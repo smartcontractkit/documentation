@@ -1432,6 +1432,15 @@ For all supported schedules, please refer to the [cron library documentation](ht
 
 ## Direct request jobs
 
+<Aside type="caution" title="Deprecation">
+  After Chainlink Node version 2.47, Chainlink is deprecating support for the legacy Direct Request and Run Log job
+  types. These job types will no longer be supported in Chainlink node releases. Node operators and developers that
+  continue to rely on them can choose to remain on the last compatible release, but should not expect ongoing
+  development support, including maintenance, bug fixes, security patches, or compatibility with future releases. Teams
+  using these legacy job types should begin planning to upgrade to the [Chainlink Runtime Environment (CRE)](/cre) as an
+  alternative.
+</Aside>
+
 Executes a job upon receipt of an explicit request made by a user. The request is detected via a log emitted by an Oracle or Operator contract. This is similar to the legacy ethlog/runlog style of jobs.
 
 ### Spec format
@@ -1538,6 +1547,15 @@ Using an *existing* Oracle Job makes your smart contract code more succinct. Let
 - The job spec example can be found [here](/chainlink-nodes/job-specs/direct-request-existing-job).
 
 ## Flux Monitor Jobs
+
+<Aside type="caution" title="Deprecation">
+  After Chainlink Node version 2.47, Chainlink is deprecating support for the legacy Flux Monitor, Direct Request, and
+  Run Log job types. These job types will no longer be supported in Chainlink node releases. Node operators and
+  developers that continue to rely on them can choose to remain on the last compatible release, but should not expect
+  ongoing development support, including maintenance, bug fixes, security patches, or compatibility with future
+  releases. Teams using these legacy job types should begin planning to upgrade to the [Chainlink Runtime Environment
+  (CRE)](/cre) as an alternative.
+</Aside>
 
 The Flux Monitor job type is for continually-updating data feeds that aggregate responses from multiple oracles. The oracles servicing the feed submit rounds based on several triggers:
 
@@ -4194,7 +4212,7 @@ HTTPURL = 'https://foo.bar' # Required
 
 ```toml
 InsecureFastScrypt = false # Default
-InsecurePPROFHeap = false # Default
+InsecurePPROFHeap = true # Default
 RootDir = '~/.chainlink' # Default
 ShutdownGracePeriod = '5s' # Default
 ```
@@ -4214,10 +4232,11 @@ InsecureFastScrypt causes all key stores to encrypt using "fast" scrypt params i
 <Aside type="caution">***ADVANCED***: *Do not change this setting unless you know what you are doing.*</Aside>
 
 ```toml
-InsecurePPROFHeap = false # Default
+InsecurePPROFHeap = true # Default
 ```
 
 InsecurePPROFHeap allows dumping the heap in pprof. This is very useful for debugging memory leaks but in certain rare cases may potentially expose sensitive data e.g. private key components, so is disabled by default.
+Deprecated: no effect. Always enabled.
 
 ### RootDir
 
@@ -4824,7 +4843,7 @@ HTTPWriteTimeout controls how long the Chainlink node's API server can hold a so
 HTTPPort = 6688 # Default
 ```
 
-HTTPPort is the port used for the Chainlink Node API, [CLI](/chainlink-nodes/configuring-nodes), and GUI.
+HTTPPort is the port used for the Chainlink Node API, [CLI](/docs/configuration-variables/#cli-client), and GUI.
 
 ### SecureCookies
 
@@ -5184,76 +5203,6 @@ UnauthenticatedPeriod = '20s' # Default
 ```
 
 UnauthenticatedPeriod defines the period to which unauthenticated requests get limited.
-
-## WebServer.OIDC
-
-```toml
-[WebServer.OIDC]
-ClientID = "abc123" # Example
-ProviderURL = "https://id.example.com/oauth2/default" # Example
-RedirectURL = "https://your-node.example.com/signin" # Default
-ClaimName = 'groups' # Default
-AdminClaim = 'NodeAdmins' # Default
-EditClaim = 'NodeEditors' # Default
-RunClaim = 'NodeRunners' # Default
-ReadClaim = 'NodeReadOnly' # Default
-SessionTimeout = '15m0s' # Default
-UserApiTokenEnabled = false # Default
-UserAPITokenDuration = '240h0m0s' # Default
-```
-
-Optional OIDC configuration (when `WebServer.AuthenticationMethod` is set to `oidc`) enables SSO via OpenID Connect. Register a new OIDC application with your identity provider to get a Client ID and Secret for the TOML fields. When OIDC is enabled, the chainlink node will redirect users to the provider and use the returned ID token for authentication and role assignment. The Client Secret should be populated in the your `secrets.toml` as follows:
-
-```toml
-[WebServer.OIDC]
-clientSecret = "secret" # Example
-```
-
-### ClientID
-
-`ClientID` is the identifier issued by your OIDC provider when registering the Chainlink node application. It represents the expected audience of the ID token. **Required**.
-
-### ProviderURL
-
-`ProviderURL` is the base issuer or discovery URL for your OIDC provider (e.g., the `.well-known/openid-configuration` endpoint). **Required**.
-
-### RedirectURL
-
-`RedirectURL` is the callback URL on the Chainlink node (this should be path: `/signin`) to which the IdP redirects after login. This must match the allowed redirect URIs configured in your IdP. **Required**.
-
-### ClaimName
-
-`ClaimName` specifies the JWT claim containing group or role information (default: `groups`). Change if your provider uses a different claim name.
-
-### AdminClaim
-
-`AdminClaim` is the claim value (within `ClaimName`) that maps to the Chainlink **Admin** role (default: `NodeAdmins`).
-
-### EditClaim
-
-`EditClaim` is the claim value that maps to the **Edit** role (default: `NodeEditors`).
-
-### RunClaim
-
-`RunClaim` is the claim value that maps to the **Run** role (default: `NodeRunners`).
-
-### ReadClaim
-
-`ReadClaim` is the claim value that maps to the **Read-Only** role (default: `NodeReadOnly`).
-
-### SessionTimeout
-
-`SessionTimeout` defines how long an OIDC session can remain idle before timing out (default: `15m0s`).
-
-### UserApiTokenEnabled
-
-`UserApiTokenEnabled` enables OIDC users to generate API tokens with the same permissions as their role (default: `false`).
-
-### UserAPITokenDuration
-
-`UserAPITokenDuration` sets the lifespan of API tokens issued by OIDC users (default: `240h0m0s`).
-
-> **Note:** Configure the OIDC client’s secret (`WebServer.OIDC.ClientSecret`) via the node’s secret management (e.g., environment variable `CL_WEB_SERVER_OIDC_CLIENT_SECRET`). Keep the client secret secure and do not expose it in plaintext configuration.
 
 ## WebServer.MFA
 
@@ -5815,7 +5764,7 @@ TraceLogging = false # Default
 EnableExperimentalRageP2P = false # Default
 ```
 
-P2P has a versioned networking stack. Currently only `[P2P.V2]` is supported.
+P2P has a versioned networking stack. Currenly only `[P2P.V2]` is supported.
 All nodes in the OCR network should share the same networking stack.
 
 ### IncomingMessageBufferSize
@@ -5990,6 +5939,7 @@ MaxBinarySize = '20.00mb' # Default
 MaxEncryptedSecretsSize = '26.40kb' # Default
 MaxConfigSize = '50.00kb' # Default
 SyncStrategy = 'event' # Default
+MaxConcurrency = 12 # Default
 ```
 
 ### Address
@@ -6057,13 +6007,21 @@ SyncStrategy = 'event' # Default
 SyncStrategy is the strategy that will be used to bring the node up to date with the latest Workflow Registry contract state.
 Options are: event which watches for contract events or reconciliation which diffs workflow metadata state.
 
+### MaxConcurrency
+
+```toml
+MaxConcurrency = 12 # Default
+```
+
+MaxConcurrency controls the maximum number of concurrent event handlers in the workflow registry syncer.
+
 ## Capabilities.WorkflowRegistry.WorkflowStorage
 
 ```toml
 [Capabilities.WorkflowRegistry.WorkflowStorage]
 URL = "localhost:4566" # Example
 TLSEnabled = true # Default
-ArtifactStorageHost = 'artifact.app.chain.link' # Example
+ArtifactStorageHost = 'artifact.cre.chain.link' # Example
 ```
 
 ### URL
@@ -6085,10 +6043,44 @@ TLSEnabled enables TLS to be used to secure communication with the workflow stor
 ### ArtifactStorageHost
 
 ```toml
-ArtifactStorageHost = 'artifact.app.chain.link' # Example
+ArtifactStorageHost = 'artifact.cre.chain.link' # Example
 ```
 
 ArtifactStorageHost is the host name that, when present within the workflow metadata binary or config URL, designates that a signed URL should be retrieved from the workflow storage service.
+
+## Capabilities.WorkflowRegistry.AdditionalSources
+
+```toml
+[[Capabilities.WorkflowRegistry.AdditionalSources]]
+URL = 'localhost:50051' # Example
+TLSEnabled = true # Default
+Name = 'my-workflow-source' # Example
+```
+
+### URL
+
+```toml
+URL = 'localhost:50051' # Example
+```
+
+URL is the GRPC endpoint for the additional workflow metadata source.
+This allows workflows to be loaded from sources other than the on-chain registry contract.
+
+### TLSEnabled
+
+```toml
+TLSEnabled = true # Default
+```
+
+TLSEnabled enables TLS for the GRPC connection. Defaults to true.
+
+### Name
+
+```toml
+Name = 'my-workflow-source' # Example
+```
+
+Name is a required unique identifier for this workflow source. Each additional source must have a distinct name to prevent workflow reconciliation conflicts. Names like 'ContractWorkflowSource' are reserved for internal use.
 
 ## Workflows
 
@@ -6532,7 +6524,7 @@ MessageRateLimiterCapacity is the "burst" of the message rate limiter.
 BytesRateLimiterRate = 5000000.0 # Default
 ```
 
-BytesRateLimiterRate is the max size of processed messages per second.
+BytesRateLimiterRate is the max size of precessed messages per second.
 
 ### BytesRateLimiterCapacity
 
@@ -6542,136 +6534,42 @@ BytesRateLimiterCapacity = 10000000 # Default
 
 BytesRateLimiterCapacity is the "burst" of the message rate limiter (in bytes).
 
-## Keeper
+## Capabilities.Local
 
 ```toml
-[Keeper]
-DefaultTransactionQueueDepth = 1 # Default
-GasPriceBufferPercent = 20 # Default
-GasTipCapBufferPercent = 20 # Default
-BaseFeeBufferPercent = 20 # Default
-MaxGracePeriod = 100 # Default
-TurnLookBack = 1_000 # Default
+[Capabilities.Local]
+RegistryBasedLaunchAllowlist = [] # Default
 ```
 
-### DefaultTransactionQueueDepth
-
-<Aside type="caution">***ADVANCED***: *Do not change this setting unless you know what you are doing.*</Aside>
+### RegistryBasedLaunchAllowlist
 
 ```toml
-DefaultTransactionQueueDepth = 1 # Default
+RegistryBasedLaunchAllowlist = [] # Default
 ```
 
-DefaultTransactionQueueDepth controls the queue size for `DropOldestStrategy` in Keeper. Set to 0 to use `SendEvery` strategy instead.
+RegistryBasedLaunchAllowlist contains regex patterns that match capability IDs to be launched
+from the on-chain capabilities registry instead of via job specs. Adding a pattern to this
+list has two effects:
 
-### GasPriceBufferPercent
+1. Disables job-spec-based launching - the delegate refuses to start matching capabilities via job specs
+2. Enables registry-based launching - the LocalCapabilityManager starts matching capabilities from on-chain registry
+   This allows staged rollout: capabilities not matching any pattern continue launching via job specs,
+   while matching capabilities transition to registry-based launching.
+   Examples (using single-quoted TOML strings where backslashes are literal):
 
-<Aside type="caution">***ADVANCED***: *Do not change this setting unless you know what you are doing.*</Aside>
+- '^cron\@1.0.0$' matches exactly "cron\@1.0.0"
+- '^http-action\@.\*$' matches any version of http-action
+- '.\*' matches all capabilities
 
-```toml
-GasPriceBufferPercent = 20 # Default
-```
-
-GasPriceBufferPercent specifies the percentage to add to the gas price used for checking whether to perform an upkeep. Only applies in legacy mode (EIP-1559 off).
-
-### GasTipCapBufferPercent
-
-<Aside type="caution">***ADVANCED***: *Do not change this setting unless you know what you are doing.*</Aside>
-
-```toml
-GasTipCapBufferPercent = 20 # Default
-```
-
-GasTipCapBufferPercent specifies the percentage to add to the gas price used for checking whether to perform an upkeep. Only applies in EIP-1559 mode.
-
-### BaseFeeBufferPercent
-
-<Aside type="caution">***ADVANCED***: *Do not change this setting unless you know what you are doing.*</Aside>
-
-```toml
-BaseFeeBufferPercent = 20 # Default
-```
-
-BaseFeeBufferPercent specifies the percentage to add to the base fee used for checking whether to perform an upkeep. Applies only in EIP-1559 mode.
-
-### MaxGracePeriod
-
-<Aside type="caution">***ADVANCED***: *Do not change this setting unless you know what you are doing.*</Aside>
-
-```toml
-MaxGracePeriod = 100 # Default
-```
-
-MaxGracePeriod is the maximum number of blocks that a keeper will wait after performing an upkeep before it resumes checking that upkeep
-
-### TurnLookBack
-
-```toml
-TurnLookBack = 1_000 # Default
-```
-
-TurnLookBack is the number of blocks in the past to look back when getting a block for a turn.
-
-## Keeper.Registry
-
-```toml
-[Keeper.Registry]
-CheckGasOverhead = 200_000 # Default
-PerformGasOverhead = 300_000 # Default
-SyncInterval = '30m' # Default
-MaxPerformDataSize = 5_000 # Default
-SyncUpkeepQueueSize = 10 # Default
-```
-
-### CheckGasOverhead
-
-<Aside type="caution">***ADVANCED***: *Do not change this setting unless you know what you are doing.*</Aside>
-
-```toml
-CheckGasOverhead = 200_000 # Default
-```
-
-CheckGasOverhead is the amount of extra gas to provide checkUpkeep() calls to account for the gas consumed by the keeper registry.
-
-### PerformGasOverhead
-
-<Aside type="caution">***ADVANCED***: *Do not change this setting unless you know what you are doing.*</Aside>
-
-```toml
-PerformGasOverhead = 300_000 # Default
-```
-
-PerformGasOverhead is the amount of extra gas to provide performUpkeep() calls to account for the gas consumed by the keeper registry
-
-### SyncInterval
-
-<Aside type="caution">***ADVANCED***: *Do not change this setting unless you know what you are doing.*</Aside>
-
-```toml
-SyncInterval = '30m' # Default
-```
-
-SyncInterval is the interval in which the RegistrySynchronizer performs a full sync of the keeper registry contract it is tracking.
-
-### MaxPerformDataSize
-
-<Aside type="caution">***ADVANCED***: *Do not change this setting unless you know what you are doing.*</Aside>
-
-```toml
-MaxPerformDataSize = 5_000 # Default
-```
-
-MaxPerformDataSize is the max size of perform data.
-
-### SyncUpkeepQueueSize
-
-<Aside type="caution">***ADVANCED***: *Do not change this setting unless you know what you are doing.*</Aside>
-
-```toml
-SyncUpkeepQueueSize = 10 # Default
-```
-
-SyncUpkeepQueueSize represents the maximum number of upkeeps that can be synced in parallel.
+Per-capability configuration. Each capability ID can have its own configuration section.
+Capability IDs must be in the format "name\@version".
+[Capabilities.Local.Capabilities."http-action\@1.0.0"]
+BinaryPathOverride overrides the default binary path for a LOOP capability.
+BinaryPathOverride = '/opt/chainlink/binaries/http_action' # Example
+[Capabilities.Local.Capabilities."http-action\@1.0.0".Config]
+Capability-specific configuration as key-value pairs.
+proxyMode = 'gateway' # Example
+allowedPorts = '443,8443' # Example
 
 ## AutoPprof
 
@@ -6797,6 +6695,7 @@ GoroutineThreshold is the maximum number of actively-running goroutines the node
 [Pyroscope]
 ServerAddress = 'http://localhost:4040' # Example
 Environment = 'mainnet' # Default
+LinkTracesToProfiles = false # Default
 ```
 
 ### ServerAddress
@@ -6814,6 +6713,14 @@ Environment = 'mainnet' # Default
 ```
 
 Environment sets the target environment tag in which profiles will be added to.
+
+### LinkTracesToProfiles
+
+```toml
+LinkTracesToProfiles = false # Default
+```
+
+LinkTracesToProfiles enables linking traces to profiles in Grafana when Pyroscope and Tracing are enabled.
 
 ## Sentry
 
@@ -7475,12 +7382,49 @@ IgnoreJoblessBridges = false # Default
 
 IgnoreJoblessBridges skips bridges that have no associated jobs.
 
+## JobSpecReporter
+
+```toml
+[JobSpecReporter]
+Enabled = false # Default
+PollingInterval = "1h" # Default
+EnabledOCR2PluginTypes = ["median"] # Default
+```
+
+JobSpecReporter holds settings for the Job Spec Reporter service, which periodically emits job spec telemetry.
+
+### Enabled
+
+```toml
+Enabled = false # Default
+```
+
+Enabled enables the Job Spec Reporter service.
+
+### PollingInterval
+
+```toml
+PollingInterval = "1h" # Default
+```
+
+PollingInterval is how often to emit a heartbeat event for each tracked job.
+
+### EnabledOCR2PluginTypes
+
+```toml
+EnabledOCR2PluginTypes = ["median"] # Default
+```
+
+EnabledOCR2PluginTypes restricts OCR2 telemetry to jobs with these plugin types.
+An empty list disables all OCR2 telemetry. Use ["all"] to enable all OCR2 plugin types.
+
 ## CRE
 
 ```toml
 [CRE]
 UseLocalTimeProvider = true # Default
 EnableDKGRecipient = false # Default
+DebugMode = false # Default
 ```
 
 ### UseLocalTimeProvider
@@ -7499,6 +7443,123 @@ EnableDKGRecipient = false # Default
 
 EnableDKGRecipient should be set to true if the DON runs a capability that uses a DKG result package.
 
+### DebugMode
+
+```toml
+DebugMode = false # Default
+```
+
+DebugMode enables additional tracing and logging for workflow engines.
+
+## CRE.ConfidentialRelay
+
+```toml
+[CRE.ConfidentialRelay]
+Enabled = false # Default
+```
+
+### Enabled
+
+```toml
+Enabled = false # Default
+```
+
+Enabled controls whether the confidential relay gateway handler should be configured.
+
+## Sharding
+
+```toml
+[Sharding]
+ShardingEnabled = false # Default
+ArbiterPort = 9876 # Default
+ArbiterPollInterval = '12s' # Default
+ArbiterRetryInterval = '12s' # Default
+ShardIndex = 0 # Default
+ShardOrchestratorPort = 50051 # Default
+ShardOrchestratorAddress = '' # Default
+```
+
+Sharding holds settings for node sharding configuration.
+
+### ShardingEnabled
+
+```toml
+ShardingEnabled = false # Default
+```
+
+ShardingEnabled enables workflow sharding across multiple nodes.
+When false (default), all workflows are processed by this node (backwards compatible mode).
+When true, workflows are distributed across shards based on ShardIndex and shard orchestrator mappings.
+
+### ArbiterPort
+
+```toml
+ArbiterPort = 9876 # Default
+```
+
+ArbiterPort is the port the Arbiter gRPC server listens on.
+
+### ArbiterPollInterval
+
+```toml
+ArbiterPollInterval = '12s' # Default
+```
+
+ArbiterPollInterval is how often to poll the ShardConfig contract.
+
+### ArbiterRetryInterval
+
+```toml
+ArbiterRetryInterval = '12s' # Default
+```
+
+ArbiterRetryInterval is the retry interval when contract reader is unavailable.
+
+### ShardIndex
+
+```toml
+ShardIndex = 0 # Default
+```
+
+ShardIndex is the index of this shard (0-based). If 0, no shard orchestration client is created.
+If greater than 0, a shard orchestration client is created and connects to ShardOrchestratorAddress.
+
+### ShardOrchestratorPort
+
+```toml
+ShardOrchestratorPort = 50051 # Default
+```
+
+ShardOrchestratorPort is the port for the shard orchestrator gRPC server.
+When a ring OCR job is created, the shard orchestrator server is spun up on this port.
+
+### ShardOrchestratorAddress
+
+```toml
+ShardOrchestratorAddress = '' # Default
+```
+
+ShardOrchestratorAddress is the URL that the shard orchestration client will try to connect to.
+Required when ShardingEnabled=true and ShardIndex > 0.
+
+## LOOPP
+
+```toml
+[LOOPP]
+GRPCServerMaxRecvMsgSize = '32mb' # Default
+```
+
+Local Out-Of-Process Plugins
+
+### GRPCServerMaxRecvMsgSize
+
+```toml
+GRPCServerMaxRecvMsgSize = '32mb' # Default
+```
+
+GRPCServerMaxRecvMsgSize is the maximum received message size configured for grpc servers.
+We use a higher limit than the grpc default of 4mb.
+
 ## EVM
 
 EVM defaults depend on ChainID:
@@ -7516,6 +7577,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x514910771AF9Ca656af840dff83E8264EcF986CA'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -7588,6 +7650,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -7632,6 +7695,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x20fE562d797A42Dcb3399062AE9546cd06f63280'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -7703,6 +7767,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -7747,6 +7812,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x01BE23585060835E02B77ef475b0Cc51aA1e0709'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -7818,6 +7884,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -7862,6 +7929,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x326C977E6efc84E512bB9C30f76E30c160eD06FB'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -7933,6 +8001,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -7978,6 +8047,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -8053,6 +8123,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -8097,6 +8168,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xa36085F69e2889c224210F603D836748e7dC0088'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -8169,6 +8241,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -8213,6 +8286,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x404460C6A5EdE2D891e8297795264fDe62ADBB75'
 LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -8284,6 +8358,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -8327,6 +8402,7 @@ FinalityTagEnabled = false
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -8398,6 +8474,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -8441,6 +8518,7 @@ FinalityTagEnabled = false
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -8512,6 +8590,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -8556,6 +8635,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xe74037112db8807B3B4B3895F5790e5bc1866a29'
 LogBackfillBatchSize = 1000
 LogPollInterval = '6s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -8627,6 +8707,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -8671,6 +8752,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06'
 LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -8742,6 +8824,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -8787,6 +8870,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xE2e73A1c69ecF83F464EFCE6A5be353a37cA09b2'
 LogBackfillBatchSize = 1000
 LogPollInterval = '5s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -8858,6 +8942,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -8902,6 +8987,7 @@ SafeTagSupported = false
 LinkContractAddress = '0x71052BAe71C25C78E37fD12E5ff1101A71d9018F'
 LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -8973,6 +9059,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 2
+PollSuccessThreshold = 0
 PollInterval = '3s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -9017,6 +9104,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x404460C6A5EdE2D891e8297795264fDe62ADBB75'
 LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -9088,6 +9176,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -9133,6 +9222,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x8418c4d7e8e17ab90232DC72150730E6c4b84F57'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -9208,6 +9298,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 2
+PollSuccessThreshold = 0
 PollInterval = '8s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -9252,6 +9343,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xb0897686c545045aFc77CF20eC7A532E3120E0F1'
 LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -9323,6 +9415,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -9367,6 +9460,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x71052BAe71C25C78E37fD12E5ff1101A71d9018F'
 LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -9438,6 +9532,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -9482,6 +9577,7 @@ SafeTagSupported = false
 LinkContractAddress = '0x44637eEfD71A090990f89faEC7022fc74B2969aD'
 LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -9553,6 +9649,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 2
+PollSuccessThreshold = 0
 PollInterval = '3s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -9598,6 +9695,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x71052BAe71C25C78E37fD12E5ff1101A71d9018F'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -9673,6 +9771,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 2
+PollSuccessThreshold = 0
 PollInterval = '8s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -9718,6 +9817,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x724593f6FCb0De4E6902d4C55D7C74DaA2AF0E55'
 LogBackfillBatchSize = 1000
 LogPollInterval = '30s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -9790,6 +9890,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -9835,6 +9936,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x8aF9711B44695a5A081F25AB9903DDB73aCf8FA9'
 LogBackfillBatchSize = 1000
 LogPollInterval = '30s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -9907,6 +10009,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -9952,6 +10055,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x709229D9587886a1eDFeE6b5cE636E1D70d1cE39'
 LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -10027,6 +10131,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -10071,6 +10176,7 @@ FinalityTagEnabled = true
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -10145,6 +10251,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -10190,6 +10297,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x2Ea38D6cDb6774992d4A62fe622f4405663729Dd'
 LogBackfillBatchSize = 1000
 LogPollInterval = '5s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -10264,6 +10372,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -10308,6 +10417,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x6F43FF82CCA38001B6699a8AC47A2d0E66939407'
 LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -10379,6 +10489,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -10422,6 +10533,7 @@ FinalityTagEnabled = true
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -10493,6 +10605,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -10538,6 +10651,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xC1F6f7622ad37C3f46cDF6F8AA0344ADE80BF450'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -10613,6 +10727,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -10658,6 +10773,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xD29F4Cc763A064b6C563B8816f09351b3Fbb61A0'
 LogBackfillBatchSize = 1000
 LogPollInterval = '5s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -10732,6 +10848,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -10777,6 +10894,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x7Ce6bb2Cc2D3Fd45a974Da6a0F29236cb9513a98'
 LogBackfillBatchSize = 1000
 LogPollInterval = '10s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -10848,6 +10966,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -10893,6 +11012,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x90a386d59b9A6a4795a011e8f032Fc21ED6FEFb6'
 LogBackfillBatchSize = 1000
 LogPollInterval = '10s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -10964,6 +11084,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -11009,6 +11130,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x23A1aFD896c8c8876AF46aDc38521f4432658d1e'
 LogBackfillBatchSize = 1000
 LogPollInterval = '5s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -11083,6 +11205,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -11128,6 +11251,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x52869bae3E091e36b0915941577F2D47d8d8B534'
 LogBackfillBatchSize = 1000
 LogPollInterval = '5s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -11202,6 +11326,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -11247,6 +11372,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xdc2CC710e42857672E7907CF474a69B63B93089f'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -11322,6 +11448,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -11367,6 +11494,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x915b648e994d5f31059B38223b9fbe98ae185473'
 LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -11442,6 +11570,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -11486,6 +11615,7 @@ FinalityTagEnabled = false
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -11557,6 +11687,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -11602,6 +11733,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x31EFB841d5e0b4082F7E1267dab8De1b853f2A9d'
 LogBackfillBatchSize = 1000
 LogPollInterval = '6s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -11673,6 +11805,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -11718,6 +11851,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x925a4bfE64AE2bFAC8a02b35F78e60C29743755d'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -11793,6 +11927,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 2
+PollSuccessThreshold = 0
 PollInterval = '3s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -11836,6 +11971,7 @@ FinalityTagEnabled = false
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -11907,6 +12043,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -11952,6 +12089,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xd2FE54D1E5F568eB710ba9d898Bf4bD02C7c0353'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -12027,6 +12165,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -12072,6 +12211,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xdB7A504CF869484dd6aC5FaF925c8386CBF7573D'
 LogBackfillBatchSize = 1000
 LogPollInterval = '30s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -12144,6 +12284,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -12189,6 +12330,7 @@ SafeTagSupported = false
 LinkContractAddress = '0x80f1FcdC96B55e459BF52b998aBBE2c364935d69'
 LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -12260,6 +12402,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -12305,6 +12448,7 @@ SafeTagSupported = false
 LinkContractAddress = '0x3580c7A817cCD41f7e02143BFa411D4EeAE78093'
 LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -12376,6 +12520,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -12420,6 +12565,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x6C475841d1D7871940E93579E5DBaE01634e17aA'
 LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -12491,6 +12637,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -12534,6 +12681,7 @@ FinalityTagEnabled = false
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -12605,6 +12753,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -12650,6 +12799,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x436a1907D9e6a65E6db73015F08f9C66F6B63E45'
 LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -12725,6 +12875,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -12770,6 +12921,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xda40816f278Cd049c137F6612822D181065EBfB4'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -12845,6 +12997,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -12888,6 +13041,7 @@ FinalityTagEnabled = false
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -12959,6 +13113,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -12990,6 +13145,123 @@ PollPeriod = '2s'
 AcceptanceTimeout = '30s'
 ```
 
+### Pharos Mainnet (1672)
+
+```toml
+AutoCreateKey = true
+BlockBackfillDepth = 10
+BlockBackfillSkip = false
+ChainType = 'pharos'
+FinalityDepth = 50
+SafeDepth = 0
+FinalityTagEnabled = false
+SafeTagSupported = true
+LogBackfillBatchSize = 1000
+LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
+LogKeepBlocksDepth = 100000
+LogPrunePageSize = 0
+BackupLogPollerBlockDelay = 100
+MinIncomingConfirmations = 3
+MinContractPayment = '0.00001 link'
+NonceAutoSync = true
+NoNewHeadsThreshold = '3m0s'
+LogBroadcasterEnabled = true
+RPCDefaultBatchSize = 100
+RPCBlockQueryDelay = 1
+FinalizedBlockOffset = 0
+NoNewFinalizedHeadsThreshold = '0s'
+
+[Transactions]
+Enabled = true
+ForwardersEnabled = false
+MaxInFlight = 16
+MaxQueued = 250
+ReaperInterval = '1h0m0s'
+ReaperThreshold = '168h0m0s'
+ResendAfterThreshold = '1m0s'
+ConfirmationTimeout = '1m0s'
+
+[Transactions.AutoPurge]
+Enabled = false
+
+[Transactions.TransactionManagerV2]
+Enabled = false
+
+[BalanceMonitor]
+Enabled = true
+
+[GasEstimator]
+Mode = 'BlockHistory'
+PriceDefault = '20 gwei'
+PriceMax = '115792089237316195423570985008687907853269984665.640564039457584007913129639935 tether'
+PriceMin = '1 gwei'
+LimitDefault = 500000
+LimitMax = 500000
+LimitMultiplier = '1'
+LimitTransfer = 21000
+EstimateLimit = false
+BumpMin = '5 gwei'
+BumpPercent = 20
+BumpThreshold = 3
+EIP1559DynamicFees = false
+FeeCapDefault = '100 gwei'
+TipCapDefault = '1 wei'
+TipCapMin = '1 wei'
+
+[GasEstimator.BlockHistory]
+BatchSize = 25
+BlockHistorySize = 8
+CheckInclusionBlocks = 12
+CheckInclusionPercentile = 90
+TransactionPercentile = 60
+
+[GasEstimator.FeeHistory]
+CacheTimeout = '10s'
+
+[HeadTracker]
+HistoryDepth = 100
+MaxBufferSize = 3
+SamplingInterval = '1s'
+MaxAllowedFinalityDepth = 10000
+FinalityTagBypass = false
+PersistenceEnabled = true
+PersistenceBatchSize = 100
+
+[NodePool]
+PollFailureThreshold = 5
+PollSuccessThreshold = 0
+PollInterval = '10s'
+SelectionMode = 'HighestHead'
+SyncThreshold = 5
+LeaseDuration = '0s'
+NodeIsSyncingEnabled = false
+FinalizedBlockPollInterval = '5s'
+EnforceRepeatableRead = true
+DeathDeclarationDelay = '1m0s'
+NewHeadsPollInterval = '0s'
+VerifyChainID = true
+ExternalRequestMaxResponseSize = 1000000
+
+[OCR]
+ContractConfirmations = 4
+ContractTransmitterTransmitTimeout = '10s'
+DatabaseTimeout = '10s'
+DeltaCOverride = '168h0m0s'
+DeltaCJitterOverride = '1h0m0s'
+ObservationGracePeriod = '1s'
+
+[OCR2]
+[OCR2.Automation]
+GasLimit = 5400000
+
+[Workflow]
+GasLimitDefault = 400000
+TxAcceptanceState = 2
+PollPeriod = '2s'
+AcceptanceTimeout = '30s'
+```
+
 ### Soneium Mainnet (1868)
 
 ```toml
@@ -13004,6 +13276,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x32D8F819C8080ae44375F8d383Ffd39FC642f3Ec'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -13079,6 +13352,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -13124,6 +13398,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x7ea13478Ea3961A0e8b538cb05a9DF0477c79Cd2'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -13199,6 +13474,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -13243,6 +13519,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x3902228D6A3d2Dc44731fD9d45FeE6a61c722D0b'
 LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -13314,6 +13591,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -13358,6 +13636,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x5bB50A6888ee6a67E22afFDFD9513be7740F1c15'
 LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -13429,6 +13708,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -13472,6 +13752,7 @@ FinalityTagEnabled = false
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -13543,6 +13824,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -13588,6 +13870,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xa75cCA5b404ec6F4BB6EC4853D177FE7057085c8'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -13663,6 +13946,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -13708,6 +13992,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x5576815a38A3706f37bf815b261cCc7cCA77e975'
 LogBackfillBatchSize = 1000
 LogPollInterval = '30s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -13780,6 +14065,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -13823,6 +14109,7 @@ FinalityTagEnabled = true
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -13894,6 +14181,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -13938,6 +14226,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x7311DED199CC28D80E58e81e8589aa160199FCD2'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -14009,6 +14298,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -14053,6 +14343,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x30e85A5c9525AD9a7A0FA5C74df4Baf0b01aD241'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -14124,6 +14415,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -14168,6 +14460,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xfaFedb041c0DD4fA2Dc0d87a6B0979Ee6FA7af5F'
 LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -14239,6 +14532,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -14283,6 +14577,7 @@ FinalityTagEnabled = false
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '4s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -14355,6 +14650,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -14400,6 +14696,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xC82Ea35634BcE95C394B6BC00626f827bB0F4801'
 LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -14475,6 +14772,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -14520,6 +14818,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xfe36cF0B43aAe49fBc5cFC5c0AF22a623114E043'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -14557,8 +14856,8 @@ Mode = 'BlockHistory'
 PriceDefault = '20 gwei'
 PriceMax = '120 gwei'
 PriceMin = '1 gwei'
-LimitDefault = 80000000000
-LimitMax = 100000000000
+LimitDefault = 500000
+LimitMax = 500000
 LimitMultiplier = '1'
 LimitTransfer = 21000
 EstimateLimit = false
@@ -14596,6 +14895,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -14641,6 +14941,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x22bdEdEa0beBdD7CfFC95bA53826E55afFE9DE04'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -14678,8 +14979,8 @@ Mode = 'BlockHistory'
 PriceDefault = '20 gwei'
 PriceMax = '120 gwei'
 PriceMin = '1 gwei'
-LimitDefault = 80000000000
-LimitMax = 100000000000
+LimitDefault = 500000
+LimitMax = 500000
 LimitMultiplier = '1'
 LimitTransfer = 21000
 EstimateLimit = false
@@ -14717,6 +15018,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -14760,6 +15062,7 @@ FinalityTagEnabled = false
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -14831,6 +15134,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -14876,6 +15180,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x88Fb150BDc53A65fe94Dea0c9BA0a6dAf8C6e196'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -14951,6 +15256,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -14994,6 +15300,7 @@ FinalityTagEnabled = false
 SafeTagSupported = true
 LogBackfillBatchSize = 100
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -15065,6 +15372,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -15110,6 +15418,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xDCA67FD8324990792C0bfaE95903B8A64097754F'
 LogBackfillBatchSize = 1000
 LogPollInterval = '5s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -15181,6 +15490,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -15226,6 +15536,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x79f531a3D07214304F259DC28c7191513223bcf3'
 LogBackfillBatchSize = 1000
 LogPollInterval = '10s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -15300,6 +15611,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -15345,6 +15657,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xa71848C99155DA0b245981E5ebD1C94C4be51c43'
 LogBackfillBatchSize = 1000
 LogPollInterval = '10s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -15419,6 +15732,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -15463,6 +15777,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x685cE6742351ae9b618F383883D6d1e0c5A31B4B'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -15534,6 +15849,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 2
+PollSuccessThreshold = 0
 PollInterval = '3s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -15579,6 +15895,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x183E3691EfF3524B2315D3703D94F922CbE51F54'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -15654,6 +15971,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 2
+PollSuccessThreshold = 0
 PollInterval = '3s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -15687,7 +16005,7 @@ AcceptanceTimeout = '30s'
 
 ### Lens Sepolia (37111)
 
-````toml
+```toml
 AutoCreateKey = true
 BlockBackfillDepth = 10
 BlockBackfillSkip = false
@@ -15699,6 +16017,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x7f1b9eE544f9ff9bB521Ab79c205d79C55250a36'
 LogBackfillBatchSize = 1000
 LogPollInterval = '5s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -15773,6 +16092,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -15786,10 +16106,28 @@ VerifyChainID = true
 ExternalRequestMaxResponseSize = 1000000
 
 [NodePool.Errors]
-TerminallyUnderpriced = '(?:: |^)(max fee per gas less than block base fee|virtual machine entered unexpected state. (?:P|p)lease contact developers and provide transaction details that caused this error. Error description: (?:The operator included transaction with an unacceptable gas price|Assertion error: Fair pubdata price too high))
+TerminallyUnderpriced = '(?:: |^)(max fee per gas less than block base fee|virtual machine entered unexpected state. (?:P|p)lease contact developers and provide transaction details that caused this error. Error description: (?:The operator included transaction with an unacceptable gas price|Assertion error: Fair pubdata price too high))$'
+
+[OCR]
+ContractConfirmations = 4
+ContractTransmitterTransmitTimeout = '10s'
+DatabaseTimeout = '10s'
+DeltaCOverride = '168h0m0s'
+DeltaCJitterOverride = '1h0m0s'
+ObservationGracePeriod = '1s'
+
+[OCR2]
+[OCR2.Automation]
+GasLimit = 5400000
+
+[Workflow]
+GasLimitDefault = 400000
+TxAcceptanceState = 2
+PollPeriod = '2s'
+AcceptanceTimeout = '30s'
+```
 
 ### Arbitrum Mainnet (42161)
-
 
 ```toml
 AutoCreateKey = true
@@ -15803,6 +16141,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4'
 LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -15877,6 +16216,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -15906,7 +16246,7 @@ GasLimitDefault = 400000
 TxAcceptanceState = 2
 PollPeriod = '2s'
 AcceptanceTimeout = '30s'
-````
+```
 
 ### Celo Mainnet (42220)
 
@@ -15922,6 +16262,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xd07294e6E917e07dfDcee882dd1e2565085C2ae0'
 LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -15993,6 +16334,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -16037,6 +16379,7 @@ FinalityTagEnabled = true
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '4s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -16112,6 +16455,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -16156,6 +16500,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846'
 LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -16227,6 +16572,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -16271,6 +16617,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x5947BB275c521040051D82396192181b413227A3'
 LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -16342,6 +16689,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -16387,6 +16735,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x32E08557B14FaD8908025619797221281D439071'
 LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -16458,6 +16807,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -16503,6 +16853,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xDEE94506570cA186BC1e3516fCf4fd719C312cCD'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -16580,6 +16931,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -16625,6 +16977,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x5D6d033B4FbD2190D99D930719fAbAcB64d2439a'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -16702,6 +17055,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -16746,6 +17100,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x61876F0429726D7777B46f663e1C9ab75d08Fc56'
 LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -16817,6 +17172,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -16862,6 +17218,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x71052BAe71C25C78E37fD12E5ff1101A71d9018F'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -16937,6 +17294,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -16980,6 +17338,7 @@ FinalityTagEnabled = false
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -17051,6 +17410,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -17095,6 +17455,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xF64E6E064a71B45514691D397ad4204972cD6508'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -17168,6 +17529,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -17212,6 +17574,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xa18152629128738a5c081eb226335FEd4B9C95e9'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -17285,6 +17648,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -17330,6 +17694,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x9870D6a0e05F867EAAe696e106741843F7fD116D'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -17405,6 +17770,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -17450,6 +17816,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x5aB885CDa7216b163fb6F813DEC1E1532516c833'
 LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -17525,6 +17892,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -17569,6 +17937,7 @@ FinalityTagEnabled = true
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '10s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -17643,6 +18012,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -17687,6 +18057,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x326C977E6efc84E512bB9C30f76E30c160eD06FB'
 LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -17758,6 +18129,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -17802,6 +18174,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x0Fd9e8d3aF1aaee056EB9e802c3A762a667b1904'
 LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -17873,6 +18246,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -17917,6 +18291,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x52CEEed7d3f8c6618e4aaD6c6e555320d0D83271'
 LogBackfillBatchSize = 1000
 LogPollInterval = '6s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -17988,6 +18363,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -18032,6 +18408,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x52CEEed7d3f8c6618e4aaD6c6e555320d0D83271'
 LogBackfillBatchSize = 1000
 LogPollInterval = '6s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -18103,6 +18480,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -18148,6 +18526,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x93202eC683288a9EA75BB829c6baCFb2BfeA9013'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -18223,6 +18602,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 4
+PollSuccessThreshold = 0
 PollInterval = '4s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -18267,6 +18647,7 @@ FinalityTagEnabled = false
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -18342,6 +18723,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -18387,6 +18769,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xE4aB69C077896252FAFBD49EFD26B5D171A32410'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -18462,6 +18845,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -18505,6 +18889,7 @@ FinalityTagEnabled = true
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '5s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -18576,6 +18961,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -18619,6 +19005,7 @@ FinalityTagEnabled = true
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '5s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -18690,6 +19077,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -18734,6 +19122,7 @@ FinalityTagEnabled = true
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -18809,6 +19198,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -18852,6 +19242,7 @@ FinalityTagEnabled = true
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '10s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -18923,6 +19314,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '5s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -18966,6 +19358,7 @@ FinalityTagEnabled = true
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '10s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -19037,6 +19430,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '5s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -19082,6 +19476,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xd8A9246e84903e82CA01e42774b01A7CdD465BFa'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -19156,6 +19551,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -19200,6 +19596,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x2A5bACb2440BC17D53B7b9Be73512dDf92265e48'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -19271,6 +19668,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -19315,6 +19713,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x56B275c0Ec034a229a1deD8DB17089544bc276D9'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -19386,6 +19785,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -19431,6 +19831,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x615fBe6372676474d9e6933d310469c9b68e9726'
 LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -19505,6 +19906,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -19550,6 +19952,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28'
 LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -19624,6 +20027,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -19669,6 +20073,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xb1D4538B4571d411F07960EF2838Ce337FE1E80E'
 LogBackfillBatchSize = 1000
 LogPollInterval = '1s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -19743,6 +20148,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -19788,6 +20194,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x231d45b53C905c3d6201318156BDC725c9c3B9B1'
 LogBackfillBatchSize = 1000
 LogPollInterval = '5s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -19864,6 +20271,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -19909,6 +20317,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x548C6944cba02B9D1C0570102c89de64D258d3Ac'
 LogBackfillBatchSize = 1000
 LogPollInterval = '5s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -19985,6 +20394,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -20029,6 +20439,7 @@ FinalityTagEnabled = false
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '4s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -20101,6 +20512,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -20145,6 +20557,7 @@ FinalityTagEnabled = true
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '4s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -20220,6 +20633,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -20264,6 +20678,7 @@ FinalityTagEnabled = true
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -20339,6 +20754,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -20384,6 +20800,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x3423C922911956b1Ccbc2b5d4f38216a6f4299b4'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -20459,6 +20876,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -20504,6 +20922,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xcd2AfB2933391E35e8682cbaaF75d9CA7339b183'
 LogBackfillBatchSize = 1000
 LogPollInterval = '3s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -20579,6 +20998,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -20623,6 +21043,7 @@ FinalityTagEnabled = true
 SafeTagSupported = true
 LogBackfillBatchSize = 1000
 LogPollInterval = '10s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -20697,6 +21118,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -20741,6 +21163,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x779877A7B0D9E8603169DdbD7836e478b4624789'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -20812,6 +21235,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -20857,6 +21281,7 @@ SafeTagSupported = true
 LinkContractAddress = '0xE4aB69C077896252FAFBD49EFD26B5D171A32410'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -20932,6 +21357,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 10
@@ -20977,6 +21403,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x7311DED199CC28D80E58e81e8589aa160199FCD2'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -21051,6 +21478,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -21096,6 +21524,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x996EfAb6011896Be832969D91E9bc1b3983cfdA1'
 LogBackfillBatchSize = 1000
 LogPollInterval = '15s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -21170,6 +21599,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -21215,6 +21645,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x02c359ebf98fc8BF793F970F9B8302bb373BdF32'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -21290,6 +21721,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 4
+PollSuccessThreshold = 0
 PollInterval = '4s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -21334,6 +21766,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x218532a12a389a4a92fC0C5Fb22901D1c19198aA'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -21405,6 +21838,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -21449,6 +21883,7 @@ SafeTagSupported = true
 LinkContractAddress = '0x8b12Ac23BFe11cAb03a634C1F117D64a7f2cFD3e'
 LogBackfillBatchSize = 1000
 LogPollInterval = '2s'
+LogPollerSkipEmptyBlocks = false
 LogKeepBlocksDepth = 100000
 LogPrunePageSize = 0
 BackupLogPollerBlockDelay = 100
@@ -21520,6 +21955,7 @@ PersistenceBatchSize = 100
 
 [NodePool]
 PollFailureThreshold = 5
+PollSuccessThreshold = 0
 PollInterval = '10s'
 SelectionMode = 'HighestHead'
 SyncThreshold = 5
@@ -21681,7 +22117,7 @@ When FinalityTagEnabled is false, SafeTagSupported is ignored and LatestSafeBloc
 FlagsContractAddress = '0xae4E781a6218A8031764928E88d457937A954fC3' # Example
 ```
 
-FlagsContractAddress can optionally point to a [Flags contract](https://github.com/smartcontractkit/chainlink-evm/blob/develop/contracts/src/v0.8/l2ep/Flags.sol). If set, the node will lookup that contract for each job that supports flags contracts (currently OCR and FM jobs are supported). If the job's contractAddress is set as hibernating in the FlagsContractAddress address, it overrides the standard update parameters (such as heartbeat/threshold).
+FlagsContractAddress can optionally point to a [Flags contract](../contracts/src/v0.8/Flags.sol). If set, the node will lookup that contract for each job that supports flags contracts (currently OCR and FM jobs are supported). If the job's contractAddress is set as hibernating in the FlagsContractAddress address, it overrides the standard update parameters (such as heartbeat/threshold).
 
 ### LinkContractAddress
 
@@ -21721,6 +22157,16 @@ LogKeepBlocksDepth = 100000 # Default
 
 LogKeepBlocksDepth works in conjunction with Feature.LogPoller. Controls how many blocks the poller will keep, must be greater than FinalityDepth+1.
 
+### LogPollerSkipEmptyBlocks
+
+<Aside type="caution">***ADVANCED***: *Do not change this setting unless you know what you are doing.*</Aside>
+
+```toml
+LogPollerSkipEmptyBlocks = false # Default
+```
+
+LogPollerSkipEmptyBlocks defines if LogPoller should persist or skip blocks that do not contain logs matching any of registered filters. Setting this to true can reduce the load on the database and improve performance for fast chains.
+
 ### LogPrunePageSize
 
 <Aside type="caution">***ADVANCED***: *Do not change this setting unless you know what you are doing.*</Aside>
@@ -21748,7 +22194,7 @@ BackupLogPollerDelay=0 will disable Backup LogPoller (*not recommended for produ
 MinContractPayment = '10000000000000 juels' # Default
 ```
 
-MinContractPayment is the minimum payment in LINK required to execute a direct request job. This can be overriden on a per-job basis.
+MinContractPayment is the minimum payment in LINK required to execute a direct request job. This can be overridden on a per-job basis.
 
 ### MinIncomingConfirmations
 
@@ -21950,7 +22396,7 @@ MinAttempts = 3 # Example
 Enabled = false # Default
 ```
 
-Enabled enables or disables automatically purging transactions that have been identified as terminally stuck (will never be included on-chain). This feature is only expected to be used by ZK chains.
+Enabled enables or disables automatically purging transactions that have been idenitified as terminally stuck (will never be included on-chain). This feature is only expected to be used by ZK chains.
 
 ### DetectionApiUrl
 
@@ -21984,6 +22430,10 @@ Enabled = false # Default
 BlockTime = '10s' # Example
 CustomURL = 'https://example.api.io' # Example
 DualBroadcast = false # Example
+ReadRequestsToMultipleNodes = false # Example
+Bundles = false # Example
+FastlaneAuctionRequestTimeout = '5s' # Example
+FeeBoost = false # Default
 ```
 
 ### Enabled
@@ -22017,6 +22467,38 @@ DualBroadcast = false # Example
 ```
 
 DualBroadcast enables DualBroadcast functionality.
+
+### ReadRequestsToMultipleNodes
+
+```toml
+ReadRequestsToMultipleNodes = false # Example
+```
+
+ReadRequestsToMultipleNodes controls whether txm chain client reads use multiplexed calls.
+
+### Bundles
+
+```toml
+Bundles = false # Example
+```
+
+Bundles enables Bundles functionality for SVR.
+
+### FastlaneAuctionRequestTimeout
+
+```toml
+FastlaneAuctionRequestTimeout = '5s' # Example
+```
+
+FastlaneAuctionRequestTimeout configures the timeout for fastlane auction requests.
+
+### FeeBoost
+
+```toml
+FeeBoost = false # Default
+```
+
+FeeBoost enables node to immediately boost txs to the max gas price configured
 
 ## EVM.BalanceMonitor
 
@@ -22175,7 +22657,7 @@ SenderAddress is optional and can be set to a specific sender address for gas li
 If you are using gas limit estimation:
 
 - Setting SenderAddress is optional for most products. If it is set, the from address for the transaction for gas estimation will be set to the inputted SenderAddress. If it is not set, the actual address the transaction is sent from is used if available.
-- Setting SenderAddress is necessary for gas limit estimation to function correctly for CCIP. Gas limit estimation works only in CCIP 1.6 and above if SenderAddress is set to the given example value (0x00c11c11c11C11c11C11c11c11C11C11c11C11c1). This value is hardcoded in the CCIP 1.6 contracts and is not needed for other products.
+- Setting SenderAddress is neccessary for gas limit estimation to function correctly for CCIP. Gas limit estimation works only in CCIP 1.6 and above if SenderAddress is set to the given example value (0x00c11c11c11C11c11C11c11c11C11C11c11C11c1). This value is hardcoded in the CCIP 1.6 contracts and is not needed for other products.
 
 ### BumpMin
 
@@ -22259,7 +22741,7 @@ In EIP-1559 mode, the following changes occur to how configuration works:
 - All new transactions will be sent as type 0x2 transactions specifying a TipCap and FeeCap. Be aware that existing pending legacy transactions will continue to be gas bumped in legacy mode.
 - `BlockHistoryEstimator` will apply its calculations (gas percentile etc) to the TipCap and this value will be used for new transactions (GasPrice will be ignored)
 - `FixedPriceEstimator` will use `GasTipCapDefault` instead of `GasPriceDefault` for the tip cap
-- `FixedPriceEstimator` will use `GasFeeCapDefault` instead of `GasPriceDefault` for the fee cap
+- `FixedPriceEstimator` will use `GasFeeCapDefault` instaed of `GasPriceDefault` for the fee cap
 - `PriceMin` is ignored for new transactions and `GasTipCapMinimum` is used instead (default 0)
 - `PriceMax` still represents that absolute upper limit that Chainlink will ever spend (total) on a single tx
 - `Keeper.GasTipCapBufferPercent` is ignored in EIP-1559 mode and `Keeper.GasTipCapBufferPercent` is used instead
@@ -22307,7 +22789,7 @@ CustomGasPriceCalldata = '' # Default
 OracleType = 'opstack' # Example
 ```
 
-OracleType refers to the oracle family this config belongs to. Currently the available oracle types are: 'opstack', 'arbitrum', 'zksync', and 'custom\_calldata'.
+OracleType refers to the oracle family this config belongs to. Currently the available oracle types are: 'opstack', 'arbitrum', 'zksync', and 'custom_calldata'.
 
 ### OracleAddress
 
@@ -22609,6 +23091,7 @@ GasEstimator.PriceMax overrides the maximum gas price for this key. See EVM.GasE
 ```toml
 [EVM.NodePool]
 PollFailureThreshold = 5 # Default
+PollSuccessThreshold = 0 # Default
 PollInterval = '10s' # Default
 SelectionMode = 'HighestHead' # Default
 SyncThreshold = 5 # Default
@@ -22632,9 +23115,19 @@ In addition to these settings, `EVM.NoNewHeadsThreshold` controls how long to wa
 PollFailureThreshold = 5 # Default
 ```
 
-PollFailureThreshold indicates how many consecutive polls must fail in order to mark a node as unreachable.
+PollFailureThreshold indicates how many polls must fail beyond those that succeed in order to mark a node as unreachable.
 
 Set to zero to disable poll checking.
+
+### PollSuccessThreshold
+
+```toml
+PollSuccessThreshold = 0 # Default
+```
+
+PollSuccessThreshold indicates how many consecutive polls must succeed in order to mark a node as alive once it has been marked as unreachable.
+
+Set to zero to require no successful polls (previous behavior).
 
 ### PollInterval
 
@@ -22907,7 +23400,7 @@ ServiceUnavailable is a regex pattern to match against service unavailable error
 TooManyResults = '(: |^)too many results' # Example
 ```
 
-TooManyResults is a regex pattern to match an eth\_getLogs error indicating the result set is too large to return
+TooManyResults is a regex pattern to match an eth_getLogs error indicating the result set is too large to return
 
 ### MissingBlocks
 
@@ -22915,7 +23408,7 @@ TooManyResults is a regex pattern to match an eth\_getLogs error indicating the 
 MissingBlocks = '(: |^)missing blocks' # Example
 ```
 
-MissingBlocks is a regex pattern to match an eth\_getLogs error indicating the rpc server is permanently missing some blocks in the requested block range
+MissingBlocks is a regex pattern to match an eth_getLogs error indicating the rpc server is permanently missing some blocks in the requested block range
 
 ## EVM.OCR
 
@@ -23226,7 +23719,7 @@ GasLimitMultiplier scales the estimated gas limit.
 MaxMsgsPerBatch = 100 # Default
 ```
 
-MaxMsgsPerBatch limits the numbers of messages per transaction batch.
+MaxMsgsPerBatch limits the numbers of mesages per transaction batch.
 
 ### OCR2CachePollPeriod
 
@@ -23306,6 +23799,8 @@ BlockHistoryBatchLoadSize = 20 # Default
 ComputeUnitLimitDefault = 200_000 # Default
 EstimateComputeUnitLimit = false # Default
 LogPollerStartingLookback = '24h0m0s' # Default
+LogPollerCPIEventsEnabled = true # Default
+LogPollerSlotsBatchSize = 100 # Default
 ```
 
 ### ChainID
@@ -23523,6 +24018,22 @@ LogPollerStartingLookback = '24h0m0s' # Default
 
 LogPollerStartingLookback
 
+### LogPollerCPIEventsEnabled
+
+```toml
+LogPollerCPIEventsEnabled = true # Default
+```
+
+LogPollerCPIEventsEnabled enables the LogPoller to listen for CPI (Cross-Program Invocation) events.
+
+### LogPollerSlotsBatchSize
+
+```toml
+LogPollerSlotsBatchSize = 100 # Default
+```
+
+LogPollerSlotsBatchSize is the number of slots to process in a batch when polling for logs. Setting this value too high may increase memory usage, while setting it too low may increase the number of RPC calls and decrease performance.
+
 ## Solana.Workflow
 
 ```toml
@@ -23552,6 +24063,7 @@ ForwarderAddress = '14grJpemFaf88c8tiVb77W7TYg2W3ir6pfkKz3YjhhZ5' # Example
 ```
 
 ForwarderAddress is the keystone forwarder program address on chain.
+Deprecated: ignored at runtime; use capability config. Kept for TOML compatibility.
 
 ### ForwarderState
 
@@ -23560,6 +24072,7 @@ ForwarderState = '14grJpemFaf88c8tiVb77W7TYg2W3ir6pfkKz3YjhhZ5' # Example
 ```
 
 ForwarderState is the keystone forwarder program state account on chain.
+Deprecated: ignored at runtime; use capability config. Kept for TOML compatibility.
 
 ### FromAddress
 
@@ -23568,6 +24081,7 @@ FromAddress = '4BJXYkfvg37zEmBbsacZjeQDpTNx91KppxFJxRqrz48e' # Example
 ```
 
 FromAddress is Address of the transmitter key to use for workflow writes.
+Deprecated: ignored at runtime; use capability / transmitter config. Kept for TOML compatibility.
 
 ### GasLimitDefault
 
@@ -23638,7 +24152,7 @@ Enabled enables the multinode feature.
 PollFailureThreshold = 5 # Default
 ```
 
-PollFailureThreshold is the number of consecutive poll failures before a node is considered unhealthy.
+PollFailureThreshold is the number of poll failures beyond poll successes before a node is considered unhealthy.
 
 ### PollInterval
 
@@ -23923,24 +24437,6 @@ APIKey = 'key' # Example
 ```
 
 APIKey Header is optional and only required for Nethermind RPCs
-
-\[OCR]
-ContractConfirmations = 4
-ContractTransmitterTransmitTimeout = '10s'
-DatabaseTimeout = '10s'
-DeltaCOverride = '168h0m0s'
-DeltaCJitterOverride = '1h0m0s'
-ObservationGracePeriod = '1s'
-
-\[OCR2]
-\[OCR2.Automation]
-GasLimit = 5400000
-
-\[Workflow]
-GasLimitDefault = 400000
-TxAcceptanceState = 2
-PollPeriod = '2s'
-AcceptanceTimeout = '30s'
 
 ---
 
@@ -24434,6 +24930,16 @@ ApiSecret = "streams-api-secret" # Example
 ```
 
 ApiSecret is the API secret used for authenticating with the CLL Data Streams SDK.
+
+## CRE.LocalSecretOverrides
+
+```toml
+[CRE.LocalSecretOverrides]
+"0000000000000000000000000000000000000000" = { "my-secret-id" = "my-plaintext-value" } # Example
+```
+
+LocalSecretOverrides maps workflow owner to (secret id -> secret value) map.
+When non-empty, overrides are used as fallback when Vault calls fail.
 
 ---
 
