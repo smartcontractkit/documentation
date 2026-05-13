@@ -93,7 +93,6 @@ function resolveSVR(feed: any): "shared" | "aave" | undefined {
 
 export function collectStreamEntries(
   type: DataFeedType,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   chainCache: Record<string, any>,
   options: FeedMarkdownOptions = {}
 ): StreamEntry[] {
@@ -102,7 +101,6 @@ export function collectStreamEntries(
   } as any
 
   const seenFeedIds = new Set<string>()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const raw: any[] = []
 
   for (const chain of CHAINS) {
@@ -216,7 +214,6 @@ export function buildFeedAddressMarkdown(
 ): string {
   const lines: string[] = []
   const streams = isStreamsType(type)
-
   const label = FEED_TYPE_LABELS[type]
 
   if (streams) {
@@ -246,6 +243,43 @@ export function buildFeedAddressMarkdown(
       lines.push("")
     } else {
       lines.push(`No stream IDs found for type \`${type}\`.`)
+    }
+  } else {
+    lines.push(`# Chainlink Feed Addresses: ${label}`)
+    lines.push("")
+
+    const feedEntries = collectFeedEntries(type, networkFilter, chainCache, options)
+
+    if (feedEntries.length === 0) {
+      lines.push(
+        networkFilter
+          ? `No feeds found for type \`${type}\` on network \`${networkFilter}\`.`
+          : `No feeds found for type \`${type}\`.`
+      )
+    } else {
+      let currentNetwork = ""
+
+      for (const entry of feedEntries) {
+        if (entry.network !== currentNetwork) {
+          currentNetwork = entry.network
+          const network = feedEntries.find((e) => e.network === currentNetwork)
+
+          if (!network) continue
+
+          lines.push(`## ${entry.chain} — ${network.networkName}`)
+          lines.push(`- Network type: ${network.networkType}`)
+          lines.push(`- Query string: \`${network.network}\``)
+          lines.push("")
+          lines.push("| Feed Name | Proxy Address | Deviation | Heartbeat |")
+          lines.push("|-----------|--------------|-----------|-----------|")
+        }
+
+        const name = escapePipes(entry.name)
+
+        lines.push(`| ${name} | \`${entry.proxyAddress}\` | ${entry.deviation} | ${entry.heartbeat} |`)
+      }
+
+      lines.push("")
     }
   }
 
