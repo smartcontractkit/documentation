@@ -13,7 +13,7 @@ const INTERNAL_TO_PUBLIC: Record<string, string> = Object.fromEntries(
 
 export const GET: APIRoute = async ({ params }) => {
   const type = params.type as DataFeedType
-  const network = params.network ?? null
+  const network = typeof params.network === "string" ? params.network : null
 
   if (!VALID_FEED_TYPES.includes(type)) {
     return new Response(`Invalid type "${type}"`, { status: 400 })
@@ -21,13 +21,43 @@ export const GET: APIRoute = async ({ params }) => {
 
   const publicType = INTERNAL_TO_PUBLIC[type] ?? type
 
-  const chainCache = await getServerSideChainMetadata(CHAINS)
+  let chainCache: Record<string, any> = {}
 
-  if (!chainCache || Object.keys(chainCache).length === 0) {
-    return new Response("Failed to load feed data", { status: 500 })
+  try {
+    chainCache = await getServerSideChainMetadata(CHAINS)
+  } catch (e) {
+    console.error("Failed to fetch chain metadata:", e)
+  }
+
+  // ✅ Validate actual usable data (not just object presence)
+  const hasNetworks = Object.values(chainCache).some(
+    (chain: any) => Array.isArray(chain?.networks) && chain.networks.length > 0
+  )
+
+  if (!hasNetworks) {
+    console.error("Chain cache missing networks or empty:", chainCache)
+
+    return new Response("# Feed data unavailable\n\nPreview environment could not load network metadata.", {
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+      },
+    })
   }
 
   const markdown = buildFeedAddressMarkdown(type, network, chainCache, "https://docs.chain.link", { publicType })
+
+  // ✅ Guard against empty output (should not happen now, but safe)
+  if (!markdown || markdown.trim().length === 0) {
+    console.error("Empty markdown output:", { type, network })
+
+    return new Response("# No data returned\n\nThe dataset could not be generated.", {
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+      },
+    })
+  }
 
   return new Response(markdown, {
     status: 200,
