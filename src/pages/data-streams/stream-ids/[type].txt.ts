@@ -5,8 +5,7 @@ import { buildFeedAddressMarkdown, type FeedMarkdownOptions } from "~/features/f
 import { STREAM_CATEGORY_MAP } from "~/features/feeds/utils/streamMetadata.ts"
 import { textPlainHeaders } from "@lib/api/cacheHeaders.js"
 
-export const prerender = false
-
+// ✅ Build-time route generation
 export function getStaticPaths() {
   return Object.keys(STREAM_CATEGORY_MAP).map((type) => ({
     params: { type },
@@ -25,6 +24,7 @@ export const GET: APIRoute = async ({ params }) => {
     })
   }
 
+  // ✅ Safe at build time
   const chainCache = await getServerSideChainMetadata(CHAINS)
 
   const options: FeedMarkdownOptions = {
@@ -64,7 +64,7 @@ export const GET: APIRoute = async ({ params }) => {
   }
 
   // --------------------------------------------------
-  // BUILD INTRO BLOCK (single structured section)
+  // BUILD INTRO BLOCK
   // --------------------------------------------------
 
   const introLines = [
