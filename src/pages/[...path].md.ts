@@ -53,9 +53,6 @@ export const GET: APIRoute = async ({ params, request }) => {
   const title = fmTitle || path.basename(mdxAbsPath, path.extname(mdxAbsPath))
   const lastModified = getIsoStringOrUndefined(fmLastModified)
 
-  const isFeedsPage = cleanPath.includes("data-feeds/price-feeds/addresses")
-  const isStreamsPage = cleanPath.includes("data-streams")
-
   const headerLines = [
     `# ${title}`,
     `Source: ${sourceUrl}`,
@@ -63,33 +60,6 @@ export const GET: APIRoute = async ({ params, request }) => {
     "",
     LLMS_DIRECTIVE,
     "",
-    ...(isFeedsPage
-      ? [
-          "## Full datasets",
-          "",
-          "Use the network index to retrieve feed addresses:",
-          "",
-          "/data-feeds/feed-addresses/default.txt",
-          "",
-          "Each network has its own dataset.",
-          "Do not load multiple networks unless required.",
-          "",
-        ]
-      : []),
-    ...(isStreamsPage
-      ? [
-          "## Full datasets",
-          "",
-          "Use structured datasets for stream IDs and network metadata:",
-          "",
-          "/data-streams/stream-ids/crypto.txt",
-          "/data-streams/networks.txt",
-          "",
-          "Stream IDs are universal.",
-          "Networks provide verifier proxy addresses.",
-          "",
-        ]
-      : []),
   ]
 
   return new Response([...headerLines, transformed.trim()].join("\n"), {
@@ -107,7 +77,13 @@ async function transformPageBodyToMarkdown(
     targetLanguage?: string
   }
 ): Promise<string> {
-  const chainCache = await getServerSideChainMetadata(CHAINS)
+  let chainCache: Record<string, any> = {}
+
+  try {
+    chainCache = await getServerSideChainMetadata(CHAINS)
+  } catch (e) {
+    console.error("Failed to load chain metadata:", e)
+  }
 
   // -----------------------
   // FEEDS INJECTION
@@ -120,6 +96,14 @@ async function transformPageBodyToMarkdown(
       "https://docs.chain.link",
       { networkType: "mainnet" }
     )
+
+    const hasExample = exampleMarkdown && !exampleMarkdown.includes("No feeds found")
+
+    const fallbackExample = `
+| Feed Name | Proxy Address | Deviation | Heartbeat |
+|-----------|--------------|-----------|-----------|
+| ETH / USD | \`0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419\` | 0.5% | 1h |
+`
 
     const replacement = `
 ## Full datasets
@@ -135,7 +119,7 @@ Do not load multiple networks unless required.
 
 ## Example (Ethereum Mainnet)
 
-${exampleMarkdown}
+${hasExample ? exampleMarkdown : fallbackExample}
 `
 
     body = body.replace(/<FeedPage[\s\S]*?\/>/g, replacement)
@@ -147,7 +131,13 @@ ${exampleMarkdown}
   if (body.includes("<StreamList")) {
     const streams = collectStreamEntries(STREAM_CATEGORY_MAP.crypto, chainCache, { publicType: "crypto" } as any)
 
-    const exampleMarkdown = buildStreamExample(streams)
+    const exampleMarkdown = streams.length > 0 ? buildStreamExample(streams) : ""
+
+    const fallbackExample = `
+| Stream | Feed ID | Schema |
+|--------|---------|--------|
+| BTC/USD | \`0x00039d9f...\` | v3 |
+`
 
     const replacement = `
 ## Full datasets
@@ -164,7 +154,7 @@ Networks provide verifier proxy addresses.
 
 ## Example (Crypto Streams)
 
-${exampleMarkdown}
+${exampleMarkdown || fallbackExample}
 `
 
     body = body.replace(/<StreamList[\s\S]*?\/>/g, replacement)
@@ -184,8 +174,6 @@ ${exampleMarkdown}
 }
 
 // -----------------------
-// STREAM EXAMPLE BUILDER
-// -----------------------
 function buildStreamExample(streams: Array<{ name: string; feedId: string; schema: string }>): string {
   const sample = streams.slice(0, 10)
 
@@ -198,8 +186,6 @@ function buildStreamExample(streams: Array<{ name: string; feedId: string; schem
   return lines.join("\n")
 }
 
-// -----------------------
-// UTILITIES
 // -----------------------
 function buildFallbackMarkdownBody(body: string): string {
   return stripRuntimeMdxSyntax(body)
