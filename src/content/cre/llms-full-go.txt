@@ -12005,15 +12005,15 @@ For complete setup instructions, configuration requirements, and step-by-step gu
 
 # Deploying to the Private Registry
 Source: https://docs.chain.link/cre/guides/operations/deploying-to-private-registry-go
-Last Updated: 2026-05-12
+Last Updated: 2026-05-14
 
 <Aside type="note" title="Go">
   This page covers deployment to the private registry for Go workflows. For TypeScript workflows, see [Deploying to the Private Registry (TypeScript)](/cre/guides/operations/deploying-to-private-registry-ts).
 </Aside>
 
 
-<Aside type="note" title="Early Access required">
-  Workflow deployment is currently in Early Access. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+<Aside type="note" title="Private registry beta">
+  The **private registry** is currently in **beta**. If you want access to private deploys, [contact us](/cre/support-feedback). For organization deploy access, see [Requesting Deploy Access](/cre/account/deploy-access)—follow the guide to submit a request, or reach out to your Chainlink contact.
 </Aside>
 
 The **private registry** is a Chainlink-hosted, offchain workflow registry. All lifecycle operations (deploy, activate, pause, delete, update) are authorized by your CRE login session — not a linked wallet key. There are no Ethereum Mainnet transactions and no gas fees for registry management.
@@ -12029,9 +12029,23 @@ This is the default registry for new projects initialized with `cre init`. For a
 
 Before deploying to the private registry, ensure you have:
 
-- **CRE CLI v1.14.0 or later**: Run `cre version` to check. See the [Installation Guide](/cre/getting-started/cli-installation/macos-linux) to install or update.
-- **Early Access approval**: Run `cre account access` to check your status. See [Requesting Deploy Access](/cre/account/deploy-access).
+- **CRE CLI v1.15.0 or later**: Run `cre version` to check. See the [Installation Guide](/cre/getting-started/cli-installation/macos-linux) to install or update.
 - **[Logged in](/cre/account/cli-login)**: Run `cre login` and complete the browser authentication flow. API keys also work: set `CRE_API_KEY` in your environment.
+
+Once you're logged in with **`cre login`**, run **`cre whoami`**. **`Deploy Access`** appears under **Account details**. Pending approval typically shows **`Deploy Access: Not enabled`**:
+
+```text
+Deploy Access:     Not enabled
+```
+
+After your organization has access—what you want before **`cre workflow deploy`**—you'll see **`Deploy Access: Enabled`**:
+
+```text
+Deploy Access:     Enabled
+```
+
+For how to submit a deploy access request, see [Requesting Deploy Access](/cre/account/deploy-access).
+
 - **Private registry enabled for your organization**: Run `cre registry list` and confirm a registry with `Type: off-chain` appears in the output. If no private registry appears, contact your Chainlink account team. Organizations are limited to **3 private registry workflows** by default — see [Service Quotas](/cre/service-quotas#registry-quotas).
 - **A workflow project**: An existing project created with `cre init`. See [Part 1: Project Setup (Go)](/cre/getting-started/part-1-project-setup-go).
 
