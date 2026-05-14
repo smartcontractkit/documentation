@@ -12,23 +12,17 @@ export const GET: APIRoute = async ({ params }) => {
   const internalType = STREAM_CATEGORY_MAP[rawType]
 
   if (!internalType) {
-    return new Response(`Invalid type "${rawType}"`, { status: 400 })
+    return new Response(`Invalid type "${rawType}"`, {
+      status: 400,
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    })
   }
 
   const chainCache = await getServerSideChainMetadata(CHAINS)
 
   const streams = collectStreamEntries(internalType, chainCache, { publicType: rawType } as any)
 
-  // flatten networks once
-  const allNetworks = [...STREAMS_NETWORKS_DATA.mainnet, ...STREAMS_NETWORKS_DATA.testnet]
-
-  // enrich streams
-  const enrichedStreams = streams.map((stream) => ({
-    ...stream,
-    networks: allNetworks,
-  }))
-
-  return new Response(JSON.stringify(enrichedStreams, null, 2), {
+  return new Response(JSON.stringify(streams, null, 2), {
     status: 200,
     headers: {
       "Content-Type": "application/json",
