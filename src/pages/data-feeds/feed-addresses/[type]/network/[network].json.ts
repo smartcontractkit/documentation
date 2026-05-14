@@ -18,9 +18,7 @@ export const GET: APIRoute = async ({ params }) => {
   }
 
   if (!network) {
-    return new Response(`Missing network`, {
-      status: 400,
-    })
+    return new Response(`Missing network`, { status: 400 })
   }
 
   const chainCache = await getServerSideChainMetadata(CHAINS)

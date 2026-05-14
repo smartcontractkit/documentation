@@ -17,44 +17,39 @@ export const GET: APIRoute = async ({ params, request }) => {
   }
 
   const url = new URL(request.url)
-  const networkFilter = url.searchParams.get("network") || null
+
+  const network = url.searchParams.get("network")
+  const search = url.searchParams.get("search")?.toLowerCase()
 
   const chainCache = await getServerSideChainMetadata(CHAINS)
 
-  // --------------------------------------------------
-  // CASE 1: Specific network requested
-  // --------------------------------------------------
-  if (networkFilter) {
-    const feeds = collectFeedEntries(type as any, networkFilter, chainCache)
+  let feeds = collectFeedEntries(type as any, network || null, chainCache)
 
-    return new Response(JSON.stringify(feeds, null, 2), {
+  // --------------------------------------------------
+  // 🔑 Add search filtering (this is the key change)
+  // --------------------------------------------------
+  if (search) {
+    feeds = feeds.filter((f: any) => f.name?.toLowerCase().includes(search))
+  }
+
+  return new Response(
+    JSON.stringify(
+      {
+        type,
+        network: network || null,
+        query: search || null,
+        count: feeds.length,
+        feeds,
+      },
+      null,
+      2
+    ),
+    {
       status: 200,
       headers: {
         "Content-Type": "application/json",
         "Cache-Control": "public, max-age=300",
       },
-    })
-  }
-
-  // --------------------------------------------------
-  // CASE 2: No network → return index with URLs
-  // --------------------------------------------------
-  const origin = new URL(request.url).origin
-
-  const networks = Object.values(chainCache).flatMap((chain: any) =>
-    (chain.networks || []).map((network: any) => ({
-      queryString: network.queryString,
-      networkName: network.networkName,
-      chain: chain.chain,
-      url: `${origin}/data-feeds/feed-addresses/${type}.json?network=${network.queryString}`,
-    }))
+    }
   )
-
-  return new Response(JSON.stringify({ networks }, null, 2), {
-    status: 200,
-    headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "public, max-age=300",
-    },
-  })
 }
