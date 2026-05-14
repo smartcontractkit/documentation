@@ -120,20 +120,17 @@ async function transformPageBodyToMarkdown(
 ## Feed Contract Addresses
 
 For programmatic access:
-${BASE_URL}/data-feeds/feed-addresses/${feedType}/ethereum-mainnet.json
+${BASE_URL}/data-feeds/feed-addresses/${feedType}.json?network=ethereum-mainnet
 
-You must first retrieve available networks (do not construct or guess network paths):
-${BASE_URL}/data-feeds/feed-addresses/${feedType}.json
-
-Use this dataset to determine the correct network queryString before retrieving a specific network dataset.
+Replace the \`network\` parameter with the target network queryString.
 
 The interactive address table on this page is loaded dynamically and is not included in this markdown export.
 
 - ${feedLabel}${feedType === "default" ? " (default dataset)" : ""}:
 /data-feeds/feed-addresses/${feedType}.json
 
-- Per-network datasets:
-/data-feeds/feed-addresses/${feedType}/{network}.json
+- Optional parameter:
+  ?network={queryString}
 `
 
     body = body.replace(/<FeedPage[\s\S]*?\/>/g, replacement)
