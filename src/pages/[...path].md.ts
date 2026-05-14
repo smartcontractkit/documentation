@@ -109,16 +109,14 @@ async function transformPageBodyToMarkdown(
     const replacement = `
 ## Feed Contract Addresses
 
-For programmatic access:
+Step 1 — retrieve available networks:
+${BASE_URL}/data-feeds/networks.json
 
-${BASE_URL}/data-feeds/search.json?type=${feedType}&feed=ETH&network=ethereum-mainnet
-
-Replace:
-- \`feed\` with the target feed name
-- \`network\` with the target network queryString
+Step 2 — retrieve feed addresses:
+${BASE_URL}/data-feeds/search.json?type=${feedType}&network=ethereum-mainnet&feed=ETH
 
 Example:
-${BASE_URL}/data-feeds/search.json?type=${feedType}&feed=SYRUPUSDT&network=ink-mainnet
+${BASE_URL}/data-feeds/search.json?type=${feedType}&network=ink-mainnet&feed=SYRUPUSDT
 
 The interactive address table on this page is loaded dynamically and is not included in this markdown export.
 `

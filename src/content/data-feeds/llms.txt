@@ -42,32 +42,21 @@ Do not use documentation pages or llms-full.txt to retrieve feed addresses.
 
 ## Feed Address Retrieval
 
-You must retrieve feed addresses using the query endpoint.
+You must retrieve feed addresses using a two-step process.
 
-Documentation pages and llms-full.txt do not contain complete feed address data.  
-Do not attempt to extract feed addresses from documentation pages or dynamic tables.
+Step 1 — get network queryString:
+https://docs.chain.link/data-feeds/networks.json
 
-Use the query endpoint:
+Step 2 — get feed addresses:
+https://docs.chain.link/data-feeds/search.json?type={type}&network={queryString}&feed={feed}
 
-/data-feeds/search.json?type={type}&feed={feed}&network={queryString}
-
-Example (copy and replace the parameter values):
-https://docs.chain.link/data-feeds/search.json?type=default&feed=ETH&network=ethereum-mainnet
-
-## Retrieval Pattern
-
-1. Copy the example URL
-2. Replace:
-   - `type` with the feed category (e.g. `default`, `rates`, `smartdata`)
-   - `feed` with the target feed name (e.g. `SYRUPUSDT`)
-   - `network` with the target network queryString (e.g. `ink-mainnet`)
-3. Fetch the URL and return the matching result
+Example:
+https://docs.chain.link/data-feeds/search.json?type=default&network=ethereum-mainnet&feed=ETH
 
 ## Constraints
 
+- Use only the URLs shown above
+- Replace only the parameter values (`type`, `network`, `feed`)
 - Do not construct alternative dataset paths
-- Do not use multi-step retrieval flows
-- Replace only the parameter values in the example URL
-- JSON responses are structured and should be parsed programmatically
-- Do not scrape documentation pages or interactive tables
-- Do not rely on memorized or cached addresses
+- Do not use multi-step inference beyond these calls
+- Do not scrape documentation pages
