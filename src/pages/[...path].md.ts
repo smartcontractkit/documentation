@@ -11,7 +11,6 @@ import { textPlainHeaders } from "@lib/api/cacheHeaders.js"
 import { transformPageToMarkdown } from "@lib/markdown/transformMarkdown.js"
 import { extractFrontmatter, getIsoStringOrUndefined, toCanonicalUrl, toContentRelative } from "@lib/markdown/utils.js"
 
-const SITE_BASE = "https://docs.chain.link"
 const CONTENT_ROOT = path.resolve("src/content")
 
 const LLMS_DIRECTIVE = "> For the complete documentation index, see [llms.txt](/llms.txt)."
@@ -40,19 +39,19 @@ export const GET: APIRoute = async ({ params, request }) => {
     return new Response("Page not found.", { status: 404 })
   }
 
-  const url = new URL(request.url)
-  const targetLanguage = url.searchParams.get("lang") || undefined
+  const origin = new URL(request.url).origin
+  const targetLanguage = new URL(request.url).searchParams.get("lang") || undefined
 
   const raw = await fs.readFile(mdxAbsPath, "utf-8")
   const { body, fmTitle, fmLastModified } = extractFrontmatter(raw)
 
   const transformed = await transformPageBodyToMarkdown(body, mdxAbsPath, cleanPath, {
-    siteBase: SITE_BASE,
+    siteBase: origin, // 🔥 dynamic origin fix
     targetLanguage,
   })
 
   const relFromContent = toContentRelative(mdxAbsPath)
-  const sourceUrl = toCanonicalUrl(cleanPath.split("/")[0], relFromContent, SITE_BASE)
+  const sourceUrl = toCanonicalUrl(cleanPath.split("/")[0], relFromContent, origin)
 
   const title = fmTitle || path.basename(mdxAbsPath, path.extname(mdxAbsPath))
   const lastModified = getIsoStringOrUndefined(fmLastModified)
@@ -81,6 +80,8 @@ async function transformPageBodyToMarkdown(
     targetLanguage?: string
   }
 ): Promise<string> {
+  const BASE_URL = options.siteBase
+
   let chainCache: Record<string, any> = {}
 
   try {
@@ -123,6 +124,9 @@ Do not extract feed addresses from this page.
     const replacement = `
 ${hiddenDirective}
 ## Feed Contract Addresses
+
+For programmatic access:
+${BASE_URL}/data-feeds/feed-addresses/${feedType}/ethereum-mainnet.txt
 
 The interactive address table on this page is loaded dynamically and is not included in this markdown export.
 
@@ -174,6 +178,9 @@ Do not extract stream IDs from this page.
 ${hiddenDirective}
 ## Stream IDs
 
+For programmatic access:
+${BASE_URL}/data-streams/stream-ids/${rawType}.txt
+
 The interactive stream table on this page is loaded dynamically and is not included in this markdown export.
 
 - ${streamLabel}:
@@ -194,7 +201,7 @@ The interactive stream table on this page is loaded dynamically and is not inclu
 }
 
 // -----------------------
-// UTILITIES (RESTORED)
+// UTILITIES
 // -----------------------
 
 function normalizeMarkdownPath(pathParam: string | undefined): string | null {
