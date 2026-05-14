@@ -7,7 +7,7 @@ import { STREAM_CATEGORY_MAP } from "~/features/feeds/utils/streamMetadata.ts"
 
 export const prerender = false
 
-export const GET: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ params, request }) => {
   const rawType = params.type as string
   const internalType = STREAM_CATEGORY_MAP[rawType]
 
@@ -20,13 +20,33 @@ export const GET: APIRoute = async ({ params }) => {
 
   const chainCache = await getServerSideChainMetadata(CHAINS)
 
+  // --------------------------------------------------
+  // CASE 1: Return stream dataset
+  // --------------------------------------------------
   const streams = collectStreamEntries(internalType, chainCache, { publicType: rawType } as any)
 
-  return new Response(JSON.stringify(streams, null, 2), {
-    status: 200,
-    headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "public, max-age=300",
-    },
-  })
+  // --------------------------------------------------
+  // ALSO include self-referencing URL
+  // --------------------------------------------------
+  const origin = new URL(request.url).origin
+
+  return new Response(
+    JSON.stringify(
+      {
+        type: rawType,
+        url: `${origin}/data-streams/stream-ids/${rawType}.json`,
+        count: streams.length,
+        streams,
+      },
+      null,
+      2
+    ),
+    {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=300",
+      },
+    }
+  )
 }

@@ -21,9 +21,36 @@ export const GET: APIRoute = async ({ params, request }) => {
 
   const chainCache = await getServerSideChainMetadata(CHAINS)
 
-  const feeds = collectFeedEntries(type as any, networkFilter, chainCache)
+  // --------------------------------------------------
+  // CASE 1: Specific network requested
+  // --------------------------------------------------
+  if (networkFilter) {
+    const feeds = collectFeedEntries(type as any, networkFilter, chainCache)
 
-  return new Response(JSON.stringify(feeds, null, 2), {
+    return new Response(JSON.stringify(feeds, null, 2), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=300",
+      },
+    })
+  }
+
+  // --------------------------------------------------
+  // CASE 2: No network → return index with URLs
+  // --------------------------------------------------
+  const origin = new URL(request.url).origin
+
+  const networks = Object.values(chainCache).flatMap((chain: any) =>
+    (chain.networks || []).map((network: any) => ({
+      queryString: network.queryString,
+      networkName: network.networkName,
+      chain: chain.chain,
+      url: `${origin}/data-feeds/feed-addresses/${type}.json?network=${network.queryString}`,
+    }))
+  )
+
+  return new Response(JSON.stringify({ networks }, null, 2), {
     status: 200,
     headers: {
       "Content-Type": "application/json",
