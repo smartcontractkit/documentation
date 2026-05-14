@@ -5,12 +5,29 @@ date: Last Modified
 metadata:
   description: "Discover what's new in CRE: latest features, changes, and improvements in each release of the Chainlink Runtime Environment."
   datePublished: "2025-11-04"
-  lastModified: "2026-05-08"
+  lastModified: "2026-05-14"
 ---
 
 import { Aside } from "@components"
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.15.0 - May 14, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.15.0" target="_blank">CRE CLI version 1.15.0</a> is now available.**
+
+- **`cre workflow supported-chains` redesigned**: The command now lists tenant-specific chains and their mock forwarder addresses fetched from the platform, replacing the previous static embedded list. Default output is a table with `CHAIN`, `SELECTOR`, and `MOCK FORWARDER` columns. Authentication is required — run `cre login` or set `CRE_API_KEY` before using this command. Use `--output json` for structured output with `chainName`, `chainSelector`, and `address` fields. Non-EVM chains enabled for your tenant also appear in the output. See [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains).
+- **ADI testnet and Celo Sepolia support**: Two new networks — ADI testnet (`adi-testnet`) and Celo Sepolia (`celo-sepolia`) — are now supported for local simulation. See [Supported Networks](/cre/supported-networks).
+- **Global `--allow-unknown-chains` flag**: A new root-level flag that skips chain-name validation when using experimental or unlisted chains in `cre workflow simulate` and `cre workflow deploy`. Chain-selector and RPC availability are still enforced. See [Global flags](/cre/reference/cli#global-flags).
+- **`cre workflow hash` registry-aware owner**: The command now auto-derives the workflow owner based on your target registry — on-chain targets use `workflow-owner-address` or `CRE_ETH_PRIVATE_KEY`; off-chain targets use the owner from your login session. `--public_key` overrides this if needed. See [`cre workflow hash`](/cre/reference/cli/workflow#cre-workflow-hash).
+- **Bug fixes**: Private registry workflow updates now preserve the paused status of existing workflows; deploy now guards against duplicate registration by checking for an existing workflow ID.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.14.0...v1.15.0)
 
 ## CLI v1.14.0 - May 8, 2026
 
