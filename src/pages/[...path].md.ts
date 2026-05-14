@@ -112,11 +112,13 @@ async function transformPageBodyToMarkdown(
 Step 1 — retrieve available networks:
 ${BASE_URL}/data-feeds/networks.json
 
-Step 2 — retrieve feed addresses:
-${BASE_URL}/data-feeds/search.json?type=${feedType}&network=ethereum-mainnet&feed=ETH
+Step 2 — retrieve feed addresses for a network:
+${BASE_URL}/data-feeds/search.json?type=${feedType}&network=ethereum-mainnet
 
 Example:
-${BASE_URL}/data-feeds/search.json?type=${feedType}&network=ink-mainnet&feed=SYRUPUSDT
+${BASE_URL}/data-feeds/search.json?type=${feedType}&network=ink-mainnet
+
+Then filter results by feed name.
 
 The interactive address table on this page is loaded dynamically and is not included in this markdown export.
 `
