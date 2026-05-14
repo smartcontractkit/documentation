@@ -122,8 +122,10 @@ async function transformPageBodyToMarkdown(
 For programmatic access:
 ${BASE_URL}/data-feeds/feed-addresses/${feedType}/ethereum-mainnet.json
 
-Available networks:
+First retrieve available networks:
 ${BASE_URL}/data-feeds/feed-addresses/${feedType}.json
+
+Use this dataset to determine the correct network queryString before retrieving a specific network dataset.
 
 The interactive address table on this page is loaded dynamically and is not included in this markdown export.
 
