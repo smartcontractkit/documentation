@@ -4,8 +4,6 @@ import path from "node:path"
 
 import { getServerSideChainMetadata } from "~/features/data/api/backend.ts"
 import { CHAINS } from "~/features/data/chains.ts"
-import { buildFeedAddressMarkdown, collectStreamEntries } from "~/features/feeds/utils/feedOutput.ts"
-import { STREAM_CATEGORY_MAP } from "~/features/feeds/utils/streamMetadata.ts"
 
 import { textPlainHeaders } from "@lib/api/cacheHeaders.js"
 import { transformPageToMarkdown } from "@lib/markdown/transformMarkdown.js"
@@ -21,10 +19,6 @@ const markdownHeaders = {
 }
 
 export const prerender = false
-
-function buildHiddenDirective(content: string): string {
-  return `<div style="display:none">\n${content.trim()}\n</div>\n`
-}
 
 export const GET: APIRoute = async ({ params, request }) => {
   const cleanPath = normalizeMarkdownPath(params.path)
@@ -82,23 +76,19 @@ async function transformPageBodyToMarkdown(
 ): Promise<string> {
   const BASE_URL = options.siteBase
 
-  let chainCache: Record<string, any> = {}
-
-  try {
-    chainCache = await getServerSideChainMetadata(CHAINS)
-  } catch (e) {
-    console.error("Failed to load chain metadata:", e)
-  }
-
   // --------------------------------------------------
-  // STRIP HIDDEN DIRECTIVE (prevents JSX in markdown)
+  // STRIP HIDDEN DIRECTIVE (prevents JSX leakage)
   // --------------------------------------------------
   body = body.replace(/<div style=\{\{\s*display:\s*["']none["']\s*\}\}>[\s\S]*?<\/div>/g, "")
+
+  const isFeedPage = body.includes("<FeedPage") && !body.includes('dataFeedType="streams')
+
+  const isStreamPage = body.includes('dataFeedType="streams')
 
   // --------------------------------------------------
   // FEEDS
   // --------------------------------------------------
-  if (body.includes("<FeedPage")) {
+  if (isFeedPage) {
     let feedType = "default"
 
     if (routePath.includes("smartdata")) feedType = "smartdata"
@@ -119,10 +109,15 @@ async function transformPageBodyToMarkdown(
     const replacement = `
 ## Feed Contract Addresses
 
-For programmatic access:
-${BASE_URL}/data-feeds/feed-addresses/${feedType}.json?network=ethereum-mainnet
+You must first retrieve available networks (this step is required):
+${BASE_URL}/data-feeds/feed-addresses/${feedType}.json
 
-Replace the \`network\` parameter with the target network queryString.
+Do not construct or guess network paths.
+
+Then retrieve feed addresses using the URL provided in the dataset.
+
+Example:
+${BASE_URL}/data-feeds/feed-addresses/${feedType}.json?network=ethereum-mainnet
 
 The interactive address table on this page is loaded dynamically and is not included in this markdown export.
 
@@ -135,10 +130,11 @@ The interactive address table on this page is loaded dynamically and is not incl
 
     body = body.replace(/<FeedPage[\s\S]*?\/>/g, replacement)
   }
+
   // --------------------------------------------------
   // STREAMS
   // --------------------------------------------------
-  if (body.includes("<StreamList")) {
+  if (isStreamPage) {
     let rawType = "crypto"
 
     if (routePath.includes("rwa")) rawType = "rwa"
@@ -168,7 +164,7 @@ The interactive stream table on this page is loaded dynamically and is not inclu
 /data-streams/stream-ids/${rawType}.json
 `
 
-    body = body.replace(/<StreamList[\s\S]*?\/>/g, replacement)
+    body = body.replace(/<FeedPage[\s\S]*?\/>/g, replacement)
   }
 
   try {
