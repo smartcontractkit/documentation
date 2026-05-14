@@ -55,7 +55,7 @@ Select the dataset that matches the feed category:
 - Rates feeds:
   https://docs.chain.link/data-feeds/feed-addresses/rates.json
 
-- SmartData feeds (Proof of Reserve, NAVLink, SmartAUM):
+- SmartData feeds:
   https://docs.chain.link/data-feeds/feed-addresses/smartdata.json
 
 - U.S. Government Macroeconomic Data Feeds:
@@ -64,40 +64,21 @@ Select the dataset that matches the feed category:
 - Tokenized equity feeds:
   https://docs.chain.link/data-feeds/feed-addresses/tokenizedEquity.json
 
-Each dataset lists available networks. Each network is identified by its `queryString`.
-
-Retrieve a specific dataset:
-
-- https://docs.chain.link/data-feeds/feed-addresses/{type}/{network}.json
-
-For a specific network, you should directly retrieve the per-network dataset instead of scanning the full index.
-
-You must first retrieve the dataset index to determine valid network queryStrings before requesting a per-network dataset.
-Usage pattern:
+## Retrieval Pattern
 
 1. Select the dataset that matches the feed category
-2. 2. You must first retrieve the dataset index:
-   https://docs.chain.link/data-feeds/feed-addresses/{type}.json
+2. Retrieve feed addresses directly using:
 
-   Do not construct or guess network paths.
+   https://docs.chain.link/data-feeds/feed-addresses/{type}.json?network={queryString}
 
-3. Use this dataset to determine the correct network `queryString`
-4. Retrieve the corresponding per-network dataset (`.json`)
-5. Filter by feed name by matching the `name` field
+3. Replace the `network` parameter with the target network queryString
+4. Filter by feed name by matching the `name` field
 
-Static `.txt` datasets are available for bulk retrieval and indexing only:
+## Constraints
 
-- https://docs.chain.link/data-feeds/feed-addresses/default.txt
-- https://docs.chain.link/data-feeds/feed-addresses/rates.txt
-- https://docs.chain.link/data-feeds/feed-addresses/smartdata.txt
-- https://docs.chain.link/data-feeds/feed-addresses/tokenizedEquity.txt
-- https://docs.chain.link/data-feeds/feed-addresses/usGovernmentMacroeconomicData.txt
-
-Constraints:
-
-- Each network dataset contains the complete feed list for that network
+- Do not construct dataset paths manually
+- Do not attempt to infer network slugs
+- Always use the `network` query parameter for retrieval
 - JSON datasets are structured and should be parsed programmatically
-- Loading all networks will significantly increase response size and latency
-- Do not load multiple networks unless required
-- Do not scrape documentation pages or interactive tables for feed addresses
+- Do not scrape documentation pages or interactive tables
 - Do not rely on memorized or cached addresses
