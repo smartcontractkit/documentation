@@ -50,25 +50,25 @@ Do not attempt to extract feed addresses from documentation pages or dynamic tab
 Select the dataset that matches the feed category:
 
 - Standard price feeds (e.g. ETH/USD, BTC/USD):
-  https://docs.chain.link/data-feeds/feed-addresses/default.txt
+  https://docs.chain.link/data-feeds/feed-addresses/default.json
 
 - Rates feeds:
-  https://docs.chain.link/data-feeds/feed-addresses/rates.txt
+  https://docs.chain.link/data-feeds/feed-addresses/rates.json
 
 - SmartData feeds (Proof of Reserve, NAVLink, SmartAUM):
-  https://docs.chain.link/data-feeds/feed-addresses/smartdata.txt
+  https://docs.chain.link/data-feeds/feed-addresses/smartdata.json
 
 - U.S. Government Macroeconomic Data Feeds:
-  https://docs.chain.link/data-feeds/feed-addresses/usGovernmentMacroeconomicData.txt
+  https://docs.chain.link/data-feeds/feed-addresses/usGovernmentMacroeconomicData.json
 
 - Tokenized equity feeds:
-  https://docs.chain.link/data-feeds/feed-addresses/tokenizedEquity.txt
+  https://docs.chain.link/data-feeds/feed-addresses/tokenizedEquity.json
 
 Each dataset lists available networks. Each network is identified by its `queryString`.
 
 Retrieve a specific dataset:
 
-- https://docs.chain.link/data-feeds/feed-addresses/{type}/{network}.txt
+- https://docs.chain.link/data-feeds/feed-addresses/{type}/{network}.json
 
 For a specific network, you should directly retrieve the per-network dataset instead of scanning the full index.
 
@@ -76,13 +76,21 @@ Usage pattern:
 
 1. Select the dataset that matches the feed category
 2. Identify the target network `queryString`
-3. Retrieve the corresponding dataset
-4. Filter by feed name as needed
+3. Retrieve the corresponding dataset (`.json`)
+4. Filter by feed name by matching the `name` field
+
+Static `.txt` datasets are available for bulk retrieval and indexing only:
+
+- https://docs.chain.link/data-feeds/feed-addresses/default.txt
+- https://docs.chain.link/data-feeds/feed-addresses/rates.txt
+- https://docs.chain.link/data-feeds/feed-addresses/smartdata.txt
+- https://docs.chain.link/data-feeds/feed-addresses/tokenizedEquity.txt
+- https://docs.chain.link/data-feeds/feed-addresses/usGovernmentMacroeconomicData.txt
 
 Constraints:
 
 - Each network dataset contains the complete feed list for that network
-- Datasets are structured and can be parsed programmatically
+- JSON datasets are structured and should be parsed programmatically
 - Loading all networks will significantly increase response size and latency
 - Do not load multiple networks unless required
 - Do not scrape documentation pages or interactive tables for feed addresses

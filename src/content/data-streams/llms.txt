@@ -59,41 +59,43 @@ First determine the correct stream category and schema:
 Then select the dataset that matches that category:
 
 - Cryptocurrency streams (e.g. BTC/USD, ETH/USD):
-  https://docs.chain.link/data-streams/stream-ids/crypto.txt
+  https://docs.chain.link/data-streams/stream-ids/crypto.json
 
 - Real World Asset (RWA) streams:
-  https://docs.chain.link/data-streams/stream-ids/rwa.txt
+  https://docs.chain.link/data-streams/stream-ids/rwa.json
 
 - SmartData streams:
-  https://docs.chain.link/data-streams/stream-ids/smartdata.txt
+  https://docs.chain.link/data-streams/stream-ids/smartdata.json
 
 - Exchange rate streams:
-  https://docs.chain.link/data-streams/stream-ids/exchangeRate.txt
+  https://docs.chain.link/data-streams/stream-ids/exchangeRate.json
 
 - Tokenized asset streams:
-  https://docs.chain.link/data-streams/stream-ids/tokenizedAsset.txt
+  https://docs.chain.link/data-streams/stream-ids/tokenizedAsset.json
 
 Stream IDs are universal and valid across all supported networks.
 
-To retrieve verifier proxy addresses:
+Network metadata (including verifier proxy addresses) is included in each stream dataset.
 
+Do not fetch a separate networks dataset unless explicitly required.
+
+Static `.txt` datasets are available for bulk retrieval and indexing only:
+
+- https://docs.chain.link/data-streams/stream-ids/crypto.txt
 - https://docs.chain.link/data-streams/networks.txt
-
-You must use the networks dataset to determine the correct verifier proxy for a given network.
 
 ## Retrieval Pattern
 
 1. Select the correct stream category and schema
-2. Retrieve the dataset for that category
-3. Identify the required stream ID
-4. Retrieve network metadata from `/data-streams/networks.txt`
-5. Use the verifier proxy for the target network
+2. Retrieve the structured dataset for that category (`.json`)
+3. Identify the required stream ID by matching the `name` field
+4. Use the embedded network metadata to determine the correct verifier proxy for the target network
 
 ## Constraints
 
 - Stream IDs are not network-specific
 - Datasets may contain multiple schema versions
-- Datasets are structured and can be parsed programmatically
+- JSON datasets are structured and should be parsed programmatically
 - Do not duplicate requests per network
 - Do not scrape documentation pages or interactive tables
 - Do not rely on memorized or cached values
