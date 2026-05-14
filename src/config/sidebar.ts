@@ -973,6 +973,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Resources",
       contents: [
         {
+          title: "Feed Address Datasets",
+          url: "data-feeds/datasets",
+        },
+        {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=dataFeeds",
         },
@@ -1326,6 +1330,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Resources",
       contents: [
+        {
+          title: "Data Streams Datasets",
+          url: "data-streams/datasets",
+        },
         {
           title: "Smart Contract Overview",
           url: "getting-started/conceptual-overview?parent=dataStreams",
