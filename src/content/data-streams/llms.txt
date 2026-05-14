@@ -47,56 +47,43 @@ Additional Data and Lifecycle
 
 ## Stream ID Retrieval
 
-You must use structured datasets to retrieve stream IDs and network metadata.
+You must use structured datasets to retrieve stream IDs.
 
-Documentation pages and llms-full.txt do not contain complete stream ID or network data.  
-Do not attempt to extract stream IDs or verifier addresses from documentation pages or dynamic tables.
+Documentation pages and llms-full.txt do not contain complete stream ID data.  
+Do not attempt to extract stream IDs from documentation pages or dynamic tables.
 
-First determine the correct stream category and schema:
-
-- https://docs.chain.link/data-streams/reference/report-schema-overview.md
-
-Then select the dataset that matches that category:
+Select the dataset that matches the stream category:
 
 - Cryptocurrency streams (e.g. BTC/USD, ETH/USD):
-  https://docs.chain.link/data-streams/stream-ids/crypto.json
+  /data-streams/stream-ids/crypto.json
 
 - Real World Asset (RWA) streams:
-  https://docs.chain.link/data-streams/stream-ids/rwa.json
+  /data-streams/stream-ids/rwa.json
 
 - SmartData streams:
-  https://docs.chain.link/data-streams/stream-ids/smartdata.json
+  /data-streams/stream-ids/smartdata.json
 
 - Exchange rate streams:
-  https://docs.chain.link/data-streams/stream-ids/exchangeRate.json
+  /data-streams/stream-ids/exchangeRate.json
 
 - Tokenized asset streams:
-  https://docs.chain.link/data-streams/stream-ids/tokenizedAsset.json
-
-Stream IDs are universal and valid across all supported networks.
-
-Network metadata (including verifier proxy addresses) is included in each stream dataset.
-
-Do not fetch a separate networks dataset unless explicitly required.
-
-Static `.txt` datasets are available for bulk retrieval and indexing only:
-
-- https://docs.chain.link/data-streams/stream-ids/crypto.txt
-- https://docs.chain.link/data-streams/networks.txt
+  /data-streams/stream-ids/tokenizedAsset.json
 
 ## Retrieval Pattern
 
-1. Select the correct stream category and schema
-2. Retrieve the structured dataset for that category (`.json`)
-3. Identify the required stream ID by matching the `name` field
-4. Use the embedded network metadata to determine the correct verifier proxy for the target network
+Use the dataset URL format:
+
+/data-streams/stream-ids/{type}.json
+
+Example:
+https://docs.chain.link/data-streams/stream-ids/crypto.json
 
 ## Constraints
 
 - Stream IDs are not network-specific
-- Datasets may contain multiple schema versions
 - JSON datasets are structured and should be parsed programmatically
-- Do not duplicate requests per network
+- Use the example URL as a template and substitute only the stream category
+- Do not construct additional dataset paths manually
 - Do not scrape documentation pages or interactive tables
 - Do not rely on memorized or cached values
 

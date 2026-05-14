@@ -109,14 +109,16 @@ async function transformPageBodyToMarkdown(
     const replacement = `
 ## Feed Contract Addresses
 
-For programmatic access:
+Use this URL format directly:
 
 ${BASE_URL}/data-feeds/feed-addresses/${feedType}/network/ethereum-mainnet.json
 
-Replace the \`network\` path segment with the target network queryString.
+Example (copy and replace the network segment):
 
-Example:
 ${BASE_URL}/data-feeds/feed-addresses/${feedType}/network/ink-mainnet.json
+
+Replace only the network path segment with the target queryString.
+Do not construct dataset URLs manually.
 
 The interactive address table on this page is loaded dynamically and is not included in this markdown export.
 `
