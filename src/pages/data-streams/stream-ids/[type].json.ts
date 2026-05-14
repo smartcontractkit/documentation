@@ -4,7 +4,6 @@ import { getServerSideChainMetadata } from "~/features/data/api/backend.ts"
 import { CHAINS } from "~/features/data/chains.ts"
 import { collectStreamEntries } from "~/features/feeds/utils/feedOutput.ts"
 import { STREAM_CATEGORY_MAP } from "~/features/feeds/utils/streamMetadata.ts"
-import { STREAMS_NETWORKS_DATA } from "~/features/data/streamsNetworksData"
 
 export const prerender = false
 
