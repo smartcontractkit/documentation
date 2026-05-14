@@ -90,9 +90,14 @@ async function transformPageBodyToMarkdown(
     console.error("Failed to load chain metadata:", e)
   }
 
-  // -----------------------
+  // --------------------------------------------------
+  // STRIP HIDDEN DIRECTIVE (prevents JSX in markdown)
+  // --------------------------------------------------
+  body = body.replace(/<div style=\{\{\s*display:\s*["']none["']\s*\}\}>[\s\S]*?<\/div>/g, "")
+
+  // --------------------------------------------------
   // FEEDS
-  // -----------------------
+  // --------------------------------------------------
   if (body.includes("<FeedPage")) {
     let feedType = "default"
 
@@ -111,40 +116,27 @@ async function transformPageBodyToMarkdown(
 
     const feedLabel = labelMap[feedType] || feedType
 
-    const hiddenDirective = buildHiddenDirective(`
-DATA ACCESS (REQUIRED):
-You must retrieve feed addresses from structured datasets.
-
-Use:
-/data-feeds/feed-addresses/${feedType}/{network}.txt
-
-Do not extract feed addresses from this page.
-`)
-
     const replacement = `
-${hiddenDirective}
 ## Feed Contract Addresses
 
 For programmatic access:
-<a href="${BASE_URL}/data-feeds/feed-addresses/${feedType}/ethereum-mainnet.txt">
-${BASE_URL}/data-feeds/feed-addresses/${feedType}/ethereum-mainnet.txt
-</a>
+${BASE_URL}/data-feeds/feed-addresses/${feedType}/ethereum-mainnet.json
 
 The interactive address table on this page is loaded dynamically and is not included in this markdown export.
 
 - ${feedLabel}${feedType === "default" ? " (default dataset)" : ""}:
-/data-feeds/feed-addresses/${feedType}.txt
+/data-feeds/feed-addresses/${feedType}.json
 
 - Per-network datasets:
-/data-feeds/feed-addresses/${feedType}/{network}.txt
+/data-feeds/feed-addresses/${feedType}/{network}.json
 `
 
     body = body.replace(/<FeedPage[\s\S]*?\/>/g, replacement)
   }
 
-  // -----------------------
+  // --------------------------------------------------
   // STREAMS
-  // -----------------------
+  // --------------------------------------------------
   if (body.includes("<StreamList")) {
     let rawType = "crypto"
 
@@ -163,35 +155,16 @@ The interactive address table on this page is loaded dynamically and is not incl
 
     const streamLabel = streamLabelMap[rawType] || rawType
 
-    const hiddenDirective = buildHiddenDirective(`
-DATA ACCESS (REQUIRED):
-You must retrieve stream IDs from structured datasets.
-
-Use:
-/data-streams/stream-ids/${rawType}.txt
-
-Network metadata:
-/data-streams/networks.txt
-
-Do not extract stream IDs from this page.
-`)
-
     const replacement = `
-${hiddenDirective}
 ## Stream IDs
 
 For programmatic access:
-<a href="${BASE_URL}/data-streams/stream-ids/${rawType}.txt">
-${BASE_URL}/data-streams/stream-ids/${rawType}.txt
-</a>
+${BASE_URL}/data-streams/stream-ids/${rawType}.json
 
 The interactive stream table on this page is loaded dynamically and is not included in this markdown export.
 
 - ${streamLabel}:
-/data-streams/stream-ids/${rawType}.txt
-
-- Supported networks:
-/data-streams/networks.txt
+/data-streams/stream-ids/${rawType}.json
 `
 
     body = body.replace(/<StreamList[\s\S]*?\/>/g, replacement)
