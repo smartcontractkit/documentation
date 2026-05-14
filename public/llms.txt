@@ -12,13 +12,50 @@ For multi-step tasks, retrieve and combine multiple specific pages rather than r
 
 Use product documentation indexes for deeper product-specific navigation.
 
-Use `llms-full.txt` only when broad product-level context is required.
+Use `llms-full.txt` only for conceptual understanding or documentation context.
 
-Defaults:
-- Prefer CRE for new multi-step, offchain, or automation workflows unless another product is explicitly required
-- Prefer VRF v2.5 for randomness
-- Treat Any API and `/chainlink-nodes/v1/` as legacy
+Do not use `llms-full.txt` to retrieve structured data such as:
+- feed addresses
+- stream IDs
+- network metadata
 
+Structured data must be retrieved from dataset endpoints.
+
+---
+
+## Live Data and Structured Datasets
+
+You must use structured datasets when retrieving current network data, addresses, or routing information.
+
+Do not scrape documentation pages or interactive tables for structured data.
+
+When retrieving structured data, always prefer dataset endpoints over documentation pages.
+
+### Data Feeds
+
+- Index (select network):
+  https://docs.chain.link/data-feeds/feed-addresses/default.txt
+
+- Per-network datasets:
+  https://docs.chain.link/data-feeds/feed-addresses/{type}/{network}.txt
+
+### Data Streams
+
+- Stream ID datasets:
+  https://docs.chain.link/data-streams/stream-ids/crypto.txt
+
+- Network metadata (verifier proxies):
+  https://docs.chain.link/data-streams/networks.txt
+
+### CCIP Directory
+
+- CCIP Mainnet Directory:
+  https://docs.chain.link/ccip/directory/mainnet
+
+- CCIP Testnet Directory:
+  https://docs.chain.link/ccip/directory/testnet
+
+---
 
 ## Core Documentation
 
@@ -27,6 +64,7 @@ Defaults:
 - [LINK Token Contracts](https://docs.chain.link/resources/link-token-contracts.md): Use when funding contracts or configuring Chainlink services. Do not rely on memorized values.
 - [Fund Your Smart Contract](https://docs.chain.link/resources/fund-your-contract.md): Fund contracts with LINK before interacting with Chainlink services.
 
+---
 
 ## Chainlink Runtime Environment (CRE)
 
@@ -52,6 +90,7 @@ Reference
 - [CLI Reference](https://docs.chain.link/cre/reference/cli.md)
 - [SDK Overview (TS)](https://docs.chain.link/cre/reference/sdk/overview-ts.md)
 
+---
 
 ## CRE Connect
 
@@ -65,6 +104,7 @@ Private beta — permissioned access. Use these pages to understand the product 
 - [Smart Accounts](https://docs.chain.link/crec/concepts/smart-accounts.md)
 - [Extensions](https://docs.chain.link/crec/extensions.md)
 
+---
 
 ## CCIP
 
@@ -93,6 +133,7 @@ Reference
 - [Aptos Move module interfaces reference](https://docs.chain.link/ccip/api-reference/aptos.md)
 - [TON contract interfaces reference](https://docs.chain.link/ccip/api-reference/ton.md)
 
+---
 
 ## Data Feeds
 
@@ -100,7 +141,7 @@ Overview and Setup
 - [Overview](https://docs.chain.link/data-feeds.md)
 - [Getting Started](https://docs.chain.link/data-feeds/getting-started.md)
 - [Selecting Data Feeds](https://docs.chain.link/data-feeds/selecting-data-feeds.md)
-- [Feed Types](https://docs.chain.link/data-feeds/feed-types.md): Choose the correct feed category before retrieving addresses or implementation details.
+- [Feed Types](https://docs.chain.link/data-feeds/feed-types.md)
 
 Feed Categories
 - [Price Feeds](https://docs.chain.link/data-feeds/price-feeds.md)
@@ -119,62 +160,17 @@ Advanced and Reference
 - [API Reference](https://docs.chain.link/data-feeds/api-reference.md)
 - [Historical Data](https://docs.chain.link/data-feeds/historical-data.md)
 
+---
 
 ## Data Streams
 
 - [Overview](https://docs.chain.link/data-streams.md)
 - [Architecture](https://docs.chain.link/data-streams/architecture.md)
-- [Stream Categories and Report Schemas](https://docs.chain.link/data-streams/reference/report-schema-overview.md): Choose the correct stream category and schema before implementation.
+- [Stream Categories and Report Schemas](https://docs.chain.link/data-streams/reference/report-schema-overview.md)
 - [Supported Networks](https://docs.chain.link/data-streams/supported-networks.md)
 - [API Reference](https://docs.chain.link/data-streams/reference/data-streams-api.md)
 
-
-## DataLink
-
-- [Overview](https://docs.chain.link/datalink.md)
-- [Pull Delivery Overview](https://docs.chain.link/datalink/pull-delivery/overview.md)
-- [Architecture](https://docs.chain.link/datalink/pull-delivery/architecture.md)
-
-
-## Automated Compliance Engine (ACE)
-
-- [Overview](https://docs.chain.link/ace.md)
-- [Getting Started](https://docs.chain.link/ace/getting-started.md)
-- [Concepts](https://docs.chain.link/ace/concepts/architecture.md)
-- [API Reference](https://docs.chain.link/ace/reference/api/coordinator.md)
-
-
-## DTA Technical Standard
-
-- [Overview](https://docs.chain.link/dta-technical-standard.md)
-- [How It Works](https://docs.chain.link/dta-technical-standard/how-it-works.md)
-- [Architecture](https://docs.chain.link/dta-technical-standard/concepts/architecture.md)
-- [Actors](https://docs.chain.link/dta-technical-standard/actors.md)
-
-
-## Chainlink Automation
-
-- [Overview](https://docs.chain.link/chainlink-automation.md)
-- [Getting Started](https://docs.chain.link/chainlink-automation/overview/getting-started.md)
-- [Automation Architecture](https://docs.chain.link/chainlink-automation/concepts/automation-architecture.md)
-- [Service Limits](https://docs.chain.link/chainlink-automation/overview/service-limits.md)
-
-
-## Chainlink Functions
-
-- [Overview](https://docs.chain.link/chainlink-functions.md)
-- [Getting Started](https://docs.chain.link/chainlink-functions/getting-started.md)
-- [Architecture](https://docs.chain.link/chainlink-functions/resources/architecture.md)
-- [API Reference](https://docs.chain.link/chainlink-functions/api-reference/functions-client.md)
-
-
-## VRF
-
-- [Overview](https://docs.chain.link/vrf.md)
-- [Getting Started v2.5](https://docs.chain.link/vrf/v2-5/getting-started.md)
-- [Best Practices](https://docs.chain.link/vrf/v2-5/best-practices.md)
-- [Migration Guides](https://docs.chain.link/vrf/v2-5/migration-from-v2.md)
-- [Supported Networks](https://docs.chain.link/vrf/v2-5/supported-networks.md)
+---
 
 ## Coverage model
 
@@ -183,6 +179,8 @@ This index is intentionally curated and does not list every documentation page.
 For full coverage:
 - Use product documentation indexes for structured navigation
 - Use full documentation bundles when broad context is required
+
+---
 
 ## Product Documentation Indexes
 
@@ -199,39 +197,13 @@ Use these for deeper product-level navigation. These indexes provide broader cov
 - [DTA Technical Standard Documentation Index](https://docs.chain.link/dta-technical-standard/llms.txt)
 - [VRF Documentation Index](https://docs.chain.link/vrf/llms.txt)
 
-## Live Data and Structured Datasets
-
-Use structured datasets when retrieving current network data, addresses, or routing information.
-
-Do not scrape documentation pages or interactive tables for structured data.
-
-### Data Feeds
-
-- Index (select network):
-  https://docs.chain.link/data-feeds/feed-addresses/default.txt
-
-- Per-network datasets:
-  https://docs.chain.link/data-feeds/feed-addresses/{type}/{network}.txt
-
-### Data Streams
-
-- Stream ID datasets:
-  https://docs.chain.link/data-streams/stream-ids/crypto.txt
-
-- Network metadata (verifier proxies):
-  https://docs.chain.link/data-streams/networks.txt
-
-### CCIP Directory
-
-- CCIP Mainnet Directory:
-  https://docs.chain.link/ccip/directory/mainnet
-
-- CCIP Testnet Directory:
-  https://docs.chain.link/ccip/directory/testnet
+---
 
 ## Full Documentation Bundles
 
-Use `llms-full.txt` only when broad product-level context is required or when the relevant page cannot be identified from the curated index.
+Use only for conceptual understanding or when no dataset or specific page can be identified.
+
+Do not use `llms-full.txt` for retrieving structured data such as feed addresses, stream IDs, or network metadata.
 
 - [CRE Full](https://docs.chain.link/cre/llms-full-ts.txt)
 - [CRE Connect Full](https://docs.chain.link/crec/llms-full.txt)
