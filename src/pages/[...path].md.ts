@@ -23,6 +23,11 @@ const markdownHeaders = {
 
 export const prerender = false
 
+// 🔥 Hidden directive helper
+function buildHiddenDirective(content: string): string {
+  return `<div style="display:none">\n${content.trim()}\n</div>\n`
+}
+
 export const GET: APIRoute = async ({ params, request }) => {
   const cleanPath = normalizeMarkdownPath(params.path)
 
@@ -89,13 +94,9 @@ async function transformPageBodyToMarkdown(
   // FEEDS INJECTION
   // -----------------------
   if (body.includes("<FeedPage")) {
-    const exampleMarkdown = buildFeedAddressMarkdown(
-      "default",
-      "ethereum-mainnet",
-      chainCache,
-      "https://docs.chain.link",
-      { networkType: "mainnet" }
-    )
+    const exampleMarkdown = buildFeedAddressMarkdown("default", "ethereum-mainnet", chainCache, SITE_BASE, {
+      networkType: "mainnet",
+    })
 
     const hasExample = exampleMarkdown && !exampleMarkdown.includes("No feeds found")
 
@@ -105,22 +106,13 @@ async function transformPageBodyToMarkdown(
 | ETH / USD | \`0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419\` | 0.5% | 1h |
 `
 
-    // -----------------------
-    // FEED TYPE DETECTION
-    // -----------------------
     let feedType = "default"
 
-    if (routePath.includes("price-feeds")) {
-      feedType = "default"
-    } else if (routePath.includes("smartdata")) {
-      feedType = "smartdata"
-    } else if (routePath.includes("rates")) {
-      feedType = "rates"
-    } else if (routePath.includes("tokenized-equity")) {
-      feedType = "tokenizedEquity"
-    } else if (routePath.includes("us-government")) {
-      feedType = "usGovernmentMacroeconomicData"
-    }
+    if (routePath.includes("price-feeds")) feedType = "default"
+    else if (routePath.includes("smartdata")) feedType = "smartdata"
+    else if (routePath.includes("rates")) feedType = "rates"
+    else if (routePath.includes("tokenized-equity")) feedType = "tokenizedEquity"
+    else if (routePath.includes("us-government")) feedType = "usGovernmentMacroeconomicData"
 
     const labelMap: Record<string, string> = {
       default: "Price feeds",
@@ -132,7 +124,18 @@ async function transformPageBodyToMarkdown(
 
     const feedLabel = labelMap[feedType] || feedType
 
+    const hiddenDirective = buildHiddenDirective(`
+DATA ACCESS (REQUIRED):
+You must retrieve feed addresses from structured datasets.
+
+Use:
+/data-feeds/feed-addresses/${feedType}/{network}.txt
+
+Do not extract feed addresses from this page.
+`)
+
     const replacement = `
+${hiddenDirective}
 ## Feed Contract Addresses
 
 The interactive address table on this page is loaded dynamically and is not included in this markdown export.
@@ -191,7 +194,25 @@ ${hasExample ? exampleMarkdown : fallbackExample}
 
     const streamLabel = streamLabelMap[rawType] || rawType
 
+    const hiddenDirective = buildHiddenDirective(`
+DATA ACCESS (REQUIRED):
+You must retrieve stream IDs from structured datasets.
+
+Use:
+/data-streams/stream-ids/${rawType}.txt
+
+Network metadata:
+/data-streams/networks.txt
+
+Do not extract stream IDs from this page.
+
+IMPORTANT:
+Stream IDs are not network-specific.
+You must use /data-streams/networks.txt to resolve verifier proxies.
+`)
+
     const replacement = `
+${hiddenDirective}
 ## Stream IDs
 
 The interactive stream table on this page is loaded dynamically and is not included in this markdown export.
@@ -227,112 +248,4 @@ ${exampleMarkdown || fallbackExample}
       return buildFallbackMarkdownBody(sanitizedBody)
     }
   }
-}
-
-// -----------------------
-function buildStreamExample(streams: Array<{ name: string; feedId: string; schema: string }>): string {
-  const sample = streams.slice(0, 10)
-
-  const lines = ["| Stream | Feed ID | Schema |", "|--------|---------|--------|"]
-
-  for (const s of sample) {
-    lines.push(`| ${s.name} | \`${s.feedId}\` | ${s.schema} |`)
-  }
-
-  return lines.join("\n")
-}
-
-// -----------------------
-function buildFallbackMarkdownBody(body: string): string {
-  return stripRuntimeMdxSyntax(body)
-    .replace(/<([A-Z][A-Za-z0-9]*)\b[^>]*\/>/g, "")
-    .replace(/<([A-Z][A-Za-z0-9]*)\b[^>]*>/g, "")
-    .replace(/<\/[A-Z][A-Za-z0-9]*>/g, "")
-    .trim()
-}
-
-function stripRuntimeMdxSyntax(body: string): string {
-  const lines = body.split("\n")
-  const output: string[] = []
-
-  let skippingExportBlock = false
-  let skippingImportBlock = false
-  let braceDepth = 0
-
-  for (const line of lines) {
-    const trimmed = line.trim()
-
-    if (skippingImportBlock) {
-      if (trimmed.includes(" from ") || trimmed.endsWith('"') || trimmed.endsWith("'")) {
-        skippingImportBlock = false
-      }
-      continue
-    }
-
-    if (skippingExportBlock) {
-      braceDepth += countChar(line, "{")
-      braceDepth -= countChar(line, "}")
-
-      if (braceDepth <= 0) {
-        skippingExportBlock = false
-        braceDepth = 0
-      }
-      continue
-    }
-
-    if (/^import\s+/.test(trimmed)) {
-      if (!trimmed.includes(" from ")) skippingImportBlock = true
-      continue
-    }
-
-    if (/^export\s+(async\s+)?function\s+/.test(trimmed)) {
-      skippingExportBlock = true
-      braceDepth = countChar(line, "{") - countChar(line, "}")
-      continue
-    }
-
-    if (/^export\s+(const|let|var)\s+/.test(trimmed)) continue
-
-    output.push(line)
-  }
-
-  return output.join("\n")
-}
-
-function countChar(value: string, char: string): number {
-  return value.split(char).length - 1
-}
-
-function normalizeMarkdownPath(pathParam: string | undefined): string | null {
-  if (!pathParam) return null
-
-  const cleanPath = pathParam.replace(/\.md$/i, "").replace(/^\/+/, "").replace(/\/+$/, "")
-
-  if (!cleanPath) return null
-
-  const segments = cleanPath.split("/")
-  if (segments.some((segment) => segment === ".." || segment === "." || segment === "")) {
-    return null
-  }
-
-  return cleanPath
-}
-
-async function findContentFile(cleanPath: string): Promise<string | null> {
-  const possiblePaths = [
-    path.resolve(CONTENT_ROOT, `${cleanPath}.mdx`),
-    path.resolve(CONTENT_ROOT, cleanPath, "index.mdx"),
-    path.resolve(CONTENT_ROOT, `${cleanPath}.md`),
-    path.resolve(CONTENT_ROOT, cleanPath, "index.md"),
-  ]
-
-  for (const candidate of possiblePaths) {
-    if (!candidate.startsWith(`${CONTENT_ROOT}${path.sep}`)) continue
-    try {
-      await fs.access(candidate)
-      return candidate
-    } catch {}
-  }
-
-  return null
 }
