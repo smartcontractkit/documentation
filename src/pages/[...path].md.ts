@@ -46,7 +46,7 @@ export const GET: APIRoute = async ({ params, request }) => {
   const { body, fmTitle, fmLastModified } = extractFrontmatter(raw)
 
   const transformed = await transformPageBodyToMarkdown(body, mdxAbsPath, cleanPath, {
-    siteBase: origin, // 🔥 dynamic origin fix
+    siteBase: origin,
     targetLanguage,
   })
 
@@ -126,7 +126,9 @@ ${hiddenDirective}
 ## Feed Contract Addresses
 
 For programmatic access:
+<a href="${BASE_URL}/data-feeds/feed-addresses/${feedType}/ethereum-mainnet.txt">
 ${BASE_URL}/data-feeds/feed-addresses/${feedType}/ethereum-mainnet.txt
+</a>
 
 The interactive address table on this page is loaded dynamically and is not included in this markdown export.
 
@@ -179,7 +181,9 @@ ${hiddenDirective}
 ## Stream IDs
 
 For programmatic access:
+<a href="${BASE_URL}/data-streams/stream-ids/${rawType}.txt">
 ${BASE_URL}/data-streams/stream-ids/${rawType}.txt
+</a>
 
 The interactive stream table on this page is loaded dynamically and is not included in this markdown export.
 
