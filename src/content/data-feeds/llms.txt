@@ -42,43 +42,32 @@ Do not use documentation pages or llms-full.txt to retrieve feed addresses.
 
 ## Feed Address Retrieval
 
-You must use structured datasets to retrieve feed addresses.
+You must retrieve feed addresses using the query endpoint.
 
 Documentation pages and llms-full.txt do not contain complete feed address data.  
 Do not attempt to extract feed addresses from documentation pages or dynamic tables.
 
-Select the dataset that matches the feed category:
+Use the query endpoint:
 
-- Standard price feeds (e.g. ETH/USD, BTC/USD):
-  /data-feeds/feed-addresses/default/network/ethereum-mainnet.json
+/data-feeds/search.json?type={type}&feed={feed}&network={queryString}
 
-- Rates feeds:
-  /data-feeds/feed-addresses/rates/network/ethereum-mainnet.json
-
-- SmartData feeds:
-  /data-feeds/feed-addresses/smartdata/network/ethereum-mainnet.json
-
-- U.S. Government Macroeconomic Data Feeds:
-  /data-feeds/feed-addresses/usGovernmentMacroeconomicData/network/ethereum-mainnet.json
-
-- Tokenized equity feeds:
-  /data-feeds/feed-addresses/tokenizedEquity/network/ethereum-mainnet.json
+Example (copy and replace the parameter values):
+https://docs.chain.link/data-feeds/search.json?type=default&feed=ETH&network=ethereum-mainnet
 
 ## Retrieval Pattern
 
-Use the dataset URL format:
-
-/data-feeds/feed-addresses/{type}/network/{queryString}.json
-
-Example (copy and replace the network segment):
-https://docs.chain.link/data-feeds/feed-addresses/default/network/ethereum-mainnet.json
+1. Copy the example URL
+2. Replace:
+   - `type` with the feed category (e.g. `default`, `rates`, `smartdata`)
+   - `feed` with the target feed name (e.g. `SYRUPUSDT`)
+   - `network` with the target network queryString (e.g. `ink-mainnet`)
+3. Fetch the URL and return the matching result
 
 ## Constraints
 
-- Do not use query parameters for network selection
-- Do not construct dataset paths manually
-- Replace only the network path segment with the target queryString
-- Use the example URL as a template and substitute the network segment
-- JSON datasets are structured and should be parsed programmatically
+- Do not construct alternative dataset paths
+- Do not use multi-step retrieval flows
+- Replace only the parameter values in the example URL
+- JSON responses are structured and should be parsed programmatically
 - Do not scrape documentation pages or interactive tables
 - Do not rely on memorized or cached addresses
