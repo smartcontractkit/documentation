@@ -122,6 +122,9 @@ async function transformPageBodyToMarkdown(
 For programmatic access:
 ${BASE_URL}/data-feeds/feed-addresses/${feedType}/ethereum-mainnet.json
 
+Available networks:
+${BASE_URL}/data-feeds/feed-addresses/${feedType}.json
+
 The interactive address table on this page is loaded dynamically and is not included in this markdown export.
 
 - ${feedLabel}${feedType === "default" ? " (default dataset)" : ""}:
@@ -133,7 +136,6 @@ The interactive address table on this page is loaded dynamically and is not incl
 
     body = body.replace(/<FeedPage[\s\S]*?\/>/g, replacement)
   }
-
   // --------------------------------------------------
   // STREAMS
   // --------------------------------------------------
