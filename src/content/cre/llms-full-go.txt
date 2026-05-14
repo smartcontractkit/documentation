@@ -489,9 +489,26 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-05-08
+Last Updated: 2026-05-14
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.15.0 - May 14, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.15.0" target="_blank">CRE CLI version 1.15.0</a> is now available.**
+
+- **`cre workflow supported-chains` redesigned**: The command now lists tenant-specific chains and their mock forwarder addresses fetched from the platform, replacing the previous static embedded list. Default output is a table with `CHAIN`, `SELECTOR`, and `MOCK FORWARDER` columns. Authentication is required — run `cre login` or set `CRE_API_KEY` before using this command. Use `--output json` for structured output with `chainName`, `chainSelector`, and `address` fields. Non-EVM chains enabled for your tenant also appear in the output. See [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains).
+- **ADI testnet and Celo Sepolia support**: Two new networks — ADI testnet (`adi-testnet`) and Celo Sepolia (`celo-sepolia`) — are now supported for local simulation. See [Supported Networks](/cre/supported-networks).
+- **Global `--allow-unknown-chains` flag**: A new root-level flag that skips chain-name validation when using experimental or unlisted chains in `cre workflow simulate` and `cre workflow deploy`. Chain-selector and RPC availability are still enforced. See [Global flags](/cre/reference/cli#global-flags).
+- **`cre workflow hash` registry-aware owner**: The command now auto-derives the workflow owner based on your target registry — on-chain targets use `workflow-owner-address` or `CRE_ETH_PRIVATE_KEY`; off-chain targets use the owner from your login session. `--public_key` overrides this if needed. See [`cre workflow hash`](/cre/reference/cli/workflow#cre-workflow-hash).
+- **Bug fixes**: Private registry workflow updates now preserve the paused status of existing workflows; deploy now guards against duplicate registration by checking for an existing workflow ID.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.14.0...v1.15.0)
 
 ## CLI v1.14.0 - May 8, 2026
 
@@ -8199,7 +8216,7 @@ See the [repository README](https://github.com/smartcontractkit/cre-gcp-predicti
 
 # CLI Reference
 Source: https://docs.chain.link/cre/reference/cli
-Last Updated: 2026-05-08
+Last Updated: 2026-05-14
 
 export const CRE_CLI_VERSION = VERSIONS["cre-cli"].LATEST
 
@@ -8215,15 +8232,16 @@ The CRE Command Line Interface (CLI) is your primary tool for developing, testin
 
 These flags can be used with any `cre` command.
 
-| Flag                 | Description                                                                                                                                                                                |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `-h, --help`         | Displays help information for any command                                                                                                                                                  |
-| `-e, --env`          | Specifies the path to your `.env` file (default: `".env"`)                                                                                                                                 |
-| `-E, --public-env`   | Specifies the path to your `.env.public` file, which contains shared, non-sensitive build configuration                                                                                    |
-| `-T, --target`       | Sets the target environment from your configuration files                                                                                                                                  |
-| `-R, --project-root` | Specifies the path to the project root directory. By default, the CLI automatically finds the project root by searching for `project.yaml` in the current directory and parent directories |
-| `-v, --verbose`      | Enables verbose logging to print `DEBUG` level logs                                                                                                                                        |
-| `--non-interactive`  | Fails instead of prompting; provide all required inputs with flags or environment variables. Use this for CI/CD, scripts, and other headless environments                                  |
+| Flag                     | Description                                                                                                                                                                                                             |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-h, --help`             | Displays help information for any command                                                                                                                                                                               |
+| `-e, --env`              | Specifies the path to your `.env` file (default: `".env"`)                                                                                                                                                              |
+| `-E, --public-env`       | Specifies the path to your `.env.public` file, which contains shared, non-sensitive build configuration                                                                                                                 |
+| `-T, --target`           | Sets the target environment from your configuration files                                                                                                                                                               |
+| `-R, --project-root`     | Specifies the path to the project root directory. By default, the CLI automatically finds the project root by searching for `project.yaml` in the current directory and parent directories                              |
+| `-v, --verbose`          | Enables verbose logging to print `DEBUG` level logs                                                                                                                                                                     |
+| `--non-interactive`      | Fails instead of prompting; provide all required inputs with flags or environment variables. Use this for CI/CD, scripts, and other headless environments                                                               |
+| `--allow-unknown-chains` | Skips chain-name validation against the chain-selectors registry for `cre workflow simulate` and `cre workflow deploy`. Use for experimental or unlisted chains. Chain-selector and RPC availability are still enforced |
 
 
 <Aside type="note" title="Non-interactive authentication">
@@ -8708,7 +8726,7 @@ When you run this command, the CLI will:
 
 # Workflow Commands
 Source: https://docs.chain.link/cre/reference/cli/workflow
-Last Updated: 2026-05-08
+Last Updated: 2026-05-14
 
 The `cre workflow` commands manage workflows throughout their entire lifecycle, from local testing to deployment and ongoing management.
 
@@ -8829,14 +8847,21 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
 
 <Aside type="tip" title="Which chains can I simulate?">
-  Run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) to print every **supported chain name** the CLI knows for simulation, then configure matching RPC URLs for your target.
+  Run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) to list the chains and mock forwarder addresses enabled for your tenant. Authentication is required — run `cre login` first.
 </Aside>
 
 ## `cre workflow supported-chains`
 
-Prints the supported chain names for EVM local simulation. Default output is a `Supported chain names:` heading followed by one indented name per line (for example `ethereum-testnet-sepolia`, `ethereum-mainnet-arbitrum-1`).
 
-Use `cre workflow supported-chains` to confirm a chain is supported before you wire RPC URLs and triggers in `project.yaml` / `workflow.yaml`. The command reads the embedded list only; it does not query your RPC endpoints.
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Lists the chains enabled for your tenant and their mock Keystone forwarder addresses. Chains are returned from the platform based on your login session (`cre login` or `CRE_API_KEY`). Non-EVM chains configured for your tenant also appear in the output.
+
+Use this command before setting up a simulation target to confirm chain availability and copy the forwarder address for use in consumer contracts. If no authenticated context is found, the CLI will prompt you to run `cre login`.
 
 **Usage:**
 
@@ -8846,9 +8871,9 @@ cre workflow supported-chains [flags]
 
 **Flags:**
 
-| Flag                | Description                                                                   |
-| ------------------- | ----------------------------------------------------------------------------- |
-| `--output <string>` | Output format. Use `json` to print a JSON array to stdout for scripting cases |
+| Flag                | Description                                                                            |
+| ------------------- | -------------------------------------------------------------------------------------- |
+| `--output <string>` | Output format. Use `json` to print a JSON array to stdout for scripting and automation |
 
 **Examples:**
 
@@ -8857,16 +8882,42 @@ cre workflow supported-chains
 cre workflow supported-chains --output json
 ```
 
-**Example (default, excerpt):**
+**Example (default output, excerpt):**
 
 ```text
-Supported chain names:
-  ethereum-testnet-sepolia
-  ethereum-mainnet
-  polygon-mainnet
+Chains and mock forwarders (tenant-scoped):
+
+CHAIN                              SELECTOR              MOCK FORWARDER
+ethereum-mainnet-arbitrum-1        4949039107694359620   0xF8344CFd5c43616a4366C34E3EEE75af79a74482
+ethereum-mainnet                   5009297550715157269   0x0b93082D9b3C7C97fAcd250082899BAcf3af3885
+ethereum-testnet-sepolia           16015286601757825753  0xF8344CFd5c43616a4366C34E3EEE75af79a74482
+polygon-mainnet                    4051577828743386545   0x76c9cf548b4179F8901cda1f8623568b58215E62
+...
 ```
 
-The full list is longer and can change between CLI releases; run the command locally for the complete set.
+**Example (JSON output, excerpt):**
+
+```json
+[
+  {
+    "chainName": "ethereum-mainnet-arbitrum-1",
+    "chainSelector": 4949039107694359620,
+    "address": "0xF8344CFd5c43616a4366C34E3EEE75af79a74482"
+  },
+  {
+    "chainName": "ethereum-mainnet",
+    "chainSelector": 5009297550715157269,
+    "address": "0x0b93082D9b3C7C97fAcd250082899BAcf3af3885"
+  },
+  {
+    "chainName": "ethereum-testnet-sepolia",
+    "chainSelector": 16015286601757825753,
+    "address": "0xF8344CFd5c43616a4366C34E3EEE75af79a74482"
+  }
+]
+```
+
+The chain list is tenant-specific and may vary between organizations. Run the command locally for the full set of chains and forwarder addresses enabled for your account. For a full reference of mock and production forwarder addresses by network, see the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory).
 
 ## `cre workflow deploy`
 
@@ -9229,17 +9280,17 @@ cre workflow hash <workflow-folder-path> [flags]
 
 **Flags:**
 
-| Flag                 | Description                                                                                                                                                          |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--public_key`       | Owner address to use when computing the workflow hash. Required when `CRE_ETH_PRIVATE_KEY` is not set and no `workflow-owner-address` is configured in your settings |
-| `--wasm`             | Path or URL to a pre-built WASM binary (skips compilation)                                                                                                           |
-| `--config`           | Override the config file path from `workflow.yaml`                                                                                                                   |
-| `--no-config`        | Compute hash without a config file                                                                                                                                   |
-| `--skip-type-checks` | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                          |
+| Flag                 | Description                                                                                                                                                                                                                                                                                        |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--public_key`       | Owner address to use when computing the workflow hash. The command auto-derives the owner based on your registry type: on-chain uses `workflow-owner-address` or `CRE_ETH_PRIVATE_KEY`; off-chain uses the owner from your login session. Pass `--public_key` to override the auto-derived address |
+| `--wasm`             | Path or URL to a pre-built WASM binary (skips compilation)                                                                                                                                                                                                                                         |
+| `--config`           | Override the config file path from `workflow.yaml`                                                                                                                                                                                                                                                 |
+| `--no-config`        | Compute hash without a config file                                                                                                                                                                                                                                                                 |
+| `--skip-type-checks` | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                                                                                                                                                        |
 
 
 <Aside type="note" title="Owner address required">
-  This command needs your owner address to compute the workflow hash, since the hash incorporates the owner. It derives this from `CRE_ETH_PRIVATE_KEY` by default. If you don't want to provide a private key, pass your address directly with `--public_key`.
+  The workflow hash incorporates the owner address. The command auto-derives this based on your registry: **on-chain** uses `workflow-owner-address` from settings or `CRE_ETH_PRIVATE_KEY`; **off-chain** uses the owner from your `cre login` session or `CRE_API_KEY`. Use `--public_key` to override the auto-derived address.
 </Aside>
 
 **Examples:**
@@ -13175,7 +13226,7 @@ For the full list of types and methods available on the Confidential HTTP client
 
 # Forwarder Directory
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-go
-Last Updated: 2026-03-23
+Last Updated: 2026-05-14
 
 <Aside type="note" title="Looking for supported networks?">
   For a complete list of supported networks and version requirements, see [Supported Networks](/cre/supported-networks).
@@ -13245,12 +13296,14 @@ These `MockKeystoneForwarder` addresses are used when running `cre workflow simu
 
 | Network                                                                                                                                                            | Chain Name                            | Mock Forwarder Address                     |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- | ------------------------------------------ |
+| <a href="https://explorer.testnet.adifoundation.ai/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">ADI Testnet</a>   | adi-testnet                           | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | <a href="https://explorer.curtis.apechain.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Apechain Curtis</a>    | apechain-testnet-curtis               | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://testnet.arcscan.app/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Arc Testnet</a>                 | arc-testnet                           | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://sepolia.arbiscan.io/address/0xd41263567ddfead91504199b8c6c87371e83ca5d" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>            | ethereum-testnet-sepolia-arbitrum-1   | 0xd41263567ddfead91504199b8c6c87371e83ca5d |
 | <a href="https://testnet.snowscan.xyz/address/0x2e7371a5d032489e4f60216d8d898a4c10805963" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>             | avalanche-testnet-fuji                | 0x2e7371a5d032489e4f60216d8d898a4c10805963 |
 | <a href="https://sepolia.basescan.org/address/0x82300bd7c3958625581cc2f77bc6464dcecdf3e5" target="_blank" rel="noopener noreferrer">Base Sepolia</a>               | ethereum-testnet-sepolia-base-1       | 0x82300bd7c3958625581cc2f77bc6464dcecdf3e5 |
 | <a href="https://testnet.bscscan.com/address/0xa238e42cb8782808dbb2f37e19859244ec4779b0" target="_blank" rel="noopener noreferrer">BNB Chain Testnet</a>           | binance_smart_chain-testnet         | 0xa238e42cb8782808dbb2f37e19859244ec4779b0 |
+| <a href="https://celo-sepolia.blockscout.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Celo Sepolia</a>        | celo-sepolia                          | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://explorer.cronos.org/testnet/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Cronos Testnet</a>      | cronos-testnet                        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://sepolia.etherscan.io/address/0x15fC6ae953E024d975e77382eEeC56A9101f9F88" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>           | ethereum-testnet-sepolia              | 0x15fC6ae953E024d975e77382eEeC56A9101f9F88 |
 | <a href="https://gnosis-chiado.blockscout.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Gnosis Chiado</a>      | gnosis-chain-testnet-chiado           | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
@@ -13307,11 +13360,13 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 
 | Network                                                                                                                                                            | Chain Name                            | Forwarder Address                          |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- | ------------------------------------------ |
+| <a href="https://explorer.testnet.adifoundation.ai/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ADI Testnet</a>   | adi-testnet                           | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://explorer.curtis.apechain.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Apechain Curtis</a>    | apechain-testnet-curtis               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://sepolia.arbiscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>            | ethereum-testnet-sepolia-arbitrum-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://testnet.snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>             | avalanche-testnet-fuji                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://sepolia.basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base Sepolia</a>               | ethereum-testnet-sepolia-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
 | <a href="https://testnet.bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">BNB Chain Testnet</a>           | binance_smart_chain-testnet         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://celo-sepolia.blockscout.com/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Celo Sepolia</a>        | celo-sepolia                          | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | <a href="https://explorer.cronos.org/testnet/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Cronos Testnet</a>      | cronos-testnet                        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | <a href="https://sepolia.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>           | ethereum-testnet-sepolia              | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
 | <a href="https://gnosis-chiado.blockscout.com/address/0x0b93082D9b3C7C97fAcd250082899BAcf3af3885" target="_blank" rel="noopener noreferrer">Gnosis Chiado</a>      | gnosis-chain-testnet-chiado           | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
@@ -18898,7 +18953,7 @@ This section provides a reference for the built-in trigger capabilities of the C
 
 # Supported Networks
 Source: https://docs.chain.link/cre/supported-networks-go
-Last Updated: 2026-03-23
+Last Updated: 2026-05-14
 
 This page lists all EVM-compatible networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network.
 
@@ -18938,34 +18993,36 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 
 ## Testnets
 
-| Network                 | CLI     | Go SDK  | TS SDK  |
-| ----------------------- | ------- | ------- | ------- |
-| Apechain Curtis         | v1.0.7+ | v1.1.4+ | v1.0.7+ |
-| Arc Testnet             | v1.0.7+ | v1.1.4+ | v1.3.1+ |
-| Arbitrum Sepolia        | v1.0.0+ | v1.0.0+ | v1.0.1+ |
-| Avalanche Fuji          | v1.0.0+ | v1.0.0+ | v1.0.1+ |
-| Base Sepolia            | v1.0.0+ | v1.0.0+ | v1.0.1+ |
-| BNB Chain Testnet       | v1.0.0+ | v1.0.0+ | v1.0.1+ |
-| Cronos Testnet          | v1.5.0+ | v1.6.0+ | v1.3.0+ |
-| Ethereum Sepolia        | v1.0.0+ | v1.0.0+ | v1.0.1+ |
-| Gnosis Chiado           | v1.7.0+ | v1.7.0+ | v1.4.0+ |
-| Hyperliquid Testnet     | v1.0.7+ | v1.1.4+ | v1.0.7+ |
-| Ink Sepolia             | v1.0.7+ | v1.1.4+ | v1.0.7+ |
-| Jovay Testnet           | v1.0.7+ | v1.1.4+ | v1.0.7+ |
-| Linea Sepolia           | v1.0.7+ | v1.1.4+ | v1.0.7+ |
-| Mantle Sepolia          | v1.5.0+ | v1.6.0+ | v1.3.0+ |
-| MegaETH Testnet 2       | v1.5.0+ | v1.6.0+ | v1.3.1+ |
-| OP Sepolia              | v1.0.0+ | v1.0.0+ | v1.0.1+ |
-| Pharos Atlantic Testnet | v1.3.0+ | v1.5.0+ | v1.3.1+ |
-| Plasma Testnet          | v1.0.7+ | v1.1.4+ | v1.0.7+ |
-| Polygon Amoy            | v1.0.0+ | v1.0.0+ | v1.0.1+ |
-| Scroll Sepolia          | v1.5.0+ | v1.6.0+ | v1.3.0+ |
-| Sonic Testnet           | v1.5.0+ | v1.6.0+ | v1.3.1+ |
-| TAC Testnet             | v1.5.0+ | v1.6.0+ | v1.3.0+ |
-| Unichain Sepolia        | v1.5.0+ | v1.6.0+ | v1.3.0+ |
-| World Chain Sepolia     | v1.0.7+ | v1.1.4+ | v1.0.7+ |
-| XLayer Testnet          | v1.5.0+ | v1.6.0+ | v1.3.1+ |
-| ZKSync Era Sepolia      | v1.0.6+ | v1.1.2+ | v1.0.7+ |
+| Network                 | CLI      | Go SDK  | TS SDK  |
+| ----------------------- | -------- | ------- | ------- |
+| ADI Testnet             | v1.15.0+ | v1.9.0+ | v1.7.0+ |
+| Apechain Curtis         | v1.0.7+  | v1.1.4+ | v1.0.7+ |
+| Arc Testnet             | v1.0.7+  | v1.1.4+ | v1.3.1+ |
+| Arbitrum Sepolia        | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| Avalanche Fuji          | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| Base Sepolia            | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| BNB Chain Testnet       | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| Celo Sepolia            | v1.15.0+ | v1.9.0+ | v1.7.0+ |
+| Cronos Testnet          | v1.5.0+  | v1.6.0+ | v1.3.0+ |
+| Ethereum Sepolia        | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| Gnosis Chiado           | v1.7.0+  | v1.7.0+ | v1.4.0+ |
+| Hyperliquid Testnet     | v1.0.7+  | v1.1.4+ | v1.0.7+ |
+| Ink Sepolia             | v1.0.7+  | v1.1.4+ | v1.0.7+ |
+| Jovay Testnet           | v1.0.7+  | v1.1.4+ | v1.0.7+ |
+| Linea Sepolia           | v1.0.7+  | v1.1.4+ | v1.0.7+ |
+| Mantle Sepolia          | v1.5.0+  | v1.6.0+ | v1.3.0+ |
+| MegaETH Testnet 2       | v1.5.0+  | v1.6.0+ | v1.3.1+ |
+| OP Sepolia              | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| Pharos Atlantic Testnet | v1.3.0+  | v1.5.0+ | v1.3.1+ |
+| Plasma Testnet          | v1.0.7+  | v1.1.4+ | v1.0.7+ |
+| Polygon Amoy            | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| Scroll Sepolia          | v1.5.0+  | v1.6.0+ | v1.3.0+ |
+| Sonic Testnet           | v1.5.0+  | v1.6.0+ | v1.3.1+ |
+| TAC Testnet             | v1.5.0+  | v1.6.0+ | v1.3.0+ |
+| Unichain Sepolia        | v1.5.0+  | v1.6.0+ | v1.3.0+ |
+| World Chain Sepolia     | v1.0.7+  | v1.1.4+ | v1.0.7+ |
+| XLayer Testnet          | v1.5.0+  | v1.6.0+ | v1.3.1+ |
+| ZKSync Era Sepolia      | v1.0.6+  | v1.1.2+ | v1.0.7+ |
 
 ## Forwarder Addresses
 
