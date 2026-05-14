@@ -114,7 +114,9 @@ ${BASE_URL}/data-feeds/feed-addresses/${feedType}.json
 
 Do not construct or guess network paths.
 
-Then retrieve feed addresses using the URL provided in the dataset.
+You must use the URL provided in the dataset.
+
+Do not construct or modify dataset URLs manually.
 
 Example:
 ${BASE_URL}/data-feeds/feed-addresses/${feedType}.json?network=ethereum-mainnet
