@@ -1,6 +1,21 @@
-# CCIP API
+# CCIP directory and configuration REST API (v1)
 
-The CCIP API provides information about supported chains and tokens in the Cross-Chain Interoperability Protocol (CCIP). This API allows you to query chain details, token information, supported fee tokens, and contract addresses needed for cross-chain operations.
+This folder documents the **CCIP directory REST API** hosted on Chainlink Documentation (`/api/ccip/v1/*`): supported chains, tokens, and lanes.
+
+## Deprecation
+
+The **CCIP Directory and configuration REST API (v1)** (`/api/ccip/v1/*` on docs.chain.link) is **planned for deprecation soon**. Official timelines and migration guidance will be published in the [CCIP Tools documentation](https://docs.chain.link/ccip/tools/). For new integrations, prefer the [CCIP Tools REST API (v2)](https://docs.chain.link/ccip/tools/api/) and the SDK/CLI where they cover your use case.
+
+## Related documentation (different products)
+
+| Surface                               | Use when you need                        | Where                                                                                                |
+| ------------------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| **CCIP Tools REST API (v2)**          | Messages, lane latency, intents, tooling | [CCIP Tools API](https://docs.chain.link/ccip/tools/api/) (maintained with the CCIP Tools docs site) |
+| **On-chain contracts and interfaces** | Solidity, Move, SVM, TON integration     | [CCIP contracts and interfaces reference](https://docs.chain.link/ccip/api-reference)                |
+
+The CCIP Tools docs repository should cross-link back here for directory/configuration (v1) and keep page titles distinct (e.g. include "Tools" and "v2" in REST API page metadata) so search engines do not merge intents with this v1 surface.
+
+This HTTP API returns information about supported chains and tokens in CCIP. You can query chain details, token information, supported fee tokens, and contract addresses used for cross-chain operations.
 
 ## Quick Start
 
