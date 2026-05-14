@@ -5991,6 +5991,8 @@ func runSearcherGateway() {
 		}
 	}
 
+  subscribe()
+
 	// Main loop
 	for {
 		select {
@@ -6246,6 +6248,13 @@ FastLane provides a query API for solvers to trace what happened to their solver
 
 **URL:** `https://solver-query-api-fra.fastlane-labs.xyz/`
 
+<Aside type="caution" title="Use EIP-55 checksummed addresses">
+  All addresses passed to this API (e.g. `solverOperationFrom`) **must be in
+  [EIP-55](https://eips.ethereum.org/EIPS/eip-55) checksum format**. Lowercased or otherwise non-checksummed addresses
+  will not match the cached entry and the API will return `"solver operation not found"`, even if your solver operation
+  was actually submitted successfully.
+</Aside>
+
 **Example request:**
 
 ```json
@@ -6287,6 +6296,10 @@ This won't happen if you inherit from `SolverBase`.
 **Solver operation arrives too late**
 
 If the solver operation arrives after the auction duration has elapsed, it will not be included. The query API will communicate the error `"solver operation not found"`.
+
+**Querying the API without an EIP-55 checksummed address**
+
+If you query the [solver operation results API](#tracing-solver-operation-results) using an address (e.g. `solverOperationFrom`) that is not in [EIP-55](https://eips.ethereum.org/EIPS/eip-55) checksum format, the lookup will fail and the query API will return `"solver operation not found"` — even if your solver operation was actually received and processed. Always pass checksummed addresses when calling the query API.
 
 **Not enough bonded atlEth**
 
