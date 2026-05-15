@@ -10,6 +10,13 @@ type FeedRiskRow = {
   risk_status: string | null
 }
 
+type FeedRequest = {
+  contractAddress: string
+  network: string
+  shutdownDate?: string
+  fallbackCategory?: string
+}
+
 export type FeedTierResult = { final: string | null }
 
 /* ===========================
@@ -89,7 +96,19 @@ const normalizeKey = (v?: string | null): CategoryKey | undefined => {
   return key in FEED_CATEGORY_CONFIG ? key : undefined
 }
 
-const chooseTier = (dbTier: string | null | undefined, fallback?: string): string | null => dbTier ?? fallback ?? null
+const FALLBACK_ONLY_CATEGORIES = new Set(["new", "custom"])
+
+const resolveRiskStatus = (
+  dbTier: string | null | undefined,
+  shutdownDate?: string,
+  fallbackCategory?: string
+): string | null => {
+  if (dbTier != null) return dbTier
+  if (shutdownDate) return "deprecating"
+  if (fallbackCategory && FALLBACK_ONLY_CATEGORIES.has(fallbackCategory.toLowerCase()))
+    return fallbackCategory.toLowerCase()
+  return null
+}
 
 const defaultCategoryList = () => Object.values(FEED_CATEGORY_CONFIG).map(({ key, name }) => ({ key, name }))
 
@@ -129,21 +148,16 @@ export async function getFeedCategories() {
 
 /**
  * Batch lookup: returns a Map of `${address}-${network}` → { final }.
- * Uses DB value when present; otherwise uses per-item fallback.
+ * Uses DB risk_status when present. If absent, infers "deprecating" from shutdownDate.
+ * Returns null when neither is available.
  */
-export async function getFeedRiskTiersBatch(
-  feedRequests: Array<{
-    contractAddress: string
-    network: string
-    fallbackCategory?: string
-  }>
-): Promise<Map<string, FeedTierResult>> {
+export async function getFeedRiskTiersBatch(feedRequests: FeedRequest[]): Promise<Map<string, FeedTierResult>> {
   const out = new Map<string, FeedTierResult>()
   const keyFor = (addr: string, net: string) => `${addr}-${net}`
 
   if (!supabase) {
-    feedRequests.forEach(({ contractAddress, network, fallbackCategory }) =>
-      out.set(keyFor(contractAddress, network), { final: chooseTier(null, fallbackCategory) })
+    feedRequests.forEach(({ contractAddress, network, shutdownDate, fallbackCategory }) =>
+      out.set(keyFor(contractAddress, network), { final: resolveRiskStatus(null, shutdownDate, fallbackCategory) })
     )
     return out
   }
@@ -160,8 +174,8 @@ export async function getFeedRiskTiersBatch(
       .limit(1000)
 
     if (error) {
-      feedRequests.forEach(({ contractAddress, network, fallbackCategory }) =>
-        out.set(keyFor(contractAddress, network), { final: chooseTier(null, fallbackCategory) })
+      feedRequests.forEach(({ contractAddress, network, shutdownDate, fallbackCategory }) =>
+        out.set(keyFor(contractAddress, network), { final: resolveRiskStatus(null, shutdownDate, fallbackCategory) })
       )
       return out
     }
@@ -171,15 +185,15 @@ export async function getFeedRiskTiersBatch(
       lookup.set(keyFor(row.proxy_address, row.network), row.risk_status ?? null)
     )
 
-    feedRequests.forEach(({ contractAddress, network, fallbackCategory }) => {
+    feedRequests.forEach(({ contractAddress, network, shutdownDate, fallbackCategory }) => {
       const key = keyFor(contractAddress, network)
-      out.set(key, { final: chooseTier(lookup.get(key), fallbackCategory) })
+      out.set(key, { final: resolveRiskStatus(lookup.get(key), shutdownDate, fallbackCategory) })
     })
 
     return out
   } catch (error) {
-    feedRequests.forEach(({ contractAddress, network, fallbackCategory }) =>
-      out.set(keyFor(contractAddress, network), { final: chooseTier(null, fallbackCategory) })
+    feedRequests.forEach(({ contractAddress, network, shutdownDate, fallbackCategory }) =>
+      out.set(keyFor(contractAddress, network), { final: resolveRiskStatus(null, shutdownDate, fallbackCategory) })
     )
     return out
   }

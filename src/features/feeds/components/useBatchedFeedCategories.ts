@@ -66,6 +66,7 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
         const feedRequests: Array<{
           contractAddress: string
           network: string
+          shutdownDate?: string
           fallbackCategory?: string
         }> = []
 
@@ -81,6 +82,7 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
             feedRequests.push({
               contractAddress: feedKey,
               network: networkKey,
+              shutdownDate: metadata.docs?.shutdownDate,
               fallbackCategory: metadata.feedCategory,
             })
           }
@@ -114,21 +116,18 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
 }
 
 /**
- * Get final category from batched results with fallback.
+ * Get final category from batched results.
+ * Returns null when no DB risk status is available and the feed is not deprecating.
  */
 export function getFeedCategoryFromBatch(
   batchData: Map<string, FeedCategoryData>,
   contractAddress: string,
-  network: string,
-  fallbackCategory?: string
+  network: string
 ): FeedCategoryData {
   if (!batchData || batchData.size === 0) {
-    return { final: fallbackCategory ?? null }
+    return { final: null }
   }
 
   const key = `${contractAddress}-${network}`
-  const found = batchData.get(key)
-  if (found) return found
-
-  return { final: fallbackCategory ?? null }
+  return batchData.get(key) ?? { final: null }
 }
