@@ -8,6 +8,7 @@
 export const SIDEBAR_SECTIONS = {
   ACE: "ace",
   CRE: "cre",
+  CREC: "crec",
   DATA_FEEDS: "dataFeeds",
   DTA_TECHNICAL_STANDARD: "dta-technical-standard",
   DATA_STREAMS: "dataStreams",

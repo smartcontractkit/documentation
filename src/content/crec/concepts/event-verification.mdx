@@ -1,0 +1,78 @@
+---
+section: crec
+title: "Event Verification"
+date: Last Modified
+metadata:
+  description: "How Chainlink CRE Connect verifies event authenticity. Covers the OCR report layout, signature recovery, signer-set lookup, and threshold checks at a conceptual level."
+  datePublished: "2026-05-01"
+  lastModified: "2026-05-01"
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+This page describes the conceptual algorithm CRE Connect uses to verify that an event is authentic — that it was produced by the right CRE workflow, signed by enough nodes of the Chainlink Decentralized Oracle Network (DON), and not tampered with in transit.
+
+## What verification proves
+
+Verification answers two questions about an event:
+
+1. **Did this event come from my tenant's CRE workflow?** Each verifiable event carries an OCR report whose contents are bound to a specific **workflow owner** address. The verification step checks that this address matches the workflow owner of the application doing the verifying.
+2. **Did enough DON nodes attest to it?** The event carries a set of OCR signatures over the report. Verification recovers the signing addresses from each signature and counts how many of them belong to the configured DON signer set. The event is accepted only when at least a configured quorum of distinct valid signatures is present.
+
+A pass on both questions guarantees authenticity, integrity, and replay protection. A fail on either question means the event must not be acted on.
+
+## Inputs
+
+A verifier needs four pieces of information:
+
+- **The event** — including the OCR proof attached to it (report bytes, replay-protection context, and the set of signatures).
+- **The expected workflow owner** — the on-chain address that identifies the CRE workflow this tenant runs.
+- **The valid signer set** — the set of DON-node signing addresses to accept signatures from.
+- **The signature threshold** — the minimum number of distinct, valid signatures required to consider the event authentic.
+
+## Algorithm at a glance
+
+<ClickToZoom src="/images/crec/concepts/event-verification-algorithm.png" caption="Event Verification Algorithm" />
+
+Step by step:
+
+1. **Type check.** Verification is event-type aware: a verifier for `watcher.event` will not verify an `operation.status` event, and vice versa. The right verifier must be applied for the right event family.
+2. **OCR proof check.** Each verifiable event carries exactly one OCR proof. Missing or duplicate OCR proofs are rejected outright.
+3. **Local event hash.** The verifier hashes the application-visible payload bytes — the same bytes the application would consume — to produce a 32-byte digest.
+4. **Workflow-owner and event-hash binding.** The verifier reads the workflow-owner address and the payload hash from the OCR report and checks that:
+   - The workflow-owner address embedded in the report matches the expected workflow owner for the tenant.
+   - The payload hash embedded in the report matches the locally-computed event hash.
+5. **Signature recovery.** The verifier recomputes the report hash from the report bytes and the replay-protection context, then recovers the signing address from each OCR signature.
+6. **Threshold check.** The number of distinct recovered addresses that belong to the valid signer set must meet or exceed the configured threshold.
+
+If every check passes, the event is authentic. If any check fails, the event is rejected.
+
+## What can go wrong
+
+The algorithm produces actionable failure modes:
+
+| Failure mode                         | What it means                                                                                                               |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| Wrong event type                     | The verifier was applied to an event family it doesn't accept. Use the right verifier for the event type.                   |
+| No OCR proof / multiple OCR proofs   | The event arrived without exactly one OCR proof. For "no proof" cases, the proof may simply not have arrived yet — re-poll. |
+| Workflow-owner / event-hash mismatch | The report was signed for a different workflow or for different payload bytes than what the application observed.           |
+| Signature recovery error             | A signature in the proof is malformed.                                                                                      |
+| Threshold not met                    | Signatures parsed cleanly but fewer than the configured number of distinct, valid signers were recovered.                   |
+
+In practice, the only "transient" failure mode is "no OCR proof yet" — events occasionally surface in the channel stream slightly before their OCR proof has been published. The right response is to skip the event and re-poll on the next cycle.
+
+## Lower-level verification
+
+If a system holds only the OCR report bytes, the replay-protection context, and a list of signatures — for example when bridging events out of one CRE Connect tenant into a different system — it is still possible to perform the cryptographic verification step (signature recovery + threshold check) without the workflow-owner / event-hash binding step.
+
+<Aside type="caution" title="Workflow-owner binding is essential">
+  The workflow-owner check is what proves the event was generated by *your tenant's* workflows, not just by *some* CRE
+  workflow. Skipping it is appropriate only when workflow-owner trust has already been established through another
+  channel.
+</Aside>
+
+## Related
+
+- [Verifiable Events](/crec/concepts/verifiable-events) — what verification actually proves.
+- [Watchers](/crec/concepts/watchers) — the source of `watcher.event` records.
+- [Confidence Levels](/crec/concepts/confidence-levels) — chain finality vs cryptographic authenticity.

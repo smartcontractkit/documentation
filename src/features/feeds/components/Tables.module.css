@@ -867,3 +867,136 @@ tr.statusRow td {
   font-weight: 500;
   border: 1px solid var(--blue-200, #bfdbfe);
 }
+
+/* Inline schema expander */
+.schemaRow {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* The <details> element is a self-contained card */
+.schemaDetails {
+  margin-top: 6px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* Full-width toggle header */
+.schemaDetails summary {
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-text-secondary, #6b7280);
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background-color: var(--color-background-tertiary, #f5f9ff);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.schemaDetails summary::-webkit-details-marker {
+  display: none;
+}
+
+.schemaDetails summary::after {
+  content: "▸";
+  font-size: 0.9em;
+  transition: transform 0.15s ease;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.schemaDetails[open] summary {
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  color: var(--color-text-primary, #111827);
+}
+
+.schemaDetails[open] summary::after {
+  transform: rotate(90deg);
+}
+
+.schemaDetails summary:hover {
+  background-color: var(--gray-100, #f3f4f6);
+  color: var(--color-text-primary, #111827);
+}
+
+.schemaDetailsContent {
+  overflow-x: auto;
+}
+
+.schemaTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  table-layout: auto;
+}
+
+/* Field column: auto-sized to content */
+.schemaTable th:nth-child(1),
+.schemaTable td:nth-child(1) {
+  white-space: nowrap;
+}
+
+/* Type column: always fits "uint192", never wider */
+.schemaTable th:nth-child(2),
+.schemaTable td:nth-child(2) {
+  white-space: nowrap;
+}
+
+/* Description column: gets all remaining space */
+.schemaTable th:nth-child(3),
+.schemaTable td:nth-child(3) {
+  width: 100%;
+}
+
+.schemaTable th {
+  text-align: left;
+  padding: 6px 10px;
+  background-color: var(--color-background-tertiary, #f5f9ff);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  color: var(--color-text-heading);
+  white-space: nowrap;
+}
+
+.schemaTable td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--gray-100, #f3f4f6);
+  vertical-align: top;
+  text-align: left;
+  word-break: break-word;
+}
+
+.schemaTable tr:last-child td {
+  border-bottom: none;
+}
+
+.schemaTable code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  background-color: rgba(0, 0, 0, 0.04);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 0.875em;
+  white-space: nowrap;
+}
+
+/* Footer link — sits inside the card, separated by a top border */
+.schemaFullLink {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--color-text-link, #2563eb);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.schemaFullLink:hover {
+  text-decoration: underline;
+}

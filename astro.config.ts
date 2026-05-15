@@ -93,6 +93,11 @@ export default defineConfig({
           return false
         }
 
+        // CCIP directory API v1 interactive page: noindex + omit from sitemap to avoid competing with CCIP Tools REST (v2)
+        if (cleanPath === "/api/ccip/v1/docs") {
+          return false
+        }
+
         return !redirectSources.has(cleanPath)
       },
       serialize(item) {

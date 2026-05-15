@@ -162,10 +162,8 @@ node <<EOF
     const newlyFound = JSON.parse(fs.readFileSync('${NEW_DATA_FILE}', 'utf8'));
     const items = newlyFound.newlyFoundItems || [];
     const newlyDeprecatedItems = newlyFound.newlyDeprecatedItems || [];
-    const resolvedDeprecatedItems = newlyFound.resolvedDeprecatedItems || [];
     const changedDeprecatedItems = newlyFound.changedDeprecatedItems || [];
     const newlyDeprecatedStreams = newlyFound.newlyDeprecatedStreams || [];
-    const resolvedDeprecatedStreams = newlyFound.resolvedDeprecatedStreams || [];
     const changedDeprecatedStreams = newlyFound.changedDeprecatedStreams || [];
     const deprecatingItems = [
       ...newlyDeprecatedItems,
@@ -175,22 +173,6 @@ node <<EOF
       ...newlyDeprecatedStreams,
       ...changedDeprecatedStreams.map(change => change.current).filter(Boolean),
     ];
-    const deprecatedFeedIdsToRemove = new Set([
-      ...resolvedDeprecatedItems.map(item => item.feedID),
-      ...changedDeprecatedItems.map(change => change.previous && change.previous.feedID).filter(Boolean),
-    ]);
-    const deprecatedFeedUrlsToRemove = new Set([
-      ...resolvedDeprecatedItems.map(item => item.url).filter(Boolean),
-      ...changedDeprecatedItems.map(change => change.previous && change.previous.url).filter(Boolean),
-    ]);
-    const deprecatedStreamIdsToRemove = new Set([
-      ...resolvedDeprecatedStreams.map(item => item.feedID),
-      ...changedDeprecatedStreams.map(change => change.previous && change.previous.feedID).filter(Boolean),
-    ]);
-    const deprecatedStreamUrlsToRemove = new Set([
-      ...resolvedDeprecatedStreams.map(item => item.url).filter(Boolean),
-      ...changedDeprecatedStreams.map(change => change.previous && change.previous.url).filter(Boolean),
-    ]);
 
     const CHANGELOG_PATH = path.resolve('${CHANGELOG_FILE}');
     let changelog;
@@ -239,6 +221,12 @@ node <<EOF
       const dateText = shutdownDates.length === 1 ? \` on \${shutdownDates[0]}\` : "";
       return \`The following \${productName} are scheduled for deprecation\${dateText}. See [\${linkText}](\${linkUrl}) for shutdown dates and the latest status:\`;
     }
+
+    // DevHub changelog is Webflow CMS: structured rows with relatedTokens/networks
+    // match the "Integration" template (e.g. "Added support to Data Streams"). "Release"
+    // entries are typically prose-only there, so use integration until deprecations have
+    // a dedicated CMS category synced from JSON.
+    const DEPRECATION_CHANGELOG_CATEGORY = "integration";
 
     // === data-streams networks
     const STREAMS_NETWORKS = [
@@ -342,54 +330,12 @@ node <<EOF
       });
     }
 
-    function removeResolvedDeprecationsFromChangelog(topic, emptyEntryTitle, feedIds, urls) {
-      if (feedIds.size === 0 && urls.size === 0) return;
-
-      changelog.data = changelog.data.filter(entry => {
-        if (
-          entry.topic !== topic ||
-          entry.category !== "deprecation" ||
-          !Array.isArray(entry.relatedTokens)
-        ) {
-          return true;
-        }
-
-        const originalLength = entry.relatedTokens.length;
-        entry.relatedTokens = entry.relatedTokens.filter(token => {
-          if (!token || typeof token !== "object") return true;
-          return !feedIds.has(token.feedID) && !urls.has(token.url);
-        });
-
-        if (entry.relatedTokens.length === originalLength) return true;
-
-        if (entry.relatedTokens.length === 0 && entry.title === emptyEntryTitle) {
-          return false;
-        }
-
-        const remainingNetworks = [...new Set(
-          entry.relatedTokens
-            .filter(token => token && typeof token === "object" && token.network)
-            .map(token => token.network)
-        )];
-        if (remainingNetworks.length > 0) {
-          entry.relatedNetworks = remainingNetworks;
-        } else {
-          delete entry.relatedNetworks;
-        }
-
-        return true;
-      });
-    }
-
     // === Now build each group
     const dataFeedsTokens = buildDataFeedTokens(dataFeeds);
     const dataStreamsTokens = buildDataStreamTokens(dataStreams);
     const smartDataTokens  = buildSmartDataTokens(smartData);
     const deprecatingDataFeedTokens = buildDeprecatingDataFeedTokens(deprecatingItems);
     const deprecatingDataStreamTokens = buildDeprecatingDataStreamTokens(deprecatingStreamItems);
-
-    removeResolvedDeprecationsFromChangelog("Data Feeds", "Feeds scheduled for deprecation", deprecatedFeedIdsToRemove, deprecatedFeedUrlsToRemove);
-    removeResolvedDeprecationsFromChangelog("Data Streams", "Streams scheduled for deprecation", deprecatedStreamIdsToRemove, deprecatedStreamUrlsToRemove);
 
     // === Create new changelog entries
     const newEntries = [];
@@ -453,7 +399,7 @@ node <<EOF
           ),
           networksList,
           deprecatingDataFeedTokens,
-          "deprecation"
+          DEPRECATION_CHANGELOG_CATEGORY
         )
       );
     }
@@ -474,7 +420,7 @@ node <<EOF
           ),
           networksList,
           deprecatingDataStreamTokens,
-          "deprecation"
+          DEPRECATION_CHANGELOG_CATEGORY
         )
       );
     }

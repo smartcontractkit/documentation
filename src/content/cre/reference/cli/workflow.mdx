@@ -5,7 +5,7 @@ title: "Workflow Commands"
 metadata:
   description: "Manage workflows with CLI: complete command reference for simulating, deploying, activating, pausing, and deleting workflows."
   datePublished: "2025-11-04"
-  lastModified: "2026-04-30"
+  lastModified: "2026-05-14"
 ---
 
 import { Aside } from "@components"
@@ -127,6 +127,80 @@ cre workflow simulate <workflow-name-or-path> [flags]
   By default, `cre workflow simulate` performs a **dry run** for onchain write operations. It simulates the transaction to confirm it would succeed, but does not broadcast it to the network. This results in a successful log with an empty transaction hash (`0x`). To send a real transaction, use the `--broadcast` flag.
 </Aside>
 
+{/* prettier-ignore */}
+<Aside type="tip" title="Which chains can I simulate?">
+  Run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) to list the chains and mock forwarder addresses enabled for your tenant. Authentication is required — run `cre login` first.
+</Aside>
+
+## `cre workflow supported-chains`
+
+{/* prettier-ignore */}
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Lists the chains enabled for your tenant and their mock Keystone forwarder addresses. Chains are returned from the platform based on your login session (`cre login` or `CRE_API_KEY`). Non-EVM chains configured for your tenant also appear in the output.
+
+Use this command before setting up a simulation target to confirm chain availability and copy the forwarder address for use in consumer contracts. If no authenticated context is found, the CLI will prompt you to run `cre login`.
+
+**Usage:**
+
+```bash
+cre workflow supported-chains [flags]
+```
+
+**Flags:**
+
+| <div style={{ width: "160px" }}>Flag</div> | Description                                                                            |
+| ------------------------------------------ | -------------------------------------------------------------------------------------- |
+| `--output <string>`                        | Output format. Use `json` to print a JSON array to stdout for scripting and automation |
+
+**Examples:**
+
+```bash
+cre workflow supported-chains
+cre workflow supported-chains --output json
+```
+
+**Example (default output, excerpt):**
+
+```text
+Chains and mock forwarders (tenant-scoped):
+
+CHAIN                              SELECTOR              MOCK FORWARDER
+ethereum-mainnet-arbitrum-1        4949039107694359620   0xF8344CFd5c43616a4366C34E3EEE75af79a74482
+ethereum-mainnet                   5009297550715157269   0x0b93082D9b3C7C97fAcd250082899BAcf3af3885
+ethereum-testnet-sepolia           16015286601757825753  0xF8344CFd5c43616a4366C34E3EEE75af79a74482
+polygon-mainnet                    4051577828743386545   0x76c9cf548b4179F8901cda1f8623568b58215E62
+...
+```
+
+**Example (JSON output, excerpt):**
+
+```json
+[
+  {
+    "chainName": "ethereum-mainnet-arbitrum-1",
+    "chainSelector": 4949039107694359620,
+    "address": "0xF8344CFd5c43616a4366C34E3EEE75af79a74482"
+  },
+  {
+    "chainName": "ethereum-mainnet",
+    "chainSelector": 5009297550715157269,
+    "address": "0x0b93082D9b3C7C97fAcd250082899BAcf3af3885"
+  },
+  {
+    "chainName": "ethereum-testnet-sepolia",
+    "chainSelector": 16015286601757825753,
+    "address": "0xF8344CFd5c43616a4366C34E3EEE75af79a74482"
+  }
+]
+```
+
+The chain list is tenant-specific and may vary between organizations. Run the command locally for the full set of chains and forwarder addresses enabled for your account. For a full reference of mock and production forwarder addresses by network, see the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory).
+
 ## `cre workflow deploy`
 
 {/* prettier-ignore */}
@@ -143,7 +217,7 @@ cre workflow simulate <workflow-name-or-path> [flags]
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Deploys a workflow to the Workflow Registry — the onchain contract where workflows are enrolled so the Chainlink DON knows they exist and should run them. This command compiles your workflow, uploads the artifacts to the CRE Storage Service, and submits a registration transaction to the registry. Use [`cre registry list`](/cre/reference/cli/registry) to see which registry your organization is configured to use.
+Deploys a workflow to the registry selected by `user-workflow.deployment-registry` in `workflow.yaml`. This command compiles your workflow, uploads the artifacts to the CRE Storage Service, and registers the workflow with either the public onchain Workflow Registry or the Chainlink-hosted private registry. Use [`cre registry list`](/cre/reference/cli/registry) to see which registries your organization can use.
 
 **Usage:**
 
@@ -163,7 +237,7 @@ cre workflow deploy <workflow-name-or-path> [flags]
 | `--wasm`                                   | Path to a pre-built WASM binary (skips compilation). Use with [`cre workflow build`](#cre-workflow-build) for CI/CD pipelines |
 | `--config`                                 | Override the config file path from `workflow.yaml`                                                                            |
 | `--no-config`                              | Deploy without a config file                                                                                                  |
-| `--unsigned`                               | Return the raw transaction instead of sending it to the network                                                               |
+| `--unsigned`                               | Onchain registry only: return the raw transaction instead of sending it to the network                                        |
 | `--yes`                                    | Skip the confirmation prompt and proceed with the operation                                                                   |
 | `--skip-type-checks`                       | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds   |
 
@@ -206,7 +280,7 @@ For more details, see [Deploying Workflows](/cre/guides/operations/deploying-wor
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Changes the workflow status to active on the Workflow Registry contract. Active workflows can respond to their configured triggers.
+Changes the workflow status to active in the registry selected by `deployment-registry`. Active workflows can respond to their configured triggers.
 
 **Usage:**
 
@@ -220,10 +294,10 @@ cre workflow activate <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag         | Description                                                     |
-| ------------ | --------------------------------------------------------------- |
-| `--unsigned` | Return the raw transaction instead of sending it to the network |
-| `--yes`      | Skip the confirmation prompt and proceed with the operation     |
+| Flag         | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `--unsigned` | Onchain registry only: return the raw transaction instead of sending it to the network |
+| `--yes`      | Skip the confirmation prompt and proceed with the operation                            |
 
 **Example:**
 
@@ -241,7 +315,7 @@ For more details, see [Activating & Pausing Workflows](/cre/guides/operations/ac
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Changes the workflow status to paused on the Workflow Registry contract. Paused workflows will not respond to triggers.
+Changes the workflow status to paused in the registry selected by `deployment-registry`. Paused workflows will not respond to triggers.
 
 **Usage:**
 
@@ -255,10 +329,10 @@ cre workflow pause <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag         | Description                                                     |
-| ------------ | --------------------------------------------------------------- |
-| `--unsigned` | Return the raw transaction instead of sending it to the network |
-| `--yes`      | Skip the confirmation prompt and proceed with the operation     |
+| Flag         | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `--unsigned` | Onchain registry only: return the raw transaction instead of sending it to the network |
+| `--yes`      | Skip the confirmation prompt and proceed with the operation                            |
 
 **Example:**
 
@@ -281,7 +355,7 @@ For more details, see [Activating & Pausing Workflows](/cre/guides/operations/ac
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Deletes a workflow from the Workflow Registry.
+Deletes a workflow from the registry selected by `deployment-registry`.
 
 **Usage:**
 
@@ -295,10 +369,10 @@ cre workflow delete <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag         | Description                                                     |
-| ------------ | --------------------------------------------------------------- |
-| `--unsigned` | Return the raw transaction instead of sending it to the network |
-| `--yes`      | Skip the confirmation prompt and proceed with the operation     |
+| Flag         | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `--unsigned` | Onchain registry only: return the raw transaction instead of sending it to the network |
+| `--yes`      | Skip the confirmation prompt and proceed with the operation                            |
 
 **Example:**
 
@@ -489,17 +563,17 @@ cre workflow hash <workflow-folder-path> [flags]
 
 **Flags:**
 
-| <div style={{ width: "180px" }}>Flag</div> | Description                                                                                                                                                          |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--public_key`                             | Owner address to use when computing the workflow hash. Required when `CRE_ETH_PRIVATE_KEY` is not set and no `workflow-owner-address` is configured in your settings |
-| `--wasm`                                   | Path or URL to a pre-built WASM binary (skips compilation)                                                                                                           |
-| `--config`                                 | Override the config file path from `workflow.yaml`                                                                                                                   |
-| `--no-config`                              | Compute hash without a config file                                                                                                                                   |
-| `--skip-type-checks`                       | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                          |
+| <div style={{ width: "180px" }}>Flag</div> | Description                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--public_key`                             | Owner address to use when computing the workflow hash. The command auto-derives the owner based on your registry type: on-chain uses `workflow-owner-address` or `CRE_ETH_PRIVATE_KEY`; off-chain uses the owner from your login session. Pass `--public_key` to override the auto-derived address |
+| `--wasm`                                   | Path or URL to a pre-built WASM binary (skips compilation)                                                                                                                                                                                                                                         |
+| `--config`                                 | Override the config file path from `workflow.yaml`                                                                                                                                                                                                                                                 |
+| `--no-config`                              | Compute hash without a config file                                                                                                                                                                                                                                                                 |
+| `--skip-type-checks`                       | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                                                                                                                                                        |
 
 {/* prettier-ignore */}
 <Aside type="note" title="Owner address required">
-  This command needs your owner address to compute the workflow hash, since the hash incorporates the owner. It derives this from `CRE_ETH_PRIVATE_KEY` by default. If you don't want to provide a private key, pass your address directly with `--public_key`.
+  The workflow hash incorporates the owner address. The command auto-derives this based on your registry: **on-chain** uses `workflow-owner-address` from settings or `CRE_ETH_PRIVATE_KEY`; **off-chain** uses the owner from your `cre login` session or `CRE_API_KEY`. Use `--public_key` to override the auto-derived address.
 </Aside>
 
 **Examples:**

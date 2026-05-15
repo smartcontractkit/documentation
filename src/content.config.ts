@@ -5,6 +5,7 @@ import { sectionValues } from "./config/sidebarSections.js"
 enum Products {
   ACE = "ace",
   CRE = "cre",
+  CREC = "crec",
   CCIP = "ccip",
   AUTOMATION = "automation",
   FUNCTIONS = "functions",
@@ -19,6 +20,7 @@ enum Products {
 export const productsInfo: Record<Products, { name: string; slug: string }> = {
   ace: { name: "ACE", slug: "ace" },
   cre: { name: "CRE", slug: "cre" },
+  crec: { name: "CRE Connect", slug: "crec" },
   ccip: { name: "CCIP", slug: "ccip" },
   automation: { name: "Automation", slug: "chainlink-automation" },
   functions: { name: "Functions", slug: "chainlink-functions" },
@@ -232,6 +234,14 @@ const creCollection = defineCollection({
   schema: baseFrontmatter,
 })
 
+const crecCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/crec",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
 /** Quickstarts collection uses a different schema */
 const quickstartsCollection = defineCollection({
   loader: glob({
@@ -297,6 +307,7 @@ export const collections = {
   "dta-technical-standard": dtaTechnicalStandardCollection,
   datalink: datalinkCollection,
   cre: creCollection,
+  crec: crecCollection,
   resources: resourcesCollection,
   vrf: vrfCollection,
   "chainlink-local": chainlinkLocalCollection,
