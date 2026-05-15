@@ -14,7 +14,7 @@ import { REPORT_SCHEMA_DEFINITIONS, type SchemaDefinition } from "./reportSchema
 import { useBatchedFeedCategories, getFeedCategoryFromBatch, getNetworkIdentifier } from "./useBatchedFeedCategories.ts"
 import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
 import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
-import { isFeedVisible } from "~/features/feeds/utils/feedVisibility.ts"
+import { isFeedVisible, shouldHideAddress } from "~/features/feeds/utils/feedVisibility.ts"
 
 const feedItems = monitoredFeeds.mainnet
 type StreamNetworkType = "mainnet" | "testnet"
@@ -345,9 +345,9 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
     metadata.contractType !== "verifier" &&
     metadata.docs?.productTypeCode === "primaryTokenizedPrice"
 
-  // Any feed with a calculated price (productSubType === "calculatedPrice") should
-  // have its address hidden and show a contact email instead.
-  const shouldHideAddress = metadata.docs?.productSubType === "calculatedPrice"
+  // Any feed with a calculated price, or one explicitly listed in CONTACT_EMAIL_PROXY_ADDRESSES,
+  // should have its address hidden and show a contact email instead.
+  const hideAddress = shouldHideAddress(metadata)
 
   // Stablecoin price-bound note: only when the source marks the feed as explicitly capped
   const stablecoinBound =
@@ -441,7 +441,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                 </dt>
               )}
               <dd>
-                {shouldHideAddress ? (
+                {hideAddress ? (
                   // Calculated-price feeds show a contact email instead of proxy address
                   <span>
                     Contact us:{" "}
@@ -516,7 +516,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                     <span className="label">{isAaveSVR(metadata) ? "AAVE SVR Proxy:" : "SVR Proxy:"}</span>
                   </dt>
                   <dd>
-                    {shouldHideAddress ? (
+                    {hideAddress ? (
                       // Calculated-price feeds show a contact email instead of SVR proxy address
                       <span>
                         Contact us:{" "}
@@ -552,7 +552,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                     )}
                   </dd>
                 </div>
-                {isAaveSVR(metadata) && !shouldHideAddress && (
+                {isAaveSVR(metadata) && !hideAddress && (
                   <div className={clsx(tableStyles.aaveCallout)}>
                     <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
                     Aave protocol. Learn more about{" "}
@@ -562,7 +562,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                     .
                   </div>
                 )}
-                {isSharedSVR(metadata) && !shouldHideAddress && (
+                {isSharedSVR(metadata) && !hideAddress && (
                   <div className={clsx(tableStyles.sharedCallout)}>
                     <strong>🔗 SVR Feed:</strong> This SVR proxy feed is usable by any protocol. Learn more about{" "}
                     <a href="/data-feeds/svr-feeds" target="_blank">
