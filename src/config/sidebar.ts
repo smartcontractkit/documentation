@@ -449,6 +449,24 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Deploying Workflows",
           url: "cre/guides/operations/deploying-workflows",
+          children: [
+            {
+              title: "Deploying to the Private Registry",
+              url: "cre/guides/operations/deploying-to-private-registry",
+              highlightAsCurrent: [
+                "cre/guides/operations/deploying-to-private-registry-ts",
+                "cre/guides/operations/deploying-to-private-registry-go",
+              ],
+            },
+            {
+              title: "Deploying to the Onchain Registry",
+              url: "cre/guides/operations/deploying-to-onchain-registry",
+              highlightAsCurrent: [
+                "cre/guides/operations/deploying-to-onchain-registry-ts",
+                "cre/guides/operations/deploying-to-onchain-registry-go",
+              ],
+            },
+          ],
         },
         {
           title: "Activating & Pausing Workflows",
@@ -2331,6 +2349,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "resources/fund-your-contract",
             },
           ],
+        },
+        {
+          title: "Chainlink Developer Agent Skills",
+          url: "resources/chainlink-developer-agent-skills",
         },
         {
           title: "Starter Kits and Frameworks",
