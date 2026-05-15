@@ -717,6 +717,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/reference/gelato-migration",
           highlightAsCurrent: ["cre/reference/gelato-migration-ts", "cre/reference/gelato-migration-go"],
         },
+        {
+          title: "Migrate from Chainlink Functions",
+          url: "cre/reference/clf-migration",
+          highlightAsCurrent: ["cre/reference/clf-migration-ts", "cre/reference/clf-migration-go"],
+        },
       ],
     },
   ],
