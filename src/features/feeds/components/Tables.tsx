@@ -335,7 +335,7 @@ const TOKENIZED_EQUITY_CONTACT_EMAIL = "chainlink_data_feeds@smartcontract.com"
 const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, dataFeedType }) => {
   // Use the pre-computed finalCategory from enriched metadata
   // (already includes deprecating status and Supabase risk tier)
-  const finalTier = metadata.finalCategory || metadata.feedCategory
+  const finalTier = metadata.finalCategory ?? null
 
   // Feed type checks
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
@@ -602,7 +602,7 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
 
   // Use the pre-computed finalCategory from enriched metadata
   // (already includes deprecating status and Supabase risk tier)
-  const finalTier = metadata.finalCategory || metadata.feedCategory
+  const finalTier = metadata.finalCategory ?? null
 
   // Stablecoin price-bound note: only when the source marks the feed as explicitly capped
   const stablecoinBound =
@@ -1437,32 +1437,17 @@ export const MainnetTable = ({
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
   const isDefault = !isStreams && !isSmartData && !isUSGovernmentMacroeconomicData
 
-  // Enrich metadata with final category (combining RDD and Supabase data)
-  // Priority: deprecating status from RDD > Supabase risk tier > RDD category fallback
+  // Enrich metadata with final category from Supabase.
+  // Deprecating is inferred from shutdownDate when no DB risk status is present.
   const enrichedMetadata = network.metadata.map((metadata) => {
-    // Check for deprecating status from RDD first (has shutdown date)
-    if (metadata.docs?.shutdownDate) {
-      return { ...metadata, finalCategory: "deprecating" }
-    }
-
-    // Otherwise, get risk category from Supabase (or fall back to RDD)
-    const contractAddress = metadata.contractAddress || metadata.proxyAddress
+    const isAptos = network.name.toLowerCase().includes("aptos")
+    const contractAddress = isAptos ? metadata.proxyAddress : metadata.contractAddress || metadata.proxyAddress
     const networkIdentifier = getNetworkIdentifier(network)
-    let finalCategory = metadata.feedCategory
 
-    if (contractAddress && batchedCategoryData?.size) {
-      const categoryResult = getFeedCategoryFromBatch(
-        batchedCategoryData,
-        contractAddress,
-        networkIdentifier,
-        metadata.feedCategory
-      )
-      const supabaseCategory = categoryResult?.final ?? null
-
-      if (supabaseCategory) {
-        finalCategory = supabaseCategory
-      }
-    }
+    const finalCategory =
+      contractAddress && batchedCategoryData?.size
+        ? getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier).final
+        : null
 
     return { ...metadata, finalCategory }
   })
@@ -1536,7 +1521,8 @@ export const MainnetTable = ({
       const normalizedFinalCategory = metadata.finalCategory?.toLowerCase().replace(/\s+/g, "")
       return (
         selectedFeedCategories.length === 0 ||
-        selectedFeedCategories.map((cat) => cat.toLowerCase().replace(/\s+/g, "")).includes(normalizedFinalCategory)
+        (normalizedFinalCategory !== undefined &&
+          selectedFeedCategories.map((cat) => cat.toLowerCase().replace(/\s+/g, "")).includes(normalizedFinalCategory))
       )
     })
     .filter(
@@ -1702,32 +1688,17 @@ export const TestnetTable = ({
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
   const isDefault = !isSmartData && !isRates && !isStreams && !isUSGovernmentMacroeconomicData
 
-  // Enrich metadata with final category (combining RDD and Supabase data)
-  // Priority: deprecating status from RDD > Supabase risk tier > RDD category fallback
+  // Enrich metadata with final category from Supabase.
+  // Deprecating is inferred from shutdownDate when no DB risk status is present.
   const enrichedMetadata = network.metadata.map((metadata) => {
-    // Check for deprecating status from RDD first (has shutdown date)
-    if (metadata.docs?.shutdownDate) {
-      return { ...metadata, finalCategory: "deprecating" }
-    }
-
-    // Otherwise, get risk category from Supabase (or fall back to RDD)
-    const contractAddress = metadata.contractAddress || metadata.proxyAddress
+    const isAptos = network.name.toLowerCase().includes("aptos")
+    const contractAddress = isAptos ? metadata.proxyAddress : metadata.contractAddress || metadata.proxyAddress
     const networkIdentifier = getNetworkIdentifier(network)
-    let finalCategory = metadata.feedCategory
 
-    if (contractAddress && batchedCategoryData?.size) {
-      const categoryResult = getFeedCategoryFromBatch(
-        batchedCategoryData,
-        contractAddress,
-        networkIdentifier,
-        metadata.feedCategory
-      )
-      const supabaseCategory = categoryResult?.final ?? null
-
-      if (supabaseCategory) {
-        finalCategory = supabaseCategory
-      }
-    }
+    const finalCategory =
+      contractAddress && batchedCategoryData?.size
+        ? getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier).final
+        : null
 
     return { ...metadata, finalCategory }
   })
@@ -1796,7 +1767,8 @@ export const TestnetTable = ({
       const normalizedFinalCategory = metadata.finalCategory?.toLowerCase().replace(/\s+/g, "")
       return (
         selectedFeedCategories.length === 0 ||
-        selectedFeedCategories.map((cat) => cat.toLowerCase().replace(/\s+/g, "")).includes(normalizedFinalCategory)
+        (normalizedFinalCategory !== undefined &&
+          selectedFeedCategories.map((cat) => cat.toLowerCase().replace(/\s+/g, "")).includes(normalizedFinalCategory))
       )
     })
     .filter(
