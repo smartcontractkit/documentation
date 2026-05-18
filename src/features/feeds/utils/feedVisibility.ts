@@ -32,8 +32,8 @@ export const CONTACT_EMAIL_PROXY_ADDRESSES = new Set<string>([
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function shouldHideAddress(feed: any): boolean {
   if (feed.docs?.productSubType === "calculatedPrice") return true
-  const proxy: string | undefined = feed.proxyAddress
-  return proxy !== undefined && CONTACT_EMAIL_PROXY_ADDRESSES.has(proxy.toLowerCase())
+  const proxy: string | null | undefined = feed.proxyAddress
+  return proxy != null && CONTACT_EMAIL_PROXY_ADDRESSES.has(proxy.toLowerCase())
 }
 
 /**
