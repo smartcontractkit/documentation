@@ -6,6 +6,7 @@
 import { Sections } from "../content.config.ts"
 import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
 import { CCIP_SIDEBAR_CONTENT } from "./sidebar/ccip-dynamic.ts"
+import { AI_AGENT_RESOURCES_SECTION } from "./sidebar/ai-agent-resources.ts"
 import type { ChainType } from "./types.js"
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
@@ -2329,6 +2330,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     },
   ],
   [SIDEBAR_SECTIONS.GLOBAL]: [
+    AI_AGENT_RESOURCES_SECTION,
     {
       section: "General Documentation",
       contents: [
@@ -2349,10 +2351,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "resources/fund-your-contract",
             },
           ],
-        },
-        {
-          title: "Chainlink Developer Agent Skills",
-          url: "resources/chainlink-developer-agent-skills",
         },
         {
           title: "Starter Kits and Frameworks",
