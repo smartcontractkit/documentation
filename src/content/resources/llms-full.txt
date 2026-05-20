@@ -416,16 +416,13 @@ Any questions before you start?
 # Chainlink for Agents User Guide
 Source: https://docs.chain.link/resources/chainlink-for-agents
 
-**Chainlink for Agents** is a hosted HTTP gateway plus bundled [Agent Skills](/resources/chainlink-developer-agent-skills) that let an AI agent register, discover workflows, run reads and writes, and pay per call with [x402](https://www.x402.org/) (USDC) on gated routes.
-
-This guide is for **developers and operators** who configure an agent to use that gateway—not for reading the skill files line by line. For the separate open-source skill bundle used to build against Chainlink products in your IDE, see [Chainlink Developer Agent Skills](/resources/chainlink-developer-agent-skills).
+**Chainlink for Agents** is a hosted HTTP gateway plus bundled agent skills that let an AI agent operate safely onchain with verified pricing data and workflows for onchain actions. Agents register autonomously and pay per call with [x402](https://www.x402.org/) using USDC on Base.
 
 <Aside type="note" title="Preview">
-  Chainlink for Agents is in Preview. APIs, pricing, and supported workflows may change. Confirm behavior against the
-  live catalog on your gateway base URL before moving real funds.
+  Chainlink for Agents is in Preview. APIs, pricing, and functionality may change.
 </Aside>
 
-## Quick start
+## Quick Start
 
 An agent with a funded wallet on Base can often complete setup in one session. You may still need to approve registration, funding, or high-risk steps depending on how your agent is configured.
 
@@ -437,24 +434,22 @@ Fetch the hub skill from the gateway:
 GET https://agents.chain.link/v1/skills
 ```
 
-The response includes `SKILL.md` and pointers to bundled gateway skills (`cre-gateway`, `x402-payments`, `eip712-signer`). Install them in your agent's skills directory per that file's instructions (see [Install](#install) and the [skill reference](#skill-reference) below). For product-area skills used in your IDE (Data Feeds, CCIP, VRF, and others), see [Chainlink Developer Agent Skills](/resources/chainlink-developer-agent-skills).
+The response includes `SKILL.md` which the agent can load directly.
 
-### 2. Complete onboarding
-
-After install, the agent typically walks through:
-
-1. **Register the agent** — creates gateway identity and signs the Terms of Service with a local [EIP-191](https://eips.ethereum.org/EIPS/eip-191) wallet.
-2. **Optional: provision an SVA** — deploy a [Signature Verifying Account (SVA)](#sva-signature-verifying-account) smart wallet for onchain writes (conceptually similar to [CRE Connect Smart Accounts](/crec/concepts/smart-accounts)).
-3. **Optional: fund the SVA** — send USDC (and native gas if required) for x402 payments and execution on your target chain. See [Fund Your Contracts](/resources/fund-your-contract) for general onchain funding guidance.
-
-### 3. Fund wallets (if needed)
+### 2. Create and fund your local wallet (if needed)
 
 If the agent does not yet have a Base wallet:
 
-- Create one locally (most agent tools can do this from a single prompt).
-- Fund it with a small amount of ETH (under $0.50 is usually enough for setup) and USDC for micropayments.
+1. Ask the agent to create an EVM wallet for the Base blockchain; agents frequently can do this from a single prompt.
+2. Fund it with USDC for micropayments — $5 should be plenty. Per-call costs are typically fractions of a cent. Deploying the SVA is the most expensive step because it deploys a contract onchain.
 
-Per-call costs are typically fractions of a cent. Deploying the SVA is usually the most expensive step because it deploys a contract onchain. To fund contracts on supported networks, see [Fund Your Contracts](/resources/fund-your-contract).
+### 3. Complete onboarding
+
+Once the `SKILL.md` is installed and you have a local wallet on Base with USDC, the agent will:
+
+1. **Registration** — create a gateway identity and sign the Terms of Service with a local [EIP-191](https://eips.ethereum.org/EIPS/eip-191) wallet.
+2. **Optional: SVA provisioning** — deploy a [Signature Verifying Account (SVA)](#sva-signature-verifying-account) smart wallet for onchain writes. Requires an x402 payment. Not required for Data Streams access or onchain read functions.
+3. **Optional: fund the SVA** — move the funds you wish to transact with into the SVA address on the chain you created it on.
 
 ## Services offered via the gateway
 
@@ -473,17 +468,17 @@ If you are building an agent with a use case for low latency verified data from 
 
 ### Guardrailed Onchain Experience
 
-For agents who wish to transact onchain safely, Chainlink for Agents offers a unique guardrail experience built on top of the [Chainlink Runtime Environment (CRE)](/cre). This offering is currently available as a Preview until a fuller set of functionality is live — see important note below. Related patterns (gas-less relay, EIP-712 batch signing) are documented for [CRE Connect](/crec); see [Architecture](/crec/concepts/architecture) and [Account Abstraction & Gas Sponsorship](/crec/concepts/account-abstraction).
+For agents who wish to transact onchain safely, Chainlink for Agents offers a unique guardrail experience built on top of the [Chainlink Runtime Environment (CRE)](/cre). This offering is currently available as a Preview until a fuller set of functionality is live — see important note below.
 
 To get started, your agent registers a smart contract wallet ([Signature Verifying Account or SVA](#sva-signature-verifying-account)) which operates in `restricted` mode by default. In `restricted` mode, the SVA can only sign transactions generated by the Chainlink for Agents endpoints.
 
 When your agent wants to transact onchain:
 
 1. It calls an endpoint such as `aave-supply` and CRE's [DON](/architecture-overview/architecture-decentralized-model) builds the correct calldata for depositing funds into Aave.
-2. The agent uses the SVA to sign the transaction (see [EIP-712 Signing](/crec/concepts/eip712-signing) for the typed-data model used in similar CRE Connect flows).
+2. The agent uses the SVA to sign the transaction.
 3. The transaction is picked up by the DON and delivered to chain with gas covered.
 
-By using Chainlink for Agents, your agent no longer has to figure out, and possibly hallucinate, how to build transactions correctly, and doesn't have to manage gas across multiple chains. To learn CRE workflow basics, see [About CRE](/cre) and [Build with AI (Skill, Prompting)](/cre/getting-started/build-with-ai-ts).
+By using Chainlink for Agents, your agent no longer has to figure out, and possibly hallucinate, how to build transactions correctly, and doesn't have to manage gas across multiple chains.
 
 #### Restricted and Unrestricted Mode
 
@@ -491,217 +486,47 @@ The SVA may optionally be changed to `unrestricted` mode, which gives access to 
 
 Working in unrestricted mode does not offer you the same protections that transactions will be constructed correctly.
 
-**Important note: during this early access phase, your agent has the ability to execute the switch to unrestricted mode without explicitly requiring a separate authorization step from you.** Your agent's `SKILL.md` file guides it to ask permission, but it may choose to ignore that guidance. Review [SVA guardrails](#sva-signature-verifying-account) before enabling unrestricted mode.
+**Important note: during this early access phase, your agent has the ability to execute the switch to unrestricted mode without explicitly requiring a separate authorization step from you.** Your agent's `SKILL.md` file guides it to ask permission, but it may choose to ignore that guidance.
 
 If you are building an agent and have specific onchain use cases you want to see supported, [contact us](https://chain.link/contact).
 
-## How an agent uses the gateway
+## Things to Know
 
-Understanding this flow first makes onboarding, the capability catalog, and examples easier to follow.
+Chainlink for Agents is in Preview, and there are some important details that will help you and your agent have an improved experience.
 
-### End to end path
+### Terms of Service
 
-```
-Agent → bundled Skill (local prompts and helpers) → CREC Agent Gateway → fulfillment for the workflow you selected
-```
+As part of registration, your agent will use the EOA tied to its identity to sign Chainlink's Terms of Service which covers its actions on your behalf while using the platform.
 
-What fulfillment looks like is defined per row in the published workflow catalog (see `GET /v1/workflows` or equivalent for your gateway base URL), not in this document. At a high level:
+### Operating Safely
 
-- Write style entries: server-side orchestration runs until the operation exposes signable calldata and typed data for your [SVA](#sva-signature-verifying-account) to execute on chain (similar to [CRE Connect Operations](/crec/concepts/operations)).
-- Read style entries: responses support discovery and decisioning (balances, positions, quotes, market style feeds, and similar). Same HTTP surface ([EIP-191](https://eips.ethereum.org/EIPS/eip-191), x402 when gated); latency and freshness follow the metadata on that row.
-- The agent plans steps and calls the gateway using the skills. It does not replace your judgment on risk, funding, or approvals.
-- The gateway is the single HTTP surface for registration, wallet provisioning, starting workflows, polling operation status, and submitting signed batches. It authenticates the agent, applies payment rules, routes each request to the implementation behind that catalog id, and correlates async results.
-- The gateway does not hold SVA private keys. Execution details (which subsystem runs a given id) are an implementation concern; your integration contract is the catalog, the request and response shapes, and the documented [submit path for writes](#standard-write-execution-pattern).
+Chainlink for Agents is built to greatly reduce the surface area for mistakes as your agent operates onchain. However, you must still take care to avoid errors. Important ways in which your agent may still lose your money include:
 
-### Async behavior
+1. The `token-transfer` and `bridge-tokens` endpoints allow asset delivery to an arbitrary external address. Your agent can send your money to an incorrect destination where it likely will not be recoverable.
+2. All workflow endpoints require the agent to send the amounts you desire — not too much or too little.
+3. The agent can set itself to unrestricted mode and gain access to the direct endpoint without requiring explicit approval from you. This allows it to construct its own calldata.
 
-Starting a workflow and submitting a signed on-chain batch both return quickly with an operation id. Final success or failure arrives later. The client polls the gateway on that id until the operation reaches a terminal state (see [Async execution and polling](#async-execution-and-polling-reference)). The bundled `cre-gateway` skill recommends a modest polling interval (for example on the order of seconds per operation); polling too fast wastes quota and can hit rate limits.
+Beyond this, operating on blockchains includes inherent risks and you may be exposed to smart contract security risks and token economic risks.
 
-### Signing model (two layers)
+### Supported Chains and Bridging
 
-1. **HTTP identity ([EIP-191](https://eips.ethereum.org/EIPS/eip-191)):** Almost every `/v1` call identifies the agent with signed headers over a canonical message (method, path, timestamp, and body hash when present). This proves which agent is calling; it is separate from the on-chain execution wallet.
-2. **On-chain batch ([EIP-712](https://eips.ethereum.org/EIPS/eip-712)):** For writes, a workflow run produces the call data and typed data the SVA should execute. The agent signs that payload locally (for example with the `eip712-signer` skill; see [EIP-712 Signing](/crec/concepts/eip712-signing)) and sends the signature in a second gateway call so the batch can be driven on chain along the documented path. The gateway never receives your SVA private key material.
+Chainlink for Agents currently operates across Base, Ethereum, Polygon, and Arbitrum. Your agent will need a separate SVA deployed to each chain that you wish to operate on. You can simply ask your agent to do this. All x402 funding payments will remain on Base.
 
-### Payments (x402)
+**Do not assume that your SVA address will remain constant across chains — it will not.**
 
-On paid routes the gateway may respond with `402` and payment requirements. The client signs a USDC authorization locally (see the `x402-payments` skill and the [x402 Crypto Price Alerts](/cre-templates/x402-price-alerts) template for a related payment flow), retries with the payment proof, and the facilitator settles before work continues.
+To move assets between chains, Chainlink for Agents natively integrates Chainlink's CCIP for asset bridging. Asset and chain routes depend on CCIP's pool availability. CCIP also requires a separate fee token for operation.
 
-## Agent identity vs SVA
+### Rate Limits
 
-| Concept                           | Role                                                                                                                                                                                                                                                                                                                                           |
-| :-------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Agent identity                    | Established at registration ([EIP-191](https://eips.ethereum.org/EIPS/eip-191) signer, [EIP-712](https://eips.ethereum.org/EIPS/eip-712) Terms of Service). Identifies the agent to the gateway on HTTP calls. Response includes `agent_id` and `agent_address` (the signing identity). There is no long-lived session JWT in the usual model. |
-| SVA (Signature Verifying Account) | A per-chain smart wallet provisioned for on-chain batches. Funded USDC (for x402) and native gas (when required) live here for workflows that move value. Batches are authorized with EIP-712 signatures tied to this account. See [SVA](#sva-signature-verifying-account) and [CRE Connect Smart Accounts](/crec/concepts/smart-accounts).    |
+{/* TODO: Add rate limit details */}
 
-The EIP-191 agent signer and the SVA address are not the same thing. The agent proves HTTP identity; the SVA is where treasury-style execution happens after you sign the batch.
+### Polling Times
 
-## Onboarding
+Internal testing has shown long polling times for transaction results. Asking your agent not to poll for status but to update you with transaction IDs when they are available will offer a better experience for now.
 
-When prompted, an agent can often complete onboarding without you manually pre-registering the agent with the gateway.
+### Preview Limits
 
-### Typical sequence
-
-1. Register the agent
-   - Call the gateway register endpoint with [EIP-191](https://eips.ethereum.org/EIPS/eip-191) headers on the request.
-   - Body includes an [EIP-712](https://eips.ethereum.org/EIPS/eip-712) signature of the Terms of Service (for example from `GET /v1/terms-of-service` on the gateway base URL you use).
-   - Outcome: agent identity (`agent_id`, `agent_address`) the gateway will recognize on subsequent calls.
-
-2. Optionally create the chain wallet (SVA)
-   - Call the wallet provisioning endpoint (for example `POST /v1/wallets`) with a `chain_selector` the hosted gateway supports (decimal [CCIP-style chain selector](/cre/reference/sdk/evm-client-ts#chain-selector-reference); see also the [CCIP Directory](/ccip/directory) for network metadata).
-   - Outcome: SVA address for that chain, used later for funded execution and batch submits.
-
-3. Optionally fund the SVA
-   - Send USDC (and native gas if required) to the SVA address for the target chain so write workflows can settle payments and transactions. See [Fund Your Contracts](/resources/fund-your-contract) for general funding guidance on supported networks.
-   - Exposure limits are your policy; the gateway enforces auth, payment, and rate limits, not your internal treasury caps unless integrated separately.
-
-## SVA (Signature Verifying Account)
-
-### What it is
-
-The SVA is the smart wallet your agent uses on each supported chain to fund and execute catalog writes through this product. Provision it through the gateway, fund gas and assets, and sign typed data batches locally per [EIP-712](/crec/concepts/eip712-signing) so the gateway never holds SVA keys. For each write, that account executes the transaction list whose calldata and typed data come from workflow output the gateway treats as authoritative once the run is signable, using the documented [submit path](#standard-write-execution-pattern), not from arbitrary calldata assembled outside that path. For the analogous CRE Connect model, see [Smart Accounts](/crec/concepts/smart-accounts) and [Operations](/crec/concepts/operations).
-
-### Why it exists
-
-It concentrates the assets and gas needed for composed on-chain actions (supplies, swaps, transfers, and similar catalog workflows) while keeping private signing material for batches on the agent side. The gateway orchestrates execution without holding those keys.
-
-### Guardrails
-
-The SVA is not a general-purpose hot wallet. It is meant to execute only batches built from workflow output the gateway exposes for signing for catalog write ids, so onchain movement stays tied to catalog-defined steps rather than whatever calldata a prompt might suggest.
-
-### How an agent should use it
-
-After provisioning, the agent checks balances via read workflows when needed, ensures funding before writes, and only submits batches built from workflow output the gateway exposes for signing, signed locally and posted through the documented [submit path](#standard-write-execution-pattern). Treat the SVA as hot-wallet-level risk: fund only what your organization's policy allows, and confirm which chains and workflows the hosted gateway exposes in the live catalog before automating movement.
-
-## What the gateway exposes (catalog first)
-
-Capabilities are not hardcoded in this guide. They come from the published workflow catalog on the hosted [CRE Connect](/crec) Agent Gateway you call (`GET /v1/workflows` or equivalent discovery for your gateway base URL). Each entry should tell you what you can do: human readable name, `input_schema`, supported `chain_selector`, price in USDC if gated, and other metadata (latency tier, asset tags, and similar). The subsections below group common outcome types; exact ids and parameters always come from discovery.
-
-### Market and streaming style reads
-
-When the catalog lists workflows aimed at live or low latency market data, you invoke them like any other read: HTTP to the gateway, [EIP-191](https://eips.ethereum.org/EIPS/eip-191) identity, x402 where applicable. Respect rate limits and polling guidance in the hosted gateway docs and the `cre-gateway` skill. Use these when you need prices or feed-style inputs the catalog advertises for your chain and asset set—often overlapping with [Data Streams](/data-streams) and the [Data Streams REST API](/data-streams/reference/data-streams-api/interface-api). Pricing and freshness are on the row, not here.
-
-### Account, position, and quote reads
-
-Read style entries (balances, yields, positions, verified quotes, and similar) support discovery and decision support before [writes](#onchain-writes-two-step-delivery). For each id, discovery tells you which chains and tokens apply, required inputs, and USDC price if any. Availability can vary by environment; confirm with [Getting Help](/resources/getting-help) or [contact us](https://chain.link/contact) if discovery is unclear.
-
-### Onchain writes (two step delivery)
-
-#### Pattern
-
-1. The agent starts the write workflow id from the catalog. Progress returns through the gateway until the operation includes signable typed data and calldata for the [SVA](#sva-signature-verifying-account).
-2. The agent forwards that payload, signs it locally with `eip712-signer` (see [EIP-712 Signing](/crec/concepts/eip712-signing)), and sends it to the gateway in a follow-up call so the batch can be executed on-chain.
-
-Call data is produced by the workflow or gateway side of the first phase; the agent signs; a second gateway call delivers the signed batch to the chain path. Always poll the operation id to terminal status after submit.
-
-#### What to read from the catalog for writes
-
-Supported chains (`chain_selector`; see [chain selector reference](/cre/reference/sdk/evm-client-ts#chain-selector-reference)), assets or contracts, inputs, and pricing. Composed flows (for example transfer then supply) appear as separate catalog steps the agent sequences.
-
-### Pricing (economic access)
-
-- Per call: Reads, workflow executions, and SVA-related submits are priced per successful x402 settlement where enforcement is on. Development may allow skipping payment with explicit insecure flags; never in production.
-- Discovery: Each catalog entry carries its own USDC price field. Do not hardcode prices in clients; read them from discovery for the environment you target.
-- No API-key subscription as the primary model for the agent: access is [EIP-191](https://eips.ethereum.org/EIPS/eip-191) identity plus x402 micropayments. Infrastructure keys on the service side are outside the agent's signing model.
-
-## Cross-chain support
-
-Which chains and assets are available is determined by the hosted gateway's published catalog, supported `chain_selector` values, and any allowlists or product rules the gateway applies. Agents should discover workflows and parameters from live catalog responses for the gateway base URL you use, not from static lists in this guide. Before automating cross-chain or multi-chain flows, confirm selectors, assets, and workflow names against the [CCIP Directory](/ccip/directory), [CRE supported networks](/cre/supported-networks), or [contact us](https://chain.link/contact) for your access tier.
-
-## Guardrails and implications
-
-| Topic                 | What to know                                                                                                                                                                                                                                                                                                                                                                                                        |
-| :-------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Read vs write         | Read paths are broadly usable for discovery. Write paths ([SVA](#sva-signature-verifying-account) provisioning, paid write-tier routes, signed batch submission) are higher risk and may be early access or allowlisted on the hosted gateway. Confirm workflow names and chains against [CRE Connect getting started](/crec/getting-started) or [contact us](https://chain.link/contact) before moving real funds. |
-| Payment caps          | x402 payment helpers in `x402-payments` should use caps on USDC authorization so a compromised or mistaken prompt cannot authorize unbounded spend. See [x402 Crypto Price Alerts](/cre-templates/x402-price-alerts).                                                                                                                                                                                               |
-| Allowlisting          | The hosted gateway may restrict which agents, workflows, or chains can execute writes. Lack of catalog visibility or 403-style responses means stop and use [Getting Help](/resources/getting-help) or official gateway support.                                                                                                                                                                                    |
-| Your responsibilities | Funding the [SVA](#sva-signature-verifying-account), treasury policy, and production approvals remain yours (and your organization's). The gateway enforces technical auth and payment gates, not your firm's risk limits.                                                                                                                                                                                          |
-| Local signing         | Private keys stay on the machine running the signing skill ([EIP-712 Signing](/crec/concepts/eip712-signing)). Implication: the agent path that signs must have access to the configured signer; the gateway never sees the key. Loss or misuse of that key material is out of band from gateway compromise.                                                                                                        |
-| REST and rate limits  | All gateway traffic is subject to fair use and documented limits; aggressive polling or high frequency read loops can throttle the agent.                                                                                                                                                                                                                                                                           |
-
-## Standard write execution pattern
-
-Most treasury-style writes follow the same skeleton (the [Aave supply walkthrough](#walkthrough-example-aave-supply) below is one instance):
-
-```
-start workflow → poll until signable batch ready → EIP-712 sign locally → submit signed batch → poll to terminal
-```
-
-| Step              | Action                                                                                                                                                                                                 |
-| :---------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Start             | Agent selects a write workflow from the catalog, supplies inputs, uses [EIP-191](https://eips.ethereum.org/EIPS/eip-191) (and x402 if challenged). Gateway returns operation id quickly.               |
-| Poll (workflow)   | Agent polls operation status until the response includes the [EIP-712](https://eips.ethereum.org/EIPS/eip-712) payload and transactions (or calldata) for the [SVA](#sva-signature-verifying-account). |
-| Sign              | Agent uses `eip712-signer` locally ([EIP-712 Signing](/crec/concepts/eip712-signing)). Keys do not leave the client.                                                                                   |
-| Submit            | Agent calls the gateway submit path with SVA context, `wallet_operation_id` where required, signature, and transactions per API contract.                                                              |
-| Poll (completion) | Agent polls the same operation until terminal status (success, failure, timeout, or gateway-defined labels), then summarizes for the user (including SVA address for explorer checks).                 |
-
-Optional read workflows (balances, yields, quotes) often run before start to support informed consent.
-
-## Walkthrough example (Aave supply)
-
-The following is one catalog-driven example; the same [standard write execution pattern](#standard-write-execution-pattern) applies to other writes (swaps, transfers, rebalances) the gateway catalog lists.
-
-### Compressed phase line
-
-```
-prompt → catalog & params → optional reads → [transfer/swap if needed] → aave-supply → poll → EIP-712 → submit → poll
-```
-
-| Phase                       | What happens (high level)                                                                                                                                                                              |
-| :-------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Prompt & catalog            | Agent uses the published catalog, picks the Aave supply workflow (`aave-supply`), aligns inputs: token, amount, chain / [`chain_selector`](/cre/reference/sdk/evm-client-ts#chain-selector-reference). |
-| Optional reads              | May run read workflows (balance, yields, positions) before committing funds.                                                                                                                           |
-| Fund SVA if needed          | May run transfer or swap workflows first if the SVA lacks the asset.                                                                                                                                   |
-| Start supply                | Executes supply workflow via gateway; receives operation id.                                                                                                                                           |
-| Poll / sign / submit / poll | Follows [Standard write execution pattern](#standard-write-execution-pattern) above.                                                                                                                   |
-
-### User involvement (summary)
-
-| Phase         | Your involvement                                                                                                                                       |
-| :------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Prompt        | State intent; confirm asset, amount, and chain if asked.                                                                                               |
-| Preconditions | Fund the [SVA](#sva-signature-verifying-account) (or approve transfers the agent describes). See [Fund Your Contracts](/resources/fund-your-contract). |
-| Payments      | USDC x402 per gated call; keep script caps sane. See [x402 Crypto Price Alerts](/cre-templates/x402-price-alerts).                                     |
-| Signing       | Local signer only; gateway never receives SVA private key.                                                                                             |
-| Outcome       | Terminal status comes from polling, not the first HTTP response.                                                                                       |
-
-## Async execution and polling (reference)
-
-1. Workflow start returns an operation id; the service behind that catalog entry continues work in the background.
-2. Signed batch submit also returns an id to track until on-chain processing settles from the gateway's perspective.
-3. Poll until a finished state; avoid sub-second polling loops.
-
-## Skill reference
-
-| Skill                           | Purpose                                                                                                                                                                                  |
-| :------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `crec-agent-gateway` (root hub) | Index, auth model, and pointers to discovery docs; hub markdown may be fetched from the gateway without agent identity. See [CRE Connect](/crec).                                        |
-| `cre-gateway`                   | [EIP-191](https://eips.ethereum.org/EIPS/eip-191) signing, registration, wallets, workflows, [operations](/crec/concepts/operations), and polling guidance aligned to gateway endpoints. |
-| `x402-payments`                 | Payment challenges; local USDC authorization; retry with the payment header the gateway expects. Related: [x402 template](/cre-templates/x402-price-alerts).                             |
-| `eip712-signer`                 | Sign typed operation data from workflow status locally; pass signature to the submit step through the gateway. See [EIP-712 Signing](/crec/concepts/eip712-signing).                     |
-
-## Install
-
-Bundled skills: download each zip with `GET /v1/skills/{name}/bundle`, unzip into your agent's skills directory, and keep the top-level folder name equal to the skill `name` (for example `cre-gateway/`). Run bundled helpers from that folder, for example `python scripts/<script>.py`, as documented inside each tree. These gateway skills are separate from the open-source [Chainlink Developer Agent Skills](/resources/chainlink-developer-agent-skills) bundle used for product documentation in your IDE.
-
-| Skill         | Markdown                   | Zip bundle                        | Single file prefix               |
-| :------------ | :------------------------- | :-------------------------------- | :------------------------------- |
-| cre-gateway   | `/v1/skills/cre-gateway`   | `/v1/skills/cre-gateway/bundle`   | `/v1/skills/cre-gateway/file/`   |
-| eip712-signer | `/v1/skills/eip712-signer` | `/v1/skills/eip712-signer/bundle` | `/v1/skills/eip712-signer/file/` |
-| x402-payments | `/v1/skills/x402-payments` | `/v1/skills/x402-payments/bundle` | `/v1/skills/x402-payments/file/` |
-
-Example: `GET https://<your-gateway-host>/v1/skills/cre-gateway/bundle`. To pull one file from a tree without the zip, use `GET /v1/skills/{name}/file/<path>` (see the hub page or OpenAPI for concrete paths).
-
-## Related documentation
-
-| Topic                                                       | Where to go next                                                                                                                                                            |
-| :---------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Product Agent Skills (Data Feeds, CCIP, VRF, CRE, and more) | [Chainlink Developer Agent Skills](/resources/chainlink-developer-agent-skills)                                                                                             |
-| CRE workflows and AI-assisted development                   | [About CRE](/cre), [Build with AI](/cre/getting-started/build-with-ai-ts)                                                                                                   |
-| CRE Connect (gateway-adjacent patterns)                     | [CRE Connect overview](/crec), [Architecture](/crec/concepts/architecture), [EIP-712 Signing](/crec/concepts/eip712-signing)                                                |
-| Data Streams (catalog reads)                                | [Data Streams](/data-streams), [REST API](/data-streams/reference/data-streams-api/interface-api)                                                                           |
-| x402 micropayments (example app)                            | [x402 Crypto Price Alerts](/cre-templates/x402-price-alerts)                                                                                                                |
-| Chain and network metadata                                  | [CCIP Directory](/ccip/directory), [CRE supported networks](/cre/supported-networks), [chain selector reference](/cre/reference/sdk/evm-client-ts#chain-selector-reference) |
-| Funding and support                                         | [Acquire testnet LINK](/resources/acquire-link), [Fund Your Contracts](/resources/fund-your-contract), [Getting Help](/resources/getting-help)                              |
+We are monitoring activity and system usage, and may opt to cap agent registrations in this early phase. Additionally, agents which have registered but are inactive or consistently ignoring rate limits may be throttled or archived.
 
 ---
 
