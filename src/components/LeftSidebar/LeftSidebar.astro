@@ -2,6 +2,8 @@
 import { Sections } from "~/content.config"
 import { SIDEBAR } from "../../config"
 import type { SectionEntry, SectionContent } from "../../config"
+import { SIDEBAR_SECTIONS } from "../../config/sidebarSections.ts"
+import { AI_AGENT_RESOURCES_SECTION, withParentQuery } from "../../config/sidebar/ai-agent-resources.ts"
 import RecursiveSidebar from "./RecursiveSidebar.astro"
 import { LanguageSwitcherDropdown } from "~/components/LanguageSwitcherDropdown"
 import { ChainTypeSelector } from "~/components/ChainSelector"
@@ -11,6 +13,9 @@ import type { ChainType } from "~/config/types"
 import styles from "./leftSidebar.module.css"
 
 type SectionEntryWithParent = SectionEntry & { parentSection?: string }
+
+/** Product sidebars that should not duplicate the shared AI resources footer. */
+const SECTIONS_WITHOUT_AI_RESOURCES = new Set<Sections>([SIDEBAR_SECTIONS.GLOBAL, SIDEBAR_SECTIONS.LEGACY])
 
 export type Props = {
   currentPage: string
@@ -27,12 +32,28 @@ function getSidebarSections(section?: Sections): SectionEntryWithParent[] {
   if (!section) {
     return []
   } else if (section === "global") {
-    // Flatten all sidebar entries into one array
+    // Flatten all sidebar entries into one array (include AI resources per product)
     return Object.entries(SIDEBAR).flatMap(([parentSection, entries]) => {
-      return entries?.map((entry) => ({ ...entry, parentSection })) ?? []
+      const sections = entries?.map((entry) => ({ ...entry, parentSection: parentSection as Sections })) ?? []
+
+      if (!SECTIONS_WITHOUT_AI_RESOURCES.has(parentSection as Sections)) {
+        sections.push({
+          ...withParentQuery(AI_AGENT_RESOURCES_SECTION, parentSection as Sections),
+          parentSection: parentSection as Sections,
+        })
+      }
+
+      return sections
     })
   }
-  return SIDEBAR[section] ?? []
+
+  const productSections = SIDEBAR[section] ?? []
+
+  if (SECTIONS_WITHOUT_AI_RESOURCES.has(section)) {
+    return productSections
+  }
+
+  return [...productSections, withParentQuery(AI_AGENT_RESOURCES_SECTION, section)]
 }
 
 /**
