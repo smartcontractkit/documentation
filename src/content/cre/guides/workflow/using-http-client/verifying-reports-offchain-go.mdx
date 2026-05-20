@@ -1,0 +1,300 @@
+---
+section: cre
+title: "Verifying CRE Reports Offchain"
+date: Last Modified
+sdkLang: "go"
+pageId: "guides-workflow-http-verify-reports-offchain"
+metadata:
+  description: "Verify CRE report signatures offchain in Go: parse reports, validate DON signatures against the onchain registry, and read workflow metadata."
+  datePublished: "2026-05-20"
+  lastModified: "2026-05-20"
+---
+
+import { Aside } from "@components"
+
+This guide is for the **receiver** side: you already received a CRE report package (usually via HTTP) and need to **prove it is authentic** before using the payload.
+
+When a workflow delivers results via HTTP (or another offchain channel), nothing onchain automatically validates the report. **You must verify signatures before trusting the data.**
+
+The CRE SDK provides `cre.ParseReport()` to do this inside a workflow. Verification runs offchain in your callback: signatures are checked with local cryptography, while authorized signer addresses are loaded via **read-only calls to the onchain Capability Registry** (default: Ethereum Mainnet). Results are cached per DON.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Not your workflow deployment registry">
+  This guide uses the **Capability Registry** (DON signers), not the **workflow registry** where you deploy (`private` or `onchain:ethereum-mainnet`). If you deployed with the [private registry](/cre/guides/operations/deploying-to-private-registry-go), `ParseReport` still works the same way. For an HTTP-triggered receiver, use the [enterprise gateway URL](/cre/guides/operations/deploying-to-private-registry-go#http-triggers-with-the-private-registry) when triggering deployed workflows. Local simulation may still need an `ethereum-mainnet` RPC in `project.yaml` for those registry reads, even though private deploy does not.
+</Aside>
+
+{/* prettier-ignore */}
+<Aside type="note" title="Onchain verification is different">
+  When you submit reports onchain through the `KeystoneForwarder`, the forwarder contract verifies signatures before calling your consumer's `onReport`. This guide covers **offchain** verification for HTTP and custom ingest paths. See [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain).
+</Aside>
+
+## Where this guide fits
+
+| Question                     | Answer                                                                                                                                                                                                                        |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| What is the report?          | Same CRE report the **sender** created with `runtime.GenerateReport()`—not a Data Streams report. See [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go#where-this-guide-fits). |
+| Where does it come from?     | Another workflow (or system) already ran sender steps: logic → `GenerateReport()` → HTTP POST. You receive `rawReport`, `context`, and `signatures` in the request body.                                                      |
+| What does this guide cover?  | Step 4: `cre.ParseReport()` before you use `Body()` or take side effects.                                                                                                                                                     |
+| Same workflow as the sender? | Often **no**—common pattern is Workflow A (publish) and Workflow B (ingest with HTTP trigger).                                                                                                                                |
+
+**Receiver flow:**
+
+1. HTTP trigger (or your API) receives the POST payload.
+2. Decode hex fields into bytes.
+3. `cre.ParseReport()` — verify signatures and read metadata.
+4. Use trusted `Body()` in your logic.
+
+For the full sender → receiver diagram, see [API Interactions — CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http).
+
+## What you'll learn
+
+- When to verify reports offchain vs relying on onchain forwarders
+- How `cre.ParseReport()` validates signatures and reads metadata
+- How to build a receiver workflow that accepts reports over HTTP
+- How to restrict verification to specific CRE environments or zones
+
+## Prerequisites
+
+- **SDK**: `cre-sdk-go` v1.8.0 or later (report verification support)
+- Familiarity with [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go) (report structure and JSON payload patterns)
+- For HTTP-triggered receivers: [HTTP Trigger configuration](/cre/guides/workflow/using-triggers/http-trigger/configuration-go)
+
+## Onchain vs offchain verification
+
+| Aspect               | Offchain (`cre.ParseReport`)                                 | Onchain (`KeystoneForwarder`)     |
+| -------------------- | ------------------------------------------------------------ | --------------------------------- |
+| **Where it runs**    | Inside your CRE workflow callback                            | In a smart contract transaction   |
+| **Signature check**  | Local `ecrecover` on report hash                             | Contract logic onchain            |
+| **Signer allowlist** | Read from Capability Registry (`getDON`, `getNodesByP2PIds`) | Forwarder + registry              |
+| **Typical use**      | HTTP APIs, webhooks, ingest workflows                        | Consumer contracts via `onReport` |
+
+Offchain verification still uses **onchain data as a trust anchor**: the first time a DON is seen, the SDK reads the production Capability Registry on Ethereum Mainnet to learn `f` and authorized signer addresses.
+
+Default (`cre.ProductionEnvironment()`):
+
+- **Chain**: Ethereum Mainnet (chain selector `5009297550715157269`)
+- **Registry**: `0x76c9cf548b4179F8901cda1f8623568b58215E62`
+
+## How verification works
+
+1. **Parse the report header** from `rawReport` (109-byte metadata + body).
+2. **Fetch DON info** from the registry (if not cached): fault tolerance `f` and signer addresses.
+3. **Verify signatures**: compute `keccak256(keccak256(rawReport) || reportContext)`, recover signers, require **f+1** valid signatures from authorized nodes.
+4. **Return a `*cre.Report`** with accessors for workflow ID, owner, execution ID, body, and more.
+
+If verification fails, `cre.ParseReport()` returns an error (for example, `ErrUnknownSigner`, `ErrWrongSignatureCount`, or registry read failure).
+
+## Complete example: HTTP receiver workflow
+
+This workflow accepts a JSON payload (matching the format from [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go#pattern-4-json-formatted-report)), verifies it, then processes the trusted body.
+
+```go
+package main
+
+import (
+	"encoding/hex"
+	"encoding/json"
+	"log/slog"
+
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+)
+
+type Config struct {
+	AuthorizedKey string `json:"authorized_key"`
+}
+
+func InitWorkflow(cfg *Config, _ *slog.Logger, _ cre.SecretsProvider) (cre.Workflow[*Config], error) {
+	return cre.Workflow[*Config]{
+		cre.Handler(http.Trigger(&http.Config{AuthorizedKeys: []*http.AuthorizedKey{{PublicKey: cfg.AuthorizedKey}}}), run),
+	}, nil
+}
+
+type ParsedPayload struct {
+	Report  string   `json:"report"`
+	Context string   `json:"context"`
+	Sigs    []string `json:"signatures"`
+}
+
+func (p *ParsedPayload) Decode() (*DecodedReport, error) {
+	report := &DecodedReport{}
+	var err error
+
+	if report.Report, err = hex.DecodeString(p.Report); err != nil {
+		return nil, err
+	}
+	if report.Context, err = hex.DecodeString(p.Context); err != nil {
+		return nil, err
+	}
+
+	report.Sigs = make([][]byte, len(p.Sigs))
+	for i, sigHex := range p.Sigs {
+		report.Sigs[i], err = hex.DecodeString(sigHex)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return report, nil
+}
+
+type DecodedReport struct {
+	Report  []byte
+	Context []byte
+	Sigs    [][]byte
+}
+
+func run(_ *Config, runtime cre.Runtime, payload *http.Payload) (bool, error) {
+	parsed := &ParsedPayload{}
+	if err := json.Unmarshal(payload.Input, parsed); err != nil {
+		return false, err
+	}
+
+	decoded, err := parsed.Decode()
+	if err != nil {
+		return false, err
+	}
+
+	report, err := cre.ParseReport(runtime, decoded.Report, decoded.Sigs, decoded.Context)
+	if err != nil {
+		return false, err
+	}
+
+	runtime.Logger().Info("Verified report",
+		"workflowId", report.WorkflowID(),
+		"executionId", report.ExecutionID(),
+	)
+
+	// Use report.Body() for your application logic (ABI-encoded payload from the sender workflow)
+	_ = report.Body()
+
+	return true, nil
+}
+```
+
+**What's happening:**
+
+1. An external system POSTs hex-encoded `report`, `context`, and `signatures` to your HTTP trigger.
+2. `cre.ParseReport()` verifies signatures against the production CRE registry.
+3. On success, you read metadata and `Body()` safely.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Hex encoding">
+  The example expects **hex strings without a `0x` prefix** in JSON. Adjust decoding if your API sends `0x`-prefixed values or base64 instead.
+</Aside>
+
+## Report payload format
+
+Receivers need three fields (plus optional metadata your API may add):
+
+| Field        | Description                                                        |
+| ------------ | ------------------------------------------------------------------ |
+| `report`     | Hex-encoded `rawReport` bytes (metadata header + workflow payload) |
+| `context`    | Hex-encoded `reportContext` (config digest + sequence number)      |
+| `signatures` | Array of hex-encoded 65-byte ECDSA signatures from DON nodes       |
+
+The `reportContext` layout used by the SDK:
+
+- Bytes 0–31: config digest
+- Bytes 32–39: sequence number (big-endian `uint64`)
+
+## API reference
+
+See [SDK Reference: Core — Report verification](/cre/reference/sdk/core-go#report-verification) for full signatures, types, and errors.
+
+### `cre.ParseReport()`
+
+```go
+func ParseReport(runtime Runtime, rawReport []byte, signatures [][]byte, reportContext []byte) (*Report, error)
+```
+
+Parses and verifies a report against the production CRE environment. Use `ParseReportWithConfig` for custom environments or zones.
+
+### `*cre.Report` accessors
+
+After a successful parse:
+
+| Method            | Description                               |
+| ----------------- | ----------------------------------------- |
+| `WorkflowID()`    | Workflow hash (`bytes32` as hex)          |
+| `WorkflowOwner()` | Deployer address (hex)                    |
+| `WorkflowName()`  | Workflow name field from metadata         |
+| `ExecutionID()`   | Unique execution identifier               |
+| `DONID()`         | DON that produced the report              |
+| `Timestamp()`     | Report timestamp (Unix seconds)           |
+| `Body()`          | Encoded payload after the 109-byte header |
+| `SeqNr()`         | Sequence number from report context       |
+| `ConfigDigest()`  | Config digest from report context         |
+
+### `cre.ReportParseConfig`
+
+```go
+config := cre.ReportParseConfig{
+    AcceptedZones: []cre.Zone{
+        cre.ZoneFromEnvironment(cre.ProductionEnvironment(), 1),
+    },
+    AcceptedEnvironments: []cre.Environment{cre.ProductionEnvironment()},
+    SkipSignatureVerification: false,
+}
+report, err := cre.ParseReportWithConfig(runtime, rawReport, sigs, reportContext, config)
+```
+
+| Field                       | Description                                                                                                |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `AcceptedEnvironments`      | Registry environments to check (defaults to production)                                                    |
+| `AcceptedZones`             | Restrict to specific DON IDs within an environment                                                         |
+| `SkipSignatureVerification` | Parse header only; call `report.VerifySignatures()` or `VerifySignaturesWithConfig()` afterward when ready |
+
+### Deferred verification
+
+If you set `SkipSignatureVerification: true` in `ParseReportWithConfig`, parse the header first (for filtering), then verify:
+
+```go
+report, err := cre.ParseReportWithConfig(runtime, rawReport, sigs, reportContext, cre.ReportParseConfig{
+    SkipSignatureVerification: true,
+})
+if err != nil {
+    return false, err
+}
+
+// Optional: inspect report.WorkflowID(), report.DONID(), etc. before registry reads
+
+if err := report.VerifySignatures(runtime); err != nil {
+    return false, err
+}
+```
+
+## Best practices
+
+1. **Verify before side effects**: Call `cre.ParseReport()` before writing to databases, chains, or external systems.
+2. **Permission on metadata**: After verification, check `WorkflowID()`, `WorkflowOwner()`, or `DONID()` match your expectations.
+3. **Deduplicate by execution ID**: Use `ExecutionID()` or `keccak256(rawReport)` to reject replays (see [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go#understanding-cachesettings-for-reports)).
+4. **Do not skip signature verification in production** unless you have another trust path.
+
+## Troubleshooting
+
+**`ErrUnknownSigner`**
+
+- Signatures may be from a different DON or stale registry config.
+- Confirm the sender workflow used production CRE and the report was not tampered with.
+
+**`ErrWrongSignatureCount`**
+
+- At least **f+1** valid signatures are required.
+
+**`could not read from chain ...`**
+
+- Registry read failed (RPC/network). Retry or check simulation vs production EVM access.
+
+**`ErrRawReportTooShort`**
+
+- `rawReport` is missing the 109-byte metadata header.
+
+## Learn more
+
+- **[API Interactions — CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http)** — Sender → receiver overview
+- **[Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go)** — Sender workflow: create and POST the report
+- **[SDK Reference: Core — Report verification](/cre/reference/sdk/core-go#report-verification)** — `ParseReport`, `Report`, and `ReportParseConfig`
+- **[HTTP Trigger Overview](/cre/guides/workflow/using-triggers/http-trigger/overview-go)** — Trigger deployed receiver workflows
+- **[Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain)** — Onchain forwarder verification path
+- **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)** — Permissioning `onReport` with workflow metadata

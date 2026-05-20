@@ -11,7 +11,9 @@ metadata:
 
 import { Aside } from "@components"
 
-This guide shows how to manually generate a report containing a single value (like `uint256`, `address`, or `bool`). This is useful when you need to send a simple value onchain but don't have a struct or binding helper available.
+This guide shows how to manually generate a **CRE report** containing a single value (like `uint256`, `address`, or `bool`). A CRE report is a DON-signed package from `runtime.GenerateReport()` / `runtime.report()`—your encoded data plus workflow metadata and signatures. It is **not** a [Data Streams](/data-streams) report.
+
+This guide covers **creating** the report (step 2 in the sender flow). **Delivering** it is a separate step—see the table below.
 
 **Use this approach when:**
 
@@ -31,10 +33,12 @@ Manually generating a report for a single value involves two main steps:
 1. **ABI-encode the value** into bytes using the `go-ethereum/accounts/abi` package
 1. **Generate a cryptographically signed report** using `runtime.GenerateReport()`
 
-The resulting report can then be:
+| After `GenerateReport()` / `report()`        | Guide                                                                                                        | Who verifies?                                                                                                             |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `evm.Client.WriteReport()` / `writeReport()` | [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain) | `KeystoneForwarder` onchain                                                                                               |
+| `http.Client` `SendReport()`                 | [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http)                | Receiver: [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain) or your API |
 
-- Submitted to the blockchain via `evm.Client.WriteReport()` (see [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain))
-- Sent to an HTTP endpoint via `http.Client` (see [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http))
+See [API Interactions — CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http) for the sender → receiver mental model.
 
 <Aside type="note" title="Have a struct in your contract's ABI?">
   If your struct appears in a public/external function's signature, you can use the simpler `WriteReportFrom<StructName>()` helper instead. See [Using WriteReportFrom Helpers](/cre/guides/workflow/using-evm-client/onchain-write/using-write-report-helpers).
