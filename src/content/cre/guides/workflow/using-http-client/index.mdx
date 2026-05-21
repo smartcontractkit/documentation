@@ -27,31 +27,21 @@ These guides will walk you through the common use cases for the HTTP client.
 
 ## CRE reports over HTTP
 
-A **CRE report** is a DON-signed package your workflow creates with `runtime.report()` (TypeScript) or `runtime.GenerateReport()` (Go). It contains your encoded payload, workflow metadata, and cryptographic signatures. It is **not** a [Data Streams](/data-streams) report—those come from a different product.
+A **CRE report** is a DON-signed package your workflow creates with `runtime.report()` (TypeScript) or `runtime.GenerateReport()` (Go). It contains your encoded payload, workflow metadata, and cryptographic signatures.
 
-Most secure HTTP integrations use two roles:
+Most secure HTTP integrations involve two parties:
 
-```mermaid
-flowchart LR
-  subgraph sender ["Sender workflow (this guide's focus)"]
-    A[Trigger] --> B[Your logic]
-    B --> C["runtime.report()"]
-    C --> D["sendReport() → HTTP POST"]
-  end
-  subgraph receiver ["Receiver (separate system)"]
-    D --> E[Your API or CRE HTTP trigger]
-    E --> F["Report.parse() before trusting data"]
-  end
-```
+**Sender workflow (CRE):** runs on a schedule or trigger, does your logic, then creates and ships the report:
 
-| Step | Who                       | What happens                                                                                                                                  |
-| ---- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | **Sender** (CRE workflow) | Run business logic, encode payload                                                                                                            |
-| 2    | **Sender**                | `runtime.report()` — DON agrees and signs                                                                                                     |
-| 3    | **Sender**                | `sendReport()` — POST report bytes to your URL                                                                                                |
-| 4    | **Receiver**              | Verify signatures, then use payload — see [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain) |
+1. Run business logic and encode your payload.
+2. Call `runtime.report()` / `GenerateReport()` so the DON signs the report.
+3. Call `sendReport()` to POST the report to your URL.
 
-You do **not** download a report from elsewhere before submitting. The sender workflow **creates** it in step 2. Validation always happens on the **receiver** side (CRE workflow, your API, or an onchain forwarder).
+**Receiver:** a separate system that gets that HTTP POST (your API, or another CRE workflow with an HTTP trigger):
+
+4. Verify signatures with `Report.parse()` / `ParseReport()`, then use the payload. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain).
+
+The sender **creates** the report in step 2; you do not fetch it from somewhere else first. The receiver **must** verify before trusting the data: the sender does not do that for you.
 
 ## Guides
 

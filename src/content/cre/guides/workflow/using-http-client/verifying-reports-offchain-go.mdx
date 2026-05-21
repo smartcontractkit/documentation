@@ -30,21 +30,21 @@ The CRE SDK provides `cre.ParseReport()` to do this inside a workflow. Verificat
 
 ## Where this guide fits
 
-| Question                     | Answer                                                                                                                                                                                                                        |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| What is the report?          | Same CRE report the **sender** created with `runtime.GenerateReport()`—not a Data Streams report. See [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go#where-this-guide-fits). |
-| Where does it come from?     | Another workflow (or system) already ran sender steps: logic → `GenerateReport()` → HTTP POST. You receive `rawReport`, `context`, and `signatures` in the request body.                                                      |
-| What does this guide cover?  | Step 4: `cre.ParseReport()` before you use `Body()` or take side effects.                                                                                                                                                     |
-| Same workflow as the sender? | Often **no**—common pattern is Workflow A (publish) and Workflow B (ingest with HTTP trigger).                                                                                                                                |
+| Question                     | Answer                                                                                                                                                                                              |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| What is the report?          | Same CRE report the **sender** created with `runtime.GenerateReport()`. See [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go#where-this-guide-fits). |
+| Where does it come from?     | Another workflow (or system) already ran sender steps: logic → `GenerateReport()` → HTTP POST. You receive `rawReport`, `context`, and `signatures` in the request body.                            |
+| What does this guide cover?  | Step 3 below: `cre.ParseReport()` before you use `Body()` or take side effects.                                                                                                                     |
+| Same workflow as the sender? | Often **no:** common pattern is Workflow A (publish) and Workflow B (ingest with HTTP trigger).                                                                                                     |
 
 **Receiver flow:**
 
 1. HTTP trigger (or your API) receives the POST payload.
 2. Decode hex fields into bytes.
-3. `cre.ParseReport()` — verify signatures and read metadata.
+3. `cre.ParseReport()`: verify signatures and read metadata.
 4. Use trusted `Body()` in your logic.
 
-For the full sender → receiver diagram, see [API Interactions — CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http).
+For the full sender → receiver overview, see [API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http).
 
 ## What you'll learn
 
@@ -200,7 +200,7 @@ The `reportContext` layout used by the SDK:
 
 ## API reference
 
-See [SDK Reference: Core — Report verification](/cre/reference/sdk/core-go#report-verification) for full signatures, types, and errors.
+See [SDK Reference: Core: Report verification](/cre/reference/sdk/core-go#report-verification) for full signatures, types, and errors.
 
 ### `cre.ParseReport()`
 
@@ -292,9 +292,9 @@ if err := report.VerifySignatures(runtime); err != nil {
 
 ## Learn more
 
-- **[API Interactions — CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http)** — Sender → receiver overview
-- **[Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go)** — Sender workflow: create and POST the report
-- **[SDK Reference: Core — Report verification](/cre/reference/sdk/core-go#report-verification)** — `ParseReport`, `Report`, and `ReportParseConfig`
-- **[HTTP Trigger Overview](/cre/guides/workflow/using-triggers/http-trigger/overview-go)** — Trigger deployed receiver workflows
-- **[Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain)** — Onchain forwarder verification path
-- **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)** — Permissioning `onReport` with workflow metadata
+- **[API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http):** sender → receiver overview
+- **[Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go):** sender workflow; create and POST the report
+- **[SDK Reference: Core: Report verification](/cre/reference/sdk/core-go#report-verification):** `ParseReport`, `Report`, and `ReportParseConfig`
+- **[HTTP Trigger Overview](/cre/guides/workflow/using-triggers/http-trigger/overview-go):** trigger deployed receiver workflows
+- **[Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain):** onchain forwarder verification path
+- **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts):** permissioning `onReport` with workflow metadata
