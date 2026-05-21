@@ -44,7 +44,7 @@ The CRE SDK provides `Report.parse()` to do this inside a workflow. Verification
 3. `Report.parse()`: verify signatures and read metadata.
 4. Use trusted `body()` in your logic.
 
-For the full sender → receiver overview, see [API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http).
+Pair this guide with [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts) on the sender side. For local simulation, start with [Testing locally with simulation](#testing-locally-with-simulation) before the [deploy example](#complete-example-http-receiver-workflow) below.
 
 ## What you'll learn
 
@@ -84,9 +84,11 @@ Default (`productionEnvironment()`):
 
 If verification fails, `Report.parse()` throws (for example, unknown signer, insufficient signatures, or registry read failure).
 
-## Complete example: HTTP receiver workflow
+## Complete example: HTTP receiver workflow (deploy)
 
-This workflow accepts a JSON payload (matching the format from [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-json-formatted-report)), verifies it, then processes the trusted body.
+This workflow is for **deployed** receivers with `authorizedKeys`. For **local simulation**, use [Testing locally with simulation](#testing-locally-with-simulation) instead.
+
+It accepts JSON with hex `report`, `context`, and `signatures` (from the submit guide’s [complete working example](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#complete-working-example) or [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-for-offchain-verification-hex)), not base64 [Pattern 4](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-json-formatted-report) unless you change decoding.
 
 ```typescript
 import {
@@ -135,6 +137,7 @@ export async function run(runtime: Runtime<Config>, payload: HTTPPayload): Promi
 
 export const initWorkflow = (config: Config, _secretsProvider: SecretsProvider) => {
   const http = new HTTPCapability()
+  // For local simulation, use handler(http.trigger({}), run) — see Testing locally with simulation above.
   return [
     handler(http.trigger({ authorizedKeys: [{ type: "KEY_TYPE_ECDSA_EVM", publicKey: config.authorizedKey }] }), run),
   ]
@@ -149,18 +152,133 @@ export const initWorkflow = (config: Config, _secretsProvider: SecretsProvider) 
 
 {/* prettier-ignore */}
 <Aside type="caution" title="Hex encoding">
-  The example expects **hex strings without a `0x` prefix** in JSON. Adjust decoding if your API sends `0x`-prefixed values or base64 instead.
+  The example expects **hex strings without a `0x` prefix** in JSON. Adjust decoding if your API sends `0x`-prefixed values or base64 instead. Pattern 4 in the [submit guide](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-json-formatted-report) uses base64 by default; use [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-for-offchain-verification-hex) when testing this receiver.
 </Aside>
+
+## Testing locally with simulation
+
+After you run the [submit guide complete example](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#complete-working-example) and copy JSON from webhook.site, use this section to exercise a receiver workflow in simulation.
+
+1. Save the webhook JSON as `test-report-payload.json` in your receiver workflow folder.
+2. Use the minimal receiver below with an **empty HTTP trigger config** (no `authorizedKeys` until deploy).
+3. From the **CRE project root**, run `cre workflow simulate` with `--http-payload verify-report-receiver/test-report-payload.json` (path relative to where you invoke `cre`).
+
+### Sim wiring vs full verify
+
+| Mode                   | Config                                              | What it validates                                                                                                                                                                      |
+| ---------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Wiring / decode**    | `skipSignatureVerification: true` in staging config | JSON + hex decode, `workflowId()`, `executionId()`, `donId()`, `body()`                                                                                                                |
+| **Full crypto verify** | Default `Report.parse()` (production registry)      | Reports from a **deployed/production DON**. Sim-signed reports **fail** default verification: simulation uses local DON keys; `Report.parse()` checks the mainnet Capability Registry. |
+
+### Minimal receiver for simulation
+
+Use an **empty HTTP trigger config** for sim (add `authorizedKeys` before deploy). Call `Report.parse()` from your handler with the `runtime` parameter. The CLI delivers `--http-payload` file contents as `payload.input` bytes.
+
+`config.staging.json`:
+
+```json
+{
+  "skipSignatureVerification": true
+}
+```
+
+```typescript
+import {
+  decodeJson,
+  handler,
+  hexToBytes,
+  HTTPCapability,
+  Report,
+  Runner,
+  type HTTPPayload,
+  type Runtime,
+} from "@chainlink/cre-sdk"
+
+interface Config {
+  skipSignatureVerification?: boolean
+}
+
+type ParsedPayload = {
+  report: string
+  context: string
+  signatures: string[]
+}
+
+/** Hex without 0x prefix in JSON → bytes (add 0x before decode). */
+const fromHexNoPrefix = (hex: string): Uint8Array => hexToBytes(`0x${hex}`)
+
+/** AggregateError from Report.parse often has an empty .message in sim output. */
+const formatError = (err: unknown): string => {
+  if (err instanceof AggregateError) {
+    const parts = err.errors.map((e) => (e instanceof Error ? e.message : String(e)))
+    return parts.join("; ") || "report verification failed"
+  }
+  if (err instanceof Error) return err.message
+  return String(err)
+}
+
+export async function run(runtime: Runtime<Config>, payload: HTTPPayload): Promise<{ verified: boolean }> {
+  try {
+    const parsed = decodeJson(payload.input) as ParsedPayload
+
+    const rawReport = fromHexNoPrefix(parsed.report)
+    const reportContext = fromHexNoPrefix(parsed.context)
+    const sigs = parsed.signatures.map((s) => fromHexNoPrefix(s))
+
+    runtime.log(`Parsing report (${rawReport.length} bytes, ${sigs.length} signatures)`)
+
+    const report = await Report.parse(runtime, rawReport, sigs, reportContext, {
+      skipSignatureVerification: runtime.config.skipSignatureVerification ?? false,
+    })
+
+    runtime.log(
+      `Verified report workflowId=${report.workflowId()} executionId=${report.executionId()} donId=${report.donId()}`
+    )
+    report.body()
+    return { verified: true }
+  } catch (err) {
+    const msg = formatError(err)
+    runtime.log(`Report verification failed: ${msg}`)
+    throw new Error(msg)
+  }
+}
+
+export const initWorkflow = () => {
+  const http = new HTTPCapability()
+  // Simulation: http.trigger({}). Deploy: add authorizedKeys — see complete example below.
+  return [handler(http.trigger({}), run)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+Save webhook JSON as `verify-report-receiver/test-report-payload.json`. From the **CRE project root**:
+
+```bash
+cre workflow simulate verify-report-receiver \
+  --target staging-settings \
+  --non-interactive \
+  --trigger-index 0 \
+  --http-payload verify-report-receiver/test-report-payload.json
+```
+
+**Pass criteria**
+
+- **Sim wiring:** `skipSignatureVerification: true`: logs show metadata and `{ verified: true }`.
+- **Full crypto verify:** default config with a **production-signed** report (not typical for sender-sim → receiver-sim alone).
 
 ## Report payload format
 
-Receivers need three fields (plus optional metadata your API may add):
+Receivers need three JSON fields (plus optional metadata your API may add). The JSON key is `context` even though the SDK field is `reportContext`:
 
-| Field        | Description                                                        |
-| ------------ | ------------------------------------------------------------------ |
-| `report`     | Hex-encoded `rawReport` bytes (metadata header + workflow payload) |
-| `context`    | Hex-encoded `reportContext` (config digest + sequence number)      |
-| `signatures` | Array of hex-encoded 65-byte ECDSA signatures from DON nodes       |
+| JSON field   | SDK field       | Description                                                     |
+| ------------ | --------------- | --------------------------------------------------------------- |
+| `report`     | `rawReport`     | Hex-encoded bytes (metadata header + workflow payload), no `0x` |
+| `context`    | `reportContext` | Hex-encoded config digest + sequence number                     |
+| `signatures` | `sigs`          | Array of hex-encoded 65-byte ECDSA signatures, no `0x`          |
 
 The `reportContext` layout used by the SDK:
 
@@ -230,10 +348,28 @@ Most workflows should use the default config (production environment only).
 
 ## Troubleshooting
 
-**`invalid signature` / `unknown signer`**
+**Empty error after verify sim**
+
+- `Report.parse()` may throw an **`AggregateError`** of multiple `invalid signature` errors. **`AggregateError.message` is often empty**, so the CLI prints `Execution resulted in an error being returned:` with nothing after the colon.
+- Format errors in your handler before rethrowing (see the simulation example above).
+
+**`invalid signature` / `unknown signer` in sim with fresh webhook JSON**
+
+- **Expected** when using default `Report.parse()` on a **sim-signed** report: simulator DON keys do not match mainnet registry signers.
+- For local wiring tests, set `skipSignatureVerification: true`. For real crypto verify, use a **deployed sender** or production-signed reports.
+
+**`invalid signature` / `unknown signer` (deployed)**
 
 - Signatures may be from a different DON or stale registry config.
 - Confirm the sender workflow used production CRE and the report was not tampered with.
+
+**`unexpected token: 'test'` on simulate**
+
+- Wrong `--http-payload` path. Invoke `cre` from the **project root** and use a path such as `verify-report-receiver/test-report-payload.json`.
+
+**Receiver JSON parse error**
+
+- You copied a **binary/octet-stream** webhook body instead of Pattern 4 JSON. Use [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-for-offchain-verification-hex).
 
 **`wrong number of signatures`**
 
@@ -241,7 +377,7 @@ Most workflows should use the default config (production environment only).
 
 **`could not read from chain ...`**
 
-- Registry read failed (RPC/network). Retry or check simulation vs production EVM access.
+- Registry read failed (RPC/network). Configure **`ethereum-mainnet` RPC** in `project.yaml` (required for default verify, including sim). Sepolia-only RPC is not sufficient for default `Report.parse()`.
 
 **`raw report too short`**
 
@@ -249,7 +385,6 @@ Most workflows should use the default config (production environment only).
 
 ## Learn more
 
-- **[API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http):** sender → receiver overview
 - **[Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts):** sender workflow; create and POST the report
 - **[SDK Reference: Core: Report verification](/cre/reference/sdk/core-ts#report-verification):** `Report.parse`, accessors, and `ReportParseConfig`
 - **[HTTP Trigger Overview](/cre/guides/workflow/using-triggers/http-trigger/overview-ts):** trigger deployed receiver workflows

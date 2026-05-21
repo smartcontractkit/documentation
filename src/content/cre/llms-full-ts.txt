@@ -4041,28 +4041,8 @@ The CRE SDK provides an HTTP client that allows your workflows to interact with 
 
 
 <Aside type="caution" title="Parse responses before aggregation">
-  When using a numeric aggregation method (such as `median`), always parse the HTTP response **inside** your node function and return a numeric value — never pass the raw response body to the aggregation step. If your endpoint returns an error string and your node function passes that string to a median aggregation, consensus will fail with `unsupported type for median aggregation`. See the [best practices section](/cre/guides/workflow/using-http-client/get-request#best-practices) of the GET request guide for correct and incorrect patterns.
+  When using a numeric aggregation method (such as `median`), always parse the HTTP response **inside** your node function and return a numeric value: never pass the raw response body to the aggregation step. If your endpoint returns an error string and your node function passes that string to a median aggregation, consensus will fail with `unsupported type for median aggregation`. See the [best practices section](/cre/guides/workflow/using-http-client/get-request#best-practices) of the GET request guide for correct and incorrect patterns.
 </Aside>
-
-These guides will walk you through the common use cases for the HTTP client.
-
-## CRE reports over HTTP
-
-A **CRE report** is a DON-signed package your workflow creates with `runtime.report()` (TypeScript) or `runtime.GenerateReport()` (Go). It contains your encoded payload, workflow metadata, and cryptographic signatures.
-
-Most secure HTTP integrations involve two parties:
-
-**Sender workflow (CRE):** runs on a schedule or trigger, does your logic, then creates and ships the report:
-
-1. Run business logic and encode your payload.
-2. Call `runtime.report()` / `GenerateReport()` so the DON signs the report.
-3. Call `sendReport()` to POST the report to your URL.
-
-**Receiver:** a separate system that gets that HTTP POST (your API, or another CRE workflow with an HTTP trigger):
-
-4. Verify signatures with `Report.parse()` / `ParseReport()`, then use the payload. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain).
-
-The sender **creates** the report in step 2; you do not fetch it from somewhere else first. The receiver **must** verify before trusting the data: the sender does not do that for you.
 
 ## Guides
 
@@ -4070,6 +4050,17 @@ The sender **creates** the report in step 2; you do not fetch it from somewhere 
 - **[Making POST Requests](/cre/guides/workflow/using-http-client/post-request)**: Learn how to send data to an external endpoint using a `POST` request.
 - **[Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http)**: Learn how to submit cryptographically signed reports to an external HTTP endpoint.
 - **[Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain)**: Verify report signatures and read workflow metadata when receiving reports over HTTP or other offchain channels.
+
+## CRE reports over HTTP
+
+A **CRE report** is a DON-signed package your workflow creates with `runtime.report()` (TypeScript) or `runtime.GenerateReport()` (Go). It contains your encoded payload, workflow metadata, and cryptographic signatures.
+
+A typical secure integration uses two parties:
+
+1. **Sender:** a CRE workflow that runs your logic, signs a report, and POSTs it to a URL. See [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http).
+2. **Receiver:** your API or another CRE workflow that verifies the report before using the data. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain).
+
+The sender creates the report inside the workflow; the receiver must verify signatures before trusting the payload.
 
 ---
 
@@ -15038,24 +15029,42 @@ This guide is for the **sender** side: a CRE workflow that **creates** a signed 
 3. `runtime.report()`: DON produces a signed `ReportResponse`.
 4. `sendReport()`: format and POST to your URL.
 
-For a conceptual overview, see [API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http).
-
 ## Prerequisites
 
 - Familiarity with [making POST requests](/cre/guides/workflow/using-http-client/post-request)
 - Familiarity with `runtime.report()` (covered [below](#generating-reports-for-http-submission))
+- **`viem`** as a direct dependency in the workflow `package.json` (for ABI encoding in examples)
+- Protobuf HTTP/report types from **`@chainlink/cre-sdk/pb`** (`SDK_PB.ReportResponse`, `HTTP_CLIENT_PB.RequestJson`), not the main `@chainlink/cre-sdk` entry
 
 
 <Aside type="caution" title="Redirects are not supported">
   HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
 </Aside>
 
-## Quick start: Minimal example
+## Payload contract (if you verify offchain)
 
-Here's the simplest possible workflow that generates and submits a report via HTTP:
+If a receiver uses [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts), your HTTP body must expose three fields. The verify guide expects **hex without `0x` in JSON** (field name `context`, not `reportContext`):
+
+| Your JSON field | SDK field on `ReportResponse` |
+| --------------- | ----------------------------- |
+| `report`        | `rawReport`                   |
+| `context`       | `reportContext`               |
+| `signatures`    | `sigs[].signature`            |
+
+Use [Pattern 4 for offchain verification (hex)](#pattern-4-for-offchain-verification-hex) or the [complete working example](#complete-working-example). Other patterns are for APIs with different formats, not the default verify examples.
+
+## Quick start: Minimal example (binary only)
+
+This example POSTs **raw report bytes** (`application/octet-stream`). It is **not** compatible with the verify guide’s JSON receiver without changes. For sender → verify local testing, skip to the [complete working example](#complete-working-example).
+
+Here's the simplest workflow that generates and submits a report via HTTP:
 
 ```typescript
-import { ok, type ReportResponse, type RequestJson, type HTTPSendRequester } from "@chainlink/cre-sdk"
+import { ok, type HTTPSendRequester, type Report } from "@chainlink/cre-sdk"
+import type { SDK_PB, HTTP_CLIENT_PB } from "@chainlink/cre-sdk/pb"
+
+type ReportResponse = SDK_PB.ReportResponse
+type RequestJson = HTTP_CLIENT_PB.RequestJson
 
 const formatReportSimple = (r: ReportResponse): RequestJson => {
   return {
@@ -15066,8 +15075,8 @@ const formatReportSimple = (r: ReportResponse): RequestJson => {
       "Content-Type": "application/octet-stream",
     },
     cacheSettings: {
-      readFromCache: true,
-      maxAgeMs: 60000, // Accept cached responses up to 60 seconds old
+      store: true,
+      maxAge: "60s",
     },
   }
 }
@@ -15141,6 +15150,15 @@ The transformation function gives you complete control over the format.
 
 Here are common patterns for formatting reports. Choose the one that matches your API's requirements.
 
+All patterns below use protobuf types and caching settings:
+
+```typescript
+import type { SDK_PB, HTTP_CLIENT_PB } from "@chainlink/cre-sdk/pb"
+
+type ReportResponse = SDK_PB.ReportResponse
+type RequestJson = HTTP_CLIENT_PB.RequestJson
+```
+
 ### Choosing the right pattern
 
 | Pattern                                                                                                 | When to use                                               |
@@ -15155,8 +15173,6 @@ Here are common patterns for formatting reports. Choose the one that matches you
 Use this when your API accepts raw binary data:
 
 ```typescript
-import type { ReportResponse, RequestJson } from "@chainlink/cre-sdk"
-
 const formatReportSimple = (r: ReportResponse): RequestJson => {
   return {
     url: "https://api.example.com/reports",
@@ -15166,8 +15182,8 @@ const formatReportSimple = (r: ReportResponse): RequestJson => {
       "Content-Type": "application/octet-stream",
     },
     cacheSettings: {
-      readFromCache: true, // Enable caching
-      maxAgeMs: 60000, // Accept cached responses up to 60 seconds old
+      store: true,
+      maxAge: "60s",
     },
   }
 }
@@ -15213,8 +15229,8 @@ const formatReportWithSignatures = (r: ReportResponse): RequestJson => {
       "Content-Type": "application/octet-stream",
     },
     cacheSettings: {
-      readFromCache: true,
-      maxAgeMs: 60000,
+      store: true,
+      maxAge: "60s",
     },
   }
 }
@@ -15245,8 +15261,8 @@ const formatReportWithHeaderSigs = (r: ReportResponse): RequestJson => {
     body: Buffer.from(r.rawReport).toString("base64"),
     headers,
     cacheSettings: {
-      readFromCache: true,
-      maxAgeMs: 60000,
+      store: true,
+      maxAge: "60s",
     },
   }
 }
@@ -15288,12 +15304,52 @@ const formatReportAsJSON = (r: ReportResponse): RequestJson => {
       "Content-Type": "application/json",
     },
     cacheSettings: {
-      readFromCache: true,
-      maxAgeMs: 60000,
+      store: true,
+      maxAge: "60s",
     },
   }
 }
 ```
+
+### Pattern 4 for offchain verification (hex)
+
+Use this variant when testing the [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts) receiver in simulation. The verify examples decode **hex without a `0x` prefix**; the receiver adds `0x` when calling `hexToBytes`.
+
+Pattern 4 in the block above uses **base64** fields. Base64 sender output does **not** match the verify guide’s hex decoder without changes.
+
+```typescript
+import type { SDK_PB, HTTP_CLIENT_PB } from "@chainlink/cre-sdk/pb"
+import { bytesToHex } from "viem"
+
+type ReportResponse = SDK_PB.ReportResponse
+type RequestJson = HTTP_CLIENT_PB.RequestJson
+
+const formatReportAsJSONHex =
+  (config: { apiUrl: string }) =>
+  (r: ReportResponse): RequestJson => {
+    const payload = {
+      report: bytesToHex(r.rawReport).slice(2),
+      context: bytesToHex(r.reportContext).slice(2),
+      signatures: r.sigs.map((sig) => bytesToHex(sig.signature).slice(2)),
+    }
+    const bodyBytes = new TextEncoder().encode(JSON.stringify(payload))
+
+    return {
+      url: config.apiUrl,
+      method: "POST",
+      body: Buffer.from(bodyBytes).toString("base64"),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cacheSettings: {
+        store: true,
+        maxAge: "60s",
+      },
+    }
+  }
+```
+
+The `body` field is the UTF-8 JSON string, base64-encoded for the protobuf `bytes` field (same pattern as other JSON POST bodies in TypeScript workflows).
 
 ### Understanding `cacheSettings` for reports
 
@@ -15371,7 +15427,11 @@ interface SubmitResponse {
   success: boolean
 }
 
-const submitReportViaHTTP = (sendRequester: HTTPSendRequester, report: Report): SubmitResponse => {
+const submitReportViaHTTP = (
+  runtime: Runtime<Config>,
+  sendRequester: HTTPSendRequester,
+  report: Report
+): SubmitResponse => {
   const response = sendRequester.sendReport(report, formatReportSimple).result()
 
   if (!ok(response)) {
@@ -15392,7 +15452,7 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
   const result = httpClient
     .sendRequest(
       runtime,
-      (sendRequester: HTTPSendRequester) => submitReportViaHTTP(sendRequester, report),
+      (sendRequester: HTTPSendRequester) => submitReportViaHTTP(runtime, sendRequester, report),
       consensusIdenticalAggregation<SubmitResponse>()
     )()
     .result()
@@ -15406,25 +15466,30 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
 This example shows a workflow that:
 
 1. Generates a report from a single value
-2. Submits it to an HTTP API
-3. Uses the simple "report in body" format
+2. Submits it to an HTTP API as **Pattern 4 JSON with hex fields** (compatible with the verify guide’s receiver sim loop)
+3. Uses `config.apiUrl` from your target config file
+
+Add **`viem`** to `package.json`. Register handlers with `handler()` from `@chainlink/cre-sdk` (not `cron.handler()`).
 
 ```typescript
 import {
   CronCapability,
   HTTPClient,
   Runner,
+  handler,
   consensusIdenticalAggregation,
   hexToBase64,
   ok,
   type Runtime,
-  type Report,
   type CronPayload,
   type HTTPSendRequester,
-  type ReportResponse,
-  type RequestJson,
+  type Report,
 } from "@chainlink/cre-sdk"
-import { encodeAbiParameters, parseAbiParameters } from "viem"
+import type { SDK_PB, HTTP_CLIENT_PB } from "@chainlink/cre-sdk/pb"
+import { encodeAbiParameters, parseAbiParameters, bytesToHex } from "viem"
+
+type ReportResponse = SDK_PB.ReportResponse
+type RequestJson = HTTP_CLIENT_PB.RequestJson
 
 interface Config {
   apiUrl: string
@@ -15439,32 +15504,43 @@ type MyResult = Record<string, never>
 
 const initWorkflow = (config: Config) => {
   const cron = new CronCapability()
-
-  return [cron.handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
 }
 
-// Transformation function: defines how the API expects the report
-const formatReportForMyAPI = (r: ReportResponse): RequestJson => {
-  return {
-    url: "https://webhook.site/your-unique-id", // Replace with your API
-    method: "POST",
-    body: Buffer.from(r.rawReport).toString("base64"),
-    headers: {
-      "Content-Type": "application/octet-stream",
-      "X-Report-SeqNr": r.seqNr.toString(),
-    },
-    cacheSettings: {
-      readFromCache: true, // Prevent duplicate submissions
-      maxAgeMs: 60000, // Accept cached responses up to 60 seconds old
-    },
+const formatReportForMyAPI =
+  (config: Config) =>
+  (r: ReportResponse): RequestJson => {
+    const payload = {
+      report: bytesToHex(r.rawReport).slice(2),
+      context: bytesToHex(r.reportContext).slice(2),
+      signatures: r.sigs.map((sig) => bytesToHex(sig.signature).slice(2)),
+    }
+    const bodyBytes = new TextEncoder().encode(JSON.stringify(payload))
+
+    return {
+      url: config.apiUrl,
+      method: "POST",
+      body: Buffer.from(bodyBytes).toString("base64"),
+      headers: {
+        "Content-Type": "application/json",
+        "X-Report-SeqNr": r.seqNr.toString(), // optional metadata for your API
+      },
+      cacheSettings: {
+        store: true,
+        maxAge: "60s",
+      },
+    }
   }
-}
 
-// Function that submits the report via HTTP
-const submitReportViaHTTP = (sendRequester: HTTPSendRequester, report: Report): SubmitResponse => {
-  runtime.log("Submitting report to API")
+const submitReportViaHTTP = (
+  runtime: Runtime<Config>,
+  sendRequester: HTTPSendRequester,
+  report: Report,
+  config: Config
+): SubmitResponse => {
+  runtime.log(`Submitting report to API: ${config.apiUrl}`)
 
-  const response = sendRequester.sendReport(report, formatReportForMyAPI).result()
+  const response = sendRequester.sendReport(report, formatReportForMyAPI(config)).result()
 
   runtime.log(`Report submitted - status: ${response.statusCode}, bodyLength: ${response.body.length}`)
 
@@ -15476,16 +15552,13 @@ const submitReportViaHTTP = (sendRequester: HTTPSendRequester, report: Report): 
   return { success: true }
 }
 
-const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): MyResult => {
-  // Step 1: Generate a report (example: a single uint256 value)
+const onCronTrigger = (runtime: Runtime<Config>, _payload: CronPayload): MyResult => {
   const myValue = 123456789n
   runtime.log(`Generating report with value: ${myValue}`)
 
-  // Encode the value using Viem
   const encodedValue = encodeAbiParameters(parseAbiParameters("uint256 value"), [myValue])
 
-  // Generate the report
-  const reportResponse = runtime
+  const report = runtime
     .report({
       encodedPayload: hexToBase64(encodedValue),
       encoderName: "evm",
@@ -15496,13 +15569,12 @@ const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): MyResult
 
   runtime.log("Report generated successfully")
 
-  // Step 2: Submit the report via HTTP
   const httpClient = new HTTPClient()
 
   const submitResult = httpClient
     .sendRequest(
       runtime,
-      (sendRequester: HTTPSendRequester) => submitReportViaHTTP(sendRequester, reportResponse),
+      (sendRequester: HTTPSendRequester) => submitReportViaHTTP(runtime, sendRequester, report, runtime.config),
       consensusIdenticalAggregation<SubmitResponse>()
     )()
     .result()
@@ -15529,12 +15601,21 @@ export async function main() {
 ### Testing with webhook.site
 
 1. Go to [webhook.site](https://webhook.site/) and get a unique URL
-2. Update `config.json` with your webhook URL
-3. Run the simulation:
+2. Update `config.json` (or `config.staging.json`) with your webhook URL in `apiUrl`
+3. From the **CRE project root**, run the simulation:
    ```bash
    cre workflow simulate my-workflow --target staging-settings
    ```
-4. Check webhook.site to see the report data received
+4. On webhook.site, open the request **Content** tab. You should see JSON with `report`, `context`, and `signatures` (hex strings). Use that JSON to test a receiver workflow in [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts#testing-locally-with-simulation).
+
+
+<Aside type="note" title="Binary vs JSON for verify testing">
+  If you post **raw binary** (`application/octet-stream`) instead of Pattern 4 JSON, webhook.site shows unreadable bytes and you cannot paste the body into the verify receiver without reformatting. Use [Pattern 4 for offchain verification (hex)](#pattern-4-for-offchain-verification-hex) for the sender → copy payload → receiver sim checklist.
+</Aside>
+
+## Next step: verify on the receiver
+
+The sender does not validate the report for the receiver. After submission, the ingesting side must verify signatures before trusting the payload. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts).
 
 ## Advanced: Low-level pattern
 
@@ -15597,10 +15678,16 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
 - Your report format likely doesn't match what your API expects
 - Check if your API expects base64 encoding, JSON wrapping, or specific headers
 
+**TypeScript compile errors on the complete example**
+
+- Use `handler(cron.trigger(...), fn)` from `@chainlink/cre-sdk`, not `cron.handler()`
+- Import `ReportResponse` / `RequestJson` from `@chainlink/cre-sdk/pb`
+- Pass `runtime` from the trigger callback into helper functions (no global `runtime`)
+- Add `viem` as a direct workflow dependency
+
 ## Learn more
 
-- **[API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http):** sender → receiver overview
-- **[Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts):** receiver workflow; verify before trusting payload
+- **[Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts):** verify signatures on the receiver before trusting payload data
 - **[HTTP Client SDK Reference](/cre/reference/sdk/http-client-ts):** complete API reference including `sendReport()` and `ReportResponse`
 - **[POST Requests](/cre/guides/workflow/using-http-client/post-request):** HTTP request patterns and caching
 - **[Writing Data Onchain](/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain):** encoding single values, structs, and complex types using Viem
@@ -15644,7 +15731,7 @@ The CRE SDK provides `Report.parse()` to do this inside a workflow. Verification
 3. `Report.parse()`: verify signatures and read metadata.
 4. Use trusted `body()` in your logic.
 
-For the full sender → receiver overview, see [API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http).
+Pair this guide with [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts) on the sender side. For local simulation, start with [Testing locally with simulation](#testing-locally-with-simulation) before the [deploy example](#complete-example-http-receiver-workflow) below.
 
 ## What you'll learn
 
@@ -15684,9 +15771,11 @@ Default (`productionEnvironment()`):
 
 If verification fails, `Report.parse()` throws (for example, unknown signer, insufficient signatures, or registry read failure).
 
-## Complete example: HTTP receiver workflow
+## Complete example: HTTP receiver workflow (deploy)
 
-This workflow accepts a JSON payload (matching the format from [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-json-formatted-report)), verifies it, then processes the trusted body.
+This workflow is for **deployed** receivers with `authorizedKeys`. For **local simulation**, use [Testing locally with simulation](#testing-locally-with-simulation) instead.
+
+It accepts JSON with hex `report`, `context`, and `signatures` (from the submit guide’s [complete working example](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#complete-working-example) or [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-for-offchain-verification-hex)), not base64 [Pattern 4](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-json-formatted-report) unless you change decoding.
 
 ```typescript
 import {
@@ -15735,6 +15824,7 @@ export async function run(runtime: Runtime<Config>, payload: HTTPPayload): Promi
 
 export const initWorkflow = (config: Config, _secretsProvider: SecretsProvider) => {
   const http = new HTTPCapability()
+  // For local simulation, use handler(http.trigger({}), run) — see Testing locally with simulation above.
   return [
     handler(http.trigger({ authorizedKeys: [{ type: "KEY_TYPE_ECDSA_EVM", publicKey: config.authorizedKey }] }), run),
   ]
@@ -15749,18 +15839,133 @@ export const initWorkflow = (config: Config, _secretsProvider: SecretsProvider) 
 
 
 <Aside type="caution" title="Hex encoding">
-  The example expects **hex strings without a `0x` prefix** in JSON. Adjust decoding if your API sends `0x`-prefixed values or base64 instead.
+  The example expects **hex strings without a `0x` prefix** in JSON. Adjust decoding if your API sends `0x`-prefixed values or base64 instead. Pattern 4 in the [submit guide](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-json-formatted-report) uses base64 by default; use [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-for-offchain-verification-hex) when testing this receiver.
 </Aside>
+
+## Testing locally with simulation
+
+After you run the [submit guide complete example](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#complete-working-example) and copy JSON from webhook.site, use this section to exercise a receiver workflow in simulation.
+
+1. Save the webhook JSON as `test-report-payload.json` in your receiver workflow folder.
+2. Use the minimal receiver below with an **empty HTTP trigger config** (no `authorizedKeys` until deploy).
+3. From the **CRE project root**, run `cre workflow simulate` with `--http-payload verify-report-receiver/test-report-payload.json` (path relative to where you invoke `cre`).
+
+### Sim wiring vs full verify
+
+| Mode                   | Config                                              | What it validates                                                                                                                                                                      |
+| ---------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Wiring / decode**    | `skipSignatureVerification: true` in staging config | JSON + hex decode, `workflowId()`, `executionId()`, `donId()`, `body()`                                                                                                                |
+| **Full crypto verify** | Default `Report.parse()` (production registry)      | Reports from a **deployed/production DON**. Sim-signed reports **fail** default verification: simulation uses local DON keys; `Report.parse()` checks the mainnet Capability Registry. |
+
+### Minimal receiver for simulation
+
+Use an **empty HTTP trigger config** for sim (add `authorizedKeys` before deploy). Call `Report.parse()` from your handler with the `runtime` parameter. The CLI delivers `--http-payload` file contents as `payload.input` bytes.
+
+`config.staging.json`:
+
+```json
+{
+  "skipSignatureVerification": true
+}
+```
+
+```typescript
+import {
+  decodeJson,
+  handler,
+  hexToBytes,
+  HTTPCapability,
+  Report,
+  Runner,
+  type HTTPPayload,
+  type Runtime,
+} from "@chainlink/cre-sdk"
+
+interface Config {
+  skipSignatureVerification?: boolean
+}
+
+type ParsedPayload = {
+  report: string
+  context: string
+  signatures: string[]
+}
+
+/** Hex without 0x prefix in JSON → bytes (add 0x before decode). */
+const fromHexNoPrefix = (hex: string): Uint8Array => hexToBytes(`0x${hex}`)
+
+/** AggregateError from Report.parse often has an empty .message in sim output. */
+const formatError = (err: unknown): string => {
+  if (err instanceof AggregateError) {
+    const parts = err.errors.map((e) => (e instanceof Error ? e.message : String(e)))
+    return parts.join("; ") || "report verification failed"
+  }
+  if (err instanceof Error) return err.message
+  return String(err)
+}
+
+export async function run(runtime: Runtime<Config>, payload: HTTPPayload): Promise<{ verified: boolean }> {
+  try {
+    const parsed = decodeJson(payload.input) as ParsedPayload
+
+    const rawReport = fromHexNoPrefix(parsed.report)
+    const reportContext = fromHexNoPrefix(parsed.context)
+    const sigs = parsed.signatures.map((s) => fromHexNoPrefix(s))
+
+    runtime.log(`Parsing report (${rawReport.length} bytes, ${sigs.length} signatures)`)
+
+    const report = await Report.parse(runtime, rawReport, sigs, reportContext, {
+      skipSignatureVerification: runtime.config.skipSignatureVerification ?? false,
+    })
+
+    runtime.log(
+      `Verified report workflowId=${report.workflowId()} executionId=${report.executionId()} donId=${report.donId()}`
+    )
+    report.body()
+    return { verified: true }
+  } catch (err) {
+    const msg = formatError(err)
+    runtime.log(`Report verification failed: ${msg}`)
+    throw new Error(msg)
+  }
+}
+
+export const initWorkflow = () => {
+  const http = new HTTPCapability()
+  // Simulation: http.trigger({}). Deploy: add authorizedKeys — see complete example below.
+  return [handler(http.trigger({}), run)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+Save webhook JSON as `verify-report-receiver/test-report-payload.json`. From the **CRE project root**:
+
+```bash
+cre workflow simulate verify-report-receiver \
+  --target staging-settings \
+  --non-interactive \
+  --trigger-index 0 \
+  --http-payload verify-report-receiver/test-report-payload.json
+```
+
+**Pass criteria**
+
+- **Sim wiring:** `skipSignatureVerification: true`: logs show metadata and `{ verified: true }`.
+- **Full crypto verify:** default config with a **production-signed** report (not typical for sender-sim → receiver-sim alone).
 
 ## Report payload format
 
-Receivers need three fields (plus optional metadata your API may add):
+Receivers need three JSON fields (plus optional metadata your API may add). The JSON key is `context` even though the SDK field is `reportContext`:
 
-| Field        | Description                                                        |
-| ------------ | ------------------------------------------------------------------ |
-| `report`     | Hex-encoded `rawReport` bytes (metadata header + workflow payload) |
-| `context`    | Hex-encoded `reportContext` (config digest + sequence number)      |
-| `signatures` | Array of hex-encoded 65-byte ECDSA signatures from DON nodes       |
+| JSON field   | SDK field       | Description                                                     |
+| ------------ | --------------- | --------------------------------------------------------------- |
+| `report`     | `rawReport`     | Hex-encoded bytes (metadata header + workflow payload), no `0x` |
+| `context`    | `reportContext` | Hex-encoded config digest + sequence number                     |
+| `signatures` | `sigs`          | Array of hex-encoded 65-byte ECDSA signatures, no `0x`          |
 
 The `reportContext` layout used by the SDK:
 
@@ -15830,10 +16035,28 @@ Most workflows should use the default config (production environment only).
 
 ## Troubleshooting
 
-**`invalid signature` / `unknown signer`**
+**Empty error after verify sim**
+
+- `Report.parse()` may throw an **`AggregateError`** of multiple `invalid signature` errors. **`AggregateError.message` is often empty**, so the CLI prints `Execution resulted in an error being returned:` with nothing after the colon.
+- Format errors in your handler before rethrowing (see the simulation example above).
+
+**`invalid signature` / `unknown signer` in sim with fresh webhook JSON**
+
+- **Expected** when using default `Report.parse()` on a **sim-signed** report: simulator DON keys do not match mainnet registry signers.
+- For local wiring tests, set `skipSignatureVerification: true`. For real crypto verify, use a **deployed sender** or production-signed reports.
+
+**`invalid signature` / `unknown signer` (deployed)**
 
 - Signatures may be from a different DON or stale registry config.
 - Confirm the sender workflow used production CRE and the report was not tampered with.
+
+**`unexpected token: 'test'` on simulate**
+
+- Wrong `--http-payload` path. Invoke `cre` from the **project root** and use a path such as `verify-report-receiver/test-report-payload.json`.
+
+**Receiver JSON parse error**
+
+- You copied a **binary/octet-stream** webhook body instead of Pattern 4 JSON. Use [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-for-offchain-verification-hex).
 
 **`wrong number of signatures`**
 
@@ -15841,7 +16064,7 @@ Most workflows should use the default config (production environment only).
 
 **`could not read from chain ...`**
 
-- Registry read failed (RPC/network). Retry or check simulation vs production EVM access.
+- Registry read failed (RPC/network). Configure **`ethereum-mainnet` RPC** in `project.yaml` (required for default verify, including sim). Sepolia-only RPC is not sufficient for default `Report.parse()`.
 
 **`raw report too short`**
 
@@ -15849,7 +16072,6 @@ Most workflows should use the default config (production environment only).
 
 ## Learn more
 
-- **[API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http):** sender → receiver overview
 - **[Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts):** sender workflow; create and POST the report
 - **[SDK Reference: Core: Report verification](/cre/reference/sdk/core-ts#report-verification):** `Report.parse`, accessors, and `ReportParseConfig`
 - **[HTTP Trigger Overview](/cre/guides/workflow/using-triggers/http-trigger/overview-ts):** trigger deployed receiver workflows

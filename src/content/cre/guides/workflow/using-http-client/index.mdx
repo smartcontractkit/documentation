@@ -20,28 +20,8 @@ The CRE SDK provides an HTTP client that allows your workflows to interact with 
 
 {/* prettier-ignore */}
 <Aside type="caution" title="Parse responses before aggregation">
-  When using a numeric aggregation method (such as `median`), always parse the HTTP response **inside** your node function and return a numeric value — never pass the raw response body to the aggregation step. If your endpoint returns an error string and your node function passes that string to a median aggregation, consensus will fail with `unsupported type for median aggregation`. See the [best practices section](/cre/guides/workflow/using-http-client/get-request#best-practices) of the GET request guide for correct and incorrect patterns.
+  When using a numeric aggregation method (such as `median`), always parse the HTTP response **inside** your node function and return a numeric value: never pass the raw response body to the aggregation step. If your endpoint returns an error string and your node function passes that string to a median aggregation, consensus will fail with `unsupported type for median aggregation`. See the [best practices section](/cre/guides/workflow/using-http-client/get-request#best-practices) of the GET request guide for correct and incorrect patterns.
 </Aside>
-
-These guides will walk you through the common use cases for the HTTP client.
-
-## CRE reports over HTTP
-
-A **CRE report** is a DON-signed package your workflow creates with `runtime.report()` (TypeScript) or `runtime.GenerateReport()` (Go). It contains your encoded payload, workflow metadata, and cryptographic signatures.
-
-Most secure HTTP integrations involve two parties:
-
-**Sender workflow (CRE):** runs on a schedule or trigger, does your logic, then creates and ships the report:
-
-1. Run business logic and encode your payload.
-2. Call `runtime.report()` / `GenerateReport()` so the DON signs the report.
-3. Call `sendReport()` to POST the report to your URL.
-
-**Receiver:** a separate system that gets that HTTP POST (your API, or another CRE workflow with an HTTP trigger):
-
-4. Verify signatures with `Report.parse()` / `ParseReport()`, then use the payload. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain).
-
-The sender **creates** the report in step 2; you do not fetch it from somewhere else first. The receiver **must** verify before trusting the data: the sender does not do that for you.
 
 ## Guides
 
@@ -49,3 +29,14 @@ The sender **creates** the report in step 2; you do not fetch it from somewhere 
 - **[Making POST Requests](/cre/guides/workflow/using-http-client/post-request)**: Learn how to send data to an external endpoint using a `POST` request.
 - **[Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http)**: Learn how to submit cryptographically signed reports to an external HTTP endpoint.
 - **[Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain)**: Verify report signatures and read workflow metadata when receiving reports over HTTP or other offchain channels.
+
+## CRE reports over HTTP
+
+A **CRE report** is a DON-signed package your workflow creates with `runtime.report()` (TypeScript) or `runtime.GenerateReport()` (Go). It contains your encoded payload, workflow metadata, and cryptographic signatures.
+
+A typical secure integration uses two parties:
+
+1. **Sender:** a CRE workflow that runs your logic, signs a report, and POSTs it to a URL. See [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http).
+2. **Receiver:** your API or another CRE workflow that verifies the report before using the data. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain).
+
+The sender creates the report inside the workflow; the receiver must verify signatures before trusting the payload.

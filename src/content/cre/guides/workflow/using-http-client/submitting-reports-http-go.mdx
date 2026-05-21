@@ -41,8 +41,6 @@ This guide is for the **sender** side: a CRE workflow that **creates** a signed 
 3. `runtime.GenerateReport()`: DON produces a signed `sdk.ReportResponse`.
 4. `SendReport()`: format and POST to your URL.
 
-For a conceptual overview, see [API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http).
-
 ## Prerequisites
 
 - Familiarity with [making POST requests](/cre/guides/workflow/using-http-client/post-request)
@@ -54,9 +52,21 @@ For a conceptual overview, see [API Interactions: CRE reports over HTTP](/cre/gu
   HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
 </Aside>
 
-## Quick start: Minimal example
+## Payload contract (if you verify offchain)
 
-Here's the simplest possible workflow that generates and submits a report via HTTP:
+Receivers using [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go) expect JSON with hex fields **without** `0x`. Use JSON key `context` for `reportContext`:
+
+| JSON field   | SDK field on `ReportResponse` |
+| ------------ | ----------------------------- |
+| `report`     | `RawReport`                   |
+| `context`    | `ReportContext`               |
+| `signatures` | per-node signatures in `Sigs` |
+
+## Quick start: Minimal example (binary only)
+
+Posts **raw `RawReport` bytes** only. Not compatible with the verify guide’s JSON receiver. For local testing, use the [complete working example](#complete-working-example) or [Pattern 4 for offchain verification (hex)](#pattern-4-for-offchain-verification-hex).
+
+Here's the simplest workflow that generates and submits a report via HTTP:
 
 ```go
 func formatReportSimple(r *sdk.ReportResponse) (*http.Request, error) {
@@ -293,6 +303,51 @@ func formatReportAsJSON(r *sdk.ReportResponse) (*http.Request, error) {
 }
 ```
 
+### Pattern 4 for offchain verification (hex)
+
+Use when testing [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go). The verify examples decode **hex without `0x`** in JSON. Base64 Pattern 4 above does not match unless you change the receiver.
+
+```go
+import (
+	"encoding/hex"
+	"encoding/json"
+)
+
+type ReportPayload struct {
+	Report     string   `json:"report"`
+	Context    string   `json:"context"`
+	Signatures []string `json:"signatures"`
+}
+
+func formatReportAsJSONHex(config *Config) func(r *sdk.ReportResponse) (*http.Request, error) {
+	return func(r *sdk.ReportResponse) (*http.Request, error) {
+		sigs := make([]string, len(r.Sigs))
+		for i, sig := range r.Sigs {
+			sigs[i] = hex.EncodeToString(sig.Signature)
+		}
+		payload := ReportPayload{
+			Report:     hex.EncodeToString(r.RawReport),
+			Context:    hex.EncodeToString(r.ReportContext),
+			Signatures: sigs,
+		}
+		body, err := json.Marshal(payload)
+		if err != nil {
+			return nil, err
+		}
+		return &http.Request{
+			Url:    config.ApiUrl,
+			Method: "POST",
+			Body:   body,
+			Headers: map[string]string{"Content-Type": "application/json"},
+			CacheSettings: &http.CacheSettings{
+				Store:  true,
+				MaxAge: durationpb.New(60 * time.Second),
+			},
+		}, nil
+	}
+}
+```
+
 ### Understanding `CacheSettings` for reports
 
 You'll notice that all the patterns above include `CacheSettings`. This is critical for report submissions, just like it is for [POST requests](/cre/guides/workflow/using-http-client/post-request).
@@ -368,8 +423,8 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 This example shows a workflow that:
 
 1. Generates a report from a single value
-1. Submits it to an HTTP API
-1. Uses the simple "report in body" format
+1. Submits it via **Pattern 4 JSON with hex fields** (compatible with the verify guide sim loop)
+1. Uses `config.ApiUrl` from your target config
 
 ```go
 //go:build wasip1
@@ -377,10 +432,11 @@ This example shows a workflow that:
 package main
 
 import (
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"math/big"
-	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/smartcontractkit/chainlink-protos/cre/go/sdk"
@@ -408,28 +464,47 @@ func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.Secre
 	}, nil
 }
 
-// Transformation function: defines how the API expects the report
-func formatReportForMyAPI(r *sdk.ReportResponse) (*http.Request, error) {
-	return &http.Request{
-		Url:    "https://webhook.site/your-unique-id",  // Replace with your API
-		Method: "POST",
-		Body:   r.RawReport,
-		Headers: map[string]string{
-			"Content-Type": "application/octet-stream",
-			"X-Report-SeqNr": fmt.Sprintf("%d", r.SeqNr),
-		},
-		CacheSettings: &http.CacheSettings{
-			Store:  true,                             // Prevent duplicate submissions
-			MaxAge: durationpb.New(60 * time.Second), // Accept cached responses up to 60 seconds old
-		},
-	}, nil
+type reportPayload struct {
+	Report     string   `json:"report"`
+	Context    string   `json:"context"`
+	Signatures []string `json:"signatures"`
+}
+
+func formatReportForMyAPI(config *Config) func(r *sdk.ReportResponse) (*http.Request, error) {
+	return func(r *sdk.ReportResponse) (*http.Request, error) {
+		sigs := make([]string, len(r.Sigs))
+		for i, sig := range r.Sigs {
+			sigs[i] = hex.EncodeToString(sig.Signature)
+		}
+		body, err := json.Marshal(reportPayload{
+			Report:     hex.EncodeToString(r.RawReport),
+			Context:    hex.EncodeToString(r.ReportContext),
+			Signatures: sigs,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return &http.Request{
+			Url:    config.ApiUrl,
+			Method: "POST",
+			Body:   body,
+			Headers: map[string]string{
+				"Content-Type":   "application/json",
+				"X-Report-SeqNr": fmt.Sprintf("%d", r.SeqNr),
+			},
+			CacheSettings: &http.CacheSettings{
+				Store:  true,
+				MaxAge: durationpb.New(60 * time.Second),
+			},
+		}, nil
+	}
 }
 
 // Function that submits the report via HTTP
 func submitReportViaHTTP(config *Config, logger *slog.Logger, sendRequester *http.SendRequester, report *cre.Report) (*SubmitResponse, error) {
 	logger.Info("Submitting report to API", "url", config.ApiUrl)
 
-	resp, err := sendRequester.SendReport(*report, formatReportForMyAPI).Await()
+	resp, err := sendRequester.SendReport(*report, formatReportForMyAPI(config)).Await()
 	if err != nil {
 		return nil, fmt.Errorf("failed to send report: %w", err)
 	}
@@ -521,7 +596,11 @@ func main() {
    ```bash
    cre workflow simulate my-workflow --target staging-settings
    ```
-1. Check webhook.site to see the report data received
+1. On webhook.site, open **Content** and confirm JSON with `report`, `context`, and `signatures` (hex). Use that JSON to test a receiver workflow in [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go#testing-locally-with-simulation).
+
+## Next step: verify on the receiver
+
+The sender does not validate the report for the receiver. After submission, the ingesting side must verify signatures before trusting the payload. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go).
 
 ## Advanced: Low-level pattern
 
@@ -588,8 +667,7 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 
 ## Learn more
 
-- **[API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http):** sender → receiver overview
-- **[Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go):** receiver workflow; verify before trusting payload
+- **[Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go):** verify signatures on the receiver before trusting payload data
 - **[HTTP Client SDK Reference](/cre/reference/sdk/http-client):** complete API reference including `SendReport` and `sdk.ReportResponse`
 - **[POST Requests](/cre/guides/workflow/using-http-client/post-request):** HTTP request patterns and caching
 - **[Generating Reports: Single Values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values):** create reports from single values
