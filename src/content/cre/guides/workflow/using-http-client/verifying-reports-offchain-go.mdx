@@ -44,7 +44,7 @@ The CRE SDK provides `cre.ParseReport()` to do this inside a workflow. Verificat
 3. `cre.ParseReport()`: verify signatures and read metadata.
 4. Use trusted `Body()` in your logic.
 
-Pair this guide with [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go) on the sender side. For local simulation, start with [Testing locally with simulation](#testing-locally-with-simulation) before the [deploy example](#complete-example-http-receiver-workflow) below.
+Pair this guide with [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go) on the sender side. This guide covers local simulation first, then the deploy example with `AuthorizedKeys`.
 
 ## What you'll learn
 
@@ -83,115 +83,6 @@ Default (`cre.ProductionEnvironment()`):
 4. **Return a `*cre.Report`** with accessors for workflow ID, owner, execution ID, body, and more.
 
 If verification fails, `cre.ParseReport()` returns an error (for example, `ErrUnknownSigner`, `ErrWrongSignatureCount`, or registry read failure).
-
-## Complete example: HTTP receiver workflow (deploy)
-
-For **local simulation**, use [Testing locally with simulation](#testing-locally-with-simulation) first. This deploy example uses `AuthorizedKeys`.
-
-It accepts JSON with hex `report`, `context`, and `signatures` from the submit guide’s [complete working example](/cre/guides/workflow/using-http-client/submitting-reports-http-go#complete-working-example) or [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-go#pattern-4-for-offchain-verification-hex), not base64 [Pattern 4](/cre/guides/workflow/using-http-client/submitting-reports-http-go#pattern-4-json-formatted-report) unless you change decoding.
-
-```go
-//go:build wasip1
-
-package main
-
-import (
-	"encoding/hex"
-	"encoding/json"
-	"log/slog"
-
-	"github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http"
-	"github.com/smartcontractkit/cre-sdk-go/cre"
-	"github.com/smartcontractkit/cre-sdk-go/cre/wasm"
-)
-
-type Config struct {
-	AuthorizedKey string `json:"authorized_key"`
-}
-
-func InitWorkflow(cfg *Config, _ *slog.Logger, _ cre.SecretsProvider) (cre.Workflow[*Config], error) {
-	// For local simulation, use http.Trigger(&http.Config{}) — see Testing locally with simulation below.
-	return cre.Workflow[*Config]{
-		cre.Handler(http.Trigger(&http.Config{AuthorizedKeys: []*http.AuthorizedKey{{PublicKey: cfg.AuthorizedKey}}}), run),
-	}, nil
-}
-
-type ParsedPayload struct {
-	Report  string   `json:"report"`
-	Context string   `json:"context"`
-	Sigs    []string `json:"signatures"`
-}
-
-func (p *ParsedPayload) Decode() (*DecodedReport, error) {
-	report := &DecodedReport{}
-	var err error
-
-	if report.Report, err = hex.DecodeString(p.Report); err != nil {
-		return nil, err
-	}
-	if report.Context, err = hex.DecodeString(p.Context); err != nil {
-		return nil, err
-	}
-
-	report.Sigs = make([][]byte, len(p.Sigs))
-	for i, sigHex := range p.Sigs {
-		report.Sigs[i], err = hex.DecodeString(sigHex)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return report, nil
-}
-
-type DecodedReport struct {
-	Report  []byte
-	Context []byte
-	Sigs    [][]byte
-}
-
-func run(_ *Config, runtime cre.Runtime, payload *http.Payload) (bool, error) {
-	parsed := &ParsedPayload{}
-	if err := json.Unmarshal(payload.Input, parsed); err != nil {
-		return false, err
-	}
-
-	decoded, err := parsed.Decode()
-	if err != nil {
-		return false, err
-	}
-
-	report, err := cre.ParseReport(runtime, decoded.Report, decoded.Sigs, decoded.Context)
-	if err != nil {
-		return false, err
-	}
-
-	runtime.Logger().Info("Verified report",
-		"workflowId", report.WorkflowID(),
-		"executionId", report.ExecutionID(),
-	)
-
-	// Use report.Body() for your application logic (ABI-encoded payload from the sender workflow)
-	_ = report.Body()
-
-	return true, nil
-}
-
-func main() {
-	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
-}
-```
-
-**What's happening:**
-
-1. An external system POSTs hex-encoded `report`, `context`, and `signatures` to your HTTP trigger.
-2. `cre.ParseReport()` verifies signatures against the production CRE registry.
-3. On success, you read metadata and `Body()` safely.
-
-{/* prettier-ignore */}
-<Aside type="caution" title="Hex encoding">
-  The example expects **hex strings without a `0x` prefix** in JSON. Adjust decoding if your API sends `0x`-prefixed values or base64 instead. Pattern 4 in the [submit guide](/cre/guides/workflow/using-http-client/submitting-reports-http-go#pattern-4-json-formatted-report) uses base64 by default; use [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-go#pattern-4-for-offchain-verification-hex) when testing this receiver.
-</Aside>
 
 ## Testing locally with simulation
 
@@ -310,6 +201,114 @@ cre workflow simulate verify-report-receiver \
 
 `project.yaml` needs **`ethereum-mainnet` RPC** for default verify (registry reads).
 
+## Complete example: HTTP receiver workflow (deploy)
+
+Once simulation is working, update the trigger config for deployment with `AuthorizedKeys`.
+
+It accepts JSON with hex `report`, `context`, and `signatures` from the submit guide’s [complete working example](/cre/guides/workflow/using-http-client/submitting-reports-http-go#complete-working-example) or [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-go#pattern-4-for-offchain-verification-hex), not base64 [Pattern 4](/cre/guides/workflow/using-http-client/submitting-reports-http-go#pattern-4-json-formatted-report) unless you change decoding.
+
+```go
+//go:build wasip1
+
+package main
+
+import (
+	"encoding/hex"
+	"encoding/json"
+	"log/slog"
+
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/cre/wasm"
+)
+
+type Config struct {
+	AuthorizedKey string `json:"authorized_key"`
+}
+
+func InitWorkflow(cfg *Config, _ *slog.Logger, _ cre.SecretsProvider) (cre.Workflow[*Config], error) {
+	return cre.Workflow[*Config]{
+		cre.Handler(http.Trigger(&http.Config{AuthorizedKeys: []*http.AuthorizedKey{{PublicKey: cfg.AuthorizedKey}}}), run),
+	}, nil
+}
+
+type ParsedPayload struct {
+	Report  string   `json:"report"`
+	Context string   `json:"context"`
+	Sigs    []string `json:"signatures"`
+}
+
+func (p *ParsedPayload) Decode() (*DecodedReport, error) {
+	report := &DecodedReport{}
+	var err error
+
+	if report.Report, err = hex.DecodeString(p.Report); err != nil {
+		return nil, err
+	}
+	if report.Context, err = hex.DecodeString(p.Context); err != nil {
+		return nil, err
+	}
+
+	report.Sigs = make([][]byte, len(p.Sigs))
+	for i, sigHex := range p.Sigs {
+		report.Sigs[i], err = hex.DecodeString(sigHex)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return report, nil
+}
+
+type DecodedReport struct {
+	Report  []byte
+	Context []byte
+	Sigs    [][]byte
+}
+
+func run(_ *Config, runtime cre.Runtime, payload *http.Payload) (bool, error) {
+	parsed := &ParsedPayload{}
+	if err := json.Unmarshal(payload.Input, parsed); err != nil {
+		return false, err
+	}
+
+	decoded, err := parsed.Decode()
+	if err != nil {
+		return false, err
+	}
+
+	report, err := cre.ParseReport(runtime, decoded.Report, decoded.Sigs, decoded.Context)
+	if err != nil {
+		return false, err
+	}
+
+	runtime.Logger().Info("Verified report",
+		"workflowId", report.WorkflowID(),
+		"executionId", report.ExecutionID(),
+	)
+
+	// Use report.Body() for your application logic (ABI-encoded payload from the sender workflow)
+	_ = report.Body()
+
+	return true, nil
+}
+
+func main() {
+	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
+}
+```
+
+**What's happening:**
+
+1. An external system POSTs hex-encoded `report`, `context`, and `signatures` to your HTTP trigger.
+2. `cre.ParseReport()` verifies signatures against the production CRE registry.
+3. On success, you read metadata and `Body()` safely.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Hex encoding">
+  The example expects **hex strings without a `0x` prefix** in JSON. Adjust decoding if your API sends `0x`-prefixed values or base64 instead. Pattern 4 in the [submit guide](/cre/guides/workflow/using-http-client/submitting-reports-http-go#pattern-4-json-formatted-report) uses base64 by default; use [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-go#pattern-4-for-offchain-verification-hex) when testing this receiver.
+</Aside>
+
 ## Report payload format
 
 Receivers need three JSON fields. The JSON key is `context` even though the SDK field is `ReportContext`:
@@ -374,7 +373,9 @@ report, err := cre.ParseReportWithConfig(runtime, rawReport, sigs, reportContext
 
 ### Deferred verification
 
-If you set `SkipSignatureVerification: true` in `ParseReportWithConfig`, parse the header first (for filtering), then verify:
+This is a **different pattern** from the simulation testing use of `SkipSignatureVerification`. In testing, you skip verification permanently. Here, you parse the header first to inspect metadata (such as `WorkflowID()` or `DONID()` for filtering), then call `VerifySignatures` in a separate step — useful when you want to gate registry reads on workflow identity checks.
+
+If you set `SkipSignatureVerification: true` in `ParseReportWithConfig`, parse the header first, then verify:
 
 ```go
 report, err := cre.ParseReportWithConfig(runtime, rawReport, sigs, reportContext, cre.ReportParseConfig{

@@ -15053,11 +15053,11 @@ If a receiver uses [Verifying CRE Reports Offchain](/cre/guides/workflow/using-h
 
 Use [Pattern 4 for offchain verification (hex)](#pattern-4-for-offchain-verification-hex) or the [complete working example](#complete-working-example). Other patterns are for APIs with different formats, not the default verify examples.
 
-## Quick start: Minimal example (binary only)
+## Minimal example (binary)
 
-This example POSTs **raw report bytes** (`application/octet-stream`). It is **not** compatible with the verify guide’s JSON receiver without changes. For sender → verify local testing, skip to the [complete working example](#complete-working-example).
+This example POSTs **raw report bytes** (`application/octet-stream`). Use this if your API accepts raw binary. It is **not** compatible with the verify guide’s JSON receiver — for the sender → verify flow, use the [complete working example](#complete-working-example) instead.
 
-Here's the simplest workflow that generates and submits a report via HTTP:
+Here’s the simplest workflow that generates and submits a report via HTTP:
 
 ```typescript
 import { ok, type HTTPSendRequester, type Report } from "@chainlink/cre-sdk"
@@ -15731,7 +15731,7 @@ The CRE SDK provides `Report.parse()` to do this inside a workflow. Verification
 3. `Report.parse()`: verify signatures and read metadata.
 4. Use trusted `body()` in your logic.
 
-Pair this guide with [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts) on the sender side. For local simulation, start with [Testing locally with simulation](#testing-locally-with-simulation) before the [deploy example](#complete-example-http-receiver-workflow) below.
+Pair this guide with [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts) on the sender side. This guide covers local simulation first, then the deploy example with `authorizedKeys`.
 
 ## What you'll learn
 
@@ -15770,77 +15770,6 @@ Default (`productionEnvironment()`):
 4. **Return a `Report` object** with accessors for workflow ID, owner, execution ID, body, and more.
 
 If verification fails, `Report.parse()` throws (for example, unknown signer, insufficient signatures, or registry read failure).
-
-## Complete example: HTTP receiver workflow (deploy)
-
-This workflow is for **deployed** receivers with `authorizedKeys`. For **local simulation**, use [Testing locally with simulation](#testing-locally-with-simulation) instead.
-
-It accepts JSON with hex `report`, `context`, and `signatures` (from the submit guide’s [complete working example](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#complete-working-example) or [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-for-offchain-verification-hex)), not base64 [Pattern 4](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-json-formatted-report) unless you change decoding.
-
-```typescript
-import {
-  HTTPCapability,
-  handler,
-  Report,
-  type HTTPPayload,
-  type Runtime,
-  type SecretsProvider,
-} from "@chainlink/cre-sdk"
-import { hexToBytes } from "viem"
-import { z } from "zod"
-
-export const configSchema = z
-  .object({
-    authorized_key: z.string(),
-  })
-  .transform((data) => ({
-    authorizedKey: data.authorized_key,
-  }))
-
-export type Config = z.infer<typeof configSchema>
-
-type ParsedPayload = {
-  report: string
-  context: string
-  signatures: string[]
-}
-
-export async function run(runtime: Runtime<Config>, payload: HTTPPayload): Promise<boolean> {
-  const parsed: ParsedPayload = JSON.parse(new TextDecoder().decode(payload.input))
-
-  const rawReport = hexToBytes(`0x${parsed.report}`)
-  const reportContext = hexToBytes(`0x${parsed.context}`)
-  const sigs = parsed.signatures.map((s) => hexToBytes(`0x${s}`))
-
-  const report = await Report.parse(runtime, rawReport, sigs, reportContext)
-
-  runtime.log(`Verified report from workflow ${report.workflowId()}, execution ${report.executionId()}`)
-
-  // Use report.body() for your application logic (ABI-encoded payload from the sender workflow)
-  void report.body()
-
-  return true
-}
-
-export const initWorkflow = (config: Config, _secretsProvider: SecretsProvider) => {
-  const http = new HTTPCapability()
-  // For local simulation, use handler(http.trigger({}), run) — see Testing locally with simulation above.
-  return [
-    handler(http.trigger({ authorizedKeys: [{ type: "KEY_TYPE_ECDSA_EVM", publicKey: config.authorizedKey }] }), run),
-  ]
-}
-```
-
-**What's happening:**
-
-1. An external system POSTs hex-encoded `report`, `context`, and `signatures` to your HTTP trigger.
-2. `Report.parse()` verifies signatures against the production CRE registry.
-3. On success, you read metadata and `body()` safely.
-
-
-<Aside type="caution" title="Hex encoding">
-  The example expects **hex strings without a `0x` prefix** in JSON. Adjust decoding if your API sends `0x`-prefixed values or base64 instead. Pattern 4 in the [submit guide](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-json-formatted-report) uses base64 by default; use [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-for-offchain-verification-hex) when testing this receiver.
-</Aside>
 
 ## Testing locally with simulation
 
@@ -15932,7 +15861,6 @@ export async function run(runtime: Runtime<Config>, payload: HTTPPayload): Promi
 
 export const initWorkflow = () => {
   const http = new HTTPCapability()
-  // Simulation: http.trigger({}). Deploy: add authorizedKeys — see complete example below.
   return [handler(http.trigger({}), run)]
 }
 
@@ -15956,6 +15884,76 @@ cre workflow simulate verify-report-receiver \
 
 - **Sim wiring:** `skipSignatureVerification: true`: logs show metadata and `{ verified: true }`.
 - **Full crypto verify:** default config with a **production-signed** report (not typical for sender-sim → receiver-sim alone).
+
+## Complete example: HTTP receiver workflow (deploy)
+
+Once simulation is working, update the trigger config for deployment with `authorizedKeys`.
+
+It accepts JSON with hex `report`, `context`, and `signatures` (from the submit guide’s [complete working example](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#complete-working-example) or [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-for-offchain-verification-hex)), not base64 [Pattern 4](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-json-formatted-report) unless you change decoding.
+
+```typescript
+import {
+  HTTPCapability,
+  handler,
+  Report,
+  type HTTPPayload,
+  type Runtime,
+  type SecretsProvider,
+} from "@chainlink/cre-sdk"
+import { hexToBytes } from "viem"
+import { z } from "zod"
+
+export const configSchema = z
+  .object({
+    authorized_key: z.string(),
+  })
+  .transform((data) => ({
+    authorizedKey: data.authorized_key,
+  }))
+
+export type Config = z.infer<typeof configSchema>
+
+type ParsedPayload = {
+  report: string
+  context: string
+  signatures: string[]
+}
+
+export async function run(runtime: Runtime<Config>, payload: HTTPPayload): Promise<boolean> {
+  const parsed: ParsedPayload = JSON.parse(new TextDecoder().decode(payload.input))
+
+  const rawReport = hexToBytes(`0x${parsed.report}`)
+  const reportContext = hexToBytes(`0x${parsed.context}`)
+  const sigs = parsed.signatures.map((s) => hexToBytes(`0x${s}`))
+
+  const report = await Report.parse(runtime, rawReport, sigs, reportContext)
+
+  runtime.log(`Verified report from workflow ${report.workflowId()}, execution ${report.executionId()}`)
+
+  // Use report.body() for your application logic (ABI-encoded payload from the sender workflow)
+  report.body()
+
+  return true
+}
+
+export const initWorkflow = (config: Config, _secretsProvider: SecretsProvider) => {
+  const http = new HTTPCapability()
+  return [
+    handler(http.trigger({ authorizedKeys: [{ type: "KEY_TYPE_ECDSA_EVM", publicKey: config.authorizedKey }] }), run),
+  ]
+}
+```
+
+**What's happening:**
+
+1. An external system POSTs hex-encoded `report`, `context`, and `signatures` to your HTTP trigger.
+2. `Report.parse()` verifies signatures against the production CRE registry.
+3. On success, you read metadata and `body()` safely.
+
+
+<Aside type="caution" title="Hex encoding">
+  The example expects **hex strings without a `0x` prefix** in JSON. Adjust decoding if your API sends `0x`-prefixed values or base64 instead. Pattern 4 in the [submit guide](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-json-formatted-report) uses base64 by default; use [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-for-offchain-verification-hex) when testing this receiver.
+</Aside>
 
 ## Report payload format
 
