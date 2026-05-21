@@ -11,9 +11,9 @@ metadata:
 
 import { Aside } from "@components"
 
-This guide shows how to manually generate a **CRE report** containing a single value (like `uint256`, `address`, or `bool`). A CRE report is a DON-signed package from `runtime.GenerateReport()` / `runtime.report()`: your encoded data plus workflow metadata and signatures.
+This guide shows how to manually generate a **[CRE report](/cre/key-terms#report-cre-report)** containing a single value (like `uint256`, `address`, or `bool`). See [Key Terms: Report](/cre/key-terms#report-cre-report) for the full definition; in short, it is a DON-signed package from [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) / [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime) with your encoded data, workflow metadata, and signatures.
 
-This guide covers **creating** the signed report (`GenerateReport()` / `runtime.report()`). **Delivering** it is a separate step: see the table below.
+This guide covers **creating** the signed report ([`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) / [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime)). **Delivering** it is a separate step: see the table below.
 
 **Use this approach when:**
 
@@ -31,12 +31,12 @@ This guide covers **creating** the signed report (`GenerateReport()` / `runtime.
 Manually generating a report for a single value involves two main steps:
 
 1. **ABI-encode the value** into bytes using the `go-ethereum/accounts/abi` package
-1. **Generate a cryptographically signed report** using `runtime.GenerateReport()`
+1. **Generate a cryptographically signed report** using [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values)
 
-| After `GenerateReport()` / `report()`        | Guide                                                                                                        | Who verifies?                                                                                                             |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
-| `evm.Client.WriteReport()` / `writeReport()` | [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain) | `KeystoneForwarder` onchain                                                                                               |
-| `http.Client` `SendReport()`                 | [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http)                | Receiver: [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain) or your API |
+| After [`GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) / [`report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime) | Guide                                                                                                        | Who verifies?                                                                                                             |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| [`WriteReport()`](/cre/reference/sdk/evm-client-go#writereport) / [`writeReport()`](/cre/reference/sdk/evm-client-ts#writereport)                                                   | [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain) | `KeystoneForwarder` onchain                                                                                               |
+| [`SendReport()`](/cre/reference/sdk/http-client-go#sendrequestersendreport) / [`sendReport()`](/cre/reference/sdk/http-client-ts#using-sendreport)                                  | [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http)                | Receiver: [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain) or your API |
 
 See [API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http) for the sender → receiver mental model.
 
