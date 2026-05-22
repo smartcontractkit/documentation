@@ -272,7 +272,7 @@ The mechanism by which a DON comes to a single, reliable, and tamper-proof resul
 
 # Service Quotas
 Source: https://docs.chain.link/cre/service-quotas
-Last Updated: 2025-12-18
+Last Updated: 2026-05-22
 
 This page documents the service quotas for Chainlink Runtime Environment (CRE) workflows.
 
@@ -283,6 +283,14 @@ This page documents the service quotas for Chainlink Runtime Environment (CRE) w
 ## Per-organization quotas
 
 These quotas apply at the organization level.
+
+### Organization membership
+
+| Quota         | Description                                      | Value |
+| ------------- | ------------------------------------------------ | ----- |
+| Maximum users | Maximum number of user accounts per organization | 40    |
+
+This limit can be increased. [Contact us](/cre/support-feedback) to request a higher user cap for your organization.
 
 ### Registry quotas
 
@@ -489,9 +497,23 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-05-14
+Last Updated: 2026-05-22
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.16.0 - May 22, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.16.0" target="_blank">CRE CLI version 1.16.0</a> is now available.**
+
+- **ADI Mainnet support**: ADI mainnet (`adi-mainnet`) is now supported for local simulation and production deployment. See [Supported Networks](/cre/supported-networks).
+- **Bug fixes**: Improved workflow deploy checks, non-interactive simulation behavior for cron triggers, and platform API reliability.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.15.0...v1.16.0)
 
 ## CLI v1.15.0 - May 14, 2026
 
@@ -6622,7 +6644,7 @@ Once your account is created:
 
 # Logging in with the CLI
 Source: https://docs.chain.link/cre/account/cli-login
-Last Updated: 2026-03-26
+Last Updated: 2026-05-22
 
 To deploy and manage workflows with the CRE CLI, you need to authenticate your CLI session with your CRE account. This guide walks you through the browser-based login process.
 
@@ -6683,13 +6705,18 @@ Login completed successfully
 
 Your CLI session is authenticated and ready to use.
 
-In the terminal, the CLI may show **“Fetching user context…”** while it downloads your organization’s tenant configuration from the platform. It then writes **`~/.cre/context.yaml`** (registry manifest: vault gateway URL, registries, secrets auth flows, and related fields). That file is separate from your credentials file (`cre.yaml`). For details and a sanitized example, see [Tenant context cache](/cre/reference/cli/authentication#tenant-context-cache).
+In the terminal, the CLI may show **“Fetching user context…”** while it downloads your organization’s tenant configuration from the platform. It then writes **`~/.cre/context.yaml`** (registry manifest: vault gateway URL, registries, secrets auth flows, and related fields). That file is separate from your credentials file (`~/.cre/cre.yaml`). For details and a sanitized example, see [Tenant context cache](/cre/reference/cli/authentication#tenant-context-cache).
+
+
+<Aside type="caution" title="Do not commit cre.yaml">
+  **`~/.cre/cre.yaml`** contains your session credentials. Keep it in `~/.cre/` on your local machine only—never commit it to version control or copy it into a project repository.
+</Aside>
 
 ---
 
 # Managing Authentication
 Source: https://docs.chain.link/cre/account/managing-auth
-Last Updated: 2026-03-26
+Last Updated: 2026-05-22
 
 This guide covers how to manage your CLI authentication, including browser-based login, API key authentication, checking your status, handling session expiration, and logging out.
 
@@ -6699,7 +6726,7 @@ To authenticate your CLI with your CRE account, use the `cre login` command. Thi
 
 For detailed login instructions, see the [Logging in with the CLI](/cre/account/cli-login) guide.
 
-Browser login stores **`~/.cre/cre.yaml`** (credentials) and **`~/.cre/context.yaml`** (cached **tenant context**: registry manifest from the platform, including vault gateway URL and related settings). **`cre logout`** removes both. For a full description and a sample `context.yaml` shape, see [Tenant context cache](/cre/reference/cli/authentication#tenant-context-cache).
+Browser login stores **`~/.cre/cre.yaml`** (credentials) and **`~/.cre/context.yaml`** (cached **tenant context**: registry manifest from the platform, including vault gateway URL and related settings). **`cre logout`** removes both. Do not commit **`~/.cre/cre.yaml`** to version control. For a full description and a sample `context.yaml` shape, see [Tenant context cache](/cre/reference/cli/authentication#tenant-context-cache).
 
 ## API key authentication
 
@@ -7986,7 +8013,7 @@ The typical workflow development process uses these commands in sequence:
 
 # Authentication Commands
 Source: https://docs.chain.link/cre/reference/cli/authentication
-Last Updated: 2026-05-08
+Last Updated: 2026-05-22
 
 The CRE CLI supports two authentication methods:
 
@@ -8082,8 +8109,8 @@ In a CI/CD pipeline, configure `CRE_API_KEY` as a secret environment variable in
 After a successful browser login — and when using an API key for commands that load credentials — the CLI stores **tenant context** at **`~/.cre/context.yaml`**. This file comes from the platform’s **`getTenantConfig`** data: a **registry manifest** for your organization so the CLI knows your CRE environment layout (for example vault gateway URL, registries, and allowed secrets auth flows per registry). Values are grouped under your CRE environment name (such as `PRODUCTION`).
 
 
-<Aside type="note" title="Credentials vs tenant context">
-  **`cre.yaml`** holds authentication tokens for your session. **`context.yaml`** holds **tenant configuration** returned by the platform, not secrets. **`cre logout`** removes both files from your machine.
+<Aside type="caution" title="Keep credential files out of version control">
+  **`~/.cre/cre.yaml`** holds authentication tokens for your session. Do not commit it to version control or copy it into your project repository—it belongs only in `~/.cre/` on your local machine. If you copy `cre.yaml` elsewhere, add it to `.gitignore` so it is not tracked. **`context.yaml`** holds **tenant configuration** returned by the platform, not secrets. **`cre logout`** removes both files from your machine.
 </Aside>
 
 The following example is **illustrative** only; your registries, addresses, and flow lists depend on your organization and environment.
@@ -12752,7 +12779,7 @@ New DON timestamps are produced continuously (multiple per second). Treat it as 
 
 # Making Confidential Requests
 Source: https://docs.chain.link/cre/guides/workflow/using-confidential-http-client/making-requests-ts
-Last Updated: 2026-02-10
+Last Updated: 2026-05-22
 
 `ConfidentialHTTPClient` implements the [Confidential HTTP capability](/cre/capabilities/confidential-http-ts). Use it when an outbound call should carry [sensitive credentials or request fields](/cre/capabilities/confidential-http-ts#whats-kept-confidential) without assembling them as plain strings in workflow code on every node—see [when to use Confidential vs. regular HTTP](/cre/capabilities/confidential-http-ts#when-to-use-confidential-http-vs-regular-http). For those values, use **`vaultDonSecrets`** with **`{{.key}}`** placeholders only; **`runtime.getSecret()`** in headers or body follows a different trust boundary.
 
@@ -12876,6 +12903,39 @@ Run the simulation:
 ```bash
 cre workflow simulate
 ```
+
+## Request timeout
+
+The `timeout` field on the inner `request` object controls how long the enclave waits for the external API to respond before cancelling the call. It uses the [Protocol Buffers `Duration`](https://protobuf.dev/reference/protobuf/google.protobuf/#duration) type.
+
+**Default and limits:**
+
+- **Default**: If you omit `timeout`, a default of **5 seconds** is applied.
+- **Maximum**: **10 seconds**. Values above this limit will error.
+
+If your API routinely takes longer than 5 seconds, set an explicit timeout so the request does not fail unexpectedly.
+
+Import `Duration` from `@bufbuild/protobuf/wkt` and set `timeout` on the request:
+
+```typescript
+import { Duration } from "@bufbuild/protobuf/wkt"
+
+const response = confHTTPClient
+  .sendRequest(runtime, {
+    request: {
+      url: runtime.config.url,
+      method: "GET",
+      multiHeaders: {
+        Authorization: { values: ["Basic {{.myApiKey}}"] },
+      },
+      timeout: { seconds: BigInt(10), nanos: 0 } satisfies Duration,
+    },
+    vaultDonSecrets: [{ key: "myApiKey", owner: runtime.config.owner }],
+  })
+  .result()
+```
+
+The JSON form is also accepted: `timeout: { seconds: "10", nanos: 0 }` (using `DurationJson`).
 
 ## Template syntax for secrets
 
@@ -13026,7 +13086,7 @@ For the full list of types and methods available on the Confidential HTTP client
 
 # Forwarder Directory
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-ts
-Last Updated: 2026-05-14
+Last Updated: 2026-05-22
 
 <Aside type="note" title="Looking for supported networks?">
   For a complete list of supported networks and version requirements, see [Supported Networks](/cre/supported-networks).
@@ -13069,6 +13129,7 @@ These `MockKeystoneForwarder` addresses are used when running `cre workflow simu
 
 | Network                                                                                                                                                             | Chain Name                    | Mock Forwarder Address                     |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------ |
+| <a href="https://explorer.adifoundation.ai/address/0x6Aa382fb8762E1232936478DD9DbC04F637028f1" target="_blank" rel="noopener noreferrer">ADI Mainnet</a>            | adi-mainnet                   | 0x6Aa382fb8762E1232936478DD9DbC04F637028f1 |
 | <a href="https://arbiscan.io/address/0xd770499057619c9a76205fd4168161cf94abc532" target="_blank" rel="noopener noreferrer">Arbitrum One</a>                         | ethereum-mainnet-arbitrum-1   | 0xd770499057619c9a76205fd4168161cf94abc532 |
 | <a href="https://snowscan.xyz/address/0xdc21e279934ff6721cadfdd112dafb3261f09a2c" target="_blank" rel="noopener noreferrer">Avalanche</a>                           | avalanche-mainnet             | 0xdc21e279934ff6721cadfdd112dafb3261f09a2c |
 | <a href="https://basescan.org/address/0x5e342a8438b4f5d39e72875fcee6f76b39cce548" target="_blank" rel="noopener noreferrer">Base</a>                                | ethereum-mainnet-base-1       | 0x5e342a8438b4f5d39e72875fcee6f76b39cce548 |
@@ -13133,6 +13194,7 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 
 | Network                                                                                                                                                             | Chain Name                    | Forwarder Address                          |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------ |
+| <a href="https://explorer.adifoundation.ai/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ADI Mainnet</a>            | adi-mainnet                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://arbiscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Arbitrum One</a>                         | ethereum-mainnet-arbitrum-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
 | <a href="https://snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche</a>                           | avalanche-mainnet             | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base</a>                                | ethereum-mainnet-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
@@ -13162,6 +13224,7 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- | ------------------------------------------ |
 | <a href="https://explorer.testnet.adifoundation.ai/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ADI Testnet</a>   | adi-testnet                           | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://explorer.curtis.apechain.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Apechain Curtis</a>    | apechain-testnet-curtis               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://testnet.arcscan.app/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Arc Testnet</a>                 | arc-testnet                           | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://sepolia.arbiscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>            | ethereum-testnet-sepolia-arbitrum-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://testnet.snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>             | avalanche-testnet-fuji                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://sepolia.basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base Sepolia</a>               | ethereum-testnet-sepolia-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
@@ -20735,7 +20798,7 @@ This section provides a reference for the built-in trigger capabilities of the C
 
 # Supported Networks
 Source: https://docs.chain.link/cre/supported-networks-ts
-Last Updated: 2026-05-14
+Last Updated: 2026-05-22
 
 This page lists all EVM-compatible networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network.
 
@@ -20748,30 +20811,31 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 
 ## Mainnets
 
-| Network             | CLI      | Go SDK  | TS SDK  |
-| ------------------- | -------- | ------- | ------- |
-| Arbitrum One        | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Avalanche           | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Base                | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| BNB Chain           | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Celo                | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| Ethereum            | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Gnosis Chain        | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| Hyperliquid Mainnet | v1.7.0+  | v1.7.0+ | v1.4.0+ |
-| Ink                 | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| Jovay               | v1.3.0+  | v1.4.0+ | v1.3.1+ |
-| Linea               | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| Mantle              | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| MegaETH             | v1.5.0+  | v1.6.0+ | v1.3.1+ |
-| OP Mainnet          | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Pharos              | v1.3.0+  | v1.4.0+ | v1.3.1+ |
-| Plasma              | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| Polygon             | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Scroll              | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| Sonic               | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| World Chain         | v1.0.11+ | v1.2.0+ | v1.0.9+ |
-| XLayer              | v1.3.0+  | v1.4.0+ | v1.1.3+ |
-| ZKSync Era          | v1.0.6+  | v1.1.3+ | v1.0.7+ |
+| Network             | CLI      | Go SDK   | TS SDK  |
+| ------------------- | -------- | -------- | ------- |
+| ADI Mainnet         | v1.16.0+ | v1.10.0+ | v1.8.0+ |
+| Arbitrum One        | v1.0.0+  | v1.0.0+  | v1.0.1+ |
+| Avalanche           | v1.0.0+  | v1.0.0+  | v1.0.1+ |
+| Base                | v1.0.0+  | v1.0.0+  | v1.0.1+ |
+| BNB Chain           | v1.0.0+  | v1.0.0+  | v1.0.1+ |
+| Celo                | v1.5.0+  | v1.6.0+  | v1.3.0+ |
+| Ethereum            | v1.0.0+  | v1.0.0+  | v1.0.1+ |
+| Gnosis Chain        | v1.5.0+  | v1.6.0+  | v1.3.0+ |
+| Hyperliquid Mainnet | v1.7.0+  | v1.7.0+  | v1.4.0+ |
+| Ink                 | v1.5.0+  | v1.6.0+  | v1.3.0+ |
+| Jovay               | v1.3.0+  | v1.4.0+  | v1.3.1+ |
+| Linea               | v1.5.0+  | v1.6.0+  | v1.3.0+ |
+| Mantle              | v1.5.0+  | v1.6.0+  | v1.3.0+ |
+| MegaETH             | v1.5.0+  | v1.6.0+  | v1.3.1+ |
+| OP Mainnet          | v1.0.0+  | v1.0.0+  | v1.0.1+ |
+| Pharos              | v1.3.0+  | v1.4.0+  | v1.3.1+ |
+| Plasma              | v1.5.0+  | v1.6.0+  | v1.3.0+ |
+| Polygon             | v1.0.0+  | v1.0.0+  | v1.0.1+ |
+| Scroll              | v1.5.0+  | v1.6.0+  | v1.3.0+ |
+| Sonic               | v1.5.0+  | v1.6.0+  | v1.3.0+ |
+| World Chain         | v1.0.11+ | v1.2.0+  | v1.0.9+ |
+| XLayer              | v1.3.0+  | v1.4.0+  | v1.1.3+ |
+| ZKSync Era          | v1.0.6+  | v1.1.3+  | v1.0.7+ |
 
 ## Testnets
 
