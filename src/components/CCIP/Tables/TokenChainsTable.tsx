@@ -53,8 +53,8 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
     return acc
   }, {})
 
-  // Fetch finality data using custom hook
-  const { finalityData, isLoading: loading } = useTokenFinality(token.id, environment, "internalId")
+  // Fetch finality and pool details using custom hook
+  const { finalityData, poolDetails, isLoading: loading } = useTokenFinality(token.id, environment, "internalId")
 
   return (
     <>
@@ -77,7 +77,8 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
               <th>Token pool address</th>
               <th>Pool version</th>
               <th>Custom finality</th>
-              <th>Min Blocks required</th>
+              <th>Finality depth</th>
+              <th>CCV threshold</th>
             </tr>
           </thead>
           <tbody>
@@ -88,23 +89,33 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                 const allLanesPaused = areAllLanesPaused(network.tokenDecimals, lanes[network.key] || {})
 
                 return (
-                  <tr key={index} className={allLanesPaused ? "ccip-table__row--paused" : ""}>
+                  <tr
+                    key={index}
+                    className={`ccip-table__row--clickable ${allLanesPaused ? "ccip-table__row--paused" : ""}`}
+                    onClick={() => {
+                      drawerWidthStore.set(DrawerWidth.Wide)
+                      drawerContentStore.set(() => (
+                        <TokenDrawer
+                          token={token}
+                          network={network}
+                          environment={environment}
+                          poolTypesByChain={poolTypesByChain}
+                        />
+                      ))
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`View ${network.name} token details`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault()
+                        e.currentTarget.click()
+                      }
+                    }}
+                  >
                     <td>
-                      <button
-                        type="button"
+                      <span
                         className={`ccip-table__network-name ${allLanesPaused ? "ccip-table__network-name--paused" : ""}`}
-                        onClick={() => {
-                          drawerWidthStore.set(DrawerWidth.Wide)
-                          drawerContentStore.set(() => (
-                            <TokenDrawer
-                              token={token}
-                              network={network}
-                              environment={environment}
-                              poolTypesByChain={poolTypesByChain}
-                            />
-                          ))
-                        }}
-                        aria-label={`View ${network.name} token details`}
                       >
                         <span className="ccip-table__logoContainer">
                           <img
@@ -135,7 +146,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                             ⏸️
                           </span>
                         )}
-                      </button>
+                      </span>
                     </td>
                     <td>{network.tokenName}</td>
                     <td>{network.tokenSymbol}</td>
@@ -144,7 +155,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                       <Address
                         contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.tokenAddress)}
                         address={network.tokenAddress}
-                        endLength={4}
+                        endLength={3}
                       />
                     </td>
                     <td>{network.tokenPoolRawType ? formatPoolTypeForDisplay(network.tokenPoolRawType) : "—"}</td>
@@ -163,14 +174,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                       {loading ? (
                         "-"
                       ) : finalityData[network.key] ? (
-                        finalityData[network.key].hasCustomFinality === null ? (
-                          <Tooltip
-                            label="N/A"
-                            tip="Custom finality data is currently unavailable. You can find the custom finality settings by reading the Token Pool contract directly on the relevant blockchain."
-                            labelStyle={{ marginRight: "5px" }}
-                            style={{ display: "inline-block", verticalAlign: "middle" }}
-                          />
-                        ) : finalityData[network.key].hasCustomFinality ? (
+                        finalityData[network.key].finalitySafe ? (
                           "Yes"
                         ) : (
                           "No"
@@ -184,14 +188,13 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                         />
                       )}
                     </td>
+                    <td>{loading ? "-" : finalityData[network.key] ? finalityData[network.key].finalityDepth : "-"}</td>
                     <td>
-                      {loading
-                        ? "-"
-                        : finalityData[network.key]
-                          ? finalityData[network.key].minBlockConfirmation === null
-                            ? "-"
-                            : finalityData[network.key].minBlockConfirmation
-                          : "-"}
+                      {(() => {
+                        if (loading) return "-"
+                        const threshold = poolDetails[network.key]?.ccv?.thresholdAmount
+                        return threshold && threshold !== "0" ? threshold : "-"
+                      })()}
                     </td>
                   </tr>
                 )

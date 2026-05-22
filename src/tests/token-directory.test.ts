@@ -7,7 +7,7 @@ import type {
   RateLimiterConfig,
   TokenRateLimits,
   TokenFees,
-  CustomFinalityConfig,
+  PoolFinalityConfig,
 } from "~/lib/ccip/types/index.ts"
 
 // Mock the logger
@@ -36,15 +36,17 @@ describe("Token Directory Types", () => {
           rawType: "BurnMintTokenPool",
           type: "burnMint",
           version: "1.6.0",
-          advancedPoolHooks: null,
-          supportsV2Features: true,
-        },
-        ccvConfig: {
-          thresholdAmount: "100000000000",
-        },
-        customFinality: {
-          hasCustomFinality: true,
-          minBlockConfirmation: 5,
+          hook: null,
+          capabilities: {
+            supportsV2Features: true,
+          },
+          finality: {
+            finalityDepth: 5,
+            finalitySafe: true,
+          },
+          ccv: {
+            thresholdAmount: "100000000000",
+          },
         },
         outboundLanes: {},
         inboundLanes: {},
@@ -55,15 +57,15 @@ describe("Token Directory Types", () => {
       expect(data.selector).toBe("5009297550715157269")
       expect(data.token.address).toBe("0x8236a87084f8B84306f72007F36F2618A5634494")
       expect(data.token.decimals).toBe(8)
-      expect(data.customFinality?.hasCustomFinality).toBe(true)
-      expect(data.customFinality?.minBlockConfirmation).toBe(5)
+      expect(data.pool.finality?.finalitySafe).toBe(true)
+      expect(data.pool.finality?.finalityDepth).toBe(5)
       expect(data.pool.type).toBe("burnMint")
-      expect(data.pool.advancedPoolHooks).toBeNull()
-      expect(data.ccvConfig?.thresholdAmount).toBe("100000000000")
+      expect(data.pool.hook).toBeNull()
+      expect(data.pool.ccv?.thresholdAmount).toBe("100000000000")
     })
 
-    it("should allow null ccvConfig and customFinality for v1.x pools only", () => {
-      // For v1.x pools (supportsV2Features=false), ccvConfig and customFinality are null
+    it("should allow null finality and ccv for v1.x pools only", () => {
+      // For v1.x pools (supportsV2Features=false), finality and ccv are null
       const data: TokenDirectoryData = {
         internalId: "mainnet",
         chainId: 1,
@@ -77,22 +79,24 @@ describe("Token Directory Types", () => {
           rawType: "LockReleaseTokenPool",
           type: "lockRelease",
           version: "1.6.0",
-          advancedPoolHooks: null,
-          supportsV2Features: false, // v1.x pool - ccvConfig and customFinality not supported
+          hook: null,
+          capabilities: {
+            supportsV2Features: false, // v1.x pool - finality and ccv not supported
+          },
+          finality: null,
+          ccv: null,
         },
-        ccvConfig: null, // null only valid for v1.x pools
-        customFinality: null, // null only valid for v1.x pools
         outboundLanes: {},
         inboundLanes: {},
       }
 
-      expect(data.pool.supportsV2Features).toBe(false)
-      expect(data.ccvConfig).toBeNull()
-      expect(data.customFinality).toBeNull()
+      expect(data.pool.capabilities.supportsV2Features).toBe(false)
+      expect(data.pool.finality).toBeNull()
+      expect(data.pool.ccv).toBeNull()
     })
 
-    it("should have ccvConfig object for v2.x pools (never null at field level)", () => {
-      // For v2.x pools, ccvConfig is always an object:
+    it("should have ccv object for v2.x pools (never null at field level)", () => {
+      // For v2.x pools, ccv is always an object:
       // - {thresholdAmount: "0"} = not configured
       // - {thresholdAmount: "value"} = configured
       // - {thresholdAmount: null} = downstream API error
@@ -109,18 +113,20 @@ describe("Token Directory Types", () => {
           rawType: "LockReleaseTokenPool",
           type: "lockRelease",
           version: "2.0.0",
-          advancedPoolHooks: null,
-          supportsV2Features: true, // v2.x pool
+          hook: null,
+          capabilities: {
+            supportsV2Features: true, // v2.x pool
+          },
+          finality: { finalityDepth: 0, finalitySafe: false },
+          ccv: { thresholdAmount: "0" }, // v2 pool without CCV configured
         },
-        ccvConfig: { thresholdAmount: "0" }, // v2 pool without CCV configured
-        customFinality: { hasCustomFinality: false, minBlockConfirmation: 0 },
         outboundLanes: {},
         inboundLanes: {},
       }
 
-      expect(dataNotConfigured.pool.supportsV2Features).toBe(true)
-      expect(dataNotConfigured.ccvConfig).not.toBeNull()
-      expect(dataNotConfigured.ccvConfig?.thresholdAmount).toBe("0")
+      expect(dataNotConfigured.pool.capabilities.supportsV2Features).toBe(true)
+      expect(dataNotConfigured.pool.ccv).not.toBeNull()
+      expect(dataNotConfigured.pool.ccv?.thresholdAmount).toBe("0")
     })
   })
 
@@ -346,15 +352,10 @@ describe("Token Directory API response validation", () => {
         rawType: "BurnMintTokenPool",
         type: "burnMint",
         version: "1.6.0",
-        advancedPoolHooks: null,
-        supportsV2Features: true,
-      },
-      ccvConfig: {
-        thresholdAmount: "100000000000",
-      },
-      customFinality: {
-        hasCustomFinality: true,
-        minBlockConfirmation: 5,
+        hook: null,
+        capabilities: { supportsV2Features: true },
+        finality: { finalityDepth: 5, finalitySafe: true },
+        ccv: { thresholdAmount: "100000000000" },
       },
       outboundLanes: {},
       inboundLanes: {},
@@ -396,7 +397,7 @@ describe("Token Directory API response validation", () => {
 
 describe("Token Directory example responses", () => {
   it("should represent v2.0 pool (LBTC) with CCV features enabled", () => {
-    // v2.0 pool - CCV features enabled (ccvConfig, threshold verifiers)
+    // v2.0 pool - CCV features enabled (ccv, threshold verifiers)
     const lbtcData: TokenDirectoryData = {
       internalId: "mainnet",
       chainId: 1,
@@ -410,15 +411,10 @@ describe("Token Directory example responses", () => {
         rawType: "BurnMintTokenPool",
         type: "burnMint",
         version: "2.0.0", // v2.0 pool
-        advancedPoolHooks: null,
-        supportsV2Features: true,
-      },
-      ccvConfig: {
-        thresholdAmount: "100000000000", // CCV config present for v2.0+
-      },
-      customFinality: {
-        hasCustomFinality: true,
-        minBlockConfirmation: 5,
+        hook: null,
+        capabilities: { supportsV2Features: true },
+        finality: { finalityDepth: 5, finalitySafe: true },
+        ccv: { thresholdAmount: "100000000000" },
       },
       outboundLanes: {
         "arbitrum-mainnet": {
@@ -470,9 +466,9 @@ describe("Token Directory example responses", () => {
     }
 
     expect(lbtcData.pool.version).toBe("2.0.0")
-    expect(lbtcData.ccvConfig).not.toBeNull()
-    expect(lbtcData.ccvConfig?.thresholdAmount).toBeDefined()
-    expect(parseInt(lbtcData.ccvConfig?.thresholdAmount || "0")).toBeGreaterThan(0)
+    expect(lbtcData.pool.ccv).not.toBeNull()
+    expect(lbtcData.pool.ccv?.thresholdAmount).toBeDefined()
+    expect(parseInt(lbtcData.pool.ccv?.thresholdAmount || "0")).toBeGreaterThan(0)
     const outboundLane = lbtcData.outboundLanes["arbitrum-mainnet"]
     expect(outboundLane.verifiers).not.toBeNull()
     expect(outboundLane.verifiers!.aboveThreshold!.length).toBeGreaterThan(
@@ -484,7 +480,7 @@ describe("Token Directory example responses", () => {
   })
 
   it("should represent v1.6 pool (DAI) with CCV features disabled", () => {
-    // v1.6 pool - CCV features disabled (no ccvConfig, verifiers null)
+    // v1.6 pool - CCV features disabled (no ccv, verifiers null)
     const daiData: TokenDirectoryData = {
       internalId: "mainnet",
       chainId: 1,
@@ -498,11 +494,13 @@ describe("Token Directory example responses", () => {
         rawType: "LockReleaseTokenPool",
         type: "lockRelease",
         version: "1.6.0", // v1.6 pool
-        advancedPoolHooks: null,
-        supportsV2Features: false, // v1.x pool does NOT support v2 features
+        hook: null,
+        capabilities: {
+          supportsV2Features: false, // v1.x pool does NOT support v2 features
+        },
+        finality: null,
+        ccv: null,
       },
-      ccvConfig: null, // No CCV config for v1.x pools
-      customFinality: null, // v1.x pool - feature not supported
       outboundLanes: {
         "arbitrum-mainnet": {
           internalId: "arbitrum-mainnet",
@@ -523,9 +521,9 @@ describe("Token Directory example responses", () => {
     }
 
     expect(daiData.pool.version).toBe("1.6.0")
-    expect(daiData.pool.supportsV2Features).toBe(false)
-    expect(daiData.ccvConfig).toBeNull()
-    expect(daiData.customFinality).toBeNull()
+    expect(daiData.pool.capabilities.supportsV2Features).toBe(false)
+    expect(daiData.pool.ccv).toBeNull()
+    expect(daiData.pool.finality).toBeNull()
     expect(daiData.outboundLanes["arbitrum-mainnet"].verifiers).toBeNull()
     expect(daiData.outboundLanes["arbitrum-mainnet"].rateLimits.standard).not.toBeNull()
     expect(daiData.outboundLanes["arbitrum-mainnet"].rateLimits.custom).toBeNull()
@@ -534,7 +532,7 @@ describe("Token Directory example responses", () => {
 
 describe("Version-conditional API behavior", () => {
   describe("v1.x pool response format", () => {
-    it("should have null ccvConfig and customFinality for v1.x pools", () => {
+    it("should have null finality and ccv for v1.x pools", () => {
       const v1PoolData: TokenDirectoryData = {
         internalId: "mainnet",
         chainId: 1,
@@ -545,18 +543,20 @@ describe("Version-conditional API behavior", () => {
           rawType: "LockReleaseTokenPool",
           type: "lockRelease",
           version: "1.6.0",
-          advancedPoolHooks: null,
-          supportsV2Features: false, // v1.x pool does NOT support v2 features
+          hook: null,
+          capabilities: {
+            supportsV2Features: false,
+          },
+          finality: null,
+          ccv: null,
         },
-        ccvConfig: null, // Must be null for v1.x (feature not supported)
-        customFinality: null, // Must be null for v1.x (feature not supported)
         outboundLanes: {},
         inboundLanes: {},
       }
 
-      expect(v1PoolData.pool.supportsV2Features).toBe(false)
-      expect(v1PoolData.ccvConfig).toBeNull()
-      expect(v1PoolData.customFinality).toBeNull()
+      expect(v1PoolData.pool.capabilities.supportsV2Features).toBe(false)
+      expect(v1PoolData.pool.ccv).toBeNull()
+      expect(v1PoolData.pool.finality).toBeNull()
     })
 
     it("should have null verifiers for v1.x pools", () => {
@@ -574,7 +574,7 @@ describe("Version-conditional API behavior", () => {
   })
 
   describe("v2.0+ pool response format", () => {
-    it("should have ccvConfig with thresholdAmount for v2.0+ pools", () => {
+    it("should have ccv with thresholdAmount for v2.0+ pools", () => {
       const v2PoolData: TokenDirectoryData = {
         internalId: "mainnet",
         chainId: 1,
@@ -585,21 +585,18 @@ describe("Version-conditional API behavior", () => {
           rawType: "BurnMintTokenPool",
           type: "burnMint",
           version: "2.0.0",
-          advancedPoolHooks: null,
-          supportsV2Features: true,
-        },
-        ccvConfig: { thresholdAmount: "100000000000" }, // Present for v2.0+
-        customFinality: {
-          hasCustomFinality: true,
-          minBlockConfirmation: 5,
+          hook: null,
+          capabilities: { supportsV2Features: true },
+          finality: { finalityDepth: 5, finalitySafe: true },
+          ccv: { thresholdAmount: "100000000000" },
         },
         outboundLanes: {},
         inboundLanes: {},
       }
 
-      expect(v2PoolData.ccvConfig).not.toBeNull()
-      expect(v2PoolData.ccvConfig?.thresholdAmount).toBeDefined()
-      expect(v2PoolData.customFinality?.hasCustomFinality).toBe(true)
+      expect(v2PoolData.pool.ccv).not.toBeNull()
+      expect(v2PoolData.pool.ccv?.thresholdAmount).toBeDefined()
+      expect(v2PoolData.pool.finality?.finalitySafe).toBe(true)
     })
 
     it("should have aboveThreshold include additional verifiers for v2.0+ pools", () => {
@@ -633,50 +630,40 @@ describe("Version-conditional API behavior", () => {
   })
 })
 
-describe("CustomFinalityConfig structure", () => {
-  it("should have hasCustomFinality and minBlockConfirmation", () => {
-    const config: CustomFinalityConfig = {
-      hasCustomFinality: true,
-      minBlockConfirmation: 5,
+describe("PoolFinalityConfig structure", () => {
+  it("should have finalityDepth and finalitySafe", () => {
+    const config: PoolFinalityConfig = {
+      finalityDepth: 5,
+      finalitySafe: true,
     }
 
-    expect(config.hasCustomFinality).toBe(true)
-    expect(config.minBlockConfirmation).toBe(5)
+    expect(config.finalityDepth).toBe(5)
+    expect(config.finalitySafe).toBe(true)
   })
 
-  it("should allow null values when data is unavailable", () => {
-    const config: CustomFinalityConfig = {
-      hasCustomFinality: null,
-      minBlockConfirmation: null,
+  it("should have finalitySafe=false when finalityDepth is 0", () => {
+    const config: PoolFinalityConfig = {
+      finalityDepth: 0,
+      finalitySafe: false,
     }
 
-    expect(config.hasCustomFinality).toBeNull()
-    expect(config.minBlockConfirmation).toBeNull()
+    expect(config.finalitySafe).toBe(false)
+    expect(config.finalityDepth).toBe(0)
   })
 
-  it("should have hasCustomFinality=false when minBlockConfirmation is 0", () => {
-    const config: CustomFinalityConfig = {
-      hasCustomFinality: false,
-      minBlockConfirmation: 0,
+  it("should derive finalitySafe from finalityDepth > 0", () => {
+    // finalitySafe = true when finalityDepth > 0
+    const enabledConfig: PoolFinalityConfig = {
+      finalityDepth: 3,
+      finalitySafe: true,
     }
+    expect(enabledConfig.finalitySafe).toBe(enabledConfig.finalityDepth > 0)
 
-    expect(config.hasCustomFinality).toBe(false)
-    expect(config.minBlockConfirmation).toBe(0)
-  })
-
-  it("should derive hasCustomFinality from minBlockConfirmation > 0", () => {
-    // hasCustomFinality = true when minBlockConfirmation > 0
-    const enabledConfig: CustomFinalityConfig = {
-      hasCustomFinality: true,
-      minBlockConfirmation: 3,
+    // finalitySafe = false when finalityDepth = 0
+    const disabledConfig: PoolFinalityConfig = {
+      finalityDepth: 0,
+      finalitySafe: false,
     }
-    expect(enabledConfig.hasCustomFinality).toBe(enabledConfig.minBlockConfirmation! > 0)
-
-    // hasCustomFinality = false when minBlockConfirmation = 0
-    const disabledConfig: CustomFinalityConfig = {
-      hasCustomFinality: false,
-      minBlockConfirmation: 0,
-    }
-    expect(disabledConfig.hasCustomFinality).toBe(disabledConfig.minBlockConfirmation! > 0)
+    expect(disabledConfig.finalitySafe).toBe(disabledConfig.finalityDepth > 0)
   })
 })

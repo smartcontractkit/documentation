@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react"
-import type { CustomFinalityConfig, Environment, OutputKeyType } from "~/lib/ccip/types/index.ts"
+import type { PoolFinalityConfig, ChainPoolDetails, Environment, OutputKeyType } from "~/lib/ccip/types/index.ts"
 import { realtimeDataService } from "~/lib/ccip/services/realtime-data-instance.ts"
 
 interface UseTokenFinalityResult {
-  finalityData: Record<string, CustomFinalityConfig>
+  finalityData: Record<string, PoolFinalityConfig>
+  poolDetails: Record<string, ChainPoolDetails>
   isLoading: boolean
   error: Error | null
 }
@@ -13,14 +14,15 @@ interface UseTokenFinalityResult {
  * @param tokenCanonicalSymbol - Token canonical symbol (e.g., "BETS", "LINK")
  * @param environment - Network environment (mainnet/testnet)
  * @param outputKey - Format to use for displaying chain keys (optional)
- * @returns Finality data for all chains, loading state, and error state
+ * @returns Finality data, pool details, loading state, and error state
  */
 export function useTokenFinality(
   tokenCanonicalSymbol: string,
   environment: Environment,
   outputKey?: OutputKeyType
 ): UseTokenFinalityResult {
-  const [finalityData, setFinalityData] = useState<Record<string, CustomFinalityConfig>>({})
+  const [finalityData, setFinalityData] = useState<Record<string, PoolFinalityConfig>>({})
+  const [poolDetails, setPoolDetails] = useState<Record<string, ChainPoolDetails>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
@@ -35,11 +37,13 @@ export function useTokenFinality(
         const result = await realtimeDataService.getTokenFinality(tokenCanonicalSymbol, environment, outputKey)
 
         if (isMounted) {
-          if (result?.data) {
-            setFinalityData(result.data)
+          if (result) {
+            setFinalityData(result.finality)
+            setPoolDetails(result.poolDetails)
           } else {
             console.warn("[useTokenFinality] No data received")
             setFinalityData({})
+            setPoolDetails({})
           }
         }
       } catch (err) {
@@ -47,6 +51,7 @@ export function useTokenFinality(
           console.error("Failed to fetch token finality data:", err)
           setError(err instanceof Error ? err : new Error("Failed to fetch token finality"))
           setFinalityData({})
+          setPoolDetails({})
         }
       } finally {
         if (isMounted) {
@@ -62,5 +67,5 @@ export function useTokenFinality(
     }
   }, [tokenCanonicalSymbol, environment, outputKey])
 
-  return { finalityData, isLoading, error }
+  return { finalityData, poolDetails, isLoading, error }
 }

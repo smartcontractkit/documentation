@@ -115,6 +115,17 @@ function TokenDrawer({
           explorer: network.explorer,
           chainType: network.chainType,
         }}
+        poolDetails={
+          tokenDirectory?.pool
+            ? {
+                version: tokenDirectory.pool.version,
+                hook: tokenDirectory.pool.hook,
+                finality: tokenDirectory.pool.finality,
+                ccv: tokenDirectory.pool.ccv,
+              }
+            : null
+        }
+        isLoadingPoolDetails={isLoadingRateLimits}
         inDrawer={true}
       />
       <div className="ccip-table__drawer-container ccip-table__drawer-container--token">

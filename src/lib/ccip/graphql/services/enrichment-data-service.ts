@@ -20,6 +20,7 @@ import { normalizeAddressForQuery } from "~/lib/ccip/graphql/utils/address-utils
 import {
   resolveTokenAddress,
   resolveAllTokenAddresses,
+  resolveCanonicalSymbolByAddress,
   toSelectorName,
   getAllTokenSymbols,
   getChainFamilyForDirectoryKey,
@@ -423,12 +424,16 @@ export async function fetchAllTokensForLane(
         ),
       ])
 
-      // Build destination pool type map: tokenSymbol → destPoolType
+      // Build destination pool type map keyed by canonical token symbol.
+      // GraphQL returns the on-chain symbol (e.g. "Bridged mswETH"), which can
+      // differ from the canonical key in tokens.json (e.g. "mswETH"). Normalizing
+      // here keeps the inbound/outbound join correct when the symbols differ
+      // between source and destination chains.
       const destPoolTypeBySymbol = new Map<string, string>()
       for (const node of inboundResult.allCcipTokenPoolLanesWithPools?.nodes ?? []) {
-        if (node.tokenSymbol) {
-          destPoolTypeBySymbol.set(node.tokenSymbol, normalizePoolType(extractRawType(node.typeAndVersion)))
-        }
+        if (!node.tokenSymbol || !node.token) continue
+        const canonical = resolveCanonicalSymbolByAddress(environment, node.token, destDirectoryKey) ?? node.tokenSymbol
+        destPoolTypeBySymbol.set(canonical, normalizePoolType(extractRawType(node.typeAndVersion)))
       }
 
       const results: LaneTokenData[] = []
@@ -436,12 +441,14 @@ export async function fetchAllTokensForLane(
         if (!node.tokenSymbol || !node.token) continue
 
         const rawType = extractRawType(node.typeAndVersion)
+        const canonicalSymbol =
+          resolveCanonicalSymbolByAddress(environment, node.token, sourceDirectoryKey) ?? node.tokenSymbol
         results.push({
-          tokenSymbol: node.tokenSymbol,
+          tokenSymbol: canonicalSymbol,
           tokenAddress: node.token,
           tokenDecimals: node.tokenDecimals ?? 18,
           sourcePoolType: normalizePoolType(rawType),
-          destPoolType: destPoolTypeBySymbol.get(node.tokenSymbol) ?? "",
+          destPoolType: destPoolTypeBySymbol.get(canonicalSymbol) ?? "",
           rateLimits: {
             standard: toRateLimiterDirections(
               node.inboundCapacity,

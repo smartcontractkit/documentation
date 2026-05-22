@@ -117,40 +117,48 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
               ?.filter((network) => network.name.toLowerCase().includes(search.toLowerCase()))
               .slice(0, seeMore ? lanes.length : BEFORE_SEE_MORE)
               .map((network, index) => (
-                <tr key={index}>
-                  <td>
-                    <button
-                      type="button"
-                      className="ccip-table__network-name"
-                      onClick={() => {
-                        const laneData = getLane({
-                          sourceChain: sourceNetwork.key as SupportedChain,
-                          destinationChain: network.key as SupportedChain,
-                          environment,
-                          version: Version.V1_2_0,
-                        })
+                <tr
+                  key={index}
+                  className="ccip-table__row--clickable"
+                  onClick={() => {
+                    const laneData = getLane({
+                      sourceChain: sourceNetwork.key as SupportedChain,
+                      destinationChain: network.key as SupportedChain,
+                      environment,
+                      version: Version.V1_2_0,
+                    })
 
-                        drawerWidthStore.set(DrawerWidth.Wide)
-                        drawerContentStore.set(() => (
-                          <LaneDrawer
-                            environment={environment}
-                            lane={laneData}
-                            sourceNetwork={sourceNetwork}
-                            destinationNetwork={{
-                              name: network?.name || "",
-                              logo: network?.logo || "",
-                              key: network.key,
-                            }}
-                            inOutbound={inOutbound}
-                            explorer={explorer}
-                          />
-                        ))
-                      }}
-                      aria-label={`View lane details for ${network.name}`}
-                    >
+                    drawerWidthStore.set(DrawerWidth.Wide)
+                    drawerContentStore.set(() => (
+                      <LaneDrawer
+                        environment={environment}
+                        lane={laneData}
+                        sourceNetwork={sourceNetwork}
+                        destinationNetwork={{
+                          name: network?.name || "",
+                          logo: network?.logo || "",
+                          key: network.key,
+                        }}
+                        inOutbound={inOutbound}
+                        explorer={explorer}
+                      />
+                    ))
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`View lane details for ${network.name}`}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      e.currentTarget.click()
+                    }
+                  }}
+                >
+                  <td>
+                    <span className="ccip-table__network-name">
                       <img src={network.logo} alt={`${network.name} blockchain logo`} className="ccip-table__logo" />
                       {network.name}
-                    </button>
+                    </span>
                   </td>
                   <td
                     style={{ textAlign: "right" }}

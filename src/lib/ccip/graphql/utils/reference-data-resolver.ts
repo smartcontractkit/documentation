@@ -55,6 +55,32 @@ export function resolveTokenAddress(
 }
 
 /**
+ * Resolves a canonical token key from an on-chain token address on a specific chain.
+ *
+ * The GraphQL API returns the on-chain symbol (e.g. "Bridged mswETH"), which can
+ * differ from the canonical key in tokens.json (e.g. "mswETH"). Building directory
+ * links from the on-chain symbol 404s — pages are generated from the canonical key.
+ *
+ * @returns Canonical token symbol/key, or null if no match found
+ */
+export function resolveCanonicalSymbolByAddress(
+  environment: Environment,
+  tokenAddress: string,
+  directoryKey: string
+): string | null {
+  if (!tokenAddress) return null
+  const { tokensReferenceData } = getRefData(environment)
+  const normalized = tokenAddress.toLowerCase()
+  for (const [canonicalSymbol, chainEntries] of Object.entries(tokensReferenceData)) {
+    const entry = chainEntries[directoryKey]
+    if (entry?.tokenAddress && entry.tokenAddress.toLowerCase() === normalized) {
+      return canonicalSymbol
+    }
+  }
+  return null
+}
+
+/**
  * Resolves all token addresses for a token across all chains.
  * @returns Map of directoryKey → tokenAddress
  */

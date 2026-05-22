@@ -21,10 +21,23 @@ interface TokenDetailsHeroProps {
     poolRawType: string
     poolAddress: string
   }
+  poolDetails?: {
+    version: string
+    hook: string | null
+    finality: { finalityDepth: number; finalitySafe: boolean } | null
+    ccv: { thresholdAmount: string | null } | null
+  } | null
+  isLoadingPoolDetails?: boolean
   inDrawer?: boolean
 }
 
-function TokenDetailsHero({ network, token, inDrawer = false }: TokenDetailsHeroProps) {
+function TokenDetailsHero({
+  network,
+  token,
+  poolDetails,
+  isLoadingPoolDetails,
+  inDrawer = false,
+}: TokenDetailsHeroProps) {
   return (
     <section className={`ccip-chain-hero ${inDrawer ? "ccip-chain-hero--drawer" : ""}`}>
       <div className="ccip-chain-hero__content">
@@ -81,6 +94,49 @@ function TokenDetailsHero({ network, token, inDrawer = false }: TokenDetailsHero
               />
             </div>
           </div>
+          {poolDetails && (
+            <>
+              <div className="ccip-chain-hero__details__item">
+                <div className="ccip-chain-hero__details__label">Pool version</div>
+                <div className="ccip-chain-hero__details__value">{poolDetails.version || "—"}</div>
+              </div>
+              <div className="ccip-chain-hero__details__item">
+                <div className="ccip-chain-hero__details__label">Custom finality</div>
+                <div className="ccip-chain-hero__details__value">
+                  {poolDetails.finality ? (poolDetails.finality.finalitySafe ? "Yes" : "No") : "—"}
+                </div>
+              </div>
+              {poolDetails.finality?.finalitySafe && (
+                <div className="ccip-chain-hero__details__item">
+                  <div className="ccip-chain-hero__details__label">Finality depth</div>
+                  <div className="ccip-chain-hero__details__value">{poolDetails.finality.finalityDepth}</div>
+                </div>
+              )}
+              {poolDetails.ccv && poolDetails.ccv.thresholdAmount && poolDetails.ccv.thresholdAmount !== "0" && (
+                <div className="ccip-chain-hero__details__item">
+                  <div className="ccip-chain-hero__details__label">CCV threshold</div>
+                  <div className="ccip-chain-hero__details__value">{poolDetails.ccv.thresholdAmount}</div>
+                </div>
+              )}
+              {poolDetails.hook && (
+                <div className="ccip-chain-hero__details__item">
+                  <div className="ccip-chain-hero__details__label">Pool hook</div>
+                  <div className="ccip-chain-hero__details__value">
+                    <Address
+                      endLength={4}
+                      contractUrl={getExplorerAddressUrl(network?.explorer, network?.chainType)(poolDetails.hook)}
+                      address={poolDetails.hook}
+                    />
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+          {isLoadingPoolDetails && !poolDetails && (
+            <div className="ccip-chain-hero__details__item">
+              <div className="ccip-chain-hero__details__value">Loading pool details...</div>
+            </div>
+          )}
         </div>
       </div>
     </section>

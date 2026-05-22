@@ -45,7 +45,7 @@ type Pool = {
   rawType: string
   type: PoolType
   version: string
-  advancedPoolHooks?: string
+  hook?: string
 }
 
 export type PoolInfo = {

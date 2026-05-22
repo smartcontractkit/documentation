@@ -189,11 +189,29 @@ function LaneDrawer({
               </tr>
             </thead>
             <tbody>
-              {processedTokens.map((token, index) => (
-                <tr key={index} className={token.isPaused ? "ccip-table__row--paused" : ""}>
-                  <td>
-                    <a href={`/ccip/directory/${environment}/token/${token.id}`}>
-                      <div
+              {processedTokens.map((token, index) => {
+                const tokenHref = `/ccip/directory/${environment}/token/${token.id}`
+                const rowProps = token.isPaused
+                  ? { className: "ccip-table__row--paused" }
+                  : {
+                      className: "ccip-table__row--clickable",
+                      onClick: () => {
+                        window.location.assign(tokenHref)
+                      },
+                      role: "button",
+                      tabIndex: 0,
+                      "aria-label": `View ${token.id} token details`,
+                      onKeyDown: (e: React.KeyboardEvent<HTMLTableRowElement>) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault()
+                          e.currentTarget.click()
+                        }
+                      },
+                    }
+                return (
+                  <tr key={index} {...rowProps}>
+                    <td>
+                      <span
                         className={`ccip-table__network-name ${token.isPaused ? "ccip-table__network-name--paused" : ""}`}
                       >
                         <img
@@ -211,47 +229,51 @@ function LaneDrawer({
                             ⏸️
                           </span>
                         )}
-                      </div>
-                    </a>
-                  </td>
-                  <td data-clipboard-type="token">
-                    <Address
-                      address={token.tokenAddress}
-                      endLength={4}
-                      contractUrl={getExplorerAddressUrl(explorer)(token.tokenAddress)}
-                    />
-                  </td>
-                  <td>{token.decimals}</td>
-                  <td>
-                    {inOutbound === LaneFilter.Outbound
-                      ? determineTokenMechanism(token.sourcePoolType as PoolType, token.destPoolType as PoolType)
-                      : determineTokenMechanism(token.destPoolType as PoolType, token.sourcePoolType as PoolType)}
-                  </td>
+                      </span>
+                    </td>
+                    <td data-clipboard-type="token">
+                      <Address
+                        address={token.tokenAddress}
+                        endLength={4}
+                        contractUrl={getExplorerAddressUrl(explorer)(token.tokenAddress)}
+                      />
+                    </td>
+                    <td>{token.decimals}</td>
+                    <td>
+                      {inOutbound === LaneFilter.Outbound
+                        ? determineTokenMechanism(token.sourcePoolType as PoolType, token.destPoolType as PoolType)
+                        : determineTokenMechanism(token.destPoolType as PoolType, token.sourcePoolType as PoolType)}
+                    </td>
 
-                  <td>
-                    <RateLimitCell
-                      isLoading={isLoadingRateLimits}
-                      rateLimit={token.rateLimits.standard}
-                      type="capacity"
-                      showUnavailableTooltip
-                    />
-                  </td>
-                  <td className="rate-tooltip-cell">
-                    <RateLimitCell isLoading={isLoadingRateLimits} rateLimit={token.rateLimits.standard} type="rate" />
-                  </td>
-                  <td>
-                    <RateLimitCell
-                      isLoading={isLoadingRateLimits}
-                      rateLimit={token.rateLimits.ftf}
-                      type="capacity"
-                      showUnavailableTooltip
-                    />
-                  </td>
-                  <td>
-                    <RateLimitCell isLoading={isLoadingRateLimits} rateLimit={token.rateLimits.ftf} type="rate" />
-                  </td>
-                </tr>
-              ))}
+                    <td>
+                      <RateLimitCell
+                        isLoading={isLoadingRateLimits}
+                        rateLimit={token.rateLimits.standard}
+                        type="capacity"
+                        showUnavailableTooltip
+                      />
+                    </td>
+                    <td className="rate-tooltip-cell">
+                      <RateLimitCell
+                        isLoading={isLoadingRateLimits}
+                        rateLimit={token.rateLimits.standard}
+                        type="rate"
+                      />
+                    </td>
+                    <td>
+                      <RateLimitCell
+                        isLoading={isLoadingRateLimits}
+                        rateLimit={token.rateLimits.ftf}
+                        type="capacity"
+                        showUnavailableTooltip
+                      />
+                    </td>
+                    <td>
+                      <RateLimitCell isLoading={isLoadingRateLimits} rateLimit={token.rateLimits.ftf} type="rate" />
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

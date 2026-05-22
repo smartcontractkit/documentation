@@ -5,10 +5,11 @@ import {
   TokenDirectoryServiceResponse,
   CCVConfigData,
   CCVChainConfig,
+  CCVConfig,
+  PoolFinalityConfig,
   LaneVerifiers,
   NamingConvention,
   OutputKeyType,
-  CustomFinalityConfig,
 } from "~/lib/ccip/types/index.ts"
 import { loadReferenceData, Version } from "@config/data/ccip/index.ts"
 import type { LaneConfig, ChainConfig } from "@config/data/ccip/types.ts"
@@ -200,12 +201,22 @@ export class TokenDirectoryService {
       // Format output based on outputKey and internalIdFormat
       const formattedInternalId = chainIdService.format(directoryKey, internalIdFormat)
 
-      // Build custom finality config (v2.0+ pools only)
-      let customFinality: CustomFinalityConfig | null = null
+      // Build finality config (v2.0+ pools only)
+      let finality: PoolFinalityConfig | null = null
       if (isCCVEnabled) {
         const minBlockConfirmation = await fetchMinBlockConfirmations(environment, tokenSymbol, directoryKey)
-        customFinality = this.buildCustomFinalityConfig(minBlockConfirmation)
+        finality = this.buildFinalityConfig(minBlockConfirmation)
       }
+
+      // Build CCV config
+      // - v1.x pool (isCCVEnabled=false): null (feature not supported)
+      // - v2.x pool with config entry: {thresholdAmount: value} (could be null for downstream error)
+      // - v2.x pool without config entry: {thresholdAmount: "0"} (not configured)
+      const ccv: CCVConfig | null = isCCVEnabled
+        ? ccvConfig
+          ? { thresholdAmount: ccvConfig.thresholdAmount }
+          : { thresholdAmount: "0" }
+        : null
 
       const data: TokenDirectoryData = {
         internalId: formattedInternalId,
@@ -220,19 +231,13 @@ export class TokenDirectoryService {
           rawType: poolInfo.rawType,
           type: poolInfo.type,
           version: await getEffectivePoolVersion(environment, tokenSymbol, directoryKey, poolInfo.version || ""),
-          advancedPoolHooks: null,
-          supportsV2Features: isCCVEnabled,
+          hook: null,
+          capabilities: {
+            supportsV2Features: isCCVEnabled,
+          },
+          finality,
+          ccv,
         },
-        // ccvConfig handling:
-        // - v1.x pool (isCCVEnabled=false): null (feature not supported)
-        // - v2.x pool with config entry: {thresholdAmount: value} (could be null for downstream error)
-        // - v2.x pool without config entry: {thresholdAmount: "0"} (not configured)
-        ccvConfig: isCCVEnabled
-          ? ccvConfig
-            ? { thresholdAmount: ccvConfig.thresholdAmount }
-            : { thresholdAmount: "0" }
-          : null,
-        customFinality,
         outboundLanes,
         inboundLanes,
       }
@@ -594,29 +599,20 @@ export class TokenDirectoryService {
   }
 
   /**
-   * Builds custom finality configuration from minBlockConfirmation value
+   * Builds pool finality configuration from minBlockConfirmation value
    *
    * @param minBlockConfirmation - The minimum block confirmation value, or null/undefined if unavailable
-   * @returns CustomFinalityConfig object with hasCustomFinality and minBlockConfirmation
+   * @returns PoolFinalityConfig with finalityDepth and finalitySafe, or null if unavailable
    */
-  private buildCustomFinalityConfig(minBlockConfirmation: number | null | undefined): CustomFinalityConfig | null {
-    // If minBlockConfirmation is undefined, we don't have rate limits data for this token/chain
-    if (minBlockConfirmation === undefined) {
+  private buildFinalityConfig(minBlockConfirmation: number | null | undefined): PoolFinalityConfig | null {
+    // If minBlockConfirmation is undefined or null, data is unavailable
+    if (minBlockConfirmation == null) {
       return null
     }
 
-    // If minBlockConfirmation is null, there was an issue with downstream API
-    if (minBlockConfirmation === null) {
-      return {
-        hasCustomFinality: null,
-        minBlockConfirmation: null,
-      }
-    }
-
-    // hasCustomFinality is true if minBlockConfirmation > 0
     return {
-      hasCustomFinality: minBlockConfirmation > 0,
-      minBlockConfirmation,
+      finalityDepth: minBlockConfirmation,
+      finalitySafe: minBlockConfirmation > 0,
     }
   }
 

@@ -4,7 +4,8 @@ import type {
   TokenLaneData,
   RateLimiterEntry,
   RateLimiterConfig,
-  CustomFinalityConfig,
+  PoolFinalityConfig,
+  ChainPoolDetails,
   OutputKeyType,
   TokenDirectoryApiResponse,
 } from "~/lib/ccip/types/index.ts"
@@ -42,7 +43,7 @@ export interface LaneSupportedTokensResponse {
 /**
  * Response structure for token finality endpoint
  */
-export interface TokenFinalityResponse {
+export interface TokenPoolDetailsResponse {
   metadata: {
     environment: Environment
     timestamp: string
@@ -50,8 +51,12 @@ export interface TokenFinalityResponse {
     tokenSymbol: string
     chainCount: number
   }
-  data: Record<string, CustomFinalityConfig>
+  finality: Record<string, PoolFinalityConfig>
+  poolDetails: Record<string, ChainPoolDetails>
 }
+
+/** @deprecated Use TokenPoolDetailsResponse instead */
+export type TokenFinalityResponse = TokenPoolDetailsResponse
 
 /**
  * Service class for handling CCIP realtime data operations
@@ -138,7 +143,7 @@ export class RealtimeDataService {
 
   /**
    * Fetches token finality details across all chains.
-   * Uses /tokens/{symbol} which already returns customFinality per chain,
+   * Uses /tokens/{symbol} which already returns pool.finality per chain,
    * then extracts only the finality fields to match TokenFinalityResponse shape.
    *
    * @param tokenCanonicalSymbol - Token canonical symbol (e.g., "BETS", "LINK")
@@ -150,7 +155,7 @@ export class RealtimeDataService {
     tokenCanonicalSymbol: string,
     environment: Environment,
     outputKey?: OutputKeyType
-  ): Promise<TokenFinalityResponse | null> {
+  ): Promise<TokenPoolDetailsResponse | null> {
     try {
       const baseUrl = getApiBaseUrl()
       let url = `${baseUrl}/api/ccip/v1/tokens/${tokenCanonicalSymbol}?environment=${environment}&internalIdFormat=directory`
@@ -168,12 +173,29 @@ export class RealtimeDataService {
 
       const tokenDetail = await response.json()
 
-      // Extract customFinality per chain from the full token detail response
-      const finalityData: Record<string, CustomFinalityConfig> = {}
+      // Extract pool details per chain from the full token detail response
+      const finalityData: Record<string, PoolFinalityConfig> = {}
+      const poolDetailsData: Record<string, ChainPoolDetails> = {}
+
       for (const [chainKey, chainData] of Object.entries(tokenDetail.data ?? {})) {
-        const cd = chainData as { customFinality?: CustomFinalityConfig | null }
-        if (cd.customFinality !== undefined) {
-          finalityData[chainKey] = cd.customFinality ?? { hasCustomFinality: null, minBlockConfirmation: null }
+        type PoolShape = {
+          finality?: PoolFinalityConfig | null
+          ccv?: { thresholdAmount: string | null } | null
+          hook?: string | null
+          capabilities?: { supportsV2Features: boolean }
+        }
+        const cd = chainData as { pool?: PoolShape | null }
+        const pool = cd.pool
+
+        if (pool?.finality) {
+          finalityData[chainKey] = pool.finality
+        }
+
+        poolDetailsData[chainKey] = {
+          finality: pool?.finality ?? null,
+          ccv: pool?.ccv ?? null,
+          hook: pool?.hook ?? null,
+          supportsV2Features: pool?.capabilities?.supportsV2Features ?? false,
         }
       }
 
@@ -183,7 +205,8 @@ export class RealtimeDataService {
           tokenSymbol: tokenCanonicalSymbol,
           chainCount: Object.keys(finalityData).length,
         },
-        data: finalityData,
+        finality: finalityData,
+        poolDetails: poolDetailsData,
       }
     } catch (error) {
       console.error("Error fetching token finality:", error)

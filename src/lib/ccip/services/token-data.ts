@@ -11,7 +11,7 @@ import {
   TokenDetailServiceResponse,
   CCVConfigData,
   CCVConfig,
-  CustomFinalityConfig,
+  PoolFinalityConfig,
 } from "~/lib/ccip/types/index.ts"
 import { Version } from "@config/data/ccip/types.ts"
 import { SupportedChain } from "@config/index.ts"
@@ -447,62 +447,30 @@ export class TokenDataService {
         ? await shouldEnableCCVFeatures(environment, tokenCanonicalSymbol, directoryKey, actualPoolVersion)
         : false
 
-      // Both customFinality and ccvConfig are v2.0+ pool features only
-      let minBlockConfirmation: number | null = null
-      let hasCustomFinality: boolean | null = null
-      let ccvConfig: CCVConfig | null = null
-      let customFinalityDataAvailable = false
+      // Build finality and CCV config (v2.0+ pool features only)
+      let finality: PoolFinalityConfig | null = null
+      let ccv: CCVConfig | null = null
 
       if (isCCVEnabled && directoryKey) {
         // Fetch minBlockConfirmation from GraphQL
-        minBlockConfirmation = await fetchMinBlockConfirmations(environment, tokenCanonicalSymbol, directoryKey)
-        customFinalityDataAvailable = true
-
-        // Derive hasCustomFinality from minBlockConfirmation
-        if (minBlockConfirmation === null) {
-          hasCustomFinality = null
-        } else if (minBlockConfirmation > 0) {
-          hasCustomFinality = true
-        } else {
-          hasCustomFinality = false
+        const minBlockConfirmation = await fetchMinBlockConfirmations(environment, tokenCanonicalSymbol, directoryKey)
+        if (minBlockConfirmation != null) {
+          finality = {
+            finalityDepth: minBlockConfirmation,
+            finalitySafe: minBlockConfirmation > 0,
+          }
         }
 
         // Look up CCV config using directory key
-        // For v2 pools:
-        // - Entry with thresholdAmount value: configured → {thresholdAmount: "value"}
-        // - Entry with thresholdAmount null: downstream error → {thresholdAmount: null}
-        // - No entry: not configured → {thresholdAmount: "0"}
         if (tokenCCVConfig && directoryKey && tokenCCVConfig[directoryKey]) {
-          // Entry exists - use the value (could be a string or null for downstream error)
-          ccvConfig = {
-            thresholdAmount: tokenCCVConfig[directoryKey].thresholdAmount,
-          }
+          ccv = { thresholdAmount: tokenCCVConfig[directoryKey].thresholdAmount }
         } else {
-          // No entry for this v2 pool - CCV not configured
-          ccvConfig = {
-            thresholdAmount: "0",
-          }
-        }
-      }
-
-      // Build customFinality response:
-      // - v1 pool (isCCVEnabled=false): null (feature not supported)
-      // - v2 pool with data: { hasCustomFinality, minBlockConfirmation }
-      // - v2 pool without data: { hasCustomFinality: null, minBlockConfirmation: null } (downstream error)
-      let customFinality: CustomFinalityConfig | null = null
-      if (isCCVEnabled) {
-        if (customFinalityDataAvailable) {
-          customFinality = { hasCustomFinality, minBlockConfirmation }
-        } else {
-          // v2 pool but no data available - downstream API error
-          customFinality = { hasCustomFinality: null, minBlockConfirmation: null }
+          ccv = { thresholdAmount: "0" }
         }
       }
 
       const detailChainData: TokenDetailChainData = {
         ...chainData,
-        customFinality,
-        ccvConfig,
         pool: chainData.pool
           ? {
               address: chainData.pool.address,
@@ -516,8 +484,12 @@ export class TokenDataService {
                     chainData.pool.version || ""
                   )
                 : chainData.pool.version || "",
-              advancedPoolHooks: chainData.pool.advancedPoolHooks || null,
-              supportsV2Features: isCCVEnabled,
+              hook: chainData.pool.hook || null,
+              capabilities: {
+                supportsV2Features: isCCVEnabled,
+              },
+              finality,
+              ccv,
             }
           : null,
       }
