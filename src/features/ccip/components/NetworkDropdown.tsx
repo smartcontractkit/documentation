@@ -5,9 +5,9 @@ import button from "@chainlink/design-system/button.module.css"
 import walletStyles from "./WalletConnection.module.css"
 import { Contract, BrowserProvider, toQuantity } from "ethers"
 import { burnMintAbi } from "@features/abi/index.ts"
-import { useMetaMaskProvider } from "@hooks/useEIP6963Providers.tsx"
 import { useNetworkChangeStorage } from "@hooks/useLocalStorage.ts"
 import { SupportedChain } from "@config/index.ts"
+import { EIP1193Provider } from "../../utils/EIP1193Interface.ts"
 import {
   getAllChains,
   getBnMParams,
@@ -38,10 +38,62 @@ enum LoadingState {
 
 interface Props {
   userAddress: string
+  provider: EIP1193Provider
 }
 
-export const NetworkDropdown = ({ userAddress }: Props) => {
-  const [activeChain, setActiveChain] = useState<SupportedChain | undefined>(undefined)
+function getProviderErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) return error.message
+  if (error && typeof error === "object" && "message" in error) return String((error as { message?: unknown }).message ?? "")
+  return "Unknown error"
+}
+
+function getProviderErrorCode(error: unknown): number | string | undefined {
+  if (error && typeof error === "object" && "code" in error) return (error as { code?: unknown }).code as number | string
+  return undefined
+}
+
+function isUserRejectedRequest(error: unknown): boolean {
+  const code = getProviderErrorCode(error)
+  if (code === 4001 || code === "4001") return true
+  const message = getProviderErrorMessage(error).toLowerCase()
+  return message.includes("user rejected") || message.includes("rejected the request")
+}
+
+function isUnknownChainError(error: unknown): boolean {
+  const code = getProviderErrorCode(error)
+  if (code === 4902 || code === "4902") return true
+  const message = getProviderErrorMessage(error).toLowerCase()
+  return (
+    message.includes("unrecognized chain") ||
+    message.includes("unknown chain") ||
+    message.includes("chain is not added") ||
+    message.includes("not been added") ||
+    message.includes("does not exist") ||
+    message.includes("unknown network")
+  )
+}
+
+function isAlreadyAddedNetworkError(error: unknown): boolean {
+  const message = getProviderErrorMessage(error).toLowerCase()
+  return (
+    (message.includes("already") && message.includes("added")) ||
+    (message.includes("already") && message.includes("exists")) ||
+    message.includes("already exists")
+  )
+}
+
+const EXCLUDED_CHAIN_RDDS = new Set<string>([
+  "dogeos-testnet-chikyu",
+  "doge-os-chikyu-testnet",
+  "ethereum-testnet-hoodi-morph",
+  "adi-testnet",
+  "ronin-testnet-saigon",
+])
+
+export const NetworkDropdown = ({ userAddress, provider }: Props) => {
+  const [walletChain, setWalletChain] = useState<SupportedChain | undefined>(undefined)
+  const [selectedChain, setSelectedChain] = useState<SupportedChain>("ETHEREUM_SEPOLIA")
+  const [walletNetworkStatus, setWalletNetworkStatus] = useState<"unknown" | "missing" | "present">("unknown")
   const [isNetworkChangePending, setIsNetworkChangePending] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<LoadingState>(LoadingState.START)
   const [toastMessage, setToastMessage] = useState<string>("")
@@ -50,8 +102,6 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
   const [mintLnMTokenButtonDisabled, setMintLnMTokenButtonDisabled] = useState<boolean>(false)
   const detailsElementRef = useRef<HTMLDetailsElement | null>(null)
 
-  // ✅ Use EIP-6963 to get MetaMask specifically (prevents Phantom conflicts)
-  const metaMaskProvider = useMetaMaskProvider()
   const { setNetworkChangePending } = useNetworkChangeStorage()
   const closeDropdown = useCallback(() => {
     if (!detailsElementRef.current) return
@@ -66,8 +116,9 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
         chainRdd,
         supportedChain: directoryToSupportedChain(chainRdd),
       }))
+      .filter(({ chainRdd }) => !EXCLUDED_CHAIN_RDDS.has(chainRdd))
       .filter(({ supportedChain }) => {
-        // Only include EVM chains since this is for MetaMask
+        // Only include EVM chains since this is an EVM wallet flow
         try {
           const { chainFamily } = getChainTypeAndFamily(supportedChain)
           return chainFamily === "evm"
@@ -84,7 +135,24 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
       })
   }, [])
 
-  const supportedChains = evmChains.map(({ supportedChain }) => supportedChain)
+  const supportedChains = useMemo(() => evmChains.map(({ supportedChain }) => supportedChain), [evmChains])
+
+  useEffect(() => {
+    if (supportedChains.length === 0) return
+    if (supportedChains.includes(selectedChain)) return
+    const fallback = supportedChains.includes("ETHEREUM_SEPOLIA") ? "ETHEREUM_SEPOLIA" : supportedChains[0]
+    setSelectedChain(fallback)
+  }, [selectedChain, supportedChains])
+
+  useEffect(() => {
+    setWalletNetworkStatus("unknown")
+  }, [selectedChain])
+
+  useEffect(() => {
+    if (walletChain === selectedChain) {
+      setWalletNetworkStatus("present")
+    }
+  }, [selectedChain, walletChain])
 
   const supportedChainFromHexChainId = (chainHexId: string) => {
     const supportedChain = supportedChains.find((supportedChain) => {
@@ -98,19 +166,19 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
 
   useEffect(() => {
     const handleChainChanged = (chainHexId: string) => {
-      setActiveChain(supportedChainFromHexChainId(chainHexId))
+      setWalletChain(supportedChainFromHexChainId(chainHexId))
       setIsLoading(LoadingState.START)
     }
     const refElement = detailsElementRef?.current
 
     const getCurrentChain = async () => {
-      if (!metaMaskProvider) return undefined
+      if (!provider) return undefined
 
-      const chainHexId = await metaMaskProvider.request<string>({
+      const chainHexId = await provider.request<string>({
         method: "eth_chainId",
         params: [],
       })
-      metaMaskProvider.on("chainChanged", handleChainChanged)
+      provider.on("chainChanged", handleChainChanged)
       const currentChain = supportedChainFromHexChainId(chainHexId)
       return currentChain
     }
@@ -125,7 +193,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
     }
 
     getCurrentChain().then((chain) => {
-      setActiveChain(chain)
+      setWalletChain(chain)
     })
 
     document.body.addEventListener("mouseup", onClick)
@@ -133,69 +201,99 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
     // ✅ Cleanup both click and chain change listeners
     return () => {
       document.body.removeEventListener("mouseup", onClick)
-      metaMaskProvider?.removeListener?.("chainChanged", handleChainChanged)
+      provider?.removeListener?.("chainChanged", handleChainChanged)
     }
-  }, [metaMaskProvider])
+  }, [provider])
 
-  // ✅  Call isConnected() as function, not property
-  const isMMConnected = (() => {
+  const isProviderConnected = (() => {
     try {
-      return metaMaskProvider?.isConnected?.() ?? false
+      return provider?.isConnected?.() ?? true
     } catch {
-      return false
+      return true
     }
   })()
-  const dropdownDisabled = !isMMConnected || isNetworkChangePending
+  const dropdownDisabled = !isProviderConnected || isNetworkChangePending
 
   // ✅  Simplified error guard - don't require stack property
   const isSwitchNetworkError = (e: unknown): e is { code: number; message?: string } => {
     return !!(e && typeof e === "object" && "code" in e)
   }
 
-  const handleNetworkChange = async (chain: SupportedChain) => {
-    const chainId = getChainId(chain)
-    if (!chainId) throw Error(`chainId not found for ${chain}`)
-    const chainHexId = toQuantity(chainId)
+  const showToastMessage = (message: string) => {
+    setToastMessage(message)
+    setShowToast(true)
+  }
 
-    // ✅ MetaMask provider already available from hook
-
-    // ✅  Use isConnected() function
-    if (!metaMaskProvider || !metaMaskProvider.isConnected?.()) {
+  const switchToSelectedChain = async () => {
+    const chainId = getChainId(selectedChain)
+    if (!chainId) {
+      showToastMessage("chainId not found for selected network.")
       return
     }
+    const chainHexId = toQuantity(chainId)
 
     setIsNetworkChangePending(true)
+    setNetworkChangePending(true)
 
     try {
-      await metaMaskProvider.request({
+      await provider.request({
         method: "wallet_switchEthereumChain",
-        params: [
-          {
-            chainId: chainHexId,
-          },
-        ],
+        params: [{ chainId: chainHexId }],
       })
+      setWalletNetworkStatus("present")
     } catch (switchError: unknown) {
-      if (isSwitchNetworkError(switchError) && switchError.code === 4902) {
-        // Network not found, add it
-        const params = getEthereumChainParameter(chainHexId)
-        await metaMaskProvider.request({
-          method: "wallet_addEthereumChain",
-          params: [params],
-        })
-      } else {
-        console.error("Network switch failed:", switchError)
-        throw switchError
+      if (isUserRejectedRequest(switchError)) {
+        showToastMessage("Network switch request rejected in wallet.")
+        return
       }
+      if (isUnknownChainError(switchError) || (isSwitchNetworkError(switchError) && switchError.code === 4902)) {
+        setWalletNetworkStatus("missing")
+        showToastMessage("This network isn't added to your wallet yet. Click Add network.")
+        return
+      }
+      showToastMessage(`Network switch failed: ${getProviderErrorMessage(switchError)}`)
+      return
     } finally {
-      // ✅  Always clear pending flag
       setIsNetworkChangePending(false)
       setNetworkChangePending(false)
     }
+  }
 
-    setActiveChain(chain)
-    setIsLoading(LoadingState.START)
-    closeDropdown()
+  const addSelectedChain = async () => {
+    const chainId = getChainId(selectedChain)
+    if (!chainId) {
+      showToastMessage("chainId not found for selected network.")
+      return
+    }
+    const chainHexId = toQuantity(chainId)
+
+    setIsNetworkChangePending(true)
+    setNetworkChangePending(true)
+
+    try {
+      const params = getEthereumChainParameter(chainHexId)
+      await provider.request({
+        method: "wallet_addEthereumChain",
+        params: [params],
+      })
+      setWalletNetworkStatus("present")
+      showToastMessage("Network added. Now click Switch network to continue.")
+    } catch (addError: unknown) {
+      if (isUserRejectedRequest(addError)) {
+        showToastMessage("Add network request rejected in wallet.")
+        return
+      }
+      if (isAlreadyAddedNetworkError(addError)) {
+        setWalletNetworkStatus("present")
+        showToastMessage("Network already exists in your wallet. Now click Switch network to continue.")
+        return
+      }
+      showToastMessage(`Failed to add network: ${getProviderErrorMessage(addError)}`)
+      return
+    } finally {
+      setIsNetworkChangePending(false)
+      setNetworkChangePending(false)
+    }
   }
 
   // ✅  Wallet-agnostic EIP-1193 provider validation
@@ -208,66 +306,61 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
   }
 
   const addBnMAssetToWallet = async () => {
-    if (!activeChain) return
+    if (walletChain !== selectedChain) return
 
-    const params = getBnMParams({ supportedChain: activeChain, version: Version.V1_2_0 })
+    const params = getBnMParams({ supportedChain: selectedChain, version: Version.V1_2_0 })
     if (!params) return
 
-    if (!metaMaskProvider) {
-      return
-    }
+    try {
+      validateEIP1193Provider(provider)
+      const success = await provider.request<boolean>({
+        method: "wallet_watchAsset",
+        params,
+      })
 
-    validateEIP1193Provider(metaMaskProvider)
-    const success = await metaMaskProvider.request<boolean>({
-      method: "wallet_watchAsset",
-      params,
-    })
-
-    if (!success) {
-      throw new Error(
-        `Something went wrong. ${params.options.symbol} of address ${params.options.address} not added to the wallet`
-      )
+      if (!success) {
+        showToastMessage(`Couldn't add ${params.options.symbol} to your wallet.`)
+      } else {
+        showToastMessage(`${params.options.symbol} added to wallet.`)
+      }
+    } catch (error) {
+      showToastMessage(`Failed to add token to wallet: ${getProviderErrorMessage(error)}`)
     }
   }
 
   const addLnMAssetToWallet = async () => {
-    if (!activeChain) return
-    const params = getLnMParams({ supportedChain: activeChain, version: Version.V1_2_0 })
+    if (walletChain !== selectedChain) return
+    const params = getLnMParams({ supportedChain: selectedChain, version: Version.V1_2_0 })
     if (!params) return
 
-    if (!metaMaskProvider) {
-      return
-    }
+    try {
+      validateEIP1193Provider(provider)
+      const success = await provider.request<boolean>({
+        method: "wallet_watchAsset",
+        params,
+      })
 
-    validateEIP1193Provider(metaMaskProvider)
-    const success = await metaMaskProvider.request<boolean>({
-      method: "wallet_watchAsset",
-      params,
-    })
-
-    if (!success) {
-      throw new Error(
-        `Something went wrong. ${params.options.symbol} of address ${params.options.address} not added to the wallet`
-      )
+      if (!success) {
+        showToastMessage(`Couldn't add ${params.options.symbol} to your wallet.`)
+      } else {
+        showToastMessage(`${params.options.symbol} added to wallet.`)
+      }
+    } catch (error) {
+      showToastMessage(`Failed to add token to wallet: ${getProviderErrorMessage(error)}`)
     }
   }
 
   const mintBnMTokens = async () => {
     setIsLoading(LoadingState["LOADING..."])
     setMintBnMTokenButtonDisabled(true)
-    if (!activeChain) return
+    if (walletChain !== selectedChain) return
 
-    const params = getBnMParams({ supportedChain: activeChain, version: Version.V1_2_0 })
+    const params = getBnMParams({ supportedChain: selectedChain, version: Version.V1_2_0 })
     if (!params) return
     const { address: ccipBNMContractAddress } = params.options
 
-    // ✅ Use MetaMask provider for minting
-    if (!metaMaskProvider) {
-      setMintBnMTokenButtonDisabled(false)
-      return
-    }
-    const provider = new BrowserProvider(metaMaskProvider)
-    const signer = await provider.getSigner()
+    const ethersProvider = new BrowserProvider(provider)
+    const signer = await ethersProvider.getSigner()
     const mintTokensContract = new Contract(ccipBNMContractAddress, burnMintAbi, signer)
     try {
       const res = await mintTokensContract.drip(userAddress)
@@ -302,26 +395,21 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
       product: "CCIP",
       action: "ccip_token_minted",
       extraInfo1: "BnM",
-      extraInfo2: activeChain, // chainId
+      extraInfo2: selectedChain, // chainId
     })
   }
 
   const mintLnMTokens = async () => {
     setIsLoading(LoadingState["LOADING..."])
     setMintLnMTokenButtonDisabled(true)
-    if (!activeChain) return
+    if (walletChain !== selectedChain) return
 
-    const params = getLnMParams({ supportedChain: activeChain, version: Version.V1_2_0 })
+    const params = getLnMParams({ supportedChain: selectedChain, version: Version.V1_2_0 })
     if (!params) return
     const { address: ccipLNMContractAddress } = params.options
 
-    // ✅ Use MetaMask provider for LnM minting
-    if (!metaMaskProvider) {
-      setMintLnMTokenButtonDisabled(false)
-      return
-    }
-    const provider = new BrowserProvider(metaMaskProvider)
-    const signer = await provider.getSigner()
+    const ethersProvider = new BrowserProvider(provider)
+    const signer = await ethersProvider.getSigner()
     const mintTokensContract = new Contract(ccipLNMContractAddress, burnMintAbi, signer)
     try {
       const res = await mintTokensContract.drip(userAddress)
@@ -356,7 +444,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
       product: "CCIP",
       action: "ccip_token_minted",
       extraInfo1: "LnM",
-      extraInfo2: activeChain, // chainId
+      extraInfo2: selectedChain, // chainId
     })
   }
 
@@ -379,9 +467,9 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
                 <>
                   <img
                     src={
-                      activeChain === undefined
+                      selectedChain === undefined
                         ? "https://smartcontract.imgix.net/icons/alert.svg"
-                        : getChainIcon(activeChain)
+                        : getChainIcon(selectedChain)
                     }
                     style={{ marginRight: "var(--space-2x)" }}
                   />
@@ -390,16 +478,16 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
                       color: dropdownDisabled ? "var(--color-text-disabled)" : "initial",
                     }}
                   >
-                    Switching networks...
+                    Confirm in wallet...
                   </span>
                 </>
               ) : (
                 <>
                   <img
                     src={
-                      activeChain === undefined
+                      selectedChain === undefined
                         ? "https://smartcontract.imgix.net/icons/alert.svg"
-                        : getChainIcon(activeChain)
+                        : getChainIcon(selectedChain)
                     }
                     style={{ marginRight: "var(--space-2x)", minHeight: "1.2em", minWidth: "1.2em" }}
                   />
@@ -408,7 +496,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
                       color: dropdownDisabled ? "var(--color-text-disabled)" : "initial",
                     }}
                   >
-                    {activeChain ? getTitle(activeChain) : "Unknown network"}
+                    {selectedChain ? getTitle(selectedChain) : "Unknown network"}
                   </span>
                 </>
               )}
@@ -419,18 +507,25 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
             <ul style={{ listStyle: "none" }}>
               {evmChains.map(({ supportedChain }) => {
                 const supportedChainTitle = getTitle(supportedChain)
-                const activeChainTitle = activeChain ? getTitle(activeChain) : null
+                const selectedChainTitle = selectedChain ? getTitle(selectedChain) : null
                 return (
                   <li
-                    className={supportedChainTitle === activeChainTitle ? styles["selected-option"] : styles.option}
+                    className={supportedChainTitle === selectedChainTitle ? styles["selected-option"] : styles.option}
                     key={supportedChainTitle}
                   >
-                    <button onClick={() => handleNetworkChange(supportedChain)} className="text-200">
+                    <button
+                      onClick={() => {
+                        setSelectedChain(supportedChain)
+                        setWalletNetworkStatus("unknown")
+                        closeDropdown()
+                      }}
+                      className="text-200"
+                    >
                       <span>
                         <img src={getChainIcon(supportedChain)} style={{ minHeight: "1em", minWidth: "1em" }} />
                         {supportedChainTitle}
                       </span>
-                      {supportedChainTitle === activeChainTitle && (
+                      {supportedChainTitle === selectedChainTitle && (
                         <img src="https://smartcontract.imgix.net/icons/check_circle_bold.svg" />
                       )}
                     </button>
@@ -440,14 +535,14 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
             </ul>
           </div>
         </details>
-        {activeChain !== undefined ? (
-          isBnMOrLnM({ chain: activeChain, version: Version.V1_2_0 }) ? (
+        {walletChain === selectedChain ? (
+          isBnMOrLnM({ chain: selectedChain, version: Version.V1_2_0 }) ? (
             <div className={walletStyles.connectedContainer}>
               {/* Enhanced Connection Status with Address - All info in one box */}
               <div className={walletStyles.connectionStatus}>
                 <div className={walletStyles.statusWithNetwork}>
                   <div>
-                    <span>Connected to MetaMask on {getTitle(activeChain)}</span>
+                    <span>Connected to wallet on {getTitle(selectedChain)}</span>
                   </div>
                   <div
                     style={{
@@ -468,7 +563,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
               {/* Action Section */}
               <div className={walletStyles.actionSection}>
                 {/* Primary Actions - Mint Tokens */}
-                {activeChain && isBnM({ chain: activeChain, version: Version.V1_2_0 }) && (
+                {isBnM({ chain: selectedChain, version: Version.V1_2_0 }) && (
                   <div className={walletStyles.primaryAction}>
                     <div className={walletStyles.actionTooltip} data-tooltip="Get free CCIP-BnM tokens for testing">
                       <button
@@ -483,11 +578,10 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
                   </div>
                 )}
 
-                {activeChain &&
-                  isLnM({ chain: activeChain, version: Version.V1_2_0 }).supported &&
-                  isLnM({ chain: activeChain, version: Version.V1_2_0 }).supportedChainForLock === activeChain && (
+                {isLnM({ chain: selectedChain, version: Version.V1_2_0 }).supported &&
+                  isLnM({ chain: selectedChain, version: Version.V1_2_0 }).supportedChainForLock === selectedChain && (
                     <>
-                      {activeChain && isBnM({ chain: activeChain, version: Version.V1_2_0 }) && (
+                      {isBnM({ chain: selectedChain, version: Version.V1_2_0 }) && (
                         <div className={walletStyles.tokenDivider}></div>
                       )}
                       <div className={walletStyles.primaryAction}>
@@ -507,28 +601,28 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
 
                 {/* Secondary Actions - Progressive Disclosure */}
                 <div className={walletStyles.secondaryActions}>
-                  {activeChain && isBnM({ chain: activeChain, version: Version.V1_2_0 }) && (
-                    <div className={walletStyles.actionTooltip} data-tooltip="Add token to MetaMask for easy tracking">
+                  {isBnM({ chain: selectedChain, version: Version.V1_2_0 }) && (
+                    <div className={walletStyles.actionTooltip} data-tooltip="Add token to wallet for easy tracking">
                       <button
                         className={`${button.secondary} ${walletStyles.secondaryAction}`}
                         onClick={async () => {
                           await addBnMAssetToWallet()
                         }}
-                        aria-label="Add CCIP-BnM token to your wallet"
+                        aria-label="Add CCIP-BnM token to wallet"
                       >
                         Add CCIP-BnM to wallet
                       </button>
                     </div>
                   )}
 
-                  {activeChain && isLnM({ chain: activeChain, version: Version.V1_2_0 }).supported && (
-                    <div className={walletStyles.actionTooltip} data-tooltip="Add token to MetaMask for easy tracking">
+                  {isLnM({ chain: selectedChain, version: Version.V1_2_0 }).supported && (
+                    <div className={walletStyles.actionTooltip} data-tooltip="Add token to wallet for easy tracking">
                       <button
                         className={`${button.secondary} ${walletStyles.secondaryAction}`}
                         onClick={async () => {
                           await addLnMAssetToWallet()
                         }}
-                        aria-label="Add CCIP-LnM token to your wallet"
+                        aria-label="Add CCIP-LnM token to wallet"
                       >
                         Add CCIP-LnM to wallet
                       </button>
@@ -537,8 +631,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
                 </div>
               </div>
 
-              {isLoading === LoadingState.ERROR && showToast && <Toast message={toastMessage} onClose={closeToast} />}
-              {isLoading === LoadingState.END && showToast && <Toast message={toastMessage} onClose={closeToast} />}
+              {showToast && <Toast message={toastMessage} onClose={closeToast} />}
             </div>
           ) : (
             <p>
@@ -547,22 +640,47 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
             </p>
           )
         ) : (
-          <div className={styles.unknownNetworkWarning} role="alert" aria-live="polite">
-            <div className={`paragraph-100 ${styles.warningContent}`}>
-              <img
-                className={styles.warningIcon}
-                src="https://smartcontract.imgix.net/icons/alert.svg"
-                alt=""
-                aria-hidden="true"
-              />
-              <div className={styles.warningText}>
-                <div>Please switch to a supported network</div>
-                <div className={styles.warningInstruction}>
-                  Click &quot;Unknown network&quot; above to select a different network.
+          <>
+            <div className={styles.unknownNetworkWarning} role="alert" aria-live="polite">
+              <div className={`paragraph-100 ${styles.warningContent}`}>
+                <img
+                  className={styles.warningIcon}
+                  src="https://smartcontract.imgix.net/icons/alert.svg"
+                  alt=""
+                  aria-hidden="true"
+                />
+                <div className={styles.warningText}>
+                  <div>{walletChain ? "Please switch to the correct network" : "Please switch to a supported network"}</div>
+                  <div className={styles.warningInstruction}>
+                    Click the network dropdown above to select a different network.
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+            <div className={styles.networkCtas}>
+              <button
+                type="button"
+                className={`${button.primary} ${walletStyles.connectButton}`}
+                onClick={switchToSelectedChain}
+              disabled={isNetworkChangePending || walletNetworkStatus === "missing"}
+                aria-label={`Switch wallet network to ${getTitle(selectedChain)}`}
+              >
+                Switch to {getTitle(selectedChain)}
+              </button>
+            {walletNetworkStatus !== "present" && (
+                <button
+                  type="button"
+                  className={`${button.secondary} ${walletStyles.secondaryAction}`}
+                  onClick={addSelectedChain}
+                  disabled={isNetworkChangePending}
+                  aria-label={`Add ${getTitle(selectedChain)} network to wallet`}
+                  title="Add this network to your wallet (if needed)."
+                >
+                  Add {getTitle(selectedChain)}
+                </button>
+              )}
+            </div>
+          </>
         )}
       </div>
     </ErrorBoundary>
