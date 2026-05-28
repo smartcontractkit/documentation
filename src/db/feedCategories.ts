@@ -1,3 +1,8 @@
+import {
+  getMarketPricingRiskTerms,
+  tierAnchor,
+  type MarketPricingRiskProduct,
+} from "../features/feeds/content/marketPricingRiskTerms.ts"
 import { supabase } from "./supabase.js"
 
 /* ===========================
@@ -82,6 +87,45 @@ export const FEED_CATEGORY_CONFIG = {
 } as const
 
 export type CategoryKey = keyof typeof FEED_CATEGORY_CONFIG
+
+const TIER_ANCHOR_KEY: Record<CategoryKey, string> = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+  veryhigh: "very-high",
+  new: "new-token",
+  custom: "custom",
+  deprecating: "deprecating",
+}
+
+const RISK_DOC_BASE_PATH: Record<MarketPricingRiskProduct, string> = {
+  feeds: "/data-feeds/selecting-data-feeds",
+  streams: "/data-streams/selecting-data-streams",
+}
+
+export function getRiskCategoryLink(key: CategoryKey, product: MarketPricingRiskProduct = "feeds"): string {
+  const base = RISK_DOC_BASE_PATH[product]
+
+  if (key === "deprecating") {
+    return `${base}#-deprecating`
+  }
+
+  return `${base}${tierAnchor(TIER_ANCHOR_KEY[key], getMarketPricingRiskTerms(product))}`
+}
+
+export function getRiskCategoryTitle(key: CategoryKey, product: MarketPricingRiskProduct = "feeds"): string {
+  const title = FEED_CATEGORY_CONFIG[key].title
+
+  if (product === "feeds") {
+    return title
+  }
+
+  return title
+    .replace(/\bFeeds\b/g, "Streams")
+    .replace(/\bFeed\b/g, "Stream")
+    .replace(/\bfeed\b/g, "stream")
+    .replace(/\bfeeds\b/g, "streams")
+}
 
 /* ===========================
    Small helpers

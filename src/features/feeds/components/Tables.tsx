@@ -9,7 +9,13 @@ import button from "@chainlink/design-system/button.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
 import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksData.ts"
-import { FEED_CATEGORY_CONFIG } from "../../../db/feedCategories.js"
+import {
+  FEED_CATEGORY_CONFIG,
+  getRiskCategoryLink,
+  getRiskCategoryTitle,
+  type CategoryKey,
+} from "../../../db/feedCategories.js"
+import type { MarketPricingRiskProduct } from "../content/marketPricingRiskTerms.ts"
 import { REPORT_SCHEMA_DEFINITIONS, type SchemaDefinition } from "./reportSchemaData.ts"
 import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
 import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
@@ -173,15 +179,17 @@ const RISK_TIER_SHORT_LABELS: Record<string, string> = {
 
 const normalizeRiskKey = (riskTier?: string | null) => riskTier?.toLowerCase().replace(/\s+/g, "") ?? ""
 
-const getRiskTooltipText = (
-  category: (typeof FEED_CATEGORY_CONFIG)[keyof typeof FEED_CATEGORY_CONFIG],
-  normalizedKey: string
-) => {
+const getRiskTooltipText = (normalizedKey: CategoryKey, product: MarketPricingRiskProduct) => {
+  const title = getRiskCategoryTitle(normalizedKey, product)
+
   if (normalizedKey === "veryhigh") {
-    return `${category.title} The contract address is hidden to help prevent accidental onboarding to inherently risky feeds. Contact ${TOKENIZED_EQUITY_CONTACT_EMAIL} if you would like to use this feed.`
+    const assetLabel = product === "streams" ? "streams" : "feeds"
+    const assetSingular = product === "streams" ? "stream" : "feed"
+
+    return `${title} The contract address is hidden to help prevent accidental onboarding to inherently risky ${assetLabel}. Contact ${TOKENIZED_EQUITY_CONTACT_EMAIL} if you would like to use this ${assetSingular}.`
   }
 
-  return category.title
+  return title
 }
 
 const RISK_TOOLTIP_MAX_WIDTH = 280
@@ -210,11 +218,18 @@ const getRiskTooltipPosition = (anchor: HTMLElement) => {
 
 const RiskTHeadCell = () => <th className={clsx(tableStyles.heading, tableStyles.riskCol)}>Risk</th>
 
-const RiskCell = ({ riskTier }: { riskTier?: string | null }) => {
+const RiskCell = ({
+  riskTier,
+  product = "feeds",
+}: {
+  riskTier?: string | null
+  product?: MarketPricingRiskProduct
+}) => {
   const [tooltipPos, setTooltipPos] = useState<ReturnType<typeof getRiskTooltipPosition> | null>(null)
   const normalizedKey = normalizeRiskKey(riskTier)
-  const category = normalizedKey ? FEED_CATEGORY_CONFIG[normalizedKey as keyof typeof FEED_CATEGORY_CONFIG] : undefined
-  const tooltipText = category ? getRiskTooltipText(category, normalizedKey) : ""
+  const category = normalizedKey ? FEED_CATEGORY_CONFIG[normalizedKey as CategoryKey] : undefined
+  const tooltipText = category ? getRiskTooltipText(normalizedKey as CategoryKey, product) : ""
+  const riskLink = category ? getRiskCategoryLink(normalizedKey as CategoryKey, product) : ""
 
   useEffect(() => {
     if (!tooltipPos || typeof document === "undefined") return
@@ -266,11 +281,9 @@ const RiskCell = ({ riskTier }: { riskTier?: string | null }) => {
           {category.icon}
         </span>
         <a
-          href={category.link}
+          href={riskLink}
           className={tableStyles.riskLabelLink}
           aria-label={category.name}
-          target="_blank"
-          rel="noopener noreferrer"
           onMouseEnter={showTooltip}
           onMouseLeave={hideTooltip}
           onFocus={showTooltip}
@@ -1282,7 +1295,7 @@ export const StreamsTr = ({ metadata, isMainnet }) => {
 
   return (
     <tr>
-      <RiskCell riskTier={finalTier} />
+      <RiskCell riskTier={finalTier} product="streams" />
       <td className={tableStyles.pairCol}>
         <div className={tableStyles.assetPair}>
           <div className={tableStyles.pairNameRow}>
