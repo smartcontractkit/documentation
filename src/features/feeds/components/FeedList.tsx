@@ -9,7 +9,6 @@ import { useGetChainMetadata } from "./useGetChainMetadata.ts"
 import { ChainMetadata } from "~/features/data/api/index.ts"
 import useQueryString from "~/hooks/useQueryString.ts"
 import { RefObject } from "preact"
-import { getFeedCategories } from "../../../db/feedCategories.js"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
@@ -22,8 +21,8 @@ import {
   shouldFilterSelectableChainsByVisibleFeeds,
   shouldRenderNetworkSection,
 } from "../utils/chainFilters.ts"
-import { getSchemaVersion } from "../utils/feedMetadata.ts"
-import { DEFAULT_FEED_CATEGORY_OPTIONS, getAddrPerPage, SMART_DATA_CATEGORY_OPTIONS } from "../constants.ts"
+import { getFeedAssetType, getSchemaVersion } from "../utils/feedMetadata.ts"
+import { getAddrPerPage, SMART_DATA_CATEGORY_OPTIONS } from "../constants.ts"
 import {
   type DataFeedType,
   type SchemaFilterValue,
@@ -421,22 +420,6 @@ export const FeedList = ({
   const testnetLastAddr = testnetPageNum * testnetAddrPerPage
   const testnetFirstAddr = testnetLastAddr - testnetAddrPerPage
 
-  // Dynamic feed categories loaded from Supabase
-  const [dataFeedCategory, setDataFeedCategory] = useState<{ key: string; name: string }[]>([
-    ...DEFAULT_FEED_CATEGORY_OPTIONS,
-  ])
-
-  // Load dynamic categories from Supabase on component mount
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const categories = await getFeedCategories()
-        setDataFeedCategory(categories)
-      } catch (error) {}
-    }
-
-    loadCategories()
-  }, [])
   const smartDataTypes = [...SMART_DATA_CATEGORY_OPTIONS]
   const [streamsChain] = useState(initialNetwork)
   const activeChain = isStreams ? streamsChain : currentNetwork
@@ -518,6 +501,55 @@ export const FeedList = ({
       setShowOnlySVR(false)
     }
   }, [chainHasSvr, showOnlySVR])
+
+  const availableAssetTypes = useMemo(() => {
+    if (isStreams || isSmartData) return []
+
+    const visibilityOptions = {
+      tokenizedEquityProvider,
+      streamCategoryFilter: isStreams ? forceStreamCategoryFilter : undefined,
+    }
+
+    const types = new Set<string>()
+
+    currentChainMetadata.processedData?.networks?.forEach((network) => {
+      if (network.networkType !== selectedNetworkType) return
+
+      network.metadata?.forEach((feed) => {
+        if (!isFeedVisible(feed, dataFeedType, ecosystem, visibilityOptions)) return
+
+        const assetType = getFeedAssetType(feed)
+        if (assetType) types.add(assetType)
+      })
+    })
+
+    return [...types].sort((a, b) => a.localeCompare(b)).map((assetType) => ({ key: assetType, name: assetType }))
+  }, [
+    currentChainMetadata.processedData,
+    selectedNetworkType,
+    dataFeedType,
+    ecosystem,
+    tokenizedEquityProvider,
+    isStreams,
+    isSmartData,
+    forceStreamCategoryFilter,
+  ])
+
+  useEffect(() => {
+    if (isStreams || isSmartData || availableAssetTypes.length === 0) return
+
+    const validKeys = new Set(availableAssetTypes.map((option) => option.key))
+    const current = Array.isArray(selectedFeedCategories)
+      ? selectedFeedCategories
+      : selectedFeedCategories
+        ? [selectedFeedCategories]
+        : []
+    const filtered = current.filter((category) => validKeys.has(category))
+
+    if (filtered.length !== current.length) {
+      setSelectedFeedCategories(filtered.length > 0 ? filtered : [])
+    }
+  }, [availableAssetTypes, selectedChain.page, selectedNetworkType, isStreams, isSmartData])
 
   const wrapperRef = useRef(null)
 
@@ -1689,14 +1721,14 @@ export const FeedList = ({
                       )}
                       <div className={feedList.tableFilters}>
                         <div className={feedList.filterControls}>
-                          {!isStreams && !isSmartData && (
+                          {!isStreams && !isSmartData && availableAssetTypes.length > 1 && (
                             <details class={feedList.filterDropdown_details}>
                               <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
-                                Data Feed Categories
+                                Asset Type
                               </summary>
                               <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
                                 <ul>
-                                  {dataFeedCategory.map((category) => (
+                                  {availableAssetTypes.map((category) => (
                                     <li>
                                       <button onClick={() => handleCategorySelection(category.key)}>
                                         <input

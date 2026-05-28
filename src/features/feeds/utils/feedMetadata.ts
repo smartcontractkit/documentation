@@ -99,7 +99,17 @@ export function matches24x5StreamFilter(
   return matchesTradingHours(metadata, tradingHoursFilter ?? "all")
 }
 
-/** Category chip filter for SmartData vs risk-tier feeds. */
+/** Canonical asset type label for filtering (matches the "Asset type" column in tables). */
+export function getFeedAssetType(metadata: FeedMetadata): string | undefined {
+  const raw = metadata.feedType || metadata.docs?.feedType || metadata.docs?.assetClass
+  if (!raw || typeof raw !== "string") return undefined
+
+  if (raw.toLowerCase() === "crypto") return "Crypto"
+
+  return raw.trim()
+}
+
+/** Category chip filter for SmartData product types vs asset-type feeds. */
 export function matchesSelectedFeedCategories(
   metadata: FeedMetadata,
   selectedFeedCategories: string[],
@@ -115,13 +125,10 @@ export function matchesSelectedFeedCategories(
     )
   }
 
-  const normalizedFinalCategory = normalizeCategoryKey(metadata.finalCategory)
-  const normalizedSelections = selectedFeedCategories.map((cat) => normalizeCategoryKey(cat)).filter(Boolean)
+  if (selectedFeedCategories.length === 0) return true
 
-  return (
-    selectedFeedCategories.length === 0 ||
-    (normalizedFinalCategory !== undefined && normalizedSelections.includes(normalizedFinalCategory))
-  )
+  const assetType = getFeedAssetType(metadata)
+  return assetType !== undefined && selectedFeedCategories.includes(assetType)
 }
 
 export type FeedSearchVariant = "mainnet" | "testnet"
