@@ -486,6 +486,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-monad-mainnet.json",
         queryString: "monad-mainnet",
+        tags: ["smartData"],
       },
       {
         name: "Monad Testnet",
@@ -493,6 +494,7 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-monad-testnet.json",
         queryString: "monad-testnet",
+        tags: ["smartData"],
       },
     ],
   },
@@ -679,7 +681,7 @@ export const CHAINS: Chain[] = [
     title: "Solana Data Feeds",
     img: "/assets/chains/solana.svg",
     networkStatusUrl: "https://status.solana.com/",
-    tags: ["default", "smartData"],
+    tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -688,7 +690,6 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-solana-mainnet.json",
         queryString: "solana-mainnet",
-        tags: ["smartData"],
       },
       {
         name: "Solana Devnet",

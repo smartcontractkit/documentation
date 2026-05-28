@@ -103,11 +103,21 @@ const resolveRiskStatus = (
   shutdownDate?: string,
   fallbackCategory?: string
 ): string | null => {
-  if (dbTier != null) return dbTier
+  // Deprecating feeds always show the deprecating icon, even when a DB risk tier exists.
   if (shutdownDate) return "deprecating"
+  if (dbTier != null) return dbTier
   if (fallbackCategory && FALLBACK_ONLY_CATEGORIES.has(fallbackCategory.toLowerCase()))
     return fallbackCategory.toLowerCase()
   return null
+}
+
+/** Client-side helper for resolving the displayed feed category. */
+export function resolveFeedCategory(
+  dbTier: string | null | undefined,
+  shutdownDate?: string,
+  fallbackCategory?: string
+): string | null {
+  return resolveRiskStatus(dbTier, shutdownDate, fallbackCategory)
 }
 
 const defaultCategoryList = () => Object.values(FEED_CATEGORY_CONFIG).map(({ key, name }) => ({ key, name }))
@@ -148,7 +158,8 @@ export async function getFeedCategories() {
 
 /**
  * Batch lookup: returns a Map of `${address}-${network}` → { final }.
- * Uses DB risk_status when present. If absent, infers "deprecating" from shutdownDate.
+ * Uses DB risk_status when present, unless the feed has a shutdownDate (deprecating).
+ * If absent, infers "deprecating" from shutdownDate.
  * Returns null when neither is available.
  */
 export async function getFeedRiskTiersBatch(feedRequests: FeedRequest[]): Promise<Map<string, FeedTierResult>> {

@@ -9,7 +9,7 @@ import button from "@chainlink/design-system/button.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
 import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksData.ts"
-import { FEED_CATEGORY_CONFIG } from "../../../db/feedCategories.js"
+import { FEED_CATEGORY_CONFIG, resolveFeedCategory } from "../../../db/feedCategories.js"
 import { REPORT_SCHEMA_DEFINITIONS, type SchemaDefinition } from "./reportSchemaData.ts"
 import { useBatchedFeedCategories, getFeedCategoryFromBatch, getNetworkIdentifier } from "./useBatchedFeedCategories.ts"
 import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
@@ -347,7 +347,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
 
   // Any feed with a calculated price, or one explicitly listed in CONTACT_EMAIL_PROXY_ADDRESSES,
   // should have its address hidden and show a contact email instead.
-  const hideAddress = shouldHideAddress(metadata)
+  const hideAddress = shouldHideAddress(metadata, finalTier)
 
   // Stablecoin price-bound note: only when the source marks the feed as explicitly capped
   const stablecoinBound =
@@ -610,6 +610,8 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
       ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
       : null
 
+  const hideAddress = shouldHideAddress(metadata, finalTier)
+
   return (
     <tr>
       <td className={tableStyles.pairCol}>
@@ -685,29 +687,40 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
       </td>
       <td>
         <div className={tableStyles.assetAddress}>
-          <a
-            className={tableStyles.addressLink}
-            href={network.explorerUrl.replace("%s", metadata.proxyAddress ?? metadata.transmissionsAccount)}
-            target="_blank"
-          >
-            {metadata.proxyAddress ?? metadata.transmissionsAccount}
-          </a>
-          <button
-            className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-            style={{ height: "16px", width: "16px" }}
-            data-clipboard-text={metadata.proxyAddress ?? metadata.transmissionsAccount}
-            onClick={(e) =>
-              handleClick(e, {
-                product: "FEEDS-POR",
-                action: "feedId_copied",
-                extraInfo1: network.name,
-                extraInfo2: metadata.name,
-                extraInfo3: metadata.proxyAddress ?? metadata.transmissionsAccount,
-              })
-            }
-          >
-            <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-          </button>
+          {hideAddress ? (
+            <span>
+              Contact us:{" "}
+              <a href={`mailto:${TOKENIZED_EQUITY_CONTACT_EMAIL}`} className={tableStyles.addressLink}>
+                {TOKENIZED_EQUITY_CONTACT_EMAIL}
+              </a>
+            </span>
+          ) : (
+            <>
+              <a
+                className={tableStyles.addressLink}
+                href={network.explorerUrl.replace("%s", metadata.proxyAddress ?? metadata.transmissionsAccount)}
+                target="_blank"
+              >
+                {metadata.proxyAddress ?? metadata.transmissionsAccount}
+              </a>
+              <button
+                className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                style={{ height: "16px", width: "16px" }}
+                data-clipboard-text={metadata.proxyAddress ?? metadata.transmissionsAccount}
+                onClick={(e) =>
+                  handleClick(e, {
+                    product: "FEEDS-POR",
+                    action: "feedId_copied",
+                    extraInfo1: network.name,
+                    extraInfo2: metadata.name,
+                    extraInfo3: metadata.proxyAddress ?? metadata.transmissionsAccount,
+                  })
+                }
+              >
+                <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+              </button>
+            </>
+          )}
         </div>
         <div>
           <dl className={tableStyles.listContainer}>
@@ -1444,10 +1457,12 @@ export const MainnetTable = ({
     const contractAddress = isAptos ? metadata.proxyAddress : metadata.contractAddress || metadata.proxyAddress
     const networkIdentifier = getNetworkIdentifier(network)
 
-    const finalCategory =
+    const batchFinal =
       contractAddress && batchedCategoryData?.size
         ? getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier).final
         : null
+
+    const finalCategory = resolveFeedCategory(batchFinal, metadata.docs?.shutdownDate, metadata.feedCategory)
 
     return { ...metadata, finalCategory }
   })
@@ -1695,10 +1710,12 @@ export const TestnetTable = ({
     const contractAddress = isAptos ? metadata.proxyAddress : metadata.contractAddress || metadata.proxyAddress
     const networkIdentifier = getNetworkIdentifier(network)
 
-    const finalCategory =
+    const batchFinal =
       contractAddress && batchedCategoryData?.size
         ? getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier).final
         : null
+
+    const finalCategory = resolveFeedCategory(batchFinal, metadata.docs?.shutdownDate, metadata.feedCategory)
 
     return { ...metadata, finalCategory }
   })

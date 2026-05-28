@@ -19,21 +19,26 @@ export const CONTACT_EMAIL_PROXY_ADDRESSES = new Set<string>([
   "0x0101166b3b000332000000000000000000000000000000000000000000000000",
 ])
 
+const normalizeCategoryKey = (value?: string | null): string | undefined => value?.toLowerCase().replace(/\s+/g, "")
+
 /**
  * Returns true when the feed's contract address should be hidden and replaced
  * with the data-feeds contact email in the UI.
  *
- * Two conditions trigger hiding:
+ * Three conditions trigger hiding:
  *  1. The feed's productSubType is "calculatedPrice" (blanket rule for all
  *     calculated-price feeds).
  *  2. The feed's proxyAddress appears in CONTACT_EMAIL_PROXY_ADDRESSES (used
  *     for one-off overrides on a per-feed basis).
+ *  3. The feed's resolved risk tier is "very high" (Supabase risk_status or
+ *     equivalent final category).
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function shouldHideAddress(feed: any): boolean {
+export function shouldHideAddress(feed: any, riskTier?: string | null): boolean {
   if (feed.docs?.productSubType === "calculatedPrice") return true
   const proxy: string | null | undefined = feed.proxyAddress
-  return proxy != null && CONTACT_EMAIL_PROXY_ADDRESSES.has(proxy.toLowerCase())
+  if (proxy != null && CONTACT_EMAIL_PROXY_ADDRESSES.has(proxy.toLowerCase())) return true
+  return normalizeCategoryKey(riskTier) === "veryhigh"
 }
 
 /**

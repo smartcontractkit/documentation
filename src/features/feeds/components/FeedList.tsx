@@ -498,14 +498,30 @@ export const FeedList = ({
   const metadataCache = chainMetadata.cache ?? initialCache
 
   const selectableChains = useMemo(() => {
-    if (!isDeprecating || isStreams || !metadataCache) return filteredChainsByTag
+    if (isStreams || !metadataCache) return filteredChainsByTag
+
+    const filterByVisibleFeeds =
+      isDeprecating || isSmartData || isRates || isUSGovernmentMacroeconomicData || dataFeedType === "tokenizedEquity"
+
+    if (!filterByVisibleFeeds) return filteredChainsByTag
 
     return filteredChainsByTag.filter((chain) =>
       chainHasVisibleFeeds((metadataCache as Record<string, any>)[chain.page], dataFeedType, ecosystem, {
         tokenizedEquityProvider,
       })
     )
-  }, [filteredChainsByTag, metadataCache, isDeprecating, isStreams, dataFeedType, ecosystem, tokenizedEquityProvider])
+  }, [
+    filteredChainsByTag,
+    metadataCache,
+    isDeprecating,
+    isStreams,
+    isSmartData,
+    isRates,
+    isUSGovernmentMacroeconomicData,
+    dataFeedType,
+    ecosystem,
+    tokenizedEquityProvider,
+  ])
 
   const availableChainsForSelection = selectableChains.length > 0 ? selectableChains : filteredChainsByTag
 
