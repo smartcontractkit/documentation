@@ -1163,6 +1163,7 @@ const streamsCategoryMap = {
 }
 
 export const StreamsTr = ({ metadata, isMainnet }) => {
+  const finalTier = metadata.finalCategory
   // Determine if stream is deprecating
   const isDeprecating = !!metadata.docs?.shutdownDate
 
@@ -1177,50 +1178,53 @@ export const StreamsTr = ({ metadata, isMainnet }) => {
     <tr>
       <td className={tableStyles.pairCol}>
         <div className={tableStyles.assetPair}>
-          {metadata.pair[0]}/{metadata.pair[1]}
-          {metadata.feedType === "Crypto-DEX" && (
-            <a
-              href="/data-streams/concepts/dex-state-price-streams"
-              target="_blank"
-              className={tableStyles.feedVariantBadge}
-            >
-              DEX State Price
-            </a>
-          )}
-          {metadata.feedType === "Datalink" && (
-            <a
-              href="/data-streams/stream-ids"
-              target="_blank"
-              className={tableStyles.feedVariantBadge}
-              title="Datalink Stream"
-            >
-              Datalink
-            </a>
-          )}
-          {isCalculatedStream && (
-            <a
-              href="/data-streams/concepts/calculated-streams"
-              target="_blank"
-              className={tableStyles.feedVariantBadge}
-              title="Calculated Stream"
-            >
-              Calculated
-            </a>
+          <div className={tableStyles.pairNameRow}>
+            {getFeedCategoryElement(finalTier || undefined)}
+            {metadata.pair[0]}/{metadata.pair[1]}
+            {metadata.feedType === "Crypto-DEX" && (
+              <a
+                href="/data-streams/concepts/dex-state-price-streams"
+                target="_blank"
+                className={tableStyles.feedVariantBadge}
+              >
+                DEX State Price
+              </a>
+            )}
+            {metadata.feedType === "Datalink" && (
+              <a
+                href="/data-streams/stream-ids"
+                target="_blank"
+                className={tableStyles.feedVariantBadge}
+                title="Datalink Stream"
+              >
+                Datalink
+              </a>
+            )}
+            {isCalculatedStream && (
+              <a
+                href="/data-streams/concepts/calculated-streams"
+                target="_blank"
+                className={tableStyles.feedVariantBadge}
+                title="Calculated Stream"
+              >
+                Calculated
+              </a>
+            )}
+          </div>
+          {metadata.docs.shutdownDate && (
+            <div className={clsx(feedList.shutDate)}>
+              <hr />
+              <a
+                href="/data-streams/deprecating-streams"
+                style={{ color: "inherit", textDecoration: "underline dotted" }}
+              >
+                Deprecating:
+              </a>
+              <br />
+              {metadata.docs.shutdownDate}
+            </div>
           )}
         </div>
-        {metadata.docs.shutdownDate && (
-          <div className={clsx(feedList.shutDate)}>
-            <hr />
-            <a
-              href="/data-streams/deprecating-streams"
-              style={{ color: "inherit", textDecoration: "underline dotted" }}
-            >
-              Deprecating:
-            </a>
-            <br />
-            {metadata.docs.shutdownDate}
-          </div>
-        )}
       </td>
       <td style="width:80%;">
         <div className={tableStyles.assetAddress}>

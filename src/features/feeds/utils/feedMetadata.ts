@@ -3,6 +3,7 @@ import type { ChainNetwork } from "~/features/data/chains.ts"
 import type { TradingHoursFilterValue } from "../types.ts"
 import type { FeedCategoryData } from "../components/useBatchedFeedCategories.ts"
 import { getFeedCategoryFromBatch, getNetworkIdentifier } from "../components/useBatchedFeedCategories.ts"
+import { getStreamCategoryFromBatch } from "../components/useBatchedStreamCategories.ts"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type FeedMetadata = any
@@ -48,6 +49,18 @@ export function enrichFeedWithCategory(
   network: ChainNetwork,
   batchedCategoryData: Map<string, FeedCategoryData>
 ): FeedMetadata {
+  const isStream = metadata.contractType === "verifier" && metadata.feedId
+
+  if (isStream) {
+    const batchFinal =
+      batchedCategoryData?.size && metadata.feedId
+        ? getStreamCategoryFromBatch(batchedCategoryData, metadata.feedId).final
+        : null
+
+    const finalCategory = resolveFeedCategory(batchFinal, metadata.docs?.shutdownDate, metadata.feedCategory)
+    return { ...metadata, finalCategory }
+  }
+
   const contractAddress = getFeedContractAddress(network, metadata)
   const networkIdentifier = getNetworkIdentifier(network)
 
