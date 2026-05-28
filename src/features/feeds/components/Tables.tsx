@@ -1550,8 +1550,13 @@ export const TestnetTable = ({
 }) => {
   if (!network.metadata) return null
 
-  const { isStreams, isSmartData, isRates, isUSGovernmentMacroeconomicData, isDefaultTable: isDefault } =
-    getFeedTypeFlags(dataFeedType, "testnet")
+  const {
+    isStreams,
+    isSmartData,
+    isRates,
+    isUSGovernmentMacroeconomicData,
+    isDefaultTable: isDefault,
+  } = getFeedTypeFlags(dataFeedType, "testnet")
 
   const { batchedCategoryData, filteredMetadata, isBatchLoading } = useFilteredFeedMetadata({
     network,
