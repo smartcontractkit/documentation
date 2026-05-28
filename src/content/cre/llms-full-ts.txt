@@ -12041,7 +12041,7 @@ For complete setup instructions, configuration requirements, and step-by-step gu
 
 # Deploying to the Private Registry
 Source: https://docs.chain.link/cre/guides/operations/deploying-to-private-registry-ts
-Last Updated: 2026-05-27
+Last Updated: 2026-05-28
 
 <Aside type="note" title="TypeScript">
   This page covers deployment to the private registry for TypeScript workflows. For Go workflows, see [Deploying to the Private Registry (Go)](/cre/guides/operations/deploying-to-private-registry-go).
@@ -12128,29 +12128,33 @@ The CLI compiles your workflow, uploads the artifacts to the CRE Storage Service
 **Example output:**
 
 ```
-Deploying Workflow :     my-workflow
-Target :                 staging-settings
-Owner Address :          <your-organization-owner>
+Deploying Workflow: my-workflow-staging
+  Registry:      private
+  Target:        staging-settings
+  Owner Address: <your-organization-owner> (derived)
 
 Compiling workflow...
-Workflow compiled successfully
+✓ Workflow compiled successfully
+  Binary hash:   <binary-hash>
+  Config hash:   <config-hash>
+  Workflow hash: <workflow-id>
 
 Uploading files...
 ✔ Loaded binary from: ./binary.wasm.br.b64
-✔ Uploaded binary to: https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
+✔ Uploaded binary to: https://storage.cre.chain.link/artifacts/<workflow-id>/binary.wasm
 ✔ Loaded config from: ./config.staging.json
-✔ Uploaded config to: https://storage.cre.example.com/artifacts/<workflow-id>/config
+✔ Uploaded config to: https://storage.cre.chain.link/artifacts/<workflow-id>/config
 
-Registering workflow in private registry (workflowID: <your-workflow-id>)...
+Registering workflow in private registry (workflowID: <workflow-id>)...
 ✓ Workflow registered in private registry
 
 Details:
    Registry:         private
    Workflow Name:    my-workflow
-   Workflow ID:      <your-workflow-id>
+   Workflow ID:      <workflow-id>
    Status:           Active
-   Binary URL:       https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
-   Config URL:       https://storage.cre.example.com/artifacts/<workflow-id>/config
+   Binary URL:       https://storage.cre.chain.link/artifacts/<workflow-id>/binary.wasm
+   Config URL:       https://storage.cre.chain.link/artifacts/<workflow-id>/config
    Owner:            <your-organization-owner>
 ```
 
@@ -12174,12 +12178,32 @@ You can also view the workflow in the [CRE platform](https://app.chain.link/cre/
 
 ## Organization owner address
 
-For workflows managed on the private registry, the workflow owner is your organization's owner address, not a linked wallet key.
+For workflows managed on the private registry, the workflow owner is your organization's owner address — not a linked wallet key. CRE derives this address from your organization; it matches the **Organization address** in the CRE platform UI.
 
-To find it in the CRE platform UI:
+### In the CRE platform UI
 
 1. Open the [CRE platform](https://app.chain.link/cre/discover) and navigate to **Organization** in the sidebar
 2. Copy the **Organization address** shown on the page
+
+You can also find the same address on a workflow's detail page under **Workflow Owner**.
+
+### From the CLI
+
+You can retrieve the organization owner address with:
+
+- **`cre workflow deploy`** — prints `Owner Address: … (derived)` at the start of the command output (before compilation finishes), even if registration later fails
+- **`cre workflow list --registry private --output json`** — each workflow includes an `ownerAddress` field
+- **`cre workflow get`** — prints the owner address for a workflow configured in `workflow.yaml`
+
+```bash
+# Example: list owner addresses for private registry workflows
+cre workflow list --registry private --output json
+
+# Example: owner address for a specific workflow
+cre workflow get ./my-workflow --target staging-settings
+```
+
+The `Owner Address (derived)` value from deploy matches the **Organization address** in the UI.
 
 ## Onchain write permissions
 
