@@ -335,7 +335,7 @@ export const StreamsNetworksData: NetworkData[] = [
     testnet: {
       label: "HyperEVM Testnet",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
-      explorerUrl: "https://testnet.purrsec.com/address/%s",
+      explorerUrl: "https://explore-testnet.hyperpc.app/address/%s",
     },
   },
   {
@@ -531,7 +531,7 @@ export const StreamsNetworksData: NetworkData[] = [
     mainnet: {
       label: "Pharos Mainnet (Private)",
       verifierProxy: "0xa094978891512268f4a4a4641B8da1A2a3E3BEB7",
-      explorerUrl: "https://pharos.socialscan.io/address/%s",
+      explorerUrl: "https://pharosscan.xyz/address/%s",
     },
     testnet: {
       label: "Pharos Atlantic Testnet",

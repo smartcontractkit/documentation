@@ -7,7 +7,7 @@ pageId: "guides-workflow-confidential-http-making-requests"
 metadata:
   description: "Make confidential HTTP requests in Go: learn to use enclave execution, secret injection, and optional response encryption in your workflows."
   datePublished: "2026-02-10"
-  lastModified: "2026-02-10"
+  lastModified: "2026-05-22"
 ---
 
 import { Aside } from "@components"
@@ -168,6 +168,42 @@ Run the simulation:
 
 ```bash
 cre workflow simulate
+```
+
+## Request timeout
+
+The `Timeout` field on the inner `Request` object controls how long the enclave waits for the external API to respond before cancelling the call. It uses the [`google.protobuf.Duration`](https://protobuf.dev/reference/protobuf/google.protobuf/#duration) type.
+
+**Default and limits:**
+
+- **Default**: If you omit `Timeout`, a default of **5 seconds** is applied.
+- **Maximum**: **10 seconds**. Values above this limit will error.
+
+If your API routinely takes longer than 5 seconds, set an explicit timeout so the request does not fail unexpectedly.
+
+Use `durationpb.New()` with a `time.Duration` value on the `Request` field:
+
+```go
+import (
+	"time"
+
+	confhttp "github.com/smartcontractkit/cre-sdk-go/capabilities/networking/confidentialhttp"
+	"google.golang.org/protobuf/types/known/durationpb"
+)
+
+result, err := confHTTPClient.SendRequest(runtime, &confhttp.ConfidentialHTTPRequest{
+	Request: &confhttp.HTTPRequest{
+		Url:    config.URL,
+		Method: "GET",
+		MultiHeaders: map[string]*confhttp.HeaderValues{
+			"Authorization": {Values: []string{"Basic {{.myApiKey}}"}},
+		},
+		Timeout: durationpb.New(10 * time.Second),
+	},
+	VaultDonSecrets: []*confhttp.SecretIdentifier{
+		{Key: "myApiKey", Owner: config.Owner},
+	},
+}).Await()
 ```
 
 ## Template syntax for secrets

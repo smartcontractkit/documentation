@@ -1,6 +1,42 @@
 import type { DataFeedType } from "../components/FeedList.tsx"
 
 /**
+ * Proxy addresses (lowercase) for feeds that should display the contact email
+ * instead of a clickable contract address.
+ *
+ * Add an entry here whenever a feed needs to be "hidden" on the front end
+ * regardless of its productSubType. The address-hiding behaviour already
+ * applies automatically to any feed with productSubType === "calculatedPrice";
+ * this list covers one-off exceptions (e.g. a specific DAI feed on a chain
+ * that does not carry that productSubType).
+ *
+ * Example:
+ *   "0xabc123..." — the proxyAddress of the feed, lower-cased
+ */
+export const CONTACT_EMAIL_PROXY_ADDRESSES = new Set<string>([
+  // add lowercase proxy addresses here, e.g.:
+  // "0x000000000000000000000000000000000000dead",
+  "0x0101166b3b000332000000000000000000000000000000000000000000000000",
+])
+
+/**
+ * Returns true when the feed's contract address should be hidden and replaced
+ * with the data-feeds contact email in the UI.
+ *
+ * Two conditions trigger hiding:
+ *  1. The feed's productSubType is "calculatedPrice" (blanket rule for all
+ *     calculated-price feeds).
+ *  2. The feed's proxyAddress appears in CONTACT_EMAIL_PROXY_ADDRESSES (used
+ *     for one-off overrides on a per-feed basis).
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function shouldHideAddress(feed: any): boolean {
+  if (feed.docs?.productSubType === "calculatedPrice") return true
+  const proxy: string | null | undefined = feed.proxyAddress
+  return proxy != null && CONTACT_EMAIL_PROXY_ADDRESSES.has(proxy.toLowerCase())
+}
+
+/**
  * Helper function to extract schema version from feed metadata
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

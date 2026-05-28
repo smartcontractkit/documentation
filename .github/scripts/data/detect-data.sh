@@ -434,7 +434,8 @@ node <<EOF
     console.log(\`changelog.json updated with \${newEntries.length} new entry(ies).\`);
 EOF
 
-  log "changelog.json updated."
+  npx prettier --write "$CHANGELOG_FILE"
+  log "changelog.json updated and formatted."
 
   log "Done."
 }

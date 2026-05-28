@@ -120,6 +120,11 @@ jobs:
       - name: Cleanup NEW_DATA_FOUND
         run: rm -f temp/NEW_DATA_FOUND.json
 
+      # Step 8b: Format generated files so the PR passes Prettier checks in test.yml
+      - name: Format generated files
+        if: steps.detect_data.outputs.data_changes_found == 'true'
+        run: npx prettier --write public/changelog.json .github/scripts/data/baseline.json
+
       # Step 9: Create an issue if any invalid URLs are detected
       - name: Create Issue for Broken URLs
         if: steps.validate_urls.outputs.url_validation_failed == 'true'

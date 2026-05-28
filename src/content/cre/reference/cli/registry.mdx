@@ -14,7 +14,12 @@ The `cre registry` commands let you view and inspect the workflow registries ava
 
 ## What is a workflow registry?
 
-A **workflow registry** is the system that tracks which workflows are registered to your CRE organization and makes them available to the DON (Decentralized Oracle Network) for execution. The standard registry is a smart contract on Ethereum Mainnet — when you run `cre workflow deploy`, the CLI submits a transaction to that contract recording your workflow's name, owner, and artifact URLs, and the DON reads from it to discover and execute your workflow.
+A **workflow registry** is the system that tracks which workflows are registered to your CRE organization and makes them available to the DON (Decentralized Oracle Network) for execution. CRE supports a public onchain registry and a private Chainlink-hosted registry.
+
+- **Public/onchain registry**: A smart contract on Ethereum Mainnet. When you run `cre workflow deploy`, the CLI submits a transaction to that contract recording your workflow's name, owner, and artifact URLs.
+- **Private registry**: A centralized, off-chain registry hosted by Chainlink. Workflow management is authorized by your CRE login session instead of a linked wallet key.
+
+Private registry management is a control-plane choice. It does not make workflow execution confidential, and confidential execution does not require the private registry.
 
 When you log in with `cre login`, the CLI fetches your organization's registry configuration from the CRE platform and caches it locally in `~/.cre/context.yaml`. `cre registry list` reads from that cache and shows which registries your organization has access to.
 
@@ -32,7 +37,7 @@ Each workflow can declare a **`deployment-registry`** in `workflow.yaml` (under 
 
 ## `cre registry list`
 
-Displays the workflow registries configured for your organization, including each registry's label, ID, type, and on-chain address (where applicable). Registry data is sourced from `~/.cre/context.yaml`, which is fetched from the CRE platform when you run `cre login`. The CLI may also print a short reminder for setting **`deployment-registry`** in `workflow.yaml` (see example output below).
+Displays the workflow registries configured for your organization, including each registry's label, ID, type, and onchain address (where applicable). Registry data is sourced from `~/.cre/context.yaml`, which is fetched from the CRE platform when you run `cre login`. The CLI may also print a short reminder for setting **`deployment-registry`** in `workflow.yaml` (see example output below).
 
 **Usage:**
 
@@ -46,7 +51,7 @@ cre registry list
 Registries available to your organization
 
 ethereum-mainnet (0x4Ac5...E7e5)
-  ID:   onchain:ethereum-mainnet
+  ID:   on-chain:ethereum-mainnet
   Type: on-chain
   Addr: 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
 
