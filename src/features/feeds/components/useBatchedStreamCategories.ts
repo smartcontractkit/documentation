@@ -8,6 +8,7 @@ export type StreamCategoryData = FeedTierResult
 type BatchedStreamCategoriesState = {
   data: Map<string, StreamCategoryData>
   isLoading: boolean
+  isReady: boolean
   error: string | null
 }
 
@@ -16,17 +17,18 @@ export function useBatchedStreamCategories(network: ChainNetwork | null): Batche
   const [state, setState] = useState<BatchedStreamCategoriesState>({
     data: new Map(),
     isLoading: false,
+    isReady: false,
     error: null,
   })
 
   useEffect(() => {
     if (!network?.metadata?.length) {
-      setState({ data: new Map(), isLoading: false, error: null })
+      setState({ data: new Map(), isLoading: false, isReady: true, error: null })
       return
     }
 
     const loadBatchedCategories = async () => {
-      setState((prev) => ({ ...prev, isLoading: true, error: null }))
+      setState((prev) => ({ ...prev, isLoading: true, isReady: false, error: null }))
 
       const streamRequests = network.metadata
         ?.filter((metadata) => metadata.contractType === "verifier" && metadata.feedId)
@@ -36,17 +38,18 @@ export function useBatchedStreamCategories(network: ChainNetwork | null): Batche
         }))
 
       if (!streamRequests?.length) {
-        setState({ data: new Map(), isLoading: false, error: null })
+        setState({ data: new Map(), isLoading: false, isReady: true, error: null })
         return
       }
 
       try {
         const batchResults = await getStreamRiskTiersBatch(streamRequests)
-        setState({ data: batchResults, isLoading: false, error: null })
+        setState({ data: batchResults, isLoading: false, isReady: true, error: null })
       } catch (error) {
         setState((prev) => ({
           ...prev,
           isLoading: false,
+          isReady: true,
           error: error instanceof Error ? error.message : "Unknown error occurred",
         }))
       }

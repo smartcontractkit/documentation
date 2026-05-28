@@ -11,12 +11,12 @@ export const SMART_DATA_CATEGORY_OPTIONS = [
 
 /** Default risk categories before Supabase categories load. */
 export const DEFAULT_FEED_CATEGORY_OPTIONS = [
-  { key: "low", name: "Low Market Risk" },
-  { key: "medium", name: "Medium Market Risk" },
-  { key: "high", name: "High Market Risk" },
-  { key: "veryhigh", name: "Very High Market Risk" },
-  { key: "custom", name: "Custom" },
-  { key: "new", name: "New Token" },
+  { key: "low", name: "Low Market Pricing Risk" },
+  { key: "medium", name: "Medium Market Pricing Risk" },
+  { key: "high", name: "High Market Pricing Risk" },
+  { key: "veryhigh", name: "Very High Market Pricing Risk" },
+  { key: "custom", name: "Custom Feeds" },
+  { key: "new", name: "New Token Feeds" },
   { key: "deprecating", name: "Deprecating" },
 ] as const
 

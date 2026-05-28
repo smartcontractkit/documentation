@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import { useEffect, useState } from "preact/hooks"
-import { Fragment } from "preact"
+import { Fragment, render } from "preact"
 import feedList from "./FeedList.module.css"
 import { clsx } from "~/lib/clsx/clsx.ts"
 import { ChainNetwork } from "~/features/data/chains.ts"
@@ -161,19 +161,125 @@ const parseMarkdownLink = (text: string) => {
   return parts.length > 0 ? parts : text
 }
 
-// Render a category icon/link from the config
-const getFeedCategoryElement = (riskTier: string | undefined) => {
-  if (!riskTier) return ""
-  // Normalize: "very high" → "veryhigh" to match config keys
-  const normalizedKey = riskTier.toLowerCase().replace(/\s+/g, "")
-  const category = FEED_CATEGORY_CONFIG[normalizedKey]
-  if (!category) return ""
+const RISK_TIER_SHORT_LABELS: Record<string, string> = {
+  low: "Low risk",
+  medium: "Medium risk",
+  high: "High risk",
+  veryhigh: "Very high risk",
+  new: "New token",
+  custom: "Custom",
+  deprecating: "Deprecating",
+}
+
+const normalizeRiskKey = (riskTier?: string | null) => riskTier?.toLowerCase().replace(/\s+/g, "") ?? ""
+
+const getRiskTooltipText = (
+  category: (typeof FEED_CATEGORY_CONFIG)[keyof typeof FEED_CATEGORY_CONFIG],
+  normalizedKey: string
+) => {
+  if (normalizedKey === "veryhigh") {
+    return `${category.title} The contract address is hidden to help prevent accidental onboarding to inherently risky feeds. Contact ${TOKENIZED_EQUITY_CONTACT_EMAIL} if you would like to use this feed.`
+  }
+
+  return category.title
+}
+
+const RISK_TOOLTIP_MAX_WIDTH = 280
+const RISK_TOOLTIP_VIEWPORT_PADDING = 8
+
+const getRiskTooltipPosition = (anchor: HTMLElement) => {
+  const rect = anchor.getBoundingClientRect()
+  const maxWidth = Math.min(RISK_TOOLTIP_MAX_WIDTH, window.innerWidth - RISK_TOOLTIP_VIEWPORT_PADDING * 2)
+  let left = rect.left
+
+  if (left + maxWidth > window.innerWidth - RISK_TOOLTIP_VIEWPORT_PADDING) {
+    left = window.innerWidth - maxWidth - RISK_TOOLTIP_VIEWPORT_PADDING
+  }
+
+  const spaceBelow = window.innerHeight - rect.bottom - RISK_TOOLTIP_VIEWPORT_PADDING
+  const showAbove = spaceBelow < 120 && rect.top > spaceBelow
+
+  return {
+    top: rect.bottom + 6,
+    anchorTop: rect.top,
+    left: Math.max(RISK_TOOLTIP_VIEWPORT_PADDING, left),
+    maxWidth,
+    showAbove,
+  }
+}
+
+const RiskTHeadCell = () => <th className={clsx(tableStyles.heading, tableStyles.riskCol)}>Risk</th>
+
+const RiskCell = ({ riskTier }: { riskTier?: string | null }) => {
+  const [tooltipPos, setTooltipPos] = useState<ReturnType<typeof getRiskTooltipPosition> | null>(null)
+  const normalizedKey = normalizeRiskKey(riskTier)
+  const category = normalizedKey ? FEED_CATEGORY_CONFIG[normalizedKey as keyof typeof FEED_CATEGORY_CONFIG] : undefined
+  const tooltipText = category ? getRiskTooltipText(category, normalizedKey) : ""
+
+  useEffect(() => {
+    if (!tooltipPos || typeof document === "undefined") return
+
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+
+    render(
+      <div
+        className={tableStyles.riskTooltipBubble}
+        style={{
+          top: tooltipPos.showAbove ? undefined : `${tooltipPos.top}px`,
+          bottom: tooltipPos.showAbove ? `${window.innerHeight - tooltipPos.anchorTop + 6}px` : undefined,
+          left: `${tooltipPos.left}px`,
+          maxWidth: `${tooltipPos.maxWidth}px`,
+        }}
+        role="tooltip"
+      >
+        <p className={tableStyles.riskTooltipText}>{tooltipText}</p>
+        <p className={tableStyles.riskTooltipHint}>Click to view the risk selection page.</p>
+      </div>,
+      container
+    )
+
+    return () => {
+      render(null, container)
+      container.remove()
+    }
+  }, [tooltipPos, tooltipText])
+
+  if (!category) {
+    return (
+      <td className={tableStyles.riskCol}>
+        <span className={tableStyles.riskUnavailable}>—</span>
+      </td>
+    )
+  }
+
+  const showTooltip = (event: Event) => {
+    setTooltipPos(getRiskTooltipPosition(event.currentTarget as HTMLElement))
+  }
+
+  const hideTooltip = () => setTooltipPos(null)
+
   return (
-    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title={category.title}>
-      <a href={category.link} aria-label={category.name} target="_blank">
-        {category.icon}
-      </a>
-    </span>
+    <td className={tableStyles.riskCol}>
+      <div className={tableStyles.riskCell}>
+        <span className={tableStyles.riskIcon} aria-hidden="true">
+          {category.icon}
+        </span>
+        <a
+          href={category.link}
+          className={tableStyles.riskLabelLink}
+          aria-label={category.name}
+          target="_blank"
+          rel="noopener noreferrer"
+          onMouseEnter={showTooltip}
+          onMouseLeave={hideTooltip}
+          onFocus={showTooltip}
+          onBlur={hideTooltip}
+        >
+          {RISK_TIER_SHORT_LABELS[normalizedKey] ?? category.name}
+        </a>
+      </div>
+    </td>
   )
 }
 
@@ -298,6 +404,7 @@ const DefaultTHead = ({
   return (
     <thead>
       <tr>
+        <RiskTHeadCell />
         <th className={tableStyles.heading}>{isUSGovernmentMacroeconomicData ? "Feed" : "Pair"}</th>
         <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Deviation</th>
         <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Heartbeat</th>
@@ -348,12 +455,10 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
     : metadata.feedType
   return (
     <tr>
+      <RiskCell riskTier={finalTier} />
       <td className={tableStyles.pairCol}>
         <div className={tableStyles.assetPair}>
-          <div className={tableStyles.pairNameRow}>
-            {getFeedCategoryElement(finalTier || undefined)}
-            {metadata.name}
-          </div>
+          <div className={tableStyles.pairNameRow}>{metadata.name}</div>
           {metadata.secondaryProxyAddress && (
             <div style={{ marginTop: "5px" }}>
               <a
@@ -556,6 +661,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
 const SmartDataTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
   <thead>
     <tr>
+      <RiskTHeadCell />
       <th className={tableStyles.heading}>SmartData Feed</th>
       <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Deviation</th>
       <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Heartbeat</th>
@@ -587,6 +693,7 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
 
   return (
     <tr>
+      <RiskCell riskTier={finalTier} />
       <td className={tableStyles.pairCol}>
         {feedItems.map((feedItem: FeedDataItem) => {
           const [feedAddress] = Object.keys(feedItem)
@@ -603,9 +710,7 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
           }
           return ""
         })}
-        <div className={tableStyles.assetPair}>
-          {getFeedCategoryElement(finalTier || undefined)} {metadata.name}
-        </div>
+        <div className={tableStyles.assetPair}>{metadata.name}</div>
         {metadata.docs.shutdownDate && (
           <div className={clsx(feedList.shutDate)}>
             <hr />
@@ -1149,6 +1254,7 @@ export const StreamsNetworkAddressesTable = ({
 export const StreamsTHead = () => (
   <thead>
     <tr>
+      <RiskTHeadCell />
       <th className={tableStyles.heading}>Stream</th>
       <th>Details</th>
     </tr>
@@ -1176,10 +1282,10 @@ export const StreamsTr = ({ metadata, isMainnet }) => {
 
   return (
     <tr>
+      <RiskCell riskTier={finalTier} />
       <td className={tableStyles.pairCol}>
         <div className={tableStyles.assetPair}>
           <div className={tableStyles.pairNameRow}>
-            {getFeedCategoryElement(finalTier || undefined)}
             {metadata.pair[0]}/{metadata.pair[1]}
             {metadata.feedType === "Crypto-DEX" && (
               <a
@@ -1446,7 +1552,7 @@ export const MainnetTable = ({
           {slicedFilteredMetadata.length === 0 ? (
             <tbody>
               <tr>
-                <td colSpan={showExtraDetails ? 4 : 2} style={{ textAlign: "center" }}>
+                <td colSpan={isStreams ? 3 : 6} style={{ textAlign: "center" }}>
                   <img
                     src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
                     style={{ height: "160px" }}
@@ -1594,7 +1700,7 @@ export const TestnetTable = ({
           {slicedFilteredMetadata.length === 0 ? (
             <tbody>
               <tr>
-                <td style={{ textAlign: "center" }}>
+                <td colSpan={isStreams ? 3 : 6} style={{ textAlign: "center" }}>
                   <img
                     src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
                     style={{ height: "160px" }}
