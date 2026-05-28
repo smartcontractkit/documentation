@@ -7,7 +7,7 @@ pageId: "operations-deploying-to-private-registry"
 metadata:
   description: "Deploy and manage CRE workflows using the Chainlink-hosted private registry — no linked wallet, no gas, and no Ethereum Mainnet RPC required for registry operations."
   datePublished: "2026-05-06"
-  lastModified: "2026-05-14"
+  lastModified: "2026-05-27"
 ---
 
 import { Aside } from "@components"
@@ -124,7 +124,7 @@ Details:
    Owner:            <your-organization-owner>
 ```
 
-The workflow is registered and active immediately. Notice there is no transaction hash, no gas cost, and the `Owner` is your CRE organization rather than a wallet address.
+The workflow is registered and active immediately. Notice there is no transaction hash, no gas cost, and the `Owner` is your [organization owner address](#organization-owner-address) rather than a linked wallet address.
 
 ## Step 3: Verify the deployment
 
@@ -141,6 +141,19 @@ cre workflow list --registry private
 ```
 
 You can also view the workflow in the [CRE platform](https://app.chain.link/cre/discover) under **Workflows**.
+
+## Organization owner address
+
+For workflows managed on the private registry, the workflow owner is your organization's owner address, not a linked wallet key.
+
+To find it in the CRE platform UI:
+
+1. Open the [CRE platform](https://app.chain.link/cre/discover) and navigate to **Organization** in the sidebar
+1. Copy the **Organization address** shown on the page
+
+## Onchain write permissions
+
+If your workflow performs [onchain writes](/cre/guides/workflow/using-evm-client/onchain-write/overview-ts) and you did not [link your own wallet key](/cre/organization/linking-keys), use your [organization owner address](#organization-owner-address) when configuring consumer contract permissions (for example, with `setExpectedAuthor()` in [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#34-configuring-permissions)).
 
 ## Managing a private registry workflow
 

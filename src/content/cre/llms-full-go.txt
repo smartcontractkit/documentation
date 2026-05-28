@@ -12092,7 +12092,7 @@ For complete setup instructions, configuration requirements, and step-by-step gu
 
 # Deploying to the Private Registry
 Source: https://docs.chain.link/cre/guides/operations/deploying-to-private-registry-go
-Last Updated: 2026-05-14
+Last Updated: 2026-05-27
 
 <Aside type="note" title="Go">
   This page covers deployment to the private registry for Go workflows. For TypeScript workflows, see [Deploying to the Private Registry (TypeScript)](/cre/guides/operations/deploying-to-private-registry-ts).
@@ -12205,7 +12205,7 @@ Details:
    Owner:            <your-organization-owner>
 ```
 
-The workflow is registered and active immediately. Notice there is no transaction hash, no gas cost, and the `Owner` is your CRE organization rather than a wallet address.
+The workflow is registered and active immediately. Notice there is no transaction hash, no gas cost, and the `Owner` is your [organization owner address](#organization-owner-address) rather than a linked wallet address.
 
 ## Step 3: Verify the deployment
 
@@ -12222,6 +12222,19 @@ cre workflow list --registry private
 ```
 
 You can also view the workflow in the [CRE platform](https://app.chain.link/cre/discover) under **Workflows**.
+
+## Organization owner address
+
+For workflows managed on the private registry, the workflow owner is your organization's owner address, not a linked wallet key.
+
+To find it in the CRE platform UI:
+
+1. Open the [CRE platform](https://app.chain.link/cre/discover) and navigate to **Organization** in the sidebar
+2. Copy the **Organization address** shown on the page
+
+## Onchain write permissions
+
+If your workflow performs [onchain writes](/cre/guides/workflow/using-evm-client/onchain-write/overview-go) and you did not [link your own wallet key](/cre/organization/linking-keys), use your [organization owner address](#organization-owner-address) when configuring consumer contract permissions (for example, with `setExpectedAuthor()` in [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#34-configuring-permissions)).
 
 ## Managing a private registry workflow
 
