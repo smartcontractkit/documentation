@@ -5950,7 +5950,7 @@ Last Updated: 2026-05-12
 
 When you deploy a workflow, you register it with a **workflow registry** so it can activate and respond to triggers across a [Decentralized Oracle Network (DON)](/cre/key-terms#decentralized-oracle-network-don). CRE supports two registry models, selected per deployment target via `deployment-registry` in `workflow.yaml`:
 
-- **Private workflow**: Lifecycle operations (deploy, activate, pause, update, delete) are authorized by your CRE login session against the Chainlink-hosted private registry. No linked wallet, no gas, no Ethereum Mainnet RPC required for registry management. This is the default for new projects initialized with `cre init`.
+- **Private workflow**: Lifecycle operations (deploy, activate, pause, update, delete) are authorized by your CRE login session against the Chainlink-hosted private registry. No linked wallet, no gas, no Ethereum Mainnet RPC required for registry management.
 - **Public/onchain workflow**: Lifecycle operations submit transactions to the Workflow Registry contract on Ethereum Mainnet, authorized by your linked web3 wallet key.
 
 This is a **control-plane** choice — it governs how workflow management is authorized, not how workflow execution behaves. See [Private workflow](/cre/key-terms#private-workflow) and [Confidential execution](/cre/key-terms#confidential-workflow-or-confidential-execution) for the distinction.
@@ -5993,7 +5993,6 @@ Use the `ID` value as the `deployment-registry` in your `workflow.yaml`.
 | ETH for gas (registry ops)      | No                              | Yes                                |
 | `cre account link-key` required | No                              | Yes                                |
 | Creates onchain record          | No                              | Yes, in Workflow Registry contract |
-| Default for `cre init` projects | Yes                             | No                                 |
 | Ideal for                       | Testing, team-managed workflows | Production, multisig ownership     |
 
 Secrets follow the same split. See [Using Secrets with Deployed Workflows](/cre/guides/workflow/secrets/using-secrets-deployed) for the per-registry secrets flows.
@@ -12119,7 +12118,7 @@ Last Updated: 2026-05-28
 
 The **private registry** is a Chainlink-hosted, offchain workflow registry. All lifecycle operations (deploy, activate, pause, delete, update) are authorized by your CRE login session — not a linked wallet key. There are no Ethereum Mainnet transactions and no gas fees for registry management.
 
-This is the default registry for new projects initialized with `cre init`. For a comparison of both registry options, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
+For a comparison of both registry options, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
 
 
 <Aside type="note" title="Private is not confidential">
@@ -12159,7 +12158,7 @@ Unlike the public onchain registry, you do **not** need:
 
 ## Step 1: Set `deployment-registry` in your `workflow.yaml`
 
-When you run `cre init`, the wizard prompts you to select a deployment registry after entering your workflow name. Private (off-chain) registries appear first with the cursor pre-selected on them. Selecting `private` writes `deployment-registry: "private"` into both targets of the generated `workflow.yaml` automatically — you can skip the manual step below.
+When you run `cre init`, the wizard prompts you to select a deployment registry after entering your workflow name. Select `private` to write `deployment-registry: "private"` into both targets of the generated `workflow.yaml` automatically — you can skip the manual step below.
 
 If you skipped the step, used `--non-interactive` without `--deployment-registry`, or are adding a new target to an existing project, add `deployment-registry: "private"` under the `user-workflow` section manually:
 
