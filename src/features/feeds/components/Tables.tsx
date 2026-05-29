@@ -218,6 +218,9 @@ const getRiskTooltipPosition = (anchor: HTMLElement) => {
 
 const RiskTHeadCell = () => <th className={clsx(tableStyles.heading, tableStyles.riskCol)}>Risk</th>
 
+const getFeedTableColSpan = (isStreams: boolean, showRiskColumn: boolean) =>
+  (isStreams ? 2 : 5) + (showRiskColumn ? 1 : 0)
+
 const RiskCell = ({
   riskTier,
   product = "feeds",
@@ -406,10 +409,12 @@ const DefaultTHead = ({
   showExtraDetails,
   networkName,
   dataFeedType,
+  showRiskColumn = true,
 }: {
   showExtraDetails: boolean
   networkName: string
   dataFeedType: string
+  showRiskColumn?: boolean
 }) => {
   const isAptosNetwork = networkName === "Aptos Mainnet" || networkName === "Aptos Testnet"
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
@@ -417,7 +422,7 @@ const DefaultTHead = ({
   return (
     <thead>
       <tr>
-        <RiskTHeadCell />
+        {showRiskColumn && <RiskTHeadCell />}
         <th className={tableStyles.heading}>{isUSGovernmentMacroeconomicData ? "Feed" : "Pair"}</th>
         <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Deviation</th>
         <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Heartbeat</th>
@@ -437,7 +442,14 @@ const HiddenAddressContact = ({ className }: { className?: string }) => (
   </span>
 )
 
-const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, dataFeedType }) => {
+const DefaultTr = ({
+  network,
+  metadata,
+  showExtraDetails,
+  batchedCategoryData,
+  dataFeedType,
+  showRiskColumn = true,
+}) => {
   // Use the pre-computed finalCategory from enriched metadata
   // (already includes deprecating status and Supabase risk tier)
   const finalTier = metadata.finalCategory ?? null
@@ -468,7 +480,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
     : metadata.feedType
   return (
     <tr>
-      <RiskCell riskTier={finalTier} />
+      {showRiskColumn && <RiskCell riskTier={finalTier} />}
       <td className={tableStyles.pairCol}>
         <div className={tableStyles.assetPair}>
           <div className={tableStyles.pairNameRow}>{metadata.name}</div>
@@ -671,10 +683,16 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
   )
 }
 
-const SmartDataTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
+const SmartDataTHead = ({
+  showExtraDetails,
+  showRiskColumn = true,
+}: {
+  showExtraDetails: boolean
+  showRiskColumn?: boolean
+}) => (
   <thead>
     <tr>
-      <RiskTHeadCell />
+      {showRiskColumn && <RiskTHeadCell />}
       <th className={tableStyles.heading}>SmartData Feed</th>
       <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Deviation</th>
       <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Heartbeat</th>
@@ -684,7 +702,7 @@ const SmartDataTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => 
   </thead>
 )
 
-const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData }) => {
+const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData, showRiskColumn = true }) => {
   // Check if this is an MVR feed
   const hasDecoding = Array.isArray(metadata.docs?.decoding) && metadata.docs.decoding.length > 0
   const isMVRFlagSet = metadata.docs?.isMVR === true
@@ -706,7 +724,7 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
 
   return (
     <tr>
-      <RiskCell riskTier={finalTier} />
+      {showRiskColumn && <RiskCell riskTier={finalTier} />}
       <td className={tableStyles.pairCol}>
         {feedItems.map((feedItem: FeedDataItem) => {
           const [feedAddress] = Object.keys(feedItem)
@@ -1264,10 +1282,10 @@ export const StreamsNetworkAddressesTable = ({
   )
 }
 
-export const StreamsTHead = () => (
+export const StreamsTHead = ({ showRiskColumn = true }: { showRiskColumn?: boolean } = {}) => (
   <thead>
     <tr>
-      <RiskTHeadCell />
+      {showRiskColumn && <RiskTHeadCell />}
       <th className={tableStyles.heading}>Stream</th>
       <th>Details</th>
     </tr>
@@ -1281,7 +1299,7 @@ const streamsCategoryMap = {
   },
 }
 
-export const StreamsTr = ({ metadata, isMainnet }) => {
+export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) => {
   const finalTier = metadata.finalCategory
   // Determine if stream is deprecating
   const isDeprecating = !!metadata.docs?.shutdownDate
@@ -1295,7 +1313,7 @@ export const StreamsTr = ({ metadata, isMainnet }) => {
 
   return (
     <tr>
-      <RiskCell riskTier={finalTier} product="streams" />
+      {showRiskColumn && <RiskCell riskTier={finalTier} product="streams" />}
       <td className={tableStyles.pairCol}>
         <div className={tableStyles.assetPair}>
           <div className={tableStyles.pairNameRow}>
@@ -1702,6 +1720,8 @@ export const TestnetTable = ({
 
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
 
+  const showRiskColumn = false
+
   if (isBatchLoading) {
     return <p style="font-style: italic;">Loading...</p>
   }
@@ -1713,7 +1733,7 @@ export const TestnetTable = ({
           {slicedFilteredMetadata.length === 0 ? (
             <tbody>
               <tr>
-                <td colSpan={isStreams ? 3 : 6} style={{ textAlign: "center" }}>
+                <td colSpan={getFeedTableColSpan(isStreams, showRiskColumn)} style={{ textAlign: "center" }}>
                   <img
                     src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
                     style={{ height: "160px" }}
@@ -1725,13 +1745,14 @@ export const TestnetTable = ({
             </tbody>
           ) : (
             <>
-              {isStreams && <StreamsTHead />}
-              {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} />}
+              {isStreams && <StreamsTHead showRiskColumn={showRiskColumn} />}
+              {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} showRiskColumn={showRiskColumn} />}
               {(isDefault || isUSGovernmentMacroeconomicData) && (
                 <DefaultTHead
                   showExtraDetails={showExtraDetails}
                   networkName={network.name}
                   dataFeedType={dataFeedType}
+                  showRiskColumn={showRiskColumn}
                 />
               )}
               {isRates && (
@@ -1739,18 +1760,20 @@ export const TestnetTable = ({
                   showExtraDetails={showExtraDetails}
                   networkName={network.name}
                   dataFeedType={dataFeedType}
+                  showRiskColumn={showRiskColumn}
                 />
               )}
               <tbody>
                 {slicedFilteredMetadata.map((metadata) => (
                   <>
-                    {isStreams && <StreamsTr metadata={metadata} isMainnet={false} />}
+                    {isStreams && <StreamsTr metadata={metadata} isMainnet={false} showRiskColumn={showRiskColumn} />}
                     {isSmartData && (
                       <SmartDataTr
                         network={network}
                         metadata={metadata}
                         showExtraDetails={showExtraDetails}
                         batchedCategoryData={batchedCategoryData}
+                        showRiskColumn={showRiskColumn}
                       />
                     )}
                     {(isDefault || isUSGovernmentMacroeconomicData) && (
@@ -1760,6 +1783,7 @@ export const TestnetTable = ({
                         showExtraDetails={showExtraDetails}
                         dataFeedType={dataFeedType}
                         batchedCategoryData={batchedCategoryData}
+                        showRiskColumn={showRiskColumn}
                       />
                     )}
                     {isRates && (
@@ -1769,6 +1793,7 @@ export const TestnetTable = ({
                         showExtraDetails={showExtraDetails}
                         dataFeedType={dataFeedType}
                         batchedCategoryData={batchedCategoryData}
+                        showRiskColumn={showRiskColumn}
                       />
                     )}
                   </>

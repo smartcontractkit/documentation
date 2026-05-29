@@ -1119,7 +1119,7 @@ export const FeedList = ({
               <>
                 <div className={feedList.tableWrapper}>
                   <table className={clsx(tableStyles.table)}>
-                    <StreamsTHead />
+                    <StreamsTHead showRiskColumn={false} />
                     <tbody>
                       {paginatedTestnetStreams.map((stream, index) => (
                         <StreamsTr key={`${stream.feedId}-${index}`} metadata={stream} isMainnet={false} />

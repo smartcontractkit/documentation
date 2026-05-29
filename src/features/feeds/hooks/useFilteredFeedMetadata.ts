@@ -9,7 +9,12 @@ type UseFilteredFeedMetadataParams = Omit<FeedTableFilterParams, "batchedCategor
   network: ChainNetwork
 }
 
-function networkNeedsRiskBatch(network: ChainNetwork, isStreams: boolean): boolean {
+function networkNeedsRiskBatch(
+  network: ChainNetwork,
+  isStreams: boolean,
+  searchVariant: UseFilteredFeedMetadataParams["searchVariant"]
+): boolean {
+  if (searchVariant === "testnet") return false
   if (!network.metadata?.length) return false
 
   if (isStreams) {
@@ -29,7 +34,7 @@ export function useFilteredFeedMetadata(params: UseFilteredFeedMetadataParams) {
   const streamCategories = useBatchedStreamCategories(isStreams ? network : null)
   const batchState = isStreams ? streamCategories : feedCategories
   const batchedCategoryData = batchState.data
-  const needsRiskBatch = networkNeedsRiskBatch(network, isStreams)
+  const needsRiskBatch = networkNeedsRiskBatch(network, isStreams, searchVariant)
   const isBatchLoading = needsRiskBatch && !batchState.isReady
 
   const filteredMetadata = filterFeedTableRows({
