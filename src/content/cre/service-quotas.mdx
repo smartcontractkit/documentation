@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Understand CRE service quotas for your workflows: execution timeouts, trigger rates, WASM resources, and organization constraints."
   datePublished: "2025-11-04"
-  lastModified: "2025-12-18"
+  lastModified: "2026-05-26"
 ---
 
 import { Aside } from "@components"
@@ -14,6 +14,31 @@ This page documents the service quotas for Chainlink Runtime Environment (CRE) w
 
 <Aside type="note" title="Subject to change">
   The quotas documented on this page are subject to change. Check back regularly for updates.
+</Aside>
+
+## Per-organization quotas
+
+These quotas apply at the organization level.
+
+### Organization membership
+
+| Quota         | Description                                      | Value |
+| ------------- | ------------------------------------------------ | ----- |
+| Maximum users | Maximum number of user accounts per organization | 40    |
+
+This limit can be increased. [Contact us](/cre/support-feedback) to request a higher user cap for your organization.
+
+### Registry quotas
+
+| Registry                                                                    | Quota                                | Value |
+| --------------------------------------------------------------------------- | ------------------------------------ | ----- |
+| Private registry (`deployment-registry: "private"`)                         | Maximum workflows per organization   | 3     |
+| Public onchain registry (`deployment-registry: "onchain:ethereum-mainnet"`) | Maximum linked keys per organization | 1     |
+| Public onchain registry (`deployment-registry: "onchain:ethereum-mainnet"`) | Maximum workflows per linked key     | 3     |
+
+{/* prettier-ignore */}
+<Aside type="note" title="Subject to change">
+  Registry quotas are being actively tuned ahead of general availability. Values may increase. Run `cre registry list` to confirm your organization's access.
 </Aside>
 
 ## Per-owner quotas
@@ -40,7 +65,7 @@ These quotas apply to each individual workflow.
 | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ------ |
 | <a href="#perworkflow-wasmbinarysizelimit" id="perworkflow-wasmbinarysizelimit">`PerWorkflow.WASMBinarySizeLimit`</a>                               | Maximum size of the compiled WASM binary   | 100 MB |
 | <a href="#perworkflow-wasmcompressedbinarysizelimit" id="perworkflow-wasmcompressedbinarysizelimit">`PerWorkflow.WASMCompressedBinarySizeLimit`</a> | Maximum size of the compressed WASM binary | 20 MB  |
-| <a href="#perworkflow-wasmconfigsizelimit" id="perworkflow-wasmconfigsizelimit">`PerWorkflow.WASMConfigSizeLimit`</a>                               | Maximum size of the workflow configuration | 1 MB   |
+| <a href="#perworkflow-wasmconfigsizelimit" id="perworkflow-wasmconfigsizelimit">`PerWorkflow.WASMConfigSizeLimit`</a>                               | Maximum size of the workflow configuration | 50 KB  |
 
 ### Trigger quotas
 
@@ -68,9 +93,10 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                         | Description                                                                                                                      | Value |
 | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| <a href="#perworkflow-wasmsecretssizelimit" id="perworkflow-wasmsecretssizelimit">`PerWorkflow.WASMSecretsSizeLimit`</a>          | Maximum total size of secrets accessible to a workflow                                                                           | 1 MB  |
+| <a href="#perworkflow-wasmsecretssizelimit" id="perworkflow-wasmsecretssizelimit">`PerWorkflow.WASMSecretsSizeLimit`</a>          | Maximum total size of secrets accessible to a workflow                                                                           | 27 KB |
 | <a href="#perworkflow-secretsconcurrencylimit" id="perworkflow-secretsconcurrencylimit">`PerWorkflow.SecretsConcurrencyLimit`</a> | Maximum number of secrets that can be fetched concurrently. [Learn how to fetch multiple secrets](/cre/guides/workflow/secrets). | 5     |
 | <a href="#perworkflow-secrets-calllimit" id="perworkflow-secrets-calllimit">`PerWorkflow.Secrets.CallLimit`</a>                   | Maximum number of secrets fetch calls per workflow execution                                                                     | 5     |
+| <a href="#persecret-ciphertextsize" id="persecret-ciphertextsize">`PerSecret.CipherTextSize`</a>                                  | Maximum size of a single encrypted secret value                                                                                  | 2 KB  |
 
 ### Consensus quotas
 
@@ -141,6 +167,15 @@ These quotas apply to each individual workflow.
 | <a href="#perworkflow-httpaction-connectiontimeout" id="perworkflow-httpaction-connectiontimeout">`PerWorkflow.HTTPAction.ConnectionTimeout`</a> | Maximum time to establish an HTTP connection           | 10 seconds |
 | <a href="#perworkflow-httpaction-requestsizelimit" id="perworkflow-httpaction-requestsizelimit">`PerWorkflow.HTTPAction.RequestSizeLimit`</a>    | Maximum size of an HTTP request payload                | 10 KB      |
 | <a href="#perworkflow-httpaction-cacheagelimit" id="perworkflow-httpaction-cacheagelimit">`PerWorkflow.HTTPAction.CacheAgeLimit`</a>             | Maximum time HTTP responses can be cached              | 10 minutes |
+
+### Confidential HTTP capability
+
+| Quota Key                                                                                                                                                          | Description                                                         | Value      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- | ---------- |
+| <a href="#perworkflow-confidentialhttp-calllimit" id="perworkflow-confidentialhttp-calllimit">`PerWorkflow.ConfidentialHTTP.CallLimit`</a>                         | Maximum number of confidential HTTP requests per workflow execution | 5          |
+| <a href="#perworkflow-confidentialhttp-requestsizelimit" id="perworkflow-confidentialhttp-requestsizelimit">`PerWorkflow.ConfidentialHTTP.RequestSizeLimit`</a>    | Maximum size of a confidential HTTP request payload                 | 10 KB      |
+| <a href="#perworkflow-confidentialhttp-responsesizelimit" id="perworkflow-confidentialhttp-responsesizelimit">`PerWorkflow.ConfidentialHTTP.ResponseSizeLimit`</a> | Maximum size of a confidential HTTP response                        | 100 KB     |
+| <a href="#perworkflow-confidentialhttp-timeout" id="perworkflow-confidentialhttp-timeout">`PerWorkflow.ConfidentialHTTP.TimeOut`</a>                               | Maximum time for a confidential HTTP request to complete            | 10 seconds |
 
 ## Quota increases
 

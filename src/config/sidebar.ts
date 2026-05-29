@@ -6,6 +6,7 @@
 import { Sections } from "../content.config.ts"
 import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
 import { CCIP_SIDEBAR_CONTENT } from "./sidebar/ccip-dynamic.ts"
+import { AI_AGENT_RESOURCES_SECTION } from "./sidebar/ai-agent-resources.ts"
 import type { ChainType } from "./types.js"
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
@@ -449,6 +450,24 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Deploying Workflows",
           url: "cre/guides/operations/deploying-workflows",
+          children: [
+            {
+              title: "Deploying to the Private Registry",
+              url: "cre/guides/operations/deploying-to-private-registry",
+              highlightAsCurrent: [
+                "cre/guides/operations/deploying-to-private-registry-ts",
+                "cre/guides/operations/deploying-to-private-registry-go",
+              ],
+            },
+            {
+              title: "Deploying to the Onchain Registry",
+              url: "cre/guides/operations/deploying-to-onchain-registry",
+              highlightAsCurrent: [
+                "cre/guides/operations/deploying-to-onchain-registry-ts",
+                "cre/guides/operations/deploying-to-onchain-registry-go",
+              ],
+            },
+          ],
         },
         {
           title: "Activating & Pausing Workflows",
@@ -698,6 +717,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Migrate from Gelato",
           url: "cre/reference/gelato-migration",
           highlightAsCurrent: ["cre/reference/gelato-migration-ts", "cre/reference/gelato-migration-go"],
+        },
+        {
+          title: "Migrate from Chainlink Functions",
+          url: "cre/reference/clf-migration",
+          highlightAsCurrent: ["cre/reference/clf-migration-ts", "cre/reference/clf-migration-go"],
         },
       ],
     },
@@ -2306,6 +2330,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     },
   ],
   [SIDEBAR_SECTIONS.GLOBAL]: [
+    AI_AGENT_RESOURCES_SECTION,
     {
       section: "General Documentation",
       contents: [
@@ -2326,10 +2351,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "resources/fund-your-contract",
             },
           ],
-        },
-        {
-          title: "Chainlink Developer Agent Skills",
-          url: "resources/chainlink-developer-agent-skills",
         },
         {
           title: "Starter Kits and Frameworks",

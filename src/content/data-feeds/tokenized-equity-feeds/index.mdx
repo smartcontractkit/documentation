@@ -244,6 +244,24 @@ These actions are usually announced outside regular trading hours. The feed will
 - Consider pausing markets during corporate action windows
 - Implement maximum price change limits with manual review for extreme moves
 
+#### Pause confirmation for corporate actions
+
+_This section contains information for asset issuers that provide Chainlink with pause state for tokenized equity feeds._
+
+Asset issuers use pause-based workflows for large corporate actions such as stock splits or reverse splits. In these workflows, **the feed freezes at the last known good token value during the pause window**. Before signaling that the feed can be unpaused, the asset issuer should verify that the post-corporate-action equity price and the new issuer multiplier are aligned so the next published token value remains continuous.
+
+The underlying equity leg for this check should be the same Data Streams 24/5 US equity input that the feed uses for tokenized equity feed calculation. See the official list of the [24/5 equity streams](/data-streams/rwa-streams?show24x5=true&page=1), and [learn more about how market data is sourced for tokenized equity feed calculation](/data-feeds/tokenized-equity-feeds#how-is-market-data-sourced-for-tokenized-equity-feed-calculation).
+
+For each tokenized equity feed, use the stream and time segment configured for that product (the value the feed pipeline would read as the stock leg for the current window), _not_ an ad hoc quote from a different venue.
+
+1. Take the new multiplier that is staged for go-live after the corporate action.
+1. Read the current equity market price from that same Data Streams 24/5 input, for the appropriate session (regular, pre-market, post-market, or overnight), the same way the feed prices that window.
+1. Multiply: `new multiplier` × that current equity price. That product is the implied token value the feed would publish if it unpaused _now_.
+1. Compare that implied value to the token price at freeze: the last good, frozen feed value from when the pause took effect. They should match, or be treated as aligned only within the asset issuer's defined tolerance, because correct coordination means the post-corporate-action stock price and the new multiplier should combine to the same onchain token price as at the freeze, preserving continuity.
+
+- **If that equality holds** within the asset issuer's tolerance, the issuer can signal that the feed is ready to unpause according to the applicable release process and any other release gates.
+- **If it does not hold**, the equity input and the new multiplier are not yet consistent with each other after the corporate action, so unpausing the feed would jump or misstate the level for integrators. The feed should remain paused until the stock leg, multiplier, or both are reconciled and the check passes.
+
 ### Market closures and halts not explicitly flagged
 
 Tokenized equity feeds do not explicitly flag:
