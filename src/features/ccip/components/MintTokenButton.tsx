@@ -23,12 +23,14 @@ interface DisconnectError {
 
 function getProviderErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message) return error.message
-  if (error && typeof error === "object" && "message" in error) return String((error as { message?: unknown }).message ?? "")
+  if (error && typeof error === "object" && "message" in error)
+    return String((error as { message?: unknown }).message ?? "")
   return "Unknown error"
 }
 
 function getProviderErrorCode(error: unknown): number | string | undefined {
-  if (error && typeof error === "object" && "code" in error) return (error as { code?: unknown }).code as number | string
+  if (error && typeof error === "object" && "code" in error)
+    return (error as { code?: unknown }).code as number | string
   return undefined
 }
 
@@ -66,7 +68,7 @@ export const MintTokenButton = () => {
 
   const selectedWallet = useMemo(() => {
     if (evmWalletOptions.length === 0) return null
-    return selectedWalletUuid ? evmWalletOptions.find((w) => w.uuid === selectedWalletUuid) ?? null : null
+    return selectedWalletUuid ? (evmWalletOptions.find((w) => w.uuid === selectedWalletUuid) ?? null) : null
   }, [evmWalletOptions, selectedWalletUuid])
 
   const selectedProvider = selectedWallet?.provider ?? null

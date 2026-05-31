@@ -43,12 +43,14 @@ interface Props {
 
 function getProviderErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message) return error.message
-  if (error && typeof error === "object" && "message" in error) return String((error as { message?: unknown }).message ?? "")
+  if (error && typeof error === "object" && "message" in error)
+    return String((error as { message?: unknown }).message ?? "")
   return "Unknown error"
 }
 
 function getProviderErrorCode(error: unknown): number | string | undefined {
-  if (error && typeof error === "object" && "code" in error) return (error as { code?: unknown }).code as number | string
+  if (error && typeof error === "object" && "code" in error)
+    return (error as { code?: unknown }).code as number | string
   return undefined
 }
 
@@ -650,7 +652,9 @@ export const NetworkDropdown = ({ userAddress, provider }: Props) => {
                   aria-hidden="true"
                 />
                 <div className={styles.warningText}>
-                  <div>{walletChain ? "Please switch to the correct network" : "Please switch to a supported network"}</div>
+                  <div>
+                    {walletChain ? "Please switch to the correct network" : "Please switch to a supported network"}
+                  </div>
                   <div className={styles.warningInstruction}>
                     Click the network dropdown above to select a different network.
                   </div>
@@ -662,12 +666,12 @@ export const NetworkDropdown = ({ userAddress, provider }: Props) => {
                 type="button"
                 className={`${button.primary} ${walletStyles.connectButton}`}
                 onClick={switchToSelectedChain}
-              disabled={isNetworkChangePending || walletNetworkStatus === "missing"}
+                disabled={isNetworkChangePending || walletNetworkStatus === "missing"}
                 aria-label={`Switch wallet network to ${getTitle(selectedChain)}`}
               >
                 Switch to {getTitle(selectedChain)}
               </button>
-            {walletNetworkStatus !== "present" && (
+              {walletNetworkStatus !== "present" && (
                 <button
                   type="button"
                   className={`${button.secondary} ${walletStyles.secondaryAction}`}
