@@ -348,7 +348,7 @@ let config = Config::new(
     api_key,
     api_secret,
     "https://api.dataengine.chain.link".to_string(), // Mainnet endpoint
-    "wss://ws.dataengine.chain.link,wss://ws.dataengine.chain.link".to_string(), // Multiple WebSocket endpoints
+    "wss://ws.dataengine.chain.link".to_string(), // Mainnet WebSocket endpoint
 )
 .with_ws_ha(WebSocketHighAvailability::Enabled) // Enable WebSocket High Availability Mode
 .build()?;
@@ -356,6 +356,8 @@ let config = Config::new(
 
 // ... existing code ...
 ```
+
+When `WebSocketHighAvailability::Enabled` is set, the SDK automatically discovers multiple origin endpoints behind the single URL and establishes separate connections to each origin.
 
 See more details about HA mode in the [SDK Reference](/data-streams/reference/data-streams-api/rust-sdk#high-availability-mode).
 
