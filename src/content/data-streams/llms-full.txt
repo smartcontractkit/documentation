@@ -6311,6 +6311,176 @@ Source: https://docs.chain.link/data-streams/rwa-streams
 
 ---
 
+# Sign Up for Data Streams
+Source: https://docs.chain.link/data-streams/sign-up
+
+The Chainlink Data Streams self-service portal lets you create an account, generate API credentials, and subscribe to data feeds directly.
+
+<Aside type="note" title="Portal URL">
+  The self-service portal is available at <a href="https://app.chain.link">app.chain.link</a>.
+</Aside>
+
+## Prerequisites
+
+- A valid email address to register for an account
+- A credit card or supported payment method for stream subscriptions (billing is handled through Stripe)
+
+<Aside type="note" title="No free tier">
+  All Data Streams subscriptions are paid. There is no free account tier. Subscriptions activate immediately upon
+  successful payment and are billed in 30-day cycles.
+</Aside>
+
+***
+
+## Step 1: Create an account or sign in
+
+1. Navigate to [app.chain.link](https://app.chain.link).
+2. Enter your **email address** and click **Continue**.
+3. If you are a new user, complete the registration steps to create your account. If you have an existing account, sign in to proceed.
+
+***
+
+## Step 2: Navigate to Data Streams
+
+After signing in, you land on the main **Discover** dashboard.
+
+1. Click the **expand icon** in the top-left corner to open the sidebar.
+2. Click **Data Streams** in the sidebar under the CRE section.
+
+The Data Streams section has three tabs: **Home**, **Credentials**, and **Billing**.
+
+***
+
+## Step 3: Generate API credentials
+
+Data Streams uses HMAC authentication. You must generate credentials before making API requests.
+
+1. On the **Home** tab, click **Create API Key**.
+2. In the modal that opens, read through the **Chainlink Data Streams Terms of Service**.
+3. Check the box: **I accept the Chainlink Data Streams Terms of Service**.
+4. Click **Generate**.
+
+### Copy your credentials immediately
+
+After the key is generated, the **Credentials** tab displays a **one-time private view** of your credentials:
+
+| Field                     | Description                                                                        |
+| ------------------------- | ---------------------------------------------------------------------------------- |
+| **Data Streams Username** | Your user ID — used for both the core Data Streams service and the Candlestick API |
+| **HMAC Secret**           | Your password for the core Data Streams service — click the copy icon to copy      |
+| **API Key**               | Your API key for the Candlestick API — click the copy icon to copy                 |
+
+<Aside type="caution" title="Credentials are shown only once">
+  The Password and API Key are not stored in the portal. Copy both values and store them securely before clicking{" "}
+  <strong>Dismiss</strong>. If you lose them, you must rotate your credentials to generate new ones.
+</Aside>
+
+#### Two services, one username, two passwords
+
+Your Data Streams account provides access to two separate services, each with its own password:
+
+- **Core Data Streams service** — uses your username and the **Password** shown on the Credentials tab. See the [Go SDK fetch tutorial](/data-streams/tutorials/go-sdk-fetch) to get started.
+- **Candlestick API** — uses the same username but a **separate password** generated for that service. See the [Candlestick API reference](/data-streams/reference/candlestick-api) for details.
+
+Make sure you save both passwords. They are issued separately and are not interchangeable.
+
+### Rotating credentials
+
+Click **Rotate Credentials** to generate new secrets. This immediately invalidates the previous ones.
+
+***
+
+## Step 4: Subscribe to a stream
+
+### Choose your subscription type
+
+You can subscribe in two ways:
+
+- **Feed Selection** — subscribe to individual feeds manually, starting at $150/month
+- **Bundle plans** — subscribe to a curated set of feeds at a discounted rate (available on the **Billing** tab)
+
+### Browse the streams catalog
+
+1. On the **Home** tab, click **Browse Subscriptions**, or navigate to **Billing → Browse Subscriptions**.
+2. The **Streams Catalog** lists all available feeds with their name, Feed ID, and monthly price.
+3. Use the **Search streams** field to filter by name or asset.
+
+### Select feeds and confirm purchase
+
+1. Check the **checkbox** on the right side of any stream row to add it to your cart.
+2. The **Checkout** panel on the right updates with your selection and the **Total Charge**.
+3. Review your selection and click **Confirm Purchase**.
+
+***
+
+## Step 5: Complete payment via Stripe
+
+Clicking **Confirm Purchase** redirects you to a hosted Stripe checkout page.
+
+1. Verify your **email address** is pre-filled in the Contact information section.
+2. Select a **payment method**: Card, Bank, or other supported payment platform.
+3. Enter your payment details and click **Subscribe**.
+
+### Billing terms
+
+| Term              | Detail                                                                                                                                                     |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Billing cycle** | 30 days from the date of subscription                                                                                                                      |
+| **Proration**     | Billing is not prorated — you are charged the full amount regardless of when in the cycle you subscribe                                                    |
+| **Activation**    | Subscriptions activate instantly upon successful payment                                                                                                   |
+| **Cancellation**  | You can cancel at any time, but the cancellation takes effect at the end of the current 30-day billing period. The feed remains accessible until that date |
+
+***
+
+## Step 6: Access your feed
+
+After a successful payment, your subscribed feed appears in the **Available Streams** table on the **Home** tab.
+
+| Column          | Description                                                                          |
+| --------------- | ------------------------------------------------------------------------------------ |
+| **Name**        | Full stream name (e.g., `MSFT/USD-Streams-ExtendedHoursEquityPrice-...`)             |
+| **Feed ID**     | The stream identifier used in API requests — click the copy icon to copy the full ID |
+| **Asset Class** | The category of the stream (e.g., Equities, Crypto)                                  |
+
+Use the Feed ID when constructing API requests. See the [authentication reference](/data-streams/reference/data-streams-api/authentication) for details on signing requests with your credentials.
+
+***
+
+## Subscription terms
+
+When you subscribe to a Data Streams feed, you are agreeing to pay the full amount for the defined billing period. The following terms apply to all subscriptions:
+
+- Subscriptions are billed in **30-day cycles** starting from the date of purchase.
+- Billing is **not prorated** — you are charged the full period amount regardless of when during the cycle you subscribe or cancel.
+- Cancelling a subscription stops renewal at the end of the current period. You will not be charged again after cancellation.
+- Your feed access remains active through the end of the paid period.
+- Individual feed subscriptions and bundle subscriptions are treated as **separate subscriptions**. If you subscribe to a bundle that includes a feed you already have an individual subscription for, the existing subscription terms are not modified — both subscriptions remain active and are billed independently.
+
+For custom plan inquiries, [contact us](https://chain.link/contact?ref_id=datastreams).
+
+***
+
+## Manage your subscription
+
+Navigate to the **Billing** tab to view and manage your active subscriptions. Each subscription shows its associated feed, monthly cost, and **Period End** date — the date the subscription auto-cancels if not renewed.
+
+Click **Manage Subscription** to open the Stripe customer portal for invoice history and payment method updates.
+
+### Cancel a subscription
+
+1. On the **Billing** tab, locate the subscription you want to cancel under **Active subscriptions**.
+2. Click **Request Cancellation** in the Actions column.
+
+<Aside type="note" title="Manual review">
+  Cancellations are reviewed and confirmed manually. Once confirmed, your subscription will not renew at the end of the
+  current billing period and you will not be charged again. Feed access remains active through the{" "}
+  <strong>Period End</strong> date shown in your subscription.
+</Aside>
+
+Cancelled subscriptions move to the **Inactive** tab once the period ends.
+
+---
+
 # SmartData Streams
 Source: https://docs.chain.link/data-streams/smartdata-streams
 
