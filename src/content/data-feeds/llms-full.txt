@@ -3694,7 +3694,7 @@ When a token is newly launched, the historical data required to implement a rigo
 
 ### 🔵 Custom Feeds
 
-Custom Feeds are built to serve a specific use case and might not be suitable for general use or your use case's risk parameters. Users must evaluate the properties of a feed to make sure it aligns with their intended use case. [Contact the Chainlink Labs team](https://chain.link/contact?ref_id=DataFeed) if you want more detail on any specific feeds in this category.
+Custom Feeds are built to serve a specific use case and can differ materially from standard market price feeds in sourcing, methodology, update behavior, and risk profile. Users must evaluate the properties of a custom feed to make sure it aligns with their intended use case and closely assess the risk of [single source feeds](#single-source-data-providers). [Contact the Chainlink Labs team](https://chain.link/contact?ref_id=DataFeed) if you want more detail on any specific feeds in this category.
 
 Custom Feeds have the following categories and compositions:
 
@@ -3758,6 +3758,7 @@ To help you prepare for unforeseen market events, you should take additional ste
 - **Manual kill switch:** If a vulnerability or bug is discovered in one of the upstream contracts, the user can manually cease operation and temporarily sever the connection to the data feed.
 - **Monitoring:** Some users create their own monitoring alerts based on deviations in the data feeds that they are using.
 - **Soak testing:** Users are strongly advised to thoroughly test price feed integrations and incorporate a [soak period](https://en.wikipedia.org/wiki/Soak_testing) prior to providing access to end users or securing value.
+- **Provider/source dependency controls:** For single-source feeds, implement controls that detect stale, delayed, missing, or unexpected values from the underlying provider. Where possible, compare the feed against independent references, enforce value bounds or caps, and define fallback or pause behavior before securing value with the feed.
 
 For more detailed information about some of these examples, see the [Monitoring data feeds](/data-feeds/#monitoring-data-feeds) documentation.
 
@@ -3807,7 +3808,15 @@ Design and test your contracts to handle price spikes and implement risk managem
 
 ### Single Source Data Providers
 
-Some data providers use a single data source, which might be necessary if only one source exists onchain or offchain for a specific type of data. Evaluate data providers to make sure they provide high-quality data that your smart contracts can rely on. Any error or omission in the provider's data might negatively impact your application and its users. Single Source Data Provider based feeds can be classified as high or very high market pricing risk and users should take precautions in consuming based on suitability.
+Some Chainlink Data Feeds rely on a single underlying data source or a single data provider. This can be necessary when only one authoritative source exists onchain or offchain for a specific type of data, such as a protocol-published NAV, reserve value, redemption rate, exchange rate, or other custom metric.
+
+Single-source feeds have a different risk profile than market price feeds that aggregate observations across multiple data sources and node operators. If the underlying source or provider publishes incorrect data, omits data, changes its methodology, experiences an outage, is delayed, or is compromised, the feed may reflect that issue. Any such error, omission, delay, or provider failure could negatively affect your application and its users.
+
+Before using a single-source feed, determine whether it is suitable for your use case and whether your application can tolerate the provider/source risk. This is especially important when the feed is used to secure value, determine collateral value, trigger liquidations, support minting or redemption, calculate NAV, or automate other protocol actions.
+
+Users of single-source feeds MUST implement additional safeguards such as value bounds, caps, circuit breakers, freshness checks, fallback behavior, monitoring against independent references where available, and manual pause or kill-switch controls. Single-source feeds can be classified as High or Very High Market Pricing Risk depending on the asset, methodology, provider dependency, and intended use case.
+
+If you are using or considering a single-source feed in production, [contact the Chainlink Labs team](mailto:chainlink_data_feeds@smartcontract.com) to discuss the feed's methodology, provider dependency, and appropriate application-level mitigations.
 
 ### Crypto and Blockchain Actions
 
