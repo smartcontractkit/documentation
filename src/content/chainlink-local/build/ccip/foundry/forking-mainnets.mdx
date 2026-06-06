@@ -76,68 +76,134 @@ import { Test, console } from "forge-std/Test.sol";
 import { CCIPLocalSimulatorFork, Register } from "@chainlink/local/src/ccip/CCIPLocalSimulatorFork.sol";
 import { IRouterClient } from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
 import { Client } from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
+import { CCIPReceiver } from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
+
+contract MockCCIPReceiver is CCIPReceiver {
+    string public lastMessage;
+    uint64 public lastSourceChainSelector;
+    address public lastSender;
+
+    event MessageReceived(string message, uint64 sourceChainSelector, address sender);
+
+    constructor(address router) CCIPReceiver(router) {}
+
+    function _ccipReceive(Client.Any2EVMMessage memory message) internal override {
+        lastMessage = abi.decode(message.data, (string));
+        lastSourceChainSelector = message.sourceChainSelector;
+        lastSender = abi.decode(message.sender, (address));
+
+        emit MessageReceived(lastMessage, lastSourceChainSelector, lastSender);
+    }
+}
 
 contract ExampleTest is Test {
-  CCIPLocalSimulatorFork public ccipLocalSimulatorFork;
-  uint256 public ethereumMainnetForkId;
-  uint256 public polygonMainnetForkId;
+    CCIPLocalSimulatorFork public ccipLocalSimulatorFork;
+    uint256 public ethereumMainnetForkId;
+    uint256 public polygonMainnetForkId;
 
-  function setUp() public {
-    // Create forks of both networks
-    string memory ETHEREUM_MAINNET_RPC_URL = vm.envString("ETHEREUM_MAINNET_RPC_URL");
-    string memory POLYGON_MAINNET_RPC_URL = vm.envString("POLYGON_MAINNET_RPC_URL");
-    ethereumMainnetForkId = vm.createFork(ETHEREUM_MAINNET_RPC_URL);
-    polygonMainnetForkId = vm.createFork(POLYGON_MAINNET_RPC_URL);
+    address ethereumMainnetCcipRouterAddress;
+    address polygonMainnetCcipRouterAddress;
+    address ccipReceiverAddress;
 
-    address ethereumMainnetCcipRouterAddress = 0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D;
-    uint64 polygonMainnetChainSelector = 4051577828743386545;
+    uint64 polygonChainId = 137; // Polygon mainnet chain ID
+    uint64 ethereumMainnetChainSelector; // Ethereum mainnet chain selector
+    uint64 polygonMainnetChainSelector; // Polygon mainnet chain selector
 
-    ccipLocalSimulatorFork = new CCIPLocalSimulatorFork();
+    function setUp() public {
+        // Create forks of both networks
+        string memory ETHEREUM_MAINNET_RPC_URL = vm.envString("ETHEREUM_MAINNET_RPC_URL");
+        string memory POLYGON_MAINNET_RPC_URL = vm.envString("POLYGON_MAINNET_RPC_URL");
+        ethereumMainnetForkId = vm.createFork(ETHEREUM_MAINNET_RPC_URL);
+        polygonMainnetForkId = vm.createFork(POLYGON_MAINNET_RPC_URL);
 
-    ccipLocalSimulatorFork.setNetworkDetails(
-      polygonMainnetForkId,
-      Register.NetworkDetails({
-        chainSelector: polygonMainnetChainSelector,
-        routerAddress: polygonMainnetCcipRouterAddress,
-        linkAddress: address(0), // not needed for this test
-        wrappedNativeAddress: address(0), // not needed for this test
-        ccipBnMAddress: address(0), // not needed for this test
-        ccipLnMAddress: address(0), // not needed for this test
-        rmnProxyAddress: address(0), // not needed for this test
-        registryModuleOwnerCustomAddress: address(0), // not needed for this test
-        tokenAdminRegistryAddress: address(0) // not needed for this test
-      })
-    );
-    vm.makePersistent(address(ccipLocalSimulatorFork));
-  }
+        ethereumMainnetCcipRouterAddress = 0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D;
+        polygonMainnetCcipRouterAddress = 0x849c5ED5a80F5B408Dd4969b78c2C8fdf0565Bfe;
 
-  function test_example() public {
-    // Set up the source chain (Ethereum)
-    vm.selectFork(ethereumMainnetForkId);
-    Register.NetworkDetails memory polygonMainnetNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(
-      polygonMainnetForkId
-    );
+        ethereumMainnetChainSelector = 5009297550715157269;
+        polygonMainnetChainSelector = 4051577828743386545;
 
-    address alice = makeAddr("alice");
-    vm.deal(alice, 1 ether);
+        ccipLocalSimulatorFork = new CCIPLocalSimulatorFork();
 
-    // Prepare the cross-chain message
-    vm.startPrank(alice);
-    Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
-      receiver: abi.encode(ccipReceiverAddress),
-      data: abi.encode("Hello world"),
-      tokenAmounts: new Client.EVMTokenAmount[](0),
-      extraArgs: "",
-      feeToken: address(0)
-    });
+        // Set network details for Ethereum
+        ccipLocalSimulatorFork.setNetworkDetails(
+            1, // Ethereum mainnet chain ID > here same as the ethereumMainnetForkId,
+            Register.NetworkDetails({
+                chainSelector: ethereumMainnetChainSelector,
+                routerAddress: ethereumMainnetCcipRouterAddress,
+                linkAddress: address(0), // not needed for this test
+                wrappedNativeAddress: address(0), // not needed for this test
+                ccipBnMAddress: address(0), // not needed for this test
+                ccipLnMAddress: address(0), // not needed for this test
+                rmnProxyAddress: address(0), // not needed for this test
+                registryModuleOwnerCustomAddress: address(0), // not needed for this test
+                tokenAdminRegistryAddress: address(0) // not needed for this test
+            })
+        );
 
-    // Send the message using CCIP
-    IRouterClient(ethereumMainnetCcipRouterAddress).ccipSend(polygonMainnetNetworkDetails.routerAddress, message);
-    vm.stopPrank();
+        // Set network details for Polygon
+        ccipLocalSimulatorFork.setNetworkDetails(
+            polygonChainId,
+            Register.NetworkDetails({
+                chainSelector: polygonMainnetChainSelector,
+                routerAddress: polygonMainnetCcipRouterAddress,
+                linkAddress: address(0), // not needed for this test
+                wrappedNativeAddress: address(0), // not needed for this test
+                ccipBnMAddress: address(0), // not needed for this test
+                ccipLnMAddress: address(0), // not needed for this test
+                rmnProxyAddress: address(0), // not needed for this test
+                registryModuleOwnerCustomAddress: address(0), // not needed for this test
+                tokenAdminRegistryAddress: address(0) // not needed for this test
+            })
+        );
 
-    // Route the message to Polygon
-    ccipLocalSimulatorFork.switchChainAndRouteMessage(polygonMainnetForkId);
-  }
+        vm.makePersistent(address(ccipLocalSimulatorFork));
+    }
+
+    function test_example() public {
+        vm.selectFork(polygonMainnetForkId);
+        MockCCIPReceiver receiver = new MockCCIPReceiver(polygonMainnetCcipRouterAddress);
+        ccipReceiverAddress = address(receiver);
+
+        // Set up the source chain (Ethereum)
+        vm.selectFork(ethereumMainnetForkId);
+
+        Register.NetworkDetails memory polygonMainnetNetworkDetails =
+            ccipLocalSimulatorFork.getNetworkDetails(polygonChainId);
+
+        address alice = makeAddr("alice");
+        vm.deal(alice, 1 ether);
+
+        // Prepare the cross-chain message
+        vm.startPrank(alice);
+        Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
+            receiver: abi.encode(ccipReceiverAddress),
+            data: abi.encode("Hello world"),
+            tokenAmounts: new Client.EVMTokenAmount[](0),
+            extraArgs: "",
+            feeToken: address(0)
+        });
+
+        uint256 fee =
+            IRouterClient(ethereumMainnetCcipRouterAddress).getFee(polygonMainnetNetworkDetails.chainSelector, message);
+
+        // Ensure Alice has enough LINK to pay for the fee
+        require(alice.balance >= fee, "Alice does not have enough ETH for the fee");
+
+        // Send the message using CCIP
+        // Note: as the feeToken is address(0), it will use the native token (ETH) for fees
+        IRouterClient(ethereumMainnetCcipRouterAddress).ccipSend{value: fee}(
+            polygonMainnetNetworkDetails.chainSelector, message
+        );
+        vm.stopPrank();
+
+        // Route the message to Polygon
+        ccipLocalSimulatorFork.switchChainAndRouteMessage(polygonMainnetForkId);
+
+        // Verify the message was received on Polygon
+        vm.selectFork(polygonMainnetForkId);
+        assertEq(receiver.lastMessage(), "Hello world");
+        assertEq(receiver.lastSourceChainSelector(), ethereumMainnetChainSelector);
+    }
 }
 ```
 
@@ -150,9 +216,11 @@ contract ExampleTest is Test {
   - Parameters that can be set to `address(0)` because they are optional for messaging.
 
 - **Message Transfer**: The `test_example()` function demonstrates:
+  - Deploy and setting up a mock ccipReceiver contract to the destionation chain
   - Setting up a test user (alice) with funds
   - Creating a cross-chain message
   - Sending the message through CCIP
   - Routing the message to the destination chain
+  - Verifying sent data from source chain to the destination chain
 
 After this configuration, you can simulate cross-chain messages between mainnet forks, enabling thorough testing of your cross-chain applications in a local environment.
