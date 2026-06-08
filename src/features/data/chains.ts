@@ -817,13 +817,6 @@ export const CHAINS: Chain[] = [
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-xlayer-1.json",
         queryString: "xlayer-mainnet",
       },
-      {
-        name: "X Layer Sepolia Testnet",
-        explorerUrl: "https://www.oklink.com/xlayer-test/address/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-xlayer-1.json",
-        queryString: "xlayer-testnet",
-      },
     ],
   },
   {
