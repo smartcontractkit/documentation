@@ -16,47 +16,34 @@ This guide is for the **receiver** side: you already received a CRE report packa
 
 When a workflow delivers results via HTTP (or another offchain channel), nothing onchain automatically validates the report. **You must verify signatures before trusting the data.**
 
-The CRE SDK provides [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) to do this inside a workflow. Verification runs **offchain** in your callback: signatures are checked with local cryptography, while authorized signer addresses are loaded via **read-only calls to the onchain Capability Registry** (default: Ethereum Mainnet). Results are cached per DON.
+There are two ways to verify, depending on who receives the POST:
 
-{/* prettier-ignore */}
-<Aside type="note" title="Not your workflow deployment registry">
-  This guide uses the **Capability Registry** (DON signers), not the **workflow registry** where you deploy (`private` or `onchain:ethereum-mainnet`). If you deployed with the [private registry](/cre/guides/operations/deploying-to-private-registry-ts), [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) still works the same way. For an HTTP-triggered receiver, use the [enterprise gateway URL](/cre/guides/operations/deploying-to-private-registry-ts#http-triggers-with-the-private-registry) when triggering deployed workflows. Local simulation may still need an `ethereum-mainnet` RPC in `project.yaml` for those registry reads, even though private deploy does not.
-</Aside>
+| My receiver is...                                            | Use                                                                                                                                                                                                                    |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **My own API or server** (Express, FastAPI, Go server, etc.) | [Verifying outside CRE](#verifying-outside-cre) — standard crypto libraries, no CRE SDK needed                                                                                                                         |
+| **A CRE workflow** with an HTTP trigger                      | [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) — see [Testing locally with simulation](#testing-locally-with-simulation) and the [deploy example](#complete-example-http-receiver-workflow-deploy) |
 
-{/* prettier-ignore */}
-<Aside type="note" title="Onchain verification is different">
-  When you submit reports onchain through the `KeystoneForwarder`, the forwarder contract verifies signatures before calling your consumer's `onReport`. This guide covers **offchain** verification for HTTP and custom ingest paths. See [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain).
-</Aside>
+Both paths run the same cryptographic checks against the same onchain Capability Registry. The difference is whether you use the CRE SDK's helper (which requires `runtime`) or implement it yourself with standard libraries.
 
 ## What is a CRE report?
 
 A **[CRE report](/cre/key-terms#report-cre-report)** is a DON-signed package another workflow (or system) created with [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime). You receive its bytes over HTTP (or another channel) as `rawReport`, `reportContext`, and `signatures`. Before you use the encoded payload, you must confirm the signatures match authorized DON signers on the Capability Registry.
 
-This guide is the **receiver** path: decode the POST body, call [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification), then read trusted metadata and `body()`. See [Key Terms: Report](/cre/key-terms#report-cre-report) for how reports are created and delivered.
+See [Key Terms: Report](/cre/key-terms#report-cre-report) for how reports are created and delivered. Pair this guide with [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts) on the sender side.
 
-## Where this guide fits
+**Receiver flow (both paths):**
 
-| Question                     | Answer                                                                                                                                                                                                                                                                               |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| What is the report?          | Same [CRE report](/cre/key-terms#report-cre-report) the **sender** created with [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime). See [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#what-is-a-cre-report). |
-| Where does it come from?     | Another workflow (or system) already ran sender steps: logic → [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime) → HTTP POST. You receive `rawReport`, `context`, and `signatures` in the request body.                                                       |
-| What does this guide cover?  | Step 3 below: [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) before you use `body()` or take side effects.                                                                                                                                                       |
-| Same workflow as the sender? | Often **no:** common pattern is Workflow A (publish) and Workflow B (ingest with HTTP trigger).                                                                                                                                                                                      |
-
-**Receiver flow:**
-
-1. HTTP trigger (or your API) receives the POST payload.
+1. Your endpoint (API or CRE HTTP trigger) receives the POST payload.
 2. Decode hex fields into bytes.
-3. [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification): verify signatures and read metadata.
-4. Use trusted `body()` in your logic.
-
-Pair this guide with [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts) on the sender side. This guide covers local simulation first, then the deploy example with `authorizedKeys`.
+3. Verify signatures against the Capability Registry.
+4. Use the trusted payload body in your logic.
 
 ## What you'll learn
 
 - When to verify reports offchain vs relying on onchain forwarders
-- How [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) validates signatures and reads metadata
-- How to build a receiver workflow that accepts reports over HTTP
+- How [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) validates signatures and reads metadata (inside a CRE workflow)
+- How to build a CRE receiver workflow that accepts reports over HTTP
+- How to verify reports in your own API server without a CRE receiver workflow
 - How to restrict verification to specific CRE environments or zones
 
 ## Prerequisites
@@ -72,7 +59,7 @@ Pair this guide with [Submitting Reports via HTTP](/cre/guides/workflow/using-ht
 | **Where it runs**    | Inside your CRE workflow callback                                             | In a smart contract transaction   |
 | **Signature check**  | Local `ecrecover` on report hash                                              | Contract logic onchain            |
 | **Signer allowlist** | Read from Capability Registry (`getDON`, `getNodesByP2PIds`)                  | Forwarder + registry              |
-| **Typical use**      | HTTP APIs, webhooks, ingest workflows                                         | Consumer contracts via `onReport` |
+| **Typical use**      | CRE receiver workflows with an HTTP trigger                                   | Consumer contracts via `onReport` |
 
 Offchain verification still uses **onchain data as a trust anchor**: the first time a DON is seen, the SDK reads the production Capability Registry on Ethereum Mainnet to learn `f` and authorized signer addresses.
 
@@ -90,7 +77,114 @@ Default (`productionEnvironment()`):
 
 If verification fails, [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) throws (for example, unknown signer, insufficient signatures, or registry read failure).
 
-## Testing locally with simulation
+## Verifying outside CRE
+
+[`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) requires the CRE `runtime` object, so it can only run inside a CRE workflow callback. If your API server receives reports directly, you can implement the same verification steps with standard libraries — no CRE SDK required.
+
+**What you need:**
+
+- An Ethereum Mainnet RPC endpoint (for Capability Registry reads)
+- `viem` for the cryptographic primitives (`keccak256`, `recoverAddress`)
+
+**Verification steps:**
+
+1. Decode the hex JSON fields into bytes.
+2. Parse the **109-byte metadata header** from `rawReport` to extract `donId`, `workflowId`, `workflowOwner`, and `body`.
+3. Compute the message hash: `keccak256(keccak256(rawReport) || reportContext)`.
+4. Fetch the DON's fault tolerance `f` and authorized signer addresses from the **Capability Registry** on Ethereum Mainnet (`0x76c9cf548b4179F8901cda1f8623568b58215E62`): call `getDON(donId)` then `getNodesByP2PIds(p2pIds)`.
+5. For each signature (65 bytes), `ecrecover` the signing address. Require at least **f+1** addresses from the authorized signer set.
+
+The following sketch shows the crypto steps. The Capability Registry call (step 4) follows the same `getDON` → `getNodesByP2PIds` ABI logic used in the CRE SDK; see [`report.ts` in cre-sdk-typescript](https://github.com/smartcontractkit/cre-sdk-typescript) for the exact ABI encoding and decoding.
+
+```typescript
+import { keccak256, concatHex, toHex, recoverAddress } from "viem"
+
+const REPORT_HEADER_LENGTH = 109
+
+/** Parse key fields from the 109-byte rawReport metadata header. */
+function parseHeader(rawReport: Uint8Array) {
+  if (rawReport.length < REPORT_HEADER_LENGTH) {
+    throw new Error(`rawReport too short: need ${REPORT_HEADER_LENGTH} bytes, got ${rawReport.length}`)
+  }
+  const view = new DataView(rawReport.buffer, rawReport.byteOffset)
+  return {
+    donId: view.getUint32(37, false), // bytes 37–40
+    workflowId: toHex(rawReport.slice(45, 77)), // bytes 45–76
+    workflowOwner: toHex(rawReport.slice(87, 107)), // bytes 87–106
+    body: rawReport.slice(REPORT_HEADER_LENGTH), // bytes 109+
+  }
+}
+
+/** keccak256(keccak256(rawReport) || reportContext) */
+function reportHash(rawReport: Uint8Array, reportContext: Uint8Array): `0x${string}` {
+  return keccak256(concatHex([keccak256(toHex(rawReport)), toHex(reportContext)]))
+}
+
+/**
+ * Fetch fault tolerance f and authorized signer addresses from the Capability Registry.
+ * Calls getDON(donId) → getNodesByP2PIds(p2pIds) on Ethereum Mainnet.
+ * Use viem's createPublicClient + readContract, or any Ethereum JSON-RPC client.
+ * See report.ts in cre-sdk-typescript for the exact ABI encoding/decoding.
+ */
+async function fetchSigners(donId: number): Promise<{ f: number; signers: Set<string> }> {
+  // TODO: implement using your Ethereum Mainnet RPC
+  // Registry: 0x76c9cf548b4179F8901cda1f8623568b58215E62
+  throw new Error("implement: call getDON(donId) then getNodesByP2PIds(p2pIds)")
+}
+
+/** Verify that ≥ f+1 signatures are from authorized DON signers. */
+async function verifyReport(rawReport: Uint8Array, signatures: Uint8Array[], reportContext: Uint8Array): Promise<void> {
+  const { donId } = parseHeader(rawReport)
+  const { f, signers } = await fetchSigners(donId)
+  const hash = reportHash(rawReport, reportContext)
+  const required = f + 1
+  let valid = 0
+
+  for (const sig of signatures) {
+    if (sig.length !== 65) continue
+    const normalized = new Uint8Array(sig)
+    if (normalized[64] >= 27) normalized[64] -= 27 // normalize recovery byte
+    try {
+      const recovered = await recoverAddress({ hash, signature: toHex(normalized) })
+      if (signers.has(recovered.toLowerCase().slice(2))) valid++
+    } catch {
+      /* malformed signature — skip */
+    }
+    if (valid >= required) return
+  }
+  throw new Error(`insufficient valid signatures: ${valid}/${required}`)
+}
+
+// Usage — given hex fields from your API POST body:
+const rawReport = hexToBytes(`0x${payload.report}`)
+const reportContext = hexToBytes(`0x${payload.context}`)
+const signatures = payload.signatures.map((s: string) => hexToBytes(`0x${s}`))
+
+await verifyReport(rawReport, signatures, reportContext)
+// If it doesn't throw, the report is authentic.
+// Read the payload: parseHeader(rawReport).body
+```
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Cache registry results">
+  The Capability Registry read for a DON ID is expensive (two onchain calls). Cache the result by DON ID in your server — it changes only when DON configuration changes. The CRE SDK does this automatically; in your own code you are responsible for invalidating the cache if you observe unexpected signer changes.
+</Aside>
+
+## CRE receiver workflow
+
+Use this path if you want the receiver itself to be a CRE workflow (with an HTTP trigger). The CRE SDK's [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) handles registry reads and caching automatically.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Using the private registry?">
+  This guide uses the **Capability Registry** (DON signers), not the **workflow registry** where you deploy. [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) works the same way regardless of which registry you deployed with. For HTTP-triggered receivers, use the [enterprise gateway URL](/cre/guides/operations/deploying-to-private-registry-ts#http-triggers-with-the-private-registry). Local simulation may need an `ethereum-mainnet` RPC in `project.yaml` for registry reads.
+</Aside>
+
+{/* prettier-ignore */}
+<Aside type="note" title="Onchain verification is different">
+  When you submit reports onchain through the `KeystoneForwarder`, the forwarder contract verifies signatures before calling `onReport`. See [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain).
+</Aside>
+
+### Testing locally with simulation
 
 After you run the [submit guide complete example](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#complete-working-example) and copy JSON from webhook.site, use this section to exercise a receiver workflow in simulation.
 
