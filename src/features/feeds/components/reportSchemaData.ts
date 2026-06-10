@@ -100,7 +100,7 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
         type: "int192",
         description: "DON consensus NAV Per Share value as reported by the Fund Manager",
       },
-      { field: "navDate", type: "uint64", description: "Timestamp for the NAV Report publication date (nanoseconds)" },
+      { field: "navDate", type: "uint64", description: "Timestamp for the NAV Report publication date (milliseconds)" },
       { field: "aum", type: "int192", description: "DON consensus total USD value of Assets Under Management" },
       {
         field: "ripcord",
