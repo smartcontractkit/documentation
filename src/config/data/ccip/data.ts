@@ -521,6 +521,8 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
       explorer,
       chainType,
       tokenAdminRegistry: chains[chain]?.tokenAdminRegistry?.address,
+      tokenPoolFactory: chains[chain]?.tokenPoolFactory?.address,
+      ccipHome: chains[chain]?.ccipHome?.address,
       registryModule: chains[chain]?.registryModule?.address,
       router,
       routerExplorerUrl,
