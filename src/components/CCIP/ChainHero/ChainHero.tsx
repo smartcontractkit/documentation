@@ -405,6 +405,60 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
               </div>
             )}
 
+            {network.ccipHome && (
+              <div className="ccip-chain-hero__details__item">
+                <div className="ccip-chain-hero__details__label">
+                  CCIP home
+                  <Tooltip
+                    label=""
+                    tip="The CCIPHome Contract is used for v1.6 config"
+                    labelStyle={{
+                      marginRight: "8px",
+                    }}
+                    style={{
+                      display: "inline-block",
+                      verticalAlign: "middle",
+                      marginBottom: "2px",
+                    }}
+                  />
+                </div>
+                <div className="ccip-chain-hero__details__value" data-clipboard-type="ccip-home">
+                  <Address
+                    endLength={4}
+                    contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.ccipHome)}
+                    address={network.ccipHome}
+                  />
+                </div>
+              </div>
+            )}
+
+            {network.tokenPoolFactory && (
+              <div className="ccip-chain-hero__details__item">
+                <div className="ccip-chain-hero__details__label">
+                  Token pool factory
+                  <Tooltip
+                    label=""
+                    tip="The TokenPoolFactory contract can be used for deploying CrossChainTokens and TokenPools for cross-chain token transfers."
+                    labelStyle={{
+                      marginRight: "8px",
+                    }}
+                    style={{
+                      display: "inline-block",
+                      verticalAlign: "middle",
+                      marginBottom: "2px",
+                    }}
+                  />
+                </div>
+                <div className="ccip-chain-hero__details__value" data-clipboard-type="token-pool-factory">
+                  <Address
+                    endLength={4}
+                    contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.tokenPoolFactory)}
+                    address={network.tokenPoolFactory}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Start of new Fee Tokens Group */}
             {network &&
               ((feeTokensWithAddress && feeTokensWithAddress.length > 0) ||
