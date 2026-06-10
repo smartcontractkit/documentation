@@ -1,0 +1,278 @@
+---
+section: cre
+date: Last Modified
+title: "Migrate from Chainlink Automation to Chainlink CRE"
+pageId: "cla-migration"
+sdkLang: "ts"
+metadata:
+  description: "Migrate from Chainlink Automation (CLA) to Chainlink CRE. Concept mapping, chain support, triggers, task authoring, onchain writes, deployment, and monitoring."
+  datePublished: "2026-05-25"
+  lastModified: "2026-05-25"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="SDK Language: TypeScript">
+  You're viewing the **TypeScript** version of this guide. If you prefer Go, use the language selector in the left
+  sidebar to switch to the Go version.
+</Aside>
+
+This guide is for developers with production [Chainlink Automation (CLA)](/chainlink-automation) upkeeps migrating their logic to the [Chainlink Runtime Environment (CRE)](/cre) before the final sunset dates:
+
+- **Testnet Shutdown:** June 15, 2026
+- **Mainnet Shutdown:** September 15, 2026
+
+The majority of CLA use cases involve periodic onchain maintenance or reacting to onchain events. That maps cleanly to a CRE workflow: a trigger (Cron or EVM Log) → offchain logic (replaces `checkUpkeep`) → a signed report written onchain to an `IReceiver` consumer (replaces `performUpkeep`).
+
+## How CLA and CRE differ
+
+In CLA, you define an upkeep with a `checkUpkeep()` function (offchain simulation) and a `performUpkeep()` function (onchain execution). The Automation network periodically simulates `checkUpkeep()` and, if it returns `true`, submits a transaction to `performUpkeep()`.
+
+In CRE, the unit of execution is a [**workflow**](/cre/key-terms#workflow) - a TypeScript (or Go) project compiled to WebAssembly and registered with the network. Workflows are started by [**triggers**](/cre/key-terms#trigger) (cron schedule, HTTP request, or onchain log event), can perform multiple steps (HTTP fetches, onchain reads, onchain writes, calls to other [capabilities](/cre/key-terms#capability)) wrapped in your own business logic, and write data onchain through a signed-report flow that any contract implementing `IReceiver` can consume.
+
+Functionally, CRE is a superset of CLA: anything CLA does today, CRE does, and many patterns that previously required multiple upkeeps or offchain relayers collapse into a single workflow.
+
+## Chain support
+
+CRE supports every chain CLA runs on today. For the canonical, up-to-date list of supported chains, see [Supported Networks](/cre/supported-networks-ts).
+
+## Terminology
+
+| Chainlink Automation                        | Chainlink CRE                                          |
+| :------------------------------------------ | :----------------------------------------------------- |
+| Upkeep contract                             | `IReceiver` consumer contract (use `ReceiverTemplate`) |
+| `checkUpkeep()` function                    | Workflow logic inside the handler                      |
+| `performUpkeep(bytes performData)` callback | `_onReport(metadata, payload)` on the receiver         |
+| Time-based Upkeep                           | Built-in Cron trigger - no Automation upkeep needed    |
+| Log Trigger Upkeep                          | EVM Log trigger                                        |
+| Custom Logic Upkeep                         | Cron trigger + `evmClient.callContract()` in handler   |
+| Automation Registry                         | Workflow Forwarder                                     |
+| `@chainlink/contracts`, Automation UI       | `@chainlink/cre-sdk`, `cre-cli`, `cre-templates`       |
+| Automation Simulation                       | CRE CLI `cre workflow simulate`                        |
+
+## Configuration
+
+A CRE project is a standalone repository. The CLI (`cre`) scaffolds a project with the following files:
+
+- **`main.ts`** - workflow code: trigger registration, handler logic, and capability calls.
+- **`config.json`** - non-secret runtime configuration (API URLs, contract addresses, chain selectors).
+- **`secrets.yaml`** - secret declarations; values are supplied via `.env` files locally and via the Vault DON in production.
+- **`workflow.yaml`** - workflow metadata: name, owner, secrets path, and target network.
+- **`project.yaml`** - project-level CRE settings.
+
+There is no equivalent in CLA, where the logic is baked into your consumer contract and registered with the registry.
+
+## Triggers
+
+CLA has three primary entry paths: time-based, log-based, and custom logic. CRE makes the [trigger](/cre/guides/workflow/using-triggers/overview) first-class.
+
+### Time-based
+
+Replaces "Time-based Upkeep." Use a cron trigger with a handler callback.
+
+```ts
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  runtime.log("Cron triggered")
+  return "done"
+}
+
+const initWorkflow = (config: Config) => {
+  const cron = new cre.capabilities.CronCapability()
+  return [
+    cre.handler(cron.trigger({ schedule: "0 */5 * * * *" }), onCronTrigger), // every 5 min
+  ]
+}
+```
+
+Standard 5- or 6-field cron expressions; minimum interval is 30 seconds. Prefix with `TZ=<timezone>` for timezone-aware scheduling.
+
+### Onchain events
+
+Directly replaces "Log Trigger Upkeep." Instead of the registry watching for an event to call `performUpkeep`, the CRE DON watches for the event and fires the workflow handler with the decoded event data.
+
+```ts
+const onLogTrigger = (runtime: Runtime<Config>, triggerEvent: EVMLogPayload): string => {
+  runtime.log(`Event received from ${triggerEvent.address}`)
+  return "processed"
+}
+
+const initWorkflow = (config: Config) => {
+  const evmLog = new cre.capabilities.EVMLogCapability()
+  return [
+    cre.handler(
+      evmLog.trigger({
+        contractAddress: config.contractAddress,
+        chainSelectorName: config.chainSelectorName,
+        eventSignature: "Transfer(address,address,uint256)",
+      }),
+      onLogTrigger
+    ),
+  ]
+}
+```
+
+### HTTP triggers
+
+New capability not natively available in CLA. The workflow exposes an HTTPS endpoint on the CRE gateway; callers POST a JSON payload signed with an authorized EVM key.
+
+```ts
+const trigger = cre.capabilities.http.trigger({
+  authorizedKeys: [{ type: "EVM", key: "0xYourAuthorizedSigner" }],
+})
+```
+
+### Per-block triggers
+
+CRE does not offer a "fire on every block" trigger; for high-frequency onchain reactions, use the EVM Log trigger with a [`LATEST` confidence level](/cre/concepts/finality-ts). For periodic state polling (Custom Logic Upkeeps), use a cron trigger and call `evmClient.callContract()` from the handler.
+
+## Task authoring and output
+
+<Aside type="caution" title="Determinism requirement">
+  CRE workflows run on multiple nodes that must reach consensus on a single result. Any code that produces different
+  output per node — `Date.now()`, `Math.random()`, non-deterministic iteration, or reading mutable global state — will
+  cause the workflow to fail at the consensus step. Review the [Avoiding
+  Non-Determinism](/cre/concepts/non-determinism-ts) guide before porting your CLA logic.
+</Aside>
+
+### Language and runtime
+
+CLA logic is written in Solidity inside `checkUpkeep()`.
+
+CRE workflows are full TypeScript or Go projects compiled to WebAssembly. You manage dependencies with your standard package manager (like `npm` or `pnpm`) and run `cre workflow simulate` for a local execution that mirrors production.
+
+The handler is single-threaded; SDK capability calls return an object that you resolve with `.result()` (TypeScript) or `.Await()` (Go).
+
+### HTTP / API calls
+
+New capability! CLA has no built-in HTTP read. In CRE, you can fetch external data and use it to drive your automation.
+
+```ts
+const res = await runtime.http
+  .sendRequest({
+    url: "https://api.example.com/status",
+    method: "GET",
+  })
+  .result()
+
+const status = res.json().active
+```
+
+### Onchain reads
+
+In CLA, `checkUpkeep()` reads state natively as it runs onchain. In CRE, you read onchain state from within the handler:
+
+```ts
+const evm = new cre.evm.EVMClient(CHAIN_SELECTOR)
+const result = await evm
+  .callContract({
+    to: CONTRACT_ADDRESS,
+    data: encodeFunctionData({ abi, functionName: "needsMaintenance" }),
+    blockNumber: cre.evm.LAST_FINALIZED_BLOCK_NUMBER,
+  })
+  .result()
+```
+
+### Onchain writes
+
+In CLA, the registry calls your `performUpkeep(bytes performData)` function. In CRE, the workflow generates a cryptographically signed report and submits it to a consumer contract that implements `IReceiver` - typically by extending `ReceiverTemplate`. The handler is `_onReport(bytes metadata, bytes payload)`.
+
+```ts
+import { cre, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { encodeAbiParameters } from "viem"
+
+const onTrigger = async (runtime: Runtime<Config>) => {
+  const evm = new cre.evm.EVMClient(CHAIN_SELECTOR)
+
+  // Logic equivalent to checkUpkeep()
+  const result = await evm.callContract({ ... }).result()
+
+  if (shouldPerform(result)) {
+    const payload = encodeAbiParameters([{ type: "uint256" }], [maintenanceData])
+    const report = await runtime.report(payload).result()
+
+    await evm.writeReport({
+      receiver: RECEIVER_ADDRESS,
+      report,
+      gasLimit: "200000",
+    }).result()
+  }
+}
+
+export function initWorkflow(config: Config) {
+  const cron = new cre.capabilities.CronCapability()
+  return [
+    cre.handler(cron.trigger({ schedule: config.schedule }), onTrigger)
+  ]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+Receiver contract:
+
+```solidity
+import {ReceiverTemplate} from "@chainlink/cre-contracts/ReceiverTemplate.sol";
+
+contract AutomatedReceiver is ReceiverTemplate {
+  constructor(address forwarder) ReceiverTemplate(forwarder) {}
+
+  function _onReport(bytes calldata /* metadata */, bytes calldata payload) internal override {
+    // Logic equivalent to performUpkeep()
+  }
+}
+```
+
+Chain selectors and forwarder addresses are network-specific; see the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory-ts) and [Supported Networks](/cre/supported-networks-ts).
+
+## Monitoring
+
+The [CRE dashboard](/cre/guides/operations/monitoring-workflows) provides per-workflow execution history, handler logs (via `runtime.log()`), per-step timings, [consensus](/cre/concepts/consensus-computing) outcomes, and onchain submission status, replacing the upkeep history views in the [Automation UI](https://automation.chain.link).
+
+## Deployment and lifecycle
+
+| Action            | Chainlink Automation                                                              | Chainlink CRE                                                                                                                                                              |
+| :---------------- | :-------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Author code       | Solidity logic in your consumer contract                                          | TypeScript/Go project; `cre workflow init` to scaffold                                                                                                                     |
+| Local test        | Manual simulation or hardhat tests                                                | [`cre workflow simulate`](/cre/guides/operations/simulating-workflows)                                                                                                     |
+| Deploy            | Deploy upkeep contract; [register and fund upkeep](https://automation.chain.link) | Deploy `IReceiver` consumer; [`cre workflow deploy`](/cre/guides/operations/deploying-workflows); [activate workflow](/cre/guides/operations/activating-pausing-workflows) |
+| Update logic      | Upgrade upkeep contract or update registry settings                               | [`cre workflow update`](/cre/guides/operations/updating-deployed-workflows) (workflow code only; receiver unchanged)                                                       |
+| Pause             | Pause in Automation UI                                                            | [`cre workflow pause`](/cre/guides/operations/activating-pausing-workflows)                                                                                                |
+| Delete            | Cancel upkeep; withdraw remaining LINK                                            | [`cre workflow delete`](/cre/guides/operations/deleting-workflows)                                                                                                         |
+| Monitor and Debug | History in Automation UI; onchain transaction data                                | [Built-in email alerts on workflow failures; UI showing executions and DON logs](/cre/guides/operations/monitoring-workflows)                                              |
+
+## Get started
+
+The fastest way to migrate is using the official **Automation Migration** starter template. This template uses a "Bridge" pattern: you deploy a generic `AutomationReceiver.sol` contract once, which forwards CRE reports to your existing, unchanged Automation contracts.
+
+### 1. Initialize your project
+
+Use the CRE CLI to scaffold a new project using the migration template:
+
+```bash
+cre workflow init --template=automation-migration-ts
+```
+
+### 2. Deploy the Bridge
+
+The template includes `AutomationReceiver.sol`. Deploy this contract to your target chain, passing the **CRE Forwarder** address to the constructor. This contract acts as a translation layer, allowing you to keep your existing `checkUpkeep` and `performUpkeep` logic exactly as it is today.
+
+### 3. Configure and Simulate
+
+Update the `config/test.json` file in your new project with your target contract address and migration type (`CRON`, `CUSTOM`, or `LOG`). Then, simulate the migration locally:
+
+```bash
+cre workflow simulate my-workflow --target=test-settings
+```
+
+### 4. Deploy
+
+Once verified, deploy your workflow to the CRE DON:
+
+```bash
+cre workflow deploy my-workflow --target=production-settings
+```
+
+For a deep dive into the bridge architecture and end-to-end examples, see the [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/automation-migration) repository.
