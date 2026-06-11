@@ -9,29 +9,30 @@ import { useGetChainMetadata } from "./useGetChainMetadata.ts"
 import { ChainMetadata } from "~/features/data/api/index.ts"
 import useQueryString from "~/hooks/useQueryString.ts"
 import { RefObject } from "preact"
-import { getFeedCategories } from "../../../db/feedCategories.js"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 import { ChainSelector } from "~/components/ChainSelector/ChainSelector.tsx"
 import { chainHasVisibleFeeds, isFeedVisible, networkHasVisibleFeeds } from "../utils/feedVisibility.ts"
+import { chainHasSvrFeeds } from "../utils/svrDetection.ts"
+import {
+  filterChainsByFeedTypeTag,
+  networkMatchesFeedTypeTag,
+  shouldFilterSelectableChainsByVisibleFeeds,
+  shouldRenderNetworkSection,
+} from "../utils/chainFilters.ts"
+import { getFeedAssetType, getSchemaVersion } from "../utils/feedMetadata.ts"
+import { getAddrPerPage, SMART_DATA_CATEGORY_OPTIONS } from "../constants.ts"
+import {
+  type DataFeedType,
+  type SchemaFilterValue,
+  type StreamsRwaFeedTypeValue,
+  type TradingHoursFilterValue,
+  getFeedTypeFlags,
+} from "../types.ts"
 import { updateUrlClean } from "./urlStateHelpers.ts"
 
-export type DataFeedType =
-  | "default"
-  | "smartdata"
-  | "rates"
-  | "usGovernmentMacroeconomicData"
-  | "tokenizedEquity"
-  | "streamsCrypto"
-  | "streamsRwa"
-  | "streamsNav"
-  | "streamsExRate"
-  | "streamsBacked"
-
-type SchemaFilterValue = "all" | "v8" | "v11"
-type StreamsRwaFeedTypeValue = "all" | "datalink" | "equities" | "forex"
-type TradingHoursFilterValue = "all" | "regular" | "extended" | "overnight"
+export type { DataFeedType } from "../types.ts"
 
 type FilterOption<T extends string> = {
   label: string
@@ -82,20 +83,7 @@ type StreamFeedMetadata = ChainMetadata & {
   }
 }
 
-const getStreamSchemaVersion = (feed: StreamFeedMetadata): string | undefined => {
-  if (feed.docs?.schema) return feed.docs.schema
-
-  const clicProductName = feed.docs?.clicProductName
-  if (!clicProductName) return undefined
-
-  const match = clicProductName.match(/-0(\d{2})$/)
-  if (!match) return undefined
-
-  if (match[1] === "04" || match[1] === "08") return "v8"
-  if (match[1] === "11") return "v11"
-
-  return undefined
-}
+const getStreamSchemaVersion = (feed: StreamFeedMetadata): string | undefined => getSchemaVersion(feed)
 
 const is24x5StreamFeed = (feed: StreamFeedMetadata): boolean => {
   const schemaVersion = getStreamSchemaVersion(feed)
@@ -177,16 +165,9 @@ export const FeedList = ({
   forceStreamCategoryFilter?: StreamsRwaFeedTypeValue
   tokenizedEquityProvider?: string
 }) => {
-  const isStreams =
-    dataFeedType === "streamsCrypto" ||
-    dataFeedType === "streamsRwa" ||
-    dataFeedType === "streamsNav" ||
-    dataFeedType === "streamsExRate" ||
-    dataFeedType === "streamsBacked"
+  const feedTypeFlags = getFeedTypeFlags(dataFeedType)
+  const { isStreams, isSmartData, isRates, isUSGovernmentMacroeconomicData } = feedTypeFlags
   const isDeprecating = ecosystem === "deprecating"
-  const isRates = dataFeedType === "rates"
-  const isSmartData = dataFeedType === "smartdata"
-  const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
   const chains = isDeprecating && isStreams ? ALL_CHAINS : CHAINS
 
   // Get network from URL parameters or fall back to initialNetwork
@@ -422,7 +403,7 @@ export const FeedList = ({
     setCurrentPage(pageStr)
     updateUrlClean({ page: pageNumber === 1 ? undefined : pageNumber })
   }
-  const addrPerPage = ecosystem === "deprecating" && isStreams ? 10 : ecosystem === "deprecating" ? 10000 : 8
+  const addrPerPage = getAddrPerPage(ecosystem, isStreams)
   const currentPageNum = Number(currentPage) || 1
   const lastAddr = currentPageNum * addrPerPage
   const firstAddr = lastAddr - addrPerPage
@@ -434,54 +415,16 @@ export const FeedList = ({
     setTestnetCurrentPage(pageStr)
     updateUrlClean({ testnetPage: pageNumber === 1 ? undefined : pageNumber })
   }
-  const testnetAddrPerPage = ecosystem === "deprecating" && isStreams ? 10 : ecosystem === "deprecating" ? 10000 : 8
+  const testnetAddrPerPage = getAddrPerPage(ecosystem, isStreams)
   const testnetPageNum = Number(testnetCurrentPage) || 1
   const testnetLastAddr = testnetPageNum * testnetAddrPerPage
   const testnetFirstAddr = testnetLastAddr - testnetAddrPerPage
 
-  // Dynamic feed categories loaded from Supabase
-  const [dataFeedCategory, setDataFeedCategory] = useState([
-    { key: "low", name: "Low Market Risk" },
-    { key: "medium", name: "Medium Market Risk" },
-    { key: "high", name: "High Market Risk" },
-    { key: "veryhigh", name: "Very High Market Risk" },
-    { key: "custom", name: "Custom" },
-    { key: "new", name: "New Token" },
-    { key: "deprecating", name: "Deprecating" },
-  ])
-
-  // Load dynamic categories from Supabase on component mount
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const categories = await getFeedCategories()
-        setDataFeedCategory(categories)
-      } catch (error) {}
-    }
-
-    loadCategories()
-  }, [])
-  const smartDataTypes = [
-    { key: "Proof of Reserve", name: "Proof of Reserve" },
-    { key: "NAVLink", name: "NAVLink" },
-    { key: "SmartAUM", name: "SmartAUM" },
-    { key: "Stablecoin Stability Assessment", name: "Stablecoin Stability Assessment" },
-  ]
+  const smartDataTypes = [...SMART_DATA_CATEGORY_OPTIONS]
   const [streamsChain] = useState(initialNetwork)
   const activeChain = isStreams ? streamsChain : currentNetwork
 
-  // Filter chains by dataFeedType tag to get only chains that support this feed type
-  const filteredChainsByTag = useMemo(() => {
-    return chains.filter((chain) => {
-      if (dataFeedType.includes("streams")) return chain.tags?.includes("streams") ?? false
-      if (dataFeedType === "smartdata") return chain.tags?.includes("smartData") ?? false
-      if (dataFeedType === "rates") return chain.tags?.includes("rates") ?? false
-      if (dataFeedType === "usGovernmentMacroeconomicData")
-        return chain.tags?.includes("usGovernmentMacroeconomicData") ?? false
-      if (dataFeedType === "tokenizedEquity") return chain.tags?.includes("tokenizedEquity") ?? false
-      return chain.tags?.includes("default") ?? false
-    })
-  }, [chains, dataFeedType])
+  const filteredChainsByTag = useMemo(() => filterChainsByFeedTypeTag(chains, dataFeedType), [chains, dataFeedType])
 
   const requestedChain = useMemo(() => {
     const requestedNetwork =
@@ -498,14 +441,18 @@ export const FeedList = ({
   const metadataCache = chainMetadata.cache ?? initialCache
 
   const selectableChains = useMemo(() => {
-    if (!isDeprecating || isStreams || !metadataCache) return filteredChainsByTag
+    if (isStreams || !metadataCache) return filteredChainsByTag
+
+    if (!shouldFilterSelectableChainsByVisibleFeeds(dataFeedType, ecosystem)) {
+      return filteredChainsByTag
+    }
 
     return filteredChainsByTag.filter((chain) =>
       chainHasVisibleFeeds((metadataCache as Record<string, any>)[chain.page], dataFeedType, ecosystem, {
         tokenizedEquityProvider,
       })
     )
-  }, [filteredChainsByTag, metadataCache, isDeprecating, isStreams, dataFeedType, ecosystem, tokenizedEquityProvider])
+  }, [filteredChainsByTag, metadataCache, isStreams, dataFeedType, ecosystem, tokenizedEquityProvider])
 
   const availableChainsForSelection = selectableChains.length > 0 ? selectableChains : filteredChainsByTag
 
@@ -531,6 +478,79 @@ export const FeedList = ({
     ...chainMetadata,
     processedData: selectedChainProcessedData,
   }
+
+  const chainHasSvr = useMemo(() => {
+    if (isStreams || isSmartData || isUSGovernmentMacroeconomicData) return false
+    if (!currentChainMetadata.processedData) return false
+
+    return chainHasSvrFeeds(currentChainMetadata.processedData, dataFeedType, ecosystem, {
+      tokenizedEquityProvider,
+    })
+  }, [
+    currentChainMetadata.processedData,
+    isStreams,
+    isSmartData,
+    isUSGovernmentMacroeconomicData,
+    dataFeedType,
+    ecosystem,
+    tokenizedEquityProvider,
+  ])
+
+  useEffect(() => {
+    if (!chainHasSvr && showOnlySVR) {
+      setShowOnlySVR(false)
+    }
+  }, [chainHasSvr, showOnlySVR])
+
+  const availableAssetTypes = useMemo(() => {
+    if (isStreams || isSmartData) return []
+
+    const visibilityOptions = {
+      tokenizedEquityProvider,
+      streamCategoryFilter: isStreams ? forceStreamCategoryFilter : undefined,
+    }
+
+    const types = new Set<string>()
+
+    currentChainMetadata.processedData?.networks?.forEach((network) => {
+      if (network.networkType !== selectedNetworkType) return
+
+      network.metadata?.forEach((feed) => {
+        if (!isFeedVisible(feed, dataFeedType, ecosystem, visibilityOptions)) return
+
+        const assetType = getFeedAssetType(feed)
+        if (assetType) types.add(assetType)
+      })
+    })
+
+    return [...types].sort((a, b) => a.localeCompare(b)).map((assetType) => ({ key: assetType, name: assetType }))
+  }, [
+    currentChainMetadata.processedData,
+    selectedNetworkType,
+    dataFeedType,
+    ecosystem,
+    tokenizedEquityProvider,
+    isStreams,
+    isSmartData,
+    forceStreamCategoryFilter,
+  ])
+
+  useEffect(() => {
+    if (isStreams || isSmartData || availableAssetTypes.length === 0) return
+
+    const validKeys = new Set(availableAssetTypes.map((option) => option.key))
+    const current = Array.isArray(selectedFeedCategories)
+      ? selectedFeedCategories
+      : selectedFeedCategories
+        ? [selectedFeedCategories]
+        : []
+    const filtered = current.filter((category) => validKeys.has(category))
+
+    if (filtered.length !== current.length) {
+      setSelectedFeedCategories(filtered.length > 0 ? filtered : [])
+    }
+  }, [availableAssetTypes, selectedChain.page, selectedNetworkType, isStreams, isSmartData])
+
   const wrapperRef = useRef(null)
 
   // scroll handler
@@ -750,14 +770,7 @@ export const FeedList = ({
 
     // Filter networks by feed type
     const filteredNetworks = currentChainMetadata.processedData.networks
-      .filter((network) => {
-        if (isStreams) return network.tags?.includes("streams")
-        if (isSmartData) return network.tags?.includes("smartData")
-        if (isRates) return network.tags?.includes("rates")
-        if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
-
-        return true
-      })
+      .filter((network) => networkMatchesFeedTypeTag(network, dataFeedType))
       .filter((network) => {
         // Ensure the network has at least one visible feed for the current dataFeedType
         const visibilityOptions = {
@@ -1030,18 +1043,21 @@ export const FeedList = ({
           {currentChainMetadata.error && <p>There was an error loading the streams...</p>}
 
           <SectionWrapper title="Mainnet Deprecating Streams" depth={2}>
-            <form class={feedList.filterDropdown_search}>
-              <input
-                id="search"
-                class={feedList.filterDropdown_searchInput}
-                placeholder="Search"
-                value={typeof searchValue === "string" ? searchValue : ""}
-                onInput={(event) => {
-                  setSearchValue((event.target as HTMLInputElement).value)
-                  setCurrentPage("1")
-                }}
-              />
-            </form>
+            <div className={feedList.tableFilters}>
+              <form class={clsx(feedList.tableSearch, feedList.filterDropdown_search)}>
+                <input
+                  id="search"
+                  class={feedList.filterDropdown_searchInput}
+                  placeholder="Search feeds"
+                  aria-label="Search feeds"
+                  value={typeof searchValue === "string" ? searchValue : ""}
+                  onInput={(event) => {
+                    setSearchValue((event.target as HTMLInputElement).value)
+                    setCurrentPage("1")
+                  }}
+                />
+              </form>
+            </div>
             {filteredMainnetStreams.length > 0 ? (
               <>
                 <div className={feedList.tableWrapper}>
@@ -1084,23 +1100,26 @@ export const FeedList = ({
           </SectionWrapper>
 
           <SectionWrapper title="Testnet Deprecating Streams" depth={2}>
-            <form class={feedList.filterDropdown_search}>
-              <input
-                id="testnetSearch"
-                class={feedList.filterDropdown_searchInput}
-                placeholder="Search"
-                value={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
-                onInput={(event) => {
-                  setTestnetSearchValue((event.target as HTMLInputElement).value)
-                  setTestnetCurrentPage("1")
-                }}
-              />
-            </form>
+            <div className={feedList.tableFilters}>
+              <form class={clsx(feedList.tableSearch, feedList.filterDropdown_search)}>
+                <input
+                  id="testnetSearch"
+                  class={feedList.filterDropdown_searchInput}
+                  placeholder="Search feeds"
+                  aria-label="Search feeds"
+                  value={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
+                  onInput={(event) => {
+                    setTestnetSearchValue((event.target as HTMLInputElement).value)
+                    setTestnetCurrentPage("1")
+                  }}
+                />
+              </form>
+            </div>
             {filteredTestnetStreams.length > 0 ? (
               <>
                 <div className={feedList.tableWrapper}>
                   <table className={clsx(tableStyles.table)}>
-                    <StreamsTHead />
+                    <StreamsTHead showRiskColumn={false} />
                     <tbody>
                       {paginatedTestnetStreams.map((stream, index) => (
                         <StreamsTr key={`${stream.feedId}-${index}`} metadata={stream} isMainnet={false} />
@@ -1209,11 +1228,142 @@ export const FeedList = ({
             idOverride={streamsMainnetSectionTitle.toLowerCase().replace(/\s+/g, "-")}
           >
             <div className={feedList.tableFilters}>
-              <form class={feedList.filterDropdown_search}>
+              <div className={feedList.filterControls}>
+                {dataFeedType === "streamsCrypto" && (
+                  <div className={feedList.checkboxContainer}>
+                    <label className={feedList.detailsLabel}>
+                      <input
+                        type="checkbox"
+                        className={feedList.feedCheckbox}
+                        checked={showOnlyDEXFeeds}
+                        onChange={() => {
+                          closeAllDropdowns()
+                          setShowOnlyDEXFeeds((old) => !old)
+                          if (showOnlyDatalinkFeeds) setShowOnlyDatalinkFeeds(false)
+                          setCurrentPage("1")
+                        }}
+                      />
+                      Show DEX State Price streams
+                    </label>
+                    <label className={feedList.detailsLabel}>
+                      <input
+                        type="checkbox"
+                        className={feedList.feedCheckbox}
+                        checked={showOnlyDatalinkFeeds}
+                        onChange={() => {
+                          closeAllDropdowns()
+                          setShowOnlyDatalinkFeeds((old) => !old)
+                          if (showOnlyDEXFeeds) setShowOnlyDEXFeeds(false)
+                          setCurrentPage("1")
+                        }}
+                      />
+                      Show Datalink streams
+                    </label>
+                  </div>
+                )}
+                {dataFeedType === "streamsRwa" && (
+                  <>
+                    {!forceStreamCategoryFilter && !show24x5Feeds && (
+                      <>
+                        <FilterDropdown
+                          isOpen={openDropdownId === "main-schema"}
+                          onToggle={(isOpen) => handleDropdownToggle("main-schema", isOpen)}
+                          onClose={closeAllDropdowns}
+                          label="Filter schema"
+                          options={schemaFilterOptions}
+                          value={rwaSchemaFilter}
+                          groupId="schema-main"
+                          onSelect={(next) => {
+                            setRwaSchemaFilter(next)
+                            setCurrentPage("1")
+                          }}
+                        />
+                        <FilterDropdown
+                          isOpen={openDropdownId === "main-feed-type"}
+                          onToggle={(isOpen) => handleDropdownToggle("main-feed-type", isOpen)}
+                          onClose={closeAllDropdowns}
+                          label="Filter category"
+                          options={feedTypeFilterOptions}
+                          value={streamCategoryFilter}
+                          groupId="feed-type-main"
+                          onSelect={(next) => {
+                            setStreamCategoryFilter(next)
+                            setCurrentPage("1")
+                          }}
+                        />
+                      </>
+                    )}
+                    {!force24x5Only && !forceStreamCategoryFilter && (
+                      <div className={feedList.checkboxContainer}>
+                        <label className={feedList.detailsLabel}>
+                          <input
+                            type="checkbox"
+                            className={feedList.feedCheckbox}
+                            checked={show24x5Feeds}
+                            onChange={() => {
+                              closeAllDropdowns()
+                              const newValue = !show24x5Feeds
+                              setShow24x5Feeds(newValue)
+                              if (newValue) {
+                                // Reset trading hours filter when enabling 24/5
+                                setTradingHoursFilter("all")
+                              }
+                              setCurrentPage("1")
+                            }}
+                          />
+                          Show only 24/5 Equity Streams
+                        </label>
+                      </div>
+                    )}
+                    {show24x5Feeds && (
+                      <FilterDropdown
+                        isOpen={openDropdownId === "main-trading-hours"}
+                        onToggle={(isOpen) => handleDropdownToggle("main-trading-hours", isOpen)}
+                        onClose={closeAllDropdowns}
+                        label="Time segment"
+                        options={tradingHoursFilterOptions}
+                        value={tradingHoursFilter}
+                        groupId="trading-hours-main"
+                        onSelect={(next) => {
+                          setTradingHoursFilter(next)
+                          setCurrentPage("1")
+                        }}
+                      />
+                    )}
+                    {(searchValue ||
+                      rwaSchemaFilter !== "all" ||
+                      (!forceStreamCategoryFilter && streamCategoryFilter !== "all") ||
+                      show24x5Feeds) && (
+                      <button
+                        type="button"
+                        className={clsx(button.secondary, feedList.clearFilterBtn)}
+                        onClick={() => {
+                          closeAllDropdowns()
+                          setSearchValue("")
+                          setRwaSchemaFilter("all")
+                          if (!forceStreamCategoryFilter) setStreamCategoryFilter("all")
+                          setShow24x5Feeds(false)
+                          setTradingHoursFilter("all")
+                          setCurrentPage("1")
+                          const inputElement = document.getElementById("search") as HTMLInputElement
+                          if (inputElement) {
+                            inputElement.value = ""
+                          }
+                        }}
+                        aria-label="Clear all filters"
+                      >
+                        Clear filter
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+              <form class={clsx(feedList.tableSearch, feedList.filterDropdown_search)}>
                 <input
                   id="search"
                   class={feedList.filterDropdown_searchInput}
-                  placeholder="Search"
+                  placeholder="Search feeds"
+                  aria-label="Search feeds"
                   onFocus={closeAllDropdowns}
                   onInput={(event) => {
                     closeAllDropdowns()
@@ -1222,134 +1372,6 @@ export const FeedList = ({
                   }}
                 />
               </form>
-              {dataFeedType === "streamsCrypto" && (
-                <div className={feedList.checkboxContainer}>
-                  <label className={feedList.detailsLabel}>
-                    <input
-                      type="checkbox"
-                      style="width:15px;height:15px;display:inline;margin-right:8px;"
-                      checked={showOnlyDEXFeeds}
-                      onChange={() => {
-                        closeAllDropdowns()
-                        setShowOnlyDEXFeeds((old) => !old)
-                        if (showOnlyDatalinkFeeds) setShowOnlyDatalinkFeeds(false)
-                        setCurrentPage("1")
-                      }}
-                    />
-                    Show DEX State Price streams
-                  </label>
-                  <label className={feedList.detailsLabel}>
-                    <input
-                      type="checkbox"
-                      style="width:15px;height:15px;display:inline;margin-right:8px;"
-                      checked={showOnlyDatalinkFeeds}
-                      onChange={() => {
-                        closeAllDropdowns()
-                        setShowOnlyDatalinkFeeds((old) => !old)
-                        if (showOnlyDEXFeeds) setShowOnlyDEXFeeds(false)
-                        setCurrentPage("1")
-                      }}
-                    />
-                    Show Datalink streams
-                  </label>
-                </div>
-              )}
-              {dataFeedType === "streamsRwa" && (
-                <>
-                  {!forceStreamCategoryFilter && !show24x5Feeds && (
-                    <>
-                      <FilterDropdown
-                        isOpen={openDropdownId === "main-schema"}
-                        onToggle={(isOpen) => handleDropdownToggle("main-schema", isOpen)}
-                        onClose={closeAllDropdowns}
-                        label="Filter schema"
-                        options={schemaFilterOptions}
-                        value={rwaSchemaFilter}
-                        groupId="schema-main"
-                        onSelect={(next) => {
-                          setRwaSchemaFilter(next)
-                          setCurrentPage("1")
-                        }}
-                      />
-                      <FilterDropdown
-                        isOpen={openDropdownId === "main-feed-type"}
-                        onToggle={(isOpen) => handleDropdownToggle("main-feed-type", isOpen)}
-                        onClose={closeAllDropdowns}
-                        label="Filter category"
-                        options={feedTypeFilterOptions}
-                        value={streamCategoryFilter}
-                        groupId="feed-type-main"
-                        onSelect={(next) => {
-                          setStreamCategoryFilter(next)
-                          setCurrentPage("1")
-                        }}
-                      />
-                    </>
-                  )}
-                  {!force24x5Only && !forceStreamCategoryFilter && (
-                    <div className={feedList.checkboxContainer}>
-                      <label className={feedList.detailsLabel}>
-                        <input
-                          type="checkbox"
-                          style="width:15px;height:15px;display:inline;margin-right:8px;"
-                          checked={show24x5Feeds}
-                          onChange={() => {
-                            closeAllDropdowns()
-                            const newValue = !show24x5Feeds
-                            setShow24x5Feeds(newValue)
-                            if (newValue) {
-                              // Reset trading hours filter when enabling 24/5
-                              setTradingHoursFilter("all")
-                            }
-                            setCurrentPage("1")
-                          }}
-                        />
-                        Show only 24/5 Equity Streams
-                      </label>
-                    </div>
-                  )}
-                  {show24x5Feeds && (
-                    <FilterDropdown
-                      isOpen={openDropdownId === "main-trading-hours"}
-                      onToggle={(isOpen) => handleDropdownToggle("main-trading-hours", isOpen)}
-                      onClose={closeAllDropdowns}
-                      label="Time segment"
-                      options={tradingHoursFilterOptions}
-                      value={tradingHoursFilter}
-                      groupId="trading-hours-main"
-                      onSelect={(next) => {
-                        setTradingHoursFilter(next)
-                        setCurrentPage("1")
-                      }}
-                    />
-                  )}
-                  {(searchValue ||
-                    rwaSchemaFilter !== "all" ||
-                    (!forceStreamCategoryFilter && streamCategoryFilter !== "all") ||
-                    show24x5Feeds) && (
-                    <button
-                      type="button"
-                      className={clsx(button.secondary, feedList.clearFilterBtn)}
-                      onClick={() => {
-                        closeAllDropdowns()
-                        setSearchValue("")
-                        setRwaSchemaFilter("all")
-                        if (!forceStreamCategoryFilter) setStreamCategoryFilter("all")
-                        setShow24x5Feeds(false)
-                        setTradingHoursFilter("all")
-                        setCurrentPage("1")
-                        const inputElement = document.getElementById("search") as HTMLInputElement
-                        if (inputElement) {
-                          inputElement.value = ""
-                        }
-                      }}
-                      aria-label="Clear all filters"
-                    >
-                      Clear filter
-                    </button>
-                  )}
-                </>
-              )}
             </div>
             {currentChainMetadata.loading || !currentChainMetadata.processedData ? (
               <p style="font-style: italic;">Loading...</p>
@@ -1397,11 +1419,140 @@ export const FeedList = ({
             idOverride={streamsTestnetSectionTitle.toLowerCase().replace(/\s+/g, "-")}
           >
             <div className={feedList.tableFilters}>
-              <form class={feedList.filterDropdown_search}>
+              <div className={feedList.filterControls}>
+                {dataFeedType === "streamsCrypto" && (
+                  <div className={feedList.checkboxContainer}>
+                    <label className={feedList.detailsLabel}>
+                      <input
+                        type="checkbox"
+                        className={feedList.feedCheckbox}
+                        checked={showOnlyDEXFeedsTestnet}
+                        onChange={() => {
+                          setShowOnlyDEXFeedsTestnet((old) => !old)
+                          if (showOnlyDatalinkFeedsTestnet) setShowOnlyDatalinkFeedsTestnet(false)
+                          setTestnetCurrentPage("1")
+                        }}
+                      />
+                      Show DEX State Price streams
+                    </label>
+                    <label className={feedList.detailsLabel}>
+                      <input
+                        type="checkbox"
+                        className={feedList.feedCheckbox}
+                        checked={showOnlyDatalinkFeedsTestnet}
+                        onChange={() => {
+                          setShowOnlyDatalinkFeedsTestnet((old) => !old)
+                          if (showOnlyDEXFeedsTestnet) setShowOnlyDEXFeedsTestnet(false)
+                          setTestnetCurrentPage("1")
+                        }}
+                      />
+                      Show Datalink streams
+                    </label>
+                  </div>
+                )}
+                {dataFeedType === "streamsRwa" && (
+                  <>
+                    {!forceStreamCategoryFilter && !show24x5FeedsTestnet && (
+                      <>
+                        <FilterDropdown
+                          isOpen={openDropdownId === "test-schema"}
+                          onToggle={(isOpen) => handleDropdownToggle("test-schema", isOpen)}
+                          onClose={closeAllDropdowns}
+                          label="Filter schema"
+                          options={schemaFilterOptions}
+                          value={testnetRwaSchemaFilter}
+                          groupId="schema-testnet"
+                          onSelect={(next) => {
+                            setTestnetRwaSchemaFilter(next)
+                            setTestnetCurrentPage("1")
+                          }}
+                        />
+                        <FilterDropdown
+                          isOpen={openDropdownId === "test-feed-type"}
+                          onToggle={(isOpen) => handleDropdownToggle("test-feed-type", isOpen)}
+                          onClose={closeAllDropdowns}
+                          label="Filter category"
+                          options={feedTypeFilterOptions}
+                          value={testnetStreamCategoryFilter}
+                          groupId="feed-type-testnet"
+                          onSelect={(next) => {
+                            setTestnetStreamCategoryFilter(next)
+                            setTestnetCurrentPage("1")
+                          }}
+                        />
+                      </>
+                    )}
+                    {!force24x5Only && !forceStreamCategoryFilter && (
+                      <div className={feedList.checkboxContainer}>
+                        <label className={feedList.detailsLabel}>
+                          <input
+                            type="checkbox"
+                            className={feedList.feedCheckbox}
+                            checked={show24x5FeedsTestnet}
+                            onChange={() => {
+                              closeAllDropdowns()
+                              const newValue = !show24x5FeedsTestnet
+                              setShow24x5FeedsTestnet(newValue)
+                              if (newValue) {
+                                // Reset trading hours filter when enabling 24/5
+                                setTestnetTradingHoursFilter("all")
+                              }
+                              setTestnetCurrentPage("1")
+                            }}
+                          />
+                          Show only 24/5 Equity Streams
+                        </label>
+                      </div>
+                    )}
+                    {show24x5FeedsTestnet && (
+                      <FilterDropdown
+                        isOpen={openDropdownId === "test-trading-hours"}
+                        onToggle={(isOpen) => handleDropdownToggle("test-trading-hours", isOpen)}
+                        onClose={closeAllDropdowns}
+                        label="Time segment"
+                        options={tradingHoursFilterOptions}
+                        value={testnetTradingHoursFilter}
+                        groupId="trading-hours-testnet"
+                        onSelect={(next) => {
+                          setTestnetTradingHoursFilter(next)
+                          setTestnetCurrentPage("1")
+                        }}
+                      />
+                    )}
+                    {(testnetSearchValue ||
+                      testnetRwaSchemaFilter !== "all" ||
+                      (!forceStreamCategoryFilter && testnetStreamCategoryFilter !== "all") ||
+                      show24x5FeedsTestnet) && (
+                      <button
+                        type="button"
+                        className={clsx(button.secondary, feedList.clearFilterBtn)}
+                        onClick={() => {
+                          closeAllDropdowns()
+                          setTestnetSearchValue("")
+                          setTestnetRwaSchemaFilter("all")
+                          if (!forceStreamCategoryFilter) setTestnetStreamCategoryFilter("all")
+                          setShow24x5FeedsTestnet(false)
+                          setTestnetTradingHoursFilter("all")
+                          setTestnetCurrentPage("1")
+                          const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
+                          if (inputElement) {
+                            inputElement.value = ""
+                          }
+                        }}
+                        aria-label="Clear all filters"
+                      >
+                        Clear filter
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+              <form class={clsx(feedList.tableSearch, feedList.filterDropdown_search)}>
                 <input
                   id="testnetSearch"
                   class={feedList.filterDropdown_searchInput}
-                  placeholder="Search"
+                  placeholder="Search feeds"
+                  aria-label="Search feeds"
                   onFocus={closeAllDropdowns}
                   onInput={(event) => {
                     closeAllDropdowns()
@@ -1410,132 +1561,6 @@ export const FeedList = ({
                   }}
                 />
               </form>
-              {dataFeedType === "streamsCrypto" && (
-                <div className={feedList.checkboxContainer}>
-                  <label className={feedList.detailsLabel}>
-                    <input
-                      type="checkbox"
-                      style="width:15px;height:15px;display:inline;margin-right:8px;"
-                      checked={showOnlyDEXFeedsTestnet}
-                      onChange={() => {
-                        setShowOnlyDEXFeedsTestnet((old) => !old)
-                        if (showOnlyDatalinkFeedsTestnet) setShowOnlyDatalinkFeedsTestnet(false)
-                        setTestnetCurrentPage("1")
-                      }}
-                    />
-                    Show DEX State Price streams
-                  </label>
-                  <label className={feedList.detailsLabel}>
-                    <input
-                      type="checkbox"
-                      style="width:15px;height:15px;display:inline;margin-right:8px;"
-                      checked={showOnlyDatalinkFeedsTestnet}
-                      onChange={() => {
-                        setShowOnlyDatalinkFeedsTestnet((old) => !old)
-                        if (showOnlyDEXFeedsTestnet) setShowOnlyDEXFeedsTestnet(false)
-                        setTestnetCurrentPage("1")
-                      }}
-                    />
-                    Show Datalink streams
-                  </label>
-                </div>
-              )}
-              {dataFeedType === "streamsRwa" && (
-                <>
-                  {!forceStreamCategoryFilter && !show24x5FeedsTestnet && (
-                    <>
-                      <FilterDropdown
-                        isOpen={openDropdownId === "test-schema"}
-                        onToggle={(isOpen) => handleDropdownToggle("test-schema", isOpen)}
-                        onClose={closeAllDropdowns}
-                        label="Filter schema"
-                        options={schemaFilterOptions}
-                        value={testnetRwaSchemaFilter}
-                        groupId="schema-testnet"
-                        onSelect={(next) => {
-                          setTestnetRwaSchemaFilter(next)
-                          setTestnetCurrentPage("1")
-                        }}
-                      />
-                      <FilterDropdown
-                        isOpen={openDropdownId === "test-feed-type"}
-                        onToggle={(isOpen) => handleDropdownToggle("test-feed-type", isOpen)}
-                        onClose={closeAllDropdowns}
-                        label="Filter category"
-                        options={feedTypeFilterOptions}
-                        value={testnetStreamCategoryFilter}
-                        groupId="feed-type-testnet"
-                        onSelect={(next) => {
-                          setTestnetStreamCategoryFilter(next)
-                          setTestnetCurrentPage("1")
-                        }}
-                      />
-                    </>
-                  )}
-                  {!force24x5Only && !forceStreamCategoryFilter && (
-                    <div className={feedList.checkboxContainer}>
-                      <label className={feedList.detailsLabel}>
-                        <input
-                          type="checkbox"
-                          style="width:15px;height:15px;display:inline;margin-right:8px;"
-                          checked={show24x5FeedsTestnet}
-                          onChange={() => {
-                            closeAllDropdowns()
-                            const newValue = !show24x5FeedsTestnet
-                            setShow24x5FeedsTestnet(newValue)
-                            if (newValue) {
-                              // Reset trading hours filter when enabling 24/5
-                              setTestnetTradingHoursFilter("all")
-                            }
-                            setTestnetCurrentPage("1")
-                          }}
-                        />
-                        Show only 24/5 Equity Streams
-                      </label>
-                    </div>
-                  )}
-                  {show24x5FeedsTestnet && (
-                    <FilterDropdown
-                      isOpen={openDropdownId === "test-trading-hours"}
-                      onToggle={(isOpen) => handleDropdownToggle("test-trading-hours", isOpen)}
-                      onClose={closeAllDropdowns}
-                      label="Time segment"
-                      options={tradingHoursFilterOptions}
-                      value={testnetTradingHoursFilter}
-                      groupId="trading-hours-testnet"
-                      onSelect={(next) => {
-                        setTestnetTradingHoursFilter(next)
-                        setTestnetCurrentPage("1")
-                      }}
-                    />
-                  )}
-                  {(testnetSearchValue ||
-                    testnetRwaSchemaFilter !== "all" ||
-                    (!forceStreamCategoryFilter && testnetStreamCategoryFilter !== "all") ||
-                    show24x5FeedsTestnet) && (
-                    <button
-                      type="button"
-                      className={clsx(button.secondary, feedList.clearFilterBtn)}
-                      onClick={() => {
-                        closeAllDropdowns()
-                        setTestnetSearchValue("")
-                        setTestnetRwaSchemaFilter("all")
-                        if (!forceStreamCategoryFilter) setTestnetStreamCategoryFilter("all")
-                        setShow24x5FeedsTestnet(false)
-                        setTestnetTradingHoursFilter("all")
-                        setTestnetCurrentPage("1")
-                        const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
-                        if (inputElement) {
-                          inputElement.value = ""
-                        }
-                      }}
-                      aria-label="Clear all filters"
-                    >
-                      Clear filter
-                    </button>
-                  )}
-                </>
-              )}
             </div>
             {currentChainMetadata.loading || !currentChainMetadata.processedData ? (
               <p style="font-style: italic;">Loading...</p>
@@ -1612,30 +1637,22 @@ export const FeedList = ({
       {(() => {
         // Handle regular network processing
         return currentChainMetadata.processedData?.networks
-          ?.filter((network: { metadata: unknown[]; tags: string | string[]; networkType: string }) => {
-            if (isDeprecating) {
-              const foundDeprecated = networkHasVisibleFeeds(network, dataFeedType, ecosystem, {
-                tokenizedEquityProvider,
-              })
-              if (foundDeprecated && network.networkType === selectedNetworkType) {
-                netCount++
-              }
-              return foundDeprecated && network.networkType === selectedNetworkType
+          ?.filter((network: ChainNetwork) => {
+            const hasVisibleFeeds = networkHasVisibleFeeds(network, dataFeedType, ecosystem, {
+              tokenizedEquityProvider,
+            })
+
+            if (isDeprecating && hasVisibleFeeds && network.networkType === selectedNetworkType) {
+              netCount++
             }
 
-            if (isStreams) return network.tags?.includes("streams") && network.networkType === selectedNetworkType
-
-            if (isSmartData) return network.tags?.includes("smartData") && network.networkType === selectedNetworkType
-
-            if (isRates) return network.tags?.includes("rates") && network.networkType === selectedNetworkType
-
-            if (isUSGovernmentMacroeconomicData)
-              return (
-                network.tags?.includes("usGovernmentMacroeconomicData") && network.networkType === selectedNetworkType
-              )
-
-            // Filter by selected network type (mainnet/testnet)
-            return network.networkType === selectedNetworkType
+            return shouldRenderNetworkSection(
+              network,
+              dataFeedType,
+              selectedNetworkType,
+              isDeprecating,
+              hasVisibleFeeds
+            )
           })
           .map((network: ChainNetwork) => {
             return (
@@ -1703,125 +1720,134 @@ export const FeedList = ({
                         </>
                       )}
                       <div className={feedList.tableFilters}>
-                        {!isStreams && !isSmartData && (
-                          <details class={feedList.filterDropdown_details}>
-                            <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
-                              Data Feed Categories
-                            </summary>
-                            <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
-                              <ul>
-                                {dataFeedCategory.map((category) => (
-                                  <li>
-                                    <button onClick={() => handleCategorySelection(category.key)}>
-                                      <input
-                                        type="checkbox"
-                                        checked={selectedFeedCategories?.includes(category.key)}
-                                        readonly
-                                        style="cursor:pointer;"
-                                      />
-                                      <span> {category.name}</span>
-                                    </button>
-                                  </li>
-                                ))}
-                              </ul>
-                            </nav>
-                          </details>
-                        )}
-                        {isSmartData && (
-                          <details class={feedList.filterDropdown_details}>
-                            <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
-                              SmartData Type
-                            </summary>
-                            <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
-                              <ul>
-                                {smartDataTypes.map((category) => (
-                                  <li>
-                                    <button onClick={() => handleCategorySelection(category.key)}>
-                                      <input
-                                        type="checkbox"
-                                        checked={selectedFeedCategories?.includes(category.key)}
-                                        readonly
-                                        style="cursor:pointer;"
-                                      />
-                                      <span> {category.name}</span>
-                                    </button>
-                                  </li>
-                                ))}
-                              </ul>
-                            </nav>
-                          </details>
-                        )}
-                        <div className={feedList.searchAndCheckbox}>
-                          <form class={feedList.filterDropdown_search}>
-                            <input
-                              id="search"
-                              class={feedList.filterDropdown_searchInput}
-                              placeholder="Search"
-                              onFocus={closeAllDropdowns}
-                              onInput={(event) => {
-                                closeAllDropdowns()
-                                setSearchValue((event.target as HTMLInputElement).value)
-                                setCurrentPage("1")
-                              }}
-                            />
-                            {searchValue && (
-                              <button
-                                type="button"
-                                className={clsx(button.secondary, feedList.clearFilterBtn)}
-                                onClick={() => {
-                                  closeAllDropdowns()
-                                  setSearchValue("")
-                                  setCurrentPage("1")
-                                  const inputElement = document.getElementById("search") as HTMLInputElement
-                                  if (inputElement) {
-                                    inputElement.value = ""
-                                  }
-                                }}
-                                aria-label="Clear search filter"
-                              >
-                                Clear filter
-                              </button>
-                            )}
-                          </form>
+                        <div className={feedList.filterControls}>
+                          {!isStreams && !isSmartData && availableAssetTypes.length > 1 && (
+                            <details class={feedList.filterDropdown_details}>
+                              <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
+                                Asset Type
+                              </summary>
+                              <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
+                                <ul>
+                                  {availableAssetTypes.map((category) => (
+                                    <li>
+                                      <button onClick={() => handleCategorySelection(category.key)}>
+                                        <input
+                                          type="checkbox"
+                                          checked={selectedFeedCategories?.includes(category.key)}
+                                          readonly
+                                          style="cursor:pointer;"
+                                        />
+                                        <span> {category.name}</span>
+                                      </button>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </nav>
+                            </details>
+                          )}
+                          {isSmartData && (
+                            <details class={feedList.filterDropdown_details}>
+                              <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
+                                SmartData Type
+                              </summary>
+                              <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
+                                <ul>
+                                  {smartDataTypes.map((category) => (
+                                    <li>
+                                      <button onClick={() => handleCategorySelection(category.key)}>
+                                        <input
+                                          type="checkbox"
+                                          checked={selectedFeedCategories?.includes(category.key)}
+                                          readonly
+                                          style="cursor:pointer;"
+                                        />
+                                        <span> {category.name}</span>
+                                      </button>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </nav>
+                            </details>
+                          )}
                           {!isStreams && (
                             <label className={feedList.detailsLabel}>
                               <input
                                 type="checkbox"
-                                style="width:15px;height:15px;display:inline;margin-right:8px;"
+                                className={feedList.feedCheckbox}
                                 checked={showExtraDetails}
                                 onChange={() => setShowExtraDetails(!showExtraDetails)}
                               />
-                              Show more details
+                              More Details
                             </label>
                           )}
-                        </div>
-                        <div className={feedList.checkboxContainer}>
                           {!isStreams && isSmartData && (
                             <label className={feedList.detailsLabel}>
                               <input
                                 type="checkbox"
-                                style="width:15px;height:15px;display:inline;margin-right:8px;"
+                                className={feedList.feedCheckbox}
                                 checked={showOnlyMVRFeeds}
                                 onChange={() => {
                                   setShowOnlyMVRFeeds((old) => !old)
-                                  setCurrentPage("1") // Reset to first page when filter changes
+                                  setCurrentPage("1")
                                 }}
                               />
                               Show Multiple-Variable Response (MVR) feeds
                             </label>
                           )}
-                          {!isStreams && !isSmartData && !isUSGovernmentMacroeconomicData && (
-                            <label className={feedList.detailsLabel}>
-                              <input
-                                type="checkbox"
-                                style="width:15px;height:15px;display:inline;margin-right:8px;"
-                                checked={showOnlySVR}
-                                onChange={() => setShowOnlySVR(!showOnlySVR)}
-                              />
-                              Show Smart Value Recapture (SVR) feeds
-                            </label>
+                          {!isStreams && !isSmartData && !isUSGovernmentMacroeconomicData && chainHasSvr && (
+                            <span className={feedList.filterCheckboxGroup}>
+                              <label className={feedList.detailsLabel}>
+                                <input
+                                  type="checkbox"
+                                  className={feedList.feedCheckbox}
+                                  checked={showOnlySVR}
+                                  onChange={() => setShowOnlySVR(!showOnlySVR)}
+                                />
+                                Show Only SVR Feeds
+                              </label>
+                              <a
+                                href="/data-feeds/svr-feeds"
+                                className={feedList.filterHelpLink}
+                                title="Smart Value Recapture (SVR) feeds help protocols recapture value from oracle-related liquidations. Click to learn more."
+                                aria-label="Learn about SVR feeds"
+                              >
+                                ?
+                              </a>
+                            </span>
                           )}
                         </div>
+                        <form class={clsx(feedList.tableSearch, feedList.filterDropdown_search)}>
+                          <input
+                            id="search"
+                            class={feedList.filterDropdown_searchInput}
+                            placeholder="Search feeds"
+                            aria-label="Search feeds"
+                            onFocus={closeAllDropdowns}
+                            onInput={(event) => {
+                              closeAllDropdowns()
+                              setSearchValue((event.target as HTMLInputElement).value)
+                              setCurrentPage("1")
+                            }}
+                          />
+                          {searchValue && (
+                            <button
+                              type="button"
+                              className={clsx(button.secondary, feedList.clearFilterBtn)}
+                              onClick={() => {
+                                closeAllDropdowns()
+                                setSearchValue("")
+                                setCurrentPage("1")
+                                const inputElement = document.getElementById("search") as HTMLInputElement
+                                if (inputElement) {
+                                  inputElement.value = ""
+                                }
+                              }}
+                              aria-label="Clear search filter"
+                            >
+                              Clear filter
+                            </button>
+                          )}
+                        </form>
                       </div>
                       <MainnetTable
                         selectedFeedCategories={
@@ -1891,94 +1917,94 @@ export const FeedList = ({
                       )}
                       {!isStreams && (
                         <div className={feedList.tableFilters}>
-                          {isSmartData && (
-                            <details class={feedList.filterDropdown_details}>
-                              <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
-                                SmartData Type
-                              </summary>
-                              <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
-                                <ul>
-                                  {smartDataTypes.map((category) => (
-                                    <li>
-                                      <button onClick={() => handleCategorySelection(category.key)}>
-                                        <input
-                                          type="checkbox"
-                                          checked={selectedFeedCategories?.includes(category.key)}
-                                          readonly
-                                          style="cursor:pointer;"
-                                        />
-                                        <span> {category.name}</span>
-                                      </button>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </nav>
-                            </details>
-                          )}
-                          <div className={feedList.searchAndCheckbox}>
-                            <form class={feedList.filterDropdown_search}>
-                              <input
-                                id="testnetSearch"
-                                class={feedList.filterDropdown_searchInput}
-                                placeholder="Search"
-                                onInput={(event) => {
-                                  setTestnetSearchValue((event.target as HTMLInputElement).value)
-                                  setTestnetCurrentPage("1")
-                                }}
-                              />
-                              {testnetSearchValue && (
-                                <button
-                                  type="button"
-                                  className={clsx(button.secondary, feedList.clearFilterBtn)}
-                                  onClick={() => {
-                                    setTestnetSearchValue("")
-                                    setTestnetCurrentPage("1")
-                                    const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
-                                    if (inputElement) {
-                                      inputElement.value = ""
-                                    }
-                                  }}
-                                  aria-label="Clear search filter"
-                                >
-                                  Clear filter
-                                </button>
-                              )}
-                            </form>
+                          <div className={feedList.filterControls}>
+                            {isSmartData && (
+                              <details class={feedList.filterDropdown_details}>
+                                <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
+                                  SmartData Type
+                                </summary>
+                                <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
+                                  <ul>
+                                    {smartDataTypes.map((category) => (
+                                      <li>
+                                        <button onClick={() => handleCategorySelection(category.key)}>
+                                          <input
+                                            type="checkbox"
+                                            checked={selectedFeedCategories?.includes(category.key)}
+                                            readonly
+                                            style="cursor:pointer;"
+                                          />
+                                          <span> {category.name}</span>
+                                        </button>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </nav>
+                              </details>
+                            )}
                             <label className={feedList.detailsLabel}>
                               <input
                                 type="checkbox"
-                                style="width:15px;height:15px;display:inline;margin-right:8px;"
+                                className={feedList.feedCheckbox}
                                 checked={showExtraDetails}
                                 onChange={() => setShowExtraDetails(!showExtraDetails)}
                               />
-                              Show more details
+                              More Details
                             </label>
-                          </div>
-                          <div className={feedList.checkboxContainer}>
                             {!isStreams && isSmartData && (
                               <label className={feedList.detailsLabel}>
                                 <input
                                   type="checkbox"
-                                  style="width:15px;height:15px;display:inline;margin-right:8px;"
+                                  className={feedList.feedCheckbox}
                                   checked={showOnlyMVRFeedsTestnet}
                                   onChange={() => {
                                     setShowOnlyMVRFeedsTestnet((old) => !old)
-                                    setTestnetCurrentPage("1") // Reset to first page when filter changes
+                                    setTestnetCurrentPage("1")
                                   }}
                                 />
                                 Show Multiple-Variable Response (MVR) feeds
                               </label>
                             )}
                           </div>
+                          <form class={clsx(feedList.tableSearch, feedList.filterDropdown_search)}>
+                            <input
+                              id="testnetSearch"
+                              class={feedList.filterDropdown_searchInput}
+                              placeholder="Search feeds"
+                              aria-label="Search feeds"
+                              onInput={(event) => {
+                                setTestnetSearchValue((event.target as HTMLInputElement).value)
+                                setTestnetCurrentPage("1")
+                              }}
+                            />
+                            {testnetSearchValue && (
+                              <button
+                                type="button"
+                                className={clsx(button.secondary, feedList.clearFilterBtn)}
+                                onClick={() => {
+                                  setTestnetSearchValue("")
+                                  setTestnetCurrentPage("1")
+                                  const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
+                                  if (inputElement) {
+                                    inputElement.value = ""
+                                  }
+                                }}
+                                aria-label="Clear search filter"
+                              >
+                                Clear filter
+                              </button>
+                            )}
+                          </form>
                         </div>
                       )}
                       {isStreams && (
                         <div className={feedList.tableFilters}>
-                          <form class={feedList.filterDropdown_search}>
+                          <form class={clsx(feedList.tableSearch, feedList.filterDropdown_search)}>
                             <input
                               id="testnetSearch"
                               class={feedList.filterDropdown_searchInput}
-                              placeholder="Search"
+                              placeholder="Search feeds"
+                              aria-label="Search feeds"
                               onInput={(event) => {
                                 setTestnetSearchValue((event.target as HTMLInputElement).value)
                                 setTestnetCurrentPage("1")

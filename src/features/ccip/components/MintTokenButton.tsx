@@ -2,28 +2,15 @@
 import button from "@chainlink/design-system/button.module.css"
 import walletStyles from "./WalletConnection.module.css"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { NetworkDropdown } from "./NetworkDropdown.tsx"
-import { useMetaMaskProvider } from "@hooks/useEIP6963Providers.tsx"
+import { useWalletSelector } from "@hooks/useEIP6963Providers.tsx"
 import { useWalletConnectionStorage } from "@hooks/useLocalStorage.ts"
 import { EIP1193Provider } from "../../utils/EIP1193Interface.ts"
 import { Toast } from "./Toast.tsx"
 import { WalletErrorBoundary } from "../../../components/ErrorBoundary.tsx"
 import { WalletSetupGate } from "./WalletSetupGate.tsx"
 import "./container.css"
-
-interface Caveat {
-  type: string
-  value: string[]
-}
-
-interface RequestPermissions {
-  caveats: Caveat[]
-  date: number
-  id: string
-  invoker: string
-  parentCapability: string
-}
 
 interface ConnectInfo {
   chainId: string
@@ -32,6 +19,19 @@ interface ConnectInfo {
 interface DisconnectError {
   code?: number
   message?: string
+}
+
+function getProviderErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) return error.message
+  if (error && typeof error === "object" && "message" in error)
+    return String((error as { message?: unknown }).message ?? "")
+  return "Unknown error"
+}
+
+function getProviderErrorCode(error: unknown): number | string | undefined {
+  if (error && typeof error === "object" && "code" in error)
+    return (error as { code?: unknown }).code as number | string
+  return undefined
 }
 
 export const MintTokenButton = () => {
@@ -50,69 +50,81 @@ export const MintTokenButton = () => {
   const [showToast, setShowToast] = useState<boolean>(false)
   const [walletCheckCount, setWalletCheckCount] = useState<number>(0)
 
-  // ✅ Use EIP-6963 to get MetaMask specifically
-  const metaMaskProvider = useMetaMaskProvider()
+  const { walletOptions } = useWalletSelector()
+  const [selectedWalletUuid, setSelectedWalletUuid] = useState<string | null>(null)
   const { saveConnectionState } = useWalletConnectionStorage()
+  const providerSessionIdRef = useRef(0)
+
+  const evmWalletOptions = useMemo(() => {
+    // Temporarily exclude Phantom from the EVM faucet wallet picker.
+    return walletOptions.filter((w) => !w.isPhantom)
+  }, [walletOptions])
 
   useEffect(() => {
-    if (!metaMaskProvider) return
+    if (!selectedWalletUuid) return
+    if (evmWalletOptions.some((w) => w.uuid === selectedWalletUuid)) return
+    setSelectedWalletUuid(null)
+  }, [evmWalletOptions, selectedWalletUuid])
 
-    // ✅ Listen to events on the selected MetaMask provider
-    const handleAccountsChanged = (accounts: string[]) => {
-      console.log("🔄 MetaMask account changed:", {
-        previousAddress: userAddress,
-        newAccounts: accounts,
-        connected: accounts.length > 0,
-        newAddress: accounts.length > 0 ? accounts[0] : "disconnected",
-      })
+  const selectedWallet = useMemo(() => {
+    if (evmWalletOptions.length === 0) return null
+    return selectedWalletUuid ? (evmWalletOptions.find((w) => w.uuid === selectedWalletUuid) ?? null) : null
+  }, [evmWalletOptions, selectedWalletUuid])
 
-      setIsWalletConnected(accounts.length > 0)
-      setUserAddress(accounts.length > 0 ? accounts[0] : "")
+  const selectedProvider = selectedWallet?.provider ?? null
 
-      if (accounts.length === 0) {
-        console.log("🔌 MetaMask disconnected")
-      } else if (accounts[0] !== userAddress) {
-        console.log("👤 MetaMask account switched:", accounts[0])
-      }
+  useEffect(() => {
+    // Any time the selected provider changes (or is cleared), invalidate in-flight async work.
+    providerSessionIdRef.current += 1
+    const sessionId = providerSessionIdRef.current
+
+    if (!selectedProvider) {
+      setIsWalletConnected(false)
+      setUserAddress("")
+      return
     }
 
-    // ✅ Also listen for connection/disconnection events
+    // Listen to events on the selected EIP-1193 provider
+    const handleAccountsChanged = (accounts: string[]) => {
+      const nextAddress = accounts && accounts.length > 0 ? accounts[0] : ""
+      setIsWalletConnected(nextAddress !== "")
+      setUserAddress(nextAddress)
+    }
+
     const handleConnect = (connectInfo: ConnectInfo) => {
-      console.log("🔗 MetaMask connected:", connectInfo)
+      console.log("🔗 Wallet connected:", connectInfo)
     }
 
     const handleDisconnect = (error: DisconnectError) => {
-      console.log("🔌 MetaMask disconnected:", error)
+      console.log("🔌 Wallet disconnected:", error)
       setIsWalletConnected(false)
       setUserAddress("")
     }
 
-    metaMaskProvider.on("accountsChanged", handleAccountsChanged)
-    metaMaskProvider.on("connect", handleConnect)
-    metaMaskProvider.on("disconnect", handleDisconnect)
+    selectedProvider.on("accountsChanged", handleAccountsChanged)
+    selectedProvider.on("connect", handleConnect)
+    selectedProvider.on("disconnect", handleDisconnect)
 
     const getAccount = async () => {
-      if (!metaMaskProvider) {
-        setIsWalletConnected(false)
-        setUserAddress("")
-        return
-      }
-
       try {
-        const accounts = await metaMaskProvider.request<string[]>({
+        const accounts = await selectedProvider.request<string[]>({
           method: "eth_accounts",
         })
+
+        if (providerSessionIdRef.current !== sessionId) return
 
         if (accounts && accounts.length > 0) {
           setUserAddress(accounts[0])
           setIsWalletConnected(true)
-          console.log("MetaMask account connected:", accounts[0])
+          const chainHexId = await selectedProvider.request<string>({ method: "eth_chainId" })
+          if (providerSessionIdRef.current !== sessionId) return
+          saveConnectionState(accounts[0], chainHexId)
         } else {
           setIsWalletConnected(false)
           setUserAddress("")
         }
       } catch (error) {
-        console.log("Failed to get MetaMask accounts:", error)
+        if (providerSessionIdRef.current !== sessionId) return
         setIsWalletConnected(false)
         setUserAddress("")
       }
@@ -121,11 +133,11 @@ export const MintTokenButton = () => {
 
     // ✅ Cleanup all event listeners
     return () => {
-      metaMaskProvider.removeListener?.("accountsChanged", handleAccountsChanged)
-      metaMaskProvider.removeListener?.("connect", handleConnect)
-      metaMaskProvider.removeListener?.("disconnect", handleDisconnect)
+      selectedProvider.removeListener?.("accountsChanged", handleAccountsChanged)
+      selectedProvider.removeListener?.("connect", handleConnect)
+      selectedProvider.removeListener?.("disconnect", handleDisconnect)
     }
-  }, [metaMaskProvider, userAddress])
+  }, [saveConnectionState, selectedProvider])
 
   // Add wallet detection refresh effect
   useEffect(() => {
@@ -151,63 +163,56 @@ export const MintTokenButton = () => {
   }
 
   const connectToWallet = async () => {
-    // ✅ Use EIP-6963 discovered MetaMask provider
-    if (!metaMaskProvider) {
-      showToastMessage("MetaMask not found. Please install MetaMask extension for EVM token minting.")
+    if (!selectedProvider) {
+      showToastMessage("No injected EVM wallet found. Please install a browser wallet extension to continue.")
       return
     }
 
-    validateEthApi(metaMaskProvider)
-    const accountPermissions = await requestPermissions(metaMaskProvider)
-    if (!accountPermissions) {
-      throw Error("Something went wrong when connecting MetaMask wallet. Please follow the steps in the popup page.")
-    }
-    const addressList = await metaMaskProvider
-      .request<string[]>({
+    // Invalidate any in-flight eth_accounts read so it can't overwrite a successful connect.
+    providerSessionIdRef.current += 1
+    const sessionId = providerSessionIdRef.current
+
+    try {
+      validateEthApi(selectedProvider)
+      const addressList = await selectedProvider.request<string[]>({
         method: "eth_requestAccounts",
       })
-      .catch((error: Error) => {
-        showToastMessage(`Something went wrong: ${error.message}`)
-      })
-    const currentChainId = await metaMaskProvider.request<string>({ method: "eth_chainId" }).catch((error: Error) => {
-      showToastMessage(`Something went wrong: ${error.message}`)
-    })
-    if (addressList) {
-      setUserAddress(addressList[0])
-      saveConnectionState(addressList[0], currentChainId as string)
-    }
-  }
+      const currentChainId = await selectedProvider.request<string>({ method: "eth_chainId" })
 
-  const requestPermissions = async (provider: EIP1193Provider) => {
-    let accountsPermission: RequestPermissions | undefined
-    await provider
-      .request<RequestPermissions[]>({
-        method: "wallet_requestPermissions",
-        params: [{ eth_accounts: {} }],
-      })
-      .then((permissions) => {
-        accountsPermission = permissions.find(
-          (permission: RequestPermissions) => permission.parentCapability === "eth_accounts"
-        )
-      })
-      .catch((error) => {
-        if (error.code === 4001) {
-          // EIP-1193 userRejectedRequest error
-          console.log("Permissions needed to continue.")
-        } else {
-          console.error(error)
-        }
-      })
-    return accountsPermission
+      if (providerSessionIdRef.current !== sessionId) return
+
+      const address = addressList && addressList.length > 0 ? addressList[0] : ""
+      if (!address) {
+        showToastMessage("No accounts returned by wallet. Please check your wallet and try again.")
+        return
+      }
+
+      setUserAddress(address)
+      setIsWalletConnected(true)
+      saveConnectionState(address, currentChainId)
+    } catch (error) {
+      if (providerSessionIdRef.current !== sessionId) return
+      const code = getProviderErrorCode(error)
+      if (code === 4001 || code === "4001") {
+        showToastMessage("Connection request rejected in wallet.")
+        return
+      }
+      showToastMessage(`Something went wrong: ${getProviderErrorMessage(error)}`)
+    }
   }
 
   return (
     <WalletErrorBoundary>
       <WalletSetupGate
-        hasWallet={!!metaMaskProvider}
-        walletName="MetaMask Wallet"
-        suggestedWallets={["MetaMask"]}
+        hasWallet={evmWalletOptions.length > 0}
+        walletName="Injected EVM wallet"
+        suggestedWallets={["Rabby", "MetaMask"]}
         installLinks={[
+          {
+            name: "Rabby",
+            url: "https://rabby.io/",
+            description: "Browser extension",
+          },
           {
             name: "MetaMask",
             url: "https://metamask.io/download/",
@@ -222,6 +227,34 @@ export const MintTokenButton = () => {
         }}
       >
         <div className="mint-component">
+          {evmWalletOptions.length > 0 && (
+            <div className={walletStyles.walletPickerContainer}>
+              <p className={walletStyles.walletPickerLabel}>Select a wallet:</p>
+              <div className={walletStyles.walletPickerOptions} role="group" aria-label="Select a wallet">
+                {evmWalletOptions.map((wallet) => {
+                  const isSelected = wallet.uuid === selectedWallet?.uuid
+                  return (
+                    <button
+                      key={wallet.uuid}
+                      type="button"
+                      className={`${button.secondary} ${walletStyles.walletOptionButton} ${
+                        isSelected ? walletStyles.walletOptionButtonSelected : ""
+                      }`}
+                      aria-pressed={isSelected}
+                      onClick={() => {
+                        setSelectedWalletUuid(wallet.uuid)
+                      }}
+                    >
+                      {wallet.icon && (
+                        <img src={wallet.icon} alt="" className={walletStyles.walletOptionIcon} aria-hidden="true" />
+                      )}
+                      <span>{wallet.name}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
           {!isWalletConnected && (
             <div className={walletStyles.connectionContainer}>
               <p className={walletStyles.connectionMessage}>Connect your browser wallet to get started:</p>
@@ -229,23 +262,20 @@ export const MintTokenButton = () => {
                 <button
                   className={`${button.primary} ${walletStyles.connectButton}`}
                   onClick={connectToWallet}
-                  aria-label="Connect MetaMask wallet to mint CCIP test tokens"
+                  disabled={!selectedProvider}
+                  aria-label="Connect wallet to mint CCIP test tokens"
                 >
                   <img
                     src="https://smartcontract.imgix.net/icons/wallet_filled.svg?auto=compress%2Cformat"
                     alt=""
                     className={walletStyles.walletIcon}
                   />
-                  Connect Wallet
+                  Connect Wallet{selectedWallet?.name ? ` (${selectedWallet.name})` : ""}
                 </button>
               </div>
             </div>
           )}
-          {userAddress && (
-            <>
-              <NetworkDropdown userAddress={userAddress} />
-            </>
-          )}
+          {userAddress && selectedProvider && <NetworkDropdown userAddress={userAddress} provider={selectedProvider} />}
           {showToast && <Toast message={toastMessage} onClose={closeToast} />}
         </div>
       </WalletSetupGate>

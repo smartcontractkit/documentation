@@ -33,6 +33,17 @@ export const getEthereumChainParameter = (chainId: string) => {
     throw new Error(`Chain with chainId '${chainId}' not found in reference data`)
   }
 
+  const rpcUrls = (Array.isArray(chain.rpc) ? chain.rpc : [])
+    .filter((url: unknown): url is string => typeof url === "string")
+    .filter((url) => url.startsWith("https://"))
+    // Drop placeholder endpoints like https://.../${INFURA_API_KEY}
+    .filter((url) => !url.includes("$"))
+    .slice(0, 3)
+
+  if (rpcUrls.length === 0) {
+    throw new Error(`No valid https rpcUrls found for chainId '${chainId}'`)
+  }
+
   const params: AddEthereumChainParameter = {
     chainId,
     chainName: chain.name,
@@ -42,7 +53,7 @@ export const getEthereumChainParameter = (chainId: string) => {
         ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
           chain.explorers.map((explorer: any) => explorer.url)
         : [chain.infoURL],
-    rpcUrls: chain.rpc,
+    rpcUrls,
   }
   return params
 }

@@ -1,3 +1,8 @@
+import {
+  getMarketPricingRiskTerms,
+  tierAnchor,
+  type MarketPricingRiskProduct,
+} from "../features/feeds/content/marketPricingRiskTerms.ts"
 import { supabase } from "./supabase.js"
 
 /* ===========================
@@ -26,62 +31,101 @@ export type FeedTierResult = { final: string | null }
 export const FEED_CATEGORY_CONFIG = {
   low: {
     key: "low",
-    name: "Low Market Risk",
+    name: "Low Market Pricing Risk",
     icon: "🟢",
-    title: "Low Market Risk - Feeds that deliver a market price for liquid assets with robust market structure.",
-    link: "/data-feeds/selecting-data-feeds#-low-market-risk-feeds",
+    title:
+      "Low Market Pricing Risk - Feeds that follow a standardized workflow to report market prices for liquid assets with robust market structure.",
+    link: "/data-feeds/selecting-data-feeds#-low-market-pricing-risk-feeds",
   },
   medium: {
     key: "medium",
-    name: "Medium Market Risk",
+    name: "Medium Market Pricing Risk",
     icon: "🟡",
     title:
-      "Medium Market Risk - Feeds that deliver a market price for assets that show signs of liquidity-related risk or other market structure-related risk.",
-    link: "/data-feeds/selecting-data-feeds#-medium-market-risk-feeds",
+      "Medium Market Pricing Risk - Feeds that report market prices for asset pairs that may have features making them more challenging to reliably price, or potentially subject them to volatility.",
+    link: "/data-feeds/selecting-data-feeds#-medium-market-pricing-risk-feeds",
   },
   high: {
     key: "high",
-    name: "High Market Risk",
+    name: "High Market Pricing Risk",
     icon: "🟠",
     title:
-      "High Market Risk - Feeds that deliver a heightened degree of some of the risk factors associated with Medium Market Risk Feeds, or a separate risk that makes the market price subject to uncertainty or volatile. In using a high market risk data feed you acknowledge that you understand the risks associated with such a feed and that you are solely responsible for monitoring and mitigating such risks.",
-    link: "/data-feeds/selecting-data-feeds#-high-market-risk-feeds",
+      "High Market Pricing Risk - Feeds for pairs that often exhibit a heightened degree of Medium Market Pricing Risk factors, or separate risks that make the market price subject to uncertainty or volatility.",
+    link: "/data-feeds/selecting-data-feeds#-high-market-pricing-risk-feeds",
   },
   veryhigh: {
     key: "veryhigh",
-    name: "Very High Market Risk",
+    name: "Very High Market Pricing Risk",
     icon: "🔴",
     title:
-      "Very High Market Risk - Feeds with significant risk factors that require careful consideration. Users must thoroughly evaluate and understand all associated risks before use.",
-    link: "/data-feeds/selecting-data-feeds#-very-high-market-risk-feeds",
+      "Very High Market Pricing Risk - Feeds that price assets with quotes subject to extreme levels of risk, greater than those outlined for High Market Pricing Risk feeds.",
+    link: "/data-feeds/selecting-data-feeds#-very-high-market-pricing-risk-feeds",
   },
   new: {
     key: "new",
-    name: "New Token",
+    name: "New Token Feeds",
     icon: "🆕",
     title:
-      "New Token - Tokens without the historical data required to implement a risk assessment framework may be launched in this category. Users must understand the additional market and volatility risks inherent with such assets. Users of New Token Feeds are responsible for independently verifying the liquidity and stability of the assets priced by feeds that they use.",
+      "New Token Feeds - Tokens without the historical data required to implement a risk assessment framework may be launched in this category. Users must understand the additional market and volatility risks inherent with such assets.",
     link: "/data-feeds/selecting-data-feeds#-new-token-feeds",
   },
   custom: {
     key: "custom",
-    name: "Custom",
+    name: "Custom Feeds",
     icon: "🔵",
     title:
-      "Custom - Feeds built to serve a specific use case or rely on external contracts or data sources. These might not be suitable for general use or your use case's risk parameters. Users must evaluate the properties of a feed to make sure it aligns with their intended use case.",
+      "Custom Feeds - Feeds built to serve a specific use case and might not be suitable for general use or your use case's risk parameters.",
     link: "/data-feeds/selecting-data-feeds#-custom-feeds",
   },
   deprecating: {
     key: "deprecating",
     name: "Deprecating",
     icon: "⭕",
-    title:
-      "Deprecating - These feeds are scheduled for deprecation. See the [Deprecation](/data-feeds/deprecating-feeds) page to learn more.",
-    link: "/data-feeds/deprecating-feeds",
+    title: "Deprecating - These feeds are scheduled for deprecation.",
+    link: "/data-feeds/selecting-data-feeds#-deprecating",
   },
 } as const
 
 export type CategoryKey = keyof typeof FEED_CATEGORY_CONFIG
+
+const TIER_ANCHOR_KEY: Record<CategoryKey, string> = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+  veryhigh: "very-high",
+  new: "new-token",
+  custom: "custom",
+  deprecating: "deprecating",
+}
+
+const RISK_DOC_BASE_PATH: Record<MarketPricingRiskProduct, string> = {
+  feeds: "/data-feeds/selecting-data-feeds",
+  streams: "/data-streams/selecting-data-streams",
+}
+
+export function getRiskCategoryLink(key: CategoryKey, product: MarketPricingRiskProduct = "feeds"): string {
+  const base = RISK_DOC_BASE_PATH[product]
+
+  if (key === "deprecating") {
+    return `${base}#-deprecating`
+  }
+
+  return `${base}${tierAnchor(TIER_ANCHOR_KEY[key], getMarketPricingRiskTerms(product))}`
+}
+
+export function getRiskCategoryTitle(key: CategoryKey, product: MarketPricingRiskProduct = "feeds"): string {
+  const title = FEED_CATEGORY_CONFIG[key].title
+
+  if (product === "feeds") {
+    return title
+  }
+
+  return title
+    .replace(/\bFeeds\b/g, "Streams")
+    .replace(/\bFeed\b/g, "Stream")
+    .replace(/\bfeed\b/g, "stream")
+    .replace(/\bfeeds\b/g, "streams")
+}
 
 /* ===========================
    Small helpers
@@ -103,11 +147,21 @@ const resolveRiskStatus = (
   shutdownDate?: string,
   fallbackCategory?: string
 ): string | null => {
-  if (dbTier != null) return dbTier
+  // Deprecating feeds always show the deprecating icon, even when a DB risk tier exists.
   if (shutdownDate) return "deprecating"
+  if (dbTier != null) return dbTier
   if (fallbackCategory && FALLBACK_ONLY_CATEGORIES.has(fallbackCategory.toLowerCase()))
     return fallbackCategory.toLowerCase()
   return null
+}
+
+/** Client-side helper for resolving the displayed feed category. */
+export function resolveFeedCategory(
+  dbTier: string | null | undefined,
+  shutdownDate?: string,
+  fallbackCategory?: string
+): string | null {
+  return resolveRiskStatus(dbTier, shutdownDate, fallbackCategory)
 }
 
 const defaultCategoryList = () => Object.values(FEED_CATEGORY_CONFIG).map(({ key, name }) => ({ key, name }))
@@ -148,7 +202,8 @@ export async function getFeedCategories() {
 
 /**
  * Batch lookup: returns a Map of `${address}-${network}` → { final }.
- * Uses DB risk_status when present. If absent, infers "deprecating" from shutdownDate.
+ * Uses DB risk_status when present, unless the feed has a shutdownDate (deprecating).
+ * If absent, infers "deprecating" from shutdownDate.
  * Returns null when neither is available.
  */
 export async function getFeedRiskTiersBatch(feedRequests: FeedRequest[]): Promise<Map<string, FeedTierResult>> {

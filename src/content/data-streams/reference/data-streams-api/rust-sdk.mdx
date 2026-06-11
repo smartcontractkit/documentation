@@ -149,11 +149,27 @@ Security best practices:
 
 ### High Availability Mode
 
+The Data Streams SDK supports High Availability mode for WebSocket connections. When enabled with `WebSocketHighAvailability::Enabled`, the SDK maintains concurrent connections to different instances to ensure high availability, fault tolerance, and minimize the risk of report gaps.
+
+#### HA Mode Behavior
+
+When high availability mode is enabled:
+
+- The client queries the server for available origins using the `X-Cll-Available-Origins` header
+- Multiple WebSocket connections are established to different server instances
+- Reports are deduplicated when received across connections
+- Partial reconnects occur when some connections fail while others remain active
+- Full reconnects occur when all connections fail
+
+#### HA Configuration
+
+Pass a single WebSocket URL. When HA mode is enabled, the SDK discovers additional origin endpoints behind that URL and opens a connection to each origin.
+
 ```rust
 use chainlink_data_streams_sdk::config::{Config, WebSocketHighAvailability};
 
-let ws_urls = "wss://ws1.dataengine.chain.link,wss://ws2.dataengine.chain.link";
-let config = Config::new(api_key, api_secret, rest_url, ws_urls)
+let ws_url = "wss://ws.dataengine.chain.link";
+let config = Config::new(api_key, api_secret, rest_url, ws_url)
     // Enable WebSocket HA mode
     .with_ws_ha(WebSocketHighAvailability::Enabled)
     // Increase the max reconnection attempts (optional, default is 5)
@@ -161,7 +177,9 @@ let config = Config::new(api_key, api_secret, rest_url, ws_urls)
     .build()?;
 ```
 
-- Multiple WebSocket endpoints
+**Note:** High Availability mode is only available on mainnet endpoints, not testnet.
+
+- Automatic origin discovery from a single WebSocket URL
 - Automatic failover on connection loss
 - Parallel connections to reduce gaps in data
 
@@ -170,7 +188,7 @@ let config = Config::new(api_key, api_secret, rest_url, ws_urls)
 The SDK allows you to:
 
 - Set `ws_max_reconnect`: The maximum number of reconnection attempts (default: 5)
-- Enable HA for multiple WebSocket endpoints
+- Enable HA for automatic multi-origin WebSocket connections
 - Optional `insecure_skip_verify` for TLS
 
 Example:
@@ -178,9 +196,9 @@ Example:
 ```rust
 use chainlink_data_streams_sdk::config::{Config, InsecureSkipVerify, WebSocketHighAvailability};
 
-let ws_urls = "wss://ws.testnet-dataengine.chain.link";
+let ws_url = "wss://ws.testnet-dataengine.chain.link";
 
-let config = Config::new(api_key, api_secret, rest_url, ws_urls)
+let config = Config::new(api_key, api_secret, rest_url, ws_url)
     .with_ws_ha(WebSocketHighAvailability::Enabled)
     .with_ws_max_reconnect(5)
     .with_insecure_skip_verify(InsecureSkipVerify::Enabled)
@@ -232,7 +250,7 @@ The [SDK repository](https://github.com/smartcontractkit/data-streams-sdk/blob/m
 - Fetching a single report, bulk reports, or paginated reports
 - Compressing report data
 - Simple WebSocket streaming
-- Multiple WebSocket endpoints (HA)
+- WebSocket streaming with HA mode
 
 ## Performance Considerations
 
@@ -268,14 +286,14 @@ pub struct ConfigBuilder {
 
 - Purpose: Enables or disables HA mode for WebSocket streaming.
 - Values:
-  - `WebSocketHighAvailability::Enabled`: Maintains multiple WebSocket connections to different endpoints simultaneously.
+  - `WebSocketHighAvailability::Enabled`: Discovers available origins from the configured WebSocket URL and maintains multiple connections simultaneously.
   - `WebSocketHighAvailability::Disabled`: Maintains a single connection.
 - Default: `Disabled`.
 - Example Use Case:
 
   ```rust
-  // When you want uninterrupted streaming even if one server goes down:
-  let config = Config::new(api_key, api_secret, rest_url, "wss://ws1,...,wss://wsN")
+  // When you want uninterrupted streaming even if one origin goes down:
+  let config = Config::new(api_key, api_secret, rest_url, "wss://ws.dataengine.chain.link")
       .with_ws_ha(WebSocketHighAvailability::Enabled)
       .build()?;
   ```
