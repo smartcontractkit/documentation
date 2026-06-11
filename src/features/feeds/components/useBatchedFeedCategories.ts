@@ -30,6 +30,7 @@ export type FeedCategoryData = {
 type BatchedFeedCategoriesState = {
   data: Map<string, FeedCategoryData>
   isLoading: boolean
+  isReady: boolean
   error: string | null
 }
 
@@ -41,23 +42,24 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
   const [state, setState] = useState<BatchedFeedCategoriesState>({
     data: new Map(),
     isLoading: false,
+    isReady: false,
     error: null,
   })
 
   useEffect(() => {
     if (!network || !network.metadata) {
-      setState({ data: new Map(), isLoading: false, error: null })
+      setState({ data: new Map(), isLoading: false, isReady: true, error: null })
       return
     }
 
     // Only load batch data for mainnet networks
     if (network.networkType !== "mainnet") {
-      setState({ data: new Map(), isLoading: false, error: null })
+      setState({ data: new Map(), isLoading: false, isReady: true, error: null })
       return
     }
 
     const loadBatchedCategories = async () => {
-      setState((prev) => ({ ...prev, isLoading: true, error: null }))
+      setState((prev) => ({ ...prev, isLoading: true, isReady: false, error: null }))
 
       const networkKey = getNetworkIdentifier(network)
 
@@ -89,7 +91,7 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
         })
 
         if (feedRequests.length === 0) {
-          setState({ data: new Map(), isLoading: false, error: null })
+          setState({ data: new Map(), isLoading: false, isReady: true, error: null })
           return
         }
         // Batched DB lookup (returns Map<key, { final }>)
@@ -98,12 +100,14 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
         setState({
           data: batchResults,
           isLoading: false,
+          isReady: true,
           error: null,
         })
       } catch (error) {
         setState((prev) => ({
           ...prev,
           isLoading: false,
+          isReady: true,
           error: error instanceof Error ? error.message : "Unknown error occurred",
         }))
       }
