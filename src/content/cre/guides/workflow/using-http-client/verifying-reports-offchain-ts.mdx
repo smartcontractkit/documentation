@@ -12,16 +12,16 @@ metadata:
 
 import { Aside } from "@components"
 
-This guide is for the **receiver** side: you already received a CRE report package (usually via HTTP) and need to **prove it is authentic** before using the payload.
+This guide is for the **receiver** side: you already received a CRE report package — typically via HTTP from a [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts) sender workflow — and need to **prove it is authentic** before using the payload.
 
 When a workflow delivers results via HTTP (or another offchain channel), nothing onchain automatically validates the report. **You must verify signatures before trusting the data.**
 
 There are two ways to verify, depending on who receives the POST:
 
-| My receiver is...                                            | Use                                                                                                                                                                                                                    |
-| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **My own API or server** (Express, FastAPI, Go server, etc.) | [Verifying outside CRE](#verifying-outside-cre) — standard crypto libraries, no CRE SDK needed                                                                                                                         |
-| **A CRE workflow** with an HTTP trigger                      | [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) — see [Testing locally with simulation](#testing-locally-with-simulation) and the [deploy example](#complete-example-http-receiver-workflow-deploy) |
+| My receiver is...                                            | Use                                                                                                                      |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| **My own API or server** (Express, FastAPI, Go server, etc.) | [Verifying outside CRE](#verifying-outside-cre) — standard crypto libraries, no CRE SDK needed                           |
+| **A CRE workflow** with an HTTP trigger                      | [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) — see [CRE receiver workflow](#cre-receiver-workflow) |
 
 Both paths run the same cryptographic checks against the same onchain Capability Registry. The difference is whether you use the CRE SDK's helper (which requires `runtime`) or implement it yourself with standard libraries.
 
@@ -48,8 +48,8 @@ See [Key Terms: Report](/cre/key-terms#report-cre-report) for how reports are cr
 
 ## Prerequisites
 
-- **SDK**: `@chainlink/cre-sdk` v1.8.0 or later (report verification support)
-- Familiarity with [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts) (report structure and JSON payload patterns)
+- **A report payload to verify** — three hex fields: `report`, `context`, `signatures`. If you don't have one yet, follow [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts) to create a sender workflow and capture its output first.
+- **SDK**: `@chainlink/cre-sdk` v1.8.0 or later (for the CRE receiver workflow path)
 - For HTTP-triggered receivers: [HTTP Trigger configuration](/cre/guides/workflow/using-triggers/http-trigger/configuration-ts)
 
 ## Onchain vs offchain verification
@@ -70,6 +70,8 @@ Default (`productionEnvironment()`):
 
 ## How verification works
 
+At its core, verification answers one question: did enough authorized nodes from the right DON sign this exact report? To answer it, the receiver decodes the report's metadata header to find which DON produced it, asks the onchain Capability Registry for that DON's authorized signers and quorum threshold (`f`), then checks that at least `f+1` of the provided signatures come from those addresses. Both paths in this guide — the outside-CRE script and the CRE receiver workflow — run this same sequence:
+
 1. **Parse the report header** from `rawReport` (109-byte metadata + body).
 2. **Fetch DON info** from the registry (if not cached): fault tolerance `f` and signer addresses.
 3. **Verify signatures**: compute `keccak256(keccak256(rawReport) || reportContext)`, recover signers, require **f+1** valid signatures from authorized nodes.
@@ -79,291 +81,353 @@ If verification fails, [`Report.parse()`](/cre/reference/sdk/core-ts#report-veri
 
 ## Verifying outside CRE
 
-[`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) requires the CRE `runtime` object, so it can only run inside a CRE workflow callback. If your API server receives reports directly, you can implement the same verification steps with standard libraries — no CRE SDK required.
+[`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) requires the CRE `runtime` object and can only run inside a CRE workflow callback. If your API server receives reports directly, you can verify without the CRE SDK using standard libraries.
 
-**What you need:**
+If you followed the [submit guide](/cre/guides/workflow/using-http-client/submitting-reports-http-ts), you already have a JSON payload with `report`, `context`, and `signatures` as hex strings — this section shows how to verify it.
 
-- An Ethereum Mainnet RPC endpoint (for Capability Registry reads)
-- `viem` for the cryptographic primitives (`keccak256`, `recoverAddress`)
+1. Create a new folder for your verification script and install `viem`:
 
-**Verification steps:**
+   ```bash
+   mkdir verify-report && cd verify-report
+   npm init -y
+   npm install viem
+   ```
 
-1. Decode the hex JSON fields into bytes.
-2. Parse the **109-byte metadata header** from `rawReport` to extract `donId`, `workflowId`, `workflowOwner`, and `body`.
-3. Compute the message hash: `keccak256(keccak256(rawReport) || reportContext)`.
-4. Fetch the DON's fault tolerance `f` and authorized signer addresses from the **Capability Registry** on Ethereum Mainnet (`0x76c9cf548b4179F8901cda1f8623568b58215E62`): call `getDON(donId)` then `getNodesByP2PIds(p2pIds)`.
-5. For each signature (65 bytes), `ecrecover` the signing address. Require at least **f+1** addresses from the authorized signer set.
+1. Save the following as `verify.ts`.
 
-The following sketch shows the crypto steps. The Capability Registry call (step 4) follows the same `getDON` → `getNodesByP2PIds` ABI logic used in the CRE SDK; see [`report.ts` in cre-sdk-typescript](https://github.com/smartcontractkit/cre-sdk-typescript) for the exact ABI encoding and decoding.
+   Parses the 109-byte report header to identify the DON, reads the authorized signer list and fault tolerance `f` from the Capability Registry on Ethereum Mainnet, then ecrecovers each signature and requires at least `f+1` to match. The ABI layout mirrors [`report.ts` in cre-sdk-typescript](https://github.com/smartcontractkit/cre-sdk-typescript).
 
-```typescript
-import { keccak256, concatHex, toHex, recoverAddress } from "viem"
+   ```typescript
+   // verify-report/verify.ts
+   import { keccak256, concatHex, toHex, recoverAddress, hexToBytes, createPublicClient, http } from "viem"
+   import { mainnet } from "viem/chains"
 
-const REPORT_HEADER_LENGTH = 109
+   const REPORT_HEADER_LENGTH = 109
+   const CAPABILITY_REGISTRY = "0x76c9cf548b4179F8901cda1f8623568b58215E62" as const
 
-/** Parse key fields from the 109-byte rawReport metadata header. */
-function parseHeader(rawReport: Uint8Array) {
-  if (rawReport.length < REPORT_HEADER_LENGTH) {
-    throw new Error(`rawReport too short: need ${REPORT_HEADER_LENGTH} bytes, got ${rawReport.length}`)
-  }
-  const view = new DataView(rawReport.buffer, rawReport.byteOffset)
-  return {
-    donId: view.getUint32(37, false), // bytes 37–40
-    workflowId: toHex(rawReport.slice(45, 77)), // bytes 45–76
-    workflowOwner: toHex(rawReport.slice(87, 107)), // bytes 87–106
-    body: rawReport.slice(REPORT_HEADER_LENGTH), // bytes 109+
-  }
-}
+   /** Parse key fields from the 109-byte rawReport metadata header. */
+   function parseHeader(rawReport: Uint8Array) {
+     if (rawReport.length < REPORT_HEADER_LENGTH) {
+       throw new Error(`rawReport too short: need ${REPORT_HEADER_LENGTH} bytes, got ${rawReport.length}`)
+     }
+     const view = new DataView(rawReport.buffer, rawReport.byteOffset)
+     return {
+       donId: view.getUint32(37, false), // bytes 37–40
+       workflowId: toHex(rawReport.slice(45, 77)), // bytes 45–76
+       workflowOwner: toHex(rawReport.slice(87, 107)), // bytes 87–106
+       body: rawReport.slice(REPORT_HEADER_LENGTH), // bytes 109+
+     }
+   }
 
-/** keccak256(keccak256(rawReport) || reportContext) */
-function reportHash(rawReport: Uint8Array, reportContext: Uint8Array): `0x${string}` {
-  return keccak256(concatHex([keccak256(toHex(rawReport)), toHex(reportContext)]))
-}
+   /** keccak256(keccak256(rawReport) || reportContext) */
+   function reportHash(rawReport: Uint8Array, reportContext: Uint8Array): `0x${string}` {
+     return keccak256(concatHex([keccak256(toHex(rawReport)), toHex(reportContext)]))
+   }
 
-/**
- * Fetch fault tolerance f and authorized signer addresses from the Capability Registry.
- * Calls getDON(donId) → getNodesByP2PIds(p2pIds) on Ethereum Mainnet.
- * Use viem's createPublicClient + readContract, or any Ethereum JSON-RPC client.
- * See report.ts in cre-sdk-typescript for the exact ABI encoding/decoding.
- */
-async function fetchSigners(donId: number): Promise<{ f: number; signers: Set<string> }> {
-  // TODO: implement using your Ethereum Mainnet RPC
-  // Registry: 0x76c9cf548b4179F8901cda1f8623568b58215E62
-  throw new Error("implement: call getDON(donId) then getNodesByP2PIds(p2pIds)")
-}
+   /** Read the last 4 bytes of a 32-byte uint256 ABI slot as a JS number. */
+   function readSlot(bytes: Uint8Array, offset: number): number {
+     return new DataView(bytes.buffer, bytes.byteOffset + offset + 28, 4).getUint32(0, false)
+   }
 
-/** Verify that ≥ f+1 signatures are from authorized DON signers. */
-async function verifyReport(rawReport: Uint8Array, signatures: Uint8Array[], reportContext: Uint8Array): Promise<void> {
-  const { donId } = parseHeader(rawReport)
-  const { f, signers } = await fetchSigners(donId)
-  const hash = reportHash(rawReport, reportContext)
-  const required = f + 1
-  let valid = 0
+   // In-process cache: registry data only changes during DON reconfiguration.
+   const signerCache = new Map<number, { f: number; signers: Set<string> }>()
 
-  for (const sig of signatures) {
-    if (sig.length !== 65) continue
-    const normalized = new Uint8Array(sig)
-    if (normalized[64] >= 27) normalized[64] -= 27 // normalize recovery byte
-    try {
-      const recovered = await recoverAddress({ hash, signature: toHex(normalized) })
-      if (signers.has(recovered.toLowerCase().slice(2))) valid++
-    } catch {
-      /* malformed signature — skip */
-    }
-    if (valid >= required) return
-  }
-  throw new Error(`insufficient valid signatures: ${valid}/${required}`)
-}
+   type PublicClient = ReturnType<typeof createPublicClient>
 
-// Usage — given hex fields from your API POST body:
-const rawReport = hexToBytes(`0x${payload.report}`)
-const reportContext = hexToBytes(`0x${payload.context}`)
-const signatures = payload.signatures.map((s: string) => hexToBytes(`0x${s}`))
+   /**
+    * Fetch fault tolerance f and authorized signer addresses from the Capability Registry.
+    * Makes two eth_call reads: getDON(donId) then getNodesByP2PIds(nodeP2PIds).
+    * Result is cached by DON ID.
+    */
+   async function fetchSigners(client: PublicClient, donId: number): Promise<{ f: number; signers: Set<string> }> {
+     const cached = signerCache.get(donId)
+     if (cached) return cached
 
-await verifyReport(rawReport, signatures, reportContext)
-// If it doesn't throw, the report is authentic.
-// Read the payload: parseHeader(rawReport).body
-```
+     // Step 1: getDON(uint32 donId) — selector keccak256("getDON(uint32)")[0:4] = 0x23537405
+     const donIdPadded = new Uint8Array(32)
+     new DataView(donIdPadded.buffer).setUint32(28, donId, false)
+     const getDONCalldata = concatHex(["0x23537405", toHex(donIdPadded)])
+
+     const getDONResult = await client.call({ to: CAPABILITY_REGISTRY, data: getDONCalldata })
+     if (!getDONResult.data) throw new Error("getDON returned empty response")
+     const getDONBytes = hexToBytes(getDONResult.data)
+     if (getDONBytes.length < 224) throw new Error(`getDON response too short: ${getDONBytes.length} bytes`)
+
+     // Response layout (see report.ts in cre-sdk-typescript for full ABI documentation):
+     //   slot 3 (bytes  96-127): f               (uint8, zero-padded to 32)
+     //   slot 6 (bytes 192-223): ptr[nodeP2PIds] relative to tupleStart = 32
+     const f = readSlot(getDONBytes, 96)
+     const nodeP2PIdsPtr = readSlot(getDONBytes, 192)
+     const nodeCountOff = 32 + nodeP2PIdsPtr
+     const nodeCount = readSlot(getDONBytes, nodeCountOff)
+
+     const nodeP2PIds: `0x${string}`[] = []
+     for (let i = 0; i < nodeCount; i++) {
+       const start = nodeCountOff + 32 + i * 32
+       nodeP2PIds.push(toHex(getDONBytes.slice(start, start + 32)))
+     }
+
+     if (nodeCount === 0) {
+       const result = { f, signers: new Set<string>() }
+       signerCache.set(donId, result)
+       return result
+     }
+
+     // Step 2: getNodesByP2PIds(bytes32[]) — selector 0x05a51966
+     // ABI-encode bytes32[]: [ptr=32][count][id0]...[idN]
+     const ptrBytes = new Uint8Array(32)
+     new DataView(ptrBytes.buffer).setUint32(28, 32, false)
+     const countBytes = new Uint8Array(32)
+     new DataView(countBytes.buffer).setUint32(28, nodeCount, false)
+     const getNodesCalldata = concatHex(["0x05a51966", toHex(ptrBytes), toHex(countBytes), ...nodeP2PIds])
+
+     const getNodesResult = await client.call({ to: CAPABILITY_REGISTRY, data: getNodesCalldata })
+     if (!getNodesResult.data) throw new Error("getNodesByP2PIds returned empty response")
+     const getNodesBytes = hexToBytes(getNodesResult.data)
+     if (getNodesBytes.length < 64)
+       throw new Error(`getNodesByP2PIds response too short: ${getNodesBytes.length} bytes`)
+
+     // Response layout: [outerPtr][count][elem0-ptr][elem1-ptr]...[tuple0][tuple1]...
+     // Each NodeInfo tuple (9 slots × 32 bytes): slot 3 = signer bytes32, first 20 bytes = address
+     const outerPtr = readSlot(getNodesBytes, 0)
+     const returnedCount = readSlot(getNodesBytes, outerPtr)
+     const NODE_TUPLE_HEAD = 288 // 9 slots × 32 bytes
+
+     const signers = new Set<string>()
+     for (let i = 0; i < returnedCount; i++) {
+       const elemPtr = readSlot(getNodesBytes, outerPtr + 32 + i * 32)
+       const tupleBase = outerPtr + 32 + elemPtr
+       if (tupleBase + NODE_TUPLE_HEAD > getNodesBytes.length) break
+       const addrBytes = getNodesBytes.slice(tupleBase + 3 * 32, tupleBase + 3 * 32 + 20)
+       signers.add(toHex(addrBytes).slice(2).toLowerCase()) // 40-char hex, no 0x prefix
+     }
+
+     const result = { f, signers }
+     signerCache.set(donId, result)
+     return result
+   }
+
+   /** Verify that ≥ f+1 signatures are from authorized DON signers. */
+   async function verifyReport(
+     rawReport: Uint8Array,
+     signatures: Uint8Array[],
+     reportContext: Uint8Array,
+     client: PublicClient
+   ): Promise<void> {
+     const { donId } = parseHeader(rawReport)
+     const { f, signers } = await fetchSigners(client, donId)
+     const hash = reportHash(rawReport, reportContext)
+     const required = f + 1
+     let valid = 0
+
+     for (const sig of signatures) {
+       if (sig.length !== 65) continue
+       const normalized = new Uint8Array(sig)
+       if (normalized[64] >= 27) normalized[64] -= 27 // normalize recovery byte
+       try {
+         const recovered = await recoverAddress({ hash, signature: toHex(normalized) })
+         if (signers.has(recovered.toLowerCase().slice(2))) valid++
+       } catch {
+         /* malformed signature — skip */
+       }
+       if (valid >= required) return
+     }
+     throw new Error(`insufficient valid signatures: ${valid}/${required}`)
+   }
+
+   // Usage — create the client once for your server, reuse it across requests:
+   const client = createPublicClient({
+     chain: mainnet,
+     transport: http(process.env.ETH_MAINNET_RPC_URL!),
+   })
+
+   // For each incoming report POST:
+   const rawReport = hexToBytes(`0x${payload.report}`)
+   const reportContext = hexToBytes(`0x${payload.context}`)
+   const signatures = payload.signatures.map((s: string) => hexToBytes(`0x${s}`))
+
+   await verifyReport(rawReport, signatures, reportContext, client)
+   // If it doesn't throw, the report is authentic.
+   // Read the payload: parseHeader(rawReport).body
+   ```
+
+1. Set your RPC URL and run the script:
+
+   ```bash
+   export ETH_MAINNET_RPC_URL=https://your-mainnet-rpc-endpoint
+   npx tsx verify.ts
+   ```
+
+1. Check the output.
+
+   With a **sim-signed report** (from the submit guide sender simulation):
+
+   ```
+   Error: insufficient valid signatures: 0/4
+   ```
+
+   This error is the expected output for this example. The registry call succeeded and returned the real mainnet signer list (`f=3, signers=10` for this DON), but the simulation generated its signatures with local test keys that don't appear on that list. The verification logic ran correctly and rejected the unrecognized signatures. When you switch to a production-signed report from a deployed sender, `verifyReport` will return without throwing.
+
+   With a **production-signed report** from a deployed sender, `verifyReport` returns without throwing. Read the payload:
+
+   ```typescript
+   const { body, workflowId, workflowOwner } = parseHeader(rawReport)
+   // body is the ABI-encoded payload the sender embedded
+   ```
 
 {/* prettier-ignore */}
 <Aside type="caution" title="Cache registry results">
-  The Capability Registry read for a DON ID is expensive (two onchain calls). Cache the result by DON ID in your server — it changes only when DON configuration changes. The CRE SDK does this automatically; in your own code you are responsible for invalidating the cache if you observe unexpected signer changes.
+  `fetchSigners` caches by DON ID in memory for the lifetime of the process. Registry data only changes during DON reconfiguration. If you see unexpected `invalid signature` errors after a DON upgrade, clear the cache and retry.
 </Aside>
 
 ## CRE receiver workflow
 
-Use this path if you want the receiver itself to be a CRE workflow (with an HTTP trigger). The CRE SDK's [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) handles registry reads and caching automatically.
+Use this path if you want the receiver itself to be a CRE workflow with an HTTP trigger. [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) handles Capability Registry reads and caching automatically.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Educational Example Disclaimer">
+  This page includes an educational example to use a Chainlink system, product, or service and is provided to
+  demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
+  template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may be
+  missing key checks or error handling to make the usage of the system, product or service more clear. Do not use the
+  code in this example in a production environment without completing your own audits and application of best practices.
+  Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
+  that are generated due to errors in code.
+</Aside>
 
 {/* prettier-ignore */}
 <Aside type="note" title="Using the private registry?">
   This guide uses the **Capability Registry** (DON signers), not the **workflow registry** where you deploy. [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) works the same way regardless of which registry you deployed with. For HTTP-triggered receivers, use the [enterprise gateway URL](/cre/guides/operations/deploying-to-private-registry-ts#http-triggers-with-the-private-registry). Local simulation may need an `ethereum-mainnet` RPC in `project.yaml` for registry reads.
 </Aside>
 
+### Testing with simulation
+
+If you ran the [submit guide complete example](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#complete-working-example), you already copied JSON from webhook.site. Use that payload here.
+
 {/* prettier-ignore */}
-<Aside type="note" title="Onchain verification is different">
-  When you submit reports onchain through the `KeystoneForwarder`, the forwarder contract verifies signatures before calling `onReport`. See [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain).
+<Aside type="note" title="CRE project required">
+  The directory you run `cre` from must contain a `project.yaml`. If you do not have one, run `cre init` from your project folder or follow the [Getting Started guide](/cre/getting-started/overview).
 </Aside>
 
-### Testing locally with simulation
+1. Save the webhook JSON as `test-report-payload.json` inside your receiver workflow folder:
 
-After you run the [submit guide complete example](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#complete-working-example) and copy JSON from webhook.site, use this section to exercise a receiver workflow in simulation.
+   ```
+   verify-report-receiver/test-report-payload.json
+   ```
 
-1. Save the webhook JSON as `test-report-payload.json` in your receiver workflow folder.
-2. Use the minimal receiver below with an **empty HTTP trigger config** (no `authorizedKeys` until deploy).
-3. From the **CRE project root**, run `cre workflow simulate` with `--http-payload verify-report-receiver/test-report-payload.json` (path relative to where you invoke `cre`).
+1. Create a `verify-report-receiver/` folder in your CRE project with the following files.
 
-### Sim wiring vs full verify
+   `config.staging.json` — enables wiring tests without mainnet signer validation:
 
-| Mode                   | Config                                                                                           | What it validates                                                                                                                                                                                                                        |
-| ---------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Wiring / decode**    | `skipSignatureVerification: true` in staging config                                              | JSON + hex decode, `workflowId()`, `executionId()`, `donId()`, `body()`                                                                                                                                                                  |
-| **Full crypto verify** | Default [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) (production registry) | Reports from a **deployed/production DON**. Sim-signed reports **fail** default verification: simulation uses local DON keys; [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) checks the mainnet Capability Registry. |
+   ```json
+   {
+     "skipSignatureVerification": true
+   }
+   ```
 
-### Minimal receiver for simulation
+   `main.ts` — uses an empty HTTP trigger (add `authorizedKeys` before deploying):
 
-Use an **empty HTTP trigger config** for sim (add `authorizedKeys` before deploy). Call [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) from your handler with the `runtime` parameter. The CLI delivers `--http-payload` file contents as `payload.input` bytes.
+   ```typescript
+   // verify-report-receiver/main.ts
+   import {
+     decodeJson,
+     handler,
+     hexToBytes,
+     HTTPCapability,
+     Report,
+     Runner,
+     type HTTPPayload,
+     type Runtime,
+   } from "@chainlink/cre-sdk"
 
-`config.staging.json`:
+   interface Config {
+     skipSignatureVerification?: boolean
+   }
 
-```json
-{
-  "skipSignatureVerification": true
-}
-```
+   type ParsedPayload = {
+     report: string
+     context: string
+     signatures: string[]
+   }
 
-`main.ts`:
+   /** Hex without 0x prefix in JSON → bytes (add 0x before decode). */
+   const fromHexNoPrefix = (hex: string): Uint8Array => hexToBytes(`0x${hex}`)
 
-```typescript
-import {
-  decodeJson,
-  handler,
-  hexToBytes,
-  HTTPCapability,
-  Report,
-  Runner,
-  type HTTPPayload,
-  type Runtime,
-} from "@chainlink/cre-sdk"
+   /** AggregateError from Report.parse often has an empty .message in sim output. */
+   const formatError = (err: unknown): string => {
+     if (err instanceof AggregateError) {
+       const parts = err.errors.map((e) => (e instanceof Error ? e.message : String(e)))
+       return parts.join("; ") || "report verification failed"
+     }
+     if (err instanceof Error) return err.message
+     return String(err)
+   }
 
-interface Config {
-  skipSignatureVerification?: boolean
-}
+   const run = async (runtime: Runtime<Config>, payload: HTTPPayload): Promise<{ verified: boolean }> => {
+     try {
+       const parsed = decodeJson(payload.input) as ParsedPayload
 
-type ParsedPayload = {
-  report: string
-  context: string
-  signatures: string[]
-}
+       const rawReport = fromHexNoPrefix(parsed.report)
+       const reportContext = fromHexNoPrefix(parsed.context)
+       const sigs = parsed.signatures.map((s) => fromHexNoPrefix(s))
 
-/** Hex without 0x prefix in JSON → bytes (add 0x before decode). */
-const fromHexNoPrefix = (hex: string): Uint8Array => hexToBytes(`0x${hex}`)
+       runtime.log(`Parsing report (${rawReport.length} bytes, ${sigs.length} signatures)`)
 
-/** AggregateError from Report.parse often has an empty .message in sim output. */
-const formatError = (err: unknown): string => {
-  if (err instanceof AggregateError) {
-    const parts = err.errors.map((e) => (e instanceof Error ? e.message : String(e)))
-    return parts.join("; ") || "report verification failed"
-  }
-  if (err instanceof Error) return err.message
-  return String(err)
-}
+       const report = await Report.parse(runtime, rawReport, sigs, reportContext, {
+         skipSignatureVerification: runtime.config.skipSignatureVerification ?? false,
+       })
 
-export async function run(runtime: Runtime<Config>, payload: HTTPPayload): Promise<{ verified: boolean }> {
-  try {
-    const parsed = decodeJson(payload.input) as ParsedPayload
+       runtime.log(
+         `Verified report workflowId=${report.workflowId()} executionId=${report.executionId()} donId=${report.donId()}`
+       )
+       report.body()
+       return { verified: true }
+     } catch (err) {
+       const msg = formatError(err)
+       runtime.log(`Report verification failed: ${msg}`)
+       throw new Error(msg)
+     }
+   }
 
-    const rawReport = fromHexNoPrefix(parsed.report)
-    const reportContext = fromHexNoPrefix(parsed.context)
-    const sigs = parsed.signatures.map((s) => fromHexNoPrefix(s))
+   const initWorkflow = () => {
+     const http = new HTTPCapability()
+     return [handler(http.trigger({}), run)]
+   }
 
-    runtime.log(`Parsing report (${rawReport.length} bytes, ${sigs.length} signatures)`)
+   export async function main() {
+     const runner = await Runner.newRunner<Config>()
+     await runner.run(initWorkflow)
+   }
+   ```
 
-    const report = await Report.parse(runtime, rawReport, sigs, reportContext, {
-      skipSignatureVerification: runtime.config.skipSignatureVerification ?? false,
-    })
+1. From the CRE project root, run the simulation:
 
-    runtime.log(
-      `Verified report workflowId=${report.workflowId()} executionId=${report.executionId()} donId=${report.donId()}`
-    )
-    report.body()
-    return { verified: true }
-  } catch (err) {
-    const msg = formatError(err)
-    runtime.log(`Report verification failed: ${msg}`)
-    throw new Error(msg)
-  }
-}
+   ```bash
+   cre workflow simulate verify-report-receiver \
+     --target staging-settings \
+     --non-interactive \
+     --trigger-index 0 \
+     --http-payload verify-report-receiver/test-report-payload.json
+   ```
 
-export const initWorkflow = () => {
-  const http = new HTTPCapability()
-  return [handler(http.trigger({}), run)]
-}
+1. Check the output.
 
-export async function main() {
-  const runner = await Runner.newRunner<Config>()
-  await runner.run(initWorkflow)
-}
-```
+   A successful wiring run logs the decoded report metadata and returns `{ verified: true }`:
 
-Save webhook JSON as `verify-report-receiver/test-report-payload.json`. From the **CRE project root**:
+   ```
+   [USER LOG] Parsing report (141 bytes, 4 signatures)
+   [USER LOG] Verified report workflowId=... executionId=... donId=1
+   ✓ Workflow Simulation Result: { "verified": true }
+   ```
 
-```bash
-cre workflow simulate verify-report-receiver \
-  --target staging-settings \
-  --non-interactive \
-  --trigger-index 0 \
-  --http-payload verify-report-receiver/test-report-payload.json
-```
+   This confirms JSON decoding, hex parsing, and [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) are wired correctly. Signatures are not verified against the mainnet registry in this mode — that requires a production-signed report from a deployed sender.
 
-**Pass criteria**
+### Deploying to production
 
-- **Sim wiring:** `skipSignatureVerification: true`: logs show metadata and `{ verified: true }`.
-- **Full crypto verify:** default config with a **production-signed** report (not typical for sender-sim → receiver-sim alone).
+The `run` handler you simulated is the same code you deploy. For production, make two configuration changes:
 
-## Complete example: HTTP receiver workflow (deploy)
-
-Once simulation is working, update the trigger config for deployment with `authorizedKeys`.
-
-It accepts JSON with hex `report`, `context`, and `signatures` (from the submit guide’s [complete working example](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#complete-working-example) or [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-for-offchain-verification-hex)), not base64 [Pattern 4](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-json-formatted-report) unless you change decoding.
-
-```typescript
-import {
-  HTTPCapability,
-  handler,
-  Report,
-  type HTTPPayload,
-  type Runtime,
-  type SecretsProvider,
-} from "@chainlink/cre-sdk"
-import { hexToBytes } from "viem"
-import { z } from "zod"
-
-export const configSchema = z
-  .object({
-    authorized_key: z.string(),
-  })
-  .transform((data) => ({
-    authorizedKey: data.authorized_key,
-  }))
-
-export type Config = z.infer<typeof configSchema>
-
-type ParsedPayload = {
-  report: string
-  context: string
-  signatures: string[]
-}
-
-export async function run(runtime: Runtime<Config>, payload: HTTPPayload): Promise<boolean> {
-  const parsed: ParsedPayload = JSON.parse(new TextDecoder().decode(payload.input))
-
-  const rawReport = hexToBytes(`0x${parsed.report}`)
-  const reportContext = hexToBytes(`0x${parsed.context}`)
-  const sigs = parsed.signatures.map((s) => hexToBytes(`0x${s}`))
-
-  const report = await Report.parse(runtime, rawReport, sigs, reportContext)
-
-  runtime.log(`Verified report from workflow ${report.workflowId()}, execution ${report.executionId()}`)
-
-  // Use report.body() for your application logic (ABI-encoded payload from the sender workflow)
-  report.body()
-
-  return true
-}
-
-export const initWorkflow = (config: Config, _secretsProvider: SecretsProvider) => {
-  const http = new HTTPCapability()
-  return [
-    handler(http.trigger({ authorizedKeys: [{ type: "KEY_TYPE_ECDSA_EVM", publicKey: config.authorizedKey }] }), run),
-  ]
-}
-```
-
-**What's happening:**
-
-1. An external system POSTs hex-encoded `report`, `context`, and `signatures` to your HTTP trigger.
-2. [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) verifies signatures against the production CRE registry.
-3. On success, you read metadata and `body()` safely.
+1. **Remove `skipSignatureVerification`** from your target config (or omit it; the default is `false`). Reports from a deployed sender must pass real signature verification.
+2. **Add `authorizedKeys`** to your HTTP trigger — required for deployed workflows, not just simulation. See [HTTP Trigger configuration](/cre/guides/workflow/using-triggers/http-trigger/configuration-ts).
 
 {/* prettier-ignore */}
 <Aside type="caution" title="Hex encoding">
@@ -372,7 +436,7 @@ export const initWorkflow = (config: Config, _secretsProvider: SecretsProvider) 
 
 ## Report payload format
 
-When a sender POSTs a [CRE report](/cre/key-terms#report-cre-report) as JSON for offchain verification, receivers need three fields (plus optional metadata your API may add). The JSON key is `context` even though the SDK field is `reportContext`:
+When a sender POSTs a [CRE report](/cre/key-terms#report-cre-report) as JSON for offchain verification, receivers need three fields. The JSON key is `context` even though the SDK field is `reportContext`. See [Payload contract](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#payload-contract-if-you-verify-offchain) in the submit guide for how the sender produces these fields.
 
 | JSON field   | SDK field       | Description                                                     |
 | ------------ | --------------- | --------------------------------------------------------------- |
@@ -380,32 +444,13 @@ When a sender POSTs a [CRE report](/cre/key-terms#report-cre-report) as JSON for
 | `context`    | `reportContext` | Hex-encoded config digest + sequence number                     |
 | `signatures` | `sigs`          | Array of hex-encoded 65-byte ECDSA signatures, no `0x`          |
 
-The `reportContext` layout used by the SDK:
-
-- Bytes 0–31: config digest
-- Bytes 32–39: sequence number (big-endian `uint64`)
-
 ## API reference
 
-See [SDK Reference: Core: Report verification](/cre/reference/sdk/core-ts#report-verification) for full signatures, types, and configuration.
-
-### `Report.parse()`
-
-```typescript
-Report.parse(
-  runtime: Runtime,
-  rawReport: Uint8Array,
-  signatures: Uint8Array[],
-  reportContext: Uint8Array,
-  config?: ReportParseConfig,
-): Promise<Report>
-```
-
-Parses and verifies a report. Throws if verification fails.
+For full signatures, types, and `ReportParseConfig` options, see [SDK Reference: Core: Report verification](/cre/reference/sdk/core-ts#report-verification).
 
 ### `Report` accessors
 
-After a successful parse:
+After a successful [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification):
 
 | Method            | Description                               |
 | ----------------- | ----------------------------------------- |
@@ -418,26 +463,6 @@ After a successful parse:
 | `body()`          | Encoded payload after the 109-byte header |
 | `seqNr()`         | Sequence number from report context       |
 | `configDigest()`  | Config digest from report context         |
-
-### `ReportParseConfig`
-
-```typescript
-import { productionEnvironment, zoneFromEnvironment, type ReportParseConfig } from "@chainlink/cre-sdk"
-
-const config: ReportParseConfig = {
-  acceptedZones: [zoneFromEnvironment(productionEnvironment(), 1)],
-  acceptedEnvironments: [productionEnvironment()],
-  skipSignatureVerification: false,
-}
-```
-
-| Option                      | Description                                                                                                                                                                                                                                                                                                                  |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `acceptedEnvironments`      | Registry environments to check (defaults to production)                                                                                                                                                                                                                                                                      |
-| `acceptedZones`             | Restrict to specific DON IDs within an environment                                                                                                                                                                                                                                                                           |
-| `skipSignatureVerification` | Parse metadata only, without registry reads or signature checks. Use only for testing or when another layer verifies signatures. There is no separate `verifySignatures()` on `Report` in TypeScript; call [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) without this flag for production verification. |
-
-Most workflows should use the default config (production environment only).
 
 ## Best practices
 
@@ -475,9 +500,9 @@ Most workflows should use the default config (production environment only).
 
 - At least **f+1** valid signatures are required. Extra invalid signatures are skipped; too few valid ones fails verification.
 
-**`could not read from chain ...`**
+**`could not read from chain ...`** _(CRE receiver workflow only)_
 
-- Registry read failed (RPC/network). Configure **`ethereum-mainnet` RPC** in `project.yaml` (required for default verify, including sim). Sepolia-only RPC is not sufficient for default `Report.parse()`.
+- Registry read failed (RPC/network). Configure an **`ethereum-mainnet` RPC** in `project.yaml` — required for default [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification), including during sim. Sepolia-only RPC is not sufficient.
 
 **`raw report too short`**
 
