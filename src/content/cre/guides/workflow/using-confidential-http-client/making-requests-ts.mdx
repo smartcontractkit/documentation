@@ -7,7 +7,7 @@ pageId: "guides-workflow-confidential-http-making-requests"
 metadata:
   description: "Make confidential HTTP requests in TypeScript: learn to use enclave execution, secret injection, and optional response encryption in your workflows."
   datePublished: "2026-02-10"
-  lastModified: "2026-02-10"
+  lastModified: "2026-05-22"
 ---
 
 import { Aside } from "@components"
@@ -135,6 +135,39 @@ Run the simulation:
 ```bash
 cre workflow simulate
 ```
+
+## Request timeout
+
+The `timeout` field on the inner `request` object controls how long the enclave waits for the external API to respond before cancelling the call. It uses the [Protocol Buffers `Duration`](https://protobuf.dev/reference/protobuf/google.protobuf/#duration) type.
+
+**Default and limits:**
+
+- **Default**: If you omit `timeout`, a default of **5 seconds** is applied.
+- **Maximum**: **10 seconds**. Values above this limit will error.
+
+If your API routinely takes longer than 5 seconds, set an explicit timeout so the request does not fail unexpectedly.
+
+Import `Duration` from `@bufbuild/protobuf/wkt` and set `timeout` on the request:
+
+```typescript
+import { Duration } from "@bufbuild/protobuf/wkt"
+
+const response = confHTTPClient
+  .sendRequest(runtime, {
+    request: {
+      url: runtime.config.url,
+      method: "GET",
+      multiHeaders: {
+        Authorization: { values: ["Basic {{.myApiKey}}"] },
+      },
+      timeout: { seconds: BigInt(10), nanos: 0 } satisfies Duration,
+    },
+    vaultDonSecrets: [{ key: "myApiKey", owner: runtime.config.owner }],
+  })
+  .result()
+```
+
+The JSON form is also accepted: `timeout: { seconds: "10", nanos: 0 }` (using `DurationJson`).
 
 ## Template syntax for secrets
 

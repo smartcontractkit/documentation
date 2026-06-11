@@ -279,7 +279,7 @@ The mechanism by which a DON comes to a single, reliable, and tamper-proof resul
 
 # Service Quotas
 Source: https://docs.chain.link/cre/service-quotas
-Last Updated: 2025-12-18
+Last Updated: 2026-05-26
 
 This page documents the service quotas for Chainlink Runtime Environment (CRE) workflows.
 
@@ -290,6 +290,14 @@ This page documents the service quotas for Chainlink Runtime Environment (CRE) w
 ## Per-organization quotas
 
 These quotas apply at the organization level.
+
+### Organization membership
+
+| Quota         | Description                                      | Value |
+| ------------- | ------------------------------------------------ | ----- |
+| Maximum users | Maximum number of user accounts per organization | 40    |
+
+This limit can be increased. [Contact us](/cre/support-feedback) to request a higher user cap for your organization.
 
 ### Registry quotas
 
@@ -328,7 +336,7 @@ These quotas apply to each individual workflow.
 | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ------ |
 | <a href="#perworkflow-wasmbinarysizelimit" id="perworkflow-wasmbinarysizelimit">`PerWorkflow.WASMBinarySizeLimit`</a>                               | Maximum size of the compiled WASM binary   | 100 MB |
 | <a href="#perworkflow-wasmcompressedbinarysizelimit" id="perworkflow-wasmcompressedbinarysizelimit">`PerWorkflow.WASMCompressedBinarySizeLimit`</a> | Maximum size of the compressed WASM binary | 20 MB  |
-| <a href="#perworkflow-wasmconfigsizelimit" id="perworkflow-wasmconfigsizelimit">`PerWorkflow.WASMConfigSizeLimit`</a>                               | Maximum size of the workflow configuration | 1 MB   |
+| <a href="#perworkflow-wasmconfigsizelimit" id="perworkflow-wasmconfigsizelimit">`PerWorkflow.WASMConfigSizeLimit`</a>                               | Maximum size of the workflow configuration | 50 KB  |
 
 ### Trigger quotas
 
@@ -356,9 +364,10 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                         | Description                                                                                                                      | Value |
 | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| <a href="#perworkflow-wasmsecretssizelimit" id="perworkflow-wasmsecretssizelimit">`PerWorkflow.WASMSecretsSizeLimit`</a>          | Maximum total size of secrets accessible to a workflow                                                                           | 1 MB  |
+| <a href="#perworkflow-wasmsecretssizelimit" id="perworkflow-wasmsecretssizelimit">`PerWorkflow.WASMSecretsSizeLimit`</a>          | Maximum total size of secrets accessible to a workflow                                                                           | 27 KB |
 | <a href="#perworkflow-secretsconcurrencylimit" id="perworkflow-secretsconcurrencylimit">`PerWorkflow.SecretsConcurrencyLimit`</a> | Maximum number of secrets that can be fetched concurrently. [Learn how to fetch multiple secrets](/cre/guides/workflow/secrets). | 5     |
 | <a href="#perworkflow-secrets-calllimit" id="perworkflow-secrets-calllimit">`PerWorkflow.Secrets.CallLimit`</a>                   | Maximum number of secrets fetch calls per workflow execution                                                                     | 5     |
+| <a href="#persecret-ciphertextsize" id="persecret-ciphertextsize">`PerSecret.CipherTextSize`</a>                                  | Maximum size of a single encrypted secret value                                                                                  | 2 KB  |
 
 ### Consensus quotas
 
@@ -430,6 +439,15 @@ These quotas apply to each individual workflow.
 | <a href="#perworkflow-httpaction-requestsizelimit" id="perworkflow-httpaction-requestsizelimit">`PerWorkflow.HTTPAction.RequestSizeLimit`</a>    | Maximum size of an HTTP request payload                | 10 KB      |
 | <a href="#perworkflow-httpaction-cacheagelimit" id="perworkflow-httpaction-cacheagelimit">`PerWorkflow.HTTPAction.CacheAgeLimit`</a>             | Maximum time HTTP responses can be cached              | 10 minutes |
 
+### Confidential HTTP capability
+
+| Quota Key                                                                                                                                                          | Description                                                         | Value      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- | ---------- |
+| <a href="#perworkflow-confidentialhttp-calllimit" id="perworkflow-confidentialhttp-calllimit">`PerWorkflow.ConfidentialHTTP.CallLimit`</a>                         | Maximum number of confidential HTTP requests per workflow execution | 5          |
+| <a href="#perworkflow-confidentialhttp-requestsizelimit" id="perworkflow-confidentialhttp-requestsizelimit">`PerWorkflow.ConfidentialHTTP.RequestSizeLimit`</a>    | Maximum size of a confidential HTTP request payload                 | 10 KB      |
+| <a href="#perworkflow-confidentialhttp-responsesizelimit" id="perworkflow-confidentialhttp-responsesizelimit">`PerWorkflow.ConfidentialHTTP.ResponseSizeLimit`</a> | Maximum size of a confidential HTTP response                        | 100 KB     |
+| <a href="#perworkflow-confidentialhttp-timeout" id="perworkflow-confidentialhttp-timeout">`PerWorkflow.ConfidentialHTTP.TimeOut`</a>                               | Maximum time for a confidential HTTP request to complete            | 10 seconds |
+
 ## Quota increases
 
 [Contact us](/cre/support-feedback) to discuss quota increases.
@@ -496,9 +514,49 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-05-14
+Last Updated: 2026-06-04
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.18.0 - June 4, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.18.0" target="_blank">CRE CLI version 1.18.0</a> is now available.**
+
+- **Internal improvements**: Reliability fixes across context propagation, secret handling, and registry type management.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.17.0...v1.18.0)
+
+## CLI v1.17.0 - May 28, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.17.0" target="_blank">CRE CLI version 1.17.0</a> is now available.**
+
+- **Bug fixes and reliability**: Improved platform client reliability and clearer error messages during workflow deploy and delete.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.16.0...v1.17.0)
+
+## CLI v1.16.0 - May 22, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.16.0" target="_blank">CRE CLI version 1.16.0</a> is now available.**
+
+- **ADI Mainnet support**: ADI mainnet (`adi-mainnet`) is now supported for local simulation and production deployment. See [Supported Networks](/cre/supported-networks).
+- **Bug fixes**: Improved workflow deploy checks, non-interactive simulation behavior for cron triggers, and platform API reliability.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.15.0...v1.16.0)
 
 ## CLI v1.15.0 - May 14, 2026
 
@@ -5933,7 +5991,7 @@ Last Updated: 2026-05-12
 
 When you deploy a workflow, you register it with a **workflow registry** so it can activate and respond to triggers across a [Decentralized Oracle Network (DON)](/cre/key-terms#decentralized-oracle-network-don). CRE supports two registry models, selected per deployment target via `deployment-registry` in `workflow.yaml`:
 
-- **Private workflow**: Lifecycle operations (deploy, activate, pause, update, delete) are authorized by your CRE login session against the Chainlink-hosted private registry. No linked wallet, no gas, no Ethereum Mainnet RPC required for registry management. This is the default for new projects initialized with `cre init`.
+- **Private workflow**: Lifecycle operations (deploy, activate, pause, update, delete) are authorized by your CRE login session against the Chainlink-hosted private registry. No linked wallet, no gas, no Ethereum Mainnet RPC required for registry management.
 - **Public/onchain workflow**: Lifecycle operations submit transactions to the Workflow Registry contract on Ethereum Mainnet, authorized by your linked web3 wallet key.
 
 This is a **control-plane** choice — it governs how workflow management is authorized, not how workflow execution behaves. See [Private workflow](/cre/key-terms#private-workflow) and [Confidential execution](/cre/key-terms#confidential-workflow-or-confidential-execution) for the distinction.
@@ -5976,7 +6034,6 @@ Use the `ID` value as the `deployment-registry` in your `workflow.yaml`.
 | ETH for gas (registry ops)      | No                              | Yes                                |
 | `cre account link-key` required | No                              | Yes                                |
 | Creates onchain record          | No                              | Yes, in Workflow Registry contract |
-| Default for `cre init` projects | Yes                             | No                                 |
 | Ideal for                       | Testing, team-managed workflows | Production, multisig ownership     |
 
 Secrets follow the same split. See [Using Secrets with Deployed Workflows](/cre/guides/workflow/secrets/using-secrets-deployed) for the per-registry secrets flows.
@@ -7098,7 +7155,7 @@ Once your account is created:
 
 # Logging in with the CLI
 Source: https://docs.chain.link/cre/account/cli-login
-Last Updated: 2026-03-26
+Last Updated: 2026-05-22
 
 To deploy and manage workflows with the CRE CLI, you need to authenticate your CLI session with your CRE account. This guide walks you through the browser-based login process.
 
@@ -7159,13 +7216,18 @@ Login completed successfully
 
 Your CLI session is authenticated and ready to use.
 
-In the terminal, the CLI may show **“Fetching user context…”** while it downloads your organization’s tenant configuration from the platform. It then writes **`~/.cre/context.yaml`** (registry manifest: vault gateway URL, registries, secrets auth flows, and related fields). That file is separate from your credentials file (`cre.yaml`). For details and a sanitized example, see [Tenant context cache](/cre/reference/cli/authentication#tenant-context-cache).
+In the terminal, the CLI may show **“Fetching user context…”** while it downloads your organization’s tenant configuration from the platform. It then writes **`~/.cre/context.yaml`** (registry manifest: vault gateway URL, registries, secrets auth flows, and related fields). That file is separate from your credentials file (`~/.cre/cre.yaml`). For details and a sanitized example, see [Tenant context cache](/cre/reference/cli/authentication#tenant-context-cache).
+
+
+<Aside type="caution" title="Do not commit cre.yaml">
+  **`~/.cre/cre.yaml`** contains your session credentials. Keep it in `~/.cre/` on your local machine only—never commit it to version control or copy it into a project repository.
+</Aside>
 
 ---
 
 # Managing Authentication
 Source: https://docs.chain.link/cre/account/managing-auth
-Last Updated: 2026-03-26
+Last Updated: 2026-05-22
 
 This guide covers how to manage your CLI authentication, including browser-based login, API key authentication, checking your status, handling session expiration, and logging out.
 
@@ -7175,7 +7237,7 @@ To authenticate your CLI with your CRE account, use the `cre login` command. Thi
 
 For detailed login instructions, see the [Logging in with the CLI](/cre/account/cli-login) guide.
 
-Browser login stores **`~/.cre/cre.yaml`** (credentials) and **`~/.cre/context.yaml`** (cached **tenant context**: registry manifest from the platform, including vault gateway URL and related settings). **`cre logout`** removes both. For a full description and a sample `context.yaml` shape, see [Tenant context cache](/cre/reference/cli/authentication#tenant-context-cache).
+Browser login stores **`~/.cre/cre.yaml`** (credentials) and **`~/.cre/context.yaml`** (cached **tenant context**: registry manifest from the platform, including vault gateway URL and related settings). **`cre logout`** removes both. Do not commit **`~/.cre/cre.yaml`** to version control. For a full description and a sample `context.yaml` shape, see [Tenant context cache](/cre/reference/cli/authentication#tenant-context-cache).
 
 ## API key authentication
 
@@ -8401,7 +8463,7 @@ The typical workflow development process uses these commands in sequence:
 
 # Authentication Commands
 Source: https://docs.chain.link/cre/reference/cli/authentication
-Last Updated: 2026-05-08
+Last Updated: 2026-05-22
 
 The CRE CLI supports two authentication methods:
 
@@ -8497,8 +8559,8 @@ In a CI/CD pipeline, configure `CRE_API_KEY` as a secret environment variable in
 After a successful browser login — and when using an API key for commands that load credentials — the CLI stores **tenant context** at **`~/.cre/context.yaml`**. This file comes from the platform’s **`getTenantConfig`** data: a **registry manifest** for your organization so the CLI knows your CRE environment layout (for example vault gateway URL, registries, and allowed secrets auth flows per registry). Values are grouped under your CRE environment name (such as `PRODUCTION`).
 
 
-<Aside type="note" title="Credentials vs tenant context">
-  **`cre.yaml`** holds authentication tokens for your session. **`context.yaml`** holds **tenant configuration** returned by the platform, not secrets. **`cre logout`** removes both files from your machine.
+<Aside type="caution" title="Keep credential files out of version control">
+  **`~/.cre/cre.yaml`** holds authentication tokens for your session. Do not commit it to version control or copy it into your project repository—it belongs only in `~/.cre/` on your local machine. If you copy `cre.yaml` elsewhere, add it to `.gitignore` so it is not tracked. **`context.yaml`** holds **tenant configuration** returned by the platform, not secrets. **`cre logout`** removes both files from your machine.
 </Aside>
 
 The following example is **illustrative** only; your registries, addresses, and flow lists depend on your organization and environment.
@@ -12084,7 +12146,7 @@ For complete setup instructions, configuration requirements, and step-by-step gu
 
 # Deploying to the Private Registry
 Source: https://docs.chain.link/cre/guides/operations/deploying-to-private-registry-go
-Last Updated: 2026-05-14
+Last Updated: 2026-05-28
 
 <Aside type="note" title="Go">
   This page covers deployment to the private registry for Go workflows. For TypeScript workflows, see [Deploying to the Private Registry (TypeScript)](/cre/guides/operations/deploying-to-private-registry-ts).
@@ -12097,7 +12159,7 @@ Last Updated: 2026-05-14
 
 The **private registry** is a Chainlink-hosted, offchain workflow registry. All lifecycle operations (deploy, activate, pause, delete, update) are authorized by your CRE login session — not a linked wallet key. There are no Ethereum Mainnet transactions and no gas fees for registry management.
 
-This is the default registry for new projects initialized with `cre init`. For a comparison of both registry options, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
+For a comparison of both registry options, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
 
 
 <Aside type="note" title="Private is not confidential">
@@ -12137,7 +12199,7 @@ Unlike the public onchain registry, you do **not** need:
 
 ## Step 1: Set `deployment-registry` in your `workflow.yaml`
 
-When you run `cre init`, the wizard prompts you to select a deployment registry after entering your workflow name. Private (off-chain) registries appear first with the cursor pre-selected on them. Selecting `private` writes `deployment-registry: "private"` into both targets of the generated `workflow.yaml` automatically — you can skip the manual step below.
+When you run `cre init`, the wizard prompts you to select a deployment registry after entering your workflow name. Select `private` to write `deployment-registry: "private"` into both targets of the generated `workflow.yaml` automatically — you can skip the manual step below.
 
 If you skipped the step, used `--non-interactive` without `--deployment-registry`, or are adding a new target to an existing project, add `deployment-registry: "private"` under the `user-workflow` section manually:
 
@@ -12171,33 +12233,37 @@ The CLI compiles your workflow, uploads the artifacts to the CRE Storage Service
 **Example output:**
 
 ```
-Deploying Workflow :     my-workflow
-Target :                 staging-settings
-Owner Address :          <your-organization-owner>
+Deploying Workflow: my-workflow-staging
+  Registry:      private
+  Target:        staging-settings
+  Owner Address: <your-organization-owner> (derived)
 
 Compiling workflow...
-Workflow compiled successfully
+✓ Workflow compiled successfully
+  Binary hash:   <binary-hash>
+  Config hash:   <config-hash>
+  Workflow hash: <workflow-id>
 
 Uploading files...
 ✔ Loaded binary from: ./binary.wasm.br.b64
-✔ Uploaded binary to: https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
+✔ Uploaded binary to: https://storage.cre.chain.link/artifacts/<workflow-id>/binary.wasm
 ✔ Loaded config from: ./config.staging.json
-✔ Uploaded config to: https://storage.cre.example.com/artifacts/<workflow-id>/config
+✔ Uploaded config to: https://storage.cre.chain.link/artifacts/<workflow-id>/config
 
-Registering workflow in private registry (workflowID: <your-workflow-id>)...
+Registering workflow in private registry (workflowID: <workflow-id>)...
 ✓ Workflow registered in private registry
 
 Details:
    Registry:         private
    Workflow Name:    my-workflow
-   Workflow ID:      <your-workflow-id>
+   Workflow ID:      <workflow-id>
    Status:           Active
-   Binary URL:       https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
-   Config URL:       https://storage.cre.example.com/artifacts/<workflow-id>/config
+   Binary URL:       https://storage.cre.chain.link/artifacts/<workflow-id>/binary.wasm
+   Config URL:       https://storage.cre.chain.link/artifacts/<workflow-id>/config
    Owner:            <your-organization-owner>
 ```
 
-The workflow is registered and active immediately. Notice there is no transaction hash, no gas cost, and the `Owner` is your CRE organization rather than a wallet address.
+The workflow is registered and active immediately. Notice there is no transaction hash, no gas cost, and the `Owner` is your [organization owner address](#organization-owner-address) rather than a linked wallet address.
 
 ## Step 3: Verify the deployment
 
@@ -12214,6 +12280,39 @@ cre workflow list --registry private
 ```
 
 You can also view the workflow in the [CRE platform](https://app.chain.link/cre/discover) under **Workflows**.
+
+## Organization owner address
+
+For workflows managed on the private registry, the workflow owner is your organization's owner address — not a linked wallet key. CRE derives this address from your organization; it matches the **Organization address** in the CRE platform UI.
+
+### In the CRE platform UI
+
+1. Open the [CRE platform](https://app.chain.link/cre/discover) and navigate to **Organization** in the sidebar
+2. Copy the **Organization address** shown on the page
+
+You can also find the same address on a workflow's detail page under **Workflow Owner**.
+
+### From the CLI
+
+You can retrieve the organization owner address with:
+
+- **`cre workflow deploy`** — prints `Owner Address: … (derived)` at the start of the command output (before compilation finishes), even if registration later fails
+- **`cre workflow list --registry private --output json`** — each workflow includes an `ownerAddress` field
+- **`cre workflow get`** — prints the owner address for a workflow configured in `workflow.yaml`
+
+```bash
+# Example: list owner addresses for private registry workflows
+cre workflow list --registry private --output json
+
+# Example: owner address for a specific workflow
+cre workflow get ./my-workflow --target staging-settings
+```
+
+The `Owner Address (derived)` value from deploy matches the **Organization address** in the UI.
+
+## Onchain write permissions
+
+If your workflow performs [onchain writes](/cre/guides/workflow/using-evm-client/onchain-write/overview-go) and you did not [link your own wallet key](/cre/organization/linking-keys), use your [organization owner address](#organization-owner-address) when configuring consumer contract permissions (for example, with `setExpectedAuthor()` in [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#34-configuring-permissions)).
 
 ## Managing a private registry workflow
 
@@ -12866,7 +12965,7 @@ New DON timestamps are produced continuously (multiple per second). Treat it as 
 
 # Making Confidential Requests
 Source: https://docs.chain.link/cre/guides/workflow/using-confidential-http-client/making-requests-go
-Last Updated: 2026-02-10
+Last Updated: 2026-05-22
 
 `confidentialhttp.Client` implements the [Confidential HTTP capability](/cre/capabilities/confidential-http-go). Use it when an outbound call should carry [sensitive credentials or request fields](/cre/capabilities/confidential-http-go#whats-kept-confidential) without assembling them as plain strings in workflow code on every node—see [when to use Confidential vs. regular HTTP](/cre/capabilities/confidential-http-go#when-to-use-confidential-http-vs-regular-http). For those values, use **`VaultDonSecrets`** with **`{{.key}}`** placeholders only; **`runtime.GetSecret()`** in headers or body follows a different trust boundary.
 
@@ -13023,6 +13122,42 @@ Run the simulation:
 
 ```bash
 cre workflow simulate
+```
+
+## Request timeout
+
+The `Timeout` field on the inner `Request` object controls how long the enclave waits for the external API to respond before cancelling the call. It uses the [`google.protobuf.Duration`](https://protobuf.dev/reference/protobuf/google.protobuf/#duration) type.
+
+**Default and limits:**
+
+- **Default**: If you omit `Timeout`, a default of **5 seconds** is applied.
+- **Maximum**: **10 seconds**. Values above this limit will error.
+
+If your API routinely takes longer than 5 seconds, set an explicit timeout so the request does not fail unexpectedly.
+
+Use `durationpb.New()` with a `time.Duration` value on the `Request` field:
+
+```go
+import (
+	"time"
+
+	confhttp "github.com/smartcontractkit/cre-sdk-go/capabilities/networking/confidentialhttp"
+	"google.golang.org/protobuf/types/known/durationpb"
+)
+
+result, err := confHTTPClient.SendRequest(runtime, &confhttp.ConfidentialHTTPRequest{
+	Request: &confhttp.HTTPRequest{
+		Url:    config.URL,
+		Method: "GET",
+		MultiHeaders: map[string]*confhttp.HeaderValues{
+			"Authorization": {Values: []string{"Basic {{.myApiKey}}"}},
+		},
+		Timeout: durationpb.New(10 * time.Second),
+	},
+	VaultDonSecrets: []*confhttp.SecretIdentifier{
+		{Key: "myApiKey", Owner: config.Owner},
+	},
+}).Await()
 ```
 
 ## Template syntax for secrets
@@ -13254,7 +13389,7 @@ For the full list of types and methods available on the Confidential HTTP client
 
 # Forwarder Directory
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-go
-Last Updated: 2026-05-14
+Last Updated: 2026-05-22
 
 <Aside type="note" title="Looking for supported networks?">
   For a complete list of supported networks and version requirements, see [Supported Networks](/cre/supported-networks).
@@ -13297,6 +13432,7 @@ These `MockKeystoneForwarder` addresses are used when running `cre workflow simu
 
 | Network                                                                                                                                                             | Chain Name                    | Mock Forwarder Address                     |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------ |
+| <a href="https://explorer.adifoundation.ai/address/0x6Aa382fb8762E1232936478DD9DbC04F637028f1" target="_blank" rel="noopener noreferrer">ADI Mainnet</a>            | adi-mainnet                   | 0x6Aa382fb8762E1232936478DD9DbC04F637028f1 |
 | <a href="https://arbiscan.io/address/0xd770499057619c9a76205fd4168161cf94abc532" target="_blank" rel="noopener noreferrer">Arbitrum One</a>                         | ethereum-mainnet-arbitrum-1   | 0xd770499057619c9a76205fd4168161cf94abc532 |
 | <a href="https://snowscan.xyz/address/0xdc21e279934ff6721cadfdd112dafb3261f09a2c" target="_blank" rel="noopener noreferrer">Avalanche</a>                           | avalanche-mainnet             | 0xdc21e279934ff6721cadfdd112dafb3261f09a2c |
 | <a href="https://basescan.org/address/0x5e342a8438b4f5d39e72875fcee6f76b39cce548" target="_blank" rel="noopener noreferrer">Base</a>                                | ethereum-mainnet-base-1       | 0x5e342a8438b4f5d39e72875fcee6f76b39cce548 |
@@ -13311,7 +13447,7 @@ These `MockKeystoneForwarder` addresses are used when running `cre workflow simu
 | <a href="https://mantlescan.xyz/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Mantle</a>                            | ethereum-mainnet-mantle-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://megaeth.blockscout.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">MegaETH</a>                   | megaeth-mainnet               | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://optimistic.etherscan.io/address/0x9119a1501550ed94a3f2794038ed9258337afa18" target="_blank" rel="noopener noreferrer">OP Mainnet</a>               | ethereum-mainnet-optimism-1   | 0x9119a1501550ed94a3f2794038ed9258337afa18 |
-| <a href="https://pharos.socialscan.io/address/0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4" target="_blank" rel="noopener noreferrer">Pharos Mainnet</a>              | pharos-mainnet                | 0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4 |
+| <a href="https://pharosscan.xyz/address/0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4" target="_blank" rel="noopener noreferrer">Pharos Mainnet</a>                    | pharos-mainnet                | 0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4 |
 | <a href="https://plasmascan.to/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Plasma</a>                             | plasma-mainnet                | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://polygonscan.com/address/0xf458d621885e29a5003ea9bbba5280d54e19b1ce" target="_blank" rel="noopener noreferrer">Polygon</a>                          | polygon-mainnet               | 0xf458d621885e29a5003ea9bbba5280d54e19b1ce |
 | <a href="https://scrollscan.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Scroll</a>                            | ethereum-mainnet-scroll-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
@@ -13335,7 +13471,7 @@ These `MockKeystoneForwarder` addresses are used when running `cre workflow simu
 | <a href="https://explorer.cronos.org/testnet/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Cronos Testnet</a>      | cronos-testnet                        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://sepolia.etherscan.io/address/0x15fC6ae953E024d975e77382eEeC56A9101f9F88" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>           | ethereum-testnet-sepolia              | 0x15fC6ae953E024d975e77382eEeC56A9101f9F88 |
 | <a href="https://gnosis-chiado.blockscout.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Gnosis Chiado</a>      | gnosis-chain-testnet-chiado           | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://testnet.purrsec.com/address/0xB27fA1c28288c50542527F64BCda22C9FbAc24CB" target="_blank" rel="noopener noreferrer">Hyperliquid Testnet</a>         | hyperliquid-testnet                   | 0xB27fA1c28288c50542527F64BCda22C9FbAc24CB |
+| <a href="https://explore-testnet.hyperpc.app/address/0xB27fA1c28288c50542527F64BCda22C9FbAc24CB" target="_blank" rel="noopener noreferrer">Hyperliquid Testnet</a> | hyperliquid-testnet                   | 0xB27fA1c28288c50542527F64BCda22C9FbAc24CB |
 | <a href="https://explorer-sepolia.inkonchain.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Ink Sepolia</a>     | ink-testnet-sepolia                   | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://sepolia-explorer.jovay.io/l2/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Jovay Testnet</a>      | jovay-testnet                         | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://sepolia.lineascan.build/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Linea Sepolia</a>           | ethereum-testnet-sepolia-linea-1      | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
@@ -13361,6 +13497,7 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 
 | Network                                                                                                                                                             | Chain Name                    | Forwarder Address                          |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------ |
+| <a href="https://explorer.adifoundation.ai/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ADI Mainnet</a>            | adi-mainnet                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://arbiscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Arbitrum One</a>                         | ethereum-mainnet-arbitrum-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
 | <a href="https://snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche</a>                           | avalanche-mainnet             | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base</a>                                | ethereum-mainnet-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
@@ -13375,7 +13512,7 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 | <a href="https://mantlescan.xyz/address/0xB9F79d863261869B234c481D1f9A7af84AeAd192" target="_blank" rel="noopener noreferrer">Mantle</a>                            | ethereum-mainnet-mantle-1     | 0xB9F79d863261869B234c481D1f9A7af84AeAd192 |
 | <a href="https://megaeth.blockscout.com/address/0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c" target="_blank" rel="noopener noreferrer">MegaETH</a>                   | megaeth-mainnet               | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
 | <a href="https://optimistic.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">OP Mainnet</a>               | ethereum-mainnet-optimism-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| <a href="https://pharos.socialscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Pharos Mainnet</a>              | pharos-mainnet                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://pharosscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Pharos Mainnet</a>                    | pharos-mainnet                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://plasmascan.to/address/0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c" target="_blank" rel="noopener noreferrer">Plasma</a>                             | plasma-mainnet                | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
 | <a href="https://polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon</a>                          | polygon-mainnet               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://scrollscan.com/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Scroll</a>                            | ethereum-mainnet-scroll-1     | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
@@ -13390,6 +13527,7 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- | ------------------------------------------ |
 | <a href="https://explorer.testnet.adifoundation.ai/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ADI Testnet</a>   | adi-testnet                           | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://explorer.curtis.apechain.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Apechain Curtis</a>    | apechain-testnet-curtis               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://testnet.arcscan.app/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Arc Testnet</a>                 | arc-testnet                           | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://sepolia.arbiscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>            | ethereum-testnet-sepolia-arbitrum-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://testnet.snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>             | avalanche-testnet-fuji                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://sepolia.basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base Sepolia</a>               | ethereum-testnet-sepolia-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
@@ -13398,7 +13536,7 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 | <a href="https://explorer.cronos.org/testnet/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Cronos Testnet</a>      | cronos-testnet                        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | <a href="https://sepolia.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>           | ethereum-testnet-sepolia              | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
 | <a href="https://gnosis-chiado.blockscout.com/address/0x0b93082D9b3C7C97fAcd250082899BAcf3af3885" target="_blank" rel="noopener noreferrer">Gnosis Chiado</a>      | gnosis-chain-testnet-chiado           | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
-| <a href="https://testnet.purrsec.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Hyperliquid Testnet</a>         | hyperliquid-testnet                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://explore-testnet.hyperpc.app/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Hyperliquid Testnet</a> | hyperliquid-testnet                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://explorer-sepolia.inkonchain.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Ink Sepolia</a>     | ink-testnet-sepolia                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://sepolia-explorer.jovay.io/l2/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Jovay Testnet</a>      | jovay-testnet                         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://sepolia.lineascan.build/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Linea Sepolia</a>           | ethereum-testnet-sepolia-linea-1      | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
@@ -20034,7 +20172,7 @@ This section provides a reference for the built-in trigger capabilities of the C
 
 # Supported Networks
 Source: https://docs.chain.link/cre/supported-networks-go
-Last Updated: 2026-05-14
+Last Updated: 2026-05-22
 
 This page lists all EVM-compatible networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network.
 
@@ -20047,30 +20185,31 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 
 ## Mainnets
 
-| Network             | CLI      | Go SDK  | TS SDK  |
-| ------------------- | -------- | ------- | ------- |
-| Arbitrum One        | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Avalanche           | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Base                | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| BNB Chain           | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Celo                | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| Ethereum            | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Gnosis Chain        | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| Hyperliquid Mainnet | v1.7.0+  | v1.7.0+ | v1.4.0+ |
-| Ink                 | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| Jovay               | v1.3.0+  | v1.4.0+ | v1.3.1+ |
-| Linea               | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| Mantle              | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| MegaETH             | v1.5.0+  | v1.6.0+ | v1.3.1+ |
-| OP Mainnet          | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Pharos              | v1.3.0+  | v1.4.0+ | v1.3.1+ |
-| Plasma              | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| Polygon             | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Scroll              | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| Sonic               | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| World Chain         | v1.0.11+ | v1.2.0+ | v1.0.9+ |
-| XLayer              | v1.3.0+  | v1.4.0+ | v1.1.3+ |
-| ZKSync Era          | v1.0.6+  | v1.1.3+ | v1.0.7+ |
+| Network             | CLI      | Go SDK   | TS SDK  |
+| ------------------- | -------- | -------- | ------- |
+| ADI Mainnet         | v1.16.0+ | v1.10.0+ | v1.8.0+ |
+| Arbitrum One        | v1.0.0+  | v1.0.0+  | v1.0.1+ |
+| Avalanche           | v1.0.0+  | v1.0.0+  | v1.0.1+ |
+| Base                | v1.0.0+  | v1.0.0+  | v1.0.1+ |
+| BNB Chain           | v1.0.0+  | v1.0.0+  | v1.0.1+ |
+| Celo                | v1.5.0+  | v1.6.0+  | v1.3.0+ |
+| Ethereum            | v1.0.0+  | v1.0.0+  | v1.0.1+ |
+| Gnosis Chain        | v1.5.0+  | v1.6.0+  | v1.3.0+ |
+| Hyperliquid Mainnet | v1.7.0+  | v1.7.0+  | v1.4.0+ |
+| Ink                 | v1.5.0+  | v1.6.0+  | v1.3.0+ |
+| Jovay               | v1.3.0+  | v1.4.0+  | v1.3.1+ |
+| Linea               | v1.5.0+  | v1.6.0+  | v1.3.0+ |
+| Mantle              | v1.5.0+  | v1.6.0+  | v1.3.0+ |
+| MegaETH             | v1.5.0+  | v1.6.0+  | v1.3.1+ |
+| OP Mainnet          | v1.0.0+  | v1.0.0+  | v1.0.1+ |
+| Pharos              | v1.3.0+  | v1.4.0+  | v1.3.1+ |
+| Plasma              | v1.5.0+  | v1.6.0+  | v1.3.0+ |
+| Polygon             | v1.0.0+  | v1.0.0+  | v1.0.1+ |
+| Scroll              | v1.5.0+  | v1.6.0+  | v1.3.0+ |
+| Sonic               | v1.5.0+  | v1.6.0+  | v1.3.0+ |
+| World Chain         | v1.0.11+ | v1.2.0+  | v1.0.9+ |
+| XLayer              | v1.3.0+  | v1.4.0+  | v1.1.3+ |
+| ZKSync Era          | v1.0.6+  | v1.1.3+  | v1.0.7+ |
 
 ## Testnets
 

@@ -123,7 +123,7 @@ export function useWalletSelector() {
   const providers = useInjectedProviders()
 
   const walletOptions = useMemo(() => {
-    return providers.map((provider) => ({
+    const eip6963Options = providers.map((provider) => ({
       uuid: provider.info.uuid,
       name: provider.info.name,
       icon: provider.info.icon,
@@ -132,6 +132,24 @@ export function useWalletSelector() {
       isMetaMask: provider.info.rdns === "io.metamask",
       isPhantom: provider.info.rdns === "app.phantom",
     }))
+    if (eip6963Options.length > 0) return eip6963Options
+
+    // Legacy fallback for wallets that haven't implemented EIP-6963 announcements.
+    // This preserves basic injected-wallet support via window.ethereum.
+    if (typeof window === "undefined") return []
+    const ethereum = (window as WindowWithEthereum).ethereum
+    if (!ethereum) return []
+    return [
+      {
+        uuid: "legacy-window-ethereum",
+        name: "Browser wallet",
+        icon: "",
+        rdns: undefined,
+        provider: ethereum,
+        isMetaMask: !!ethereum.isMetaMask,
+        isPhantom: false,
+      },
+    ]
   }, [providers])
 
   return {

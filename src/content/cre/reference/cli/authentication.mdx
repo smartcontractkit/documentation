@@ -5,7 +5,7 @@ title: "Authentication Commands"
 metadata:
   description: "Manage your CLI authentication: browser-based login, API key authentication for CI/CD, and session management commands."
   datePublished: "2025-11-04"
-  lastModified: "2026-05-08"
+  lastModified: "2026-05-22"
 ---
 
 import { Aside } from "@components"
@@ -104,8 +104,8 @@ In a CI/CD pipeline, configure `CRE_API_KEY` as a secret environment variable in
 After a successful browser login — and when using an API key for commands that load credentials — the CLI stores **tenant context** at **`~/.cre/context.yaml`**. This file comes from the platform’s **`getTenantConfig`** data: a **registry manifest** for your organization so the CLI knows your CRE environment layout (for example vault gateway URL, registries, and allowed secrets auth flows per registry). Values are grouped under your CRE environment name (such as `PRODUCTION`).
 
 {/* prettier-ignore */}
-<Aside type="note" title="Credentials vs tenant context">
-  **`cre.yaml`** holds authentication tokens for your session. **`context.yaml`** holds **tenant configuration** returned by the platform, not secrets. **`cre logout`** removes both files from your machine.
+<Aside type="caution" title="Keep credential files out of version control">
+  **`~/.cre/cre.yaml`** holds authentication tokens for your session. Do not commit it to version control or copy it into your project repository—it belongs only in `~/.cre/` on your local machine. If you copy `cre.yaml` elsewhere, add it to `.gitignore` so it is not tracked. **`context.yaml`** holds **tenant configuration** returned by the platform, not secrets. **`cre logout`** removes both files from your machine.
 </Aside>
 
 The following example is **illustrative** only; your registries, addresses, and flow lists depend on your organization and environment.
