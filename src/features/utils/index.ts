@@ -324,6 +324,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "RONIN_MAINNET"
     case "ronin-testnet-saigon":
       return "RONIN_SAIGON"
+    case "ethereum-testnet-sepolia-ronin-1":
+      return "RONIN_SEPOLIA"
     case "bitcoin-mainnet-bsquared-1":
       return "BSQUARED_MAINNET"
     case "bitcoin-testnet-bsquared-1":
@@ -692,6 +694,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ronin-mainnet"
     case "RONIN_SAIGON":
       return "ronin-testnet-saigon"
+    case "RONIN_SEPOLIA":
+      return "ethereum-testnet-sepolia-ronin-1"
     case "BSQUARED_MAINNET":
       return "bitcoin-mainnet-bsquared-1"
     case "BSQUARED_TESTNET":
