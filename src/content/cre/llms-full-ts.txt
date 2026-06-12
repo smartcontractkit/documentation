@@ -99,17 +99,18 @@ Learn more about [Consensus Computing in CRE](/cre/concepts/consensus-computing)
 
 ## Glossary: Building blocks
 
-| Concept            | One-liner                                                         |
-| ------------------ | ----------------------------------------------------------------- |
-| **Workflow**       | Compiled WebAssembly (WASM) binary.                               |
-| **Handler**        | `handler(trigger, callback)` pair; the atom of execution.         |
-| **Trigger**        | Event that starts an execution (cron, HTTP, EVM log, …).          |
-| **Callback**       | Function that runs when its trigger fires; contains your logic.   |
-| **Runtime**        | Object passed to a callback; used to invoke capabilities.         |
-| **Capability**     | Decentralized microservice (chain read/write, HTTP Fetch, ...).   |
-| **Workflow DON**   | Watches triggers and coordinates the workflow.                    |
-| **Capability DON** | Executes a specific capability.                                   |
-| **Consensus**      | BFT protocol that merges node results into one verifiable report. |
+| Concept            | One-liner                                                        |
+| ------------------ | ---------------------------------------------------------------- |
+| **Workflow**       | Compiled WebAssembly (WASM) binary.                              |
+| **Handler**        | `handler(trigger, callback)` pair; the atom of execution.        |
+| **Trigger**        | Event that starts an execution (cron, HTTP, EVM log, …).         |
+| **Callback**       | Function that runs when its trigger fires; contains your logic.  |
+| **Runtime**        | Object passed to a callback; used to invoke capabilities.        |
+| **Capability**     | Decentralized microservice (chain read/write, HTTP Fetch, ...).  |
+| **Workflow DON**   | Watches triggers and coordinates the workflow.                   |
+| **Capability DON** | Executes a specific capability.                                  |
+| **Consensus**      | BFT protocol that merges node results into one trusted outcome.  |
+| **Report**         | DON-signed package from `runtime.report()` / `GenerateReport()`. |
 
 Full definitions live on **[Key Terms and Concepts](/cre/key-terms)**.
 
@@ -149,7 +150,7 @@ Jump to what you need:
 
 # Key Terms and Concepts
 Source: https://docs.chain.link/cre/key-terms
-Last Updated: 2025-11-04
+Last Updated: 2026-05-20
 
 This page defines the fundamental terms and concepts for the Chainlink Runtime Environment (CRE).
 
@@ -215,6 +216,12 @@ Short-lived objects passed to your callback function during a specific execution
 - **`NodeRuntime`**: Think of this as the "Manual Mode". It is used when a BFT guarantee cannot be provided automatically (e.g. calling a standard API). You tell each node to perform a task on its own. Each node returns its own individual answer, and you are responsible for telling the SDK how to combine them into a single, trusted result by providing an aggregation algorithm. This is always used inside a `cre.RunInNodeMode` block.
 
 Learn more about [Consensus and Aggregation](/cre/reference/sdk/consensus).
+
+### Report (CRE report)
+
+A cryptographically signed package your workflow [DON](/cre/key-terms#decentralized-oracle-network-don) produces after your callback encodes its result: payload bytes, report context, and DON signatures. Create it with [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime) (TypeScript) or [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) (Go).
+
+Deliver onchain with [`writeReport()`](/cre/reference/sdk/evm-client-ts#writereport) / [`WriteReport()`](/cre/reference/sdk/evm-client-go#writereport), or offchain with [`sendReport()`](/cre/reference/sdk/http-client-ts#using-sendreport) / [`SendReport()`](/cre/reference/sdk/http-client-go#sendrequestersendreport). Receivers verify with [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) or [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport). See [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http) and [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain).
 
 ### SDK Clients: `EVMClient` & `HTTPClient`
 
@@ -4088,7 +4095,7 @@ if (writeResult.txStatus === TxStatus.SUCCESS) {
 
 # API Interactions
 Source: https://docs.chain.link/cre/guides/workflow/using-http-client
-Last Updated: 2026-03-17
+Last Updated: 2026-05-20
 
 The CRE SDK provides an HTTP client that allows your workflows to interact with external APIs. Use it to fetch offchain data, send results to other systems, or trigger external events.
 
@@ -4099,16 +4106,26 @@ The CRE SDK provides an HTTP client that allows your workflows to interact with 
 
 
 <Aside type="caution" title="Parse responses before aggregation">
-  When using a numeric aggregation method (such as `median`), always parse the HTTP response **inside** your node function and return a numeric value — never pass the raw response body to the aggregation step. If your endpoint returns an error string and your node function passes that string to a median aggregation, consensus will fail with `unsupported type for median aggregation`. See the [best practices section](/cre/guides/workflow/using-http-client/get-request#best-practices) of the GET request guide for correct and incorrect patterns.
+  When using a numeric aggregation method (such as `median`), always parse the HTTP response **inside** your node function and return a numeric value: never pass the raw response body to the aggregation step. If your endpoint returns an error string and your node function passes that string to a median aggregation, consensus will fail with `unsupported type for median aggregation`. See the [best practices section](/cre/guides/workflow/using-http-client/get-request#best-practices) of the GET request guide for correct and incorrect patterns.
 </Aside>
-
-These guides will walk you through the common use cases for the HTTP client.
 
 ## Guides
 
 - **[Making GET Requests](/cre/guides/workflow/using-http-client/get-request)**: Learn how to fetch data from a public API using a `GET` request.
 - **[Making POST Requests](/cre/guides/workflow/using-http-client/post-request)**: Learn how to send data to an external endpoint using a `POST` request.
 - **[Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http)**: Learn how to submit cryptographically signed reports to an external HTTP endpoint.
+- **[Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain)**: Verify report signatures and read workflow metadata when receiving reports over HTTP or other offchain channels.
+
+## CRE reports over HTTP
+
+A **[CRE report](/cre/key-terms#report-cre-report)** is a DON-signed package your workflow creates with [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime) (TypeScript) or [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) (Go). It bundles your encoded payload, workflow metadata, report context, and cryptographic signatures from the DON. See [Key Terms: Report](/cre/key-terms#report-cre-report) for the full definition, including how onchain delivery differs from HTTP.
+
+A typical secure integration uses two parties:
+
+1. **Sender:** a CRE workflow that runs your logic, signs a report, and POSTs it to a URL. See [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http).
+2. **Receiver:** your API or another CRE workflow that verifies the report before using the data. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain).
+
+The sender creates the report inside the workflow; the receiver must verify signatures before trusting the payload.
 
 ---
 
@@ -14123,6 +14140,17 @@ Here's the journey your workflow's data takes to reach the blockchain:
 
 In your workflow code, this process involves two steps: calling `runtime.report()` to generate the signed report, then calling `evmClient.writeReport()` to submit it to the blockchain.
 
+### Where reports can go after generation
+
+The same signed report from `runtime.report()` can be delivered in different ways:
+
+| Destination                    | Guide                                                                                                                       | Verification                                                                                                           |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Smart contract (via Forwarder) | This section + [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain) | Onchain in `KeystoneForwarder`                                                                                         |
+| HTTP API                       | [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts)                            | [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts) on the receiver |
+
+See [API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http) for the sender → receiver flow.
+
 ## What you need: A consumer contract
 
 Before you can write data onchain, you need a **consumer contract**. This is the smart contract that will receive your workflow's data.
@@ -15112,13 +15140,13 @@ export async function main() {
 
 # Submitting Reports via HTTP
 Source: https://docs.chain.link/cre/guides/workflow/using-http-client/submitting-reports-http-ts
-Last Updated: 2026-01-20
+Last Updated: 2026-05-20
 
-This guide shows how to send a cryptographically signed report (generated by your workflow) to an external HTTP API. You'll learn how to write a transformation function that formats the report for your specific API's requirements.
+This guide is for the **sender** side: a CRE workflow that **creates** a signed report and **POSTs** it to an HTTP endpoint.
 
 **What you'll learn:**
 
-- How to use `sendReport()` to submit reports via HTTP
+- How to use [`sendReport()`](/cre/reference/sdk/http-client-ts#using-sendreport) to submit reports via HTTP
 - How to write transformation functions for different API formats
 - Best practices for report submission and deduplication
 
@@ -15127,22 +15155,64 @@ This guide shows how to send a cryptographically signed report (generated by you
   This guide covers HTTP submission. For submitting reports to smart contracts, see [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/overview-ts).
 </Aside>
 
+## What is a CRE report?
+
+A **[CRE report](/cre/key-terms#report-cre-report)** is the signed output your workflow DON produces when you call [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime). It packages your encoded data (the payload you computed in the callback), fixed workflow metadata, a report context (config digest and sequence number), and ECDSA signatures from DON nodes.
+
+This guide covers the **sender** path: create the report in your workflow, then POST it to an HTTP endpoint. The receiver must verify those signatures before trusting the data. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts) on the receiver side.
+
+## Where this guide fits
+
+| Question                    | Answer                                                                                                                                                                                                                                                               |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| What is the report?         | A [CRE report](/cre/key-terms#report-cre-report): output of [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime) after DON consensus (encoded payload + metadata + signatures).                                                                  |
+| Where does it come from?    | **Inside this workflow:** after your logic runs (fetch data, compute, encode). There is no separate "get report" step.                                                                                                                                               |
+| What does this guide cover? | Steps 3–4 below: [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime), then [`sendReport()`](/cre/reference/sdk/http-client-ts#using-sendreport) to your API. Steps 1–2 (trigger and your callback logic) are prerequisites, not the focus here. |
+| Who verifies it?            | The **receiver:** your HTTP service or a separate CRE workflow. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts).                                                                                          |
+
+**Sender flow in one workflow execution:**
+
+1. Trigger fires (cron, HTTP, …).
+2. Your callback runs (API calls, encoding, etc.).
+3. [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime): DON produces a signed `ReportResponse`.
+4. [`sendReport()`](/cre/reference/sdk/http-client-ts#using-sendreport): format and POST to your URL.
+
 ## Prerequisites
 
 - Familiarity with [making POST requests](/cre/guides/workflow/using-http-client/post-request)
-- Familiarity with `runtime.report()` (covered [below](#generating-reports-for-http-submission))
+- Familiarity with [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime) (covered [below](#generating-reports-for-http-submission))
+- **`viem`** as a direct dependency in the workflow `package.json` (for ABI encoding in examples)
+- Protobuf HTTP/report types from **`@chainlink/cre-sdk/pb`** (`SDK_PB.ReportResponse`, `HTTP_CLIENT_PB.RequestJson`), not the main `@chainlink/cre-sdk` entry
 
 
 <Aside type="caution" title="Redirects are not supported">
   HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
 </Aside>
 
-## Quick start: Minimal example
+## Payload contract (if you verify offchain)
 
-Here's the simplest possible workflow that generates and submits a report via HTTP:
+If a receiver uses [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts), your HTTP body must expose three fields. The verify guide expects **hex without `0x` in JSON** (field name `context`, not `reportContext`):
+
+| Your JSON field | SDK field on `ReportResponse` |
+| --------------- | ----------------------------- |
+| `report`        | `rawReport`                   |
+| `context`       | `reportContext`               |
+| `signatures`    | `sigs[].signature`            |
+
+Use [Pattern 4 for offchain verification (hex)](#pattern-4-for-offchain-verification-hex) or the [complete working example](#complete-working-example). Other patterns are for APIs with different formats, not the default verify examples.
+
+## Minimal example (binary)
+
+This example POSTs **raw report bytes** (`application/octet-stream`). Use this if your API accepts raw binary. It is **not** compatible with the verify guide’s JSON receiver — for the sender → verify flow, use the [complete working example](#complete-working-example) instead.
+
+Here’s the simplest workflow that generates and submits a report via HTTP:
 
 ```typescript
-import { ok, type ReportResponse, type RequestJson, type HTTPSendRequester } from "@chainlink/cre-sdk"
+import { ok, type HTTPSendRequester, type Report } from "@chainlink/cre-sdk"
+import type { SDK_PB, HTTP_CLIENT_PB } from "@chainlink/cre-sdk/pb"
+
+type ReportResponse = SDK_PB.ReportResponse
+type RequestJson = HTTP_CLIENT_PB.RequestJson
 
 const formatReportSimple = (r: ReportResponse): RequestJson => {
   return {
@@ -15153,8 +15223,8 @@ const formatReportSimple = (r: ReportResponse): RequestJson => {
       "Content-Type": "application/octet-stream",
     },
     cacheSettings: {
-      readFromCache: true,
-      maxAgeMs: 60000, // Accept cached responses up to 60 seconds old
+      store: true,
+      maxAge: "60s",
     },
   }
 }
@@ -15173,7 +15243,7 @@ const submitReport = (sendRequester: HTTPSendRequester, report: Report): { succe
 **What's happening here:**
 
 1. `formatReportSimple` transforms the report into an HTTP request that your API understands
-2. `sendRequester.sendReport()` calls your transformation function and sends the request
+2. [`sendRequester.sendReport()`](/cre/reference/sdk/http-client-ts#using-sendreport) calls your transformation function and sends the request
 3. The SDK handles consensus and returns the result
 
 The rest of this guide explains how this works and shows different formatting patterns for various API requirements.
@@ -15182,7 +15252,7 @@ The rest of this guide explains how this works and shows different formatting pa
 
 ### The report structure
 
-When you call `runtime.report()`, the SDK creates a `ReportResponse` containing:
+After [consensus](/cre/key-terms#consensus), [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime) returns a `ReportResponse`: the wire-format view of a [CRE report](/cre/key-terms#report-cre-report). It contains:
 
 ```typescript
 interface ReportResponse {
@@ -15211,7 +15281,7 @@ Your transformation function tells the SDK how to format the report for your API
 
 **The SDK calls this function internally:**
 
-1. You pass your transformation function to `sendReport()`
+1. You pass your transformation function to [`sendReport()`](/cre/reference/sdk/http-client-ts#using-sendreport)
 2. The SDK calls it with the generated `ReportResponse`
 3. Your function returns a `RequestJson` formatted for your API
 4. The SDK sends the request and handles consensus
@@ -15228,6 +15298,15 @@ The transformation function gives you complete control over the format.
 
 Here are common patterns for formatting reports. Choose the one that matches your API's requirements.
 
+All patterns below use protobuf types and caching settings:
+
+```typescript
+import type { SDK_PB, HTTP_CLIENT_PB } from "@chainlink/cre-sdk/pb"
+
+type ReportResponse = SDK_PB.ReportResponse
+type RequestJson = HTTP_CLIENT_PB.RequestJson
+```
+
 ### Choosing the right pattern
 
 | Pattern                                                                                                 | When to use                                               |
@@ -15242,8 +15321,6 @@ Here are common patterns for formatting reports. Choose the one that matches you
 Use this when your API accepts raw binary data:
 
 ```typescript
-import type { ReportResponse, RequestJson } from "@chainlink/cre-sdk"
-
 const formatReportSimple = (r: ReportResponse): RequestJson => {
   return {
     url: "https://api.example.com/reports",
@@ -15253,8 +15330,8 @@ const formatReportSimple = (r: ReportResponse): RequestJson => {
       "Content-Type": "application/octet-stream",
     },
     cacheSettings: {
-      readFromCache: true, // Enable caching
-      maxAgeMs: 60000, // Accept cached responses up to 60 seconds old
+      store: true,
+      maxAge: "60s",
     },
   }
 }
@@ -15300,8 +15377,8 @@ const formatReportWithSignatures = (r: ReportResponse): RequestJson => {
       "Content-Type": "application/octet-stream",
     },
     cacheSettings: {
-      readFromCache: true,
-      maxAgeMs: 60000,
+      store: true,
+      maxAge: "60s",
     },
   }
 }
@@ -15332,8 +15409,8 @@ const formatReportWithHeaderSigs = (r: ReportResponse): RequestJson => {
     body: Buffer.from(r.rawReport).toString("base64"),
     headers,
     cacheSettings: {
-      readFromCache: true,
-      maxAgeMs: 60000,
+      store: true,
+      maxAge: "60s",
     },
   }
 }
@@ -15375,12 +15452,52 @@ const formatReportAsJSON = (r: ReportResponse): RequestJson => {
       "Content-Type": "application/json",
     },
     cacheSettings: {
-      readFromCache: true,
-      maxAgeMs: 60000,
+      store: true,
+      maxAge: "60s",
     },
   }
 }
 ```
+
+### Pattern 4 for offchain verification (hex)
+
+Use this variant when testing the [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts) receiver in simulation. The verify examples decode **hex without a `0x` prefix**; the receiver adds `0x` when calling `hexToBytes`.
+
+Pattern 4 in the block above uses **base64** fields. Base64 sender output does **not** match the verify guide’s hex decoder without changes.
+
+```typescript
+import type { SDK_PB, HTTP_CLIENT_PB } from "@chainlink/cre-sdk/pb"
+import { bytesToHex } from "viem"
+
+type ReportResponse = SDK_PB.ReportResponse
+type RequestJson = HTTP_CLIENT_PB.RequestJson
+
+const formatReportAsJSONHex =
+  (config: { apiUrl: string }) =>
+  (r: ReportResponse): RequestJson => {
+    const payload = {
+      report: bytesToHex(r.rawReport).slice(2),
+      context: bytesToHex(r.reportContext).slice(2),
+      signatures: r.sigs.map((sig) => bytesToHex(sig.signature).slice(2)),
+    }
+    const bodyBytes = new TextEncoder().encode(JSON.stringify(payload))
+
+    return {
+      url: config.apiUrl,
+      method: "POST",
+      body: Buffer.from(bodyBytes).toString("base64"),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cacheSettings: {
+        store: true,
+        maxAge: "60s",
+      },
+    }
+  }
+```
+
+The `body` field is the UTF-8 JSON string, base64-encoded for the protobuf `bytes` field (same pattern as other JSON POST bodies in TypeScript workflows).
 
 ### Understanding `cacheSettings` for reports
 
@@ -15414,7 +15531,7 @@ This approach is reliable because the `rawReport` is identical across all nodes�
 
 ## Generating reports for HTTP submission
 
-Before you can submit a report via HTTP, you need to generate it using `runtime.report()`. This creates a cryptographically signed report from your encoded data.
+Before you can submit a report via HTTP, you need to generate it using [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime). This creates a cryptographically signed report from your encoded data.
 
 **Basic pattern:**
 
@@ -15438,11 +15555,11 @@ const report = runtime
 // Step 3: Submit via HTTP (covered in next section)
 ```
 
-The `runtime.report()` method works the same way whether you're encoding a single value or a struct—just use Viem's `encodeAbiParameters()` with the appropriate ABI types. For detailed examples on encoding single values, structs, and complex types, see the [Writing Data Onchain](/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain) guide.
+The [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime) method works the same way whether you're encoding a single value or a struct—just use Viem's `encodeAbiParameters()` with the appropriate ABI types. For detailed examples on encoding single values, structs, and complex types, see the [Writing Data Onchain](/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain) guide.
 
 ## Using `sendReport()` (recommended approach)
 
-Use the high-level `httpClient.sendRequest()` pattern with `sendRequester.sendReport()`:
+Use the high-level `httpClient.sendRequest()` pattern with [`sendRequester.sendReport()`](/cre/reference/sdk/http-client-ts#using-sendreport):
 
 ```typescript
 import {
@@ -15458,7 +15575,11 @@ interface SubmitResponse {
   success: boolean
 }
 
-const submitReportViaHTTP = (sendRequester: HTTPSendRequester, report: Report): SubmitResponse => {
+const submitReportViaHTTP = (
+  runtime: Runtime<Config>,
+  sendRequester: HTTPSendRequester,
+  report: Report
+): SubmitResponse => {
   const response = sendRequester.sendReport(report, formatReportSimple).result()
 
   if (!ok(response)) {
@@ -15479,7 +15600,7 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
   const result = httpClient
     .sendRequest(
       runtime,
-      (sendRequester: HTTPSendRequester) => submitReportViaHTTP(sendRequester, report),
+      (sendRequester: HTTPSendRequester) => submitReportViaHTTP(runtime, sendRequester, report),
       consensusIdenticalAggregation<SubmitResponse>()
     )()
     .result()
@@ -15493,25 +15614,30 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
 This example shows a workflow that:
 
 1. Generates a report from a single value
-2. Submits it to an HTTP API
-3. Uses the simple "report in body" format
+2. Submits it to an HTTP API as **Pattern 4 JSON with hex fields** (compatible with the verify guide’s receiver sim loop)
+3. Uses `config.apiUrl` from your target config file
+
+Add **`viem`** to `package.json`. Register handlers with `handler()` from `@chainlink/cre-sdk` (not `cron.handler()`).
 
 ```typescript
 import {
   CronCapability,
   HTTPClient,
   Runner,
+  handler,
   consensusIdenticalAggregation,
   hexToBase64,
   ok,
   type Runtime,
-  type Report,
   type CronPayload,
   type HTTPSendRequester,
-  type ReportResponse,
-  type RequestJson,
+  type Report,
 } from "@chainlink/cre-sdk"
-import { encodeAbiParameters, parseAbiParameters } from "viem"
+import type { SDK_PB, HTTP_CLIENT_PB } from "@chainlink/cre-sdk/pb"
+import { encodeAbiParameters, parseAbiParameters, bytesToHex } from "viem"
+
+type ReportResponse = SDK_PB.ReportResponse
+type RequestJson = HTTP_CLIENT_PB.RequestJson
 
 interface Config {
   apiUrl: string
@@ -15526,32 +15652,43 @@ type MyResult = Record<string, never>
 
 const initWorkflow = (config: Config) => {
   const cron = new CronCapability()
-
-  return [cron.handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
 }
 
-// Transformation function: defines how the API expects the report
-const formatReportForMyAPI = (r: ReportResponse): RequestJson => {
-  return {
-    url: "https://webhook.site/your-unique-id", // Replace with your API
-    method: "POST",
-    body: Buffer.from(r.rawReport).toString("base64"),
-    headers: {
-      "Content-Type": "application/octet-stream",
-      "X-Report-SeqNr": r.seqNr.toString(),
-    },
-    cacheSettings: {
-      readFromCache: true, // Prevent duplicate submissions
-      maxAgeMs: 60000, // Accept cached responses up to 60 seconds old
-    },
+const formatReportForMyAPI =
+  (config: Config) =>
+  (r: ReportResponse): RequestJson => {
+    const payload = {
+      report: bytesToHex(r.rawReport).slice(2),
+      context: bytesToHex(r.reportContext).slice(2),
+      signatures: r.sigs.map((sig) => bytesToHex(sig.signature).slice(2)),
+    }
+    const bodyBytes = new TextEncoder().encode(JSON.stringify(payload))
+
+    return {
+      url: config.apiUrl,
+      method: "POST",
+      body: Buffer.from(bodyBytes).toString("base64"),
+      headers: {
+        "Content-Type": "application/json",
+        "X-Report-SeqNr": r.seqNr.toString(), // optional metadata for your API
+      },
+      cacheSettings: {
+        store: true,
+        maxAge: "60s",
+      },
+    }
   }
-}
 
-// Function that submits the report via HTTP
-const submitReportViaHTTP = (sendRequester: HTTPSendRequester, report: Report): SubmitResponse => {
-  runtime.log("Submitting report to API")
+const submitReportViaHTTP = (
+  runtime: Runtime<Config>,
+  sendRequester: HTTPSendRequester,
+  report: Report,
+  config: Config
+): SubmitResponse => {
+  runtime.log(`Submitting report to API: ${config.apiUrl}`)
 
-  const response = sendRequester.sendReport(report, formatReportForMyAPI).result()
+  const response = sendRequester.sendReport(report, formatReportForMyAPI(config)).result()
 
   runtime.log(`Report submitted - status: ${response.statusCode}, bodyLength: ${response.body.length}`)
 
@@ -15563,16 +15700,13 @@ const submitReportViaHTTP = (sendRequester: HTTPSendRequester, report: Report): 
   return { success: true }
 }
 
-const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): MyResult => {
-  // Step 1: Generate a report (example: a single uint256 value)
+const onCronTrigger = (runtime: Runtime<Config>, _payload: CronPayload): MyResult => {
   const myValue = 123456789n
   runtime.log(`Generating report with value: ${myValue}`)
 
-  // Encode the value using Viem
   const encodedValue = encodeAbiParameters(parseAbiParameters("uint256 value"), [myValue])
 
-  // Generate the report
-  const reportResponse = runtime
+  const report = runtime
     .report({
       encodedPayload: hexToBase64(encodedValue),
       encoderName: "evm",
@@ -15583,13 +15717,12 @@ const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): MyResult
 
   runtime.log("Report generated successfully")
 
-  // Step 2: Submit the report via HTTP
   const httpClient = new HTTPClient()
 
   const submitResult = httpClient
     .sendRequest(
       runtime,
-      (sendRequester: HTTPSendRequester) => submitReportViaHTTP(sendRequester, reportResponse),
+      (sendRequester: HTTPSendRequester) => submitReportViaHTTP(runtime, sendRequester, report, runtime.config),
       consensusIdenticalAggregation<SubmitResponse>()
     )()
     .result()
@@ -15616,12 +15749,21 @@ export async function main() {
 ### Testing with webhook.site
 
 1. Go to [webhook.site](https://webhook.site/) and get a unique URL
-2. Update `config.json` with your webhook URL
-3. Run the simulation:
+2. Update `config.json` (or `config.staging.json`) with your webhook URL in `apiUrl`
+3. From the **CRE project root**, run the simulation:
    ```bash
    cre workflow simulate my-workflow --target staging-settings
    ```
-4. Check webhook.site to see the report data received
+4. On webhook.site, open the request **Content** tab. You should see JSON with `report`, `context`, and `signatures` (hex strings). Use that JSON to test a receiver workflow in [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts#testing-locally-with-simulation).
+
+
+<Aside type="note" title="Binary vs JSON for verify testing">
+  If you post **raw binary** (`application/octet-stream`) instead of Pattern 4 JSON, webhook.site shows unreadable bytes and you cannot paste the body into the verify receiver without reformatting. Use [Pattern 4 for offchain verification (hex)](#pattern-4-for-offchain-verification-hex) for the sender → copy payload → receiver sim checklist.
+</Aside>
+
+## Next step: verify on the receiver
+
+The sender does not validate the report for the receiver. After submission, the ingesting side must verify signatures before trusting the payload. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts).
 
 ## Advanced: Low-level pattern
 
@@ -15662,15 +15804,13 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
 
 1. **Always use `cacheSettings`**: Include caching in every transformation function to prevent worst-case duplicate submission scenarios
 2. **Implement API-side deduplication**: Your receiving API must implement deduplication using the **hash of the report** (`keccak256(rawReport)`) to detect and reject duplicate submissions
-3. **Verify signatures before processing**: Your API must verify the cryptographic signatures against DON public keys before trusting report data (see note below about signature verification)
+3. **Verify on the receiver**: The sender does not validate the report; your API or a [receiver CRE workflow](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts) must verify before trusting payload data
 4. **Match your API's format exactly**: Study your API's documentation to understand the expected format (binary, JSON, headers, etc.)
 5. **Handle errors gracefully**: Check HTTP status codes and provide meaningful error messages
 
 
 <Aside type="caution" title="Signature verification is your responsibility">
-  Unlike onchain submissions (where the `KeystoneForwarder` contract verifies signatures), **HTTP submissions require your API to verify signatures** before trusting the report data.
-
-  **Documentation coming soon**: "Verifying CRE Reports Offchain" guide.
+  Unlike onchain submissions (where the `KeystoneForwarder` contract verifies signatures), **HTTP submissions require you to verify signatures** before trusting the report data. Use [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) in a receiver workflow or implement equivalent checks in your API. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts).
 </Aside>
 
 ## Troubleshooting
@@ -15686,12 +15826,530 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
 - Your report format likely doesn't match what your API expects
 - Check if your API expects base64 encoding, JSON wrapping, or specific headers
 
+**TypeScript compile errors on the complete example**
+
+- Use `handler(cron.trigger(...), fn)` from `@chainlink/cre-sdk`, not `cron.handler()`
+- Import `ReportResponse` / `RequestJson` from `@chainlink/cre-sdk/pb`
+- Pass `runtime` from the trigger callback into helper functions (no global `runtime`)
+- Add `viem` as a direct workflow dependency
+
 ## Learn more
 
-- **[HTTP Client SDK Reference](/cre/reference/sdk/http-client-ts)** — Complete API reference including `sendReport()` and `ReportResponse`
-- **[POST Requests](/cre/guides/workflow/using-http-client/post-request)** — Learn about HTTP request patterns and caching
-- **[Writing Data Onchain](/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain)** — Detailed guide on encoding single values, structs, and complex types using Viem
-- **[Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain)** — Alternative: Submit reports to smart contracts instead of HTTP
+- **[Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts):** verify signatures on the receiver before trusting payload data
+- **[HTTP Client SDK Reference](/cre/reference/sdk/http-client-ts):** complete API reference including `sendReport()` and `ReportResponse`
+- **[POST Requests](/cre/guides/workflow/using-http-client/post-request):** HTTP request patterns and caching
+- **[Writing Data Onchain](/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain):** encoding single values, structs, and complex types using Viem
+- **[Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain):** submit reports to smart contracts instead of HTTP
+
+---
+
+# Verifying CRE Reports Offchain
+Source: https://docs.chain.link/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts
+Last Updated: 2026-05-20
+
+This guide is for the **receiver** side: you already received a CRE report package — typically via HTTP from a [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts) sender workflow — and need to **prove it is authentic** before using the payload.
+
+When a workflow delivers results via HTTP (or another offchain channel), nothing onchain automatically validates the report. **You must verify signatures before trusting the data.**
+
+There are two ways to verify, depending on who receives the POST:
+
+| My receiver is...                                            | Use                                                                                                                      |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| **My own API or server** (Express, FastAPI, Go server, etc.) | [Verifying outside CRE](#verifying-outside-cre) — standard crypto libraries, no CRE SDK needed                           |
+| **A CRE workflow** with an HTTP trigger                      | [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) — see [CRE receiver workflow](#cre-receiver-workflow) |
+
+Both paths run the same cryptographic checks against the same onchain Capability Registry. The difference is whether you use the CRE SDK's helper (which requires `runtime`) or implement it yourself with standard libraries.
+
+## What is a CRE report?
+
+A **[CRE report](/cre/key-terms#report-cre-report)** is a DON-signed package another workflow (or system) created with [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime). You receive its bytes over HTTP (or another channel) as `rawReport`, `reportContext`, and `signatures`. Before you use the encoded payload, you must confirm the signatures match authorized DON signers on the Capability Registry.
+
+See [Key Terms: Report](/cre/key-terms#report-cre-report) for how reports are created and delivered. Pair this guide with [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts) on the sender side.
+
+**Receiver flow (both paths):**
+
+1. Your endpoint (API or CRE HTTP trigger) receives the POST payload.
+2. Decode hex fields into bytes.
+3. Verify signatures against the Capability Registry.
+4. Use the trusted payload body in your logic.
+
+## What you'll learn
+
+- When to verify reports offchain vs relying on onchain forwarders
+- How [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) validates signatures and reads metadata (inside a CRE workflow)
+- How to build a CRE receiver workflow that accepts reports over HTTP
+- How to verify reports in your own API server without a CRE receiver workflow
+- How to restrict verification to specific CRE environments or zones
+
+## Prerequisites
+
+- **A report payload to verify** — three hex fields: `report`, `context`, `signatures`. If you don't have one yet, follow [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts) to create a sender workflow and capture its output first.
+- **SDK**: `@chainlink/cre-sdk` v1.8.0 or later (for the CRE receiver workflow path)
+- For HTTP-triggered receivers: [HTTP Trigger configuration](/cre/guides/workflow/using-triggers/http-trigger/configuration-ts)
+
+## Onchain vs offchain verification
+
+| Aspect               | Offchain ([`Report.parse()`](/cre/reference/sdk/core-ts#report-verification)) | Onchain (`KeystoneForwarder`)     |
+| -------------------- | ----------------------------------------------------------------------------- | --------------------------------- |
+| **Where it runs**    | Inside your CRE workflow callback                                             | In a smart contract transaction   |
+| **Signature check**  | Local `ecrecover` on report hash                                              | Contract logic onchain            |
+| **Signer allowlist** | Read from Capability Registry (`getDON`, `getNodesByP2PIds`)                  | Forwarder + registry              |
+| **Typical use**      | CRE receiver workflows with an HTTP trigger                                   | Consumer contracts via `onReport` |
+
+Offchain verification still uses **onchain data as a trust anchor**: the first time a DON is seen, the SDK reads the production Capability Registry on Ethereum Mainnet to learn `f` and authorized signer addresses.
+
+Default (`productionEnvironment()`):
+
+- **Chain**: Ethereum Mainnet (chain selector `5009297550715157269`)
+- **Registry**: `0x76c9cf548b4179F8901cda1f8623568b58215E62`
+
+## How verification works
+
+At its core, verification answers one question: did enough authorized nodes from the right DON sign this exact report? To answer it, the receiver decodes the report's metadata header to find which DON produced it, asks the onchain Capability Registry for that DON's authorized signers and quorum threshold (`f`), then checks that at least `f+1` of the provided signatures come from those addresses. Both paths in this guide — the outside-CRE script and the CRE receiver workflow — run this same sequence:
+
+1. **Parse the report header** from `rawReport` (109-byte metadata + body).
+2. **Fetch DON info** from the registry (if not cached): fault tolerance `f` and signer addresses.
+3. **Verify signatures**: compute `keccak256(keccak256(rawReport) || reportContext)`, recover signers, require **f+1** valid signatures from authorized nodes.
+4. **Return a `Report` object** with accessors for workflow ID, owner, execution ID, body, and more.
+
+If verification fails, [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) throws (for example, unknown signer, insufficient signatures, or registry read failure).
+
+## Verifying outside CRE
+
+[`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) requires the CRE `runtime` object and can only run inside a CRE workflow callback. If your API server receives reports directly, you can verify without the CRE SDK using standard libraries.
+
+If you followed the [submit guide](/cre/guides/workflow/using-http-client/submitting-reports-http-ts), you already have a JSON payload with `report`, `context`, and `signatures` as hex strings — this section shows how to verify it.
+
+1. Create a new folder for your verification script and install `viem`:
+
+   ```bash
+   mkdir verify-report && cd verify-report
+   npm init -y
+   npm install viem
+   ```
+
+2. Save the following as `verify.ts`.
+
+   Parses the 109-byte report header to identify the DON, reads the authorized signer list and fault tolerance `f` from the Capability Registry on Ethereum Mainnet, then ecrecovers each signature and requires at least `f+1` to match. The ABI layout mirrors [`report.ts` in cre-sdk-typescript](https://github.com/smartcontractkit/cre-sdk-typescript).
+
+   ```typescript
+   // verify-report/verify.ts
+   import { keccak256, concatHex, toHex, recoverAddress, hexToBytes, createPublicClient, http } from "viem"
+   import { mainnet } from "viem/chains"
+
+   const REPORT_HEADER_LENGTH = 109
+   const CAPABILITY_REGISTRY = "0x76c9cf548b4179F8901cda1f8623568b58215E62" as const
+
+   /** Parse key fields from the 109-byte rawReport metadata header. */
+   function parseHeader(rawReport: Uint8Array) {
+     if (rawReport.length < REPORT_HEADER_LENGTH) {
+       throw new Error(`rawReport too short: need ${REPORT_HEADER_LENGTH} bytes, got ${rawReport.length}`)
+     }
+     const view = new DataView(rawReport.buffer, rawReport.byteOffset)
+     return {
+       donId: view.getUint32(37, false), // bytes 37–40
+       workflowId: toHex(rawReport.slice(45, 77)), // bytes 45–76
+       workflowOwner: toHex(rawReport.slice(87, 107)), // bytes 87–106
+       body: rawReport.slice(REPORT_HEADER_LENGTH), // bytes 109+
+     }
+   }
+
+   /** keccak256(keccak256(rawReport) || reportContext) */
+   function reportHash(rawReport: Uint8Array, reportContext: Uint8Array): `0x${string}` {
+     return keccak256(concatHex([keccak256(toHex(rawReport)), toHex(reportContext)]))
+   }
+
+   /** Read the last 4 bytes of a 32-byte uint256 ABI slot as a JS number. */
+   function readSlot(bytes: Uint8Array, offset: number): number {
+     return new DataView(bytes.buffer, bytes.byteOffset + offset + 28, 4).getUint32(0, false)
+   }
+
+   // In-process cache: registry data only changes during DON reconfiguration.
+   const signerCache = new Map<number, { f: number; signers: Set<string> }>()
+
+   type PublicClient = ReturnType<typeof createPublicClient>
+
+   /**
+    * Fetch fault tolerance f and authorized signer addresses from the Capability Registry.
+    * Makes two eth_call reads: getDON(donId) then getNodesByP2PIds(nodeP2PIds).
+    * Result is cached by DON ID.
+    */
+   async function fetchSigners(client: PublicClient, donId: number): Promise<{ f: number; signers: Set<string> }> {
+     const cached = signerCache.get(donId)
+     if (cached) return cached
+
+     // Step 1: getDON(uint32 donId) — selector keccak256("getDON(uint32)")[0:4] = 0x23537405
+     const donIdPadded = new Uint8Array(32)
+     new DataView(donIdPadded.buffer).setUint32(28, donId, false)
+     const getDONCalldata = concatHex(["0x23537405", toHex(donIdPadded)])
+
+     const getDONResult = await client.call({ to: CAPABILITY_REGISTRY, data: getDONCalldata })
+     if (!getDONResult.data) throw new Error("getDON returned empty response")
+     const getDONBytes = hexToBytes(getDONResult.data)
+     if (getDONBytes.length < 224) throw new Error(`getDON response too short: ${getDONBytes.length} bytes`)
+
+     // Response layout (see report.ts in cre-sdk-typescript for full ABI documentation):
+     //   slot 3 (bytes  96-127): f               (uint8, zero-padded to 32)
+     //   slot 6 (bytes 192-223): ptr[nodeP2PIds] relative to tupleStart = 32
+     const f = readSlot(getDONBytes, 96)
+     const nodeP2PIdsPtr = readSlot(getDONBytes, 192)
+     const nodeCountOff = 32 + nodeP2PIdsPtr
+     const nodeCount = readSlot(getDONBytes, nodeCountOff)
+
+     const nodeP2PIds: `0x${string}`[] = []
+     for (let i = 0; i < nodeCount; i++) {
+       const start = nodeCountOff + 32 + i * 32
+       nodeP2PIds.push(toHex(getDONBytes.slice(start, start + 32)))
+     }
+
+     if (nodeCount === 0) {
+       const result = { f, signers: new Set<string>() }
+       signerCache.set(donId, result)
+       return result
+     }
+
+     // Step 2: getNodesByP2PIds(bytes32[]) — selector 0x05a51966
+     // ABI-encode bytes32[]: [ptr=32][count][id0]...[idN]
+     const ptrBytes = new Uint8Array(32)
+     new DataView(ptrBytes.buffer).setUint32(28, 32, false)
+     const countBytes = new Uint8Array(32)
+     new DataView(countBytes.buffer).setUint32(28, nodeCount, false)
+     const getNodesCalldata = concatHex(["0x05a51966", toHex(ptrBytes), toHex(countBytes), ...nodeP2PIds])
+
+     const getNodesResult = await client.call({ to: CAPABILITY_REGISTRY, data: getNodesCalldata })
+     if (!getNodesResult.data) throw new Error("getNodesByP2PIds returned empty response")
+     const getNodesBytes = hexToBytes(getNodesResult.data)
+     if (getNodesBytes.length < 64)
+       throw new Error(`getNodesByP2PIds response too short: ${getNodesBytes.length} bytes`)
+
+     // Response layout: [outerPtr][count][elem0-ptr][elem1-ptr]...[tuple0][tuple1]...
+     // Each NodeInfo tuple (9 slots × 32 bytes): slot 3 = signer bytes32, first 20 bytes = address
+     const outerPtr = readSlot(getNodesBytes, 0)
+     const returnedCount = readSlot(getNodesBytes, outerPtr)
+     const NODE_TUPLE_HEAD = 288 // 9 slots × 32 bytes
+
+     const signers = new Set<string>()
+     for (let i = 0; i < returnedCount; i++) {
+       const elemPtr = readSlot(getNodesBytes, outerPtr + 32 + i * 32)
+       const tupleBase = outerPtr + 32 + elemPtr
+       if (tupleBase + NODE_TUPLE_HEAD > getNodesBytes.length) break
+       const addrBytes = getNodesBytes.slice(tupleBase + 3 * 32, tupleBase + 3 * 32 + 20)
+       signers.add(toHex(addrBytes).slice(2).toLowerCase()) // 40-char hex, no 0x prefix
+     }
+
+     const result = { f, signers }
+     signerCache.set(donId, result)
+     return result
+   }
+
+   /** Verify that ≥ f+1 signatures are from authorized DON signers. */
+   async function verifyReport(
+     rawReport: Uint8Array,
+     signatures: Uint8Array[],
+     reportContext: Uint8Array,
+     client: PublicClient
+   ): Promise<void> {
+     const { donId } = parseHeader(rawReport)
+     const { f, signers } = await fetchSigners(client, donId)
+     const hash = reportHash(rawReport, reportContext)
+     const required = f + 1
+     let valid = 0
+
+     for (const sig of signatures) {
+       if (sig.length !== 65) continue
+       const normalized = new Uint8Array(sig)
+       if (normalized[64] >= 27) normalized[64] -= 27 // normalize recovery byte
+       try {
+         const recovered = await recoverAddress({ hash, signature: toHex(normalized) })
+         if (signers.has(recovered.toLowerCase().slice(2))) valid++
+       } catch {
+         /* malformed signature — skip */
+       }
+       if (valid >= required) return
+     }
+     throw new Error(`insufficient valid signatures: ${valid}/${required}`)
+   }
+
+   // Usage — create the client once for your server, reuse it across requests:
+   const client = createPublicClient({
+     chain: mainnet,
+     transport: http(process.env.ETH_MAINNET_RPC_URL!),
+   })
+
+   // For each incoming report POST:
+   const rawReport = hexToBytes(`0x${payload.report}`)
+   const reportContext = hexToBytes(`0x${payload.context}`)
+   const signatures = payload.signatures.map((s: string) => hexToBytes(`0x${s}`))
+
+   await verifyReport(rawReport, signatures, reportContext, client)
+   // If it doesn't throw, the report is authentic.
+   // Read the payload: parseHeader(rawReport).body
+   ```
+
+3. Set your RPC URL and run the script:
+
+   ```bash
+   export ETH_MAINNET_RPC_URL=https://your-mainnet-rpc-endpoint
+   npx tsx verify.ts
+   ```
+
+4. Check the output.
+
+   With a **sim-signed report** (from the submit guide sender simulation):
+
+   ```
+   Error: insufficient valid signatures: 0/4
+   ```
+
+   This error is the expected output for this example. The registry call succeeded and returned the real mainnet signer list (`f=3, signers=10` for this DON), but the simulation generated its signatures with local test keys that don't appear on that list. The verification logic ran correctly and rejected the unrecognized signatures. When you switch to a production-signed report from a deployed sender, `verifyReport` will return without throwing.
+
+   With a **production-signed report** from a deployed sender, `verifyReport` returns without throwing. Read the payload:
+
+   ```typescript
+   const { body, workflowId, workflowOwner } = parseHeader(rawReport)
+   // body is the ABI-encoded payload the sender embedded
+   ```
+
+
+<Aside type="caution" title="Cache registry results">
+  `fetchSigners` caches by DON ID in memory for the lifetime of the process. Registry data only changes during DON reconfiguration. If you see unexpected `invalid signature` errors after a DON upgrade, clear the cache and retry.
+</Aside>
+
+## CRE receiver workflow
+
+Use this path if you want the receiver itself to be a CRE workflow with an HTTP trigger. [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) handles Capability Registry reads and caching automatically.
+
+
+<Aside type="caution" title="Educational Example Disclaimer">
+  This page includes an educational example to use a Chainlink system, product, or service and is provided to
+  demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
+  template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may be
+  missing key checks or error handling to make the usage of the system, product or service more clear. Do not use the
+  code in this example in a production environment without completing your own audits and application of best practices.
+  Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
+  that are generated due to errors in code.
+</Aside>
+
+
+<Aside type="note" title="Using the private registry?">
+  This guide uses the **Capability Registry** (DON signers), not the **workflow registry** where you deploy. [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) works the same way regardless of which registry you deployed with. For HTTP-triggered receivers, use the [enterprise gateway URL](/cre/guides/operations/deploying-to-private-registry-ts#http-triggers-with-the-private-registry). Local simulation may need an `ethereum-mainnet` RPC in `project.yaml` for registry reads.
+</Aside>
+
+### Testing with simulation
+
+If you ran the [submit guide complete example](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#complete-working-example), you already copied JSON from webhook.site. Use that payload here.
+
+
+<Aside type="note" title="CRE project required">
+  The directory you run `cre` from must contain a `project.yaml`. If you do not have one, run `cre init` from your project folder or follow the [Getting Started guide](/cre/getting-started/overview).
+</Aside>
+
+1. Save the webhook JSON as `test-report-payload.json` inside your receiver workflow folder:
+
+   ```
+   verify-report-receiver/test-report-payload.json
+   ```
+
+2. Create a `verify-report-receiver/` folder in your CRE project with the following files.
+
+   `config.staging.json` — enables wiring tests without mainnet signer validation:
+
+   ```json
+   {
+     "skipSignatureVerification": true
+   }
+   ```
+
+   `main.ts` — uses an empty HTTP trigger (add `authorizedKeys` before deploying):
+
+   ```typescript
+   // verify-report-receiver/main.ts
+   import {
+     decodeJson,
+     handler,
+     hexToBytes,
+     HTTPCapability,
+     Report,
+     Runner,
+     type HTTPPayload,
+     type Runtime,
+   } from "@chainlink/cre-sdk"
+
+   interface Config {
+     skipSignatureVerification?: boolean
+   }
+
+   type ParsedPayload = {
+     report: string
+     context: string
+     signatures: string[]
+   }
+
+   /** Hex without 0x prefix in JSON → bytes (add 0x before decode). */
+   const fromHexNoPrefix = (hex: string): Uint8Array => hexToBytes(`0x${hex}`)
+
+   /** AggregateError from Report.parse often has an empty .message in sim output. */
+   const formatError = (err: unknown): string => {
+     if (err instanceof AggregateError) {
+       const parts = err.errors.map((e) => (e instanceof Error ? e.message : String(e)))
+       return parts.join("; ") || "report verification failed"
+     }
+     if (err instanceof Error) return err.message
+     return String(err)
+   }
+
+   const run = async (runtime: Runtime<Config>, payload: HTTPPayload): Promise<{ verified: boolean }> => {
+     try {
+       const parsed = decodeJson(payload.input) as ParsedPayload
+
+       const rawReport = fromHexNoPrefix(parsed.report)
+       const reportContext = fromHexNoPrefix(parsed.context)
+       const sigs = parsed.signatures.map((s) => fromHexNoPrefix(s))
+
+       runtime.log(`Parsing report (${rawReport.length} bytes, ${sigs.length} signatures)`)
+
+       const report = await Report.parse(runtime, rawReport, sigs, reportContext, {
+         skipSignatureVerification: runtime.config.skipSignatureVerification ?? false,
+       })
+
+       runtime.log(
+         `Verified report workflowId=${report.workflowId()} executionId=${report.executionId()} donId=${report.donId()}`
+       )
+       report.body()
+       return { verified: true }
+     } catch (err) {
+       const msg = formatError(err)
+       runtime.log(`Report verification failed: ${msg}`)
+       throw new Error(msg)
+     }
+   }
+
+   const initWorkflow = () => {
+     const http = new HTTPCapability()
+     return [handler(http.trigger({}), run)]
+   }
+
+   export async function main() {
+     const runner = await Runner.newRunner<Config>()
+     await runner.run(initWorkflow)
+   }
+   ```
+
+3. From the CRE project root, run the simulation:
+
+   ```bash
+   cre workflow simulate verify-report-receiver \
+     --target staging-settings \
+     --non-interactive \
+     --trigger-index 0 \
+     --http-payload verify-report-receiver/test-report-payload.json
+   ```
+
+4. Check the output.
+
+   A successful wiring run logs the decoded report metadata and returns `{ verified: true }`:
+
+   ```
+   [USER LOG] Parsing report (141 bytes, 4 signatures)
+   [USER LOG] Verified report workflowId=... executionId=... donId=1
+   ✓ Workflow Simulation Result: { "verified": true }
+   ```
+
+   This confirms JSON decoding, hex parsing, and [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) are wired correctly. Signatures are not verified against the mainnet registry in this mode — that requires a production-signed report from a deployed sender.
+
+### Deploying to production
+
+The `run` handler you simulated is the same code you deploy. For production, make two configuration changes:
+
+1. **Remove `skipSignatureVerification`** from your target config (or omit it; the default is `false`). Reports from a deployed sender must pass real signature verification.
+2. **Add `authorizedKeys`** to your HTTP trigger — required for deployed workflows, not just simulation. See [HTTP Trigger configuration](/cre/guides/workflow/using-triggers/http-trigger/configuration-ts).
+
+
+<Aside type="caution" title="Hex encoding">
+  The example expects **hex strings without a `0x` prefix** in JSON. Adjust decoding if your API sends `0x`-prefixed values or base64 instead. Pattern 4 in the [submit guide](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-json-formatted-report) uses base64 by default; use [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-for-offchain-verification-hex) when testing this receiver.
+</Aside>
+
+## Report payload format
+
+When a sender POSTs a [CRE report](/cre/key-terms#report-cre-report) as JSON for offchain verification, receivers need three fields. The JSON key is `context` even though the SDK field is `reportContext`. See [Payload contract](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#payload-contract-if-you-verify-offchain) in the submit guide for how the sender produces these fields.
+
+| JSON field   | SDK field       | Description                                                     |
+| ------------ | --------------- | --------------------------------------------------------------- |
+| `report`     | `rawReport`     | Hex-encoded bytes (metadata header + workflow payload), no `0x` |
+| `context`    | `reportContext` | Hex-encoded config digest + sequence number                     |
+| `signatures` | `sigs`          | Array of hex-encoded 65-byte ECDSA signatures, no `0x`          |
+
+## API reference
+
+For full signatures, types, and `ReportParseConfig` options, see [SDK Reference: Core: Report verification](/cre/reference/sdk/core-ts#report-verification).
+
+### `Report` accessors
+
+After a successful [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification):
+
+| Method            | Description                               |
+| ----------------- | ----------------------------------------- |
+| `workflowId()`    | Workflow hash (`bytes32` as hex)          |
+| `workflowOwner()` | Deployer address (hex)                    |
+| `workflowName()`  | Workflow name field from metadata         |
+| `executionId()`   | Unique execution identifier               |
+| `donId()`         | DON that produced the report              |
+| `timestamp()`     | Report timestamp (Unix seconds)           |
+| `body()`          | Encoded payload after the 109-byte header |
+| `seqNr()`         | Sequence number from report context       |
+| `configDigest()`  | Config digest from report context         |
+
+## Best practices
+
+1. **Verify before side effects**: Call [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) before writing to databases, chains, or external systems.
+2. **Permission on metadata**: After verification, check `workflowId()`, `workflowOwner()`, or `donId()` match your expectations.
+3. **Deduplicate by execution ID**: Use `executionId()` or `keccak256(rawReport)` to reject replays (see [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#understanding-cachesettings-for-reports)).
+4. **Do not skip signature verification in production** unless you have another trust path.
+
+## Troubleshooting
+
+**Empty error after verify sim**
+
+- [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) may throw an **`AggregateError`** of multiple `invalid signature` errors. **`AggregateError.message` is often empty**, so the CLI prints `Execution resulted in an error being returned:` with nothing after the colon.
+- Format errors in your handler before rethrowing (see the simulation example above).
+
+**`invalid signature` / `unknown signer` in sim with fresh webhook JSON**
+
+- **Expected** when using default [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) on a **sim-signed** report: simulator DON keys do not match mainnet registry signers.
+- For local wiring tests, set `skipSignatureVerification: true`. For real crypto verify, use a **deployed sender** or production-signed reports.
+
+**`invalid signature` / `unknown signer` (deployed)**
+
+- Signatures may be from a different DON or stale registry config.
+- Confirm the sender workflow used production CRE and the report was not tampered with.
+
+**`unexpected token: 'test'` on simulate**
+
+- Wrong `--http-payload` path. Invoke `cre` from the **project root** and use a path such as `verify-report-receiver/test-report-payload.json`.
+
+**Receiver JSON parse error**
+
+- You copied a **binary/octet-stream** webhook body instead of Pattern 4 JSON. Use [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-ts#pattern-4-for-offchain-verification-hex).
+
+**`wrong number of signatures`**
+
+- At least **f+1** valid signatures are required. Extra invalid signatures are skipped; too few valid ones fails verification.
+
+**`could not read from chain ...`** *(CRE receiver workflow only)*
+
+- Registry read failed (RPC/network). Configure an **`ethereum-mainnet` RPC** in `project.yaml` — required for default [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification), including during sim. Sepolia-only RPC is not sufficient.
+
+**`raw report too short`**
+
+- `rawReport` is missing the 109-byte metadata header.
+
+## Learn more
+
+- **[Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts):** sender workflow; create and POST the report
+- **[SDK Reference: Core: Report verification](/cre/reference/sdk/core-ts#report-verification):** `Report.parse`, accessors, and `ReportParseConfig`
+- **[HTTP Trigger Overview](/cre/guides/workflow/using-triggers/http-trigger/overview-ts):** trigger deployed receiver workflows
+- **[Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain):** onchain forwarder verification path
+- **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts):** permissioning `onReport` with workflow metadata
 
 ---
 
@@ -18003,7 +18661,7 @@ If all nodes fail or consensus cannot be reached, the default value (`0n` in thi
 
 # SDK Reference: Core
 Source: https://docs.chain.link/cre/reference/sdk/core-ts
-Last Updated: 2026-01-20
+Last Updated: 2026-05-20
 
 This page provides a reference for the core data structures and functions of the CRE TypeScript SDK. These are the fundamental building blocks that every workflow uses, regardless of trigger types or capabilities.
 
@@ -18100,7 +18758,7 @@ Both `Runtime` and `NodeRuntime` provide:
 
 - **`runInNodeMode(...)`**: Execute code on individual nodes with consensus aggregation
 - **`getSecret(...)`**: Access to workflow secrets
-- **`report(...)`**: Generate cryptographically signed reports
+- **`report(...)`**: Generate cryptographically signed reports. To verify received reports, use [`Report.parse()`](#report-verification).
 
 ### Logging
 
@@ -18534,6 +19192,72 @@ const onTrigger = (runtime: Runtime<Config>): string => {
 <Aside type="note" title="Secrets guide">
   For a complete walkthrough on creating, storing, and using secrets, see the [Secrets guide](/cre/guides/workflow/secrets).
 </Aside>
+
+## Report verification
+
+Parse and verify CRE reports received over HTTP or other offchain channels. Requires **`@chainlink/cre-sdk` v1.8.0** or later.
+
+
+<Aside type="note" title="Guide">
+  For end-to-end examples (HTTP receiver workflow, payload format, private registry notes), see [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts). To **send** reports via HTTP, see [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts).
+</Aside>
+
+Verification runs in your callback: signatures are checked offchain, while authorized signers are loaded from the onchain **Capability Registry** (default: `productionEnvironment()` on Ethereum Mainnet). This is not the workflow deployment registry (`private` or onchain).
+
+Import from `@chainlink/cre-sdk`: `Report`, `productionEnvironment`, `zoneFromEnvironment`, and `ReportParseConfig`.
+
+### `Report.parse()`
+
+**Signature:**
+
+```typescript
+Report.parse(
+  runtime: Runtime,
+  rawReport: Uint8Array,
+  signatures: Uint8Array[],
+  reportContext: Uint8Array,
+  config?: ReportParseConfig,
+): Promise<Report>
+```
+
+Parses a report and verifies signatures. Throws on failure. Registry reads are cached per chain and DON.
+
+### `Report` accessors
+
+After a successful parse:
+
+| Method            | Returns      | Description                                |
+| ----------------- | ------------ | ------------------------------------------ |
+| `workflowId()`    | `string`     | Workflow hash (hex)                        |
+| `workflowOwner()` | `string`     | Workflow owner (hex)                       |
+| `workflowName()`  | `string`     | Workflow name from metadata                |
+| `executionId()`   | `string`     | Execution identifier (hex)                 |
+| `donId()`         | `number`     | DON that produced the report               |
+| `body()`          | `Uint8Array` | Payload after the 109-byte metadata header |
+| `seqNr()`         | `bigint`     | Sequence number                            |
+| `configDigest()`  | `Uint8Array` | Config digest                              |
+| `reportContext()` | `Uint8Array` | Full report context bytes                  |
+| `rawReport()`     | `Uint8Array` | Full raw report bytes                      |
+
+### `ReportParseConfig`
+
+| Field                       | Type            | Description                                                        |
+| --------------------------- | --------------- | ------------------------------------------------------------------ |
+| `acceptedEnvironments`      | `Environment[]` | Registry environments to try (defaults to production)              |
+| `acceptedZones`             | `Zone[]`        | Restrict verification to specific DON IDs                          |
+| `skipSignatureVerification` | `boolean`       | Parse metadata only; not for production without another trust path |
+
+### `productionEnvironment()` and `zoneFromEnvironment()`
+
+```typescript
+function productionEnvironment(): Environment
+function zoneFromEnvironment(environment: Environment, donID: number): Zone
+```
+
+| `Environment` field | Type     | Description                                              |
+| ------------------- | -------- | -------------------------------------------------------- |
+| `chainSelector`     | `bigint` | Chain selector for EVM reads (default: Ethereum Mainnet) |
+| `registryAddress`   | `string` | Capability Registry contract address                     |
 
 ---
 
@@ -19509,7 +20233,7 @@ Because it operates at the node level, all HTTP requests are wrapped in a consen
 - **[High-level (recommended)](#high-level-sendrequest-recommended):** Automatically wraps your request in the `runtime.runInNodeMode()` pattern with consensus aggregation.
 - **[Low-level](#low-level-sendrequest):** Requires manual wrapping in a `runtime.runInNodeMode()` block for complex scenarios.
 
-For complete step-by-step examples, see the [GET requests](/cre/guides/workflow/using-http-client/get-request) and [POST requests](/cre/guides/workflow/using-http-client/post-request) guides.
+For complete step-by-step examples, see the [GET requests](/cre/guides/workflow/using-http-client/get-request) and [POST requests](/cre/guides/workflow/using-http-client/post-request) guides. To **submit** signed reports, see [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts). To **verify** received reports, see [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) and [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts).
 
 ## High-level `sendRequest()` (recommended)
 
@@ -19644,6 +20368,11 @@ const submitReport = (sendRequester: HTTPSendRequester, report: Report): string 
   return "Report submitted successfully"
 }
 ```
+
+
+<Aside type="note" title="Receiving and verifying reports">
+  If your workflow **receives** reports (for example via an HTTP trigger), use [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) before trusting payload data, not `sendReport()`. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts).
+</Aside>
 
 ## Low-level `sendRequest()`
 
@@ -20151,7 +20880,7 @@ This section provides a detailed technical reference for the public interfaces o
 
 The SDK Reference is broken down into several pages, each corresponding to a core part of the SDK's functionality:
 
-- **[Core SDK](/cre/reference/sdk/core-ts)**: Covers the fundamental building blocks of any workflow, including `handler`, `Runtime`, and the `.result()` pattern for promise resolution.
+- **[Core SDK](/cre/reference/sdk/core-ts)**: Covers the fundamental building blocks of any workflow, including `handler`, `Runtime`, report verification (`Report.parse`), and the `.result()` pattern for promise resolution.
 - **[Triggers](/cre/reference/sdk/triggers/overview-ts)**: Details the configuration and payload structures for all available trigger types (`Cron`, `HTTP`, `EVM Log`).
 - **[EVM Client](/cre/reference/sdk/evm-client-ts)**: Provides a reference for the `EVMClient`, the primary tool for all EVM interactions, including reads and writes.
 - **[HTTP Client](/cre/reference/sdk/http-client-ts)**: Provides a reference for the `HTTPClient`, used for making offchain API requests from individual nodes.
