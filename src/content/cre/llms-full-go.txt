@@ -16838,9 +16838,109 @@ The template ID above is expected to work after the template metadata is merged 
 
 Deploy `AutomationReceiver.sol` (found in the template) to your target chain, passing the CRE `KeystoneForwarder` address for that network to the constructor. Find the correct forwarder address for your chain in the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory-go). This contract acts as a translation layer, allowing you to reuse your existing `checkUpkeep`, `checkLog`, and `performUpkeep` logic while moving trigger and check orchestration into CRE.
 
-### 3. Configure and Simulate
+### 3. Configure and Authorize the Receiver
 
-Update `my-workflow/config.test.json` in your new project with your previously deployed AutomationReceiver contract address, target contract address, migration type (`CRON`, `CUSTOM`, or `LOG`), schedule, and log filters if applicable. Then install dependencies and simulate from the project root. The CRE CLI prepares the workflow build tooling during simulation.
+Update `my-workflow/config.test.json` in your new project with your previously deployed AutomationReceiver contract address, target contract address, migration type (`CRON`, `CUSTOM`, or `LOG`), schedule, and log filters if applicable.
+
+#### 3a. Allow Upkeep Calls
+
+Before your workflow can call your target contract through the receiver, you must authorize the function call using `setCallAllowed()`. This setter transaction grants the receiver permission to forward calls to your target contract with a specific function selector.
+
+**Parameters:**
+
+- **target** (address): The address of your existing Automation upkeep contract
+- **selector** (bytes4): The 4-byte function selector you want to allow (e.g., `0x4585e33b` for `performUpkeep`)
+- **allowed** (bool): Set to `true` to enable the call
+
+**Example transaction:**
+
+```
+Function: setCallAllowed (0xb1e17766)
+target (address): 0x0971Ad145A5462f6Ae18b1aD2b9c9b0c6d8CC9C8
+selector (bytes4): 0x4585e33b
+allowed (bool): true
+```
+
+#### 3b. Set Workflow Identity Checks (Optional)
+
+For production deployments, configure additional authorization layers by setting expected workflow identity parameters. These optional checks ensure only authorized workflows can invoke your receiver.
+
+**Available setters:**
+
+- **setExpectedAuthor** — Restrict calls to workflows authored by a specific address
+  - Parameter: `_author` (address)
+- **setExpectedWorkflowId** — Restrict calls to a specific workflow ID
+  - Parameter: `_workflowId` (string)
+- **setExpectedWorkflowName** — Restrict calls to workflows with a specific name
+  - Parameter: `_workflowName` (string)
+
+**Example transactions:**
+
+```
+Function: setExpectedAuthor
+_author (address): 0x5c5c48fc95d68f88b4a13e0c9b0c6d8cc9c8c8c
+
+Function: setExpectedWorkflowId
+_workflowId (string): 0x0971ad145a5462f6ae18b1ad2b9c9b0c6d8cc9c8
+
+Function: setExpectedWorkflowName
+_workflowName (string): automation-migration-test
+```
+
+### Parameters Quick Reference
+
+#### Getting the Target Address
+
+The target address is the address of your existing **Automation upkeep contract** — the contract that currently implements `performUpkeep()`. You can find this by:
+
+- Reviewing your Automation registry registration
+- Checking your deployment scripts or configuration
+- Looking up the contract address in your blockchain explorer
+
+#### Computing the Function Selector
+
+The function selector is the first 4 bytes of the keccak256 hash of the function signature. Use the `cast` command-line tool to compute it:
+
+```shell
+# For performUpkeep(bytes)
+cast sig 'performUpkeep(bytes)'
+# Output: 0x4585e33b
+
+# For custom functions
+cast sig 'myCustomFunction(uint256,address)'
+# Output: 0xabcdef12
+```
+
+Alternatively, compute it programmatically in your test or deployment script:
+
+```go
+import "github.com/ethereum/go-ethereum/crypto"
+
+selector := crypto.Keccak256([]byte("performUpkeep(bytes)"))[:4]
+// Result: 0x4585e33b
+```
+
+### Example Transaction Outputs
+
+A successful `setCallAllowed` transaction on a block explorer shows:
+
+```
+Transaction Type: Contract Interaction
+Function: setCallAllowed(address,bytes4,bool)
+Status: ✓ Success
+From: 0xYourAddress
+To: 0xAutomationReceiverAddress
+Gas Used: 35,400 gas
+
+Decoded Input:
+target: 0x0971Ad145A5462f6Ae18b1aD2b9c9b0c6d8CC9C8
+selector: 0x4585e33b
+allowed: true
+```
+
+### 3c. Configure and Simulate
+
+Then install dependencies and simulate from the project root. The CRE CLI prepares the workflow build tooling during simulation.
 
 ```shell
 cd my-workflow
@@ -16870,6 +16970,20 @@ cre workflow deploy my-workflow --target=production-settings
 ```
 
 For end-to-end runnable examples, see the [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates/tree/cla-migration/starter-templates/automation-migration) repository.
+
+## Troubleshooting
+
+### CallNotAllowed Error
+
+If your workflow execution fails with a `CallNotAllowed` error, verify the following:
+
+1. **Function selector mismatch** — Ensure the selector you configured in `setCallAllowed()` matches the function your workflow is attempting to call. Use `cast sig 'functionName(types)'` to compute the correct selector. For more information, see the [Function Selector Reference](https://rareskills.io/post/function-selector).
+
+2. **Permission not set** — Confirm that `setCallAllowed()` was called with `allowed: true` for your target contract and function selector.
+
+3. **Workflow authorization** — If you set workflow identity checks (`setExpectedAuthor`, `setExpectedWorkflowId`, or `setExpectedWorkflowName`), ensure the workflow deploying the call matches those values.
+
+4. **Forwarder mismatch** — Verify that the `KeystoneForwarder` address passed to the `AutomationReceiver` constructor matches the address for your chain in the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory-go).
 
 ---
 
