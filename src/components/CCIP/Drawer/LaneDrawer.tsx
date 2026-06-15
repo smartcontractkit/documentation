@@ -137,7 +137,6 @@ function LaneDrawer({
 
                     // Check if token is paused
                     const tokenPaused = isTokenPaused(
-                      data[sourceNetwork.key].decimals,
                       lane.supportedTokens?.[token]?.rateLimiterConfig?.[
                         inOutbound === LaneFilter.Inbound ? "in" : "out"
                       ]

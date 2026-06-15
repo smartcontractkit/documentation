@@ -7,7 +7,7 @@ pageId: "operations-deploying-to-private-registry"
 metadata:
   description: "Deploy and manage CRE workflows using the Chainlink-hosted private registry — no linked wallet, no gas, and no Ethereum Mainnet RPC required for registry operations."
   datePublished: "2026-05-06"
-  lastModified: "2026-05-14"
+  lastModified: "2026-05-28"
 ---
 
 import { Aside } from "@components"
@@ -24,7 +24,7 @@ import { Aside } from "@components"
 
 The **private registry** is a Chainlink-hosted, offchain workflow registry. All lifecycle operations (deploy, activate, pause, delete, update) are authorized by your CRE login session — not a linked wallet key. There are no Ethereum Mainnet transactions and no gas fees for registry management.
 
-This is the default registry for new projects initialized with `cre init`. For a comparison of both registry options, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
+For a comparison of both registry options, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
 
 {/* prettier-ignore */}
 <Aside type="note" title="Private is not confidential">
@@ -64,7 +64,7 @@ Unlike the public onchain registry, you do **not** need:
 
 ## Step 1: Set `deployment-registry` in your `workflow.yaml`
 
-When you run `cre init`, the wizard prompts you to select a deployment registry after entering your workflow name. Private (off-chain) registries appear first with the cursor pre-selected on them. Selecting `private` writes `deployment-registry: "private"` into both targets of the generated `workflow.yaml` automatically — you can skip the manual step below.
+When you run `cre init`, the wizard prompts you to select a deployment registry after entering your workflow name. Select `private` to write `deployment-registry: "private"` into both targets of the generated `workflow.yaml` automatically — you can skip the manual step below.
 
 If you skipped the step, used `--non-interactive` without `--deployment-registry`, or are adding a new target to an existing project, add `deployment-registry: "private"` under the `user-workflow` section manually:
 
@@ -98,33 +98,37 @@ The CLI compiles your workflow, uploads the artifacts to the CRE Storage Service
 **Example output:**
 
 ```
-Deploying Workflow :     my-workflow
-Target :                 staging-settings
-Owner Address :          <your-organization-owner>
+Deploying Workflow: my-workflow-staging
+  Registry:      private
+  Target:        staging-settings
+  Owner Address: <your-organization-owner> (derived)
 
 Compiling workflow...
-Workflow compiled successfully
+✓ Workflow compiled successfully
+  Binary hash:   <binary-hash>
+  Config hash:   <config-hash>
+  Workflow hash: <workflow-id>
 
 Uploading files...
 ✔ Loaded binary from: ./binary.wasm.br.b64
-✔ Uploaded binary to: https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
+✔ Uploaded binary to: https://storage.cre.chain.link/artifacts/<workflow-id>/binary.wasm
 ✔ Loaded config from: ./config.staging.json
-✔ Uploaded config to: https://storage.cre.example.com/artifacts/<workflow-id>/config
+✔ Uploaded config to: https://storage.cre.chain.link/artifacts/<workflow-id>/config
 
-Registering workflow in private registry (workflowID: <your-workflow-id>)...
+Registering workflow in private registry (workflowID: <workflow-id>)...
 ✓ Workflow registered in private registry
 
 Details:
    Registry:         private
    Workflow Name:    my-workflow
-   Workflow ID:      <your-workflow-id>
+   Workflow ID:      <workflow-id>
    Status:           Active
-   Binary URL:       https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
-   Config URL:       https://storage.cre.example.com/artifacts/<workflow-id>/config
+   Binary URL:       https://storage.cre.chain.link/artifacts/<workflow-id>/binary.wasm
+   Config URL:       https://storage.cre.chain.link/artifacts/<workflow-id>/config
    Owner:            <your-organization-owner>
 ```
 
-The workflow is registered and active immediately. Notice there is no transaction hash, no gas cost, and the `Owner` is your CRE organization rather than a wallet address.
+The workflow is registered and active immediately. Notice there is no transaction hash, no gas cost, and the `Owner` is your [organization owner address](#organization-owner-address) rather than a linked wallet address.
 
 ## Step 3: Verify the deployment
 
@@ -141,6 +145,39 @@ cre workflow list --registry private
 ```
 
 You can also view the workflow in the [CRE platform](https://app.chain.link/cre/discover) under **Workflows**.
+
+## Organization owner address
+
+For workflows managed on the private registry, the workflow owner is your organization's owner address — not a linked wallet key. CRE derives this address from your organization; it matches the **Organization address** in the CRE platform UI.
+
+### In the CRE platform UI
+
+1. Open the [CRE platform](https://app.chain.link/cre/discover) and navigate to **Organization** in the sidebar
+1. Copy the **Organization address** shown on the page
+
+You can also find the same address on a workflow's detail page under **Workflow Owner**.
+
+### From the CLI
+
+You can retrieve the organization owner address with:
+
+- **`cre workflow deploy`** — prints `Owner Address: … (derived)` at the start of the command output (before compilation finishes), even if registration later fails
+- **`cre workflow list --registry private --output json`** — each workflow includes an `ownerAddress` field
+- **`cre workflow get`** — prints the owner address for a workflow configured in `workflow.yaml`
+
+```bash
+# Example: list owner addresses for private registry workflows
+cre workflow list --registry private --output json
+
+# Example: owner address for a specific workflow
+cre workflow get ./my-workflow --target staging-settings
+```
+
+The `Owner Address (derived)` value from deploy matches the **Organization address** in the UI.
+
+## Onchain write permissions
+
+If your workflow performs [onchain writes](/cre/guides/workflow/using-evm-client/onchain-write/overview-go) and you did not [link your own wallet key](/cre/organization/linking-keys), use your [organization owner address](#organization-owner-address) when configuring consumer contract permissions (for example, with `setExpectedAuthor()` in [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#34-configuring-permissions)).
 
 ## Managing a private registry workflow
 

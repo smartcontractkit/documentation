@@ -4555,11 +4555,27 @@ Security best practices:
 
 ### High Availability Mode
 
+The Data Streams SDK supports High Availability mode for WebSocket connections. When enabled with `WebSocketHighAvailability::Enabled`, the SDK maintains concurrent connections to different instances to ensure high availability, fault tolerance, and minimize the risk of report gaps.
+
+#### HA Mode Behavior
+
+When high availability mode is enabled:
+
+- The client queries the server for available origins using the `X-Cll-Available-Origins` header
+- Multiple WebSocket connections are established to different server instances
+- Reports are deduplicated when received across connections
+- Partial reconnects occur when some connections fail while others remain active
+- Full reconnects occur when all connections fail
+
+#### HA Configuration
+
+Pass a single WebSocket URL. When HA mode is enabled, the SDK discovers additional origin endpoints behind that URL and opens a connection to each origin.
+
 ```rust
 use chainlink_data_streams_sdk::config::{Config, WebSocketHighAvailability};
 
-let ws_urls = "wss://ws1.dataengine.chain.link,wss://ws2.dataengine.chain.link";
-let config = Config::new(api_key, api_secret, rest_url, ws_urls)
+let ws_url = "wss://ws.dataengine.chain.link";
+let config = Config::new(api_key, api_secret, rest_url, ws_url)
     // Enable WebSocket HA mode
     .with_ws_ha(WebSocketHighAvailability::Enabled)
     // Increase the max reconnection attempts (optional, default is 5)
@@ -4567,7 +4583,9 @@ let config = Config::new(api_key, api_secret, rest_url, ws_urls)
     .build()?;
 ```
 
-- Multiple WebSocket endpoints
+**Note:** High Availability mode is only available on mainnet endpoints, not testnet.
+
+- Automatic origin discovery from a single WebSocket URL
 - Automatic failover on connection loss
 - Parallel connections to reduce gaps in data
 
@@ -4576,7 +4594,7 @@ let config = Config::new(api_key, api_secret, rest_url, ws_urls)
 The SDK allows you to:
 
 - Set `ws_max_reconnect`: The maximum number of reconnection attempts (default: 5)
-- Enable HA for multiple WebSocket endpoints
+- Enable HA for automatic multi-origin WebSocket connections
 - Optional `insecure_skip_verify` for TLS
 
 Example:
@@ -4584,9 +4602,9 @@ Example:
 ```rust
 use chainlink_data_streams_sdk::config::{Config, InsecureSkipVerify, WebSocketHighAvailability};
 
-let ws_urls = "wss://ws.testnet-dataengine.chain.link";
+let ws_url = "wss://ws.testnet-dataengine.chain.link";
 
-let config = Config::new(api_key, api_secret, rest_url, ws_urls)
+let config = Config::new(api_key, api_secret, rest_url, ws_url)
     .with_ws_ha(WebSocketHighAvailability::Enabled)
     .with_ws_max_reconnect(5)
     .with_insecure_skip_verify(InsecureSkipVerify::Enabled)
@@ -4638,7 +4656,7 @@ The [SDK repository](https://github.com/smartcontractkit/data-streams-sdk/blob/m
 - Fetching a single report, bulk reports, or paginated reports
 - Compressing report data
 - Simple WebSocket streaming
-- Multiple WebSocket endpoints (HA)
+- WebSocket streaming with HA mode
 
 ## Performance Considerations
 
@@ -4674,14 +4692,14 @@ pub struct ConfigBuilder {
 
 - Purpose: Enables or disables HA mode for WebSocket streaming.
 - Values:
-  - `WebSocketHighAvailability::Enabled`: Maintains multiple WebSocket connections to different endpoints simultaneously.
+  - `WebSocketHighAvailability::Enabled`: Discovers available origins from the configured WebSocket URL and maintains multiple connections simultaneously.
   - `WebSocketHighAvailability::Disabled`: Maintains a single connection.
 - Default: `Disabled`.
 - Example Use Case:
 
   ```rust
-  // When you want uninterrupted streaming even if one server goes down:
-  let config = Config::new(api_key, api_secret, rest_url, "wss://ws1,...,wss://wsN")
+  // When you want uninterrupted streaming even if one origin goes down:
+  let config = Config::new(api_key, api_secret, rest_url, "wss://ws.dataengine.chain.link")
       .with_ws_ha(WebSocketHighAvailability::Enabled)
       .build()?;
   ```
@@ -5667,7 +5685,7 @@ Chainlink SmartData streams adhere to the report schema outlined below.
 | `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                     |
 | `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                  |
 | `navPerShare`           | `int192`  | DON consensus NAV Per Share value as reported by the Fund Manager        |
-| `navDate`               | `uint64`  | Timestamp for the NAV Report publication date (nanoseconds)              |
+| `navDate`               | `uint64`  | Timestamp for the NAV Report publication date (milliseconds)             |
 | `aum`                   | `int192`  | DON consensus total USD value of Assets Under Management                 |
 | `ripcord`               | `uint32`  | Data provider pause status: 0 (normal), 1 (paused — do not consume data) |
 
@@ -5802,9 +5820,9 @@ Phase-specific feeds can introduce unique behavior due to venue-specific operati
 
 ##### Regular Hours Session: Delayed Quote Availability at Market Open
 
-During the first 10–20 seconds after regular hours open (9:30am ET), bid/ask quotes may not yet be available from the regular hours venue. In those cases, the reported price may still reflect the previous regular hours close rather than live market data.
+Right after the open of the regular trading hours (starting at 9:30 a.m. ET), bid/ask quotes from the regular-hours venue may not yet be available. For highly liquid stocks, this typically lasts only a few seconds (around 10–20 seconds), while for less liquid stocks it can take several minutes. Until live quotes become available, the reported price may continue to reflect the previous regular-hours close rather than current market activity.
 
-Users should factor this transition period into their switching logic and consider alternative strategies during the first \~20 seconds of regular hours, such as:
+Users should factor this transition period into their switching logic and consider alternative strategies until live regular-hours quotes are available, such as:
 
 - Pause or lock market activity
 - Continue using the pre-market (Extended Hours) stream until fresh regular hours quotes are available
@@ -6290,6 +6308,20 @@ Announcements can cause sharp price spikes or sustained moves.
 Source: https://docs.chain.link/data-streams/rwa-streams
 
 <FeedPage dataFeedType="streamsRwa" initialNetwork="arbitrum" allowNetworkTableExpansion={true} defaultNetworkTableExpanded={false} />
+
+---
+
+# Selecting Quality Data Streams
+Source: https://docs.chain.link/data-streams/selecting-data-streams
+
+When you design your applications, consider the quality of the data that you use. Ultimately you are responsible for identifying and assessing the accuracy, availability, and quality of data that you choose to consume via the Chainlink Network. Note that all streams contain some inherent risk. Read the [Data Streams Best Practices](/data-streams/concepts/best-practices) and [Developer Responsibilities](/data-streams/developer-responsibilities) sections when making design decisions.
+
+For a summary of data sourcing models by asset type, see [Data Sources](/data-streams/data-sources).
+
+<Aside type="note">
+  For important updates regarding the use of Chainlink Data Streams, subscribe to the [Chainlink
+  Changelog](https://dev.chain.link/changelog?product=Data+Streams).
+</Aside>
 
 ---
 
@@ -9123,7 +9155,7 @@ let config = Config::new(
     api_key,
     api_secret,
     "https://api.dataengine.chain.link".to_string(), // Mainnet endpoint
-    "wss://ws.dataengine.chain.link,wss://ws.dataengine.chain.link".to_string(), // Multiple WebSocket endpoints
+    "wss://ws.dataengine.chain.link".to_string(), // Mainnet WebSocket endpoint
 )
 .with_ws_ha(WebSocketHighAvailability::Enabled) // Enable WebSocket High Availability Mode
 .build()?;
@@ -9131,6 +9163,8 @@ let config = Config::new(
 
 // ... existing code ...
 ```
+
+When `WebSocketHighAvailability::Enabled` is set, the SDK automatically discovers multiple origin endpoints behind the single URL and establishes separate connections to each origin.
 
 See more details about HA mode in the [SDK Reference](/data-streams/reference/data-streams-api/rust-sdk#high-availability-mode).
 

@@ -272,7 +272,7 @@ The mechanism by which a DON comes to a single, reliable, and tamper-proof resul
 
 # Service Quotas
 Source: https://docs.chain.link/cre/service-quotas
-Last Updated: 2026-05-22
+Last Updated: 2026-05-26
 
 This page documents the service quotas for Chainlink Runtime Environment (CRE) workflows.
 
@@ -329,7 +329,7 @@ These quotas apply to each individual workflow.
 | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ------ |
 | <a href="#perworkflow-wasmbinarysizelimit" id="perworkflow-wasmbinarysizelimit">`PerWorkflow.WASMBinarySizeLimit`</a>                               | Maximum size of the compiled WASM binary   | 100 MB |
 | <a href="#perworkflow-wasmcompressedbinarysizelimit" id="perworkflow-wasmcompressedbinarysizelimit">`PerWorkflow.WASMCompressedBinarySizeLimit`</a> | Maximum size of the compressed WASM binary | 20 MB  |
-| <a href="#perworkflow-wasmconfigsizelimit" id="perworkflow-wasmconfigsizelimit">`PerWorkflow.WASMConfigSizeLimit`</a>                               | Maximum size of the workflow configuration | 1 MB   |
+| <a href="#perworkflow-wasmconfigsizelimit" id="perworkflow-wasmconfigsizelimit">`PerWorkflow.WASMConfigSizeLimit`</a>                               | Maximum size of the workflow configuration | 50 KB  |
 
 ### Trigger quotas
 
@@ -357,9 +357,10 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                         | Description                                                                                                                      | Value |
 | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| <a href="#perworkflow-wasmsecretssizelimit" id="perworkflow-wasmsecretssizelimit">`PerWorkflow.WASMSecretsSizeLimit`</a>          | Maximum total size of secrets accessible to a workflow                                                                           | 1 MB  |
+| <a href="#perworkflow-wasmsecretssizelimit" id="perworkflow-wasmsecretssizelimit">`PerWorkflow.WASMSecretsSizeLimit`</a>          | Maximum total size of secrets accessible to a workflow                                                                           | 27 KB |
 | <a href="#perworkflow-secretsconcurrencylimit" id="perworkflow-secretsconcurrencylimit">`PerWorkflow.SecretsConcurrencyLimit`</a> | Maximum number of secrets that can be fetched concurrently. [Learn how to fetch multiple secrets](/cre/guides/workflow/secrets). | 5     |
 | <a href="#perworkflow-secrets-calllimit" id="perworkflow-secrets-calllimit">`PerWorkflow.Secrets.CallLimit`</a>                   | Maximum number of secrets fetch calls per workflow execution                                                                     | 5     |
+| <a href="#persecret-ciphertextsize" id="persecret-ciphertextsize">`PerSecret.CipherTextSize`</a>                                  | Maximum size of a single encrypted secret value                                                                                  | 2 KB  |
 
 ### Consensus quotas
 
@@ -431,6 +432,15 @@ These quotas apply to each individual workflow.
 | <a href="#perworkflow-httpaction-requestsizelimit" id="perworkflow-httpaction-requestsizelimit">`PerWorkflow.HTTPAction.RequestSizeLimit`</a>    | Maximum size of an HTTP request payload                | 10 KB      |
 | <a href="#perworkflow-httpaction-cacheagelimit" id="perworkflow-httpaction-cacheagelimit">`PerWorkflow.HTTPAction.CacheAgeLimit`</a>             | Maximum time HTTP responses can be cached              | 10 minutes |
 
+### Confidential HTTP capability
+
+| Quota Key                                                                                                                                                          | Description                                                         | Value      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- | ---------- |
+| <a href="#perworkflow-confidentialhttp-calllimit" id="perworkflow-confidentialhttp-calllimit">`PerWorkflow.ConfidentialHTTP.CallLimit`</a>                         | Maximum number of confidential HTTP requests per workflow execution | 5          |
+| <a href="#perworkflow-confidentialhttp-requestsizelimit" id="perworkflow-confidentialhttp-requestsizelimit">`PerWorkflow.ConfidentialHTTP.RequestSizeLimit`</a>    | Maximum size of a confidential HTTP request payload                 | 10 KB      |
+| <a href="#perworkflow-confidentialhttp-responsesizelimit" id="perworkflow-confidentialhttp-responsesizelimit">`PerWorkflow.ConfidentialHTTP.ResponseSizeLimit`</a> | Maximum size of a confidential HTTP response                        | 100 KB     |
+| <a href="#perworkflow-confidentialhttp-timeout" id="perworkflow-confidentialhttp-timeout">`PerWorkflow.ConfidentialHTTP.TimeOut`</a>                               | Maximum time for a confidential HTTP request to complete            | 10 seconds |
+
 ## Quota increases
 
 [Contact us](/cre/support-feedback) to discuss quota increases.
@@ -497,9 +507,35 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-05-22
+Last Updated: 2026-06-04
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.18.0 - June 4, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.18.0" target="_blank">CRE CLI version 1.18.0</a> is now available.**
+
+- **Internal improvements**: Reliability fixes across context propagation, secret handling, and registry type management.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.17.0...v1.18.0)
+
+## CLI v1.17.0 - May 28, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.17.0" target="_blank">CRE CLI version 1.17.0</a> is now available.**
+
+- **Bug fixes and reliability**: Improved platform client reliability and clearer error messages during workflow deploy and delete.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.16.0...v1.17.0)
 
 ## CLI v1.16.0 - May 22, 2026
 
@@ -5927,7 +5963,7 @@ Last Updated: 2026-05-12
 
 When you deploy a workflow, you register it with a **workflow registry** so it can activate and respond to triggers across a [Decentralized Oracle Network (DON)](/cre/key-terms#decentralized-oracle-network-don). CRE supports two registry models, selected per deployment target via `deployment-registry` in `workflow.yaml`:
 
-- **Private workflow**: Lifecycle operations (deploy, activate, pause, update, delete) are authorized by your CRE login session against the Chainlink-hosted private registry. No linked wallet, no gas, no Ethereum Mainnet RPC required for registry management. This is the default for new projects initialized with `cre init`.
+- **Private workflow**: Lifecycle operations (deploy, activate, pause, update, delete) are authorized by your CRE login session against the Chainlink-hosted private registry. No linked wallet, no gas, no Ethereum Mainnet RPC required for registry management.
 - **Public/onchain workflow**: Lifecycle operations submit transactions to the Workflow Registry contract on Ethereum Mainnet, authorized by your linked web3 wallet key.
 
 This is a **control-plane** choice — it governs how workflow management is authorized, not how workflow execution behaves. See [Private workflow](/cre/key-terms#private-workflow) and [Confidential execution](/cre/key-terms#confidential-workflow-or-confidential-execution) for the distinction.
@@ -5970,7 +6006,6 @@ Use the `ID` value as the `deployment-registry` in your `workflow.yaml`.
 | ETH for gas (registry ops)      | No                              | Yes                                |
 | `cre account link-key` required | No                              | Yes                                |
 | Creates onchain record          | No                              | Yes, in Workflow Registry contract |
-| Default for `cre init` projects | Yes                             | No                                 |
 | Ideal for                       | Testing, team-managed workflows | Production, multisig ownership     |
 
 Secrets follow the same split. See [Using Secrets with Deployed Workflows](/cre/guides/workflow/secrets/using-secrets-deployed) for the per-registry secrets flows.
@@ -12083,7 +12118,7 @@ For complete setup instructions, configuration requirements, and step-by-step gu
 
 # Deploying to the Private Registry
 Source: https://docs.chain.link/cre/guides/operations/deploying-to-private-registry-go
-Last Updated: 2026-05-14
+Last Updated: 2026-05-28
 
 <Aside type="note" title="Go">
   This page covers deployment to the private registry for Go workflows. For TypeScript workflows, see [Deploying to the Private Registry (TypeScript)](/cre/guides/operations/deploying-to-private-registry-ts).
@@ -12096,7 +12131,7 @@ Last Updated: 2026-05-14
 
 The **private registry** is a Chainlink-hosted, offchain workflow registry. All lifecycle operations (deploy, activate, pause, delete, update) are authorized by your CRE login session — not a linked wallet key. There are no Ethereum Mainnet transactions and no gas fees for registry management.
 
-This is the default registry for new projects initialized with `cre init`. For a comparison of both registry options, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
+For a comparison of both registry options, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
 
 
 <Aside type="note" title="Private is not confidential">
@@ -12136,7 +12171,7 @@ Unlike the public onchain registry, you do **not** need:
 
 ## Step 1: Set `deployment-registry` in your `workflow.yaml`
 
-When you run `cre init`, the wizard prompts you to select a deployment registry after entering your workflow name. Private (off-chain) registries appear first with the cursor pre-selected on them. Selecting `private` writes `deployment-registry: "private"` into both targets of the generated `workflow.yaml` automatically — you can skip the manual step below.
+When you run `cre init`, the wizard prompts you to select a deployment registry after entering your workflow name. Select `private` to write `deployment-registry: "private"` into both targets of the generated `workflow.yaml` automatically — you can skip the manual step below.
 
 If you skipped the step, used `--non-interactive` without `--deployment-registry`, or are adding a new target to an existing project, add `deployment-registry: "private"` under the `user-workflow` section manually:
 
@@ -12170,33 +12205,37 @@ The CLI compiles your workflow, uploads the artifacts to the CRE Storage Service
 **Example output:**
 
 ```
-Deploying Workflow :     my-workflow
-Target :                 staging-settings
-Owner Address :          <your-organization-owner>
+Deploying Workflow: my-workflow-staging
+  Registry:      private
+  Target:        staging-settings
+  Owner Address: <your-organization-owner> (derived)
 
 Compiling workflow...
-Workflow compiled successfully
+✓ Workflow compiled successfully
+  Binary hash:   <binary-hash>
+  Config hash:   <config-hash>
+  Workflow hash: <workflow-id>
 
 Uploading files...
 ✔ Loaded binary from: ./binary.wasm.br.b64
-✔ Uploaded binary to: https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
+✔ Uploaded binary to: https://storage.cre.chain.link/artifacts/<workflow-id>/binary.wasm
 ✔ Loaded config from: ./config.staging.json
-✔ Uploaded config to: https://storage.cre.example.com/artifacts/<workflow-id>/config
+✔ Uploaded config to: https://storage.cre.chain.link/artifacts/<workflow-id>/config
 
-Registering workflow in private registry (workflowID: <your-workflow-id>)...
+Registering workflow in private registry (workflowID: <workflow-id>)...
 ✓ Workflow registered in private registry
 
 Details:
    Registry:         private
    Workflow Name:    my-workflow
-   Workflow ID:      <your-workflow-id>
+   Workflow ID:      <workflow-id>
    Status:           Active
-   Binary URL:       https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
-   Config URL:       https://storage.cre.example.com/artifacts/<workflow-id>/config
+   Binary URL:       https://storage.cre.chain.link/artifacts/<workflow-id>/binary.wasm
+   Config URL:       https://storage.cre.chain.link/artifacts/<workflow-id>/config
    Owner:            <your-organization-owner>
 ```
 
-The workflow is registered and active immediately. Notice there is no transaction hash, no gas cost, and the `Owner` is your CRE organization rather than a wallet address.
+The workflow is registered and active immediately. Notice there is no transaction hash, no gas cost, and the `Owner` is your [organization owner address](#organization-owner-address) rather than a linked wallet address.
 
 ## Step 3: Verify the deployment
 
@@ -12213,6 +12252,39 @@ cre workflow list --registry private
 ```
 
 You can also view the workflow in the [CRE platform](https://app.chain.link/cre/discover) under **Workflows**.
+
+## Organization owner address
+
+For workflows managed on the private registry, the workflow owner is your organization's owner address — not a linked wallet key. CRE derives this address from your organization; it matches the **Organization address** in the CRE platform UI.
+
+### In the CRE platform UI
+
+1. Open the [CRE platform](https://app.chain.link/cre/discover) and navigate to **Organization** in the sidebar
+2. Copy the **Organization address** shown on the page
+
+You can also find the same address on a workflow's detail page under **Workflow Owner**.
+
+### From the CLI
+
+You can retrieve the organization owner address with:
+
+- **`cre workflow deploy`** — prints `Owner Address: … (derived)` at the start of the command output (before compilation finishes), even if registration later fails
+- **`cre workflow list --registry private --output json`** — each workflow includes an `ownerAddress` field
+- **`cre workflow get`** — prints the owner address for a workflow configured in `workflow.yaml`
+
+```bash
+# Example: list owner addresses for private registry workflows
+cre workflow list --registry private --output json
+
+# Example: owner address for a specific workflow
+cre workflow get ./my-workflow --target staging-settings
+```
+
+The `Owner Address (derived)` value from deploy matches the **Organization address** in the UI.
+
+## Onchain write permissions
+
+If your workflow performs [onchain writes](/cre/guides/workflow/using-evm-client/onchain-write/overview-go) and you did not [link your own wallet key](/cre/organization/linking-keys), use your [organization owner address](#organization-owner-address) when configuring consumer contract permissions (for example, with `setExpectedAuthor()` in [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#34-configuring-permissions)).
 
 ## Managing a private registry workflow
 
