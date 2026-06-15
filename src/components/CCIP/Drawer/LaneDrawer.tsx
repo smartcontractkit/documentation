@@ -32,11 +32,6 @@ function LaneDrawer({
     chain: destinationNetwork.key,
   })
 
-  const sourceNetworkDetails = getNetwork({
-    filter: environment,
-    chain: sourceNetwork.key,
-  })
-
   return (
     <>
       <h2 className="ccip-table__drawer-heading">Lane details</h2>
@@ -137,7 +132,6 @@ function LaneDrawer({
 
                     // Check if token is paused
                     const tokenPaused = isTokenPaused(
-                      data[sourceNetwork.key].decimals,
                       lane.supportedTokens?.[token]?.rateLimiterConfig?.[
                         inOutbound === LaneFilter.Inbound ? "in" : "out"
                       ]
