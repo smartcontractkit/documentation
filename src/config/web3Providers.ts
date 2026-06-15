@@ -57,6 +57,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   MANTLE_SEPOLIA: () => new JsonRpcProvider("https://rpc.sepolia.mantle.xyz"),
   RONIN_MAINNET: () => new JsonRpcProvider("https://ronin.lgns.net/rpc"),
   RONIN_SAIGON: () => new JsonRpcProvider("https://saigon-testnet.roninchain.com/rpc"),
+  RONIN_SEPOLIA: () => new JsonRpcProvider("https://saigon-testnet.roninchain.com/rpc"),
   BSQUARED_MAINNET: () => new JsonRpcProvider("https://rpc.ankr.com/b2"),
   BSQUARED_TESTNET: () => new JsonRpcProvider("https://rpc.ankr.com/b2_testnet"),
   SHIBARIUM_MAINNET: () => new JsonRpcProvider("https://www.shibrpc.com"),
