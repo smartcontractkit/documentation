@@ -690,7 +690,7 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.8.0" target="_blank">CRE CLI version 1.8.0</a> is now available.**
 
-- **Tenant context cache**: The [**Authentication**](/cre/reference/cli/authentication#tenant-context-cache) reference documents **`~/.cre/context.yaml`**, which the CLI updates after login so your local session reflects the platform’s registry manifest.
+- **Tenant context cache**: The [**Authentication**](/cre/reference/cli/authentication#tenant-context-cache) reference documents **`~/.cre/context.yaml`**, which the CLI updates after login so your local session reflects the platform's registry manifest.
 - **Scriptable `cre init`**: [**Project setup**](/cre/reference/cli/project-setup) covers **`cre init --non-interactive`** and related flags for CI and automation without prompts.
 - **`cre templates list --json`**: Use [**Template sources**](/cre/reference/cli/templates) for **`--json`** output when you need machine-readable template listings in scripts.
 
@@ -2550,7 +2550,7 @@ interface IReceiver is IERC165 {
 
 The logical packing matches `abi.encodePacked(bytes32 workflowId, bytes10 workflowName, address workflowOwner)`, which is 62 bytes (`32 + 10 + 20`).
 
-Production `KeystoneForwarder` does not pass exactly those 62 bytes as the `metadata` argument. It forwards the calldata slice [`rawReport[FORWARDER_METADATA_LENGTH:METADATA_LENGTH]`](https://github.com/smartcontractkit/chainlink-evm/blob/b6427ea1f4847d640abdf24dbd6c6f01d7799d59/contracts/cre/src/v1/KeystoneForwarder.sol#L305) from [`report`](https://github.com/smartcontractkit/chainlink-evm/blob/b6427ea1f4847d640abdf24dbd6c6f01d7799d59/contracts/cre/src/v1/KeystoneForwarder.sol#L262), which is 64 bytes wide (`METADATA_LENGTH - FORWARDER_METADATA_LENGTH`). That slice is word-aligned to a 32-byte boundary: you get the same 62-byte packed workflow identity as above, plus two trailing bytes. Workflow configuration does not change this length; it is fixed by the forwarder’s report layout.
+Production `KeystoneForwarder` does not pass exactly those 62 bytes as the `metadata` argument. It forwards the calldata slice [`rawReport[FORWARDER_METADATA_LENGTH:METADATA_LENGTH]`](https://github.com/smartcontractkit/chainlink-evm/blob/b6427ea1f4847d640abdf24dbd6c6f01d7799d59/contracts/cre/src/v1/KeystoneForwarder.sol#L305) from [`report`](https://github.com/smartcontractkit/chainlink-evm/blob/b6427ea1f4847d640abdf24dbd6c6f01d7799d59/contracts/cre/src/v1/KeystoneForwarder.sol#L262), which is 64 bytes wide (`METADATA_LENGTH - FORWARDER_METADATA_LENGTH`). That slice is word-aligned to a 32-byte boundary: you get the same 62-byte packed workflow identity as above, plus two trailing bytes. Workflow configuration does not change this length; it is fixed by the forwarder's report layout.
 
 Those trailing bytes are the `reportId` field (`bytes2`) at calldata indices 62 and 63. Field offsets for the full signed `rawReport` (including `report_id` at offset 139 in that buffer) are documented in [`KeystoneForwarder._getMetadata`](https://github.com/smartcontractkit/chainlink-evm/blob/b6427ea1f4847d640abdf24dbd6c6f01d7799d59/contracts/cre/src/v1/KeystoneForwarder.sol#L315). If `reportId` is zero, those bytes read as `0x0000` in a hex dump; they still occupy the `reportId` field rather than arbitrary alignment filler you can drop when sizing `metadata`. In production delivery, `metadata.length` is 64. A `require(metadata.length == 62)` (or similar) in your own code will revert; the sample `ReceiverTemplate` does not enforce length 62 on `metadata`.
 
@@ -6740,7 +6740,7 @@ Login completed successfully
 
 Your CLI session is authenticated and ready to use.
 
-In the terminal, the CLI may show **“Fetching user context…”** while it downloads your organization’s tenant configuration from the platform. It then writes **`~/.cre/context.yaml`** (registry manifest: vault gateway URL, registries, secrets auth flows, and related fields). That file is separate from your credentials file (`~/.cre/cre.yaml`). For details and a sanitized example, see [Tenant context cache](/cre/reference/cli/authentication#tenant-context-cache).
+In the terminal, the CLI may show **"Fetching user context…"** while it downloads your organization's tenant configuration from the platform. It then writes **`~/.cre/context.yaml`** (registry manifest: vault gateway URL, registries, secrets auth flows, and related fields). That file is separate from your credentials file (`~/.cre/cre.yaml`). For details and a sanitized example, see [Tenant context cache](/cre/reference/cli/authentication#tenant-context-cache).
 
 
 <Aside type="caution" title="Do not commit cre.yaml">
@@ -8075,7 +8075,7 @@ cre login
 2. Enter your account email address
 3. Enter your account password
 4. Enter your one-time password (OTP) from your authenticator app
-5. The CLI automatically captures and saves your credentials locally, then fetches and caches tenant context (you may see **“Fetching user context…”** in the terminal)
+5. The CLI automatically captures and saves your credentials locally, then fetches and caches tenant context (you may see **"Fetching user context…"** in the terminal)
 
 For a detailed walkthrough with screenshots, see [Logging in with the CLI](/cre/account/cli-login).
 
@@ -8141,7 +8141,7 @@ In a CI/CD pipeline, configure `CRE_API_KEY` as a secret environment variable in
 
 ## Tenant context cache
 
-After a successful browser login — and when using an API key for commands that load credentials — the CLI stores **tenant context** at **`~/.cre/context.yaml`**. This file comes from the platform’s **`getTenantConfig`** data: a **registry manifest** for your organization so the CLI knows your CRE environment layout (for example vault gateway URL, registries, and allowed secrets auth flows per registry). Values are grouped under your CRE environment name (such as `PRODUCTION`).
+After a successful browser login — and when using an API key for commands that load credentials — the CLI stores **tenant context** at **`~/.cre/context.yaml`**. This file comes from the platform's **`getTenantConfig`** data: a **registry manifest** for your organization so the CLI knows your CRE environment layout (for example vault gateway URL, registries, and allowed secrets auth flows per registry). Values are grouped under your CRE environment name (such as `PRODUCTION`).
 
 
 <Aside type="caution" title="Keep credential files out of version control">
@@ -16623,6 +16623,291 @@ Start by learning how to configure HTTP triggers and write handler functions:
 Or explore the SDK reference for detailed API documentation:
 
 - **[HTTP Trigger SDK Reference](/cre/reference/sdk/triggers/http-trigger)** - Complete API documentation
+
+---
+
+# Migrate from Chainlink Automation to Chainlink CRE
+Source: https://docs.chain.link/cre/reference/cla-migration-ts
+Last Updated: 2026-05-25
+
+<Aside type="note" title="SDK Language: TypeScript">
+  You're viewing the **TypeScript** version of this guide. If you prefer Go, use the language selector in the left
+  sidebar to switch to the Go version.
+</Aside>
+
+This guide is for developers with production [Chainlink Automation (CLA)](https://docs.chain.link/chainlink-automation) upkeeps migrating their logic to the [Chainlink Runtime Environment (CRE)](https://docs.chain.link/cre).
+
+The majority of Automation use cases involve periodic on-chain maintenance or reacting to on-chain events. That maps cleanly to a CRE workflow: a trigger (Cron or EVM Log) → off-chain logic (replaces `checkUpkeep`) → a signed report written on-chain through the CRE `KeystoneForwarder` to an `IReceiver` consumer, which then calls your execution function.
+
+## How CLA and CRE differ
+
+In CLA, you define an upkeep with a `checkUpkeep()` function (off-chain simulation) and a `performUpkeep()` function (on-chain execution). The Automation network periodically simulates `checkUpkeep()` and, if it returns `true`, submits a transaction to `performUpkeep()`.
+
+In CRE, the unit of execution is a **workflow** — a TypeScript or Go project compiled to WebAssembly and registered with the network. Workflows are started by **triggers** (cron schedule, HTTP request, or on-chain log event), can perform multiple steps (HTTP fetches, on-chain reads & on-chain writes) wrapped in your own business logic, and write data on-chain through a signed-report flow that any contract implementing `IReceiver` can consume.
+
+Functionally, CRE is a superset of CLA: anything CLA does today, CRE does, and many patterns that previously required multiple upkeeps or offchain relayers collapse into a single workflow.
+
+## Chain support
+
+CRE supports every chain CLA runs on today. For the canonical, up-to-date list of supported chains, see [Supported Networks](/cre/supported-networks-ts).
+
+## Terminology
+
+| Chainlink Automation               | Chainlink CRE                                                                           |
+| :--------------------------------- | :-------------------------------------------------------------------------------------- |
+| Upkeep registration                | CRE workflow deployment                                                                 |
+| Upkeep contract                    | Existing target contract plus an `IReceiver` bridge or consumer                         |
+| `checkUpkeep()` function           | Workflow logic inside the handler                                                       |
+| `performUpkeep(bytes performData)` | `onReport(metadata, report)` on an `IReceiver`, then bridge call to the target contract |
+| Time-based Upkeep                  | Built-in Cron trigger                                                                   |
+| Log Trigger Upkeep                 | EVM Log trigger                                                                         |
+| Custom Logic Upkeep                | Cron trigger + `evmClient.callContract()` in handler                                    |
+| Automation Registry                | CRE workflow registry/control plane                                                     |
+| Automation Forwarder               | CRE `KeystoneForwarder` plus your receiver authorization                                |
+
+## Triggers
+
+CLA has three primary entry paths: time-based, log-based, and custom logic. CRE makes the [trigger](/cre/guides/workflow/using-triggers/overview) first-class.
+
+### Time-based
+
+Replaces "Time-based Upkeep." Use a cron trigger with a handler callback.
+
+```ts
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  runtime.log("Cron triggered")
+  return "done"
+}
+
+const initWorkflow = (config: Config) => {
+  const cron = new cre.capabilities.CronCapability()
+  return [
+    cre.handler(cron.trigger({ schedule: "0 */5 * * * *" }), onCronTrigger), // every 5 min
+  ]
+}
+```
+
+Standard 5- or 6-field cron expressions; minimum interval is 30 seconds. Prefix with `TZ=<timezone>` for timezone-aware scheduling.
+
+### Onchain events
+
+Directly replaces "Log Trigger Upkeep." Instead of the registry watching for an event to call `performUpkeep`, the CRE DON watches for the event and fires the workflow handler with the decoded event data.
+
+```ts
+const onLogTrigger = (runtime: Runtime<Config>, triggerEvent: EVMLogPayload): string => {
+  runtime.log(`Event received from ${triggerEvent.address}`)
+  return "processed"
+}
+
+const initWorkflow = (config: Config) => {
+  const evmLog = new cre.capabilities.EVMLogCapability()
+  return [
+    cre.handler(
+      evmLog.trigger({
+        contractAddress: config.contractAddress,
+        chainSelectorName: config.chainSelectorName,
+        eventSignature: "Transfer(address,address,uint256)",
+      }),
+      onLogTrigger
+    ),
+  ]
+}
+```
+
+## Task Authoring: The "Bridge" Pattern
+
+The fastest way to migrate is using the official **Automation Migration** starter template. This template uses a "Bridge" pattern: you deploy a generic [`AutomationReceiver.sol`](https://github.com/smartcontractkit/cre-templates/blob/cla-migration/starter-templates/automation-migration/contracts/evm/src/AutomationReceiver.sol) contract, which receives CRE reports and forwards approved calls to your existing Automation contracts.
+
+Your Solidity consumer contract usually does not need to reimplement `checkUpkeep`, `checkLog`, or `performUpkeep`, but some contracts still need a permission update. If your existing contract checks `msg.sender`, uses an Automation Forwarder allowlist, or has role-based permissions, authorize the new `AutomationReceiver` or adjust that permission boundary before deployment.
+
+### Logic Migration (`checkUpkeep` → Handler)
+
+In the handler, you use `evmClient.callContract()` to perform the same checks previously done in `checkUpkeep`. Since this runs off-chain, you are not limited by on-chain gas constraints for the "check" phase.
+
+### On-chain Execution (`performUpkeep` → `onReport`)
+
+Your workflow generates a signed report and submits it to the `AutomationReceiver`. The receiver then calls the original `performUpkeep` function on your target contract.
+
+```
+// AutomationReceiver.sol (included in template)
+function _processReport(bytes calldata report) internal override {
+    (address target, bytes memory data) = abi.decode(report, (address, bytes));
+
+    if (target == address(0)) {
+        revert InvalidTargetAddress();
+    }
+
+    (bool success, bytes memory returnData) = target.call(data);
+    if (!success) {
+        revert CallExecutionFailed(target, returnData);
+    }
+}
+```
+
+`AutomationReceiver` inherits `ReceiverTemplate`, so it validates the configured CRE forwarder before processing reports. For production, also configure workflow identity checks such as expected workflow ID and/or expected workflow owner address, or narrow the receiver to known target contracts and function selectors. A generic receiver that accepts arbitrary `(target, data)` is convenient for migration, but it should not be left broadly reusable without explicit authorization controls.
+
+## Get started
+
+### 1. Initialize your project
+
+Use the CRE CLI to scaffold a new project using the migration template:
+
+```shell
+cre init --template=automation-migration-ts --project-name my-automation-migration --workflow-name my-workflow
+```
+
+The template ID above is expected to work after the template metadata is merged into the default template source. While the template is still on the `cla-migration` branch, use the repository branch directly or copy `starter-templates/automation-migration` from [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates/tree/cla-migration/starter-templates/automation-migration).
+
+### 2. Deploy the Bridge
+
+Deploy `AutomationReceiver.sol` (found in the template) to your target chain, passing the CRE `KeystoneForwarder` address for that network to the constructor. Find the correct forwarder address for your chain in the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory-ts). This contract acts as a translation layer, allowing you to reuse your existing `checkUpkeep`, `checkLog`, and `performUpkeep` logic while moving trigger and check orchestration into CRE.
+
+### 3. Configure and Authorize the Receiver
+
+Update `my-workflow/config.test.json` in your new project with your previously deployed AutomationReceiver contract address, target contract address, migration type (`CRON`, `CUSTOM`, or `LOG`), schedule, and log filters if applicable.
+
+#### 3a. Allow Upkeep Calls
+
+Before your workflow can call your target contract through the receiver, you must authorize the function call using `setCallAllowed()`. This setter transaction grants the receiver permission to forward calls to your target contract with a specific function selector.
+
+**Parameters:**
+
+- **target** (address): The address of your existing Automation upkeep contract
+- **selector** (bytes4): The 4-byte function selector you want to allow (e.g., `0x4585e33b` for `performUpkeep`)
+- **allowed** (bool): Set to `true` to enable the call
+
+**Example transaction:**
+
+```
+Function: setCallAllowed (0xb1e17766)
+target (address): 0x0971Ad145A5462f6Ae18b1aD2b9c9b0c6d8CC9C8
+selector (bytes4): 0x4585e33b
+allowed (bool): true
+```
+
+#### 3b. Set Workflow Identity Checks
+
+For production deployments, configure additional authorization layers by setting expected workflow identity parameters. These optional checks ensure only authorized workflows can invoke your receiver.
+
+**Available setters:**
+
+- **setExpectedAuthor** — Restrict calls to workflows authored by a specific address
+  - Parameter: `_author` (address)
+- **setExpectedWorkflowId** — Restrict calls to a specific workflow ID
+  - Parameter: `_workflowId` (string)
+- **setExpectedWorkflowName** — Restrict calls to workflows with a specific name
+  - Parameter: `_workflowName` (string)
+
+**Example transactions:**
+
+```
+Function: setExpectedAuthor
+_author (address): 0x5c5c48fc95d68f88b4a13e0c9b0c6d8cc9c8c8c
+
+Function: setExpectedWorkflowId
+_workflowId (string): 0x0971ad145a5462f6ae18b1ad2b9c9b0c6d8cc9c8
+
+Function: setExpectedWorkflowName
+_workflowName (string): automation-migration-test
+```
+
+### Parameters Quick Reference
+
+#### Getting the Target Address
+
+The target address is the address of your existing **Automation upkeep contract** — the contract that currently implements `performUpkeep()`. You can find this by:
+
+- Reviewing your Automation registry registration
+- Checking your deployment scripts or configuration
+- Looking up the contract address in your blockchain explorer
+
+#### Computing the Function Selector
+
+The function selector is the first 4 bytes of the keccak256 hash of the function signature. Use the `cast` command-line tool to compute it:
+
+```shell
+# For performUpkeep(bytes)
+cast sig 'performUpkeep(bytes)'
+# Output: 0x4585e33b
+
+# For custom functions
+cast sig 'myCustomFunction(uint256,address)'
+# Output: 0xabcdef12
+```
+
+Alternatively, compute it programmatically in your test or deployment script:
+
+```ts
+import { getAddress, toFunctionSelector } from "viem"
+
+const selector = toFunctionSelector("performUpkeep(bytes)")
+// Result: 0x4585e33b
+```
+
+### Example Transaction Outputs
+
+A successful `setCallAllowed` transaction on a block explorer shows:
+
+```
+Transaction Type: Contract Interaction
+Function: setCallAllowed(address,bytes4,bool)
+Status: ✓ Success
+From: 0xYourAddress
+To: 0xAutomationReceiverAddress
+Gas Used: 35,400 gas
+
+Decoded Input:
+target: 0x0971Ad145A5462f6Ae18b1aD2b9c9b0c6d8CC9C8
+selector: 0x4585e33b
+allowed: true
+```
+
+### 3c. Configure and Simulate
+
+Then install dependencies and simulate from the project root. The CRE CLI prepares the workflow build tooling during simulation.
+
+```shell
+cd my-workflow
+bun install
+cd ..
+
+cre workflow simulate my-workflow --target=test-settings
+```
+
+For log-trigger migrations, provide a transaction hash containing the event so simulation does not wait for a live event:
+
+```shell
+cre workflow simulate my-workflow \
+  --target=test-settings \
+  --non-interactive \
+  --trigger-index=0 \
+  --evm-tx-hash=0x... \
+  --evm-event-index=0
+```
+
+### 4. Deploy
+
+Once verified, deploy your workflow to the CRE DON:
+
+```shell
+cre workflow deploy my-workflow --target=production-settings
+```
+
+For end-to-end runnable examples, see the [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates/tree/cla-migration/starter-templates/automation-migration) repository.
+
+## Troubleshooting
+
+### CallNotAllowed Error
+
+If your workflow execution fails with a `CallNotAllowed` error, verify the following:
+
+1. **Function selector mismatch** — Ensure the selector you configured in `setCallAllowed()` matches the function your workflow is attempting to call. Use `cast sig 'functionName(types)'` to compute the correct selector. For more information, see the [Function Selector Reference](https://rareskills.io/post/function-selector).
+
+2. **Permission not set** — Confirm that `setCallAllowed()` was called with `allowed: true` for your target contract and function selector.
+
+3. **Workflow authorization** — If you set workflow identity checks (`setExpectedAuthor`, `setExpectedWorkflowId`, or `setExpectedWorkflowName`), ensure the workflow deploying the call matches those values.
+
+4. **Forwarder mismatch** — Verify that the `KeystoneForwarder` address passed to the `AutomationReceiver` constructor matches the address for your chain in the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory-ts).
 
 ---
 

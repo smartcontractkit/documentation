@@ -68,7 +68,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
               ?.filter((network) => network.name.toLowerCase().includes(search.toLowerCase()))
               .map((network, index) => {
                 // Check if all lanes for this token on this network are paused
-                const allLanesPaused = areAllLanesPaused(network.tokenDecimals, lanes[network.key] || {})
+                const allLanesPaused = areAllLanesPaused(lanes[network.key] || {})
 
                 return (
                   <tr key={index} className={allLanesPaused ? "ccip-table__row--paused" : ""}>
