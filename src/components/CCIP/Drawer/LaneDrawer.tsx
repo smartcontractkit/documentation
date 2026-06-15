@@ -32,11 +32,6 @@ function LaneDrawer({
     chain: destinationNetwork.key,
   })
 
-  const sourceNetworkDetails = getNetwork({
-    filter: environment,
-    chain: sourceNetwork.key,
-  })
-
   return (
     <>
       <h2 className="ccip-table__drawer-heading">Lane details</h2>
