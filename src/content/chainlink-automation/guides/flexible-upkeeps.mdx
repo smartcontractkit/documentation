@@ -76,7 +76,7 @@ To reduce these gas fees and avoid running out of gas, you can make some simple 
 
 ## Solution: Perform complex computations with no gas fees
 
-Modify the contract and move the computation to the `checkUpkeep()` function. This computation _doesn’t consume any gas_ and supports multiple upkeeps for the same contract to do the work in parallel. The main difference between this new contract and the previous contract are:
+Modify the contract and move the computation to the `checkUpkeep()` function. This computation _doesn't consume any gas_ and supports multiple upkeeps for the same contract to do the work in parallel. The main difference between this new contract and the previous contract are:
 
 - The `checkUpkeep()` function receives [`checkData`](/chainlink-automation/reference/automation-interfaces/#checkdata), which passes arbitrary bytes to the function. Pass a `lowerBound` and an `upperBound` to scope the work to a sub-array of `balances`. This creates several upkeeps with different values of `checkData`. The function loops over the sub-array and looks for the indexes of the elements that require re-balancing and calculates the required `increments`. Then, it returns `upkeepNeeded == true` and `performData`, which is calculated by encoding `indexes` and `increments`. Note that `checkUpkeep()` is a view function, so computation does not consume any gas.
 - The `performUpkeep()` function takes [performData](/chainlink-automation/reference/automation-interfaces/#performdata) as a parameter and decodes it to fetch the `indexes` and the `increments`.
