@@ -8,6 +8,12 @@ Last Updated: 2025-05-19
   CCIP Contact form](https://chain.link/ccip-contact).
 </Aside>
 
+<Aside type="note" title="CCIP UPGRADE">
+  A new version of CCIP is being progressively deployed across supported blockchains. No disruption to existing
+  integrations or protocol downtime is anticipated during the upgrade process. For more information, please reach out to
+  your Chainlink Labs point of contact or visit the [Chainlink CCIP Contact form](https://chain.link/ccip-contact).
+</Aside>
+
 Blockchain interoperability protocols are important for the Web3 ecosystem and traditional systems that need to interact with different blockchains. These protocols are the foundation for building blockchain abstraction layers, allowing traditional backends and dApps to interact with any blockchain network through a single middleware solution. Without a blockchain interoperability protocol, Web2 systems and dApps would need to build separate in-house implementations for each cross-chain interaction that they want to use, which is a time-consuming, resource-intensive, and complex process.
 
 Blockchain interoperability protocols provide the following capabilities:
@@ -1351,7 +1357,7 @@ A **decentralized oracle network (DON)** consists of multiple independent Chainl
 
 ## Risk Management Network (RMN)
 
-*Based on user demand, CCIP’s architecture is evolving to provide enhanced support for configurable security, compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network’s automated offchain role is no longer active in current CCIP deployments, but is expected to be offered as an optional validation layer in future releases. The [onchain RMN contract](https://docs.chain.link/ccip/concepts/architecture/onchain/evm/components#rmn-contract) remains part of CCIP’s architecture as an emergency safeguard over certain per-chain or network-wide functions when required. CCIP continues to provide robust risk management controls, including configurable rate limits, developer token attestations, and monitoring capabilities.*
+*Based on user demand, CCIP's architecture is evolving to provide enhanced support for configurable security, compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network's automated offchain role is no longer active in current CCIP deployments, but is expected to be offered as an optional validation layer in future releases. The [onchain RMN contract](https://docs.chain.link/ccip/concepts/architecture/onchain/evm/components#rmn-contract) remains part of CCIP's architecture as an emergency safeguard over certain per-chain or network-wide functions when required. CCIP continues to provide robust risk management controls, including configurable rate limits, developer token attestations, and monitoring capabilities.*
 
 ---
 
@@ -1691,11 +1697,11 @@ The RMN Contract is deployed on every chain where CCIP is integrated. Its key fu
    - **Curse Detection**: Onchain components (such as the Router, OnRamp, OffRamp, and TokenPool) call the `isCursed()` function on the RMNRemote contract to detect global curses or curses targeting a remote chain.
 
 <Aside type="note">
-  Based on user demand, CCIP’s architecture is evolving to provide enhanced support for configurable security,
-  compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network’s automated
+  Based on user demand, CCIP's architecture is evolving to provide enhanced support for configurable security,
+  compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network's automated
   offchain role is no longer active in current CCIP deployments, but is expected to be offered as an optional validation
   layer in future releases. The [onchain RMN contract](/ccip/concepts/architecture/onchain/evm/components#rmn-contract)
-  remains part of CCIP’s architecture as an emergency safeguard over certain per-chain or network-wide functions when
+  remains part of CCIP's architecture as an emergency safeguard over certain per-chain or network-wide functions when
   required. CCIP continues to provide robust risk management controls, including configurable rate limits, developer
   token attestations, and monitoring capabilities.
 </Aside>
@@ -2019,7 +2025,7 @@ The OffRamp program operates on the destination SVM chain and processes incoming
           - Makes a CPI call to the receiver program using the accounts specified in the original message.
 
       - **Completion**:
-        - Marks the message as “Success” in the commit report's state tracking.
+        - Marks the message as "Success" in the commit report's state tracking.
         - Emits an `ExecutionStateChanged` event with details, including the source chain selector, sequence number, message ID, message hash and the new state.
         - **Note**: If any part of the execution process fails, the entire transaction will revert. This means no state changes are persisted, no tokens are transferred, and no events are emitted. The message will remain in the previous state, allowing for retry.
 
@@ -2089,11 +2095,11 @@ The RMN Contract adds an additional security layer to CCIP by maintaining an onc
 - The owner calls `uncurse` to lift the curse when the threat is resolved, restoring normal CCIP operations.
 
 <Aside type="note">
-  Based on user demand, CCIP’s architecture is evolving to provide enhanced support for configurable security,
-  compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network’s automated
+  Based on user demand, CCIP's architecture is evolving to provide enhanced support for configurable security,
+  compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network's automated
   offchain role is no longer active in current CCIP deployments, but is expected to be offered as an optional validation
   layer in future releases. The [onchain RMN contract](/ccip/concepts/architecture/onchain/evm/components#rmn-contract)
-  remains part of CCIP’s architecture as an emergency safeguard over certain per-chain or network-wide functions when
+  remains part of CCIP's architecture as an emergency safeguard over certain per-chain or network-wide functions when
   required. CCIP continues to provide robust risk management controls, including configurable rate limits, developer
   token attestations, and monitoring capabilities.
 </Aside>
@@ -2425,11 +2431,11 @@ The `ccip::receiver_registry` is a module where developers can register their cu
 The `ccip::rmn_remote` module is a critical security component deployed on every CCIP-enabled chain. Various CCIP modules (like `OnRamp`, `OffRamp`, `Token Pools`) query this component to verify the status of other chains in the network. It maintains an onchain list of "cursed" (i.e., blocklisted) chains. If a source or destination chain is cursed, CCIP transactions involving that chain are halted.
 
 <Aside type="note">
-  Based on user demand, CCIP’s architecture is evolving to provide enhanced support for configurable security,
-  compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network’s automated
+  Based on user demand, CCIP's architecture is evolving to provide enhanced support for configurable security,
+  compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network's automated
   offchain role is no longer active in current CCIP deployments, but is expected to be offered as an optional validation
   layer in future releases. The [onchain RMN contract](/ccip/concepts/architecture/onchain/evm/components#rmn-contract)
-  remains part of CCIP’s architecture as an emergency safeguard over certain per-chain or network-wide functions when
+  remains part of CCIP's architecture as an emergency safeguard over certain per-chain or network-wide functions when
   required. CCIP continues to provide robust risk management controls, including configurable rate limits, developer
   token attestations, and monitoring capabilities.
 </Aside>
@@ -2858,11 +2864,11 @@ CCIP's offchain architecture includes the following:
 - **Interaction Components**: Managing communication between the CCIP DONs.
 
 <Aside type="note">
-  Based on user demand, CCIP’s architecture is evolving to provide enhanced support for configurable security,
-  compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network’s automated
+  Based on user demand, CCIP's architecture is evolving to provide enhanced support for configurable security,
+  compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network's automated
   offchain role is no longer active in current CCIP deployments, but is expected to be offered as an optional validation
   layer in future releases. The [onchain RMN contract](/ccip/concepts/architecture/onchain/evm/components#rmn-contract)
-  remains part of CCIP’s architecture as an emergency safeguard over certain per-chain or network-wide functions when
+  remains part of CCIP's architecture as an emergency safeguard over certain per-chain or network-wide functions when
   required. CCIP continues to provide robust risk management controls, including configurable rate limits, developer
   token attestations, and monitoring capabilities.
 </Aside>
@@ -3202,7 +3208,7 @@ For example:
 - On Ethereum: you configure 18 decimals (0.123456789123456789)
 - On Polygon: you configure 9 decimals (0.123456789)
 
-When tokens move between chains with different decimals, CCIP converts values automatically and rounds to match the destination chain’s precision.
+When tokens move between chains with different decimals, CCIP converts values automatically and rounds to match the destination chain's precision.
 
 **Impact Scenario**
 
@@ -3214,7 +3220,7 @@ Consider a token deployed across three blockchains:
 
 | Scenario         | Transfer Path | Example                                                           | Impact                                                                                                                                                                                                                                                        |
 | ---------------- | ------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **High → Low ❌** | A → B         | • Send: 1.123456789123456789<br />• Receive: 1.123456789          | Precision is lost when converting to the destination chain’s decimals. The difference (0.000000000123456789) is not represented on the destination chain.<br />• Burn/mint: not included in the minted amount<br />• Lock/release: remains in the source pool |
+| **High → Low ❌** | A → B         | • Send: 1.123456789123456789<br />• Receive: 1.123456789          | Precision is lost when converting to the destination chain's decimals. The difference (0.000000000123456789) is not represented on the destination chain.<br />• Burn/mint: not included in the minted amount<br />• Lock/release: remains in the source pool |
 | **Low → High ✅** | B → A         | • Send: 1.123456789<br />• Receive: 1.123456789000000000          | No precision loss                                                                                                                                                                                                                                             |
 | **Equal ✅**      | A → C         | • Send: 1.123456789123456789<br />• Receive: 1.123456789123456789 | No precision loss                                                                                                                                                                                                                                             |
 
@@ -5401,7 +5407,7 @@ Each inbound or outbound rate limit is defined by three parameters:
 - **capacity**: the maximum amount of tokens that can be transferred before the bucket is depleted
 - **rate**: the speed at which capacity refills, measured in tokens per second
 
-All values are expressed in the token’s **smallest unit**, not in whole tokens.
+All values are expressed in the token's **smallest unit**, not in whole tokens.
 
 ## Token bucket state
 
@@ -5487,7 +5493,7 @@ This means:
 
 Before making any changes, you should ensure that:
 
-- you understand the token’s decimal precision and smallest unit
+- you understand the token's decimal precision and smallest unit
 - you have reviewed the current inbound and outbound configurations
 - you are prepared to validate values carefully before submitting transactions
 
@@ -5505,7 +5511,7 @@ Incorrect configuration can:
 
 For this reason, rate limit management should follow a deliberate review process and use a multisig workflow where possible.
 
-## What’s next
+## What's next
 
 If you meet these prerequisites, the next step is to [inspect the current inbound and outbound rate limit](/ccip/concepts/rate-limit-management/inspect-current-rate-limits) configuration before making any changes.
 
@@ -5559,7 +5565,7 @@ These functions take a remote chain selector as input and return the current **T
 
 You can call these functions using:
 
-- a block explorer’s “Read Contract” interface
+- a block explorer's "Read Contract" interface
 - a web3-enabled script or client
 
 ## Interpreting the TokenBucket state
@@ -5583,7 +5589,7 @@ Where:
 - isEnabled (bool): whether the rate limit is active
 - capacity (uint128): the maximum bucket size
 - rate (uint128): the refill rate in tokens per second
-- All numeric values are expressed in the token’s **smallest unit**, not in whole tokens.
+- All numeric values are expressed in the token's **smallest unit**, not in whole tokens.
 
 ## Inbound vs outbound inspection
 
@@ -5609,7 +5615,7 @@ Only proceed to updating rate limits once you fully understand the current state
 # Token Units and Decimals
 Source: https://docs.chain.link/ccip/concepts/rate-limit-management/token-units-and-decimals
 
-When configuring CCIP rate limits, **all values are specified in the token’s smallest unit**, not in whole tokens. Understanding token decimals is critical to setting correct capacity and refill rates.
+When configuring CCIP rate limits, **all values are specified in the token's smallest unit**, not in whole tokens. Understanding token decimals is critical to setting correct capacity and refill rates.
 
 Incorrect unit handling can result in rate limits that are orders of magnitude larger or smaller than intended.
 
@@ -5683,13 +5689,13 @@ Any of these mistakes can:
 
 Before submitting any transaction that updates rate limits:
 
-- verify the token’s decimal precision
+- verify the token's decimal precision
 - recompute capacity and rate values from first principles
 - double-check values in base units
 
 Once values are submitted on-chain, they take effect immediately.
 
-## What’s next
+## What's next
 
 After validating units and conversions, you can proceed to [updating inbound and outbound rate limits](/ccip/concepts/rate-limit-management/update-rate-limits) for the selected token pool and lane.
 
@@ -5762,7 +5768,7 @@ The exact tooling used does not change the on-chain behavior.
 
 Before submitting a rate limit update:
 
-- re-check all values are expressed in the token’s smallest unit
+- re-check all values are expressed in the token's smallest unit
 - confirm inbound and outbound directions are not swapped
 - verify the correct remote chain selector is used
 - review existing values to ensure changes are intentional
@@ -5832,7 +5838,7 @@ Both inbound and outbound limits should be set to ensure transfers are blocked i
 When locking down a lane:
 
 - transfers may still succeed for a minimal amount before capacity is exhausted
-- behavior depends on the token’s smallest unit
+- behavior depends on the token's smallest unit
 - the change takes effect immediately after the transaction is confirmed
 
 This approach is intended to **contain activity**, not to permanently disable rate limits.
@@ -6007,7 +6013,7 @@ Configuration tuples must be entered as arrays containing:
 - `capacity`
 - `rate`
 
-All numeric values must be expressed in the token’s smallest unit.
+All numeric values must be expressed in the token's smallest unit.
 
 ## Tooling options
 
@@ -26183,7 +26189,7 @@ Hyperliquid is an emerging app-chain that powers a popular decentralized exchang
 | **Primary Function** | High-speed decentralized exchange trading via an onchain order book | Supporting infrastructure and external smart contracts |
 |    **Token Type**    |                             HIP-1 tokens                            |                      ERC20 tokens                      |
 |    **Deployment**    |                 Requires winning a spot slot auction                |                Standard ERC20 deployment               |
-|    **Interaction**   |         Posting “signed actions” through a Rest API Endpoint        |                  Standard RPC Methods                  |
+|    **Interaction**   |         Posting "signed actions" through a Rest API Endpoint        |                  Standard RPC Methods                  |
 
 ### HyperCore
 
@@ -26301,7 +26307,7 @@ Once the above steps are completed, a user can bridge their CCIP token from any 
 
 ## Contact Us
 
-Before proceeding, it’s essential to carefully review your deployment configuration. Even minor misconfigurations can permanently impact your spot slot, potentially requiring you to reacquire one through another auction.
+Before proceeding, it's essential to carefully review your deployment configuration. Even minor misconfigurations can permanently impact your spot slot, potentially requiring you to reacquire one through another auction.
 
 To help ensure a smooth and secure deployment, we currently offer white-glove support for CCIP users. Our team will validate your configuration and, if desired, provide tools and assistance to complete this process.
 
@@ -26314,7 +26320,7 @@ Source: https://docs.chain.link/ccip/tools-resources/network-specific/hyperevm-t
 Last Updated: 2025-10-08
 
 <Aside type="caution" title="Disclaimer">
-  This RPC is provided “as is” without warranties of any kind. Use is at your own risk, Chainlink Labs and its
+  This RPC is provided "as is" without warranties of any kind. Use is at your own risk, Chainlink Labs and its
   affiliates are not liable for any losses, damages, or interruptions arising from its use. The RPC may be modified or
   unavailable at any time, and users are solely responsible for their interactions and compliance with applicable laws.
 </Aside>
@@ -26449,7 +26455,7 @@ You can easily add this network to browser extension wallets like [MetaMask](htt
 | eth_chainId                             | Returns the chain ID used for EIP-155 transaction signing (hex quantity).                                |
 | eth_estimateGas                         | Estimates the gas required to execute a transaction/call. Only the latest block is supported.            |
 | eth_feeHistory                          | Returns historical base fees, priority fee rewards, and gas usage ratios for a range of recent blocks.   |
-| eth_gasPrice                            | Returns the node’s suggested gas price. Returns the base fee for the next small block.                   |
+| eth_gasPrice                            | Returns the node's suggested gas price. Returns the base fee for the next small block.                   |
 | eth_getBalance                          | Returns the account balance for an address. Only the latest block is supported.                          |
 | eth_getBlockByHash                      | Returns block details by block hash; can include full transactions when requested.                       |
 | eth_getBlockByNumber                    | Returns block details by block number; can include full transactions when requested.                     |
@@ -26671,7 +26677,7 @@ In Token Manager Expert Mode:
 4. Under **Add a new network**, configure each remote chain:
    - **Network**: Select the remote chain (e.g., Avalanche Fuji)
    - **Token Address**: Enter the token address on the remote chain
-   - **Token Pool Address**: Enter the remote chain’s BurnMintTokenPool address
+   - **Token Pool Address**: Enter the remote chain's BurnMintTokenPool address
 5. Click **Chain update** and pay gas
 
 Leave **Inbound/Outbound rate limiters** at their default values unless you have specific requirements.
@@ -49111,7 +49117,7 @@ pub struct Any2SVMMessage {
 
 ### SVM2AnyRampMessage
 
-When sending a cross-chain message from a Solana-compatible (SVM) blockchain to a destination chain (EVM, SVM, etc.), the `SVM2AnyRampMessage` struct describes all necessary data and token information. It’s typically constructed inside the ccip_send call.
+When sending a cross-chain message from a Solana-compatible (SVM) blockchain to a destination chain (EVM, SVM, etc.), the `SVM2AnyRampMessage` struct describes all necessary data and token information. It's typically constructed inside the ccip_send call.
 
 ```rust
 #[derive(Clone, AnchorSerialize, AnchorDeserialize)]
