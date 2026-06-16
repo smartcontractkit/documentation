@@ -51,7 +51,7 @@ struct (0x1e55bbf6) Router_CCIPReceiveConfirm {
 }
 ```
 
-Send this with `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` so the remaining TON (the gas reserve forwarded by the OffRamp minus your execution costs) is returned through the protocol chain.
+Send this with `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` so the remaining GRAM (the gas reserve forwarded by the OffRamp minus your execution costs) is returned through the protocol chain.
 
 ---
 
@@ -60,7 +60,7 @@ Send this with `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` so the remaining TO
 Every TON CCIP receiver must:
 
 1. **Accept `Receiver_CCIPReceive` only from the authorized CCIP Router** — verify `in.senderAddress == st.router`.
-2. **Verify sufficient value is attached** — the Router needs at least 0.02 TON to forward the confirmation. Set `MIN_VALUE` above your execution costs.
+2. **Verify sufficient value is attached** — the Router needs at least 0.02 GRAM to forward the confirmation. Set `MIN_VALUE` above your execution costs.
 3. **Send `Router_CCIPReceiveConfirm` back to the Router** — include `execId` from the received message. Use `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE`.
 
 <Aside type="caution">
@@ -113,7 +113,7 @@ struct Storage {
     router: address; // The CCIP Router address
 }
 
-const MIN_VALUE: coins = ton("0.03"); // 0.02 TON for OffRamp + your execution costs
+const MIN_VALUE: coins = ton("0.03"); // 0.02 GRAM for OffRamp + your execution costs
 
 type MinimalReceiver_InMessage = Receiver_CCIPReceive;
 
