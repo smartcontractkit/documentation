@@ -53,18 +53,18 @@ const extraArgs = buildExtraArgsForEVM(100_000, true) // 100k EVM gas limit
 
 ### `buildExtraArgsForTON`
 
-Encodes `GenericExtraArgsV2` as ABI bytes for use in an **EVM → TON** `ccipSend` call. The `gasLimit` is in **nanoTON**.
+Encodes `GenericExtraArgsV2` as ABI bytes for use in an **EVM → TON** `ccipSend` call. The `gasLimit` is in **nanoGRAM**.
 
 ```typescript
-export function buildExtraArgsForTON(gasLimitNanoTON: bigint | number, allowOutOfOrderExecution: boolean): Uint8Array
+export function buildExtraArgsForTON(gasLimitNanoGRAM: bigint | number, allowOutOfOrderExecution: boolean): Uint8Array
 ```
 
 #### Parameters
 
-| Name                                    | Type                            | Description                                                                                                                                                |
-| --------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <nobr>`gasLimitNanoTON`</nobr>          | <nobr>`bigint \| number`</nobr> | The TON execution budget forwarded to the receiver, in nanoTON. For example, `100_000_000n` = 0.1 TON. Must be sufficient for your receiver's `MIN_VALUE`. |
-| <nobr>`allowOutOfOrderExecution`</nobr> | <nobr>`boolean`</nobr>          | If `true`, this message can be executed out of order.                                                                                                      |
+| Name                                    | Type                            | Description                                                                                                                                                  |
+| --------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <nobr>`gasLimitNanoGRAM`</nobr>         | <nobr>`bigint \| number`</nobr> | The TON execution budget forwarded to the receiver, in nanoGRAM. For example, `100_000_000n` = 0.1 GRAM. Must be sufficient for your receiver's `MIN_VALUE`. |
+| <nobr>`allowOutOfOrderExecution`</nobr> | <nobr>`boolean`</nobr>          | If `true`, this message can be executed out of order.                                                                                                        |
 
 #### Returns
 
@@ -73,7 +73,7 @@ A `Uint8Array` containing the ABI-encoded `GenericExtraArgsV2` with the `0x181dc
 #### Example
 
 ```typescript
-const extraArgs = buildExtraArgsForTON(100_000_000n, true) // 0.1 TON gas limit
+const extraArgs = buildExtraArgsForTON(100_000_000n, true) // 0.1 GRAM gas limit
 ```
 
 <Aside type="caution">
@@ -130,14 +130,14 @@ export function buildCCIPMessageForEVM(
 
 #### Parameters
 
-| Name                             | Type                            | Description                                                                                 |
-| -------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------- |
-| <nobr>`queryID`</nobr>           | <nobr>`bigint \| number`</nobr> | Unique identifier for this send. Use the wallet `seqno`. Returned in ACK/NACK responses.    |
-| <nobr>`destChainSelector`</nobr> | <nobr>`bigint \| number`</nobr> | CCIP chain selector of the destination EVM chain.                                           |
-| <nobr>`receiverBytes`</nobr>     | <nobr>`Buffer`</nobr>           | 32-byte encoded receiver address. Use [`encodeEVMAddress`](#encodeevmaddress).              |
-| <nobr>`data`</nobr>              | <nobr>`Cell`</nobr>             | The message payload as a TL-B `Cell`.                                                       |
-| <nobr>`feeToken`</nobr>          | <nobr>`Address`</nobr>          | The TON address of the fee token. Use the wrapped native token address for native TON fees. |
-| <nobr>`extraArgs`</nobr>         | <nobr>`Cell`</nobr>             | Encoded extra args. Use [`buildExtraArgsForEVM`](#buildextraargsforevm).                    |
+| Name                             | Type                            | Description                                                                                  |
+| -------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------- |
+| <nobr>`queryID`</nobr>           | <nobr>`bigint \| number`</nobr> | Unique identifier for this send. Use the wallet `seqno`. Returned in ACK/NACK responses.     |
+| <nobr>`destChainSelector`</nobr> | <nobr>`bigint \| number`</nobr> | CCIP chain selector of the destination EVM chain.                                            |
+| <nobr>`receiverBytes`</nobr>     | <nobr>`Buffer`</nobr>           | 32-byte encoded receiver address. Use [`encodeEVMAddress`](#encodeevmaddress).               |
+| <nobr>`data`</nobr>              | <nobr>`Cell`</nobr>             | The message payload as a TL-B `Cell`.                                                        |
+| <nobr>`feeToken`</nobr>          | <nobr>`Address`</nobr>          | The TON address of the fee token. Use the wrapped native token address for native GRAM fees. |
+| <nobr>`extraArgs`</nobr>         | <nobr>`Cell`</nobr>             | Encoded extra args. Use [`buildExtraArgsForEVM`](#buildextraargsforevm).                     |
 
 #### Returns
 
@@ -166,7 +166,7 @@ Builds the CCIP message struct for an **EVM → TON** `ccipSend` call on the EVM
 export function buildCCIPMessageForTON(
   receiver: Uint8Array,
   data: Uint8Array,
-  gasLimitNanoTON: bigint | number,
+  gasLimitNanoGRAM: bigint | number,
   allowOutOfOrderExecution: boolean,
   feeToken: string = ethers.ZeroAddress
 ): object
@@ -178,7 +178,7 @@ export function buildCCIPMessageForTON(
 | --------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | <nobr>`receiver`</nobr>                 | <nobr>`Uint8Array`</nobr>       | The TON receiver address encoded as raw bytes (from base64 address).                                                               |
 | <nobr>`data`</nobr>                     | <nobr>`Uint8Array`</nobr>       | The message payload as raw bytes.                                                                                                  |
-| <nobr>`gasLimitNanoTON`</nobr>          | <nobr>`bigint \| number`</nobr> | TON gas budget for the receiver, in nanoTON. Minimum recommended: `100_000_000n` (0.1 TON).                                        |
+| <nobr>`gasLimitNanoGRAM`</nobr>         | <nobr>`bigint \| number`</nobr> | TON gas budget for the receiver, in nanoGRAM. Minimum recommended: `100_000_000n` (0.1 GRAM).                                      |
 | <nobr>`allowOutOfOrderExecution`</nobr> | <nobr>`boolean`</nobr>          | If `true`, this message can be executed out of order.                                                                              |
 | <nobr>`feeToken`</nobr>                 | <nobr>`string`</nobr>           | EVM address of the fee token. Use `ethers.ZeroAddress` for native ETH/gas token fees. Use the LINK token address to pay with LINK. |
 
@@ -193,7 +193,8 @@ const receiverBytes = new Uint8Array(Buffer.from(tonReceiverAddress, "base64"))
 const message = buildCCIPMessageForTON(
   receiverBytes,
   ethers.toUtf8Bytes("Hello TON from EVM"),
-  100_000_000n, // 0.1 TON
+  100_000_000n, // 0.1 GRAM
+
   true,
   ethers.ZeroAddress // pay with native
 )
@@ -230,7 +231,7 @@ export async function getCCIPFeeForEVM(
 
 #### Returns
 
-`Promise<bigint>` — the fee in nanoTON.
+`Promise<bigint>` — the fee in nanoGRAM.
 
 **Address resolution:** `Router.onRamp(destChainSelector)` → `OnRamp.feeQuoter(destChainSelector)` → `validatedFeeCell(ccipSendCell)`
 

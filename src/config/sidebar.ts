@@ -1325,28 +1325,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "Streams Trade",
-      contents: [
-        {
-          title: "Overview",
-          url: "data-streams/streams-trade",
-        },
-        {
-          title: "Getting Started",
-          url: "data-streams/tutorials/streams-trade/getting-started",
-          highlightAsCurrent: ["data-streams/tutorials/streams-trade/getting-started-hardhat"],
-        },
-        {
-          title: "Handle StreamsLookup errors",
-          url: "data-streams/tutorials/streams-trade/streams-trade-lookup-error-handler",
-        },
-        {
-          title: "Reference (Interfaces)",
-          url: "data-streams/streams-trade/interfaces",
-        },
-      ],
-    },
-    {
       section: "Resources",
       contents: [
         {
