@@ -12,6 +12,17 @@ metadata:
 
 import { Aside } from "@components"
 
+<Aside type="caution" title="Chainlink Automation v1.x sunsets June 30, 2026. Chainlink Automation v2.1 sunsets July 31, 2026 (testnet: June 24, 2026)">
+  Migrate to the [Chainlink Runtime Environment (CRE)](/cre), which does everything and more →. Migrate your existing upkeeps before these dates to avoid service disruption.
+
+**Temporary Service Interruptions:**
+
+- Jul 15, 9:00 AM–1:00 PM EST (4 hours)
+- Jul 22, 9:00 AM–5:00 PM EST (8 hours)
+- Jul 27, 9:00 AM–Jul 28, 9:00 AM EST (24 hours)
+
+</Aside>
+
 <Aside type="note" title="SDK Language: TypeScript">
   You're viewing the **TypeScript** version of this guide. If you prefer Go, use the language selector in the left
   sidebar to switch to the Go version.
@@ -98,7 +109,7 @@ const initWorkflow = (config: Config) => {
 
 ## Task Authoring: The "Bridge" Pattern
 
-The fastest way to migrate is using the official **Automation Migration** starter template. This template uses a "Bridge" pattern: you deploy a generic [`AutomationReceiver.sol`](https://github.com/smartcontractkit/cre-templates/blob/cla-migration/starter-templates/automation-migration/contracts/evm/src/AutomationReceiver.sol) contract, which receives CRE reports and forwards approved calls to your existing Automation contracts.
+The fastest way to migrate is using the official **Automation Migration** starter template. This template uses a "Bridge" pattern: you deploy a generic [`AutomationReceiver.sol`](https://github.com/smartcontractkit/cre-templates/blob/main/starter-templates/automation-migration/contracts/evm/src/AutomationReceiver.sol) contract, which receives CRE reports and forwards approved calls to your existing Automation contracts.
 
 Your Solidity consumer contract usually does not need to reimplement `checkUpkeep`, `checkLog`, or `performUpkeep`, but some contracts still need a permission update. If your existing contract checks `msg.sender`, uses an Automation Forwarder allowlist, or has role-based permissions, authorize the new `AutomationReceiver` or adjust that permission boundary before deployment.
 
@@ -138,7 +149,13 @@ Use the CRE CLI to scaffold a new project using the migration template:
 cre init --template=automation-migration-ts --project-name my-automation-migration --workflow-name my-workflow
 ```
 
-The template ID above is expected to work after the template metadata is merged into the default template source. While the template is still on the `cla-migration` branch, use the repository branch directly or copy `starter-templates/automation-migration` from [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates/tree/cla-migration/starter-templates/automation-migration).
+The template is available in the `main` branch. You can scaffold a new project using the CRE CLI:
+
+```shell
+cre init --template=automation-migration-ts
+```
+
+Or browse the template directly at [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/automation-migration).
 
 ### 2. Deploy the Bridge
 
@@ -275,7 +292,7 @@ Once verified, deploy your workflow to the CRE DON:
 cre workflow deploy my-workflow --target=production-settings
 ```
 
-For end-to-end runnable examples, see the [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates/tree/cla-migration/starter-templates/automation-migration) repository.
+For end-to-end runnable examples, see the [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/automation-migration) repository.
 
 ## Troubleshooting
 
