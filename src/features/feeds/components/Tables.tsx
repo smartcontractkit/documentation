@@ -20,8 +20,8 @@ import { REPORT_SCHEMA_DEFINITIONS, type SchemaDefinition } from "./reportSchema
 import schemaFieldsTableStyles from "../../data-streams/common/schemaFieldsTable.module.css"
 import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
 import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
-import { shouldHideAddress } from "~/features/feeds/utils/feedVisibility.ts"
-import { TOKENIZED_EQUITY_CONTACT_EMAIL } from "~/features/feeds/constants.ts"
+import { shouldHideAddress, shouldHideStreamFeedId } from "~/features/feeds/utils/feedVisibility.ts"
+import { DATA_STREAMS_CONTACT_URL, TOKENIZED_EQUITY_CONTACT_EMAIL } from "~/features/feeds/constants.ts"
 import {
   getSchemaVersion,
   getMarketStatusDocLink,
@@ -470,6 +470,15 @@ const HiddenAddressContact = ({ className }: { className?: string }) => (
     Contact us:{" "}
     <a href={`mailto:${TOKENIZED_EQUITY_CONTACT_EMAIL}`} className={className}>
       {TOKENIZED_EQUITY_CONTACT_EMAIL}
+    </a>
+  </span>
+)
+
+const HiddenStreamFeedIdContact = ({ className }: { className?: string }) => (
+  <span>
+    Contact us:{" "}
+    <a href={DATA_STREAMS_CONTACT_URL} target="_blank" rel="noopener noreferrer" className={className}>
+      chain.link/contact
     </a>
   </span>
 )
@@ -1333,8 +1342,8 @@ const streamsCategoryMap = {
 
 export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) => {
   const finalTier = metadata.finalCategory
-  // Determine if stream is deprecating
   const isDeprecating = !!metadata.docs?.shutdownDate
+  const hideFeedId = shouldHideStreamFeedId(metadata)
 
   // Temporary calculated stream detection until proper metadata tagging is implemented
   // TODO: Replace with metadata.docs.isCalculated or similar once available
@@ -1397,23 +1406,29 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
       </td>
       <td style="width:80%;">
         <div className={tableStyles.assetAddress}>
-          <span className={tableStyles.streamAddress}>{metadata.feedId}</span>
-          <button
-            className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-            style={{ height: "16px", width: "16px" }}
-            data-clipboard-text={metadata.feedId}
-            onClick={(e) =>
-              handleClick(e, {
-                product: "STREAMS",
-                action: "feedId_copied",
-                extraInfo1: isMainnet ? "Mainnet" : "Testnet",
-                extraInfo2: metadata.pair[0],
-                extraInfo3: metadata.feedId,
-              })
-            }
-          >
-            <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-          </button>
+          {hideFeedId ? (
+            <HiddenStreamFeedIdContact className={tableStyles.addressLink} />
+          ) : (
+            <>
+              <span className={tableStyles.streamAddress}>{metadata.feedId}</span>
+              <button
+                className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                style={{ height: "16px", width: "16px" }}
+                data-clipboard-text={metadata.feedId}
+                onClick={(e) =>
+                  handleClick(e, {
+                    product: "STREAMS",
+                    action: "feedId_copied",
+                    extraInfo1: isMainnet ? "Mainnet" : "Testnet",
+                    extraInfo2: metadata.pair[0],
+                    extraInfo3: metadata.feedId,
+                  })
+                }
+              >
+                <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+              </button>
+            </>
+          )}
         </div>
         <div>
           <dl className={tableStyles.listContainer}>

@@ -1,5 +1,8 @@
-/** Contact email shown when a feed address is intentionally hidden. */
+/** Contact email shown when a data feed address is intentionally hidden. */
 export const TOKENIZED_EQUITY_CONTACT_EMAIL = "chainlink_data_feeds@smartcontract.com"
+
+/** Contact URL shown when a stream feedId is intentionally hidden. */
+export const DATA_STREAMS_CONTACT_URL = "https://chain.link/contact?ref_id=datastreams"
 
 /** Static SmartData category filters shown in the UI. */
 export const SMART_DATA_CATEGORY_OPTIONS = [
