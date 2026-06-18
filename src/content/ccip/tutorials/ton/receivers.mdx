@@ -36,7 +36,7 @@ A **CCIP Receiver** is a TON smart contract (written in Tolk) that accepts incom
 When a cross-chain message arrives on TON:
 
 1. The CCIP off-ramp verifies the message against a Merkle root and routes it through the CCIP Router on TON.
-1. The Router sends a `Receiver_CCIPReceive` internal message to your receiver contract, with enough TON attached to cover the confirmation transaction.
+1. The Router sends a `Receiver_CCIPReceive` internal message to your receiver contract, with enough GRAM attached to cover the confirmation transaction.
 1. Your contract performs three mandatory protocol steps, then executes your application logic.
 1. Your contract sends `Router_CCIPReceiveConfirm` back to the Router, which marks the message as successfully delivered on-chain.
 
@@ -52,13 +52,13 @@ Every TON CCIP receiver **must** implement all three steps in order:
 assert(in.senderAddress == st.router) throw (Receiver_Error.Unauthorized as int);
 ```
 
-**Step 2 — Check attached value.** The Router forwards TON with the message to cover the confirmation transaction. Verify the attached value meets `MIN_VALUE`. The Router needs at least **0.02 TON** to send `Router_CCIPReceiveConfirm` back through the protocol chain. Use **0.03 TON** as a baseline and increase it to cover your own execution costs.
+**Step 2 — Check attached value.** The Router forwards GRAM with the message to cover the confirmation transaction. Verify the attached value meets `MIN_VALUE`. The Router needs at least **0.02 GRAM** to send `Router_CCIPReceiveConfirm` back through the protocol chain. Use **0.03 GRAM** as a baseline and increase it to cover your own execution costs.
 
 ```tolk
 assert(in.valueCoins >= MIN_VALUE) throw (Receiver_Error.LowValue as int);
 ```
 
-**Step 3 — Acknowledge delivery.** Send `Router_CCIPReceiveConfirm` back to the Router with enough TON attached to cover the protocol's confirmation chain. Using `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` is the simplest approach — it forwards all remaining value automatically — but any send mode is valid as long as at least **0.02 TON** reaches the Router.
+**Step 3 — Acknowledge delivery.** Send `Router_CCIPReceiveConfirm` back to the Router with enough GRAM attached to cover the protocol's confirmation chain. Using `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` is the simplest approach — it forwards all remaining value automatically — but any send mode is valid as long as at least **0.02 GRAM** reaches the Router.
 
 ```tolk
 val receiveConfirm = createMessage({
@@ -72,7 +72,7 @@ receiveConfirm.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
 
 <Aside type="caution" title="Setting MIN_VALUE Too Low">
 
-If `MIN_VALUE` is too small, your contract may not forward enough TON for `Router_CCIPReceiveConfirm` to propagate back through the protocol chain, leaving the message in an undelivered state. The message cannot be retried and used gas is not refunded. Start at **0.03 TON** and benchmark your contract's execution costs to determine the correct value.
+If `MIN_VALUE` is too small, your contract may not forward enough GRAM for `Router_CCIPReceiveConfirm` to propagate back through the protocol chain, leaving the message in an undelivered state. The message cannot be retried and used gas is not refunded. Start at **0.03 GRAM** and benchmark your contract's execution costs to determine the correct value.
 
 </Aside>
 
@@ -141,7 +141,7 @@ The starter kit provides three receiver contracts at different complexity levels
                 assert(in.senderAddress == st.router) throw (Receiver_Error.Unauthorized as int);
 
                 // 2. Verify enough value is attached to cover gas costs.
-                //    Router needs ≥0.02 TON for CCIPReceiveConfirm; increase for your own costs.
+                //    Router needs ≥0.02 GRAM for CCIPReceiveConfirm; increase for your own costs.
                 assert(in.valueCoins >= MIN_VALUE) throw (Receiver_Error.LowValue as int);
 
                 // 3. Send CCIPReceiveConfirm back to the Router.
@@ -157,7 +157,7 @@ The starter kit provides three receiver contracts at different complexity levels
                 processMessage(msg.message);
             }
             else => {
-                // Ignore plain TON transfers; reject unknown opcodes.
+                // Ignore plain GRAM transfers; reject unknown opcodes.
                 assert(in.body.isEmpty()) throw 0xFFFF;
             }
         }
@@ -279,9 +279,9 @@ The starter kit provides three receiver contracts at different complexity levels
                 // 4. Send CCIPReceiveConfirm back to the Router after processing.
                 //    reserveToncoinsOnBalance preserves the contract's existing balance;
                 //    SEND_MODE_CARRY_ALL_BALANCE then forwards everything above that amount —
-                //    effectively the TON that arrived with this message minus compute/action fees.
-                //    At least 0.02 TON is required for the Router to process the confirmation;
-                //    send ~0.025 TON or more to account for fee fluctuations.
+                //    effectively the GRAM that arrived with this message minus compute/action fees.
+                //    At least 0.02 GRAM is required for the Router to process the confirmation;
+                //    send ~0.025 GRAM or more to account for fee fluctuations.
                 reserveToncoinsOnBalance(0, RESERVE_MODE_INCREASE_BY_ORIGINAL_BALANCE);
                 val receiveConfirm = createMessage({
                     bounce: true,
@@ -305,8 +305,8 @@ The starter kit provides three receiver contracts at different complexity levels
 
     Two aspects of this implementation differ from `MinimalReceiver`:
 
-    - **Value is checked before sender**: The contract validates `valueCoins >= 0.03 TON` first, then verifies the Router address. Both checks are mandatory; the order is a valid implementation choice.
-    - **Confirm is sent after processing**: `Router_CCIPReceiveConfirm` is enqueued after the behavior logic runs, not before. `reserveToncoinsOnBalance` preserves the contract's pre-message balance so that `SEND_MODE_CARRY_ALL_BALANCE` forwards only the TON that arrived with this message, minus compute and action fees.
+    - **Value is checked before sender**: The contract validates `valueCoins >= 0.03 GRAM` first, then verifies the Router address. Both checks are mandatory; the order is a valid implementation choice.
+    - **Confirm is sent after processing**: `Router_CCIPReceiveConfirm` is enqueued after the behavior logic runs, not before. `reserveToncoinsOnBalance` preserves the contract's pre-message balance so that `SEND_MODE_CARRY_ALL_BALANCE` forwards only the GRAM that arrived with this message, minus compute and action fees.
 
     The `TestReceiverBehavior.RejectAll` and `ConsumeAllGas` branches are testing aids that simulate common failure scenarios. In a production receiver, remove them and replace `processAccept` with your application logic.
 

@@ -802,12 +802,12 @@ Last Updated: 2026-04-13
 
 These limits apply to messages sent from an EVM-compatible chain to the TON blockchain.
 
-| Item                        | Description                                                                                                                | Limit                 |
-| :-------------------------- | :------------------------------------------------------------------------------------------------------------------------- | :-------------------- |
-| Maximum message data length | The data payload sent within the CCIP message.                                                                             | 30,000 bytes          |
-| Message execution gas limit | The user-specified `gasLimit` (in nanoTON) in `extraArgs` for the execution of the `ccipReceive` function on TON.          | 4,200,000,000 nanoTON |
-| Smart Execution time window | The maximum duration that CCIP will attempt to automatically execute a message on TON before manual execution is required. | 8 hours               |
-| Out of Order execution      | The `allowOutOfOrderExecution` parameter in the `extraArgs` of a CCIP message from an EVM chain.                           | Must be `true`        |
+| Item                        | Description                                                                                                                | Limit                  |
+| :-------------------------- | :------------------------------------------------------------------------------------------------------------------------- | :--------------------- |
+| Maximum message data length | The data payload sent within the CCIP message.                                                                             | 30,000 bytes           |
+| Message execution gas limit | The user-specified `gasLimit` (in nanoGRAM) in `extraArgs` for the execution of the `ccipReceive` function on TON.         | 4,200,000,000 nanoGRAM |
+| Smart Execution time window | The maximum duration that CCIP will attempt to automatically execute a message on TON before manual execution is required. | 8 hours                |
+| Out of Order execution      | The `allowOutOfOrderExecution` parameter in the `extraArgs` of a CCIP message from an EVM chain.                           | Must be `true`         |
 
 ## TON to EVM
 
@@ -2510,19 +2510,19 @@ Last Updated: 2026-04-07
 
 ## TON as Source Chain
 
-On the TON source blockchain, a user or another contract initiates a cross-chain message by sending a `CCIPSend` internal message to the CCIP `Router` contract. The `Router` validates that sufficient TON is attached for gas and forwards the message to the appropriate `OnRamp` contract. The `OnRamp` assigns a unique message ID, deploys an ephemeral `SendExecutor{id}` contract to isolate fee validation, and instructs it to call the `FeeQuoter` for a price check. Once the `FeeQuoter` confirms the fee, the `SendExecutor` reports back to the `OnRamp`, which then assigns a sequence number and emits a chain log (`ExtOutLogMessage`) containing the full `CCIPSend` payload. This external log is observed offchain by the Committing DON, which relays the message to the destination blockchain.
+On the TON source blockchain, a user or another contract initiates a cross-chain message by sending a `CCIPSend` internal message to the CCIP `Router` contract. The `Router` validates that sufficient GRAM is attached for gas and forwards the message to the appropriate `OnRamp` contract. The `OnRamp` assigns a unique message ID, deploys an ephemeral `SendExecutor{id}` contract to isolate fee validation, and instructs it to call the `FeeQuoter` for a price check. Once the `FeeQuoter` confirms the fee, the `SendExecutor` reports back to the `OnRamp`, which then assigns a sequence number and emits a chain log (`ExtOutLogMessage`) containing the full `CCIPSend` payload. This external log is observed offchain by the Committing DON, which relays the message to the destination blockchain.
 
 ## TON as Destination Chain
 
 <Aside type="caution" title="Low gasLimit can permanently burn a message">
-  When sending from an EVM chain to TON, the `gasLimit` field in `extraArgs` is denominated in **nanoTON** — not EVM
-  gas units. This value is the amount of TON the protocol reserves and forwards to cover execution on the TON
-  destination chain, including the TON your receiver contract needs to send `Router_CCIPReceiveConfirm` back through
+  When sending from an EVM chain to TON, the `gasLimit` field in `extraArgs` is denominated in **nanoGRAM** — not EVM
+  gas units. This value is the amount of GRAM the protocol reserves and forwards to cover execution on the TON
+  destination chain, including the GRAM your receiver contract needs to send `Router_CCIPReceiveConfirm` back through
   the protocol chain.
 
-  If `gasLimit` is set too low, the Router will not forward enough TON for your receiver contract to successfully
+  If `gasLimit` is set too low, the Router will not forward enough GRAM for your receiver contract to successfully
   acknowledge delivery. A message that fails in this way **cannot be retried** and the attached value can be
-  permanently lost. Start with a `gasLimit` of at least `100_000_000` nanoTON (0.1 TON) and benchmark your receiver
+  permanently lost. Start with a `gasLimit` of at least `100_000_000` nanoGRAM (0.1 GRAM)) and benchmark your receiver
   under realistic conditions before deploying to mainnet. See [Set MIN_VALUE correctly](/ccip/concepts/best-practices/ton#set-min_value-correctly)
   for receiver-side guidance.
 </Aside>
@@ -2542,17 +2542,17 @@ On the TON destination blockchain, the `OffRamp` contract receives two types of 
 
 **Destination Chain**:
 
-| Component             | Ownership                | Role                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| --------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Sender                | External (User/Contract) | A user wallet or a custom contract that initiates a cross-chain message on the source chain by sending `CCIPSend` to the `Router`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| Receiver              | External (User/Contract) | A custom contract on the destination chain that receives `CCIPReceive` from the `Router`, sends back a `CCIPReceiveConfirm`, and processes the message data.                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| Router                | CCIP                     | The primary entry point for both sending and receiving. On the source chain it validates the attached TON, checks for sufficient gas, and forwards to the `OnRamp`. On the destination chain it routes executed messages from the `OffRamp` to the Receiver and relays the confirmation back. The `Router` also acts as the RMN Remote: it stores the set of cursed subjects, accepts `Router_RMNRemoteCurse` and `Router_RMNRemoteUncurse` messages from the authorized RMN admin, and propagates the updated curse state to all registered `OffRamp` contracts via `OffRamp_UpdateCursedSubjects`. |
-| OnRamp                | CCIP                     | Processes outbound messages. Assigns a message ID, deploys a `SendExecutor{id}` for fee validation, assigns a sequence number on success, and emits a chain log (`CCIPMessageSent`) observed by the offchain DONs.                                                                                                                                                                                                                                                                                                                                                                                   |
-| `SendExecutor{id}`    | CCIP                     | An ephemeral contract deployed by the `OnRamp` per outgoing message. It calls `FeeQuoter` for fee validation, verifies the sender attached enough TON to cover the CCIP fee, and reports the result back to the `OnRamp`. It is destroyed after reporting.                                                                                                                                                                                                                                                                                                                                           |
-| FeeQuoter             | CCIP                     | Stores destination-chain fee configuration, fee token prices, and premium multipliers. Validates the `CCIPSend` request and returns the computed fee or a validation error to the `SendExecutor{id}`.                                                                                                                                                                                                                                                                                                                                                                                                |
-| OffRamp               | CCIP                     | Receives OCR3 `Commit` and `Execute` reports from the DONs. On commit, deploys a `MerkleRoot{id}` and emits `CommitReportAccepted`. On execute, validates each message via the `MerkleRoot{id}`, orchestrates delivery through a `ReceiveExecutor{id}` and the `Router`, and emits `ExecutionStateChanged`. Maintains a local replica of cursed subjects, pushed by the `Router` whenever the RMN admin curses or un-curses a subject. This replicated state is checked synchronously during every `Commit` and `Execute` call.                                                                      |
-| `MerkleRoot{id}`      | CCIP                     | An ephemeral contract deployed once per committed Merkle root. Stores the two-bit execution state for every message in the root, verifies Merkle proofs, and gates retries. Destroyed when all messages in the root reach `Success`.                                                                                                                                                                                                                                                                                                                                                                 |
-| `ReceiveExecutor{id}` | CCIP                     | An ephemeral contract deployed (or reused on retry) per incoming message. Holds the message content and its delivery state (`Untouched`, `Execute`, `ExecuteFailed`, `Success`). Dispatches delivery back to the `OffRamp` and tracks the confirmation or bounce result.                                                                                                                                                                                                                                                                                                                             |
+| Component             | Ownership                | Role                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| --------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sender                | External (User/Contract) | A user wallet or a custom contract that initiates a cross-chain message on the source chain by sending `CCIPSend` to the `Router`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Receiver              | External (User/Contract) | A custom contract on the destination chain that receives `CCIPReceive` from the `Router`, sends back a `CCIPReceiveConfirm`, and processes the message data.                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Router                | CCIP                     | The primary entry point for both sending and receiving. On the source chain it validates the attached GRAM, checks for sufficient gas, and forwards to the `OnRamp`. On the destination chain it routes executed messages from the `OffRamp` to the Receiver and relays the confirmation back. The `Router` also acts as the RMN Remote: it stores the set of cursed subjects, accepts `Router_RMNRemoteCurse` and `Router_RMNRemoteUncurse` messages from the authorized RMN admin, and propagates the updated curse state to all registered `OffRamp` contracts via `OffRamp_UpdateCursedSubjects`. |
+| OnRamp                | CCIP                     | Processes outbound messages. Assigns a message ID, deploys a `SendExecutor{id}` for fee validation, assigns a sequence number on success, and emits a chain log (`CCIPMessageSent`) observed by the offchain DONs.                                                                                                                                                                                                                                                                                                                                                                                    |
+| `SendExecutor{id}`    | CCIP                     | An ephemeral contract deployed by the `OnRamp` per outgoing message. It calls `FeeQuoter` for fee validation, verifies the sender attached enough GRAM to cover the CCIP fee, and reports the result back to the `OnRamp`. It is destroyed after reporting.                                                                                                                                                                                                                                                                                                                                           |
+| FeeQuoter             | CCIP                     | Stores destination-chain fee configuration, fee token prices, and premium multipliers. Validates the `CCIPSend` request and returns the computed fee or a validation error to the `SendExecutor{id}`.                                                                                                                                                                                                                                                                                                                                                                                                 |
+| OffRamp               | CCIP                     | Receives OCR3 `Commit` and `Execute` reports from the DONs. On commit, deploys a `MerkleRoot{id}` and emits `CommitReportAccepted`. On execute, validates each message via the `MerkleRoot{id}`, orchestrates delivery through a `ReceiveExecutor{id}` and the `Router`, and emits `ExecutionStateChanged`. Maintains a local replica of cursed subjects, pushed by the `Router` whenever the RMN admin curses or un-curses a subject. This replicated state is checked synchronously during every `Commit` and `Execute` call.                                                                       |
+| `MerkleRoot{id}`      | CCIP                     | An ephemeral contract deployed once per committed Merkle root. Stores the two-bit execution state for every message in the root, verifies Merkle proofs, and gates retries. Destroyed when all messages in the root reach `Success`.                                                                                                                                                                                                                                                                                                                                                                  |
+| `ReceiveExecutor{id}` | CCIP                     | An ephemeral contract deployed (or reused on retry) per incoming message. Holds the message content and its delivery state (`Untouched`, `Execute`, `ExecuteFailed`, `Success`). Dispatches delivery back to the `OffRamp` and tracks the confirmation or bounce result.                                                                                                                                                                                                                                                                                                                              |
 
 ## Typical Lifecycle of a Message
 
@@ -2569,15 +2569,15 @@ This outlines the process when initiating a CCIP transaction from the TON blockc
    - The fee can be estimated in two ways. Unlike EVM integrations, TON contracts cannot proxy-query each other's state, so there is no free getter path through the Router:
      - **Via FeeQuoter getter (free)**: Call the `validatedFeeCell` getter directly on the `FeeQuoter` contract. This requires no transaction and incurs no gas cost. The `FeeQuoter` address is stable and does not change on protocol upgrades. To resolve it programmatically, call two getters in sequence: `Router.onRamp(destChainSelector)` → `OnRamp.feeQuoter(destChainSelector)`. The `getCCIPFeeForEVM` helper performs this lookup automatically — see [Estimating the CCIP Fee](/ccip/tutorials/ton/source/build-messages#estimating-the-ccip-fee) for a full example.
      - **Via Router message (costs gas)**: Send a `Router_GetValidatedFee` internal message to the `Router`. This is an actual on-chain transaction — the `Router` forwards the request to the `FeeQuoter` via an internal message, and the `FeeQuoter` replies back to the `Router`, which returns `Router_MessageValidated` (or `Router_MessageValidationFailed`) containing the computed fee.
-   - The fee is paid in native TON. The Sender must attach the CCIP fee plus additional TON to cover internal message forwarding gas costs.
+   - The fee is paid in native GRAM. The Sender must attach the CCIP fee plus additional GRAM to cover internal message forwarding gas costs.
 
 2. **Sending**
-   - The Sender sends a `CCIPSend` internal message to the `Router`, attaching the required TON.
-   - The `Router` validates that sufficient TON is attached and forwards the message to the `OnRamp`.
+   - The Sender sends a `CCIPSend` internal message to the `Router`, attaching the required GRAM.
+   - The `Router` validates that sufficient GRAM is attached and forwards the message to the `OnRamp`.
    - The `OnRamp` assigns a message ID, then deploys a `SendExecutor{id}` contract with a deterministic address derived from the `OnRamp` address and a randomized `id`. It sends an `Execute` message to the `SendExecutor{id}` containing the full `CCIPSend` payload.
-   - The `SendExecutor{id}` sends `GetValidatedFee` to the `FeeQuoter`. If the fee is valid and the sender attached sufficient TON, the `FeeQuoter` replies with `MessageValidated`. The `SendExecutor{id}` then destroys itself and reports `ExecutorFinishedSuccessfully` to the `OnRamp`, returning any remaining balance.
+   - The `SendExecutor{id}` sends `GetValidatedFee` to the `FeeQuoter`. If the fee is valid and the sender attached sufficient GRAM, the `FeeQuoter` replies with `MessageValidated`. The `SendExecutor{id}` then destroys itself and reports `ExecutorFinishedSuccessfully` to the `OnRamp`, returning any remaining balance.
    - If the fee is insufficient or validation fails, the `FeeQuoter` replies with `MessageValidationFailed` and the `SendExecutor{id}` reports `ExecutorFinishedWithError`, triggering a rejection path back through the `OnRamp` and `Router` to the Sender (`CCIPSendNACK`).
-   - On success, the `OnRamp` assigns a sequence number and emits a chain log (`ExtOutLogMessage`) containing the sequenced `CCIPSend` message. The Sender receives a `CCIPSendACK` with the unused TON.
+   - On success, the `OnRamp` assigns a sequence number and emits a chain log (`ExtOutLogMessage`) containing the sequenced `CCIPSend` message. The Sender receives a `CCIPSendACK` with the unused GRAM.
 
 3. **Initial Offchain Processing**
    - The Committing DON observes the `CCIPMessageSent` chain log emitted by the `OnRamp` and begins batching messages offchain to prepare a Merkle root for commitment on the destination chain.
@@ -2613,7 +2613,7 @@ This outlines the process when TON is the receiving chain for a CCIP message.
 4. **Failure and Retry**
    - If the Receiver bounces the `CCIPReceive` message (fails to process it), the `Router` sends `CCIPReceiveBounced` to the `OffRamp`. The `OffRamp` forwards `Bounced` to the `ReceiveExecutor{id}`, which sets its state to `ExecuteFailed` and reports `NotifyFailure`. The `OffRamp` emits `ExecutionStateChanged` with state `Failure` and calls `MarkState(Failure)` on the `MerkleRoot{id}`.
    - **Retryable failures**: If the Receiver bounced the message due to application logic (e.g., a bug that has since been fixed, or a receiver upgrade), the `MerkleRoot{id}` allows a transition from `Failure` back to `InProgress` on a subsequent `Validate` call the existing `ReceiveExecutor{id}` is reused for the retry attempt. Manual execution is also supported permissionlessly after a configured time delay. For more information, read the [manual execution](/ccip/concepts/manual-execution) page.
-   - **Non-retryable failures**: If the message was never successfully delivered because the `gasLimit` set by the EVM sender was too low — leaving the `ReceiveExecutor{id}` without enough TON to forward `CCIPReceiveConfirm` back through the protocol chain — the message cannot be retried and the attached TON value can be permanently lost. This is distinct from an application-level bounce. Set `gasLimit` (in nanoTON) conservatively and validate it against your receiver's actual execution costs before deploying to mainnet.
+   - **Non-retryable failures**: If the message was never successfully delivered because the `gasLimit` set by the EVM sender was too low — leaving the `ReceiveExecutor{id}` without enough GRAM to forward `CCIPReceiveConfirm` back through the protocol chain — the message cannot be retried and the attached GRAM value can be permanently lost. This is distinct from an application-level bounce. Set `gasLimit` (in nanoGRAM) conservatively and validate it against your receiver's actual execution costs before deploying to mainnet.
 
 ---
 
@@ -2652,12 +2652,12 @@ This section provides more detail on the onchain components for TON.
 - Retrieve a fee estimate using one of two methods. Unlike EVM integrations, TON contracts cannot proxy-query each other's state, so there is no free getter path through the Router:
   - **Via FeeQuoter getter (free)**: Call the `validatedFeeCell` getter directly on the `FeeQuoter` contract. This requires no transaction and incurs no gas cost. To resolve the `FeeQuoter` address programmatically, call `Router.onRamp(destChainSelector)` → `OnRamp.feeQuoter(destChainSelector)`. The `getCCIPFeeForEVM` helper performs this lookup automatically — see [Estimating the CCIP Fee](/ccip/tutorials/ton/source/build-messages#estimating-the-ccip-fee) for a full example.
   - **Via Router message (costs gas)**: Send a `Router_GetValidatedFee` message to the `Router`. This is an actual on-chain transaction — the `Router` relays the request to the `OnRamp`, which forwards it to the `FeeQuoter`. The result is returned via `Router_MessageValidated` (or `Router_MessageValidationFailed`).
-- Send `CCIPSend` to the `Router` with sufficient TON attached to cover both the CCIP fee and internal message forwarding gas costs. The router checks that the attached value meets the minimum required (`Router_Costs.CCIPSend()`).
+- Send `CCIPSend` to the `Router` with sufficient GRAM attached to cover both the CCIP fee and internal message forwarding gas costs. The router checks that the attached value meets the minimum required (`Router_Costs.CCIPSend()`).
 
 **Receiver Responsibilities:**
 
 - **Security validation**: The receiver contract must verify that the sender of any `CCIPReceive` internal message is the registered CCIP `Router` contract.
-- **Confirmation**: The receiver must reply with a `CCIPReceiveConfirm{execId}` message back to the `Router` after processing the message. This confirmation must carry sufficient TON to cover the confirmation trace costs (`Router_Costs.receiveConfirm()`). Without this confirmation the execution is treated as failed.
+- **Confirmation**: The receiver must reply with a `CCIPReceiveConfirm{execId}` message back to the `Router` after processing the message. This confirmation must carry sufficient GRAM to cover the confirmation trace costs (`Router_Costs.receiveConfirm()`). Without this confirmation the execution is treated as failed.
 - **Failure handling**: If the receiver cannot process the message, it may allow `CCIPReceive` to bounce. The `Router` detects the bounce and forwards `CCIPReceiveBounced` to the `OffRamp`, initiating the failure path.
 
 ## Router
@@ -2666,10 +2666,10 @@ The `Router` contract is the single user-facing entry point for both sending and
 
 **On the source chain (sending)**, the `Router`:
 
-- Accepts `CCIPSend` messages from senders. Requires a minimum TON value (`Router_Costs.CCIPSend()`); messages with insufficient value are rejected before any further processing.
+- Accepts `CCIPSend` messages from senders. Requires a minimum GRAM value (`Router_Costs.CCIPSend()`); messages with insufficient value are rejected before any further processing.
 - Checks the destination chain is not cursed (using its locally stored `CursedSubjects`) before forwarding to the `OnRamp`.
 - Resolves the `OnRamp` address for the given destination chain selector from its `onRamps` map and forwards the `OnRamp_Send` message, carrying all remaining value.
-- Receives `Router_MessageSent` from the `OnRamp` on success and delivers `CCIPSendACK` back to the original sender with unused TON.
+- Receives `Router_MessageSent` from the `OnRamp` on success and delivers `CCIPSendACK` back to the original sender with unused GRAM.
 - Receives `Router_MessageRejected` from the `OnRamp` on failure and delivers `CCIPSendNACK` to the sender.
 - Accepts `Router_GetValidatedFee` from any caller, relays to the `OnRamp`, and returns the result (`Router_MessageValidated` or `Router_MessageValidationFailed`).
 
@@ -2731,7 +2731,7 @@ The `OffRamp` contract operates on the destination chain and is the primary cont
 
 1. **Report submission**: The Committing DON calls `OffRamp_Commit` with an OCR3 report containing a Merkle root (covering a batch of messages from a source chain) and optional token/gas price updates.
 
-2. **Fee check**: The `OffRamp` verifies the attached TON covers the minimum commit cost. Price-update-only reports require less TON than reports with Merkle roots.
+2. **Fee check**: The `OffRamp` verifies the attached GRAM covers the minimum commit cost. Price-update-only reports require less GRAM than reports with Merkle roots.
 
 3. **Curse and source chain check**: The `OffRamp` checks its locally replicated `CursedSubjects` and verifies the source chain is enabled in `sourceChainConfigs`. If either check fails, the report is rejected.
 
@@ -6868,13 +6868,13 @@ Every TON CCIP receiver must implement three mandatory protocol steps in order. 
 assert(in.senderAddress == st.router) throw (Receiver_Error.Unauthorized as int);
 ```
 
-**Step 2 — Check attached value.** The Router attaches TON to cover the cost of routing `Router_CCIPReceiveConfirm` back through the protocol chain. Verify the attached value meets your `MIN_VALUE` constant. The Router needs at least **0.02 TON** to process the confirmation. Use **0.03 TON** as your baseline and increase it to account for your own execution costs.
+**Step 2 — Check attached value.** The Router attaches GRAM to cover the cost of routing `Router_CCIPReceiveConfirm` back through the protocol chain. Verify the attached value meets your `MIN_VALUE` constant. The Router needs at least **0.02 GRAM** to process the confirmation. Use **0.03 GRAM** as your baseline and increase it to account for your own execution costs.
 
 ```tolk
 assert(in.valueCoins >= MIN_VALUE) throw (Receiver_Error.LowValue as int);
 ```
 
-**Step 3 — Send `Router_CCIPReceiveConfirm`.** Return the confirmation message to the Router along with enough TON to cover the remaining protocol chain. Using `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` is the simplest correct choice — it forwards all remaining value automatically.
+**Step 3 — Send `Router_CCIPReceiveConfirm`.** Return the confirmation message to the Router along with enough GRAM to cover the remaining protocol chain. Using `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` is the simplest correct choice — it forwards all remaining value automatically.
 
 ```tolk
 val receiveConfirm = createMessage({
@@ -6892,25 +6892,25 @@ The `MinimalReceiver` contract in the [TON Starter Kit](https://github.com/smart
 
 If the `Receiver_CCIPReceive` message execution runs out of gas and fails without bouncing the message back to the Router, or if the Router does not receive `Router_CCIPReceiveConfirm`, then CCIP cannot confirm whether the message was successful or not. The message is left in an in-progress state and, if it failed, it cannot be retried.
 
-`MIN_VALUE` is the minimum TON your receiver requires attached to each `Receiver_CCIPReceive` message. If the value received is lower, it manually reverts and leaves the message in a failed state where retries through manual execution are allowed. `MIN_VALUE` should be enough to cover the expected execution costs of your message. By including the 0.02 TON required for `Router_CCIPReceiveConfirm` in `MIN_VALUE`, you can also make sure your contract will have enough balance to send the confirmation message on successful executions.
+`MIN_VALUE` is the minimum GRAM your receiver requires attached to each `Receiver_CCIPReceive` message. If the value received is lower, it manually reverts and leaves the message in a failed state where retries through manual execution are allowed. `MIN_VALUE` should be enough to cover the expected execution costs of your message. By including the 0.02 GRAM required for `Router_CCIPReceiveConfirm` in `MIN_VALUE`, you can also make sure your contract will have enough balance to send the confirmation message on successful executions.
 
-Start at **0.03 TON** and benchmark your contract under realistic load to determine the right value. The 0.03 TON baseline includes 0.02 TON for the Router's confirmation cost plus 0.01 TON margin.
+Start at **0.03 GRAM** and benchmark your contract under realistic load to determine the right value. The 0.03 GRAM baseline includes 0.02 GRAM for the Router's confirmation cost plus 0.01 GRAM margin.
 
 ```tolk
 // In your receiver contract
 const MIN_VALUE: int = ton("0.03"); // increase if your logic is more expensive
 ```
 
-The EVM-side `gasLimit` (set in `extraArgs`) controls how much nanoTON the protocol reserves for delivery. If your receiver requires more than the default 0.1 TON allocation, increase the `gasLimit` in `buildExtraArgsForTON` accordingly:
+The EVM-side `gasLimit` (set in `extraArgs`) controls how much nanoGRAM the protocol reserves for delivery. If your receiver requires more than the default 0.1 GRAM allocation, increase the `gasLimit` in `buildExtraArgsForTON` accordingly:
 
 ```typescript
 // In your EVM sender script — increase gasLimit if your TON receiver is expensive
-const extraArgs = buildExtraArgsForTON(200_000_000n, true) // 0.2 TON in nanoTON
+const extraArgs = buildExtraArgsForTON(200_000_000n, true) // 0.2 GRAM in nanoGRAM
 ```
 
 ## Verify destination chain
 
-Before sending a CCIP message from TON, verify that the destination chain is supported. The CCIP Router on TON exposes its supported destination chains through the `OnRamp`. Sending a message to an unsupported chain selector will be rejected at the Router level, wasting the TON attached to the transaction.
+Before sending a CCIP message from TON, verify that the destination chain is supported. The CCIP Router on TON exposes its supported destination chains through the `OnRamp`. Sending a message to an unsupported chain selector will be rejected at the Router level, wasting the GRAM attached to the transaction.
 
 Check the [CCIP Directory](/ccip/directory/testnet/chain/ton-testnet) for the list of supported TON → EVM lanes and their chain selectors before hardcoding a destination. Always use the chain selector constant from `helper-config.ts` in the [TON Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-ton/blob/main/helper-config.ts) rather than deriving it manually.
 
@@ -6971,29 +6971,29 @@ const extraArgs = buildExtraArgsForEVM(100_000, true)
 
 When sending from EVM to a TON destination, use `buildExtraArgsForTON` from the Starter Kit. The parameter meanings differ from the EVM case:
 
-**`gasLimit`** — Denominated in **nanoTON**, not EVM gas units. This is the amount of nanoTON reserved for execution on the TON destination chain. A starting value of `100_000_000n` (0.1 TON) covers most receive operations. Any unused nanoTON is returned to the contract after execution.
+**`gasLimit`** — Denominated in **nanoGRAM**, not EVM gas units. This is the amount of nanoGRAM reserved for execution on the TON destination chain. A starting value of `100_000_000n` (0.1 GRAM)) covers most receive operations. Any unused nanoGRAM is returned to the contract after execution.
 
 **`allowOutOfOrderExecution`** — Must be `true` for TON-bound lanes.
 
 ```typescript filename="scripts/utils/utils.ts"
-// gasLimit: nanoTON reserved for TON execution (1 TON = 1_000_000_000 nanoTON)
-const extraArgs = buildExtraArgsForTON(100_000_000n, true) // 0.1 TON
+// gasLimit: nanoGRAM reserved for TON execution (1 GRAM = 1_000_000_000 nanoGRAM)
+const extraArgs = buildExtraArgsForTON(100_000_000n, true) // 0.1 GRAM
 ```
 
-<Aside type="caution" title="nanoTON vs EVM gas units">
+<Aside type="caution" title="nanoGRAM vs EVM gas units">
   The `gasLimit` in `extraArgs` means different things depending on the destination chain. For EVM destinations it is
-  EVM gas units. For TON destinations it is nanoTON. Confusing the two will result in incorrect fee estimation and may
+  EVM gas units. For TON destinations it is nanoGRAM. Confusing the two will result in incorrect fee estimation and may
   cause delivery failures.
 </Aside>
 
 ## Estimate fees accurately and apply a buffer
 
-The CCIP protocol fee for TON-to-EVM messages is denominated in nanoTON and computed by the FeeQuoter contract, reachable through a chain of on-chain getter calls:
+The CCIP protocol fee for TON-to-EVM messages is denominated in nanoGRAM and computed by the FeeQuoter contract, reachable through a chain of on-chain getter calls:
 
 ```
 Router.onRamp(destChainSelector)         → OnRamp address
 OnRamp.feeQuoter(destChainSelector)      → FeeQuoter address
-FeeQuoter.validatedFeeCell(ccipSendCell) → fee in nanoTON
+FeeQuoter.validatedFeeCell(ccipSendCell) → fee in nanoGRAM
 ```
 
 Use the `getCCIPFeeForEVM` helper in the [TON Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-ton/blob/main/scripts/utils/utils.ts) to perform this lookup. The CCIP message Cell passed to it must be fully populated — all fields must match the values used in the final send.
@@ -7001,12 +7001,12 @@ Use the `getCCIPFeeForEVM` helper in the [TON Starter Kit](https://github.com/sm
 Apply two buffers on top of the quoted fee:
 
 - **10% fee buffer**: Accounts for small fluctuations between quote time and execution time.
-- **0.5 TON gas reserve**: Covers the wallet-level transaction cost and source-chain execution overhead. Any surplus above actual costs is returned via the ACK message.
+- **0.5 GRAM gas reserve**: Covers the wallet-level transaction cost and source-chain execution overhead. Any surplus above actual costs is returned via the ACK message.
 
 ```typescript filename="scripts/ton2evm/sendMessage.ts"
 const fee = await getCCIPFeeForEVM(client, routerAddress, destChainSelector, ccipSendMessage)
 const feeWithBuffer = (fee * 110n) / 100n // +10%
-const gasReserve = 500_000_000n // 0.5 TON in nanoTON
+const gasReserve = 500_000_000n // 0.5 GRAM in nanoGRAM
 const valueToAttach = feeWithBuffer + gasReserve // total value sent to Router
 ```
 
@@ -7045,7 +7045,7 @@ npm run utils:checkLastTxs -- --ccipSendOnly true
 npm run utils:checkLastTxs -- --queryId <QUERY_ID>
 ```
 
-An ACK contains the CCIP Message ID and a CCIP Explorer URL. A NACK means the Router rejected the message — both the fee and any TON surplus are returned to the sender.
+An ACK contains the CCIP Message ID and a CCIP Explorer URL. A NACK means the Router rejected the message — both the fee and any GRAM surplus are returned to the sender.
 
 ### EVM → TON: track delivery on TON
 
@@ -24695,7 +24695,7 @@ A **CCIP Receiver** is a TON smart contract (written in Tolk) that accepts incom
 When a cross-chain message arrives on TON:
 
 1. The CCIP off-ramp verifies the message against a Merkle root and routes it through the CCIP Router on TON.
-2. The Router sends a `Receiver_CCIPReceive` internal message to your receiver contract, with enough TON attached to cover the confirmation transaction.
+2. The Router sends a `Receiver_CCIPReceive` internal message to your receiver contract, with enough GRAM attached to cover the confirmation transaction.
 3. Your contract performs three mandatory protocol steps, then executes your application logic.
 4. Your contract sends `Router_CCIPReceiveConfirm` back to the Router, which marks the message as successfully delivered on-chain.
 
@@ -24711,13 +24711,13 @@ Every TON CCIP receiver **must** implement all three steps in order:
 assert(in.senderAddress == st.router) throw (Receiver_Error.Unauthorized as int);
 ```
 
-**Step 2 — Check attached value.** The Router forwards TON with the message to cover the confirmation transaction. Verify the attached value meets `MIN_VALUE`. The Router needs at least **0.02 TON** to send `Router_CCIPReceiveConfirm` back through the protocol chain. Use **0.03 TON** as a baseline and increase it to cover your own execution costs.
+**Step 2 — Check attached value.** The Router forwards GRAM with the message to cover the confirmation transaction. Verify the attached value meets `MIN_VALUE`. The Router needs at least **0.02 GRAM** to send `Router_CCIPReceiveConfirm` back through the protocol chain. Use **0.03 GRAM** as a baseline and increase it to cover your own execution costs.
 
 ```tolk
 assert(in.valueCoins >= MIN_VALUE) throw (Receiver_Error.LowValue as int);
 ```
 
-**Step 3 — Acknowledge delivery.** Send `Router_CCIPReceiveConfirm` back to the Router with enough TON attached to cover the protocol's confirmation chain. Using `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` is the simplest approach — it forwards all remaining value automatically — but any send mode is valid as long as at least **0.02 TON** reaches the Router.
+**Step 3 — Acknowledge delivery.** Send `Router_CCIPReceiveConfirm` back to the Router with enough GRAM attached to cover the protocol's confirmation chain. Using `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` is the simplest approach — it forwards all remaining value automatically — but any send mode is valid as long as at least **0.02 GRAM** reaches the Router.
 
 ```tolk
 val receiveConfirm = createMessage({
@@ -24730,7 +24730,7 @@ receiveConfirm.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
 ```
 
 <Aside type="caution" title="Setting MIN_VALUE Too Low">
-  If `MIN_VALUE` is too small, your contract may not forward enough TON for `Router_CCIPReceiveConfirm` to propagate back through the protocol chain, leaving the message in an undelivered state. The message cannot be retried and used gas is not refunded. Start at **0.03 TON** and benchmark your contract's execution costs to determine the correct value.
+  If `MIN_VALUE` is too small, your contract may not forward enough GRAM for `Router_CCIPReceiveConfirm` to propagate back through the protocol chain, leaving the message in an undelivered state. The message cannot be retried and used gas is not refunded. Start at **0.03 GRAM** and benchmark your contract's execution costs to determine the correct value.
 </Aside>
 
 ### Developer Responsibilities
@@ -24841,7 +24841,7 @@ Last Updated: 2026-03-29
 
 This guide explains how to construct CCIP messages from the TON blockchain to EVM chains (e.g., Ethereum Sepolia, Arbitrum Sepolia). TON's CCIP integration currently supports **arbitrary messaging only** — token transfers are not supported on TON lanes.
 
-You send a CCIP message from TON by constructing a [Cell](https://docs.ton.org/foundations/serialization/cells) in the specific [TL-B layout](https://docs.ton.org/languages/tl-b/overview) expected by the CCIP Router contract, then sending that Cell as the body of an internal TON message to the Router address with enough TON attached to cover both the CCIP protocol fee and source-chain execution costs.
+You send a CCIP message from TON by constructing a [Cell](https://docs.ton.org/foundations/serialization/cells) in the specific [TL-B layout](https://docs.ton.org/languages/tl-b/overview) expected by the CCIP Router contract, then sending that Cell as the body of an internal TON message to the Router address with enough GRAM attached to cover both the CCIP protocol fee and source-chain execution costs.
 
 <Aside title="Note">
   The code snippets in this guide use the [`@ton/core`](https://www.npmjs.com/package/@ton/core),
@@ -24866,7 +24866,7 @@ export function buildCCIPMessageForEVM(
   destChainSelector: bigint | number,
   receiverBytes: Buffer, // 32 bytes: 12 zero-bytes + 20-byte EVM address
   data: Cell, // message payload
-  feeToken: Address, // native TON address
+  feeToken: Address, // native GRAM address
   extraArgs: Cell // GenericExtraArgsV2 cell
 ): Cell {
   return beginCell()
@@ -24877,7 +24877,7 @@ export function buildCCIPMessageForEVM(
     .storeBuffer(receiverBytes) // encoded EVM receiver address
     .storeRef(data) // message payload cell
     .storeRef(Cell.EMPTY) // tokenAmounts — always empty for TON
-    .storeAddress(feeToken) // fee token (native TON only)
+    .storeAddress(feeToken) // fee token (native GRAM only)
     .storeRef(extraArgs) // GenericExtraArgsV2 cell
     .endCell()
 }
@@ -24984,7 +24984,7 @@ The EVM receiver contract receives these bytes as `message.data` and is responsi
 ### feeToken
 
 - **Definition**: The token used to pay the CCIP protocol fee on TON.
-- **Supported value**: Only native TON is supported. Paying fees in LINK is not available for TON-to-EVM messages.
+- **Supported value**: Only native GRAM is supported. Paying fees in LINK is not available for TON-to-EVM messages.
 - **Address**: `EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAd99`
 
 ```typescript filename="scripts/ton2evm/sendMessage.ts"
@@ -24992,7 +24992,7 @@ const feeToken = Address.parse(networkConfig.tonTestnet.nativeTokenAddress)
 // "EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAd99"
 ```
 
-The CCIP protocol fee is deducted from the TON value attached to the Router message, not from a separate token transfer.
+The CCIP protocol fee is deducted from the GRAM value attached to the Router message, not from a separate token transfer.
 
 ***
 
@@ -25040,12 +25040,12 @@ export function buildExtraArgsForEVM(gasLimitEVMUnits: number, allowOutOfOrderEx
 
 ## Estimating the CCIP Fee
 
-Before sending, query the protocol fee. The fee is returned in [nanoTON](https://docs.ton.org/foundations/fees) and is computed by the FeeQuoter contract, reachable through a chain of on-chain getter calls:
+Before sending, query the protocol fee. The fee is returned in [nanoGRAM](https://docs.ton.org/foundations/fees) and is computed by the FeeQuoter contract, reachable through a chain of on-chain getter calls:
 
 ```
 Router.onRamp(destChainSelector)         → OnRamp address
 OnRamp.feeQuoter(destChainSelector)      → FeeQuoter address
-FeeQuoter.validatedFeeCell(ccipSendCell) → fee in nanoTON
+FeeQuoter.validatedFeeCell(ccipSendCell) → fee in nanoGRAM
 ```
 
 The `getCCIPFeeForEVM` helper in the Starter Kit performs this lookup. The CCIP message Cell passed to it must be fully populated — `queryID`, `destChainSelector`, `receiver`, `data`, `feeToken`, and `extraArgs` must all match the values used in the final send.
@@ -25055,7 +25055,7 @@ import { TonClient } from "@ton/ton"
 import { fromNano } from "@ton/core"
 
 const fee = await getCCIPFeeForEVM(client, routerAddress, destChainSelector, ccipSendMessage)
-console.log(`CCIP fee: ${fromNano(fee)} TON`)
+console.log(`CCIP fee: ${fromNano(fee)} GRAM`)
 ```
 
 ### Applying a buffer and gas reserve
@@ -25063,12 +25063,12 @@ console.log(`CCIP fee: ${fromNano(fee)} TON`)
 Add a buffer on top of the quoted fee to account for minor variations between quote time and execution:
 
 - **10% fee buffer**: Covers small fluctuations in the protocol fee.
-- **0.5 TON gas reserve**: Covers the wallet-level transaction fee and source-chain execution. This is sent to the Router along with the fee and any surplus is returned via the ACK message.
+- **0.5 GRAM gas reserve**: Covers the wallet-level transaction fee and source-chain execution. This is sent to the Router along with the fee and any surplus is returned via the ACK message.
 
 ```typescript filename="scripts/ton2evm/sendMessage.ts"
 const fee = await getCCIPFeeForEVM(client, routerAddress, destChainSelector, ccipSendMessage)
 const feeWithBuffer = (fee * 110n) / 100n // +10%
-const gasReserve = 500_000_000n // 0.5 TON in nanoTON
+const gasReserve = 500_000_000n // 0.5 GRAM in nanoGRAM
 
 const valueToAttach = feeWithBuffer + gasReserve // total value sent to Router
 ```
@@ -25237,25 +25237,25 @@ ARBITRUM_SEPOLIA_RPC_URL=https://arb-sepolia.g.alchemy.com/v2/YOUR_API_KEY
   added to your `.gitignore` to prevent accidental exposure.
 </Aside>
 
-## Native TON Tokens for Transaction Fees
+## Native GRAM Tokens for Transaction Fees
 
-**TON** tokens are required for all transactions on the TON blockchain, including sending CCIP messages. TON is also used to pay for CCIP fees when sending cross-chain messages.
+**GRAM** tokens are required for all transactions on the TON blockchain, including sending CCIP messages. GRAM is also used to pay for CCIP fees when sending cross-chain messages.
 
 <Aside type="note" title="TON-Only Fee Payment">
-  Unlike some other CCIP source chains, TON currently supports only native TON tokens for paying CCIP fees. LINK tokens
+  Unlike some other CCIP source chains, TON currently supports only native GRAM tokens for paying CCIP fees. LINK tokens
   are not supported as a fee payment option.
 </Aside>
 
-### Getting TON on Testnet
+### Getting GRAM on Testnet
 
-To obtain TON tokens on Testnet, use the official TON Testnet faucet:
+To obtain GRAM tokens on Testnet, use the official TON Testnet faucet:
 
 1. Visit the [TON Testnet Faucet](https://t.me/testgiver_ton_bot)
 2. Open Telegram and start a chat with the `@testgiver_ton_bot`
 3. Send your V4R2 testnet wallet address to the bot
-4. The bot will send you 2 testnet TON (you can request again every 60 minutes)
+4. The bot will send you 2 testnet GRAM (you can request again every 60 minutes)
 
-### Checking Your TON Balance
+### Checking Your GRAM Balance
 
 You can check your wallet balance using TON blockchain explorers:
 
@@ -25272,12 +25272,12 @@ const client = new TonClient({
 })
 
 const balance = await client.getBalance(yourWalletAddress)
-console.log(`Balance: ${balance} nanoTON`)
+console.log(`Balance: ${balance} nanoGRAM`)
 ```
 
 <Aside type="note" title="TON Denominations">
-  TON uses nanoTON as the smallest unit (1 TON = 1,000,000,000 nanoTON). The starter kit scripts use the `toNano()` and
-  `fromNano()` helper functions from `@ton/core` to convert between TON and nanoTON.
+  GRAM uses nanoGRAM as the smallest unit (1 GRAM = 1,000,000,000 nanoGRAM). The starter kit scripts use the `toNano()`
+  and `fromNano()` helper functions from `@ton/core` to convert between GRAM and nanoGRAM.
 </Aside>
 
 ---
@@ -25298,7 +25298,7 @@ This tutorial demonstrates how to send a CCIP arbitrary message from the TON blo
 This tutorial covers sending a data-only message from TON Testnet to Ethereum Sepolia without any token transfer. When you send a message using CCIP:
 
 1. The `Router_CCIPSend` Cell is submitted to the CCIP Router on TON.
-2. The Router validates the message, deducts the protocol fee from the attached TON, and forwards the message to the CCIP Decentralized Oracle Network (DON).
+2. The Router validates the message, deducts the protocol fee from the attached GRAM, and forwards the message to the CCIP Decentralized Oracle Network (DON).
 3. The DON delivers the message to the `_ccipReceive` function of the receiver contract on Ethereum Sepolia.
 
 ## What You Will Build
@@ -25307,13 +25307,13 @@ In this tutorial, you will:
 
 - Use a script to configure a CCIP message with a text payload.
 - Send the message from TON Testnet to a receiver contract on Ethereum Sepolia.
-- Pay for CCIP transaction fees using native TON.
+- Pay for CCIP transaction fees using native GRAM.
 - Monitor and verify your cross-chain message.
 
 <Aside title="Minimum Requirements">
   To successfully complete this tutorial, ensure you have:
 
-  - TON for transaction fees and the CCIP protocol fee (at least 1 TON recommended).
+  - GRAM for transaction fees and the CCIP protocol fee (at least 1 GRAM recommended).
   - A deployed `MessageReceiver` contract on Ethereum Sepolia to receive the message. You will deploy this in the prerequisites check below.
   - A configured TON wallet with its 24-word mnemonic set in the `.env` file.
   - An Ethereum Sepolia RPC URL set in the `.env` file.
@@ -25327,7 +25327,7 @@ In this tutorial, you will:
 This tutorial focuses on data-only cross-chain messages from your TON Testnet wallet to a contract on Ethereum Sepolia. Key points specific to arbitrary messaging from TON:
 
 - **Data only**: TON CCIP lanes support arbitrary messaging only. No tokens are transferred — only a bytes payload is delivered to the receiver contract.
-- **Fee Payment**: Transaction fees are paid on TON using native TON tokens. Paying with LINK is not available on TON-to-EVM lanes.
+- **Fee Payment**: Transaction fees are paid on TON using native GRAM tokens. Paying with LINK is not available on TON-to-EVM lanes.
 - **Message Construction**: A script constructs and delivers the `Router_CCIPSend` Cell by calling helpers from `scripts/utils/utils.ts` and sending it to the CCIP Router address on TON Testnet.
 
 ## How the Script Works
@@ -25337,8 +25337,8 @@ The `ton2evm/sendMessage.ts` script handles the interaction with the CCIP Router
 1. **Context Initialization**: The script connects to TON Testnet and loads your wallet from the `TON_MNEMONIC` environment variable.
 2. **Argument Parsing**: It reads your command-line arguments (`--destChain`, `--evmReceiver`, `--msg`, and optionally `--tonSender`) to determine the destination chain, receiver address, message content, and sending mode.
 3. **Message Construction**: It encodes the EVM receiver address using `encodeEVMAddress`, builds the `GenericExtraArgsV2` Cell using `buildExtraArgsForEVM(100_000, true)`, and assembles the full `Router_CCIPSend` Cell using `buildCCIPMessageForEVM`. Note that `allowOutOfOrderExecution` **must** be `true` — TON-to-EVM lanes require it, and the Router will reject the message otherwise.
-4. **Fee Estimation**: It calls `getCCIPFeeForEVM`, which walks the `Router → OnRamp → FeeQuoter` on-chain getter chain to retrieve the protocol fee in nanoTON.
-5. **Fee Buffering**: It applies a 10% buffer to the quoted fee and adds a fixed 0.5 TON gas reserve to cover wallet-level transaction costs and source-chain execution.
+4. **Fee Estimation**: It calls `getCCIPFeeForEVM`, which walks the `Router → OnRamp → FeeQuoter` on-chain getter chain to retrieve the protocol fee in nanoGRAM.
+5. **Fee Buffering**: It applies a 10% buffer to the quoted fee and adds a fixed 0.5 GRAM gas reserve to cover wallet-level transaction costs and source-chain execution.
 6. **Sending**: It submits the `Router_CCIPSend` Cell directly from the wallet to the CCIP Router. If `--tonSender` is provided, it instead sends a `CCIPSender_RelayCCIPSend` message to the `MinimalSender` contract, which forwards the Cell to the Router.
 
 ## Running the Arbitrary Message
@@ -25351,7 +25351,7 @@ Before running the script:
 
 2. Make sure your `.env` file contains `TON_MNEMONIC` (your 24-word phrase) and `ETHEREUM_SEPOLIA_RPC_URL`.
 
-3. Verify you have sufficient TON balance in your testnet wallet. At least **1 TON** is recommended to cover the CCIP protocol fee plus gas.
+3. Verify you have sufficient GRAM balance in your testnet wallet. At least **1 GRAM** is recommended to cover the CCIP protocol fee plus gas.
 
 4. Deploy the `MessageReceiver` contract on Ethereum Sepolia. This EVM contract receives and stores the CCIP message. The `EVM_PRIVATE_KEY` in your `.env` must correspond to a wallet with Sepolia ETH.
 
@@ -25428,12 +25428,14 @@ When the script executes successfully, you will see logs similar to the followin
 💸 Fee Token: native
 ✅ Connected to TON, Block: 49273773
 📤 Sending from: EQBTzZB_jpRo1oR3wLsxhrS7tPLUDteL9NN_83S1fWwanyHK
-💰 Balance: 106.80152516 TON
+💰 Balance: 106.80152516 GRAM
+
 
 🔑 QueryID (seqno): 71
-💸 Estimated CCIP fee: 894032 nanoTON (0.000894032 TON)
-💸 Fee with 10% buffer: 983435 nanoTON (0.000983435 TON)
-💸 Gas reserve: 0.5 TON
+💸 Estimated CCIP fee: 894032 nanoGRAM (0.000894032 GRAM))
+💸 Fee with 10% buffer: 983435 nanoGRAM (0.000983435 GRAM))
+💸 Gas reserve: 0.5 GRAM
+
 ✅ Transaction sent!
 
 🔍 Monitor your transaction:
@@ -25481,7 +25483,7 @@ An ACK confirms the Router accepted the message and submitted it to the DON for 
 <Aside type="note" title="ACK vs NACK">
   - **ACK**: The Router accepted the message. CCIP will deliver it to the destination EVM chain. The protocol fee is
     consumed. - **NACK**: The Router rejected the message (for example, insufficient fee or invalid parameters). Both the
-    fee and any TON surplus are returned to the sender.
+    fee and any GRAM surplus are returned to the sender.
 </Aside>
 
 ### Track on CCIP Explorer
@@ -25678,8 +25680,8 @@ For TON-bound messages, the `extraArgs` parameter is a byte string composed of t
 
 ### gasLimit
 
-- **Definition**: The amount of nanoTON reserved for execution on the TON destination chain.
-- **Units**: This value is denominated in **nanoTON**, not EVM gas units. 1 TON = 1,000,000,000 nanoTON. A starting value of `100_000_000n` (0.1 TON) covers most receive operations. Any unused nanoTON is returned to the contract.
+- **Definition**: The amount of nanoGRAM reserved for execution on the TON destination chain.
+- **Units**: This value is denominated in **nanoGRAM**, not EVM gas units. 1 GRAM = 1,000,000,000 nanoGRAM. A starting value of `100_000_000n` (0.1 GRAM)) covers most receive operations. Any unused nanoGRAM is returned to the contract.
 - **Usage**: Increase this value if your receiver performs heavy computation. Determine the right amount through testing.
 
 ### allowOutOfOrderExecution
@@ -25688,20 +25690,20 @@ For TON-bound messages, the `extraArgs` parameter is a byte string composed of t
 - **Usage**: Must be set to `true` when TON is the destination chain.
 
 <Aside title="Encoding extraArgs for TON">
-  ABI-encode `gasLimit` (in nanoTON) and `allowOutOfOrderExecution`, then prepend the `0x181dcf10` tag:
+  ABI-encode `gasLimit` (in nanoGRAM) and `allowOutOfOrderExecution`, then prepend the `0x181dcf10` tag:
 
   ```typescript filename="scripts/utils/utils.ts"
   import { ethers } from "ethers"
 
-  function buildExtraArgsForTON(gasLimitNanoTON: bigint, allowOutOfOrderExecution: boolean): Uint8Array {
+  function buildExtraArgsForTON(gasLimitNanoGRAM: bigint, allowOutOfOrderExecution: boolean): Uint8Array {
     const encoded = ethers.AbiCoder.defaultAbiCoder().encode(
       ["uint256", "bool"],
-      [gasLimitNanoTON, allowOutOfOrderExecution]
+      [gasLimitNanoGRAM, allowOutOfOrderExecution]
     )
     return ethers.getBytes(ethers.concat(["0x181dcf10", encoded]))
   }
 
-  // 100_000_000n nanoTON = 0.1 TON reserved for execution
+  // 100_000_000n nanoGRAM = 0.1 GRAM reserved for execution
   const extraArgs = buildExtraArgsForTON(100_000_000n, true)
   ```
 </Aside>
@@ -25716,7 +25718,7 @@ Use this configuration when sending a data payload to a custom smart contract on
   - `receiver` must be the 36-byte encoded TON address of your destination smart contract — not a raw TON address string.
   - `tokenAmounts` **MUST** be an empty array.
   - `data` must be raw bytes. Use `ethers.toUtf8Bytes()` — do **not** call `hexlify`.
-  - `gasLimit` is in **nanoTON** (`100_000_000n` = 0.1 TON is a recommended starting value).
+  - `gasLimit` is in **nanoGRAM** (`100_000_000n` = 0.1 GRAM is a recommended starting value).
   - `allowOutOfOrderExecution` **MUST** be `true`.
 </Aside>
 
@@ -25849,13 +25851,13 @@ ETH is required to pay for EVM transaction fees and CCIP fees when sending from 
 
 When paying CCIP fees in LINK instead of ETH, you need LINK tokens on the source chain. Use the [Chainlink Faucet](https://faucet.chain.link) to get test LINK.
 
-### TON on Testnet
+### GRAM on Testnet
 
-A small amount of TON is required to deploy the receiver contract and pay for transactions on TON Testnet.
+A small amount of GRAM is required to deploy the receiver contract and pay for transactions on TON Testnet.
 
 1. Visit the [TON Testnet Faucet](https://t.me/testgiver_ton_bot) on Telegram
 2. Send your V4R2 testnet wallet address to `@testgiver_ton_bot`
-3. The bot will send you 2 testnet TON (you can request again every 60 minutes)
+3. The bot will send you 2 testnet GRAM (you can request again every 60 minutes)
 
 ---
 
@@ -25894,7 +25896,7 @@ In this tutorial, you will:
   To successfully complete this tutorial, ensure you have:
 
   - ETH on Ethereum Sepolia for transaction fees and CCIP fees (at least 0.1 ETH recommended). If paying with LINK, also get testnet LINK from the [Chainlink Faucet](https://faucet.chain.link).
-  - TON on TON Testnet to cover deployment and contract execution costs (at least 0.5 TON recommended). Get testnet TON from [@testgiver_ton_bot](https://t.me/testgiver_ton_bot) on Telegram.
+  - GRAM on TON Testnet to cover deployment and contract execution costs (at least 0.5 GRAM recommended). Get testnet GRAM from [@testgiver_ton_bot](https://t.me/testgiver_ton_bot) on Telegram.
   - `EVM_PRIVATE_KEY` set in your `.env` file — used to send from the EVM source chain.
   - `TON_MNEMONIC` set in your `.env` file — used to deploy the receiver contract on TON.
   - `ETHEREUM_SEPOLIA_RPC_URL` set in your `.env` file.
@@ -25917,7 +25919,8 @@ On success, the script prints output similar to the following:
 
 📤 Deploying from wallet: EQBTzZB_jpRo1oR3wLsxhrS7tPLUDteL9NN_83S1fWwanyHK
 Explorer: https://testnet.tonviewer.com/EQBTzZB_jpRo1oR3wLsxhrS7tPLUDteL9NN_83S1fWwanyHK
-💰 Wallet balance: 106.538102666 TON
+💰 Wallet balance: 106.538102666 GRAM
+
 
 ⏳ Compiling MinimalReceiver.tolk...
 📍 Contract will be deployed at: EQBt4-OlEHzH_MsmHdl_YsL26f3OPpV2jRzZ34zxo9E2xasT
@@ -25940,7 +25943,7 @@ Explorer: https://testnet.tonviewer.com/EQBTzZB_jpRo1oR3wLsxhrS7tPLUDteL9NN_83S1
 
 <Aside type="note" title="What MinimalReceiver does">
   The `MinimalReceiver` contract (`contracts/minimal_receiver.tolk`) implements all three mandatory CCIP receiver
-  protocol steps inline: it validates that the message comes from the authorized CCIP Router, checks that enough TON is
+  protocol steps inline: it validates that the message comes from the authorized CCIP Router, checks that enough GRAM is
   attached to cover the confirmation gas, and sends `Router_CCIPReceiveConfirm` back to the Router. It also emits a
   `CCIPMessageReceived` event for each delivery.
 
@@ -25960,7 +25963,7 @@ The `evm2ton/sendMessage.ts` script handles the EVM-side interaction with the CC
 1. **Context Initialization**: The script connects to the EVM chain and loads your wallet from the `EVM_PRIVATE_KEY` environment variable.
 2. **Argument Parsing**: It reads your command-line arguments (`--sourceChain`, `--tonReceiver`, `--msg`, and `--feeToken`) to determine the source chain, receiver address, message content, and fee payment method.
 3. **Address Encoding**: It encodes your TON receiver address into the 36-byte format expected by the EVM-side CCIP message using `encodeTONAddress()`.
-4. **Message Construction**: It builds the `EVM2AnyMessage` struct using `buildCCIPMessageForTON(receiverBytes, messageData, 100_000_000n, true, selectedFeeToken)`. The `100_000_000n` nanoTON `gasLimit` covers receiver execution on TON. Note that `allowOutOfOrderExecution` **must** be `true` — TON-bound lanes require it, and the Router will reject the message otherwise.
+4. **Message Construction**: It builds the `EVM2AnyMessage` struct using `buildCCIPMessageForTON(receiverBytes, messageData, 100_000_000n, true, selectedFeeToken)`. The `100_000_000n` nanoGRAM `gasLimit` covers receiver execution on TON. Note that `allowOutOfOrderExecution` **must** be `true` — TON-bound lanes require it, and the Router will reject the message otherwise.
 5. **Fee Estimation**: It calls `getCCIPFeeForTON()` to retrieve the CCIP protocol fee from the on-chain Router, then applies a 10% buffer.
 6. **Sending**: For native fees, it calls `router.ccipSend(destChainSelector, message, { value: feeWithBuffer })`. For LINK fees, it checks the current allowance, approves the Router if needed, then calls `router.ccipSend(destChainSelector, message)`.
 
@@ -26066,7 +26069,8 @@ When the message has been successfully delivered, you will see output similar to
    From:                EQB9QIw22sgwNKMfqsMKGepkhnjXYJmXlzCgcBSAlaiF9VCj (CCIP Router ✓)
    Message ID:          0xcf5c283fb14942e82498b0a1887bb2c525f0a8a065b5682230af4518dc53bff0
    CCIP Explorer:       https://ccip.chain.link/#/side-drawer/msg/0xcf5c283fb14942e82498b0a1887bb2c525f0a8a065b5682230af4518dc53bff0
-   Value:               0.1 TON
+   Value:               0.1 GRAM
+
    Message:             "Hello TON from EVM"
    Time:                2026-03-30T16:10:45.000Z
    TX Hash:             21048345fbf52bf7c02f64d587bf6a6dd9567ad1786cd2abeaa1c1399f940f86
@@ -52867,7 +52871,7 @@ Source: https://docs.chain.link/ccip/api-reference/ton
 - **[CCIP v1.6.0](/ccip/api-reference/ton/v1.6.0)** (Current Version)
   - Initial release for the TON blockchain
   - Cross-chain arbitrary messaging between TON and EVM-based chains
-  - Native TON fee payments (nanoTON)
+  - Native GRAM fee payments (nanoGRAM)
   - Configurable gas limits and out-of-order execution
 
 ## Documentation Structure
@@ -52922,7 +52926,7 @@ This section details the data structures used for sending and receiving CCIP mes
 
 **Opcode:** `0x31768d95`
 
-The primary message to send a cross-chain message from TON to a destination chain. Send this to the CCIP Router contract with sufficient TON attached to cover the CCIP fee plus a gas reserve.
+The primary message to send a cross-chain message from TON to a destination chain. Send this to the CCIP Router contract with sufficient GRAM attached to cover the CCIP fee plus a gas reserve.
 
 ```tolk
 struct (0x31768d95) Router_CCIPSend {
@@ -52945,15 +52949,15 @@ struct (0x31768d95) Router_CCIPSend {
 | <nobr>`receiver`</nobr>          | <nobr>`CrossChainAddress`</nobr>       | The 32-byte address of the receiver on the destination chain. For EVM destinations, left-pad the 20-byte address with 12 zero bytes. |
 | <nobr>`data`</nobr>              | <nobr>`cell`</nobr>                    | Arbitrary payload to deliver to the receiver contract.                                                                               |
 | <nobr>`tokenAmounts`</nobr>      | <nobr>`SnakedCell<TokenAmount>`</nobr> | Token transfers to include. Pass an empty cell — token transfers are not yet supported on TON.                                       |
-| <nobr>`feeToken`</nobr>          | <nobr>`address?`</nobr>                | Fee token address. Currently only native TON is supported; pass the wrapped native address or `null`.                                |
+| <nobr>`feeToken`</nobr>          | <nobr>`address?`</nobr>                | Fee token address. Currently only native GRAM is supported; pass the wrapped native address or `null`.                               |
 | <nobr>`extraArgs`</nobr>         | <nobr>`cell`</nobr>                    | Encoded extra arguments. See [GenericExtraArgsV2](#genericextraargsv2).                                                              |
 
 **Value to attach**
 
-When sending `Router_CCIPSend`, you must attach enough TON to cover:
+When sending `Router_CCIPSend`, you must attach enough GRAM to cover:
 
 1. The CCIP fee (query `validatedFeeCell` on the FeeQuoter beforehand)
-2. A gas reserve for execution on TON (\~0.5 TON recommended, add a 10% buffer to the fee)
+2. A gas reserve for execution on TON (\~0.5 GRAM recommended, add a 10% buffer to the fee)
 
 #### Responses
 
@@ -53055,23 +53059,24 @@ export function buildExtraArgsForEVM(gasLimitEVMUnits: number, allowOutOfOrderEx
 ```
 
 <Aside type="caution">
-  `gasLimit` in `GenericExtraArgsV2` for EVM destinations is in **EVM gas units** (e.g., `100_000`), not nanoTON. This
-  is the inverse of the EVM→TON direction where `gasLimit` represents nanoTON.
+  `gasLimit` in `GenericExtraArgsV2` for EVM destinations is in **EVM gas units** (e.g., `100_000`), not nanoGRAM. This
+  is the inverse of the EVM→TON direction where `gasLimit` represents nanoGRAM.
 </Aside>
 
 ***
 
-### EVM → TON: `gasLimit` in nanoTON
+### EVM → TON: `gasLimit` in nanoGRAM
 
-When sending from an EVM chain to TON, the `gasLimit` field in `GenericExtraArgsV2` represents the TON execution budget in **nanoTON** (not EVM gas units). This value is forwarded by the OffRamp to your receiver contract as the attached value.
+When sending from an EVM chain to TON, the `gasLimit` field in `GenericExtraArgsV2` represents the TON execution budget in **nanoGRAM** (not EVM gas units). This value is forwarded by the OffRamp to your receiver contract as the attached value.
 
 ```typescript
-// EVM → TON: gasLimit is in nanoTON
-// 100_000_000n = 0.1 TON
-export function buildExtraArgsForTON(gasLimitNanoTON: bigint | number, allowOutOfOrderExecution: boolean): Uint8Array {
+// EVM → TON: gasLimit is in nanoGRAM
+// 100_000_000n = 0.1 GRAM
+
+export function buildExtraArgsForTON(gasLimitNanoGRAM: bigint | number, allowOutOfOrderExecution: boolean): Uint8Array {
   const encoded = ethers.AbiCoder.defaultAbiCoder().encode(
     ["uint256", "bool"],
-    [gasLimitNanoTON, allowOutOfOrderExecution]
+    [gasLimitNanoGRAM, allowOutOfOrderExecution]
   )
   return ethers.getBytes(ethers.concat(["0x181dcf10", encoded]))
 }
@@ -53079,7 +53084,7 @@ export function buildExtraArgsForTON(gasLimitNanoTON: bigint | number, allowOutO
 
 <Aside type="caution">
   Set `gasLimit` to a high enough value or your message could fail in a non-retriable way. Setting `gasLimit` to at
-  least **0.1 TON** (`100_000_000n` nanoTON) should be enough to guarantee that receivers following [CCIP TON best
+  least **0.1 GRAM** (`100_000_000n` nanoGRAM) should be enough to guarantee that receivers following [CCIP TON best
   practices](/ccip/api-reference/ton/v1.6.0/receiver#implementation-requirements) will manually revert before running
   out of gas and leave your message in a retriable state if the value was not enough.
 </Aside>
@@ -53140,7 +53145,7 @@ Send this internal message to the Router to initiate a cross-chain message. See 
 The Router requires a minimum value attached to the message:
 
 - `Router_Costs.CCIPSend()` covers the Router's own execution (checked onchain)
-- Additionally, you must cover the CCIP fee (query from FeeQuoter) and a gas reserve (\~0.5 TON) for the execution chain
+- Additionally, you must cover the CCIP fee (query from FeeQuoter) and a gas reserve (\~0.5 GRAM)) for the execution chain
 
 #### Responses
 
@@ -53230,9 +53235,9 @@ get fun validatedFeeCell(msg: Cell<Router_CCIPSend>): coins
 
 #### Returns
 
-| Type                 | Description         |
-| -------------------- | ------------------- |
-| <nobr>`coins`</nobr> | The fee in nanoTON. |
+| Type                 | Description          |
+| -------------------- | -------------------- |
+| <nobr>`coins`</nobr> | The fee in nanoGRAM. |
 
 **TypeScript example (from the Starter Kit)**
 
@@ -53255,7 +53260,7 @@ const fee = feeRes.stack.readBigNumber()
 
 ### Option 2: `Router_GetValidatedFee` message (costs gas)
 
-Send a `Router_GetValidatedFee` internal message to the Router. The Router forwards the request to the OnRamp and FeeQuoter, then returns the fee via a callback message. This costs TON for the on-chain execution.
+Send a `Router_GetValidatedFee` internal message to the Router. The Router forwards the request to the OnRamp and FeeQuoter, then returns the fee via a callback message. This costs GRAM for the on-chain execution.
 
 ```tolk
 // Sent TO the Router
@@ -53327,22 +53332,22 @@ struct (0x00000001) CCIPSender_RelayCCIPSend {
 
 #### Fields
 
-| Field                        | Type                                 | Description                                                                                                                                                                                  |
-| ---------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <nobr>`routerAddress`</nobr> | <nobr>`address`</nobr>               | The CCIP Router contract address.                                                                                                                                                            |
-| <nobr>`valueToAttach`</nobr> | <nobr>`coins`</nobr>                 | The nanoTON value to forward to the Router. Must cover the CCIP fee plus execution gas reserve. Query `validatedFeeCell` beforehand and add at least a 10% buffer and \~0.5 TON gas reserve. |
-| <nobr>`message`</nobr>       | <nobr>`Cell<Router_CCIPSend>`</nobr> | The pre-built `Router_CCIPSend` message cell.                                                                                                                                                |
+| Field                        | Type                                 | Description                                                                                                                                                                                    |
+| ---------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`routerAddress`</nobr> | <nobr>`address`</nobr>               | The CCIP Router contract address.                                                                                                                                                              |
+| <nobr>`valueToAttach`</nobr> | <nobr>`coins`</nobr>                 | The nanoGRAM value to forward to the Router. Must cover the CCIP fee plus execution gas reserve. Query `validatedFeeCell` beforehand and add at least a 10% buffer and \~0.5 GRAM gas reserve. |
+| <nobr>`message`</nobr>       | <nobr>`Cell<Router_CCIPSend>`</nobr> | The pre-built `Router_CCIPSend` message cell.                                                                                                                                                  |
 
 **Total value to send to the Sender contract**
 
-`valueToAttach` + \~0.1 TON (to cover the Sender contract's own execution). Any surplus is returned via ACK.
+`valueToAttach` + \~0.1 GRAM (to cover the Sender contract's own execution). Any surplus is returned via ACK.
 
 #### Responses
 
-| Message                               | Opcode                    | Meaning                                                                                   |
-| ------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------- |
-| <nobr>`Router_MessageSent`</nobr>     | <nobr>`0x6513f8e1`</nobr> | Message accepted. `messageId` is the cross-chain message ID. Any surplus TON is returned. |
-| <nobr>`Router_MessageRejected`</nobr> | <nobr>`0x8ae25114`</nobr> | Message rejected. Both the fee and surplus are returned. `error` contains the exit code.  |
+| Message                               | Opcode                    | Meaning                                                                                    |
+| ------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------ |
+| <nobr>`Router_MessageSent`</nobr>     | <nobr>`0x6513f8e1`</nobr> | Message accepted. `messageId` is the cross-chain message ID. Any surplus GRAM is returned. |
+| <nobr>`Router_MessageRejected`</nobr> | <nobr>`0x8ae25114`</nobr> | Message rejected. Both the fee and surplus are returned. `error` contains the exit code.   |
 
 <Aside type="caution" title="Educational Example Disclaimer">
   This page includes an educational example to use a Chainlink system, product, or service and is provided to
@@ -53401,7 +53406,7 @@ struct (0x1e55bbf6) Router_CCIPReceiveConfirm {
 }
 ```
 
-Send this with `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` so the remaining TON (the gas reserve forwarded by the OffRamp minus your execution costs) is returned through the protocol chain.
+Send this with `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` so the remaining GRAM (the gas reserve forwarded by the OffRamp minus your execution costs) is returned through the protocol chain.
 
 ***
 
@@ -53410,7 +53415,7 @@ Send this with `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` so the remaining TO
 Every TON CCIP receiver must:
 
 1. **Accept `Receiver_CCIPReceive` only from the authorized CCIP Router** — verify `in.senderAddress == st.router`.
-2. **Verify sufficient value is attached** — the Router needs at least 0.02 TON to forward the confirmation. Set `MIN_VALUE` above your execution costs.
+2. **Verify sufficient value is attached** — the Router needs at least 0.02 GRAM to forward the confirmation. Set `MIN_VALUE` above your execution costs.
 3. **Send `Router_CCIPReceiveConfirm` back to the Router** — include `execId` from the received message. Use `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE`.
 
 <Aside type="caution">
@@ -53463,7 +53468,7 @@ struct Storage {
     router: address; // The CCIP Router address
 }
 
-const MIN_VALUE: coins = ton("0.03"); // 0.02 TON for OffRamp + your execution costs
+const MIN_VALUE: coins = ton("0.03"); // 0.02 GRAM for OffRamp + your execution costs
 
 type MinimalReceiver_InMessage = Receiver_CCIPReceive;
 
@@ -53582,7 +53587,7 @@ enum Router_Error {
 | <nobr>`57102`</nobr> | <nobr>`SenderIsNotOffRamp`</nobr>    | A `Router_RouteMessage` was sent by an address that is not the expected OffRamp.                                      |
 | <nobr>`57105`</nobr> | <nobr>`SubjectCursed`</nobr>         | The transfer is blocked because the source or destination chain has been cursed by the Risk Management Network (RMN). |
 | <nobr>`57108`</nobr> | <nobr>`NoMultiTokenTransfers`</nobr> | Token transfers are not yet supported on TON. Pass an empty `tokenAmounts` cell.                                      |
-| <nobr>`57109`</nobr> | <nobr>`InsufficientFee`</nobr>       | The TON value attached to the message is below the required minimum. Increase the attached value.                     |
+| <nobr>`57109`</nobr> | <nobr>`InsufficientFee`</nobr>       | The GRAM value attached to the message is below the required minimum. Increase the attached value.                    |
 
 ***
 
@@ -53647,7 +53652,7 @@ enum FeeQuoter_Error {
 | <nobr>`34411`</nobr> | <nobr>`MsgDataTooLarge`</nobr>                       | The `data` payload exceeds the maximum allowed size for the destination chain.                                                                             |
 | <nobr>`34412`</nobr> | <nobr>`StaleGasPrice`</nobr>                         | The gas price data on the FeeQuoter is stale and cannot be used for fee calculation.                                                                       |
 | <nobr>`34413`</nobr> | <nobr>`DestChainNotEnabled`</nobr>                   | The destination chain is not enabled on this FeeQuoter.                                                                                                    |
-| <nobr>`34414`</nobr> | <nobr>`FeeTokenNotSupported`</nobr>                  | The specified fee token is not supported. Use native TON.                                                                                                  |
+| <nobr>`34414`</nobr> | <nobr>`FeeTokenNotSupported`</nobr>                  | The specified fee token is not supported. Use native GRAM.                                                                                                 |
 | <nobr>`34419`</nobr> | <nobr>`TokenTransfersNotSupported`</nobr>            | Token transfers are not yet supported on TON. Pass an empty `tokenAmounts` cell.                                                                           |
 | <nobr>`34427`</nobr> | <nobr>`MessageFeeTooHigh`</nobr>                     | The calculated fee exceeds the maximum fee per message allowed by the FeeQuoter.                                                                           |
 
@@ -53666,14 +53671,14 @@ enum Receiver_Error {
 }
 ```
 
-| Exit Code           | Symbol                      | Description                                                                                                                                                                                        |
-| ------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <nobr>`5400`</nobr> | <nobr>`Unauthorized`</nobr> | The sender of the `Receiver_CCIPReceive` message is not the authorized CCIP Router. Ensure your receiver stores the correct Router address.                                                        |
-| <nobr>`5401`</nobr> | <nobr>`LowValue`</nobr>     | The TON value attached to the `Receiver_CCIPReceive` message is below `MIN_VALUE`. The EVM sender must set a higher `gasLimit` in `GenericExtraArgsV2` (minimum 0.1 TON = `100_000_000n` nanoTON). |
+| Exit Code           | Symbol                      | Description                                                                                                                                                                                           |
+| ------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`5400`</nobr> | <nobr>`Unauthorized`</nobr> | The sender of the `Receiver_CCIPReceive` message is not the authorized CCIP Router. Ensure your receiver stores the correct Router address.                                                           |
+| <nobr>`5401`</nobr> | <nobr>`LowValue`</nobr>     | The GRAM value attached to the `Receiver_CCIPReceive` message is below `MIN_VALUE`. The EVM sender must set a higher `gasLimit` in `GenericExtraArgsV2` (minimum 0.1 GRAM = `100_000_000n` nanoGRAM). |
 
 <Aside type="caution">
   If your receiver throws `LowValue` (5401), the message will require manual execution. The EVM sender must set a
-  sufficient `gasLimit` in nanoTON when building the CCIP message. See the [Manual
+  sufficient `gasLimit` in nanoGRAM when building the CCIP message. See the [Manual
   Execution](/ccip/concepts/ton/manual-execution) page for recovery steps.
 </Aside>
 
@@ -53891,18 +53896,18 @@ const extraArgs = buildExtraArgsForEVM(100_000, true) // 100k EVM gas limit
 
 ### `buildExtraArgsForTON`
 
-Encodes `GenericExtraArgsV2` as ABI bytes for use in an **EVM → TON** `ccipSend` call. The `gasLimit` is in **nanoTON**.
+Encodes `GenericExtraArgsV2` as ABI bytes for use in an **EVM → TON** `ccipSend` call. The `gasLimit` is in **nanoGRAM**.
 
 ```typescript
-export function buildExtraArgsForTON(gasLimitNanoTON: bigint | number, allowOutOfOrderExecution: boolean): Uint8Array
+export function buildExtraArgsForTON(gasLimitNanoGRAM: bigint | number, allowOutOfOrderExecution: boolean): Uint8Array
 ```
 
 #### Parameters
 
-| Name                                    | Type                            | Description                                                                                                                                                |
-| --------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <nobr>`gasLimitNanoTON`</nobr>          | <nobr>`bigint \| number`</nobr> | The TON execution budget forwarded to the receiver, in nanoTON. For example, `100_000_000n` = 0.1 TON. Must be sufficient for your receiver's `MIN_VALUE`. |
-| <nobr>`allowOutOfOrderExecution`</nobr> | <nobr>`boolean`</nobr>          | If `true`, this message can be executed out of order.                                                                                                      |
+| Name                                    | Type                            | Description                                                                                                                                                  |
+| --------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <nobr>`gasLimitNanoGRAM`</nobr>         | <nobr>`bigint \| number`</nobr> | The TON execution budget forwarded to the receiver, in nanoGRAM. For example, `100_000_000n` = 0.1 GRAM. Must be sufficient for your receiver's `MIN_VALUE`. |
+| <nobr>`allowOutOfOrderExecution`</nobr> | <nobr>`boolean`</nobr>          | If `true`, this message can be executed out of order.                                                                                                        |
 
 #### Returns
 
@@ -53911,7 +53916,7 @@ A `Uint8Array` containing the ABI-encoded `GenericExtraArgsV2` with the `0x181dc
 #### Example
 
 ```typescript
-const extraArgs = buildExtraArgsForTON(100_000_000n, true) // 0.1 TON gas limit
+const extraArgs = buildExtraArgsForTON(100_000_000n, true) // 0.1 GRAM gas limit
 ```
 
 <Aside type="caution">
@@ -53968,14 +53973,14 @@ export function buildCCIPMessageForEVM(
 
 #### Parameters
 
-| Name                             | Type                            | Description                                                                                 |
-| -------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------- |
-| <nobr>`queryID`</nobr>           | <nobr>`bigint \| number`</nobr> | Unique identifier for this send. Use the wallet `seqno`. Returned in ACK/NACK responses.    |
-| <nobr>`destChainSelector`</nobr> | <nobr>`bigint \| number`</nobr> | CCIP chain selector of the destination EVM chain.                                           |
-| <nobr>`receiverBytes`</nobr>     | <nobr>`Buffer`</nobr>           | 32-byte encoded receiver address. Use [`encodeEVMAddress`](#encodeevmaddress).              |
-| <nobr>`data`</nobr>              | <nobr>`Cell`</nobr>             | The message payload as a TL-B `Cell`.                                                       |
-| <nobr>`feeToken`</nobr>          | <nobr>`Address`</nobr>          | The TON address of the fee token. Use the wrapped native token address for native TON fees. |
-| <nobr>`extraArgs`</nobr>         | <nobr>`Cell`</nobr>             | Encoded extra args. Use [`buildExtraArgsForEVM`](#buildextraargsforevm).                    |
+| Name                             | Type                            | Description                                                                                  |
+| -------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------- |
+| <nobr>`queryID`</nobr>           | <nobr>`bigint \| number`</nobr> | Unique identifier for this send. Use the wallet `seqno`. Returned in ACK/NACK responses.     |
+| <nobr>`destChainSelector`</nobr> | <nobr>`bigint \| number`</nobr> | CCIP chain selector of the destination EVM chain.                                            |
+| <nobr>`receiverBytes`</nobr>     | <nobr>`Buffer`</nobr>           | 32-byte encoded receiver address. Use [`encodeEVMAddress`](#encodeevmaddress).               |
+| <nobr>`data`</nobr>              | <nobr>`Cell`</nobr>             | The message payload as a TL-B `Cell`.                                                        |
+| <nobr>`feeToken`</nobr>          | <nobr>`Address`</nobr>          | The TON address of the fee token. Use the wrapped native token address for native GRAM fees. |
+| <nobr>`extraArgs`</nobr>         | <nobr>`Cell`</nobr>             | Encoded extra args. Use [`buildExtraArgsForEVM`](#buildextraargsforevm).                     |
 
 #### Returns
 
@@ -54004,7 +54009,7 @@ Builds the CCIP message struct for an **EVM → TON** `ccipSend` call on the EVM
 export function buildCCIPMessageForTON(
   receiver: Uint8Array,
   data: Uint8Array,
-  gasLimitNanoTON: bigint | number,
+  gasLimitNanoGRAM: bigint | number,
   allowOutOfOrderExecution: boolean,
   feeToken: string = ethers.ZeroAddress
 ): object
@@ -54016,7 +54021,7 @@ export function buildCCIPMessageForTON(
 | --------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | <nobr>`receiver`</nobr>                 | <nobr>`Uint8Array`</nobr>       | The TON receiver address encoded as raw bytes (from base64 address).                                                               |
 | <nobr>`data`</nobr>                     | <nobr>`Uint8Array`</nobr>       | The message payload as raw bytes.                                                                                                  |
-| <nobr>`gasLimitNanoTON`</nobr>          | <nobr>`bigint \| number`</nobr> | TON gas budget for the receiver, in nanoTON. Minimum recommended: `100_000_000n` (0.1 TON).                                        |
+| <nobr>`gasLimitNanoGRAM`</nobr>         | <nobr>`bigint \| number`</nobr> | TON gas budget for the receiver, in nanoGRAM. Minimum recommended: `100_000_000n` (0.1 GRAM).                                      |
 | <nobr>`allowOutOfOrderExecution`</nobr> | <nobr>`boolean`</nobr>          | If `true`, this message can be executed out of order.                                                                              |
 | <nobr>`feeToken`</nobr>                 | <nobr>`string`</nobr>           | EVM address of the fee token. Use `ethers.ZeroAddress` for native ETH/gas token fees. Use the LINK token address to pay with LINK. |
 
@@ -54031,7 +54036,8 @@ const receiverBytes = new Uint8Array(Buffer.from(tonReceiverAddress, "base64"))
 const message = buildCCIPMessageForTON(
   receiverBytes,
   ethers.toUtf8Bytes("Hello TON from EVM"),
-  100_000_000n, // 0.1 TON
+  100_000_000n, // 0.1 GRAM
+
   true,
   ethers.ZeroAddress // pay with native
 )
@@ -54068,7 +54074,7 @@ export async function getCCIPFeeForEVM(
 
 #### Returns
 
-`Promise<bigint>` — the fee in nanoTON.
+`Promise<bigint>` — the fee in nanoGRAM.
 
 **Address resolution:** `Router.onRamp(destChainSelector)` → `OnRamp.feeQuoter(destChainSelector)` → `validatedFeeCell(ccipSendCell)`
 
