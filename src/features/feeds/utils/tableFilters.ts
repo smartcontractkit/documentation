@@ -4,6 +4,7 @@ import { getFeedTypeFlags } from "../types.ts"
 import {
   enrichFeedWithCategory,
   matches24x5StreamFilter,
+  matchesApacEquitiesStreamFilter,
   matchesFeedSearch,
   matchesSelectedFeedCategories,
   type FeedSearchVariant,
@@ -22,6 +23,7 @@ export interface FeedTableFilterParams {
   showOnlySVR?: boolean
   visibilityOptions?: FeedVisibilityOptions
   show24x5Feeds?: boolean
+  showApacEquitiesFeeds?: boolean
   tradingHoursFilter?: TradingHoursFilterValue
   streamCategoryFilter?: StreamsRwaFeedTypeValue
   rwaSchemaFilter?: SchemaFilterValue
@@ -39,6 +41,7 @@ export function filterFeedTableRows({
   showOnlySVR = false,
   visibilityOptions = {},
   show24x5Feeds,
+  showApacEquitiesFeeds,
   tradingHoursFilter,
 }: FeedTableFilterParams) {
   const { isSmartData } = getFeedTypeFlags(dataFeedType, searchVariant)
@@ -54,6 +57,7 @@ export function filterFeedTableRows({
       return isFeedVisible(metadata, dataFeedType as never, ecosystem, visibilityOptions)
     })
     .filter((metadata) => matches24x5StreamFilter(metadata, show24x5Feeds, tradingHoursFilter))
+    .filter((metadata) => matchesApacEquitiesStreamFilter(metadata, showApacEquitiesFeeds))
     .filter((metadata) => matchesSelectedFeedCategories(metadata, selectedFeedCategories, isSmartData))
     .filter((metadata) => matchesFeedSearch(metadata, searchValue, searchVariant))
 }
