@@ -1,5 +1,5 @@
 import type { DataFeedType } from "../types.ts"
-import { getSchemaVersion, normalizeCategoryKey } from "./feedMetadata.ts"
+import { getSchemaVersion, isApacEquitiesStreamFeed, normalizeCategoryKey } from "./feedMetadata.ts"
 
 /**
  * Proxy addresses (lowercase) for feeds that should display the contact email
@@ -25,6 +25,16 @@ export function shouldHideAddress(feed: any, riskTier?: string | null): boolean 
   const proxy: string | null | undefined = feed.proxyAddress
   if (proxy != null && CONTACT_EMAIL_PROXY_ADDRESSES.has(proxy.toLowerCase())) return true
   return normalizeCategoryKey(riskTier) === "veryhigh"
+}
+
+/**
+ * Returns true when a stream's feedId should be hidden and replaced with a
+ * contact link. Add new feed-type checks here to extend the behaviour; remove
+ * them when the stream goes live.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function shouldHideStreamFeedId(feed: any): boolean {
+  return isApacEquitiesStreamFeed(feed)
 }
 
 /**

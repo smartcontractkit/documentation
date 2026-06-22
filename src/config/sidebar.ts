@@ -1154,6 +1154,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "24/5 US Equities User Guide",
               url: "data-streams/rwa-streams/24-5-us-equities-user-guide",
             },
+            {
+              title: "APAC Equities",
+              url: "data-streams/rwa-streams/apac-equities",
+            },
           ],
         },
         {
