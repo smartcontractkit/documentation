@@ -16,6 +16,8 @@ metadata:
       "Post-market",
       "Real World Assets",
       "US Equities",
+      "APAC Equities",
+      "marketStatus",
     ]
 ---
 
@@ -37,45 +39,49 @@ Chainlink Data Streams that use the RWA Advanced (v11) schema adhere to the stru
 
 ### Market Status Values
 
-The `marketStatus` field indicates the current state of the market. The possible values vary depending on the stream's supported trading hours:
-
-#### Standard RWA Streams
-
-For streams with standard market hours coverage. Unless a feed explicitly states extended hours support, it is assumed to follow this format:
-
-| Value | Status      | Description                        |
-| ----- | ----------- | ---------------------------------- |
-| `0`   | **Unknown** | Market status cannot be determined |
-| `1`   | **Closed**  | Market is closed                   |
-| `2`   | **Open**    | Market is open                     |
-
-#### 24/5 US Equities Streams
-
-For streams with 24/5 extended hours coverage (e.g., US Equities):
-
-| Value | Status            | Normal Hours (ET)                     | Description                                                |
-| ----- | ----------------- | ------------------------------------- | ---------------------------------------------------------- |
-| `0`   | **Unknown**       | —                                     | Market status cannot be determined                         |
-| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                 | Extended hours before regular trading session              |
-| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                 | Primary trading session with highest liquidity             |
-| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session               |
-| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                   |
-| `5`   | **Closed**        | —                                     | Market closed (weekends, holidays, or unexpected closures) |
-
-Users should implement appropriate safeguards based on market status, such as pausing trading, adjusting risk parameters, or implementing staleness checks during non-regular hours or closed periods.
-
-<Aside type="caution" title="Use marketStatus for Stream Selection">
-  The `marketStatus` field is the authoritative signal for determining market availability and selecting which stream to
-  consume. Do not use `observationsTimestamp`, `lastSeenTimestampNs`, or any other timestamp field to infer whether a
-  market is open or to decide which stream to use. Timestamps reflect when data was last recorded, not the current state
-  of the market.
+<Aside type="caution" title="Use marketStatus, not timestamps">
+  Always use <code>marketStatus</code> to determine whether a market is open. Do <strong>not</strong> use{" "}
+  <code>observationsTimestamp</code>, <code>lastSeenTimestampNs</code>, or other timestamp fields — timestamps indicate
+  when data was last recorded, not whether the market is currently active.
 </Aside>
 
-<Aside type="note" title="Handling Unknown and Closed Status">
-  Consumers should implement logic to handle market status `0` (Unknown) and market status `5` (Closed), as these
-  periods imply no active feed and require a decision on fallback behavior (e.g., using a tokenized price, pausing the
-  market, etc.).
+The v11 schema defines six numeric values (`0`–`5`), but **the values that appear on a given feed depend on its trading-hours model**. Check which mapping applies to your stream before implementing logic. For full trading schedules, see [Market Hours](/data-streams/market-hours).
+
+#### Standard-hours feeds
+
+Used by [APAC Equities](/data-streams/rwa-streams/apac-equities) and any v11 feed without 24/5 extended hours.
+
+| Value | Status      | Used?  | Description                                                                                     |
+| ----- | ----------- | ------ | ----------------------------------------------------------------------------------------------- |
+| `0`   | **Unknown** | Yes    | Market status cannot be determined                                                              |
+| `1`   | N/A         | **No** | Not mapped. Do not treat as Closed or Pre-market.                                               |
+| `2`   | **Open**    | Yes    | Market is open during a regular trading session                                                 |
+| `3`   | N/A         | **No** | Not mapped. Do not treat as Post-market.                                                        |
+| `4`   | N/A         | **No** | Not mapped. Do not treat as Overnight.                                                          |
+| `5`   | **Closed**  | Yes    | Market is closed (outside trading hours, lunch breaks, closing auctions, weekends, or holidays) |
+
+<Aside type="caution">
+  Values <code>1</code>, <code>3</code>, and <code>4</code> are reserved for 24/5 session types and **will not appear**
+  on these feeds. On standard-hours feeds, <code>5</code> covers intraday closures such as lunch breaks and closing
+  auctions — not only weekends and holidays.
 </Aside>
+
+During closing auction periods and daily lunch breaks on APAC exchanges, `marketStatus` is `5` (Closed) even though the exchange trading day has not fully ended. See [Market Hours (APAC Equities)](/data-streams/market-hours#apac-equities) for session schedules.
+
+#### 24/5 US Equities feeds
+
+Used by [24/5 US Equities](/data-streams/rwa-streams/24-5-us-equities-user-guide) streams with extended and overnight sessions.
+
+| Value | Status            | Hours (ET)                            | Description                                                                           |
+| ----- | ----------------- | ------------------------------------- | ------------------------------------------------------------------------------------- |
+| `0`   | **Unknown**       | N/A                                   | Market status cannot be determined                                                    |
+| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                 | Extended hours before regular trading session                                         |
+| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                 | Primary trading session with highest liquidity                                        |
+| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session                                          |
+| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                                              |
+| `5`   | **Closed**        | N/A                                   | Market closed (weekends, holidays, or unexpected closures; ~8:00pm Fri–8:00pm Sun ET) |
+
+Implement appropriate safeguards based on market status — such as pausing trading, adjusting risk parameters, or adding staleness checks during non-regular or closed periods. See [Best Practices](/data-streams/concepts/best-practices#market-hours) for guidance.
 
 ### Notes
 

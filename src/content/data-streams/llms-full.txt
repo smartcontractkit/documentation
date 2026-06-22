@@ -951,71 +951,171 @@ Access data directly through REST APIs or WebSocket connections using our SDKs:
 # Data Streams Market Hours
 Source: https://docs.chain.link/data-streams/market-hours
 
-Markets for several assets are actively traded only during certain hours.
+<Aside type="caution" title="Use marketStatus, not timestamps">
+  Always use the `marketStatus` field in each report to determine whether a market is open. Do **not** use
+  `observationsTimestamp`, `lastSeenTimestampNs`, `lastUpdateTimestamp`, or any other timestamp field — timestamps
+  indicate when data was last recorded, not whether the market is currently active.
+</Aside>
+
+This page covers trading schedules and `marketStatus` value mappings for each Chainlink Data Streams asset class. The correct `marketStatus` values depend on both the **report schema version** and the **feed's trading-hours model**. Find your specific feed type below — each section shows hours and status values together.
+
+***
+
+## Asset class overview
+
+| Asset class                                                                               | Weekly open                                      | Weekly close                                     | Daily breaks        | Bank holidays                                                                          |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------ | ------------------- | -------------------------------------------------------------------------------------- |
+| [**Crypto**](#cryptocurrency)                                                             | 24/7/365                                         | —                                                | None                | None                                                                                   |
+| [**US Equities**](#rwa-market-hours)<br />(top-50 by market cap + selected ETFs)          | **09:30 Mon**                                    | **16:00 Fri**                                    | None                | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                  |
+| [**APAC Equities**](#apac-equities)<br />(indices & single-name stocks)                   | Varies by exchange ([see below](#apac-equities)) | Varies by exchange ([see below](#apac-equities)) | Varies by exchange  | Consult each exchange's official holiday calendar                                      |
+| [**FX Majors**](#forex-precious-metals-and-commodities)<br />(G10 + KRW, SGD, HKD, CNH …) | **17:00 Sun**                                    | **17:00 Fri**                                    | None                | Jan 1, Dec 25                                                                          |
+| [**Precious Metals Spot**](#forex-precious-metals-and-commodities)<br />(XAU, XAG)        | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu | Jan 1, Good Fri, Dec 25                                                                |
+| [**Commodities**](#forex-precious-metals-and-commodities)<br />(WTI Synthetic Spot)       | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/) |
+
+US Equities times are **ET**. All other times are **UTC**. Half-day trading may apply on the eve of certain U.S. holidays (e.g., Jul 3, Nov 28) — consult the linked exchange calendars for exact cut-off times.
 
 ***
 
 ## Cryptocurrency
 
-Cryptocurrency markets operate continuously, with no designated market close.
-
-| Asset class | Hours                       |
-| ----------- | --------------------------- |
-| **Crypto**  | 24/7/365 — No market close. |
+Cryptocurrency markets operate continuously. There is no designated market close and no `marketStatus` field on crypto streams.
 
 ***
 
-## Real-World Asset (RWA) market hours <span id="rwa-market-hours" />
+## US Equities <span id="rwa-market-hours" />
 
-RWA markets operate during specific hours, with breaks for holidays and sometimes daily pauses.
+All times are **ET (Eastern Time)**. US Equities streams use the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11).
 
+### Standard US Equities <span id="v11-standard-hours-feeds" />
 
-<Aside type="note" title="marketStatus field differences">
-  The <code>marketStatus</code> field varies by schema version:<br /><br />
-  <strong>RWA Standard (v8)</strong> — [View schema](/data-streams/reference/report-schema-v8)<br />
-  • <code>0</code> → <strong>Unknown</strong><br />
-  • <code>1</code> → <strong>Closed</strong><br />
-  • <code>2</code> → <strong>Open</strong><br />
+Standard US Equities streams cover regular NYSE/NASDAQ trading sessions only (9:30am–4:00pm Mon–Fri).
 
-  <strong>RWA Advanced (v11)</strong> — [View schema](/data-streams/reference/report-schema-v11)<br />
-  • <code>0</code> → <strong>Unknown</strong><br />
-  • <code>1</code> → <strong>Pre-market</strong><br />
-  • <code>2</code> → <strong>Regular hours</strong><br />
-  • <code>3</code> → <strong>Post-market</strong><br />
-  • <code>4</code> → <strong>Overnight</strong><br />
-  • <code>5</code> → <strong>Weekend</strong><br />
+| Value | Status      | Description                                                     |
+| ----- | ----------- | --------------------------------------------------------------- |
+| `0`   | **Unknown** | Market status cannot be determined                              |
+| `2`   | **Open**    | Market is open during a regular trading session                 |
+| `5`   | **Closed**  | Market is closed (outside trading hours, weekends, or holidays) |
+
+<Aside type="caution">
+  Values `1`, `3`, and `4` are reserved for 24/5 extended-session feeds and **will never appear** on standard-hours
+  feeds. Do not treat them as Closed or any other status if encountered unexpectedly.
 </Aside>
 
-| Asset class                                                 | Weekly Open   | Weekly Close  | Daily Breaks \*     | Bank Holidays \*\*                                                                     |
-| ----------------------------------------------------------- | ------------- | ------------- | ------------------- | -------------------------------------------------------------------------------------- |
-| **US Equities**<br />(top-50 by market cap + selected ETFs) | **09:30 Mon** | **16:00 Fri** | —                   | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                  |
-| **FX Majors**<br />(G10 + KRW, SGD, HKD, CNH …)             | **17:00 Sun** | **17:00 Fri** | —                   | Jan 1, Dec 25                                                                          |
-| **Precious Metals (Spot)**<br />(XAU, XAG)                  | **18:00 Sun** | **17:00 Fri** | 17:00–18:00 Mon-Thu | Jan 1, Good Fri, Dec 25                                                                |
-| **Commodities** <br /> (WTI Synthetic Spot)                 | **18:00 Sun** | **17:00 Fri** | 17:00–18:00 Mon-Thu | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/) |
+### 24/5 US Equities
 
-### US Equities 24/5 Trading Sessions
+24/5 US Equities streams cover three distinct trading sessions across the week. Use `marketStatus` to determine the active session before consuming price data. See the [24/5 US Equities User Guide](/data-streams/rwa-streams/24-5-us-equities-user-guide) for continuous price feed construction and session transitions.
 
-For feeds using the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11), US Equities are available across three distinct trading sessions, providing 24/5 coverage:
-
-| Session             | Hours (ET)                            | `marketStatus` Value                 | Description                                    |
-| ------------------- | ------------------------------------- | ------------------------------------ | ---------------------------------------------- |
-| **Regular Hours**   | 9:30am–4:00pm Mon–Fri                 | `2` (Regular hours)                  | Primary trading session with highest liquidity |
-| **Extended Hours**  | 4:00am–9:30am & 4:00pm–8:00pm Mon–Fri | `1` (Pre-market) & `3` (Post-market) | Pre-market and post-market sessions            |
-| **Overnight Hours** | 8:00pm–4:00am Sun evening–Fri morning | `4` (Overnight)                      | Overnight session with limited liquidity       |
-
-**Additional `marketStatus` values:**
-
-- `0` (Unknown) — Market status cannot be determined
-- `5` (Weekend) — Weekend period: 8:00pm Fri–8:00pm Sun
-
-See the [24/5 US Equities User Guide](/data-streams/rwa-streams/24-5-us-equities-user-guide) for detailed information on building continuous price feeds and managing session transitions.
-
-\* Times shown as **HH:MM ET**.\
-\*\* Half-day trading may apply on the eve of certain U.S. holidays (e.g., Jul 3, Nov 28). Consult the linked exchange calendars for exact cut-off times.
+| Value | Status            | Hours (ET)                            | Description                                                                            |
+| ----- | ----------------- | ------------------------------------- | -------------------------------------------------------------------------------------- |
+| `0`   | **Unknown**       | N/A                                   | Market status cannot be determined                                                     |
+| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                 | Extended hours before regular trading session                                          |
+| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                 | Primary trading session with highest liquidity                                         |
+| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session                                           |
+| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                                               |
+| `5`   | **Closed**        | N/A                                   | Market closed (weekends, holidays, or unexpected closures; \~8:00pm Fri–8:00pm Sun ET) |
 
 ***
 
-## User Recommendations
+## APAC Equities <span id="apac-equities" />
+
+APAC Equities streams use the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11) with standard-hours mapping. There are no extended or overnight sessions.
+
+| Value | Status      | Description                                                                                     |
+| ----- | ----------- | ----------------------------------------------------------------------------------------------- |
+| `0`   | **Unknown** | Market status cannot be determined                                                              |
+| `2`   | **Open**    | Market is open during a regular trading session                                                 |
+| `5`   | **Closed**  | Market is closed (outside trading hours, lunch breaks, closing auctions, weekends, or holidays) |
+
+<Aside type="caution">
+  Values `1`, `3`, and `4` are reserved for 24/5 session types and **will not appear** on these feeds.
+</Aside>
+
+<Aside type="note" title="Closing auctions and lunch breaks">
+  During **closing auction periods** and **daily lunch breaks**, `marketStatus` is `5` (Closed), even though the
+  exchange trading day has not fully ended.
+</Aside>
+
+### Session schedules
+
+APAC streams quote in each exchange's local currency (for example, `/JPY` for Japanese equities). All times are **local exchange time** (Mon–Fri unless noted). UTC offsets are fixed for the listed timezone.
+
+| Exchange                    | Code | Currency | Status      | Time zone   | Session   | Hours (local) | UTC equivalent  | Notes                                                                               |
+| --------------------------- | ---- | -------- | ----------- | ----------- | --------- | ------------- | --------------- | ----------------------------------------------------------------------------------- |
+| **Korea Exchange**          | KRX  | KRW      | Available   | KST (UTC+9) | Regular   | 09:00–15:20   | 00:00–06:20 UTC |                                                                                     |
+| **Tokyo Stock Exchange**    | TSE  | JPY      | Available   | JST (UTC+9) | Morning   | 09:00–11:30   | 00:00–02:30 UTC |                                                                                     |
+|                             |      |          |             |             | Afternoon | 12:30–15:25   | 03:30–06:25 UTC | One-hour lunch break 11:30–12:30. Closing auction 15:25–15:30 (`marketStatus = 5`). |
+| **Taiwan Stock Exchange**   | TWSE | TWD      | Coming soon | CST (UTC+8) | Regular   | 09:00–13:25   | 01:00–05:25 UTC | Closing auction 13:25–13:30 (`marketStatus = 5`).                                   |
+| **Taipei Exchange**         | TPEx | TWD      | Coming soon | CST (UTC+8) | Regular   | 09:00–13:25   | 01:00–05:25 UTC | Closing auction 13:25–13:30 (`marketStatus = 5`).                                   |
+| **Shanghai Stock Exchange** | SSE  | CNY      | Coming soon | CST (UTC+8) | Morning   | 09:30–11:30   | 01:30–03:30 UTC |                                                                                     |
+|                             |      |          |             |             | Afternoon | 13:00–14:57   | 05:00–06:57 UTC | One-hour lunch break 11:30–13:00. Closing auction 14:57–15:00 (`marketStatus = 5`). |
+| **Shenzhen Stock Exchange** | SZSE | CNY      | Coming soon | CST (UTC+8) | Morning   | 09:30–11:30   | 01:30–03:30 UTC |                                                                                     |
+|                             |      |          |             |             | Afternoon | 13:00–14:57   | 05:00–06:57 UTC | One-hour lunch break 11:30–13:00. Closing auction 14:57–15:00 (`marketStatus = 5`). |
+
+See the [APAC Equities](/data-streams/rwa-streams/apac-equities) page for coverage and risk considerations.
+
+***
+
+## Forex, Precious Metals, and Commodities
+
+These asset classes use the [RWA Standard (v8) schema](/data-streams/reference/report-schema-v8). All times are **UTC**.
+
+| Value | Status      | Description                        |
+| ----- | ----------- | ---------------------------------- |
+| `0`   | **Unknown** | Market status cannot be determined |
+| `1`   | **Closed**  | Market is closed                   |
+| `2`   | **Open**    | Market is open                     |
+
+| Asset class                                     | Weekly open | Weekly close | Daily breaks        | Bank holidays                                                                          |
+| ----------------------------------------------- | ----------- | ------------ | ------------------- | -------------------------------------------------------------------------------------- |
+| **FX Majors**<br />(G10 + KRW, SGD, HKD, CNH …) | 17:00 Sun   | 17:00 Fri    | None                | Jan 1, Dec 25                                                                          |
+| **Precious Metals Spot**<br />(XAU, XAG)        | 18:00 Sun   | 17:00 Fri    | 17:00–18:00 Mon–Thu | Jan 1, Good Fri, Dec 25                                                                |
+| **Commodities**<br />(WTI Synthetic Spot)       | 18:00 Sun   | 17:00 Fri    | 17:00–18:00 Mon–Thu | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/) |
+
+***
+
+## marketStatus quick reference <span id="marketstatus-reference" />
+
+A compact lookup by schema and feed type. Using the wrong mapping for your feed type will cause incorrect integration behavior.
+
+### RWA Standard (v8) <span id="v8-market-status" />
+
+Used by Forex, precious metals, and commodity streams.
+
+| Value | Status      | Description                        |
+| ----- | ----------- | ---------------------------------- |
+| `0`   | **Unknown** | Market status cannot be determined |
+| `1`   | **Closed**  | Market is closed                   |
+| `2`   | **Open**    | Market is open                     |
+
+### RWA Advanced (v11) — Standard-hours feeds <span id="v11-market-status" />
+
+Used by APAC Equities and US Equities feeds without 24/5 extended hours.
+
+| Value | Status      | Used?  | Description                                                                                     |
+| ----- | ----------- | ------ | ----------------------------------------------------------------------------------------------- |
+| `0`   | **Unknown** | Yes    | Market status cannot be determined                                                              |
+| `1`   | N/A         | **No** | Not mapped. Do not treat as Closed or Pre-market.                                               |
+| `2`   | **Open**    | Yes    | Market is open during a regular trading session                                                 |
+| `3`   | N/A         | **No** | Not mapped. Do not treat as Post-market.                                                        |
+| `4`   | N/A         | **No** | Not mapped. Do not treat as Overnight.                                                          |
+| `5`   | **Closed**  | Yes    | Market is closed (outside trading hours, lunch breaks, closing auctions, weekends, or holidays) |
+
+### RWA Advanced (v11) — 24/5 US Equities feeds <span id="v11-24-5-feeds" />
+
+Used by 24/5 US Equities streams with extended and overnight sessions.
+
+| Value | Status            | Normal hours (ET)                     | Description                                                |
+| ----- | ----------------- | ------------------------------------- | ---------------------------------------------------------- |
+| `0`   | **Unknown**       | N/A                                   | Market status cannot be determined                         |
+| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                 | Extended hours before regular trading session              |
+| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                 | Primary trading session with highest liquidity             |
+| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session               |
+| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                   |
+| `5`   | **Closed**        | N/A                                   | Market closed (weekends, holidays, or unexpected closures) |
+
+***
+
+## Best practices
 
 For comprehensive guidance on managing risks related to market hours, market gaps, volatility, and corporate actions, see the [Best Practices](/data-streams/concepts/best-practices#market-hours) page.
 
@@ -5440,64 +5540,68 @@ Chainlink Data Streams that use the RWA Advanced (v11) schema adhere to the stru
 
 ## Schema Fields
 
-| Field                   | Type      | Description                                                                            |
-| ----------------------- | --------- | -------------------------------------------------------------------------------------- |
-| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                                            |
-| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                                   |
-| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                                     |
-| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                           |
-| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                   |
-| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                                |
-| `mid`                   | `int192`  | DON consensus mid-price                                                                |
-| `lastSeenTimestampNs`   | `uint64`  | Timestamp of the last update for the mid price only (nanoseconds)                      |
-| `bid`                   | `int192`  | Median bid price                                                                       |
-| `bidVolume`             | `int192`  | Volume at bid price                                                                    |
-| `ask`                   | `int192`  | Median ask price                                                                       |
-| `askVolume`             | `int192`  | Volume at ask price                                                                    |
-| `lastTradedPrice`       | `int192`  | Last traded price                                                                      |
-| `marketStatus`          | `uint32`  | Market status. Values vary by stream type — see full schema documentation for details. |
+| Field                   | Type      | Description                                                       |
+| ----------------------- | --------- | ----------------------------------------------------------------- |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                       |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)              |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                      |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                              |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                           |
+| `mid`                   | `int192`  | DON consensus mid-price                                           |
+| `lastSeenTimestampNs`   | `uint64`  | Timestamp of the last update for the mid price only (nanoseconds) |
+| `bid`                   | `int192`  | Median bid price                                                  |
+| `bidVolume`             | `int192`  | Volume at bid price                                               |
+| `ask`                   | `int192`  | Median ask price                                                  |
+| `askVolume`             | `int192`  | Volume at ask price                                               |
+| `lastTradedPrice`       | `int192`  | Last traded price                                                 |
+| `marketStatus`          | `uint32`  | Market status. Mapping varies by feed; see schema docs.           |
 
 ### Market Status Values
 
-The `marketStatus` field indicates the current state of the market. The possible values vary depending on the stream's supported trading hours:
-
-#### Standard RWA Streams
-
-For streams with standard market hours coverage. Unless a feed explicitly states extended hours support, it is assumed to follow this format:
-
-| Value | Status      | Description                        |
-| ----- | ----------- | ---------------------------------- |
-| `0`   | **Unknown** | Market status cannot be determined |
-| `1`   | **Closed**  | Market is closed                   |
-| `2`   | **Open**    | Market is open                     |
-
-#### 24/5 US Equities Streams
-
-For streams with 24/5 extended hours coverage (e.g., US Equities):
-
-| Value | Status            | Normal Hours (ET)                     | Description                                                |
-| ----- | ----------------- | ------------------------------------- | ---------------------------------------------------------- |
-| `0`   | **Unknown**       | —                                     | Market status cannot be determined                         |
-| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                 | Extended hours before regular trading session              |
-| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                 | Primary trading session with highest liquidity             |
-| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session               |
-| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                   |
-| `5`   | **Closed**        | —                                     | Market closed (weekends, holidays, or unexpected closures) |
-
-Users should implement appropriate safeguards based on market status, such as pausing trading, adjusting risk parameters, or implementing staleness checks during non-regular hours or closed periods.
-
-<Aside type="caution" title="Use marketStatus for Stream Selection">
-  The `marketStatus` field is the authoritative signal for determining market availability and selecting which stream to
-  consume. Do not use `observationsTimestamp`, `lastSeenTimestampNs`, or any other timestamp field to infer whether a
-  market is open or to decide which stream to use. Timestamps reflect when data was last recorded, not the current state
-  of the market.
+<Aside type="caution" title="Use marketStatus, not timestamps">
+  Always use <code>marketStatus</code> to determine whether a market is open. Do <strong>not</strong> use{" "}
+  <code>observationsTimestamp</code>, <code>lastSeenTimestampNs</code>, or other timestamp fields — timestamps indicate
+  when data was last recorded, not whether the market is currently active.
 </Aside>
 
-<Aside type="note" title="Handling Unknown and Closed Status">
-  Consumers should implement logic to handle market status `0` (Unknown) and market status `5` (Closed), as these
-  periods imply no active feed and require a decision on fallback behavior (e.g., using a tokenized price, pausing the
-  market, etc.).
+The v11 schema defines six numeric values (`0`–`5`), but **the values that appear on a given feed depend on its trading-hours model**. Check which mapping applies to your stream before implementing logic. For full trading schedules, see [Market Hours](/data-streams/market-hours).
+
+#### Standard-hours feeds
+
+Used by [APAC Equities](/data-streams/rwa-streams/apac-equities) and any v11 feed without 24/5 extended hours.
+
+| Value | Status      | Used?  | Description                                                                                     |
+| ----- | ----------- | ------ | ----------------------------------------------------------------------------------------------- |
+| `0`   | **Unknown** | Yes    | Market status cannot be determined                                                              |
+| `1`   | N/A         | **No** | Not mapped. Do not treat as Closed or Pre-market.                                               |
+| `2`   | **Open**    | Yes    | Market is open during a regular trading session                                                 |
+| `3`   | N/A         | **No** | Not mapped. Do not treat as Post-market.                                                        |
+| `4`   | N/A         | **No** | Not mapped. Do not treat as Overnight.                                                          |
+| `5`   | **Closed**  | Yes    | Market is closed (outside trading hours, lunch breaks, closing auctions, weekends, or holidays) |
+
+<Aside type="caution">
+  Values <code>1</code>, <code>3</code>, and <code>4</code> are reserved for 24/5 session types and **will not appear**
+  on these feeds. On standard-hours feeds, <code>5</code> covers intraday closures such as lunch breaks and closing
+  auctions — not only weekends and holidays.
 </Aside>
+
+During closing auction periods and daily lunch breaks on APAC exchanges, `marketStatus` is `5` (Closed) even though the exchange trading day has not fully ended. See [Market Hours (APAC Equities)](/data-streams/market-hours#apac-equities) for session schedules.
+
+#### 24/5 US Equities feeds
+
+Used by [24/5 US Equities](/data-streams/rwa-streams/24-5-us-equities-user-guide) streams with extended and overnight sessions.
+
+| Value | Status            | Hours (ET)                            | Description                                                                            |
+| ----- | ----------------- | ------------------------------------- | -------------------------------------------------------------------------------------- |
+| `0`   | **Unknown**       | N/A                                   | Market status cannot be determined                                                     |
+| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                 | Extended hours before regular trading session                                          |
+| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                 | Primary trading session with highest liquidity                                         |
+| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session                                           |
+| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                                               |
+| `5`   | **Closed**        | N/A                                   | Market closed (weekends, holidays, or unexpected closures; \~8:00pm Fri–8:00pm Sun ET) |
+
+Implement appropriate safeguards based on market status — such as pausing trading, adjusting risk parameters, or adding staleness checks during non-regular or closed periods. See [Best Practices](/data-streams/concepts/best-practices#market-hours) for guidance.
 
 ### Notes
 
@@ -5649,14 +5753,29 @@ RWA streams adhere to the report schema outlined below.
 | `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                |
 | `lastUpdateTimestamp`   | `uint64`  | Timestamp of the last valid price update (nanoseconds) |
 | `midPrice`              | `int192`  | DON's consensus median price                           |
-| `marketStatus`          | `uint32`  | Market status: 0 (Unknown), 1 (Closed), 2 (Open)       |
+| `marketStatus`          | `uint32`  | Market status. See schema docs for value mappings.     |
 
-**Notes**:
+### Market Status Values
 
-- `marketStatus`:
-  - The `marketStatus` field is the authoritative signal for determining whether a market is open. Do not use `observationsTimestamp` (or any other timestamp field) to infer whether a stream is active or to select among multiple streams — timestamps reflect when an observation was last recorded, not whether the market is currently open.
-  - Users are responsible for handling market status changes in their applications.
-  - For further guidance, refer to the [Handling Market Events](/data-streams/rwa-streams/handling-market-events) documentation.
+<Aside type="caution" title="Use marketStatus, not timestamps">
+  Always use <code>marketStatus</code> to determine whether a market is open. Do <strong>not</strong> use
+  <code>observationsTimestamp</code>, <code>lastUpdateTimestamp</code>, or any other timestamp field — timestamps
+  indicate when data was last recorded, not whether the market is currently active.
+</Aside>
+
+v8 streams use a three-value mapping:
+
+| Value | Status      | Description                        |
+| ----- | ----------- | ---------------------------------- |
+| `0`   | **Unknown** | Market status cannot be determined |
+| `1`   | **Closed**  | Market is closed                   |
+| `2`   | **Open**    | Market is open                     |
+
+For trading schedules by asset class, see [Market Hours](/data-streams/market-hours). For integration guidance during market transitions, see [Handling Market Events](/data-streams/rwa-streams/handling-market-events).
+
+### Notes
+
+- Users are responsible for handling market status changes in their applications.
 - Future RWA streams may use different report schemas.
 
 ---
@@ -5971,6 +6090,123 @@ For detailed market hours and trading schedules, see the [Market Hours](/data-st
 ## Available Streams
 
 The table below shows all available 24/5 US Equities streams. Use the **Time segment** filter to view streams for specific trading sessions.
+
+---
+
+# APAC Equities
+Source: https://docs.chain.link/data-streams/rwa-streams/apac-equities
+
+Asia-Pacific (APAC) Equities streams provide high-frequency, transparent price data for major Asia-Pacific indices and single-name stocks. These streams enable onchain protocols to build liquid, capital-efficient markets around globally relevant APAC assets, including sectors such as AI, semiconductors, and consumer goods.
+
+Each instrument is quoted during its exchange's standard trading hours. Integrators should monitor `marketStatus`, data freshness, and the risk considerations below.
+
+Developers are responsible for choosing the appropriate feed and ensuring that the operation and performance of their choice matches expectations. For more information, see the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance.
+
+## Schema
+
+APAC Equities data is delivered using the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11).
+
+| Field                   | Type      | Description                                             |
+| ----------------------- | --------- | ------------------------------------------------------- |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed             |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)    |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)      |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)            |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                    |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                 |
+| `mid`                   | `int192`  | DON consensus mid-price                                 |
+| `lastSeenTimestampNs`   | `uint64`  | Timestamp of the last report update (nanoseconds)       |
+| `bid`                   | `int192`  | Mid-price minus half the spread (mid − spread/2)        |
+| `bidVolume`             | `int192`  | Not populated for APAC equities; reported as 0          |
+| `ask`                   | `int192`  | Mid-price plus half the spread (mid + spread/2)         |
+| `askVolume`             | `int192`  | Not populated for APAC equities; reported as 0          |
+| `lastTradedPrice`       | `int192`  | Not populated for APAC equities; reported as 0          |
+| `marketStatus`          | `uint32`  | Market status. Mapping varies by feed; see schema docs. |
+
+For `marketStatus` value mappings, see [Standard-hours feeds (v11)](/data-streams/reference/report-schema-v11#standard-hours-feeds). For exchange schedules, see [Market Hours (APAC Equities)](/data-streams/market-hours#apac-equities).
+
+## Coverage
+
+APAC Equities streams cover major indices and single-name stocks across Asia-Pacific exchanges. Data is quoted in each exchange's local currency (for example, `/JPY` for Japanese equities).
+
+### Exchanges
+
+| Exchange             | Code | Local currency | Status    |
+| -------------------- | ---- | -------------- | --------- |
+| Korea Exchange       | KRX  | KRW            | Available |
+| Tokyo Stock Exchange | TSE  | JPY            | Available |
+
+Other APAC exchanges are coming soon.
+
+## Trading hours
+
+APAC equities trade during each exchange's standard local sessions (Mon–Fri). Schedules, lunch breaks, and closing auction behavior are documented on the [Market Hours](/data-streams/market-hours#apac-equities) page.
+
+## Risk considerations
+
+Integrating protocols are responsible for implementing appropriate monitoring and risk mitigation mechanisms to ensure safe market operation.
+
+### Data freshness
+
+Protocols should continuously monitor the `lastSeenTimestampNs` field to verify data recency. A lagging or stale timestamp indicates that fresh pricing inputs are not being received. In such cases, protocols should restrict or suspend trading and liquidations until data freshness is restored.
+
+Consuming data when `marketStatus = 5` (Closed) is not recommended. Protocols should consider pausing or restricting activity until `marketStatus = 2` (Open) is confirmed.
+
+When a session is closed, prices hold at the last traded value until the next session opens. A flat, unchanging price during a closed period is expected behavior and does not indicate a data quality issue. Do not use price movement as a proxy for market activity — use `marketStatus` as the authoritative signal.
+
+### Scheduled intraday breaks and freshness thresholds
+
+TSE-listed equities observe a scheduled lunch break (11:30–12:30 JST / 02:30–03:30 UTC) during which `marketStatus = 5` (Closed) and no new price data is published. `lastSeenTimestampNs` will not advance for approximately 60 minutes during this window.
+
+Freshness monitoring logic that evaluates timestamp age alone should account for this break. A staleness threshold shorter than \~60 minutes will fire during the TSE lunch break, producing false-positive alerts and potentially unnecessary circuit-breaker activity.
+
+Recommended approach: check `marketStatus` before evaluating freshness. If `marketStatus = 5`, staleness is expected and should not trigger restrictions; evaluate freshness thresholds only when `marketStatus = 2` (Open).
+
+KRX-listed equities have no intraday break; the session runs continuously from 09:00–15:20 KST (00:00–06:20 UTC).
+
+### Opening and closing auction prices
+
+At the open of each session, prices may reflect the exchange's opening auction mechanism rather than continuous traded prices. Opening auctions concentrate deferred orders from the closed period into a single price discovery event, which can produce an opening price that deviates materially from the prior session's close. This is normal exchange behavior, not a data quality issue.
+
+The same consideration applies at the start of the TSE afternoon session (12:30 JST / 03:30 UTC) following the lunch break.
+
+Protocols should account for session-open volatility by:
+
+- Treating the `marketStatus` transition from `5` (Closed) to `2` (Open) as a signal to re-evaluate risk parameters before acting on the opening price
+- Widening deviation thresholds or reducing position exposure during the first minutes of each session
+- Avoiding liquidation triggers driven purely by price movement relative to the prior session's close
+
+### Exchange halts
+
+Underlying markets may halt trading due to regulatory actions, news events, volatility controls, or operational issues. **These events are not explicitly reflected in the `marketStatus` field.**
+
+Protocols are responsible for detecting halt conditions and implementing safeguards (for example, pausing trading or disabling liquidations) to prevent execution against stale or non-actionable prices.
+
+### Corporate actions
+
+Equities are subject to corporate actions (for example, stock splits, reverse splits, and dividends) that can materially impact price and position value between trading sessions. Protocols should monitor corporate action events and adjust pricing logic, collateral parameters, and open positions accordingly. This may include pausing markets during corporate action windows to prevent unfair liquidations.
+
+### Single-source data
+
+Each APAC market is sourced from a single institutional-grade data provider per feed. While this enables high-frequency, low-latency delivery, it introduces dependency on the underlying provider's data quality and availability. There is no redundant cross-validation between providers for a given feed.
+
+If the underlying provider fails to deliver data during an active session, there is no fallback source. A gap in price data during exchange open hours may not be accompanied by a `marketStatus` change — the feed may continue reporting `marketStatus = 2` (Open) while `lastSeenTimestampNs` stops advancing. Staleness monitoring is therefore critical during open sessions, not only when the market is closed.
+
+Recommended safeguards include:
+
+- Monitor `lastSeenTimestampNs` for staleness during open sessions
+- Implement price deviation checks against recent valid observations
+- Detect sustained periods of no price movement during `marketStatus = 2` as a potential gap condition
+- Pause or restrict market activity when data quality signals are triggered
+- Review the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance before integration
+
+## Available streams
+
+{/* TODO: Refine filtering based on RDD implementation once APAC equity feed metadata is finalized. */}
+
+## Support
+
+For inquiries related to a data outage, contact Chainlink Labs at [data_support@chain.link](mailto:data_support@chain.link).
 
 ---
 

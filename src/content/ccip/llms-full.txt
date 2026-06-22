@@ -19418,7 +19418,7 @@ Understanding these encoding details becomes especially important when working w
 
 # Cross-Chain Token (CCT) Tutorials
 Source: https://docs.chain.link/ccip/tutorials/svm/cross-chain-tokens
-Last Updated: 2025-08-13
+Last Updated: 2026-06-15
 
 Learn how to implement cross-chain tokens using Chainlink's Cross-Chain Interoperability Protocol (CCIP) on SVM-based blockchains like Solana.
 
@@ -19442,7 +19442,7 @@ This tutorial demonstrates the Lock and Mint token handling mechanism using Lock
 
 # Cross-Chain Token Setup: BurnMint with Direct Mint Authority Transfer
 Source: https://docs.chain.link/ccip/tutorials/svm/cross-chain-tokens/direct-mint-authority
-Last Updated: 2025-08-13
+Last Updated: 2026-06-15
 
 This comprehensive tutorial demonstrates how to create and configure cross-chain tokens using Chainlink's Cross-Chain Interoperability Protocol (CCIP) between Solana Devnet and Ethereum Sepolia. You will implement the **direct mint authority transfer** approach within **Path A** from the [CCIP Cross-Chain Token Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide).
 
@@ -19490,76 +19490,86 @@ For complete details on token handling mechanisms, see [Token Handling Mechanism
 
 ## Prerequisites
 
-This tutorial requires setting up two different repositories in separate terminal windows. Follow the setup instructions for both environments before proceeding.
+This tutorial uses a **two-terminal workflow** across two repositories. Install the system tools below, clone both repos, then complete environment setup before starting Phase 1.
 
-### Development Environment Requirements
+### System Requirements
 
-**System Requirements:**
-
-- **Anchor and Solana CLI Tools**: Install following the [installation guide](https://www.anchor-lang.com/docs/installation). Requires Rust to be installed.
-- **Node.js v20 or higher**: Use the [nvm package](https://www.npmjs.com/package/nvm) to install and manage versions. Verify with `node -v`
-- **Yarn**: For dependency management
+- **Node.js v22 or higher**: Verify with `node -v` ([nvm](https://www.npmjs.com/package/nvm) recommended)
+- **pnpm**: Required for the BS58 generator (`npm install -g pnpm`)
+- **Solana CLI**: [Installation guide](https://docs.solana.com/cli/install-solana-cli-tools) (includes `spl-token`)
 - **Git**: For cloning repositories
+- **CCIP CLI**: For cross-chain transfer testing in the final phase
 
-### Terminal 1: Solana Starter Kit Setup
-
-**Clone and setup the Solana Starter Kit:**
+Install the [CCIP CLI](https://github.com/smartcontractkit/ccip-tools-ts) globally:
 
 ```bash
-git clone https://github.com/smartcontractkit/solana-starter-kit.git && cd solana-starter-kit
+npm install -g @chainlink/ccip-cli
+ccip-cli --help
 ```
 
-**Install dependencies:**
+See the [CCIP CLI documentation](https://docs.chain.link/ccip/tools/cli/) for RPC and wallet configuration.
+
+### Tutorial Workflow
+
+| Terminal       | Repository                                                                                                                  | Purpose                              | Commands        |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | --------------- |
+| **Terminal 1** | [CCIP Solana BS58 Generator](https://github.com/smartcontractkit/ccip-solana-bs58-generator)                                | Solana setup and configuration       | `pnpm bs58`     |
+| **Terminal 2** | [Smart Contract Examples (Hardhat)](https://github.com/smartcontractkit/smart-contract-examples/tree/main/ccip/cct/hardhat) | EVM deploy and configuration         | `npx hardhat`   |
+| **Either**     | Global `@chainlink/ccip-cli`                                                                                                | Cross-chain transfer testing (final) | `ccip-cli send` |
+
+### Terminal 1: CCIP Solana BS58 Generator
+
+**Clone and install** (skip `git clone` if you already have the repo):
 
 ```bash
-yarn install
+git clone https://github.com/smartcontractkit/ccip-solana-bs58-generator.git
+cd ccip-solana-bs58-generator
+pnpm install
 ```
 
-**Configure your Solana environment:**
+**Configure Solana CLI for devnet:**
+
+First, check whether your environment is already set up:
 
 ```bash
-# Set Solana CLI to use devnet
+solana config get
+solana address
+solana balance
+```
+
+If the RPC URL is already `https://api.devnet.solana.com`, your keypair path is correct, and you have sufficient SOL, skip to [Terminal 2 setup](#terminal-2-smart-contract-examples-hardhat) below.
+
+Otherwise, run only the steps you need:
+
+```bash
+# Set devnet (skip if config get already shows devnet)
 solana config set --url https://api.devnet.solana.com
 
-# Set your keypair (create one if needed)
+# Point to your keypair (skip if config get already shows the path you want)
 solana config set --keypair ~/.config/solana/id.json
 
-# If you do not have a keypair, create one:
+# Create a keypair only if the file does not exist yet
 solana-keygen new --outfile ~/.config/solana/id.json
-```
 
-**Fund your Solana wallet:**
-
-```bash
-# Get your wallet address
-solana address
-
-# Request SOL from the devnet faucet
+# Fund your wallet if balance is low
 solana airdrop 2
-```
-
-**Verify your setup:**
-
-```bash
-# Check your SOL balance
 solana balance
-
-# Verify you are on devnet
-solana config get
 ```
 
-### Terminal 2: Smart Contract Examples Setup
+<Aside type="note" title="Direct Execution">
+  Append `--execute` to **mutating** `pnpm bs58` commands in Terminal 1 so your local wallet signs and sends
+  transactions. **Read-only** commands (`get-state`, `get-chain-config`, `derive-accounts`) omit `--execute`. See the
+  [CCIP Solana BS58 Generator
+  README](https://github.com/smartcontractkit/ccip-solana-bs58-generator/blob/main/README.md) for command syntax.
+</Aside>
 
-**Clone the repository and navigate to the Hardhat project:**
+### Terminal 2: Smart Contract Examples (Hardhat)
+
+**Clone, install, and compile** (skip `git clone` if you already have the repo):
 
 ```bash
 git clone https://github.com/smartcontractkit/smart-contract-examples.git
 cd smart-contract-examples/ccip/cct/hardhat
-```
-
-**Install and compile dependencies:**
-
-```bash
 npm install
 npm run compile
 ```
@@ -19567,38 +19577,70 @@ npm run compile
 **Set up encrypted environment variables:**
 
 ```bash
-# Set encryption password
+# Required at the start of each session
 npx env-enc set-pw
 
-# Configure environment variables
+# Verify existing variables (skip npx env-enc set if all required vars are already configured)
+npx env-enc view
+
+# Add or update variables only if missing
 npx env-enc set
 ```
 
-**Required environment variables for Ethereum Sepolia:**
+**Required variables for Ethereum Sepolia:**
 
 - `ETHEREUM_SEPOLIA_RPC_URL`: RPC endpoint from [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/)
 - `PRIVATE_KEY`: Your testnet wallet private key ([MetaMask export guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/))
 - `ETHERSCAN_API_KEY`: API key from [Etherscan](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics)
 
-**Fund your wallet:**
+**Fund your EVM wallet:**
 
-- Acquire LINK and ETH on Ethereum Sepolia using [Chainlink faucets](https://faucets.chain.link/)
+- Acquire **ETH** on Ethereum Sepolia for transaction gas and CCIP fees ([Chainlink faucet](https://faucets.chain.link/) or [Google Cloud Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia))
+- **LINK** is optional — use `--fee-token LINK` on EVM → Solana sends if you prefer paying CCIP fees in LINK
+
+### Cross-Chain Transfers (CCIP CLI)
+
+The final tutorial phase uses globally installed `ccip-cli` (not the BS58 generator):
+
+- **Solana → EVM**: Run from Terminal 1 with `--wallet ~/.config/solana/id.json`
+- **EVM → Solana**: Run from Terminal 2 (Hardhat directory). Prefer `--wallet hardhat:<name>` ([Hardhat keystore](https://hardhat.org/docs/plugins/hardhat-keystore)) so the signing key stays encrypted. Hardhat tasks load env-enc automatically; `ccip-cli` does not. As an alternative, view the same key with `npx env-enc view` and export `PRIVATE_KEY` manually for the send command.
+
+**RPC endpoints** (required for source and destination chains). You can provide them any of these ways — see [CCIP CLI configuration](https://docs.chain.link/ccip/tools/cli/configuration):
+
+- **Command line:** pass `--rpc` on each command (repeat for multiple networks), or `--rpcs` with comma-separated URLs
+- **Environment variables:** export `RPC_*` variables (e.g., `RPC_SEPOLIA`, `RPC_SOLANA_DEVNET`) or the tutorial's `SOLANA_DEVNET_RPC` and `ETHEREUM_SEPOLIA_RPC_URL` exports
+- **File:** create a `.env` file in the directory where you run `ccip-cli` (default `--rpcs-file`, one URL per line)
+
+See the tutorial's **Configure CCIP CLI** section for the recommended `--rpc` examples.
+
+### Environment Variables
+
+Variables use prefixes to prevent confusion across repositories and tools:
+
+| Prefix       | Usage                   | Examples                                                                  |
+| ------------ | ----------------------- | ------------------------------------------------------------------------- |
+| `ETH_*`      | Ethereum addresses      | `ETH_TOKEN_ADDRESS`, `ETH_POOL_ADDRESS`                                   |
+| `SOL_*`      | Solana addresses        | `SOL_TOKEN_MINT`, `SOL_POOL_ADDRESS`, `SOL_WALLET_ADDRESS`                |
+| `SOL_CCIP_*` | Solana CCIP program IDs | `SOL_CCIP_POOL_PROGRAM`, `SOL_CCIP_ROUTER`, `SOL_CCIP_FEE_QUOTER_PROGRAM` |
 
 <Aside type="note" title="Two-Terminal Workflow">
-  Keep both terminal windows open throughout the tutorial. You will switch between the Solana Starter Kit (Terminal 1)
-  and Hardhat project (Terminal 2) as you progress through the phases.
+  Keep both terminal windows open throughout the tutorial. Switch between the CCIP Solana BS58 Generator (Terminal 1)
+  and the Hardhat project (Terminal 2) as each phase indicates. Cross-chain transfer commands use `ccip-cli` from the
+  terminal that matches the source chain.
 </Aside>
 
 ## Tutorial Approach
 
-This tutorial provides step-by-step instructions with detailed explanations of what each command does and why. You'll work primarily in Terminal 1 (Solana) with occasional switches to Terminal 2 (EVM).
+This tutorial provides step-by-step instructions with detailed explanations of what each command does and why. You'll work primarily in Terminal 1 (CCIP Solana BS58 Generator) with occasional switches to Terminal 2 (EVM).
 
 **Environment Variable Management**: This tutorial uses phase-based variable files (e.g., `~/.phase1_vars`, `~/.ccip_complete_vars`) to eliminate manual variable re-entry when switching between terminals. Each phase saves its variables to files that subsequent phases can load automatically.
 
 For deeper technical implementation details, refer to:
 
-- **[Solana Starter Kit README](https://github.com/smartcontractkit/solana-starter-kit/blob/main/README.md)**: SVM command details
+- **[CCIP Solana BS58 Generator README](https://github.com/smartcontractkit/ccip-solana-bs58-generator/blob/main/README.md)**: Solana CLI command details, `--execute` EOA workflow, and options
 - **[Smart Contract Examples README](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/cct/hardhat/README.md)**: EVM implementation guide
+
+**EOA execution**: In Terminal 1, append `--execute` to each `pnpm bs58` command so your local Solana wallet signs and sends transactions directly. Set `--authority` to your wallet address (`$SOL_WALLET_ADDRESS`). Read-only commands (`get-state`, `get-chain-config`, `derive-accounts`) do not use `--execute`.
 
 ## Phase 1: Ethereum Sepolia Token Setup
 
@@ -19646,31 +19688,37 @@ Save your EVM configuration for use in later phases:
 Now we'll create and configure the Solana side of your cross-chain token system.
 
 <Aside type="note" title="Terminal Context">
-  **Switch to Terminal 1** (Solana Starter Kit) Verify your location:
+  **Switch to Terminal 1** (CCIP Solana BS58 Generator) Verify your location:
 
   ```bash
   pwd
-  # Should show: .../solana-starter-kit
+  # Should show: .../ccip-solana-bs58-generator
   ```
 </Aside>
 
-### Step 1: Create SPL Token
+### Step 1: Prepare Environment
 
-Create an SPL token with metadata support:
+Load EVM variables from Phase 1 and set Solana CCIP constants:
+
+### Step 2: Create SPL Token
+
+Create an SPL token with metadata and initial supply using direct EOA execution:
 
 Set the token mint variable:
 
-### Step 2: Initialize CCIP Token Pool
+### Step 3: Initialize CCIP Token Pool
 
 Initialize the token pool configuration on Solana:
 
-Save the Pool Signer PDA and Pool Config PDA from the output:
+Save the Pool Signer PDA and Pool Config PDA. Derive them from the onchain pool configuration:
 
-### Step 3: Create Pool Token Account
+Copy the **Pool Signer PDA** and **Pool State PDA** addresses from the output, then export them:
+
+### Step 4: Create Pool Token Account
 
 In this step, you will create an Associated Token Account (ATA) for the Pool Signer PDA. This ATA is required for the pool to hold and manage tokens during cross-chain transfer operations.
 
-### Step 4: Register as CCIP Administrator
+### Step 5: Register as CCIP Administrator
 
 #### Propose Admin
 
@@ -19680,7 +19728,7 @@ In this step, you will propose yourself as the CCIP administrator for the Solana
 
 In this step, you will accept the administrator role for the Solana token. This process establishes your control over the token's CCIP configuration on Solana.
 
-### Step 5: Transfer Mint Authority to Pool Signer PDA
+### Step 6: Transfer Mint Authority to Pool Signer PDA
 
 <Aside type="caution" title="Critical Step: Mint Authority Transfer">
   **This is the defining step** of the direct mint authority approach. You're transferring complete mint authority to the Pool Signer PDA, which:
@@ -19692,7 +19740,9 @@ In this step, you will accept the administrator role for the Solana token. This 
   **Important**: Ensure you have sufficient tokens for testing before proceeding. The SPL token creation in Step 1 already minted tokens to your wallet, so you're ready to continue.
 </Aside>
 
-### Step 6: Save Phase 2 Variables
+Verify the authority transfer:
+
+### Step 7: Save Phase 2 Variables
 
 Save your Solana configuration for use in cross-chain setup:
 
@@ -19702,7 +19752,7 @@ Configure bidirectional connectivity between your token pools on both chains.
 
 ### Step 1: Configure Solana Pool
 
-**Stay in Terminal 1 (Solana Starter Kit)**
+**Stay in Terminal 1** (CCIP Solana BS58 Generator)
 
 Load the Ethereum addresses from Phase 1:
 
@@ -19748,16 +19798,23 @@ Register the BurnMint token pool with your token in the TokenAdminRegistry:
 
 ### Step 2: Register Solana Pool
 
-**Switch to Terminal 1 (Solana Starter Kit)**
+**Switch to Terminal 1** (CCIP Solana BS58 Generator)
 
 ```bash
 pwd
-# Should show ../solana-starter-kit
+# Should show: .../ccip-solana-bs58-generator
+```
+
+Load variables from previous phases:
+
+```bash
+source ~/.phase1_vars
+source ~/.phase2_vars
 ```
 
 #### Create Address Lookup Table
 
-Address Lookup Tables (ALT) optimize Solana transactions by compressing addresses.
+Address Lookup Tables (ALT) optimize Solana transactions by compressing addresses. With EOA execution, create and populate the ALT in one step:
 
 Save the ALT address:
 
@@ -19771,52 +19828,94 @@ Save all variables for the testing phase:
 
 ## Phase 5: Pre-Transfer Setup
 
-Before testing transfers, complete final setup steps.
+Before validating your configuration, complete final setup steps.
 
-### Step 1: Get Pool Signer PDA
+### Step 1: Verify Pool Signer PDA
 
-Extract the Pool Signer PDA for reference:
+Confirm the Pool Signer PDA matches your saved configuration:
 
-Confirm this matches your previously saved PDA:
-
-```bash
-echo "Saved Pool Signer PDA: $SOL_POOL_SIGNER_PDA"
-echo "Current Pool Signer PDA: BwzTc3R77vf1dS4kj3JX8YGpCvjsg91vBDgyKJfeBkue"
-```
+Compare the onchain **Pool Signer** with your saved variable:
 
 ### Step 2: Delegate Token Authority
 
-In this step, you will delegate token approval to the fee-billing signer PDA, which is what enables CCIP to transfer tokens on your behalf when sending cross-chain messages.
+In this step, you will delegate token approval to the CCIP fee-billing signer PDA, which enables CCIP to transfer tokens on your behalf when sending cross-chain messages.
 
-### Step 3: Verify Delegate
+Approve the fee-billing signer to transfer tokens from your ATA:
 
-Check the previous step to verify the token is delegated to the Pool Signer PDA:
+### Step 3: Verify Delegation
 
-## Phase 6: Testing Cross-Chain Transfers
+Check that your token account is delegated to the fee-billing signer:
 
-In this step, you will test bidirectional token transfers to verify your setup.
+Display token account and delegation status:
+
+## Phase 6: Test Cross-Chain Transfers
+
+Validate your configuration, then execute bidirectional token transfers using the CCIP CLI.
+
+<Aside type="note" title="Cross-Chain Transfers with CCIP CLI">
+  Use [`@chainlink/ccip-cli`](https://github.com/smartcontractkit/ccip-tools-ts) for bidirectional token transfers. Run Solana → EVM sends from Terminal 1 and EVM → Solana sends from Terminal 2. See the [CCIP CLI documentation](https://docs.chain.link/ccip/tools/cli/) for full options.
+</Aside>
 
 Confirm you are in the correct directory (Terminal 1):
 
 ```bash
 pwd
-# Should output: ../solana-starter-kit
+# Should show: .../ccip-solana-bs58-generator
 ```
 
 ### Step 1: Load Complete Configuration
 
-Before testing, ensure all variables are available in your current terminal:
+### Step 2: Verify Solana Pool and Chain Config
 
-### Step 2: Transfer Solana → Ethereum
+### Step 3: Verify Ethereum Pool (Terminal 2)
 
-**In Terminal 1 (Solana Starter Kit)**
+**Switch to Terminal 2** (Smart Contract Examples - Hardhat):
 
-### Step 3: Transfer Ethereum → Solana
+```bash
+npx hardhat getPoolConfig \
+  --pooladdress $ETH_POOL_ADDRESS \
+  --network ethereumSepolia
+```
 
-<Aside type="note" title="EVM Credentials Required">
-  For this direction, ensure your `.env` file in Terminal 1 contains your EVM credentials as set up in the
-  prerequisites.
+Confirm the Ethereum pool recognizes Solana Devnet with your `$SOL_POOL_CONFIG_PDA` and `$SOL_TOKEN_MINT`.
+
+### Configure CCIP CLI
+
+Export these RPC URLs once before your first transfer:
+
+```bash
+export SOLANA_DEVNET_RPC="https://api.devnet.solana.com"
+export ETHEREUM_SEPOLIA_RPC_URL="<YOUR_ETHEREUM_SEPOLIA_RPC_URL>"
+
+export ETH_CCIP_ROUTER="0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59"
+```
+
+Use the same `ETHEREUM_SEPOLIA_RPC_URL` from your env-enc setup in Terminal 2 (`npx env-enc view`). On `ccip-cli send`, the source chain RPC quotes fees and submits the transaction; for token-only transfers in this tutorial, that is the only RPC strictly required to send. Pass both RPCs on cross-chain commands anyway: the destination RPC is required for `ccip-cli show --wait` and for optional send features such as `--estimate-gas-limit` or `send --wait`.
+
+<Aside type="note" title="RPC and wallet configuration">
+  Repeat `--rpc` for multiple networks, or use `--rpcs` with comma-separated URLs. Alternatively, set `RPC_*` environment variables or a `.env` file — see [CCIP CLI configuration](https://docs.chain.link/ccip/tools/cli/configuration). Solana sends use `--wallet ~/.config/solana/id.json`. EVM sends: prefer `--wallet hardhat:<name>` from the Hardhat project directory ([Hardhat keystore](https://hardhat.org/docs/plugins/hardhat-keystore)); alternatively export `PRIVATE_KEY` manually after `npx env-enc view` (Hardhat tasks load env-enc automatically, but `ccip-cli` does not). See [CCIP CLI wallet configuration](https://docs.chain.link/ccip/tools/cli/configuration#wallet-configuration).
 </Aside>
+
+### Transfer Solana → Ethereum
+
+**Terminal 1** (CCIP Solana BS58 Generator):
+
+The `-t` flag uses human-readable amounts (0.001 tokens with 9 decimals = 1,000,000 smallest units).
+
+### Transfer Ethereum → Solana
+
+**Switch to Terminal 2** (Smart Contract Examples - Hardhat):
+
+`ccip-cli` does not load Hardhat env-enc automatically. Run these commands from the Hardhat project directory. Prefer [Hardhat keystore](https://hardhat.org/docs/plugins/hardhat-keystore) over exporting a private key in plain text.
+
+For token-only transfers to Solana, `--to` is the destination wallet that receives minted tokens. CCIP fees are paid in native Sepolia ETH by default — ensure your wallet has sufficient ETH for gas and fees.
+
+<Aside type="note" title="Pay fees in LINK (optional)">
+  Add `--fee-token LINK` to pay CCIP fees in LINK instead of ETH (Sepolia LINK:
+  `0x779877A7B0D9E8603169DdbD7836e478b4624789`).
+</Aside>
+
+**Congratulations!** Your cross-chain token infrastructure is fully configured on both chains.
 
 ## Reference: Verification Commands
 
@@ -19824,13 +19923,14 @@ Use these commands to verify your setup at any point during the tutorial. Each s
 
 ### Solana Pool Verification
 
-**Terminal 1 (Solana Starter Kit)**
+**Terminal 1** (CCIP Solana BS58 Generator)
 
 ```bash
 # Verify pool configuration and status
-yarn svm:pool:get-info \
-  --token-mint $SOL_TOKEN_MINT \
-  --burn-mint-pool-program $CCIP_POOL_PROGRAM
+pnpm bs58 --env devnet burnmint-token-pool \
+  --instruction get-state \
+  --program-id $SOL_CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT
 ```
 
 **What this shows:**
@@ -19842,14 +19942,15 @@ yarn svm:pool:get-info \
 
 ### Solana Chain Configuration
 
-**Terminal 1 (Solana Starter Kit)**
+**Terminal 1** (CCIP Solana BS58 Generator)
 
 ```bash
-# Verify cross-chain configuration with Ethereum
-yarn svm:pool:get-chain-config \
-  --token-mint $SOL_TOKEN_MINT \
-  --burn-mint-pool-program $CCIP_POOL_PROGRAM \
-  --remote-chain ethereum-sepolia
+# Verify cross-chain configuration with Ethereum Sepolia
+pnpm bs58 --env devnet burnmint-token-pool \
+  --instruction get-chain-config \
+  --program-id $SOL_CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --remote-chain-selector $ETH_SEPOLIA_CHAIN_SELECTOR
 ```
 
 **What this shows:**
@@ -19861,7 +19962,7 @@ yarn svm:pool:get-chain-config \
 
 ### Solana Token Balance
 
-**Terminal 1 (Solana Starter Kit)**
+**Terminal 1** (CCIP Solana BS58 Generator)
 
 ```bash
 # Check your token balance
@@ -19882,7 +19983,7 @@ spl-token balance $SOL_TOKEN_MINT
 # Verify Ethereum pool configuration
 npx hardhat getPoolConfig \
   --pooladdress $ETH_POOL_ADDRESS \
-  --network sepolia
+  --network ethereumSepolia
 ```
 
 **What this shows:**
@@ -19923,7 +20024,7 @@ npx hardhat getPoolConfig \
 
 # Cross-Chain Token Setup: BurnMint with SPL Token Multisig Tutorial
 Source: https://docs.chain.link/ccip/tutorials/svm/cross-chain-tokens/spl-token-multisig-tutorial
-Last Updated: 2025-08-13
+Last Updated: 2026-06-15
 
 This educational tutorial demonstrates how to create and configure cross-chain tokens using Chainlink's Cross-Chain Interoperability Protocol (CCIP) between Solana Devnet and Ethereum Sepolia using **SPL token multisig concepts**. You will learn to implement the **SPL token multisig** approach within **Path A** from the [CCIP Cross-Chain Token Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide#path-a-full-self-service-mint-authority-controlled).
 
@@ -19981,76 +20082,86 @@ This tutorial implements the **[Burn and Mint](/ccip/concepts/cross-chain-token/
 
 ## Prerequisites
 
-This tutorial requires setting up two different repositories in separate terminal windows. Follow the setup instructions for both environments before proceeding.
+This tutorial uses a **two-terminal workflow** across two repositories. Install the system tools below, clone both repos, then complete environment setup before starting Phase 1.
 
-### Development Environment Requirements
+### System Requirements
 
-**System Requirements:**
-
-- **Anchor and Solana CLI Tools**: Install following the [installation guide](https://www.anchor-lang.com/docs/installation). Requires Rust to be installed.
-- **Node.js v20 or higher**: Use the [nvm package](https://www.npmjs.com/package/nvm) to install and manage versions. Verify with `node -v`
-- **Yarn**: For dependency management
+- **Node.js v22 or higher**: Verify with `node -v` ([nvm](https://www.npmjs.com/package/nvm) recommended)
+- **pnpm**: Required for the BS58 generator (`npm install -g pnpm`)
+- **Solana CLI**: [Installation guide](https://docs.solana.com/cli/install-solana-cli-tools) (includes `spl-token`)
 - **Git**: For cloning repositories
+- **CCIP CLI**: For cross-chain transfer testing in the final phase
 
-### Terminal 1: Solana Starter Kit Setup
-
-**Clone and setup the Solana Starter Kit:**
+Install the [CCIP CLI](https://github.com/smartcontractkit/ccip-tools-ts) globally:
 
 ```bash
-git clone https://github.com/smartcontractkit/solana-starter-kit.git && cd solana-starter-kit
+npm install -g @chainlink/ccip-cli
+ccip-cli --help
 ```
 
-**Install dependencies:**
+See the [CCIP CLI documentation](https://docs.chain.link/ccip/tools/cli/) for RPC and wallet configuration.
+
+### Tutorial Workflow
+
+| Terminal       | Repository                                                                                                                  | Purpose                              | Commands        |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | --------------- |
+| **Terminal 1** | [CCIP Solana BS58 Generator](https://github.com/smartcontractkit/ccip-solana-bs58-generator)                                | Solana setup and configuration       | `pnpm bs58`     |
+| **Terminal 2** | [Smart Contract Examples (Hardhat)](https://github.com/smartcontractkit/smart-contract-examples/tree/main/ccip/cct/hardhat) | EVM deploy and configuration         | `npx hardhat`   |
+| **Either**     | Global `@chainlink/ccip-cli`                                                                                                | Cross-chain transfer testing (final) | `ccip-cli send` |
+
+### Terminal 1: CCIP Solana BS58 Generator
+
+**Clone and install** (skip `git clone` if you already have the repo):
 
 ```bash
-yarn install
+git clone https://github.com/smartcontractkit/ccip-solana-bs58-generator.git
+cd ccip-solana-bs58-generator
+pnpm install
 ```
 
-**Configure your Solana environment:**
+**Configure Solana CLI for devnet:**
+
+First, check whether your environment is already set up:
 
 ```bash
-# Set Solana CLI to use devnet
+solana config get
+solana address
+solana balance
+```
+
+If the RPC URL is already `https://api.devnet.solana.com`, your keypair path is correct, and you have sufficient SOL, skip to [Terminal 2 setup](#terminal-2-smart-contract-examples-hardhat) below.
+
+Otherwise, run only the steps you need:
+
+```bash
+# Set devnet (skip if config get already shows devnet)
 solana config set --url https://api.devnet.solana.com
 
-# Set your keypair (create one if needed)
+# Point to your keypair (skip if config get already shows the path you want)
 solana config set --keypair ~/.config/solana/id.json
 
-# If you do not have a keypair, create one:
+# Create a keypair only if the file does not exist yet
 solana-keygen new --outfile ~/.config/solana/id.json
-```
 
-**Fund your Solana wallet:**
-
-```bash
-# Get your wallet address
-solana address
-
-# Request SOL from the devnet faucet
+# Fund your wallet if balance is low
 solana airdrop 2
-```
-
-**Verify your setup:**
-
-```bash
-# Check your SOL balance
 solana balance
-
-# Verify you are on devnet
-solana config get
 ```
 
-### Terminal 2: Smart Contract Examples Setup
+<Aside type="note" title="Direct Execution">
+  Append `--execute` to **mutating** `pnpm bs58` commands in Terminal 1 so your local wallet signs and sends
+  transactions. **Read-only** commands (`get-state`, `get-chain-config`, `derive-accounts`) omit `--execute`. See the
+  [CCIP Solana BS58 Generator
+  README](https://github.com/smartcontractkit/ccip-solana-bs58-generator/blob/main/README.md) for command syntax.
+</Aside>
 
-**Clone the repository and navigate to the Hardhat project:**
+### Terminal 2: Smart Contract Examples (Hardhat)
+
+**Clone, install, and compile** (skip `git clone` if you already have the repo):
 
 ```bash
 git clone https://github.com/smartcontractkit/smart-contract-examples.git
 cd smart-contract-examples/ccip/cct/hardhat
-```
-
-**Install and compile dependencies:**
-
-```bash
 npm install
 npm run compile
 ```
@@ -20058,40 +20169,70 @@ npm run compile
 **Set up encrypted environment variables:**
 
 ```bash
-# Set encryption password
+# Required at the start of each session
 npx env-enc set-pw
 
-# Configure environment variables
+# Verify existing variables (skip npx env-enc set if all required vars are already configured)
+npx env-enc view
+
+# Add or update variables only if missing
 npx env-enc set
 ```
 
-**Required environment variables for Ethereum Sepolia:**
+**Required variables for Ethereum Sepolia:**
 
 - `ETHEREUM_SEPOLIA_RPC_URL`: RPC endpoint from [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/)
 - `PRIVATE_KEY`: Your testnet wallet private key ([MetaMask export guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/))
 - `ETHERSCAN_API_KEY`: API key from [Etherscan](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics)
 
-**Fund your wallet:**
+**Fund your EVM wallet:**
 
-- Acquire LINK and ETH on Ethereum Sepolia using [Chainlink faucets](https://faucets.chain.link/)
+- Acquire **ETH** on Ethereum Sepolia for transaction gas and CCIP fees ([Chainlink faucet](https://faucets.chain.link/) or [Google Cloud Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia))
+- **LINK** is optional — use `--fee-token LINK` on EVM → Solana sends if you prefer paying CCIP fees in LINK
+
+### Cross-Chain Transfers (CCIP CLI)
+
+The final tutorial phase uses globally installed `ccip-cli` (not the BS58 generator):
+
+- **Solana → EVM**: Run from Terminal 1 with `--wallet ~/.config/solana/id.json`
+- **EVM → Solana**: Run from Terminal 2 (Hardhat directory). Prefer `--wallet hardhat:<name>` ([Hardhat keystore](https://hardhat.org/docs/plugins/hardhat-keystore)) so the signing key stays encrypted. Hardhat tasks load env-enc automatically; `ccip-cli` does not. As an alternative, view the same key with `npx env-enc view` and export `PRIVATE_KEY` manually for the send command.
+
+**RPC endpoints** (required for source and destination chains). You can provide them any of these ways — see [CCIP CLI configuration](https://docs.chain.link/ccip/tools/cli/configuration):
+
+- **Command line:** pass `--rpc` on each command (repeat for multiple networks), or `--rpcs` with comma-separated URLs
+- **Environment variables:** export `RPC_*` variables (e.g., `RPC_SEPOLIA`, `RPC_SOLANA_DEVNET`) or the tutorial's `SOLANA_DEVNET_RPC` and `ETHEREUM_SEPOLIA_RPC_URL` exports
+- **File:** create a `.env` file in the directory where you run `ccip-cli` (default `--rpcs-file`, one URL per line)
+
+See the tutorial's **Configure CCIP CLI** section for the recommended `--rpc` examples.
+
+### Environment Variables
+
+Variables use prefixes to prevent confusion across repositories and tools:
+
+| Prefix       | Usage                   | Examples                                                                  |
+| ------------ | ----------------------- | ------------------------------------------------------------------------- |
+| `ETH_*`      | Ethereum addresses      | `ETH_TOKEN_ADDRESS`, `ETH_POOL_ADDRESS`                                   |
+| `SOL_*`      | Solana addresses        | `SOL_TOKEN_MINT`, `SOL_POOL_ADDRESS`, `SOL_WALLET_ADDRESS`                |
+| `SOL_CCIP_*` | Solana CCIP program IDs | `SOL_CCIP_POOL_PROGRAM`, `SOL_CCIP_ROUTER`, `SOL_CCIP_FEE_QUOTER_PROGRAM` |
 
 <Aside type="note" title="Two-Terminal Workflow">
-  Keep both terminal windows open throughout the tutorial. You will switch between the Solana Starter Kit (Terminal 1)
-  and Hardhat project (Terminal 2) as you progress through the phases.
+  Keep both terminal windows open throughout the tutorial. Switch between the CCIP Solana BS58 Generator (Terminal 1)
+  and the Hardhat project (Terminal 2) as each phase indicates. Cross-chain transfer commands use `ccip-cli` from the
+  terminal that matches the source chain.
 </Aside>
 
 ## Tutorial Approach
 
-This tutorial provides step-by-step instructions with detailed explanations of what each command does and why. You'll work primarily in Terminal 1 (Solana) with occasional switches to Terminal 2 (EVM).
+This tutorial provides step-by-step instructions with detailed explanations of what each command does and why. You'll work primarily in Terminal 1 (CCIP Solana BS58 Generator) with occasional switches to Terminal 2 (EVM).
 
 **Environment Variable Management**: This tutorial uses phase-based variable files (e.g., `~/.phase1_vars`, `~/.ccip_complete_vars`) to eliminate manual variable re-entry when switching between terminals. Each phase saves its variables to files that subsequent phases can load automatically.
 
-For detailed implementation code explanations, refer to the comprehensive READMEs in both repositories:
+For detailed implementation code explanations, refer to:
 
-- **[Solana Starter Kit README](https://github.com/smartcontractkit/solana-starter-kit/blob/main/README.md)**: Detailed explanations of all SVM commands and implementation
-- **[Smart Contract Examples README](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/cct/hardhat/README.md)**: Comprehensive EVM implementation guide
+- **[CCIP Solana BS58 Generator README](https://github.com/smartcontractkit/ccip-solana-bs58-generator/blob/main/README.md)**: Solana CLI command details, `--execute` EOA workflow, and options
+- **[Smart Contract Examples README](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/cct/hardhat/README.md)**: EVM implementation guide
 
-The READMEs contain detailed technical explanations, troubleshooting guides, and advanced configuration options.
+**EOA execution**: In Terminal 1, append `--execute` to each `pnpm bs58` command so your local Solana wallet signs and sends transactions directly. Set `--authority` to your wallet address (`$SOL_ADMIN_WALLET`). Read-only commands (`get-state`, `get-chain-config`, `derive-accounts`) do not use `--execute`.
 
 ## Phase 1: Ethereum Sepolia Token Setup
 
@@ -20134,101 +20275,76 @@ Save the Phase 1 variables for cross-terminal access:
 
 In this phase, you will create an SPL token, initialize the CCIP token pool, and complete CCIP registration **before\*\*** setting up the SPL token multisig. This sequence is critical because the self-service registration requires you to hold the mint authority.
 
-**Switch to Terminal 1** (Solana Starter Kit) Verify your location:
+**Switch to Terminal 1** (CCIP Solana BS58 Generator) Verify your location:
 
 ```bash
 pwd
-# Should show: .../solana-starter-kit
+# Should show: .../ccip-solana-bs58-generator
 ```
 
-Load the Ethereum addresses from Phase 1:
-
-```bash
-source ~/.phase1_vars
-echo "Loaded Phase 1 variables: ETH_TOKEN_ADDRESS=$ETH_TOKEN_ADDRESS, ETH_POOL_ADDRESS=$ETH_POOL_ADDRESS"
-```
+Load the Ethereum addresses from Phase 1 and set CCIP constants:
 
 ### Step 1: Create SPL Token
 
-In this step, you will use the `svm:token:create` script to create an SPL token with Metaplex metadata support on Solana Devnet. This script leverages the TokenManager library to create a comprehensive token with metadata, initial supply, and proper configuration for CCIP integration.
+Create an SPL token with Metaplex metadata and initial supply using direct EOA execution:
 
-### Set Environment Variables
-
-Set up environment variables for easier reference throughout the tutorial:
+Set the token mint variable:
 
 ### Step 2: Initialize CCIP Token Pool
 
-In this step, you will use the `svm:pool:initialize` script to initialize a CCIP token pool for your SPL token. This process creates the necessary on-chain state for cross-chain operations and establishes the Pool Signer PDA that will manage token operations.
+Initialize a CCIP token pool for your SPL token. This creates the on-chain state for cross-chain operations and establishes the Pool Signer PDA that will become a multisig member.
 
 ### Step 3: Verify Pool Creation
 
-In this step, you will use the `svm:pool:get-info` script to verify that your token pool was initialized correctly. This command queries the on-chain state and displays comprehensive information about your pool configuration, including the Pool Signer PDA and current ownership.
+Derive pool accounts using the read-only `derive-accounts` command:
+
+Copy the **Pool Signer PDA** and **Pool State PDA** from the output, then export them:
 
 ### Step 4: Create Pool Token Account
 
-In this step, you will use the `svm:pool:create-token-account` script to create an Associated Token Account (ATA) for the Pool Signer PDA. This ATA is required for the pool to hold and manage tokens during cross-chain transfer operations.
+Create an Associated Token Account (ATA) for the Pool Signer PDA. This ATA is required for the pool to hold and manage tokens during cross-chain transfer operations.
 
-### Step 5: Set Pool Environment Variables
+### Step 5: Claim Admin
 
-Set the Pool Signer PDA and Pool Config PDA from the Step 3 output above:
+Register yourself as the CCIP administrator for the Solana token. This must be completed while you still hold the mint authority.
 
-### Step 6: Claim Admin
+### Step 6: Accept Admin Role
 
-In this step, you will use the `svm:admin:propose-administrator` and `svm:admin:accept-admin-role` scripts to register yourself as the CCIP administrator for the Solana token. This process establishes your control over the token's CCIP configuration on Solana.
+Accept the proposed administrator role to establish CCIP admin control:
 
-### Step 7: Accept Admin Role
-
-In this step, you will use the `svm:admin:accept-admin-role` script to accept the proposed administrator role. This process establishes your control over the token's CCIP configuration on Solana.
-
-### Step 8: Create SPL Token Multisig
+### Step 7: Create SPL Token Multisig
 
 Now that CCIP registration is complete, create the SPL token multisig that will serve as the mint authority:
 
 **Set the multisig address environment variable:**
 
-### Step 9: Transfer Mint Authority to Multisig
+### Step 8: Transfer Mint Authority to Multisig
 
 Now transfer the mint authority from your wallet to the multisig:
 
-### Step 10: Verify Multisig Configuration
+### Step 9: Verify Multisig Configuration
 
 Verify that the multisig has been properly configured and the mint authority has been transferred:
 
 Save the Phase 2 variables for cross-terminal access:
 
-```bash
-# Save all variables from Phases 1 and 2 to complete vars file
-cat > ~/.ccip_complete_vars << EOF
-export ETH_TOKEN_ADDRESS="$ETH_TOKEN_ADDRESS"
-export ETH_POOL_ADDRESS="$ETH_POOL_ADDRESS"
-export SOL_TOKEN_MINT="$SOL_TOKEN_MINT"
-export SOL_ADMIN_WALLET="$SOL_ADMIN_WALLET"
-export CCIP_POOL_PROGRAM="$CCIP_POOL_PROGRAM"
-export SOL_POOL_SIGNER_PDA="$SOL_POOL_SIGNER_PDA"
-export SOL_POOL_CONFIG_PDA="$SOL_POOL_CONFIG_PDA"
-export SOL_MULTISIG_ADDRESS="$SOL_MULTISIG_ADDRESS"
-EOF
-
-echo "All variables saved to ~/.ccip_complete_vars for cross-terminal access"
-```
-
 ## Phase 3: Cross-Chain Configuration
 
-In this step, you will configure bidirectional connectivity between the token pools on both chains. Each chain uses different tools: **Solana** uses Starter Kit scripts to configure its pool to recognize Ethereum tokens and pools, while **Ethereum** uses Hardhat tasks to configure its pool to recognize Solana tokens and pools.
+In this step, you will configure bidirectional connectivity between the token pools on both chains. Each chain uses different tools: **Solana** uses [CCIP Solana BS58 Generator](https://github.com/smartcontractkit/ccip-solana-bs58-generator) commands to configure its pool to recognize Ethereum tokens and pools, while **Ethereum** uses Hardhat tasks to configure its pool to recognize Solana tokens and pools.
 
 ### Step 1: Configure Solana -> Ethereum
 
 #### Initialize Chain Remote Configuration
 
-In this step, you will use the `svm:pool:init-chain-remote-config` script to initialize the configuration for Ethereum Sepolia as a remote chain. This creates the basic chain configuration with token information but without pool addresses (those will be added in the next step).
+In this step, you will initialize the configuration for Ethereum Sepolia as a remote chain. This creates the basic chain configuration with token information but without pool addresses (those will be added in the next step).
 
 #### Add Ethereum Pool Address
 
-In this step, you will use the `svm:pool:edit-chain-remote-config` script to update the previously created chain configuration with the Ethereum pool address. This completes the configuration by telling the Solana pool which Ethereum pool it should interact with for cross-chain transfers.
+In this step, you will update the previously created chain configuration with the Ethereum pool address.
 
 #### Verify Configuration
 
-In this step, you will use the `svm:pool:get-chain-config` script to verify that the Solana pool configuration for Ethereum Sepolia has been set up correctly with both the token address and pool address.
+In this step, you will verify that the Solana pool configuration for Ethereum Sepolia has been set up correctly.
 
 ### Step 2: Configure Ethereum → Solana
 
@@ -20271,16 +20387,16 @@ In this step, you will use the `setPool` Hardhat task to register the BurnMint t
 
 ### Step 2: Solana Devnet Pool Registration
 
-**Switch to Terminal 1 (Solana Starter Kit)**
+**Switch to Terminal 1** (CCIP Solana BS58 Generator)
 
 ```bash
 pwd
-# Should show: .../solana-starter-kit
+# Should show: .../ccip-solana-bs58-generator
 ```
 
 #### Create Address Lookup Table
 
-Create an Address Lookup Table (ALT) containing all required accounts for CCIP operations:
+Create an Address Lookup Table (ALT) containing all required CCIP accounts plus your multisig address:
 
 **Set ALT environment variable:**
 
@@ -20288,94 +20404,117 @@ Create an Address Lookup Table (ALT) containing all required accounts for CCIP o
 
 Register your token pool with the CCIP Router using the Address Lookup Table:
 
-## Phase 5: Testing Cross-Chain Transfers
+Save the complete configuration including the ALT address:
 
-Test the complete cross-chain token transfer functionality in both directions.
+## Phase 5: Pre-Transfer Setup
 
-### Step 1: Transfer Solana → Ethereum
+Before validating your configuration, complete final setup steps.
 
-**Stay in Terminal 1 (Solana Starter Kit)**
-
-Confirm you are in the correct directory:
+**Stay in Terminal 1** (CCIP Solana BS58 Generator)
 
 ```bash
 pwd
-# Should show: .../solana-starter-kit
+# Should show: .../ccip-solana-bs58-generator
 ```
 
-#### Prepare for Testing
+### Step 1: Delegate Token Authority
 
-Your Associated Token Account (ATA) was already created during token creation in Phase 1. Now verify your token balance and prepare for cross-chain transfers:
+Delegate token approval to the CCIP fee-billing signer PDA, which enables CCIP to transfer tokens on your behalf when sending cross-chain messages.
 
-#### Execute Transfer
+Approve the fee-billing signer to transfer tokens from your ATA:
 
-#### Monitor and Verify Transaction
+### Step 2: Verify Delegation
 
-Upon successful execution, the system generates critical tracking identifiers for transaction monitoring and verification.
+Check that your token account is delegated to the fee-billing signer:
 
-**Transaction Identifiers:**
+Display token account and delegation status:
 
-- **Transaction Signature**: `sb2kHXW3M4P56WNNH74LviWcPmeYXjNA4f6opmt8iPrYF1cu5FC9grLhyu2XTEwkABQUrTdaJoDWc5CHe2gQL2u`
-- **CCIP Message ID**: `0x9c486ce15650d0bbff3f9cd8ead0510aadd854f7247bf9b775918a1296408aaa`
+## Phase 6: Test Cross-Chain Transfers
 
-**CCIP Explorer** (Primary monitoring interface):
+Validate your configuration, then execute bidirectional token transfers using the CCIP CLI.
 
-```
-https://ccip.chain.link/msg/0x9c486ce15650d0bbff3f9cd8ead0510aadd854f7247bf9b775918a1296408aaa
-```
+<Aside type="note" title="Cross-Chain Transfers with CCIP CLI">
+  Use [`@chainlink/ccip-cli`](https://github.com/smartcontractkit/ccip-tools-ts) for bidirectional token transfers. Run Solana → EVM sends from Terminal 1 and EVM → Solana sends from Terminal 2. See the [CCIP CLI documentation](https://docs.chain.link/ccip/tools/cli/) for full options.
+</Aside>
 
-The CCIP Explorer provides comprehensive transaction visibility:
+### Step 1: Load Complete Configuration
 
-- Source chain (Solana) transaction confirmation
-- CCIP message processing and routing
-- Destination chain (Ethereum) message delivery
-- Token minting completion on Ethereum
+### Step 2: Verify Solana Pool and Chain Config
 
-**Solana Explorer** (Source chain verification):
+### Step 3: Verify Ethereum Pool (Terminal 2)
 
-```
-https://explorer.solana.com/tx/sb2kHXW3M4P56WNNH74LviWcPmeYXjNA4f6opmt8iPrYF1cu5FC9grLhyu2XTEwkABQUrTdaJoDWc5CHe2gQL2u?cluster=devnet
-```
+**Switch to Terminal 2** (Smart Contract Examples - Hardhat):
 
-### Step 2: Transfer Ethereum → Solana
-
-**In Terminal 1 (Solana Starter Kit)**
-
-#### Execute Transfer
-
-#### Monitor and Verify Transaction
-
-Upon successful execution, the system generates distinct tracking identifiers for comprehensive monitoring across both blockchain networks.
-
-**Transaction Identifiers:**
-
-- **Ethereum Transaction Hash**: `0xb2d48398a4d57dde2aaf0551209abad448b092602ca5087e0d108eadd8a8c319`
-- **CCIP Message ID**: `0x567f4cdb2e1c52f6aef6354bd9acbeac6761aa4b1a5e74a356785c2e67197d88`
-
-**CCIP Explorer** (Primary monitoring interface):
-
-```
-https://ccip.chain.link/msg/0x567f4cdb2e1c52f6aef6354bd9acbeac6761aa4b1a5e74a356785c2e67197d88
+```bash
+npx hardhat getPoolConfig \
+  --pooladdress $ETH_POOL_ADDRESS \
+  --network ethereumSepolia
 ```
 
-The CCIP Explorer provides comprehensive transaction visibility:
+Confirm the Ethereum pool recognizes Solana Devnet with your `$SOL_POOL_CONFIG_PDA` and `$SOL_TOKEN_MINT`.
 
-- Source chain (Ethereum) transaction confirmation
-- CCIP message processing and routing
-- Destination chain (Solana) message delivery
-- Token minting completion on Solana network
+### Configure CCIP CLI
 
-**Ethereum Sepolia Explorer** (Source chain verification):
+Export these RPC URLs once before your first transfer:
 
+```bash
+export SOLANA_DEVNET_RPC="https://api.devnet.solana.com"
+export ETHEREUM_SEPOLIA_RPC_URL="<YOUR_ETHEREUM_SEPOLIA_RPC_URL>"
+
+export ETH_CCIP_ROUTER="0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59"
 ```
-https://sepolia.etherscan.io/tx/0xb2d48398a4d57dde2aaf0551209abad448b092602ca5087e0d108eadd8a8c319
-```
+
+Use the same `ETHEREUM_SEPOLIA_RPC_URL` from your env-enc setup in Terminal 2 (`npx env-enc view`). On `ccip-cli send`, the source chain RPC quotes fees and submits the transaction; for token-only transfers in this tutorial, that is the only RPC strictly required to send. Pass both RPCs on cross-chain commands anyway: the destination RPC is required for `ccip-cli show --wait` and for optional send features such as `--estimate-gas-limit` or `send --wait`.
+
+<Aside type="note" title="RPC and wallet configuration">
+  Repeat `--rpc` for multiple networks, or use `--rpcs` with comma-separated URLs. Alternatively, set `RPC_*` environment variables or a `.env` file — see [CCIP CLI configuration](https://docs.chain.link/ccip/tools/cli/configuration). Solana sends use `--wallet ~/.config/solana/id.json`. EVM sends: prefer `--wallet hardhat:<name>` from the Hardhat project directory ([Hardhat keystore](https://hardhat.org/docs/plugins/hardhat-keystore)); alternatively export `PRIVATE_KEY` manually after `npx env-enc view` (Hardhat tasks load env-enc automatically, but `ccip-cli` does not). See [CCIP CLI wallet configuration](https://docs.chain.link/ccip/tools/cli/configuration#wallet-configuration).
+</Aside>
+
+### Transfer Solana → Ethereum
+
+**Terminal 1** (CCIP Solana BS58 Generator):
+
+The `-t` flag uses human-readable amounts (0.001 tokens with 9 decimals = 1,000,000 smallest units).
+
+### Transfer Ethereum → Solana
+
+**Switch to Terminal 2** (Smart Contract Examples - Hardhat):
+
+`ccip-cli` does not load Hardhat env-enc automatically. Run these commands from the Hardhat project directory. Prefer [Hardhat keystore](https://hardhat.org/docs/plugins/hardhat-keystore) over exporting a private key in plain text.
+
+For token-only transfers to Solana, `--to` is the destination wallet that receives minted tokens. CCIP fees are paid in native Sepolia ETH by default — ensure your wallet has sufficient ETH for gas and fees.
+
+<Aside type="note" title="Pay fees in LINK (optional)">
+  Add `--fee-token LINK` to pay CCIP fees in LINK instead of ETH (Sepolia LINK:
+  `0x779877A7B0D9E8603169DdbD7836e478b4624789`).
+</Aside>
+
+**Congratulations!** Your cross-chain token infrastructure with SPL token multisig governance is fully configured on both chains.
 
 ## Optional: Verify Mint Authority Control
 
 ### Demonstrate Manual Minting Through Multisig
 
 This optional section demonstrates that transferring mint authority to the multisig doesn't mean "losing control" - you can still mint tokens manually through the **Admin Wallet** (the non-PDA signer in your multisig). This proves the multisig setup is working correctly and that you retain administrative capabilities.
+
+<Aside type="tip" title="Understanding This Demonstration">
+  **What This Proves**: Successfully minting tokens through the multisig confirms that:
+
+  - Mint authority transfer was successful
+  - The multisig is properly configured (1-of-2 with Pool Signer PDA + Admin Wallet)
+  - You retain administrative control through your Admin Wallet
+  - The Pool Signer PDA can autonomously handle CCIP operations
+
+  **Key Insight**: Since you're one of the multisig signers, you can still perform administrative mints. The Pool Signer PDA handles CCIP burns/mints automatically, while you handle manual operations.
+</Aside>
+
+<Aside type="caution" title="Production Considerations">
+  **Tutorial vs Production**: This tutorial uses your single wallet as the admin signer for simplicity. In production, replace the admin wallet with a proper governance multisig (Such as [Squads](https://squads.so/)) for enhanced security.
+
+  **Scope Limitation**: This SPL token multisig only controls mint authority. For comprehensive governance (CCIP admin roles, pool ownership), implement separate governance infrastructure.
+
+  To learn more, see the [Production Multisig Tutorial](/ccip/tutorials/svm/cross-chain-tokens/production-multisig-tutorial).
+</Aside>
 
 <Aside type="caution" title="Educational Example Disclaimer">
   This page includes an educational example to use a Chainlink system, product, or service and is provided to
@@ -20391,7 +20530,7 @@ This optional section demonstrates that transferring mint authority to the multi
 
 # Cross-Chain Token Setup: BurnMint with Production Multisig Governance
 Source: https://docs.chain.link/ccip/tutorials/svm/cross-chain-tokens/production-multisig-tutorial
-Last Updated: 2025-08-13
+Last Updated: 2026-06-15
 
 This tutorial implements **production-grade cross-chain tokens** using Chainlink CCIP with **dual-layer multisig governance** between Solana Devnet and Ethereum Sepolia. You'll build a **production-ready governance architecture** following **Path A** from the [CCIP Cross-Chain Token Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide#path-a-full-self-service-mint-authority-controlled).
 
@@ -20441,30 +20580,34 @@ This tutorial implements **dual-layer multisig governance** that separates conce
 
 ## Prerequisites
 
+This tutorial uses a **two-terminal workflow** with **Squads multisig governance** on Solana. Install the system tools below, create your Squad on devnet, clone both repositories, then complete environment setup before starting Phase 1.
+
 ### System Requirements
 
-Install these tools before starting:
-
-**Package Managers:**
-
-- **Node.js v20+**: Required for all repositories
-- **pnpm**: Required for base58 Generator (`npm install -g pnpm`)
-- **yarn**: Required for Solana Starter Kit (`npm install -g yarn`)
-
-**Solana Development:**
-
-- **Solana CLI**: [Installation guide](https://docs.solana.com/cli/install-solana-cli-tools)
+- **Node.js v22 or higher**: Required for all tools. Verify with `node -v`
+- **pnpm**: Required for the BS58 generator (`npm install -g pnpm`)
+- **npm**: Required for the Hardhat project (bundled with Node.js)
+- **Solana CLI**: [Installation guide](https://docs.solana.com/cli/install-solana-cli-tools) (includes `spl-token`)
+- **Git**: For cloning repositories
+- **CCIP CLI**: For cross-chain transfer testing in the final phase
 
 **Wallets:**
 
-- **Solana wallet**: [Phantom](https://phantom.app/) or [Backpack](https://backpack.app/) for Devnet operations
-- **Ethereum wallet**: [MetaMask](https://metamask.io/) for Sepolia testnet operations
+- **Solana**: [Phantom](https://phantom.app/) or [Backpack](https://backpack.app/) for Devnet and Squads operations
+- **Ethereum**: [MetaMask](https://metamask.io/) for Sepolia testnet operations
+
+Install the [CCIP CLI](https://github.com/smartcontractkit/ccip-tools-ts) globally:
+
+```bash
+npm install -g @chainlink/ccip-cli
+ccip-cli --help
+```
+
+See the [CCIP CLI documentation](https://docs.chain.link/ccip/tools/cli/) for RPC and wallet configuration.
 
 ### Repository Setup
 
-Clone and install dependencies for all three repositories:
-
-**Terminal 1: base58 Generator**
+**Terminal 1: CCIP Solana BS58 Generator** (skip `git clone` if you already have the repo)
 
 ```bash
 git clone https://github.com/smartcontractkit/ccip-solana-bs58-generator.git
@@ -20472,7 +20615,7 @@ cd ccip-solana-bs58-generator
 pnpm install
 ```
 
-**Terminal 2: EVM Hardhat**
+**Terminal 2: Smart Contract Examples (Hardhat)** (skip `git clone` if you already have the repo)
 
 ```bash
 git clone https://github.com/smartcontractkit/smart-contract-examples.git
@@ -20481,76 +20624,77 @@ npm install
 npm run compile
 ```
 
-**Terminal 3: Solana Starter Kit**
-
-```bash
-git clone https://github.com/smartcontractkit/solana-starter-kit.git
-cd solana-starter-kit
-yarn install
-```
-
-**Create and configure the .env file:**
-
-```bash
-# Create .env file in the project root
-cat > .env << 'EOF'
-EVM_PRIVATE_KEY=your_private_key_here
-EVM_RPC_URL=your_rpc_url_here
-EOF
-```
-
-Replace the placeholder values with:
-
-- `EVM_PRIVATE_KEY`: Your Ethereum wallet private key (for Sepolia testnet operations)
-- `EVM_RPC_URL`: Your Ethereum RPC URL (from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another provider)
-
 ### Environment Configuration
 
-**Solana Configuration:**
+#### Solana (Terminal 1)
+
+First, check whether your environment is already set up:
 
 ```bash
-# Set Solana CLI to devnet
-solana config set --url https://api.devnet.solana.com
-
-# Create keypair (ONLY IF NEEDED)
-solana-keygen new --outfile ~/.config/solana/id.json
-
-# Check Config
 solana config get
-
-# Fund wallet
-solana airdrop 3
+solana address
+solana balance
 ```
 
-**Ethereum Sepolia Configuration:**
+If the RPC URL is already `https://api.devnet.solana.com`, your keypair path is correct, and you have sufficient SOL, skip to [Ethereum Sepolia setup](#ethereum-sepolia-terminal-2) below.
+
+Otherwise, run only the steps you need:
 
 ```bash
-# In Terminal 2 (Hardhat directory)
+# Set devnet (skip if config get already shows devnet)
+solana config set --url https://api.devnet.solana.com
+
+# Point to your keypair (skip if config get already shows the path you want)
+solana config set --keypair ~/.config/solana/id.json
+
+# Create a keypair only if the file does not exist yet
+solana-keygen new --outfile ~/.config/solana/id.json
+
+# Fund your wallet if balance is low
+solana airdrop 3
+solana balance
+```
+
+#### Ethereum Sepolia (Terminal 2)
+
+```bash
+# Required at the start of each session
 npx env-enc set-pw
+
+# Verify existing variables (skip npx env-enc set if all required vars are already configured)
+npx env-enc view
+
+# Add or update variables only if missing
 npx env-enc set
 ```
 
-Required environment variables:
+Required variables:
 
 - `ETHEREUM_SEPOLIA_RPC_URL`: RPC endpoint ([Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/))
 - `PRIVATE_KEY`: Testnet wallet private key
 - `ETHERSCAN_API_KEY`: API key from [Etherscan](https://etherscan.io/apis)
 
-**Testnet Tokens:**
+**Testnet tokens:**
 
-- **Solana Devnet**: Use `solana airdrop 3` for SOL
-- **Ethereum Sepolia**: Use [Chainlink faucets](https://faucets.chain.link/) for LINK and ETH
+- **Solana Devnet**: `solana airdrop 3` for SOL
+- **Ethereum Sepolia**: ETH for gas and CCIP fees ([Chainlink faucet](https://faucets.chain.link/) or [Google Cloud Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia)). LINK is optional for `--fee-token LINK` on EVM sends.
+
+<Aside type="note" title="When to Use --execute">
+  **Governance steps** generate base58-encoded transactions in Terminal 1 **without** `--execute`. Import the output
+  into Squads and sign there. **Pre-transfer steps** (token delegation, pool ATA creation) use your local Solana wallet
+  with `--execute` on `pnpm bs58` commands. **Read-only** commands (`get-state`, `get-chain-config`) omit `--execute`.
+  See the [CCIP Solana BS58 Generator
+  README](https://github.com/smartcontractkit/ccip-solana-bs58-generator/blob/main/README.md).
+</Aside>
 
 ### Squads Multisig Setup
 
 <Aside type="caution" title="Required: Create Squads Multisig">
-  **Before starting this tutorial**, you must create a Squads multisig on Solana Devnet. This will serve as your
-  governance mechanism for all CCIP administrative operations.
+  **Before starting this tutorial**, create a Squads multisig on Solana Devnet. It serves as your governance mechanism
+  for CCIP administrative operations.
 </Aside>
 
-**Step 1: Prepare Signers**
-
-Create multiple wallet addresses for your multisig signers:
+**Step 1: Prepare signers**
 
 ```bash
 # Create additional signers using Solana CLI
@@ -20567,121 +20711,107 @@ solana transfer <SIGNER2_ADDRESS> 0.1 --allow-unfunded-recipient
 solana transfer <SIGNER3_ADDRESS> 0.1 --allow-unfunded-recipient
 ```
 
-Alternatively, create signers in Phantom wallet and fund them:
+Alternatively, create signers in Phantom and fund them:
 
 ```bash
-# Transfer SOL to Phantom-created addresses
 solana transfer <PHANTOM_SIGNER_ADDRESS> 0.5 --allow-unfunded-recipient
 ```
 
-**Step 2: Create Your Squad**
+**Step 2: Create your Squad**
 
 1. Visit [devnet.squads.so](https://devnet.squads.so)
-2. Connect your Solana wallet (e.g., Phantom/Backpack)
-3. Click "Create New Squad"
-4. Configure your multisig:
-   - **Squad Name**: Choose a descriptive name (e.g., "CCIP Token Governance")
-   - **Members**: Add wallet addresses of all signers
-   - **Threshold**: Set approval threshold (recommended: 2/3 or 3/5)
+2. Connect your Solana wallet (Phantom or Backpack)
+3. Click **Create New Squad**
+4. Configure members and threshold (recommended: 2/3 or 3/5)
 
 <Aside type="note" title="Threshold Best Practices">
   - **Avoid 1/n thresholds** (single point of failure)
   - **Avoid maximum thresholds** (e.g., 3/3 prevents recovery if one key is lost)
 </Aside>
 
-**Step 3: Record Critical Addresses**
+**Step 3: Record the vault address**
 
-After Squad creation, navigate to Settings tab and record these addresses.
+After Squad creation, open the Settings tab and copy the **vault address** (not the multisig address).
 
-**In Terminal 1 (base58 Generator), export the vault address:**
+**In Terminal 1:**
 
 ```bash
 # CRITICAL: Use the VAULT address, NOT the multisig address
 export SOL_SQUAD_VAULT_MULTISIG="YOUR_VAULT_ADDRESS_HERE"
-```
-
-Verify the export:
-
-```bash
 echo "Squads Vault Address: $SOL_SQUAD_VAULT_MULTISIG"
 ```
 
 <Aside type="caution" title="Vault vs Multisig Address">
-  **IMPORTANT**: Only use the **Vault address** for setting authorities and receiving funds. The **Multisig address** is
-  used only for CLI detection - sending assets to it causes **irreversible loss**.
+  Use the **vault address** for authorities and receiving funds. The **multisig address** is for CLI detection only —
+  sending assets to it causes **irreversible loss**.
 </Aside>
 
-**Step 4: Test Your Squad**
-
-Perform a small test transaction to verify setup:
+**Step 4: Test your Squad**
 
 1. Send a small amount of SOL to your Squad vault
 2. Create a test transaction in Squads UI (e.g., SOL transfer to your wallet)
-3. Confirm all signers can approve transactions
-4. Execute the transaction
+3. Confirm signers can approve and execute
 
-For detailed setup guidance, see the [Squads Documentation](https://docs.squads.so/).
+See [Squads Documentation](https://docs.squads.so/) for detailed setup guidance.
 
 ### Token Creation Option
 
 <Aside type="note" title="Existing Token Requirements">
-  **Important**: You can only skip token creation if you have an existing SPL token where the **mint authority is already controlled by your Squad vault**.
+  You can skip token creation only if you have an existing SPL token where **mint authority is already controlled by your
+  Squad vault**.
 
   **Two scenarios:**
 
-  1. **Mint authority = Squad vault**: Skip to Step 3 (pool initialization) and export your existing mint address
-  2. **Mint authority ≠ Squad vault**: You must first transfer mint authority to your Squad vault, OR create a fresh token in Step 2
+  1. **Mint authority = Squad vault**: Skip to pool initialization and export your existing mint address
+  2. **Mint authority ≠ Squad vault**: Transfer mint authority to your Squad vault first, or create a fresh token in the tutorial
 
-  **For fresh start**: Proceed with Step 2 to create a new token with Squad vault as mint authority from the beginning.
+  **For a fresh start**: Proceed with token creation so the Squad vault is mint authority from the beginning.
 </Aside>
 
 ## Tutorial Approach
 
-This tutorial implements production-grade cross-chain tokens using a three-terminal workflow across specialized repositories:
+| Terminal       | Repository                                                                                                                  | Purpose                                    | Commands        |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | --------------- |
+| **Terminal 1** | [CCIP Solana BS58 Generator](https://github.com/smartcontractkit/ccip-solana-bs58-generator)                                | Governance txs and pre-transfer setup      | `pnpm bs58`     |
+| **Terminal 2** | [Smart Contract Examples (Hardhat)](https://github.com/smartcontractkit/smart-contract-examples/tree/main/ccip/cct/hardhat) | Deploy and configure EVM components        | `npx hardhat`   |
+| **Either**     | Global `@chainlink/ccip-cli`                                                                                                | Cross-chain transfer testing (final phase) | `ccip-cli send` |
 
-| Terminal       | Repository                                                                                                                  | Purpose                          | Commands      |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ------------- |
-| **Terminal 1** | [CCIP Solana base58 Generator](https://github.com/smartcontractkit/ccip-solana-bs58-generator)                              | Generate governance transactions | `pnpm bs58`   |
-| **Terminal 2** | [Smart Contract Examples (Hardhat)](https://github.com/smartcontractkit/smart-contract-examples/tree/main/ccip/cct/hardhat) | Deploy EVM components            | `npx hardhat` |
-| **Terminal 3** | [Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit)                                                | Test cross-chain transfers       | `yarn`        |
-
-**Note**: Each repository contains comprehensive READMEs with detailed technical explanations and troubleshooting guides.
+The [CCIP Solana BS58 Generator README](https://github.com/smartcontractkit/ccip-solana-bs58-generator/blob/main/README.md) contains command syntax, simulation behavior, and troubleshooting.
 
 ### Key Implementation Notes
 
-- **Terminal 1** generates base58-encoded transactions for Squads multisig governance
-- **Terminal 2** uses EOA for tutorial simplicity; production deployments should use multisig wallets (e.g., Safe)
-- **Terminal 3** validates end-to-end cross-chain functionality
+- **Terminal 1** generates base58 transactions for Squads governance (no `--execute`). Pre-transfer delegation steps use `--execute` with your local wallet.
+- **Terminal 2** uses an EOA for tutorial simplicity; production EVM deployments should use multisig wallets (e.g., Safe).
+- **Cross-chain transfers** use [`@chainlink/ccip-cli`](https://github.com/smartcontractkit/ccip-tools-ts): Terminal 1 for Solana → EVM, Terminal 2 for EVM → Solana. For EVM sends, prefer `--wallet hardhat:<name>` ([Hardhat keystore](https://hardhat.org/docs/plugins/hardhat-keystore)) from the Hardhat directory; alternatively export `PRIVATE_KEY` manually after `npx env-enc view` (Hardhat tasks load env-enc automatically, but `ccip-cli` does not). Provide RPCs via `--rpc`/`--rpcs`, `RPC_*` environment variables, or a `.env` file — see [CCIP CLI configuration](https://docs.chain.link/ccip/tools/cli/configuration).
 
 ### base58 Transaction Execution Workflow
 
-**Transaction Generation and Validation:**
+**Transaction generation:**
 
-1. **CLI Simulation**: Each base58 transaction is automatically simulated during generation
-2. **Error Handling**: If simulation fails, error logs appear in terminal - do not upload failed transactions to Squads
-3. **Success Indicator**: Successful simulation shows transaction preview and base58 output
+1. **CLI simulation**: Each base58 transaction is simulated during generation
+2. **Error handling**: If simulation fails, do not upload the transaction to Squads
+3. **Success**: Terminal shows a transaction preview and base58 output
 
-**Squads Multisig Execution Process:**
+**Squads execution:**
 
-1. **Propose**: A signer imports the base58 transaction into Squads UI → "Add instruction" → "Import base58 encoded tx" → **Initiate Transaction**
-2. **Approve**: Required threshold (M) of signers review and approve the transaction
-3. **Simulate** (Recommended): Before execution, signers can simulate through Squads interface to preview onchain effects
-4. **Execute**: After threshold approval, any signer can execute the transaction
+1. **Propose**: Import base58 output in Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx** → **Initiate Transaction**
+2. **Approve**: Required threshold of signers approves
+3. **Simulate** (recommended): Preview onchain effects in Squads before execution
+4. **Execute**: Any approved signer executes after threshold is met
 
 <Aside type="note" title="Security Best Practice">
-  Always simulate before execution using Squads' built-in simulation feature. This shows exactly what will happen
-  onchain and is critical for validating complex governance operations before commitment.
+  Always simulate in Squads before execution. This validates complex governance operations before commitment.
 </Aside>
 
 ### Environment Variables
 
 Variables use prefixes to prevent confusion across repositories:
 
-| Prefix   | Usage              | Examples                                   |
-| -------- | ------------------ | ------------------------------------------ |
-| `ETH_*`  | Ethereum addresses | `ETH_TOKEN_ADDRESS`, `ETH_POOL_ADDRESS`    |
-| `SOL_*`  | Solana addresses   | `SOL_TOKEN_MINT`, `SOL_POOL_ADDRESS`       |
-| `CCIP_*` | Protocol constants | `CCIP_POOL_PROGRAM`, `CCIP_ROUTER_PROGRAM` |
+| Prefix       | Usage                   | Examples                                                                  |
+| ------------ | ----------------------- | ------------------------------------------------------------------------- |
+| `ETH_*`      | Ethereum addresses      | `ETH_TOKEN_ADDRESS`, `ETH_POOL_ADDRESS`                                   |
+| `SOL_*`      | Solana addresses        | `SOL_TOKEN_MINT`, `SOL_POOL_ADDRESS`                                      |
+| `SOL_CCIP_*` | Solana CCIP program IDs | `SOL_CCIP_POOL_PROGRAM`, `SOL_CCIP_ROUTER`, `SOL_CCIP_FEE_QUOTER_PROGRAM` |
 
 ## Phase 1: EVM Chain Setup (Ethereum Sepolia)
 
@@ -20743,6 +20873,8 @@ In this phase, you will implement the **production-grade dual-layer multisig gov
 
 ### Step 1: Prepare base58 Environment
 
+Set up CCIP constants on Solana Devnet (DO NOT CHANGE THESE)
+
 ### Step 2: Create SPL Token (Layer 2 Foundation)
 
 This command generates a transaction that creates a new SPL token mint with the following features:
@@ -20768,8 +20900,7 @@ Generate the SPL token creation transaction (customize parameters or reuse the e
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add
-    instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
 
   - **Review**: Verify transaction details, check authority and mint
 
@@ -20814,9 +20945,9 @@ Generate the pool initialization transaction:
 
 | Account | Address                                        | Purpose                                                     |
 | ------- | ---------------------------------------------- | ----------------------------------------------------------- |
-| **#1**  | `2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M` | **Pool State PDA** - Your main pool configuration           |
-| **#2**  | `3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci` | Token Mint (your token)                                     |
-| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | Authority (your Squad vault)                                |
+| **#1**  | `2wEj5e6gpdsEu6DxMQyGbvgRvTe8ZsQmfPbJWV8HUNEu` | **Pool State PDA** - Your main pool configuration           |
+| **#2**  | `hdTyFD4Pv5vLRvGVAQqs1ZSedNvTM1iu5Y5Rwur5gub`  | Token Mint (your token)                                     |
+| **#3**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | Authority (your Squad vault)                                |
 | **#4**  | `11111111111111111111111111111111`             | System Program                                              |
 | **#5**  | `41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB` | CCIP Pool Program                                           |
 | **#6**  | `4sVSCJqG9ZKEvnpN38qTzb7Kc8QdHakBgB87HN3FYRaz` | Program Data PDA                                            |
@@ -20830,8 +20961,7 @@ Generate the pool initialization transaction:
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add
-    instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
 
   - **Review**: Verify pool initialization parameters
 
@@ -20843,11 +20973,6 @@ Generate the pool initialization transaction:
 </Aside>
 
 After execution, set the pool state address from the transaction:
-
-```bash
-# Set the pool state address from Account #1 in the transaction above
-export SOL_POOL_ADDRESS="2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M"
-```
 
 ### Step 4: Derive Pool Signer PDA
 
@@ -20870,9 +20995,9 @@ The [owner_propose_administrator](/ccip/concepts/cross-chain-token/svm/registrat
 | Account | Address                                        | Description                                                           |
 | ------- | ---------------------------------------------- | --------------------------------------------------------------------- |
 | **#1**  | `3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3` | Router Config PDA (read-only)                                         |
-| **#2**  | `4maPuX2fcDmCkQv1Qa6RmQa2yGpeZLxiqKy9ybwazGft` | **🎯 Token Admin Registry PDA** - Gets created/updated for your token |
-| **#3**  | `3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci` | Token Mint (your token)                                               |
-| **#4**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | Authority/Payer (your Squad vault)                                    |
+| **#2**  | `6jWPxptvZKTiLFNdLT39uG1HHa1DXnUqFpi6VttNGrH3` | **🎯 Token Admin Registry PDA** - Gets created/updated for your token |
+| **#3**  | `hdTyFD4Pv5vLRvGVAQqs1ZSedNvTM1iu5Y5Rwur5gub`  | Token Mint (your token)                                               |
+| **#4**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | Authority/Payer (your Squad vault)                                    |
 | **#5**  | `11111111111111111111111111111111`             | System Program                                                        |
 
 **What This Transaction Does:**
@@ -20881,8 +21006,7 @@ This transaction proposes your Squad vault as the administrator for your token i
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add
-    instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
 
   - **Review**: Verify transaction details and parameters
 
@@ -20902,9 +21026,9 @@ The [accept_admin_role](/ccip/concepts/cross-chain-token/svm/registration-admini
 | Account | Address                                        | Description                                                  |
 | ------- | ---------------------------------------------- | ------------------------------------------------------------ |
 | **#1**  | `3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3` | Router Config PDA (read-only)                                |
-| **#2**  | `4maPuX2fcDmCkQv1Qa6RmQa2yGpeZLxiqKy9ybwazGft` | **🎯 Token Admin Registry PDA** - Updates status to "active" |
-| **#3**  | `3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci` | Token Mint (your token)                                      |
-| **#4**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | Authority (your Squad vault - must be pending admin)         |
+| **#2**  | `6jWPxptvZKTiLFNdLT39uG1HHa1DXnUqFpi6VttNGrH3` | **🎯 Token Admin Registry PDA** - Updates status to "active" |
+| **#3**  | `hdTyFD4Pv5vLRvGVAQqs1ZSedNvTM1iu5Y5Rwur5gub`  | Token Mint (your token)                                      |
+| **#4**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | Authority (your Squad vault - must be pending admin)         |
 
 **What This Transaction Does:**
 This is the **acceptance step** of the two-phase administrator registration. It updates the Token Admin Registry PDA (Account #2) from "pending administrator" to "active administrator" status. Your Squad vault explicitly accepts the administrator role, completing the secure registration process.
@@ -20914,8 +21038,7 @@ This is the **acceptance step** of the two-phase administrator registration. It 
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add
-    instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
 
   - **Review**: Verify transaction details and parameters
 
@@ -20945,15 +21068,15 @@ This command creates the second layer of your dual-multisig architecture by esta
 
 | Account | Address                                        | Description                               |
 | ------- | ---------------------------------------------- | ----------------------------------------- |
-| **#1**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Payer/Authority** (your Squad vault)    |
-| **#2**  | `6c5UGRRQzPvZY4ZJZJiPGRYMw5e32uX8GfFzvm35k3jK` | **🎯 SPL Token Multisig** (newly created) |
+| **#1**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Payer/Authority** (your Squad vault)    |
+| **#2**  | `3cKsjnEtGtH47n5wzzA2GKGTTTFWby6n4nWSQDEJU1MX` | **🎯 SPL Token Multisig** (newly created) |
 
 **What This Transaction Does:**
 This creates an **SPL Token Multisig** account that will control your token's mint authority. The CLI automatically detected SPL Token v1 and created the appropriate multisig type.
 
 **Key Details:**
 
-- **Generated Multisig Address**: `6c5UGRRQzPvZY4ZJZJiPGRYMw5e32uX8GfFzvm35k3jK`
+- **Generated Multisig Address**: `3cKsjnEtGtH47n5wzzA2GKGTTTFWby6n4nWSQDEJU1MX`
 - **Multisig Signers**: Pool Signer PDA + Squad vault
 - **Threshold**: 1 (either signer can authorize mint operations)
 - **Hybrid Control**: Enables both automated CCIP operations and human governance
@@ -20961,7 +21084,7 @@ This creates an **SPL Token Multisig** account that will control your token's mi
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
   - **Review**: Verify transaction details and parameters
   - **Simulate**: Simulate the transaction to ensure it will succeed
   - **Approve**: Obtain required threshold signatures
@@ -20986,20 +21109,19 @@ Transfer mint authority from your Squad vault to the SPL Token Multisig, complet
 
 | Account | Address                                        | Description                                   |
 | ------- | ---------------------------------------------- | --------------------------------------------- |
-| **#1**  | `3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci` | **Token Mint** (writable - authority updated) |
-| **#2**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Current Authority** (signer - Squad vault)  |
+| **#1**  | `hdTyFD4Pv5vLRvGVAQqs1ZSedNvTM1iu5Y5Rwur5gub`  | **Token Mint** (writable - authority updated) |
+| **#2**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Current Authority** (signer - Squad vault)  |
 
 **Key Details:**
 
-- **Current Authority**: `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` (Squad vault)
-- **New Authority**: `6c5UGRRQzPvZY4ZJZJiPGRYMw5e32uX8GfFzvm35k3jK` (SPL Token Multisig)
-- **Token Mint**: `3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci` (authority field updated)
+- **Current Authority**: `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` (Squad vault)
+- **New Authority**: `3cKsjnEtGtH47n5wzzA2GKGTTTFWby6n4nWSQDEJU1MX` (SPL Token Multisig)
+- **Token Mint**: `hdTyFD4Pv5vLRvGVAQqs1ZSedNvTM1iu5Y5Rwur5gub` (authority field updated)
 
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add
-    instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
 
   - **Review**: Verify transaction details and parameters
 
@@ -21029,10 +21151,10 @@ Verify that your Squad vault can still mint tokens after the authority transfer.
 
 | Account | Address                                        | Description                                         |
 | ------- | ---------------------------------------------- | --------------------------------------------------- |
-| **#1**  | `3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci` | **Token Mint** (writable - supply updated)          |
-| **#2**  | `84FvKxAQpHtSaFLguFygoPPEaRorZpTjs8rmMCxuwqUF` | **Recipient's ATA** (writable - receives tokens)    |
-| **#3**  | `6c5UGRRQzPvZY4ZJZJiPGRYMw5e32uX8GfFzvm35k3jK` | **SPL Token Multisig** (read-only - mint authority) |
-| **#4**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault** (signer - multisig member)          |
+| **#1**  | `hdTyFD4Pv5vLRvGVAQqs1ZSedNvTM1iu5Y5Rwur5gub`  | **Token Mint** (writable - supply updated)          |
+| **#2**  | `gKhGBvVGw62EdjfdNQFvVvvbg8CqdepTrdmSdVsEDBS`  | **Recipient's ATA** (writable - receives tokens)    |
+| **#3**  | `3cKsjnEtGtH47n5wzzA2GKGTTTFWby6n4nWSQDEJU1MX` | **SPL Token Multisig** (read-only - mint authority) |
+| **#4**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Squad Vault** (signer - multisig member)          |
 
 **What This Transaction Does:**
 This is an **SPL Token Multisig Mint** operation that proves your dual-layer governance is working correctly. The Squad vault acts as a signer for the SPL Token Multisig that now controls mint authority.
@@ -21040,9 +21162,9 @@ This is an **SPL Token Multisig Mint** operation that proves your dual-layer gov
 **Key Details:**
 
 - **Amount**: 1,000,000,000 smallest units = 1 token (with 9 decimals)
-- **Recipient**: Your wallet address (`EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB`)
-- **Mint Authority**: SPL Token Multisig (`6c5UGRRQzPvZY4ZJZJiPGRYMw5e32uX8GfFzvm35k3jK`)
-- **Multisig Signer**: Squad vault (`59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY`)
+- **Recipient**: Your wallet address (`GY3V5RAtSxoJf2dZGqAbzaSxDyXWb8RPMWQdv1mC5PXN`)
+- **Mint Authority**: SPL Token Multisig (`3cKsjnEtGtH47n5wzzA2GKGTTTFWby6n4nWSQDEJU1MX`)
+- **Multisig Signer**: Squad vault (`AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB`)
 - **Token Program**: SPL Token v1 (`TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
 
 **Transaction Flow:**
@@ -21055,7 +21177,7 @@ This is an **SPL Token Multisig Mint** operation that proves your dual-layer gov
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
   - **Review**: Verify transaction details and parameters
   - **Simulate**: Simulate the transaction to ensure it will succeed
   - **Approve**: Obtain required threshold signatures
@@ -21105,9 +21227,9 @@ Initialize the basic remote chain configuration for Ethereum Sepolia. Pool addre
 
 | Account | Address                                        | Description                                         |
 | ------- | ---------------------------------------------- | --------------------------------------------------- |
-| **#1**  | `2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M` | **Pool State PDA** (read-only - validation)         |
-| **#2**  | `8zdWLvsAgLQkRmBDATR3j8xVQzcdwrRNZtPZH5kU37jg` | **Chain Remote Config PDA** (writable - created)    |
-| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault** (signer, writable - pool authority) |
+| **#1**  | `2wEj5e6gpdsEu6DxMQyGbvgRvTe8ZsQmfPbJWV8HUNEu` | **Pool State PDA** (read-only - validation)         |
+| **#2**  | `A3TEVLHYCbBzncbmVtiZAsK9R281n9oe4DZwMZyKy5p2` | **Chain Remote Config PDA** (writable - created)    |
+| **#3**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Squad Vault** (signer, writable - pool authority) |
 | **#4**  | `11111111111111111111111111111111`             | **System Program** (read-only - account creation)   |
 
 **What This Command Does:**
@@ -21116,7 +21238,7 @@ This initializes the **cross-chain configuration** for your Solana token to enab
 **Key Details:**
 
 - **Remote Chain**: Ethereum Sepolia (chain selector: `16015286601757825753`)
-- **Token Mapping**: Links to ERC20 token `0x7c57A9d966c3E6e344621C512d510f76575640ED`
+- **Token Mapping**: Links to ERC20 token `0x8b7ce78b89f05eaec2e803e638ff5b0f6f009184`
 - **Decimal Precision**: 18 decimals (standard EVM token format)
 - **Basic Setup**: No rate limits or pool addresses configured at this stage
 - **Account Creation**: Creates a new Chain Remote Config PDA for this cross-chain relationship
@@ -21131,7 +21253,7 @@ This initializes the **cross-chain configuration** for your Solana token to enab
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
   - **Review**: Verify transaction details and parameters
   - **Simulate**: Simulate the transaction to ensure it will succeed
   - **Approve**: Obtain required threshold signatures
@@ -21146,9 +21268,9 @@ After initializing the chain remote config, add the remote pool address to enabl
 
 | Account | Address                                        | Description                                                    |
 | ------- | ---------------------------------------------- | -------------------------------------------------------------- |
-| **#1**  | `2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M` | **Pool State PDA** (read-only - authority validation)          |
-| **#2**  | `8zdWLvsAgLQkRmBDATR3j8xVQzcdwrRNZtPZH5kU37jg` | **Chain Remote Config PDA** (writable - configuration updated) |
-| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault Authority** (signer, writable - fee payer)       |
+| **#1**  | `2wEj5e6gpdsEu6DxMQyGbvgRvTe8ZsQmfPbJWV8HUNEu` | **Pool State PDA** (read-only - authority validation)          |
+| **#2**  | `A3TEVLHYCbBzncbmVtiZAsK9R281n9oe4DZwMZyKy5p2` | **Chain Remote Config PDA** (writable - configuration updated) |
+| **#3**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Squad Vault Authority** (signer, writable - fee payer)       |
 | **#4**  | `11111111111111111111111111111111`             | **System Program** (read-only - account operations)            |
 
 **Transaction Flow:**
@@ -21160,7 +21282,7 @@ After initializing the chain remote config, add the remote pool address to enabl
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
   - **Review**: Verify transaction details and parameters
   - **Simulate**: Simulate the transaction to ensure it will succeed
   - **Approve**: Obtain required threshold signatures
@@ -21194,14 +21316,14 @@ This command configures inbound and outbound rate limiting for token transfers b
 
 | Account | Address                                        | Type                 | Purpose                                                           |
 | ------- | ---------------------------------------------- | -------------------- | ----------------------------------------------------------------- |
-| **#1**  | `2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M` | **Read-only**        | **Pool State PDA** - Main pool configuration account              |
-| **#2**  | `8zdWLvsAgLQkRmBDATR3j8xVQzcdwrRNZtPZH5kU37jg` | **Writable**         | **Chain Config PDA** - Chain-specific config (stores rate limits) |
-| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Signer, Writable** | **Authority** - Your Squad vault that can modify rate limits      |
+| **#1**  | `2wEj5e6gpdsEu6DxMQyGbvgRvTe8ZsQmfPbJWV8HUNEu` | **Read-only**        | **Pool State PDA** - Main pool configuration account              |
+| **#2**  | `A3TEVLHYCbBzncbmVtiZAsK9R281n9oe4DZwMZyKy5p2` | **Writable**         | **Chain Config PDA** - Chain-specific config (stores rate limits) |
+| **#3**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Signer, Writable** | **Authority** - Your Squad vault that can modify rate limits      |
 
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
   - **Review**: Verify transaction details and parameters
   - **Simulate**: Simulate the transaction to ensure it will succeed
   - **Approve**: Obtain required threshold signatures
@@ -21220,9 +21342,9 @@ This command creates an **Address Lookup Table (ALT)** that stores frequently us
 
 | Account | Address                                        | Description                                               |
 | ------- | ---------------------------------------------- | --------------------------------------------------------- |
-| **#1**  | `2s6yx6xCBgEQBrv5h4dF7TQvvKUWTJBEsueqTnZZHLwY` | **ALT Account** (writable - being created)                |
-| **#2**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **ALT Authority** (signer - will own the table)           |
-| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Fee Payer** (signer, writable - pays creation costs)    |
+| **#1**  | `DtbZ7Py3pmH5azq4HTqc4axfKwj8zLApkFzueouKg9Zv` | **ALT Account** (writable - being created)                |
+| **#2**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **ALT Authority** (signer - will own the table)           |
+| **#3**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Fee Payer** (signer, writable - pays creation costs)    |
 | **#4**  | `11111111111111111111111111111111`             | **System Program** (read-only - handles account creation) |
 
 **What This Command Does:**
@@ -21231,7 +21353,7 @@ This command creates the ALT infrastructure needed for efficient CCIP operations
 
 **Transaction Flow:**
 
-1. **ALT Creation**: Creates lookup table account `2s6yx6x...` with Squad Vault as authority
+1. **ALT Creation**: Creates lookup table account `DtbZ7Py3pmH5azq4HTqc4axfKwj8zLApkFzueouKg9Zv` with Squad Vault as authority
 2. **Core Address Addition**: Adds essential CCIP accounts (programs, PDAs) to the table
 3. **SPL Multisig Addition**: Adds your SPL multisig `$SOL_SPL_MULTISIG` via `--additional-addresses`
 4. **Index Assignment**: Each address gets a unique 1-byte index for future reference
@@ -21246,17 +21368,17 @@ The created lookup table will contain indices for these accounts in this exact o
 
 | Index  | Account Address                                | Purpose                                               |
 | ------ | ---------------------------------------------- | ----------------------------------------------------- |
-| **0**  | `2s6yx6xCBgEQBrv5h4dF7TQvvKUWTJBEsueqTnZZHLwY` | **ALT Address (Self-Reference)**                      |
-| **1**  | `4maPuX2fcDmCkQv1Qa6RmQa2yGpeZLxiqKy9ybwazGft` | **Token Admin Registry PDA**                          |
+| **0**  | `DtbZ7Py3pmH5azq4HTqc4axfKwj8zLApkFzueouKg9Zv` | **ALT Address (Self-Reference)**                      |
+| **1**  | `6jWPxptvZKTiLFNdLT39uG1HHa1DXnUqFpi6VttNGrH3` | **Token Admin Registry PDA**                          |
 | **2**  | `41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB` | **Pool Program ID**                                   |
-| **3**  | `2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M` | **Pool State PDA**                                    |
-| **4**  | `BKkeydRQWKDc5dR7euwhYi47TDLV99o8pD83ncGA2LdZ` | **Pool Signer's Associated Token Account**            |
-| **5**  | `8NTqDH8dFj7aU5FBWeNMJwjsR1gZMR7criaEaDMEE24r` | **Pool Signer PDA**                                   |
+| **3**  | `2wEj5e6gpdsEu6DxMQyGbvgRvTe8ZsQmfPbJWV8HUNEu` | **Pool State PDA**                                    |
+| **4**  | `2Lzp4uRF6N2x65aMpKqFrajFukAbTCtQcG8thVgqcsEh` | **Pool Signer's Associated Token Account**            |
+| **5**  | `62So4PhmWWzMpVXKzsCXdNUfrrB4jGXTVda9BzS6HTeo` | **Pool Signer PDA**                                   |
 | **6**  | `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`  | **Token Program ID (SPL Token v1)**                   |
-| **7**  | `3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci` | **Token Mint**                                        |
+| **7**  | `hdTyFD4Pv5vLRvGVAQqs1ZSedNvTM1iu5Y5Rwur5gub`  | **Token Mint**                                        |
 | **8**  | `GTz54AfhMRkKzFVse8jX8rjAx21fA86ZmVBF1v5VUC3u` | **Fee Quoter Token Config PDA**                       |
 | **9**  | `H6ZviaabTYZqUPgiSoMDbeVthcNW9ULcAuUu3zRLFqDR` | **Router External Token Pools Signer PDA**            |
-| **10** | `6c5UGRRQzPvZY4ZJZJiPGRYMw5e32uX8GfFzvm35k3jK` | **SPL Token Multisig** ← **Your Additional Address!** |
+| **10** | `3cKsjnEtGtH47n5wzzA2GKGTTTFWby6n4nWSQDEJU1MX` | **SPL Token Multisig** ← **Your Additional Address!** |
 
 **Transaction Efficiency Impact:**
 
@@ -21267,7 +21389,7 @@ The created lookup table will contain indices for these accounts in this exact o
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
   - **Review**: Verify transaction details and parameters
   - **Simulate**: Simulate the transaction to ensure it will succeed
   - **Approve**: Obtain required threshold signatures
@@ -21293,10 +21415,10 @@ Register your token pool with the CCIP Router using [set_pool](/ccip/api-referen
 | Account | Address                                        | Description                                                 |
 | ------- | ---------------------------------------------- | ----------------------------------------------------------- |
 | **#1**  | `3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3` | **Router Config PDA** (read-only - configuration reference) |
-| **#2**  | `4maPuX2fcDmCkQv1Qa6RmQa2yGpeZLxiqKy9ybwazGft` | **Token Admin Registry PDA** (writable - pool registration) |
-| **#3**  | `3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci` | **Token Mint** (read-only - token identification)           |
-| **#4**  | `2s6yx6xCBgEQBrv5h4dF7TQvvKUWTJBEsueqTnZZHLwY` | **Address Lookup Table** (read-only - ALT registration)     |
-| **#5**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault Authority** (signer, writable - admin & fees) |
+| **#2**  | `6jWPxptvZKTiLFNdLT39uG1HHa1DXnUqFpi6VttNGrH3` | **Token Admin Registry PDA** (writable - pool registration) |
+| **#3**  | `hdTyFD4Pv5vLRvGVAQqs1ZSedNvTM1iu5Y5Rwur5gub`  | **Token Mint** (read-only - token identification)           |
+| **#4**  | `DtbZ7Py3pmH5azq4HTqc4axfKwj8zLApkFzueouKg9Zv` | **Address Lookup Table** (read-only - ALT registration)     |
+| **#5**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Squad Vault Authority** (signer, writable - admin & fees) |
 
 **What This Command Does:**
 
@@ -21304,7 +21426,7 @@ This command **registers your token pool** with the CCIP Router. It configures t
 
 **Key Configuration:**
 
-- **ALT Integration**: Uses the lookup table `2s6yx6x...` you just created
+- **ALT Integration**: Uses the lookup table `DtbZ7Py3pmH5azq4HTqc4axfKwj8zLApkFzueouKg9Zv` you just created
 - **Writable Indexes**: `[3,4,7]` - Specific accounts from the ALTthat need write access during CCIP operations
 
 **Transaction Flow:**
@@ -21327,7 +21449,7 @@ Based on the ALT order established earlier:
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
   - **Review**: Verify transaction details and parameters
   - **Simulate**: Simulate the transaction to ensure it will succeed
   - **Approve**: Obtain required threshold signatures
@@ -21367,141 +21489,120 @@ Configure the Ethereum pool to recognize the Solana chain and set production rat
     - 0.1 tokens/sec = `100000000000000000` wei (0.1 × 10^18)
 </Aside>
 
-## Phase 5: Testing and Validation
+## Phase 5: Pre-Transfer Setup, Validation, and Testing
 
 <Aside type="note" title="Terminal Context Check">
-  **Current Focus: Terminal 3 (Solana Testing)** Switch to the Solana Starter Kit repository for comprehensive testing.
+  **Current Focus: Terminal 1 (CCIP Solana BS58 Generator)** Complete pre-transfer setup and validate your
+  configuration. Governance steps use Squads; delegation and verification use your local wallet with `--execute`.
 </Aside>
 
-### Step 1: Load Phase 4 Variables
-
-Before testing cross-chain transfers, ensure your terminal environment is properly configured:
-
-### Transfer Direction 1: Solana → Ethereum
-
-Test the production multisig setup with a cross-chain transfer from Solana Devnet to Ethereum Sepolia:
-
-#### Prepare for Testing
-
-Before testing cross-chain transfers, you need to create the pool's Associated Token Account (ATA) and prepare your tokens:
-
-##### Check Token Balance
-
-##### Create Pool Associated Token Account
-
-##### Delegate Token Authority
-
-#### Transfer tokens from Solana Devnet to Ethereum Sepolia
-
-#### Monitor and Verify Transaction
-
-Upon successful execution, the system generates critical tracking identifiers for transaction monitoring and verification.
-
-**Transaction Identifiers:**
-
-- **Transaction Signature**: `4T6coWNspJ7TDhsUFVZ7S1huzVxy6dSjbPfrFw4THGRBEt8X9UYfFggrxYLD4Hnm11Hqdnzg9vJTbrNSjp7ycRvf`
-- **CCIP Message ID**: `0x21d6ca53d5ab59caa9d5a1d58a5f8040f9695043dcad5ddc0059710dff0113c3`
-
-**CCIP Explorer** (Primary monitoring interface):
-
-```
-https://ccip.chain.link/msg/0x21d6ca53d5ab59caa9d5a1d58a5f8040f9695043dcad5ddc0059710dff0113c3
-```
-
-The CCIP Explorer provides comprehensive transaction visibility:
-
-- Source chain (Solana) transaction confirmation
-- CCIP message processing and routing
-- Destination chain (Ethereum) message delivery
-- Token minting completion on Ethereum
-
-**Solana Explorer** (Source chain verification):
-
-```
-https://explorer.solana.com/tx/4T6coWNspJ7TDhsUFVZ7S1huzVxy6dSjbPfrFw4THGRBEt8X9UYfFggrxYLD4Hnm11Hqdnzg9vJTbrNSjp7ycRvf?cluster=devnet
-```
-
-### Transfer Direction 2: Ethereum → Solana
-
-<Aside type="note" title="Terminal Environment">
-  **Continue in Terminal 3** (Solana Starter Kit directory). No need to switch terminals - the Solana Starter Kit
-  handles Ethereum → Solana transfers as well.
+<Aside type="note" title="Cross-Chain Transfers with CCIP CLI">
+  Use [`@chainlink/ccip-cli`](https://github.com/smartcontractkit/ccip-tools-ts) for bidirectional token transfers. Run Solana → EVM sends from Terminal 1 and EVM → Solana sends from Terminal 2. See the [CCIP CLI documentation](https://docs.chain.link/ccip/tools/cli/) for full options.
 </Aside>
 
-#### Transfer tokens from Ethereum Sepolia to Solana Devnet
+### Step 1: Load Configuration
 
-#### Monitor and Verify Transaction
+### Step 2: Pre-Transfer Setup
 
-Upon successful execution, the system generates distinct tracking identifiers for comprehensive monitoring across both blockchain networks.
+Before cross-chain transfers (when available), complete token delegation so CCIP can move tokens from your wallet.
 
-**Transaction Identifiers:**
+#### Check Token Balance
 
-- **Ethereum Transaction Hash**: `0x55e6e9c295c7d32bc0d708f3363e42aad37298f9f30b4db0889e06bfac761157`
-- **CCIP Message ID**: `0x11ef3640d8030bae75c2e4ca863a122bbf28fbbcd1dc83be0f77a25091442c72`
+#### Create Pool Associated Token Account
 
-**CCIP Explorer** (Primary monitoring interface):
+If not created during pool setup, create the pool's ATA:
 
+#### Delegate Token Authority
+
+Approve the fee-billing signer to transfer tokens from your ATA:
+
+#### Verify Delegation
+
+Check that your token account is delegated to the fee-billing signer:
+
+Display token account and delegation status:
+
+### Step 3: Verify Solana Pool and Chain Config
+
+### Step 4: Verify Ethereum Pool (Terminal 2)
+
+**Switch to Terminal 2** (Smart Contract Examples - Hardhat):
+
+```bash
+npx hardhat getPoolConfig \
+  --pooladdress $ETH_POOL_ADDRESS \
+  --network ethereumSepolia
 ```
-https://ccip.chain.link/msg/0x11ef3640d8030bae75c2e4ca863a122bbf28fbbcd1dc83be0f77a25091442c72
+
+Confirm the Ethereum pool recognizes Solana Devnet with your `$SOL_POOL_ADDRESS` and `$SOL_TOKEN_MINT`.
+
+### Configure CCIP CLI
+
+Export these RPC URLs once before your first transfer:
+
+```bash
+export SOLANA_DEVNET_RPC="https://api.devnet.solana.com"
+export ETHEREUM_SEPOLIA_RPC_URL="<YOUR_ETHEREUM_SEPOLIA_RPC_URL>"
+
+export ETH_CCIP_ROUTER="0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59"
 ```
 
-The CCIP Explorer provides comprehensive transaction visibility:
+Use the same `ETHEREUM_SEPOLIA_RPC_URL` from your env-enc setup in Terminal 2 (`npx env-enc view`). On `ccip-cli send`, the source chain RPC quotes fees and submits the transaction; for token-only transfers in this tutorial, that is the only RPC strictly required to send. Pass both RPCs on cross-chain commands anyway: the destination RPC is required for `ccip-cli show --wait` and for optional send features such as `--estimate-gas-limit` or `send --wait`.
 
-- Source chain (Ethereum) transaction confirmation
-- CCIP message processing and routing
-- Destination chain (Solana) message delivery
-- Token minting completion on Solana network
-
-**Ethereum Sepolia Explorer** (Source chain verification):
-
-```
-https://sepolia.etherscan.io/tx/0x55e6e9c295c7d32bc0d708f3363e42aad37298f9f30b4db0889e06bfac761157
-```
-
-### Test Solana Rate Limit Enforcement (Optional)
-
-<Aside type="note" title="Rate Limit Configuration Reminder">
-  **Current Rate Limits**: If you followed Phase 3 with rate limits enabled:
-
-  - **Solana Outbound**: 18 tokens capacity, 0.1 tokens/second rate
-  - **Solana Inbound**: 20 tokens capacity, 0.1 tokens/second rate
-  - **Ethereum**: Similar limits (18-decimal equivalent: 18/20 ETH tokens)
-
-  **Testing Strategy**: Attempt to transfer 25 tokens (exceeds 20-token inbound capacity).
+<Aside type="note" title="RPC and wallet configuration">
+  Repeat `--rpc` for multiple networks, or use `--rpcs` with comma-separated URLs. Alternatively, set `RPC_*` environment variables or a `.env` file — see [CCIP CLI configuration](https://docs.chain.link/ccip/tools/cli/configuration). Solana sends use `--wallet ~/.config/solana/id.json`. EVM sends: prefer `--wallet hardhat:<name>` from the Hardhat project directory ([Hardhat keystore](https://hardhat.org/docs/plugins/hardhat-keystore)); alternatively export `PRIVATE_KEY` manually after `npx env-enc view` (Hardhat tasks load env-enc automatically, but `ccip-cli` does not). See [CCIP CLI wallet configuration](https://docs.chain.link/ccip/tools/cli/configuration#wallet-configuration).
 </Aside>
 
-The transaction correctly failed with `RLMaxCapacityExceeded` error because:
+### Transfer Solana → Ethereum
 
-- **Attempted**: 25 tokens (`25000000000` in smallest units)
-- **Limit**: 20 tokens maximum capacity (`20000000000`)
-- **Result**: Rate limiter blocked the excessive transfer
+**Terminal 1** (CCIP Solana BS58 Generator):
 
-**Key Error Details:**
+The `-t` flag uses human-readable amounts (0.001 tokens with 9 decimals = 1,000,000 smallest units).
 
-- **Error Code**: `RLMaxCapacityExceeded` (Error Number: 6015)
-- **Source**: `programs/base-token-pool/src/rate_limiter.rs:48`
-- **Meaning**: The token bucket capacity was exceeded
+### Transfer Ethereum → Solana
 
-This demonstrates that your rate limits are properly configured and actively protecting against transfers that exceed the configured limits.
+**Switch to Terminal 2** (Smart Contract Examples - Hardhat):
 
-### Test EVM Rate Limit Enforcement (Optional)
+`ccip-cli` does not load Hardhat env-enc automatically. Run these commands from the Hardhat project directory. Prefer [Hardhat keystore](https://hardhat.org/docs/plugins/hardhat-keystore) over exporting a private key in plain text.
 
-Test rate limits from the EVM side (Ethereum to Solana) using the same 25-token limit.
+For token-only transfers to Solana, `--to` is the destination wallet that receives minted tokens. CCIP fees are paid in native Sepolia ETH by default — ensure your wallet has sufficient ETH for gas and fees.
 
-The transaction correctly failed because:
+<Aside type="note" title="Pay fees in LINK (optional)">
+  Add `--fee-token LINK` to pay CCIP fees in LINK instead of ETH (Sepolia LINK:
+  `0x779877A7B0D9E8603169DdbD7836e478b4624789`).
+</Aside>
 
-- **Attempted**: 25 tokens (`25000000000000000000` wei - 18 decimals)
-- **Limit**: 18 tokens maximum capacity
-- **Error Selector**: [`0x1a76572a` (TokenMaxCapacityExceeded)](/ccip/api-reference/evm/v1.6.1/errors#rate-limiter-errors)
-- **Decoded Values**: Capacity: `18000000000000000000`, Attempted: `25000000000000000000`, Token: `0x9cE471d0a7bE21ee32276dde49104fe02c812906`
+### Optional: Test Rate Limit Enforcement
 
-This demonstrates that rate limits are enforced on both chains, protecting the cross-chain bridge from excessive transfers. The EVM error selector corresponds to the `TokenMaxCapacityExceeded` error in the [CCIP EVM v1.6.0 errors reference](/ccip/api-reference/evm/v1.6.1/errors).
+If you configured rate limits in Phase 3, attempt a transfer that exceeds capacity (25 tokens vs 20-token limit):
+
+### Optional: Verify Rate Limit Configuration
+
+If you configured rate limits in Phase 3, confirm they appear in your chain configuration:
+
+```bash
+# Terminal 1 — inspect Solana outbound/inbound rate limits
+pnpm bs58 --env devnet burnmint-token-pool \
+  --instruction get-chain-config \
+  --program-id $SOL_CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --remote-chain-selector $ETHEREUM_SEPOLIA_CHAIN_SELECTOR
+```
+
+```bash
+# Terminal 2 — inspect EVM rate limit settings
+npx hardhat getPoolConfig \
+  --pooladdress $ETH_POOL_ADDRESS \
+  --network ethereumSepolia
+```
+
+**Congratulations!** Your production cross-chain token infrastructure with Squads governance is fully configured on both chains.
 
 ---
 
 # Cross-Chain Token Setup: LockRelease Pool with Squads Governance
 Source: https://docs.chain.link/ccip/tutorials/svm/cross-chain-tokens/lock-release-multisig
-Last Updated: 2025-09-17
+Last Updated: 2026-06-15
 
 This tutorial demonstrates how to implement cross-chain tokens using the **[Lock and Mint](/ccip/concepts/cross-chain-token/overview#lock-and-mint)** mechanism with production-grade governance.
 
@@ -21550,30 +21651,34 @@ For complete details on token handling mechanisms, see [Token Handling Mechanism
 
 ## Prerequisites
 
+This tutorial uses a **two-terminal workflow** with **Squads multisig governance** on Solana. Install the system tools below, create your Squad on devnet, clone both repositories, then complete environment setup before starting Phase 1.
+
 ### System Requirements
 
-Install these tools before starting:
-
-**Package Managers:**
-
-- **Node.js v20+**: Required for all repositories
-- **pnpm**: Required for base58 Generator (`npm install -g pnpm`)
-- **yarn**: Required for Solana Starter Kit (`npm install -g yarn`)
-
-**Solana Development:**
-
-- **Solana CLI**: [Installation guide](https://docs.solana.com/cli/install-solana-cli-tools)
+- **Node.js v22 or higher**: Required for all tools. Verify with `node -v`
+- **pnpm**: Required for the BS58 generator (`npm install -g pnpm`)
+- **npm**: Required for the Hardhat project (bundled with Node.js)
+- **Solana CLI**: [Installation guide](https://docs.solana.com/cli/install-solana-cli-tools) (includes `spl-token`)
+- **Git**: For cloning repositories
+- **CCIP CLI**: For cross-chain transfer testing in the final phase
 
 **Wallets:**
 
-- **Solana wallet**: [Phantom](https://phantom.app/) or [Backpack](https://backpack.app/) for Devnet operations
-- **Ethereum wallet**: [MetaMask](https://metamask.io/) for Sepolia testnet operations
+- **Solana**: [Phantom](https://phantom.app/) or [Backpack](https://backpack.app/) for Devnet and Squads operations
+- **Ethereum**: [MetaMask](https://metamask.io/) for Sepolia testnet operations
+
+Install the [CCIP CLI](https://github.com/smartcontractkit/ccip-tools-ts) globally:
+
+```bash
+npm install -g @chainlink/ccip-cli
+ccip-cli --help
+```
+
+See the [CCIP CLI documentation](https://docs.chain.link/ccip/tools/cli/) for RPC and wallet configuration.
 
 ### Repository Setup
 
-Clone and install dependencies for all three repositories:
-
-**Terminal 1: base58 Generator**
+**Terminal 1: CCIP Solana BS58 Generator** (skip `git clone` if you already have the repo)
 
 ```bash
 git clone https://github.com/smartcontractkit/ccip-solana-bs58-generator.git
@@ -21581,7 +21686,7 @@ cd ccip-solana-bs58-generator
 pnpm install
 ```
 
-**Terminal 2: EVM Hardhat**
+**Terminal 2: Smart Contract Examples (Hardhat)** (skip `git clone` if you already have the repo)
 
 ```bash
 git clone https://github.com/smartcontractkit/smart-contract-examples.git
@@ -21590,76 +21695,77 @@ npm install
 npm run compile
 ```
 
-**Terminal 3: Solana Starter Kit**
-
-```bash
-git clone https://github.com/smartcontractkit/solana-starter-kit.git
-cd solana-starter-kit
-yarn install
-```
-
-**Create and configure the .env file:**
-
-```bash
-# Create .env file in the project root
-cat > .env << 'EOF'
-EVM_PRIVATE_KEY=your_private_key_here
-EVM_RPC_URL=your_rpc_url_here
-EOF
-```
-
-Replace the placeholder values with:
-
-- `EVM_PRIVATE_KEY`: Your Ethereum wallet private key (for Sepolia testnet operations)
-- `EVM_RPC_URL`: Your Ethereum RPC URL (from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another provider)
-
 ### Environment Configuration
 
-**Solana Configuration:**
+#### Solana (Terminal 1)
+
+First, check whether your environment is already set up:
 
 ```bash
-# Set Solana CLI to devnet
-solana config set --url https://api.devnet.solana.com
-
-# Create keypair (ONLY IF NEEDED)
-solana-keygen new --outfile ~/.config/solana/id.json
-
-# Check Config
 solana config get
-
-# Fund wallet
-solana airdrop 3
+solana address
+solana balance
 ```
 
-**Ethereum Sepolia Configuration:**
+If the RPC URL is already `https://api.devnet.solana.com`, your keypair path is correct, and you have sufficient SOL, skip to [Ethereum Sepolia setup](#ethereum-sepolia-terminal-2) below.
+
+Otherwise, run only the steps you need:
 
 ```bash
-# In Terminal 2 (Hardhat directory)
+# Set devnet (skip if config get already shows devnet)
+solana config set --url https://api.devnet.solana.com
+
+# Point to your keypair (skip if config get already shows the path you want)
+solana config set --keypair ~/.config/solana/id.json
+
+# Create a keypair only if the file does not exist yet
+solana-keygen new --outfile ~/.config/solana/id.json
+
+# Fund your wallet if balance is low
+solana airdrop 3
+solana balance
+```
+
+#### Ethereum Sepolia (Terminal 2)
+
+```bash
+# Required at the start of each session
 npx env-enc set-pw
+
+# Verify existing variables (skip npx env-enc set if all required vars are already configured)
+npx env-enc view
+
+# Add or update variables only if missing
 npx env-enc set
 ```
 
-Required environment variables:
+Required variables:
 
 - `ETHEREUM_SEPOLIA_RPC_URL`: RPC endpoint ([Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/))
 - `PRIVATE_KEY`: Testnet wallet private key
 - `ETHERSCAN_API_KEY`: API key from [Etherscan](https://etherscan.io/apis)
 
-**Testnet Tokens:**
+**Testnet tokens:**
 
-- **Solana Devnet**: Use `solana airdrop 3` for SOL
-- **Ethereum Sepolia**: Use [Chainlink faucets](https://faucets.chain.link/) for LINK and ETH
+- **Solana Devnet**: `solana airdrop 3` for SOL
+- **Ethereum Sepolia**: ETH for gas and CCIP fees ([Chainlink faucet](https://faucets.chain.link/) or [Google Cloud Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia)). LINK is optional for `--fee-token LINK` on EVM sends.
+
+<Aside type="note" title="When to Use --execute">
+  **Governance steps** generate base58-encoded transactions in Terminal 1 **without** `--execute`. Import the output
+  into Squads and sign there. **Pre-transfer steps** (token delegation, pool ATA creation) use your local Solana wallet
+  with `--execute` on `pnpm bs58` commands. **Read-only** commands (`get-state`, `get-chain-config`) omit `--execute`.
+  See the [CCIP Solana BS58 Generator
+  README](https://github.com/smartcontractkit/ccip-solana-bs58-generator/blob/main/README.md).
+</Aside>
 
 ### Squads Multisig Setup
 
 <Aside type="caution" title="Required: Create Squads Multisig">
-  **Before starting this tutorial**, you must create a Squads multisig on Solana Devnet. This will serve as your
-  governance mechanism for all CCIP administrative operations.
+  **Before starting this tutorial**, create a Squads multisig on Solana Devnet. It serves as your governance mechanism
+  for CCIP administrative operations.
 </Aside>
 
-**Step 1: Prepare Signers**
-
-Create multiple wallet addresses for your multisig signers:
+**Step 1: Prepare signers**
 
 ```bash
 # Create additional signers using Solana CLI
@@ -21676,121 +21782,107 @@ solana transfer <SIGNER2_ADDRESS> 0.1 --allow-unfunded-recipient
 solana transfer <SIGNER3_ADDRESS> 0.1 --allow-unfunded-recipient
 ```
 
-Alternatively, create signers in Phantom wallet and fund them:
+Alternatively, create signers in Phantom and fund them:
 
 ```bash
-# Transfer SOL to Phantom-created addresses
 solana transfer <PHANTOM_SIGNER_ADDRESS> 0.5 --allow-unfunded-recipient
 ```
 
-**Step 2: Create Your Squad**
+**Step 2: Create your Squad**
 
 1. Visit [devnet.squads.so](https://devnet.squads.so)
-2. Connect your Solana wallet (e.g., Phantom/Backpack)
-3. Click "Create New Squad"
-4. Configure your multisig:
-   - **Squad Name**: Choose a descriptive name (e.g., "CCIP Token Governance")
-   - **Members**: Add wallet addresses of all signers
-   - **Threshold**: Set approval threshold (recommended: 2/3 or 3/5)
+2. Connect your Solana wallet (Phantom or Backpack)
+3. Click **Create New Squad**
+4. Configure members and threshold (recommended: 2/3 or 3/5)
 
 <Aside type="note" title="Threshold Best Practices">
   - **Avoid 1/n thresholds** (single point of failure)
   - **Avoid maximum thresholds** (e.g., 3/3 prevents recovery if one key is lost)
 </Aside>
 
-**Step 3: Record Critical Addresses**
+**Step 3: Record the vault address**
 
-After Squad creation, navigate to Settings tab and record these addresses.
+After Squad creation, open the Settings tab and copy the **vault address** (not the multisig address).
 
-**In Terminal 1 (base58 Generator), export the vault address:**
+**In Terminal 1:**
 
 ```bash
 # CRITICAL: Use the VAULT address, NOT the multisig address
 export SOL_SQUAD_VAULT_MULTISIG="YOUR_VAULT_ADDRESS_HERE"
-```
-
-Verify the export:
-
-```bash
 echo "Squads Vault Address: $SOL_SQUAD_VAULT_MULTISIG"
 ```
 
 <Aside type="caution" title="Vault vs Multisig Address">
-  **IMPORTANT**: Only use the **Vault address** for setting authorities and receiving funds. The **Multisig address** is
-  used only for CLI detection - sending assets to it causes **irreversible loss**.
+  Use the **vault address** for authorities and receiving funds. The **multisig address** is for CLI detection only —
+  sending assets to it causes **irreversible loss**.
 </Aside>
 
-**Step 4: Test Your Squad**
-
-Perform a small test transaction to verify setup:
+**Step 4: Test your Squad**
 
 1. Send a small amount of SOL to your Squad vault
 2. Create a test transaction in Squads UI (e.g., SOL transfer to your wallet)
-3. Confirm all signers can approve transactions
-4. Execute the transaction
+3. Confirm signers can approve and execute
 
-For detailed setup guidance, see the [Squads Documentation](https://docs.squads.so/).
+See [Squads Documentation](https://docs.squads.so/) for detailed setup guidance.
 
 ### Token Creation Option
 
 <Aside type="note" title="Existing Token Requirements">
-  **Important**: You can only skip token creation if you have an existing SPL token where the **mint authority is already controlled by your Squad vault**.
+  You can skip token creation only if you have an existing SPL token where **mint authority is already controlled by your
+  Squad vault**.
 
   **Two scenarios:**
 
-  1. **Mint authority = Squad vault**: Skip to Step 3 (pool initialization) and export your existing mint address
-  2. **Mint authority ≠ Squad vault**: You must first transfer mint authority to your Squad vault, OR create a fresh token in Step 2
+  1. **Mint authority = Squad vault**: Skip to pool initialization and export your existing mint address
+  2. **Mint authority ≠ Squad vault**: Transfer mint authority to your Squad vault first, or create a fresh token in the tutorial
 
-  **For fresh start**: Proceed with Step 2 to create a new token with Squad vault as mint authority from the beginning.
+  **For a fresh start**: Proceed with token creation so the Squad vault is mint authority from the beginning.
 </Aside>
 
 ## Tutorial Approach
 
-This tutorial implements production-grade cross-chain tokens using a three-terminal workflow across specialized repositories:
+| Terminal       | Repository                                                                                                                  | Purpose                                    | Commands        |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | --------------- |
+| **Terminal 1** | [CCIP Solana BS58 Generator](https://github.com/smartcontractkit/ccip-solana-bs58-generator)                                | Governance txs and pre-transfer setup      | `pnpm bs58`     |
+| **Terminal 2** | [Smart Contract Examples (Hardhat)](https://github.com/smartcontractkit/smart-contract-examples/tree/main/ccip/cct/hardhat) | Deploy and configure EVM components        | `npx hardhat`   |
+| **Either**     | Global `@chainlink/ccip-cli`                                                                                                | Cross-chain transfer testing (final phase) | `ccip-cli send` |
 
-| Terminal       | Repository                                                                                                                  | Purpose                          | Commands      |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ------------- |
-| **Terminal 1** | [CCIP Solana base58 Generator](https://github.com/smartcontractkit/ccip-solana-bs58-generator)                              | Generate governance transactions | `pnpm bs58`   |
-| **Terminal 2** | [Smart Contract Examples (Hardhat)](https://github.com/smartcontractkit/smart-contract-examples/tree/main/ccip/cct/hardhat) | Deploy EVM components            | `npx hardhat` |
-| **Terminal 3** | [Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit)                                                | Test cross-chain transfers       | `yarn`        |
-
-**Note**: Each repository contains comprehensive READMEs with detailed technical explanations and troubleshooting guides.
+The [CCIP Solana BS58 Generator README](https://github.com/smartcontractkit/ccip-solana-bs58-generator/blob/main/README.md) contains command syntax, simulation behavior, and troubleshooting.
 
 ### Key Implementation Notes
 
-- **Terminal 1** generates base58-encoded transactions for Squads multisig governance
-- **Terminal 2** uses EOA for tutorial simplicity; production deployments should use multisig wallets (e.g., Safe)
-- **Terminal 3** validates end-to-end cross-chain functionality
+- **Terminal 1** generates base58 transactions for Squads governance (no `--execute`). Pre-transfer delegation steps use `--execute` with your local wallet.
+- **Terminal 2** uses an EOA for tutorial simplicity; production EVM deployments should use multisig wallets (e.g., Safe).
+- **Cross-chain transfers** use [`@chainlink/ccip-cli`](https://github.com/smartcontractkit/ccip-tools-ts): Terminal 1 for Solana → EVM, Terminal 2 for EVM → Solana. For EVM sends, prefer `--wallet hardhat:<name>` ([Hardhat keystore](https://hardhat.org/docs/plugins/hardhat-keystore)) from the Hardhat directory; alternatively export `PRIVATE_KEY` manually after `npx env-enc view` (Hardhat tasks load env-enc automatically, but `ccip-cli` does not). Provide RPCs via `--rpc`/`--rpcs`, `RPC_*` environment variables, or a `.env` file — see [CCIP CLI configuration](https://docs.chain.link/ccip/tools/cli/configuration).
 
 ### base58 Transaction Execution Workflow
 
-**Transaction Generation and Validation:**
+**Transaction generation:**
 
-1. **CLI Simulation**: Each base58 transaction is automatically simulated during generation
-2. **Error Handling**: If simulation fails, error logs appear in terminal - do not upload failed transactions to Squads
-3. **Success Indicator**: Successful simulation shows transaction preview and base58 output
+1. **CLI simulation**: Each base58 transaction is simulated during generation
+2. **Error handling**: If simulation fails, do not upload the transaction to Squads
+3. **Success**: Terminal shows a transaction preview and base58 output
 
-**Squads Multisig Execution Process:**
+**Squads execution:**
 
-1. **Propose**: A signer imports the base58 transaction into Squads UI → "Add instruction" → "Import base58 encoded tx" → **Initiate Transaction**
-2. **Approve**: Required threshold (M) of signers review and approve the transaction
-3. **Simulate** (Recommended): Before execution, signers can simulate through Squads interface to preview onchain effects
-4. **Execute**: After threshold approval, any signer can execute the transaction
+1. **Propose**: Import base58 output in Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx** → **Initiate Transaction**
+2. **Approve**: Required threshold of signers approves
+3. **Simulate** (recommended): Preview onchain effects in Squads before execution
+4. **Execute**: Any approved signer executes after threshold is met
 
 <Aside type="note" title="Security Best Practice">
-  Always simulate before execution using Squads' built-in simulation feature. This shows exactly what will happen
-  onchain and is critical for validating complex governance operations before commitment.
+  Always simulate in Squads before execution. This validates complex governance operations before commitment.
 </Aside>
 
 ### Environment Variables
 
 Variables use prefixes to prevent confusion across repositories:
 
-| Prefix   | Usage              | Examples                                   |
-| -------- | ------------------ | ------------------------------------------ |
-| `ETH_*`  | Ethereum addresses | `ETH_TOKEN_ADDRESS`, `ETH_POOL_ADDRESS`    |
-| `SOL_*`  | Solana addresses   | `SOL_TOKEN_MINT`, `SOL_POOL_ADDRESS`       |
-| `CCIP_*` | Protocol constants | `CCIP_POOL_PROGRAM`, `CCIP_ROUTER_PROGRAM` |
+| Prefix       | Usage                   | Examples                                                                  |
+| ------------ | ----------------------- | ------------------------------------------------------------------------- |
+| `ETH_*`      | Ethereum addresses      | `ETH_TOKEN_ADDRESS`, `ETH_POOL_ADDRESS`                                   |
+| `SOL_*`      | Solana addresses        | `SOL_TOKEN_MINT`, `SOL_POOL_ADDRESS`                                      |
+| `SOL_CCIP_*` | Solana CCIP program IDs | `SOL_CCIP_POOL_PROGRAM`, `SOL_CCIP_ROUTER`, `SOL_CCIP_FEE_QUOTER_PROGRAM` |
 
 ## Phase 1: EVM Chain Setup (Ethereum Sepolia)
 
@@ -21838,12 +21930,12 @@ In this step, you will use the `setPool` task to register the BurnMint token poo
 
 <Aside type="note" title="Phase 1 Complete">
   **EVM Setup Complete**: You have successfully deployed and configured the EVM side. Next, you'll implement the
-  production-grade Solana side with dual-layer multisig governance.
+  production-grade Solana LockRelease setup with Squads governance.
 </Aside>
 
-## Phase 2: Solana Setup with Production Dual Multisig Governance
+## Phase 2: Solana LockRelease Setup with Squads Governance
 
-In this phase, you will implement the **production-grade multisig governance** architecture on Solana Devnet.
+In this phase, you will implement the **production-grade LockRelease pool** with Squads multisig governance on Solana Devnet.
 
 <Aside type="note" title="Terminal Context Check">
   **Current Focus: Terminal 1 (base58 Generator)** Switch to the base58 generator repository for transaction generation.
@@ -21852,7 +21944,9 @@ In this phase, you will implement the **production-grade multisig governance** a
 
 ### Step 1: Prepare base58 Environment
 
-### Step 2: Create SPL Token (Layer 2 Foundation)
+Set up CCIP constants on Solana Devnet (DO NOT CHANGE THESE)
+
+### Step 2: Create SPL Token
 
 This command generates a transaction that creates a new SPL token mint with the following features:
 
@@ -21877,8 +21971,7 @@ Generate the SPL token creation transaction (customize parameters or reuse the e
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add
-    instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
 
   - **Review**: Verify transaction details, check authority and mint
 
@@ -21893,8 +21986,8 @@ After execution, set the token mint:
 
 ### Step 3: Initialize LockRelease Token Pool
 
-<Aside type="caution" title="Why Initialize Pool Before Mint Authority Transfer">
-  Since your Squad multisig currently holds the mint authority, you can initialize the pool without Chainlink Labs intervention.
+<Aside type="note" title="Self-Service Pool Initialization">
+  Since your Squad vault currently holds the mint authority, you can initialize the LockRelease pool without Chainlink Labs intervention.
 
   If you have an existing token where the mint authority is held by a wallet or another multisig under your control, you can transfer the mint authority to your Squad vault first to follow the self-service path. Otherwise, if you cannot control the mint authority, you can submit a [registration request](https://chain.link/ccip-contact?v=Tokens:%20Token%20admin%20registration) to have Chainlink Labs initialize the pool for you.
 </Aside>
@@ -21919,9 +22012,9 @@ Generate the pool initialization transaction:
 
 | Account | Address                                        | Purpose                                                     |
 | ------- | ---------------------------------------------- | ----------------------------------------------------------- |
-| **#1**  | `9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1` | **Pool State PDA** - Your main pool configuration           |
-| **#2**  | `FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1` | Token Mint (your token)                                     |
-| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | Authority (your Squad vault)                                |
+| **#1**  | `9n9UgFppJCanCjy6cd3tEudEemUf4bQRR8PgiXN7Rp4R` | **Pool State PDA** - Your main pool configuration           |
+| **#2**  | `3nLW4zA3xdZmKY5SyhP2RRr7BDMKLuh4SQ9kFTDsx1Li` | Token Mint (your token)                                     |
+| **#3**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | Authority (your Squad vault)                                |
 | **#4**  | `11111111111111111111111111111111`             | System Program                                              |
 | **#5**  | `8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC` | CCIP Pool Program                                           |
 | **#6**  | `AeMEQshfd7w72oGt5cMn8196zod6gQPWskbf5BY83W1B` | Program Data PDA                                            |
@@ -21935,8 +22028,7 @@ Generate the pool initialization transaction:
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add
-    instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
 
   - **Review**: Verify pool initialization parameters
 
@@ -21948,11 +22040,6 @@ Generate the pool initialization transaction:
 </Aside>
 
 After execution, set the pool state address from the transaction:
-
-```bash
-# Set the pool state address from Account #1 in the transaction above
-export SOL_POOL_ADDRESS="9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1"
-```
 
 ### Step 4: Derive Pool Signer PDA
 
@@ -21975,9 +22062,9 @@ The [owner_propose_administrator](/ccip/concepts/cross-chain-token/svm/registrat
 | Account | Address                                        | Description                                                           |
 | ------- | ---------------------------------------------- | --------------------------------------------------------------------- |
 | **#1**  | `3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3` | Router Config PDA (read-only)                                         |
-| **#2**  | `89Jy2ZEz6LcvBPVQgR2YxPYVoF1sLugNRs3havQP8SvF` | **🎯 Token Admin Registry PDA** - Gets created/updated for your token |
-| **#3**  | `FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1` | Token Mint (your token)                                               |
-| **#4**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | Authority/Payer (your Squad vault)                                    |
+| **#2**  | `6gmKNyGtrSgB4gAH9yQyzXSPnDw1P5We9abZLEcuqdLY` | **🎯 Token Admin Registry PDA** - Gets created/updated for your token |
+| **#3**  | `3nLW4zA3xdZmKY5SyhP2RRr7BDMKLuh4SQ9kFTDsx1Li` | Token Mint (your token)                                               |
+| **#4**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | Authority/Payer (your Squad vault)                                    |
 | **#5**  | `11111111111111111111111111111111`             | System Program                                                        |
 
 **What This Transaction Does:**
@@ -21986,8 +22073,7 @@ This transaction proposes your Squad vault as the administrator for your token i
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add
-    instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
 
   - **Review**: Verify transaction details and parameters
 
@@ -22007,9 +22093,9 @@ The [accept_admin_role](/ccip/concepts/cross-chain-token/svm/registration-admini
 | Account | Address                                        | Description                                                  |
 | ------- | ---------------------------------------------- | ------------------------------------------------------------ |
 | **#1**  | `3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3` | Router Config PDA (read-only)                                |
-| **#2**  | `89Jy2ZEz6LcvBPVQgR2YxPYVoF1sLugNRs3havQP8SvF` | **🎯 Token Admin Registry PDA** - Updates status to "active" |
-| **#3**  | `FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1` | Token Mint (your token)                                      |
-| **#4**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | Authority (your Squad vault - must be pending admin)         |
+| **#2**  | `6gmKNyGtrSgB4gAH9yQyzXSPnDw1P5We9abZLEcuqdLY` | **🎯 Token Admin Registry PDA** - Updates status to "active" |
+| **#3**  | `3nLW4zA3xdZmKY5SyhP2RRr7BDMKLuh4SQ9kFTDsx1Li` | Token Mint (your token)                                      |
+| **#4**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | Authority (your Squad vault - must be pending admin)         |
 
 **What This Transaction Does:**
 This is the **acceptance step** of the two-phase administrator registration. It updates the Token Admin Registry PDA (Account #2) from "pending administrator" to "active administrator" status. Your Squad vault explicitly accepts the administrator role, completing the secure registration process.
@@ -22019,8 +22105,7 @@ This is the **acceptance step** of the two-phase administrator registration. It 
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add
-    instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
 
   - **Review**: Verify transaction details and parameters
 
@@ -22039,7 +22124,7 @@ Create the Associated Token Account (ATA) for the Squad vault. This account will
 
 **Transaction Details:**
 
-- **Squad Vault ATA**: `G7yVJJKDRBQDdbFttmA3G3oytFKBcsZH8VMdJWBXJKJB` (example)
+- **Squad Vault ATA**: `ApwnQFrEvC2Zo9PD6YigMNDzQQPQvFm4bNE1EUtFZzMV` (example)
 - **Owner**: Squad vault PDA
 
 ### Step 7: Mint Tokens for Pool Liquidity
@@ -22056,9 +22141,9 @@ Mint tokens to your Squad vault to prepare for LockRelease pool liquidity provis
 
 | Account | Address                                        | Description                                        |
 | ------- | ---------------------------------------------- | -------------------------------------------------- |
-| **#1**  | `FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1` | **Token Mint** (writable - supply updated)         |
-| **#2**  | `G7yVJJKDRBQDdbFttmA3G3oytFKBcsZH8VMdJWBXJKJB` | **Squad vault's ATA** (writable - receives tokens) |
-| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault** (signer)                           |
+| **#1**  | `3nLW4zA3xdZmKY5SyhP2RRr7BDMKLuh4SQ9kFTDsx1Li` | **Token Mint** (writable - supply updated)         |
+| **#2**  | `ApwnQFrEvC2Zo9PD6YigMNDzQQPQvFm4bNE1EUtFZzMV` | **Squad vault's ATA** (writable - receives tokens) |
+| **#3**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Squad Vault** (signer)                           |
 
 **What This Transaction Does:**
 This is a standard SPL token mint operation that mints tokens for the Squad vault to use as liquidity for the LockRelease pool. Since the Squad vault retains mint authority, it can directly mint tokens without requiring multisig operations.
@@ -22080,7 +22165,7 @@ This is a standard SPL token mint operation that mints tokens for the Squad vaul
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
   - **Review**: Verify transaction details and parameters
   - **Simulate**: Simulate the transaction to ensure it will succeed
   - **Approve**: Obtain required threshold signatures
@@ -22101,14 +22186,14 @@ Configure the Squad vault as the rebalancer for the LockRelease pool. The rebala
 
 | Account | Address                                        | Description                                  |
 | ------- | ---------------------------------------------- | -------------------------------------------- |
-| **#1**  | `9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1` | **Pool state PDA** (writable)                |
-| **#2**  | `FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1` | **Token Mint** (read-only - your token mint) |
-| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault** (signer)                     |
+| **#1**  | `9n9UgFppJCanCjy6cd3tEudEemUf4bQRR8PgiXN7Rp4R` | **Pool state PDA** (writable)                |
+| **#2**  | `3nLW4zA3xdZmKY5SyhP2RRr7BDMKLuh4SQ9kFTDsx1Li` | **Token Mint** (read-only - your token mint) |
+| **#3**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Squad Vault** (signer)                     |
 
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
   - **Review**: Verify rebalancer address matches your Squad vault
   - **Simulate**: Simulate the transaction to ensure it will succeed
   - **Approve**: Obtain required threshold signatures
@@ -22121,7 +22206,7 @@ Create the Associated Token Account (ATA) for the Pool Signer PDA. This account 
 
 **Transaction Details:**
 
-- **Pool ATA**: `A57bH91QkGuARh37JTN41fd3Vwcmf2bLzVHAVPB8Gaeg` (example)
+- **Pool ATA**: `GQ4md7wUKmU35m4munp8giYg9osXCTaGVCPvNYzz8Wnu` (example)
 - **Owner**: Pool Signer PDA
 
 ### Step 10: Set Can Accept Liquidity
@@ -22138,9 +22223,9 @@ Configure the LockRelease pool to accept liquidity from the rebalancer. This set
 
 | Account | Address                                        | Description                                           |
 | ------- | ---------------------------------------------- | ----------------------------------------------------- |
-| **#1**  | `9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1` | **Pool State PDA** (writable - configuration updated) |
-| **#2**  | `FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1` | **Token Mint** (read-only)                            |
-| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault** (signer - pool owner authority)       |
+| **#1**  | `9n9UgFppJCanCjy6cd3tEudEemUf4bQRR8PgiXN7Rp4R` | **Pool State PDA** (writable - configuration updated) |
+| **#2**  | `3nLW4zA3xdZmKY5SyhP2RRr7BDMKLuh4SQ9kFTDsx1Li` | **Token Mint** (read-only)                            |
+| **#3**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Squad Vault** (signer - pool owner authority)       |
 
 **Transaction Flow:**
 
@@ -22151,7 +22236,7 @@ Configure the LockRelease pool to accept liquidity from the rebalancer. This set
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
   - **Review**: Verify the liquidity acceptance setting is enabled
   - **Simulate**: Simulate the transaction to ensure it will succeed
   - **Approve**: Obtain required threshold signatures
@@ -22172,9 +22257,9 @@ Approve the Pool Signer PDA to spend tokens from the Squad vault's ATA. This del
 
 | Account | Address                                        | Description                                         |
 | ------- | ---------------------------------------------- | --------------------------------------------------- |
-| **#1**  | `G7yVJJKDRBQDdbFttmA3G3oytFKBcsZH8VMdJWBXJKJB` | **Squad Vault ATA** (writable - delegation updated) |
-| **#2**  | `E8odUv4V4DXy3RWvkNYF7H33X9J56RtsFp4ExVXB86UA` | **Pool Signer PDA** (read-only - delegate)          |
-| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault** (signer - token account owner)      |
+| **#1**  | `ApwnQFrEvC2Zo9PD6YigMNDzQQPQvFm4bNE1EUtFZzMV` | **Squad Vault ATA** (writable - delegation updated) |
+| **#2**  | `5FBAzopzmZ1oo2aadR1PKfTZqK7viBYipjvDVMyEQxzk` | **Pool Signer PDA** (read-only - delegate)          |
+| **#3**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Squad Vault** (signer - token account owner)      |
 
 **Transaction Flow:**
 
@@ -22184,7 +22269,7 @@ Approve the Pool Signer PDA to spend tokens from the Squad vault's ATA. This del
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
   - **Review**: Verify delegate address is the Pool Signer PDA
   - **Simulate**: Simulate the transaction to ensure it will succeed
   - **Approve**: Obtain required threshold signatures
@@ -22205,13 +22290,13 @@ Provide initial liquidity to the LockRelease pool using the tokens minted in Ste
 
 | Account | Address                                        | Description                                         |
 | ------- | ---------------------------------------------- | --------------------------------------------------- |
-| **#1**  | `9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1` | **Pool State PDA** (read-only)                      |
+| **#1**  | `9n9UgFppJCanCjy6cd3tEudEemUf4bQRR8PgiXN7Rp4R` | **Pool State PDA** (read-only)                      |
 | **#2**  | `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`  | **Token Program** (read-only)                       |
-| **#3**  | `FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1` | **Token Mint** (writable)                           |
-| **#4**  | `E8odUv4V4DXy3RWvkNYF7H33X9J56RtsFp4ExVXB86UA` | **Pool Signer PDA** (read-only)                     |
-| **#5**  | `A57bH91QkGuARh37JTN41fd3Vwcmf2bLzVHAVPB8Gaeg` | **Pool Token ATA** (writable - receives liquidity)  |
-| **#6**  | `G7yVJJKDRBQDdbFttmA3G3oytFKBcsZH8VMdJWBXJKJB` | **Squad Vault ATA** (writable - provides liquidity) |
-| **#7**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault** (signer - rebalancer authority)     |
+| **#3**  | `3nLW4zA3xdZmKY5SyhP2RRr7BDMKLuh4SQ9kFTDsx1Li` | **Token Mint** (writable)                           |
+| **#4**  | `5FBAzopzmZ1oo2aadR1PKfTZqK7viBYipjvDVMyEQxzk` | **Pool Signer PDA** (read-only)                     |
+| **#5**  | `GQ4md7wUKmU35m4munp8giYg9osXCTaGVCPvNYzz8Wnu` | **Pool Token ATA** (writable - receives liquidity)  |
+| **#6**  | `ApwnQFrEvC2Zo9PD6YigMNDzQQPQvFm4bNE1EUtFZzMV` | **Squad Vault ATA** (writable - provides liquidity) |
+| **#7**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Squad Vault** (signer - rebalancer authority)     |
 
 **Transaction Flow:**
 
@@ -22223,7 +22308,7 @@ Provide initial liquidity to the LockRelease pool using the tokens minted in Ste
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
   - **Review**: Verify liquidity amount and token addresses
   - **Simulate**: Simulate the transaction to ensure it will succeed
   - **Approve**: Obtain required threshold signatures
@@ -22255,8 +22340,8 @@ Load Phase 1 variables and set the Ethereum Sepolia chain selector for cross-cha
 
 Configure your token pool for cross-chain transfers to Ethereum Sepolia. This process involves two sequential operations:
 
-1. **Initialize Chain Remote Config**: Create the basic cross-chain configuration using [init_chain_remote_config](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#init_chain_remote_config)
-2. **Edit Chain Remote Config**: Add the remote pool address using [edit_chain_remote_config](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config)
+1. **Initialize Chain Remote Config**: Create the basic cross-chain configuration using [init_chain_remote_config](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#init_chain_remote_config)
+2. **Edit Chain Remote Config**: Add the remote pool address using [edit_chain_remote_config](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#edit_chain_remote_config)
 
 #### Step 2A: Initialize Chain Remote Config
 
@@ -22266,9 +22351,9 @@ Initialize the basic remote chain configuration for Ethereum Sepolia. Pool addre
 
 | Account | Address                                        | Description                                         |
 | ------- | ---------------------------------------------- | --------------------------------------------------- |
-| **#1**  | `9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1` | **Pool State PDA** (read-only - validation)         |
-| **#2**  | `DzPjdCvEgJq6tyTvQtuh6i8WtPn6gWGmhaRM3DnCvwq9` | **Chain Remote Config PDA** (writable - created)    |
-| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault** (signer, writable - pool authority) |
+| **#1**  | `9n9UgFppJCanCjy6cd3tEudEemUf4bQRR8PgiXN7Rp4R` | **Pool State PDA** (read-only - validation)         |
+| **#2**  | `5ZctnHiRZyrtDirqfXxpo4aH6eNT7YTJZ3HZh5WJWMiX` | **Chain Remote Config PDA** (writable - created)    |
+| **#3**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Squad Vault** (signer, writable - pool authority) |
 | **#4**  | `11111111111111111111111111111111`             | **System Program** (read-only - account creation)   |
 
 **What This Command Does:**
@@ -22277,7 +22362,7 @@ This initializes the **cross-chain configuration** for your Solana token to enab
 **Key Details:**
 
 - **Remote Chain**: Ethereum Sepolia (chain selector: `16015286601757825753`)
-- **Token Mapping**: Links to ERC20 token `0x563eb47F0D8bE95CAF70ec2b7bB9Cdca6f045715`
+- **Token Mapping**: Links to ERC20 token `0x44490fee906a4cfd5e71a46c3ca2147287b018e7`
 - **Decimal Precision**: 18 decimals (standard EVM token format)
 - **Basic Setup**: No rate limits or pool addresses configured at this stage
 - **Account Creation**: Creates a new Chain Remote Config PDA for this cross-chain relationship
@@ -22292,7 +22377,7 @@ This initializes the **cross-chain configuration** for your Solana token to enab
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
   - **Review**: Verify transaction details and parameters
   - **Simulate**: Simulate the transaction to ensure it will succeed
   - **Approve**: Obtain required threshold signatures
@@ -22301,15 +22386,15 @@ This initializes the **cross-chain configuration** for your Solana token to enab
 
 #### Step 2B: Edit Chain Remote Config (Add Remote Pool Address)
 
-After initializing the chain remote config, add the remote pool address to enable bidirectional cross-chain transfers. This uses [`edit_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config) to specify the Ethereum pool address.
+After initializing the chain remote config, add the remote pool address to enable bidirectional cross-chain transfers. This uses [`edit_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#edit_chain_remote_config) to specify the Ethereum pool address.
 
 **Account Breakdown from the Transaction:**
 
 | Account | Address                                        | Description                                                    |
 | ------- | ---------------------------------------------- | -------------------------------------------------------------- |
-| **#1**  | `9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1` | **Pool State PDA** (read-only - authority validation)          |
-| **#2**  | `DzPjdCvEgJq6tyTvQtuh6i8WtPn6gWGmhaRM3DnCvwq9` | **Chain Remote Config PDA** (writable - configuration updated) |
-| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault Authority** (signer, writable - fee payer)       |
+| **#1**  | `9n9UgFppJCanCjy6cd3tEudEemUf4bQRR8PgiXN7Rp4R` | **Pool State PDA** (read-only - authority validation)          |
+| **#2**  | `5ZctnHiRZyrtDirqfXxpo4aH6eNT7YTJZ3HZh5WJWMiX` | **Chain Remote Config PDA** (writable - configuration updated) |
+| **#3**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Squad Vault Authority** (signer, writable - fee payer)       |
 | **#4**  | `11111111111111111111111111111111`             | **System Program** (read-only - account operations)            |
 
 **Transaction Flow:**
@@ -22321,7 +22406,7 @@ After initializing the chain remote config, add the remote pool address to enabl
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
   - **Review**: Verify transaction details and parameters
   - **Simulate**: Simulate the transaction to ensure it will succeed
   - **Approve**: Obtain required threshold signatures
@@ -22355,14 +22440,14 @@ This command configures inbound and outbound rate limiting for token transfers b
 
 | Account | Address                                        | Type                 | Purpose                                                           |
 | ------- | ---------------------------------------------- | -------------------- | ----------------------------------------------------------------- |
-| **#1**  | `9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1` | **Read-only**        | **Pool State PDA** - Main pool configuration account              |
-| **#2**  | `DzPjdCvEgJq6tyTvQtuh6i8WtPn6gWGmhaRM3DnCvwq9` | **Writable**         | **Chain Config PDA** - Chain-specific config (stores rate limits) |
-| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Signer, Writable** | **Authority** - Your Squad vault that can modify rate limits      |
+| **#1**  | `9n9UgFppJCanCjy6cd3tEudEemUf4bQRR8PgiXN7Rp4R` | **Read-only**        | **Pool State PDA** - Main pool configuration account              |
+| **#2**  | `5ZctnHiRZyrtDirqfXxpo4aH6eNT7YTJZ3HZh5WJWMiX` | **Writable**         | **Chain Config PDA** - Chain-specific config (stores rate limits) |
+| **#3**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Signer, Writable** | **Authority** - Your Squad vault that can modify rate limits      |
 
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
   - **Review**: Verify transaction details and parameters
   - **Simulate**: Simulate the transaction to ensure it will succeed
   - **Approve**: Obtain required threshold signatures
@@ -22381,9 +22466,9 @@ This command creates an **Address Lookup Table (ALT)** that stores frequently us
 
 | Account | Address                                        | Description                                               |
 | ------- | ---------------------------------------------- | --------------------------------------------------------- |
-| **#1**  | `C3a5U5C4Sn8fywXmV4ZX6JAfYoQrEhAqF5daL39ScKSy` | **ALT Account** (writable - being created)                |
-| **#2**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **ALT Authority** (signer - will own the table)           |
-| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Fee Payer** (signer, writable - pays creation costs)    |
+| **#1**  | `2xNjGFuymdCu2KMqDtNTTVuhyFUYvXhbWz29Q1kAnPVK` | **ALT Account** (writable - being created)                |
+| **#2**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **ALT Authority** (signer - will own the table)           |
+| **#3**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Fee Payer** (signer, writable - pays creation costs)    |
 | **#4**  | `11111111111111111111111111111111`             | **System Program** (read-only - handles account creation) |
 
 **What This Command Does:**
@@ -22392,7 +22477,7 @@ This command creates the ALT infrastructure needed for efficient CCIP operations
 
 **Transaction Flow:**
 
-1. **ALT Creation**: Creates lookup table account `C3a5U...` with Squad Vault as authority
+1. **ALT Creation**: Creates lookup table account `2xNjGFuymdCu2KMqDtNTTVuhyFUYvXhbWz29Q1kAnPVK` with Squad Vault as authority
 2. **Core Address Addition**: Adds essential CCIP accounts (programs, PDAs) to the table
 3. **Index Assignment**: Each address gets a unique 1-byte index for future reference
 
@@ -22406,14 +22491,14 @@ The created lookup table will contain indices for these accounts in this exact o
 
 | Index | Account Address                                | Purpose                                    |
 | ----- | ---------------------------------------------- | ------------------------------------------ |
-| **0** | `C3a5U5C4Sn8fywXmV4ZX6JAfYoQrEhAqF5daL39ScKSy` | **ALT Address (Self-Reference)**           |
-| **1** | `89Jy2ZEz6LcvBPVQgR2YxPYVoF1sLugNRs3havQP8SvF` | **Token Admin Registry PDA**               |
+| **0** | `2xNjGFuymdCu2KMqDtNTTVuhyFUYvXhbWz29Q1kAnPVK` | **ALT Address (Self-Reference)**           |
+| **1** | `6gmKNyGtrSgB4gAH9yQyzXSPnDw1P5We9abZLEcuqdLY` | **Token Admin Registry PDA**               |
 | **2** | `8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC` | **Pool Program ID**                        |
-| **3** | `9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1` | **Pool State PDA**                         |
-| **4** | `A57bH91QkGuARh37JTN41fd3Vwcmf2bLzVHAVPB8Gaeg` | **Pool Signer's Associated Token Account** |
-| **5** | `E8odUv4V4DXy3RWvkNYF7H33X9J56RtsFp4ExVXB86UA` | **Pool Signer PDA**                        |
+| **3** | `9n9UgFppJCanCjy6cd3tEudEemUf4bQRR8PgiXN7Rp4R` | **Pool State PDA**                         |
+| **4** | `GQ4md7wUKmU35m4munp8giYg9osXCTaGVCPvNYzz8Wnu` | **Pool Signer's Associated Token Account** |
+| **5** | `5FBAzopzmZ1oo2aadR1PKfTZqK7viBYipjvDVMyEQxzk` | **Pool Signer PDA**                        |
 | **6** | `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`  | **Token Program ID (SPL Token v1)**        |
-| **7** | `FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1` | **Token Mint**                             |
+| **7** | `3nLW4zA3xdZmKY5SyhP2RRr7BDMKLuh4SQ9kFTDsx1Li` | **Token Mint**                             |
 | **8** | `84grjTssjNyuDsaxJGkpJB8t17Y9sQt1G81R5AQyZ1Rr` | **Fee Quoter Token Config PDA**            |
 | **9** | `DPyeT76APQQVQD7EJRVw8Y6gLYjGkC5CdbdHQTQkpoN2` | **Router External Token Pools Signer PDA** |
 
@@ -22426,7 +22511,7 @@ The created lookup table will contain indices for these accounts in this exact o
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
   - **Review**: Verify transaction details and parameters
   - **Simulate**: Simulate the transaction to ensure it will succeed
   - **Approve**: Obtain required threshold signatures
@@ -22452,10 +22537,10 @@ Register your token pool with the CCIP Router using [set_pool](/ccip/api-referen
 | Account | Address                                        | Description                                                 |
 | ------- | ---------------------------------------------- | ----------------------------------------------------------- |
 | **#1**  | `3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3` | **Router Config PDA** (read-only - configuration reference) |
-| **#2**  | `89Jy2ZEz6LcvBPVQgR2YxPYVoF1sLugNRs3havQP8SvF` | **Token Admin Registry PDA** (writable - pool registration) |
-| **#3**  | `FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1` | **Token Mint** (read-only - token identification)           |
-| **#4**  | `C3a5U5C4Sn8fywXmV4ZX6JAfYoQrEhAqF5daL39ScKSy` | **Address Lookup Table** (read-only - ALT registration)     |
-| **#5**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault Authority** (signer, writable - admin & fees) |
+| **#2**  | `6gmKNyGtrSgB4gAH9yQyzXSPnDw1P5We9abZLEcuqdLY` | **Token Admin Registry PDA** (writable - pool registration) |
+| **#3**  | `3nLW4zA3xdZmKY5SyhP2RRr7BDMKLuh4SQ9kFTDsx1Li` | **Token Mint** (read-only - token identification)           |
+| **#4**  | `2xNjGFuymdCu2KMqDtNTTVuhyFUYvXhbWz29Q1kAnPVK` | **Address Lookup Table** (read-only - ALT registration)     |
+| **#5**  | `AgPSS5TVRimXPx2bv7Cs2CnuD6pVGPZkrPxjnZ8tLtgB` | **Squad Vault Authority** (signer, writable - admin & fees) |
 
 **What This Command Does:**
 
@@ -22486,7 +22571,7 @@ Based on the ALT order established earlier:
 <Aside type="note" title="Squads Execution Required">
   **Execute this base58 transaction in Squads UI:**
 
-  - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+  - **Import**: Copy the base58 output → Squads UI → **Developers** (left sidebar) → **TX Builder** → **Import base58 encoded tx**
   - **Review**: Verify transaction details and parameters
   - **Simulate**: Simulate the transaction to ensure it will succeed
   - **Approve**: Obtain required threshold signatures
@@ -22526,94 +22611,118 @@ Configure the Ethereum pool to recognize the Solana chain and set production rat
     - 0.1 tokens/sec = `100000000000000000` wei (0.1 × 10^18)
 </Aside>
 
-## Phase 5: Testing and Validation
+## Phase 5: Pre-Transfer Setup, Validation, and Testing
 
 <Aside type="note" title="Terminal Context Check">
-  **Current Focus: Terminal 3 (Solana Testing)** Switch to the Solana Starter Kit repository for comprehensive testing.
+  **Current Focus: Terminal 1 (CCIP Solana BS58 Generator)** Complete pre-transfer setup and validate your
+  configuration. Governance steps use Squads; delegation and verification use your local wallet with `--execute`.
 </Aside>
 
-### Step 1: Load Phase 4 Variables
-
-Before testing cross-chain transfers, ensure your terminal environment is properly configured:
-
-### Transfer Direction 1: Solana → Ethereum
-
-Test the production multisig setup with a cross-chain transfer from Solana Devnet to Ethereum Sepolia:
-
-#### Prepare for Testing
-
-Before testing cross-chain transfers, you need to create the pool's Associated Token Account (ATA) and prepare your tokens:
-
-##### Check Token Balance
-
-##### Delegate Token Authority
-
-#### Transfer tokens from Solana Devnet to Ethereum Sepolia
-
-#### Monitor and Verify Transaction
-
-Upon successful execution, the system generates critical tracking identifiers for transaction monitoring and verification.
-
-**Transaction Identifiers:**
-
-- **Transaction Signature**: `4w81mpUozjJsEvHrkukCejbA9byMjkHacwtqM5cJD19XQu8MvXzoJ4YTqqkoEvBfP7HPvdivMA3Q1MePA16PdCXM`
-- **CCIP Message ID**: `0xd92433fea1fab2b9b2efa8d6091df0b5156bb159c883b94dada725539e5edace`
-
-**CCIP Explorer** (Primary monitoring interface):
-
-```
-https://ccip.chain.link/msg/0xd92433fea1fab2b9b2efa8d6091df0b5156bb159c883b94dada725539e5edace
-```
-
-The CCIP Explorer provides comprehensive transaction visibility:
-
-- Source chain (Solana) transaction confirmation
-- CCIP message processing and routing
-- Destination chain (Ethereum) message delivery
-- Token minting completion on Ethereum
-
-**Solana Explorer** (Source chain verification):
-
-```
-https://explorer.solana.com/tx/4w81mpUozjJsEvHrkukCejbA9byMjkHacwtqM5cJD19XQu8MvXzoJ4YTqqkoEvBfP7HPvdivMA3Q1MePA16PdCXM?cluster=devnet
-```
-
-### Transfer Direction 2: Ethereum → Solana
-
-<Aside type="note" title="Terminal Environment">
-  **Continue in Terminal 3** (Solana Starter Kit directory). No need to switch terminals - the Solana Starter Kit
-  handles Ethereum → Solana transfers as well.
+<Aside type="note" title="Cross-Chain Transfers with CCIP CLI">
+  Use [`@chainlink/ccip-cli`](https://github.com/smartcontractkit/ccip-tools-ts) for bidirectional token transfers. Run Solana → EVM sends from Terminal 1 and EVM → Solana sends from Terminal 2. See the [CCIP CLI documentation](https://docs.chain.link/ccip/tools/cli/) for full options.
 </Aside>
 
-#### Transfer tokens from Ethereum Sepolia to Solana Devnet
+### Step 1: Load Configuration
 
-#### Monitor and Verify Transaction
+### Step 2: Pre-Transfer Setup
 
-Upon successful execution, the system generates distinct tracking identifiers for comprehensive monitoring across both blockchain networks.
+Before cross-chain transfers (when available), complete token delegation so CCIP can move tokens from your wallet.
 
-**Transaction Identifiers:**
+#### Check Token Balance
 
-- **Ethereum Transaction Hash**: `0xcacca1de44800d4e88544597b1b9f8190db93ae2f2144bb3b92aafd73b626c3d`
-- **CCIP Message ID**: `0xb8327a54fcf042f6fa9ca236372ea68835204802ca13ebfc34c7f839631ee567`
+#### Create Pool Associated Token Account
 
-**CCIP Explorer** (Primary monitoring interface):
+If not created during pool setup, create the pool's ATA:
 
+#### Delegate Token Authority
+
+Approve the fee-billing signer to transfer tokens from your ATA:
+
+#### Verify Delegation
+
+Check that your token account is delegated to the fee-billing signer:
+
+Display token account and delegation status:
+
+### Step 3: Verify Solana Pool and Chain Config
+
+### Step 4: Verify Ethereum Pool (Terminal 2)
+
+**Switch to Terminal 2** (Smart Contract Examples - Hardhat):
+
+```bash
+npx hardhat getPoolConfig \
+  --pooladdress $ETH_POOL_ADDRESS \
+  --network ethereumSepolia
 ```
-https://ccip.chain.link/msg/0xb8327a54fcf042f6fa9ca236372ea68835204802ca13ebfc34c7f839631ee567
+
+Confirm the Ethereum pool recognizes Solana Devnet with your `$SOL_POOL_ADDRESS` and `$SOL_TOKEN_MINT`.
+
+### Configure CCIP CLI
+
+Export these RPC URLs once before your first transfer:
+
+```bash
+export SOLANA_DEVNET_RPC="https://api.devnet.solana.com"
+export ETHEREUM_SEPOLIA_RPC_URL="<YOUR_ETHEREUM_SEPOLIA_RPC_URL>"
+
+export ETH_CCIP_ROUTER="0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59"
 ```
 
-The CCIP Explorer provides comprehensive transaction visibility:
+Use the same `ETHEREUM_SEPOLIA_RPC_URL` from your env-enc setup in Terminal 2 (`npx env-enc view`). On `ccip-cli send`, the source chain RPC quotes fees and submits the transaction; for token-only transfers in this tutorial, that is the only RPC strictly required to send. Pass both RPCs on cross-chain commands anyway: the destination RPC is required for `ccip-cli show --wait` and for optional send features such as `--estimate-gas-limit` or `send --wait`.
 
-- Source chain (Ethereum) transaction confirmation
-- CCIP message processing and routing
-- Destination chain (Solana) message delivery
-- Token minting completion on Solana network
+<Aside type="note" title="RPC and wallet configuration">
+  Repeat `--rpc` for multiple networks, or use `--rpcs` with comma-separated URLs. Alternatively, set `RPC_*` environment variables or a `.env` file — see [CCIP CLI configuration](https://docs.chain.link/ccip/tools/cli/configuration). Solana sends use `--wallet ~/.config/solana/id.json`. EVM sends: prefer `--wallet hardhat:<name>` from the Hardhat project directory ([Hardhat keystore](https://hardhat.org/docs/plugins/hardhat-keystore)); alternatively export `PRIVATE_KEY` manually after `npx env-enc view` (Hardhat tasks load env-enc automatically, but `ccip-cli` does not). See [CCIP CLI wallet configuration](https://docs.chain.link/ccip/tools/cli/configuration#wallet-configuration).
+</Aside>
 
-**Ethereum Sepolia Explorer** (Source chain verification):
+### Transfer Solana → Ethereum
 
+**Terminal 1** (CCIP Solana BS58 Generator):
+
+The `-t` flag uses human-readable amounts (0.001 tokens with 9 decimals = 1,000,000 smallest units).
+
+### Transfer Ethereum → Solana
+
+**Switch to Terminal 2** (Smart Contract Examples - Hardhat):
+
+`ccip-cli` does not load Hardhat env-enc automatically. Run these commands from the Hardhat project directory. Prefer [Hardhat keystore](https://hardhat.org/docs/plugins/hardhat-keystore) over exporting a private key in plain text.
+
+For token-only transfers to Solana, `--to` is the destination wallet that receives minted tokens. CCIP fees are paid in native Sepolia ETH by default — ensure your wallet has sufficient ETH for gas and fees.
+
+<Aside type="note" title="Pay fees in LINK (optional)">
+  Add `--fee-token LINK` to pay CCIP fees in LINK instead of ETH (Sepolia LINK:
+  `0x779877A7B0D9E8603169DdbD7836e478b4624789`).
+</Aside>
+
+<Aside type="note" title="Your transfer identifiers will differ">
+  Use the Sepolia transaction hash from your `ccip-cli send` command with `ccip-cli show <TX_HASH> --wait`. Message IDs, timestamps, and Solana receipt signatures are unique per transfer. The example below shows the expected **completed** output shape once the message executes on Solana Devnet.
+</Aside>
+
+### Optional: Test Rate Limit Enforcement
+
+If you configured rate limits in Phase 3, attempt a transfer that exceeds capacity (25 tokens vs 20-token limit):
+
+### Optional: Verify Rate Limit Configuration
+
+If you configured rate limits in Phase 3, confirm they appear in your chain configuration:
+
+```bash
+# Terminal 1 — inspect Solana outbound/inbound rate limits
+pnpm bs58 --env devnet lockrelease-token-pool \
+  --instruction get-chain-config \
+  --program-id $SOL_CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --remote-chain-selector $ETHEREUM_SEPOLIA_CHAIN_SELECTOR
 ```
-https://sepolia.etherscan.io/tx/0xcacca1de44800d4e88544597b1b9f8190db93ae2f2144bb3b92aafd73b626c3d
+
+```bash
+# Terminal 2 — inspect EVM rate limit settings
+npx hardhat getPoolConfig \
+  --pooladdress $ETH_POOL_ADDRESS \
+  --network ethereumSepolia
 ```
+
+**Congratulations!** Your production Lock/Release cross-chain token infrastructure with Squads governance is fully configured on both chains.
 
 ---
 
