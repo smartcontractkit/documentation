@@ -2,76 +2,86 @@ import { Aside } from "@components"
 
 ## Prerequisites
 
-This tutorial requires setting up two different repositories in separate terminal windows. Follow the setup instructions for both environments before proceeding.
+This tutorial uses a **two-terminal workflow** across two repositories. Install the system tools below, clone both repos, then complete environment setup before starting Phase 1.
 
-### Development Environment Requirements
+### System Requirements
 
-**System Requirements:**
-
-- **Anchor and Solana CLI Tools**: Install following the [installation guide](https://www.anchor-lang.com/docs/installation). Requires Rust to be installed.
-- **Node.js v20 or higher**: Use the [nvm package](https://www.npmjs.com/package/nvm) to install and manage versions. Verify with `node -v`
-- **Yarn**: For dependency management
+- **Node.js v22 or higher**: Verify with `node -v` ([nvm](https://www.npmjs.com/package/nvm) recommended)
+- **pnpm**: Required for the BS58 generator (`npm install -g pnpm`)
+- **Solana CLI**: [Installation guide](https://docs.solana.com/cli/install-solana-cli-tools) (includes `spl-token`)
 - **Git**: For cloning repositories
+- **CCIP CLI**: For cross-chain transfer testing in the final phase
 
-### Terminal 1: Solana Starter Kit Setup
-
-**Clone and setup the Solana Starter Kit:**
+Install the [CCIP CLI](https://github.com/smartcontractkit/ccip-tools-ts) globally:
 
 ```bash
-git clone https://github.com/smartcontractkit/solana-starter-kit.git && cd solana-starter-kit
+npm install -g @chainlink/ccip-cli
+ccip-cli --help
 ```
 
-**Install dependencies:**
+See the [CCIP CLI documentation](https://docs.chain.link/ccip/tools/cli/) for RPC and wallet configuration.
+
+### Tutorial Workflow
+
+| Terminal       | Repository                                                                                                                  | Purpose                              | Commands        |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | --------------- |
+| **Terminal 1** | [CCIP Solana BS58 Generator](https://github.com/smartcontractkit/ccip-solana-bs58-generator)                                | Solana setup and configuration       | `pnpm bs58`     |
+| **Terminal 2** | [Smart Contract Examples (Hardhat)](https://github.com/smartcontractkit/smart-contract-examples/tree/main/ccip/cct/hardhat) | EVM deploy and configuration         | `npx hardhat`   |
+| **Either**     | Global `@chainlink/ccip-cli`                                                                                                | Cross-chain transfer testing (final) | `ccip-cli send` |
+
+### Terminal 1: CCIP Solana BS58 Generator
+
+**Clone and install** (skip `git clone` if you already have the repo):
 
 ```bash
-yarn install
+git clone https://github.com/smartcontractkit/ccip-solana-bs58-generator.git
+cd ccip-solana-bs58-generator
+pnpm install
 ```
 
-**Configure your Solana environment:**
+**Configure Solana CLI for devnet:**
+
+First, check whether your environment is already set up:
 
 ```bash
-# Set Solana CLI to use devnet
+solana config get
+solana address
+solana balance
+```
+
+If the RPC URL is already `https://api.devnet.solana.com`, your keypair path is correct, and you have sufficient SOL, skip to [Terminal 2 setup](#terminal-2-smart-contract-examples-hardhat) below.
+
+Otherwise, run only the steps you need:
+
+```bash
+# Set devnet (skip if config get already shows devnet)
 solana config set --url https://api.devnet.solana.com
 
-# Set your keypair (create one if needed)
+# Point to your keypair (skip if config get already shows the path you want)
 solana config set --keypair ~/.config/solana/id.json
 
-# If you do not have a keypair, create one:
+# Create a keypair only if the file does not exist yet
 solana-keygen new --outfile ~/.config/solana/id.json
-```
 
-**Fund your Solana wallet:**
-
-```bash
-# Get your wallet address
-solana address
-
-# Request SOL from the devnet faucet
+# Fund your wallet if balance is low
 solana airdrop 2
-```
-
-**Verify your setup:**
-
-```bash
-# Check your SOL balance
 solana balance
-
-# Verify you are on devnet
-solana config get
 ```
 
-### Terminal 2: Smart Contract Examples Setup
+<Aside type="note" title="Direct Execution">
+  Append `--execute` to **mutating** `pnpm bs58` commands in Terminal 1 so your local wallet signs and sends
+  transactions. **Read-only** commands (`get-state`, `get-chain-config`, `derive-accounts`) omit `--execute`. See the
+  [CCIP Solana BS58 Generator
+  README](https://github.com/smartcontractkit/ccip-solana-bs58-generator/blob/main/README.md) for command syntax.
+</Aside>
 
-**Clone the repository and navigate to the Hardhat project:**
+### Terminal 2: Smart Contract Examples (Hardhat)
+
+**Clone, install, and compile** (skip `git clone` if you already have the repo):
 
 ```bash
 git clone https://github.com/smartcontractkit/smart-contract-examples.git
 cd smart-contract-examples/ccip/cct/hardhat
-```
-
-**Install and compile dependencies:**
-
-```bash
 npm install
 npm run compile
 ```
@@ -79,24 +89,54 @@ npm run compile
 **Set up encrypted environment variables:**
 
 ```bash
-# Set encryption password
+# Required at the start of each session
 npx env-enc set-pw
 
-# Configure environment variables
+# Verify existing variables (skip npx env-enc set if all required vars are already configured)
+npx env-enc view
+
+# Add or update variables only if missing
 npx env-enc set
 ```
 
-**Required environment variables for Ethereum Sepolia:**
+**Required variables for Ethereum Sepolia:**
 
 - `ETHEREUM_SEPOLIA_RPC_URL`: RPC endpoint from [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/)
 - `PRIVATE_KEY`: Your testnet wallet private key ([MetaMask export guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/))
 - `ETHERSCAN_API_KEY`: API key from [Etherscan](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics)
 
-**Fund your wallet:**
+**Fund your EVM wallet:**
 
-- Acquire LINK and ETH on Ethereum Sepolia using [Chainlink faucets](https://faucets.chain.link/)
+- Acquire **ETH** on Ethereum Sepolia for transaction gas and CCIP fees ([Chainlink faucet](https://faucets.chain.link/) or [Google Cloud Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia))
+- **LINK** is optional — use `--fee-token LINK` on EVM → Solana sends if you prefer paying CCIP fees in LINK
+
+### Cross-Chain Transfers (CCIP CLI)
+
+The final tutorial phase uses globally installed `ccip-cli` (not the BS58 generator):
+
+- **Solana → EVM**: Run from Terminal 1 with `--wallet ~/.config/solana/id.json`
+- **EVM → Solana**: Run from Terminal 2 (Hardhat directory). Prefer `--wallet hardhat:<name>` ([Hardhat keystore](https://hardhat.org/docs/plugins/hardhat-keystore)) so the signing key stays encrypted. Hardhat tasks load env-enc automatically; `ccip-cli` does not. As an alternative, view the same key with `npx env-enc view` and export `PRIVATE_KEY` manually for the send command.
+
+**RPC endpoints** (required for source and destination chains). You can provide them any of these ways — see [CCIP CLI configuration](https://docs.chain.link/ccip/tools/cli/configuration):
+
+- **Command line:** pass `--rpc` on each command (repeat for multiple networks), or `--rpcs` with comma-separated URLs
+- **Environment variables:** export `RPC_*` variables (e.g., `RPC_SEPOLIA`, `RPC_SOLANA_DEVNET`) or the tutorial's `SOLANA_DEVNET_RPC` and `ETHEREUM_SEPOLIA_RPC_URL` exports
+- **File:** create a `.env` file in the directory where you run `ccip-cli` (default `--rpcs-file`, one URL per line)
+
+See the tutorial's **Configure CCIP CLI** section for the recommended `--rpc` examples.
+
+### Environment Variables
+
+Variables use prefixes to prevent confusion across repositories and tools:
+
+| Prefix       | Usage                   | Examples                                                                  |
+| ------------ | ----------------------- | ------------------------------------------------------------------------- |
+| `ETH_*`      | Ethereum addresses      | `ETH_TOKEN_ADDRESS`, `ETH_POOL_ADDRESS`                                   |
+| `SOL_*`      | Solana addresses        | `SOL_TOKEN_MINT`, `SOL_POOL_ADDRESS`, `SOL_WALLET_ADDRESS`                |
+| `SOL_CCIP_*` | Solana CCIP program IDs | `SOL_CCIP_POOL_PROGRAM`, `SOL_CCIP_ROUTER`, `SOL_CCIP_FEE_QUOTER_PROGRAM` |
 
 <Aside type="note" title="Two-Terminal Workflow">
-  Keep both terminal windows open throughout the tutorial. You will switch between the Solana Starter Kit (Terminal 1)
-  and Hardhat project (Terminal 2) as you progress through the phases.
+  Keep both terminal windows open throughout the tutorial. Switch between the CCIP Solana BS58 Generator (Terminal 1)
+  and the Hardhat project (Terminal 2) as each phase indicates. Cross-chain transfer commands use `ccip-cli` from the
+  terminal that matches the source chain.
 </Aside>
