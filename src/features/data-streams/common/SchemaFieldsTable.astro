@@ -1,5 +1,6 @@
 ---
 import { REPORT_SCHEMA_DEFINITIONS } from "../../feeds/components/reportSchemaData.ts"
+import schemaFieldsTableStyles from "./schemaFieldsTable.module.css"
 
 interface Props {
   schema: string
@@ -11,35 +12,37 @@ const schemaDef = REPORT_SCHEMA_DEFINITIONS[schema]
 
 {
   schemaDef && (
-    <table>
-      <thead>
-        <tr>
-          <th>Field</th>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        {schemaDef.fields.map((f) => (
+    <div class={schemaFieldsTableStyles.wrapper}>
+      <table class={schemaFieldsTableStyles.table}>
+        <thead>
           <tr>
-            <td>
-              <code>{f.field}</code>
-            </td>
-            <td>
-              <code>{f.type}</code>
-            </td>
-            <td>
-              {f.description}
-              {f.link && (
-                <>
-                  {" "}
-                  — <a href={f.link.href}>{f.link.label}</a>
-                </>
-              )}
-            </td>
+            <th>Field</th>
+            <th>Type</th>
+            <th>Description</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {schemaDef.fields.map((f) => (
+            <tr>
+              <td>
+                <code>{f.field}</code>
+              </td>
+              <td>
+                <code>{f.type}</code>
+              </td>
+              <td>
+                {f.description}
+                {f.link && (
+                  <>
+                    {" "}
+                    — <a href={f.link.href}>{f.link.label}</a>
+                  </>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 }
