@@ -19,15 +19,17 @@ The HTTP Client lets you make requests to external APIs from your workflow. Each
 - Fetching data from REST APIs ([GET requests](/cre/guides/workflow/using-http-client/get-request))
 - Sending data to webhooks ([POST requests](/cre/guides/workflow/using-http-client/post-request))
 - Submitting reports to offchain systems ([Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http))
+- Verifying reports received over HTTP ([Report verification](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go))
 
 ## Quick reference
 
-| Method                                                 | Use When                                  | Guide                                                                                                                   |
-| ------------------------------------------------------ | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| [`http.SendRequest`](#httpsendrequest)                 | Making HTTP calls (recommended)           | [GET](/cre/guides/workflow/using-http-client/get-request) / [POST](/cre/guides/workflow/using-http-client/post-request) |
-| [`client.SendRequest`](#clientsendrequest)             | Complex scenarios requiring fine control  | [GET](/cre/guides/workflow/using-http-client/get-request#2-the-creruninnodemode-pattern-low-level)                      |
-| [`sendRequester.SendReport`](#sendrequestersendreport) | Submitting reports via HTTP (recommended) | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http)                                     |
-| [`client.SendReport`](#clientsendreport)               | Complex report submission scenarios       | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http#advanced-low-level-pattern)          |
+| Method                                                              | Use When                                  | Guide                                                                                                                   |
+| ------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| [`http.SendRequest`](#httpsendrequest)                              | Making HTTP calls (recommended)           | [GET](/cre/guides/workflow/using-http-client/get-request) / [POST](/cre/guides/workflow/using-http-client/post-request) |
+| [`client.SendRequest`](#clientsendrequest)                          | Complex scenarios requiring fine control  | [GET](/cre/guides/workflow/using-http-client/get-request#2-the-creruninnodemode-pattern-low-level)                      |
+| [`sendRequester.SendReport`](#sendrequestersendreport)              | Submitting reports via HTTP (recommended) | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http)                                     |
+| [`client.SendReport`](#clientsendreport)                            | Complex report submission scenarios       | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http#advanced-low-level-pattern)          |
+| [`cre.ParseReport`](/cre/reference/sdk/core-go#report-verification) | Verifying received reports (receiver)     | [Report verification](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go)                             |
 
 ## Core types
 
@@ -397,3 +399,8 @@ func formatReport(r *sdk.ReportResponse) (*http.Request, error) {
 ```
 
 For complete examples of including signatures in different formats (body, headers, JSON), see the [Submitting Reports via HTTP guide](/cre/guides/workflow/using-http-client/submitting-reports-http#formatting-patterns).
+
+{/* prettier-ignore */}
+<Aside type="note" title="Receiving and verifying reports">
+  If your workflow **receives** reports (for example via an HTTP trigger), use [`cre.ParseReport`](/cre/reference/sdk/core-go#report-verification) before trusting payload data. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go).
+</Aside>

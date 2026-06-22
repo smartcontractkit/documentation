@@ -387,6 +387,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                 "cre/guides/workflow/using-http-client/submitting-reports-http-go",
               ],
             },
+            {
+              title: "Verifying CRE Reports Offchain",
+              url: "cre/guides/workflow/using-http-client/verifying-reports-offchain",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-http-client/verifying-reports-offchain-ts",
+                "cre/guides/workflow/using-http-client/verifying-reports-offchain-go",
+              ],
+            },
           ],
         },
         {

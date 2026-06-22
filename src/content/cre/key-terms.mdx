@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Learn essential CRE concepts: workflows, handlers, triggers, callbacks, Runtime, capabilities, DONs, and consensus."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-05-20"
 ---
 
 import { Aside } from "@components"
@@ -74,6 +74,12 @@ Short-lived objects passed to your callback function during a specific execution
 - **`NodeRuntime`**: Think of this as the "Manual Mode". It is used when a BFT guarantee cannot be provided automatically (e.g. calling a standard API). You tell each node to perform a task on its own. Each node returns its own individual answer, and you are responsible for telling the SDK how to combine them into a single, trusted result by providing an aggregation algorithm. This is always used inside a `cre.RunInNodeMode` block.
 
 Learn more about [Consensus and Aggregation](/cre/reference/sdk/consensus).
+
+### Report (CRE report)
+
+A cryptographically signed package your workflow [DON](/cre/key-terms#decentralized-oracle-network-don) produces after your callback encodes its result: payload bytes, report context, and DON signatures. Create it with [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime) (TypeScript) or [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) (Go).
+
+Deliver onchain with [`writeReport()`](/cre/reference/sdk/evm-client-ts#writereport) / [`WriteReport()`](/cre/reference/sdk/evm-client-go#writereport), or offchain with [`sendReport()`](/cre/reference/sdk/http-client-ts#using-sendreport) / [`SendReport()`](/cre/reference/sdk/http-client-go#sendrequestersendreport). Receivers verify with [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) or [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport). See [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http) and [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain).
 
 ### SDK Clients: `EVMClient` & `HTTPClient`
 

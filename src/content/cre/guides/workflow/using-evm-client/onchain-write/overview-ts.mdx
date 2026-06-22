@@ -42,6 +42,17 @@ Here's the journey your workflow's data takes to reach the blockchain:
 
 In your workflow code, this process involves two steps: calling `runtime.report()` to generate the signed report, then calling `evmClient.writeReport()` to submit it to the blockchain.
 
+### Where reports can go after generation
+
+The same signed report from `runtime.report()` can be delivered in different ways:
+
+| Destination                    | Guide                                                                                                                       | Verification                                                                                                           |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Smart contract (via Forwarder) | This section + [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain) | Onchain in `KeystoneForwarder`                                                                                         |
+| HTTP API                       | [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts)                            | [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts) on the receiver |
+
+See [API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http) for the sender → receiver flow.
+
 ## What you need: A consumer contract
 
 Before you can write data onchain, you need a **consumer contract**. This is the smart contract that will receive your workflow's data.

@@ -5,9 +5,9 @@ date: Last Modified
 sdkLang: "go"
 pageId: "reference-sdk-core"
 metadata:
-  description: "Reference for core Go SDK: Workflow, Handler, Runtime, NodeRuntime, and essential functions every CRE workflow uses."
+  description: "Reference for core Go SDK: Workflow, Handler, Runtime, NodeRuntime, report verification (ParseReport), and essential functions every CRE workflow uses."
   datePublished: "2025-11-04"
-  lastModified: "2026-04-20"
+  lastModified: "2026-05-20"
 ---
 
 import { Aside } from "@components"
@@ -320,6 +320,83 @@ func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
   For a complete walkthrough on creating, storing, and using secrets, see the [Secrets
   guide](/cre/guides/workflow/secrets).
 </Aside>
+
+## Report verification
+
+Parse and verify CRE reports received over HTTP or other offchain channels. Requires **cre-sdk-go v1.8.0** or later.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Guide">
+  For end-to-end examples (HTTP receiver workflow, payload format, private registry notes), see [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go). To **send** reports via HTTP, see [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go).
+</Aside>
+
+Verification runs in your callback: signatures are checked offchain, while authorized signers are loaded from the onchain **Capability Registry** (default: `cre.ProductionEnvironment()` on Ethereum Mainnet). This is not the workflow deployment registry (`private` or onchain).
+
+### `cre.ParseReport`
+
+**Signature:**
+
+```go
+func ParseReport(runtime Runtime, rawReport []byte, signatures [][]byte, reportContext []byte) (*Report, error)
+```
+
+Parses a report and verifies signatures against `cre.ProductionEnvironment()`. Registry reads are cached per chain and DON.
+
+### `cre.ParseReportWithConfig`
+
+**Signature:**
+
+```go
+func ParseReportWithConfig(runtime Runtime, rawReport []byte, signatures [][]byte, reportContext []byte, config ReportParseConfig) (*Report, error)
+```
+
+Same as `ParseReport`, with custom accepted environments or zones. Set `SkipSignatureVerification: true` to parse metadata only; call `report.VerifySignatures()` afterward when ready.
+
+### `Report` accessors
+
+After a successful parse:
+
+| Method            | Returns  | Description                                |
+| ----------------- | -------- | ------------------------------------------ |
+| `WorkflowID()`    | `string` | Workflow hash (hex)                        |
+| `WorkflowOwner()` | `string` | Workflow owner (hex)                       |
+| `WorkflowName()`  | `string` | Workflow name from metadata                |
+| `ExecutionID()`   | `string` | Execution identifier (hex)                 |
+| `DONID()`         | `uint32` | DON that produced the report               |
+| `Body()`          | `[]byte` | Payload after the 109-byte metadata header |
+| `SeqNr()`         | `uint64` | Sequence number                            |
+| `ConfigDigest()`  | `[]byte` | Config digest                              |
+| `ReportContext()` | `[]byte` | Full report context bytes                  |
+| `RawReport()`     | `[]byte` | Full raw report bytes                      |
+
+### `ReportParseConfig`
+
+| Field                       | Type            | Description                                           |
+| --------------------------- | --------------- | ----------------------------------------------------- |
+| `AcceptedEnvironments`      | `[]Environment` | Registry environments to try (defaults to production) |
+| `AcceptedZones`             | `[]Zone`        | Restrict verification to specific DON IDs             |
+| `SkipSignatureVerification` | `bool`          | Parse header only; call `VerifySignatures` separately |
+
+### `cre.ProductionEnvironment` and `cre.ZoneFromEnvironment`
+
+```go
+func ProductionEnvironment() Environment  // mainnet Capability Registry
+func ZoneFromEnvironment(env Environment, donId uint32) Zone
+```
+
+| `Environment` field | Type     | Description                                              |
+| ------------------- | -------- | -------------------------------------------------------- |
+| `ChainSelector`     | `uint64` | Chain selector for EVM reads (default: Ethereum Mainnet) |
+| `RegistryAddress`   | `string` | Capability Registry contract address                     |
+
+### Verification errors
+
+| Error                    | When                                         |
+| ------------------------ | -------------------------------------------- |
+| `ErrUnknownSigner`       | Recovered signer not in registry allowlist   |
+| `ErrWrongSignatureCount` | Fewer than f+1 valid signatures              |
+| `ErrRawReportTooShort`   | `rawReport` missing 109-byte metadata header |
+| `ErrDuplicateSigner`     | Same signer twice in accepted set            |
 
 ## `cre.OrderedEntries` and `cre.OrderedEntriesFunc`
 

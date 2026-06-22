@@ -19,7 +19,7 @@ Because it operates at the node level, all HTTP requests are wrapped in a consen
 - **[High-level (recommended)](#high-level-sendrequest-recommended):** Automatically wraps your request in the `runtime.runInNodeMode()` pattern with consensus aggregation.
 - **[Low-level](#low-level-sendrequest):** Requires manual wrapping in a `runtime.runInNodeMode()` block for complex scenarios.
 
-For complete step-by-step examples, see the [GET requests](/cre/guides/workflow/using-http-client/get-request) and [POST requests](/cre/guides/workflow/using-http-client/post-request) guides.
+For complete step-by-step examples, see the [GET requests](/cre/guides/workflow/using-http-client/get-request) and [POST requests](/cre/guides/workflow/using-http-client/post-request) guides. To **submit** signed reports, see [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts). To **verify** received reports, see [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) and [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts).
 
 ## High-level `sendRequest()` (recommended)
 
@@ -154,6 +154,11 @@ const submitReport = (sendRequester: HTTPSendRequester, report: Report): string 
   return "Report submitted successfully"
 }
 ```
+
+{/* prettier-ignore */}
+<Aside type="note" title="Receiving and verifying reports">
+  If your workflow **receives** reports (for example via an HTTP trigger), use [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) before trusting payload data, not `sendReport()`. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts).
+</Aside>
 
 ## Low-level `sendRequest()`
 
