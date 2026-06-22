@@ -70,7 +70,7 @@ enum Router_Error {
 | <nobr>`57102`</nobr> | <nobr>`SenderIsNotOffRamp`</nobr>    | A `Router_RouteMessage` was sent by an address that is not the expected OffRamp.                                      |
 | <nobr>`57105`</nobr> | <nobr>`SubjectCursed`</nobr>         | The transfer is blocked because the source or destination chain has been cursed by the Risk Management Network (RMN). |
 | <nobr>`57108`</nobr> | <nobr>`NoMultiTokenTransfers`</nobr> | Token transfers are not yet supported on TON. Pass an empty `tokenAmounts` cell.                                      |
-| <nobr>`57109`</nobr> | <nobr>`InsufficientFee`</nobr>       | The TON value attached to the message is below the required minimum. Increase the attached value.                     |
+| <nobr>`57109`</nobr> | <nobr>`InsufficientFee`</nobr>       | The GRAM value attached to the message is below the required minimum. Increase the attached value.                    |
 
 ---
 
@@ -135,7 +135,7 @@ enum FeeQuoter_Error {
 | <nobr>`34411`</nobr> | <nobr>`MsgDataTooLarge`</nobr>                       | The `data` payload exceeds the maximum allowed size for the destination chain.                                                                             |
 | <nobr>`34412`</nobr> | <nobr>`StaleGasPrice`</nobr>                         | The gas price data on the FeeQuoter is stale and cannot be used for fee calculation.                                                                       |
 | <nobr>`34413`</nobr> | <nobr>`DestChainNotEnabled`</nobr>                   | The destination chain is not enabled on this FeeQuoter.                                                                                                    |
-| <nobr>`34414`</nobr> | <nobr>`FeeTokenNotSupported`</nobr>                  | The specified fee token is not supported. Use native TON.                                                                                                  |
+| <nobr>`34414`</nobr> | <nobr>`FeeTokenNotSupported`</nobr>                  | The specified fee token is not supported. Use native GRAM.                                                                                                 |
 | <nobr>`34419`</nobr> | <nobr>`TokenTransfersNotSupported`</nobr>            | Token transfers are not yet supported on TON. Pass an empty `tokenAmounts` cell.                                                                           |
 | <nobr>`34427`</nobr> | <nobr>`MessageFeeTooHigh`</nobr>                     | The calculated fee exceeds the maximum fee per message allowed by the FeeQuoter.                                                                           |
 
@@ -154,14 +154,14 @@ enum Receiver_Error {
 }
 ```
 
-| Exit Code           | Symbol                      | Description                                                                                                                                                                                        |
-| ------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <nobr>`5400`</nobr> | <nobr>`Unauthorized`</nobr> | The sender of the `Receiver_CCIPReceive` message is not the authorized CCIP Router. Ensure your receiver stores the correct Router address.                                                        |
-| <nobr>`5401`</nobr> | <nobr>`LowValue`</nobr>     | The TON value attached to the `Receiver_CCIPReceive` message is below `MIN_VALUE`. The EVM sender must set a higher `gasLimit` in `GenericExtraArgsV2` (minimum 0.1 TON = `100_000_000n` nanoTON). |
+| Exit Code           | Symbol                      | Description                                                                                                                                                                                           |
+| ------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`5400`</nobr> | <nobr>`Unauthorized`</nobr> | The sender of the `Receiver_CCIPReceive` message is not the authorized CCIP Router. Ensure your receiver stores the correct Router address.                                                           |
+| <nobr>`5401`</nobr> | <nobr>`LowValue`</nobr>     | The GRAM value attached to the `Receiver_CCIPReceive` message is below `MIN_VALUE`. The EVM sender must set a higher `gasLimit` in `GenericExtraArgsV2` (minimum 0.1 GRAM = `100_000_000n` nanoGRAM). |
 
 <Aside type="caution">
   If your receiver throws `LowValue` (5401), the message will require manual execution. The EVM sender must set a
-  sufficient `gasLimit` in nanoTON when building the CCIP message. See the [Manual
+  sufficient `gasLimit` in nanoGRAM when building the CCIP message. See the [Manual
   Execution](/ccip/concepts/ton/manual-execution) page for recovery steps.
 </Aside>
 

@@ -34,7 +34,7 @@ Send this internal message to the Router to initiate a cross-chain message. See 
 The Router requires a minimum value attached to the message:
 
 - `Router_Costs.CCIPSend()` covers the Router's own execution (checked onchain)
-- Additionally, you must cover the CCIP fee (query from FeeQuoter) and a gas reserve (~0.5 TON) for the execution chain
+- Additionally, you must cover the CCIP fee (query from FeeQuoter) and a gas reserve (~0.5 GRAM)) for the execution chain
 
 #### Responses
 
@@ -124,9 +124,9 @@ get fun validatedFeeCell(msg: Cell<Router_CCIPSend>): coins
 
 #### Returns
 
-| Type                 | Description         |
-| -------------------- | ------------------- |
-| <nobr>`coins`</nobr> | The fee in nanoTON. |
+| Type                 | Description          |
+| -------------------- | -------------------- |
+| <nobr>`coins`</nobr> | The fee in nanoGRAM. |
 
 **TypeScript example (from the Starter Kit)**
 
@@ -149,7 +149,7 @@ const fee = feeRes.stack.readBigNumber()
 
 ### Option 2: `Router_GetValidatedFee` message (costs gas)
 
-Send a `Router_GetValidatedFee` internal message to the Router. The Router forwards the request to the OnRamp and FeeQuoter, then returns the fee via a callback message. This costs TON for the on-chain execution.
+Send a `Router_GetValidatedFee` internal message to the Router. The Router forwards the request to the OnRamp and FeeQuoter, then returns the fee via a callback message. This costs GRAM for the on-chain execution.
 
 ```tolk
 // Sent TO the Router
@@ -221,21 +221,21 @@ struct (0x00000001) CCIPSender_RelayCCIPSend {
 
 #### Fields
 
-| Field                        | Type                                 | Description                                                                                                                                                                                 |
-| ---------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <nobr>`routerAddress`</nobr> | <nobr>`address`</nobr>               | The CCIP Router contract address.                                                                                                                                                           |
-| <nobr>`valueToAttach`</nobr> | <nobr>`coins`</nobr>                 | The nanoTON value to forward to the Router. Must cover the CCIP fee plus execution gas reserve. Query `validatedFeeCell` beforehand and add at least a 10% buffer and ~0.5 TON gas reserve. |
-| <nobr>`message`</nobr>       | <nobr>`Cell<Router_CCIPSend>`</nobr> | The pre-built `Router_CCIPSend` message cell.                                                                                                                                               |
+| Field                        | Type                                 | Description                                                                                                                                                                                   |
+| ---------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`routerAddress`</nobr> | <nobr>`address`</nobr>               | The CCIP Router contract address.                                                                                                                                                             |
+| <nobr>`valueToAttach`</nobr> | <nobr>`coins`</nobr>                 | The nanoGRAM value to forward to the Router. Must cover the CCIP fee plus execution gas reserve. Query `validatedFeeCell` beforehand and add at least a 10% buffer and ~0.5 GRAM gas reserve. |
+| <nobr>`message`</nobr>       | <nobr>`Cell<Router_CCIPSend>`</nobr> | The pre-built `Router_CCIPSend` message cell.                                                                                                                                                 |
 
 **Total value to send to the Sender contract**
 
-`valueToAttach` + ~0.1 TON (to cover the Sender contract's own execution). Any surplus is returned via ACK.
+`valueToAttach` + ~0.1 GRAM (to cover the Sender contract's own execution). Any surplus is returned via ACK.
 
 #### Responses
 
-| Message                               | Opcode                    | Meaning                                                                                   |
-| ------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------- |
-| <nobr>`Router_MessageSent`</nobr>     | <nobr>`0x6513f8e1`</nobr> | Message accepted. `messageId` is the cross-chain message ID. Any surplus TON is returned. |
-| <nobr>`Router_MessageRejected`</nobr> | <nobr>`0x8ae25114`</nobr> | Message rejected. Both the fee and surplus are returned. `error` contains the exit code.  |
+| Message                               | Opcode                    | Meaning                                                                                    |
+| ------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------ |
+| <nobr>`Router_MessageSent`</nobr>     | <nobr>`0x6513f8e1`</nobr> | Message accepted. `messageId` is the cross-chain message ID. Any surplus GRAM is returned. |
+| <nobr>`Router_MessageRejected`</nobr> | <nobr>`0x8ae25114`</nobr> | Message rejected. Both the fee and surplus are returned. `error` contains the exit code.   |
 
 <CcipCommon callout="educationalDisclaimer" />

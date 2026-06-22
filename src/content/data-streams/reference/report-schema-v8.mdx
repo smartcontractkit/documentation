@@ -5,12 +5,14 @@ title: "Report Schema: RWA Standard (v8)"
 metadata:
   title: "RWA Standard (v8) | Chainlink Data Streams"
   description: "Learn about Chainlink Data Streams RWA Standard (v8) schema, including fields, encoding, and examples for integrating RWA data in your applications."
-  keywords: ["Report Schema", "RWA", "Real World Assets", "v8 Schema", "Data Format", "Report Structure"]
+  keywords:
+    ["Report Schema", "RWA", "Real World Assets", "v8 Schema", "Data Format", "Report Structure", "marketStatus"]
 ---
 
 import DataStreams from "@features/data-streams/common/DataStreams.astro"
 import ReportSchemaTabs from "@features/data-streams/common/ReportSchemaTabs.astro"
 import SchemaFieldsTable from "@features/data-streams/common/SchemaFieldsTable.astro"
+import { Aside } from "@components"
 
 <DataStreams section="dsNotes" />
 
@@ -22,10 +24,25 @@ RWA streams adhere to the report schema outlined below.
 
 <SchemaFieldsTable schema="v8" />
 
-**Notes**:
+### Market Status Values
 
-- `marketStatus`:
-  - The `marketStatus` field is the authoritative signal for determining whether a market is open. Do not use `observationsTimestamp` (or any other timestamp field) to infer whether a stream is active or to select among multiple streams — timestamps reflect when an observation was last recorded, not whether the market is currently open.
-  - Users are responsible for handling market status changes in their applications.
-  - For further guidance, refer to the [Handling Market Events](/data-streams/rwa-streams/handling-market-events) documentation.
+<Aside type="caution" title="Use marketStatus, not timestamps">
+  Always use <code>marketStatus</code> to determine whether a market is open. Do <strong>not</strong> use
+  <code>observationsTimestamp</code>, <code>lastUpdateTimestamp</code>, or any other timestamp field — timestamps
+  indicate when data was last recorded, not whether the market is currently active.
+</Aside>
+
+v8 streams use a three-value mapping:
+
+| Value | Status      | Description                        |
+| ----- | ----------- | ---------------------------------- |
+| `0`   | **Unknown** | Market status cannot be determined |
+| `1`   | **Closed**  | Market is closed                   |
+| `2`   | **Open**    | Market is open                     |
+
+For trading schedules by asset class, see [Market Hours](/data-streams/market-hours). For integration guidance during market transitions, see [Handling Market Events](/data-streams/rwa-streams/handling-market-events).
+
+### Notes
+
+- Users are responsible for handling market status changes in their applications.
 - Future RWA streams may use different report schemas.

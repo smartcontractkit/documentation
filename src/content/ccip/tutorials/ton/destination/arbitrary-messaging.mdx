@@ -48,7 +48,7 @@ In this tutorial, you will:
 To successfully complete this tutorial, ensure you have:
 
 - ETH on Ethereum Sepolia for transaction fees and CCIP fees (at least 0.1 ETH recommended). If paying with LINK, also get testnet LINK from the [Chainlink Faucet](https://faucet.chain.link).
-- TON on TON Testnet to cover deployment and contract execution costs (at least 0.5 TON recommended). Get testnet TON from [@testgiver_ton_bot](https://t.me/testgiver_ton_bot) on Telegram.
+- GRAM on TON Testnet to cover deployment and contract execution costs (at least 0.5 GRAM recommended). Get testnet GRAM from [@testgiver_ton_bot](https://t.me/testgiver_ton_bot) on Telegram.
 - `EVM_PRIVATE_KEY` set in your `.env` file — used to send from the EVM source chain.
 - `TON_MNEMONIC` set in your `.env` file — used to deploy the receiver contract on TON.
 - `ETHEREUM_SEPOLIA_RPC_URL` set in your `.env` file.
@@ -72,7 +72,8 @@ On success, the script prints output similar to the following:
 
 📤 Deploying from wallet: EQBTzZB_jpRo1oR3wLsxhrS7tPLUDteL9NN_83S1fWwanyHK
 Explorer: https://testnet.tonviewer.com/EQBTzZB_jpRo1oR3wLsxhrS7tPLUDteL9NN_83S1fWwanyHK
-💰 Wallet balance: 106.538102666 TON
+💰 Wallet balance: 106.538102666 GRAM
+
 
 ⏳ Compiling MinimalReceiver.tolk...
 📍 Contract will be deployed at: EQBt4-OlEHzH_MsmHdl_YsL26f3OPpV2jRzZ34zxo9E2xasT
@@ -95,7 +96,7 @@ Explorer: https://testnet.tonviewer.com/EQBTzZB_jpRo1oR3wLsxhrS7tPLUDteL9NN_83S1
 
 <Aside type="note" title="What MinimalReceiver does">
   The `MinimalReceiver` contract (`contracts/minimal_receiver.tolk`) implements all three mandatory CCIP receiver
-  protocol steps inline: it validates that the message comes from the authorized CCIP Router, checks that enough TON is
+  protocol steps inline: it validates that the message comes from the authorized CCIP Router, checks that enough GRAM is
   attached to cover the confirmation gas, and sends `Router_CCIPReceiveConfirm` back to the Router. It also emits a
   `CCIPMessageReceived` event for each delivery.
   <br></br>
@@ -115,7 +116,7 @@ The `evm2ton/sendMessage.ts` script handles the EVM-side interaction with the CC
 1. **Context Initialization**: The script connects to the EVM chain and loads your wallet from the `EVM_PRIVATE_KEY` environment variable.
 1. **Argument Parsing**: It reads your command-line arguments (`--sourceChain`, `--tonReceiver`, `--msg`, and `--feeToken`) to determine the source chain, receiver address, message content, and fee payment method.
 1. **Address Encoding**: It encodes your TON receiver address into the 36-byte format expected by the EVM-side CCIP message using `encodeTONAddress()`.
-1. **Message Construction**: It builds the `EVM2AnyMessage` struct using `buildCCIPMessageForTON(receiverBytes, messageData, 100_000_000n, true, selectedFeeToken)`. The `100_000_000n` nanoTON `gasLimit` covers receiver execution on TON. Note that `allowOutOfOrderExecution` **must** be `true` — TON-bound lanes require it, and the Router will reject the message otherwise.
+1. **Message Construction**: It builds the `EVM2AnyMessage` struct using `buildCCIPMessageForTON(receiverBytes, messageData, 100_000_000n, true, selectedFeeToken)`. The `100_000_000n` nanoGRAM `gasLimit` covers receiver execution on TON. Note that `allowOutOfOrderExecution` **must** be `true` — TON-bound lanes require it, and the Router will reject the message otherwise.
 1. **Fee Estimation**: It calls `getCCIPFeeForTON()` to retrieve the CCIP protocol fee from the on-chain Router, then applies a 10% buffer.
 1. **Sending**: For native fees, it calls `router.ccipSend(destChainSelector, message, { value: feeWithBuffer })`. For LINK fees, it checks the current allowance, approves the Router if needed, then calls `router.ccipSend(destChainSelector, message)`.
 
@@ -221,7 +222,8 @@ When the message has been successfully delivered, you will see output similar to
    From:                EQB9QIw22sgwNKMfqsMKGepkhnjXYJmXlzCgcBSAlaiF9VCj (CCIP Router ✓)
    Message ID:          0xcf5c283fb14942e82498b0a1887bb2c525f0a8a065b5682230af4518dc53bff0
    CCIP Explorer:       https://ccip.chain.link/#/side-drawer/msg/0xcf5c283fb14942e82498b0a1887bb2c525f0a8a065b5682230af4518dc53bff0
-   Value:               0.1 TON
+   Value:               0.1 GRAM
+
    Message:             "Hello TON from EVM"
    Time:                2026-03-30T16:10:45.000Z
    TX Hash:             21048345fbf52bf7c02f64d587bf6a6dd9567ad1786cd2abeaa1c1399f940f86

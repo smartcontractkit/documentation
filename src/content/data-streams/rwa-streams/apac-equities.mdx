@@ -1,0 +1,122 @@
+---
+section: dataStreams
+date: "Last Modified"
+title: "APAC Equities"
+metadata:
+  title: "APAC Equities | Chainlink Data Streams"
+  description: "Reference for Chainlink Asia-Pacific (APAC) Equities Data Streams, covering coverage, schema, trading hours, and risk considerations."
+whatsnext:
+  {
+    "Find the schema of data to expect from Data Streams reports: RWA Advanced (v11)": "/data-streams/reference/report-schema-v11",
+    "Learn about Data Streams market hours and schedules": "/data-streams/market-hours#apac-equities",
+    "Learn about developer responsibilities": "/data-streams/developer-responsibilities",
+  }
+---
+
+import SchemaFieldsTable from "@features/data-streams/common/SchemaFieldsTable.astro"
+import { FeedList } from "@features/feeds"
+
+Asia-Pacific (APAC) Equities streams provide high-frequency, transparent price data for major Asia-Pacific indices and single-name stocks. These streams enable onchain protocols to build liquid, capital-efficient markets around globally relevant APAC assets, including sectors such as AI, semiconductors, and consumer goods.
+
+Each instrument is quoted during its exchange's standard trading hours. Integrators should monitor `marketStatus`, data freshness, and the risk considerations below.
+
+Developers are responsible for choosing the appropriate feed and ensuring that the operation and performance of their choice matches expectations. For more information, see the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance.
+
+## Schema
+
+APAC Equities data is delivered using the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11).
+
+<SchemaFieldsTable schema="v11-apac" />
+
+For `marketStatus` value mappings, see [Standard-hours feeds (v11)](/data-streams/reference/report-schema-v11#standard-hours-feeds). For exchange schedules, see [Market Hours (APAC Equities)](/data-streams/market-hours#apac-equities).
+
+## Coverage
+
+APAC Equities streams cover major indices and single-name stocks across Asia-Pacific exchanges. Data is quoted in each exchange's local currency (for example, `/JPY` for Japanese equities).
+
+### Exchanges
+
+| Exchange             | Code | Local currency | Status    |
+| -------------------- | ---- | -------------- | --------- |
+| Korea Exchange       | KRX  | KRW            | Available |
+| Tokyo Stock Exchange | TSE  | JPY            | Available |
+
+Other APAC exchanges are coming soon.
+
+## Trading hours
+
+APAC equities trade during each exchange's standard local sessions (Mon–Fri). Schedules, lunch breaks, and closing auction behavior are documented on the [Market Hours](/data-streams/market-hours#apac-equities) page.
+
+## Risk considerations
+
+Integrating protocols are responsible for implementing appropriate monitoring and risk mitigation mechanisms to ensure safe market operation.
+
+### Data freshness
+
+Protocols should continuously monitor the `lastSeenTimestampNs` field to verify data recency. A lagging or stale timestamp indicates that fresh pricing inputs are not being received. In such cases, protocols should restrict or suspend trading and liquidations until data freshness is restored.
+
+Consuming data when `marketStatus = 5` (Closed) is not recommended. Protocols should consider pausing or restricting activity until `marketStatus = 2` (Open) is confirmed.
+
+When a session is closed, prices hold at the last traded value until the next session opens. A flat, unchanging price during a closed period is expected behavior and does not indicate a data quality issue. Do not use price movement as a proxy for market activity — use `marketStatus` as the authoritative signal.
+
+### Scheduled intraday breaks and freshness thresholds
+
+TSE-listed equities observe a scheduled lunch break (11:30–12:30 JST / 02:30–03:30 UTC) during which `marketStatus = 5` (Closed) and no new price data is published. `lastSeenTimestampNs` will not advance for approximately 60 minutes during this window.
+
+Freshness monitoring logic that evaluates timestamp age alone should account for this break. A staleness threshold shorter than ~60 minutes will fire during the TSE lunch break, producing false-positive alerts and potentially unnecessary circuit-breaker activity.
+
+Recommended approach: check `marketStatus` before evaluating freshness. If `marketStatus = 5`, staleness is expected and should not trigger restrictions; evaluate freshness thresholds only when `marketStatus = 2` (Open).
+
+KRX-listed equities have no intraday break; the session runs continuously from 09:00–15:20 KST (00:00–06:20 UTC).
+
+### Opening and closing auction prices
+
+At the open of each session, prices may reflect the exchange's opening auction mechanism rather than continuous traded prices. Opening auctions concentrate deferred orders from the closed period into a single price discovery event, which can produce an opening price that deviates materially from the prior session's close. This is normal exchange behavior, not a data quality issue.
+
+The same consideration applies at the start of the TSE afternoon session (12:30 JST / 03:30 UTC) following the lunch break.
+
+Protocols should account for session-open volatility by:
+
+- Treating the `marketStatus` transition from `5` (Closed) to `2` (Open) as a signal to re-evaluate risk parameters before acting on the opening price
+- Widening deviation thresholds or reducing position exposure during the first minutes of each session
+- Avoiding liquidation triggers driven purely by price movement relative to the prior session's close
+
+### Exchange halts
+
+Underlying markets may halt trading due to regulatory actions, news events, volatility controls, or operational issues. **These events are not explicitly reflected in the `marketStatus` field.**
+
+Protocols are responsible for detecting halt conditions and implementing safeguards (for example, pausing trading or disabling liquidations) to prevent execution against stale or non-actionable prices.
+
+### Corporate actions
+
+Equities are subject to corporate actions (for example, stock splits, reverse splits, and dividends) that can materially impact price and position value between trading sessions. Protocols should monitor corporate action events and adjust pricing logic, collateral parameters, and open positions accordingly. This may include pausing markets during corporate action windows to prevent unfair liquidations.
+
+### Single-source data
+
+Each APAC market is sourced from a single institutional-grade data provider per feed. While this enables high-frequency, low-latency delivery, it introduces dependency on the underlying provider's data quality and availability. There is no redundant cross-validation between providers for a given feed.
+
+If the underlying provider fails to deliver data during an active session, there is no fallback source. A gap in price data during exchange open hours may not be accompanied by a `marketStatus` change — the feed may continue reporting `marketStatus = 2` (Open) while `lastSeenTimestampNs` stops advancing. Staleness monitoring is therefore critical during open sessions, not only when the market is closed.
+
+Recommended safeguards include:
+
+- Monitor `lastSeenTimestampNs` for staleness during open sessions
+- Implement price deviation checks against recent valid observations
+- Detect sustained periods of no price movement during `marketStatus = 2` as a potential gap condition
+- Pause or restrict market activity when data quality signals are triggered
+- Review the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance before integration
+
+## Available streams
+
+{/* TODO: Refine filtering based on RDD implementation once APAC equity feed metadata is finalized. */}
+
+<FeedList
+  client:idle
+  initialNetwork="arbitrum"
+  dataFeedType="streamsRwa"
+  forceApacEquitiesOnly={true}
+  allowNetworkTableExpansion={true}
+/>
+
+## Support
+
+For inquiries related to a data outage, contact Chainlink Labs at [data_support@chain.link](mailto:data_support@chain.link).
