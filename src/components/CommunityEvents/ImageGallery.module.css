@@ -1,0 +1,70 @@
+.gallery {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5x);
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  gap: var(--space-5x);
+  animation: scrollLeft 30s linear infinite;
+  flex-shrink: 0;
+}
+
+.rowReverse {
+  animation: scrollRight 30s linear infinite;
+}
+
+.imageWrapper {
+  width: 16rem;
+  height: 12rem;
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.image {
+  object-fit: cover;
+  border-radius: 0.5rem;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+
+@keyframes scrollLeft {
+  0% {
+    transform: translate3d(0%, 0px, 0px);
+  }
+  100% {
+    transform: translate3d(-50%, 0px, 0px);
+  }
+}
+
+@keyframes scrollRight {
+  0% {
+    transform: translate3d(-50%, 0px, 0px);
+  }
+  100% {
+    transform: translate3d(0%, 0px, 0px);
+  }
+}
+
+/* Pause animation on hover */
+.gallery:hover .row {
+  animation-play-state: paused;
+}
+
+@media (max-width: 1024px) {
+  .imageWrapper {
+    width: 12rem;
+    height: 9rem;
+  }
+
+  .gallery {
+    padding: 0 var(--space-10x);
+  }
+}

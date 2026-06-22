@@ -8,12 +8,15 @@ import type {
   ChainType,
   OutputKeyType,
   ChainFamily,
-  SearchType,
   ChainMetadata,
   ChainConfigError,
   FilterType,
+  RateLimitsMetadata,
+  RateLimitsFilterType,
+  RateLimitsDirection,
+  RateLimitsType,
 } from "./types/index.ts"
-import { jsonHeaders, commonHeaders as sharedCommonHeaders } from "@lib/api/cacheHeaders.js"
+import { commonHeaders as sharedCommonHeaders } from "@lib/api/cacheHeaders.js"
 import { logger } from "@lib/logging/index.js"
 
 export const prerender = false
@@ -22,18 +25,6 @@ export const prerender = false
 export type { ChainsConfig, Version }
 export { Environment }
 export type { SelectorsConfig } from "@config/data/ccip/selectors.ts"
-
-/**
- * Common HTTP headers used across all API responses
- * @deprecated Use sharedCommonHeaders from @lib/api/cacheHeaders.js instead
- */
-export const commonHeaders = sharedCommonHeaders
-
-/**
- * Extended headers for successful responses with caching directives
- * @deprecated Use jsonHeaders from @lib/api/cacheHeaders.js instead
- */
-export const successHeaders = jsonHeaders
 
 /**
  * Custom error class for CCIP-specific errors
@@ -208,6 +199,90 @@ export const createTokenMetadata = (environment: Environment): TokenMetadata => 
 }
 
 /**
+ * Creates rate-limits-specific metadata object
+ * @param environment - Current network environment
+ * @param sourceChain - Source chain internal ID
+ * @param destinationChain - Destination chain internal ID
+ * @param tokenCount - Number of tokens in the response
+ * @returns Metadata object for rate limits API response
+ */
+export const createRateLimitsMetadata = (
+  environment: Environment,
+  sourceChain: string,
+  destinationChain: string,
+  tokenCount: number
+): RateLimitsMetadata => {
+  return {
+    environment,
+    timestamp: new Date().toISOString(),
+    requestId: crypto.randomUUID(),
+    sourceChain,
+    destinationChain,
+    tokenCount,
+  }
+}
+
+/**
+ * Validates rate limits filter parameters
+ * @param filters - Filter parameters to validate
+ * @throws CCIPError if required parameters are missing or invalid
+ */
+export const validateRateLimitsFilters = (filters: {
+  sourceInternalId?: string
+  destinationInternalId?: string
+  tokens?: string
+  direction?: string
+  rateType?: string
+}): RateLimitsFilterType => {
+  // Validate required parameters
+  if (!filters.sourceInternalId) {
+    throw new CCIPError(400, "source_internal_id parameter is required")
+  }
+  if (!filters.destinationInternalId) {
+    throw new CCIPError(400, "destination_internal_id parameter is required")
+  }
+
+  // Validate direction if provided
+  let direction: RateLimitsDirection | undefined
+  if (filters.direction) {
+    const normalizedDirection = filters.direction.toLowerCase()
+    if (!["in", "out"].includes(normalizedDirection)) {
+      throw new CCIPError(400, 'direction parameter must be "in" or "out"')
+    }
+    direction = normalizedDirection as RateLimitsDirection
+  }
+
+  // Validate rate_type if provided
+  let rateType: RateLimitsType | undefined
+  if (filters.rateType) {
+    const normalizedRateType = filters.rateType.toLowerCase()
+    if (!["standard", "custom"].includes(normalizedRateType)) {
+      throw new CCIPError(400, 'rate_type parameter must be "standard" or "custom"')
+    }
+    rateType = normalizedRateType as RateLimitsType
+  }
+
+  // Validate tokens if provided (must not be empty after parsing)
+  if (filters.tokens !== undefined && filters.tokens !== null) {
+    const tokenList = filters.tokens
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0)
+    if (filters.tokens.length > 0 && tokenList.length === 0) {
+      throw new CCIPError(400, "tokens parameter cannot be empty when provided")
+    }
+  }
+
+  return {
+    sourceInternalId: filters.sourceInternalId,
+    destinationInternalId: filters.destinationInternalId,
+    tokens: filters.tokens,
+    direction,
+    rateType,
+  }
+}
+
+/**
  * Validates the environment parameter
  * @param environment - Environment string to validate
  * @returns Validated Environment enum value
@@ -234,17 +309,42 @@ export const validateFilters = (filters: FilterType): void => {
 }
 
 /**
- * Validates and normalizes the outputKey parameter
+ * Validates and normalizes the output_key parameter
  * @param outputKey - Output key to validate
  * @returns Validated output key
  * @throws CCIPError if output key is invalid
  */
-export const validateOutputKey = (outputKey?: string): "chainId" | "selector" | "internalId" => {
-  if (!outputKey) return "chainId"
+export const validateOutputKey = (
+  outputKey?: string,
+  internalIdFormat?: string
+): "chainId" | "selector" | "internalId" => {
+  if (!outputKey) {
+    // When internalIdFormat is explicitly set but outputKey is not,
+    // default to "internalId" so the response keys match the requested format
+    return internalIdFormat ? "internalId" : "chainId"
+  }
   if (!["chainId", "selector", "internalId"].includes(outputKey)) {
     throw new CCIPError(400, "outputKey must be one of: chainId, selector, or internalId.")
   }
   return outputKey as "chainId" | "selector" | "internalId"
+}
+
+/**
+ * Validates the internalIdFormat parameter
+ * Controls which naming convention is used for internalId in responses:
+ * - 'directory': chains.json keys (e.g., "mainnet", "bsc-mainnet")
+ * - 'selector': selectors.yml names (e.g., "ethereum-mainnet", "binance_smart_chain-mainnet")
+ *
+ * @param internalIdFormat - Format to validate
+ * @returns Validated format, defaults to "selector" for backward compatibility
+ * @throws CCIPError if format is invalid
+ */
+export const validateInternalIdFormat = (internalIdFormat?: string): "directory" | "selector" => {
+  if (!internalIdFormat) return "selector" // Default for backward compatibility
+  if (!["directory", "selector"].includes(internalIdFormat)) {
+    throw new CCIPError(400, 'internalIdFormat must be "directory" or "selector".')
+  }
+  return internalIdFormat as "directory" | "selector"
 }
 
 /**
@@ -378,37 +478,81 @@ export const normalizeVersion = (version: string): string => {
 }
 
 /**
+ * Error types for API responses
+ */
+export enum APIErrorType {
+  VALIDATION_ERROR = "VALIDATION_ERROR",
+  SERVER_ERROR = "SERVER_ERROR",
+  NOT_FOUND = "NOT_FOUND",
+  INVALID_PARAMETER = "INVALID_PARAMETER",
+}
+
+/**
+ * Standard API error response format
+ * All fields are required for consistency across all endpoints
+ */
+export interface APIError {
+  error: APIErrorType
+  message: string
+  requestId: string
+  details: Record<string, unknown>
+}
+
+/**
+ * Creates a standardized API error response
+ * All error responses include: error, message, requestId, and details
+ *
+ * @param error - Error type
+ * @param message - Error message
+ * @param status - HTTP status code
+ * @param requestId - Request ID for correlation (required)
+ * @param details - Additional error details (defaults to empty object)
+ * @returns Response object with error details
+ */
+export function createErrorResponse(
+  error: APIErrorType,
+  message: string,
+  status: number,
+  requestId: string,
+  details: Record<string, unknown> = {}
+): Response {
+  const errorResponse: APIError = {
+    error,
+    message,
+    requestId,
+    details,
+  }
+
+  return new Response(JSON.stringify(errorResponse), {
+    status,
+    headers: sharedCommonHeaders,
+  })
+}
+
+/**
  * Handles API errors and converts them to standardized responses
  * @param error - Error to handle
+ * @param requestId - Request ID for correlation
  * @returns Standardized error response
  */
-export const handleApiError = (error: unknown): Response => {
-  let errorType = "UNKNOWN_ERROR"
+export const handleApiError = (error: unknown, requestId: string): Response => {
+  let errorType = APIErrorType.SERVER_ERROR
   let message = "An unexpected error occurred"
   let statusCode = 500
 
   if (error instanceof CCIPError) {
-    errorType = "VALIDATION_ERROR"
+    errorType = error.statusCode === 400 ? APIErrorType.VALIDATION_ERROR : APIErrorType.SERVER_ERROR
     message = error.message
     statusCode = error.statusCode
   } else if (error instanceof Error) {
     message = error.message
     if (error.name === "ValidationError") {
-      errorType = "VALIDATION_ERROR"
+      errorType = APIErrorType.VALIDATION_ERROR
       statusCode = 400
     }
   }
 
-  return new Response(
-    JSON.stringify({
-      error: errorType,
-      message,
-    }),
-    {
-      status: statusCode,
-      headers: commonHeaders,
-    }
-  )
+  return createErrorResponse(errorType, message, statusCode, requestId)
 }
 
 /**
@@ -464,53 +608,4 @@ export const loadChainConfiguration = async (
     })
     throw new CCIPError(500, "Failed to load chain configuration")
   }
-}
-
-/**
- * Error types for API responses
- */
-export enum APIErrorType {
-  VALIDATION_ERROR = "VALIDATION_ERROR",
-  SERVER_ERROR = "SERVER_ERROR",
-  NOT_FOUND = "NOT_FOUND",
-  INVALID_PARAMETER = "INVALID_PARAMETER",
-}
-
-/**
- * Standard API error response format
- */
-export interface APIError {
-  error: APIErrorType
-  message: string
-  requestId?: string
-  details?: unknown
-}
-
-/**
- * Creates a standardized API error response
- * @param error - Error type
- * @param message - Error message
- * @param status - HTTP status code
- * @param details - Additional error details
- * @param requestId - Optional request ID for correlation
- * @returns Response object with error details
- */
-export function createErrorResponse(
-  error: APIErrorType,
-  message: string,
-  status: number,
-  details?: unknown,
-  requestId?: string
-): Response {
-  const errorResponse: APIError = {
-    error,
-    message,
-    ...(requestId ? { requestId } : {}),
-    ...(details ? { details } : {}),
-  }
-
-  return new Response(JSON.stringify(errorResponse), {
-    status,
-    headers: commonHeaders,
-  })
 }

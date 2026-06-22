@@ -39,5 +39,5 @@ export const normalizeTechnologyName = (technology: string): string => {
   }
 
   // Default: convert to lowercase and replace underscores with hyphens
-  return technology.toLowerCase().replace(/_/g, "-")
+  return technology.toLowerCase().replace(/[_ ]/g, "-")
 }

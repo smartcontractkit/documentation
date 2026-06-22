@@ -21,7 +21,6 @@ import evmCcipV162Contents from "./ccip/api-reference/evm/v1_6_2.json" with { ty
 import evmCcipV163Contents from "./ccip/api-reference/evm/v1_6_3.json" with { type: "json" }
 import aptosCcipV160Contents from "./ccip/api-reference/aptos/v1_6_0.json" with { type: "json" }
 import svmCcipV160Contents from "./ccip/api-reference/svm/v1_6_0.json" with { type: "json" }
-import tonCcipV160Contents from "./ccip/api-reference/ton/v1_6_0.json" with { type: "json" }
 
 /**
  * CCIP Sidebar Content with Chain Type Annotations
@@ -34,7 +33,7 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
       {
         title: "Overview",
         url: "ccip",
-        chainTypes: ["evm", "solana", "aptos"],
+        // Universal - no chainTypes
       },
       {
         title: "Getting Started",
@@ -82,11 +81,6 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         chainTypes: ["aptos"],
       },
       {
-        title: "Service Limits",
-        url: "ccip/service-limits/ton",
-        chainTypes: ["ton"],
-      },
-      {
         title: "Service Responsibility",
         url: "ccip/service-responsibility",
       },
@@ -110,22 +104,12 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
       {
         title: "Overview",
         url: "ccip/concepts/architecture/overview",
-        chainTypes: ["evm", "solana", "aptos"],
-      },
-      {
-        title: "Overview",
-        url: "ccip/concepts/architecture/ton/overview",
-        chainTypes: ["ton"],
+        // Universal
       },
       {
         title: "Key Concepts",
         url: "ccip/concepts/architecture/key-concepts",
-        chainTypes: ["evm", "solana", "aptos"],
-      },
-      {
-        title: "Key Concepts",
-        url: "ccip/concepts/architecture/ton/key-concepts",
-        chainTypes: ["ton"],
+        // Universal
       },
       {
         title: "Onchain Architecture",
@@ -194,28 +178,6 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         ],
       },
       {
-        title: "Onchain Architecture",
-        url: "ccip/concepts/architecture/onchain/ton",
-        chainTypes: ["ton"],
-        children: [
-          {
-            title: "Overview",
-            url: "ccip/concepts/architecture/onchain/ton/overview",
-            chainTypes: ["ton"],
-          },
-          {
-            title: "Components",
-            url: "ccip/concepts/architecture/onchain/ton/components",
-            chainTypes: ["ton"],
-          },
-          {
-            title: "Upgradability",
-            url: "ccip/concepts/architecture/onchain/ton/upgradability",
-            chainTypes: ["ton"],
-          },
-        ],
-      },
-      {
         title: "Offchain Architecture",
         url: "ccip/concepts/architecture/offchain/overview",
         // Universal
@@ -223,12 +185,11 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
       {
         title: "Cross-Chain Token (CCT)",
         url: "ccip/concepts/cross-chain-token",
-        chainTypes: ["evm", "solana", "aptos"],
         children: [
           {
             title: "Overview",
             url: "ccip/concepts/cross-chain-token/overview",
-            chainTypes: ["evm", "solana", "aptos"],
+            // Universal
           },
           {
             title: "Tokens",
@@ -290,62 +251,56 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
       {
         title: "Manual execution",
         url: "ccip/concepts/manual-execution",
-        chainTypes: ["evm", "solana", "aptos"],
+        // Universal
       },
-      {
-        title: "Manual execution",
-        url: "ccip/concepts/ton/manual-execution",
-        chainTypes: ["ton"],
-      },
-      // Rate Limit Management folder + children (Universal except TON)
+      // NEW: Rate Limit Management folder + children (Universal)
       {
         title: "Rate Limit Management",
-        chainTypes: ["evm", "solana", "aptos"],
         children: [
           {
             title: "Overview",
             url: "ccip/concepts/rate-limit-management/overview",
-            chainTypes: ["evm", "solana", "aptos"],
+            // Universal
           },
           {
             title: "How Rate Limits Work",
             url: "ccip/concepts/rate-limit-management/how-rate-limits-work",
-            chainTypes: ["evm", "solana", "aptos"],
+            // Universal
           },
           {
             title: "Prerequisites and Permissions",
             url: "ccip/concepts/rate-limit-management/prerequisites-and-permissions",
-            chainTypes: ["evm", "solana", "aptos"],
+            // Universal
           },
           {
             title: "Inspect Current Rate Limits",
             url: "ccip/concepts/rate-limit-management/inspect-current-rate-limits",
-            chainTypes: ["evm", "solana", "aptos"],
+            // Universal
           },
           {
             title: "Token Units and Decimals",
             url: "ccip/concepts/rate-limit-management/token-units-and-decimals",
-            chainTypes: ["evm", "solana", "aptos"],
+            // Universal
           },
           {
             title: "Update Rate Limits",
             url: "ccip/concepts/rate-limit-management/update-rate-limits",
-            chainTypes: ["evm", "solana", "aptos"],
+            // Universal
           },
           {
             title: "Emergency Actions",
             url: "ccip/concepts/rate-limit-management/emergency-actions",
-            chainTypes: ["evm", "solana", "aptos"],
+            // Universal
           },
           {
             title: "Common Scenarios",
             url: "ccip/concepts/rate-limit-management/common-scenarios",
-            chainTypes: ["evm", "solana", "aptos"],
+            // Universal
           },
           {
             title: "Executing with a Multisig",
             url: "ccip/concepts/rate-limit-management/executing-with-a-multisig",
-            chainTypes: ["evm", "solana", "aptos"],
+            // Universal
           },
         ],
       },
@@ -364,43 +319,18 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         url: "ccip/concepts/best-practices/aptos",
         chainTypes: ["aptos"],
       },
-      {
-        title: "Best Practices",
-        url: "ccip/concepts/best-practices/ton",
-        chainTypes: ["ton"],
-      },
     ],
   },
   {
     section: "Tutorials",
     contents: [
       {
-        title: "Overview",
-        url: "ccip/tutorials/evm",
-        chainTypes: ["evm"],
-      },
-      {
-        title: "Overview",
-        url: "ccip/tutorials/svm",
-        chainTypes: ["solana"],
-      },
-      {
-        title: "Overview",
-        url: "ccip/tutorials/aptos",
-        chainTypes: ["aptos"],
-      },
-      {
-        title: "Overview",
-        url: "ccip/tutorials/ton",
-        chainTypes: ["ton"],
-      },
-      {
         title: "Acquire Test Tokens",
         url: "ccip/test-tokens",
-        chainTypes: ["evm", "solana", "aptos"],
+        // Universal
       },
       {
-        title: "Offchain",
+        title: "CCIP API, SDK & CLI",
         url: "ccip/tutorials/offchain",
         // Universal - supports all chain families
       },
@@ -647,75 +577,6 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         url: "ccip/tutorials/aptos/cross-chain-tokens",
         chainTypes: ["aptos"],
       },
-      {
-        title: "Implement CCIP Receiver",
-        url: "ccip/tutorials/ton/receivers",
-        chainTypes: ["ton"],
-      },
-      {
-        title: "Source",
-        url: "ccip/tutorials/ton/source",
-        chainTypes: ["ton"],
-        children: [
-          {
-            title: "Build CCIP Messages",
-            url: "ccip/tutorials/ton/source/build-messages",
-            chainTypes: ["ton"],
-          },
-          {
-            title: "Prerequisites",
-            url: "ccip/tutorials/ton/source/prerequisites",
-            chainTypes: ["ton"],
-          },
-          // {
-          //   title: "Token Transfers",
-          //   url: "ccip/tutorials/ton/source/token-transfers",
-          //   chainTypes: ["ton"],
-          // },
-          {
-            title: "Arbitrary Messaging",
-            url: "ccip/tutorials/ton/source/arbitrary-messaging",
-            chainTypes: ["ton"],
-          },
-        ],
-      },
-      {
-        title: "Destination",
-        url: "ccip/tutorials/ton/destination",
-        chainTypes: ["ton"],
-        children: [
-          {
-            title: "Build CCIP Messages",
-            url: "ccip/tutorials/ton/destination/build-messages",
-            chainTypes: ["ton"],
-          },
-          {
-            title: "Prerequisites",
-            url: "ccip/tutorials/ton/destination/prerequisites",
-            chainTypes: ["ton"],
-          },
-          // {
-          //   title: "Token Transfers",
-          //   url: "ccip/tutorials/ton/destination/token-transfers",
-          //   chainTypes: ["ton"],
-          // },
-          {
-            title: "Arbitrary Messaging",
-            url: "ccip/tutorials/ton/destination/arbitrary-messaging",
-            chainTypes: ["ton"],
-          },
-          // {
-          //   title: "Programmable Token Transfers",
-          //   url: "ccip/tutorials/ton/destination/programmable-token-transfers",
-          //   chainTypes: ["ton"],
-          // },
-        ],
-      },
-      // {
-      //   title: "Cross-Chain Token (CCT)",
-      //   url: "ccip/tutorials/ton/cross-chain-tokens",
-      //   chainTypes: ["ton"],
-      // },
     ],
   },
   {
@@ -749,11 +610,6 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
           {
             title: "HyperEVM Service Limits",
             url: "ccip/service-limits/evm/hyperevm",
-            chainTypes: ["evm"],
-          },
-          {
-            title: "Tempo Integration Guide",
-            url: "ccip/tools-resources/network-specific/tempo-integration-guide",
             chainTypes: ["evm"],
           },
         ],
@@ -832,25 +688,6 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
             children: aptosCcipV160Contents,
           },
         ],
-      },
-      {
-        title: "TON Contract Interfaces",
-        url: "ccip/api-reference/ton",
-        chainTypes: ["ton"],
-        children: [
-          {
-            title: "v1.6.0",
-            url: "ccip/api-reference/ton/v1.6.0",
-            isCollapsible: true,
-            chainTypes: ["ton"],
-            children: tonCcipV160Contents,
-          },
-        ],
-      },
-      {
-        title: "TON Starter Kit Helpers",
-        url: "ccip/api-reference/ton/starter-kit-helpers",
-        chainTypes: ["ton"],
       },
       {
         title: "CCIP API, SDK & CLI",

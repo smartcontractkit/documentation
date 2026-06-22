@@ -2014,6 +2014,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     },
   ],
   [SIDEBAR_SECTIONS.CCIP]: CCIP_SIDEBAR_CONTENT,
+
   [SIDEBAR_SECTIONS.CHAINLINK_LOCAL]: [
     {
       section: "Chainlink Local",

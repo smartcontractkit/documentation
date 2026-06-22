@@ -1,0 +1,153 @@
+.container {
+  background-color: var(--tertiary-foreground);
+  padding: var(--space-10x) var(--space-16x);
+  margin: 86px 0;
+}
+
+.title {
+  margin-bottom: var(--space-8x);
+  color: var(--background);
+}
+
+.secondaryBtn {
+  color: var(--white) !important;
+}
+
+.contentFooter {
+  display: flex;
+  gap: var(--space-6x);
+  margin-top: 55px;
+}
+
+/* NEW: CTA group wrapper should behave like the old footer (buttons as direct children) */
+.contentFooter :global(.cta-item),
+.contentFooterMobile :global(.cta-item-mobile) {
+  display: flex;
+  gap: var(--space-6x); /* match footer spacing */
+  align-items: center;
+}
+
+/* Optional: ensure hidden groups don't occupy space (extra-safe) */
+.contentFooter :global(.cta-item[aria-hidden="true"]),
+.contentFooterMobile :global(.cta-item-mobile[aria-hidden="true"]) {
+  display: none;
+}
+
+/* prevent CTA row reflow across tabs */
+.contentFooter,
+.contentFooterMobile {
+  min-height: 56px; /* keeps vertical stability too */
+}
+
+/* apply to actual anchor buttons inside the active CTA group */
+.contentFooter :global(.cta-item) a,
+.contentFooterMobile :global(.cta-item-mobile) a {
+  width: 280px; /* tune */
+  justify-content: center; /* centers text inside button */
+  text-align: center;
+  white-space: nowrap; /* avoid wrapping */
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  justify-content: space-between;
+  gap: var(--space-24x);
+}
+
+.accordionItem {
+  border-bottom: none;
+  border-top: 1px solid var(--segment-button-foreground);
+  display: flex;
+  flex-direction: column;
+
+  * {
+    transition: all 0.2s linear;
+  }
+}
+
+.contentLeft {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.text {
+  color: var(--gray-400);
+}
+
+.indicator {
+  color: var(--gray-400);
+}
+
+.accordionTrigger {
+  color: var(--gray-400);
+  padding: var(--space-4x) 0;
+  border: none;
+  outline: none;
+  & p {
+    color: var(--gray-400);
+  }
+
+  & svg {
+    display: none;
+  }
+
+  & span {
+    word-wrap: normal;
+  }
+}
+
+.image {
+  width: 100%;
+  max-height: 412px;
+  overflow-y: auto;
+  border-bottom: 1.5px solid var(--stepper-counter-pending-foreground);
+  border-radius: 6.317px;
+}
+
+.accordionItem[data-state="open"] {
+  border-top: 2px solid var(--link);
+
+  & .accordionTrigger {
+    color: var(--white);
+  }
+  & .indicator {
+    color: var(--link);
+  }
+}
+
+.body {
+  max-width: var(--fullwidth-max-width);
+  width: 100%;
+  margin: 0 auto;
+}
+
+.contentFooterMobile {
+  display: none;
+  gap: var(--space-6x);
+}
+
+@media screen and (max-width: 425px) {
+  .contentFooterMobile {
+    flex-direction: column;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .content {
+    grid-template-columns: 1fr;
+    gap: var(--space-8x);
+  }
+
+  .title {
+    font-size: 28px;
+  }
+  .contentFooter {
+    display: none;
+  }
+
+  .contentFooterMobile {
+    display: flex;
+  }
+}

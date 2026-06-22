@@ -16,15 +16,23 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
 
   if (!address) return null
 
-  const handleClick = (e) => {
+  const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     if (address) navigator.clipboard.writeText(address)
   }
 
   return (
     <span className={`addressContainer ${urlClass || ""}`} id={urlId}>
       {contractUrl ? (
-        <a title={address} className="addressLink" href={contractUrl} target="_blank" rel="noopener noreferrer">
+        <a
+          title={address}
+          className="addressLink"
+          href={contractUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+        >
           {endLength && address ? address.slice(0, endLength + 2) + "..." + address.slice(-endLength) : address}
         </a>
       ) : (
@@ -46,6 +54,7 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
           padding: 1px 0px;
           border-radius: var(--border-radius-10);
           word-break: break-word;
+          color: var(--blue-600);
         }
 
         .addressContainer {

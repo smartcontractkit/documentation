@@ -1,35 +1,99 @@
 ---
-import ProductTabs from "../features/landing/sections/ProductTabs.astro"
-import LandingLayout from "../layouts/LandingLayout.astro"
-import HeroCTA from "../features/landing/sections/HeroCTA.astro"
+import JourneyCards from "~/components/JourneyCards/JourneyCards.astro"
+import TechnicalStandards from "~/components/TechnicalStandards/TechnicalStandards.astro"
 import BaseLayout from "~/layouts/BaseLayout.astro"
 
 import * as CONFIG from "../config"
+import Demos from "~/components/Demos.astro"
+import { Typography } from "@chainlink/blocks"
+import LandingHero from "~/components/LandingHero/LandingHero.astro"
+import TryItOut from "~/components/TryItOut/TryItOut.astro"
+import CommunityEvents from "~/components/CommunityEvents/CommunityEvents.astro"
 
 const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.title}`
 ---
 
 <BaseLayout title={formattedContentTitle}>
   <main>
-    <div class="heroContainer">
-      <div class="hero">
-        <h1>Chainlink Developer Docs</h1>
-        <h2>What are you building?</h2>
-        <ProductTabs />
-      </div>
+    <LandingHero />
+
+    <div class="wrapper">
+      <JourneyCards />
     </div>
-    <div class="recommended">
-      <h4>Recommended reading</h4>
-      <h2>We think you'd love to explore</h2>
-      <div>
-        <a href="/getting-started/conceptual-overview">General</a>
-        <a href="/resources/link-token-contracts">Link Token Contracts</a>
-        <a href="/ccip/getting-started">Getting Started with CCIP</a>
-        <a href="/ccip/directory">CCIP Directory</a>
-        <a href="/data-feeds/price-feeds/addresses">Data Feed Addresses</a>
-        <a href="/data-feeds/smartdata/addresses">SmartData Feed Addresses</a>
-        <a href="/data-streams/getting-started-hardhat">Getting Started with Data Streams</a>
-        <a href="/data-streams/crypto-streams">Data Streams Addresses</a>
+
+    <TryItOut
+      accordionTabs={[
+        {
+          title: "Build an Orchestrated Workflow",
+          text: "Use Chainlink CRE to build, test, and deploy advanced workflows for institutional-grade smart contracts without needing to manage new infrastructure or complex onchain logic.",
+          codeSampleSrc: "/samples/CRE/basic-functionality.ts",
+          ctas: [
+            { text: "Get started with CRE", href: "/cre/getting-started/overview", variant: "primary" },
+            { text: "Create CRE account", href: "https://cre.chain.link/signup", variant: "secondary" },
+          ],
+        },
+        {
+          title: "Transfer Tokens Between Chains",
+          text: "Use Chainlink CCIP to transfer CCIP-BnM tokens from a contract on Avalanche Fuji to an account on Ethereum Sepolia",
+          codeSampleSrc: "/samples/CCIP/TokenTransferor.sol",
+          ctas: [
+            {
+              text: "Open in Remix",
+              href: "https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/TokenTransferor.sol&autoCompile=true",
+              variant: "primary",
+            },
+            { text: "Read Tutorial", href: "/ccip/tutorials/evm/transfer-tokens-from-contract", variant: "secondary" },
+          ],
+        },
+        {
+          title: "Recapture Oracle Extractable Value",
+          text: "Use Chainlink Smart Value Recapture (SVR) Feeds to backrun new prices with liquidation transactions and compete for profit.",
+          codeSampleSrc: "/samples/DataFeeds/SVR/import-aggregatorV3.sol",
+          ctas: [
+            { text: "Integrate SVR Feeds", href: "/data-feeds/svr-feeds", variant: "primary" },
+            {
+              text: "Find SVR-enabled Feeds",
+              href: "/data-feeds/price-feeds/addresses",
+              variant: "secondary",
+            },
+          ],
+        },
+        {
+          title: "Access Real-Time Data for Traditional Financial Markets",
+          text: "Use the Data Streams SDK in TypeScript/Go/Rust to fetch and decode reports from the Data Streams Aggregation Network.",
+          codeSampleSrc: "/samples/DataStreams/FetchSingleStream.ts",
+          ctas: [
+            {
+              text: "Download the SDK",
+              href: "https://github.com/smartcontractkit/data-streams-sdk",
+              variant: "primary",
+            },
+            { text: "Read Tutorial", href: "/data-streams/tutorials/ts-sdk-fetch", variant: "secondary" },
+          ],
+        },
+      ]}
+    />
+
+    <div class="wrapper">
+      <Demos />
+    </div>
+
+    <CommunityEvents />
+
+    <div class="wrapper">
+      <div class="recommended">
+        <h4>Recommended reading</h4>
+        <h2>We think you'd love to explore</h2>
+        <div>
+          <a href="/getting-started/conceptual-overview">General</a>
+          <a href="/resources/link-token-contracts">Link Token Contracts</a>
+          <a href="/ccip/getting-started">Getting Started with CCIP</a>
+          <a href="/ccip/directory">CCIP Directory</a>
+          <a href="/data-feeds/price-feeds/addresses">Data Feed Addresses</a>
+          <a href="/data-feeds/smartdata/addresses">SmartData Feed Addresses</a>
+          <a href="/data-streams/getting-started-hardhat">Getting Started with Data Streams</a>
+          <a href="/data-streams/crypto-streams">Data Streams Addresses</a>
+        </div>
       </div>
     </div>
   </main>
@@ -134,6 +198,15 @@ const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.titl
     background-color: var(--blue-100);
   }
 
+  .wrapper {
+    display: flex;
+    flex-direction: column;
+    max-width: var(--fullwidth-max-width);
+    padding: 0 var(--space-10x);
+    gap: 36px;
+  }
+
+  /*800px*/
   @media (min-width: 50em) {
     .hero {
       max-width: var(--fullwidth-max-width);
@@ -159,11 +232,6 @@ const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.titl
       font-weight: 600;
     }
 
-    .recommended {
-      margin: var(--space-16x) auto;
-      max-width: var(--fullwidth-max-width);
-    }
-
     .heroContainer {
       background: linear-gradient(180deg, #f1f5fe 0%, white 100%);
     }
@@ -178,8 +246,14 @@ const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.titl
       line-height: var(--space-6x);
       margin-bottom: var(--space-2x);
     }
+
+    .wrapper {
+      gap: 82px;
+    }
   }
-  @media (min-width: 72em) {
+
+  /* 992px */
+  @media (min-width: 62em) {
     .hero {
       max-width: min(1200px, calc(100% - 2 * var(--space-16x)));
       padding: 0;
@@ -188,6 +262,11 @@ const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.titl
     .recommended {
       max-width: min(1200px, calc(100% - 2 * var(--space-16x)));
       padding: 0;
+    }
+
+    .wrapper {
+      margin: 0 auto;
+      margin-top: 60px;
     }
   }
 </style>
