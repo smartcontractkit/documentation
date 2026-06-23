@@ -19,10 +19,11 @@ interface LaneDetailsHeroProps {
   }
   onRamp: string
   offRamp: string
+  sourceAddress: string
   destinationAddress: string
-  enforceOutOfOrder?: boolean
   explorer: ExplorerInfo
   inOutbound: LaneFilter
+  inDrawer?: boolean
 }
 
 // Arrow component to avoid duplication
@@ -69,13 +70,13 @@ const DetailItem = ({
   clipboardType?: string
   tooltip?: React.ReactNode
 }) => (
-  <>
+  <div className="lane-details-hero__details__item">
     <div className="lane-details-hero__details__label">
       {label}
       {tooltip}
     </div>
     <div data-clipboard-type={clipboardType}>{children}</div>
-  </>
+  </div>
 )
 
 function LaneDetailsHero({
@@ -83,20 +84,14 @@ function LaneDetailsHero({
   destinationNetwork,
   onRamp,
   offRamp,
+  sourceAddress,
   destinationAddress,
-  enforceOutOfOrder,
   explorer,
   inOutbound,
+  inDrawer = false,
 }: LaneDetailsHeroProps) {
-  // Map boolean values to display strings
-  const getOutOfOrderText = (value?: boolean) => {
-    if (value === true) return "Required"
-    if (value === false) return "Optional"
-    return "N/A"
-  }
-
   return (
-    <div className="lane-details-hero">
+    <div className={`lane-details-hero ${inDrawer ? "lane-details-hero--drawer" : ""}`}>
       {/* Display networks with direction based on lane type */}
       <div className="lane-details-hero__networks">
         {inOutbound === LaneFilter.Inbound ? (
@@ -115,16 +110,7 @@ function LaneDetailsHero({
       </div>
 
       <div className="lane-details-hero__details">
-        {/* Display address information based on lane type */}
-        {inOutbound === LaneFilter.Inbound ? (
-          <DetailItem label="OffRamp address" clipboardType="offramp">
-            <AddressComponent
-              address={offRamp}
-              endLength={6}
-              contractUrl={getExplorerAddressUrl(explorer, destinationNetwork.chainType)(offRamp)}
-            />
-          </DetailItem>
-        ) : (
+        {onRamp && (
           <DetailItem
             label="OnRamp address"
             clipboardType="onramp"
@@ -132,25 +118,39 @@ function LaneDetailsHero({
           >
             <AddressComponent
               address={onRamp}
-              endLength={6}
+              endLength={4}
               contractUrl={getExplorerAddressUrl(explorer, sourceNetwork.chainType)(onRamp)}
             />
           </DetailItem>
         )}
 
-        <DetailItem label="Destination chain selector" clipboardType="destination-chain-selector">
-          {destinationAddress ? <CopyValue value={destinationAddress} /> : "n/a"}{" "}
-        </DetailItem>
+        {offRamp && (
+          <DetailItem label="OffRamp address" clipboardType="offramp">
+            <AddressComponent
+              address={offRamp}
+              endLength={4}
+              contractUrl={getExplorerAddressUrl(explorer, destinationNetwork.chainType)(offRamp)}
+            />
+          </DetailItem>
+        )}
 
-        {inOutbound === LaneFilter.Outbound && (
+        {sourceAddress && (
           <DetailItem
-            label="Out of Order Execution"
-            clipboardType="out-of-order-execution"
-            tooltip={
-              <StyledTooltip tip="Currently controls the execution order of your messages on the destination blockchain. Required = Must be set for all messages, and to True. Optional = Can be set, and if set to True, enables Out-of-Order messaging. Note: Being deprecated in early 2026; OOO becomes default and only option." />
-            }
+            label="Source chain selector"
+            clipboardType="source-chain-selector"
+            tooltip={<StyledTooltip tip="Unique identifier for the source blockchain network." />}
           >
-            {getOutOfOrderText(enforceOutOfOrder)}
+            <CopyValue value={sourceAddress} />
+          </DetailItem>
+        )}
+
+        {destinationAddress && (
+          <DetailItem
+            label="Destination chain selector"
+            clipboardType="destination-chain-selector"
+            tooltip={<StyledTooltip tip="Unique identifier for the destination blockchain network." />}
+          >
+            <CopyValue value={destinationAddress} />
           </DetailItem>
         )}
       </div>

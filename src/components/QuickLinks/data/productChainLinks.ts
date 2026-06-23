@@ -334,6 +334,7 @@ export const productChainLinks: ProductChainLinks = {
     plume: "/resources/link-token-contracts#plume",
     polygon: "/resources/link-token-contracts#polygon",
     polygonkatana: "/resources/link-token-contracts#polygon-katana",
+    polygonzkevm: "/resources/link-token-contracts#polygon-zkevm",
     robinhood: "/resources/link-token-contracts#robinhood-chain",
     ronin: "/resources/link-token-contracts#ronin",
     rootstock: "/resources/link-token-contracts#rootstock",

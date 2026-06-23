@@ -82,7 +82,7 @@ export const Dropdown = ({ placeholder = "Select a network...", options }: Props
             onInput={handleInputChange}
           />
           <img
-            src="https://smartcontract.imgix.net/icons/Caret2.svg"
+            src="https://d2f70xi62kby8n.cloudfront.net/icons/Caret2.svg"
             alt="Caret icon"
             style={{ position: "absolute", top: "30%", right: 0, transform: "translateX(-50%)" }}
           />

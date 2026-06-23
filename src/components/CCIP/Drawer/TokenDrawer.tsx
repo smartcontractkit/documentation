@@ -1,34 +1,38 @@
 import "../Tables/Table.css"
-import { drawerContentStore } from "../Drawer/drawerStore.ts"
 import TokenDetailsHero from "../ChainHero/TokenDetailsHero.tsx"
 import {
   Environment,
-  getLane,
   getNetwork,
-  SupportedTokenConfig,
-  Version,
-  LaneFilter,
-  displayCapacity,
   determineTokenMechanism,
   PoolType,
   getTokenData,
-  LaneConfig,
+  Version,
 } from "~/config/data/ccip/index.ts"
-import { isTokenPaused } from "~/config/data/ccip/utils.ts"
-import { useRef, useState } from "react"
+import { useState, useRef } from "react"
 import { createPortal } from "react-dom"
-import { ChainType, ExplorerInfo, SupportedChain } from "~/config/index.ts"
-import LaneDrawer from "../Drawer/LaneDrawer.tsx"
+import { ChainType, ExplorerInfo } from "~/config/index.ts"
 import TableSearchInput from "../Tables/TableSearchInput.tsx"
 import Tabs from "../Tables/Tabs.tsx"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
-import RateTooltip from "../Tooltip/RateTooltip.tsx"
+import { useTokenDirectory } from "~/hooks/useTokenDirectory.ts"
+import { realtimeDataService } from "~/lib/ccip/services/realtime-data-instance.ts"
+import { NetworkLaneRow } from "./NetworkLaneRow.tsx"
+import { NetworkLaneRowNoVerifiers } from "./NetworkLaneRowNoVerifiers.tsx"
+import type { TokenRateLimits } from "~/lib/ccip/types/index.ts"
+
+// Feature flag: set to `true` once the backend is ready to re-enable the Verifiers accordion.
+const SHOW_VERIFIERS_ACCORDION = false
+
+enum TokenTab {
+  Outbound = "outbound",
+  Inbound = "inbound",
+}
 
 function TokenDrawer({
   token,
   network,
-  destinationLanes,
   environment,
+  poolTypesByChain,
 }: {
   token: {
     id: string
@@ -48,30 +52,28 @@ function TokenDrawer({
     tokenDecimals: number
     tokenAddress: string
     tokenPoolType: PoolType
+    tokenPoolRawType: string
     tokenPoolAddress: string
-    tokenPoolVersion?: string
     explorer: ExplorerInfo
   }
-  destinationLanes: {
-    [sourceChain: string]: SupportedTokenConfig
-  }
   environment: Environment
+  poolTypesByChain?: Record<string, PoolType>
 }) {
   const [search, setSearch] = useState("")
-  const [inOutbound, setInOutbound] = useState<LaneFilter>(LaneFilter.Outbound)
+  const [activeTab, setActiveTab] = useState<TokenTab>(TokenTab.Outbound)
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const [openWarning, setOpenWarning] = useState<string | null>(null)
   const [tooltipPosition, setTooltipPosition] = useState<{ top: number; left: number } | null>(null)
   const closeTimeoutRef = useRef<number | null>(null)
 
-  type LaneRow = {
-    networkDetails: {
-      name: string
-      logo: string
+  const toggleRowExpansion = (networkName: string) => {
+    const newExpandedRows = new Set(expandedRows)
+    if (newExpandedRows.has(networkName)) {
+      newExpandedRows.delete(networkName)
+    } else {
+      newExpandedRows.add(networkName)
     }
-    laneData: LaneConfig
-    destinationChain: string
-    destinationPoolType: PoolType
-    destinationDecimals: number
+    setExpandedRows(newExpandedRows)
   }
 
   const warningContent = (
@@ -125,56 +127,41 @@ function TokenDrawer({
     setOpenWarning(destinationChain)
   }
 
-  const laneRows: LaneRow[] = Object.keys(destinationLanes)
-    .map((destinationChain) => {
-      const networkDetails = getNetwork({
-        filter: environment,
-        chain: destinationChain,
-      })
+  // Single API call — returns outboundLanes + inboundLanes with rate limits and verifiers
+  const { data: tokenDirectory, isLoading: isLoadingRateLimits } = useTokenDirectory(token.id, network.key, environment)
 
-      const destinationTokenData = getTokenData({
+  // Select the appropriate lane map and direction based on the active tab
+  const activeLanes =
+    activeTab === TokenTab.Outbound ? (tokenDirectory?.outboundLanes ?? {}) : (tokenDirectory?.inboundLanes ?? {})
+
+  const direction = activeTab === TokenTab.Outbound ? "out" : "in"
+
+  type LaneRow = {
+    networkDetails: { name: string; logo: string }
+    chainKey: string
+    destinationPoolType: PoolType | undefined
+    rateLimits: TokenRateLimits | null
+    destinationDecimals: number | undefined
+  }
+
+  const laneRows: LaneRow[] = Object.entries(activeLanes)
+    .map(([chainKey, laneEntry]) => {
+      const networkDetails = getNetwork({ filter: environment, chain: chainKey })
+      if (!networkDetails) return null
+
+      // Destination token decimals (V1_2_0 config) — used to detect the v1.5.1 decimal-mismatch rate-limit warning
+      const destinationDecimals = getTokenData({
         environment,
         version: Version.V1_2_0,
         tokenId: token.id,
-      })[destinationChain]
-
-      if (!destinationTokenData) {
-        console.error(`No token data found for ${token.id} on ${network.key} -> ${destinationChain}`)
-        return null
-      }
-
-      const destinationPoolType = destinationTokenData.poolType
-      if (!destinationPoolType) {
-        console.error(`No pool type found for ${token.id} on ${network.key} -> ${destinationChain}`)
-        return null
-      }
-
-      const laneData = getLane({
-        sourceChain: network.key as SupportedChain,
-        destinationChain: destinationChain as SupportedChain,
-        environment,
-        version: Version.V1_2_0,
-      })
-
-      if (!laneData) {
-        console.error(`No lane data found for ${token.id} on ${network.key} -> ${destinationChain}`)
-        return null
-      }
-      if (!laneData.supportedTokens) {
-        console.error(`No supported tokens found for ${token.id} on ${network.key} -> ${destinationChain}`)
-        return null
-      }
-      if (!(token.id in laneData.supportedTokens)) {
-        console.error(`${token.id} not found in supported tokens for ${network.key} -> ${destinationChain}`)
-        return null
-      }
+      })[chainKey]?.decimals
 
       return {
         networkDetails,
-        laneData,
-        destinationChain,
-        destinationPoolType,
-        destinationDecimals: destinationTokenData.decimals,
+        chainKey,
+        destinationPoolType: poolTypesByChain?.[chainKey],
+        rateLimits: laneEntry.rateLimits ?? null,
+        destinationDecimals,
       }
     })
     .filter(Boolean) as LaneRow[]
@@ -190,7 +177,7 @@ function TokenDrawer({
           logo: network.tokenLogo,
           decimals: network.tokenDecimals,
           address: network.tokenAddress,
-          poolType: network.tokenPoolType,
+          poolRawType: network.tokenPoolRawType,
           poolAddress: network.tokenPoolAddress,
         }}
         network={{
@@ -199,22 +186,34 @@ function TokenDrawer({
           explorer: network.explorer,
           chainType: network.chainType,
         }}
+        poolDetails={
+          tokenDirectory?.pool
+            ? {
+                version: tokenDirectory.pool.version,
+                hook: tokenDirectory.pool.hook,
+                finality: tokenDirectory.pool.finality,
+                ccv: tokenDirectory.pool.ccv,
+              }
+            : null
+        }
+        isLoadingPoolDetails={isLoadingRateLimits}
+        inDrawer={true}
       />
-      <div className="ccip-table__drawer-container">
+      <div className="ccip-table__drawer-container ccip-table__drawer-container--token">
         <div className="ccip-table__filters">
           <div>
             <Tabs
               tabs={[
                 {
                   name: "Outbound lanes",
-                  key: LaneFilter.Outbound,
+                  key: TokenTab.Outbound,
                 },
                 {
                   name: "Inbound lanes",
-                  key: LaneFilter.Inbound,
+                  key: TokenTab.Inbound,
                 },
               ]}
-              onChange={(key) => setInOutbound(key as LaneFilter)}
+              onChange={(key) => setActiveTab(key as TokenTab)}
             />
           </div>
           <TableSearchInput search={search} setSearch={setSearch} />
@@ -223,37 +222,7 @@ function TokenDrawer({
           <table className="ccip-table">
             <thead>
               <tr>
-                <th>{inOutbound === LaneFilter.Inbound ? "Source" : "Destination"} network</th>
-                <th>
-                  Rate limit capacity
-                  <Tooltip
-                    label=""
-                    tip="Maximum amount per transaction"
-                    labelStyle={{
-                      marginRight: "5px",
-                    }}
-                    style={{
-                      display: "inline-block",
-                      verticalAlign: "middle",
-                      marginBottom: "2px",
-                    }}
-                  />
-                </th>
-                <th>
-                  Rate limit refill rate
-                  <Tooltip
-                    label=""
-                    tip="Rate at which available capacity is replenished"
-                    labelStyle={{
-                      marginRight: "5px",
-                    }}
-                    style={{
-                      display: "inline-block",
-                      verticalAlign: "middle",
-                      marginBottom: "2px",
-                    }}
-                  />
-                </th>
+                <th>{activeTab === TokenTab.Inbound ? "Source" : "Destination"} network</th>
                 <th>
                   Mechanism
                   <Tooltip
@@ -269,6 +238,51 @@ function TokenDrawer({
                     }}
                   />
                 </th>
+                <th>
+                  <div>
+                    Rate limit capacity
+                    <Tooltip
+                      label=""
+                      tip="Maximum amount per transaction"
+                      labelStyle={{
+                        marginRight: "5px",
+                      }}
+                      style={{
+                        display: "inline-block",
+                        verticalAlign: "middle",
+                        marginBottom: "2px",
+                      }}
+                    />
+                  </div>
+                  <span className="ccip-table__header-sublabel">(Tokens)</span>
+                </th>
+                <th>
+                  <div>
+                    Rate limit refill rate
+                    <Tooltip
+                      label=""
+                      tip="Rate at which available capacity is replenished"
+                      labelStyle={{
+                        marginRight: "5px",
+                      }}
+                      style={{
+                        display: "inline-block",
+                        verticalAlign: "middle",
+                        marginBottom: "2px",
+                      }}
+                    />
+                  </div>
+                  <span className="ccip-table__header-sublabel">(Tokens/sec)</span>
+                </th>
+                <th>
+                  <div>FTF Rate limit capacity</div>
+                  <span className="ccip-table__header-sublabel">(Tokens)</span>
+                </th>
+                <th>
+                  <div>FTF Rate limit refill rate</div>
+                  <span className="ccip-table__header-sublabel">(Tokens/sec)</span>
+                </th>
+                {SHOW_VERIFIERS_ACCORDION && <th>Verifiers</th>}
               </tr>
             </thead>
             <tbody>
@@ -277,117 +291,52 @@ function TokenDrawer({
                   ({ networkDetails }) =>
                     networkDetails && networkDetails.name.toLowerCase().includes(search.toLowerCase())
                 )
-                .map(({ networkDetails, laneData, destinationChain, destinationPoolType, destinationDecimals }) => {
-                  if (!laneData || !networkDetails) return null
+                .map(({ networkDetails, chainKey, destinationPoolType, rateLimits, destinationDecimals }) => {
+                  const allLimits = realtimeDataService.getAllRateLimitsForDirection(rateLimits, direction)
+                  const tokenPaused = allLimits.standard?.capacity === "0"
 
-                  const tokenPaused = isTokenPaused(
-                    destinationLanes[destinationChain].rateLimiterConfig?.[
-                      inOutbound === LaneFilter.Inbound ? "in" : "out"
-                    ]
-                  )
+                  const mechanism =
+                    activeTab === TokenTab.Outbound
+                      ? determineTokenMechanism(network.tokenPoolType, destinationPoolType)
+                      : determineTokenMechanism(destinationPoolType, network.tokenPoolType)
 
+                  // v1.5.1 token pools on EVM may enforce rate limits differently when token decimals
+                  // differ across chains. Warn on inbound lanes where a decimal mismatch exists.
                   const hasDecimalMismatch = network.tokenDecimals !== destinationDecimals
-                  const isV151 = network.tokenPoolVersion?.includes("1.5.1")
-                  const isInboundLane = inOutbound === LaneFilter.Inbound
+                  const isV151 = tokenDirectory?.pool?.version?.includes("1.5.1")
+                  const isInboundLane = activeTab === TokenTab.Inbound
                   const isEvmNetwork = String(network.chainType).toLowerCase() === "evm"
-                  const shouldWarn = isV151 && hasDecimalMismatch && isInboundLane && isEvmNetwork
+                  const shouldWarn = Boolean(isV151 && hasDecimalMismatch && isInboundLane && isEvmNetwork)
 
-                  return (
-                    <tr key={networkDetails.name} className={tokenPaused ? "ccip-table__row--paused" : ""}>
-                      <td>
-                        <button
-                          type="button"
-                          className={`ccip-table__network-name ${tokenPaused ? "ccip-table__network-name--paused" : ""}`}
-                          onClick={() => {
-                            drawerContentStore.set(() => (
-                              <LaneDrawer
-                                environment={environment}
-                                lane={laneData}
-                                sourceNetwork={network}
-                                destinationNetwork={{
-                                  name: networkDetails.name || "",
-                                  logo: networkDetails.logo || "",
-                                  key: destinationChain,
-                                }}
-                                inOutbound={inOutbound}
-                                explorer={network.explorer}
-                              />
-                            ))
-                          }}
-                          aria-label={`View lane details for ${networkDetails.name}`}
-                        >
-                          <img
-                            src={networkDetails.logo}
-                            alt={`${networkDetails.name} blockchain logo`}
-                            className="ccip-table__logo"
-                          />
-
-                          <span style={{ display: "inline-flex", alignItems: "center" }}>
-                            {networkDetails.name}
-
-                            {shouldWarn && (
-                              <span
-                                style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  marginLeft: "6px",
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.stopPropagation()
-                                  openWarningTooltip(destinationChain, e.currentTarget)
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.stopPropagation()
-                                  scheduleCloseWarning()
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                }}
-                              >
-                                <span
-                                  aria-label="Rate limit warning"
-                                  style={{
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  ⚠️
-                                </span>
-                              </span>
-                            )}
-                          </span>
-
-                          {tokenPaused && (
-                            <span className="ccip-table__paused-badge" title="Transfers are currently paused">
-                              ⏸️
-                            </span>
-                          )}
-                        </button>
-                      </td>
-                      <td>
-                        {displayCapacity(
-                          network.tokenDecimals,
-                          network.tokenSymbol,
-                          destinationLanes[destinationChain].rateLimiterConfig?.[
-                            inOutbound === LaneFilter.Inbound ? "in" : "out"
-                          ]
-                        )}
-                      </td>
-                      <td>
-                        <RateTooltip
-                          destinationLane={destinationLanes[destinationChain]}
-                          inOutbound={inOutbound}
-                          symbol={network.tokenSymbol}
-                          decimals={network.tokenDecimals}
-                        />
-                      </td>
-                      <td>
-                        {inOutbound === LaneFilter.Outbound
-                          ? determineTokenMechanism(network.tokenPoolType, destinationPoolType)
-                          : determineTokenMechanism(destinationPoolType, network.tokenPoolType)}
-                      </td>
-                    </tr>
+                  return SHOW_VERIFIERS_ACCORDION ? (
+                    <NetworkLaneRow
+                      key={chainKey}
+                      networkDetails={networkDetails}
+                      tokenPaused={tokenPaused}
+                      isExpanded={expandedRows.has(networkDetails.name)}
+                      onToggle={() => toggleRowExpansion(networkDetails.name)}
+                      mechanism={mechanism}
+                      allLimits={allLimits}
+                      isLoadingRateLimits={isLoadingRateLimits}
+                      destinationVerifiers={[]}
+                      explorer={network.explorer}
+                      chainType={network.chainType}
+                      showWarning={shouldWarn}
+                      onWarningEnter={(target) => openWarningTooltip(chainKey, target)}
+                      onWarningLeave={scheduleCloseWarning}
+                    />
+                  ) : (
+                    <NetworkLaneRowNoVerifiers
+                      key={chainKey}
+                      networkDetails={networkDetails}
+                      tokenPaused={tokenPaused}
+                      mechanism={mechanism}
+                      allLimits={allLimits}
+                      isLoadingRateLimits={isLoadingRateLimits}
+                      showWarning={shouldWarn}
+                      onWarningEnter={(target) => openWarningTooltip(chainKey, target)}
+                      onWarningLeave={scheduleCloseWarning}
+                    />
                   )
                 })}
             </tbody>
@@ -395,9 +344,13 @@ function TokenDrawer({
         </div>
 
         <div className="ccip-table__notFound">
-          {laneRows.filter(
-            ({ networkDetails }) => networkDetails && networkDetails.name.toLowerCase().includes(search.toLowerCase())
-          ).length === 0 && <>No lanes found</>}
+          {isLoadingRateLimits ? (
+            <>Loading...</>
+          ) : (
+            laneRows.filter(
+              ({ networkDetails }) => networkDetails && networkDetails.name.toLowerCase().includes(search.toLowerCase())
+            ).length === 0 && <>No lanes found</>
+          )}
         </div>
       </div>
 
