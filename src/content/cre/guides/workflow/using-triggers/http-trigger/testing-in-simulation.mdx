@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Test HTTP triggers locally with the CRE simulator: provide JSON payloads interactively or via command-line flags for rapid development."
   datePublished: "2025-11-10"
-  lastModified: "2025-11-10"
+  lastModified: "2026-06-11"
 ---
 
 import { Aside, CodeHighlightBlockMulti } from "@components"
@@ -44,6 +44,24 @@ cre workflow simulate my-http-workflow --target staging-settings
 ```
 
 The simulator will detect your HTTP trigger and prompt you to select it from available triggers.
+
+## Listen mode
+
+Use `--listen` to keep the simulator alive between runs. Instead of simulating once and exiting, the CLI starts a local HTTP server on port `2000` and re-runs the simulator every time it receives a POST request — no need to restart between tests.
+
+```bash
+cre workflow simulate my-http-workflow --listen --target staging-settings
+```
+
+Once running, send payloads with any HTTP client:
+
+```bash
+curl -X POST http://localhost:2000 \
+  -H "Content-Type: application/json" \
+  -d '{"userId":"123","action":"purchase","amount":100}'
+```
+
+Each POST triggers a fresh simulation run. Press `Ctrl+C` to stop.
 
 ## Providing input data
 
