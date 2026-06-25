@@ -247,13 +247,26 @@ func (c *Client) WriteReport(runtime cre.Runtime, input *WriteCreReportRequest) 
 
 #### `evm.WriteReportReply`
 
-| Field                             | Type                               | Description                                                                         |
-| --------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------- |
-| `TxStatus`                        | `TxStatus`                         | The final status of the transaction: `SUCCESS`, `REVERTED`, or `FATAL`.             |
-| `ReceiverContractExecutionStatus` | `*ReceiverContractExecutionStatus` | Optional. The status of the receiver contract's execution: `SUCCESS` or `REVERTED`. |
-| `TxHash`                          | `[]byte`                           | Optional. The 32-byte transaction hash of the onchain submission.                   |
-| `TransactionFee`                  | `*pb.BigInt`                       | Optional. The total fee paid for the transaction in Wei.                            |
-| `ErrorMessage`                    | `*string`                          | Optional. An error message if the transaction failed.                               |
+| Field                             | Type                               | Description                                                                                                                                                                                                                       |
+| --------------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TxStatus`                        | `TxStatus`                         | The final status of the transaction: `evm.TxStatus_TX_STATUS_SUCCESS`, `evm.TxStatus_TX_STATUS_REVERTED`, or `evm.TxStatus_TX_STATUS_FATAL`.                                                                                      |
+| `ReceiverContractExecutionStatus` | `*ReceiverContractExecutionStatus` | Optional. The status of the receiver contract's execution: `evm.ReceiverContractExecutionStatus_RECEIVER_CONTRACT_EXECUTION_STATUS_SUCCESS` or `evm.ReceiverContractExecutionStatus_RECEIVER_CONTRACT_EXECUTION_STATUS_REVERTED`. |
+| `TxHash`                          | `[]byte`                           | Optional. The 32-byte transaction hash of the onchain submission.                                                                                                                                                                 |
+| `TransactionFee`                  | `*pb.BigInt`                       | Optional. The total fee paid for the transaction in Wei.                                                                                                                                                                          |
+| `ErrorMessage`                    | `*string`                          | Optional. An error message if the transaction failed.                                                                                                                                                                             |
+
+**Status constants:**
+
+```go
+// TxStatus values
+evm.TxStatus_TX_STATUS_SUCCESS  // = 2
+evm.TxStatus_TX_STATUS_REVERTED // = 1
+evm.TxStatus_TX_STATUS_FATAL    // = 0
+
+// ReceiverContractExecutionStatus values
+evm.ReceiverContractExecutionStatus_RECEIVER_CONTRACT_EXECUTION_STATUS_SUCCESS  // = 0
+evm.ReceiverContractExecutionStatus_RECEIVER_CONTRACT_EXECUTION_STATUS_REVERTED // = 1
+```
 
 ## Chain Selectors
 

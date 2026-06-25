@@ -1,0 +1,235 @@
+---
+section: cre
+title: "Verifying Transaction Status"
+sdkLang: "ts"
+pageId: "guides-workflow-evm-verifying-transaction-status"
+date: Last Modified
+metadata:
+  description: "Verify consumer contract execution in TypeScript: learn to check both transaction success and your contract's onReport() execution status."
+  datePublished: "2025-12-08"
+  lastModified: "2025-12-08"
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+When your workflow writes data to the blockchain, you can verify both that the transaction was mined and that your consumer contract successfully processed the data. This guide explains how to properly check both levels of execution.
+
+<Aside type="note" title="Prerequisites">
+  This guide assumes you're already familiar with how CRE's onchain write process works. If you haven't read it yet,
+  start with [Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write/overview-ts) to understand the
+  secure write flow.
+</Aside>
+
+## Why two levels of verification?
+
+Your workflow's data goes through a two-tier transaction model:
+
+1. **Outer transaction**: Your workflow → `KeystoneForwarder` contract (on the blockchain)
+1. **Inner execution**: `KeystoneForwarder` → Your [consumer contract](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)'s `onReport()` function
+
+A common mistake is only checking the outer transaction status. **The transaction can succeed while your consumer contract's `onReport()` function reverts.**
+
+## Understanding the status fields
+
+When you call `evmClient.writeReport()` and await the result, you receive a `WriteReportReply` object. This object contains the complete results of your write operation, including two status indicators:
+
+| Field                             | What it checks                                                        | Success means                                                            | Failure means                                                                      |
+| --------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| `txStatus`                        | Was the transaction mined on the blockchain?                          | Forwarder received and processed the report                              | Network issues, insufficient gas, or forwarder rejected the report                 |
+| `receiverContractExecutionStatus` | Did YOUR consumer contract's `onReport()` complete without reverting? | All validation passed (if any), `_processReport()` executed successfully | Forwarder validation failed, workflow ID mismatch, or your business logic reverted |
+
+<Aside type="caution" title="Simulation Limitation">
+  The `receiverContractExecutionStatus` field is currently not populated during workflow simulation. This verification
+  only works in production environments. During simulation, you can only verify that the transaction to the Forwarder
+  succeeded (`txStatus`), but cannot detect if your consumer contract's `onReport()` function reverted.
+</Aside>
+
+## The complete verification pattern
+
+### Only checks outer transaction
+
+```typescript
+const writeResult = evmClient.writeReport(runtime, {...}).result()
+
+// INCOMPLETE: Only verifies the transaction was mined
+if (writeResult.txStatus === TxStatus.SUCCESS) {
+  runtime.log("Transaction succeeded")
+}
+```
+
+**Problem**: Your consumer contract could have reverted, but you'd never know because you only checked if the transaction was mined.
+
+### Checks both levels
+
+```typescript
+import { TxStatus, ReceiverContractExecutionStatus, bytesToHex } from "@chainlink/cre-sdk"
+
+const writeResult = evmClient.writeReport(runtime, {...}).result()
+
+// Step 1: Check outer transaction status
+if (writeResult.txStatus !== TxStatus.SUCCESS) {
+  throw new Error(`Transaction failed with status: ${writeResult.txStatus}`)
+}
+
+// Step 2: Check consumer contract execution status
+if (writeResult.receiverContractExecutionStatus === ReceiverContractExecutionStatus.REVERTED) {
+  const error = writeResult.errorMessage || "Unknown error"
+  const txHash = bytesToHex(writeResult.txHash || new Uint8Array(32))
+  runtime.log(`Consumer contract reverted: ${error}`)
+  runtime.log(`Transaction hash: ${txHash}`)
+  throw new Error(`Consumer contract execution failed: ${error}`)
+}
+
+runtime.log("Both transaction AND consumer contract execution succeeded")
+const txHash = bytesToHex(writeResult.txHash || new Uint8Array(32))
+runtime.log(`Transaction hash: ${txHash}`)
+```
+
+**What this checks**:
+
+1. Transaction was mined successfully
+1. Your consumer contract's `onReport()` function executed without reverting
+1. Your business logic completed successfully
+
+## Common scenarios
+
+### Scenario 1: Everything succeeded
+
+```typescript
+// Transaction mined + Consumer contract executed successfully
+txStatus: TxStatus.SUCCESS
+receiverContractExecutionStatus: ReceiverContractExecutionStatus.SUCCESS
+```
+
+**What happened**: The report was delivered and your contract processed it successfully.
+
+**Action**: None needed - everything worked as expected.
+
+### Scenario 2: Transaction succeeded, but contract reverted
+
+```typescript
+// Transaction was mined, but your contract rejected the data
+txStatus: TxStatus.SUCCESS
+receiverContractExecutionStatus: ReceiverContractExecutionStatus.REVERTED
+```
+
+**What happened**: The forwarder successfully submitted the transaction, but your consumer contract's `onReport()` function reverted during execution.
+
+**Common causes**:
+
+- Forwarder address mismatch: You configured the wrong forwarder address in your consumer contract (simulation forwarders are different from production forwarders - see [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks-ts))
+- [Security check](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#34-configuring-permissions) failed (if you configured expected values for workflow ID, owner, or name in your contract)
+- Custom validation in `_processReport()` rejected the data
+- ABI decoding failure (struct mismatch between workflow and contract)
+- Custom business logic constraints not met
+
+**Action**: Check the error message and review your consumer contract's validation logic. If moving from simulation to production, ensure you updated the forwarder address in your contract.
+
+### Scenario 3: Transaction failed
+
+Transaction failed to be mined:
+
+```typescript
+txStatus: TxStatus.REVERTED or TxStatus.FATAL
+receiverContractExecutionStatus: undefined
+```
+
+**What happened**: The transaction couldn't be mined on the blockchain.
+
+**Common causes**:
+
+- Insufficient gas
+- Network connectivity issues
+- Incorrect forwarder address
+- RPC endpoint problems
+
+**Action**: Check RPC endpoint, gas configuration, network status, and forwarder address.
+
+## Best practices helper function
+
+Create a reusable helper to verify both status levels:
+
+```typescript
+import { TxStatus, ReceiverContractExecutionStatus, bytesToHex, type Runtime } from "@chainlink/cre-sdk"
+import type { WriteReportReply } from "@chainlink/cre-sdk"
+
+/**
+ * Verifies both transaction and consumer contract execution status
+ * @throws Error if either verification fails
+ */
+function verifyWriteSuccess(writeResult: WriteReportReply, runtime: Runtime<unknown>): string {
+  // Check outer transaction
+  if (writeResult.txStatus !== TxStatus.SUCCESS) {
+    throw new Error(`Transaction failed with status: ${writeResult.txStatus}`)
+  }
+
+  // Check consumer contract execution
+  if (writeResult.receiverContractExecutionStatus === ReceiverContractExecutionStatus.REVERTED) {
+    const errorMsg = writeResult.errorMessage || "Unknown error"
+    throw new Error(`Consumer contract reverted: ${errorMsg}`)
+  }
+
+  // Log success and return transaction hash
+  const txHash = bytesToHex(writeResult.txHash || new Uint8Array(32))
+  runtime.log(`Write verification succeeded`)
+  runtime.log(`Transaction hash: ${txHash}`)
+  runtime.log(`Transaction status: ${writeResult.txStatus}`)
+  runtime.log(`Contract status: ${writeResult.receiverContractExecutionStatus}`)
+
+  return txHash
+}
+
+// Usage in your workflow
+const writeDataOnchain = (runtime: Runtime<Config>): string => {
+  // ... prepare network, client, and data ...
+
+  const writeResult = evmClient
+    .writeReport(runtime, {
+      receiver: runtime.config.consumerAddress,
+      report: reportResponse,
+      gasConfig: { gasLimit: runtime.config.gasLimit },
+    })
+    .result()
+
+  // Use the helper for complete verification
+  const txHash = verifyWriteSuccess(writeResult, runtime)
+  return txHash
+}
+```
+
+## Accessing error details
+
+The `WriteReportReply` provides direct property access to error information:
+
+```typescript
+const writeResult = evmClient.writeReport(runtime, {...}).result()
+
+// Access error message (can be undefined)
+if (writeResult.errorMessage) {
+  runtime.log(`Error: ${writeResult.errorMessage}`)
+}
+
+// Access transaction hash (can be undefined)
+if (writeResult.txHash) {
+  const txHash = bytesToHex(writeResult.txHash)
+  runtime.log(`Transaction: ${txHash}`)
+}
+
+// Check status enums
+runtime.log(`TX Status: ${writeResult.txStatus}`)
+runtime.log(`Contract Status: ${writeResult.receiverContractExecutionStatus}`)
+```
+
+**Best practice**: Always provide fallback values when accessing potentially undefined fields:
+
+```typescript
+const errorMsg = writeResult.errorMessage || "Unknown error"
+const txHash = bytesToHex(writeResult.txHash || new Uint8Array(32))
+```
+
+## Related resources
+
+- **[EVM Client Reference](/cre/reference/sdk/evm-client-ts#writereportreply)** - Complete API documentation for `WriteReportReply`, including all field definitions and status enum values
+- **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)** - Learn about forwarder validation and the `IReceiver` interface
+- **[Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks)** - Forwarder addresses for simulation and production
+- **[Writing Data Onchain](/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain)** - Complete guide to the write process
