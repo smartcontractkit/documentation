@@ -2,9 +2,12 @@
  * Shared utilities for converting changelog.json entries into @astrojs/rss feed items.
  *
  * Feed layout:
- *   /changelog/rss.xml                – all entries (main feed)
- *   /changelog/rss/deprecations.xml   – deprecations only, all products
- *   /changelog/rss/[topic].xml        – per-product feed (ccip, data-feeds, …)
+ *   /changelog/rss.xml          – all entries (main feed)
+ *   /changelog/rss/[topic].xml  – per-product feed (ccip, data-feeds, …)
+ *
+ * Deprecation detection: changelog.json stores deprecations with `"category": "integration"`
+ * for front-end display reasons. The RSS layer detects them by title instead so we don't
+ * have to touch the changelog data.
  */
 
 import type { RSSFeedItem } from "@astrojs/rss"
@@ -63,6 +66,16 @@ const TOPIC_URLS: Record<string, string> = {
 // Helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Temporary: changelog.json uses `"category": "integration"` for deprecation entries
+ * because of front-end display constraints. Detect them by title until that's resolved.
+ */
+const DEPRECATION_TITLE_RE = /deprecat/i
+
+export function isDeprecationEntry(entry: ChangelogEntry): boolean {
+  return entry.category === "deprecation" || DEPRECATION_TITLE_RE.test(entry.title)
+}
+
 /** Stable URL-safe slug for an entry – used as the fragment in <link> / <guid>. */
 export function entrySlug(entry: ChangelogEntry): string {
   return `${entry.date}-${entry.title
@@ -88,7 +101,7 @@ export function topicDocsUrl(topic: string, siteBase: string): string {
 
 async function buildItemContent(entry: ChangelogEntry, networksMap: NetworksMap): Promise<string> {
   const parts: string[] = []
-  const isDeprecation = entry.category === "deprecation"
+  const isDeprecation = isDeprecationEntry(entry)
 
   if (isDeprecation) {
     parts.push(`<p><strong>⚠️ Deprecation notice — ${entry.topic}</strong></p>`)
@@ -106,13 +119,16 @@ async function buildItemContent(entry: ChangelogEntry, networksMap: NetworksMap)
     parts.push("</ul>")
   }
 
-  // Related tokens / assets
-  if (entry.relatedTokens?.length) {
-    const count = entry.relatedTokens.length
-    const heading = isDeprecation ? `Affected assets (${count})` : `Assets (${count})`
+  // Related tokens / assets — for deprecations, mainnet only
+  const tokens = isDeprecation
+    ? (entry.relatedTokens ?? []).filter((t) => typeof t === "string" || !/testnet/i.test(t.assetName))
+    : (entry.relatedTokens ?? [])
+
+  if (tokens.length) {
+    const heading = isDeprecation ? `Affected assets (${tokens.length})` : `Assets (${tokens.length})`
     parts.push(`<h3>${heading}</h3><ul>`)
 
-    for (const token of entry.relatedTokens) {
+    for (const token of tokens) {
       if (typeof token === "string") {
         parts.push(`<li>${token}</li>`)
         continue
@@ -127,9 +143,7 @@ async function buildItemContent(entry: ChangelogEntry, networksMap: NetworksMap)
   }
 
   // Related networks (only shown when tokens don't already carry per-token network info)
-  const tokensHaveNetworks = entry.relatedTokens?.some(
-    (t) => typeof t === "object" && t !== null && "network" in t && t.network
-  )
+  const tokensHaveNetworks = tokens.some((t) => typeof t === "object" && t !== null && "network" in t && t.network)
   if (entry.relatedNetworks?.length && !tokensHaveNetworks) {
     const names = entry.relatedNetworks.map((n) => networksMap[n]?.displayName ?? n).join(", ")
     parts.push(`<p><strong>Available on:</strong> ${names}</p>`)
@@ -170,7 +184,7 @@ export async function entryToRssItem(
     description: plainSummary,
     link,
     content,
-    categories: [entry.topic, entry.category],
+    categories: [entry.topic, isDeprecationEntry(entry) ? "deprecation" : entry.category],
   }
 }
 
@@ -187,13 +201,5 @@ export function topicFeedMeta(topic: string): { title: string; description: stri
   return {
     title: `Chainlink ${topic} Changelog`,
     description: `Updates, releases, integrations, and deprecations for Chainlink ${topic}.`,
-  }
-}
-
-/** Build title + description for a per-topic deprecations feed. */
-export function topicDeprecationFeedMeta(topic: string): { title: string; description: string } {
-  return {
-    title: `Chainlink ${topic} Deprecations`,
-    description: `Deprecation notices for Chainlink ${topic}.`,
   }
 }
