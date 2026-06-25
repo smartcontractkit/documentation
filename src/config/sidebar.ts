@@ -6,6 +6,7 @@
 import { Sections } from "../content.config.ts"
 import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
 import { CCIP_SIDEBAR_CONTENT } from "./sidebar/ccip-dynamic.ts"
+import { AI_AGENT_RESOURCES_SECTION } from "./sidebar/ai-agent-resources.ts"
 import type { ChainType } from "./types.js"
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
@@ -449,6 +450,24 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Deploying Workflows",
           url: "cre/guides/operations/deploying-workflows",
+          children: [
+            {
+              title: "Deploying to the Private Registry",
+              url: "cre/guides/operations/deploying-to-private-registry",
+              highlightAsCurrent: [
+                "cre/guides/operations/deploying-to-private-registry-ts",
+                "cre/guides/operations/deploying-to-private-registry-go",
+              ],
+            },
+            {
+              title: "Deploying to the Onchain Registry",
+              url: "cre/guides/operations/deploying-to-onchain-registry",
+              highlightAsCurrent: [
+                "cre/guides/operations/deploying-to-onchain-registry-ts",
+                "cre/guides/operations/deploying-to-onchain-registry-go",
+              ],
+            },
+          ],
         },
         {
           title: "Activating & Pausing Workflows",
@@ -699,6 +718,53 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/reference/gelato-migration",
           highlightAsCurrent: ["cre/reference/gelato-migration-ts", "cre/reference/gelato-migration-go"],
         },
+        {
+          title: "Migrate from Chainlink Automation",
+          url: "cre/reference/cla-migration",
+          highlightAsCurrent: ["cre/reference/cla-migration-ts", "cre/reference/cla-migration-go"],
+        },
+        {
+          title: "Migrate from Chainlink Functions",
+          url: "cre/reference/clf-migration",
+          highlightAsCurrent: ["cre/reference/clf-migration-ts", "cre/reference/clf-migration-go"],
+        },
+      ],
+    },
+  ],
+  [SIDEBAR_SECTIONS.CREC]: [
+    {
+      section: "Chainlink CRE Connect",
+      contents: [
+        { title: "Overview", url: "crec" },
+        { title: "Supported Networks", url: "crec/supported-networks" },
+        { title: "Release Notes", url: "crec/release-notes" },
+      ],
+    },
+    {
+      section: "Getting Started",
+      contents: [{ title: "Get Access", url: "crec/getting-started" }],
+    },
+    {
+      section: "Concepts",
+      contents: [
+        { title: "Architecture", url: "crec/concepts/architecture" },
+        { title: "Channels", url: "crec/concepts/channels" },
+        { title: "Watchers", url: "crec/concepts/watchers" },
+        { title: "Verifiable Events", url: "crec/concepts/verifiable-events" },
+        { title: "Event Verification", url: "crec/concepts/event-verification" },
+        { title: "Operations & Transactions", url: "crec/concepts/operations" },
+        { title: "EIP-712 Signing", url: "crec/concepts/eip712-signing" },
+        { title: "Smart Accounts", url: "crec/concepts/smart-accounts" },
+        { title: "Account Abstraction & Gas Sponsorship", url: "crec/concepts/account-abstraction" },
+        { title: "Confidence Levels", url: "crec/concepts/confidence-levels" },
+        { title: "Extensions", url: "crec/concepts/extensions" },
+      ],
+    },
+    {
+      section: "Extensions",
+      contents: [
+        { title: "Overview", url: "crec/extensions" },
+        { title: "DTA (Digital Transfer Agent)", url: "crec/extensions/dta" },
       ],
     },
   ],
@@ -1011,6 +1077,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams",
         },
         {
+          title: "Sign Up for Data Streams",
+          url: "data-streams/sign-up",
+        },
+        {
           title: "Developer Responsibilities",
           url: "data-streams/developer-responsibilities",
         },
@@ -1084,6 +1154,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "24/5 US Equities User Guide",
               url: "data-streams/rwa-streams/24-5-us-equities-user-guide",
             },
+            {
+              title: "APAC Equities",
+              url: "data-streams/rwa-streams/apac-equities",
+            },
           ],
         },
         {
@@ -1113,6 +1187,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Market Hours",
           url: "data-streams/market-hours",
+        },
+        {
+          title: "Selecting Quality Data Streams",
+          url: "data-streams/selecting-data-streams",
         },
         {
           title: "Deprecating Streams",
@@ -1243,28 +1321,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Candlestick API",
           url: "data-streams/reference/candlestick-api",
-        },
-      ],
-    },
-    {
-      section: "Streams Trade",
-      contents: [
-        {
-          title: "Overview",
-          url: "data-streams/streams-trade",
-        },
-        {
-          title: "Getting Started",
-          url: "data-streams/tutorials/streams-trade/getting-started",
-          highlightAsCurrent: ["data-streams/tutorials/streams-trade/getting-started-hardhat"],
-        },
-        {
-          title: "Handle StreamsLookup errors",
-          url: "data-streams/tutorials/streams-trade/streams-trade-lookup-error-handler",
-        },
-        {
-          title: "Reference (Interfaces)",
-          url: "data-streams/streams-trade/interfaces",
         },
       ],
     },
@@ -2269,6 +2325,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     },
   ],
   [SIDEBAR_SECTIONS.GLOBAL]: [
+    AI_AGENT_RESOURCES_SECTION,
     {
       section: "General Documentation",
       contents: [

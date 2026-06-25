@@ -1,0 +1,70 @@
+---
+import type { MarketPricingRiskProduct } from "../content/marketPricingRiskTerms.ts"
+import { getMarketPricingRiskTerms } from "../content/marketPricingRiskTerms.ts"
+import { getCategoryListItems, getMarketPricingRiskTiers } from "../content/marketPricingRiskTiers.ts"
+
+export type Props = {
+  product?: MarketPricingRiskProduct
+}
+
+const { product = "feeds" } = Astro.props
+const terms = getMarketPricingRiskTerms(product)
+const categoriesAnchor = product === "streams" ? "data-stream-categories" : "data-feed-categories"
+const categoryItems = getCategoryListItems(terms)
+const tiers = getMarketPricingRiskTiers(terms)
+
+function renderInlineMarkdown(text: string): string {
+  return text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+}
+---
+
+<h2 id={categoriesAnchor}>{terms.categoriesHeading}</h2>
+
+<p set:html={renderInlineMarkdown(terms.categoriesIntro)} />
+
+<p set:html={renderInlineMarkdown(terms.categoriesListIntro)} />
+
+<ul>
+  {
+    categoryItems.map((item) => (
+      <li>
+        <a href={item.href}>
+          {item.icon} {item.label}
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<h2>Market pricing risk by category</h2>
+
+<p
+  set:html={renderInlineMarkdown(
+    terms.sectionIntro
+      .replace("#data-feed-categories", `#${categoriesAnchor}`)
+      .replace("#data-stream-categories", `#${categoriesAnchor}`)
+  )}
+/>
+
+{
+  tiers.map((tier) => (
+    <>
+      <h3 id={tier.id}>
+        {tier.icon} {tier.title}
+      </h3>
+      {tier.leadParagraphs.map((paragraph) => (
+        <p set:html={renderInlineMarkdown(paragraph)} />
+      ))}
+      {tier.bullets && (
+        <ul>
+          {tier.bullets.map((bullet) => (
+            <li set:html={renderInlineMarkdown(bullet)} />
+          ))}
+        </ul>
+      )}
+      {tier.closingParagraphs.map((paragraph) => (
+        <p set:html={renderInlineMarkdown(paragraph)} />
+      ))}
+    </>
+  ))
+}

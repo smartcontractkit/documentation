@@ -84,8 +84,8 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
       {
         field: "marketStatus",
         type: "uint32",
-        description: "Market status: 0 (Unknown), 1 (Closed), 2 (Open)",
-        link: { label: "Market hours", href: "/data-streams/market-hours" },
+        description: "Market status. See schema docs for value mappings.",
+        link: { label: "Status values", href: "/data-streams/reference/report-schema-v8#market-status-values" },
       },
     ],
   },
@@ -100,7 +100,7 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
         type: "int192",
         description: "DON consensus NAV Per Share value as reported by the Fund Manager",
       },
-      { field: "navDate", type: "uint64", description: "Timestamp for the NAV Report publication date (nanoseconds)" },
+      { field: "navDate", type: "uint64", description: "Timestamp for the NAV Report publication date (milliseconds)" },
       { field: "aum", type: "int192", description: "DON consensus total USD value of Assets Under Management" },
       {
         field: "ripcord",
@@ -189,8 +189,45 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
       {
         field: "marketStatus",
         type: "uint32",
-        description: "Market status. Values vary by stream type — see full schema documentation for details.",
-        link: { label: "Market hours", href: "/data-streams/market-hours" },
+        description: "Market status. Mapping varies by feed; see schema docs.",
+        link: { label: "Status values", href: "/data-streams/reference/report-schema-v11#market-status-values" },
+      },
+    ],
+  },
+  "v11-apac": {
+    label: "Report Schema v11 (RWA Advanced)",
+    shortLabel: "v11",
+    url: "/data-streams/reference/report-schema-v11",
+    fields: [
+      ...COMMON_FIELDS,
+      { field: "mid", type: "int192", description: "DON consensus mid-price" },
+      {
+        field: "lastSeenTimestampNs",
+        type: "uint64",
+        description: "Timestamp of the last report update (nanoseconds)",
+      },
+      { field: "bid", type: "int192", description: "Mid-price minus half the spread (mid − spread/2)" },
+      {
+        field: "bidVolume",
+        type: "int192",
+        description: "Not populated for APAC equities; reported as 0",
+      },
+      { field: "ask", type: "int192", description: "Mid-price plus half the spread (mid + spread/2)" },
+      {
+        field: "askVolume",
+        type: "int192",
+        description: "Not populated for APAC equities; reported as 0",
+      },
+      {
+        field: "lastTradedPrice",
+        type: "int192",
+        description: "Not populated for APAC equities; reported as 0",
+      },
+      {
+        field: "marketStatus",
+        type: "uint32",
+        description: "Market status. Mapping varies by feed; see schema docs.",
+        link: { label: "Status values", href: "/data-streams/reference/report-schema-v11#standard-hours-feeds" },
       },
     ],
   },

@@ -43,8 +43,8 @@ The Chainlink DTA technical standard consists of multiple components that enable
   - **DTA Request Management**: Accessed by fund distributors to submit subscription/redemption requests and by transfer agents to process pending requests.
   - **DTA Request Settlement**: Deployed by each fund administrator or transfer agent, the contract is responsible for minting, burning, and transferring the tokenized fund upon successful settlement.
 - **[CCIP](/ccip)**: Support transfer agency services across multiple blockchains. This allows requests to be submitted on one chain and settled on another. Furthermore, fund tokens can be deployed and made available to investors across multiple blockchain ecosystems.
-- **[Chainlink ACE](https://chain.link/automated-compliance-engine)**: Provide flexible, programmable compliance enforcement (e.g., eligibility checks, rate limits, role-based access) to enable regulators’ and institutions’ requirements to be adhered to onchain.
-- **[NAVLink Feeds](/data-feeds/smartdata#navlink-feeds)**: Securely link tokenized funds to the fund administrators’ NAV reporting systems to ensure accurate pricing for subscriptions and redemptions across both fiat and digital asset settlement.
+- **[Chainlink ACE](https://chain.link/automated-compliance-engine)**: Provide flexible, programmable compliance enforcement (e.g., eligibility checks, rate limits, role-based access) to enable regulators' and institutions' requirements to be adhered to onchain.
+- **[NAVLink Feeds](/data-feeds/smartdata#navlink-feeds)**: Securely link tokenized funds to the fund administrators' NAV reporting systems to ensure accurate pricing for subscriptions and redemptions across both fiat and digital asset settlement.
 - **[CRE](https://chain.link/chainlink-runtime-environment)**: Ensure compatibility with legacy systems, facilitate access to fiat settlement via [established payment rails](https://www.swift.com/news-events/press-releases/swift-ubs-asset-management-and-chainlink-successfully-complete-innovative-pilot-bridge-tokenized-assets-existing-payment-systems), and enable record reconciliation with offchain systems.
 
 ## The subscription flow
@@ -61,9 +61,9 @@ A typical subscription (buy) order follows a clear, four-step process that moves
 
 4. **Token Minting & Escrow:** DTA Request Settlement receives the request and mints the associated Fund Token.
 
-   *Note: At this point, the token contract itself can enforce its own compliance rules (for example, using Chainlink ACE to verify DTA Request Settlement’s permissions and the distributor's eligibility). Upon a successful compliance check, the new shares are created and held in escrow by the DTA Request Settlement itself, pending final payment settlement.*
+   *Note: At this point, the token contract itself can enforce its own compliance rules (for example, using Chainlink ACE to verify DTA Request Settlement's permissions and the distributor's eligibility). Upon a successful compliance check, the new shares are created and held in escrow by the DTA Request Settlement itself, pending final payment settlement.*
 
-5. **Settlement:** Depending on the fund’s payment model, DTA Request Settlement completes settlement by either pulling payment tokens onchain, awaiting and recording offchain payment confirmation, or receiving cross-chain payment via [CCIP](/ccip). Upon successful settlement, it releases the newly minted fund tokens from escrow to the Fund Distributor’s address.
+5. **Settlement:** Depending on the fund's payment model, DTA Request Settlement completes settlement by either pulling payment tokens onchain, awaiting and recording offchain payment confirmation, or receiving cross-chain payment via [CCIP](/ccip). Upon successful settlement, it releases the newly minted fund tokens from escrow to the Fund Distributor's address.
 
 Each of these steps corresponds to a formal status change in the DTA technical standard. To see a detailed breakdown of these states, from **Pending** to **Processed**, see [The Request Lifecycle](/dta-technical-standard/concepts/request-lifecycle) page.
 
@@ -140,8 +140,8 @@ The Fund Issuer is the entity that creates the underlying tokenized asset. Their
 
 **Key Responsibilities:**
 
-- Deploying the fund token contract, using Chainlink’s Automated Compliance Engine (ACE)
-- Granting the necessary permissions to the Transfer Agent’s DTA Request Settlement contract, authorizing it to mint and burn tokens in response to processed requests.
+- Deploying the fund token contract, using Chainlink's Automated Compliance Engine (ACE)
+- Granting the necessary permissions to the Transfer Agent's DTA Request Settlement contract, authorizing it to mint and burn tokens in response to processed requests.
 - Ensuring DTA Request Settlement is authorized to hold tokens within the token's compliance framework.
 
 ## The wider ecosystem
@@ -175,7 +175,7 @@ DTA Request Management serves as the central hub for discovery and requests.
 
 - **Request Intake:** Acts as the entry point for all subscription and redemption requests from distributors.
 - **Initial Validation & Calculation:** When a Transfer Agent initiates processing, DTA Request Management validates requests against operational rules (such as rate limits and time zones) and calculates final share or payment amounts using the NAVLink feed.
-- **Request Routing:** After processing, it forwards finalized request details to the appropriate DTA Request Settlement contract, which is deployed and owned by the fund’s Transfer Agent.
+- **Request Routing:** After processing, it forwards finalized request details to the appropriate DTA Request Settlement contract, which is deployed and owned by the fund's Transfer Agent.
 
 #### DTA Request Settlement
 
@@ -183,7 +183,7 @@ The DTA Request Settlement is owned and deployed by the Transfer Agent. This con
 
 **Key Responsibilities:**
 
-- **Token Control Authority:** Holds rights to mint, burn, and transfer the fund’s tokenized shares, enforced via role-based permissions.
+- **Token Control Authority:** Holds rights to mint, burn, and transfer the fund's tokenized shares, enforced via role-based permissions.
 - **Asset Custody:** Holds the authority to manage investment product tokens, securely storing newly created tokens during offchain settlements.
 - **Settlement Engine:** Receives finalized instructions from DTA Request Management and executes settlements, including transferring payment tokens, managing tokens, and releasing tokens from escrow.
 - **Access Control:** Maintains a list of approved DTA Request Management contract addresses allowed to send requests, preventing unauthorized interactions.
@@ -252,7 +252,7 @@ This is the simplest, fully automated model. It is used when DTA Request Managem
 1. A Distributor submits a request.
 2. The Transfer Agent processes the request.
 3. DTA Request Management makes a direct external call to DTA Request Settlement on the same chain.
-4. DTA Request Settlement atomically settles in a single transaction: it pulls the approved payment tokens from the Fund Distributor, mints the Fund Token subject to token-level compliance checks, and delivers the new shares directly to the Fund Distributor’s address. No manual completion step is required.
+4. DTA Request Settlement atomically settles in a single transaction: it pulls the approved payment tokens from the Fund Distributor, mints the Fund Token subject to token-level compliance checks, and delivers the new shares directly to the Fund Distributor's address. No manual completion step is required.
 
 **Workflow (Redemption):**
 

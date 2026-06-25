@@ -1,0 +1,70 @@
+---
+section: crec
+title: "Smart Accounts"
+date: Last Modified
+metadata:
+  description: "Smart Accounts in Chainlink CRE Connect are tenant-owned, signature-verifying contracts deployed per chain. They authorize Operations using EIP-712 signatures and execute the underlying transactions atomically."
+  datePublished: "2026-05-01"
+  lastModified: "2026-05-01"
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+A **Smart Account** is the on-chain identity that executes Operations. Each Smart Account is:
+
+- **Tenant-owned.** The Account is provisioned by the CRE Connect tenant and configured with an explicit list of authorized signer keys.
+- **Per-chain.** A wallet is created on a specific chain. To operate on multiple chains, create one wallet per chain.
+- **Signature-verifying.** Every Operation submitted to the Account must carry a valid EIP-712 signature from one of the Account's authorized signers.
+
+The off-chain record that represents a Smart Account is called a **Wallet**. The two terms refer to the same thing: a Wallet is the off-chain record; the Smart Account is its on-chain instantiation.
+
+## Account abstraction model
+
+CRE Connect Smart Accounts implement a Chainlink-native account abstraction model. They are **not ERC-4337 accounts** — there is no EntryPoint, UserOperation, paymaster, or bundler in the picture. Instead, the model is:
+
+- **Account creation** is performed through an on-chain factory contract that deterministically deploys a Smart Account per (tenant, wallet) pair.
+- **Authorization** lives entirely inside the Account contract. It accepts a payload of `(operation, signature)` and verifies the EIP-712 signature against its configured signer list before executing.
+- **Execution** is invoked by the Chainlink DON. A Chainlink-operated writer EOA broadcasts the transaction on the Account's behalf, so on-chain `tx.origin` is the DON writer (not the user). The Account contract authorizes the call by recovering the EIP-712 signer from the supplied signature and checking it against the wallet's allow-list — `msg.sender` is only used to enforce that the call comes from one of the approved Chainlink writer addresses.
+
+This keeps the on-chain footprint small (one factory plus one Account contract per wallet) and removes the need for any 4337 infrastructure on the chains the application operates on.
+
+## Signer model
+
+A wallet's authorization rules are fixed at creation time. Two wallet types are supported:
+
+| Wallet type | Allowed signers                     | Notes                                                                                           |
+| ----------- | ----------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `ecdsa`     | A list of EVM signer addresses      | The recovered EIP-712 signer address must be in this list.                                      |
+| `rsa`       | A list of RSA public-key components | Used by Smart Accounts that verify RSA-signed payloads (selected workflows / KMS integrations). |
+
+A wallet is **either ECDSA or RSA**, never both. The signer set is fixed once the wallet is created — to rotate keys, create a new wallet and migrate.
+
+## Wallet lifecycle
+
+A wallet is provisioned asynchronously: the on-chain Smart Account is deployed in the background.
+
+<ClickToZoom src="/images/crec/concepts/smart-account-lifecycle.png" />
+
+| <div style="width: 120px;">Status</div> | Meaning                                                                                                         |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `pending`                               | The wallet record was created in CRE Connect; on-chain deployment has not started yet.                          |
+| `deploying`                             | The deployment workflow is awaiting on-chain inclusion.                                                         |
+| `deployed`                              | The on-chain Account is live and able to execute Operations. The deployed address appears in the wallet record. |
+| `archived`                              | The wallet is read-only; new Operations are rejected.                                                           |
+| `failed`                                | Deployment failed. The latest `wallet.status` event includes the reason.                                        |
+
+Lifecycle transitions are emitted as `wallet.status` events into the channel that owns the wallet, so applications can drive their provisioning state machines from the same verifiable event stream they use for everything else.
+
+## Predicting addresses
+
+The on-chain Account address is derived deterministically from the factory, the unique account ID, the initial owner, and config data. The wallet record exposes the predicted address before deployment finishes, so applications can reference the address — for funding, RBAC setup, or off-chain bookkeeping — without waiting for the `deployed` status.
+
+<Aside type="tip" title="One wallet, one chain">
+  A wallet is bound to a specific chain. Cross-chain workflows compose multiple wallets — one per chain — into a single
+  business flow. Use the channel-level event stream to coordinate state across them.
+</Aside>
+
+## Related
+
+- [Operations & Transactions](/crec/concepts/operations) · [EIP-712 Signing](/crec/concepts/eip712-signing) — what the Smart Account executes and verifies.
+- [Account Abstraction & Gas Sponsorship](/crec/concepts/account-abstraction) — why these accounts cost no gas to drive.

@@ -1,0 +1,63 @@
+---
+section: crec
+title: "Extensions"
+date: Last Modified
+metadata:
+  description: "Extensions are protocol-specific modules that ship typed Operation builders, ready-made watcher provisioning, and decoded event types for partner protocols on top of Chainlink CRE Connect. Currently available: DTA (Digital Transfer Agent)."
+  datePublished: "2026-05-01"
+  lastModified: "2026-05-01"
+---
+
+import { ClickToZoom } from "@components"
+
+An **extension** is an optional module that layers protocol-specific knowledge on top of CRE Connect. Extensions ship three things:
+
+1. **Typed Operation builders.** One builder per supported on-chain action, with strongly-typed arguments. The builder produces a fully-formed Operation ready to sign and submit.
+2. **One-call watcher provisioning.** A registered service name plus the contract ABIs required to monitor a class of contracts. Watchers can be created by referencing the service by name instead of supplying the ABI.
+3. **Decoded event types.** Strongly-typed values for each event the watcher emits, so application code does not need to write ABI-decoding glue.
+
+The currently available extension is **DTA (Digital Transfer Agent)**. Its repository uses contract versioning to expose multiple ABI versions (`v1`, `v2`, …) side-by-side — the CRE Connect documentation focuses on the **v2** ABI.
+
+## Why use an extension
+
+Without an extension, applications can still do anything CRE Connect supports — call any contract through the Operation/Transaction model, monitor any event by supplying its ABI. Extensions exist to remove the per-protocol boilerplate:
+
+| Without an extension                     | With an extension                                                               |
+| ---------------------------------------- | ------------------------------------------------------------------------------- |
+| Hand-craft calldata against the ABI      | One typed call per on-chain action                                              |
+| Supply the contract ABI to every watcher | Reference the service by name (e.g. `dta.v2`)                                   |
+| Decode raw event topics yourself         | Receive a typed value (e.g. `RedemptionRequested { Shares, ReferenceID, ... }`) |
+| Track ABI revisions per protocol upgrade | Upgrade the extension version                                                   |
+
+An extension is, at its heart, a vendored copy of "everything an integrator would otherwise have written by hand" for a protocol — but maintained alongside the protocol's own contracts so it stays accurate.
+
+## Anatomy of an extension
+
+Every CRE Connect extension exposes the same shape:
+
+<ClickToZoom src="/images/crec/concepts/extensions-anatomy.png" />
+
+- **Operation builders** ABI-encode each call and wrap it as a CRE Connect Operation, ready to sign and submit.
+- The **watcher bundle** is the service descriptor consumed by CRE Connect to provision the service's watchers in one call.
+- **Typed events** give the application a strongly-typed value per emitted event, with named fields that match the on-chain event signature.
+- The **decode dispatch** is a single helper that takes a verifiable event from the channel stream and returns the correct typed value.
+
+## Composing extension calls with raw transactions
+
+Because extension builders produce a CRE Connect Operation whose transaction list is open, applications can append extra transactions to the same Operation before submitting it. The whole composed Operation still executes atomically — the same guarantee as a hand-built batch.
+
+This is useful when an extension call needs to be paired with an auxiliary on-chain step, such as logging an internal correlation ID or updating an in-house registry, without losing atomicity.
+
+## Available extensions
+
+| Extension                        | Use when                                                            |
+| -------------------------------- | ------------------------------------------------------------------- |
+| **DTA — Digital Transfer Agent** | Tokenised funds: subscriptions, redemptions, distributor lifecycle. |
+
+For details, see the [DTA extension overview](/crec/extensions/dta).
+
+## Related
+
+- [Extensions Overview](/crec/extensions) — the catalog of available extensions.
+- [DTA Extension](/crec/extensions/dta) — the first available extension.
+- [Watchers](/crec/concepts/watchers) — service-backed provisioning is how an extension's pre-packaged watchers are set up.

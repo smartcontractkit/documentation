@@ -7,6 +7,8 @@ title: "Encode request data offchain"
 import { Aside } from "@components"
 import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
 
+<ChainlinkFunctions callout="shutdown" />
+
 This tutorial shows you how make multiple API calls from your smart contract to a Decentralized Oracle Network. After [OCR](/chainlink-functions/resources/architecture) completes offchain computation and aggregation, the DON returns the asset price to your smart contract. This example returns the `BTC/USD` price.
 
 This guide assumes that you know how to build HTTP requests and how to use secrets. Read the [API query parameters](/chainlink-functions/tutorials/api-query-parameters) and [API use secrets](/chainlink-functions/tutorials/api-use-secrets) guides before you follow the example in this document.
@@ -19,12 +21,6 @@ To build a decentralized asset price, send a request to the DON to fetch the pri
 Read the [Call Multiple Data Sources](/chainlink-functions/tutorials/api-multiple-calls) tutorial before you follow the steps in this example. This tutorial uses the same example but with a slightly different process:
 
 - Instead of sending the request data (source code, encrypted secrets reference, and arguments) in the request, you will first encode it offchain and then send the encoded request. Encoding the request offchain from your front end or a server rather than onchain from your smart contract. This helps save gas.
-
-<Aside type="caution">
-  Chainlink Functions is still in BETA. The use of secrets in your requests is an experimental feature that may not
-  operate as expected and is subject to change. Use of this feature is at your own risk and may result in unexpected
-  errors, possible revealing of the secret as new versions are released, or other issues.
-</Aside>
 
 <Aside type="note">
   Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests

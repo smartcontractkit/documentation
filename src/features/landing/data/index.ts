@@ -16,6 +16,8 @@ import datalinkLogo from "../../../assets/product-logos/datalink-logo.svg"
 import datalinkShape from "../../../assets/product-logos/datalink-shape.svg"
 import creLogo from "../../../assets/product-logos/cre-logo.svg"
 import creShape from "../../../assets/product-logos/cre-shape.svg"
+import crecLogo from "../../../assets/product-logos/crec-logo.svg"
+import crecShape from "../../../assets/product-logos/crec-shape.svg"
 import aceLogo from "../../../assets/product-logos/ace-logo.svg"
 import aceShape from "../../../assets/product-logos/ace-shape.svg"
 import { ProductCardProps } from "../components/ProductCard.tsx"
@@ -114,6 +116,13 @@ export const evmProducts = [
     docsLandingLink: "/ace",
     image: aceLogo,
     shape: aceShape,
+  },
+  {
+    title: "CRE Connect",
+    description: "Verifiable on-chain events and gas-less, account-abstracted operations.",
+    docsLandingLink: "/crec",
+    image: crecLogo,
+    shape: crecShape,
   },
   {
     title: "Functions",

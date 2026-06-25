@@ -45,12 +45,12 @@ This section provides more detail on the onchain components for TON.
 - Retrieve a fee estimate using one of two methods. Unlike EVM integrations, TON contracts cannot proxy-query each other's state, so there is no free getter path through the Router:
   - **Via FeeQuoter getter (free)**: Call the `validatedFeeCell` getter directly on the `FeeQuoter` contract. This requires no transaction and incurs no gas cost. To resolve the `FeeQuoter` address programmatically, call `Router.onRamp(destChainSelector)` → `OnRamp.feeQuoter(destChainSelector)`. The `getCCIPFeeForEVM` helper performs this lookup automatically — see [Estimating the CCIP Fee](/ccip/tutorials/ton/source/build-messages#estimating-the-ccip-fee) for a full example.
   - **Via Router message (costs gas)**: Send a `Router_GetValidatedFee` message to the `Router`. This is an actual on-chain transaction — the `Router` relays the request to the `OnRamp`, which forwards it to the `FeeQuoter`. The result is returned via `Router_MessageValidated` (or `Router_MessageValidationFailed`).
-- Send `CCIPSend` to the `Router` with sufficient TON attached to cover both the CCIP fee and internal message forwarding gas costs. The router checks that the attached value meets the minimum required (`Router_Costs.CCIPSend()`).
+- Send `CCIPSend` to the `Router` with sufficient GRAM attached to cover both the CCIP fee and internal message forwarding gas costs. The router checks that the attached value meets the minimum required (`Router_Costs.CCIPSend()`).
 
 **Receiver Responsibilities:**
 
 - **Security validation**: The receiver contract must verify that the sender of any `CCIPReceive` internal message is the registered CCIP `Router` contract.
-- **Confirmation**: The receiver must reply with a `CCIPReceiveConfirm{execId}` message back to the `Router` after processing the message. This confirmation must carry sufficient TON to cover the confirmation trace costs (`Router_Costs.receiveConfirm()`). Without this confirmation the execution is treated as failed.
+- **Confirmation**: The receiver must reply with a `CCIPReceiveConfirm{execId}` message back to the `Router` after processing the message. This confirmation must carry sufficient GRAM to cover the confirmation trace costs (`Router_Costs.receiveConfirm()`). Without this confirmation the execution is treated as failed.
 - **Failure handling**: If the receiver cannot process the message, it may allow `CCIPReceive` to bounce. The `Router` detects the bounce and forwards `CCIPReceiveBounced` to the `OffRamp`, initiating the failure path.
 
 ## Router
@@ -59,10 +59,10 @@ The `Router` contract is the single user-facing entry point for both sending and
 
 **On the source chain (sending)**, the `Router`:
 
-- Accepts `CCIPSend` messages from senders. Requires a minimum TON value (`Router_Costs.CCIPSend()`); messages with insufficient value are rejected before any further processing.
+- Accepts `CCIPSend` messages from senders. Requires a minimum GRAM value (`Router_Costs.CCIPSend()`); messages with insufficient value are rejected before any further processing.
 - Checks the destination chain is not cursed (using its locally stored `CursedSubjects`) before forwarding to the `OnRamp`.
 - Resolves the `OnRamp` address for the given destination chain selector from its `onRamps` map and forwards the `OnRamp_Send` message, carrying all remaining value.
-- Receives `Router_MessageSent` from the `OnRamp` on success and delivers `CCIPSendACK` back to the original sender with unused TON.
+- Receives `Router_MessageSent` from the `OnRamp` on success and delivers `CCIPSendACK` back to the original sender with unused GRAM.
 - Receives `Router_MessageRejected` from the `OnRamp` on failure and delivers `CCIPSendNACK` to the sender.
 - Accepts `Router_GetValidatedFee` from any caller, relays to the `OnRamp`, and returns the result (`Router_MessageValidated` or `Router_MessageValidationFailed`).
 
@@ -124,7 +124,7 @@ The `OffRamp` contract operates on the destination chain and is the primary cont
 
 1. **Report submission**: The Committing DON calls `OffRamp_Commit` with an OCR3 report containing a Merkle root (covering a batch of messages from a source chain) and optional token/gas price updates.
 
-1. **Fee check**: The `OffRamp` verifies the attached TON covers the minimum commit cost. Price-update-only reports require less TON than reports with Merkle roots.
+1. **Fee check**: The `OffRamp` verifies the attached GRAM covers the minimum commit cost. Price-update-only reports require less GRAM than reports with Merkle roots.
 
 1. **Curse and source chain check**: The `OffRamp` checks its locally replicated `CursedSubjects` and verifies the source chain is enabled in `sourceChainConfigs`. If either check fails, the report is rejected.
 

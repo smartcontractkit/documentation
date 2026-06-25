@@ -19,6 +19,11 @@ export const MENU: MenuItems = {
       section: "cre",
     },
     {
+      text: "CRE Connect",
+      link: "/crec",
+      section: "crec",
+    },
+    {
       text: "Data Feeds",
       link: "/data-feeds",
       section: "dataFeeds",

@@ -69,6 +69,10 @@ export type ChainConfig = {
     address: string
     version: string
   }
+  ccipHome?: {
+    address: string
+    version: string
+  }
   feeQuoter?: string
   nativeToken?: {
     name: string
@@ -191,6 +195,8 @@ export interface Network {
   key: string
   chainType: ChainType
   tokenAdminRegistry?: string
+  tokenPoolFactory?: string
+  ccipHome?: string
   explorer: ExplorerInfo
   registryModule?: string
   router?: {

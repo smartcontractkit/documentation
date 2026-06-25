@@ -281,7 +281,6 @@ function TokenDrawer({
                   if (!laneData || !networkDetails) return null
 
                   const tokenPaused = isTokenPaused(
-                    network.tokenDecimals,
                     destinationLanes[destinationChain].rateLimiterConfig?.[
                       inOutbound === LaneFilter.Inbound ? "in" : "out"
                     ]

@@ -3,23 +3,25 @@ section: cre
 date: Last Modified
 title: "Linking Wallet Keys"
 metadata:
-  description: "Link your wallet to CRE: connect your address to deploy workflows, set up multi-sig wallets, and manage your organization's keys."
+  description: "Link your wallet to CRE: connect your address for public onchain registry workflows, set up multi-sig wallets, and manage your organization's keys."
   datePublished: "2025-11-04"
   lastModified: "2025-11-04"
 ---
 
 import { Aside, CopyText } from "@components"
 
-Before you can deploy workflows, you must link a public key address to your CRE organization. This process registers your wallet address onchain in the Workflow Registry contract—the smart contract on Ethereum Mainnet that stores and manages all CRE workflows—associating it with your organization and allowing you to deploy and manage workflows.
+Before you can deploy workflows to the public onchain registry (`deployment-registry: "onchain:ethereum-mainnet"`), you must link a public key address to your CRE organization. This process registers your wallet address onchain in the Workflow Registry contract—the smart contract on Ethereum Mainnet that stores and manages public CRE workflows—associating it with your organization and allowing you to deploy and manage workflows through the onchain registry.
+
+Private registry workflows (`deployment-registry: "private"`) do not require key linking. They are managed with your CRE login session.
 
 ## What is key linking?
 
-Key linking is the process of connecting a blockchain wallet address to your CRE organization. Once linked, this address becomes a **workflow owner address** that can deploy, update, and delete workflows in the Workflow Registry.
+Key linking is the process of connecting a blockchain wallet address to your CRE organization. Once linked, this address becomes a **workflow owner address** that can deploy, update, and delete workflows in the public onchain Workflow Registry.
 
 **Key benefits:**
 
 - Multiple team members can link their own addresses to the same organization
-- Each linked address can independently deploy and manage workflows
+- Each linked address can independently deploy and manage public onchain registry workflows
 - Addresses are labeled for easy identification (e.g., "Production Wallet", "Dev Wallet")
 - All linked addresses are visible to organization members via <CopyText text="cre account list-key" code />
 
@@ -52,7 +54,7 @@ Before linking a key, ensure you have:
 
 ## Linking your first key
 
-The easiest way to link a key is to let the deployment process handle it automatically. When you first try to [deploy a workflow](/cre/guides/operations/deploying-workflows), the CLI will detect that your address isn't linked and prompt you to link it.
+The easiest way to link a key is to let the deployment process handle it automatically. When you first try to [deploy a workflow](/cre/guides/operations/deploying-workflows) with `deployment-registry: "onchain:ethereum-mainnet"`, the CLI will detect that your address isn't linked and prompt you to link it.
 
 ### Automatic linking during deployment
 
@@ -132,7 +134,7 @@ View on explorer: https://etherscan.io/tx/<your_transaction_hash>
 
 [OK] web3 address linked to your CRE organization successfully
 
-→ You can now deploy workflows using this address
+→ You can now deploy public onchain registry workflows using this address
 ```
 
 ## Viewing linked keys
@@ -275,7 +277,7 @@ When you run `cre account unlink-key --unsigned` while logged into your CRE orga
    Starting unlinking: owner=0x....
    ✔ Yes
    Contract address validation passed
-   --unsigned flag detected: transaction not sent on-chain.
+   --unsigned flag detected: transaction not sent onchain.
    Generating call data for offline signing and submission in your preferred tool:
 
    Ownership unlinking initialized successfully!
@@ -354,7 +356,7 @@ Checking existing registrations...
 ✓ No existing link found for this address
 Starting linking: owner=<your_multisig_address>, label=SafeWallet
 Contract address validation passed
---unsigned flag detected: transaction not sent on-chain.
+--unsigned flag detected: transaction not sent onchain.
 Generating call data for offline signing and submission in your preferred tool:
 
 Ownership linking initialized successfully!

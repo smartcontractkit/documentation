@@ -40,14 +40,15 @@ cre init [flags]
 
 **Flags:**
 
-| Flag                  | Description                                                                                                                               |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `--non-interactive`   | Fail instead of prompting; supply all inputs via flags (for **CI/CD** and non-TTY environments).                                          |
-| `-p, --project-name`  | Name for the new project (required for a new project when using `--non-interactive`).                                                     |
-| `-t, --template`      | Template name to use (for example `hello-world-go`). Run `cre templates list` to see IDs and required networks.                           |
-| `-w, --workflow-name` | Name for the new workflow.                                                                                                                |
-| `--refresh`           | Bypass the template cache and fetch fresh data from GitHub.                                                                               |
-| `--rpc-url`           | RPC endpoint for a chain, repeatable. Format: `chain-name=url`. Often **required** with `--non-interactive` when the template needs RPCs. |
+| Flag                    | Description                                                                                                                                                                                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--non-interactive`     | Fail instead of prompting; supply all inputs via flags (for **CI/CD** and non-TTY environments).                                                                                                                                                 |
+| `-p, --project-name`    | Name for the new project (required for a new project when using `--non-interactive`).                                                                                                                                                            |
+| `-t, --template`        | Template name to use (for example `hello-world-go`). Run `cre templates list` to see IDs and required networks.                                                                                                                                  |
+| `-w, --workflow-name`   | Name for the new workflow.                                                                                                                                                                                                                       |
+| `--deployment-registry` | Registry ID to write into the generated `workflow.yaml` (e.g. `private` or `onchain:ethereum-mainnet`). Run `cre registry list` to see available IDs. In `--non-interactive` mode, omitting this flag prints a warning and defaults to on-chain. |
+| `--refresh`             | Bypass the template cache and fetch fresh data from GitHub.                                                                                                                                                                                      |
+| `--rpc-url`             | RPC endpoint for a chain, repeatable. Format: `chain-name=url`. Often **required** with `--non-interactive` when the template needs RPCs.                                                                                                        |
 
 Inherited [global flags](/cre/reference/cli#global-flags) include **`-R, --project-root`**, which `cre init` uses as the directory where the project is created when you pass it explicitly.
 
@@ -59,6 +60,7 @@ Running `cre init` without flags starts an interactive setup that guides you thr
 1. **Language** (Go or TypeScript)
 1. **Workflow template** (fetched dynamically from configured template sources)
 1. **Workflow name**
+1. **Deployment registry** — select which registry the generated `workflow.yaml` targets. Private (off-chain) registries appear first with the cursor defaulted to them. If your organization has no registries configured, this step is skipped and the field is omitted from `workflow.yaml`.
 
 {/* prettier-ignore */}
 <Aside type="note" title="Template sources">
@@ -82,12 +84,13 @@ cre init \
   --project-name my-cre-project \
   --workflow-name my-workflow \
   --template hello-world-go \
+  --deployment-registry private \
   --rpc-url sepolia=https://sepolia.infura.io/v3/YOUR_KEY
 ```
 
 {/* prettier-ignore */}
 <Aside type="note" title="Interactive vs. non-interactive">
-  For most users, `cre init` without flags is easiest. With **`--non-interactive`**, the CLI does not prompt; if RPC URLs are required and there is no TTY, you get a clear error—pass the needed **`--rpc-url`** flags up front.
+  For most users, `cre init` without flags is easiest. With **`--non-interactive`**, the CLI does not prompt; if RPC URLs are required and there is no TTY, you get a clear error — pass the needed flags up front. If `--deployment-registry` is omitted in `--non-interactive` mode, the CLI prints a warning and defaults to the onchain registry.
 </Aside>
 
 For a detailed walkthrough, see [Part 1 of the Getting Started guide](/cre/getting-started/part-1-project-setup).

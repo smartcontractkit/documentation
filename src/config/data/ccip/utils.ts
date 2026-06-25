@@ -201,11 +201,11 @@ export const displayRate = (capacity: string, rate: string, symbol: string, deci
 // ==============================
 
 /**
- * Determines if a token is paused based on its rate limiter configuration
- * A token is considered paused if its capacity is <= 1
- *
+ * Determines if a token is paused based on its rate limiter configuration.
+ * A token is considered paused when the outbound rate limiter is enabled and
+ * capacity is <= 2 in smallest units (wei, lamports, etc.) — not scaled to full tokens.
  */
-export const isTokenPaused = (decimals = 18, rateLimiterConfig?: RateLimiterConfig): boolean => {
+export const isTokenPaused = (rateLimiterConfig?: RateLimiterConfig): boolean => {
   if (!rateLimiterConfig?.isEnabled) {
     return false // N/A tokens are not considered paused
   }
@@ -213,13 +213,8 @@ export const isTokenPaused = (decimals = 18, rateLimiterConfig?: RateLimiterConf
   const capacity = rateLimiterConfig?.capacity || "0"
 
   try {
-    // Convert to BigInt for precise comparison
     const capacityBigInt = BigInt(capacity)
-    // Calculate threshold: 1 token in smallest units = 10^decimals
-    const oneTokenInSmallestUnits = BigInt(10) ** BigInt(decimals)
-
-    // Direct BigInt comparison - no floating point risks
-    return capacityBigInt <= oneTokenInSmallestUnits
+    return capacityBigInt <= 2n
   } catch (error) {
     // If capacity is not a valid number, treat as paused for safety
     console.warn(`Invalid capacity value for rate limiter: ${capacity}`, error)
@@ -244,12 +239,11 @@ export const isTokenPaused = (decimals = 18, rateLimiterConfig?: RateLimiterConf
  *     }
  *   }
  * }
- * areAllLanesPaused(8, destinationLanes) // returns true (2 ≤ 10^8)
+ * areAllLanesPaused(destinationLanes) // returns true (capacity 2 ≤ 2 smallest units)
  */
-export const areAllLanesPaused = (
-  decimals = 18,
-  destinationLanes: { [destinationChain: string]: { rateLimiterConfig?: { out?: RateLimiterConfig } } }
-): boolean => {
+export const areAllLanesPaused = (destinationLanes: {
+  [destinationChain: string]: { rateLimiterConfig?: { out?: RateLimiterConfig } }
+}): boolean => {
   const laneKeys = Object.keys(destinationLanes)
 
   // If no lanes exist, don't consider it paused
@@ -260,6 +254,6 @@ export const areAllLanesPaused = (
   // Check if ALL outbound lanes are paused
   return laneKeys.every((destinationChain) => {
     const outboundConfig = destinationLanes[destinationChain]?.rateLimiterConfig?.out
-    return isTokenPaused(decimals, outboundConfig)
+    return isTokenPaused(outboundConfig)
   })
 }

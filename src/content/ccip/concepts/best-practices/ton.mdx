@@ -44,13 +44,13 @@ Every TON CCIP receiver must implement three mandatory protocol steps in order. 
 assert(in.senderAddress == st.router) throw (Receiver_Error.Unauthorized as int);
 ```
 
-**Step 2 — Check attached value.** The Router attaches TON to cover the cost of routing `Router_CCIPReceiveConfirm` back through the protocol chain. Verify the attached value meets your `MIN_VALUE` constant. The Router needs at least **0.02 TON** to process the confirmation. Use **0.03 TON** as your baseline and increase it to account for your own execution costs.
+**Step 2 — Check attached value.** The Router attaches GRAM to cover the cost of routing `Router_CCIPReceiveConfirm` back through the protocol chain. Verify the attached value meets your `MIN_VALUE` constant. The Router needs at least **0.02 GRAM** to process the confirmation. Use **0.03 GRAM** as your baseline and increase it to account for your own execution costs.
 
 ```tolk
 assert(in.valueCoins >= MIN_VALUE) throw (Receiver_Error.LowValue as int);
 ```
 
-**Step 3 — Send `Router_CCIPReceiveConfirm`.** Return the confirmation message to the Router along with enough TON to cover the remaining protocol chain. Using `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` is the simplest correct choice — it forwards all remaining value automatically.
+**Step 3 — Send `Router_CCIPReceiveConfirm`.** Return the confirmation message to the Router along with enough GRAM to cover the remaining protocol chain. Using `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` is the simplest correct choice — it forwards all remaining value automatically.
 
 ```tolk
 val receiveConfirm = createMessage({
@@ -68,25 +68,25 @@ The `MinimalReceiver` contract in the [TON Starter Kit](https://github.com/smart
 
 If the `Receiver_CCIPReceive` message execution runs out of gas and fails without bouncing the message back to the Router, or if the Router does not receive `Router_CCIPReceiveConfirm`, then CCIP cannot confirm whether the message was successful or not. The message is left in an in-progress state and, if it failed, it cannot be retried.
 
-`MIN_VALUE` is the minimum TON your receiver requires attached to each `Receiver_CCIPReceive` message. If the value received is lower, it manually reverts and leaves the message in a failed state where retries through manual execution are allowed. `MIN_VALUE` should be enough to cover the expected execution costs of your message. By including the 0.02 TON required for `Router_CCIPReceiveConfirm` in `MIN_VALUE`, you can also make sure your contract will have enough balance to send the confirmation message on successful executions.
+`MIN_VALUE` is the minimum GRAM your receiver requires attached to each `Receiver_CCIPReceive` message. If the value received is lower, it manually reverts and leaves the message in a failed state where retries through manual execution are allowed. `MIN_VALUE` should be enough to cover the expected execution costs of your message. By including the 0.02 GRAM required for `Router_CCIPReceiveConfirm` in `MIN_VALUE`, you can also make sure your contract will have enough balance to send the confirmation message on successful executions.
 
-Start at **0.03 TON** and benchmark your contract under realistic load to determine the right value. The 0.03 TON baseline includes 0.02 TON for the Router's confirmation cost plus 0.01 TON margin.
+Start at **0.03 GRAM** and benchmark your contract under realistic load to determine the right value. The 0.03 GRAM baseline includes 0.02 GRAM for the Router's confirmation cost plus 0.01 GRAM margin.
 
 ```tolk
 // In your receiver contract
 const MIN_VALUE: int = ton("0.03"); // increase if your logic is more expensive
 ```
 
-The EVM-side `gasLimit` (set in `extraArgs`) controls how much nanoTON the protocol reserves for delivery. If your receiver requires more than the default 0.1 TON allocation, increase the `gasLimit` in `buildExtraArgsForTON` accordingly:
+The EVM-side `gasLimit` (set in `extraArgs`) controls how much nanoGRAM the protocol reserves for delivery. If your receiver requires more than the default 0.1 GRAM allocation, increase the `gasLimit` in `buildExtraArgsForTON` accordingly:
 
 ```typescript
 // In your EVM sender script — increase gasLimit if your TON receiver is expensive
-const extraArgs = buildExtraArgsForTON(200_000_000n, true) // 0.2 TON in nanoTON
+const extraArgs = buildExtraArgsForTON(200_000_000n, true) // 0.2 GRAM in nanoGRAM
 ```
 
 ## Verify destination chain
 
-Before sending a CCIP message from TON, verify that the destination chain is supported. The CCIP Router on TON exposes its supported destination chains through the `OnRamp`. Sending a message to an unsupported chain selector will be rejected at the Router level, wasting the TON attached to the transaction.
+Before sending a CCIP message from TON, verify that the destination chain is supported. The CCIP Router on TON exposes its supported destination chains through the `OnRamp`. Sending a message to an unsupported chain selector will be rejected at the Router level, wasting the GRAM attached to the transaction.
 
 Check the [CCIP Directory](/ccip/directory/testnet/chain/ton-testnet) for the list of supported TON → EVM lanes and their chain selectors before hardcoding a destination. Always use the chain selector constant from `helper-config.ts` in the [TON Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-ton/blob/main/helper-config.ts) rather than deriving it manually.
 
@@ -147,29 +147,29 @@ const extraArgs = buildExtraArgsForEVM(100_000, true)
 
 When sending from EVM to a TON destination, use `buildExtraArgsForTON` from the Starter Kit. The parameter meanings differ from the EVM case:
 
-**`gasLimit`** — Denominated in **nanoTON**, not EVM gas units. This is the amount of nanoTON reserved for execution on the TON destination chain. A starting value of `100_000_000n` (0.1 TON) covers most receive operations. Any unused nanoTON is returned to the contract after execution.
+**`gasLimit`** — Denominated in **nanoGRAM**, not EVM gas units. This is the amount of nanoGRAM reserved for execution on the TON destination chain. A starting value of `100_000_000n` (0.1 GRAM)) covers most receive operations. Any unused nanoGRAM is returned to the contract after execution.
 
 **`allowOutOfOrderExecution`** — Must be `true` for TON-bound lanes.
 
 ```typescript filename="scripts/utils/utils.ts"
-// gasLimit: nanoTON reserved for TON execution (1 TON = 1_000_000_000 nanoTON)
-const extraArgs = buildExtraArgsForTON(100_000_000n, true) // 0.1 TON
+// gasLimit: nanoGRAM reserved for TON execution (1 GRAM = 1_000_000_000 nanoGRAM)
+const extraArgs = buildExtraArgsForTON(100_000_000n, true) // 0.1 GRAM
 ```
 
-<Aside type="caution" title="nanoTON vs EVM gas units">
+<Aside type="caution" title="nanoGRAM vs EVM gas units">
   The `gasLimit` in `extraArgs` means different things depending on the destination chain. For EVM destinations it is
-  EVM gas units. For TON destinations it is nanoTON. Confusing the two will result in incorrect fee estimation and may
+  EVM gas units. For TON destinations it is nanoGRAM. Confusing the two will result in incorrect fee estimation and may
   cause delivery failures.
 </Aside>
 
 ## Estimate fees accurately and apply a buffer
 
-The CCIP protocol fee for TON-to-EVM messages is denominated in nanoTON and computed by the FeeQuoter contract, reachable through a chain of on-chain getter calls:
+The CCIP protocol fee for TON-to-EVM messages is denominated in nanoGRAM and computed by the FeeQuoter contract, reachable through a chain of on-chain getter calls:
 
 ```
 Router.onRamp(destChainSelector)         → OnRamp address
 OnRamp.feeQuoter(destChainSelector)      → FeeQuoter address
-FeeQuoter.validatedFeeCell(ccipSendCell) → fee in nanoTON
+FeeQuoter.validatedFeeCell(ccipSendCell) → fee in nanoGRAM
 ```
 
 Use the `getCCIPFeeForEVM` helper in the [TON Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-ton/blob/main/scripts/utils/utils.ts) to perform this lookup. The CCIP message Cell passed to it must be fully populated — all fields must match the values used in the final send.
@@ -177,12 +177,12 @@ Use the `getCCIPFeeForEVM` helper in the [TON Starter Kit](https://github.com/sm
 Apply two buffers on top of the quoted fee:
 
 - **10% fee buffer**: Accounts for small fluctuations between quote time and execution time.
-- **0.5 TON gas reserve**: Covers the wallet-level transaction cost and source-chain execution overhead. Any surplus above actual costs is returned via the ACK message.
+- **0.5 GRAM gas reserve**: Covers the wallet-level transaction cost and source-chain execution overhead. Any surplus above actual costs is returned via the ACK message.
 
 ```typescript filename="scripts/ton2evm/sendMessage.ts"
 const fee = await getCCIPFeeForEVM(client, routerAddress, destChainSelector, ccipSendMessage)
 const feeWithBuffer = (fee * 110n) / 100n // +10%
-const gasReserve = 500_000_000n // 0.5 TON in nanoTON
+const gasReserve = 500_000_000n // 0.5 GRAM in nanoGRAM
 const valueToAttach = feeWithBuffer + gasReserve // total value sent to Router
 ```
 
@@ -221,7 +221,7 @@ npm run utils:checkLastTxs -- --ccipSendOnly true
 npm run utils:checkLastTxs -- --queryId <QUERY_ID>
 ```
 
-An ACK contains the CCIP Message ID and a CCIP Explorer URL. A NACK means the Router rejected the message — both the fee and any TON surplus are returned to the sender.
+An ACK contains the CCIP Message ID and a CCIP Explorer URL. A NACK means the Router rejected the message — both the fee and any GRAM surplus are returned to the sender.
 
 ### EVM → TON: track delivery on TON
 
