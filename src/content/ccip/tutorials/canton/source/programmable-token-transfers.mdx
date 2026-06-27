@@ -1,0 +1,123 @@
+---
+section: ccip
+date: Last Modified
+title: "Programmable Token Transfers: Canton as Source"
+isIndex: false
+metadata:
+  description: "Send LINK tokens with an attached data payload from Canton to Ethereum Sepolia using canton2any:data-and-token."
+  image: "/images/ccip/concepts/architecture/ccip-canton-source-chain.png"
+  excerpt: "Canton as Source, canton2any, programmable token transfer, PTT, CCIPSender"
+  datePublished: "2026-07-06"
+  lastModified: "2026-07-06"
+  estimatedTime: "25 minutes"
+  difficulty: "intermediate"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="cantonAddressesBanner" />
+
+This tutorial demonstrates how to send a **programmable token transfer (PTT)** — tokens plus arbitrary data — from Canton testnet to Ethereum Sepolia using the [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton).
+
+<Aside title="Prerequisites">
+
+Complete the [Canton as Source prerequisites](/ccip/tutorials/canton/source/prerequisites) and the [Token Transfers (Canton as Source)](/ccip/tutorials/canton/source/token-transfers) tutorial concepts. You need LINK and Amulet (or LINK fee token) on your Canton party.
+
+These steps use **Canton testnet** and **Ethereum Sepolia** only.
+
+</Aside>
+
+## Introduction
+
+A programmable token transfer combines a token transfer with a data payload delivered to the destination receiver contract. On Sepolia, the receiver's `ccipReceive` function receives both the tokens and the calldata.
+
+This tutorial uses the `canton2any:data-and-token` script to send LINK plus a UTF-8 string in a single CCIP message.
+
+## What You Will Build
+
+In this tutorial, you will:
+
+- Run `canton2any:data-and-token` with `--dataString` and `--amount`.
+- Pay CCIP fees in Amulet or LINK.
+- Track delivery in the [CCIP Explorer](/ccip/tools-resources/ccip-explorer).
+- Verify token delivery and optional manual execution on Sepolia.
+
+## Understanding Programmable Token Transfers (canton2any)
+
+| Aspect          | Token-only         | Programmable token transfer                         |
+| :-------------- | :----------------- | :-------------------------------------------------- |
+| **Data**        | Empty              | UTF-8 string (or `0x:` prefixed ABI-encoded string) |
+| **Tokens**      | LINK only          | LINK + data in one message                          |
+| **Destination** | Tokens to receiver | Tokens + `ccipReceive` calldata on Sepolia          |
+
+The send path on Canton combines token pool lock/burn (`TokenPoolTicket`) with CommitteeVerifier tickets in a single `PerPartyRouter_CCIPSend`, as described in the [Canton as Source flow](/ccip/concepts/canton/overview#canton--public-chain).
+
+## How the Script Works
+
+`scripts/canton2any/ccipSendDataAndToken.ts` builds a message with both `data` (from `encodeMessageData`) and `tokenAmounts` (Canton LINK instrument), then submits via `CantonChain.sendMessage` with the same fee and execution options as the other `canton2any` scripts.
+
+## Running the Programmable Token Transfer
+
+### Prerequisites Check
+
+1. Complete [prerequisites](/ccip/tutorials/canton/source/prerequisites).
+2. Confirm LINK and fee-token balances:
+
+   ```bash filename="Terminal"
+   npm run check-balance
+   ```
+
+### Execute the Script
+
+Send `0.001` LINK with a data payload:
+
+```bash filename="Terminal"
+npm run canton2any:data-and-token -- --dataString "Hello" --amount 0.001
+```
+
+Pay fee in LINK and skip auto-execution:
+
+```bash filename="Terminal"
+npm run canton2any:data-and-token -- --dataString "Hello" --amount 0.001 --feeToken link --no-exec
+```
+
+Custom Sepolia receiver and a higher gas limit (default is `200000`):
+
+```bash filename="Terminal"
+npm run canton2any:data-and-token -- \
+  --dataString "Hello" \
+  --amount 0.001 \
+  --evmReceiver 0xYourReceiverAddress \
+  --gasLimit 300000
+```
+
+### Understanding the Output
+
+```text
+📧🪙 Sending data + 0.001 LINK from Canton → Sepolia: "Hello"
+🆔 CCIP Message ID: 0x…
+🔗 CCIP Explorer: https://ccip.chain.link/#/side-drawer/msg/0x…
+```
+
+## Verification and Monitoring
+
+### CCIP Explorer
+
+Monitor message status and destination execution state in the CCIP Explorer.
+
+### Manual execution on Sepolia
+
+After `--no-exec` sends, run manual execution once Committee Verifier proofs are on the indexer:
+
+```bash filename="Terminal"
+npm run canton2any:manual-exec -- <cantonUpdateId | messageId>
+```
+
+Pass either the Canton **update ID** (`📜 Canton transaction` / Lighthouse link) or the **CCIP Message ID** (`🆔 CCIP Message ID`, `0x…`) from the send output — `canton2any:manual-exec` accepts both.
+
+### Verify on Sepolia
+
+Check TEST token balance and inspect the receiver contract's events on [Sepolia Etherscan](https://sepolia.etherscan.io/) to confirm both token delivery and data processing.
+
+<CcipCommon callout="educationalDisclaimer" />

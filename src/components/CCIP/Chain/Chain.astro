@@ -17,7 +17,6 @@ import ChainTokenGrid from "./ChainTokenGrid"
 import { generateChainStructuredData } from "~/utils/ccipStructuredData"
 import StructuredData from "~/components/StructuredData.astro"
 import { DOCS_BASE_URL } from "~/utils/structuredData"
-
 interface Props {
   environment: Environment
   network: Network
@@ -127,16 +126,19 @@ const chainStructuredData = generateChainStructuredData(
       <div class="ccip-heading">
         <h2>Tokens <span>({allTokens.length})</span></h2>
         {
-          network.chainType !== "solana" && network.chainType !== "aptos" && network.chainType !== "ton" && (
-            <a class="button secondary" href="/ccip/tutorials/evm/token-manager#verifying-your-token">
-              <img
-                src="/assets/icons/plus.svg"
-                alt="Add"
-                style={{ width: "1em", height: "1em", marginRight: "0.5em", verticalAlign: "middle" }}
-              />
-              Add my token
-            </a>
-          )
+          network.chainType !== "solana" &&
+            network.chainType !== "aptos" &&
+            network.chainType !== "ton" &&
+            network.chainType !== "canton" && (
+              <a class="button secondary" href="/ccip/tutorials/evm/token-manager#verifying-your-token">
+                <img
+                  src="/assets/icons/plus.svg"
+                  alt="Add"
+                  style={{ width: "1em", height: "1em", marginRight: "0.5em", verticalAlign: "middle" }}
+                />
+                Add my token
+              </a>
+            )
         }
       </div>
       <ChainTokenGrid tokens={allTokens} network={network} client:only="react" environment={environment} />

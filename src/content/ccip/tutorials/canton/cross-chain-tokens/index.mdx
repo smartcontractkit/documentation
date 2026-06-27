@@ -1,0 +1,105 @@
+---
+section: ccip
+date: Last Modified
+title: "Cross-Chain Token (CCT) — Canton"
+metadata:
+  description: "Deploy and register CCIP token pools on Canton for cross-chain token transfers using the starter kit or Ledger API."
+  excerpt: "CCIP Canton CCT, token pools, Registry issuer, BurnMint, LockRelease, Token Admin Registry, starter kit"
+  datePublished: "2026-06-27"
+  lastModified: "2026-07-06"
+isIndex: true
+whatsnext:
+  "Registry Issuer Guide": "/ccip/tutorials/canton/cross-chain-tokens/registry-issuer-guide"
+  "Token pool concepts": "/ccip/concepts/canton/token-pools"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="cantonAddressesBanner" />
+
+Connect a Canton instrument to CCIP by deploying a token pool, registering on the Token Admin Registry (TAR), and enabling a cross-chain lane.
+
+<Aside type="note" title="Testnet only">
+
+Starter kit `cct:*` scripts target **Canton testnet** only.
+
+</Aside>
+
+## Choose your guide
+
+| Guide                                                                                                  | When to use                                                              |
+| :----------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| [Registry Issuer Guide](/ccip/tutorials/canton/cross-chain-tokens/registry-issuer-guide)               | Issue a new token via Digital Asset Registry and connect CCIP end to end |
+| [BurnMint Token Pool Deployment](/ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool)       | Existing CIP-56 instrument with burn/mint authority                      |
+| [LockRelease Token Pool Deployment](/ccip/tutorials/canton/cross-chain-tokens/lock-release-token-pool) | Fixed-supply instrument with transfer pre-approvals                      |
+
+## Starter kit (`cct:*` scripts)
+
+The [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton) automates pool deployment and TAR registration on Canton testnet. Each BurnMint and LockRelease guide includes **Starter kit** and **Manual** paths for those steps.
+
+### Setup
+
+1. Clone and install:
+
+   ```bash filename="Terminal"
+   git clone https://github.com/smartcontractkit/ccip-starter-kit-canton.git
+   cd ccip-starter-kit-canton
+   npm install
+   ```
+
+2. Configure environment — follow [Canton as Source prerequisites](/ccip/tutorials/canton/source/prerequisites) for `.env`, `canton-config.json`, and ledger auth.
+
+3. In `config/canton-config.json`, set **`party`** (pool owner/admin) and **`transferInstructionUrl`** (your validator API) — see [Canton as Source prerequisites](/ccip/tutorials/canton/source/prerequisites#understanding-canton-configuration-canton-configjson).
+
+### Scripts
+
+| Script                  | Command                           | What it does                                                                                                                                                                                    |
+| :---------------------- | :-------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Deploy BurnMint pool    | `npm run cct:deploy-burn-mint`    | Creates a [`BurnMintTokenPool`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/pools/burn-mint-token-pool/daml/CCIP/BurnMintTokenPoolV2.daml) on-ledger          |
+| Deploy LockRelease pool | `npm run cct:deploy-lock-release` | Creates a [`LockReleaseTokenPool`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/pools/lock-release-token-pool/daml/CCIP/LockReleaseTokenPoolV2.daml) on-ledger |
+| Register on TAR         | `npm run cct:set-token`           | Runs `ProposeAdministrator` → `AcceptAdminRole` → `SetPool` on the Token Admin Registry                                                                                                         |
+
+### Typical flow (BurnMint)
+
+```bash filename="Terminal"
+# 1. Deploy pool
+npm run cct:deploy-burn-mint -- \
+  --instanceId acme-eur-bm-pool \
+  --instrument 'yourParty::1220…::token-id'
+
+# 2. Register on TAR (poolOwner defaults to party in canton-config.json)
+npm run cct:set-token -- \
+  --instrument 'yourParty::1220…::token-id' \
+  --poolInstanceId acme-eur-bm-pool
+
+# 3. Enable lane — manual Ledger API (see guide Step 3)
+```
+
+<Aside type="note" title="Script scope">
+
+Starter kit scripts cover **pool creation** and **TAR registration** only. You still configure **rate limiters**, **`ApplyChainUpdates`**, **LockRelease liquidity and pre-approval**, **EDS**, and **lane validation** manually — each guide documents those steps.
+
+</Aside>
+
+## On-ledger checklist (all guides)
+
+Every CCT deployment ends with the same verification path:
+
+1. Pool deployed at `{instanceId}@{poolOwner}` with the correct `InstrumentId`.
+2. TAR maps the instrument to your pool; your party is token admin.
+3. Lane enabled — three rate limiters plus `ApplyChainUpdates` on the pool.
+4. [Explicit Disclosure Service](/ccip/concepts/canton/explicit-disclosure) running for your pool operator.
+5. Test transfers — see [CCIP on Canton — Overview](/ccip/concepts/canton/overview) and [CCIP Explorer](/ccip/tools-resources/ccip-explorer).
+
+Cross-chain send and receive are validated by Chainlink operations once your token is registered and lanes are configured.
+
+## Prerequisites (all CCT guides)
+
+- [Starter kit setup](/ccip/tutorials/canton/source/prerequisites) for `cct:*` scripts (`.env`, `canton-config.json`, ledger auth)
+- The token pool DAR for your pool type on your participant — [`ccip-burn-mint-token-pool-1.0.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/legacy/ccip-burn-mint-token-pool-1.0.0.dar) or [`ccip-lock-release-token-pool-1.0.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/legacy/ccip-lock-release-token-pool-1.0.0.dar) (each bundles its CCIP dependencies — the only DAR you upload).
+- CCIP contract references from Chainlink ops (owner party, TAR, RMNRemote, FeeQuoter) — EDS and indexer URLs are pre-filled in the starter kit
+- A validator user with `can_act_as` rights for your ledger parties
+- Understanding of [token pools](/ccip/concepts/canton/token-pools) and [explicit disclosure](/ccip/concepts/canton/explicit-disclosure)
+
+<CcipCommon callout="educationalDisclaimer" />

@@ -6,7 +6,7 @@ import { areAllLanesPaused } from "~/config/data/ccip/utils.ts"
 import { ChainType, ExplorerInfo } from "~/config/types.ts"
 import TableSearchInput from "./TableSearchInput.tsx"
 import { useState } from "react"
-import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils/index.ts"
+import { getContractExplorerUrl, fallbackTokenIconUrl, isCantonNativeFeeToken } from "~/features/utils/index.ts"
 import TokenDrawer from "../Drawer/TokenDrawer.tsx"
 
 interface TableProps {
@@ -124,7 +124,11 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                     <td>{network.tokenDecimals}</td>
                     <td data-clipboard-type="token">
                       <Address
-                        contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.tokenAddress)}
+                        contractUrl={
+                          isCantonNativeFeeToken(network.key, network.tokenId)
+                            ? undefined
+                            : getContractExplorerUrl(network.explorer, network.chainType)(network.tokenAddress)
+                        }
                         address={network.tokenAddress}
                         endLength={6}
                       />
@@ -132,7 +136,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                     <td>{tokenPoolDisplay(network.tokenPoolType)}</td>
                     <td data-clipboard-type="token-pool">
                       <Address
-                        contractUrl={getExplorerAddressUrl(
+                        contractUrl={getContractExplorerUrl(
                           network.explorer,
                           network.chainType
                         )(network.tokenPoolAddress)}

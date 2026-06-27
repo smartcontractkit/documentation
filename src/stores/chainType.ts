@@ -72,6 +72,7 @@ function detectChainFromPath(pathname: string): ChainType | null {
   if (/\/(svm|solana)(\/|$)/i.test(pathname)) return "solana"
   if (/\/aptos(\/|$)/i.test(pathname)) return "aptos"
   if (/\/ton(\/|$)/i.test(pathname)) return "ton"
+  if (/\/canton(\/|$)/i.test(pathname)) return "canton"
   return null
 }
 

@@ -90,6 +90,51 @@ export const getExplorerAddressUrl =
     return queryString ? `${url}?${queryString}` : url
   }
 
+/** Canton contract IDs are hashes — only party IDs are explorable in Lighthouse. */
+export const getCantonPartyIdFromAddress = (address?: string): string | undefined => {
+  if (!address) return undefined
+
+  const atIndex = address.indexOf("@")
+  if (atIndex !== -1) {
+    const partyId = address.slice(atIndex + 1)
+    return partyId || undefined
+  }
+
+  // Values like ccipOwner::1220... are already party IDs.
+  if (address.includes("::")) {
+    return address
+  }
+
+  return undefined
+}
+
+export const getCantonPartyExplorerUrl = (explorer: ExplorerInfo, partyId?: string): string | undefined => {
+  if (!partyId) return undefined
+  return `${explorer.baseUrl}/party/${encodeURIComponent(partyId)}`
+}
+
+export const getCantonAddressExplorerUrl = (explorer: ExplorerInfo, address?: string): string | undefined => {
+  const partyId = getCantonPartyIdFromAddress(address)
+  return getCantonPartyExplorerUrl(explorer, partyId)
+}
+
+/** Canton token addresses that should be copy-only (no Lighthouse link). */
+export const isCantonNativeFeeToken = (chain: string, tokenId: string): boolean => {
+  if (!chain.startsWith("canton-")) return false
+  if (tokenId === "LINK") return true
+  return (chain === "canton-mainnet" && tokenId === "CC") || (chain === "canton-testnet" && tokenId === "Amulet")
+}
+
+export const getContractExplorerUrl =
+  (explorer: ExplorerInfo, chainType: ChainType = "evm") =>
+  (contractAddress?: string): string | undefined => {
+    if (!contractAddress) return undefined
+    if (chainType === "canton") {
+      return getCantonAddressExplorerUrl(explorer, contractAddress)
+    }
+    return getExplorerAddressUrl(explorer, chainType)(contractAddress)
+  }
+
 export const getExplorerTransactionUrl = (explorer: ExplorerInfo) => (transactionSignature: string) => {
   const url = `${explorer.baseUrl}/tx/${transactionSignature}`
   if (!explorer.queryParameters) return url
@@ -595,6 +640,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "TON_TESTNET"
     case "ton-mainnet":
       return "TON_MAINNET"
+    case "canton-testnet":
+      return "CANTON_TESTNET"
+    case "canton-mainnet":
+      return "CANTON_MAINNET"
     case "creditcoin-mainnet":
       return "CREDITCOIN_MAINNET"
     default:
@@ -960,6 +1009,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ton-testnet"
     case "TON_MAINNET":
       return "ton-mainnet"
+    case "CANTON_TESTNET":
+      return "canton-testnet"
+    case "CANTON_MAINNET":
+      return "canton-mainnet"
     case "CREDITCOIN_MAINNET":
       return "creditcoin-mainnet"
     default:

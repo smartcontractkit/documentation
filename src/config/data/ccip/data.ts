@@ -20,7 +20,6 @@ import {
   directoryToSupportedChain,
   getChainIcon,
   getExplorer,
-  getExplorerAddressUrl,
   getTitle,
   getChainTypeAndFamily,
   supportedChainToChainInRdd,
@@ -513,7 +512,6 @@ const buildNetworkForChain = ({ chain, filter }: { chain: string; filter: Enviro
 
   const { chainType } = getChainTypeAndFamily(supportedChain)
 
-  const routerExplorerUrl = getExplorerAddressUrl(explorer, chainType)(router.address)
   const nativeToken = getNativeCurrency(supportedChain)
   if (!nativeToken) throw Error(`Native token not found for ${supportedChain}`)
 
@@ -535,7 +533,6 @@ const buildNetworkForChain = ({ chain, filter }: { chain: string; filter: Enviro
     ccipHome: chainConfig.ccipHome?.address,
     registryModule: chainConfig.registryModule?.address,
     router,
-    routerExplorerUrl,
     chainSelector: chainConfig.chainSelector,
     nativeToken: {
       name: nativeToken.name,
@@ -550,6 +547,15 @@ const buildNetworkForChain = ({ chain, filter }: { chain: string; filter: Enviro
     feeQuoter: chainType === "solana" ? chainConfig.feeQuoter : undefined,
     mcms: chainType === "aptos" ? chainConfig.mcms?.address : undefined,
     poolPrograms: chainType === "solana" ? chainConfig.poolPrograms : undefined,
+    ...(chainType === "canton"
+      ? {
+          ccipOwnerParty: chainConfig.ccipOwnerParty,
+          ccipExplicitDisclosureServer: chainConfig.ccipExplicitDisclosureServer,
+          committeeVerifier: chainConfig.committeeVerifier,
+          feeQuoterModule: chainConfig.feeQuoterModule,
+          indexer: chainConfig.indexer,
+        }
+      : {}),
   }
 }
 

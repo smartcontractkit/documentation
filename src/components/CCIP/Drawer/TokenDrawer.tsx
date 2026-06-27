@@ -198,6 +198,7 @@ function TokenDrawer({
           logo: network.logo,
           explorer: network.explorer,
           chainType: network.chainType,
+          chain: network.key,
         }}
       />
       <div className="ccip-table__drawer-container">

@@ -42,6 +42,20 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
       </button>
 
       <style>{`
+        a.addressLink {
+          color: var(--color-text-link);
+          text-decoration: none;
+        }
+
+        a.addressLink:hover {
+          color: var(--color-text-link-hover);
+          text-decoration: underline;
+        }
+
+        a.addressLink:visited {
+          color: var(--color-text-link);
+        }
+
         .addressLink {
           padding: 1px 0px;
           border-radius: var(--border-radius-10);
