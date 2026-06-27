@@ -1,0 +1,97 @@
+---
+section: ccip
+date: Last Modified
+title: "Explicit Disclosure API (Canton)"
+metadata:
+  description: "Explicit Disclosure Services for CCIP on Canton: global CCIP API, token pool operator APIs, CNS discovery, and reference EDS deployment."
+  excerpt: "CCIP Canton EDS, explicit disclosure, token pool API, Global CCIP API, CNS discovery, chainlink-canton"
+  datePublished: "2026-06-27"
+  lastModified: "2026-06-27"
+  difficulty: "intermediate"
+  estimatedTime: "10 minutes"
+whatsnext:
+  "Token pools": "/ccip/concepts/canton/token-pools"
+  "BurnMint deployment (Go Live step)": "/ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool"
+---
+
+import { Aside } from "@components"
+
+On Canton, users must be given explicit access to contracts they interact with but are not stakeholders of. Token pool operators run an **Explicit Disclosure Service (EDS)** API that returns these disclosures so users can include them in ledger transactions.
+
+## Global CCIP API
+
+Operated by **Chainlink Labs**. Provides disclosures for core CCIP contracts (FeeQuoter, OnRamp, OffRamp, PerPartyRouterFactory, RMNRemote, TokenAdminRegistry, etc.). Available to all users — third parties do not operate this API.
+
+| Environment | URL                                   |
+| :---------- | :------------------------------------ |
+| Testnet     | `https://eds.testnet.ccip.chain.link` |
+| Mainnet     | `https://eds.ccip.chain.link`         |
+
+Example — fetch TAR disclosure via batch endpoint:
+
+```shell
+curl --request POST \
+  --url https://eds.testnet.ccip.chain.link/ccip/v1/global/disclosure/batch \
+  --header 'content-type: application/json' \
+  --data '{
+  "addresses": [
+    "tokenadminregistry-lzrnd@ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551"
+  ]
+}'
+```
+
+OpenAPI spec: [`eds-global.yaml`](https://github.com/smartcontractkit/chainlink-canton/blob/main/openapi/src/eds/global/eds-global.yaml) (`postGetExplicitDisclosureBatch` on `/ccip/v1/global/disclosure/batch`).
+
+## External APIs (third-party operated)
+
+Token pool operators, CommitteeVerifier operators, and custom executors each run their own EDS API following a standardized definition:
+
+| API                                           | Endpoints                                                                                                                |
+| :-------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
+| **Token Pool**                                | `POST /ccip/v1/external/tokenPool/{address}/send` — disclosures before sending a transfer involving the operator's token |
+|                                               | `POST /ccip/v1/external/tokenPool/{address}/execute` — disclosures and inputs before executing an incoming transfer      |
+| **CommitteeVerifier** (optional, coming soon) | Disclosures and inputs for send and execute flows                                                                        |
+
+Full API reference: [`openapi/src/eds/README.md`](https://github.com/smartcontractkit/chainlink-canton/blob/main/openapi/src/eds/README.md).
+
+## EDS URL discovery
+
+Users need the token pool operator's EDS URL. Recommended approach:
+
+1. Operator creates a **Canton Name Service (CNS)** entry for their party with key `ccip.chain.link/edsUrls` and a comma-separated list of API URLs.
+2. CCIP SDK/CLI discovers the URL automatically from the pool's `RawInstanceAddress` party ID.
+
+Alternatively, communicate the EDS URL out-of-band via documentation or direct coordination.
+
+## Reference implementation
+
+A reference EDS is available as a [Docker image](https://github.com/smartcontractkit/chainlink-canton/blob/main/eds/eds.Dockerfile). It supports BurnMint and LockRelease token pools, default Token Pool / CommitteeVerifier / Executor APIs, and native Canton Token Standard APIs — configured via a single TOML file.
+
+Example config: [`eds/testdata/config.toml`](https://github.com/smartcontractkit/chainlink-canton/blob/main/eds/testdata/config.toml).
+
+<Aside type="tip">
+
+Most issuers only need the `token_pool_api` block. Set `type = ""` or omit the block to disable token pool API serving during development.
+
+</Aside>
+
+### Configuration reference
+
+| Field                        | Meaning                                                                                       |
+| :--------------------------- | :-------------------------------------------------------------------------------------------- |
+| `chain_selector`             | Local Canton chain selector (distinct from remote selectors in `ApplyChainUpdates`).          |
+| `[node].url`                 | Participant gRPC Ledger API endpoint. EDS reads the Active Contract Set over this connection. |
+| `[node.auth].type`           | `static`, `insecureStatic`, `clientCredentials`, or `authorizationCode`.                      |
+| `map key / instance_address` | Each pool keyed by instance address hex; map key **must** equal `instance_address`.           |
+| `type`                       | `burnMint` or `lockRelease`.                                                                  |
+| `pool_owner`                 | Pool owner party (should equal `instrumentId.admin`).                                         |
+
+Operators using the provided token pool contracts can run the reference implementation without custom code. **Custom pool implementations** must implement the standardized API endpoints or adapt the reference.
+
+## Operator responsibilities
+
+- **Availability** — EDS must stay reachable; users cannot send or execute token transfers involving your pool if it is down.
+- **TLS** — Terminate TLS at a reverse proxy or load balancer; expose HTTPS publicly.
+- **Participant connectivity** — EDS connects to your Canton participant via gRPC; configure permissions for ACS reads.
+- **Authentication (optional)** — Default is unauthenticated; restrict at the proxy if needed.
+- **CNS registration (recommended)** — Register `ccip.chain.link/edsUrls` for SDK/CLI discovery.

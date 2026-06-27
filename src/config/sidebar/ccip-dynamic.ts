@@ -52,6 +52,11 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         chainTypes: ["aptos"],
       },
       {
+        title: "Getting Started",
+        url: "ccip/getting-started/canton",
+        chainTypes: ["canton"],
+      },
+      {
         title: "CCIP Directory",
         url: "ccip/directory",
         // Universal
@@ -368,6 +373,22 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         title: "Best Practices",
         url: "ccip/concepts/best-practices/ton",
         chainTypes: ["ton"],
+      },
+      // Canton — minimal, enterprise-focused IA (independent of other chain families)
+      {
+        title: "Overview",
+        url: "ccip/concepts/canton/overview",
+        chainTypes: ["canton"],
+      },
+      {
+        title: "Token Pools",
+        url: "ccip/concepts/canton/token-pools",
+        chainTypes: ["canton"],
+      },
+      {
+        title: "Explicit Disclosure API",
+        url: "ccip/concepts/canton/explicit-disclosure",
+        chainTypes: ["canton"],
       },
     ],
   },
@@ -716,6 +737,78 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
       //   url: "ccip/tutorials/ton/cross-chain-tokens",
       //   chainTypes: ["ton"],
       // },
+      // Canton tutorials — minimal set for initial public release
+      {
+        title: "Overview",
+        url: "ccip/tutorials/canton",
+        chainTypes: ["canton"],
+      },
+      {
+        title: "Cross-Chain Token (CCT)",
+        url: "ccip/tutorials/canton/cross-chain-tokens",
+        chainTypes: ["canton"],
+        children: [
+          {
+            title: "Registry Issuer Guide",
+            url: "ccip/tutorials/canton/cross-chain-tokens/registry-issuer-guide",
+            chainTypes: ["canton"],
+          },
+          {
+            title: "BurnMint Token Pool Deployment",
+            url: "ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool",
+            chainTypes: ["canton"],
+          },
+          {
+            title: "LockRelease Token Pool Deployment",
+            url: "ccip/tutorials/canton/cross-chain-tokens/lock-release-token-pool",
+            chainTypes: ["canton"],
+          },
+        ],
+      },
+      {
+        title: "Source",
+        url: "ccip/tutorials/canton/source",
+        chainTypes: ["canton"],
+        children: [
+          {
+            title: "Token Transfers",
+            url: "ccip/tutorials/canton/source/token-transfers",
+            chainTypes: ["canton"],
+          },
+          {
+            title: "Arbitrary Messaging",
+            url: "ccip/tutorials/canton/source/arbitrary-messaging",
+            chainTypes: ["canton"],
+          },
+          {
+            title: "Programmable Token Transfers",
+            url: "ccip/tutorials/canton/source/programmable-token-transfers",
+            chainTypes: ["canton"],
+          },
+        ],
+      },
+      {
+        title: "Destination",
+        url: "ccip/tutorials/canton/destination",
+        chainTypes: ["canton"],
+        children: [
+          {
+            title: "Token Transfers",
+            url: "ccip/tutorials/canton/destination/token-transfers",
+            chainTypes: ["canton"],
+          },
+          {
+            title: "Arbitrary Messaging",
+            url: "ccip/tutorials/canton/destination/arbitrary-messaging",
+            chainTypes: ["canton"],
+          },
+          {
+            title: "Programmable Token Transfers",
+            url: "ccip/tutorials/canton/destination/programmable-token-transfers",
+            chainTypes: ["canton"],
+          },
+        ],
+      },
     ],
   },
   {

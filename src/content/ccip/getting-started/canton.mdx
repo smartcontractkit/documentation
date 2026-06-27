@@ -1,0 +1,63 @@
+---
+section: ccip
+date: Last Modified
+title: "Getting Started (Canton)"
+metadata:
+  description: "Get started with Chainlink CCIP on Canton Network. Connect institutional tokens to 85+ supported chains using CIP-56 token pools and CCIP messaging."
+  excerpt: "Chainlink CCIP, Canton Network, cross-chain interoperability, enterprise blockchain, CIP-56, token pools, institutional tokens"
+  datePublished: "2026-06-27"
+  lastModified: "2026-06-27"
+whatsnext:
+  "Cross-chain flows on Canton": "/ccip/concepts/canton/overview"
+  "Token pool concepts": "/ccip/concepts/canton/token-pools"
+  "CCT deployment guides": "/ccip/tutorials/canton/cross-chain-tokens"
+---
+
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+import { Aside } from "@components"
+
+<CcipCommon callout="talkToExpert" />
+
+Chainlink CCIP supports the [Canton Network](https://www.canton.network/), enabling regulated institutions and enterprises to move tokens and messages between Canton and 85+ supported chains.
+
+<Aside type="note" title="Audience">
+
+These docs target engineers at enterprises and institutions integrating CCIP on Canton. The scope is intentionally minimal for the initial public release — enough to understand the model, deploy token pools, and connect Registry-issued instruments.
+
+</Aside>
+
+## What CCIP enables on Canton
+
+- **Cross-chain token transfers**: Bridge CIP-56 instruments to and from EVM, Solana, and other CCIP-supported chains via token pools.
+- **Cross-chain messaging**: Send arbitrary data between Canton and remote chains using `CCIPSender` and `CCIPReceiver` contracts.
+- **Programmable token transfers**: Combine token movement with destination-chain logic (coming soon in starter-kit tutorials).
+
+## How Canton differs from other CCIP chains
+
+Canton uses Daml smart contracts and a privacy model where parties need **explicit disclosure** of contracts they are not stakeholders on. CCIP on Canton therefore relies on:
+
+1. On-ledger CCIP contracts (OnRamp, OffRamp, PerPartyRouter, token pools, Token Admin Registry).
+2. Off-ledger **Explicit Disclosure Services (EDS)** operated by Chainlink (global CCIP contracts) and by token pool operators.
+3. The **CCIP CLI / SDK** to assemble disclosures, proofs, and ledger submissions for send and execute flows.
+
+Read [Overview](/ccip/concepts/canton/overview) for end-to-end send and receive flows.
+
+## Recommended path
+
+| Goal                                                 | Start here                                                                                             |
+| :--------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| Understand cross-chain flows                         | [Overview](/ccip/concepts/canton/overview)                                                             |
+| Issue a Registry token and connect CCIP              | [Registry Issuer Guide](/ccip/tutorials/canton/cross-chain-tokens/registry-issuer-guide)               |
+| Connect an existing CIP-56 instrument (burn/mint)    | [BurnMint Token Pool Deployment](/ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool)       |
+| Connect an existing CIP-56 instrument (lock/release) | [LockRelease Token Pool Deployment](/ccip/tutorials/canton/cross-chain-tokens/lock-release-token-pool) |
+| Operate pool disclosure infrastructure               | [Explicit Disclosure API](/ccip/concepts/canton/explicit-disclosure)                                   |
+
+## Before you begin
+
+Coordinate with **Chainlink CCIP operations** for:
+
+- CCIP owner party ID and hosted contract addresses (Token Admin Registry, FeeQuoter, RMNRemote).
+- Remote chain selectors and lane configuration for your target networks.
+- CCIP DAR packages on your participant (typically provisioned by ops).
+
+Confirm party IDs and contract addresses with Chainlink CCIP — values in these docs may change, including upgrade-incompatible changes.
