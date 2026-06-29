@@ -76,7 +76,11 @@ const workflow = (runtime: Runtime<Config>) => {
 
   // Call the high-level sendRequest with your custom function
   const price = httpClient
-    .sendRequest(runtime, fetchPrice, consensusMedianAggregation<number>())(runtime.config.apiUrl)
+    .sendRequest(
+      runtime,
+      fetchPrice,
+      consensusMedianAggregation<number>()
+    )(runtime.config.apiUrl)
     .result()
 
   runtime.log(`Aggregated price: ${price}`)
@@ -598,7 +602,11 @@ const createResource = (sendRequester: HTTPSendRequester, payload: { name: strin
 // In your workflow
 const httpClient = new HTTPClient()
 const resource = httpClient
-  .sendRequest(runtime, createResource, consensusIdenticalAggregation<{ id: string }>())({ name: "My Resource" })
+  .sendRequest(
+    runtime,
+    createResource,
+    consensusIdenticalAggregation<{ id: string }>()
+  )({ name: "My Resource" })
   .result()
 ```
 

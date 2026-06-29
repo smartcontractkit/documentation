@@ -17796,12 +17796,8 @@ Directly replaces the on-chain entry path of `_sendRequest()`. Instead of your c
 ```ts
 const evmClient = new cre.evm.EVMClient(CHAIN_SELECTOR)
 const trigger = evmClient.logTrigger({
-  addresses: [
-    /* base64-encoded contract address */
-  ],
-  topics: [
-    /* base64-encoded event signature hash */
-  ],
+  addresses: [/* base64-encoded contract address */],
+  topics: [/* base64-encoded event signature hash */],
 })
 ```
 
@@ -20727,7 +20723,11 @@ const workflow = (runtime: Runtime<Config>) => {
 
   // Call the high-level sendRequest with your custom function
   const price = httpClient
-    .sendRequest(runtime, fetchPrice, consensusMedianAggregation<number>())(runtime.config.apiUrl)
+    .sendRequest(
+      runtime,
+      fetchPrice,
+      consensusMedianAggregation<number>()
+    )(runtime.config.apiUrl)
     .result()
 
   runtime.log(`Aggregated price: ${price}`)
@@ -21249,7 +21249,11 @@ const createResource = (sendRequester: HTTPSendRequester, payload: { name: strin
 // In your workflow
 const httpClient = new HTTPClient()
 const resource = httpClient
-  .sendRequest(runtime, createResource, consensusIdenticalAggregation<{ id: string }>())({ name: "My Resource" })
+  .sendRequest(
+    runtime,
+    createResource,
+    consensusIdenticalAggregation<{ id: string }>()
+  )({ name: "My Resource" })
   .result()
 ```
 
