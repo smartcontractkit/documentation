@@ -14,12 +14,17 @@ export const getServerSideChainMetadata = async (
         ? EleventyFetch(nw?.rddUrl, {
             duration: skipCache ? "0s" : "1d",
             type: "json",
-          }).then((metadata) => ({
-            ...nw,
-            metadata: metadata.filter(
-              (meta) => meta.docs?.hidden !== true && (meta.proxyAddress || meta.transmissionsAccount || meta.feedId)
-            ),
-          }))
+          })
+            .then((metadata) => ({
+              ...nw,
+              metadata: metadata.filter(
+                (meta) => meta.docs?.hidden !== true && (meta.proxyAddress || meta.transmissionsAccount || meta.feedId)
+              ),
+            }))
+            .catch((error) => {
+              console.warn(`[getServerSideChainMetadata] Failed to fetch ${nw.rddUrl}: ${error?.message ?? error}`)
+              return { ...nw, metadata: [] }
+            })
         : undefined
     )
     const networks = await Promise.all(requests)
