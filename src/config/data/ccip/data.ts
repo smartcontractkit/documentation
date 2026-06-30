@@ -456,6 +456,8 @@ export const getLnMParams = ({ supportedChain, version }: { supportedChain: Supp
 }
 
 export const getTokensOfChain = ({ chain, filter }: { chain: string; filter: Environment }): string[] => {
+  if (getDecommissionedChainKeys({ filter }).has(chain)) return []
+
   // Create a mapping object to avoid the switch statement
   const tokensDataMap: { [key in Environment]?: TokensConfig } = {
     [Environment.Mainnet]: tokensMainnetv120 as TokensConfig,
@@ -481,6 +483,76 @@ export const getTokensOfChain = ({ chain, filter }: { chain: string; filter: Env
   })
 }
 
+const getDecommissionedChainKeys = ({ filter }: { filter: Environment }): Set<string> => {
+  const { decomReferenceData } = loadDecommissionedData({
+    environment: filter,
+    version: Version.V1_2_0,
+  })
+  return new Set(Object.keys(decomReferenceData))
+}
+
+const buildNetworkForChain = ({ chain, filter }: { chain: string; filter: Environment }): Network | undefined => {
+  const chainsReferenceData =
+    Environment.Mainnet === filter
+      ? (chainsMainnetv120 as unknown as ChainsConfig)
+      : (chainsTestnetv120 as unknown as ChainsConfig)
+  const chainConfig = chainsReferenceData[chain]
+  if (!chainConfig) return undefined
+
+  const supportedChain = directoryToSupportedChain(chain)
+  const title = getTitle(supportedChain)
+  if (!title) throw Error(`Title not found for ${supportedChain}`)
+
+  const lanes = Environment.Mainnet === filter ? lanesMainnetv120 : lanesTestnetv120
+  const logo = getChainIcon(supportedChain)
+  if (!logo) throw Error(`Logo not found for ${supportedChain}`)
+  const token = getTokensOfChain({ chain, filter })
+  const explorer = getExplorer(supportedChain)
+  const router = chainConfig.router
+  if (!explorer) throw Error(`Explorer not found for ${supportedChain}`)
+
+  const { chainType } = getChainTypeAndFamily(supportedChain)
+
+  const routerExplorerUrl = getExplorerAddressUrl(explorer, chainType)(router.address)
+  const nativeToken = getNativeCurrency(supportedChain)
+  if (!nativeToken) throw Error(`Native token not found for ${supportedChain}`)
+
+  const decommissionedChainKeys = getDecommissionedChainKeys({ filter })
+
+  return {
+    name: title,
+    logo,
+    totalLanes: lanes[chain]
+      ? Object.keys(lanes[chain]).filter((destination) => !decommissionedChainKeys.has(destination)).length
+      : 0,
+    totalTokens: token.length,
+    chain,
+    key: chain,
+    explorer,
+    chainType,
+    tokenAdminRegistry: chainConfig.tokenAdminRegistry?.address,
+    tokenPoolFactory: chainConfig.tokenPoolFactory?.address,
+    ccipHome: chainConfig.ccipHome?.address,
+    registryModule: chainConfig.registryModule?.address,
+    router,
+    routerExplorerUrl,
+    chainSelector: chainConfig.chainSelector,
+    nativeToken: {
+      name: nativeToken.name,
+      symbol: nativeToken.symbol,
+      logo: getTokenIconUrl(nativeToken.symbol),
+    },
+    feeTokens: chainConfig.feeTokens?.map((tokenName: string) => ({
+      name: tokenName,
+      logo: getTokenIconUrl(tokenName),
+    })),
+    armProxy: chainConfig.armProxy,
+    feeQuoter: chainType === "solana" ? chainConfig.feeQuoter : undefined,
+    mcms: chainType === "aptos" ? chainConfig.mcms?.address : undefined,
+    poolPrograms: chainType === "solana" ? chainConfig.poolPrograms : undefined,
+  }
+}
+
 export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] => {
   const chains = getAllChains({
     mainnetVersion: Version.V1_2_0,
@@ -488,59 +560,14 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
     environment: filter,
   })
 
+  const decommissionedChainKeys = getDecommissionedChainKeys({ filter })
   const allChains: Network[] = []
 
   for (const chain of chains) {
-    const supportedChain = directoryToSupportedChain(chain)
-    const title = getTitle(supportedChain)
-    if (!title) throw Error(`Title not found for ${supportedChain}`)
+    if (decommissionedChainKeys.has(chain)) continue
 
-    const lanes = Environment.Mainnet === filter ? lanesMainnetv120 : lanesTestnetv120
-    const chains = Environment.Mainnet === filter ? chainsMainnetv120 : chainsTestnetv120
-    const logo = getChainIcon(supportedChain)
-    if (!logo) throw Error(`Logo not found for ${supportedChain}`)
-    const token = getTokensOfChain({ chain, filter })
-    const explorer = getExplorer(supportedChain)
-    const router = chains[chain].router
-    if (!explorer) throw Error(`Explorer not found for ${supportedChain}`)
-
-    // Determine chain type based on chain name
-    const { chainType } = getChainTypeAndFamily(supportedChain)
-
-    const routerExplorerUrl = getExplorerAddressUrl(explorer, chainType)(router.address)
-    const nativeToken = getNativeCurrency(supportedChain)
-    if (!nativeToken) throw Error(`Native token not found for ${supportedChain}`)
-
-    allChains.push({
-      name: title,
-      logo,
-      totalLanes: lanes[chain] ? Object.keys(lanes[chain]).length : 0,
-      totalTokens: token.length,
-      chain,
-      key: chain,
-      explorer,
-      chainType,
-      tokenAdminRegistry: chains[chain]?.tokenAdminRegistry?.address,
-      tokenPoolFactory: chains[chain]?.tokenPoolFactory?.address,
-      ccipHome: chains[chain]?.ccipHome?.address,
-      registryModule: chains[chain]?.registryModule?.address,
-      router,
-      routerExplorerUrl,
-      chainSelector: chains[chain].chainSelector,
-      nativeToken: {
-        name: nativeToken.name,
-        symbol: nativeToken.symbol,
-        logo: getTokenIconUrl(nativeToken.symbol),
-      },
-      feeTokens: chains[chain].feeTokens?.map((tokenName: string) => ({
-        name: tokenName,
-        logo: getTokenIconUrl(tokenName),
-      })),
-      armProxy: chains[chain].armProxy,
-      feeQuoter: chainType === "solana" ? chains[chain]?.feeQuoter : undefined,
-      mcms: chainType === "aptos" ? chains[chain]?.mcms?.address : undefined,
-      poolPrograms: chainType === "solana" ? chains[chain]?.poolPrograms : undefined,
-    })
+    const network = buildNetworkForChain({ chain, filter })
+    if (network) allChains.push(network)
   }
 
   return allChains.sort((a, b) => a.name.localeCompare(b.name))
@@ -579,6 +606,8 @@ export const getNetwork = ({ chain, filter }: { chain: string; filter: Environme
 }
 
 export const getChainsOfToken = ({ token, filter }: { token: string; filter: Environment }): string[] => {
+  const decommissionedChainKeys = getDecommissionedChainKeys({ filter })
+
   // Get the tokens data based on the filter
   const tokensData = (() => {
     switch (filter) {
@@ -593,6 +622,7 @@ export const getChainsOfToken = ({ token, filter }: { token: string; filter: Env
 
   // Get all valid chains for the given token
   return Object.entries(tokensData[token])
+    .filter(([chain]) => !decommissionedChainKeys.has(chain))
     .filter(([, tokenData]) => tokenData.poolType !== "feeTokenOnly")
     .filter(([chain]) => {
       const lanes = getAllTokenLanes({ token, environment: filter })
@@ -610,12 +640,16 @@ export const getAllNetworkLanes = async ({
   environment: Environment
   version: Version
 }) => {
+  const decommissionedChainKeys = getDecommissionedChainKeys({ filter: environment })
+  if (decommissionedChainKeys.has(chain)) return []
+
   const { lanesReferenceData } = loadReferenceData({
     environment,
     version,
   })
 
   const allLanes = lanesReferenceData[chain]
+  if (!allLanes) return []
 
   const lanesData: {
     name: string
@@ -630,22 +664,24 @@ export const getAllNetworkLanes = async ({
       address: string
       version: string
     }
-  }[] = Object.keys(allLanes).map((lane) => {
-    const laneData = allLanes[lane]
+  }[] = Object.keys(allLanes)
+    .filter((lane) => !decommissionedChainKeys.has(lane))
+    .map((lane) => {
+      const laneData = allLanes[lane]
 
-    const directory = directoryToSupportedChain(lane || "")
-    const title = getTitle(directory)
-    const networkLogo = getChainIcon(directory)
+      const directory = directoryToSupportedChain(lane || "")
+      const title = getTitle(directory)
+      const networkLogo = getChainIcon(directory)
 
-    return {
-      name: title || "",
-      logo: networkLogo || "",
-      onRamp: laneData.onRamp,
-      offRamp: laneData.offRamp,
-      key: lane,
-      directory,
-    }
-  })
+      return {
+        name: title || "",
+        logo: networkLogo || "",
+        onRamp: laneData.onRamp,
+        offRamp: laneData.offRamp,
+        key: lane,
+        directory,
+      }
+    })
 
   return lanesData.sort((a, b) => a.name.localeCompare(b.name))
 }
@@ -664,6 +700,8 @@ export function getAllTokenLanes({
     version,
   })
 
+  const decommissionedChainKeys = getDecommissionedChainKeys({ filter: environment })
+
   // Define the resulting object
   const allDestinationLanes: {
     [sourceChain: string]: {
@@ -673,8 +711,12 @@ export function getAllTokenLanes({
 
   // Iterate over the source chains
   for (const sourceChain in lanesReferenceData) {
+    if (decommissionedChainKeys.has(sourceChain)) continue
+
     const sourceData = lanesReferenceData[sourceChain]
     for (const destinationChain in sourceData) {
+      if (decommissionedChainKeys.has(destinationChain)) continue
+
       const destinationData = sourceData[destinationChain]
 
       // Check if the token is supported
@@ -711,6 +753,7 @@ export function getLane({
 
 export function getSearchLanes({ environment }: { environment: Environment }) {
   const lanes = environment === Environment.Mainnet ? lanesMainnetv120 : lanesTestnetv120
+  const decommissionedChainKeys = getDecommissionedChainKeys({ filter: environment })
   const allLanes: {
     sourceNetwork: {
       name: string
@@ -729,12 +772,16 @@ export function getSearchLanes({ environment }: { environment: Environment }) {
   }[] = []
 
   for (const sourceChain in lanes) {
+    if (decommissionedChainKeys.has(sourceChain)) continue
+
     const sourceSupportedChain = directoryToSupportedChain(sourceChain)
     const sourceChainTitle = getTitle(sourceSupportedChain)
     const sourceChainLogo = getChainIcon(sourceSupportedChain)
     const { chainType: sourceChainType } = getChainTypeAndFamily(sourceSupportedChain)
 
     for (const destinationChain in lanes[sourceChain]) {
+      if (decommissionedChainKeys.has(destinationChain)) continue
+
       const destinationSupportedChain = directoryToSupportedChain(destinationChain)
       const destinationChainTitle = getTitle(destinationSupportedChain)
       const destinationChainLogo = getChainIcon(destinationSupportedChain)
@@ -822,4 +869,21 @@ export const getAllDecommissionedNetworks = ({ filter }: { filter: Environment }
 export const getDecommissionedNetwork = ({ chain, filter }: { chain: string; filter: Environment }) => {
   const decommissionedChains = getAllDecommissionedNetworks({ filter })
   return decommissionedChains.find((network) => network.chain === chain)
+}
+
+export const getDecommissionedNetworkWithDetails = ({
+  chain,
+  filter,
+}: {
+  chain: string
+  filter: Environment
+}): Network | undefined => {
+  const { decomReferenceData } = loadDecommissionedData({
+    environment: filter,
+    version: Version.V1_2_0,
+  })
+
+  if (!(chain in decomReferenceData)) return undefined
+
+  return buildNetworkForChain({ chain, filter })
 }

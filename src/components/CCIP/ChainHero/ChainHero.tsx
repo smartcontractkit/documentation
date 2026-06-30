@@ -54,11 +54,16 @@ interface ChainHeroProps {
     symbol: string
   }
   environment: Environment
+  isDecommissioned?: boolean
 }
 
-function ChainHero({ chains, tokens, network, token, environment, lanes }: ChainHeroProps) {
+const CCIP_EXPLORER_URL = "https://ccip.chain.link/"
+
+function ChainHero({ chains, tokens, network, token, environment, lanes, isDecommissioned = false }: ChainHeroProps) {
   // Get chain-specific tooltip configuration
-  const chainTooltipConfig = network?.chain ? getChainTooltip(network.chain) : null
+  const chainTooltipConfig = network?.chain && !isDecommissioned ? getChainTooltip(network.chain) : null
+  const hasFullNetworkDetails = Boolean(network?.router?.address)
+  const showNetworkConfiguration = !isDecommissioned || hasFullNetworkDetails
 
   const feeTokensWithAddress =
     network?.feeTokens?.map((feeToken) => {
@@ -117,6 +122,21 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
           </div>
         </div>
 
+        {isDecommissioned && (
+          <aside className="ccip-chain-hero__decom-banner" aria-label="Inactive Chain">
+            <div className="ccip-chain-hero__decom-banner__icon" aria-hidden="true">
+              !
+            </div>
+            <div className="ccip-chain-hero__decom-banner__content">
+              <p className="ccip-chain-hero__decom-banner__title">Inactive Chain</p>
+              <p>
+                This chain is inactive on the CCIP network. No new transactions can be initiated, but historical
+                transactions remain accessible in the CCIP Explorer.
+              </p>
+            </div>
+          </aside>
+        )}
+
         <div className="ccip-chain-hero__heading">
           <img
             src={network?.logo || token?.logo}
@@ -127,200 +147,240 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
               currentTarget.src = fallbackTokenIconUrl
             }}
           />
-          <h1
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              position: "relative",
-              overflow: "visible",
-            }}
-          >
-            {network?.name || token?.id}
-            <span className="ccip-chain-hero__token-logo__symbol">
-              {token?.id === "USDC" ? "USD Coin" : token?.name}
-            </span>
+          <div className="ccip-chain-hero__title-group">
+            <h1
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                position: "relative",
+                overflow: "visible",
+              }}
+            >
+              {network?.name || token?.id}
+              <span className="ccip-chain-hero__token-logo__symbol">
+                {token?.id === "USDC" ? "USD Coin" : token?.name}
+              </span>
 
-            {chainTooltipConfig && (
-              <Tooltip
-                tip={chainTooltipConfig.content}
-                hoverable={chainTooltipConfig.hoverable}
-                hideDelay={chainTooltipConfig.hideDelay}
-              />
-            )}
-          </h1>
+              {chainTooltipConfig && (
+                <Tooltip
+                  tip={chainTooltipConfig.content}
+                  hoverable={chainTooltipConfig.hoverable}
+                  hideDelay={chainTooltipConfig.hideDelay}
+                />
+              )}
+            </h1>
+            {isDecommissioned && network && <span className="ccip-chain-hero__decom-subtitle">Inactive</span>}
+          </div>
         </div>
         {network && (
           <div className="ccip-chain-hero__details">
-            <div className="ccip-chain-hero__details__item">
-              <div className="ccip-chain-hero__details__label">Router</div>
-              <div className="ccip-chain-hero__details__value" data-clipboard-type="router">
-                <Address
-                  endLength={4}
-                  contractUrl={
-                    network.router?.address
-                      ? getExplorerAddressUrl(network.explorer, network.chainType)(network.router.address)
-                      : ""
-                  }
-                  address={network.router?.address}
-                />
-              </div>
-            </div>
-            <div className="ccip-chain-hero__details__item">
-              <div className="ccip-chain-hero__details__label" data-clipboard-type="chain-selector">
-                Chain selector
-                <Tooltip
-                  label=""
-                  tip="CCIP Blockchain identifier."
-                  labelStyle={{
-                    marginRight: "8px",
-                  }}
-                  style={{
-                    display: "inline-block",
-                    verticalAlign: "middle",
-                    marginBottom: "2px",
-                  }}
-                />
-              </div>
-              <div className="ccip-chain-hero__details__value">
-                {network.chainSelector ? <CopyValue value={network.chainSelector} /> : "n/a"}{" "}
-              </div>
-            </div>
-            <div className="ccip-chain-hero__details__item">
-              <div className="ccip-chain-hero__details__label">
-                RMN
-                <Tooltip
-                  label=""
-                  tip="The RMN contract is used to curse."
-                  labelStyle={{
-                    marginRight: "8px",
-                  }}
-                  style={{
-                    display: "inline-block",
-                    verticalAlign: "middle",
-                    marginBottom: "2px",
-                  }}
-                />
-              </div>
-              <div className="ccip-chain-hero__details__value" data-clipboard-type="rmn">
-                {network.armProxy ? (
-                  <Address
-                    endLength={4}
-                    contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.armProxy.address)}
-                    address={network.armProxy.address}
-                  />
-                ) : (
-                  "n/a"
+            {showNetworkConfiguration && (
+              <>
+                <div className="ccip-chain-hero__details__item">
+                  <div className="ccip-chain-hero__details__label">Router</div>
+                  <div className="ccip-chain-hero__details__value" data-clipboard-type="router">
+                    <Address
+                      endLength={4}
+                      contractUrl={
+                        network.router?.address
+                          ? getExplorerAddressUrl(network.explorer, network.chainType)(network.router.address)
+                          : ""
+                      }
+                      address={network.router?.address}
+                    />
+                  </div>
+                </div>
+                <div className="ccip-chain-hero__details__item">
+                  <div className="ccip-chain-hero__details__label" data-clipboard-type="chain-selector">
+                    Chain selector
+                    <Tooltip
+                      label=""
+                      tip="CCIP Blockchain identifier."
+                      labelStyle={{
+                        marginRight: "8px",
+                      }}
+                      style={{
+                        display: "inline-block",
+                        verticalAlign: "middle",
+                        marginBottom: "2px",
+                      }}
+                    />
+                  </div>
+                  <div className="ccip-chain-hero__details__value">
+                    {network.chainSelector ? <CopyValue value={network.chainSelector} /> : "n/a"}{" "}
+                  </div>
+                </div>
+                <div className="ccip-chain-hero__details__item">
+                  <div className="ccip-chain-hero__details__label">
+                    RMN
+                    <Tooltip
+                      label=""
+                      tip="The RMN contract is used to curse."
+                      labelStyle={{
+                        marginRight: "8px",
+                      }}
+                      style={{
+                        display: "inline-block",
+                        verticalAlign: "middle",
+                        marginBottom: "2px",
+                      }}
+                    />
+                  </div>
+                  <div className="ccip-chain-hero__details__value" data-clipboard-type="rmn">
+                    {network.armProxy ? (
+                      <Address
+                        endLength={4}
+                        contractUrl={getExplorerAddressUrl(
+                          network.explorer,
+                          network.chainType
+                        )(network.armProxy.address)}
+                        address={network.armProxy.address}
+                      />
+                    ) : (
+                      "n/a"
+                    )}
+                  </div>
+                </div>
+
+                {/* Conditional rendering based on chain type */}
+                {network.chainType === "evm" && (
+                  <>
+                    <div className="ccip-chain-hero__details__item">
+                      <div className="ccip-chain-hero__details__label">
+                        Token admin registry
+                        <Tooltip
+                          label=""
+                          tip="The TokenAdminRegistry contract is responsible for managing the configuration of token pools for all cross chain tokens."
+                          labelStyle={{
+                            marginRight: "8px",
+                          }}
+                          style={{
+                            display: "inline-block",
+                            verticalAlign: "middle",
+                            marginBottom: "2px",
+                          }}
+                        />
+                      </div>
+                      <div className="ccip-chain-hero__details__value" data-clipboard-type="token-registry">
+                        {network.tokenAdminRegistry ? (
+                          <Address
+                            endLength={4}
+                            contractUrl={getExplorerAddressUrl(
+                              network.explorer,
+                              network.chainType
+                            )(network.tokenAdminRegistry)}
+                            address={network.tokenAdminRegistry}
+                          />
+                        ) : (
+                          "n/a"
+                        )}
+                      </div>
+                    </div>
+                    <div className="ccip-chain-hero__details__item">
+                      <div className="ccip-chain-hero__details__label">
+                        Registry module owner
+                        <Tooltip
+                          label=""
+                          tip="The RegistryModuleOwnerCustom contract is responsible for registering the administrator of a token in the TokenAdminRegistry."
+                          labelStyle={{
+                            marginRight: "8px",
+                          }}
+                          style={{
+                            display: "inline-block",
+                            verticalAlign: "middle",
+                            marginBottom: "2px",
+                          }}
+                        />
+                      </div>
+                      <div className="ccip-chain-hero__details__value" data-clipboard-type="registry">
+                        {network.registryModule ? (
+                          <Address
+                            endLength={4}
+                            contractUrl={getExplorerAddressUrl(
+                              network.explorer,
+                              network.chainType
+                            )(network.registryModule)}
+                            address={network.registryModule}
+                          />
+                        ) : (
+                          "n/a"
+                        )}
+                      </div>
+                    </div>
+                  </>
                 )}
-              </div>
-            </div>
 
-            {/* Conditional rendering based on chain type */}
-            {network.chainType === "evm" && (
-              <>
-                <div className="ccip-chain-hero__details__item">
-                  <div className="ccip-chain-hero__details__label">
-                    Token admin registry
-                    <Tooltip
-                      label=""
-                      tip="The TokenAdminRegistry contract is responsible for managing the configuration of token pools for all cross chain tokens."
-                      labelStyle={{
-                        marginRight: "8px",
-                      }}
-                      style={{
-                        display: "inline-block",
-                        verticalAlign: "middle",
-                        marginBottom: "2px",
-                      }}
-                    />
-                  </div>
-                  <div className="ccip-chain-hero__details__value" data-clipboard-type="token-registry">
-                    {network.tokenAdminRegistry ? (
-                      <Address
-                        endLength={4}
-                        contractUrl={getExplorerAddressUrl(
-                          network.explorer,
-                          network.chainType
-                        )(network.tokenAdminRegistry)}
-                        address={network.tokenAdminRegistry}
-                      />
-                    ) : (
-                      "n/a"
-                    )}
-                  </div>
-                </div>
-                <div className="ccip-chain-hero__details__item">
-                  <div className="ccip-chain-hero__details__label">
-                    Registry module owner
-                    <Tooltip
-                      label=""
-                      tip="The RegistryModuleOwnerCustom contract is responsible for registering the administrator of a token in the TokenAdminRegistry."
-                      labelStyle={{
-                        marginRight: "8px",
-                      }}
-                      style={{
-                        display: "inline-block",
-                        verticalAlign: "middle",
-                        marginBottom: "2px",
-                      }}
-                    />
-                  </div>
-                  <div className="ccip-chain-hero__details__value" data-clipboard-type="registry">
-                    {network.registryModule ? (
-                      <Address
-                        endLength={4}
-                        contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.registryModule)}
-                        address={network.registryModule}
-                      />
-                    ) : (
-                      "n/a"
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
+                {network.chainType === "aptos" && (
+                  <>
+                    <div className="ccip-chain-hero__details__item">
+                      <div className="ccip-chain-hero__details__label">
+                        Token admin registry
+                        <Tooltip
+                          label=""
+                          tip="The TokenAdminRegistry module is responsible for managing the configuration of token pools for all cross chain tokens."
+                          labelStyle={{
+                            marginRight: "8px",
+                          }}
+                          style={{
+                            display: "inline-block",
+                            verticalAlign: "middle",
+                            marginBottom: "2px",
+                          }}
+                        />
+                      </div>
+                      <div className="ccip-chain-hero__details__value" data-clipboard-type="token-registry">
+                        {network.tokenAdminRegistry ? (
+                          <Address
+                            endLength={4}
+                            contractUrl={getExplorerAddressUrl(
+                              network.explorer,
+                              network.chainType
+                            )(network.tokenAdminRegistry)}
+                            address={network.tokenAdminRegistry}
+                          />
+                        ) : (
+                          "n/a"
+                        )}
+                      </div>
+                    </div>
 
-            {network.chainType === "aptos" && (
-              <>
-                <div className="ccip-chain-hero__details__item">
-                  <div className="ccip-chain-hero__details__label">
-                    Token admin registry
-                    <Tooltip
-                      label=""
-                      tip="The TokenAdminRegistry module is responsible for managing the configuration of token pools for all cross chain tokens."
-                      labelStyle={{
-                        marginRight: "8px",
-                      }}
-                      style={{
-                        display: "inline-block",
-                        verticalAlign: "middle",
-                        marginBottom: "2px",
-                      }}
-                    />
-                  </div>
-                  <div className="ccip-chain-hero__details__value" data-clipboard-type="token-registry">
-                    {network.tokenAdminRegistry ? (
-                      <Address
-                        endLength={4}
-                        contractUrl={getExplorerAddressUrl(
-                          network.explorer,
-                          network.chainType
-                        )(network.tokenAdminRegistry)}
-                        address={network.tokenAdminRegistry}
-                      />
-                    ) : (
-                      "n/a"
+                    {network.mcms && (
+                      <div className="ccip-chain-hero__details__item">
+                        <div className="ccip-chain-hero__details__label">
+                          MCMS
+                          <Tooltip
+                            label=""
+                            tip="The MCMS address must be added as a dependency in your Move.toml file when building modules that interact with CCIP on Aptos chains."
+                            labelStyle={{
+                              marginRight: "8px",
+                            }}
+                            style={{
+                              display: "inline-block",
+                              verticalAlign: "middle",
+                              marginBottom: "2px",
+                            }}
+                          />
+                        </div>
+                        <div className="ccip-chain-hero__details__value" data-clipboard-type="mcms">
+                          <Address
+                            endLength={4}
+                            contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.mcms)}
+                            address={network.mcms}
+                          />
+                        </div>
+                      </div>
                     )}
-                  </div>
-                </div>
+                  </>
+                )}
 
-                {network.mcms && (
+                {network.chainType === "solana" && (
                   <div className="ccip-chain-hero__details__item">
                     <div className="ccip-chain-hero__details__label">
-                      MCMS
+                      Fee Quoter Program
                       <Tooltip
                         label=""
-                        tip="The MCMS address must be added as a dependency in your Move.toml file when building modules that interact with CCIP on Aptos chains."
+                        tip="The Fee Quoter Program provides fee calculations for CCIP transactions on Solana."
                         labelStyle={{
                           marginRight: "8px",
                         }}
@@ -331,194 +391,221 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                         }}
                       />
                     </div>
-                    <div className="ccip-chain-hero__details__value" data-clipboard-type="mcms">
-                      <Address
-                        endLength={4}
-                        contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.mcms)}
-                        address={network.mcms}
-                      />
+                    <div className="ccip-chain-hero__details__value" data-clipboard-type="fee-quoter">
+                      {network.feeQuoter ? (
+                        <Address
+                          endLength={4}
+                          contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.feeQuoter)}
+                          address={network.feeQuoter}
+                        />
+                      ) : (
+                        "n/a"
+                      )}
                     </div>
                   </div>
                 )}
-              </>
-            )}
 
-            {network.chainType === "solana" && (
-              <div className="ccip-chain-hero__details__item">
-                <div className="ccip-chain-hero__details__label">
-                  Fee Quoter Program
-                  <Tooltip
-                    label=""
-                    tip="The Fee Quoter Program provides fee calculations for CCIP transactions on Solana."
-                    labelStyle={{
-                      marginRight: "8px",
-                    }}
-                    style={{
-                      display: "inline-block",
-                      verticalAlign: "middle",
-                      marginBottom: "2px",
-                    }}
-                  />
-                </div>
-                <div className="ccip-chain-hero__details__value" data-clipboard-type="fee-quoter">
-                  {network.feeQuoter ? (
-                    <Address
-                      endLength={4}
-                      contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.feeQuoter)}
-                      address={network.feeQuoter}
-                    />
-                  ) : (
-                    "n/a"
-                  )}
-                </div>
-              </div>
-            )}
-
-            {network.chainType === "solana" && network.poolPrograms && (
-              <div className="ccip-chain-hero__details__item">
-                <div className="ccip-chain-hero__details__label">
-                  Self-service pool programs
-                  <PoolProgramTooltip />
-                </div>
-                <div className="ccip-chain-hero__details__value ccip-chain-hero__pool-programs-container">
-                  {network.poolPrograms.BurnMintTokenPool && (
-                    <div className="ccip-chain-hero__pool-program-entry">
-                      <span className="ccip-chain-hero__pool-program-type">BurnMint:</span>
-                      <Address
-                        endLength={4}
-                        contractUrl={getExplorerAddressUrl(network.explorer)(network.poolPrograms.BurnMintTokenPool)}
-                        address={network.poolPrograms.BurnMintTokenPool}
-                      />
+                {network.chainType === "solana" && network.poolPrograms && (
+                  <div className="ccip-chain-hero__details__item">
+                    <div className="ccip-chain-hero__details__label">
+                      Self-service pool programs
+                      <PoolProgramTooltip />
                     </div>
-                  )}
-                  {network.poolPrograms.LockReleaseTokenPool && (
-                    <div className="ccip-chain-hero__pool-program-entry">
-                      <span className="ccip-chain-hero__pool-program-type">LockRelease:</span>
-                      <Address
-                        endLength={4}
-                        contractUrl={getExplorerAddressUrl(network.explorer)(network.poolPrograms.LockReleaseTokenPool)}
-                        address={network.poolPrograms.LockReleaseTokenPool}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {network.ccipHome && (
-              <div className="ccip-chain-hero__details__item">
-                <div className="ccip-chain-hero__details__label">
-                  CCIP home
-                  <Tooltip
-                    label=""
-                    tip="The CCIPHome Contract is used for v1.6 config"
-                    labelStyle={{
-                      marginRight: "8px",
-                    }}
-                    style={{
-                      display: "inline-block",
-                      verticalAlign: "middle",
-                      marginBottom: "2px",
-                    }}
-                  />
-                </div>
-                <div className="ccip-chain-hero__details__value" data-clipboard-type="ccip-home">
-                  <Address
-                    endLength={4}
-                    contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.ccipHome)}
-                    address={network.ccipHome}
-                  />
-                </div>
-              </div>
-            )}
-
-            {network.tokenPoolFactory && (
-              <div className="ccip-chain-hero__details__item">
-                <div className="ccip-chain-hero__details__label">
-                  Token pool factory
-                  <Tooltip
-                    label=""
-                    tip="The TokenPoolFactory contract can be used for deploying CrossChainTokens and TokenPools for cross-chain token transfers."
-                    labelStyle={{
-                      marginRight: "8px",
-                    }}
-                    style={{
-                      display: "inline-block",
-                      verticalAlign: "middle",
-                      marginBottom: "2px",
-                    }}
-                  />
-                </div>
-                <div className="ccip-chain-hero__details__value" data-clipboard-type="token-pool-factory">
-                  <Address
-                    endLength={4}
-                    contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.tokenPoolFactory)}
-                    address={network.tokenPoolFactory}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Start of new Fee Tokens Group */}
-            {network &&
-              ((feeTokensWithAddress && feeTokensWithAddress.length > 0) ||
-                (!nativeTokenHasAddress() && nativeCurrency)) && (
-                <div className="ccip-chain-hero__details__item ccip-chain-hero__fee-tokens-group-item">
-                  <div className="ccip-chain-hero__details__label">Fee tokens</div>
-                  <div className="ccip-chain-hero__details__value" data-clipboard-type="fee-tokens-group">
-                    <div className="ccip-chain-hero__feeTokens__list">
-                      {" "}
-                      {/* This new div will hold all token items */}
-                      {feeTokensWithAddress &&
-                        feeTokensWithAddress.map(({ token, address, logo, contractUrl }, index) => (
-                          <div key={`fee-token-${index}`} className="ccip-chain-hero__feeTokens__item">
-                            <object
-                              data={logo}
-                              type="image/png"
-                              width="20px"
-                              height="20px"
-                              className="ccip-chain-hero__feeTokens__item__logo"
-                            >
-                              <img
-                                src={fallbackTokenIconUrl}
-                                alt={`${token.name} token logo`}
-                                width="20px"
-                                height="20px"
-                              />
-                            </object>
-                            <div>{token.name}</div>
-                            <Address
-                              endLength={4}
-                              contractUrl={token.name === "TON" ? undefined : contractUrl}
-                              address={address}
-                            />
-                          </div>
-                        ))}
-                      {!nativeTokenHasAddress() && nativeCurrency && (
-                        <div className="ccip-chain-hero__feeTokens__item">
-                          <object
-                            data={`${getTokenIconUrl(nativeCurrency.symbol)}`}
-                            type="image/png"
-                            width="20px"
-                            height="20px"
-                            className="ccip-chain-hero__feeTokens__item__logo"
-                          >
-                            <img
-                              src={fallbackTokenIconUrl}
-                              alt={`${nativeCurrency.symbol} token logo`}
-                              width="20px"
-                              height="20px"
-                            />
-                          </object>
-                          <div>{nativeCurrency.symbol}</div>
-                          <span className="ccip-chain-hero__feeTokens__native-gas-token">(native gas token)</span>
+                    <div className="ccip-chain-hero__details__value ccip-chain-hero__pool-programs-container">
+                      {network.poolPrograms.BurnMintTokenPool && (
+                        <div className="ccip-chain-hero__pool-program-entry">
+                          <span className="ccip-chain-hero__pool-program-type">BurnMint:</span>
+                          <Address
+                            endLength={4}
+                            contractUrl={getExplorerAddressUrl(network.explorer)(
+                              network.poolPrograms.BurnMintTokenPool
+                            )}
+                            address={network.poolPrograms.BurnMintTokenPool}
+                          />
+                        </div>
+                      )}
+                      {network.poolPrograms.LockReleaseTokenPool && (
+                        <div className="ccip-chain-hero__pool-program-entry">
+                          <span className="ccip-chain-hero__pool-program-type">LockRelease:</span>
+                          <Address
+                            endLength={4}
+                            contractUrl={getExplorerAddressUrl(network.explorer)(
+                              network.poolPrograms.LockReleaseTokenPool
+                            )}
+                            address={network.poolPrograms.LockReleaseTokenPool}
+                          />
                         </div>
                       )}
                     </div>
                   </div>
+                )}
+
+                {network.ccipHome && (
+                  <div className="ccip-chain-hero__details__item">
+                    <div className="ccip-chain-hero__details__label">
+                      CCIP home
+                      <Tooltip
+                        label=""
+                        tip="The CCIPHome Contract is used for v1.6 config"
+                        labelStyle={{
+                          marginRight: "8px",
+                        }}
+                        style={{
+                          display: "inline-block",
+                          verticalAlign: "middle",
+                          marginBottom: "2px",
+                        }}
+                      />
+                    </div>
+                    <div className="ccip-chain-hero__details__value" data-clipboard-type="ccip-home">
+                      <Address
+                        endLength={4}
+                        contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.ccipHome)}
+                        address={network.ccipHome}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {network.tokenPoolFactory && (
+                  <div className="ccip-chain-hero__details__item">
+                    <div className="ccip-chain-hero__details__label">
+                      Token pool factory
+                      <Tooltip
+                        label=""
+                        tip="The TokenPoolFactory contract can be used for deploying CrossChainTokens and TokenPools for cross-chain token transfers."
+                        labelStyle={{
+                          marginRight: "8px",
+                        }}
+                        style={{
+                          display: "inline-block",
+                          verticalAlign: "middle",
+                          marginBottom: "2px",
+                        }}
+                      />
+                    </div>
+                    <div className="ccip-chain-hero__details__value" data-clipboard-type="token-pool-factory">
+                      <Address
+                        endLength={4}
+                        contractUrl={getExplorerAddressUrl(
+                          network.explorer,
+                          network.chainType
+                        )(network.tokenPoolFactory)}
+                        address={network.tokenPoolFactory}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Start of new Fee Tokens Group */}
+                {network &&
+                  ((feeTokensWithAddress && feeTokensWithAddress.length > 0) ||
+                    (!nativeTokenHasAddress() && nativeCurrency)) && (
+                    <div className="ccip-chain-hero__details__item ccip-chain-hero__fee-tokens-group-item">
+                      <div className="ccip-chain-hero__details__label">Fee tokens</div>
+                      <div className="ccip-chain-hero__details__value" data-clipboard-type="fee-tokens-group">
+                        <div className="ccip-chain-hero__feeTokens__list">
+                          {" "}
+                          {/* This new div will hold all token items */}
+                          {feeTokensWithAddress &&
+                            feeTokensWithAddress.map(({ token, address, logo, contractUrl }, index) => (
+                              <div key={`fee-token-${index}`} className="ccip-chain-hero__feeTokens__item">
+                                <object
+                                  data={logo}
+                                  type="image/png"
+                                  width="20px"
+                                  height="20px"
+                                  className="ccip-chain-hero__feeTokens__item__logo"
+                                >
+                                  <img
+                                    src={fallbackTokenIconUrl}
+                                    alt={`${token.name} token logo`}
+                                    width="20px"
+                                    height="20px"
+                                  />
+                                </object>
+                                <div>{token.name}</div>
+                                <Address
+                                  endLength={4}
+                                  contractUrl={token.name === "TON" ? undefined : contractUrl}
+                                  address={address}
+                                />
+                              </div>
+                            ))}
+                          {!nativeTokenHasAddress() && nativeCurrency && (
+                            <div className="ccip-chain-hero__feeTokens__item">
+                              <object
+                                data={`${getTokenIconUrl(nativeCurrency.symbol)}`}
+                                type="image/png"
+                                width="20px"
+                                height="20px"
+                                className="ccip-chain-hero__feeTokens__item__logo"
+                              >
+                                <img
+                                  src={fallbackTokenIconUrl}
+                                  alt={`${nativeCurrency.symbol} token logo`}
+                                  width="20px"
+                                  height="20px"
+                                />
+                              </object>
+                              <div>{nativeCurrency.symbol}</div>
+                              <span className="ccip-chain-hero__feeTokens__native-gas-token">(native gas token)</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                {/* End of new Fee Tokens Group */}
+              </>
+            )}
+
+            {!showNetworkConfiguration && isDecommissioned && (
+              <div className="ccip-chain-hero__details__item">
+                <div className="ccip-chain-hero__details__label" data-clipboard-type="chain-selector">
+                  Chain selector
+                  <Tooltip
+                    label=""
+                    tip="CCIP Blockchain identifier."
+                    labelStyle={{
+                      marginRight: "8px",
+                    }}
+                    style={{
+                      display: "inline-block",
+                      verticalAlign: "middle",
+                      marginBottom: "2px",
+                    }}
+                  />
                 </div>
-              )}
-            {/* End of new Fee Tokens Group */}
+                <div className="ccip-chain-hero__details__value">
+                  {network.chainSelector ? <CopyValue value={network.chainSelector} /> : "n/a"}
+                </div>
+              </div>
+            )}
+
+            {isDecommissioned && (
+              <>
+                <div className="ccip-chain-hero__details__item">
+                  <div className="ccip-chain-hero__details__label">Status</div>
+                  <div className="ccip-chain-hero__details__value">
+                    <span className="ccip-chain-hero__decom-status-badge">Inactive</span>
+                  </div>
+                </div>
+                <div className="ccip-chain-hero__details__item">
+                  <div className="ccip-chain-hero__details__label">Historical data</div>
+                  <div className="ccip-chain-hero__details__value">
+                    <a
+                      href={CCIP_EXPLORER_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ccip-chain-hero__decom-explorer-link"
+                    >
+                      View in CCIP Explorer →
+                    </a>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
