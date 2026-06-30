@@ -84,7 +84,7 @@ const getSchemaDefinitionKey = (metadata: any): string | undefined => {
   }
 
   if (metadata.docs?.productTypeCode === "ExRate") return "v7"
-  if (feedType === "Net Asset Value") return "v9"
+  if (schemaVersion === "v9") return "v9"
   if (feedType === "Tokenized Equities") return "v10"
 
   return undefined

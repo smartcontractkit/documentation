@@ -46,7 +46,7 @@ export function shouldHideStreamFeedId(feed: any): boolean {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const DATALINK_STREAM_MATCH: Partial<Record<string, (feed: any) => boolean>> = {
   streamsCrypto: (feed) => feed.docs?.assetClass === "Crypto",
-  streamsNav: (feed) => feed.docs?.assetClass === "Net Asset Value",
+  streamsNav: (feed) => getSchemaVersion(feed) === "v9",
   streamsExRate: (feed) => feed.docs?.productTypeCode === "ExRate",
   streamsBacked: (feed) => feed.docs?.assetClass === "Tokenized Equities",
 }
@@ -113,7 +113,7 @@ export function isFeedVisible(
       } else if (dataFeedType === "streamsRwa") {
         isVisible = ["Equities", "Forex"].includes(feed.docs?.feedType)
       } else if (dataFeedType === "streamsNav") {
-        isVisible = feed.docs?.feedType === "Net Asset Value"
+        isVisible = getSchemaVersion(feed) === "v9"
       } else if (dataFeedType === "streamsExRate") {
         isVisible = feed.docs?.productTypeCode === "ExRate"
       } else if (dataFeedType === "streamsBacked") {
