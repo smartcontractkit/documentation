@@ -33,6 +33,7 @@ export function getSchemaVersion(feed: FeedMetadata): string | undefined {
   if (!match) return undefined
 
   if (match[1] === "04" || match[1] === "08") return "v8"
+  if (match[1] === "09") return "v9"
   if (match[1] === "11") return "v11"
 
   return undefined
