@@ -44,16 +44,16 @@ This page covers trading schedules and `marketStatus` value mappings for each Ch
 
 ## Asset class overview
 
-| Asset class                                                                              | Weekly open                                      | Weekly close                                     | Daily breaks        | Bank holidays                                                                          |
-| ---------------------------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------ | ------------------- | -------------------------------------------------------------------------------------- |
-| [**Crypto**](#cryptocurrency)                                                            | 24/7/365                                         | —                                                | None                | None                                                                                   |
-| [**US Equities**](#rwa-market-hours)<br/>(top-50 by market cap&nbsp;+ selected ETFs)     | **09:30 Mon**                                    | **16:00 Fri**                                    | None                | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                  |
-| [**APAC Equities**](#apac-equities)<br/>(indices & single-name stocks)                   | Varies by exchange ([see below](#apac-equities)) | Varies by exchange ([see below](#apac-equities)) | Varies by exchange  | Consult each exchange's official holiday calendar                                      |
-| [**FX Majors**](#forex-precious-metals-and-commodities)<br/>(G10 + KRW, SGD, HKD, CNH …) | **17:00 Sun**                                    | **17:00 Fri**                                    | None                | Jan 1, Dec 25                                                                          |
-| [**Precious Metals Spot**](#forex-precious-metals-and-commodities)<br/>(XAU, XAG)        | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu | Jan 1, Good Fri, Dec 25                                                                |
-| [**Commodities**](#forex-precious-metals-and-commodities)<br/>(WTI Synthetic Spot)       | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/) |
+| Asset class                                                                              | Weekly open                                      | Weekly close                                     | Daily breaks        | Bank holidays                                                                                  |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------ | ------------------- | ---------------------------------------------------------------------------------------------- |
+| [**Crypto**](#cryptocurrency)                                                            | 24/7/365                                         | —                                                | None                | None                                                                                           |
+| [**US Equities**](#rwa-market-hours)<br/>(top-50 by market cap&nbsp;+ selected ETFs)     | **09:30 Mon**                                    | **16:00 Fri**                                    | None                | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                          |
+| [**APAC Equities**](#apac-equities)<br/>(indices & single-name stocks)                   | Varies by exchange ([see below](#apac-equities)) | Varies by exchange ([see below](#apac-equities)) | Varies by exchange  | Consult each exchange's official holiday calendar                                              |
+| [**FX Majors**](#forex-precious-metals-and-commodities)<br/>(G10 + KRW, SGD, HKD, CNH …) | **17:00 Sun**                                    | **17:00 Fri**                                    | None                | Jan 1, Dec 25                                                                                  |
+| [**Precious Metals Spot**](#forex-precious-metals-and-commodities)<br/>(XAU, XAG)        | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu | Major US holidays ([early closures](#precious-metals-early-closures)); Jan 1, Good Fri, Dec 25 |
+| [**Commodities**](#forex-precious-metals-and-commodities)<br/>(WTI Synthetic Spot)       | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/)         |
 
-US Equities times are **ET**. All other times are **UTC**. Half-day trading may apply on the eve of certain U.S. holidays (e.g., Jul 3, Nov 28) — consult the linked exchange calendars for exact cut-off times.
+US Equities, FX Majors, Precious Metals Spot, and Commodities times are **ET (Eastern Time)** and follow US daylight saving time. APAC Equities times are **local exchange time**. Early closes may apply on major US holidays for Precious Metals Spot — see [Precious Metals Spot early closures](#precious-metals-early-closures). Half-day trading may apply on the eve of certain US holidays for US Equities (e.g., Jul 3, Nov 28) — consult the linked exchange calendars for exact cut-off times.
 
 ---
 
@@ -136,9 +136,9 @@ See the [APAC Equities](/data-streams/rwa-streams/apac-equities) page for covera
 
 ---
 
-## Forex, Precious Metals, and Commodities
+## Forex, Precious Metals, and Commodities <span id="forex-precious-metals-and-commodities"></span>
 
-These asset classes use the [RWA Standard (v8) schema](/data-streams/reference/report-schema-v8). All times are **UTC**.
+These asset classes use the [RWA Standard (v8) schema](/data-streams/reference/report-schema-v8). All times are **ET (Eastern Time)** and follow US daylight saving time.
 
 | Value | Status      | Description                        |
 | ----- | ----------- | ---------------------------------- |
@@ -146,11 +146,19 @@ These asset classes use the [RWA Standard (v8) schema](/data-streams/reference/r
 | `1`   | **Closed**  | Market is closed                   |
 | `2`   | **Open**    | Market is open                     |
 
-| Asset class                                    | Weekly open | Weekly close | Daily breaks        | Bank holidays                                                                          |
-| ---------------------------------------------- | ----------- | ------------ | ------------------- | -------------------------------------------------------------------------------------- |
-| **FX Majors**<br/>(G10 + KRW, SGD, HKD, CNH …) | 17:00 Sun   | 17:00 Fri    | None                | Jan 1, Dec 25                                                                          |
-| **Precious Metals Spot**<br/>(XAU, XAG)        | 18:00 Sun   | 17:00 Fri    | 17:00–18:00 Mon–Thu | Jan 1, Good Fri, Dec 25                                                                |
-| **Commodities**<br/>(WTI Synthetic Spot)       | 18:00 Sun   | 17:00 Fri    | 17:00–18:00 Mon–Thu | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/) |
+| Asset class                                    | Weekly open | Weekly close | Daily breaks        | Bank holidays                                                                                  |
+| ---------------------------------------------- | ----------- | ------------ | ------------------- | ---------------------------------------------------------------------------------------------- |
+| **FX Majors**<br/>(G10 + KRW, SGD, HKD, CNH …) | 17:00 Sun   | 17:00 Fri    | None                | Jan 1, Dec 25                                                                                  |
+| **Precious Metals Spot**<br/>(XAU, XAG)        | 18:00 Sun   | 17:00 Fri    | 17:00–18:00 Mon–Thu | Major US holidays ([early closures](#precious-metals-early-closures)); Jan 1, Good Fri, Dec 25 |
+| **Commodities**<br/>(WTI Synthetic Spot)       | 18:00 Sun   | 17:00 Fri    | 17:00–18:00 Mon–Thu | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/)         |
+
+### Precious Metals Spot early closures <span id="precious-metals-early-closures"></span>
+
+On major US holidays, Precious Metals Spot markets may close early instead of at the regular weekly close. Full-day closures apply on Jan 1, Good Friday, and Dec 25. Always use `marketStatus` in each report to determine whether the market is open.
+
+| Date        | Holiday                        | Early close (ET) |
+| ----------- | ------------------------------ | ---------------- |
+| Jul 3, 2026 | US Independence Day (observed) | 13:00            |
 
 ---
 
