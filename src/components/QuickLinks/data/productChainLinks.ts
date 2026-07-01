@@ -106,7 +106,7 @@ export const productChainLinks: ProductChainLinks = {
       dogeos: "/ccip/directory/testnet/chain/dogeos-testnet-chikyu",
       "adi-network": "/ccip/directory/testnet/chain/adi-testnet",
       edge: "/ccip/directory/mainnet/chain/edge-mainnet",
-      robinhood: "/ccip/directory/testnet/chain/robinhood-testnet",
+      robinhood: "/ccip/directory/testnet/chain/robinhood-mainnet",
       ton: "/ccip/directory/mainnet/chain/ton-mainnet",
       creditcoin: "/ccip/directory/mainnet/chain/creditcoin-mainnet",
     },

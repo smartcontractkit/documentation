@@ -589,6 +589,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "EDGE_MAINNET"
     case "robinhood-testnet":
       return "ROBINHOOD_TESTNET"
+    case "robinhood-mainnet":
+      return "ROBINHOOD_MAINNET"
     case "ton-testnet":
       return "TON_TESTNET"
     case "ton-mainnet":
@@ -952,6 +954,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "edge-mainnet"
     case "ROBINHOOD_TESTNET":
       return "robinhood-testnet"
+    case "ROBINHOOD_MAINNET":
+      return "robinhood-mainnet"
     case "TON_TESTNET":
       return "ton-testnet"
     case "TON_MAINNET":

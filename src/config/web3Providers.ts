@@ -186,6 +186,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   EDGE_TESTNET: () => new JsonRpcProvider("https://edge-testnet.g.alchemy.com/public"),
   EDGE_MAINNET: () => new JsonRpcProvider("https://edge-mainnet.g.alchemy.com/public"),
   ROBINHOOD_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.chain.robinhood.com"),
+  ROBINHOOD_MAINNET: () => new JsonRpcProvider("https://rpc.mainnet.chain.robinhood.com"),
   TON_TESTNET: () => new JsonRpcProvider("https://ton-testnet.api.onfinality.io/public"),
   TON_MAINNET: () => new JsonRpcProvider("https://ton.api.onfinality.io/public"),
   CREDITCOIN_MAINNET: () => new JsonRpcProvider("https://mainnet3.creditcoin.network"),
