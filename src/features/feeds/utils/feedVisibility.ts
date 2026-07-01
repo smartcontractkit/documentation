@@ -133,8 +133,9 @@ export function isFeedVisible(
   } else if (isRates) {
     isVisible = feed.docs?.productType === "Rates" || feed.docs?.productSubType === "Realized Volatility"
   } else if (isTokenizedEquity) {
+    const assetClass = feed.docs?.assetClass
     isVisible =
-      feed.docs?.assetClass === "Equity" &&
+      (assetClass === "Equity" || assetClass === "Equities") &&
       feed.contractType !== "verifier" &&
       feed.docs?.productTypeCode === "primaryTokenizedPrice"
   } else {
@@ -183,6 +184,20 @@ export function isFeedVisible(
       const assetName = (feed.assetName || "").toLowerCase()
       const isOndoFeed = assetName.includes("ondo") && feed.docs?.productTypeCode === "primaryTokenizedPrice"
       if (!isOndoFeed) return false
+    }
+
+    if (provider === "robinhood") {
+      if (feed.docs?.productTypeCode !== "primaryTokenizedPrice") return false
+
+      const assetName = (feed.assetName || "").toLowerCase()
+      const baseAsset = (feed.docs?.baseAsset || "").toUpperCase()
+      const isRobinhoodFeed =
+        feed.docs?.blockchainName === "Robinhood" ||
+        baseAsset.startsWith("RH") ||
+        assetName.includes("robinhood") ||
+        (feed.name || "").toLowerCase().startsWith("robinhood ")
+
+      if (!isRobinhoodFeed) return false
     }
   }
 
