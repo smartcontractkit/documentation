@@ -1,0 +1,124 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP on Canton — Overview"
+metadata:
+  description: "End-to-end CCIP flows on Canton Network: sending and receiving cross-chain messages and token transfers between Canton and other supported chains."
+  excerpt: "CCIP Canton, cross-chain flows, CCIPSender, CCIPReceiver, PerPartyRouter, explicit disclosure, manual execution, enterprise interoperability"
+  image: "/images/ccip/concepts/architecture/ccip-canton-destination-chain.png"
+  datePublished: "2026-06-27"
+  lastModified: "2026-06-27"
+  difficulty: "intermediate"
+  estimatedTime: "15 minutes"
+whatsnext:
+  "Token pools": "/ccip/concepts/canton/token-pools"
+  "Explicit Disclosure API": "/ccip/concepts/canton/explicit-disclosure"
+  "Registry Issuer Guide": "/ccip/tutorials/canton/cross-chain-tokens/registry-issuer-guide"
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+<Aside type="note">
+
+EVM is used illustratively below. CCIP supports 85+ chains and can connect Canton to any supported VM such as Solana.
+
+</Aside>
+
+The following outlines the end-to-end data journey between a remote chain (e.g. EVM) and Canton addresses, including execution responsibilities and the components involved at each step.
+
+## EVM → Canton
+
+When Canton is the **destination** (receiving) chain.
+
+<ClickToZoom
+  src="/images/ccip/concepts/architecture/ccip-canton-destination-chain.png"
+  alt="CCIP Onchain Canton Destination Chain"
+/>
+
+_Figure 1. Execute flow, on Canton, when Canton is the destination (receiving) chain._
+
+### 1. On the source chain (e.g. EVM)
+
+Using the [CCIP SDK/CLI](https://github.com/smartcontractkit/ccip-tools-ts), the sending user or dApp calls the Router on the source chain, which forwards the message to the chain's OnRamp. The OnRamp:
+
+- Validates the message structure and contents.
+- Forwards the message to all specified CommitteeVerifiers for additional validation if required.
+- For token transfers: forwards the message to the token pool, which locks or burns tokens to be sent.
+- Calculates the message fee and collects payment.
+- Emits a [`CCIPMessageSent`](https://github.com/smartcontractkit/chainlink-ccip/blob/6ea6cc1d3db9c6075133dfc45fc4a8a5d1ca6abf/chains/evm/contracts/onRamp/OnRamp.sol#L58-L67) event containing the message payload.
+
+CommitteeVerifier operators (for the default verifier, Chainlink NOPs) observe the event, validate it, generate proofs, sign with their signer keys, and aggregate proofs to the indexer.
+
+Once all requested CommitteeVerifiers have submitted proofs, the message is written to the destination chain OffRamp by a **custom executor operated by the receiver on Canton**.
+
+### 2. On Canton
+
+Using the [CCIP API](/ccip/tools-resources/ccip-explorer), the status of messages destined for Canton can be retrieved. When a message is ready to execute, the receiver uses the [CCIP CLI](https://github.com/smartcontractkit/ccip-tools-ts/blob/main/ccip-cli/README.md) to manually execute it. Preparation includes:
+
+- Fetching proofs from the indexer for the target message ID or transaction.
+- Querying the CCIP EDS for explicit disclosures of CCIP contracts.
+- Looking up the `PerPartyRouter` (or creating one via `PerPartyRouterFactory` on first use).
+- For custom CommitteeVerifiers: querying the verifier's EDS for disclosures.
+- For token transfers: querying the asset's Token Standard Registry and token pool operator's EDS.
+
+To execute, the user interacts with the [`CCIPReceiver` contract](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/receiver/daml/CCIP/CCIPReceiver.daml):
+
+1. Deploy and configure a `CCIPReceiver`. Set `receiverFinalityConfig` according to how the receiver handles finality. The sender chooses requested finality in the message; the receiver config must allow it (FTF = faster than finality, FCR = safe confirmation, or default finality tag).
+2. Call the receiver with the message and message proof.
+3. The receiver calls each CommitteeVerifier; each verifies its proof and returns validation.
+4. The receiver calls `PerPartyRouter_Execute` with CommitteeVerifier validations:
+   - `PerPartyRouter` forwards to the OffRamp, which verifies all required CommitteeVerifiers have validated.
+   - On success, the OffRamp/TokenPool consumes tickets and, for token transfers, issues a `TokenReceiveTicket`.
+   - `PerPartyRouter` marks the message executed to prevent double execution.
+
+If the message contained a token transfer, the receiver uses the `TokenReceiveTicket` to call the token pool:
+
+1. The token pool verifies the ticket was issued by the CCIP owner and creates an outgoing `TransferInstruction` to the token receiver party.
+2. The receiver party accepts the `TransferInstruction` to gain access to the transferred tokens.
+
+## Canton → EVM
+
+When Canton is the **source** (sending) chain.
+
+<ClickToZoom
+  src="/images/ccip/concepts/architecture/ccip-canton-source-chain.png"
+  alt="CCIP Onchain Canton Source Chain"
+/>
+
+_Figure 2. Execute flow, on Canton, when Canton is the source (sending) chain._
+
+### 1. On Canton
+
+Before sending, fetch explicit disclosures and prerequisites using the CCIP CLI:
+
+- Query the CCIP EDS for disclosures of CCIP contracts.
+- For custom CommitteeVerifiers: query the verifier's EDS.
+- For token transfers: query the token pool operator's EDS and the asset registry API to create a `TransferInstruction` to the token pool owner party.
+- Retrieve or create the current `PerPartyRouter` via `PerPartyRouterFactory`.
+
+Using the CCIP CLI, create a `CCIPSender` contract and send a message:
+
+- Call each CommitteeVerifier's `CommitteeVerifier_ForwardToVerifier`, returning a `CCVTicket`. Each verifier includes observer parties on the `CCIPMessageSent` event.
+- For token transfers: call the token pool to lock/burn tokens; the pool issues a `TokenPoolTicket`.
+- Call `PerPartyRouter_CCIPSend` with `CCVTicket`(s) and `TokenPoolTicket`(s). `PerPartyRouter` forwards to the OnRamp, which validates tickets and emits `CCIPMessageSent`.
+- CommitteeVerifier operators observe, validate, generate proofs, and submit to the indexer.
+- Once proofs are aggregated, the indexer marks the message ready for destination execution.
+
+The message is written to the destination chain (e.g. EVM) OffRamp by a custom executor or automatically by Chainlink NOPs (default executor).
+
+### 2. On the destination chain (e.g. EVM)
+
+The OffRamp calls the receiving contract's `ccipReceive`. The OffRamp:
+
+- Validates message structure and contents.
+- Forwards to CommitteeVerifiers for signature validation.
+- For token transfers: forwards to the token pool to unlock or mint received tokens.
+
+## Key tools
+
+| Tool                                                                | Role                                                             |
+| :------------------------------------------------------------------ | :--------------------------------------------------------------- |
+| [CCIP CLI / SDK](https://github.com/smartcontractkit/ccip-tools-ts) | Assemble disclosures, build messages, send and execute on Canton |
+| [Global CCIP EDS](https://eds.ccip.chain.link)                      | Disclosures for Chainlink-hosted CCIP contracts                  |
+| [CCIP Explorer](/ccip/tools-resources/ccip-explorer)                | Track message status                                             |
+| Token pool operator EDS                                             | Disclosures for issuer token pools during send/execute           |

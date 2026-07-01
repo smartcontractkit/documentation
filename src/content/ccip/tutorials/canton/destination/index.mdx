@@ -1,0 +1,54 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Tutorials: Remote Chain to Canton"
+metadata:
+  description: "Execute incoming cross-chain messages and token transfers on Canton using the CCIP SDK."
+  excerpt: "CCIP Canton destination, execute on Canton, manual execution, CCIPReceiver, token transfers"
+  datePublished: "2026-06-27"
+  lastModified: "2026-06-27"
+  difficulty: "intermediate"
+isIndex: true
+whatsnext:
+  "Token Transfers": "/ccip/tutorials/canton/destination/token-transfers"
+  "Cross-chain overview": "/ccip/concepts/canton/overview"
+---
+
+import { Aside } from "@components"
+
+**Destination** tutorials cover receiving on Canton — a remote chain is the source, Canton is the destination.
+
+<Aside type="note" title="Coming soon">
+
+Step-by-step guides will use a minimal starter kit on [`ccip-tools-ts`](https://github.com/smartcontractkit/ccip-tools-ts).
+
+</Aside>
+
+## Tutorials by use case
+
+| Tutorial                                                                                        | Description                                  |
+| :---------------------------------------------------------------------------------------------- | :------------------------------------------- |
+| [Token Transfers](/ccip/tutorials/canton/destination/token-transfers)                           | Execute an incoming token transfer on Canton |
+| [Arbitrary Messaging](/ccip/tutorials/canton/destination/arbitrary-messaging)                   | Execute an incoming data message on Canton   |
+| [Programmable Token Transfers](/ccip/tutorials/canton/destination/programmable-token-transfers) | Execute an incoming PTT on Canton            |
+
+## Common flow (all destination tutorials)
+
+1. Poll message status via the CCIP API or [CCIP Explorer](/ccip/tools-resources/ccip-explorer)
+2. Fetch proofs from the indexer and disclosures from Global CCIP EDS (+ token pool operator EDS for token messages)
+3. Call `execute` / `manual-exec` — the SDK **finds or creates** a compatible `CCIPReceiver` for message finality
+4. For token messages: accept the `TransferInstruction` to receive tokens on-ledger
+
+<Aside type="tip">
+
+No separate receiver deployment tutorial is needed for the default path. Pass a `receiver` hint only for custom `CCIPReceiver` configurations.
+
+</Aside>
+
+See [remote chain → Canton](/ccip/concepts/canton/overview#evm--canton) in the overview for the full execute path.
+
+## Prerequisites
+
+- Funded ledger party with rights to execute on Canton
+- CCIP CLI or SDK configured for your participant
+- For token transfers: token pool registered for the instrument — see [CCT guides](/ccip/tutorials/canton/cross-chain-tokens)

@@ -1,0 +1,372 @@
+---
+section: ccip
+date: Last Modified
+title: "Registry Issuer Guide (Canton)"
+metadata:
+  description: "Issue a token through Digital Asset Registry on Canton and connect it to Chainlink CCIP for cross-chain transfers."
+  excerpt: "Canton Registry CCIP, issuer guide, BurnMint token pool, TAR, AllocationFactory, canton-registry-kit, institutional tokens"
+  datePublished: "2026-06-27"
+  lastModified: "2026-06-27"
+  difficulty: "advanced"
+  estimatedTime: "2 hours"
+whatsnext:
+  "BurnMint pool reference": "/ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool"
+  "Token pools": "/ccip/concepts/canton/token-pools"
+  "Explicit Disclosure API": "/ccip/concepts/canton/explicit-disclosure"
+---
+
+import { Aside } from "@components"
+
+**Audience:** Engineers who understand Canton and want to issue a token through Digital Asset's Registry utility and connect it to Chainlink CCIP.
+
+**Outcome:** A live Registry instrument on Canton, initial token supply on-ledger, a registrar-owned CCIP BurnMint token pool, and registration in the Token Admin Registry (TAR) so Chainlink can bridge the token once lane configuration is complete.
+
+## 1. Overview
+
+Two on-ledger systems connect at a single **instrument identity**:
+
+| Layer              | Purpose                                                  | Analog                               |
+| :----------------- | :------------------------------------------------------- | :----------------------------------- |
+| **DA Registry**    | Who may issue this token and how much exists on Canton   | Transfer agent + securities registry |
+| **Chainlink CCIP** | How this Canton token enters and exits cross-chain lanes | Bridge + router + token pool         |
+
+**Flow:** Provider onboards Registrar → Registrar creates instrument and mints → Registrar deploys CCIP BurnMint pool → TAR links instrument to pool → Chainlink ops validates cross-chain lanes.
+
+### Critical identity rule
+
+CCIP identifies your token with an **InstrumentId**:
+
+```
+InstrumentId = { admin: <registrar party>, id: "<your instrument string>" }
+```
+
+The `admin` field **must** be your **registrar** party. Wrong party → TAR and pool will not recognize your token.
+
+### What Chainlink ops handles
+
+This guide covers **issuer/registrar** steps only. Chainlink operations must have deployed CCIP core contracts, configured lanes, and provided contract references before you begin. Cross-chain send/receive (`CCIPSender.Send`, `CCIPReceiver.Execute`) are validated separately once your token is registered.
+
+## 2. Parties and roles
+
+| Party           | Organization              | Role in this guide                                                   |
+| :-------------- | :------------------------ | :------------------------------------------------------------------- |
+| **DA Operator** | Digital Asset             | Accepts Provider onboarding; Operator Backend for context/disclosure |
+| **Provider**    | Token program owner (you) | Onboards registrars; credential requirements                         |
+| **Registrar**   | Transfer agent / treasury | Creates instrument, mints, owns CCIP pool, TAR admin                 |
+| **Issuer**      | Mint requester (optional) | Requests mint when credentials apply                                 |
+| **Holder**      | Investor / end user       | Holds balances — no Registry service onboarding required             |
+| **CCIP owner**  | Chainlink                 | Owns TAR, OnRamp, OffRamp, shared CCIP infrastructure                |
+
+**Recommended:** three parties under your org — Provider, Registrar, Holder — plus Chainlink's CCIP owner on the participant.
+
+Registry onboarding: [DA Registry onboarding guide](https://docs.digitalasset.com/utilities/mainnet/overview/registry-user-guide/onboarding-offboarding.html).
+
+## 3. Prerequisites
+
+### 3.1 Values from Chainlink ops
+
+| Value                                 | Used for                                    |
+| :------------------------------------ | :------------------------------------------ |
+| Ledger JSON API URL                   | All ledger submissions                      |
+| OAuth client (scoped to your parties) | JWT — do not use shared admin clients       |
+| `can_act_as` rights                   | Provider, Registrar, optional Issuer/Holder |
+| CCIP owner party ID                   | TAR `ProposeAdministrator`                  |
+| TokenAdminRegistry contract ID        | TAR exercises                               |
+| RMNRemote / FeeQuoter addresses       | Pool dependencies                           |
+| Remote chain selector                 | Pool `RemoteChainConfig`                    |
+| Remote pool / token addresses (hex)   | Pool lane config                            |
+| DA Operator party ID                  | Registry onboarding                         |
+
+### 3.2 Values you choose
+
+| Value                     | Guidance                                  |
+| :------------------------ | :---------------------------------------- |
+| Instrument ID             | Short uppercase, e.g. `ACME-USD`          |
+| Pool instance ID          | e.g. `acme-usd-ccip-pool`                 |
+| Rate limiter instance IDs | Inbound default, inbound custom, outbound |
+| Initial mint amount       | e.g. `1000000.0`                          |
+
+### 3.3 Environment requirements
+
+Devnet, testnet, and mainnet are **provisioned by operators**. Issuers do **not** upload DAR packages.
+
+| Responsibility                   | Provider                  | What you get                                |
+| :------------------------------- | :------------------------ | :------------------------------------------ |
+| Registry utility DARs (≥ 0.12.5) | Participant / DA operator | Registry template code on-ledger            |
+| CCIP DAR packages                | Chainlink ops             | TAR, pools, OnRamp, OffRamp templates       |
+| Registry choice context          | DA Operator Backend       | `extraArgs.context`, `disclosedContracts`   |
+| CCIP choice context              | CCIP EDS                  | Disclosures for TAR, pool, router exercises |
+
+**DARs vs disclosures:** DARs must exist before contracts can be created (infrastructure). Disclosures are fetched at request time for contracts your party is not a stakeholder on — include them in JSON API submissions.
+
+### 3.4 Optional tooling — `canton-registry-kit`
+
+Chainlink provides a CLI automating many Registry and TAR steps on devnet. Every automated step maps to an on-ledger exercise documented below.
+
+Example `registry-kit.toml`:
+
+```toml
+network = "devnet-cv1"
+
+[ledger]
+json_api_url = "https://<your-participant>/api/json"
+grpc_ledger_api_url = "<your-participant>:443"
+admin_api_url = "<your-participant>:443"
+user_id = "your-ledger-user-id"
+synchronizer_id = "global-domain::1220..."
+
+[ledger.auth]
+type = "authorizationCode"
+auth_url = "https://your-idp/oauth2/default"
+client_id = "your-oauth-client-id"
+
+[parties]
+operator = "operator-party::1220..."
+provider = "provider-party::1220..."
+registrar = "registrar-party::1220..."
+
+[ccip]
+token_admin_registry_cid = "00..."
+ccip_party = "ccip-owner-party::1220..."
+burn_mint_pool_instance_id = "your-pool-instance-id"
+
+[operator_backend]
+base_url = "https://api.utilities.digitalasset-dev.com/api/utilities"
+```
+
+Global flags: `canton-registry-kit --config registry-kit.toml [--state registry-kit.state.json]`
+
+## 4. End-to-end workflow
+
+| Phase                   | Steps | Actor                    |
+| :---------------------- | :---- | :----------------------- |
+| A — Registry onboarding | 1–6   | Provider (+ DA Operator) |
+| B — Instrument and mint | 7–9   | Registrar                |
+| C — CCIP pool deploy    | 10–13 | Registrar (pool owner)   |
+| D — TAR registration    | 14–17 | CCIP owner + Registrar   |
+| E — Verification        | 18    | Registrar                |
+
+Hand off to Chainlink ops for lane testing after Phase E.
+
+## 5. Phase A — Registry onboarding
+
+Request/accept workflow on-ledger. UI walkthrough: [DA issuance onboarding tutorial](https://docs.digitalasset.com/utilities/mainnet/tutorials/issuance/1-onboarding.html).
+
+### Step 1 — Verify environment
+
+```shell
+canton-registry-kit onboarding check-packages
+```
+
+If packages missing, contact participant operator — do not upload DARs unless you operate the validator.
+
+### Step 2 — Request Provider service
+
+| Field     | Value                                                |
+| :-------- | :--------------------------------------------------- |
+| Template  | `ProviderServiceRequest`                             |
+| Create as | Provider                                             |
+| Fields    | `operator` = DA Operator, `provider` = your Provider |
+
+CLI: `canton-registry-kit onboarding request-provider-service`
+
+### Step 3 — Wait for Provider acceptance
+
+DA Operator exercises `ProviderServiceRequest_Accept` → creates `ProviderService`.
+
+CLI: `canton-registry-kit onboarding wait-provider-service --timeout 15m`
+
+### Step 4 — Create Provider configuration
+
+Choice: `ProviderService_CreateProviderConfiguration` (Provider). Use empty `registrarRequirements` / `holderRequirements` for simplest path.
+
+### Step 5 — Request Registrar service
+
+Template: `RegistrarServiceRequest` (Provider). Set `createAllocationFactory = true`, `createTransferRule = true`.
+
+The `AllocationFactory` implements Splice `BurnMintFactory` — CCIP uses it for burn/mint on Registry holdings.
+
+### Step 6 — Accept Registrar service
+
+Choice: `ProviderService_AcceptRegistrarServiceRequest` → creates `RegistrarService`, **`AllocationFactory`**, `TransferRule`.
+
+CLI (Steps 4–6): `canton-registry-kit onboarding onboard-registrar`
+
+**Record:** `RegistrarService`, `AllocationFactory`, `TransferRule` CIDs.
+
+Inspect: `canton-registry-kit onboarding discover-registry-factories`
+
+## 6. Phase B — Create instrument and mint
+
+Registry **0.12.5+** uses AllocationFactory two-step mint (`RequestMint` → `Accept`).
+
+### Step 7 — Create instrument
+
+Choice: `RegistrarService_CreateInstrumentConfiguration` (Registrar). `instrumentId` e.g. `ACME-USD`.
+
+Your CCIP InstrumentId: `{ admin: <registrar>, id: "ACME-USD" }`
+
+CLI: `canton-registry-kit issuer create-instrument ACME-USD`
+
+### Step 8 — Request mint
+
+Choice: `AllocationFactory_RequestMint`. Fetch Operator Backend context first:
+
+```
+POST {operator_backend}/v0/registry/mint/v0/request
+Body: { "holder": "<holder>", "instrumentId": { "admin": "<registrar>", "id": "ACME-USD" } }
+```
+
+Include `choiceContextData` and `disclosedContracts` in ledger submission.
+
+CLI: `canton-registry-kit issuer mint --amount 1000000.0 --holder <holder-party>`
+
+### Step 9 — Accept mint
+
+Choice: `MintRequest_Accept` with Operator Backend context:
+
+```
+POST {operator_backend}/v0/registry/mint/v0/request/{mintRequestCid}/choice-contexts/accept
+```
+
+CLI: `canton-registry-kit issuer accept-mint`
+
+Verify: `canton-registry-kit issuer query-supply`
+
+## 7. Phase C — Deploy CCIP token pool
+
+Performed via Ledger API — no CLI for pool deployment today. Deploy rate limiters first, then pool.
+
+### Steps 10–12 — Rate limiters
+
+Deploy three [`RateLimiter`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/core/daml/CCIP/RateLimiter.daml) contracts:
+
+- Inbound, `mode = DefaultFinality`
+- Inbound, `mode = CustomFinality`
+- Outbound
+
+### Step 13 — Deploy BurnMintTokenPool
+
+| Field                          | Value                                  |
+| :----------------------------- | :------------------------------------- |
+| `instanceId`                   | e.g. `acme-usd-ccip-pool`              |
+| `poolOwner`                    | Registrar                              |
+| `ccipOwner`                    | From Chainlink ops                     |
+| `instrumentId`                 | `{ admin: registrar, id: "ACME-USD" }` |
+| `decimals`                     | `10`                                   |
+| `deps.*`                       | TAR, RMNRemote, FeeQuoter bindings     |
+| `remoteChainConfigs[selector]` | Remote pool/token addresses from ops   |
+
+Record pool address `{poolInstanceId}@{registrarParty}` and all rate limiter CIDs.
+
+Full field reference: [BurnMint Token Pool Deployment](/ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool).
+
+## 8. Phase D — Register in Token Admin Registry
+
+### Steps 14–16 — Propose, accept, set pool
+
+| Step | Choice                 | Act as     |
+| :--- | :--------------------- | :--------- |
+| 14   | `ProposeAdministrator` | CCIP owner |
+| 15   | `AcceptAdminRole`      | Registrar  |
+| 16   | `SetPool`              | Registrar  |
+
+Steps 15–16 require TAR disclosed to registrar (CCIP EDS or CLI).
+
+CLI (14–16): `canton-registry-kit operator link-token-to-pool`
+
+### Step 17 — SetBurnMintFactory (required)
+
+**Mandatory** for Registry tokens — links TAR to your `AllocationFactory` from Step 6.
+
+| Field             | Value                                      |
+| :---------------- | :----------------------------------------- |
+| Choice            | `SetBurnMintFactory` on TokenAdminRegistry |
+| Act as            | Registrar                                  |
+| `burnMintFactory` | **AllocationFactory CID** from Step 6      |
+
+Without this, cross-chain transfers fail at execution. CCIP EDS assembles Registry-specific pool context at runtime.
+
+Reference: [DA burn-mint how-to](https://docs.digitalasset.com/utilities/mainnet/how-tos/registry/burn-mint/burn-mint.html).
+
+## 9. Phase E — Verification
+
+```shell
+canton-registry-kit operator validate
+```
+
+| Check               | How                                                            |
+| :------------------ | :------------------------------------------------------------- |
+| Instrument identity | `InstrumentId.admin` = registrar; `id` matches Registry config |
+| Holdings            | Active `Holding`(s); supply matches mint                       |
+| TAR mapping         | `TokenConfig` references your pool and registrar as admin      |
+| Factory link        | `TokenConfig.burnMintFactory` = AllocationFactory CID          |
+| Pool active         | `BurnMintTokenPool` at `{poolInstanceId}@{registrarParty}`     |
+
+## 10. CLI command reference
+
+All commands: `--config registry-kit.toml [--state registry-kit.state.json]`
+
+### Onboarding
+
+| Command                                  | Description                                                  |
+| :--------------------------------------- | :----------------------------------------------------------- |
+| `onboarding check-packages`              | Verify Registry DARs (read-only)                             |
+| `onboarding request-provider-service`    | Submit ProviderServiceRequest                                |
+| `onboarding wait-provider-service`       | Poll until DA accepts                                        |
+| `onboarding onboard-registrar`           | ProviderConfiguration + RegistrarService + AllocationFactory |
+| `onboarding discover-registry-factories` | List Registry contracts for registrar                        |
+
+### Issuer
+
+| Command                                       | Description                      |
+| :-------------------------------------------- | :------------------------------- |
+| `issuer create-instrument <ID>`               | Create InstrumentConfiguration   |
+| `issuer mint --amount <N> [--holder <party>]` | RequestMint via Operator Backend |
+| `issuer accept-mint`                          | AcceptMint                       |
+| `issuer query-supply`                         | Sum Holding balances             |
+
+### Operator (CCIP linking)
+
+| Command                       | Description                                      |
+| :---------------------------- | :----------------------------------------------- |
+| `operator link-token-to-pool` | ProposeAdministrator → AcceptAdminRole → SetPool |
+| `operator validate`           | Read-only TAR and instrument checks              |
+
+### CLI gaps (Ledger API only)
+
+- Deploy RateLimiter contracts
+- Deploy BurnMintTokenPool
+- `SetBurnMintFactory`
+
+## 11. Troubleshooting
+
+| Symptom                      | Cause                            | Resolution                                                                                                                                                 |
+| :--------------------------- | :------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mint credential error        | Missing issuer credentials       | Issue per [DA credential docs](https://docs.digitalasset.com/utilities/mainnet/overview/credential-user-guide/introduction.html) or use empty requirements |
+| Bridge fails after SetPool   | `SetBurnMintFactory` not called  | Exercise Step 17 with AllocationFactory CID                                                                                                                |
+| Pool doesn't recognize token | Wrong `InstrumentId.admin`       | Must be registrar, not Provider or CCIP owner                                                                                                              |
+| Registry choice fails        | Missing Operator Backend context | Call Operator Backend before submission                                                                                                                    |
+| Missing utility packages     | Participant not provisioned      | Contact operator                                                                                                                                           |
+| TAR exercise fails           | TAR not disclosed                | Use CCIP EDS or `link-token-to-pool`                                                                                                                       |
+| 403 from Ledger API          | VPN / wrong OAuth client         | Scoped client with `can_act_as`                                                                                                                            |
+
+## 12. Glossary
+
+| Term                   | Definition                                               |
+| :--------------------- | :------------------------------------------------------- |
+| **InstrumentId**       | CCIP token ID: `{ admin: party, id: string }`            |
+| **Holding**            | Registry balance record for an instrument                |
+| **AllocationFactory**  | Registry factory implementing Splice `BurnMintFactory`   |
+| **TAR**                | TokenAdminRegistry — maps instrument → pool + admin      |
+| **EDS**                | Chainlink Execution Disclosure Service                   |
+| **Disclosed contract** | Contract blob in submission for non-stakeholder exercise |
+
+## 13. Further reading
+
+| Topic                      | Link                                                                                                                  |
+| :------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
+| Registry introduction      | [Registry user guide](https://docs.digitalasset.com/utilities/mainnet/overview/registry-user-guide/introduction.html) |
+| Token Standard integration | [Token Standard](https://docs.digitalasset.com/utilities/mainnet/overview/registry-user-guide/token-standard.html)    |
+| Issuance tutorial          | [Issuance onboarding](https://docs.digitalasset.com/utilities/mainnet/tutorials/issuance/1-onboarding.html)           |
+| Utility DAR versions       | [DAR versions](https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html)              |

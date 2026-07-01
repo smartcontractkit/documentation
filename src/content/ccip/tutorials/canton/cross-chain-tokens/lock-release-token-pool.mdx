@@ -1,0 +1,133 @@
+---
+section: ccip
+date: Last Modified
+title: "LockRelease Token Pool Deployment (Canton)"
+metadata:
+  description: "Deploy a CCIP LockRelease token pool on Canton for fixed-supply CIP-56 instruments, register on TAR, and enable a cross-chain lane."
+  excerpt: "CCIP Canton LockRelease token pool, pre-approval, TAR registration, fixed supply, cross-chain deployment"
+  datePublished: "2026-06-27"
+  lastModified: "2026-06-27"
+  difficulty: "advanced"
+  estimatedTime: "45 minutes"
+whatsnext:
+  "Explicit Disclosure API": "/ccip/concepts/canton/explicit-disclosure"
+  "BurnMint alternative": "/ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool"
+  "Token pool concepts": "/ccip/concepts/canton/token-pools"
+---
+
+import { Aside } from "@components"
+
+This guide assumes you have a token instrument live on Canton with supply minted on-ledger, supporting the CIP-56 `TransferFactory` interface and transfer pre-approvals.
+
+**LockRelease** is for **fixed total supply** tokens where cross-chain transfers are backed by locked liquidity — not mint/burn. On send, tokens lock to the pool owner; on receive, the pool releases from its holdings.
+
+**Scope:** Deploy pool, fund liquidity, register on TAR, enable a lane. Excludes [EDS setup](/ccip/concepts/canton/explicit-disclosure) and end-to-end transfer tests.
+
+<Aside type="caution">
+
+Addresses shown may change. Confirm party IDs and contract addresses with Chainlink CCIP.
+
+</Aside>
+
+## Prerequisites
+
+- Instrument with known `InstrumentId = { admin, id }` supporting `TransferFactory` and pre-approvals.
+- Token liquidity held by the pool owner party for expected release volume.
+- CCIP DAR packages from [`contracts/dars/v2_0_0`](https://github.com/smartcontractkit/chainlink-canton/tree/main/contracts/dars/v2_0_0).
+- CCIP contract references from Chainlink ops.
+
+<Aside type="caution" title="Pool owner trust">
+
+CCIP fully trusts the pool owner. Strongly recommend pool owner equals instrument admin, decentralized across nodes.
+
+</Aside>
+
+## Step 1 — Deploy the LockRelease Token Pool
+
+Create one [`LockReleaseTokenPool`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/pools/lock-release-token-pool/daml/CCIP/LockReleaseTokenPool.daml). Signatory: `poolOwner`.
+
+| Argument                  | Guidance                                           |
+| :------------------------ | :------------------------------------------------- |
+| `instanceId`              | Unique string, e.g. `acme-eur-lr-pool`             |
+| `poolOwner`               | Recommended: instrument admin                      |
+| `ccipOwner`               | Chainlink CCIP owner party                         |
+| `instrumentId`            | Underlying asset `InstrumentId`                    |
+| `decimals`                | `10`                                               |
+| `rateLimitAdmin`          | Optional                                           |
+| `remoteChainConfigs`      | Empty — configure via `ApplyChainUpdates` (Step 4) |
+| `tokenTransferFeeConfigs` | Optional per-destination fees                      |
+| `poolReceiveContext`      | Empty at creation — set preapproval in Step 2      |
+| `transferTimeout`         | `Indefinite`                                       |
+| `deps`                    | `tokenAdminRegistry`, `rmnRemote`, `feeQuoter`     |
+
+See [BurnMint deployment guide](/ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool) for transfer-fee fields and **CCIP hosted addresses** table (same values apply).
+
+After creation, pool address: `{instanceId}@{poolOwner}`.
+
+## Step 2 — Fund the pool and configure pre-approval
+
+The pool releases from the pool owner's holdings — no on-pool "add liquidity" choice. Ensure sufficient holdings before enabling inbound transfers. Holdings are supplied at execution via EDS context.
+
+### Set pool receive preapproval
+
+Record the token's transfer preapproval in `poolReceiveContext` so inbound transfers to the pool owner succeed atomically on send:
+
+```shell
+curl --request POST \
+  --url https://<your-participant>/api/json/v2/commands/submit-and-wait-for-transaction-tree \
+  --header "authorization: Bearer $JWT" \
+  --header 'content-type: application/json' \
+  --data '{
+  "commands": [
+    {
+      "ExerciseCommand": {
+        "templateId": "#ccip-lock-release-token-pool:CCIP.LockReleaseTokenPool:LockReleaseTokenPool",
+        "contractId": "<POOL_CONTRACT_ID>",
+        "choice": "AddPoolReceiveContextContractValue",
+        "choiceArgument": {
+          "contextKey": "transfer-preapproval",
+          "referredContract": "<PREAPPROVAL_CONTRACT_ID>"
+        }
+      }
+    }
+  ],
+  "commandId": "set-pool-receive-preapproval",
+  "actAs": ["<POOL_OWNER_PARTY>"]
+}'
+```
+
+| Field              | Value                                                        |
+| :----------------- | :----------------------------------------------------------- |
+| `contextKey`       | Key the TransferFactory expects, e.g. `transfer-preapproval` |
+| `referredContract` | ContractId of the pool owner's transfer preapproval          |
+
+Related choices: `AddPoolReceiveContextNonContractValue`, `RemovePoolReceiveContextValue`, `ClearPoolReceiveContext`.
+
+## Step 3 — Register on the Token Admin Registry
+
+Same three-step flow as BurnMint: fetch TAR disclosure from Global EDS, then `ProposeAdministrator` → `AcceptAdminRole` → `SetPool`.
+
+See [Step 2 of the BurnMint guide](/ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool#step-2--register-on-the-token-admin-registry) for the curl example and choice details.
+
+## Step 4 — Enable a lane
+
+Deploy three [`RateLimiter`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/core/daml/CCIP/RateLimiter.daml) contracts (inbound default, inbound custom, outbound), then call `ApplyChainUpdates` on the pool.
+
+See [Step 3 of the BurnMint guide](/ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool#step-3--enable-a-lane) for the `ChainUpdate` field reference.
+
+## Step 5 — Go live
+
+### Verification checklist
+
+1. TAR maps instrument to pool with your party as admin.
+2. Pool at `{instanceId}@{poolOwner}` with matching `InstrumentId`.
+3. Pool owner holds sufficient liquidity; receive preapproval set in `poolReceiveContext`.
+4. Lane rate limiters in place.
+
+### Stand up EDS
+
+The [reference EDS](https://github.com/smartcontractkit/chainlink-canton/blob/main/eds/eds.Dockerfile) supports LockRelease, including holdings and TransferFactory context for pre-approvals.
+
+### Test transactions
+
+See [CCIP on Canton — Overview](/ccip/concepts/canton/overview) and [CCIP Explorer](/ccip/tools-resources/ccip-explorer).

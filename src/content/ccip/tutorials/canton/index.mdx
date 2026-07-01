@@ -1,0 +1,54 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Tutorials (Canton)"
+metadata:
+  description: "CCIP tutorials for Canton Network: deploy token pools, issue Registry tokens, and cross-chain transfers using the CCIP SDK."
+  excerpt: "CCIP Canton tutorials, token pools, Registry issuer, cross-chain tokens, CCIP CLI, enterprise blockchain"
+  datePublished: "2026-06-27"
+  lastModified: "2026-06-27"
+  difficulty: "intermediate"
+isIndex: true
+whatsnext:
+  "Registry Issuer Guide": "/ccip/tutorials/canton/cross-chain-tokens/registry-issuer-guide"
+  "Cross-chain overview": "/ccip/concepts/canton/overview"
+---
+
+import { Aside } from "@components"
+
+These tutorials cover the primary integration paths for CCIP on Canton. The initial release focuses on **Cross-Chain Token (CCT)** deployment for institutional issuers.
+
+<Aside type="note" title="Coming soon">
+
+Tutorials for token transfers, arbitrary messaging, and programmable token transfers will reference a minimal starter kit built on [`ccip-tools-ts`](https://github.com/smartcontractkit/ccip-tools-ts). Placeholder pages are linked below.
+
+</Aside>
+
+## Cross-Chain Token (CCT)
+
+Connect a Canton instrument to CCIP so it can move across supported chains.
+
+| Guide                                                                                                  | When to use                                                              |
+| :----------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| [Registry Issuer Guide](/ccip/tutorials/canton/cross-chain-tokens/registry-issuer-guide)               | Issue a new token via Digital Asset Registry and connect CCIP end to end |
+| [BurnMint Token Pool Deployment](/ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool)       | Existing CIP-56 instrument with burn/mint authority                      |
+| [LockRelease Token Pool Deployment](/ccip/tutorials/canton/cross-chain-tokens/lock-release-token-pool) | Fixed-supply instrument with transfer pre-approvals                      |
+
+## Application integration (coming soon)
+
+Organized by direction to match other non-EVM CCIP tutorials and chain-family switching in the sidebar.
+
+|                                  | [Source](/ccip/tutorials/canton/source) (Canton → remote)            | [Destination](/ccip/tutorials/canton/destination) (remote → Canton)            |
+| :------------------------------- | :------------------------------------------------------------------- | :----------------------------------------------------------------------------- |
+| **Token Transfers**              | [Source](/ccip/tutorials/canton/source/token-transfers)              | [Destination](/ccip/tutorials/canton/destination/token-transfers)              |
+| **Arbitrary Messaging**          | [Source](/ccip/tutorials/canton/source/arbitrary-messaging)          | [Destination](/ccip/tutorials/canton/destination/arbitrary-messaging)          |
+| **Programmable Token Transfers** | [Source](/ccip/tutorials/canton/source/programmable-token-transfers) | [Destination](/ccip/tutorials/canton/destination/programmable-token-transfers) |
+
+Tutorials will reference a [`ccip-tools-ts`](https://github.com/smartcontractkit/ccip-tools-ts) starter kit. Destination flows use the SDK's find-or-create `CCIPReceiver` behavior — no separate receiver deployment page.
+
+## Prerequisites (all CCT guides)
+
+- CCIP DAR packages on your participant ([`contracts/dars/v2_0_0`](https://github.com/smartcontractkit/chainlink-canton/tree/main/contracts/dars/v2_0_0))
+- CCIP contract references from Chainlink ops (owner party, TAR, RMNRemote, FeeQuoter)
+- OAuth client with `can_act_as` rights for your ledger parties
+- Understanding of [token pools](/ccip/concepts/canton/token-pools) and [explicit disclosure](/ccip/concepts/canton/explicit-disclosure)

@@ -2,6 +2,7 @@ import { describe, it, expect } from "@jest/globals"
 import { CCIP_SIDEBAR_CONTENT } from "../ccip-dynamic.ts"
 import type { SectionEntry, SectionContent } from "../../sidebar.ts"
 import type { ChainType } from "../../types.ts"
+import { CCIP_SUPPORTED_CHAINS } from "../../chainTypes.ts"
 
 describe("CCIP Sidebar Configuration", () => {
   describe("Structural Integrity", () => {
@@ -43,7 +44,7 @@ describe("CCIP Sidebar Configuration", () => {
         if (item.chainTypes !== undefined) {
           expect(Array.isArray(item.chainTypes)).toBe(true)
           item.chainTypes.forEach((chainType: ChainType) => {
-            expect(["evm", "solana", "aptos", "ton"]).toContain(chainType)
+            expect(CCIP_SUPPORTED_CHAINS).toContain(chainType)
           })
         }
       }
@@ -56,7 +57,7 @@ describe("CCIP Sidebar Configuration", () => {
     })
 
     it("should only contain valid chainTypes", () => {
-      const validChainTypes = ["evm", "solana", "aptos", "ton"]
+      const validChainTypes = CCIP_SUPPORTED_CHAINS
 
       const checkChainTypes = (item: SectionContent) => {
         if (item.chainTypes) {

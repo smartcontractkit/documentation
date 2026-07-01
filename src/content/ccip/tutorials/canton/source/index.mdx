@@ -1,0 +1,48 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Tutorials: Canton to Remote Chain"
+metadata:
+  description: "Send cross-chain messages and token transfers from Canton to remote CCIP chains using the CCIP SDK."
+  excerpt: "CCIP Canton source, Canton to EVM, CCIPSender, token transfers, arbitrary messaging"
+  datePublished: "2026-06-27"
+  lastModified: "2026-06-27"
+  difficulty: "intermediate"
+isIndex: true
+whatsnext:
+  "Token Transfers": "/ccip/tutorials/canton/source/token-transfers"
+  "Cross-chain overview": "/ccip/concepts/canton/overview"
+---
+
+import { Aside } from "@components"
+
+**Source** tutorials cover sending from Canton — Canton is the source chain, a remote CCIP-supported chain is the destination.
+
+<Aside type="note" title="Coming soon">
+
+Step-by-step guides will use a minimal starter kit on [`ccip-tools-ts`](https://github.com/smartcontractkit/ccip-tools-ts).
+
+</Aside>
+
+## Tutorials by use case
+
+| Tutorial                                                                                   | Description                                    |
+| :----------------------------------------------------------------------------------------- | :--------------------------------------------- |
+| [Token Transfers](/ccip/tutorials/canton/source/token-transfers)                           | Bridge tokens from Canton to a remote chain    |
+| [Arbitrary Messaging](/ccip/tutorials/canton/source/arbitrary-messaging)                   | Send a data-only message from Canton           |
+| [Programmable Token Transfers](/ccip/tutorials/canton/source/programmable-token-transfers) | Send tokens plus calldata to a remote receiver |
+
+## Common flow (all source tutorials)
+
+1. Fetch explicit disclosures from Global CCIP EDS (and token pool operator EDS for token messages)
+2. Create or reuse `CCIPSender` and `PerPartyRouter` on Canton
+3. Submit via `PerPartyRouter_CCIPSend` with CommitteeVerifier tickets (and token pool tickets when applicable)
+4. Track delivery in [CCIP Explorer](/ccip/tools-resources/ccip-explorer)
+
+See [Canton → remote chain](/ccip/concepts/canton/overview#canton--evm) in the overview for the full on-ledger and off-ledger flow.
+
+## Prerequisites
+
+- Token pool registered on TAR (for token transfers and PTT) — see [CCT guides](/ccip/tutorials/canton/cross-chain-tokens)
+- CCIP CLI or SDK configured with OAuth credentials and `can_act_as` rights for your ledger party
+- [Explicit Disclosure API](/ccip/concepts/canton/explicit-disclosure) endpoints reachable
