@@ -252,8 +252,8 @@ export function generateDecommissionedChainStructuredData(
   structuredData.push({
     "@context": "https://schema.org",
     "@type": "Service",
-    name: `${network.name} CCIP Network (Decommissioned)`,
-    description: `Decommissioned cross-chain interoperability service for ${network.name} blockchain on ${environmentText}. Historical data remains accessible.`,
+    name: `${network.name} CCIP Network (Inactive)`,
+    description: `Inactive cross-chain interoperability service for ${network.name} blockchain on ${environmentText}. Historical data remains accessible.`,
     url: canonicalURL,
     serviceType: "Blockchain Interoperability Protocol",
     provider: CHAINLINK_ORGANIZATION,
@@ -313,7 +313,7 @@ export function generateDecommissionedChainStructuredData(
       {
         "@type": "ListItem",
         position: 5,
-        name: `${network.name} (Decommissioned)`,
+        name: `${network.name} (Inactive)`,
         item: canonicalURL,
       },
     ],
