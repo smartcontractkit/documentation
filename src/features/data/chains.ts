@@ -599,6 +599,25 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
+    page: "robinhood",
+    label: "Robinhood Chain",
+    title: "Robinhood Chain Data Feeds",
+    img: "/assets/chains/robinhood-chain.svg",
+    networkStatusUrl: "https://docs.robinhood.com/chain/",
+    tags: ["default", "tokenizedEquity"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Robinhood Chain Mainnet",
+        explorerUrl: "https://explorer.chain.robinhood.com/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-robinhood-mainnet.json",
+        queryString: "robinhood-mainnet",
+        tags: ["tokenizedEquity"],
+      },
+    ],
+  },
+  {
     page: "ronin",
     label: "Ronin",
     title: "Ronin Data Feeds",
