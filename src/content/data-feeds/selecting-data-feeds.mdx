@@ -120,6 +120,22 @@ In addition to categories, be aware that markets for several assets are actively
 | **MI_ETF**                      | Standard Milan equity market hours. 09:00-17:30 CET time M-F, excluding Milan equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | **XETRA_ETF**                   | Deutsche Börse Xetra equity market hours. 09:00-17:30 CET time M-F, excluding Xetra equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
+## 24/7 blended gold price feeds
+
+Some custom feeds, such as the tGLD/USD 24/7 blended price feed on Ethereum mainnet, are designed to publish a gold-linked price both during and outside regular precious metals market hours. During open market hours, the feed reports the XAU/USD price. When the XAU market is closed, the feed starts from the last observed open-market XAU/USD price and adjusts it with a blended signal derived from tokenized gold price streams.
+
+The current implementation uses XAUT/USD and PAXG/USD streams for the closed-market signal. For each available tokenized gold stream, the adapter tracks the token's open-market premium or discount to XAU/USD with an EMA, uses that value to derive a spot-equivalent tokenized gold price, averages the valid derived prices, and smooths the resulting deviation from the last XAU/USD price with another EMA. The composite price then applies a configurable weight to that smoothed deviation. In the current implementation, the tokenized-gold signal has a 70% weight and the smoothed deviation is capped between -5% and +2.5% before it is applied.
+
+<Aside type="note" title="24/7 blended gold feed risks">
+  This feed is a custom methodology and is not equivalent to a continuously open physical gold spot market. Outside
+  regular precious metals market hours, the answer depends on tokenized gold markets, their liquidity, their premium or
+  discount to physical gold, and the availability of the configured tokenized gold streams. Users should monitor the feed
+  against independent references, enforce freshness checks and value bounds appropriate for their use case, and define
+  pause or fallback behavior before using the feed to secure value, support minting or redemption, trigger liquidations,
+  or automate other protocol actions. If the tokenized inputs stop updating or are unavailable, the adapter can continue
+  from its most recent cached EMA state until valid inputs resume or the XAU market reopens.
+</Aside>
+
 ## Risk Mitigation
 
 As a development best practice, design your systems and smart contracts to be resilient and mitigate risk to your protocol and your users. Ensure that your systems can tolerate known and unknown exceptions that might occur. Some examples include but are not limited to volatile market conditions, the degraded performance of infrastructure, chains, or networks, and any other upstream outage related to data providers or node operators. You bear responsibility for any manner in which you use the Chainlink Network, its software, and documentation.
