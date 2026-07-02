@@ -609,7 +609,7 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Robinhood Chain Mainnet",
-        explorerUrl: "https://explorer.chain.robinhood.com/address/%s",
+        explorerUrl: "https://robinhoodchain.blockscout.com/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-robinhood-mainnet.json",
         queryString: "robinhood-mainnet",
