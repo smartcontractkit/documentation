@@ -39,7 +39,7 @@ export function LlmsLink({ section, supportedLanguages, currentPageLanguage }: L
     // Language-specific section (like CRE)
     const langToUse =
       effectiveLanguage && supportedLanguages.includes(effectiveLanguage) ? effectiveLanguage : supportedLanguages[0]
-    llmsHref = `/${section}/llms-full-${langToUse}.txt`
+    llmsHref = `/${section}/${langToUse}/llms-full.txt`
 
     // For CRE: just show language, no product name
     if (section === "cre") {
