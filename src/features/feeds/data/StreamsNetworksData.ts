@@ -446,12 +446,12 @@ export const StreamsNetworksData: NetworkData[] = [
     mainnet: {
       label: "MegaETH Mainnet",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
-      explorerUrl: "https://megaeth.blockscout.com/address/%s",
+      explorerUrl: "https://mega.etherscan.io/address/%s",
     },
     testnet: {
       label: "MegaETH Testnet",
       verifierProxy: "0xa33c1F0561eECe58ee7b7349D5BE018dd94EC9B6",
-      explorerUrl: "https://megaeth-testnet-v2.blockscout.com/address/%s",
+      explorerUrl: "https://testnet-mega.etherscan.io/address/%s",
     },
   },
   {
