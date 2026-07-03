@@ -465,7 +465,7 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "MegaETH Mainnet",
-        explorerUrl: "https://megaeth.blockscout.com/address/%s",
+        explorerUrl: "https://mega.etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-megaeth-mainnet.json",
         queryString: "megaeth-mainnet",
