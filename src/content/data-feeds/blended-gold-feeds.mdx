@@ -1,0 +1,56 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "24/7 Blended Gold Feeds"
+metadata:
+  title: "24/7 Blended Gold Feeds | Chainlink Data Feeds"
+  description: "Learn how 24/7 blended gold price feeds work, including closed-market methodology and integration risks for custom feeds such as tGLD/USD."
+  keywords:
+    [
+      "Blended Gold Feeds",
+      "tGLD",
+      "Custom Feeds",
+      "Precious Metals",
+      "XAU",
+      "Tokenized Gold",
+      "Data Feeds",
+    ]
+whatsnext:
+  {
+    "Review custom feed categories": "/data-feeds/selecting-data-feeds#-custom-feeds",
+    "Find Price Feed Addresses": "/data-feeds/price-feeds/addresses",
+    "Learn about developer responsibilities": "/data-feeds/developer-responsibilities",
+  }
+---
+
+import { Aside } from "@components"
+
+24/7 blended gold price feeds are [custom feeds](/data-feeds/selecting-data-feeds#-custom-feeds) designed to publish a gold-linked price both during and outside regular [precious metals market hours](/data-feeds/selecting-data-feeds#market-hours). They use a bespoke methodology rather than a continuously open physical gold spot market.
+
+Developers integrating these feeds should review this page alongside the [Custom Feeds](/data-feeds/selecting-data-feeds#-custom-feeds) section and implement [risk mitigation](/data-feeds/selecting-data-feeds#risk-mitigation) appropriate for their use case.
+
+## How it works
+
+During open precious metals market hours, the feed reports the XAU/USD price. When the XAU market is closed, the feed starts from the last observed open-market XAU/USD price and adjusts it with a blended signal derived from tokenized gold price streams.
+
+The current implementation uses XAUT/USD and PAXG/USD streams for the closed-market signal. For each available tokenized gold stream, the adapter tracks the token's open-market premium or discount to XAU/USD with an EMA, uses that value to derive a spot-equivalent tokenized gold price, averages the valid derived prices, and smooths the resulting deviation from the last XAU/USD price with another EMA. The composite price applies configurable weighting and deviation controls before the closed-market adjustment is reflected in the answer.
+
+## Supported feeds
+
+| Feed | Network | Proxy address |
+| ---- | ------- | ------------- |
+| tGLD/USD - 24/7 Blended Price | Ethereum Mainnet | [0x369C67E8b026CC4Ef98350f332D7Dd52b85b7674](https://etherscan.io/address/0x369C67E8b026CC4Ef98350f332D7Dd52b85b7674) |
+
+Find this feed on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page.
+
+## Risks
+
+<Aside type="note" title="24/7 blended gold feed risks">
+  This feed is a custom methodology and is not equivalent to a continuously open physical gold spot market. Outside
+  regular precious metals market hours, the answer depends on tokenized gold markets, their liquidity, their premium or
+  discount to physical gold, and the availability of the configured tokenized gold streams. Users should monitor the feed
+  against independent references, enforce freshness checks and value bounds appropriate for their use case, and define
+  pause or fallback behavior before using the feed to secure value, support minting or redemption, trigger liquidations,
+  or automate other protocol actions. If the tokenized inputs stop updating or are unavailable, the adapter can continue
+  from its most recent cached EMA state until valid inputs resume or the XAU market reopens. Contact chainlink_data_feeds@smartcontract.com with questions.
+</Aside>
