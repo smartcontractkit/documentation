@@ -514,9 +514,35 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-06-18
+Last Updated: 2026-07-02
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.23.0 - July 2, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.23.0" target="_blank">CRE CLI version 1.23.0</a> is now available.**
+
+- **Simulator rate limits enforced**: The local simulator now enforces rate limits during workflow execution, aligning simulation behavior more closely with production. When a rate limit is reached the workflow is not terminated — execution continues within the allowed limits.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.22.0...v1.23.0)
+
+## CLI v1.22.0 - June 25, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.22.0" target="_blank">CRE CLI version 1.22.0</a> is now available.**
+
+- **Secrets security hardening**: Two improvements to the browser OAuth secrets flow: all gateway requests are now forced to HTTPS (preventing accidental use of insecure endpoints), and OCR response payload signatures are validated before consuming secrets responses.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.21.0...v1.22.0)
 
 ## CLI v1.21.0 - June 18, 2026
 
@@ -1928,9 +1954,15 @@ Once you've tested your workflow locally:
 
 # Triggering Deployed Workflows
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows
-Last Updated: 2025-11-10
+Last Updated: 2026-07-05
 
 Once you've [deployed a workflow](/cre/guides/operations/deploying-workflows) with an HTTP trigger, you can execute it by sending authenticated HTTP requests to the CRE gateway. This guide explains how to trigger deployed workflows in production.
+
+<Aside type="note" title="One HTTP trigger per workflow">
+  Each workflow supports only one HTTP trigger handler. There is currently no mechanism to route requests to different
+  HTTP trigger handlers within the same workflow. If you need to handle different use cases or execution paths, include
+  routing logic in your request payload and branch within a single handler function.
+</Aside>
 
 ## What you'll learn
 
@@ -17426,7 +17458,7 @@ func onHttpTrigger(config *Config, runtime cre.Runtime, payload *http.Payload) (
 
 # HTTP Trigger Overview
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/overview-go
-Last Updated: 2025-11-10
+Last Updated: 2026-07-05
 
 The HTTP trigger allows external systems to initiate your workflow execution by making HTTP requests to a designated endpoint. This enables on-demand workflow execution, webhook integration, and API-driven automation.
 
@@ -17445,6 +17477,12 @@ When you deploy a workflow with an HTTP trigger:
   your workflow. During **local simulation**, you can use empty authorization configs to simplify testing—just remember
   to add `authorizedKeys` before deploying. Learn more: [Configuration &
   Handler](/cre/guides/workflow/using-triggers/http-trigger/configuration-go#configuration-and-handler).
+</Aside>
+
+<Aside type="note" title="One HTTP trigger per workflow">
+  Each workflow supports only one HTTP trigger handler. There is currently no mechanism to route requests to different
+  HTTP trigger handlers within the same workflow. If you need to handle different use cases or execution paths, include
+  routing logic in your request payload and branch within a single handler function.
 </Aside>
 
 ## When to use HTTP triggers
