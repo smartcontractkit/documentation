@@ -514,9 +514,35 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-06-18
+Last Updated: 2026-07-02
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.23.0 - July 2, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.23.0" target="_blank">CRE CLI version 1.23.0</a> is now available.**
+
+- **Simulator rate limits enforced**: The local simulator now enforces rate limits during workflow execution, aligning simulation behavior more closely with production. When a rate limit is reached the workflow is not terminated — execution continues within the allowed limits.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.22.0...v1.23.0)
+
+## CLI v1.22.0 - June 25, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.22.0" target="_blank">CRE CLI version 1.22.0</a> is now available.**
+
+- **Secrets security hardening**: Two improvements to the browser OAuth secrets flow: all gateway requests are now forced to HTTPS (preventing accidental use of insecure endpoints), and OCR response payload signatures are validated before consuming secrets responses.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.21.0...v1.22.0)
 
 ## CLI v1.21.0 - June 18, 2026
 
@@ -1914,9 +1940,15 @@ Once you've tested your workflow locally:
 
 # Triggering Deployed Workflows
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows
-Last Updated: 2025-11-10
+Last Updated: 2026-07-05
 
 Once you've [deployed a workflow](/cre/guides/operations/deploying-workflows) with an HTTP trigger, you can execute it by sending authenticated HTTP requests to the CRE gateway. This guide explains how to trigger deployed workflows in production.
+
+<Aside type="note" title="One HTTP trigger per workflow">
+  Each workflow supports only one HTTP trigger handler. There is currently no mechanism to route requests to different
+  HTTP trigger handlers within the same workflow. If you need to handle different use cases or execution paths, include
+  routing logic in your request payload and branch within a single handler function.
+</Aside>
 
 ## What you'll learn
 
@@ -17321,7 +17353,7 @@ const onHttpTrigger = (runtime: Runtime<Config>, payload: HTTPPayload): string =
 
 # HTTP Trigger Overview
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/overview-ts
-Last Updated: 2025-11-10
+Last Updated: 2026-07-05
 
 The HTTP trigger allows external systems to initiate your workflow execution by making HTTP requests to a designated endpoint. This enables on-demand workflow execution, webhook integration, and API-driven automation.
 
@@ -17340,6 +17372,12 @@ When you deploy a workflow with an HTTP trigger:
   your workflow. During **local simulation**, you can use empty authorization configs to simplify testing—just remember
   to add `authorizedKeys` before deploying. Learn more: [Configuration &
   Handler](/cre/guides/workflow/using-triggers/http-trigger/configuration-ts#configuration-and-handler).
+</Aside>
+
+<Aside type="note" title="One HTTP trigger per workflow">
+  Each workflow supports only one HTTP trigger handler. There is currently no mechanism to route requests to different
+  HTTP trigger handlers within the same workflow. If you need to handle different use cases or execution paths, include
+  routing logic in your request payload and branch within a single handler function.
 </Aside>
 
 ## When to use HTTP triggers
@@ -20657,7 +20695,7 @@ const evmClient = new EVMClient(network.chainSelector.selector)
 
 # SDK Reference: HTTP Client
 Source: https://docs.chain.link/cre/reference/sdk/http-client-ts
-Last Updated: 2026-01-26
+Last Updated: 2026-07-06
 
 This page provides a reference for making offchain HTTP requests using the `HTTPClient`. This is a "node-level" action capability, meaning it executes on each individual node in the DON.
 
@@ -21050,14 +21088,15 @@ Defines the parameters for an outgoing HTTP request.
   HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
 </Aside>
 
-| Field           | Type                                              | Description                                                                                                             |
-| --------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `url`           | `string`                                          | The URL of the API endpoint.                                                                                            |
-| `method`        | `string` (optional)                               | The HTTP method (e.g., `"GET"`, `"POST"`). Defaults to `"GET"`.                                                         |
-| `headers`       | `{ [key: string]: string }` (optional)            | Optional HTTP headers.                                                                                                  |
-| `body`          | `string` (base64-encoded) (optional)              | Optional raw request body (must be base64-encoded).                                                                     |
-| `timeout`       | `string` (optional)                               | Request timeout as a duration string (e.g., `"5s"`, `"8s"`). See [Request Timeout](#request-timeout) below for details. |
-| `cacheSettings` | `CacheSettings` \| `CacheSettingsJson` (optional) | Optional caching behavior for the request.                                                                              |
+| Field           | Type                                              | Description                                                                                                                                 |
+| --------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `url`           | `string`                                          | The URL of the API endpoint.                                                                                                                |
+| `method`        | `string` (optional)                               | The HTTP method (e.g., `"GET"`, `"POST"`). Defaults to `"GET"`.                                                                             |
+| `multiHeaders`  | `{ [key: string]: HeaderValuesJson }` (optional)  | Optional HTTP headers (recommended). Supports multiple values per header name. See [`HeaderValues`](#headervalues--headervaluesjson) below. |
+| `headers`       | `{ [key: string]: string }` (optional)            | **Deprecated.** Use `multiHeaders` instead. Single-value headers only.                                                                      |
+| `body`          | `string` (base64-encoded) (optional)              | Optional raw request body (must be base64-encoded).                                                                                         |
+| `timeout`       | `string` (optional)                               | Request timeout as a duration string (e.g., `"5s"`, `"8s"`). See [Request Timeout](#request-timeout) below for details.                     |
+| `cacheSettings` | `CacheSettings` \| `CacheSettingsJson` (optional) | Optional caching behavior for the request.                                                                                                  |
 
 ### Request Timeout
 
@@ -21162,15 +21201,39 @@ const response = sendRequester
 
 For practical examples, see the [POST request guide](/cre/guides/workflow/using-http-client/post-request).
 
+### `HeaderValues` / `HeaderValuesJson`
+
+Holds one or more values for a single HTTP header name. Used as the value type in `multiHeaders` on both requests and responses.
+
+| Field    | Type                     | Description                                    |
+| -------- | ------------------------ | ---------------------------------------------- |
+| `values` | `string[]` / `string[]?` | One or more string values for the header name. |
+
+**Example:**
+
+```typescript
+const response = sendRequester
+  .sendRequest({
+    url: config.apiUrl,
+    method: "GET",
+    multiHeaders: {
+      Accept: { values: ["application/json"] },
+      "X-Custom-Key": { values: ["value1", "value2"] },
+    },
+  })
+  .result()
+```
+
 ### `Response`
 
 The result of the HTTP call from a single node (before consensus aggregation).
 
-| Field        | Type                              | Description                |
-| ------------ | --------------------------------- | -------------------------- |
-| `statusCode` | `number`                          | The HTTP status code.      |
-| `headers`    | `{ [key: string]: string }`       | The HTTP response headers. |
-| `body`       | `Uint8Array` \| `string` (base64) | The raw response body.     |
+| Field          | Type                                  | Description                                                                |
+| -------------- | ------------------------------------- | -------------------------------------------------------------------------- |
+| `statusCode`   | `number`                              | The HTTP status code.                                                      |
+| `multiHeaders` | `{ [key: string]: HeaderValuesJson }` | The HTTP response headers, with multiple values per name where applicable. |
+| `headers`      | `{ [key: string]: string }`           | **Deprecated.** Use `multiHeaders` instead.                                |
+| `body`         | `Uint8Array` \| `string` (base64)     | The raw response body.                                                     |
 
 **Example parsing response body:**
 
