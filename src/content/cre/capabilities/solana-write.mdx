@@ -10,22 +10,17 @@ metadata:
 
 import { Aside } from "@components"
 
-The **Solana Write** capability lets your CRE workflow submit cryptographically signed reports to Solana programs. Your workflow code calls a single method; the underlying Decentralized Oracle Network (DON) handles consensus, report signing, and on-chain submission through the Keystone Forwarder program.
-
-<Aside type="note" title="Write only — for now">
-  The current release supports **writing to Solana** only. Solana Read and Solana Log Trigger capabilities are in active
-  development and will be documented when available.
-</Aside>
+The **Solana Write** capability lets your CRE workflow submit cryptographically signed reports to Solana programs. Your workflow calls a single method while the underlying Decentralized Oracle Network (DON) handles consensus, report signing, and onchain submission through the Keystone Forwarder program.
 
 ## How it works
 
-The Solana Write capability shares the same conceptual model as [EVM Write](/cre/capabilities/evm-read-write): your workflow generates a signed report, and the DON submits it to a Keystone Forwarder program on-chain. The forwarder verifies the oracle signatures, then cross-program invokes (CPI) your receiver program's `on_report` instruction.
+The Solana Write capability shares the same conceptual model as [EVM Write](/cre/capabilities/evm-read-write): your workflow generates a signed report, and the DON submits it to a Keystone Forwarder program onchain. The forwarder verifies the oracle signatures, then cross-program invokes (CPI) your receiver program's `on_report` instruction.
 
 ### The secure write flow
 
 1. **Payload encoding**: Your workflow Borsh-encodes the data to deliver and wraps it in a `ForwarderReport` struct containing an account hash.
 2. **Report generation**: `runtime.report()` signs the encoded payload using the `solana` encoder (`ecdsa` + `keccak256`).
-3. **DON consensus**: Multiple DON nodes independently validate the report before any on-chain submission.
+3. **DON consensus**: Multiple DON nodes independently validate the report before any onchain submission.
 4. **Forwarder submission**: A DON node calls the Keystone Forwarder program with the signed report and the required accounts.
 5. **Delivery to your program**: The forwarder verifies the signatures and CPIs into your receiver program's `on_report` instruction.
 
@@ -35,22 +30,11 @@ Every Solana write request includes a `remainingAccounts` list. The Keystone For
 
 | Index | Account              | Writable  | Description                                                                                      |
 | ----- | -------------------- | --------- | ------------------------------------------------------------------------------------------------ |
-| 0     | `forwarderState`     | No        | The Keystone Forwarder's on-chain state account                                                  |
+| 0     | `forwarderState`     | No        | The Keystone Forwarder's onchain state account                                                   |
 | 1     | `forwarderAuthority` | No        | PDA derived from `["forwarder", forwarderState, receiverProgram]` under the forwarder program ID |
 | 2+    | Receiver accounts    | As needed | Accounts your program's `on_report` instruction requires                                         |
 
 The public keys of all accounts in this list are concatenated and SHA-256 hashed to produce the `accountHash` field in the report. The forwarder strips indices 0–1 before CPIing into your receiver, so they must be present and in the correct positions.
-
-### Key differences from EVM Write
-
-| Aspect             | EVM Write                                | Solana Write                     |
-| ------------------ | ---------------------------------------- | -------------------------------- |
-| Payload encoding   | ABI (viem)                               | Borsh                            |
-| Receiver interface | `onReport(bytes metadata, bytes report)` | `on_report` Anchor instruction   |
-| Address format     | 20-byte hex                              | 32-byte base58 / base64          |
-| Report encoder     | `evm`                                    | `solana`                         |
-| Consumer setup     | Deploy a Solidity contract               | Deploy an Anchor program         |
-| Compute budget     | Gas limit                                | Compute units (default: 290,000) |
 
 ## Key features
 
