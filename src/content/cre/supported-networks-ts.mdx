@@ -5,14 +5,14 @@ date: Last Modified
 sdkLang: "ts"
 pageId: "supported-networks"
 metadata:
-  description: "View all EVM networks supported by CRE workflows, including required CLI and SDK versions for each network."
+  description: "View all networks supported by CRE workflows — EVM and Solana — including required CLI and SDK versions for each network."
   datePublished: "2026-02-03"
-  lastModified: "2026-06-24"
+  lastModified: "2026-07-06"
 ---
 
 import { Aside } from "@components"
 
-This page lists EVM-compatible networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network.
+This page lists networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network. CRE supports two [chain families](/cre/capabilities#chain-families): EVM-compatible chains and Solana.
 
 <Aside type="tip" title="Check chains enabled for your tenant">
   The tables below show minimum version requirements for each network. To see which chains and mock forwarder addresses
@@ -91,6 +91,25 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 
 ## Forwarder Addresses
 
-For forwarder contract addresses and chain names, see the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory). Forwarder addresses are used when building consumer contracts that receive workflow reports onchain. Learn more about [Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write/overview).
+For EVM forwarder contract addresses and chain names, see the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory). Forwarder addresses are used when building consumer contracts that receive workflow reports onchain. Learn more about [EVM Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write/overview-ts).
 
 Run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) anytime to list the chains and mock forwarder addresses currently enabled for your tenant.
+
+---
+
+## Solana Networks
+
+Solana support is currently **write-only**. Read and Log Trigger capabilities are in development.
+
+{/* TODO: Add minimum CLI and SDK versions for Solana once versions are confirmed */}
+
+| Network        | Capabilities | Chain Selector         |
+| -------------- | ------------ | ---------------------- |
+| Solana Mainnet | Write        | `124615329519749607`   |
+| Solana Devnet  | Write        | `16423721717087811551` |
+
+In TypeScript, use `SolanaClient.SUPPORTED_CHAIN_SELECTORS['solana-mainnet']` (returns `124615329519749607n`) or pass the selector directly as a `bigint`.
+
+For the Solana Keystone Forwarder program addresses, contact your Chainlink representative or run `cre workflow supported-chains` after enabling Solana for your organization.
+
+Learn more in the [Solana Chain Interactions guide](/cre/guides/workflow/using-solana-client/overview-ts).

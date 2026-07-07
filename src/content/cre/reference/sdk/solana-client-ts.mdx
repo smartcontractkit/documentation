@@ -1,0 +1,368 @@
+---
+section: cre
+title: "SDK Reference: Solana Client"
+date: Last Modified
+sdkLang: "ts"
+pageId: "reference-sdk-solana-client"
+metadata:
+  description: "TypeScript SDK reference for SolanaClient: writeReport, helper functions, chain selectors, and account layout for Solana CRE workflows."
+  datePublished: "2026-07-06"
+  lastModified: "2026-07-06"
+---
+
+import { Aside, CopyText } from "@components"
+
+This page provides a reference for `SolanaClient`, the TypeScript SDK interface for writing data to Solana programs via the Keystone Forwarder. It covers the client class, all exported helper functions, and the chain selector reference for Solana networks.
+
+<Aside type="note" title="Write only — for now">
+  The current release supports onchain **writes** only. Solana Read and Solana Log Trigger capabilities are in
+  development.
+</Aside>
+
+## Client instantiation
+
+Instantiate `SolanaClient` with the `bigint` chain selector for the Solana network you are targeting.
+
+```typescript
+import { SolanaClient } from "@chainlink/cre-sdk"
+
+// Solana Mainnet
+const client = new SolanaClient(124615329519749607n)
+
+// Or use the supported chain selectors constant
+const client = new SolanaClient(SolanaClient.SUPPORTED_CHAIN_SELECTORS["solana-mainnet"])
+```
+
+### Static constants
+
+| Constant                                                   | Type     | Value                   |
+| ---------------------------------------------------------- | -------- | ----------------------- |
+| `SolanaClient.CAPABILITY_ID`                               | `string` | `"solana@1.0.0"`        |
+| `SolanaClient.CAPABILITY_NAME`                             | `string` | `"solana"`              |
+| `SolanaClient.CAPABILITY_VERSION`                          | `string` | `"1.0.0"`               |
+| `SolanaClient.SUPPORTED_CHAIN_SELECTORS["solana-mainnet"]` | `bigint` | `124615329519749607n`   |
+| `SolanaClient.SUPPORTED_CHAIN_SELECTORS["solana-devnet"]`  | `bigint` | `16423721717087811551n` |
+
+---
+
+## Write methods
+
+### `writeReport()`
+
+Submits a cryptographically signed report to a Solana program via the Keystone Forwarder. This is the primary method for writing data onchain from a CRE workflow. In practice, you call this indirectly through generated binding methods (`writeReportFrom<StructName>()`), which handle Borsh encoding and account hashing for you.
+
+**Signature:**
+
+```typescript
+writeReport(
+  runtime: Runtime<unknown>,
+  input: SolanaWriteCreReportRequest | SolanaWriteCreReportRequestJson
+): { result: () => WriteReportReply }
+```
+
+#### `SolanaWriteCreReportRequestJson`
+
+The plain-object form accepted by `writeReport`. Generated binding methods build this internally.
+
+| Field               | Type                | Required | Description                                                     |
+| ------------------- | ------------------- | -------- | --------------------------------------------------------------- |
+| `receiver`          | `string`            | Yes      | Hex-encoded 32-byte program ID of the receiver program          |
+| `remainingAccounts` | `AccountMetaJson[]` | Yes      | Ordered list of accounts required by the forwarder and receiver |
+| `report`            | `Report`            | Yes      | The signed report returned by `runtime.report()`                |
+| `computeConfig`     | `ComputeConfigJson` | No       | Optional compute budget configuration                           |
+
+#### `AccountMetaJson`
+
+| Field        | Type      | Required | Description                                        |
+| ------------ | --------- | -------- | -------------------------------------------------- |
+| `publicKey`  | `string`  | Yes      | Base64-encoded 32-byte public key                  |
+| `isWritable` | `boolean` | No       | Whether the account is writable (default: `false`) |
+
+Use `solanaAccountMetasToJson()` to convert `SolanaAccountMeta[]` to this format.
+
+#### `ComputeConfigJson`
+
+| Field              | Type     | Required | Description                                                   |
+| ------------------ | -------- | -------- | ------------------------------------------------------------- |
+| `computeUnitLimit` | `string` | No       | Maximum compute units for the transaction (default: `290000`) |
+
+#### `WriteReportReply`
+
+| Field          | Type             | Description                                                     |
+| -------------- | ---------------- | --------------------------------------------------------------- |
+| `txStatus`     | `SolanaTxStatus` | `TX_STATUS_SUCCESS`, `TX_STATUS_REVERTED`, or `TX_STATUS_FATAL` |
+| `txHash`       | `Uint8Array`     | 32-byte transaction signature (optional)                        |
+| `errorMessage` | `string`         | Error message if the transaction failed (optional)              |
+
+#### Usage example
+
+The low-level call, shown for reference. In most workflows, use a generated binding instead.
+
+```typescript
+import {
+  SolanaClient,
+  solanaAccountMeta,
+  solanaAccountMetasToJson,
+  calculateAccountsHash,
+  encodeForwarderReport,
+  prepareSolanaReportRequest,
+  bytesToHex,
+  solanaAddressToBytes,
+  type Runtime,
+} from "@chainlink/cre-sdk"
+
+const client = new SolanaClient(124615329519749607n)
+
+const forwarderStateBytes = solanaAddressToBytes("ForwarderStateBase58...")
+const forwarderAuthBytes = solanaAddressToBytes("ForwarderAuthBase58...")
+const reportStateBytes = solanaAddressToBytes("ReportStateBase58...")
+
+const remainingAccounts = [
+  solanaAccountMeta(forwarderStateBytes, false),
+  solanaAccountMeta(forwarderAuthBytes, false),
+  solanaAccountMeta(reportStateBytes, true),
+]
+
+// 1. Borsh-encode your payload (generated bindings do this automatically)
+const payload: Uint8Array = borshEncode({ price: 500000n, timestamp: BigInt(Date.now()) })
+
+// 2. Generate a signed report
+const report = runtime
+  .report(
+    prepareSolanaReportRequest(
+      encodeForwarderReport({
+        accountHash: calculateAccountsHash(remainingAccounts),
+        payload,
+      })
+    )
+  )
+  .result()
+
+// 3. Submit the report
+const result = client
+  .writeReport(runtime, {
+    receiver: bytesToHex(solanaAddressToBytes("ReceiverProgramBase58...")),
+    remainingAccounts: solanaAccountMetasToJson(remainingAccounts),
+    report,
+    computeConfig: { computeUnitLimit: "290000" },
+  })
+  .result()
+```
+
+---
+
+## Helper functions
+
+These functions are exported from `@chainlink/cre-sdk` and used when building Solana write requests, either directly or through generated bindings.
+
+### `solanaAccountMeta()`
+
+Builds an account entry for the `remainingAccounts` list.
+
+**Signature:**
+
+```typescript
+function solanaAccountMeta(publicKey: Uint8Array | string, isWritable?: boolean): SolanaAccountMeta
+```
+
+**Parameters:**
+
+- `publicKey`: The 32-byte public key as raw bytes or a base58-encoded string
+- `isWritable`: Whether the account is writable. Defaults to `false`.
+
+**Usage:**
+
+```typescript
+import { solanaAccountMeta } from "@chainlink/cre-sdk"
+
+// From a base58 string
+const account = solanaAccountMeta("ECL8142j2YQAvs9R9geSsRnkVH2wLEi7soJCRyJ74cfL", true)
+
+// From raw bytes
+const account = solanaAccountMeta(rawBytes, false)
+```
+
+---
+
+### `solanaAddressToBytes()`
+
+Converts a base58-encoded Solana address to its raw 32-byte representation.
+
+**Signature:**
+
+```typescript
+function solanaAddressToBytes(base58Address: string): Uint8Array
+```
+
+**Usage:**
+
+```typescript
+import { solanaAddressToBytes } from "@chainlink/cre-sdk"
+
+const bytes = solanaAddressToBytes("ECL8142j2YQAvs9R9geSsRnkVH2wLEi7soJCRyJ74cfL")
+// → Uint8Array(32)
+```
+
+---
+
+### `solanaAccountMetasToJson()`
+
+Converts `SolanaAccountMeta[]` to the `AccountMetaJson[]` shape expected by `SolanaClient.writeReport()`. Generated bindings call this internally.
+
+**Signature:**
+
+```typescript
+function solanaAccountMetasToJson(accounts: ReadonlyArray<SolanaAccountMeta>): AccountMetaJson[]
+```
+
+---
+
+### `calculateAccountsHash()`
+
+Computes the SHA-256 hash of the concatenated public keys of the given accounts. This hash is embedded in the report payload and verified on-chain by the Keystone Forwarder.
+
+**Signature:**
+
+```typescript
+function calculateAccountsHash(accounts: ReadonlyArray<SolanaAccountInput | null | undefined>): Uint8Array
+```
+
+The hash is computed over the raw 32-byte public keys in the order provided. Account order matters: swapping two accounts produces a different hash.
+
+**Usage:**
+
+```typescript
+import { calculateAccountsHash, solanaAccountMeta } from "@chainlink/cre-sdk"
+
+const accounts = [
+  solanaAccountMeta(forwarderState, false),
+  solanaAccountMeta(forwarderAuthority, false),
+  solanaAccountMeta(reportState, true),
+]
+
+const accountHash = calculateAccountsHash(accounts)
+// → Uint8Array(32) [SHA-256 of concatenated public keys]
+```
+
+---
+
+### `encodeForwarderReport()`
+
+Borsh-encodes a `ForwarderReport` struct for the Keystone Forwarder program. The encoding format is `[32-byte accountHash][u32-LE payload length][payload bytes]`.
+
+**Signature:**
+
+```typescript
+function encodeForwarderReport(report: ForwarderReport): Uint8Array
+```
+
+```typescript
+interface ForwarderReport {
+  accountHash: Uint8Array // must be exactly 32 bytes
+  payload: Uint8Array // your Borsh-encoded struct
+}
+```
+
+**Usage:**
+
+```typescript
+import { encodeForwarderReport, calculateAccountsHash, solanaAccountMeta } from "@chainlink/cre-sdk"
+
+const encoded = encodeForwarderReport({
+  accountHash: calculateAccountsHash(remainingAccounts),
+  payload: borshEncodedPayload,
+})
+```
+
+---
+
+### `prepareSolanaReportRequest()`
+
+Prepares a `ReportRequestJson` for `runtime.report()` using the Solana default encoder (`solana` / `ecdsa` / `keccak256`). Pass the result directly to `runtime.report()`.
+
+**Signature:**
+
+```typescript
+function prepareSolanaReportRequest(payload: Uint8Array, reportEncoder?: ReportEncoder): ReportRequestJson
+```
+
+**Parameters:**
+
+- `payload`: The encoded payload bytes — typically the output of `encodeForwarderReport()`
+- `reportEncoder`: Optional. Defaults to `SOLANA_DEFAULT_REPORT_ENCODER`
+
+**Usage:**
+
+```typescript
+import { prepareSolanaReportRequest, encodeForwarderReport } from "@chainlink/cre-sdk"
+
+const reportRequest = prepareSolanaReportRequest(encodeForwarderReport({ accountHash, payload }))
+
+const report = runtime.report(reportRequest).result()
+```
+
+---
+
+### `SOLANA_DEFAULT_REPORT_ENCODER`
+
+The default encoder configuration for Solana write operations.
+
+```typescript
+const SOLANA_DEFAULT_REPORT_ENCODER = {
+  encoderName: "solana",
+  signingAlgo: "ecdsa",
+  hashingAlgo: "keccak256",
+}
+```
+
+Pass to `prepareSolanaReportRequest()` to override encoding parameters.
+
+---
+
+### `encodeBorshVecU32()`
+
+Encodes a `Vec<Bytes>` in Borsh format: `[u32-LE element count][concatenated element payloads]`. Use this when your receiver program's `on_report` accepts a `Vec<T>` of items.
+
+**Signature:**
+
+```typescript
+function encodeBorshVecU32(elementPayloads: ReadonlyArray<Uint8Array>): Uint8Array
+```
+
+**Usage:**
+
+```typescript
+import { encodeBorshVecU32 } from "@chainlink/cre-sdk"
+
+const vec = encodeBorshVecU32([item1Bytes, item2Bytes, item3Bytes])
+```
+
+Generated binding methods ending in `s` (e.g., `writeReportFromPriceDatas()`) use this internally to encode arrays.
+
+---
+
+## Chain selectors
+
+| Network        | String Name                             | Numeric ID                                    |
+| -------------- | --------------------------------------- | --------------------------------------------- |
+| Solana Mainnet | <CopyText text="solana-mainnet" code /> | <CopyText text="124615329519749607" code />   |
+| Solana Devnet  | <CopyText text="solana-devnet" code />  | <CopyText text="16423721717087811551" code /> |
+
+In your workflow config (e.g., `config.staging.json`), store the numeric ID as a **string** to avoid JSON precision loss, then convert with `BigInt()`:
+
+```json
+{
+  "chainSelector": "124615329519749607"
+}
+```
+
+```typescript
+const client = new SolanaClient(BigInt(config.chainSelector))
+```
+
+## Related resources
+
+- **[Solana Write Capability](/cre/capabilities/solana-write)**: Architecture reference and account layout
+- **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-ts)**: How to generate typed binding classes from your Anchor IDL
+- **[Writing to Solana guide](/cre/guides/workflow/using-solana-client/onchain-write-ts)**: Step-by-step tutorial
+- **[Supported Networks](/cre/supported-networks-ts)**: Chain selector values for all supported networks

@@ -1,0 +1,36 @@
+---
+section: cre
+title: "Solana Chain Interactions"
+sdkLang: "ts"
+pageId: "guides-workflow-solana-overview"
+date: Last Modified
+metadata:
+  description: "Write data to Solana programs from TypeScript CRE workflows using SolanaClient and Borsh-encoded reports."
+  datePublished: "2026-07-06"
+  lastModified: "2026-07-06"
+---
+
+import { Aside } from "@components"
+
+`SolanaClient` is the TypeScript SDK's interface for writing data to Solana programs. It submits cryptographically signed reports through the Keystone Forwarder program, which verifies DON signatures and CPIs into your receiver program.
+
+<Aside type="note" title="Write only — for now">
+  The current release supports **onchain writes** only. Solana Read and Solana Log Trigger capabilities are in active
+  development and will be documented when available.
+</Aside>
+
+## How it works
+
+The TypeScript SDK uses **generated Anchor bindings** for Solana program interactions. You provide your program's Anchor IDL, run the binding generator, and the SDK creates typed classes with `writeReportFrom<StructName>()` methods that handle Borsh encoding, account hashing, and report submission.
+
+Key aspects of the TypeScript approach:
+
+- Anchor IDL-based code generation: no manual Borsh encoding in your workflow code
+- `@solana/addresses` and `@solana/codecs` handle address and codec utilities inside generated bindings
+- `SOLANA_DEFAULT_REPORT_ENCODER` configures the correct signing parameters automatically
+- Account public keys are base64-encoded inside generated bindings; your workflow passes base58 strings via `solanaAccountMeta()`
+
+## Guides
+
+- **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-ts)**: Generate typed TypeScript classes from your Anchor IDL using the CRE CLI
+- **[Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-ts)**: Step-by-step guide for submitting your first Solana write from a CRE workflow

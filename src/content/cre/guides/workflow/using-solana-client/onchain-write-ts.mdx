@@ -1,0 +1,275 @@
+---
+section: cre
+title: "Writing to Solana"
+sdkLang: "ts"
+pageId: "guides-workflow-solana-onchain-write"
+date: Last Modified
+metadata:
+  description: "Write verified CRE workflow results to Solana programs using TypeScript: step-by-step guide with generated bindings and the SolanaClient."
+  datePublished: "2026-07-06"
+  lastModified: "2026-07-06"
+---
+
+import { Aside } from "@components"
+
+This guide walks through writing data from a CRE workflow to a Solana program using the TypeScript SDK. By the end, you will have a working workflow that writes a Borsh-encoded struct to a Solana program via the Keystone Forwarder.
+
+## Prerequisites
+
+- A CRE project initialized with `cre init`. See [Part 1: Project Setup](/cre/getting-started/part-1-project-setup-ts) if you are starting from scratch.
+- An Anchor program deployed to Solana Mainnet or Devnet with an `on_report` instruction. See [What you need: a receiver program](#what-you-need-a-receiver-program) below.
+- The following addresses from your Chainlink representative or via `cre workflow supported-chains`:
+  - Keystone Forwarder program ID
+  - Forwarder state account address
+  - Your program's report state account address
+
+## What you need: a receiver program
+
+Your Solana program must implement an `on_report` instruction that accepts the payload delivered by the Keystone Forwarder. The forwarder CPIs into your program after verifying the DON signatures.
+
+A minimal `on_report` instruction in Anchor:
+
+```rust
+// programs/my-consumer/src/lib.rs
+
+#[program]
+pub mod my_consumer {
+    use super::*;
+
+    pub fn on_report(ctx: Context<OnReport>, _metadata: Vec<u8>, payload: Vec<u8>) -> Result<()> {
+        // Deserialize the Borsh-encoded payload delivered by the forwarder
+        let price_data: PriceData = PriceData::try_from_slice(&payload)?;
+        ctx.accounts.price_store.price = price_data.price;
+        ctx.accounts.price_store.timestamp = price_data.timestamp;
+        Ok(())
+    }
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize)]
+pub struct PriceData {
+    pub price: u64,
+    pub timestamp: i64,
+}
+```
+
+{/* TODO: Link to a reference Anchor consumer program repository or deployed address once available */}
+
+<Aside type="note" title="Forwarder strips leading accounts">
+  The Keystone Forwarder passes only indices 2+ of your `remainingAccounts` list to your program's CPI call. Indices 0
+  (`forwarderState`) and 1 (`forwarderAuthority`) are consumed by the forwarder itself.
+</Aside>
+
+## Step 1: Get your program's Anchor IDL
+
+After building your Anchor program, the IDL is at `target/idl/<program-name>.json`. Copy it to your CRE project:
+
+1. Create the IDL directory.
+
+   ```bash
+   mkdir -p contracts/solana/src/idl
+   ```
+
+1. Copy your IDL file.
+
+   ```bash
+   cp /path/to/anchor-project/target/idl/my_consumer.json contracts/solana/src/idl/
+   ```
+
+## Step 2: Generate TypeScript bindings
+
+1. Generate the bindings from the IDL.
+
+   ```bash
+   cre generate-bindings solana
+   ```
+
+   This creates `contracts/solana/ts/generated/MyConsumer.ts` (and `MyConsumer_mock.ts` and `index.ts`).
+
+1. Verify the generated file exists.
+
+   ```bash
+   ls contracts/solana/ts/generated/
+   # MyConsumer.ts   MyConsumer_mock.ts   index.ts
+   ```
+
+   The generated `MyConsumer` class has a `writeReportFromPriceData(runtime, input, remainingAccounts)` method for the `PriceData` struct.
+
+## Step 3: Configure the workflow
+
+1. Open (or create) `config.staging.json` and add the Solana parameters.
+
+   {/* TODO: Replace placeholder addresses with real Solana Mainnet / Devnet forwarder addresses once published */}
+
+   ```json
+   {
+     "schedule": "0 */1 * * * *",
+     "chainSelector": "124615329519749607",
+     "receiverProgramId": "<YOUR_PROGRAM_ID>",
+     "forwarderProgramId": "<KEYSTONE_FORWARDER_PROGRAM_ID>",
+     "forwarderState": "<FORWARDER_STATE_ACCOUNT>",
+     "forwarderAuthority": "<FORWARDER_AUTHORITY_PDA>",
+     "reportState": "<REPORT_STATE_ACCOUNT>"
+   }
+   ```
+
+   | Field                | Description                                                                                                                                      |
+   | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+   | `chainSelector`      | Chain selector for Solana Mainnet (`"124615329519749607"`) or Devnet (`"16423721717087811551"`). Store as a string to avoid JSON precision loss. |
+   | `receiverProgramId`  | Base58 program ID of your deployed Anchor program                                                                                                |
+   | `forwarderProgramId` | Base58 program ID of the Keystone Forwarder — provided by Chainlink                                                                              |
+   | `forwarderState`     | Base58 address of the forwarder's on-chain state account — provided by Chainlink                                                                 |
+   | `forwarderAuthority` | Base58 address of the PDA derived from `["forwarder", forwarderState, receiverProgram]` under the forwarder program ID                           |
+   | `reportState`        | Base58 address of the report state account required by your program                                                                              |
+
+<Aside type="tip" title="Deriving forwarderAuthority">
+  You can derive the `forwarderAuthority` PDA offline using `@solana/addresses`:
+
+```typescript
+import { getProgramDerivedAddress, address, getAddressEncoder } from "@solana/addresses"
+
+const enc = getAddressEncoder()
+const [auth] = await getProgramDerivedAddress({
+  programAddress: address(forwarderProgramId),
+  seeds: [Buffer.from("forwarder"), enc.encode(address(forwarderState)), enc.encode(address(receiverProgramId))],
+})
+// auth is the base58 forwarderAuthority address
+```
+
+</Aside>
+
+## Step 4: Write the workflow
+
+1. Save the following as `my-workflow/main.ts`.
+
+   ```typescript
+   // my-workflow/main.ts
+   import { SolanaClient, handler, CronCapability, Runner, type Runtime, solanaAccountMeta } from "@chainlink/cre-sdk"
+   import { MyConsumer } from "../contracts/solana/ts/generated/MyConsumer"
+
+   type Config = {
+     schedule: string
+     chainSelector: string
+     receiverProgramId: string
+     forwarderState: string
+     forwarderAuthority: string
+     reportState: string
+   }
+
+   const onCronTrigger = (runtime: Runtime<Config>) => {
+     const config = runtime.config
+
+     const client = new SolanaClient(BigInt(config.chainSelector))
+     const myConsumer = new MyConsumer(client, config.receiverProgramId)
+
+     // Build remaining accounts in the required order.
+     // Index 0: forwarderState  — read-only, consumed by the forwarder
+     // Index 1: forwarderAuthority — read-only PDA, consumed by the forwarder
+     // Index 2+: accounts your on_report instruction requires
+     const remainingAccounts = [
+       solanaAccountMeta(config.forwarderState, false),
+       solanaAccountMeta(config.forwarderAuthority, false),
+       solanaAccountMeta(config.reportState, true),
+     ]
+
+     runtime.log("Submitting price update to Solana")
+
+     const result = myConsumer.writeReportFromPriceData(
+       runtime,
+       {
+         price: 500000n,
+         timestamp: BigInt(Math.floor(Date.now() / 1000)),
+       },
+       remainingAccounts
+     )
+
+     runtime.log("Write succeeded", { txSignature: result.txHash })
+     return result
+   }
+
+   export const initWorkflow = (config: Config) => {
+     const cron = new CronCapability()
+     return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+   }
+
+   export async function main() {
+     const runner = await Runner.newRunner<Config>()
+     await runner.run(initWorkflow)
+   }
+   ```
+
+## Step 5: Run the simulation
+
+{/* TODO: Update when Solana devnet simulation target is fully supported — currently --target staging-solana-devnet throws "no RPC URLs found" */}
+
+<Aside type="note" title="Simulation and broadcast">
+  `cre workflow simulate` performs a **dry run** by default: it validates and encodes the payload but does not submit a
+  transaction. Add `--broadcast` to send a real transaction.
+
+Full simulation with `--target` pointing to a Solana network requires the correct RPC URLs in your `project.yaml`.
+
+</Aside>
+
+1. Add a Solana RPC endpoint to your `project.yaml`.
+
+   ```yaml
+   local-simulation:
+     rpcs:
+       - chain-name: solana-mainnet
+         url: https://your-solana-rpc-url
+   ```
+
+1. Run the simulation.
+
+   ```bash
+   cre workflow simulate my-workflow --target staging-settings
+   ```
+
+   Expected output (dry run):
+
+   ```
+   Workflow compiled
+   [SIMULATION] Simulator Initialized
+   [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+   [USER LOG] Submitting price update to Solana
+   [USER LOG] Write succeeded txSignature=<empty for dry run>
+
+   Workflow Simulation Result:
+   {}
+
+   [SIMULATION] Execution finished signal received
+   ```
+
+1. To broadcast a real transaction, add `--broadcast`.
+
+   ```bash
+   cre workflow simulate my-workflow --target staging-settings --broadcast
+   ```
+
+   A successful broadcast logs the transaction signature. You can verify it on [Solana Explorer](https://explorer.solana.com/) or [Solscan](https://solscan.io/).
+
+## Step 6: Deploy the workflow
+
+Once simulation succeeds, deploy to the CRE platform:
+
+```bash
+cre workflow deploy my-workflow --target staging-settings
+```
+
+See [Deploying Workflows](/cre/guides/operations/deploying-workflows) for the full deployment process.
+
+## What happens on-chain
+
+When the workflow runs in production:
+
+1. The DON nodes each execute your workflow and reach consensus on the `PriceData` payload.
+1. A DON node calls the Keystone Forwarder program with the signed report and account list.
+1. The forwarder verifies all DON signatures.
+1. The forwarder CPIs into your program's `on_report` instruction with the decoded payload and receiver accounts.
+
+The transaction on Solana Explorer will show the forwarder program as the initial callee, with your program appearing as a CPI target.
+
+## Next steps
+
+- **[Solana Client SDK Reference](/cre/reference/sdk/solana-client-ts)**: Full API reference for `SolanaClient` and all helper functions
+- **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-ts)**: Details on the binding generator and generated class structure
+- **[Solana Write Capability](/cre/capabilities/solana-write)**: Architecture and account layout reference

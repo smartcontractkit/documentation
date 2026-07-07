@@ -1,0 +1,36 @@
+---
+section: cre
+title: "Solana Chain Interactions"
+sdkLang: "go"
+pageId: "guides-workflow-solana-overview"
+date: Last Modified
+metadata:
+  description: "Write data to Solana programs from Go CRE workflows using solana.Client and Borsh-encoded reports."
+  datePublished: "2026-07-06"
+  lastModified: "2026-07-06"
+---
+
+import { Aside } from "@components"
+
+`solana.Client` is the Go SDK's interface for writing data to Solana programs. It submits cryptographically signed reports through the Keystone Forwarder program, which verifies DON signatures and CPIs into your receiver program.
+
+<Aside type="note" title="Write only — for now">
+  The current release supports **onchain writes** only. Solana Read and Solana Log Trigger capabilities are in active
+  development and will be documented when available.
+</Aside>
+
+## How it works
+
+The Go SDK uses **generated Anchor bindings** for Solana program interactions. You provide your program's Anchor IDL, run the binding generator, and the SDK creates typed Go structs with `WriteReportFrom<StructName>()` methods that handle Borsh encoding, account hashing, and report submission.
+
+Key aspects of the Go approach:
+
+- Anchor IDL-based code generation via `cre generate-bindings solana`
+- `github.com/gagliardetto/binary` handles Borsh serialization inside generated bindings
+- `bindings.CalculateAccountsHash` and `bindings.ForwarderReport` are the core primitives
+- Account public keys are 32-byte slices; your workflow populates `[]*solana.AccountMeta` directly
+
+## Guides
+
+- **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-go)**: Generate typed Go structs from your Anchor IDL using the CRE CLI
+- **[Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-go)**: Step-by-step guide for submitting your first Solana write from a CRE workflow

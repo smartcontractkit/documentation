@@ -1,0 +1,212 @@
+---
+section: cre
+title: "Generating Solana Bindings"
+sdkLang: "ts"
+pageId: "guides-workflow-solana-generating-bindings"
+date: Last Modified
+metadata:
+  description: "Generate typed TypeScript classes from Anchor IDL files to write data to Solana programs from CRE workflows."
+  datePublished: "2026-07-06"
+  lastModified: "2026-07-06"
+---
+
+import { Aside } from "@components"
+
+To interact with a Solana program from your TypeScript workflow, you generate **bindings** from the program's [Anchor IDL](https://www.anchor-lang.com/docs/references/idl). Bindings are typed TypeScript classes that handle Borsh encoding, account hashing, and report submission automatically.
+
+For each Anchor instruction that accepts a report, the generator creates a `writeReportFrom<StructName>()` method on the binding class. Your workflow calls this method with the struct data and the required accounts; the generated code handles everything else.
+
+{/* TODO: Confirm minimum CLI version once Solana binding generation is cut in a release */}
+
+<Aside type="note" title="CLI version requirement">
+  Solana binding generation requires a minimum CLI version. Run `cre update` to get the latest CLI.
+</Aside>
+
+## The generation process
+
+### Step 1: Add your Anchor IDL
+
+Place your program's Anchor IDL file in `contracts/solana/src/idl/`. The IDL is a JSON file that Anchor generates when you build your program:
+
+```bash
+# In your Anchor project
+anchor build
+# IDL is written to: target/idl/<program-name>.json
+```
+
+Copy or symlink it into your CRE project:
+
+```bash
+mkdir -p contracts/solana/src/idl
+cp /path/to/your-anchor-project/target/idl/my_program.json contracts/solana/src/idl/
+```
+
+### Step 2: Generate the bindings
+
+From your **project root**, run:
+
+```bash
+cre generate-bindings solana
+```
+
+This reads all `.json` IDL files in `contracts/solana/src/idl/` and generates TypeScript files in `contracts/solana/ts/generated/`. For each IDL, three files are generated:
+
+- `<ProgramName>.ts` — The typed binding class with `writeReportFrom<StructName>()` methods
+- `<ProgramName>_mock.ts` — A mock for testing without a live network
+- `index.ts` — A barrel re-exporting everything
+
+### Step 3: Import the generated class
+
+```typescript
+import { MyProgram } from "../contracts/solana/ts/generated/MyProgram"
+```
+
+## What the generator creates
+
+For each Anchor type that appears in an `on_report` instruction, the generator creates:
+
+- A **TypeScript type** matching the Anchor struct fields
+- A **codec** using `@solana/codecs` for Borsh encoding
+- A **`writeReportFrom<StructName>(runtime, input, remainingAccounts, computeConfig?)`** method on the binding class that:
+  1. Borsh-encodes `input` using the generated codec
+  2. Calculates the account hash via `calculateAccountsHash(remainingAccounts)`
+  3. Encodes the forwarder report via `encodeForwarderReport({ accountHash, payload })`
+  4. Calls `runtime.report()` with `prepareSolanaReportRequest(encodedForwarderReport)` to generate the signed report
+  5. Calls `this.client.writeReport()` to submit the report on-chain
+
+The binding class constructor takes a `SolanaClient` and an optional program ID override:
+
+```typescript
+// Program ID defaults to the address baked into the IDL
+const myProgram = new MyProgram(client)
+
+// Or override with a different address (useful for testing)
+const myProgram = new MyProgram(client, "ECL8142j2YQAvs9R9geSsRnkVH2wLEi7soJCRyJ74cfL")
+```
+
+## Example: Writing a price update
+
+Given an Anchor program with a `PriceData` struct and an `on_report` instruction that accepts it, the generated binding exposes:
+
+```typescript
+// contracts/solana/ts/generated/PriceConsumer.ts (generated — do not edit)
+
+export type PriceData = {
+  price: bigint
+  timestamp: bigint
+}
+
+export class PriceConsumer {
+  constructor(private readonly client: SolanaClient, programId?: string | Uint8Array) { ... }
+
+  writeReportFromPriceData(
+    runtime: Runtime<unknown>,
+    input: PriceData,
+    remainingAccounts: SolanaAccountMeta[],
+    computeConfig?: SolanaComputeConfig,
+  ) { ... }
+}
+```
+
+Your workflow code calls the generated method directly:
+
+```typescript
+// my-workflow/main.ts
+
+import {
+  SolanaClient,
+  handler,
+  CronCapability,
+  Runner,
+  type Runtime,
+  solanaAccountMeta,
+  solanaAddressToBytes,
+} from "@chainlink/cre-sdk"
+import { PriceConsumer } from "../contracts/solana/ts/generated/PriceConsumer"
+import { PublicKey } from "@solana/web3.js"
+
+type Config = {
+  schedule: string
+  chainSelector: string
+  receiverProgramId: string
+  forwarderState: string
+  forwarderAuthority: string
+  reportState: string
+}
+
+const onCronTrigger = (runtime: Runtime<Config>) => {
+  const config = runtime.config
+
+  const client = new SolanaClient(BigInt(config.chainSelector))
+  const priceConsumer = new PriceConsumer(client, config.receiverProgramId)
+
+  // Build the remaining accounts list in the required order:
+  //   Index 0: forwarderState (read-only)
+  //   Index 1: forwarderAuthority (read-only)
+  //   Index 2+: receiver-specific accounts
+  const remainingAccounts = [
+    solanaAccountMeta(config.forwarderState, false),
+    solanaAccountMeta(config.forwarderAuthority, false),
+    solanaAccountMeta(config.reportState, true),
+  ]
+
+  return priceConsumer.writeReportFromPriceData(
+    runtime,
+    { price: 500000n, timestamp: BigInt(Math.floor(Date.now() / 1000)) },
+    remainingAccounts
+  )
+}
+
+export const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+See the full step-by-step walkthrough in the [Writing to Solana guide](/cre/guides/workflow/using-solana-client/onchain-write-ts).
+
+## `remainingAccounts` layout
+
+Every Solana write requires a `remainingAccounts` array. The Keystone Forwarder program expects:
+
+| Index | Account              | Writable                | How to obtain                                                                                    |
+| ----- | -------------------- | ----------------------- | ------------------------------------------------------------------------------------------------ |
+| 0     | `forwarderState`     | No                      | Provided by Chainlink for the forwarder deployment                                               |
+| 1     | `forwarderAuthority` | No                      | PDA derived from `["forwarder", forwarderState, receiverProgram]` under the forwarder program ID |
+| 2+    | Receiver accounts    | Depends on your program | Defined by your Anchor program's `on_report` instruction                                         |
+
+The `forwarderAuthority` PDA derivation in TypeScript using `@solana/addresses`:
+
+```typescript
+import { getProgramDerivedAddress, getAddressEncoder } from "@solana/addresses"
+
+const [forwarderAuthority] = await getProgramDerivedAddress({
+  programAddress: config.forwarderProgramId,
+  seeds: [
+    Buffer.from("forwarder"),
+    getAddressEncoder().encode(config.forwarderState),
+    getAddressEncoder().encode(config.receiverProgramId),
+  ],
+})
+```
+
+<Aside type="tip" title="PDA derivation">
+  Derive the `forwarderAuthority` PDA once at workflow startup using the values from your config. The seeds are:
+  `["forwarder", forwarderState bytes, receiverProgram bytes]` under the Keystone Forwarder program ID.
+</Aside>
+
+## Best practices
+
+- **Regenerate when needed**: Re-run `cre generate-bindings solana` whenever your Anchor IDL changes. Do not edit generated files.
+- **Store addresses in config**: Put program IDs, forwarder addresses, and account addresses in your `config.staging.json` / `config.production.json` rather than hard-coding them.
+- **`chainSelector` as string in config**: Store the chain selector as a stringified number in your JSON config to avoid precision loss, then convert with `BigInt()` in workflow code.
+
+## Where to go next
+
+- [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-ts) — Step-by-step tutorial
+- [Solana Client SDK Reference](/cre/reference/sdk/solana-client-ts) — Full API reference for `SolanaClient` and helper functions

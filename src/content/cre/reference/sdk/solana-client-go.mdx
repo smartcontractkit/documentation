@@ -1,0 +1,254 @@
+---
+section: cre
+title: "SDK Reference: Solana Client"
+date: Last Modified
+sdkLang: "go"
+pageId: "reference-sdk-solana-client"
+metadata:
+  description: "Go SDK reference for solana.Client: WriteReport, bindings helpers, chain selectors, and account layout for Solana CRE workflows."
+  datePublished: "2026-07-06"
+  lastModified: "2026-07-06"
+---
+
+import { Aside, CopyText } from "@components"
+
+This page provides a reference for `solana.Client`, the Go SDK interface for writing data to Solana programs via the Keystone Forwarder. It covers the client type, the `bindings` package helpers, and the chain selector reference for Solana networks.
+
+<Aside type="note" title="Write only — for now">
+  The current release supports onchain **writes** only. Solana Read and Solana Log Trigger capabilities are in
+  development.
+</Aside>
+
+## Import paths
+
+```go
+import (
+    solana "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana"
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana/bindings"
+)
+```
+
+## Client instantiation
+
+```go
+import solana "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana"
+
+// Solana Mainnet using the package constant
+client := &solana.Client{ChainSelector: solana.SolanaMainnet}
+
+// Solana Devnet
+client := &solana.Client{ChainSelector: solana.SolanaDevnet}
+
+// Or use ChainSelectorFromName
+selector, err := solana.ChainSelectorFromName("solana-mainnet")
+client := &solana.Client{ChainSelector: selector}
+```
+
+### Chain selector constants
+
+| Constant               | Value                  |
+| ---------------------- | ---------------------- |
+| `solana.SolanaMainnet` | `124615329519749607`   |
+| `solana.SolanaDevnet`  | `16423721717087811551` |
+
+### `ChainSelectorFromName()`
+
+```go
+func ChainSelectorFromName(name string) (uint64, error)
+```
+
+Accepts `"solana-mainnet"` or `"solana-devnet"`. Returns an error for unknown names.
+
+---
+
+## Write methods
+
+### `Client.WriteReport()`
+
+Submits a cryptographically signed report to a Solana program via the Keystone Forwarder. In most workflows, you call generated binding methods (`WriteReportFrom<StructName>()`) rather than this method directly.
+
+**Signature:**
+
+```go
+func (c *Client) WriteReport(runtime cre.Runtime, input *WriteCreReportRequest) cre.Promise[*WriteReportReply]
+```
+
+#### `WriteCreReportRequest`
+
+| Field               | Type             | Description                                             |
+| ------------------- | ---------------- | ------------------------------------------------------- |
+| `RemainingAccounts` | `[]*AccountMeta` | Ordered accounts required by the forwarder and receiver |
+| `Receiver`          | `[]byte`         | 32-byte raw program ID of the receiver program          |
+| `ComputeConfig`     | `*ComputeConfig` | Optional compute budget configuration                   |
+| `Report`            | `*cre.Report`    | The signed report returned by `runtime.Report()`        |
+
+#### `AccountMeta`
+
+| Field        | Type     | Description                     |
+| ------------ | -------- | ------------------------------- |
+| `PublicKey`  | `[]byte` | 32-byte raw public key          |
+| `IsWritable` | `bool`   | Whether the account is writable |
+
+#### `ComputeConfig`
+
+| Field              | Type     | Description                                                   |
+| ------------------ | -------- | ------------------------------------------------------------- |
+| `ComputeUnitLimit` | `uint32` | Maximum compute units for the transaction (default: `290000`) |
+
+#### `WriteReportReply`
+
+| Field          | Type       | Description                                                     |
+| -------------- | ---------- | --------------------------------------------------------------- |
+| `TxStatus`     | `TxStatus` | `TX_STATUS_SUCCESS`, `TX_STATUS_REVERTED`, or `TX_STATUS_FATAL` |
+| `TxHash`       | `[]byte`   | 64-byte transaction signature (optional)                        |
+| `ErrorMessage` | `string`   | Error message if the transaction failed (optional)              |
+
+#### Usage example
+
+The low-level call, shown for reference. In most workflows, use a generated binding instead.
+
+```go
+import (
+    "encoding/base58"
+    "time"
+
+    "github.com/smartcontractkit/cre-sdk-go/cre"
+    solana "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana"
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana/bindings"
+    binary "github.com/gagliardetto/binary"
+)
+
+client := &solana.Client{ChainSelector: solana.SolanaMainnet}
+
+forwarderStateBytes, _ := base58.Decode("ForwarderStateBase58...")
+forwarderAuthBytes, _ := base58.Decode("ForwarderAuthBase58...")
+reportStateBytes, _ := base58.Decode("ReportStateBase58...")
+receiverBytes, _ := base58.Decode("ReceiverProgramBase58...")
+
+accounts := []*solana.AccountMeta{
+    {PublicKey: forwarderStateBytes, IsWritable: false},
+    {PublicKey: forwarderAuthBytes, IsWritable: false},
+    {PublicKey: reportStateBytes, IsWritable: true},
+}
+
+// 1. Borsh-encode your payload (generated bindings do this automatically)
+type PriceData struct {
+    Price     uint64
+    Timestamp int64
+}
+var buf bytes.Buffer
+enc := binary.NewBorshEncoder(&buf)
+enc.Encode(PriceData{Price: 500000, Timestamp: time.Now().Unix()})
+payload := buf.Bytes()
+
+// 2. Compute the account hash and build the forwarder report
+accountHash := bindings.CalculateAccountsHash(accounts)
+forwarderReport := bindings.ForwarderReport{AccountHash: accountHash, Payload: payload}
+encoded, err := forwarderReport.Marshal()
+
+// 3. Generate a signed report
+report := runtime.Report(cre.ReportRequest{
+    EncodedPayload: base64.StdEncoding.EncodeToString(encoded),
+    EncoderName:    "solana",
+    SigningAlgo:    "ecdsa",
+    HashingAlgo:    "keccak256",
+}).Result()
+
+// 4. Submit the report
+result := client.WriteReport(runtime, &solana.WriteCreReportRequest{
+    RemainingAccounts: accounts,
+    Receiver:          receiverBytes,
+    Report:            report,
+}).Result()
+```
+
+---
+
+## `bindings` package
+
+The `bindings` package (`github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana/bindings`) provides the serialization primitives used by generated binding code. You can also use them directly when writing low-level Solana write logic.
+
+### `ForwarderReport`
+
+Represents the Borsh-serialized report format expected by the Keystone Forwarder program.
+
+```go
+type ForwarderReport struct {
+    AccountHash [32]byte
+    Payload     []byte
+}
+```
+
+#### `ForwarderReport.Marshal()`
+
+Serializes the report into Borsh bytes: `[32-byte accountHash][u32-LE payload length][payload]`.
+
+```go
+func (obj ForwarderReport) Marshal() ([]byte, error)
+```
+
+**Usage:**
+
+```go
+report := bindings.ForwarderReport{
+    AccountHash: bindings.CalculateAccountsHash(accounts),
+    Payload:     borshEncodedPayload,
+}
+
+encoded, err := report.Marshal()
+```
+
+---
+
+### `CalculateAccountsHash()`
+
+Computes the SHA-256 hash of the concatenated 32-byte public keys of the given accounts. This hash is embedded in the report payload and verified on-chain by the Keystone Forwarder.
+
+```go
+func CalculateAccountsHash(accs []*solana.AccountMeta) [32]byte
+```
+
+`nil` entries in the slice are skipped. Account order matters: swapping two accounts produces a different hash.
+
+**Usage:**
+
+```go
+accounts := []*solana.AccountMeta{
+    {PublicKey: forwarderStateBytes},
+    {PublicKey: forwarderAuthBytes},
+    {PublicKey: reportStateBytes},
+}
+
+hash := bindings.CalculateAccountsHash(accounts)
+// → [32]byte
+```
+
+---
+
+## Chain selectors
+
+| Network        | String Name                             | Numeric ID                                    |
+| -------------- | --------------------------------------- | --------------------------------------------- |
+| Solana Mainnet | <CopyText text="solana-mainnet" code /> | <CopyText text="124615329519749607" code />   |
+| Solana Devnet  | <CopyText text="solana-devnet" code />  | <CopyText text="16423721717087811551" code /> |
+
+In your workflow config (e.g., `config.staging.json`), store the numeric ID as a **string** to avoid precision loss, and use the `json:",string"` struct tag:
+
+```json
+{
+  "chainSelector": "124615329519749607"
+}
+```
+
+```go
+type Config struct {
+    ChainSelector uint64 `json:"chainSelector,string"`
+}
+```
+
+## Related resources
+
+- **[Solana Write Capability](/cre/capabilities/solana-write)**: Architecture reference and account layout
+- **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-go)**: How to generate typed Go structs from your Anchor IDL
+- **[Writing to Solana guide](/cre/guides/workflow/using-solana-client/onchain-write-go)**: Step-by-step tutorial
+- **[Supported Networks](/cre/supported-networks-go)**: Chain selector values for all supported networks
