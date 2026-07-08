@@ -13,6 +13,8 @@ import { getSchemaVersion, isApacEquitiesStreamFeed, normalizeCategoryKey } from
  */
 export const CONTACT_EMAIL_PROXY_ADDRESSES = new Set<string>([
   "0x0101166b3b000332000000000000000000000000000000000000000000000000",
+  "0x7cf132bd0456af4ecfceaae684fd7967df931141",
+  "0xbb65fa58bdb7d33e4a3d1a40a7a9bd99e746367b",
 ])
 
 /**
