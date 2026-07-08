@@ -7,7 +7,7 @@ pageId: "reference-sdk-http-client"
 metadata:
   description: "Reference for TypeScript HTTP Client: complete API for GET/POST requests, headers, authentication, and consensus aggregation."
   datePublished: "2025-11-04"
-  lastModified: "2026-01-26"
+  lastModified: "2026-07-06"
 ---
 
 import { Aside } from "@components"
@@ -403,14 +403,15 @@ Defines the parameters for an outgoing HTTP request.
   HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
 </Aside>
 
-| Field           | Type                                              | Description                                                                                                             |
-| --------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `url`           | `string`                                          | The URL of the API endpoint.                                                                                            |
-| `method`        | `string` (optional)                               | The HTTP method (e.g., `"GET"`, `"POST"`). Defaults to `"GET"`.                                                         |
-| `headers`       | `{ [key: string]: string }` (optional)            | Optional HTTP headers.                                                                                                  |
-| `body`          | `string` (base64-encoded) (optional)              | Optional raw request body (must be base64-encoded).                                                                     |
-| `timeout`       | `string` (optional)                               | Request timeout as a duration string (e.g., `"5s"`, `"8s"`). See [Request Timeout](#request-timeout) below for details. |
-| `cacheSettings` | `CacheSettings` \| `CacheSettingsJson` (optional) | Optional caching behavior for the request.                                                                              |
+| Field           | Type                                              | Description                                                                                                                                 |
+| --------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `url`           | `string`                                          | The URL of the API endpoint.                                                                                                                |
+| `method`        | `string` (optional)                               | The HTTP method (e.g., `"GET"`, `"POST"`). Defaults to `"GET"`.                                                                             |
+| `multiHeaders`  | `{ [key: string]: HeaderValuesJson }` (optional)  | Optional HTTP headers (recommended). Supports multiple values per header name. See [`HeaderValues`](#headervalues--headervaluesjson) below. |
+| `headers`       | `{ [key: string]: string }` (optional)            | **Deprecated.** Use `multiHeaders` instead. Single-value headers only.                                                                      |
+| `body`          | `string` (base64-encoded) (optional)              | Optional raw request body (must be base64-encoded).                                                                                         |
+| `timeout`       | `string` (optional)                               | Request timeout as a duration string (e.g., `"5s"`, `"8s"`). See [Request Timeout](#request-timeout) below for details.                     |
+| `cacheSettings` | `CacheSettings` \| `CacheSettingsJson` (optional) | Optional caching behavior for the request.                                                                                                  |
 
 ### Request Timeout
 
@@ -515,15 +516,39 @@ const response = sendRequester
 
 For practical examples, see the [POST request guide](/cre/guides/workflow/using-http-client/post-request).
 
+### `HeaderValues` / `HeaderValuesJson`
+
+Holds one or more values for a single HTTP header name. Used as the value type in `multiHeaders` on both requests and responses.
+
+| Field    | Type                     | Description                                    |
+| -------- | ------------------------ | ---------------------------------------------- |
+| `values` | `string[]` / `string[]?` | One or more string values for the header name. |
+
+**Example:**
+
+```typescript
+const response = sendRequester
+  .sendRequest({
+    url: config.apiUrl,
+    method: "GET",
+    multiHeaders: {
+      Accept: { values: ["application/json"] },
+      "X-Custom-Key": { values: ["value1", "value2"] },
+    },
+  })
+  .result()
+```
+
 ### `Response`
 
 The result of the HTTP call from a single node (before consensus aggregation).
 
-| Field        | Type                              | Description                |
-| ------------ | --------------------------------- | -------------------------- |
-| `statusCode` | `number`                          | The HTTP status code.      |
-| `headers`    | `{ [key: string]: string }`       | The HTTP response headers. |
-| `body`       | `Uint8Array` \| `string` (base64) | The raw response body.     |
+| Field          | Type                                  | Description                                                                |
+| -------------- | ------------------------------------- | -------------------------------------------------------------------------- |
+| `statusCode`   | `number`                              | The HTTP status code.                                                      |
+| `multiHeaders` | `{ [key: string]: HeaderValuesJson }` | The HTTP response headers, with multiple values per name where applicable. |
+| `headers`      | `{ [key: string]: string }`           | **Deprecated.** Use `multiHeaders` instead.                                |
+| `body`         | `Uint8Array` \| `string` (base64)     | The raw response body.                                                     |
 
 **Example parsing response body:**
 
