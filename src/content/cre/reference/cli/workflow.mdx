@@ -5,7 +5,7 @@ title: "Workflow Commands"
 metadata:
   description: "Manage workflows with CLI: complete command reference for simulating, deploying, activating, pausing, and deleting workflows."
   datePublished: "2025-11-04"
-  lastModified: "2026-06-11"
+  lastModified: "2026-07-09"
 ---
 
 import { Aside } from "@components"
@@ -481,7 +481,7 @@ cre workflow list [flags]
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Shows metadata for the workflow configured in `workflow.yaml`. The command reads the workflow name for the selected `--target`, searches the CRE platform for matching workflow metadata, and filters results to the workflow's configured `deployment-registry` by default.
+Shows deployment health and the most recent execution for the workflow configured in `workflow.yaml`. The command reads the workflow name for the selected `--target`, resolves the workflow on the CRE platform (scoped to the configured `deployment-registry` by default), and prints deployment health plus the latest execution.
 
 **Usage:**
 
@@ -495,25 +495,33 @@ cre workflow get <workflow-folder-path> [flags]
 
 **Flags:**
 
-| <div style={{ width: "170px" }}>Flag</div> | Description                                                              |
-| ------------------------------------------ | ------------------------------------------------------------------------ |
-| `--all-registries`                         | Do not filter results by the workflow's configured `deployment-registry` |
+| <div style={{ width: "170px" }}>Flag</div> | Description                                                                                |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| `--all-registries`                         | Resolve the workflow across every registry instead of the configured `deployment-registry` |
+| `--output <string>`                        | Output format. Use `json` to print JSON to stdout for scripting                            |
+| `--json`                                   | Shorthand for `--output=json`                                                              |
 
 **Examples:**
 
-- Show metadata for the workflow configured for a target
+- Show deployment health and recent execution for the workflow configured for a target
 
   ```bash
   cre workflow get ./my-workflow --target staging-settings
   ```
 
-- Search across all registries in your organization
+- Resolve across all registries in your organization
 
   ```bash
   cre workflow get ./my-workflow --target staging-settings --all-registries
   ```
 
-The command prints the same human-readable workflow metadata fields as [`cre workflow list`](#cre-workflow-list): workflow name, workflow ID, owner address, status, registry, and registry address when available.
+- Export as JSON
+
+  ```bash
+  cre workflow get ./my-workflow --target staging-settings --output json
+  ```
+
+For a full execution history, use [`cre execution list`](/cre/reference/cli/execution#cre-execution-list).
 
 ---
 

@@ -514,9 +514,24 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-07-02
+Last Updated: 2026-07-09
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.24.0 - July 9, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.24.0" target="_blank">CRE CLI version 1.24.0</a> is now available.**
+
+- **Execution observability from the CLI**: New [`cre execution`](/cre/reference/cli/execution) commands let you inspect deployed workflow runs without opening the UI — `list` for recent executions (filter by status and time range), `status` for a single run, `events` for the capability timeline, and `logs` for emitted log lines. All support `--output json` for scripting.
+- **Enhanced `cre workflow get`**: [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get) now resolves the workflow from your `workflow.yaml` settings and shows deployment health plus the most recent execution, not just registry metadata.
+- **Solana Write capability**: Workflows can now submit DON-consensus signed reports to Solana programs on Mainnet and Devnet via the Keystone Forwarder — the same secure write model as EVM. The CLI adds the tooling to build and test these workflows: `CRE_SOLANA_PRIVATE_KEY` for signing, `cre generate-bindings solana` for Go and TypeScript bindings from Anchor IDLs, and local write simulation with `cre workflow simulate` (dry run or `--broadcast`).
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.23.0...v1.24.0)
 
 ## CLI v1.23.0 - July 2, 2026
 
@@ -8443,7 +8458,7 @@ See the [repository README](https://github.com/smartcontractkit/cre-gcp-predicti
 
 # CLI Reference
 Source: https://docs.chain.link/cre/reference/cli
-Last Updated: 2026-05-14
+Last Updated: 2026-07-09
 
 export const CRE_CLI_VERSION = VERSIONS["cre-cli"].LATEST
 
@@ -8469,6 +8484,7 @@ These flags can be used with any `cre` command.
 | `-v, --verbose`          | Enables verbose logging to print `DEBUG` level logs                                                                                                                                                                     |
 | `--non-interactive`      | Fails instead of prompting; provide all required inputs with flags or environment variables. Use this for CI/CD, scripts, and other headless environments                                                               |
 | `--allow-unknown-chains` | Skips chain-name validation against the chain-selectors registry for `cre workflow simulate` and `cre workflow deploy`. Use for experimental or unlisted chains. Chain-selector and RPC availability are still enforced |
+| `--allow-insecure-rpc`   | Allows non-localhost HTTP RPC URLs. By default, the CLI blocks cleartext RPC endpoints to reduce accidental secret exposure over insecure connections                                                                   |
 
 
 <Aside type="note" title="Non-interactive authentication">
@@ -8494,7 +8510,7 @@ Manage your authentication and account credentials.
 Initialize projects and generate contract bindings (Go only).
 
 - [**`cre init`**](/cre/reference/cli/project-setup) — Initialize a new CRE project (interactive wizard or **`--non-interactive`** with flags for CI/CD)
-- **`cre generate-bindings`** (Go only) — Generate Go bindings from contract ABI files for type-safe contract interactions
+- **`cre generate-bindings`** — Generate contract bindings from ABI or Anchor IDL files (Go and TypeScript for Solana)
 
 [View project setup commands →](/cre/reference/cli/project-setup)
 
@@ -8525,11 +8541,24 @@ Manage workflows throughout their entire lifecycle.
 - **`cre workflow pause`** — Pause a workflow on the Workflow Registry contract
 - **`cre workflow delete`** — Delete all versions of a workflow from the Workflow Registry
 - **`cre workflow list`** — List workflows deployed for your organization; use `--output json` for scripts
-- **`cre workflow get`** — Show metadata for the workflow configured in `workflow.yaml`
+- **`cre workflow get`** — Show deployment health and the most recent execution for the workflow configured in `workflow.yaml`
 - **`cre workflow supported-chains`** — List chain names the CLI supports for local simulation; use `--output json` for scripts
 - **`cre workflow custom-build`** — Convert a workflow to use a custom self-compiled WASM build
 
 [View workflow commands →](/cre/reference/cli/workflow)
+
+***
+
+### Execution Commands
+
+Inspect deployed workflow runs from the terminal.
+
+- **`cre execution list`** — List recent executions; filter by workflow, status, and time range
+- **`cre execution status`** — Show detailed status for a single execution
+- **`cre execution events`** — Show the capability event timeline for an execution
+- **`cre execution logs`** — Show log lines emitted during an execution
+
+[View execution commands →](/cre/reference/cli/execution)
 
 ***
 
@@ -8953,7 +8982,7 @@ When you run this command, the CLI will:
 
 # Workflow Commands
 Source: https://docs.chain.link/cre/reference/cli/workflow
-Last Updated: 2026-06-11
+Last Updated: 2026-07-09
 
 The `cre workflow` commands manage workflows throughout their entire lifecycle, from local testing to deployment and ongoing management.
 
@@ -9425,7 +9454,7 @@ cre workflow list [flags]
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Shows metadata for the workflow configured in `workflow.yaml`. The command reads the workflow name for the selected `--target`, searches the CRE platform for matching workflow metadata, and filters results to the workflow's configured `deployment-registry` by default.
+Shows deployment health and the most recent execution for the workflow configured in `workflow.yaml`. The command reads the workflow name for the selected `--target`, resolves the workflow on the CRE platform (scoped to the configured `deployment-registry` by default), and prints deployment health plus the latest execution.
 
 **Usage:**
 
@@ -9439,25 +9468,33 @@ cre workflow get <workflow-folder-path> [flags]
 
 **Flags:**
 
-| Flag               | Description                                                              |
-| ------------------ | ------------------------------------------------------------------------ |
-| `--all-registries` | Do not filter results by the workflow's configured `deployment-registry` |
+| Flag                | Description                                                                                |
+| ------------------- | ------------------------------------------------------------------------------------------ |
+| `--all-registries`  | Resolve the workflow across every registry instead of the configured `deployment-registry` |
+| `--output <string>` | Output format. Use `json` to print JSON to stdout for scripting                            |
+| `--json`            | Shorthand for `--output=json`                                                              |
 
 **Examples:**
 
-- Show metadata for the workflow configured for a target
+- Show deployment health and recent execution for the workflow configured for a target
 
   ```bash
   cre workflow get ./my-workflow --target staging-settings
   ```
 
-- Search across all registries in your organization
+- Resolve across all registries in your organization
 
   ```bash
   cre workflow get ./my-workflow --target staging-settings --all-registries
   ```
 
-The command prints the same human-readable workflow metadata fields as [`cre workflow list`](#cre-workflow-list): workflow name, workflow ID, owner address, status, registry, and registry address when available.
+- Export as JSON
+
+  ```bash
+  cre workflow get ./my-workflow --target staging-settings --output json
+  ```
+
+For a full execution history, use [`cre execution list`](/cre/reference/cli/execution#cre-execution-list).
 
 ***
 
@@ -9622,6 +9659,161 @@ The typical workflow lifecycle uses these commands in sequence:
 - [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows) — Managing workflow state
 - [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows) — Version management
 - [Deleting Workflows](/cre/guides/operations/deleting-workflows) — Cleanup and removal
+
+---
+
+# Execution Commands
+Source: https://docs.chain.link/cre/reference/cli/execution
+Last Updated: 2026-07-09
+
+The `cre execution` commands query workflow execution history from the CRE platform. Use them to debug failures, review capability timelines, and pull log lines without opening the web UI.
+
+
+<Aside type="note" title="Authentication required">
+  Running `cre execution` commands requires you to be logged in. Run `cre whoami` to verify your session, or `cre login` to authenticate. See [Logging in with the CLI](/cre/account/cli-login) for details.
+</Aside>
+
+
+<Aside type="note" title="Global flags">
+  All `cre` commands support [global flags](/cre/reference/cli#global-flags) like `--env`, `--target`, `--project-root`, and `--verbose`.
+</Aside>
+
+For a quick health check on the workflow configured in your project, see [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get), which shows deployment health and the most recent execution.
+
+## `cre execution list`
+
+Lists recent workflow executions from the CRE platform.
+
+**Usage:**
+
+```bash
+cre execution list [workflow-id-or-name] [flags]
+```
+
+**Arguments:**
+
+- `[workflow-id-or-name]` — (Optional) On-chain workflow ID (64-char hex, visible in [`cre workflow list`](/cre/reference/cli/workflow#cre-workflow-list)) or workflow name. When omitted, executions across all workflows are returned.
+
+**Flags:**
+
+| Flag                | Description                                                                     |
+| ------------------- | ------------------------------------------------------------------------------- |
+| `--status <string>` | Filter by execution status: `TRIGGERED`, `IN_PROGRESS`, `SUCCESS`, or `FAILURE` |
+| `--start <string>`  | Start of time range in ISO8601 format (e.g. `2026-01-01T00:00:00Z`)             |
+| `--end <string>`    | End of time range in ISO8601 format (e.g. `2026-01-02T00:00:00Z`)               |
+| `--limit <int>`     | Maximum number of executions to return (max 100, default 20)                    |
+| `--output <string>` | Output format. Use `json` to print a JSON array to stdout for scripting         |
+| `--json`            | Shorthand for `--output=json`                                                   |
+
+**Examples:**
+
+```bash
+cre execution list
+cre execution list my-workflow
+cre execution list my-workflow --status FAILURE
+cre execution list my-workflow --start 2026-01-01T00:00:00Z --end 2026-01-02T00:00:00Z
+cre execution list my-workflow --limit 50 --output json
+```
+
+***
+
+## `cre execution status`
+
+Shows detailed status for a single workflow execution, including top-level errors when the run has failed.
+
+**Usage:**
+
+```bash
+cre execution status <execution-uuid> [flags]
+```
+
+**Arguments:**
+
+- `<execution-uuid>` — (Required) Execution UUID from `cre execution list` or the CRE UI
+
+**Flags:**
+
+| Flag                | Description                                       |
+| ------------------- | ------------------------------------------------- |
+| `--output <string>` | Output format. Use `json` to print JSON to stdout |
+| `--json`            | Shorthand for `--output=json`                     |
+
+**Examples:**
+
+```bash
+cre execution status 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g
+cre execution status 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g --output json
+```
+
+***
+
+## `cre execution events`
+
+Shows the ordered capability event timeline for a workflow execution, including per-event status, method, duration, and errors.
+
+**Usage:**
+
+```bash
+cre execution events <execution-uuid> [flags]
+```
+
+**Arguments:**
+
+- `<execution-uuid>` — (Required) Execution UUID
+
+**Flags:**
+
+| Flag                    | Description                                               |
+| ----------------------- | --------------------------------------------------------- |
+| `--capability <string>` | Filter events to a specific capability ID                 |
+| `--status <string>`     | Filter events by status (e.g. `FAILURE`)                  |
+| `--output <string>`     | Output format. Use `json` to print a JSON array to stdout |
+| `--json`                | Shorthand for `--output=json`                             |
+
+**Examples:**
+
+```bash
+cre execution events 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g
+cre execution events 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g --capability fetch-price
+cre execution events 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g --status FAILURE --output json
+```
+
+***
+
+## `cre execution logs`
+
+Shows log lines emitted during a workflow execution.
+
+**Usage:**
+
+```bash
+cre execution logs <execution-uuid> [flags]
+```
+
+**Arguments:**
+
+- `<execution-uuid>` — (Required) Execution UUID
+
+**Flags:**
+
+| Flag                | Description                                                        |
+| ------------------- | ------------------------------------------------------------------ |
+| `--node <string>`   | Filter logs to a specific node or capability ID (case-insensitive) |
+| `--output <string>` | Output format. Use `json` to print a JSON array to stdout          |
+| `--json`            | Shorthand for `--output=json`                                      |
+
+**Examples:**
+
+```bash
+cre execution logs 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g
+cre execution logs 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g --node ProcessData
+cre execution logs 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g --output json
+```
+
+## Learn more
+
+- [Monitoring & Debugging Workflows](/cre/guides/operations/monitoring-workflows) — Web UI monitoring dashboard
+- [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get) — Deployment health and recent execution for the workflow in `workflow.yaml`
 
 ---
 
