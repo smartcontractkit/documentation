@@ -16870,7 +16870,7 @@ const [forwarderAuthority] = await getProgramDerivedAddress({
 
 # Writing to Solana
 Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/onchain-write-ts
-Last Updated: 2026-07-06
+Last Updated: 2026-07-08
 
 This guide walks through writing data from a CRE workflow to a Solana program using the TypeScript SDK. By the end, you will have a working workflow that writes a Borsh-encoded struct to a Solana program via the Keystone Forwarder.
 
@@ -16952,7 +16952,7 @@ After building your Anchor program, the IDL is at `target/idl/<program-name>.jso
    # MyConsumer.ts   MyConsumer_mock.ts   index.ts
    ```
 
-   The generated `MyConsumer` class has a `writeReportFromPriceData(runtime, input, remainingAccounts)` method for the `PriceData` struct.
+   The generated `MyConsumer` class has a `writeReportFromPriceData(runtime, input, remainingAccounts, computeConfig?)` method for the `PriceData` struct.
 
 ## Step 3: Configure the workflow
 
@@ -17018,6 +17018,7 @@ After building your Anchor program, the IDL is at `target/idl/<program-name>.jso
      const config = runtime.config
 
      const client = new SolanaClient(BigInt(config.chainSelector))
+     // Optional second arg overrides the program ID baked into the IDL
      const myConsumer = new MyConsumer(client, config.receiverProgramId)
 
      // Build remaining accounts in the required order.
@@ -17032,16 +17033,18 @@ After building your Anchor program, the IDL is at `target/idl/<program-name>.jso
 
      runtime.log("Submitting price update to Solana")
 
+     // Solana simulate requires a non-nil computeConfig with computeLimit > 0
      const result = myConsumer.writeReportFromPriceData(
        runtime,
        {
          price: 500000n,
          timestamp: BigInt(Math.floor(Date.now() / 1000)),
        },
-       remainingAccounts
+       remainingAccounts,
+       { computeLimit: 200_000 }
      )
 
-     runtime.log("Write succeeded", { txSignature: result.txHash })
+     runtime.log(`Write completed txStatus=${result.txStatus} txSignature=${result.txSignature ?? ""}`)
      return result
    }
 
@@ -17058,52 +17061,47 @@ After building your Anchor program, the IDL is at `target/idl/<program-name>.jso
 
 ## Step 5: Run the simulation
 
-{/* TODO: Update when Solana devnet simulation target is fully supported — currently --target staging-solana-devnet throws "no RPC URLs found" */}
-
 <Aside type="note" title="Simulation and broadcast">
-  `cre workflow simulate` performs a **dry run** by default: it validates and encodes the payload but does not submit a
-  transaction. Add `--broadcast` to send a real transaction.
-
-  Full simulation with `--target` pointing to a Solana network requires the correct RPC URLs in your `project.yaml`.
+  `cre workflow simulate` performs a **dry run** by default: it builds and simulates the Solana write path but does not
+  submit a transaction. Add `--broadcast` to send a real transaction. Your `project.yaml` target must include a Solana
+  RPC URL for the network you are simulating against.
 </Aside>
 
-1. Add a Solana RPC endpoint to your `project.yaml`.
+1. Add a Solana RPC endpoint to your `project.yaml` under your simulation target.
 
    ```yaml
-   local-simulation:
+   staging-settings:
      rpcs:
-       - chain-name: solana-mainnet
-         url: https://your-solana-rpc-url
+       - chain-name: solana-devnet
+         url: https://api.devnet.solana.com
    ```
 
-2. Run the simulation.
+2. Set `CRE_SOLANA_PRIVATE_KEY` in your project `.env`.
+
+   Solana simulation requires a 64-byte base58 keypair even for dry-run (no `--broadcast`). The transmitter account
+   derived from that key must exist and be funded on the network you are simulating against. Generate a key with
+   `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and put the keypair in `.env`:
+
+   ```bash
+   CRE_SOLANA_PRIVATE_KEY=<your-64-byte-base58-keypair>
+   ```
+
+3. Run the simulation.
 
    ```bash
    cre workflow simulate my-workflow --target staging-settings
    ```
 
-   Expected output (dry run):
+   When your receiver program and forwarder accounts are correctly configured for that network, a successful dry-run
+   logs the write result. Inspect `txStatus` and `txSignature` in the workflow logs and simulation result.
 
-   ```
-   Workflow compiled
-   [SIMULATION] Simulator Initialized
-   [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-   [USER LOG] Submitting price update to Solana
-   [USER LOG] Write succeeded txSignature=<empty for dry run>
-
-   Workflow Simulation Result:
-   {}
-
-   [SIMULATION] Execution finished signal received
-   ```
-
-3. To broadcast a real transaction, add `--broadcast`.
+4. To broadcast a real transaction, add `--broadcast`.
 
    ```bash
    cre workflow simulate my-workflow --target staging-settings --broadcast
    ```
 
-   A successful broadcast logs the transaction signature. You can verify it on [Solana Explorer](https://explorer.solana.com/) or [Solscan](https://solscan.io/).
+   A successful broadcast includes a transaction signature. You can verify it on [Solana Explorer](https://explorer.solana.com/) or [Solscan](https://solscan.io/).
 
 ## Step 6: Deploy the workflow
 
