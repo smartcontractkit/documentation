@@ -14,7 +14,7 @@ import { Aside } from "@components"
 
 This guide walks through writing data from a CRE workflow to a Solana program using the TypeScript SDK. By the end, you will have a working workflow that Borsh-encodes a payload, builds a forwarder report, and submits it with `SolanaClient.writeReport()`.
 
-The pasteable example writes to a Devnet receiver you configure with the placeholders below. Dry-run simulation always uses the CLI **mock forwarder** (not production Keystone), so you can exercise the write path before you deploy.
+The pasteable example writes to a Devnet receiver you configure with the placeholders below. [Step 3](#step-3-run-the-simulation) exercises compile, trigger, and `writeReport` against the CLI **mock** forwarder. [Step 4](#step-4-deploy-for-the-keystone-path) deploys so the DON uses **Keystone**.
 
 <Aside type="note" title="Your own program and bindings">
   When you have your own Anchor IDL, generate typed helpers with [`cre generate-bindings
@@ -25,7 +25,7 @@ The pasteable example writes to a Devnet receiver you configure with the placeho
 ## Prerequisites
 
 - A CRE project initialized with `cre init`. See [Part 1: Project Setup](/cre/getting-started/part-1-project-setup-ts) if you are starting from scratch.
-- A funded Solana Devnet keypair for `CRE_SOLANA_PRIVATE_KEY` (required even for dry-run). See [Step 3](#step-3-run-the-simulation).
+- A funded Solana Devnet keypair for `CRE_SOLANA_PRIVATE_KEY` (required even for dry-run). Generate one with `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and put the 64-byte base58 keypair in your project `.env`. See [Step 3](#step-3-run-the-simulation).
 
 ## What you need: a receiver program
 
@@ -42,8 +42,9 @@ The example receiver in this guide expects a small Borsh payload: an `i64` littl
 
 1. Open (or create) `config.staging.json` and add the Solana Devnet dry-run parameters.
 
-   Dry-run (`cre workflow simulate`) always invokes the CLI **mock forwarder**. Use the mock forwarder program and
-   state below with your receiver and report state. Local simulate does not use production Keystone; see
+   Dry-run (`cre workflow simulate`) always invokes the CLI **mock forwarder**. The mock `forwarderProgramId` and
+   `forwarderState` below are fixed Devnet values baked into the CLI. You supply `receiverProgramId`, a derived
+   `forwarderAuthority`, `reportState`, and `label`. Local simulate does not use production Keystone; see
    [Step 3](#step-3-run-the-simulation).
 
    ```json
@@ -63,18 +64,27 @@ The example receiver in this guide expects a small Borsh payload: an `i64` littl
    | Field                | Description                                                                                                            |
    | -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
    | `chainSelector`      | Solana Devnet (`"16423721717087811551"`). Store as a string to avoid JSON precision loss.                              |
-   | `receiverProgramId`  | Your receiver program on Devnet                                                                                        |
-   | `forwarderProgramId` | CLI mock forwarder program (dry-run only)                                                                              |
-   | `forwarderState`     | Mock forwarder state account (dry-run only)                                                                            |
-   | `forwarderAuthority` | PDA from `["forwarder", forwarderState, receiverProgram]` under the **mock** forwarder program ID                      |
-   | `reportState`        | Writable account required by your receiver                                                                             |
+   | `receiverProgramId`  | Your receiver program on Devnet (you supply)                                                                           |
+   | `forwarderProgramId` | CLI mock forwarder program (dry-run only; fixed)                                                                       |
+   | `forwarderState`     | Mock forwarder state account (dry-run only; fixed)                                                                     |
+   | `forwarderAuthority` | PDA from `["forwarder", forwarderState, receiverProgram]` under the **mock** forwarder program ID (you derive)         |
+   | `reportState`        | Writable account required by your receiver (you supply)                                                                |
    | `label`              | Fixed 16-byte string the example payload encodes (padded with zeros). Receiver-specific data; not your CRE DON Family. |
    | `computeLimit`       | Solana compute units; must be greater than 0 for simulation                                                            |
 
-<Aside type="tip" title="Deriving forwarderAuthority">
-  Derive the PDA offline with `@solana/addresses` (or `@solana/web3.js`). Seeds are `["forwarder", forwarderState,
-  receiverProgram]` under the forwarder program ID in your config (the mock forwarder for local simulate).
-</Aside>
+1. Derive `forwarderAuthority` and paste it into the config. Seeds are `["forwarder", forwarderState, receiverProgram]`
+   under the **mock** forwarder program ID above. When you move to Keystone in Step 4, derive again under the Keystone
+   program ID.
+
+   ```typescript
+   import { getProgramDerivedAddress, address, getAddressEncoder } from "@solana/addresses"
+
+   const enc = getAddressEncoder()
+   const [forwarderAuthority] = await getProgramDerivedAddress({
+     programAddress: address(forwarderProgramId),
+     seeds: [Buffer.from("forwarder"), enc.encode(address(forwarderState)), enc.encode(address(receiverProgramId))],
+   })
+   ```
 
 ## Step 2: Write the workflow
 
@@ -150,6 +160,7 @@ The example receiver in this guide expects a small Borsh payload: an `i64` littl
 
    const onCronTrigger = (runtime: Runtime<Config>, trigger: CronPayload): string => {
      const cfg = runtime.config
+     // Order matters for the account hash: 0 = forwarderState, 1 = forwarderAuthority, 2+ = receiver accounts.
      const remainingAccounts = [
        solanaAccountMeta(cfg.forwarderState, false),
        solanaAccountMeta(cfg.forwarderAuthority, false),
@@ -206,11 +217,8 @@ The example receiver in this guide expects a small Borsh payload: an `i64` littl
 
 ## Step 3: Run the simulation
 
-<Aside type="note" title="Local simulate uses the mock forwarder">
-  `cre workflow simulate` builds the Solana write against the baked-in mock forwarder (`7kuEAA3m…`). Production Keystone
-  addresses in config are not used for that choice. Use this step to confirm compile, trigger, and `writeReport` wiring.
-  For a Keystone write on Devnet, continue to [Step 4](#step-4-deploy-for-the-keystone-path).
-</Aside>
+Local simulate always uses the CLI mock forwarder from Step 1 (not Keystone). Use this step to confirm compile, trigger,
+and `writeReport` wiring.
 
 1. Add a Solana RPC endpoint to your `project.yaml` under your simulation target.
 
@@ -224,7 +232,8 @@ The example receiver in this guide expects a small Borsh payload: an `i64` littl
 1. Set `CRE_SOLANA_PRIVATE_KEY` in your project `.env`.
 
    Solana simulation requires a 64-byte base58 keypair even for dry-run. The transmitter account must exist and be
-   funded on Solana Devnet:
+   funded on Solana Devnet. Generate a key with `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and
+   put the keypair in `.env`:
 
    ```bash
    CRE_SOLANA_PRIVATE_KEY=<your-64-byte-base58-keypair>
@@ -249,8 +258,7 @@ The example receiver in this guide expects a small Borsh payload: an `i64` littl
    ...
    ```
 
-   The WriteReport status depends on how your receiver is paired with the mock forwarder. A full Keystone path needs a
-   deployed workflow ([Step 4](#step-4-deploy-for-the-keystone-path)).
+   For a Keystone write on Devnet, continue to [Step 4](#step-4-deploy-for-the-keystone-path).
 
 ## Step 4: Deploy for the Keystone path
 
@@ -275,9 +283,9 @@ Ethereum gas for registry ops). You need [Deploy Access](/cre/account/deploy-acc
    ```
 
    `forwarderAuthority` is the PDA from `["forwarder", forwarderState, receiverProgram]` under the **Keystone**
-   forwarder program ID, not the mock program. Get Keystone addresses from your Chainlink representative or from
-   [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) after Solana is enabled
-   for your organization.
+   forwarder program ID (re-derive with the Step 1 snippet). Get Keystone addresses from your Chainlink representative
+   or from [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) after Solana is
+   enabled for your organization.
 
 1. Point a deploy target at that config and the private registry in `my-workflow/workflow.yaml`.
 
@@ -311,9 +319,8 @@ Ethereum gas for registry ops). You need [Deploy Access](/cre/account/deploy-acc
         Status:           Active
    ```
 
-1. After the cron fires, open the workflow in the [CRE platform](https://app.chain.link/cre/workflows) and confirm node logs reach the write path.
-
-   Expected log shape:
+1. After the cron fires, open the workflow in the [CRE platform](https://app.chain.link/cre/workflows) (or run
+   `cre execution list my-solana-write`) and confirm node logs reach the write path:
 
    ```
    Submitting report label=<LABEL> scheduledUnix=...
