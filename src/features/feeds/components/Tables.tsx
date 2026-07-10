@@ -70,21 +70,29 @@ const getMaxSubmissionValueBound = (
 
 const getSchemaDefinitionKey = (metadata: any): string | undefined => {
   const feedType = metadata.feedType || metadata.docs?.feedType
-
-  if (metadata.feedType === "Crypto-DEX") return "v3-dex"
-  if (metadata.feedType === "Crypto" && metadata.docs?.productTypeCode !== "ExRate") return "v3-crypto"
-
   const schemaVersion = getSchemaVersion(metadata)
+
+  // Explicit docs.schema (or clicProductName suffix) takes precedence over feedType heuristics.
+  if (schemaVersion === "v9") return "v9"
+  if (schemaVersion === "v12") return "v12"
+  if (schemaVersion === "v8") return "v8"
+  if (schemaVersion === "v10") return "v10"
+  if (schemaVersion === "v11") {
+    return isApacEquitiesStreamFeed(metadata) ? "v11-apac" : "v11"
+  }
+  if (schemaVersion === "v7") return "v7"
+  if (schemaVersion === "v3") {
+    return feedType === "Crypto-DEX" ? "v3-dex" : "v3-crypto"
+  }
+
+  if (feedType === "Crypto-DEX") return "v3-dex"
+  if (feedType === "Crypto" && metadata.docs?.productTypeCode !== "ExRate") return "v3-crypto"
+
   if (feedType === "Equities" || feedType === "Forex" || feedType === "Datalink") {
-    if (schemaVersion === "v11") {
-      return isApacEquitiesStreamFeed(metadata) ? "v11-apac" : "v11"
-    }
-    if (schemaVersion === "v8") return "v8"
     return undefined
   }
 
   if (metadata.docs?.productTypeCode === "ExRate") return "v7"
-  if (schemaVersion === "v9") return "v9"
   if (feedType === "Tokenized Equities") return "v10"
 
   return undefined
