@@ -16870,190 +16870,199 @@ const [forwarderAuthority] = await getProgramDerivedAddress({
 
 # Writing to Solana
 Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/onchain-write-ts
-Last Updated: 2026-07-11
+Last Updated: 2026-07-13
 
-This guide walks through writing data from a CRE workflow to a Solana program using the TypeScript SDK. By the end, you will have a working workflow that Borsh-encodes a payload, builds a forwarder report, and submits it with `SolanaClient.writeReport()`.
+This guide walks through your first Solana write from a CRE workflow using the TypeScript SDK. The preferred path is
+**generated bindings**: you place your Anchor IDL in the project, run `cre generate-bindings solana`, and call a typed
+`writeReportFrom...` helper. The binding Borsh-encodes your payload, builds the forwarder report, and submits it — you
+do not hand-roll encoding.
 
-The pasteable example writes to a Devnet receiver you configure with the placeholders below. [Step 3](#step-3-run-the-simulation) exercises compile, trigger, and `writeReport` against the CLI **mock** forwarder. [Step 4](#step-4-deploy-for-the-keystone-path) deploys so the DON uses **Keystone**.
+[Step 4](#step-4-run-the-simulation) exercises compile, trigger, and the write against the CLI **mock** forwarder.
+[Step 5](#step-5-deploy-for-the-keystone-path) deploys so the DON uses **Keystone**.
 
-<Aside type="note" title="Your own program and bindings">
-  When you have your own Anchor IDL, generate typed helpers with [`cre generate-bindings
-    solana`](/cre/guides/workflow/using-solana-client/generating-bindings-ts) and call the generated `writeReportFrom...`
-  methods instead of the low-level `writeReport` flow below.
-</Aside>
+For IDL layout, generator output, and what each `writeReportFrom...` method does under the hood, see
+[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-ts).
 
 ## Prerequisites
 
 - A CRE project initialized with `cre init`. See [Part 1: Project Setup](/cre/getting-started/part-1-project-setup-ts) if you are starting from scratch.
-- A funded Solana Devnet keypair for `CRE_SOLANA_PRIVATE_KEY` (required even for dry-run). Generate one with `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and put the 64-byte base58 keypair in your project `.env`. See [Step 3](#step-3-run-the-simulation).
+- A current CRE CLI (`cre update`) with TypeScript Solana binding generation.
+- A funded Solana Devnet keypair for `CRE_SOLANA_PRIVATE_KEY` (required even for dry-run). Generate one with `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and put the 64-byte base58 keypair in your project `.env`. See [Step 4](#step-4-run-the-simulation).
 
 ## What you need: a receiver program
 
-Your Solana program must implement an `on_report` instruction that accepts the payload delivered by the forwarder. The forwarder CPIs into your program after verifying the DON signatures.
+Your Solana program must implement an `on_report` instruction that accepts the payload delivered by the forwarder. The
+forwarder CPIs into your program after verifying the DON signatures. Your Anchor IDL's `types` section defines the
+struct(s) you will write; the generator turns each into a `writeReportFrom<StructName>()` method.
 
-The example receiver in this guide expects a small Borsh payload: an `i64` little-endian Unix timestamp followed by a fixed 16-byte label. Your own program will define a different payload shape.
+This guide uses a minimal `DataStorage` / `UserData` IDL so you can simulate without deploying your own program. Swap in
+your IDL and call the generated helpers for your structs when you are ready.
 
 <Aside type="note" title="Forwarder strips leading accounts">
   The forwarder passes only indices 2+ of your `remainingAccounts` list to your program's CPI call. Indices 0
   (`forwarderState`) and 1 (`forwarderAuthority`) are consumed by the forwarder itself.
 </Aside>
 
-## Step 1: Configure the workflow
+## Step 1: Add your IDL and generate bindings
+
+1. Save the following as `contracts/solana/src/idl/data_storage.json` (or copy your own Anchor IDL into that folder).
+
+   ```json
+   {
+     "address": "ECL8142j2YQAvs9R9geSsRnkVH2wLEi7soJCRyJ74cfL",
+     "metadata": {
+       "name": "data_storage",
+       "version": "0.1.0",
+       "spec": "0.1.0",
+       "description": "Minimal CRE Solana write example IDL"
+     },
+     "instructions": [
+       {
+         "name": "on_report",
+         "discriminator": [214, 173, 18, 221, 173, 148, 151, 208],
+         "accounts": [],
+         "args": [
+           { "name": "_metadata", "type": "bytes" },
+           { "name": "payload", "type": "bytes" }
+         ]
+       }
+     ],
+     "accounts": [],
+     "events": [],
+     "errors": [],
+     "types": [
+       {
+         "name": "UserData",
+         "type": {
+           "kind": "struct",
+           "fields": [
+             { "name": "key", "type": "string" },
+             { "name": "value", "type": "string" }
+           ]
+         }
+       }
+     ]
+   }
+   ```
+
+2. From your project root, generate the bindings:
+
+   ```bash
+   cre generate-bindings solana
+   ```
+
+   This creates `contracts/solana/ts/generated/DataStorage.ts` (plus a mock and `index.ts`). The `DataStorage` class
+   includes `writeReportFromUserData(runtime, input, remainingAccounts, computeConfig?)`.
+
+## Step 2: Configure the workflow
 
 1. Open (or create) `config.staging.json` and add the Solana Devnet dry-run parameters.
 
    Dry-run (`cre workflow simulate`) always invokes the CLI **mock forwarder**. The mock `forwarderProgramId` and
-   `forwarderState` below are fixed Devnet values baked into the CLI. You supply `receiverProgramId`, a derived
-   `forwarderAuthority`, `reportState`, and `label`. Local simulate does not use production Keystone; see
-   [Step 3](#step-3-run-the-simulation).
+   `forwarderState` below are fixed Devnet values baked into the CLI. `receiverProgramId` matches the IDL address above
+   for this example; with your own program, use your Devnet program ID. Local simulate does not use production Keystone;
+   see [Step 4](#step-4-run-the-simulation).
 
    ```json
    {
      "schedule": "*/30 * * * * *",
      "chainSelector": "16423721717087811551",
-     "receiverProgramId": "<RECEIVER_PROGRAM_ID>",
+     "receiverProgramId": "ECL8142j2YQAvs9R9geSsRnkVH2wLEi7soJCRyJ74cfL",
      "forwarderProgramId": "7kuEAA3mSC1Tz8gQjnvH7bKFda9xSPRRin9SZbH49cNK",
      "forwarderState": "5Tipz3yhTBdVsDbaBxZkrp7Gjf3brGq5SKkxReefPMP7",
-     "forwarderAuthority": "<MOCK_FORWARDER_AUTHORITY>",
-     "reportState": "<REPORT_STATE>",
-     "label": "<LABEL>",
-     "computeLimit": 290000
+     "reportState": "11111111111111111111111111111111",
+     "computeLimit": 200000
    }
    ```
 
-   | Field                | Description                                                                                                            |
-   | -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-   | `chainSelector`      | Solana Devnet (`"16423721717087811551"`). Store as a string to avoid JSON precision loss.                              |
-   | `receiverProgramId`  | Your receiver program on Devnet (you supply)                                                                           |
-   | `forwarderProgramId` | CLI mock forwarder program (dry-run only; fixed)                                                                       |
-   | `forwarderState`     | Mock forwarder state account (dry-run only; fixed)                                                                     |
-   | `forwarderAuthority` | PDA from `["forwarder", forwarderState, receiverProgram]` under the **mock** forwarder program ID (you derive)         |
-   | `reportState`        | Writable account required by your receiver (you supply)                                                                |
-   | `label`              | Fixed 16-byte string the example payload encodes (padded with zeros). Receiver-specific data; not your CRE DON Family. |
-   | `computeLimit`       | Solana compute units; must be greater than 0 for simulation                                                            |
+   | Field                | Description                                                                                 |
+   | -------------------- | ------------------------------------------------------------------------------------------- |
+   | `chainSelector`      | Solana Devnet (`"16423721717087811551"`). Store as a string to avoid JSON precision loss.   |
+   | `receiverProgramId`  | Your receiver program (IDL address for this example)                                        |
+   | `forwarderProgramId` | CLI mock forwarder program (dry-run only; fixed)                                            |
+   | `forwarderState`     | Mock forwarder state account (dry-run only; fixed)                                          |
+   | `reportState`        | Writable account required by your receiver (placeholder system program ID for this dry-run) |
+   | `computeLimit`       | Solana compute units; must be greater than 0 for simulation                                 |
 
-2. Derive `forwarderAuthority` and paste it into the config. Seeds are `["forwarder", forwarderState, receiverProgram]`
-   under the **mock** forwarder program ID above. When you move to Keystone in Step 4, derive again under the Keystone
-   program ID.
+   The workflow derives `forwarderAuthority` at runtime from
+   `["forwarder", forwarderState, receiverProgram]` under `forwarderProgramId`. When you move to Keystone in Step 5,
+   keep that derivation and only swap the forwarder program/state in config.
 
-   ```typescript
-   import { getProgramDerivedAddress, address, getAddressEncoder } from "@solana/addresses"
+## Step 3: Write the workflow
 
-   const enc = getAddressEncoder()
-   const [forwarderAuthority] = await getProgramDerivedAddress({
-     programAddress: address(forwarderProgramId),
-     seeds: [Buffer.from("forwarder"), enc.encode(address(forwarderState)), enc.encode(address(receiverProgramId))],
-   })
-   ```
-
-## Step 2: Write the workflow
+This step is a complete, pasteable workflow that performs one Solana write on a cron trigger using **generated
+bindings**. It reads config, derives the forwarder authority PDA, builds the `remainingAccounts` list the forwarder
+expects, and calls `writeReportFromUserData()`. Replace `DataStorage` / `UserData` with your generated class and struct
+when you use your own IDL.
 
 1. Save the following as `my-workflow/main.ts`.
 
    ```typescript
    // my-workflow/main.ts
    import {
-     bytesToHex,
      CronCapability,
      type CronPayload,
-     calculateAccountsHash,
-     encodeForwarderReport,
      handler,
-     prepareSolanaReportRequest,
      Runner,
      type Runtime,
      SolanaClient,
      solanaAccountMeta,
-     solanaAccountMetasToJson,
-     solanaAddressToBytes,
    } from "@chainlink/cre-sdk"
+   import { PublicKey } from "@solana/web3.js"
+   import { DataStorage, type UserData } from "../contracts/solana/ts/generated/DataStorage"
 
    type Config = {
      schedule: string
      chainSelector: string
      receiverProgramId: string
+     forwarderProgramId: string
      forwarderState: string
-     forwarderAuthority: string
      reportState: string
-     label?: string
      computeLimit?: number
    }
 
-   const LABEL_LEN = 16
-   const DEFAULT_COMPUTE_LIMIT = 290_000
-   const DEFAULT_LABEL = "example-label"
+   const DEFAULT_COMPUTE_LIMIT = 200_000
+   const FORWARDER_SEED = Uint8Array.from("forwarder", (c) => c.charCodeAt(0))
 
-   function configuredLabel(cfg: Config): string {
-     return cfg.label && cfg.label.length > 0 ? cfg.label : DEFAULT_LABEL
+   function deriveForwarderAuthority(
+     forwarderState: PublicKey,
+     receiverProgram: PublicKey,
+     forwarderProgram: PublicKey
+   ): PublicKey {
+     const [authority] = PublicKey.findProgramAddressSync(
+       [FORWARDER_SEED, forwarderState.toBytes(), receiverProgram.toBytes()],
+       forwarderProgram
+     )
+     return authority
    }
 
-   /** Fixed [u8;16] label (Latin-1 bytes). */
-   function padLabel(label: string): Uint8Array {
-     const z = new Uint8Array(LABEL_LEN)
-     for (let i = 0; i < label.length && i < LABEL_LEN; i++) {
-       const code = label.charCodeAt(i)
-       if (code > 255) {
-         throw new Error(`label must be Latin-1; got non-byte at index ${i}`)
-       }
-       z[i] = code
-     }
-     return z
-   }
-
-   /** Borsh: i64 LE + fixed [u8;16] label — example on_report payload. */
-   function encodeReportPayload(scheduledUnix: bigint, label: string): Uint8Array {
-     const out = new Uint8Array(8 + LABEL_LEN)
-     const view = new DataView(out.buffer)
-     view.setBigInt64(0, scheduledUnix, true)
-     out.set(padLabel(label), 8)
-     return out
-   }
-
-   function scheduledUnixFromPayload(trigger: CronPayload): bigint {
-     const ts = trigger.scheduledExecutionTime
-     if (!ts?.seconds) {
-       return 0n
-     }
-     const s = ts.seconds
-     return typeof s === "bigint" ? s : BigInt(s as number)
-   }
-
-   const onCronTrigger = (runtime: Runtime<Config>, trigger: CronPayload): string => {
+   const onCronTrigger = (runtime: Runtime<Config>, _trigger: CronPayload): string => {
      const cfg = runtime.config
-     // Order matters for the account hash: 0 = forwarderState, 1 = forwarderAuthority, 2+ = receiver accounts.
+     const client = new SolanaClient(BigInt(cfg.chainSelector))
+     // Program ID defaults to the address baked into the IDL; pass cfg.receiverProgramId to override.
+     const receiver = new DataStorage(client, cfg.receiverProgramId)
+
+     const forwarderState = new PublicKey(cfg.forwarderState)
+     const receiverProgram = new PublicKey(cfg.receiverProgramId)
+     const forwarderProgram = new PublicKey(cfg.forwarderProgramId)
+     const reportState = new PublicKey(cfg.reportState)
+     const forwarderAuthority = deriveForwarderAuthority(forwarderState, receiverProgram, forwarderProgram)
+
+     // Index 0 forwarderState, 1 forwarderAuthority (derived), 2+ reportState.
      const remainingAccounts = [
-       solanaAccountMeta(cfg.forwarderState, false),
-       solanaAccountMeta(cfg.forwarderAuthority, false),
-       solanaAccountMeta(cfg.reportState, true),
+       solanaAccountMeta(forwarderState.toBase58(), false),
+       solanaAccountMeta(forwarderAuthority.toBase58(), false),
+       solanaAccountMeta(reportState.toBase58(), true),
      ]
 
-     const scheduled = scheduledUnixFromPayload(trigger)
-     const label = configuredLabel(cfg)
-     const payload = encodeReportPayload(scheduled, label)
+     const payload: UserData = { key: "price", value: "500000" }
 
-     runtime.log(`Submitting report label=${label} scheduledUnix=${scheduled}`)
-
-     const report = runtime
-       .report(
-         prepareSolanaReportRequest(
-           encodeForwarderReport({
-             accountHash: calculateAccountsHash(remainingAccounts),
-             payload,
-           })
-         )
-       )
-       .result()
+     runtime.log(
+       `Submitting UserData via bindings key=${payload.key} forwarderAuthority=${forwarderAuthority.toBase58()}`
+     )
 
      const computeLimit = cfg.computeLimit ?? DEFAULT_COMPUTE_LIMIT
-     const client = new SolanaClient(BigInt(cfg.chainSelector))
-     const out = client
-       .writeReport(runtime, {
-         receiver: bytesToHex(solanaAddressToBytes(cfg.receiverProgramId)),
-         remainingAccounts: solanaAccountMetasToJson(remainingAccounts),
-         computeConfig: { computeLimit },
-         report,
-       })
-       .result()
+     const out = receiver.writeReportFromUserData(runtime, payload, remainingAccounts, { computeLimit })
 
      runtime.log(
        `Write completed txStatus=${out.txStatus} errorMessage=${out.errorMessage ?? ""} txSignature=${out.txSignature ?? ""}`
@@ -17075,10 +17084,10 @@ The example receiver in this guide expects a small Borsh payload: an `i64` littl
    }
    ```
 
-## Step 3: Run the simulation
+## Step 4: Run the simulation
 
-Local simulate always uses the CLI mock forwarder from Step 1 (not Keystone). Use this step to confirm compile, trigger,
-and `writeReport` wiring.
+Local simulate always uses the CLI mock forwarder from Step 2 (not Keystone). Use this step to confirm compile, trigger,
+and the bindings write path.
 
 1. Add a Solana RPC endpoint to your `project.yaml` under your simulation target.
 
@@ -17105,28 +17114,34 @@ and `writeReport` wiring.
    cre workflow simulate my-workflow --target staging-settings
    ```
 
-   Confirm the workflow compiles, the cron trigger runs, and your USER LOGs appear:
+   Confirm the workflow compiles, the cron trigger runs, and your USER LOGs appear. This example uses a placeholder
+   receiver program ID, so the write path completes through the mock forwarder and the CPI into the receiver may return
+   `Custom:2007`. That still confirms bindings, encoding, and report submission worked:
 
    ```
    ✓ Workflow compiled
    [SIMULATION] Simulator Initialized
    [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-   [USER LOG] Submitting report label=<LABEL> scheduledUnix=...
-   [USER LOG] Write completed txStatus=... txSignature=...
+   [USER LOG] Submitting UserData via bindings key=price forwarderAuthority=...
+   [USER LOG] Write completed txStatus=... errorMessage=...
 
    ✓ Workflow Simulation Result:
    ...
    ```
 
-   For a Keystone write on Devnet, continue to [Step 4](#step-4-deploy-for-the-keystone-path).
+   For a Keystone write on Devnet with **your** receiver, continue to [Step 5](#step-5-deploy-for-the-keystone-path).
 
-## Step 4: Deploy for the Keystone path
+## Step 5: Deploy for the Keystone path
 
 A **deployed** workflow is what runs against production Keystone on Solana Devnet. Prefer the
 [private registry](/cre/guides/operations/deploying-to-private-registry-ts) for this example (CRE login session; no
 Ethereum gas for registry ops). You need [Deploy Access](/cre/account/deploy-access).
 
-1. Create `config.production.json` with Devnet Keystone forwarder addresses (same receiver and report state as staging).
+Use **your** receiver program ID and accounts — not the placeholder `DataStorage` address from the dry-run IDL unless
+that program is actually deployed and ready to accept writes.
+
+1. Create `config.production.json` with Devnet Keystone forwarder addresses (same receiver and report state your program
+   expects).
 
    ```json
    {
@@ -17135,17 +17150,13 @@ Ethereum gas for registry ops). You need [Deploy Access](/cre/account/deploy-acc
      "receiverProgramId": "<RECEIVER_PROGRAM_ID>",
      "forwarderProgramId": "<KEYSTONE_FORWARDER_PROGRAM_ID>",
      "forwarderState": "<KEYSTONE_FORWARDER_STATE>",
-     "forwarderAuthority": "<KEYSTONE_FORWARDER_AUTHORITY>",
      "reportState": "<REPORT_STATE>",
-     "label": "<LABEL>",
      "computeLimit": 290000
    }
    ```
 
-   `forwarderAuthority` is the PDA from `["forwarder", forwarderState, receiverProgram]` under the **Keystone**
-   forwarder program ID (re-derive with the Step 1 snippet). Get Keystone addresses from your Chainlink representative
-   or from [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) after Solana is
-   enabled for your organization.
+   Get Keystone addresses from your Chainlink representative. The workflow still derives `forwarderAuthority` from
+   `["forwarder", forwarderState, receiverProgram]` under the Keystone `forwarderProgramId`.
 
 2. Point a deploy target at that config and the private registry in `my-workflow/workflow.yaml`.
 
@@ -17183,7 +17194,7 @@ Ethereum gas for registry ops). You need [Deploy Access](/cre/account/deploy-acc
    `cre execution list my-solana-write`) and confirm node logs reach the write path:
 
    ```
-   Submitting report label=<LABEL> scheduledUnix=...
+   Submitting UserData via bindings key=...
    ```
 
    If WriteReport returns a Solana `txSignature`, confirm the transaction on
@@ -17205,7 +17216,7 @@ The transaction on Solana Explorer will show the forwarder program as the initia
 
 ## Next steps
 
-- **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-ts)**: Typed `writeReportFrom...` helpers from your Anchor IDL
+- **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-ts)**: IDL layout, generator output, and what `writeReportFrom...` does
 - **[Solana Client SDK Reference](/cre/reference/sdk/solana-client-ts)**: Full API reference for `SolanaClient` and helpers
 - **[Solana Write Capability](/cre/capabilities/solana-write)**: Architecture and account layout reference
 
@@ -17235,7 +17246,7 @@ Typical flow:
 ## Guides
 
 - **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-ts)**: Generate typed TypeScript classes from your Anchor IDL using the CRE CLI
-- **[Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-ts)**: Step-by-step guide for submitting your first Solana write from a CRE workflow
+- **[Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-ts)**: End-to-end first write with generated bindings, simulate, and Keystone deploy
 
 ---
 
