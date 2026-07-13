@@ -23,6 +23,11 @@ export const CONTACT_EMAIL_PROXY_ADDRESSES = new Set<string>([
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function shouldHideAddress(feed: any, riskTier?: string | null): boolean {
+  // Robinhood tokenized equity feeds display their proxy address directly.
+  if (feed.docs?.blockchainName === "Robinhood" && feed.docs?.productTypeCode === "primaryTokenizedPrice") {
+    return false
+  }
+
   if (feed.docs?.productSubType === "calculatedPrice") return true
   const proxy: string | null | undefined = feed.proxyAddress
   if (proxy != null && CONTACT_EMAIL_PROXY_ADDRESSES.has(proxy.toLowerCase())) return true
