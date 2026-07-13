@@ -17,8 +17,11 @@ This guide walks through your first Solana write from a CRE workflow using the G
 `WriteReportFrom...` helper. The binding Borsh-encodes your payload, builds the forwarder report, and submits it — you
 do not hand-roll encoding.
 
-[Step 4](#step-4-run-the-simulation) exercises compile, trigger, and the write against the CLI **mock** forwarder.
-[Step 5](#step-5-deploy-for-the-keystone-path) deploys so the DON uses **Keystone**.
+Onchain, the DON does not call your program directly. It submits a signed report to the **Keystone Forwarder** — a
+Chainlink-managed Solana program that verifies DON signatures, then cross-program invokes (CPI) your receiver's
+`on_report`. That is the same forwarder model as [EVM Write](/cre/capabilities/evm-read-write); see
+[Solana Write](/cre/capabilities/solana-write) for the full flow. Local simulation uses a Devnet stand-in of that
+forwarder so you can dry-run without deploying. After you deploy, the live forwarder addresses apply.
 
 For IDL layout, generator output, and what each `WriteReportFrom...` method does under the hood, see
 [Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-go).
@@ -102,12 +105,11 @@ your IDL and call the generated helpers for your structs when you are ready.
 
 ## Step 2: Configure the workflow
 
-1. Open (or create) `config.staging.json` and add the Solana Devnet dry-run parameters.
+1. Open (or create) `config.staging.json` and add the Solana Devnet simulation parameters.
 
-   Dry-run (`cre workflow simulate`) always invokes the CLI **mock forwarder**. The mock `forwarderProgramId` and
-   `forwarderState` below are fixed Devnet values baked into the CLI. `receiverProgramId` matches the IDL address above
-   for this example; with your own program, use your Devnet program ID. Local simulate does not use production Keystone;
-   see [Step 4](#step-4-run-the-simulation).
+   For `cre workflow simulate`, use these fixed Devnet forwarder program and state accounts (baked into the CLI).
+   `receiverProgramId` matches the IDL address above for this example; with your own program, use your Devnet program
+   ID.
 
    ```json
    {
@@ -125,14 +127,15 @@ your IDL and call the generated helpers for your structs when you are ready.
    | -------------------- | ------------------------------------------------------------------------------------------- |
    | `chainSelector`      | Solana Devnet (`"16423721717087811551"`). Store as a string to avoid JSON precision loss.   |
    | `receiverProgramId`  | Your receiver program (IDL address for this example)                                        |
-   | `forwarderProgramId` | CLI mock forwarder program (dry-run only; fixed)                                            |
-   | `forwarderState`     | Mock forwarder state account (dry-run only; fixed)                                          |
+   | `forwarderProgramId` | Forwarder program ID used for local simulation (fixed Devnet value)                         |
+   | `forwarderState`     | Forwarder state account used for local simulation (fixed Devnet value)                      |
    | `reportState`        | Writable account required by your receiver (placeholder system program ID for this dry-run) |
    | `computeLimit`       | Solana compute units; must be greater than 0 for simulation                                 |
 
    The workflow derives `forwarderAuthority` at runtime from
-   `[]byte("forwarder")`, forwarder state bytes, and receiver program bytes under `forwarderProgramId`. When you move to
-   Keystone in Step 5, keep that derivation and only swap the forwarder program/state in config.
+   `[]byte("forwarder")`, forwarder state bytes, and receiver program bytes under `forwarderProgramId`. When you deploy
+   in [Step 5](#step-5-deploy-the-workflow), keep that derivation and point `forwarderProgramId` / `forwarderState` at
+   the live forwarder addresses for your network.
 
 ## Step 3: Write the workflow
 
@@ -255,8 +258,7 @@ use your own IDL.
 
 ## Step 4: Run the simulation
 
-Local simulate always uses the CLI mock forwarder from Step 2 (not Keystone). Use this step to confirm compile, trigger,
-and the bindings write path.
+Use this step to confirm compile, trigger, and the bindings write path with `cre workflow simulate`.
 
 1. Add a Solana RPC endpoint to your `project.yaml` under your simulation target.
 
@@ -284,8 +286,8 @@ and the bindings write path.
    ```
 
    Confirm the workflow compiles, the cron trigger runs, and your USER LOGs appear. This example uses a placeholder
-   receiver program ID, so the write path completes through the mock forwarder and the CPI into the receiver may return
-   `Custom:2007`. That still confirms bindings, encoding, and report submission worked:
+   receiver program ID, so the simulation write may complete with a receiver CPI error such as `Custom:2007`. That still
+   confirms bindings, encoding, and report submission worked:
 
    ```
    ✓ Workflow compiled
@@ -298,12 +300,12 @@ and the bindings write path.
    ...
    ```
 
-   For a Keystone write on Devnet with **your** receiver, continue to [Step 5](#step-5-deploy-for-the-keystone-path).
+   When you are ready to run on the DON with **your** receiver, continue to [Step 5](#step-5-deploy-the-workflow).
 
-## Step 5: Deploy for the Keystone path
+## Step 5: Deploy the workflow
 
-A **deployed** workflow is what runs against production Keystone on Solana Devnet. Prefer the
-[private registry](/cre/guides/operations/deploying-to-private-registry-go) for this example (CRE login session; no
+A deployed workflow runs on the DON, which submits reports through the live Keystone Forwarder on Solana Devnet. Prefer
+the [private registry](/cre/guides/operations/deploying-to-private-registry-go) for this example (CRE login session; no
 Ethereum gas for registry ops). You need [Deploy Access](/cre/account/deploy-access).
 
 Use **your** receiver program ID and accounts — not the placeholder `DataStorage` address from the dry-run IDL unless
@@ -311,23 +313,24 @@ that program is actually deployed and ready to accept writes. Update the IDL add
 `receiverProgramId` to the same value (Go bindings use the program ID baked into the generated package for the write
 receiver; config is used to derive the forwarder authority PDA).
 
-1. Create `config.production.json` with Devnet Keystone forwarder addresses (same receiver and report state your program
-   expects).
+1. Create `config.production.json` with the live forwarder addresses for your network (same receiver and report state
+   your program expects).
 
    ```json
    {
      "schedule": "30 */5 * * * *",
      "chainSelector": "16423721717087811551",
      "receiverProgramId": "<RECEIVER_PROGRAM_ID>",
-     "forwarderProgramId": "<KEYSTONE_FORWARDER_PROGRAM_ID>",
-     "forwarderState": "<KEYSTONE_FORWARDER_STATE>",
+     "forwarderProgramId": "<FORWARDER_PROGRAM_ID>",
+     "forwarderState": "<FORWARDER_STATE>",
      "reportState": "<REPORT_STATE>",
      "computeLimit": 290000
    }
    ```
 
-   Get Keystone addresses from your Chainlink representative. The workflow still derives `forwarderAuthority` from
-   `[]byte("forwarder")`, forwarder state bytes, and receiver program bytes under the Keystone `forwarderProgramId`.
+   Get forwarder program and state addresses from your Chainlink representative. The workflow still derives
+   `forwarderAuthority` from `[]byte("forwarder")`, forwarder state bytes, and receiver program bytes under that
+   `forwarderProgramId`.
 
 1. Point a deploy target at that config and the private registry in `my-workflow/workflow.yaml`.
 
