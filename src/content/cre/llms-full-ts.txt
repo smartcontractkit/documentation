@@ -514,9 +514,24 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-07-02
+Last Updated: 2026-07-09
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.24.0 - July 9, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.24.0" target="_blank">CRE CLI version 1.24.0</a> is now available.**
+
+- **Execution observability from the CLI**: New [`cre execution`](/cre/reference/cli/execution) commands let you inspect deployed workflow runs without opening the UI — `list` for recent executions (filter by status and time range), `status` for a single run, `events` for the capability timeline, and `logs` for emitted log lines. All support `--output json` for scripting.
+- **Enhanced `cre workflow get`**: [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get) now resolves the workflow from your `workflow.yaml` settings and shows deployment health plus the most recent execution, not just registry metadata.
+- **Solana Write capability**: Workflows can now submit DON-consensus signed reports to Solana programs on Mainnet and Devnet via the Keystone Forwarder — the same secure write model as EVM. See the [Solana Write capability](/cre/capabilities/solana-write), [Solana chain interactions](/cre/guides/workflow/using-solana-client/overview), [generating Solana bindings](/cre/guides/workflow/using-solana-client/generating-bindings) (`cre generate-bindings solana`), and [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write). Local write simulation uses `cre workflow simulate` with `CRE_SOLANA_PRIVATE_KEY`; chain selectors are listed under [Supported Networks](/cre/supported-networks).
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.23.0...v1.24.0)
 
 ## CLI v1.23.0 - July 2, 2026
 
@@ -7656,7 +7671,18 @@ Each capability is powered by its own independent Decentralized Oracle Network (
 
 ## Invoking Capabilities via the SDK
 
-As a developer, you do not interact with these capability DONs directly. Instead, you invoke them through the developer-friendly interfaces provided by the **CRE SDKs** ([Go](/cre/reference/sdk/core-go) and [TypeScript](/cre/reference/sdk/core-ts)), such as the [`evm.Client`](/cre/reference/sdk/evm-client) or the [`http.Client`](/cre/reference/sdk/http-client). The SDK handles the low-level complexity of communicating with the correct DON and processing the consensus-verified result, allowing you to focus on your business logic.
+As a developer, you do not interact with these capability DONs directly. Instead, you invoke them through the developer-friendly interfaces provided by the **CRE SDKs** ([Go](/cre/reference/sdk/core-go) and [TypeScript](/cre/reference/sdk/core-ts)), such as the [`evm.Client`](/cre/reference/sdk/evm-client), the [`solana.Client`](/cre/reference/sdk/solana-client), or the [`http.Client`](/cre/reference/sdk/http-client). The SDK handles the low-level complexity of communicating with the correct DON and processing the consensus-verified result, allowing you to focus on your business logic.
+
+## Chain Families
+
+CRE supports blockchain capabilities across multiple **chain families** — groups of networks that share the same virtual machine, serialization format, and address encoding. The chain family determines which SDK client you use and how payloads are encoded.
+
+| Chain Family | Networks                                                           | SDK Client                       | Payload Encoding         |
+| ------------ | ------------------------------------------------------------------ | -------------------------------- | ------------------------ |
+| EVM          | Ethereum, Base, Arbitrum, and [many more](/cre/supported-networks) | `EVMClient` / `evm.Client`       | ABI (viem / go-ethereum) |
+| Solana       | Solana Mainnet, Solana Devnet                                      | `SolanaClient` / `solana.Client` | Borsh                    |
+
+Additional chain families may be added in future releases.
 
 ## Available Capabilities
 
@@ -7666,8 +7692,9 @@ This section provides a high-level, conceptual overview of the capabilities curr
 - **[HTTP](/cre/capabilities/http)**: Fetch and post data from external APIs with decentralized consensus.
 - **[Confidential HTTP](/cre/capabilities/confidential-http)**: Make privacy-preserving API calls with enclave execution, secret injection, and optional response encryption.
 - **[EVM Read & Write](/cre/capabilities/evm-read-write)**: Interact with smart contracts on EVM-compatible blockchains with decentralized consensus.
+- **[Solana Write](/cre/capabilities/solana-write)**: Write verified workflow results to Solana programs via the Keystone Forwarder.
 
-All execution capabilities (HTTP, Confidential HTTP, EVM) automatically use [built-in consensus](/cre/concepts/consensus-computing) to validate results across multiple nodes, ensuring security and reliability.
+All execution capabilities automatically use [built-in consensus](/cre/concepts/consensus-computing) to validate results across multiple nodes, ensuring security and reliability.
 
 ---
 
@@ -7778,6 +7805,57 @@ Learn more in the [Onchain Write guide](/cre/guides/workflow/using-evm-client/on
 
 - **[EVM Chain Interactions Guide](/cre/guides/workflow/using-evm-client/overview)**: Learn how to read from and write to smart contracts
 - **[EVM Client SDK Reference](/cre/reference/sdk/evm-client)**: Detailed API reference for the `evm.Client`
+
+---
+
+# The Solana Write Capability
+Source: https://docs.chain.link/cre/capabilities/solana-write
+Last Updated: 2026-07-13
+
+The **Solana Write** capability lets your CRE workflow submit cryptographically signed reports to Solana programs. Your workflow calls a single method while the underlying Decentralized Oracle Network (DON) handles consensus, report signing, and onchain submission through the Keystone Forwarder program.
+
+## How it works
+
+The Solana Write capability shares the same conceptual model as [EVM Write](/cre/capabilities/evm-read-write): your workflow generates a signed report, and the DON submits it to a Keystone Forwarder program onchain. The forwarder verifies the oracle signatures, then cross-program invokes (CPI) your receiver program's `on_report` instruction.
+
+### The secure write flow
+
+1. **Payload encoding**: Your workflow Borsh-encodes the data to deliver and wraps it in a `ForwarderReport` struct containing an account hash.
+2. **Report generation**: `runtime.report()` signs the encoded payload using the `solana` encoder (`ecdsa` + `keccak256`).
+3. **DON consensus**: Multiple DON nodes independently validate the report before any onchain submission.
+4. **Forwarder submission**: A DON node calls the Keystone Forwarder program with the signed report and the required accounts.
+5. **Delivery to your program**: The forwarder verifies the signatures and CPIs into your receiver program's `on_report` instruction.
+
+### Account layout
+
+Every Solana write request includes a `remainingAccounts` list. The Keystone Forwarder expects accounts in the following order:
+
+| Index | Account              | Writable  | Description                                                                                      |
+| ----- | -------------------- | --------- | ------------------------------------------------------------------------------------------------ |
+| 0     | `forwarderState`     | No        | The Keystone Forwarder's onchain state account                                                   |
+| 1     | `forwarderAuthority` | No        | PDA derived from `["forwarder", forwarderState, receiverProgram]` under the forwarder program ID |
+| 2+    | Receiver accounts    | As needed | Accounts your program's `on_report` instruction requires                                         |
+
+The public keys of all accounts in this list are concatenated and SHA-256 hashed to produce the `accountHash` field in the report. The forwarder strips indices 0–1 before CPIing into your receiver, so they must be present and in the correct positions.
+
+## Key features
+
+- **DON consensus**: Reports are signed by multiple oracle nodes before submission.
+- **Borsh encoding**: Payloads use Borsh, the standard serialization format for Solana programs.
+- **Type-safe bindings**: The CLI binding generator creates typed `writeReportFrom<StructName>()` helpers from your Anchor IDL.
+- **Configurable compute budget**: Override the default 290,000 compute unit limit via `ComputeConfig`.
+- **Chain selector support**: Target Solana Mainnet or Devnet using Chainlink's chain selector system.
+
+<Aside type="note" title="CLI and simulation">
+  Solana write requires **CRE CLI v1.24.0 or later**. Local `cre workflow simulate` dry-runs the write path against the
+  Devnet forwarder built into the CLI. Deployed workflows use the live Keystone Forwarder on your target network.
+</Aside>
+
+## Learn more
+
+- **[Solana Chain Interactions Guide](/cre/guides/workflow/using-solana-client/overview)**: Learn how to write data to Solana programs using the `SolanaClient`
+- **[Solana Client SDK Reference](/cre/reference/sdk/solana-client)**: Detailed API reference for `SolanaClient` and helper functions
+- **[Supported Networks](/cre/supported-networks)**: Chain selector values and minimum SDK versions for Solana networks
 
 ---
 
@@ -8045,7 +8123,7 @@ See the [repository README](https://github.com/smartcontractkit/cre-gcp-predicti
 
 # CLI Reference
 Source: https://docs.chain.link/cre/reference/cli
-Last Updated: 2026-05-14
+Last Updated: 2026-07-09
 
 export const CRE_CLI_VERSION = VERSIONS["cre-cli"].LATEST
 
@@ -8071,6 +8149,7 @@ These flags can be used with any `cre` command.
 | `-v, --verbose`          | Enables verbose logging to print `DEBUG` level logs                                                                                                                                                                     |
 | `--non-interactive`      | Fails instead of prompting; provide all required inputs with flags or environment variables. Use this for CI/CD, scripts, and other headless environments                                                               |
 | `--allow-unknown-chains` | Skips chain-name validation against the chain-selectors registry for `cre workflow simulate` and `cre workflow deploy`. Use for experimental or unlisted chains. Chain-selector and RPC availability are still enforced |
+| `--allow-insecure-rpc`   | Allows non-localhost HTTP RPC URLs. By default, the CLI blocks cleartext RPC endpoints to reduce accidental secret exposure over insecure connections                                                                   |
 
 
 <Aside type="note" title="Non-interactive authentication">
@@ -8096,7 +8175,7 @@ Manage your authentication and account credentials.
 Initialize projects and generate contract bindings (Go only).
 
 - [**`cre init`**](/cre/reference/cli/project-setup) — Initialize a new CRE project (interactive wizard or **`--non-interactive`** with flags for CI/CD)
-- **`cre generate-bindings`** (Go only) — Generate Go bindings from contract ABI files for type-safe contract interactions
+- **`cre generate-bindings`** — Generate contract bindings from ABI or Anchor IDL files (Go and TypeScript for Solana)
 
 [View project setup commands →](/cre/reference/cli/project-setup)
 
@@ -8127,11 +8206,24 @@ Manage workflows throughout their entire lifecycle.
 - **`cre workflow pause`** — Pause a workflow on the Workflow Registry contract
 - **`cre workflow delete`** — Delete all versions of a workflow from the Workflow Registry
 - **`cre workflow list`** — List workflows deployed for your organization; use `--output json` for scripts
-- **`cre workflow get`** — Show metadata for the workflow configured in `workflow.yaml`
+- **`cre workflow get`** — Show deployment health and the most recent execution for the workflow configured in `workflow.yaml`
 - **`cre workflow supported-chains`** — List chain names the CLI supports for local simulation; use `--output json` for scripts
 - **`cre workflow custom-build`** — Convert a workflow to use a custom self-compiled WASM build
 
 [View workflow commands →](/cre/reference/cli/workflow)
+
+***
+
+### Execution Commands
+
+Inspect deployed workflow runs from the terminal.
+
+- **`cre execution list`** — List recent executions; filter by workflow, status, and time range
+- **`cre execution status`** — Show detailed status for a single execution
+- **`cre execution events`** — Show the capability event timeline for an execution
+- **`cre execution logs`** — Show log lines emitted during an execution
+
+[View execution commands →](/cre/reference/cli/execution)
 
 ***
 
@@ -8555,7 +8647,7 @@ When you run this command, the CLI will:
 
 # Workflow Commands
 Source: https://docs.chain.link/cre/reference/cli/workflow
-Last Updated: 2026-06-11
+Last Updated: 2026-07-09
 
 The `cre workflow` commands manage workflows throughout their entire lifecycle, from local testing to deployment and ongoing management.
 
@@ -9027,7 +9119,7 @@ cre workflow list [flags]
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Shows metadata for the workflow configured in `workflow.yaml`. The command reads the workflow name for the selected `--target`, searches the CRE platform for matching workflow metadata, and filters results to the workflow's configured `deployment-registry` by default.
+Shows deployment health and the most recent execution for the workflow configured in `workflow.yaml`. The command reads the workflow name for the selected `--target`, resolves the workflow on the CRE platform (scoped to the configured `deployment-registry` by default), and prints deployment health plus the latest execution.
 
 **Usage:**
 
@@ -9041,25 +9133,33 @@ cre workflow get <workflow-folder-path> [flags]
 
 **Flags:**
 
-| Flag               | Description                                                              |
-| ------------------ | ------------------------------------------------------------------------ |
-| `--all-registries` | Do not filter results by the workflow's configured `deployment-registry` |
+| Flag                | Description                                                                                |
+| ------------------- | ------------------------------------------------------------------------------------------ |
+| `--all-registries`  | Resolve the workflow across every registry instead of the configured `deployment-registry` |
+| `--output <string>` | Output format. Use `json` to print JSON to stdout for scripting                            |
+| `--json`            | Shorthand for `--output=json`                                                              |
 
 **Examples:**
 
-- Show metadata for the workflow configured for a target
+- Show deployment health and recent execution for the workflow configured for a target
 
   ```bash
   cre workflow get ./my-workflow --target staging-settings
   ```
 
-- Search across all registries in your organization
+- Resolve across all registries in your organization
 
   ```bash
   cre workflow get ./my-workflow --target staging-settings --all-registries
   ```
 
-The command prints the same human-readable workflow metadata fields as [`cre workflow list`](#cre-workflow-list): workflow name, workflow ID, owner address, status, registry, and registry address when available.
+- Export as JSON
+
+  ```bash
+  cre workflow get ./my-workflow --target staging-settings --output json
+  ```
+
+For a full execution history, use [`cre execution list`](/cre/reference/cli/execution#cre-execution-list).
 
 ***
 
@@ -9224,6 +9324,161 @@ The typical workflow lifecycle uses these commands in sequence:
 - [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows) — Managing workflow state
 - [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows) — Version management
 - [Deleting Workflows](/cre/guides/operations/deleting-workflows) — Cleanup and removal
+
+---
+
+# Execution Commands
+Source: https://docs.chain.link/cre/reference/cli/execution
+Last Updated: 2026-07-09
+
+The `cre execution` commands query workflow execution history from the CRE platform. Use them to debug failures, review capability timelines, and pull log lines without opening the web UI.
+
+
+<Aside type="note" title="Authentication required">
+  Running `cre execution` commands requires you to be logged in. Run `cre whoami` to verify your session, or `cre login` to authenticate. See [Logging in with the CLI](/cre/account/cli-login) for details.
+</Aside>
+
+
+<Aside type="note" title="Global flags">
+  All `cre` commands support [global flags](/cre/reference/cli#global-flags) like `--env`, `--target`, `--project-root`, and `--verbose`.
+</Aside>
+
+For a quick health check on the workflow configured in your project, see [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get), which shows deployment health and the most recent execution.
+
+## `cre execution list`
+
+Lists recent workflow executions from the CRE platform.
+
+**Usage:**
+
+```bash
+cre execution list [workflow-id-or-name] [flags]
+```
+
+**Arguments:**
+
+- `[workflow-id-or-name]` — (Optional) On-chain workflow ID (64-char hex, visible in [`cre workflow list`](/cre/reference/cli/workflow#cre-workflow-list)) or workflow name. When omitted, executions across all workflows are returned.
+
+**Flags:**
+
+| Flag                | Description                                                                     |
+| ------------------- | ------------------------------------------------------------------------------- |
+| `--status <string>` | Filter by execution status: `TRIGGERED`, `IN_PROGRESS`, `SUCCESS`, or `FAILURE` |
+| `--start <string>`  | Start of time range in ISO8601 format (e.g. `2026-01-01T00:00:00Z`)             |
+| `--end <string>`    | End of time range in ISO8601 format (e.g. `2026-01-02T00:00:00Z`)               |
+| `--limit <int>`     | Maximum number of executions to return (max 100, default 20)                    |
+| `--output <string>` | Output format. Use `json` to print a JSON array to stdout for scripting         |
+| `--json`            | Shorthand for `--output=json`                                                   |
+
+**Examples:**
+
+```bash
+cre execution list
+cre execution list my-workflow
+cre execution list my-workflow --status FAILURE
+cre execution list my-workflow --start 2026-01-01T00:00:00Z --end 2026-01-02T00:00:00Z
+cre execution list my-workflow --limit 50 --output json
+```
+
+***
+
+## `cre execution status`
+
+Shows detailed status for a single workflow execution, including top-level errors when the run has failed.
+
+**Usage:**
+
+```bash
+cre execution status <execution-uuid> [flags]
+```
+
+**Arguments:**
+
+- `<execution-uuid>` — (Required) Execution UUID from `cre execution list` or the CRE UI
+
+**Flags:**
+
+| Flag                | Description                                       |
+| ------------------- | ------------------------------------------------- |
+| `--output <string>` | Output format. Use `json` to print JSON to stdout |
+| `--json`            | Shorthand for `--output=json`                     |
+
+**Examples:**
+
+```bash
+cre execution status 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g
+cre execution status 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g --output json
+```
+
+***
+
+## `cre execution events`
+
+Shows the ordered capability event timeline for a workflow execution, including per-event status, method, duration, and errors.
+
+**Usage:**
+
+```bash
+cre execution events <execution-uuid> [flags]
+```
+
+**Arguments:**
+
+- `<execution-uuid>` — (Required) Execution UUID
+
+**Flags:**
+
+| Flag                    | Description                                               |
+| ----------------------- | --------------------------------------------------------- |
+| `--capability <string>` | Filter events to a specific capability ID                 |
+| `--status <string>`     | Filter events by status (e.g. `FAILURE`)                  |
+| `--output <string>`     | Output format. Use `json` to print a JSON array to stdout |
+| `--json`                | Shorthand for `--output=json`                             |
+
+**Examples:**
+
+```bash
+cre execution events 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g
+cre execution events 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g --capability fetch-price
+cre execution events 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g --status FAILURE --output json
+```
+
+***
+
+## `cre execution logs`
+
+Shows log lines emitted during a workflow execution.
+
+**Usage:**
+
+```bash
+cre execution logs <execution-uuid> [flags]
+```
+
+**Arguments:**
+
+- `<execution-uuid>` — (Required) Execution UUID
+
+**Flags:**
+
+| Flag                | Description                                                        |
+| ------------------- | ------------------------------------------------------------------ |
+| `--node <string>`   | Filter logs to a specific node or capability ID (case-insensitive) |
+| `--output <string>` | Output format. Use `json` to print a JSON array to stdout          |
+| `--json`            | Shorthand for `--output=json`                                      |
+
+**Examples:**
+
+```bash
+cre execution logs 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g
+cre execution logs 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g --node ProcessData
+cre execution logs 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g --output json
+```
+
+## Learn more
+
+- [Monitoring & Debugging Workflows](/cre/guides/operations/monitoring-workflows) — Web UI monitoring dashboard
+- [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get) — Deployment health and recent execution for the workflow in `workflow.yaml`
 
 ---
 
@@ -16511,6 +16766,682 @@ After a successful [`Report.parse()`](/cre/reference/sdk/core-ts#report-verifica
 
 ---
 
+# Generating Solana Bindings
+Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/generating-bindings-ts
+Last Updated: 2026-07-08
+
+To interact with a Solana program from your TypeScript workflow, you generate **bindings** from the program's [Anchor IDL](https://www.anchor-lang.com/docs/references/idl). Bindings are typed TypeScript classes that handle Borsh encoding, account hashing, and report submission automatically.
+
+The Solana CRE capability is write-only. For each Anchor struct in your IDL, the generator creates a `writeReportFrom<StructName>()` method on the binding class. Your workflow calls this method with the struct data and the required accounts; the generated code handles everything else.
+
+<Aside type="note" title="CLI version requirement">
+  TypeScript Solana binding generation and Solana write simulation require **CRE CLI v1.24.0 or later**. Run `cre
+    version` to check, then `cre update` if needed.
+</Aside>
+
+## The generation process
+
+The CRE CLI reads your IDL files and generates a typed class with the write helpers your workflow needs.
+
+The target language is **auto-detected** from your project files (presence of `package.json` picks TypeScript). You can also force TypeScript explicitly with the `--language` flag:
+
+```bash
+cre generate-bindings solana --language typescript
+```
+
+### Step 1: Add your Anchor IDL
+
+Place your program's Anchor IDL file in `contracts/solana/src/idl/`. The IDL is a JSON file that Anchor generates when you build your program:
+
+```bash
+# In your Anchor project
+anchor build
+# IDL is written to: target/idl/<program-name>.json
+```
+
+Copy or symlink it into your CRE project:
+
+```bash
+mkdir -p contracts/solana/src/idl
+cp /path/to/your-anchor-project/target/idl/my_program.json contracts/solana/src/idl/
+```
+
+### Step 2: Generate the bindings
+
+From your **project root**, run:
+
+```bash
+cre generate-bindings solana
+```
+
+This reads all `.json` IDL files in `contracts/solana/src/idl/` and generates TypeScript files in `contracts/solana/ts/generated/`. For each IDL, three files are generated:
+
+- `<ProgramName>.ts` — The typed binding class with `writeReportFrom<StructName>()` methods
+- `<ProgramName>_mock.ts` — A mock for testing without a live network
+- `index.ts` — A barrel re-exporting everything
+
+## Using generated bindings
+
+### For onchain writes
+
+For each struct in your IDL's `types` section, the generator creates a `writeReportFrom<StructName>()` method that Borsh-encodes your data, builds the forwarder report, and submits it in one step.
+
+**Example: A minimal `DataStorage` IDL**
+
+The following IDL is enough to generate a `writeReportFromUserData()` helper. Save it as `contracts/solana/src/idl/data_storage.json`. You can run this example without deploying your own Anchor program: the program ID in the IDL is used as the write receiver, and simulation uses the Solana Devnet mock forwarder built into the CLI.
+
+```json
+{
+  "address": "ECL8142j2YQAvs9R9geSsRnkVH2wLEi7soJCRyJ74cfL",
+  "metadata": {
+    "name": "data_storage",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Minimal CRE Solana write example IDL"
+  },
+  "instructions": [
+    {
+      "name": "on_report",
+      "discriminator": [214, 173, 18, 221, 173, 148, 151, 208],
+      "accounts": [],
+      "args": [
+        { "name": "_metadata", "type": "bytes" },
+        { "name": "payload", "type": "bytes" }
+      ]
+    }
+  ],
+  "accounts": [],
+  "events": [],
+  "errors": [],
+  "types": [
+    {
+      "name": "UserData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "key", "type": "string" },
+          { "name": "value", "type": "string" }
+        ]
+      }
+    }
+  ]
+}
+```
+
+1. Generate the bindings from your project root.
+
+   ```bash
+   cre generate-bindings solana
+   ```
+
+   This creates `contracts/solana/ts/generated/DataStorage.ts` (plus `DataStorage_mock.ts` and `index.ts`). The generated `DataStorage` class includes `writeReportFromUserData(runtime, input, remainingAccounts, computeConfig?)`.
+
+2. Add Solana Devnet to `project.yaml` under your simulation target.
+
+   ```yaml
+   staging-settings:
+     rpcs:
+       - chain-name: solana-devnet
+         url: https://api.devnet.solana.com
+   ```
+
+3. Save the following as `config.staging.json` in your workflow folder.
+
+   These addresses are the Solana Devnet **mock forwarder** values used by `cre workflow simulate`. The `forwarderAuthority` PDA is derived from `["forwarder", forwarderState, receiverProgram]` under the mock forwarder program ID for the `DataStorage` receiver above. `reportState` is a placeholder writable account for this dry-run example.
+
+   ```json
+   {
+     "schedule": "*/30 * * * * *",
+     "chainSelector": "16423721717087811551",
+     "forwarderState": "5Tipz3yhTBdVsDbaBxZkrp7Gjf3brGq5SKkxReefPMP7",
+     "forwarderAuthority": "5wxb2QHeB4iyN1mPfmsjdsaxoP4P9EmTU7zBzpp4UgVu",
+     "reportState": "11111111111111111111111111111111"
+   }
+   ```
+
+4. Save the following as `my-workflow/main.ts`.
+
+   ```typescript
+   // my-workflow/main.ts
+   import { CronCapability, handler, Runner, SolanaClient, solanaAccountMeta, type Runtime } from "@chainlink/cre-sdk"
+   import { DataStorage } from "../contracts/solana/ts/generated/DataStorage"
+
+   type Config = {
+     schedule: string
+     chainSelector: string
+     forwarderState: string
+     forwarderAuthority: string
+     reportState: string
+   }
+
+   const onCronTrigger = (runtime: Runtime<Config>) => {
+     const config = runtime.config
+
+     const client = new SolanaClient(BigInt(config.chainSelector))
+     // Program ID defaults to the address baked into the IDL
+     const ds = new DataStorage(client)
+
+     // remainingAccounts layout required by the forwarder:
+     //   Index 0: forwarderState (read-only)
+     //   Index 1: forwarderAuthority PDA (read-only)
+     //   Index 2+: receiver-specific accounts
+     const remainingAccounts = [
+       solanaAccountMeta(config.forwarderState, false),
+       solanaAccountMeta(config.forwarderAuthority, false),
+       solanaAccountMeta(config.reportState, true),
+     ]
+
+     runtime.log("Submitting UserData to Solana DataStorage program")
+
+     // Solana simulate requires a non-nil computeConfig with computeLimit > 0
+     const result = ds.writeReportFromUserData(runtime, { key: "price", value: "500000" }, remainingAccounts, {
+       computeLimit: 200_000,
+     })
+
+     runtime.log(`Write completed txStatus=${result.txStatus} errorMessage=${result.errorMessage ?? ""}`)
+     return result
+   }
+
+   export const initWorkflow = (config: Config) => {
+     const cron = new CronCapability()
+     return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+   }
+
+   export async function main() {
+     const runner = await Runner.newRunner<Config>()
+     await runner.run(initWorkflow)
+   }
+   ```
+
+5. Set `CRE_SOLANA_PRIVATE_KEY` in your project `.env`, then run the simulation.
+
+   Solana simulation requires a 64-byte base58 keypair even for dry-run (no `--broadcast`). The transmitter account derived from that key must exist and be funded on Solana Devnet. Generate a key with `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and put the keypair in `.env`:
+
+   ```bash
+   CRE_SOLANA_PRIVATE_KEY=<your-64-byte-base58-keypair>
+   ```
+
+   Then from your project root:
+
+   ```bash
+   cre workflow simulate my-workflow --target staging-settings
+   ```
+
+   Expected output (dry-run against the mock forwarder). This example uses a placeholder receiver program ID, so the
+   write path completes through the mock forwarder and the CPI into the receiver returns `Custom:2007`. That confirms
+   bindings, encoding, and report submission worked:
+
+   ```
+   ✓ Workflow compiled
+   [SIMULATION] Simulator Initialized
+   [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+   [USER LOG] Submitting UserData to Solana DataStorage program
+   [USER LOG] Write completed txStatus=0 errorMessage=map[InstructionError:[0 map[Custom:2007]]]
+
+   ✓ Workflow Simulation Result:
+   {
+     "$typeName": "capabilities.blockchain.solana.v1alpha.WriteReportReply",
+     "errorMessage": "map[InstructionError:[0 map[Custom:2007]]]",
+     "transactionFee": 7262,
+     "txStatus": 0
+   }
+   ```
+
+<Aside type="note" title="What does writeReportFrom do?">
+  The generated method Borsh-encodes the struct with `@solana/codecs`, hashes `remainingAccounts` via
+  `calculateAccountsHash`, encodes a forwarder report and calls `runtime.report()` with `prepareSolanaReportRequest`,
+  calls `SolanaClient.writeReport()` to submit it, and returns the transaction result synchronously (after consensus).
+</Aside>
+
+## What the CLI generates
+
+For each IDL file, the generator creates three files in `contracts/solana/ts/generated/`:
+
+- `<ProgramName>.ts` — The main binding class
+- `<ProgramName>_mock.ts` — A mock implementation for testing
+- `index.ts` — A barrel re-exporting everything
+
+What's inside depends on your IDL:
+
+- **For all programs**:
+  - A typed `<PROGRAM>_IDL` constant and `<PROGRAM>_PROGRAM_ID` from the IDL address.
+  - A `<ProgramName>` class with a `writeReport(runtime, payload, remainingAccounts, computeConfig?)` base method.
+- **For onchain writes** (each struct in `types`):
+  - A `writeReportFrom<StructName>(runtime, input, remainingAccounts, computeConfig?)` method.
+  - A `writeReportFrom<StructName>s(...)` variant for Borsh `Vec` payloads.
+
+You can import from the barrel file to keep imports clean:
+
+```typescript
+import { DataStorage } from "../contracts/solana/ts/generated"
+```
+
+## `remainingAccounts` layout
+
+Every Solana write requires a `remainingAccounts` array. The Keystone Forwarder (and the Devnet mock forwarder used in simulation) expects:
+
+| Index | Account              | Writable                | How to obtain                                                                                      |
+| ----- | -------------------- | ----------------------- | -------------------------------------------------------------------------------------------------- |
+| 0     | `forwarderState`     | No                      | Provided by Chainlink for the forwarder deployment (mock values are built into the CLI for Devnet) |
+| 1     | `forwarderAuthority` | No                      | PDA derived from `["forwarder", forwarderState, receiverProgram]` under the forwarder program ID   |
+| 2+    | Receiver accounts    | Depends on your program | Defined by your Anchor program's `on_report` instruction                                           |
+
+The `forwarderAuthority` PDA derivation in TypeScript using `@solana/addresses`:
+
+```typescript
+import { getProgramDerivedAddress, address, getAddressEncoder } from "@solana/addresses"
+
+const enc = getAddressEncoder()
+const [forwarderAuthority] = await getProgramDerivedAddress({
+  programAddress: address(forwarderProgramId),
+  seeds: [Buffer.from("forwarder"), enc.encode(address(forwarderState)), enc.encode(address(receiverProgramId))],
+})
+```
+
+<Aside type="tip" title="PDA derivation">
+  Derive the `forwarderAuthority` PDA once and store it in config. The seeds are: `["forwarder", forwarderState bytes,
+    receiverProgram bytes]` under the forwarder program ID.
+</Aside>
+
+## Best practices
+
+1. **Regenerate when needed**: Re-run `cre generate-bindings solana` whenever your Anchor IDL changes. Do not edit generated files by hand.
+2. **Always pass `computeConfig`**: Solana simulation rejects a missing or zero `computeLimit`. Pass `{ computeLimit: 200_000 }` (or another positive limit within the simulator's CU cap).
+3. **Store addresses in config**: Put forwarder and account addresses in `config.staging.json` / `config.production.json` rather than hard-coding them.
+4. **`chainSelector` as string in config**: Store the chain selector as a stringified number in JSON to avoid precision loss, then convert with `BigInt()` in workflow code.
+5. **Use explicit `--language` in CI**: If your project has both `go.mod` and `package.json`, pass `--language typescript` explicitly.
+
+## Where to go next
+
+- [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-ts) — Full write walkthrough (deploy, broadcast, production forwarder addresses)
+- [Solana Client SDK Reference](/cre/reference/sdk/solana-client-ts) — Full API reference for `SolanaClient` and helper functions
+
+---
+
+# Writing to Solana
+Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/onchain-write-ts
+Last Updated: 2026-07-13
+
+This guide walks through your first Solana write from a CRE workflow using the TypeScript SDK. The preferred path is
+**generated bindings**: you place your Anchor IDL in the project, run `cre generate-bindings solana`, and call a typed
+`writeReportFrom...` helper. The binding Borsh-encodes your payload, builds the forwarder report, and submits it — you
+do not hand-roll encoding.
+
+Onchain, the DON does not call your program directly. It submits a signed report to the **Keystone Forwarder** — a
+Chainlink-managed Solana program that verifies DON signatures, then cross-program invokes (CPI) your receiver's
+`on_report`. That is the same forwarder model as [EVM Write](/cre/capabilities/evm-read-write); see
+[Solana Write](/cre/capabilities/solana-write) for the full flow. Local simulation uses a Devnet stand-in of that
+forwarder so you can dry-run without deploying. After you deploy, the live forwarder addresses apply.
+
+For IDL layout, generator output, and what each `writeReportFrom...` method does under the hood, see
+[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-ts).
+
+## Prerequisites
+
+- A CRE project initialized with `cre init`. See [Part 1: Project Setup](/cre/getting-started/part-1-project-setup-ts) if you are starting from scratch.
+- CRE CLI **v1.24.0 or later** (`cre version` / `cre update`) with TypeScript Solana binding generation.
+- A funded Solana Devnet keypair for `CRE_SOLANA_PRIVATE_KEY` (required even for dry-run). Generate one with `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and put the 64-byte base58 keypair in your project `.env`. See [Step 4](#step-4-run-the-simulation).
+
+## What you need: a receiver program
+
+Your Solana program must implement an `on_report` instruction that accepts the payload delivered by the forwarder. The
+forwarder CPIs into your program after verifying the DON signatures. Your Anchor IDL's `types` section defines the
+struct(s) you will write; the generator turns each into a `writeReportFrom<StructName>()` method.
+
+This guide uses a minimal `DataStorage` / `UserData` IDL so you can simulate without deploying your own program. Swap in
+your IDL and call the generated helpers for your structs when you are ready.
+
+<Aside type="note" title="Forwarder strips leading accounts">
+  The forwarder passes only indices 2+ of your `remainingAccounts` list to your program's CPI call. Indices 0
+  (`forwarderState`) and 1 (`forwarderAuthority`) are consumed by the forwarder itself.
+</Aside>
+
+## Step 1: Add your IDL and generate bindings
+
+1. Save the following as `contracts/solana/src/idl/data_storage.json` (or copy your own Anchor IDL into that folder).
+
+   ```json
+   {
+     "address": "ECL8142j2YQAvs9R9geSsRnkVH2wLEi7soJCRyJ74cfL",
+     "metadata": {
+       "name": "data_storage",
+       "version": "0.1.0",
+       "spec": "0.1.0",
+       "description": "Minimal CRE Solana write example IDL"
+     },
+     "instructions": [
+       {
+         "name": "on_report",
+         "discriminator": [214, 173, 18, 221, 173, 148, 151, 208],
+         "accounts": [],
+         "args": [
+           { "name": "_metadata", "type": "bytes" },
+           { "name": "payload", "type": "bytes" }
+         ]
+       }
+     ],
+     "accounts": [],
+     "events": [],
+     "errors": [],
+     "types": [
+       {
+         "name": "UserData",
+         "type": {
+           "kind": "struct",
+           "fields": [
+             { "name": "key", "type": "string" },
+             { "name": "value", "type": "string" }
+           ]
+         }
+       }
+     ]
+   }
+   ```
+
+2. From your project root, generate the bindings:
+
+   ```bash
+   cre generate-bindings solana
+   ```
+
+   This creates `contracts/solana/ts/generated/DataStorage.ts` (plus a mock and `index.ts`). The `DataStorage` class
+   includes `writeReportFromUserData(runtime, input, remainingAccounts, computeConfig?)`.
+
+## Step 2: Configure the workflow
+
+1. Open (or create) `config.staging.json` and add the Solana Devnet simulation parameters.
+
+   For `cre workflow simulate`, use these fixed Devnet forwarder program and state accounts (baked into the CLI).
+   `receiverProgramId` matches the IDL address above for this example; with your own program, use your Devnet program
+   ID.
+
+   ```json
+   {
+     "schedule": "*/30 * * * * *",
+     "chainSelector": "16423721717087811551",
+     "receiverProgramId": "ECL8142j2YQAvs9R9geSsRnkVH2wLEi7soJCRyJ74cfL",
+     "forwarderProgramId": "7kuEAA3mSC1Tz8gQjnvH7bKFda9xSPRRin9SZbH49cNK",
+     "forwarderState": "5Tipz3yhTBdVsDbaBxZkrp7Gjf3brGq5SKkxReefPMP7",
+     "reportState": "11111111111111111111111111111111",
+     "computeLimit": 200000
+   }
+   ```
+
+   | Field                | Description                                                                                 |
+   | -------------------- | ------------------------------------------------------------------------------------------- |
+   | `chainSelector`      | Solana Devnet (`"16423721717087811551"`). Store as a string to avoid JSON precision loss.   |
+   | `receiverProgramId`  | Your receiver program (IDL address for this example)                                        |
+   | `forwarderProgramId` | Forwarder program ID used for local simulation (fixed Devnet value)                         |
+   | `forwarderState`     | Forwarder state account used for local simulation (fixed Devnet value)                      |
+   | `reportState`        | Writable account required by your receiver (placeholder system program ID for this dry-run) |
+   | `computeLimit`       | Solana compute units; must be greater than 0 for simulation                                 |
+
+   The workflow derives `forwarderAuthority` at runtime from
+   `["forwarder", forwarderState, receiverProgram]` under `forwarderProgramId`. When you deploy in [Step 5](#step-5-deploy-the-workflow),
+   keep that derivation and point `forwarderProgramId` / `forwarderState` at the live forwarder addresses for your
+   network.
+
+## Step 3: Write the workflow
+
+This step is a complete, pasteable workflow that performs one Solana write on a cron trigger using **generated
+bindings**. It reads config, derives the forwarder authority PDA, builds the `remainingAccounts` list the forwarder
+expects, and calls `writeReportFromUserData()`. Replace `DataStorage` / `UserData` with your generated class and struct
+when you use your own IDL.
+
+1. Save the following as `my-workflow/main.ts`.
+
+   ```typescript
+   // my-workflow/main.ts
+   import {
+     CronCapability,
+     type CronPayload,
+     handler,
+     Runner,
+     type Runtime,
+     SolanaClient,
+     solanaAccountMeta,
+   } from "@chainlink/cre-sdk"
+   import { PublicKey } from "@solana/web3.js"
+   import { DataStorage, type UserData } from "../contracts/solana/ts/generated/DataStorage"
+
+   type Config = {
+     schedule: string
+     chainSelector: string
+     receiverProgramId: string
+     forwarderProgramId: string
+     forwarderState: string
+     reportState: string
+     computeLimit?: number
+   }
+
+   const DEFAULT_COMPUTE_LIMIT = 200_000
+   const FORWARDER_SEED = Uint8Array.from("forwarder", (c) => c.charCodeAt(0))
+
+   function deriveForwarderAuthority(
+     forwarderState: PublicKey,
+     receiverProgram: PublicKey,
+     forwarderProgram: PublicKey
+   ): PublicKey {
+     const [authority] = PublicKey.findProgramAddressSync(
+       [FORWARDER_SEED, forwarderState.toBytes(), receiverProgram.toBytes()],
+       forwarderProgram
+     )
+     return authority
+   }
+
+   const onCronTrigger = (runtime: Runtime<Config>, _trigger: CronPayload): string => {
+     const cfg = runtime.config
+     const client = new SolanaClient(BigInt(cfg.chainSelector))
+     // Program ID defaults to the address baked into the IDL; pass cfg.receiverProgramId to override.
+     const receiver = new DataStorage(client, cfg.receiverProgramId)
+
+     const forwarderState = new PublicKey(cfg.forwarderState)
+     const receiverProgram = new PublicKey(cfg.receiverProgramId)
+     const forwarderProgram = new PublicKey(cfg.forwarderProgramId)
+     const reportState = new PublicKey(cfg.reportState)
+     const forwarderAuthority = deriveForwarderAuthority(forwarderState, receiverProgram, forwarderProgram)
+
+     // Index 0 forwarderState, 1 forwarderAuthority (derived), 2+ reportState.
+     const remainingAccounts = [
+       solanaAccountMeta(forwarderState.toBase58(), false),
+       solanaAccountMeta(forwarderAuthority.toBase58(), false),
+       solanaAccountMeta(reportState.toBase58(), true),
+     ]
+
+     const payload: UserData = { key: "price", value: "500000" }
+
+     runtime.log(
+       `Submitting UserData via bindings key=${payload.key} forwarderAuthority=${forwarderAuthority.toBase58()}`
+     )
+
+     const computeLimit = cfg.computeLimit ?? DEFAULT_COMPUTE_LIMIT
+     const out = receiver.writeReportFromUserData(runtime, payload, remainingAccounts, { computeLimit })
+
+     runtime.log(
+       `Write completed txStatus=${out.txStatus} errorMessage=${out.errorMessage ?? ""} txSignature=${out.txSignature ?? ""}`
+     )
+     if (out.errorMessage && out.errorMessage.length > 0) {
+       return out.errorMessage
+     }
+     return "Success"
+   }
+
+   export const initWorkflow = (config: Config) => {
+     const cron = new CronCapability()
+     return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+   }
+
+   export async function main() {
+     const runner = await Runner.newRunner<Config>()
+     await runner.run(initWorkflow)
+   }
+   ```
+
+## Step 4: Run the simulation
+
+Use this step to confirm compile, trigger, and the bindings write path with `cre workflow simulate`.
+
+1. Add a Solana RPC endpoint to your `project.yaml` under your simulation target.
+
+   ```yaml
+   staging-settings:
+     rpcs:
+       - chain-name: solana-devnet
+         url: https://api.devnet.solana.com
+   ```
+
+2. Set `CRE_SOLANA_PRIVATE_KEY` in your project `.env`.
+
+   Solana simulation requires a 64-byte base58 keypair even for dry-run. The transmitter account must exist and be
+   funded on Solana Devnet. Generate a key with `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and
+   put the keypair in `.env`:
+
+   ```bash
+   CRE_SOLANA_PRIVATE_KEY=<your-64-byte-base58-keypair>
+   ```
+
+3. Run the dry-run simulation.
+
+   ```bash
+   cre workflow simulate my-workflow --target staging-settings
+   ```
+
+   Confirm the workflow compiles, the cron trigger runs, and your USER LOGs appear. This example uses a placeholder
+   receiver program ID, so the simulation write may complete with a receiver CPI error such as `Custom:2007`. That still
+   confirms bindings, encoding, and report submission worked:
+
+   ```
+   ✓ Workflow compiled
+   [SIMULATION] Simulator Initialized
+   [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+   [USER LOG] Submitting UserData via bindings key=price forwarderAuthority=...
+   [USER LOG] Write completed txStatus=... errorMessage=...
+
+   ✓ Workflow Simulation Result:
+   ...
+   ```
+
+   When you are ready to run on the DON with **your** receiver, continue to [Step 5](#step-5-deploy-the-workflow).
+
+## Step 5: Deploy the workflow
+
+A deployed workflow runs on the DON, which submits reports through the live Keystone Forwarder on Solana Devnet. Prefer
+the [private registry](/cre/guides/operations/deploying-to-private-registry-ts) for this example (CRE login session; no
+Ethereum gas for registry ops). You need [Deploy Access](/cre/account/deploy-access).
+
+Use **your** receiver program ID and accounts — not the placeholder `DataStorage` address from the dry-run IDL unless
+that program is actually deployed and ready to accept writes.
+
+1. Create `config.production.json` with the live forwarder addresses for your network (same receiver and report state
+   your program expects).
+
+   ```json
+   {
+     "schedule": "30 */5 * * * *",
+     "chainSelector": "16423721717087811551",
+     "receiverProgramId": "<RECEIVER_PROGRAM_ID>",
+     "forwarderProgramId": "<FORWARDER_PROGRAM_ID>",
+     "forwarderState": "<FORWARDER_STATE>",
+     "reportState": "<REPORT_STATE>",
+     "computeLimit": 290000
+   }
+   ```
+
+   Get forwarder program and state addresses from your Chainlink representative. The workflow still derives
+   `forwarderAuthority` from `["forwarder", forwarderState, receiverProgram]` under that `forwarderProgramId`.
+
+2. Point a deploy target at that config and the private registry in `my-workflow/workflow.yaml`.
+
+   ```yaml
+   production-settings:
+     user-workflow:
+       workflow-name: "my-solana-write"
+       deployment-registry: "private"
+     workflow-artifacts:
+       workflow-path: "./main.ts"
+       config-path: "./config.production.json"
+       secrets-path: ""
+   ```
+
+3. Add the Solana Devnet RPC under `production-settings` in `project.yaml` (same URL as staging is fine).
+
+4. Deploy from your project root.
+
+   ```bash
+   cre workflow deploy my-workflow --target production-settings
+   ```
+
+   Expected shape:
+
+   ```
+   Deploying Workflow: my-solana-write
+     Registry:      private
+     ...
+   ✓ Workflow registered in private registry
+   ...
+        Status:           Active
+   ```
+
+5. After the cron fires, open the workflow in the [CRE platform](https://app.chain.link/cre/workflows) (or run
+   `cre execution list my-solana-write`) and confirm node logs reach the write path:
+
+   ```
+   Submitting UserData via bindings key=...
+   ```
+
+   If WriteReport returns a Solana `txSignature`, confirm the transaction on
+   [Solana Explorer](https://explorer.solana.com/?cluster=devnet) (forwarder as the top-level program, your receiver as
+   a CPI).
+
+See [Deploying to the Private Registry](/cre/guides/operations/deploying-to-private-registry-ts) for registry details, activate/pause, and CI flags.
+
+## What happens onchain
+
+When the deployed workflow runs on the DON:
+
+1. The DON nodes each execute your workflow and reach consensus on the encoded payload.
+2. A DON node calls the Keystone Forwarder program with the signed report and account list.
+3. The forwarder verifies all DON signatures.
+4. The forwarder CPIs into your program's `on_report` instruction with the decoded payload and receiver accounts.
+
+The transaction on Solana Explorer will show the forwarder program as the initial callee, with your program appearing as a CPI target.
+
+## Next steps
+
+- **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-ts)**: IDL layout, generator output, and what `writeReportFrom...` does
+- **[Solana Client SDK Reference](/cre/reference/sdk/solana-client-ts)**: Full API reference for `SolanaClient` and helpers
+- **[Solana Write Capability](/cre/capabilities/solana-write)**: Architecture and account layout reference
+
+---
+
+# Solana Chain Interactions
+Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/overview-ts
+Last Updated: 2026-07-13
+
+`SolanaClient` is the TypeScript SDK's interface for Solana chain interactions from CRE workflows. Writes submit cryptographically signed reports through the Keystone Forwarder program, which verifies DON signatures and CPIs into your receiver program.
+
+<Aside type="note" title="Write only — for now">
+  The current release supports **onchain writes** only. Solana Read and Solana Log Trigger capabilities are in active
+  development and will be documented when available.
+</Aside>
+
+## How it works
+
+For Solana program interactions, CRE can **generate typed bindings** from your program's [Anchor IDL](https://www.anchor-lang.com/docs/references/idl). You place the IDL in your project, run `cre generate-bindings solana`, and the CLI creates TypeScript classes with helpers such as `writeReportFrom<StructName>()` that handle encoding, account hashing, and report submission for you.
+
+Typical flow:
+
+1. Add your Anchor IDL under `contracts/solana/src/idl/`
+2. Run `cre generate-bindings solana` from your project root
+3. Call the generated helpers from your workflow
+
+## Guides
+
+- **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-ts)**: Generate typed TypeScript classes from your Anchor IDL using the CRE CLI
+- **[Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-ts)**: End-to-end first write with generated bindings, simulate, and deploy
+
+---
+
 # Cron Trigger
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/cron-trigger-ts
 Last Updated: 2026-01-20
@@ -21469,6 +22400,367 @@ TypeScript workflows are compiled to WebAssembly (WASM) using Javy and QuickJS. 
 
 ---
 
+# SDK Reference: Solana Client
+Source: https://docs.chain.link/cre/reference/sdk/solana-client-ts
+Last Updated: 2026-07-06
+
+This page provides a reference for `SolanaClient`, the TypeScript SDK interface for writing data to Solana programs via the Keystone Forwarder. It covers the client class, all exported helper functions, and the chain selector reference for Solana networks.
+
+<Aside type="note" title="Write only — for now">
+  The current release supports onchain **writes** only. Solana Read and Solana Log Trigger capabilities are in
+  development.
+</Aside>
+
+## Client instantiation
+
+Instantiate `SolanaClient` with the `bigint` chain selector for the Solana network you are targeting.
+
+```typescript
+import { SolanaClient } from "@chainlink/cre-sdk"
+
+// Solana Mainnet
+const client = new SolanaClient(124615329519749607n)
+
+// Or use the supported chain selectors constant
+const client = new SolanaClient(SolanaClient.SUPPORTED_CHAIN_SELECTORS["solana-mainnet"])
+```
+
+### Static constants
+
+| Constant                                                   | Type     | Value                   |
+| ---------------------------------------------------------- | -------- | ----------------------- |
+| `SolanaClient.CAPABILITY_ID`                               | `string` | `"solana@1.0.0"`        |
+| `SolanaClient.CAPABILITY_NAME`                             | `string` | `"solana"`              |
+| `SolanaClient.CAPABILITY_VERSION`                          | `string` | `"1.0.0"`               |
+| `SolanaClient.SUPPORTED_CHAIN_SELECTORS["solana-mainnet"]` | `bigint` | `124615329519749607n`   |
+| `SolanaClient.SUPPORTED_CHAIN_SELECTORS["solana-devnet"]`  | `bigint` | `16423721717087811551n` |
+
+***
+
+## Write methods
+
+### `writeReport()`
+
+Submits a cryptographically signed report to a Solana program via the Keystone Forwarder. This is the primary method for writing data onchain from a CRE workflow. In practice, you call this indirectly through generated binding methods (`writeReportFrom<StructName>()`), which handle Borsh encoding and account hashing for you.
+
+**Signature:**
+
+```typescript
+writeReport(
+  runtime: Runtime<unknown>,
+  input: SolanaWriteCreReportRequest | SolanaWriteCreReportRequestJson
+): { result: () => WriteReportReply }
+```
+
+#### `SolanaWriteCreReportRequestJson`
+
+The plain-object form accepted by `writeReport`. Generated binding methods build this internally.
+
+| Field               | Type                | Required | Description                                                     |
+| ------------------- | ------------------- | -------- | --------------------------------------------------------------- |
+| `receiver`          | `string`            | Yes      | Hex-encoded 32-byte program ID of the receiver program          |
+| `remainingAccounts` | `AccountMetaJson[]` | Yes      | Ordered list of accounts required by the forwarder and receiver |
+| `report`            | `Report`            | Yes      | The signed report returned by `runtime.report()`                |
+| `computeConfig`     | `ComputeConfigJson` | No       | Optional compute budget configuration                           |
+
+#### `AccountMetaJson`
+
+| Field        | Type      | Required | Description                                        |
+| ------------ | --------- | -------- | -------------------------------------------------- |
+| `publicKey`  | `string`  | Yes      | Base64-encoded 32-byte public key                  |
+| `isWritable` | `boolean` | No       | Whether the account is writable (default: `false`) |
+
+Use `solanaAccountMetasToJson()` to convert `SolanaAccountMeta[]` to this format.
+
+#### `ComputeConfigJson`
+
+| Field              | Type     | Required | Description                                                   |
+| ------------------ | -------- | -------- | ------------------------------------------------------------- |
+| `computeUnitLimit` | `string` | No       | Maximum compute units for the transaction (default: `290000`) |
+
+#### `WriteReportReply`
+
+| Field          | Type             | Description                                                    |
+| -------------- | ---------------- | -------------------------------------------------------------- |
+| `txStatus`     | `SolanaTxStatus` | `TX_STATUS_SUCCESS`, `TX_STATUS_ABORTED`, or `TX_STATUS_FATAL` |
+| `txSignature`  | `Uint8Array`     | Transaction signature bytes (optional)                         |
+| `errorMessage` | `string`         | Error message if the transaction failed (optional)             |
+
+#### Usage example
+
+The low-level call, shown for reference. In most workflows, use a generated binding instead.
+
+```typescript
+import {
+  SolanaClient,
+  solanaAccountMeta,
+  solanaAccountMetasToJson,
+  calculateAccountsHash,
+  encodeForwarderReport,
+  prepareSolanaReportRequest,
+  bytesToHex,
+  solanaAddressToBytes,
+  type Runtime,
+} from "@chainlink/cre-sdk"
+
+const client = new SolanaClient(124615329519749607n)
+
+const forwarderStateBytes = solanaAddressToBytes("ForwarderStateBase58...")
+const forwarderAuthBytes = solanaAddressToBytes("ForwarderAuthBase58...")
+const reportStateBytes = solanaAddressToBytes("ReportStateBase58...")
+
+const remainingAccounts = [
+  solanaAccountMeta(forwarderStateBytes, false),
+  solanaAccountMeta(forwarderAuthBytes, false),
+  solanaAccountMeta(reportStateBytes, true),
+]
+
+// 1. Borsh-encode your payload (generated bindings do this automatically)
+const payload: Uint8Array = borshEncode({ price: 500000n, timestamp: BigInt(Date.now()) })
+
+// 2. Generate a signed report
+const report = runtime
+  .report(
+    prepareSolanaReportRequest(
+      encodeForwarderReport({
+        accountHash: calculateAccountsHash(remainingAccounts),
+        payload,
+      })
+    )
+  )
+  .result()
+
+// 3. Submit the report
+const result = client
+  .writeReport(runtime, {
+    receiver: bytesToHex(solanaAddressToBytes("ReceiverProgramBase58...")),
+    remainingAccounts: solanaAccountMetasToJson(remainingAccounts),
+    report,
+    computeConfig: { computeUnitLimit: "290000" },
+  })
+  .result()
+```
+
+***
+
+## Helper functions
+
+These functions are exported from `@chainlink/cre-sdk` and used when building Solana write requests, either directly or through generated bindings.
+
+### `solanaAccountMeta()`
+
+Builds an account entry for the `remainingAccounts` list.
+
+**Signature:**
+
+```typescript
+function solanaAccountMeta(publicKey: Uint8Array | string, isWritable?: boolean): SolanaAccountMeta
+```
+
+**Parameters:**
+
+- `publicKey`: The 32-byte public key as raw bytes or a base58-encoded string
+- `isWritable`: Whether the account is writable. Defaults to `false`.
+
+**Usage:**
+
+```typescript
+import { solanaAccountMeta } from "@chainlink/cre-sdk"
+
+// From a base58 string
+const account = solanaAccountMeta("ECL8142j2YQAvs9R9geSsRnkVH2wLEi7soJCRyJ74cfL", true)
+
+// From raw bytes
+const account = solanaAccountMeta(rawBytes, false)
+```
+
+***
+
+### `solanaAddressToBytes()`
+
+Converts a base58-encoded Solana address to its raw 32-byte representation.
+
+**Signature:**
+
+```typescript
+function solanaAddressToBytes(base58Address: string): Uint8Array
+```
+
+**Usage:**
+
+```typescript
+import { solanaAddressToBytes } from "@chainlink/cre-sdk"
+
+const bytes = solanaAddressToBytes("ECL8142j2YQAvs9R9geSsRnkVH2wLEi7soJCRyJ74cfL")
+// → Uint8Array(32)
+```
+
+***
+
+### `solanaAccountMetasToJson()`
+
+Converts `SolanaAccountMeta[]` to the `AccountMetaJson[]` shape expected by `SolanaClient.writeReport()`. Generated bindings call this internally.
+
+**Signature:**
+
+```typescript
+function solanaAccountMetasToJson(accounts: ReadonlyArray<SolanaAccountMeta>): AccountMetaJson[]
+```
+
+***
+
+### `calculateAccountsHash()`
+
+Computes the SHA-256 hash of the concatenated public keys of the given accounts. This hash is embedded in the report payload and verified on-chain by the Keystone Forwarder.
+
+**Signature:**
+
+```typescript
+function calculateAccountsHash(accounts: ReadonlyArray<SolanaAccountInput | null | undefined>): Uint8Array
+```
+
+The hash is computed over the raw 32-byte public keys in the order provided. Account order matters: swapping two accounts produces a different hash.
+
+**Usage:**
+
+```typescript
+import { calculateAccountsHash, solanaAccountMeta } from "@chainlink/cre-sdk"
+
+const accounts = [
+  solanaAccountMeta(forwarderState, false),
+  solanaAccountMeta(forwarderAuthority, false),
+  solanaAccountMeta(reportState, true),
+]
+
+const accountHash = calculateAccountsHash(accounts)
+// → Uint8Array(32) [SHA-256 of concatenated public keys]
+```
+
+***
+
+### `encodeForwarderReport()`
+
+Borsh-encodes a `ForwarderReport` struct for the Keystone Forwarder program. The encoding format is `[32-byte accountHash][u32-LE payload length][payload bytes]`.
+
+**Signature:**
+
+```typescript
+function encodeForwarderReport(report: ForwarderReport): Uint8Array
+```
+
+```typescript
+interface ForwarderReport {
+  accountHash: Uint8Array // must be exactly 32 bytes
+  payload: Uint8Array // your Borsh-encoded struct
+}
+```
+
+**Usage:**
+
+```typescript
+import { encodeForwarderReport, calculateAccountsHash, solanaAccountMeta } from "@chainlink/cre-sdk"
+
+const encoded = encodeForwarderReport({
+  accountHash: calculateAccountsHash(remainingAccounts),
+  payload: borshEncodedPayload,
+})
+```
+
+***
+
+### `prepareSolanaReportRequest()`
+
+Prepares a `ReportRequestJson` for `runtime.report()` using the Solana default encoder (`solana` / `ecdsa` / `keccak256`). Pass the result directly to `runtime.report()`.
+
+**Signature:**
+
+```typescript
+function prepareSolanaReportRequest(payload: Uint8Array, reportEncoder?: ReportEncoder): ReportRequestJson
+```
+
+**Parameters:**
+
+- `payload`: The encoded payload bytes — typically the output of `encodeForwarderReport()`
+- `reportEncoder`: Optional. Defaults to `SOLANA_DEFAULT_REPORT_ENCODER`
+
+**Usage:**
+
+```typescript
+import { prepareSolanaReportRequest, encodeForwarderReport } from "@chainlink/cre-sdk"
+
+const reportRequest = prepareSolanaReportRequest(encodeForwarderReport({ accountHash, payload }))
+
+const report = runtime.report(reportRequest).result()
+```
+
+***
+
+### `SOLANA_DEFAULT_REPORT_ENCODER`
+
+The default encoder configuration for Solana write operations.
+
+```typescript
+const SOLANA_DEFAULT_REPORT_ENCODER = {
+  encoderName: "solana",
+  signingAlgo: "ecdsa",
+  hashingAlgo: "keccak256",
+}
+```
+
+Pass to `prepareSolanaReportRequest()` to override encoding parameters.
+
+***
+
+### `encodeBorshVecU32()`
+
+Encodes a `Vec<Bytes>` in Borsh format: `[u32-LE element count][concatenated element payloads]`. Use this when your receiver program's `on_report` accepts a `Vec<T>` of items.
+
+**Signature:**
+
+```typescript
+function encodeBorshVecU32(elementPayloads: ReadonlyArray<Uint8Array>): Uint8Array
+```
+
+**Usage:**
+
+```typescript
+import { encodeBorshVecU32 } from "@chainlink/cre-sdk"
+
+const vec = encodeBorshVecU32([item1Bytes, item2Bytes, item3Bytes])
+```
+
+Generated binding methods ending in `s` (e.g., `writeReportFromPriceDatas()`) use this internally to encode arrays.
+
+***
+
+## Chain selectors
+
+| Network        | String Name    | Numeric ID           |
+| -------------- | -------------- | -------------------- |
+| Solana Mainnet | solana-mainnet | 124615329519749607   |
+| Solana Devnet  | solana-devnet  | 16423721717087811551 |
+
+In your workflow config (e.g., `config.staging.json`), store the numeric ID as a **string** to avoid JSON precision loss, then convert with `BigInt()`:
+
+```json
+{
+  "chainSelector": "124615329519749607"
+}
+```
+
+```typescript
+const client = new SolanaClient(BigInt(config.chainSelector))
+```
+
+## Related resources
+
+- **[Solana Write Capability](/cre/capabilities/solana-write)**: Architecture reference and account layout
+- **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-ts)**: How to generate typed binding classes from your Anchor IDL
+- **[Writing to Solana guide](/cre/guides/workflow/using-solana-client/onchain-write-ts)**: Step-by-step tutorial
+- **[Supported Networks](/cre/supported-networks-ts)**: Chain selector values for all supported networks
+
+---
+
 # SDK Reference: Cron Trigger
 Source: https://docs.chain.link/cre/reference/sdk/triggers/cron-trigger-ts
 Last Updated: 2026-01-20
@@ -22103,9 +23395,9 @@ This section provides a reference for the built-in trigger capabilities of the C
 
 # Supported Networks
 Source: https://docs.chain.link/cre/supported-networks-ts
-Last Updated: 2026-06-24
+Last Updated: 2026-07-13
 
-This page lists EVM-compatible networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network.
+This page lists networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network. CRE supports two [chain families](/cre/capabilities#chain-families): EVM-compatible chains and Solana.
 
 <Aside type="tip" title="Check chains enabled for your tenant">
   The tables below show minimum version requirements for each network. To see which chains and mock forwarder addresses
@@ -22184,9 +23476,27 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 
 ## Forwarder Addresses
 
-For forwarder contract addresses and chain names, see the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory). Forwarder addresses are used when building consumer contracts that receive workflow reports onchain. Learn more about [Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write/overview).
+For EVM forwarder contract addresses and chain names, see the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory). Forwarder addresses are used when building consumer contracts that receive workflow reports onchain. Learn more about [EVM Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write/overview-ts).
 
 Run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) anytime to list the chains and mock forwarder addresses currently enabled for your tenant.
+
+***
+
+## Solana Networks
+
+Solana support is currently **write-only**. Read and Log Trigger capabilities are in development. Solana write requires
+**CRE CLI v1.24.0 or later** (`cre version` / `cre update`).
+
+| Network        | CLI      | Capabilities | Chain Selector         |
+| -------------- | -------- | ------------ | ---------------------- |
+| Solana Mainnet | v1.24.0+ | Write        | `124615329519749607`   |
+| Solana Devnet  | v1.24.0+ | Write        | `16423721717087811551` |
+
+In TypeScript, use `SolanaClient.SUPPORTED_CHAIN_SELECTORS['solana-mainnet']` (returns `124615329519749607n`) or pass the selector directly as a `bigint`.
+
+For the Solana Keystone Forwarder program addresses, contact your Chainlink representative or run `cre workflow supported-chains` after enabling Solana for your organization.
+
+Learn more in the [Solana Chain Interactions guide](/cre/guides/workflow/using-solana-client/overview-ts).
 
 ---
 
