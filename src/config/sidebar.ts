@@ -360,6 +360,32 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Solana Chain Interactions",
+          url: "cre/guides/workflow/using-solana-client/overview",
+          highlightAsCurrent: [
+            "cre/guides/workflow/using-solana-client/overview-ts",
+            "cre/guides/workflow/using-solana-client/overview-go",
+          ],
+          children: [
+            {
+              title: "Generating Bindings",
+              url: "cre/guides/workflow/using-solana-client/generating-bindings",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-solana-client/generating-bindings-ts",
+                "cre/guides/workflow/using-solana-client/generating-bindings-go",
+              ],
+            },
+            {
+              title: "Onchain Write",
+              url: "cre/guides/workflow/using-solana-client/onchain-write",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-solana-client/onchain-write-ts",
+                "cre/guides/workflow/using-solana-client/onchain-write-go",
+              ],
+            },
+          ],
+        },
+        {
           title: "API Interactions",
           url: "cre/guides/workflow/using-http-client",
           children: [
@@ -572,6 +598,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           highlightAsCurrent: ["cre/capabilities/confidential-http-ts", "cre/capabilities/confidential-http-go"],
         },
         { title: "EVM Read & Write", url: "cre/capabilities/evm-read-write" },
+        { title: "Solana Write", url: "cre/capabilities/solana-write" },
       ],
     },
     {
@@ -640,6 +667,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
             { title: "Account Management", url: "cre/reference/cli/account" },
             { title: "Workflow Commands", url: "cre/reference/cli/workflow" },
+            { title: "Execution Commands", url: "cre/reference/cli/execution" },
             { title: "Registry Commands", url: "cre/reference/cli/registry" },
             { title: "Secrets Management", url: "cre/reference/cli/secrets" },
             { title: "Template Sources", url: "cre/reference/cli/templates" },
@@ -691,6 +719,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "EVM Client",
               url: "cre/reference/sdk/evm-client",
               highlightAsCurrent: ["cre/reference/sdk/evm-client-ts", "cre/reference/sdk/evm-client-go"],
+            },
+            {
+              title: "Solana Client",
+              url: "cre/reference/sdk/solana-client",
+              highlightAsCurrent: ["cre/reference/sdk/solana-client-ts", "cre/reference/sdk/solana-client-go"],
             },
             {
               title: "HTTP Client",
