@@ -5,14 +5,14 @@ sdkLang: "ts"
 pageId: "guides-workflow-solana-overview"
 date: Last Modified
 metadata:
-  description: "Write data to Solana programs from TypeScript CRE workflows using SolanaClient and Borsh-encoded reports."
+  description: "Interact with Solana from TypeScript CRE workflows using SolanaClient and generated Anchor bindings."
   datePublished: "2026-07-06"
-  lastModified: "2026-07-06"
+  lastModified: "2026-07-13"
 ---
 
 import { Aside } from "@components"
 
-`SolanaClient` is the TypeScript SDK's interface for writing data to Solana programs. It submits cryptographically signed reports through the Keystone Forwarder program, which verifies DON signatures and CPIs into your receiver program.
+`SolanaClient` is the TypeScript SDK's interface for Solana chain interactions from CRE workflows. Writes submit cryptographically signed reports through the Keystone Forwarder program, which verifies DON signatures and CPIs into your receiver program.
 
 <Aside type="note" title="Write only — for now">
   The current release supports **onchain writes** only. Solana Read and Solana Log Trigger capabilities are in active
@@ -21,14 +21,13 @@ import { Aside } from "@components"
 
 ## How it works
 
-The TypeScript SDK uses **generated Anchor bindings** for Solana program interactions. You provide your program's Anchor IDL, run the binding generator, and the SDK creates typed classes with `writeReportFrom<StructName>()` methods that handle Borsh encoding, account hashing, and report submission.
+For Solana program interactions, CRE can **generate typed bindings** from your program's [Anchor IDL](https://www.anchor-lang.com/docs/references/idl). You place the IDL in your project, run `cre generate-bindings solana`, and the CLI creates TypeScript classes with helpers such as `writeReportFrom<StructName>()` that handle encoding, account hashing, and report submission for you.
 
-Key aspects of the TypeScript approach:
+Typical flow:
 
-- Anchor IDL-based code generation: no manual Borsh encoding in your workflow code
-- `@solana/addresses` and `@solana/codecs` handle address and codec utilities inside generated bindings
-- `SOLANA_DEFAULT_REPORT_ENCODER` configures the correct signing parameters automatically
-- Account public keys are base64-encoded inside generated bindings; your workflow passes base58 strings via `solanaAccountMeta()`
+1. Add your Anchor IDL under `contracts/solana/src/idl/`
+1. Run `cre generate-bindings solana` from your project root
+1. Call the generated helpers from your workflow
 
 ## Guides
 

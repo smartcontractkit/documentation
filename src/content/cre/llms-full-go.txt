@@ -17553,9 +17553,9 @@ The transaction on Solana Explorer will show the forwarder program as the initia
 
 # Solana Chain Interactions
 Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/overview-go
-Last Updated: 2026-07-06
+Last Updated: 2026-07-13
 
-`solana.Client` is the Go SDK's interface for writing data to Solana programs. It submits cryptographically signed reports through the Keystone Forwarder program, which verifies DON signatures and CPIs into your receiver program.
+`solana.Client` is the Go SDK's interface for Solana chain interactions from CRE workflows. Writes submit cryptographically signed reports through the Keystone Forwarder program, which verifies DON signatures and CPIs into your receiver program.
 
 <Aside type="note" title="Write only — for now">
   The current release supports **onchain writes** only. Solana Read and Solana Log Trigger capabilities are in active
@@ -17564,14 +17564,13 @@ Last Updated: 2026-07-06
 
 ## How it works
 
-The Go SDK uses **generated Anchor bindings** for Solana program interactions. You provide your program's Anchor IDL, run the binding generator, and the SDK creates typed Go structs with `WriteReportFrom<StructName>()` methods that handle Borsh encoding, account hashing, and report submission.
+For Solana program interactions, CRE can **generate typed bindings** from your program's [Anchor IDL](https://www.anchor-lang.com/docs/references/idl). You place the IDL in your project, run `cre generate-bindings solana`, and the CLI creates Go packages with helpers such as `WriteReportFrom<StructName>()` that handle encoding, account hashing, and report submission for you.
 
-Key aspects of the Go approach:
+Typical flow:
 
-- Anchor IDL-based code generation via `cre generate-bindings solana`
-- `github.com/gagliardetto/binary` handles Borsh serialization inside generated bindings
-- `bindings.CalculateAccountsHash` and `bindings.ForwarderReport` are the core primitives
-- Account public keys are 32-byte slices; your workflow populates `[]*solana.AccountMeta` directly
+1. Add your Anchor IDL under `contracts/solana/src/idl/`
+2. Run `cre generate-bindings solana` from your project root
+3. Call the generated helpers from your workflow
 
 ## Guides
 
