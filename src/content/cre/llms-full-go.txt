@@ -524,7 +524,7 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 - **Execution observability from the CLI**: New [`cre execution`](/cre/reference/cli/execution) commands let you inspect deployed workflow runs without opening the UI — `list` for recent executions (filter by status and time range), `status` for a single run, `events` for the capability timeline, and `logs` for emitted log lines. All support `--output json` for scripting.
 - **Enhanced `cre workflow get`**: [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get) now resolves the workflow from your `workflow.yaml` settings and shows deployment health plus the most recent execution, not just registry metadata.
-- **Solana Write capability**: Workflows can now submit DON-consensus signed reports to Solana programs on Mainnet and Devnet via the Keystone Forwarder — the same secure write model as EVM. The CLI adds the tooling to build and test these workflows: `CRE_SOLANA_PRIVATE_KEY` for signing, `cre generate-bindings solana` for Go and TypeScript bindings from Anchor IDLs, and local write simulation with `cre workflow simulate` (dry run or `--broadcast`).
+- **Solana Write capability**: Workflows can now submit DON-consensus signed reports to Solana programs on Mainnet and Devnet via the Keystone Forwarder — the same secure write model as EVM. See the [Solana Write capability](/cre/capabilities/solana-write), [Solana chain interactions](/cre/guides/workflow/using-solana-client/overview), [generating Solana bindings](/cre/guides/workflow/using-solana-client/generating-bindings) (`cre generate-bindings solana`), and [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write). Local write simulation uses `cre workflow simulate` with `CRE_SOLANA_PRIVATE_KEY`; chain selectors are listed under [Supported Networks](/cre/supported-networks).
 
 **How to update:**
 
@@ -8269,7 +8269,7 @@ Learn more in the [Onchain Write guide](/cre/guides/workflow/using-evm-client/on
 
 # The Solana Write Capability
 Source: https://docs.chain.link/cre/capabilities/solana-write
-Last Updated: 2026-07-06
+Last Updated: 2026-07-13
 
 The **Solana Write** capability lets your CRE workflow submit cryptographically signed reports to Solana programs. Your workflow calls a single method while the underlying Decentralized Oracle Network (DON) handles consensus, report signing, and onchain submission through the Keystone Forwarder program.
 
@@ -8305,11 +8305,9 @@ The public keys of all accounts in this list are concatenated and SHA-256 hashed
 - **Configurable compute budget**: Override the default 290,000 compute unit limit via `ComputeConfig`.
 - **Chain selector support**: Target Solana Mainnet or Devnet using Chainlink's chain selector system.
 
-<Aside type="note" title="Simulation support">
-  Write simulation (`--broadcast` flag) is available in the CLI. Simulation without broadcast performs a dry run and
-  validates the payload encoding. Full simulation with `--broadcast` submits a real transaction.
-
-  {/* TODO: Update when Solana devnet target is fully supported in the simulator */}
+<Aside type="note" title="CLI and simulation">
+  Solana write requires **CRE CLI v1.24.0 or later**. Local `cre workflow simulate` dry-runs the write path against the
+  Devnet forwarder built into the CLI. Deployed workflows use the live Keystone Forwarder on your target network.
 </Aside>
 
 ## Learn more
@@ -17080,8 +17078,8 @@ To interact with a Solana program from your Go workflow, you generate **bindings
 The Solana CRE capability is write-only. For each Anchor struct in your IDL, the generator creates a `WriteReportFrom<StructName>()` method. Your workflow calls this method with the struct data and the required accounts; the generated code handles everything else.
 
 <Aside type="note" title="CLI version requirement">
-  Solana binding generation and Solana write simulation require a current CRE CLI. Run `cre update` to get the latest
-  version.
+  Solana binding generation and Solana write simulation require **CRE CLI v1.24.0 or later**. Run `cre version` to
+  check, then `cre update` if needed.
 </Aside>
 
 <Aside type="note" title="TypeScript support">
@@ -17403,7 +17401,7 @@ For IDL layout, generator output, and what each `WriteReportFrom...` method does
 ## Prerequisites
 
 - A CRE Go project initialized with `cre init`. See [Part 1: Project Setup](/cre/getting-started/part-1-project-setup-go) if you are starting from scratch.
-- A current CRE CLI (`cre update`) with Solana binding generation.
+- CRE CLI **v1.24.0 or later** (`cre version` / `cre update`) with Solana binding generation.
 - A funded Solana Devnet keypair for `CRE_SOLANA_PRIVATE_KEY` (required even for dry-run). Generate one with `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and put the 64-byte base58 keypair in your project `.env`. See [Step 4](#step-4-run-the-simulation).
 
 ## What you need: a receiver program
@@ -21901,7 +21899,7 @@ This section provides a reference for the built-in trigger capabilities of the C
 
 # Supported Networks
 Source: https://docs.chain.link/cre/supported-networks-go
-Last Updated: 2026-07-06
+Last Updated: 2026-07-13
 
 This page lists networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network. CRE supports two [chain families](/cre/capabilities#chain-families): EVM-compatible chains and Solana.
 
@@ -21990,14 +21988,13 @@ Run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-s
 
 ## Solana Networks
 
-Solana support is currently **write-only**. Read and Log Trigger capabilities are in development.
+Solana support is currently **write-only**. Read and Log Trigger capabilities are in development. Solana write requires
+**CRE CLI v1.24.0 or later** (`cre version` / `cre update`).
 
-{/* TODO: Add minimum CLI and SDK versions for Solana once versions are confirmed */}
-
-| Network        | Capabilities | Chain Selector         |
-| -------------- | ------------ | ---------------------- |
-| Solana Mainnet | Write        | `124615329519749607`   |
-| Solana Devnet  | Write        | `16423721717087811551` |
+| Network        | CLI      | Capabilities | Chain Selector         |
+| -------------- | -------- | ------------ | ---------------------- |
+| Solana Mainnet | v1.24.0+ | Write        | `124615329519749607`   |
+| Solana Devnet  | v1.24.0+ | Write        | `16423721717087811551` |
 
 Use `solana.SolanaMainnet` and `solana.SolanaDevnet` constants in your Go workflow code, or pass the numeric selector directly to `solana.Client`.
 
