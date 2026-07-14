@@ -116,7 +116,7 @@ contract TokenTransferor is OwnerIsCreator {
     returns (bytes32 messageId)
   {
     // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
-    //  address(linkToken) means fees are paid in LINK
+    // address(linkToken) means fees are paid in LINK
     Client.EVM2AnyMessage memory evm2AnyMessage = _buildCCIPMessage(_receiver, _token, _amount, address(s_linkToken));
 
     // Get the fee required to send the message
