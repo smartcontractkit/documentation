@@ -1,0 +1,165 @@
+---
+section: ccip
+date: Last Modified
+title: "Arbitrary Messaging: Canton as Destination"
+isIndex: false
+metadata:
+  description: "Send a data-only CCIP message from Ethereum Sepolia and execute it on Canton using any2canton scripts."
+  image: "/images/ccip/concepts/architecture/ccip-canton-destination-chain.png"
+  excerpt: "Canton as Destination, any2canton, arbitrary messaging, manual execution, CCIPReceiver"
+  datePublished: "2026-07-06"
+  lastModified: "2026-07-06"
+  estimatedTime: "25 minutes"
+  difficulty: "intermediate"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="cantonAddressesBanner" />
+
+This tutorial demonstrates how to send arbitrary data from Ethereum Sepolia to Canton and **execute** the message on Canton using the [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton).
+
+<Aside title="Prerequisites">
+
+Complete the [Canton as Destination prerequisites](/ccip/tutorials/canton/destination/prerequisites) before starting. You need Sepolia ETH for send fees and Canton ledger access for `any2canton:manual-exec`.
+
+These steps use **Canton testnet** and **Ethereum Sepolia** only.
+
+</Aside>
+
+## Introduction
+
+When Canton is the **destination** chain, the source send happens on Ethereum Sepolia and execution happens on Canton. For data-only messages:
+
+1. You call the CCIP Router on Sepolia via `any2canton:data`.
+2. CommitteeVerifier operators validate and aggregate proofs.
+3. You run `any2canton:manual-exec` to execute on Canton — the SDK finds or creates a compatible `CCIPReceiver`.
+
+## What You Will Build
+
+In this tutorial, you will:
+
+- Send a data-only message from Sepolia to your Canton party with `any2canton:data`.
+- Wait for source finality and Committee Verifier proofs on the indexer.
+- Execute the message on Canton with `any2canton:manual-exec`.
+- Track progress in the [CCIP Explorer](/ccip/tools-resources/ccip-explorer).
+
+## Understanding Arbitrary Messaging (any2canton)
+
+Key points when Canton is the destination:
+
+- **Two-step flow**: Send on Sepolia, then manually execute on Canton (all `any2canton` tutorials use manual execution on Canton).
+- **Receiver**: Defaults to the `party` in `canton-config.json`. Override with `--cantonReceiver` on send or `--receiver` on manual exec.
+- **Finality**: Default `--finality finalized` waits for Sepolia finality before execution is allowed. Pass `--finality 32` (or another block depth) for faster-than-finality.
+- **Fee payment**: CCIP fees on Sepolia default to native ETH. Pass `--feeToken link` to pay in LINK.
+
+See the [Canton as Destination flow](/ccip/concepts/canton/overview#public-chain--canton) in the overview.
+
+## How the Scripts Work
+
+**`scripts/any2canton/ccipSendData.ts`**:
+
+1. Resolves the Canton receiver party from `canton-config.json`.
+2. Builds and sends a data-only CCIP message via the SDK's `sendMessage` on Sepolia.
+3. Prints the CCIP Message ID and a copy-pasteable `any2canton:manual-exec` command.
+
+**`scripts/any2canton/manualExecute.ts`**:
+
+1. Looks up the message using the **Sepolia source transaction hash** from the send output.
+2. Fetches proofs from the indexer and disclosures from Global CCIP EDS.
+3. Calls `CantonChain.execute` — the SDK resolves or creates the `CCIPReceiver` and submits to the ledger.
+
+## Running the Tutorial
+
+### Prerequisites Check
+
+1. Complete [prerequisites](/ccip/tutorials/canton/destination/prerequisites).
+2. Confirm Sepolia ETH balance:
+
+   ```bash filename="Terminal"
+   npm run check-balance -- --chain sepolia --token link
+   ```
+
+## Step 1: Send from Sepolia
+
+```bash filename="Terminal"
+npm run any2canton:data -- --dataString "Hello Canton"
+```
+
+Pay fee in LINK:
+
+```bash filename="Terminal"
+npm run any2canton:data -- --dataString "Hello Canton" --feeToken link
+```
+
+Request faster execution with block-depth finality (32 confirmations):
+
+```bash filename="Terminal"
+npm run any2canton:data -- --dataString "Hello Canton" --finality 32
+```
+
+Override the Canton receiver party:
+
+```bash filename="Terminal"
+npm run any2canton:data -- --dataString "Hello Canton" --cantonReceiver 'yourParty::1220…'
+```
+
+### Expected send output
+
+```text
+📧 Sending data from Sepolia → Canton: "Hello Canton"
+   Receiver party: yourParty::1220…
+🆔 CCIP Message ID: 0x…
+🔗 CCIP Explorer: https://ccip.chain.link/#/side-drawer/msg/0x…
+📜 Source transaction: https://sepolia.etherscan.io/tx/0x…
+
+⚙️  Execute on Canton once the message is finalized on Sepolia:
+   npm run any2canton:manual-exec -- 0x<messageId>
+```
+
+Save the **CCIP Message ID** (`🆔 CCIP Message ID`) — or the **Sepolia source transaction hash** (`📜 Source transaction`) — from the send output for the execution step. `any2canton:manual-exec` accepts either.
+
+## Step 2: Execute on Canton
+
+Wait until the message is ready — timing depends on `--finality`:
+
+- **`finalized`** (default): Wait for Sepolia finality (often 15+ minutes).
+- **Block depth** (e.g. `32`): Wait for the specified number of Sepolia confirmations.
+
+Monitor status in the [CCIP Explorer](/ccip/tools-resources/ccip-explorer). When proofs are on the indexer, run:
+
+```bash filename="Terminal"
+npm run any2canton:manual-exec -- <sepoliaTxHash | messageId>
+```
+
+You can pass either the **Sepolia source transaction hash** or the **CCIP Message ID** (`0x…`). They share the same `0x`+64-hex shape, so the script resolves the message from whichever matches. Examples:
+
+```bash filename="Terminal"
+# By Sepolia source transaction hash
+npm run any2canton:manual-exec -- 0x5a814d64666f60d2777c5425e8d0ea5a4b1bc9a3215eaeabced8b248050a3b99
+
+# By CCIP Message ID
+npm run any2canton:manual-exec -- 0x1220e4133ede8f2daf2e665b53321da54d1bd0b8e00fb1cece20b63079c1d48d6a5b
+```
+
+### Expected execution output
+
+```text
+⚙️  Executing on Canton (OffRamp 0x…)…
+   Resolving CCIPReceiver, fetching EDS disclosures, and submitting to the ledger — often 1–3 minutes with no further output.
+✅ Canton execution transaction: https://lighthouse.testnet.cantonloop.com/transactions/…
+```
+
+<Aside type="tip" title="Debug logging">
+
+Set `CCIP_DEBUG=1` in `.env` for step-by-step SDK logs during execution.
+
+</Aside>
+
+## Verification
+
+1. Confirm **SUCCESS** in the [CCIP Explorer](/ccip/tools-resources/ccip-explorer).
+2. Inspect the Canton execution transaction on [Canton Lighthouse](https://lighthouse.testnet.cantonloop.com).
+
+<CcipCommon callout="educationalDisclaimer" />

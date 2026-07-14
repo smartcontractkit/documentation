@@ -1,0 +1,150 @@
+---
+section: ccip
+date: Last Modified
+title: "Token Transfers: Canton as Source"
+isIndex: false
+metadata:
+  description: "Transfer LINK tokens from Canton to Ethereum Sepolia using the CCIP Canton Starter Kit canton2any:token script."
+  image: "/images/ccip/concepts/architecture/ccip-canton-source-chain.png"
+  excerpt: "Canton as Source, canton2any, token transfers, LINK, CCIPSender"
+  datePublished: "2026-07-06"
+  lastModified: "2026-07-06"
+  estimatedTime: "25 minutes"
+  difficulty: "intermediate"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="cantonAddressesBanner" />
+
+This tutorial demonstrates how to transfer **LINK** tokens from Canton testnet to Ethereum Sepolia using the [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton).
+
+<Aside title="Prerequisites">
+
+Complete the [Canton as Source prerequisites](/ccip/tutorials/canton/source/prerequisites). For token transfers you also need:
+
+- **LINK** holdings on your Canton party (the token being sent).
+- **Amulet** (or LINK with `--feeToken link`) for CCIP fees.
+- A registered token pool on the Token Admin Registry — the prod testnet **LINK ↔ TEST** lane is pre-configured. For custom instruments, see [Cross-Chain Token guides](/ccip/tutorials/canton/cross-chain-tokens).
+
+These steps use **Canton testnet** and **Ethereum Sepolia** only.
+
+</Aside>
+
+## Introduction
+
+This tutorial covers a token-only transfer from Canton to Ethereum Sepolia without an attached data payload. When you transfer tokens using CCIP:
+
+1. Tokens are burned or locked in the token pool on Canton.
+2. Equivalent tokens are minted or released on Sepolia after destination execution.
+3. CCIP fees are collected on Canton in Amulet (default) or LINK.
+
+The prod testnet lane maps Canton **LINK** to Sepolia **TEST**.
+
+## What You Will Build
+
+In this tutorial, you will:
+
+- Run `canton2any:token` to send LINK from Canton to Sepolia.
+- Pay CCIP fees in Amulet or LINK.
+- Monitor the transfer in the [CCIP Explorer](/ccip/tools-resources/ccip-explorer).
+- Verify TEST token balance on Sepolia after execution.
+
+## Understanding Token Transfers (canton2any)
+
+Key points for token-only transfers from Canton:
+
+- **Burn and mint**: LINK is burned on Canton; TEST is minted on Sepolia for the configured lane.
+- **Fee payment**: CCIP fees are paid on Canton. Default fee token is **Amulet**; pass `--feeToken link` to pay in LINK.
+- **No data payload**: Token-only transfers omit the `data` field.
+- **Token pool**: The SDK fetches disclosures from the token pool operator EDS and obtains a `TokenPoolTicket` during send.
+
+See the [Canton as Source flow](/ccip/concepts/canton/overview#canton--public-chain) in the overview.
+
+## How the Script Works
+
+The `scripts/canton2any/ccipSendToken.ts` script:
+
+1. Loads Canton config, authenticates to the ledger, and connects.
+2. Parses `--amount` (human-readable LINK, e.g. `0.001`), `--feeToken`, `--evmReceiver`, and `--no-exec`.
+3. Builds a message with `tokenAmounts` for the Canton LINK instrument and submits via `CantonChain.sendMessage`.
+4. Prints the CCIP Message ID, explorer links, and optional manual-exec hint.
+
+## Running the Token Transfer
+
+### Prerequisites Check
+
+1. Complete [prerequisites](/ccip/tutorials/canton/source/prerequisites).
+2. Verify LINK and Amulet balances:
+
+   ```bash filename="Terminal"
+   npm run check-balance -- --chain canton --token link
+   npm run check-balance -- --chain canton --token amulet
+   ```
+
+3. Set `EVM_PRIVATE_KEY` if you will verify Sepolia balances or run manual execution.
+
+### Execute the Script
+
+Send `0.001` LINK from Canton to Sepolia (default receiver):
+
+```bash filename="Terminal"
+npm run canton2any:token -- --amount 0.001
+```
+
+Pay CCIP fee in LINK:
+
+```bash filename="Terminal"
+npm run canton2any:token -- --amount 0.001 --feeToken link
+```
+
+Skip auto-execution on Sepolia:
+
+```bash filename="Terminal"
+npm run canton2any:token -- --amount 0.001 --no-exec
+```
+
+### Understanding the Output
+
+```text
+🪙 Sending 0.001 LINK from Canton → Sepolia
+   Executor: default (auto-execution on Sepolia when an executor is configured)
+🆔 CCIP Message ID: 0x…
+🔗 CCIP Explorer: https://ccip.chain.link/#/side-drawer/msg/0x…
+📜 Canton transaction: https://lighthouse.testnet.cantonloop.com/transactions/…
+```
+
+## Verification and Monitoring
+
+### CCIP Explorer
+
+Track the full message lifecycle using the CCIP Explorer URL from the output.
+
+### Manual execution on Sepolia
+
+If you used `--no-exec`:
+
+```bash filename="Terminal"
+npm run canton2any:manual-exec -- <cantonUpdateId | messageId>
+```
+
+Pass either the Canton **update ID** (`📜 Canton transaction` / Lighthouse link) or the **CCIP Message ID** (`🆔 CCIP Message ID`, `0x…`) from the send output — `canton2any:manual-exec` accepts both.
+
+### Verify TEST balance on Sepolia
+
+After successful execution, check the Sepolia wallet that received TEST:
+
+```bash filename="Terminal"
+npm run check-balance -- --chain sepolia --token test
+```
+
+Or inspect the receiver address on [Sepolia Etherscan](https://sepolia.etherscan.io/).
+
+<Aside type="note" title="Decimals">
+
+Canton LINK uses **10** decimal places in the starter kit configuration (`helperConfig.ts`), not the 18 decimals used on Sepolia ERC-20 tokens.
+
+</Aside>
+
+<CcipCommon callout="educationalDisclaimer" />

@@ -82,6 +82,20 @@ export type ChainConfig = {
   mcms?: {
     address: string
   }
+  ccipOwnerParty?: string
+  ccipExplicitDisclosureServer?: string
+  committeeVerifier?: {
+    address: string
+    version: string
+  }
+  feeQuoterModule?: {
+    address: string
+    version: string
+  }
+  indexer?: {
+    primary: string
+    backup: string | null
+  }
   poolPrograms?: {
     BurnMintTokenPool?: string
     LockReleaseTokenPool?: string
@@ -216,13 +230,26 @@ export interface Network {
     address: string
     version: string
   }
-  routerExplorerUrl: string
   feeQuoter?: string
   mcms?: string
   poolPrograms?: {
     BurnMintTokenPool?: string
     LockReleaseTokenPool?: string
     CCTPTokenPool?: string
+  }
+  ccipOwnerParty?: string
+  ccipExplicitDisclosureServer?: string
+  committeeVerifier?: {
+    address: string
+    version: string
+  }
+  feeQuoterModule?: {
+    address: string
+    version: string
+  }
+  indexer?: {
+    primary: string
+    backup: string | null
   }
 }
 

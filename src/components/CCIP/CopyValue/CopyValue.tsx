@@ -4,9 +4,10 @@ export type Props = {
   value?: string
   valueClass?: string
   valueId?: string
+  href?: string
 }
 
-const CopyValue = ({ value, valueClass, valueId }: Props) => {
+const CopyValue = ({ value, valueClass, valueId, href }: Props) => {
   if (!value) return null
 
   const handleClick = (e) => {
@@ -16,7 +17,13 @@ const CopyValue = ({ value, valueClass, valueId }: Props) => {
 
   return (
     <span className={`addressContainer ${valueClass || ""}`} id={valueId}>
-      <span className="valueCopy">{value}</span>
+      {href ? (
+        <a className="valueCopy valueCopy--link" href={href} target="_blank" rel="noopener noreferrer">
+          {value}
+        </a>
+      ) : (
+        <span className="valueCopy">{value}</span>
+      )}
       <button
         className={clsx("copyBtn", "copy-iconbutton")}
         style={{ height: "16px", width: "16px", minWidth: "12px" }}
@@ -30,6 +37,15 @@ const CopyValue = ({ value, valueClass, valueId }: Props) => {
         .valueCopy {
           border-radius: var(--border-radius-10);
           word-break: break-word;
+        }
+
+        .valueCopy--link {
+          color: var(--color-text-link);
+          text-decoration: none;
+        }
+
+        .valueCopy--link:hover {
+          text-decoration: underline;
         }
 
         .addressContainer {

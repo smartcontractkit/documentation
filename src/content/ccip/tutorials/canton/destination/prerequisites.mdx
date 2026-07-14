@@ -1,0 +1,174 @@
+---
+section: ccip
+date: Last Modified
+title: "Prerequisites for Canton as Destination Tutorials"
+isIndex: false
+metadata:
+  description: "Complete setup guide for Canton as Destination cross-chain development. Install Node.js, configure Ethereum Sepolia and Canton ledger access, and fund testnet tokens for CCIP tutorials."
+  image: "/images/ccip/concepts/architecture/ccip-canton-destination-chain.png"
+  excerpt: "prerequisites, Canton, any2canton, wallets, tokens, setup"
+  datePublished: "2026-07-06"
+  lastModified: "2026-07-06"
+  estimatedTime: "15 minutes"
+  difficulty: "beginner"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="cantonAddressesBanner" />
+
+Before starting the **Canton as Destination** (`any2canton`) tutorials, ensure you have the following:
+
+<Aside type="note" title="Testnet only">
+
+These tutorials use **Canton testnet** and **Ethereum Sepolia** only. The starter kit's `helperConfig.ts` and `canton-config.example.json` are pre-configured for the Canton CCIP testnet lane.
+
+</Aside>
+
+## Development Environment
+
+- **Node.js v20 or higher**: You can use the [nvm package](http://nvm.sh/) to install and switch between Node.js versions. Once installed, verify the node version with:
+
+  ```bash filename="Terminal"
+  node -v
+  ```
+
+  Example output:
+
+  ```text
+  $ node -v
+  v22.15.0
+  ```
+
+- **npm**: For installing and managing dependencies.
+- **Git**: For cloning the repository.
+
+## Starter Kit Repository
+
+1. Clone the [CCIP Canton Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-canton):
+
+   ```bash filename="Terminal"
+   git clone https://github.com/smartcontractkit/ccip-starter-kit-canton.git
+   ```
+
+1. Navigate to the directory:
+
+   ```bash filename="Terminal"
+   cd ccip-starter-kit-canton
+   ```
+
+1. Install dependencies:
+
+   ```bash filename="Terminal"
+   npm install
+   ```
+
+The starter kit uses [`@chainlink/ccip-sdk`](https://www.npmjs.com/package/@chainlink/ccip-sdk) v1.10+ for sending from Ethereum Sepolia and executing on Canton.
+
+## Understanding Network Configuration
+
+Lane defaults live in [`helperConfig.ts`](https://github.com/smartcontractkit/ccip-starter-kit-canton/blob/main/helperConfig.ts):
+
+- **Canton testnet** chain selector: `9268731218649498074`
+- **Ethereum Sepolia** chain selector: `16015286601757825753`
+- **Token lane**: Canton LINK ↔ Sepolia TEST (`0xeEe6675b20fE5950eb51361b93021D076289F612`)
+
+Canton deployment fields live in `config/canton-config.json` — see the [Canton as Source prerequisites](/ccip/tutorials/canton/source/prerequisites#understanding-canton-configuration-canton-configjson) for the full file reference. Replace **`party`** and **`transferInstructionUrl`**; other fields are pre-configured for the Canton CCIP testnet lane.
+
+## Wallets and Accounts
+
+- **Ethereum Sepolia wallet and private key**: Required to send CCIP messages from Sepolia (`any2canton` send scripts). Set up a wallet like [MetaMask](https://metamask.io/), export the private key for the account you send from, and add it to `.env` as `EVM_PRIVATE_KEY`.
+
+- **Canton party**: The destination receiver on Canton. Defaults to the `party` field in `canton-config.json`. Override with `--cantonReceiver` on send scripts or `--receiver` on `any2canton:manual-exec` when needed.
+
+<Aside type="tip" title="No separate receiver deployment">
+
+The SDK **finds or creates** a compatible `CCIPReceiver` when you run `any2canton:manual-exec`. Pass a `receiver` hint only for custom `CCIPReceiver` configurations.
+
+</Aside>
+
+## Environment Configuration (`.env` file)
+
+Create `.env` from the example:
+
+```bash filename="Terminal"
+cp .env.example .env
+cp config/canton-config.example.json config/canton-config.json
+```
+
+Fill in the following values:
+
+| Variable                                    | Description                                                                                              |
+| :------------------------------------------ | :------------------------------------------------------------------------------------------------------- |
+| `EVM_PRIVATE_KEY`                           | Sepolia signer hex key (with or without `0x` prefix)                                                     |
+| `ETHEREUM_SEPOLIA_RPC_URL`                  | Sepolia JSON-RPC URL                                                                                     |
+| `CANTON_LEDGER_URL`                         | Canton participant JSON Ledger API URL (required for `any2canton:manual-exec`; not EDS or the validator) |
+| `CANTON_CONFIG_PATH`                        | Path to `canton-config.json`                                                                             |
+| `CANTON_AUTH_URL`                           | OIDC authorization server URL (from your validator setup)                                                |
+| `CANTON_CLIENT_ID` / `CANTON_CLIENT_SECRET` | OIDC credentials for ledger auth on Canton                                                               |
+
+In `canton-config.json`, set **`party`** to your Canton testnet party ID and **`transferInstructionUrl`** to your validator's transfer-instruction API. See [source prerequisites](/ccip/tutorials/canton/source/prerequisites#understanding-canton-configuration-canton-configjson) for field reference.
+
+Send scripts use a default **`--gasLimit` of `200000`** for destination `ccipReceive` (see [optional script flags](/ccip/tutorials/canton/source/prerequisites#optional-script-flags) in source prerequisites).
+
+**Example `.env` file:**
+
+```bash filename=".env"
+EVM_PRIVATE_KEY=0xYourSepoliaPrivateKey
+ETHEREUM_SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY
+CANTON_LEDGER_URL=https://your-canton-ledger-api.example.com
+CANTON_CONFIG_PATH=./config/canton-config.json
+CANTON_AUTH_URL=https://auth.example.com
+CANTON_CLIENT_ID=your_client_id
+CANTON_CLIENT_SECRET=your_client_secret
+```
+
+<Aside type="caution" title="Keep your secrets safe">
+
+Never commit `.env`, OIDC secrets, or private keys to version control.
+
+</Aside>
+
+## Testnet Tokens
+
+### ETH on Ethereum Sepolia
+
+ETH pays for Sepolia transaction fees and CCIP fees (default `--feeToken native`). Use the [Chainlink Faucet](https://faucet.chain.link) to obtain test ETH.
+
+### LINK on Ethereum Sepolia (optional)
+
+Pass `--feeToken link` on `any2canton` send scripts to pay CCIP fees in LINK instead of ETH. Use the [Chainlink Faucet](https://faucet.chain.link) for test LINK.
+
+### TEST token on Ethereum Sepolia (token transfer tutorials)
+
+Token transfer tutorials send the Sepolia **TEST** token (`BurnMintERC20WithDrip`). Mint test tokens with the starter kit faucet:
+
+```bash filename="Terminal"
+npm run faucet:evm-test
+```
+
+This calls `drip()` on the TEST token contract and credits 1 TEST to your `EVM_PRIVATE_KEY` wallet.
+
+### Canton holdings after execution
+
+TEST burned on Sepolia mints **LINK** on Canton only after you run `any2canton:manual-exec` once the message is ready. Data-only messages do not transfer tokens.
+
+Check balances before and after execution:
+
+```bash filename="Terminal"
+npm run check-balance
+```
+
+## Verify Setup
+
+Confirm Sepolia and Canton configuration:
+
+```bash filename="Terminal"
+npm run check-balance -- --chain sepolia --token test
+npm run check-balance -- --chain canton --token link
+```
+
+When setup is complete, continue to the [Canton as Destination tutorials](/ccip/tutorials/canton/destination).
+
+<CcipCommon callout="educationalDisclaimer" />

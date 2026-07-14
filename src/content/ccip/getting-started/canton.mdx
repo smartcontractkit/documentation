@@ -1,0 +1,88 @@
+---
+section: ccip
+date: Last Modified
+title: "Getting Started (Canton)"
+metadata:
+  description: "Get started with Chainlink CCIP on Canton Network. Learn key concepts, configure tooling, and run your first cross-chain message or token transfer."
+  excerpt: "Chainlink CCIP, Canton Network, cross-chain interoperability, enterprise blockchain, CIP-56, token pools, institutional tokens"
+  datePublished: "2026-06-27"
+  lastModified: "2026-07-07"
+  estimatedTime: "30 minutes"
+whatsnext:
+  "Key concepts": "/ccip/concepts/canton/key-concepts"
+  "Cross-chain flows on Canton": "/ccip/concepts/canton/overview"
+  "Canton as Source prerequisites": "/ccip/tutorials/canton/source/prerequisites"
+---
+
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+import { Aside } from "@components"
+
+<CcipCommon callout="cantonAddressesBanner" />
+
+**Connect a Canton party to CCIP and run a cross-chain workflow on testnet.**
+
+In this guide, you will:
+
+1. Learn Canton-specific concepts CCIP relies on ([Key Concepts](/ccip/concepts/canton/key-concepts))
+2. Choose the right tooling ([`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton) tutorials vs [`ccip-tools-ts`](https://github.com/smartcontractkit/ccip-tools-ts) SDK/CLI for production)
+3. Complete prerequisites and run your first **Canton ↔ Sepolia** tutorial (send or receive, including **manual execution** when Canton is the destination)
+
+<Aside type="caution" title="Manual execution required on Canton">
+
+When Canton is the **destination**, incoming messages are **not** executed automatically. The **receiver** must [manually execute](/ccip/concepts/canton/manual-execution) each message after proofs are on the indexer.
+
+</Aside>
+
+## Who this is for
+
+Institution and enterprise engineers who need to:
+
+- Bridge **CIP-56** instruments or Registry-issued tokens across CCIP lanes
+- Send arbitrary data or programmable token transfers to or from Canton
+- Operate token pool and Explicit Disclosure Service (EDS) infrastructure for their instruments
+
+No permission from Chainlink is required for your party to send messages on a configured lane — you need participant access, disclosures, and fee-token holdings.
+
+## What you can build
+
+| Goal                                             | Start here                                                                                                       |
+| :----------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
+| First testnet send or receive (Canton ↔ Sepolia) | [Canton as Source](/ccip/tutorials/canton/source) or [Canton as Destination](/ccip/tutorials/canton/destination) |
+| Deploy a token pool and register on TAR          | [Cross-Chain Token (CCT)](/ccip/tutorials/canton/cross-chain-tokens)                                             |
+| Issue a Registry token end to end                | [Registry Issuer Guide](/ccip/tutorials/canton/cross-chain-tokens/registry-issuer-guide)                         |
+| Understand send/execute flows                    | [Overview](/ccip/concepts/canton/overview)                                                                       |
+| Operate pool EDS                                 | [Explicit Disclosure API](/ccip/concepts/canton/explicit-disclosure)                                             |
+
+## Tooling
+
+| Tool                                                                                                                                         | Role                                                                                                                |
+| :------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ |
+| [`@chainlink/ccip-sdk`](https://www.npmjs.com/package/@chainlink/ccip-sdk) / [`ccip-cli`](https://github.com/smartcontractkit/ccip-tools-ts) | Production library and CLI — disclosures, fees, send, execute, proofs                                               |
+| [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton)                                                     | Testnet tutorial scripts (`canton2any:*`, `any2canton:*`, `cct:*`) pre-configured for Canton CCIP testnet ↔ Sepolia |
+
+The starter kit uses the same SDK and ledger submit model as `ccip-cli` with `canton-config.json`. Use the starter kit to learn; use the SDK or CLI directly for your own applications.
+
+## Fees (summary)
+
+- **Sending from Canton:** CCIP fees are paid on-ledger in **Amulet** by default, or **LINK** with `--feeToken link`. See [Key Concepts — Fees](/ccip/concepts/canton/key-concepts#fees-on-canton).
+- **Sending to Canton:** Fees are paid on the **source** chain (Sepolia ETH or LINK in the starter kit).
+
+Fund your party before running tutorials — `npm run check-balance` in the starter kit.
+
+## Quick start (testnet tutorial)
+
+1. Read [Key Concepts](/ccip/concepts/canton/key-concepts) (parties, privacy, manual execution, fees).
+2. Clone and configure the [starter kit](/ccip/tutorials/canton/source/prerequisites) (`party`, ledger URL, validator user, `transferInstructionUrl`).
+3. Pick a direction and tutorial:
+   - **Canton → Sepolia:** [Arbitrary Messaging](/ccip/tutorials/canton/source/arbitrary-messaging), [Token Transfers](/ccip/tutorials/canton/source/token-transfers), or [Programmable Token Transfers](/ccip/tutorials/canton/source/programmable-token-transfers)
+   - **Sepolia → Canton:** [Arbitrary Messaging](/ccip/tutorials/canton/destination/arbitrary-messaging), [Token Transfers](/ccip/tutorials/canton/destination/token-transfers), or [Programmable Token Transfers](/ccip/tutorials/canton/destination/programmable-token-transfers) — each ends with `any2canton:manual-exec`
+
+## Before you begin
+
+Coordinate with **Chainlink CCIP operations** for:
+
+- CCIP owner party ID and hosted contract addresses (Token Admin Registry, FeeQuoter, RMNRemote)
+- Remote chain selectors and lane configuration for your target networks
+- CCIP DAR packages on your participant (typically provisioned by ops)
+
+<CcipCommon callout="talkToExpert" />

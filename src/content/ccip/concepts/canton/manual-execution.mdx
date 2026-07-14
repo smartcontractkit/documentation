@@ -1,0 +1,123 @@
+---
+section: ccip
+date: Last Modified
+title: "Manual Execution (Canton)"
+metadata:
+  description: "Manual execution on Canton: why incoming CCIP messages are not auto-executed, and how receivers execute messages after indexer verification."
+  excerpt: "Canton CCIP manual execution, any2canton, CCIPReceiver, indexer, EDS, TransferInstruction, destination chain"
+  image: "/images/ccip/concepts/architecture/ccip-canton-destination-chain.png"
+  datePublished: "2026-07-07"
+  lastModified: "2026-07-07"
+  difficulty: "intermediate"
+  estimatedTime: "10 minutes"
+whatsnext:
+  "Canton as Destination tutorials": "/ccip/tutorials/canton/destination"
+  "Cross-chain flows": "/ccip/concepts/canton/overview"
+  "Key concepts": "/ccip/concepts/canton/key-concepts"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="cantonAddressesBanner" />
+
+<Aside type="note" title="Prerequisites">
+
+Read [Key Concepts](/ccip/concepts/canton/key-concepts) and the [flow overview](/ccip/concepts/canton/overview) before this page.
+
+</Aside>
+
+On Canton, **manual execution is required** when Canton is the **destination** chain. This is different from EVM-style CCIP, where manual execution is usually a fallback when automatic execution fails.
+
+## Why Canton requires manual execution
+
+Canton enforces **data privacy**: parties only see contracts they are stakeholders on. Incoming messages may involve private receiver contracts, token DARs, and token pool contracts that Chainlink operators cannot access on your participant.
+
+Chainlink does **not** provide automatic execution of receiver contracts on Canton. The **receiver party** (or a party the receiver authorizes via [explicit disclosure](/ccip/concepts/canton/explicit-disclosure)) must execute each message after Committee Verifier proofs are aggregated on the indexer.
+
+## When manual execution applies
+
+| Scenario                  | Execution on Canton                                                                                                                          |
+| :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Remote chain → Canton** | **Always manual** — receiver runs execute after proofs are ready                                                                             |
+| **Canton → remote chain** | Not applicable on Canton for inbound; destination chain may auto-execute (for example Sepolia via Chainlink NOPs) unless the sender skips it |
+
+Plan every inbound integration for: send on source → wait for verification → **manual execute on Canton**.
+
+## Execution workflow (remote chain → Canton)
+
+<ClickToZoom
+  src="/images/ccip/concepts/architecture/ccip-canton-destination-chain.png"
+  alt="CCIP execute flow when Canton is the destination chain"
+/>
+
+_Figure 1. Execute flow when Canton is the destination (receiving) chain._
+
+### 1. Wait for the message to be ready
+
+1. Track the message in the [CCIP Explorer](/ccip/tools-resources/ccip-explorer) or CCIP API.
+2. Committee Verifier operators (for the default verifier, Chainlink NOPs) validate the source `CCIPMessageSent` event, generate proofs, and submit them to the **indexer**.
+3. Once all required Committee Verifiers have submitted proofs, the message is ready for you to execute on Canton.
+
+### 2. Prepare disclosures and proofs
+
+Before submitting to the ledger, gather:
+
+- **Proofs** from the indexer for the target transaction
+- **Explicit disclosures** from the Global CCIP **EDS** for CCIP contracts
+- Your **`PerPartyRouter`** (or create one via `PerPartyRouterFactory` on first use)
+- For custom Committee Verifiers: disclosures from the verifier's EDS
+- For token transfers: disclosures from the asset's Token Standard Registry and the **token pool operator's EDS**
+
+See [Explicit Disclosure API](/ccip/concepts/canton/explicit-disclosure) for EDS endpoints.
+
+### 3. Execute on Canton
+
+Using the [CCIP CLI](https://github.com/smartcontractkit/ccip-tools-ts/blob/main/ccip-cli/README.md) or [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton) `any2canton:manual-exec`, interact with [`CCIPReceiver`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/receiver/daml/CCIP/CCIPReceiver.daml):
+
+1. Deploy and configure a `CCIPReceiver` if needed. Set `receiverFinalityConfig` to match how you handle finality (FTF, FCR, or default — the sender's requested finality must be allowed).
+2. Call the receiver with the message and message proof.
+3. The receiver validates proofs via each Committee Verifier and calls `PerPartyRouter_Execute`.
+4. On success, the OffRamp marks the message executed (preventing double execution).
+
+The SDK **finds or creates** a compatible `CCIPReceiver` on the default path — see [Canton as Destination](/ccip/tutorials/canton/destination) tutorials.
+
+### 4. Token transfers — accept holdings
+
+If the message included a token transfer:
+
+1. The token pool creates a **`TransferInstruction`** to the receiver party.
+2. The receiver party must **accept** the `TransferInstruction` to take custody — this is separate from the CCIP execute step.
+
+For programmable token transfers, your receiver logic runs after tokens are available.
+
+<Aside type="note" title="Which identifier to pass">
+
+The manual-exec scripts accept **either** the source-chain transaction **or** the **CCIP Message ID** (`🆔 CCIP Message ID`, `0x…`) from the send output:
+
+- **Sepolia → Canton** (`any2canton:manual-exec`): Sepolia tx hash (`📜 Source transaction`) **or** the CCIP Message ID
+- **Canton → Sepolia** (`canton2any:manual-exec`): Canton update ID (`📜 Canton transaction` / Lighthouse link) **or** the CCIP Message ID
+
+Passing the **source transaction / update ID** builds the OffRamp and proofs locally from on-chain data (the indexer aggregates Committee Verifier proofs by transaction). Passing the **CCIP Message ID** lets the SDK fetch the OffRamp and verifications from the CCIP API instead. A Sepolia tx hash and a CCIP Message ID share the same `0x`+64-hex shape, so the script resolves the message from whichever matches.
+
+</Aside>
+
+## Tooling
+
+| Tool                        | Execute command (starter kit)                                                            |
+| :-------------------------- | :--------------------------------------------------------------------------------------- |
+| Data-only message           | `npm run any2canton:manual-exec -- <sepoliaTxHash \| messageId>` after `any2canton:data` |
+| Token transfer              | Same after `any2canton:token`                                                            |
+| Programmable token transfer | Same after `any2canton:data-and-token`                                                   |
+
+Scripts use `@chainlink/ccip-sdk` with `canton-config.json` and ledger auth — the same model as `ccip-cli` without `--wallet`.
+
+## Tutorials
+
+Step-by-step walkthroughs:
+
+- [Arbitrary Messaging (destination)](/ccip/tutorials/canton/destination/arbitrary-messaging)
+- [Token Transfers (destination)](/ccip/tutorials/canton/destination/token-transfers)
+- [Programmable Token Transfers (destination)](/ccip/tutorials/canton/destination/programmable-token-transfers)
+
+Complete [Canton as Destination prerequisites](/ccip/tutorials/canton/destination/prerequisites) before running them.

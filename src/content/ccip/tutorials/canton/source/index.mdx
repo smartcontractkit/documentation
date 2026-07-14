@@ -1,0 +1,61 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Tutorials: Canton as Source"
+metadata:
+  description: "Send cross-chain messages and token transfers from Canton to remote CCIP chains using the CCIP Canton Starter Kit."
+  excerpt: "CCIP Canton source, canton2any, CCIPSender, token transfers, arbitrary messaging"
+  datePublished: "2026-06-27"
+  lastModified: "2026-07-06"
+  difficulty: "intermediate"
+isIndex: true
+whatsnext:
+  "Prerequisites": "/ccip/tutorials/canton/source/prerequisites"
+  "Token Transfers": "/ccip/tutorials/canton/source/token-transfers"
+  "Cross-chain overview": "/ccip/concepts/canton/overview"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="cantonAddressesBanner" />
+
+**Canton as Source** (`canton2any`) tutorials cover sending from Canton — Canton is the source chain, a remote CCIP-supported chain (Ethereum Sepolia in the starter kit) is the destination.
+
+<Aside type="note" title="Testnet only">
+
+These tutorials run on **Canton testnet** and **Ethereum Sepolia** only. Complete [prerequisites](/ccip/tutorials/canton/source/prerequisites) with testnet credentials and tokens before starting.
+
+</Aside>
+
+Tutorials use the [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton) on [`@chainlink/ccip-sdk`](https://www.npmjs.com/package/@chainlink/ccip-sdk).
+
+## Getting Started
+
+- [Prerequisites for Canton as Source](/ccip/tutorials/canton/source/prerequisites) — Clone the starter kit, configure Canton ledger access, and fund Amulet/LINK.
+- [Canton as Source flow](/ccip/concepts/canton/overview#canton--public-chain) — On-ledger send path in the overview.
+
+## Tutorials by Use Case
+
+| Tutorial                                                                                   | Script                      | Description                                   |
+| :----------------------------------------------------------------------------------------- | :-------------------------- | :-------------------------------------------- |
+| [Arbitrary Messaging](/ccip/tutorials/canton/source/arbitrary-messaging)                   | `canton2any:data`           | Send a data-only message from Canton          |
+| [Token Transfers](/ccip/tutorials/canton/source/token-transfers)                           | `canton2any:token`          | Bridge LINK from Canton to Sepolia            |
+| [Programmable Token Transfers](/ccip/tutorials/canton/source/programmable-token-transfers) | `canton2any:data-and-token` | Send LINK plus calldata to a Sepolia receiver |
+
+## Common Flow (all canton2any tutorials)
+
+1. Fetch explicit disclosures from Global CCIP EDS (and token pool operator EDS for token messages)
+2. Create or reuse `CCIPSender` and `PerPartyRouter` on Canton
+3. Submit via `PerPartyRouter_CCIPSend` with CommitteeVerifier tickets (and token pool tickets when applicable)
+4. Track delivery in [CCIP Explorer](/ccip/tools-resources/ccip-explorer)
+5. Destination execution on Sepolia runs automatically by default, or via `canton2any:manual-exec` with `--no-exec`
+
+## Prerequisites
+
+- [Starter kit setup](/ccip/tutorials/canton/source/prerequisites)
+- **Amulet** (default) or **LINK** on Canton for CCIP fees
+- **LINK** on Canton for token transfer and PTT tutorials
+- Token pool registered on TAR for token messages — see [CCT guides](/ccip/tutorials/canton/cross-chain-tokens)
+
+<CcipCommon callout="educationalDisclaimer" />

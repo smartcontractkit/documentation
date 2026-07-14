@@ -6,11 +6,12 @@ import Search from "../Search/Search.tsx"
 import "./ChainHero.css"
 import CopyValue from "../CopyValue/CopyValue.tsx"
 import {
-  getExplorerAddressUrl,
   getTokenIconUrl,
   getNativeCurrency,
   directoryToSupportedChain,
   fallbackTokenIconUrl,
+  getContractExplorerUrl,
+  isCantonNativeFeeToken,
 } from "~/features/utils/index.ts"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
 import { getChainTooltip } from "../Tooltip/index.ts"
@@ -64,6 +65,10 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
   const chainTooltipConfig = network?.chain && !isDecommissioned ? getChainTooltip(network.chain) : null
   const hasFullNetworkDetails = Boolean(network?.router?.address)
   const showNetworkConfiguration = !isDecommissioned || hasFullNetworkDetails
+  const isCanton = network?.chainType === "canton"
+  const addressEndLength = isCanton ? 10 : 4
+  const cantonWideAddressEndLength = 14
+  const networkContractUrl = network ? getContractExplorerUrl(network.explorer, network.chainType) : undefined
 
   const feeTokensWithAddress =
     network?.feeTokens?.map((feeToken) => {
@@ -73,9 +78,11 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
         version: Version.V1_2_0,
         tokenId: feeToken.name,
       })
-      const explorer = network.explorer || {}
       const address = token[network.chain]?.tokenAddress
-      const contractUrl = address ? getExplorerAddressUrl(explorer, network.chainType)(address) : ""
+      const contractUrl =
+        address && !(isCanton && isCantonNativeFeeToken(network.chain, feeToken.name))
+          ? networkContractUrl?.(address)
+          : undefined
 
       return {
         logo,
@@ -173,20 +180,38 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
             {isDecommissioned && network && <span className="ccip-chain-hero__decom-subtitle">Inactive</span>}
           </div>
         </div>
+
+        {isCanton && (
+          <aside className="ccip-chain-hero__decom-banner" aria-label="Canton address caution">
+            <div className="ccip-chain-hero__decom-banner__icon" aria-hidden="true">
+              !
+            </div>
+            <div className="ccip-chain-hero__decom-banner__content">
+              <p className="ccip-chain-hero__decom-banner__title">Caution</p>
+              <p>
+                Addresses shown may change due to upgrades since Canton contracts are immutable. Confirm party IDs and
+                contract addresses with{" "}
+                <a href="https://chain.link/ccip-contact" target="_blank" rel="noopener noreferrer">
+                  Chainlink CCIP
+                </a>
+                .
+              </p>
+            </div>
+          </aside>
+        )}
+
         {network && (
-          <div className="ccip-chain-hero__details">
+          <div className={`ccip-chain-hero__details${isCanton ? " ccip-chain-hero__details--canton" : ""}`}>
             {showNetworkConfiguration && (
               <>
                 <div className="ccip-chain-hero__details__item">
-                  <div className="ccip-chain-hero__details__label">Router</div>
+                  <div className="ccip-chain-hero__details__label">
+                    {isCanton ? "Per party factory router" : "Router"}
+                  </div>
                   <div className="ccip-chain-hero__details__value" data-clipboard-type="router">
                     <Address
-                      endLength={4}
-                      contractUrl={
-                        network.router?.address
-                          ? getExplorerAddressUrl(network.explorer, network.chainType)(network.router.address)
-                          : ""
-                      }
+                      endLength={addressEndLength}
+                      contractUrl={networkContractUrl?.(network.router?.address)}
                       address={network.router?.address}
                     />
                   </div>
@@ -230,11 +255,8 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
                   <div className="ccip-chain-hero__details__value" data-clipboard-type="rmn">
                     {network.armProxy ? (
                       <Address
-                        endLength={4}
-                        contractUrl={getExplorerAddressUrl(
-                          network.explorer,
-                          network.chainType
-                        )(network.armProxy.address)}
+                        endLength={addressEndLength}
+                        contractUrl={networkContractUrl?.(network.armProxy.address)}
                         address={network.armProxy.address}
                       />
                     ) : (
@@ -265,11 +287,8 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
                       <div className="ccip-chain-hero__details__value" data-clipboard-type="token-registry">
                         {network.tokenAdminRegistry ? (
                           <Address
-                            endLength={4}
-                            contractUrl={getExplorerAddressUrl(
-                              network.explorer,
-                              network.chainType
-                            )(network.tokenAdminRegistry)}
+                            endLength={addressEndLength}
+                            contractUrl={networkContractUrl?.(network.tokenAdminRegistry)}
                             address={network.tokenAdminRegistry}
                           />
                         ) : (
@@ -296,11 +315,8 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
                       <div className="ccip-chain-hero__details__value" data-clipboard-type="registry">
                         {network.registryModule ? (
                           <Address
-                            endLength={4}
-                            contractUrl={getExplorerAddressUrl(
-                              network.explorer,
-                              network.chainType
-                            )(network.registryModule)}
+                            endLength={addressEndLength}
+                            contractUrl={networkContractUrl?.(network.registryModule)}
                             address={network.registryModule}
                           />
                         ) : (
@@ -332,11 +348,8 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
                       <div className="ccip-chain-hero__details__value" data-clipboard-type="token-registry">
                         {network.tokenAdminRegistry ? (
                           <Address
-                            endLength={4}
-                            contractUrl={getExplorerAddressUrl(
-                              network.explorer,
-                              network.chainType
-                            )(network.tokenAdminRegistry)}
+                            endLength={addressEndLength}
+                            contractUrl={networkContractUrl?.(network.tokenAdminRegistry)}
                             address={network.tokenAdminRegistry}
                           />
                         ) : (
@@ -364,10 +377,181 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
                         </div>
                         <div className="ccip-chain-hero__details__value" data-clipboard-type="mcms">
                           <Address
-                            endLength={4}
-                            contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.mcms)}
+                            endLength={addressEndLength}
+                            contractUrl={networkContractUrl?.(network.mcms)}
                             address={network.mcms}
                           />
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {network.chainType === "canton" && (
+                  <>
+                    {network.ccipOwnerParty && (
+                      <div className="ccip-chain-hero__details__item ccip-chain-hero__details__item--wide">
+                        <div className="ccip-chain-hero__details__label">
+                          CCIP owner party
+                          <Tooltip
+                            label=""
+                            tip="The CCIP owner party is the signatory and owner of core CCIP contracts on Canton."
+                            labelStyle={{
+                              marginRight: "8px",
+                            }}
+                            style={{
+                              display: "inline-block",
+                              verticalAlign: "middle",
+                              marginBottom: "2px",
+                            }}
+                          />
+                        </div>
+                        <div className="ccip-chain-hero__details__value" data-clipboard-type="ccip-owner-party">
+                          <Address
+                            endLength={cantonWideAddressEndLength}
+                            contractUrl={networkContractUrl?.(network.ccipOwnerParty)}
+                            address={network.ccipOwnerParty}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {network.committeeVerifier && (
+                      <div className="ccip-chain-hero__details__item">
+                        <div className="ccip-chain-hero__details__label">
+                          Committee verifier
+                          <Tooltip
+                            label=""
+                            tip="The Committee Verifier contract (CCVS) validates cross-chain message proofs on Canton."
+                            labelStyle={{
+                              marginRight: "8px",
+                            }}
+                            style={{
+                              display: "inline-block",
+                              verticalAlign: "middle",
+                              marginBottom: "2px",
+                            }}
+                          />
+                        </div>
+                        <div className="ccip-chain-hero__details__value" data-clipboard-type="committee-verifier">
+                          <Address
+                            endLength={addressEndLength}
+                            contractUrl={networkContractUrl?.(network.committeeVerifier.address)}
+                            address={network.committeeVerifier.address}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {network.feeQuoterModule && (
+                      <div className="ccip-chain-hero__details__item">
+                        <div className="ccip-chain-hero__details__label">
+                          Fee quoter module
+                          <Tooltip
+                            label=""
+                            tip="The Fee Quoter module calculates CCIP fees for cross-chain messages on Canton."
+                            labelStyle={{
+                              marginRight: "8px",
+                            }}
+                            style={{
+                              display: "inline-block",
+                              verticalAlign: "middle",
+                              marginBottom: "2px",
+                            }}
+                          />
+                        </div>
+                        <div className="ccip-chain-hero__details__value" data-clipboard-type="fee-quoter-module">
+                          <Address
+                            endLength={addressEndLength}
+                            contractUrl={networkContractUrl?.(network.feeQuoterModule.address)}
+                            address={network.feeQuoterModule.address}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {network.chain === "canton-testnet" && network.tokenAdminRegistry && (
+                      <div className="ccip-chain-hero__details__item">
+                        <div className="ccip-chain-hero__details__label">
+                          Token admin registry
+                          <Tooltip
+                            label=""
+                            tip="The Token Admin Registry manages token pool configuration for cross-chain tokens on Canton."
+                            labelStyle={{
+                              marginRight: "8px",
+                            }}
+                            style={{
+                              display: "inline-block",
+                              verticalAlign: "middle",
+                              marginBottom: "2px",
+                            }}
+                          />
+                        </div>
+                        <div className="ccip-chain-hero__details__value" data-clipboard-type="token-registry">
+                          <Address
+                            endLength={addressEndLength}
+                            contractUrl={networkContractUrl?.(network.tokenAdminRegistry)}
+                            address={network.tokenAdminRegistry}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {network.ccipExplicitDisclosureServer && (
+                      <div className="ccip-chain-hero__details__item ccip-chain-hero__details__item--wide">
+                        <div className="ccip-chain-hero__details__label">
+                          Explicit disclosure server
+                          <Tooltip
+                            label=""
+                            tip="The Explicit Disclosure Server (EDS) endpoint for Canton CCIP disclosures."
+                            labelStyle={{
+                              marginRight: "8px",
+                            }}
+                            style={{
+                              display: "inline-block",
+                              verticalAlign: "middle",
+                              marginBottom: "2px",
+                            }}
+                          />
+                        </div>
+                        <div className="ccip-chain-hero__details__value" data-clipboard-type="eds-server">
+                          <CopyValue value={network.ccipExplicitDisclosureServer} />
+                        </div>
+                      </div>
+                    )}
+
+                    {network.indexer?.primary && (
+                      <div className="ccip-chain-hero__details__item ccip-chain-hero__details__item--wide">
+                        <div className="ccip-chain-hero__details__label">
+                          Indexer
+                          <Tooltip
+                            label=""
+                            tip="The CCIP indexer endpoint used to retrieve Merkle proofs for manual execution on Canton."
+                            labelStyle={{
+                              marginRight: "8px",
+                            }}
+                            style={{
+                              display: "inline-block",
+                              verticalAlign: "middle",
+                              marginBottom: "2px",
+                            }}
+                          />
+                        </div>
+                        <div className="ccip-chain-hero__details__value" data-clipboard-type="indexer">
+                          {network.indexer.backup ? (
+                            <div className="ccip-chain-hero__indexer-list">
+                              <div className="ccip-chain-hero__pool-program-entry">
+                                <span className="ccip-chain-hero__pool-program-type">Primary:</span>
+                                <CopyValue value={network.indexer.primary} />
+                              </div>
+                              <div className="ccip-chain-hero__pool-program-entry">
+                                <span className="ccip-chain-hero__pool-program-type">Backup:</span>
+                                <CopyValue value={network.indexer.backup} />
+                              </div>
+                            </div>
+                          ) : (
+                            <CopyValue value={network.indexer.primary} />
+                          )}
                         </div>
                       </div>
                     )}
@@ -394,8 +578,8 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
                     <div className="ccip-chain-hero__details__value" data-clipboard-type="fee-quoter">
                       {network.feeQuoter ? (
                         <Address
-                          endLength={4}
-                          contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.feeQuoter)}
+                          endLength={addressEndLength}
+                          contractUrl={networkContractUrl?.(network.feeQuoter)}
                           address={network.feeQuoter}
                         />
                       ) : (
@@ -416,10 +600,8 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
                         <div className="ccip-chain-hero__pool-program-entry">
                           <span className="ccip-chain-hero__pool-program-type">BurnMint:</span>
                           <Address
-                            endLength={4}
-                            contractUrl={getExplorerAddressUrl(network.explorer)(
-                              network.poolPrograms.BurnMintTokenPool
-                            )}
+                            endLength={addressEndLength}
+                            contractUrl={networkContractUrl?.(network.poolPrograms.BurnMintTokenPool)}
                             address={network.poolPrograms.BurnMintTokenPool}
                           />
                         </div>
@@ -428,10 +610,8 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
                         <div className="ccip-chain-hero__pool-program-entry">
                           <span className="ccip-chain-hero__pool-program-type">LockRelease:</span>
                           <Address
-                            endLength={4}
-                            contractUrl={getExplorerAddressUrl(network.explorer)(
-                              network.poolPrograms.LockReleaseTokenPool
-                            )}
+                            endLength={addressEndLength}
+                            contractUrl={networkContractUrl?.(network.poolPrograms.LockReleaseTokenPool)}
                             address={network.poolPrograms.LockReleaseTokenPool}
                           />
                         </div>
@@ -459,8 +639,8 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
                     </div>
                     <div className="ccip-chain-hero__details__value" data-clipboard-type="ccip-home">
                       <Address
-                        endLength={4}
-                        contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.ccipHome)}
+                        endLength={addressEndLength}
+                        contractUrl={networkContractUrl?.(network.ccipHome)}
                         address={network.ccipHome}
                       />
                     </div>
@@ -486,11 +666,8 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
                     </div>
                     <div className="ccip-chain-hero__details__value" data-clipboard-type="token-pool-factory">
                       <Address
-                        endLength={4}
-                        contractUrl={getExplorerAddressUrl(
-                          network.explorer,
-                          network.chainType
-                        )(network.tokenPoolFactory)}
+                        endLength={addressEndLength}
+                        contractUrl={networkContractUrl?.(network.tokenPoolFactory)}
                         address={network.tokenPoolFactory}
                       />
                     </div>
@@ -526,7 +703,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
                                 </object>
                                 <div>{token.name}</div>
                                 <Address
-                                  endLength={4}
+                                  endLength={token.name === "TON" ? undefined : addressEndLength}
                                   contractUrl={token.name === "TON" ? undefined : contractUrl}
                                   address={address}
                                 />
