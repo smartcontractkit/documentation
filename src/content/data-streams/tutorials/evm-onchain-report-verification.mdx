@@ -114,6 +114,7 @@ Refer to the following tutorials:
    remappings = [
      "@chainlink/contracts/=node_modules/@chainlink/contracts/",
      "@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/",
+     "@openzeppelin/contracts@4.8.3/=node_modules/@openzeppelin/contracts/",
    ]
    ```
 
@@ -162,7 +163,7 @@ Refer to the following tutorials:
 
 ## Deploy the verifier contract
 
-Deploy `ClientReportsVerifier` to _Arbitrum Sepolia_, passing the Chainlink-deployed `VerifierProxy` address as the constructor argument. The VerifierProxy address for Arbitrum Sepolia is <CopyText text="0x2ff010DEbC1297f19579B4246cad07bd24F2488A" code/>. You can find addresses for other networks on the [Stream Addresses](/data-streams/crypto-streams) page.
+Deploy `ClientReportsVerifier` to _Arbitrum Sepolia_, passing the Chainlink-deployed `VerifierProxy` address as the constructor argument. The `VerifierProxy` is a Chainlink-deployed contract that routes your verification calls to the correct Verifier contract and handles fee collection. You are not deploying the proxy yourself — you only point your contract at it. The VerifierProxy address for Arbitrum Sepolia is <CopyText text="0x2ff010DEbC1297f19579B4246cad07bd24F2488A" code/>. You can find addresses for other networks on the [Stream Addresses](/data-streams/crypto-streams) page.
 
 ```bash
 forge create src/ClientReportsVerifier.sol:ClientReportsVerifier \
@@ -215,6 +216,27 @@ You should see a non-zero value returned.
 ## Verify a single report
 
 You need a signed report payload to verify. This is the `fullReport` value from a report you fetched using the Streams API — see the [Fetch and decode reports](/data-streams/tutorials/go-sdk-fetch#payload-for-onchain-verification) tutorial for an example payload.
+
+When you call `verifyReport()`, the contract does the following:
+
+1. **Extract the report version**: The payload is ABI-encoded as `(bytes32[3], bytes)`. The contract decodes it and reads the first two bytes of `reportData` to determine the schema version:
+
+   | Schema version | Report type                                                        |
+   | -------------- | ------------------------------------------------------------------ |
+   | `0x0003`       | [Crypto Advanced (v3)](/data-streams/reference/report-schema-v3)   |
+   | `0x0008`       | [RWA Standard (v8)](/data-streams/reference/report-schema-v8)      |
+   | `0x0007`       | [Redemption Rates (v7)](/data-streams/reference/report-schema-v7)  |
+   | `0x0009`       | [SmartData (v9)](/data-streams/reference/report-schema-v9)         |
+   | `0x000A`       | [Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) |
+   | `0x000B`       | [RWA Advanced (v11)](/data-streams/reference/report-schema-v11)    |
+
+   Unsupported versions revert with `InvalidReportVersion`.
+
+2. **Handle fees**: The contract calls `s_feeManager()` on the proxy to check whether a `FeeManager` is deployed on the current network. On networks with a FeeManager (Arbitrum, Avalanche, Base, Blast, Bob, Ink, Linea, OP, Scroll, Soneium, ZKSync), it quotes the fee via `getFeeAndReward`, approves the `RewardManager` to spend that LINK amount, and encodes the fee token address into `parameterPayload`. On networks without a FeeManager (zero address returned), it passes empty bytes and skips fee logic entirely. This check runs automatically, so the same contract works on any supported network without changes.
+
+3. **Verify through the proxy**: The contract calls `VerifierProxy.verify()`, which checks the DON's signatures and returns the verified report body.
+
+4. **Decode and store the price**: The verified bytes are decoded into the appropriate struct (`ReportV3` or `ReportV8`). The price is stored in `lastDecodedPrice` and emitted as a `DecodedPrice` event.
 
 Store the payload in your shell:
 
@@ -275,6 +297,15 @@ This is the ETH/USD price with 18 decimal places: **3,865.05 USD**. Each stream 
 
 `verifyBulkReports()` lets you verify reports for multiple feed IDs in a single transaction. This is useful when your protocol needs prices from more than one stream atomically.
 
+The function follows the same four stages as `verifyReport()`, extended to handle an array of payloads:
+
+1. All payloads are decoded and their versions validated in a loop before any fee or verification logic runs.
+2. `getFeeAndReward` is called once per report, and the individual fees are summed into a single `totalFee`. A single `approve()` covers the combined cost of the entire batch.
+3. All payloads are passed to `VerifierProxy.verifyBulk()` in one call.
+4. The verified reports are decoded and stored in `lastDecodedPrices[]`, with a `DecodedPrice` event emitted per report.
+
+Payloads in the array may reference different feed IDs — there is no requirement that they all be for the same stream.
+
 Store two payloads (one per feed) as shell variables, then call the function with them as an array:
 
 ```bash
@@ -306,73 +337,6 @@ cast call $CONTRACT_ADDRESS \
   --rpc-url $RPC_URL
 ```
 
-## Examine the code
+## Recover tokens
 
-<CodeSample src="samples/DataStreams/ClientReportsVerifier.sol" />
-
-### Initializing the contract
-
-The constructor accepts a single argument: the `VerifierProxy` address for the target network. This address is Chainlink-deployed — you are not deploying the proxy yourself. The proxy routes your verification calls to the correct Verifier contract and handles fee collection.
-
-```solidity
-constructor(address _verifierProxy) {
-    i_owner = msg.sender;
-    i_verifierProxy = IVerifierProxy(_verifierProxy);
-}
-```
-
-### `verifyReport()` — single report
-
-The function works in four stages:
-
-**1. Extract the report version**
-
-The payload from the Streams API is ABI-encoded as `(bytes32[3], bytes)`. The function decodes it and reads the first two bytes of `reportData` to determine the schema version:
-
-| Schema version | Report type                                                        |
-| -------------- | ------------------------------------------------------------------ |
-| `0x0003`       | [Crypto Advanced (v3)](/data-streams/reference/report-schema-v3)   |
-| `0x0008`       | [RWA Standard (v8)](/data-streams/reference/report-schema-v8)      |
-| `0x0007`       | [Redemption Rates (v7)](/data-streams/reference/report-schema-v7)  |
-| `0x0009`       | [SmartData (v9)](/data-streams/reference/report-schema-v9)         |
-| `0x000A`       | [Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) |
-| `0x000B`       | [RWA Advanced (v11)](/data-streams/reference/report-schema-v11)    |
-
-Unsupported versions revert with `InvalidReportVersion`.
-
-**2. Handle fees**
-
-The function calls `s_feeManager()` on the proxy to check whether a `FeeManager` is deployed on the current network.
-
-- **FeeManager present** (Arbitrum, Avalanche, Base, Blast, Bob, Ink, Linea, OP, Scroll, Soneium, ZKSync): the function quotes the fee via `getFeeAndReward`, approves the `RewardManager` to spend that LINK amount, and encodes the fee token address into `parameterPayload`.
-- **No FeeManager** (zero address returned): the function passes empty bytes as `parameterPayload` and skips fee logic entirely.
-
-This check runs automatically, so the same contract works on any supported network without changes.
-
-**3. Verify through the proxy**
-
-```solidity
-bytes memory verified = i_verifierProxy.verify(unverifiedReport, parameterPayload);
-```
-
-The proxy checks the DON's signatures and returns the verified report body.
-
-**4. Decode and store the price**
-
-The verified bytes are decoded into the appropriate struct (`ReportV3` or `ReportV8`). The price is stored in `lastDecodedPrice` and emitted as a `DecodedPrice` event.
-
-### `verifyBulkReports()` — multiple reports
-
-This function follows the same four stages, extended to handle an array of payloads:
-
-1. All payloads are decoded and their versions validated in a loop before any fee or verification logic runs.
-2. `getFeeAndReward` is called once per report, and the individual fees are summed into a single `totalFee`. A single `approve()` covers the combined cost of the entire batch.
-3. All payloads are passed to `VerifierProxy.verifyBulk()` in one call.
-4. The verified reports are decoded and stored in `lastDecodedPrices[]`, with a `DecodedPrice` event emitted per report.
-
-Payloads in the array may reference different feed IDs — there is no requirement that they all be for the same stream.
-
-### Additional functions
-
-- **`withdrawToken()`**: Allows the contract owner to recover any ERC-20 tokens (including LINK) held by the contract. Reverts with `NothingToWithdraw` if the balance is zero.
-- **Error types**: `InvalidReportVersion`, `NotOwner`, `NothingToWithdraw`, and `EmptyReportsArray` provide specific revert reasons for easier debugging.
+The contract includes a `withdrawToken()` function that allows the owner to recover any ERC-20 tokens (including LINK) held by the contract. It reverts with `NothingToWithdraw` if the balance is zero.
