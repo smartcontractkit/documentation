@@ -150,6 +150,17 @@ To help you prepare for unforeseen market events, you should take additional ste
 - **Soak testing:** Users are strongly advised to thoroughly test price feed integrations and incorporate a [soak period](https://en.wikipedia.org/wiki/Soak_testing) prior to providing access to end users or securing value.
 - **Provider/source dependency controls:** For single-source feeds, implement controls that detect stale, delayed, missing, or unexpected values from the underlying provider. Where possible, compare the feed against independent references, enforce value bounds or caps, and define fallback or pause behavior before securing value with the feed.
 
+<Aside type="note" title="Deviation threshold is a trigger, not an accuracy bound">
+  A feed's deviation threshold is the percentage move that triggers a new onchain update; it is not a promise that the
+  onchain answer will always stay within that percentage of a live market price. Reaching consensus and transmitting a
+  new round onchain takes time, and reference prices keep moving during that window. Because of this, the observed
+  gap between the onchain answer and any specific external price (such as a single exchange's price) can exceed the
+  configured deviation threshold, particularly in fast-moving markets. If you build monitoring, alerting, or risk
+  parameters around a feed's deviation threshold, treat it as the minimum move that causes an update, not the maximum
+  difference you should expect to observe between updates. To learn more about how the deviation threshold and
+  heartbeat interact, see [Aggregator](/architecture-overview/architecture-decentralized-model#aggregator).
+</Aside>
+
 For more detailed information about some of these examples, see the [Monitoring data feeds](/data-feeds/#monitoring-data-feeds) documentation.
 
 For important updates regarding the use of Chainlink Price Feeds, users should join the official Chainlink Discord and subscribe to the [data-feeds-user-notifications channel](https://discord.gg/Dqy5N9UbsR).

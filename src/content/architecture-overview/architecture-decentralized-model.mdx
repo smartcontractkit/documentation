@@ -13,7 +13,7 @@ metadata:
   image: "/files/OpenGraph_V3.png"
 ---
 
-import { ClickToZoom } from "@components"
+import { ClickToZoom, Aside } from "@components"
 
 This page describes how data aggregation is applied to produce Chainlink Data Feeds and provides more insight as to how Data Feeds are updated.
 
@@ -74,3 +74,12 @@ Aggregators receive updates from the oracle network only when the **Deviation Th
 
 - Deviation Threshold: A new aggregation round starts when a node identifies that the off-chain values deviate by more than the defined deviation threshold from the onchain value. Individual nodes monitor one or more data providers for each feed.
 - Heartbeat Threshold: A new aggregation round starts after a specified amount of time from the last update.
+
+<Aside type="note" title="What the deviation threshold does and does not mean">
+  The deviation threshold is the trigger that starts a new aggregation round — it is not a guarantee that the onchain
+  answer always stays within that percentage of a live market price. Reaching consensus and transmitting a new round
+  onchain takes time, and market prices continue to move during that process. As a result, the difference between the
+  onchain answer and any specific external reference price can exceed the deviation threshold, particularly during
+  fast-moving markets. Observing a gap larger than the configured deviation threshold does not necessarily indicate
+  that a feed is late, malfunctioning, or out of specification.
+</Aside>
