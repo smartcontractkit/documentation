@@ -79,7 +79,7 @@ For example:
 - On Ethereum: you configure 18 decimals (0.123456789123456789)
 - On Polygon: you configure 9 decimals (0.123456789)
 
-When tokens move between chains with different decimals, CCIP converts values automatically and rounds to match the destination chain’s precision.
+When tokens move between chains with different decimals, CCIP converts values automatically and rounds to match the destination chain's precision.
 
 **Impact Scenario**
 
@@ -91,7 +91,7 @@ Consider a token deployed across three blockchains:
 
 | Scenario          | Transfer Path | Example                                                           | Impact                                                                                                                                                                                                                                                        |
 | ----------------- | ------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **High → Low ❌** | A → B         | • Send: 1.123456789123456789<br />• Receive: 1.123456789          | Precision is lost when converting to the destination chain’s decimals. The difference (0.000000000123456789) is not represented on the destination chain.<br />• Burn/mint: not included in the minted amount<br />• Lock/release: remains in the source pool |
+| **High → Low ❌** | A → B         | • Send: 1.123456789123456789<br />• Receive: 1.123456789          | Precision is lost when converting to the destination chain's decimals. The difference (0.000000000123456789) is not represented on the destination chain.<br />• Burn/mint: not included in the minted amount<br />• Lock/release: remains in the source pool |
 | **Low → High ✅** | B → A         | • Send: 1.123456789<br />• Receive: 1.123456789000000000          | No precision loss                                                                                                                                                                                                                                             |
 | **Equal ✅**      | A → C         | • Send: 1.123456789123456789<br />• Receive: 1.123456789123456789 | No precision loss                                                                                                                                                                                                                                             |
 

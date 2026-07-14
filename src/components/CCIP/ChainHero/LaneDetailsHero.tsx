@@ -1,7 +1,7 @@
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
 import AddressComponent from "~/components/AddressReact.tsx"
 import "./LaneDetailsHero.css"
-import { getExplorerAddressUrl } from "~/features/utils/index.ts"
+import { getContractExplorerUrl } from "~/features/utils/index.ts"
 import CopyValue from "../CopyValue/CopyValue.tsx"
 import { LaneFilter } from "~/config/data/ccip/types.ts"
 import { ChainType, ExplorerInfo } from "@config/types.ts"
@@ -121,7 +121,7 @@ function LaneDetailsHero({
             <AddressComponent
               address={offRamp}
               endLength={6}
-              contractUrl={getExplorerAddressUrl(explorer, destinationNetwork.chainType)(offRamp)}
+              contractUrl={getContractExplorerUrl(explorer, destinationNetwork.chainType)(offRamp)}
             />
           </DetailItem>
         ) : (
@@ -133,7 +133,7 @@ function LaneDetailsHero({
             <AddressComponent
               address={onRamp}
               endLength={6}
-              contractUrl={getExplorerAddressUrl(explorer, sourceNetwork.chainType)(onRamp)}
+              contractUrl={getContractExplorerUrl(explorer, sourceNetwork.chainType)(onRamp)}
             />
           </DetailItem>
         )}

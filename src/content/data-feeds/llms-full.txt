@@ -1643,7 +1643,7 @@ Mantle Mainnet: [0xaDE1b9AbB98c6A542E4B49db2588a3Ec4bF7Cdf0](https://mantlescan.
 
 ### <img src="/assets/chains/megaeth.svg" style="height: 20px; width: auto; margin-right: 8px;" />MegaETH
 
-MegaETH Mainnet: [0x78B2195A21B8BBe82acaB43F90F9180E9513FD0C](https://megaeth.blockscout.com/address/0x78B2195A21B8BBe82acaB43F90F9180E9513FD0C)
+MegaETH Mainnet: [0x78B2195A21B8BBe82acaB43F90F9180E9513FD0C](https://mega.etherscan.io/address/0x78B2195A21B8BBe82acaB43F90F9180E9513FD0C)
 
 ### <img src="/assets/chains/metis.svg" style="height: 20px; width: auto; margin-right: 8px;" />Metis
 
@@ -1714,7 +1714,7 @@ If the sequencer is down, messages cannot be transmitted from L1 to L2 and **no 
 
 When the Sequencer is down, all L2 transactions sent from the L1 network wait in the pending queue.
 
-1. **Transaction 3** contains Chainlink’s transaction to set the status of the sequencer as being down on L2.
+1. **Transaction 3** contains Chainlink's transaction to set the status of the sequencer as being down on L2.
 2. **Transaction 4** is a transaction made by a consumer that is dependent on the sequencer status.
 
 After the sequencer comes back up, it moves all transactions in the pending queue to the processed queue.
@@ -3590,7 +3590,7 @@ The following data types are available:
 
 ## Bitcoin Interest Rate Curve
 
-Lenders and borrowers use base rates to evaluate interest rate risk for lending and borrowing contracts, asset valuation for derivatives contracts, and an underlying rate for interest rate swap contracts. Bitcoin Interest Rate Curve Data Feeds provide a base rate to assist with market decisions and quantify the risks of using certain protocols and products based on current and predicted baseline interest rates. The curve’s normalized methodology and daily rates introduce more consistency and predictability to the ebb and flow of digital asset markets. Bitcoin Interest Rate Curve Feeds incorporate a wide range of data sources such as OTC lending desks, DeFi lending pools, and perpetual futures markets.
+Lenders and borrowers use base rates to evaluate interest rate risk for lending and borrowing contracts, asset valuation for derivatives contracts, and an underlying rate for interest rate swap contracts. Bitcoin Interest Rate Curve Data Feeds provide a base rate to assist with market decisions and quantify the risks of using certain protocols and products based on current and predicted baseline interest rates. The curve's normalized methodology and daily rates introduce more consistency and predictability to the ebb and flow of digital asset markets. Bitcoin Interest Rate Curve Feeds incorporate a wide range of data sources such as OTC lending desks, DeFi lending pools, and perpetual futures markets.
 
 To learn more about the use of these interest rate curves in the industry, read the [Bitcoin Interest Rate Curve (CF BIRC)](https://blog.chain.link/cf-bitcoin-interest-rate-curve-cf-birc/) blog post.
 
@@ -3604,11 +3604,11 @@ See the [Rate and Volatility Feed Addresses](/data-feeds/rates-feeds/addresses) 
 
 ## Realized volatility
 
-Realized volatility measures asset price movement over a specific time interval. This value is expressed as a percent of the asset price. The more an asset price moves up or down over time, the higher the realized volatility is for that asset. Please note that realized volatility is not the same as implied volatility, which measures the market’s expectation about future volatility typically derived from options markets.
+Realized volatility measures asset price movement over a specific time interval. This value is expressed as a percent of the asset price. The more an asset price moves up or down over time, the higher the realized volatility is for that asset. Please note that realized volatility is not the same as implied volatility, which measures the market's expectation about future volatility typically derived from options markets.
 
 Each data feed reflects the volatility of an asset over a specific rolling window of time. For example, some data feeds provide volatility data for the last 24 hours, 7 days, and 30 days of time. You can compare the data across these windows to infer whether the volatility of an asset is trending up or down. For example, if realized volatility for the 24-hour window is higher than the 7-day window, volatility might increase.
 
-The same high-quality data providers used in Chainlink’s price feeds sample price data every 10 minutes to refresh volatility estimates. onchain values are updated when the feed heartbeat or deviation threshold is met.
+The same high-quality data providers used in Chainlink's price feeds sample price data every 10 minutes to refresh volatility estimates. onchain values are updated when the feed heartbeat or deviation threshold is met.
 
 See the [Rate and Volatility Feed Addresses](/data-feeds/rates-feeds/addresses) page to find heartbeat and deviation information for each feed. If you have questions or would like to request an enhancement to Realized Volatility Feeds, contact us using [this form](https://forms.gle/Jc1MGY5ry1ceYH1X6).
 
@@ -3694,7 +3694,7 @@ When a token is newly launched, the historical data required to implement a rigo
 
 ### 🔵 Custom Feeds
 
-Custom Feeds are built to serve a specific use case and might not be suitable for general use or your use case's risk parameters. Users must evaluate the properties of a feed to make sure it aligns with their intended use case. [Contact the Chainlink Labs team](https://chain.link/contact?ref_id=DataFeed) if you want more detail on any specific feeds in this category.
+Custom Feeds are built to serve a specific use case and can differ materially from standard market price feeds in sourcing, methodology, update behavior, and risk profile. Users must evaluate the properties of a custom feed to make sure it aligns with their intended use case and closely assess the risk of [single source feeds](#single-source-data-providers). [Contact the Chainlink Labs team](https://chain.link/contact?ref_id=DataFeed) if you want more detail on any specific feeds in this category.
 
 Custom Feeds have the following categories and compositions:
 
@@ -3758,6 +3758,7 @@ To help you prepare for unforeseen market events, you should take additional ste
 - **Manual kill switch:** If a vulnerability or bug is discovered in one of the upstream contracts, the user can manually cease operation and temporarily sever the connection to the data feed.
 - **Monitoring:** Some users create their own monitoring alerts based on deviations in the data feeds that they are using.
 - **Soak testing:** Users are strongly advised to thoroughly test price feed integrations and incorporate a [soak period](https://en.wikipedia.org/wiki/Soak_testing) prior to providing access to end users or securing value.
+- **Provider/source dependency controls:** For single-source feeds, implement controls that detect stale, delayed, missing, or unexpected values from the underlying provider. Where possible, compare the feed against independent references, enforce value bounds or caps, and define fallback or pause behavior before securing value with the feed.
 
 For more detailed information about some of these examples, see the [Monitoring data feeds](/data-feeds/#monitoring-data-feeds) documentation.
 
@@ -3807,7 +3808,15 @@ Design and test your contracts to handle price spikes and implement risk managem
 
 ### Single Source Data Providers
 
-Some data providers use a single data source, which might be necessary if only one source exists onchain or offchain for a specific type of data. Evaluate data providers to make sure they provide high-quality data that your smart contracts can rely on. Any error or omission in the provider's data might negatively impact your application and its users. Single Source Data Provider based feeds can be classified as high or very high market pricing risk and users should take precautions in consuming based on suitability.
+Some Chainlink Data Feeds rely on a single underlying data source or a single data provider. This can be necessary when only one authoritative source exists onchain or offchain for a specific type of data, such as a protocol-published NAV, reserve value, redemption rate, exchange rate, or other custom metric.
+
+Single-source feeds have a different risk profile than market price feeds that aggregate observations across multiple data sources and node operators. If the underlying source or provider publishes incorrect data, omits data, changes its methodology, experiences an outage, is delayed, or is compromised, the feed may reflect that issue. Any such error, omission, delay, or provider failure could negatively affect your application and its users.
+
+Before using a single-source feed, determine whether it is suitable for your use case and whether your application can tolerate the provider/source risk. This is especially important when the feed is used to secure value, determine collateral value, trigger liquidations, support minting or redemption, calculate NAV, or automate other protocol actions.
+
+Users of single-source feeds MUST implement additional safeguards such as value bounds, caps, circuit breakers, freshness checks, fallback behavior, monitoring against independent references where available, and manual pause or kill-switch controls. Single-source feeds can be classified as High or Very High Market Pricing Risk depending on the asset, methodology, provider dependency, and intended use case.
+
+If you are using or considering a single-source feed in production, [contact the Chainlink Labs team](mailto:chainlink_data_feeds@smartcontract.com) to discuss the feed's methodology, provider dependency, and appropriate application-level mitigations.
 
 ### Crypto and Blockchain Actions
 
@@ -3853,7 +3862,7 @@ Chainlink Data Feeds are designed to provide the market-wide price of various as
 
 However, users should be aware that certain extreme events may result in price deviations between the wrapped/bridged asset and its underlying counterpart. For example, the exploitation or hack of a cross-chain token bridge may cause a collapse in demand for a particular wrapped asset. As such, users should construct their applications with safeguards, such as circuit breakers to proactively pause functionality to mitigate risk during such scenarios. Circuit breakers can be created using Chainlink Automation to monitor data feeds for unexpected scenarios.
 
-An additional mechanism for securing a protocol utilizing wrapped assets is by incorporating [Chainlink Proof of Reserve](https://chain.link/proof-of-reserve). Chainlink Proof of Reserve enables the real-time reserve monitoring of offchain and cross-chain assets, including those that have been wrapped/bridged. By comparing the wrapped token’s supply against a Chainlink Proof of Reserve feed, protocols can ensure that these assets are properly collateralized at all times.
+An additional mechanism for securing a protocol utilizing wrapped assets is by incorporating [Chainlink Proof of Reserve](https://chain.link/proof-of-reserve). Chainlink Proof of Reserve enables the real-time reserve monitoring of offchain and cross-chain assets, including those that have been wrapped/bridged. By comparing the wrapped token's supply against a Chainlink Proof of Reserve feed, protocols can ensure that these assets are properly collateralized at all times.
 
 ### Front Running Risk
 
@@ -3869,7 +3878,7 @@ Market Price Feeds incorporate three layers of aggregation at the data source, n
 
 Bounded Market Price Feeds are a specific category of Market Price Feeds that incorporate predefined bounds on reported values to mitigate specific asset class risks, following risk management best practices.
 
-For example, a Bounded Market Price Feed for a stablecoin would include an upper bound that caps the on-chain reported price at a pre-defined maximum (e.g., $1.05), even during edge cases like market dislocations where the stablecoin trades higher than the cap. In such cases, the price will not be reported on-chain. Instead, the most recently written on-chain price will be the value returned by calling [latestRoundData](https://docs.chain.link/data-feeds/api-reference#latestrounddata) on the feed’s [proxy address](https://docs.chain.link/data-feeds#single-value-feed-components). This helps prevent extreme or sustained premium pricing from being reported. These bounds are designed to provide guardrails for assets where structural deviations may introduce elevated risk for feed consumers. Note that a Bounded Market Price Feed for a stablecoin would not include a lower bound for the on-chain reported price.
+For example, a Bounded Market Price Feed for a stablecoin would include an upper bound that caps the on-chain reported price at a pre-defined maximum (e.g., $1.05), even during edge cases like market dislocations where the stablecoin trades higher than the cap. In such cases, the price will not be reported on-chain. Instead, the most recently written on-chain price will be the value returned by calling [latestRoundData](https://docs.chain.link/data-feeds/api-reference#latestrounddata) on the feed's [proxy address](https://docs.chain.link/data-feeds#single-value-feed-components). This helps prevent extreme or sustained premium pricing from being reported. These bounds are designed to provide guardrails for assets where structural deviations may introduce elevated risk for feed consumers. Note that a Bounded Market Price Feed for a stablecoin would not include a lower bound for the on-chain reported price.
 
 In rare circumstances, the fundamental value of an asset underlying a Bounded Market Price Feed, such as a stablecoin, may materially change. In such a case, the predefined bound(s) associated with a Bounded Market Price Feed may be adjusted or removed following an update to Chainlink's [Changelog](https://dev.chain.link/changelog).
 
@@ -3931,7 +3940,7 @@ At a high level, a [Chainlink Runtime Environment (CRE)](/cre) workflow reads fr
 
 ### Data quality
 
-Data for assets are delivered through **[Chainlink Data Streams](/data-streams)**. Data Streams provides the offchain data for the self-managed feeds; however, it is the third party’s obligation to read, transform, or write the correct values onchain on schedule.
+Data for assets are delivered through **[Chainlink Data Streams](/data-streams)**. Data Streams provides the offchain data for the self-managed feeds; however, it is the third party's obligation to read, transform, or write the correct values onchain on schedule.
 
 ### Monitoring & service levels
 
@@ -4097,7 +4106,7 @@ For detailed implementation guides, see:
 # Data Feeds on Solana
 Source: https://docs.chain.link/data-feeds/solana
 
-Chainlink provides data feeds on the [Solana](https://solana.com/) network. Chainlink data feeds on Solana employ [Offchain Reporting (OCR)](/architecture-overview/off-chain-reporting?parent=dataFeeds) to aggregate data from data providers who pull from both centralized and decentralized exchanges. Chainlink’s Solana deployment has no dependencies on external blockchain networks such as Ethereum. In Solana, storage and smart contract logic are separate. Programs store all the logic similar to an EVM (Ethereum) smart contract. The accounts store all the data. Compared to Solidity, the combination of an account and a program is equivalent to a smart contract on an EVM chain. State and logic are separate in Solana.
+Chainlink provides data feeds on the [Solana](https://solana.com/) network. Chainlink data feeds on Solana employ [Offchain Reporting (OCR)](/architecture-overview/off-chain-reporting?parent=dataFeeds) to aggregate data from data providers who pull from both centralized and decentralized exchanges. Chainlink's Solana deployment has no dependencies on external blockchain networks such as Ethereum. In Solana, storage and smart contract logic are separate. Programs store all the logic similar to an EVM (Ethereum) smart contract. The accounts store all the data. Compared to Solidity, the combination of an account and a program is equivalent to a smart contract on an EVM chain. State and logic are separate in Solana.
 
 Solana programs are stateless, so you don't always need to deploy your program to the network to test it. You can deploy and test your programs on a [Solana Test Validator](https://docs.solana.com/developing/test-validator). However, to use Chainlink products on Solana, you must deploy your contract onchain to one of the [supported Solana clusters](#chainlink-products-and-solana-clusters).
 
@@ -5400,14 +5409,21 @@ return []
 }
 }
 
-<Aside type="tip" title="SVR Now Available on Base, Arbitrum, and BNB Chain">
+<Aside type="note" title="SVR integrated with Titan OFA">
   <p>
-    Chainlink SVR has expanded beyond Ethereum Mainnet and is now available on Base, Arbitrum, and BNB Chain via the
-    Atlas auction system. See the{" "}
-    <a href="/data-feeds/svr-feeds/searcher-onboarding-atlas">Atlas searcher onboarding guide</a> for integration
-    details.
+    SVR now supports multiple orderflow auctions in parallel on Ethereum mainnet, including Flashbots and Titan.
+    Searchers participating in SVR should integrate with all supported orderflow auction providers to maximize their
+    competitiveness.
+  </p>
+
+  <p>
+    Reach out to <a href="mailto:devrel@smartcontract.com">[devrel@smartcontract.com](mailto:devrel@smartcontract.com)</a> for assistance getting
+    onboarded. Searchers can [subscribe here](https://chainlinkcommunity.typeform.com/to/s55Hu2tK) to receive timely
+    Chainlink SVR updates.
   </p>
 </Aside>
+
+<Aside type="tip" title="SVR Now Available on Base, Arbitrum, and BNB Chain" />
 
 [Chainlink Smart Value Recapture](https://blog.chain.link/chainlink-smart-value-recapture-svr/) (SVR) Feeds introduce a novel and secure way to recapture Oracle Extractable Value (OEV)—a subset of non-toxic Maximal Extractable Value (MEV) associated with oracle updates that is most commonly observed during the liquidation process of lending protocols. The value recaptured by SVR provides DeFi protocols with an additional revenue stream while also supporting the economic sustainability of Chainlink oracle. SVR Feeds are read in the same manner as standard Chainlink Data Feeds (see [Using Data Feeds](/data-feeds/using-data-feeds)), and simply require that users specify an SVR-enabled feed address.
 
@@ -5579,7 +5595,16 @@ export const arbitrumFeeds = [
 ]
 
 <Aside type="note" title="Searcher Onboarding">
-  To onboard as a searcher to SVR, reach out to [devrel@smartcontract.com](mailto:devrel@smartcontract.com).
+  SVR on Atlas (every chain outside of ETH mainnet) uses a reputation system with **two groups**. Unless otherwise specified for a chain, Atlas includes up to **2 searcher bids** per transaction for on-chain settlement:
+
+  - One slot is always reserved for the high-reputation set
+  - The second slot is open to both high- and low-reputation searchers
+
+  Final winner ordering is determined by bid competitiveness, not reputation. If a low-reputation searcher submits the highest valid bid, that searcher can win.
+
+  Onboarding and access to the high-reputation set is permissionless and does not require communication with Chainlink Labs. For any questions or comments about SVR, email [devrel@smartcontract.com](mailto:devrel@smartcontract.com)
+
+  Searchers can [subscribe here](https://chainlinkcommunity.typeform.com/to/s55Hu2tK) to receive timely Chainlink SVR updates.
 </Aside>
 
 [Chainlink Smart Value Recapture (SVR)](/data-feeds/svr-feeds) has expanded to Base, Arbitrum, and BNB Chain with a new auction system, **Atlas**. This guide provides existing Chainlink SVR searchers with the technical specifications and integration requirements for participating in all non-ETH mainnet SVR auctions.
@@ -5991,6 +6016,8 @@ func runSearcherGateway() {
 		}
 	}
 
+  subscribe()
+
 	// Main loop
 	for {
 		select {
@@ -6246,6 +6273,13 @@ FastLane provides a query API for solvers to trace what happened to their solver
 
 **URL:** `https://solver-query-api-fra.fastlane-labs.xyz/`
 
+<Aside type="caution" title="Use EIP-55 checksummed addresses">
+  All addresses passed to this API (e.g. `solverOperationFrom`) **must be in
+  [EIP-55](https://eips.ethereum.org/EIPS/eip-55) checksum format**. Lowercased or otherwise non-checksummed addresses
+  will not match the cached entry and the API will return `"solver operation not found"`, even if your solver operation
+  was actually submitted successfully.
+</Aside>
+
 **Example request:**
 
 ```json
@@ -6287,6 +6321,10 @@ This won't happen if you inherit from `SolverBase`.
 **Solver operation arrives too late**
 
 If the solver operation arrives after the auction duration has elapsed, it will not be included. The query API will communicate the error `"solver operation not found"`.
+
+**Querying the API without an EIP-55 checksummed address**
+
+If you query the [solver operation results API](#tracing-solver-operation-results) using an address (e.g. `solverOperationFrom`) that is not in [EIP-55](https://eips.ethereum.org/EIPS/eip-55) checksum format, the lookup will fail and the query API will return `"solver operation not found"` — even if your solver operation was actually received and processed. Always pass checksummed addresses when calling the query API.
 
 **Not enough bonded atlEth**
 
@@ -6374,7 +6412,8 @@ return []
 }
 
 <Aside type="note" title="Searcher Onboarding">
-  To onboard as a searcher to SVR, reach out to [devrel@smartcontract.com](mailto:devrel@smartcontract.com).
+  To onboard as a searcher to SVR, reach out to [devrel@smartcontract.com](mailto:devrel@smartcontract.com). Searchers
+  can [subscribe here](https://chainlinkcommunity.typeform.com/to/s55Hu2tK) to receive timely Chainlink SVR updates.
 </Aside>
 
 This guide explains how to identify and bid on **Chainlink SVR** liquidation opportunities on **Ethereum Mainnet**
@@ -6841,6 +6880,24 @@ These actions are usually announced outside regular trading hours. The feed will
 - Consider pausing markets during corporate action windows
 - Implement maximum price change limits with manual review for extreme moves
 
+#### Pause confirmation for corporate actions
+
+*This section contains information for asset issuers that provide Chainlink with pause state for tokenized equity feeds.*
+
+Asset issuers use pause-based workflows for large corporate actions such as stock splits or reverse splits. In these workflows, **the feed freezes at the last known good token value during the pause window**. Before signaling that the feed can be unpaused, the asset issuer should verify that the post-corporate-action equity price and the new issuer multiplier are aligned so the next published token value remains continuous.
+
+The underlying equity leg for this check should be the same Data Streams 24/5 US equity input that the feed uses for tokenized equity feed calculation. See the official list of the [24/5 equity streams](/data-streams/rwa-streams?show24x5=true\&page=1), and [learn more about how market data is sourced for tokenized equity feed calculation](/data-feeds/tokenized-equity-feeds#how-is-market-data-sourced-for-tokenized-equity-feed-calculation).
+
+For each tokenized equity feed, use the stream and time segment configured for that product (the value the feed pipeline would read as the stock leg for the current window), *not* an ad hoc quote from a different venue.
+
+1. Take the new multiplier that is staged for go-live after the corporate action.
+2. Read the current equity market price from that same Data Streams 24/5 input, for the appropriate session (regular, pre-market, post-market, or overnight), the same way the feed prices that window.
+3. Multiply: `new multiplier` × that current equity price. That product is the implied token value the feed would publish if it unpaused *now*.
+4. Compare that implied value to the token price at freeze: the last good, frozen feed value from when the pause took effect. They should match, or be treated as aligned only within the asset issuer's defined tolerance, because correct coordination means the post-corporate-action stock price and the new multiplier should combine to the same onchain token price as at the freeze, preserving continuity.
+
+- **If that equality holds** within the asset issuer's tolerance, the issuer can signal that the feed is ready to unpause according to the applicable release process and any other release gates.
+- **If it does not hold**, the equity input and the new multiplier are not yet consistent with each other after the corporate action, so unpausing the feed would jump or misstate the level for integrators. The feed should remain paused until the stock leg, multiplier, or both are reconciled and the check passes.
+
 ### Market closures and halts not explicitly flagged
 
 Tokenized equity feeds do not explicitly flag:
@@ -7015,6 +7072,14 @@ The token price remains continuous at $200 throughout the event, even though the
 
 This fail-safe behavior prevents incorrect token prices from being published when the stock price and `sValue` are temporarily out of sync.
 
+## Smart Value Recapture (SVR)
+
+Primary mint and redeem for Ondo Finance Global Markets (GM) tokenized equities can be permissioned, but once the tokens are onchain, anyone can hold them and anyone can liquidate positions that use the feed.
+
+Most Ondo Finance Global Markets (GM) feeds have [SVR](/data-feeds/svr-feeds) enabled even when the primary market is not public to all participants. The liquidator set includes teams that can also access primary mint and redeem when they need to. Permissioned mint and redeem concerns the primary market; tokens can still circulate onchain and positions that use the feed can still be liquidated outside that path.
+
+For Oracle Extractable Value (OEV) and how SVR relates to standard feeds, use [SVR Feeds](/data-feeds/svr-feeds)—especially [Understanding MEV and OEV](/data-feeds/svr-feeds#understanding-mev-and-oev). To read answers from contracts, follow [Using Data Feeds](/data-feeds/using-data-feeds) and point at the SVR-enabled proxy address for your feed.
+
 ---
 
 # Asset Issuer Catalog
@@ -7026,13 +7091,149 @@ Tokenized equity feeds have issuer-specific implementations that affect pricing 
 
 ## Available providers
 
-| Provider     | Feed Type          | Price Calculation                                      | Corporate Action Handling            | Documentation                                           | Issuer Contact                        |
-| :----------- | :----------------- | :----------------------------------------------------- | :----------------------------------- | :------------------------------------------------------ | :------------------------------------ |
-| Ondo Finance | Total Return Value | Underlying Equity Market Price × Multiplier (`sValue`) | Pause-based with manual confirmation | [View details](/data-feeds/tokenized-equity-feeds/ondo) | [Contact page](https://ondo.finance/) |
+| Provider     | Feed Type          | Price Calculation                                      | Corporate Action Handling            | Documentation                                                | Issuer Contact                         |
+| :----------- | :----------------- | :----------------------------------------------------- | :----------------------------------- | :----------------------------------------------------------- | :------------------------------------- |
+| Ondo Finance | Total Return Value | Underlying Equity Market Price × Multiplier (`sValue`) | Pause-based with manual confirmation | [View details](/data-feeds/tokenized-equity-feeds/ondo)      | [Contact page](https://ondo.finance/)  |
+| Robinhood    | Multiplier-scaled  | Underlying Equity Market Price × `uiMultiplier`        | Oracle pause on token contract       | [View details](/data-feeds/tokenized-equity-feeds/robinhood) | [Contact page](https://robinhood.com/) |
 
 ## Provider-specific considerations
 
 Each provider may implement tokenized equity feeds differently based on their token design and corporate action handling requirements. Review the provider-specific documentation and contact Chainlink Labs at [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) before integrating their tokenized equity feeds into your protocol.
+
+---
+
+# Robinhood Tokenized Equities
+Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/robinhood
+
+<TokenizedEquityFeeds section="tokenizedEquityNote" />
+
+Chainlink provides tokenized equity feeds for Robinhood tokenized stocks. Each Robinhood tokenized stock is represented by its own ERC-20 token contract, deployed on Robinhood Chain (one contract per ticker). The corresponding Chainlink feed reports the Total Return Value of the token by combining the underlying equity's market price with a multiplier read directly from the Robinhood token contract, rather than the raw equity price.
+
+These feeds use the standard Chainlink V3 aggregator interface (`latestRoundData()`), so any consumer reads the published price through the proxy in the same way as a crypto price feed. They are push-based oracles intended for compliance reference pricing, protocol integration, and similar use cases.
+
+## Available Robinhood tokenized equity feeds
+
+The following table shows the available Robinhood tokenized equity feeds.
+
+## Total Return Value calculation
+
+Robinhood tokenized equity feeds calculate the token price using the following formula:
+
+```
+Token Price = Underlying Equity Market Price × Multiplier
+```
+
+Where:
+
+- **Underlying Equity Market Price**: Sourced from Chainlink's 24/5 equity price feeds, which aggregate data across regular, pre-market, post-market, and overnight trading sessions.
+- **Multiplier**: Read from the Robinhood token contract via the `uiMultiplier()` function. The multiplier accounts for dividend reinvestments and corporate action adjustments (see [Corporate action handling](#corporate-action-handling-and-oracle-pause) below).
+
+This approach ensures the token price reflects the total return of the underlying equity, including dividend reinvestments and corporate action adjustments, rather than just the current market price per share.
+
+## How the multiplier works
+
+The multiplier accounts for events that change the relationship between token quantity and underlying equity value:
+
+| Event Type                   | Multiplier Behavior             | Example                       |
+| :--------------------------- | :------------------------------ | :---------------------------- |
+| Dividend reinvestment        | Small increase                  | `uiMultiplier`: 1.000 → 1.008 |
+| Stock split (10:1 example)   | Large increase                  | `uiMultiplier`: 1.0 → 10.0    |
+| Reverse split (1:10 example) | Large decrease                  | `uiMultiplier`: 10.0 → 1.0    |
+| Spin-offs                    | Adjustment to reflect new value | Varies by event               |
+
+Robinhood updates the multiplier on the token contract through two paths:
+
+- **Immediate update**: `updateMultiplier(uint256)` sets a new `uiMultiplier` effective immediately.
+- **Scheduled update**: `updateMultiplier(uint256, uint256 effectiveAt)` stages the next multiplier. The staged value is exposed through `newUIMultiplier()` and the activation time through `effectiveAt()`. The new value becomes the active `uiMultiplier` once the `effectiveAt` timestamp is reached.
+
+The `UIMultiplierUpdated` event (`oldMultiplier`, `newMultiplier`, `effectiveAtTimestamp`) is emitted whenever the multiplier changes or a new value is staged.
+
+Robinhood's on-chain token contract enforces two update paths:
+
+- **Small updates** (no price discontinuity): Applied immediately via automated processes. These handle routine dividend reinvestments.
+- **Large updates** (price discontinuity): Requires a scheduled pause window and manual confirmation before unpause. These handle major corporate actions like stock splits.
+
+## Corporate action handling and oracle pause
+
+Corporate actions are coordinated by Robinhood as the asset issuer. Chainlink does not provide corporate-action calendar data or automated pause triggers; pause timing and multiplier updates are coordinated by Robinhood.
+
+The Robinhood token contract exposes a dedicated oracle pause flag, `oraclePaused()`, that the feed honors:
+
+**Normal mode** (`oraclePaused() == false`): The feed returns the current underlying equity market price multiplied by the current `uiMultiplier`.
+
+**Paused mode** (`oraclePaused() == true`): The feed stops publishing new prices and holds the last known good value. This prevents an inconsistent token price from being published while a corporate action is in progress and the underlying price and multiplier are temporarily out of sync.
+
+During a corporate action, the issuer-driven workflow keeps the token price continuous:
+
+1. Robinhood pauses the oracle (`pauseOracle()`), freezing the feed at the last known good value.
+2. The new multiplier is staged via `updateMultiplier(newMultiplier, effectiveAt)` (or applied at the scheduled time).
+3. After the corporate action takes effect and Robinhood confirms that both the underlying market price and the multiplier reflect the new values correctly, the oracle is unpaused (`unpauseOracle()`).
+4. The feed resumes publishing using the updated multiplier.
+
+For example, during a 10:1 stock split:
+
+| Stage         | Stock Price | `uiMultiplier` | Token Price   |
+| :------------ | :---------- | :------------- | :------------ |
+| Before split  | $200        | 1.0            | $200          |
+| During pause  | Frozen      | Pending: 10.0  | $200 (frozen) |
+| After unpause | $20         | 10.0           | $200          |
+
+The token price remains continuous at $200 throughout the event, even though the underlying equity market price dropped from $200 to $20.
+
+## Example scenarios
+
+**Normal operation**
+
+```
+- Stock price: $200 → $201
+- uiMultiplier: 1.000 (unchanged)
+- Token price: $201
+```
+
+**Dividend reinvestment** (small multiplier drift)
+
+```
+- Stock price: $200
+- uiMultiplier: 1.000 → 1.008
+- Token price: $201.60
+```
+
+**Stock split** (10:1, scheduled corporate action)
+
+```
+1. Robinhood pauses the oracle and stages newUIMultiplier = 10 with an effectiveAt timestamp
+2. The feed freezes at the current token price while oraclePaused() is true
+3. Market reopens with the underlying stock price at $20 (post-split)
+4. Robinhood confirms alignment and calls unpauseOracle()
+5. uiMultiplier becomes 10.0, token price = $20 × 10 = $200 (continuous)
+```
+
+**Split with timing mismatch** (stock price updates before the multiplier)
+
+```
+- Oracle paused with newUIMultiplier = 10 staged
+- Underlying stock price = $20, uiMultiplier still 1.0 (not yet effective)
+- Result: Feed remains frozen at the pre-pause price until Robinhood unpauses the oracle
+```
+
+This fail-safe behavior prevents incorrect token prices from being published when the underlying stock price and the multiplier are temporarily out of sync.
+
+## Off-hours and session behavior
+
+Robinhood tokenized equity feeds are configured as 24/5 tokenized equity feeds (regular, pre-market, post-market, and overnight sessions), where underlying liquidity and session data quality support it. Integrators should be aware of standard tokenized equity behavior:
+
+- **Off-hours / closed sessions**: When underlying equity markets are closed (weekends, holidays, thin overnight windows), the feed may hold the last published price even though the contract remains callable via `latestRoundData()`. These feeds do not have heartbeats during off-hours.
+- **Staleness checks**: Integrators should read `updatedAt` and implement staleness bounds appropriate to their use case.
+
+See [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds) for the shared behavioral model across providers.
+
+## Smart Value Recapture (SVR)
+
+Primary mint and redeem for Robinhood tokenized equities can be permissioned, but once the tokens are onchain, anyone can hold them and anyone can liquidate positions that use the feed.
+
+Robinhood feeds have SVR enabled even when the primary market is not public to all participants. The liquidator set includes teams that can also access primary mint and redeem when they need to. Permissioned mint and redeem concerns the primary market; tokens can still circulate onchain and positions that use the feed can still be liquidated outside that path.
+
+For Oracle Extractable Value (OEV) and how SVR relates to standard feeds, use [SVR Feeds](/data-feeds/svr-feeds)—especially [Understanding MEV and OEV](/data-feeds/svr-feeds#understanding-mev-and-oev). To read answers from contracts, follow [Using Data Feeds](/data-feeds/using-data-feeds) and point at the proxy address for your feed.
 
 ---
 

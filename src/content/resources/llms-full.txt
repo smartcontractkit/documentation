@@ -64,7 +64,7 @@ Bridges enable the following:
 As an analogy, you can use [the blockchains as cities mental model](https://medium.com/dragonfly-research/blockchains-are-cities-564327013f86):
 
 - Layer-1 blockchains are like cities.
-- Layer-2 solutions are equivalent to skyscrapers. As described in the mental model, “Each rollup is like a vertical blockchain that extends from the ground L1”.
+- Layer-2 solutions are equivalent to skyscrapers. As described in the mental model, "Each rollup is like a vertical blockchain that extends from the ground L1".
 - Bridges are like roads and streets that connect different cities and skyscrapers.
 
 ## Trade-offs
@@ -85,7 +85,7 @@ When choosing a bridge, be aware of the following risks.
 
 ### Smart contract risks
 
-Bugs and vulnerabilities can expose users' assets to different kinds of exploits. Read this [detailed analysis](https://certik.medium.com/qubit-bridge-collapse-exploited-to-the-tune-of-80-million-a7ab9068e1a0) for an example of a bridge exploit where the attacker could leverage a logical error in the bridge’s smart contract.
+Bugs and vulnerabilities can expose users' assets to different kinds of exploits. Read this [detailed analysis](https://certik.medium.com/qubit-bridge-collapse-exploited-to-the-tune-of-80-million-a7ab9068e1a0) for an example of a bridge exploit where the attacker could leverage a logical error in the bridge's smart contract.
 
 ### Systemic financial risks
 
@@ -114,7 +114,7 @@ Web2 verification can be fairly convenient for personal transactions and require
 
 #### External verification
 
-External verification is where a group of validator nodes are responsible for verifying transactions. These validators do not belong to either of the two blockchains’ validator sets and they also have their trust assumptions irrespective of the underlying blockchains.
+External verification is where a group of validator nodes are responsible for verifying transactions. These validators do not belong to either of the two blockchains' validator sets and they also have their trust assumptions irrespective of the underlying blockchains.
 
 External verification typically requires an honest majority assumption, where a majority of the external validator nodes must behave honestly for the integrity of the cross-chain interaction to be upheld. However, additional techniques can be used to increase trust-minimization, such as:
 
@@ -122,7 +122,7 @@ External verification typically requires an honest majority assumption, where a 
 - Risk management networks
 - Cryptoeconomic staking
 
-Despite an additional trust assumption, external verification is currently the only practical way to perform cross-chain contract calls between certain types of blockchains while still providing trust-minimized guarantees. It’s also a highly generalized and extensible form of cross-chain computation that is capable of supporting more complex cross-chain applications.
+Despite an additional trust assumption, external verification is currently the only practical way to perform cross-chain contract calls between certain types of blockchains while still providing trust-minimized guarantees. It's also a highly generalized and extensible form of cross-chain computation that is capable of supporting more complex cross-chain applications.
 
 <Aside type="note" title="Cryptography risk">
   Some externally verified bridges are secured by multisig wallets.
@@ -182,7 +182,7 @@ This guide is for developers seeking to leverage AI skills while integrating Cha
 
 ## How to install the skills
 
-Installation uses [Vercel’s CLI for the open skills ecosystem](https://github.com/vercel-labs/skills#readme).
+Installation uses [Vercel's CLI for the open skills ecosystem](https://github.com/vercel-labs/skills#readme).
 
 ### Install skills (recommended default)
 
@@ -219,7 +219,7 @@ After installation, restart or refresh your assistant session if your tool requi
 
 ## How to use the skills day to day
 
-Compatible assistants can **activate skills automatically** when your task matches their descriptions. For predictable results, **mention the skill explicitly** in your message, using the slash form your tool expects (often `/chainlink-data-feeds-skill`, `/chainlink-ccip-skill`, and so on). Match the `name` field in each skill’s `SKILL.md`.
+Compatible assistants can **activate skills automatically** when your task matches their descriptions. For predictable results, **mention the skill explicitly** in your message, using the slash form your tool expects (often `/chainlink-data-feeds-skill`, `/chainlink-ccip-skill`, and so on). Match the `name` field in each skill's `SKILL.md`.
 
 Keep prompts concrete: target chain, framework (Foundry, Hardhat, and so on), what you want built or changed, and any constraints (validation, tests, security expectations). The skills steer answers toward current integration practices and safer defaults; you remain responsible for reviews, keys, and anything executed onchain.
 
@@ -271,7 +271,7 @@ Using the /chainlink-ccip-skill, build a cross-chain liquid staking project:
 
 - is a Foundry project
 - Users deposit a token on the source chain and get a liquid staking token on the destination chain
-- Avalanche Fuji is the source chain where the user’s deposit tokens
+- Avalanche Fuji is the source chain where the user's deposit tokens
 - Base Sepolia is the destination chain where they get a liquid staking token
 - Users can return the liquid staking token to receive their funds back on the original source chain
 - Verifies all cross chain transfers
@@ -413,6 +413,131 @@ Any questions before you start?
 
 ---
 
+# Chainlink for Agents User Guide
+Source: https://docs.chain.link/resources/chainlink-for-agents
+
+**Chainlink for Agents** is a hosted HTTP gateway plus bundled agent skills that let an AI agent operate safely onchain with verified pricing data and workflows for onchain actions. Agents register autonomously and pay per call with [x402](https://www.x402.org/) using USDC on Base.
+
+<Aside type="note" title="Preview">
+  Chainlink for Agents is in Preview. APIs, pricing, and functionality may change. <br /> <br />
+  <a href="https://forms.gle/mQYTLWa2DxNL6QuQ7">Contact us</a> to get more information, suggest features, or get help.
+</Aside>
+
+## Quick Start
+
+An agent with a funded wallet on Base can often complete setup in one session. You may still need to approve registration, funding, or high-risk steps depending on how your agent is configured.
+
+### 1. Install the skills bundle
+
+Fetch the hub skill from the gateway:
+
+```http
+GET https://agents.chain.link/v1/skills
+```
+
+Alternatively, you could simply request your agent to retrieve the skills at agents.chain.link at the `/v1/skills` endpoint.
+
+The response includes `SKILL.md` which the agent can load directly.
+
+### 2. Create and fund your local wallet (if needed)
+
+If the agent does not yet have a Base wallet:
+
+1. Ask the agent to create an EVM wallet for the Base blockchain; agents frequently can do this from a single prompt.
+2. Fund it with USDC for micropayments — $5 should be plenty. Per-call costs are typically fractions of a cent. Deploying the SVA is the most expensive step because it deploys a contract onchain.
+
+### 3. Complete onboarding
+
+Once the `SKILL.md` is installed and you have a local wallet on Base with USDC, the agent will run the following steps:
+
+1. **Registration**: create a gateway identity and sign the Terms of Service with a local [EIP-191](https://eips.ethereum.org/EIPS/eip-191) wallet.
+2. **Optional: SVA provisioning**: deploy a [Signature Verifying Account (SVA)](#sva-signature-verifying-account) smart wallet for onchain writes. Requires an x402 payment. Not required for Data Streams access or onchain read functions.
+3. **Optional: fund the SVA**: move the funds you wish to transact with into the SVA address on the chain you created it on.
+
+## Services offered via the gateway
+
+Chainlink for Agents currently offers a Preview of two core services for registered agents:
+
+1. Access to Chainlink [Data Streams](/data-streams) on a pay-per-call basis
+2. Access to a guardrailed onchain transaction experience powered by [CRE](/cre)
+
+### Data Streams
+
+Data Streams access allows your agent to make individual x402-gated calls to retrieve the latest verified pricing data across crypto assets, tokenized stocks, and more verified by Chainlink's [decentralized oracle network (DON)](/architecture-overview/architecture-decentralized-model). Data Streams are particularly useful as part of a larger flow for agentic trading of prediction markets, but can also be used for up-to-date pricing for arbitrage or other trading strategies.
+
+Data Streams access is currently available as a [REST endpoint](/data-streams/reference/data-streams-api/interface-api) which returns a single report per call. Future iterations of Chainlink for Agents may add [WebSocket](/data-streams/reference/data-streams-api/interface-ws) access.
+
+If you are building an agent with a use case for low latency verified data from Chainlink Data Streams, [contact us](https://forms.gle/mQYTLWa2DxNL6QuQ7).
+
+### Guardrailed Onchain Experience
+
+For agents who wish to transact onchain safely, Chainlink for Agents offers a unique guardrail experience built on top of the [Chainlink Runtime Environment (CRE)](/cre). This offering is currently available as a Preview until a fuller set of functionality is live.
+
+To get started, your agent registers a smart contract wallet ([Signature Verifying Account or SVA](#sva-signature-verifying-account)) which operates in `restricted` mode by default. In `restricted` mode, the SVA can only sign transactions generated by the Chainlink for Agents endpoints.
+
+When your agent wants to transact onchain:
+
+1. It calls an endpoint such as `aave-supply` and CRE's [DON](/architecture-overview/architecture-decentralized-model) builds the correct calldata for depositing funds into Aave.
+2. The agent uses its local wallet to sign the transaction (see [EIP-712 Signing](/crec/concepts/eip712-signing) for the typed-data model used in similar CRE Connect flows).
+3. The transaction is picked up by the DON, relayed to the SVA, and delivered to chain with gas covered. The SVA is the identity for the transaction, **not the local wallet.**
+
+Chainlink for Agents builds the calldata for each catalog workflow and relays transactions with gas covered, so your agent does not have to figure out—or hallucinate—correct contract calls or manage gas on each chain.
+
+#### Restricted and Unrestricted Mode
+
+The agent's registration may optionally be changed to `unrestricted` mode, which gives access to the `/direct` endpoint allowing your agent to submit calldata it constructed itself for signature and delivery to chain. This allows your agent to use funds in the SVA for onchain actions that aren't yet directly supported by specific endpoints. In restricted mode, the calldata is deterministically generated by Chainlink for Agents, aimed at a core set of use cases you will find valuable in this preview offering.
+
+Working in unrestricted mode does not offer you the same protections that transactions will be constructed correctly, or that the amount sent or addresses and contracts interacted with are part of the preview offerings.
+
+<Aside type="caution" title="Unrestricted mode can be enabled without your approval">
+  During this early access phase, your agent has the ability to execute the switch to unrestricted mode without
+  explicitly requiring a separate authorization step from you. Your agent's `SKILL.md` file guides it to ask permission,
+  but it may choose to ignore that guidance. Review [SVA guardrails](#sva-signature-verifying-account) before enabling
+  unrestricted mode.
+</Aside>
+
+If you are building an agent and have specific onchain use cases you want to see supported, [contact us](https://forms.gle/mQYTLWa2DxNL6QuQ7).
+
+## Things to Know
+
+Chainlink for Agents is in Preview, and there are some important details that will help you and your agent have an improved experience.
+
+### Terms of Service
+
+As part of registration, your agent will use the EOA tied to its identity to sign Chainlink's Terms of Service which covers its actions on your behalf while using the platform.
+
+### Operating Safely
+
+Chainlink for Agents is built to greatly reduce the surface area for mistakes as your agent operates onchain. However, you must still take care to avoid errors. Important ways in which your agent may still lose funds include:
+
+1. The `token-transfer` and `bridge-tokens` endpoints allow asset delivery to an arbitrary external address. Your agent can send your money to an incorrect destination where it likely will not be recoverable.
+2. All workflow endpoints require the agent to send the amounts you desire. Your agent can still choose to specify the wrong amounts.
+3. The agent can set itself to unrestricted mode and gain access to the direct endpoint without requiring explicit approval from you. This allows it to construct its own calldata.
+
+Beyond this, operating on blockchains includes inherent risks and you may be exposed to smart contract security risks and token economic risks.
+
+### Supported Chains and Bridging
+
+Chainlink for Agents currently operates across Base, Ethereum, Polygon, and Arbitrum. Your agent will need a separate SVA deployed to each chain that you wish to operate on. You can simply ask your agent to do this. All x402 funding payments will remain on Base.
+
+**Do not assume that your SVA address will remain constant across chains — it will not.**
+
+To move assets between chains, Chainlink for Agents natively integrates Chainlink's CCIP for asset bridging. Asset and chain routes depend on CCIP's pool availability. Additionally, CCIP does require separate fee tokens for operation.
+
+### Rate Limits
+
+Chainlink for Agents is in preview. There is a global TPS limit of 1 invoked operation per second, and a global TPS limit across all HTTP endpoints of 10 calls per second. These are subject to change. You should expect rate limiting per agent identity to be implemented soon.
+
+### Polling Times
+
+Testing occasionally has shown long polling times for transaction results. Chainlink for Agents currently waits for the strongest forms of finality for propagating onchain updates. Your agent can expect wait times of up to 15 minutes for Ethereum, Base, and Polygon mainnets. Asking your agent not to poll for status but to update you with transaction IDs when they are available will offer a better experience for now.
+
+### Preview Limits
+
+We are monitoring activity and system usage, and may opt to cap agent registrations in this early phase. Additionally, agents which have registered but are inactive or consistently ignoring rate limits may be throttled or archived.
+
+---
+
 # Contributing to Chainlink
 Source: https://docs.chain.link/resources/contributing-to-chainlink
 
@@ -446,7 +571,7 @@ The most direct way you can contribute to Chainlink is to contribute to the core
 
 ### Raising an issue
 
-During the course of using Chainlink software or tools, you might encounter errors or unexpected behavior that leads you to believe the software isn't behaving correctly. You can bring this to the attention of the Chainlink Labs team as well as the wider developer community by raising an issue in the project’s GitHub repository. The 'Issues' tab lists all of the open issues for the repository.
+During the course of using Chainlink software or tools, you might encounter errors or unexpected behavior that leads you to believe the software isn't behaving correctly. You can bring this to the attention of the Chainlink Labs team as well as the wider developer community by raising an issue in the project's GitHub repository. The 'Issues' tab lists all of the open issues for the repository.
 
 After an issue is raised and tagged, the Chainlink Labs team and the wider community can address it. This gives the issue the visibility required for someone to investigate it and resolve the issue.
 
@@ -988,21 +1113,21 @@ If you feel uncomfortable or think there may be a potential violation of the cod
 
 ##### **Event Rules & Conditions**
 
-1. The following rules & conditions (the “Rules”) apply to this Chainlink hackathon (the “Event"). By clicking the “I Accept” button, you acknowledge that you have read these Rules, understand them, and agree to be bound as follows:
-2. You assume full responsibility for any damage or injury caused by you in your participation in the Event (whether to persons or property, and whether to yourself or others) and release SmartContract Chainlink Limited SEZC (and its affiliates) (“Chainlink”), the Event, the organizers of the Event (the “Organizers”), all sponsors of the Event (“Sponsors”), the Event volunteers and the Event staff, (collectively, the “Releasees”) from any liability therefore. **YOU ARE AWARE THAT YOUR PARTICIPATION IN THE EVENT IS SOLELY AT YOUR OWN RISK, AND THAT THE RELEASE HEREIN IS INTENDED TO REFLECT THAT UNDERSTANDING**
-3. You will own any developments that you create during the Event, and all right, title and interest in those developments, including the intellectual property rights therein, shall belong to you. However, you acknowledge that during the course of the Event, you may obtain access to products, developments, information and other materials belonging to Chainlink, other participants of the Event, the Sponsors and/or other third parties (“Third Party Materials”), and that nothing in this Agreement is deemed to transfer any ownership, right, title or interest in such Third Party Materials to you. Your only rights to the Third Party Materials shall be those expressly granted to you by the owner(s) of the Third Party Materials. Specifically, any APIs or other software provided to you by the Sponsors are subject to the subscription terms and software licenses associated with such APIs or other software.
-4. By entering this Event, you represent and warrant that your participation complies with these Rules and that you have sufficient rights to (1) authorize the publication and dissemination of any submission materials and presentations (“Submitted Materials”); (2) allow the Organizers and Sponsors to use and to authorize others to use, publish and disseminate your Submitted Materials. Further, you are entirely responsible for your Submitted Materials, in whole or in part, if: (a) determined to be defamatory, offensive or otherwise inappropriate; (b) determined to violate any laws, rules or regulations; (c) determined to be infringing, or constitute a misappropriation of any intellectual property rights or confidential or proprietary information of any third party; or (d) determined to violate these Rules. Your Submitted Materials must be true and accurate and in compliance with these Rules in all regards. At any time, the Organizers at their sole discretion, reserve the right to remove your Submitted Materials from the Event, in whole or in part, for any violation of these Official Rules.
+1. The following rules & conditions (the "Rules") apply to this Chainlink hackathon (the "Event"). By clicking the "I Accept" button, you acknowledge that you have read these Rules, understand them, and agree to be bound as follows:
+2. You assume full responsibility for any damage or injury caused by you in your participation in the Event (whether to persons or property, and whether to yourself or others) and release SmartContract Chainlink Limited SEZC (and its affiliates) ("Chainlink"), the Event, the organizers of the Event (the "Organizers"), all sponsors of the Event ("Sponsors"), the Event volunteers and the Event staff, (collectively, the "Releasees") from any liability therefore. **YOU ARE AWARE THAT YOUR PARTICIPATION IN THE EVENT IS SOLELY AT YOUR OWN RISK, AND THAT THE RELEASE HEREIN IS INTENDED TO REFLECT THAT UNDERSTANDING**
+3. You will own any developments that you create during the Event, and all right, title and interest in those developments, including the intellectual property rights therein, shall belong to you. However, you acknowledge that during the course of the Event, you may obtain access to products, developments, information and other materials belonging to Chainlink, other participants of the Event, the Sponsors and/or other third parties ("Third Party Materials"), and that nothing in this Agreement is deemed to transfer any ownership, right, title or interest in such Third Party Materials to you. Your only rights to the Third Party Materials shall be those expressly granted to you by the owner(s) of the Third Party Materials. Specifically, any APIs or other software provided to you by the Sponsors are subject to the subscription terms and software licenses associated with such APIs or other software.
+4. By entering this Event, you represent and warrant that your participation complies with these Rules and that you have sufficient rights to (1) authorize the publication and dissemination of any submission materials and presentations ("Submitted Materials"); (2) allow the Organizers and Sponsors to use and to authorize others to use, publish and disseminate your Submitted Materials. Further, you are entirely responsible for your Submitted Materials, in whole or in part, if: (a) determined to be defamatory, offensive or otherwise inappropriate; (b) determined to violate any laws, rules or regulations; (c) determined to be infringing, or constitute a misappropriation of any intellectual property rights or confidential or proprietary information of any third party; or (d) determined to violate these Rules. Your Submitted Materials must be true and accurate and in compliance with these Rules in all regards. At any time, the Organizers at their sole discretion, reserve the right to remove your Submitted Materials from the Event, in whole or in part, for any violation of these Official Rules.
 5. You acknowledge that the Event is intended to be a place where ideas are shared freely, and therefore acknowledge that any information that you share with other participants of the Event, the Sponsors and/or other third parties during the Event is solely at your discretion and risk. If you wish to protect your information, it is solely your responsibility to implement confidentiality and security measures with respect to the persons to whom you are disclosing your information. None of the Releasees shall have any responsibility under this Agreement or by virtue of their participation in the Event with respect to your information.
 6. You are not be a citizen or resident of any jurisdiction subject to sanctions as enforced by the Office of Foreign Assets Control, including without limitation Burma, Crimea and Sevastopol, Cote d'Ivoire, Cuba, Democratic Republic of Congo, Iran, Iraq, Libya, North Korea, Sudan, Syria, Zimbabwe, and you must not be named by OFAC as a Specially Designated National or Blocked Person which can be found at: [www.treasury.gov](https://www.treasury.gov/resource-center/sanctions/sdn-list/pages/default.aspx)
 7. You acknowledge that the Organizers and Chainlink have the right to reject participants in the Event at their sole discretion.
-8. The Organizers have the unrestricted right to use your likeness, image, voice, opinions, and appearance, and also any images of your projects, developments, materials and belongings made at or brought to the Event, captured through video, photographs or other media during the Event for the express purpose of creating promotional material (the “Images”), for the purposes of use in websites, promotional materials, publications and other media of any of the Organizers, whether in print or electronically (the “Materials”). The foregoing right includes permission to copyright, use, re-use, publish, and republish Images in which you may be included, intact or in part, composite or distorted in character or form, without restriction as to changes or transformations, in conjunction with your own or a fictitious name, reproduction in color or otherwise, made through any and all media now or hereafter known;
+8. The Organizers have the unrestricted right to use your likeness, image, voice, opinions, and appearance, and also any images of your projects, developments, materials and belongings made at or brought to the Event, captured through video, photographs or other media during the Event for the express purpose of creating promotional material (the "Images"), for the purposes of use in websites, promotional materials, publications and other media of any of the Organizers, whether in print or electronically (the "Materials"). The foregoing right includes permission to copyright, use, re-use, publish, and republish Images in which you may be included, intact or in part, composite or distorted in character or form, without restriction as to changes or transformations, in conjunction with your own or a fictitious name, reproduction in color or otherwise, made through any and all media now or hereafter known;
    1. The Organizers shall solely own the Materials in which you or your Images, in whole or in part, may appear, including copyright interests, and you have no ownership rights therein;
    2. You give all clearances, copyright and otherwise, for use of your Images, and waive any moral rights that you may have in the Materials in which you or your Images may appear. The rights granted to the Organizers herein are perpetual and worldwide. For greater certainty, you agree that your images may continue to be used after the completion of the Event;
    3. You relinquish any right that you may have to examine or approve the Materials in which you or your Images may appear or the use to which they may be applied; and
    4. You hereby release, discharge and agree to save harmless each and all of the Organizers from any liability by virtue of any blurring, distortion, alteration, optical illusion, or use in composite form of the Images whether intentional or otherwise, that may occur or be produced in the recording of the Images or in any subsequent processing thereof, as well as any publication thereof, including without limitation any claims for libel or invasion of privacy.
 9. You agree that the Organizers may share your registration details, LinkedIn/Github profiles, details of your Hackathon submission, and other information obtained from you in the course of, or relating to, the Event with the Sponsors, and acknowledge that such Sponsors may contact you during and after the Event. By agreeing to this document and/or participating in the Event, you are providing your express consent to communications by the Organizers and Sponsors (including email communications, both marketing and informational) respecting the products and services of the Organizers and Sponsors, and future events.
 10. For valuable consideration, including permission to take part in the Event, you hereby covenant not to sue, and release, waive, and discharge the Releasees, their owners, officers, agents, affiliates, employees, volunteers, and/or any other person or entity in any way associated with the Event, from liability for any injury to your person or property or death arising out of or related to your participation in the Event, whether caused by an act of negligence of the Releasees or otherwise; and hereby assume full responsibility for any risk of bodily injury, death or property damage arising out of or related to your participation in the Event, whether occurring to you or to any other person or entity for whom you are responsible or with whom you are associated, and whether caused by an act of negligence of the Releasees or otherwise. The foregoing release includes, but is not limited to, any occurrences of personal injury, illness (food-borne or otherwise), and loss of belongings, whether by theft or otherwise. You further agree that this instrument (the terms of which collectively are referred to as the Rules) is intended to be as broad and inclusive as is permitted by the laws of the State of California and that if any portion thereof is held invalid, that portion shall be invalid only to the extent required by law, and the balance shall, notwithstanding, continue in full force and effect.
-11. You agree to indemnify and hold the Organizers and Sponsors (and judges, mentors, volunteers, organizers, Chainlink team administering the Event) and each of their employees, representatives, agents, attorneys, affiliates, directors, employees, officers, managers, and shareholders (the “Indemnified Parties”) harmless from any damage, loss, cost, or expense (including without limitation, attorneys’ fees and costs) incurred in connection with any third-party claim, demand, or action (“Claim”) brought or asserted against any of the Indemnified Parties, alleging facts or circumstances that would constitute a breach of any provision of these Rules by you; arising from, related to, or connected with your entry, Submitted Materials, presentations and participation in any way in any aspect of Event, including receipt of any prize. If you are obligated to provide indemnification pursuant to this provision, the Indemnified Parties may, in their sole discretion, control the disposition of any claim at your sole cost and expense. Without limitation of the foregoing, you may not settle, compromise, or in any other manner dispose of any claim without the Organizers’s express written consent.
+11. You agree to indemnify and hold the Organizers and Sponsors (and judges, mentors, volunteers, organizers, Chainlink team administering the Event) and each of their employees, representatives, agents, attorneys, affiliates, directors, employees, officers, managers, and shareholders (the "Indemnified Parties") harmless from any damage, loss, cost, or expense (including without limitation, attorneys' fees and costs) incurred in connection with any third-party claim, demand, or action ("Claim") brought or asserted against any of the Indemnified Parties, alleging facts or circumstances that would constitute a breach of any provision of these Rules by you; arising from, related to, or connected with your entry, Submitted Materials, presentations and participation in any way in any aspect of Event, including receipt of any prize. If you are obligated to provide indemnification pursuant to this provision, the Indemnified Parties may, in their sole discretion, control the disposition of any claim at your sole cost and expense. Without limitation of the foregoing, you may not settle, compromise, or in any other manner dispose of any claim without the Organizers's express written consent.
 12. If selected as a winner of a Chainlink award, your acceptance of the Chainlink award means you agree to the following:
     1. You will not disparage Chainlink or its products, services, agents, representatives, directors, officers, shareholders, attorneys, employees, vendors, business partners, affiliates, successors or assigns, or any person acting by, through, under or in concert with any of them, with any written or oral statement. Nothing in this paragraph shall prohibit the winner from providing truthful information in response to a valid subpoena or other legal process; however, the winning participant agrees to provide Company sufficient notice of such to allow Company the opportunity to oppose such subpoena or legal process prior to providing any information (unless expressly prohibited by applicable law).
     2. You agree that awards are subject to availability and Chainlink and the Sponsors reserve the right to substitute or withdraw any prize without giving notice at their sole discretion.
@@ -1021,7 +1146,7 @@ Source: https://docs.chain.link/resources/link-token-contracts
   support the LINK token.
 </Aside>
 
-The LINK token is the native digital asset of the Chainlink Network. It serves as the standard unit of payment for Chainlink services and as a core component of the network’s cryptoeconomic security through staking. As more developers, enterprises, and financial institutions use Chainlink to build institutional-grade smart contract applications, LINK provides a shared economic framework that helps strengthen the network’s security and service quality.
+The LINK token is the native digital asset of the Chainlink Network. It serves as the standard unit of payment for Chainlink services and as a core component of the network's cryptoeconomic security through staking. As more developers, enterprises, and financial institutions use Chainlink to build institutional-grade smart contract applications, LINK provides a shared economic framework that helps strengthen the network's security and service quality.
 
 ### Payment for oracle services
 
@@ -1035,11 +1160,11 @@ To reduce payment friction and accelerate adoption, [Payment Abstraction](https:
 
 ### Chainlink Reserve
 
-Payment Abstraction is used to help build the [Chainlink Reserve](https://blog.chain.link/chainlink-reserve-strategic-link-reserve/), a strategic onchain reserve of LINK tokens designed to support the network’s long-term growth and sustainability. The Chainlink Reserve is funded by offchain revenue from enterprise adoption of the Chainlink standard, as well as onchain revenue from service usage.
+Payment Abstraction is used to help build the [Chainlink Reserve](https://blog.chain.link/chainlink-reserve-strategic-link-reserve/), a strategic onchain reserve of LINK tokens designed to support the network's long-term growth and sustainability. The Chainlink Reserve is funded by offchain revenue from enterprise adoption of the Chainlink standard, as well as onchain revenue from service usage.
 
 ### Network security and rewards
 
-[Chainlink Staking](https://chain.link/economics/staking) uses the LINK token to support the network’s cryptoeconomic security. Node operators and community members stake LINK, which can be subject to slashing if predefined performance requirements are not met. In exchange for helping secure the network, stakers receive staking rewards.
+[Chainlink Staking](https://chain.link/economics/staking) uses the LINK token to support the network's cryptoeconomic security. Node operators and community members stake LINK, which can be subject to slashing if predefined performance requirements are not met. In exchange for helping secure the network, stakers receive staking rewards.
 
 ### Token standard and cross-chain transfers
 
@@ -1916,13 +2041,13 @@ Testnet Native and LINK is available at [faucets.chain.link/hedera-testnet](http
 
 ### HyperEVM Testnet
 
-| Parameter | Value                                                                                                                                                                                    |
-| :-------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Chain ID  | `998`                                                                                                                                                                                    |
-| Address   | <Address contractUrl="https://hyperevmscan.io/address/0xDD311DBec8A24EdFabf5F985845a75F42e8f9544" urlId="998_0xDD311DBec8A24EdFabf5F985845a75F42e8f9544" urlClass="erc-token-address" /> |
-| Name      | Chainlink Token                                                                                                                                                                          |
-| Symbol    | LINK                                                                                                                                                                                     |
-| Decimals  | 18                                                                                                                                                                                       |
+| Parameter | Value                                                                                                                                                                                                |
+| :-------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chain ID  | `998`                                                                                                                                                                                                |
+| Address   | <Address contractUrl="https://explore-testnet.hyperpc.app/address/0xDD311DBec8A24EdFabf5F985845a75F42e8f9544" urlId="998_0xDD311DBec8A24EdFabf5F985845a75F42e8f9544" urlClass="erc-token-address" /> |
+| Name      | Chainlink Token                                                                                                                                                                                      |
+| Symbol    | LINK                                                                                                                                                                                                 |
+| Decimals  | 18                                                                                                                                                                                                   |
 
 ## <img src="/assets/chains/ink.svg" style="height: 24px; width: auto; margin-right: 8px;" />Ink
 
@@ -2118,23 +2243,23 @@ Testnet Native and LINK are available at [faucets.chain.link/mantle-sepolia](htt
 
 ### MegaETH Mainnet
 
-| Parameter | Value                                                                                                                                                                                            |
-| :-------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Chain ID  | `4326`                                                                                                                                                                                           |
-| Address   | <Address contractUrl="https://megaeth.blockscout.com/address/0xee85aEfb15b9489563A6a29891ebe0750AA1A7Ae" urlId="4326_0xee85aEfb15b9489563A6a29891ebe0750AA1A7Ae" urlClass="erc-token-address" /> |
-| Name      | Chainlink Token on MegaETH Mainnet                                                                                                                                                               |
-| Symbol    | LINK                                                                                                                                                                                             |
-| Decimals  | 18                                                                                                                                                                                               |
+| Parameter | Value                                                                                                                                                                                       |
+| :-------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Chain ID  | `4326`                                                                                                                                                                                      |
+| Address   | <Address contractUrl="https://mega.etherscan.io/address/0xee85aEfb15b9489563A6a29891ebe0750AA1A7Ae" urlId="4326_0xee85aEfb15b9489563A6a29891ebe0750AA1A7Ae" urlClass="erc-token-address" /> |
+| Name      | Chainlink Token on MegaETH Mainnet                                                                                                                                                          |
+| Symbol    | LINK                                                                                                                                                                                        |
+| Decimals  | 18                                                                                                                                                                                          |
 
 ### MegaETH Testnet
 
-| Parameter | Value                                                                                                                                                                                                       |
-| :-------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Chain ID  | `6343`                                                                                                                                                                                                      |
-| Address   | <Address contractUrl="https://megaeth-testnet-v2.blockscout.com/address/0xAd1652471967E7FBf524245782A7f4430F6a4243" urlId="6343_0xAd1652471967E7FBf524245782A7f4430F6a4243" urlClass="erc-token-address" /> |
-| Name      | Chainlink Token on MegaETH Testnet                                                                                                                                                                          |
-| Symbol    | LINK                                                                                                                                                                                                        |
-| Decimals  | 18                                                                                                                                                                                                          |
+| Parameter | Value                                                                                                                                                                                               |
+| :-------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chain ID  | `6343`                                                                                                                                                                                              |
+| Address   | <Address contractUrl="https://testnet-mega.etherscan.io/address/0xAd1652471967E7FBf524245782A7f4430F6a4243" urlId="6343_0xAd1652471967E7FBf524245782A7f4430F6a4243" urlClass="erc-token-address" /> |
+| Name      | Chainlink Token on MegaETH Testnet                                                                                                                                                                  |
+| Symbol    | LINK                                                                                                                                                                                                |
+| Decimals  | 18                                                                                                                                                                                                  |
 
 ## <img src="/assets/chains/merlin.svg" style="height: 24px; width: auto; margin-right: 8px;" />Merlin
 
@@ -2439,13 +2564,13 @@ Testnet Native and LINK is available at [faucets.chain.link/optimism-sepolia](ht
 
 ### Pharos Mainnet
 
-| Parameter | Value                                                                                                                                                                                          |
-| :-------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Chain ID  | `1672`                                                                                                                                                                                         |
-| Address   | <Address contractUrl="https://pharos.socialscan.io/address/0x51e2A24742Db77604B881d6781Ee16B5b8fcBE29" urlId="1672_0x51e2A24742Db77604B881d6781Ee16B5b8fcBE29" urlClass="erc-token-address" /> |
-| Name      | Chainlink Token on Pharos Mainnet                                                                                                                                                              |
-| Symbol    | LINK                                                                                                                                                                                           |
-| Decimals  | 18                                                                                                                                                                                             |
+| Parameter | Value                                                                                                                                                                                    |
+| :-------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chain ID  | `1672`                                                                                                                                                                                   |
+| Address   | <Address contractUrl="https://pharosscan.xyz/address/0x51e2A24742Db77604B881d6781Ee16B5b8fcBE29" urlId="1672_0x51e2A24742Db77604B881d6781Ee16B5b8fcBE29" urlClass="erc-token-address" /> |
+| Name      | Chainlink Token on Pharos Mainnet                                                                                                                                                        |
+| Symbol    | LINK                                                                                                                                                                                     |
+| Decimals  | 18                                                                                                                                                                                       |
 
 ### Pharos Atlantic Testnet
 
@@ -2570,6 +2695,16 @@ Testnet POL and LINK are available at [faucets.chain.link/polygon-amoy](https://
 
 ## <img src="/assets/chains/robinhood-chain.svg" style="height: 24px; width: auto; margin-right: 8px;" />Robinhood Chain
 
+### Robinhood Chain Mainnet
+
+| Parameter | Value                                                                                                                                                                                                   |
+| :-------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Chain ID  | `4663`                                                                                                                                                                                                  |
+| Address   | <Address contractUrl="https://robinhoodchain.blockscout.com/address/0x492641f648a4986844848e0befe66d14817bce34" urlId="4663_0x492641f648a4986844848e0befe66d14817bce34" urlClass="erc-token-address" /> |
+| Name      | Chainlink Token on Robinhood Chain Mainnet                                                                                                                                                              |
+| Symbol    | LINK                                                                                                                                                                                                    |
+| Decimals  | 18                                                                                                                                                                                                      |
+
 ### Robinhood Chain Testnet
 
 | Parameter | Value                                                                                                                                                                                                         |
@@ -2601,14 +2736,14 @@ Testnet RON is used to pay for transactions on Ronin Saigon.
 
 Testnet Native and LINK are available at [faucets.chain.link/ronin-saigon](https://faucets.chain.link/ronin-saigon).
 
-| Parameter      | Value                                                                                                                                                                                               |
-| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Chain ID       | `2021`                                                                                                                                                                                              |
-| Address        | <Address contractUrl="https://saigon-app.roninchain.com/address/0x5bB50A6888ee6a67E22afFDFD9513be7740F1c15" urlId="2021_0x5bB50A6888ee6a67E22afFDFD9513be7740F1c15" urlClass="erc-token-address" /> |
-| Name           | Chainlink Token on Ronin Saigon Testnet                                                                                                                                                             |
-| Symbol         | LINK                                                                                                                                                                                                |
-| Decimals       | 18                                                                                                                                                                                                  |
-| Network status | [app.roninchain.com](https://saigon-app.roninchain.com/)                                                                                                                                            |
+| Parameter      | Value                                                                                                                                                                                                      |
+| :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chain ID       | `202601`                                                                                                                                                                                                   |
+| Address        | <Address contractUrl="https://saigon-explorer.roninchain.com/address/0x2282DA461850d900ba7E777b6D4161a415860931" urlId="202601_0x2282DA461850d900ba7E777b6D4161a415860931" urlClass="erc-token-address" /> |
+| Name           | Chainlink Token on Ronin Saigon Testnet                                                                                                                                                                    |
+| Symbol         | LINK                                                                                                                                                                                                       |
+| Decimals       | 18                                                                                                                                                                                                         |
+| Network status | [app.roninchain.com](https://saigon-app.roninchain.com/)                                                                                                                                                   |
 
 ## <img src="/assets/chains/rootstock.svg" style="height: 24px; width: auto; margin-right: 8px;" />Rootstock
 

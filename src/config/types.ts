@@ -85,6 +85,7 @@ export type SupportedTechnology =
   | "ADI_NETWORK"
   | "EDGE"
   | "ROBINHOOD_CHAIN"
+  | "CANTON"
   | "CREDITCOIN"
 
 export type ChainType = "evm" | "solana" | "aptos" | "sui" | "canton" | "ton" | "tron" | "stellar" | "starknet"
@@ -144,6 +145,7 @@ export type SupportedChain =
   | "MANTLE_SEPOLIA"
   | "RONIN_MAINNET"
   | "RONIN_SAIGON"
+  | "RONIN_SEPOLIA"
   | "BSQUARED_MAINNET"
   | "BSQUARED_TESTNET"
   | "SHIBARIUM_MAINNET"
@@ -272,8 +274,11 @@ export type SupportedChain =
   | "EDGE_MAINNET"
   | "EDGE_TESTNET"
   | "ROBINHOOD_TESTNET"
+  | "ROBINHOOD_MAINNET"
   | "TON_TESTNET"
   | "TON_MAINNET"
+  | "CANTON_TESTNET"
+  | "CANTON_MAINNET"
   | "CREDITCOIN_MAINNET"
 
 export type ExplorerInfo = {

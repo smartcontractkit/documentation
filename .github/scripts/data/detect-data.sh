@@ -230,12 +230,12 @@ node <<EOF
 
     // === data-streams networks
     const STREAMS_NETWORKS = [
-      "0g", "apechain", "adi", "aptos", "arbitrum", "arc", "avalanche", "base", "berachain", "bitlayer", "blast",
-      "bnb-chain", "bob", "botanix", "celo", "dogeos", "ethereum", "giwa", "gnosis-chain", "gravity", "hashkey", 
-      "hedera", "hyperliquid", "injective", "ink", "jovay", "katana", "lens", "linea", "mantle", 
-      "metis", "monad", "opbnb", "optimism", "polygon", "perennial", "pharos", "plasma", "ronin",
-      "robinhood", "scroll", "shibarium", "sei", "seismic", "soneium", "sonic", "solana", "stable", 
-      "xlayer","taiko", "unichain", "worldchain", "zksync"
+      "0g", "adi-network", "apechain", "aptos", "arbitrum", "arc", "avalanche", "base", "berachain", "bitlayer",
+      "blast", "bnb-chain", "bob", "botanix", "canton", "celo", "dogeos", "ethereum", "giwa", "gnosis-chain",
+      "gravity", "hashkey", "hedera", "hyperevm", "injective", "ink", "jovay", "lens", "linea", "mantle",
+      "megaeth", "metis", "monad", "opbnb", "optimism", "perennial", "pharos", "plasma", "polygon",
+      "polygonkatana", "robinhood", "ronin", "scroll", "sei", "seismic", "shibarium", "solana", "soneium",
+      "sonic", "stable", "stellar", "taiko", "unichain", "worldchain", "xlayer", "zksync"
     ];
 
     // === Build relatedTokens for FEEDS
@@ -434,7 +434,8 @@ node <<EOF
     console.log(\`changelog.json updated with \${newEntries.length} new entry(ies).\`);
 EOF
 
-  log "changelog.json updated."
+  npx prettier --write "$CHANGELOG_FILE"
+  log "changelog.json updated and formatted."
 
   log "Done."
 }

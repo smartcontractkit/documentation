@@ -33,6 +33,17 @@ export const getEthereumChainParameter = (chainId: string) => {
     throw new Error(`Chain with chainId '${chainId}' not found in reference data`)
   }
 
+  const rpcUrls = (Array.isArray(chain.rpc) ? chain.rpc : [])
+    .filter((url: unknown): url is string => typeof url === "string")
+    .filter((url) => url.startsWith("https://"))
+    // Drop placeholder endpoints like https://.../${INFURA_API_KEY}
+    .filter((url) => !url.includes("$"))
+    .slice(0, 3)
+
+  if (rpcUrls.length === 0) {
+    throw new Error(`No valid https rpcUrls found for chainId '${chainId}'`)
+  }
+
   const params: AddEthereumChainParameter = {
     chainId,
     chainName: chain.name,
@@ -42,7 +53,7 @@ export const getEthereumChainParameter = (chainId: string) => {
         ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
           chain.explorers.map((explorer: any) => explorer.url)
         : [chain.infoURL],
-    rpcUrls: chain.rpc,
+    rpcUrls,
   }
   return params
 }
@@ -77,6 +88,51 @@ export const getExplorerAddressUrl =
       .join("&")
 
     return queryString ? `${url}?${queryString}` : url
+  }
+
+/** Canton contract IDs are hashes — only party IDs are explorable in Lighthouse. */
+export const getCantonPartyIdFromAddress = (address?: string): string | undefined => {
+  if (!address) return undefined
+
+  const atIndex = address.indexOf("@")
+  if (atIndex !== -1) {
+    const partyId = address.slice(atIndex + 1)
+    return partyId || undefined
+  }
+
+  // Values like ccipOwner::1220... are already party IDs.
+  if (address.includes("::")) {
+    return address
+  }
+
+  return undefined
+}
+
+export const getCantonPartyExplorerUrl = (explorer: ExplorerInfo, partyId?: string): string | undefined => {
+  if (!partyId) return undefined
+  return `${explorer.baseUrl}/party/${encodeURIComponent(partyId)}`
+}
+
+export const getCantonAddressExplorerUrl = (explorer: ExplorerInfo, address?: string): string | undefined => {
+  const partyId = getCantonPartyIdFromAddress(address)
+  return getCantonPartyExplorerUrl(explorer, partyId)
+}
+
+/** Canton token addresses that should be copy-only (no Lighthouse link). */
+export const isCantonNativeFeeToken = (chain: string, tokenId: string): boolean => {
+  if (!chain.startsWith("canton-")) return false
+  if (tokenId === "LINK") return true
+  return (chain === "canton-mainnet" && tokenId === "CC") || (chain === "canton-testnet" && tokenId === "Amulet")
+}
+
+export const getContractExplorerUrl =
+  (explorer: ExplorerInfo, chainType: ChainType = "evm") =>
+  (contractAddress?: string): string | undefined => {
+    if (!contractAddress) return undefined
+    if (chainType === "canton") {
+      return getCantonAddressExplorerUrl(explorer, contractAddress)
+    }
+    return getExplorerAddressUrl(explorer, chainType)(contractAddress)
   }
 
 export const getExplorerTransactionUrl = (explorer: ExplorerInfo) => (transactionSignature: string) => {
@@ -313,6 +369,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "RONIN_MAINNET"
     case "ronin-testnet-saigon":
       return "RONIN_SAIGON"
+    case "ethereum-testnet-sepolia-ronin-1":
+      return "RONIN_SEPOLIA"
     case "bitcoin-mainnet-bsquared-1":
       return "BSQUARED_MAINNET"
     case "bitcoin-testnet-bsquared-1":
@@ -576,10 +634,16 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "EDGE_MAINNET"
     case "robinhood-testnet":
       return "ROBINHOOD_TESTNET"
+    case "robinhood-mainnet":
+      return "ROBINHOOD_MAINNET"
     case "ton-testnet":
       return "TON_TESTNET"
     case "ton-mainnet":
       return "TON_MAINNET"
+    case "canton-testnet":
+      return "CANTON_TESTNET"
+    case "canton-mainnet":
+      return "CANTON_MAINNET"
     case "creditcoin-mainnet":
       return "CREDITCOIN_MAINNET"
     default:
@@ -681,6 +745,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ronin-mainnet"
     case "RONIN_SAIGON":
       return "ronin-testnet-saigon"
+    case "RONIN_SEPOLIA":
+      return "ethereum-testnet-sepolia-ronin-1"
     case "BSQUARED_MAINNET":
       return "bitcoin-mainnet-bsquared-1"
     case "BSQUARED_TESTNET":
@@ -937,10 +1003,16 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "edge-mainnet"
     case "ROBINHOOD_TESTNET":
       return "robinhood-testnet"
+    case "ROBINHOOD_MAINNET":
+      return "robinhood-mainnet"
     case "TON_TESTNET":
       return "ton-testnet"
     case "TON_MAINNET":
       return "ton-mainnet"
+    case "CANTON_TESTNET":
+      return "canton-testnet"
+    case "CANTON_MAINNET":
+      return "canton-mainnet"
     case "CREDITCOIN_MAINNET":
       return "creditcoin-mainnet"
     default:

@@ -198,6 +198,7 @@ function TokenDrawer({
           logo: network.logo,
           explorer: network.explorer,
           chainType: network.chainType,
+          chain: network.key,
         }}
       />
       <div className="ccip-table__drawer-container">
@@ -281,7 +282,6 @@ function TokenDrawer({
                   if (!laneData || !networkDetails) return null
 
                   const tokenPaused = isTokenPaused(
-                    network.tokenDecimals,
                     destinationLanes[destinationChain].rateLimiterConfig?.[
                       inOutbound === LaneFilter.Inbound ? "in" : "out"
                     ]

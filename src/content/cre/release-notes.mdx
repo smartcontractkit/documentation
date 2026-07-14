@@ -5,12 +5,176 @@ date: Last Modified
 metadata:
   description: "Discover what's new in CRE: latest features, changes, and improvements in each release of the Chainlink Runtime Environment."
   datePublished: "2025-11-04"
-  lastModified: "2026-05-08"
+  lastModified: "2026-07-09"
 ---
 
 import { Aside } from "@components"
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.24.0 - July 9, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.24.0" target="_blank">CRE CLI version 1.24.0</a> is now available.**
+
+- **Execution observability from the CLI**: New [`cre execution`](/cre/reference/cli/execution) commands let you inspect deployed workflow runs without opening the UI — `list` for recent executions (filter by status and time range), `status` for a single run, `events` for the capability timeline, and `logs` for emitted log lines. All support `--output json` for scripting.
+- **Enhanced `cre workflow get`**: [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get) now resolves the workflow from your `workflow.yaml` settings and shows deployment health plus the most recent execution, not just registry metadata.
+- **Solana Write capability**: Workflows can now submit DON-consensus signed reports to Solana programs on Mainnet and Devnet via the Keystone Forwarder — the same secure write model as EVM. See the [Solana Write capability](/cre/capabilities/solana-write), [Solana chain interactions](/cre/guides/workflow/using-solana-client/overview), [generating Solana bindings](/cre/guides/workflow/using-solana-client/generating-bindings) (`cre generate-bindings solana`), and [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write). Local write simulation uses `cre workflow simulate` with `CRE_SOLANA_PRIVATE_KEY`; chain selectors are listed under [Supported Networks](/cre/supported-networks).
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.23.0...v1.24.0)
+
+## CLI v1.23.0 - July 2, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.23.0" target="_blank">CRE CLI version 1.23.0</a> is now available.**
+
+- **Simulator rate limits enforced**: The local simulator now enforces rate limits during workflow execution, aligning simulation behavior more closely with production. When a rate limit is reached the workflow is not terminated — execution continues within the allowed limits.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.22.0...v1.23.0)
+
+## CLI v1.22.0 - June 25, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.22.0" target="_blank">CRE CLI version 1.22.0</a> is now available.**
+
+- **Secrets security hardening**: Two improvements to the browser OAuth secrets flow: all gateway requests are now forced to HTTPS (preventing accidental use of insecure endpoints), and OCR response payload signatures are validated before consuming secrets responses.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.21.0...v1.22.0)
+
+## CLI v1.21.0 - June 18, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.21.0" target="_blank">CRE CLI version 1.21.0</a> is now available.**
+
+- **MSIG mode guard**: Using `--unsigned` or `--changeset` with `--secrets-auth=browser` or a private registry now produces a clear upfront error instead of a confusing failure mid-operation.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.20.0...v1.21.0)
+
+## CLI v1.20.0 - June 12, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.20.0" target="_blank">CRE CLI version 1.20.0</a> is now available.**
+
+- **Simulation limits aligned with production**: The local simulator's resource limits now match production. Notable increases: execution concurrency (10 → 50), EVM transaction gas limit (5M → 10M), chain write report size (5 KB → 50 KB), HTTP action payload sizes (10 KB request / 100 KB response → 120 KB / 250 KB), and ConfidentialHTTP payload sizes (10 KB / 100 KB → 125 KB / 500 KB). Workflows that previously hit local-only caps should now simulate more faithfully.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.19.0...v1.20.0)
+
+## CLI v1.19.0 - June 11, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.19.0" target="_blank">CRE CLI version 1.19.0</a> is now available.**
+
+- **`--listen` flag for `cre workflow simulate`**: A new `--listen` flag keeps the simulator alive and re-runs it for each incoming event — HTTP POST requests on port 2000 or matching EVM log trigger events. Use it when iterating on trigger-driven workflows without restarting the simulator between runs. Also added `--evm-receipt-timeout` (default `1m`) to control how long the simulator waits for an EVM transaction receipt.
+- **Browser OAuth secrets auth in production**: Browser-based OAuth authentication for secrets is now fully enabled in production environments. A related fix prevents secrets flows from failing when the default `CRE_ETH_PRIVATE_KEY` placeholder is set in your environment.
+- **DON Family shown in workflow output**: The `DON Family` field is now displayed in the details section after `cre workflow deploy`, `activate`, and `pause`. The underlying resolution now uses your tenant's platform default instead of the embedded config, so the displayed value reflects what the platform actually uses.
+- **Capability registry RPC auto-resolution**: The CLI now resolves RPC endpoints for the capability registry chain automatically and prompts for consent when needed, removing the need to configure these connections manually in your secrets workflows.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.18.0...v1.19.0)
+
+## Go SDK v1.12.0 - June 11, 2026
+
+**Go SDK version 1.12.0** adds Solana mainnet support.
+
+- **Solana mainnet**: Solana mainnet chain selectors and workflow bindings are now included in the SDK, enabling production workflows that target Solana mainnet.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.11.0...v1.12.0)
+
+## CLI v1.18.0 - June 4, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.18.0" target="_blank">CRE CLI version 1.18.0</a> is now available.**
+
+- **Internal improvements**: Reliability fixes across context propagation, secret handling, and registry type management.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.17.0...v1.18.0)
+
+## CLI v1.17.0 - May 28, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.17.0" target="_blank">CRE CLI version 1.17.0</a> is now available.**
+
+- **Bug fixes and reliability**: Improved platform client reliability and clearer error messages during workflow deploy and delete.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.16.0...v1.17.0)
+
+## CLI v1.16.0 - May 22, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.16.0" target="_blank">CRE CLI version 1.16.0</a> is now available.**
+
+- **ADI Mainnet support**: ADI mainnet (`adi-mainnet`) is now supported for local simulation and production deployment. See [Supported Networks](/cre/supported-networks).
+- **Bug fixes**: Improved workflow deploy checks, non-interactive simulation behavior for cron triggers, and platform API reliability.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.15.0...v1.16.0)
+
+## Go SDK v1.11.0 - May 21, 2026
+
+**Go SDK version 1.11.0** adds private Rhyolite testnet support.
+
+- **`private-testnet-rhyolite` support**: EVM capabilities for the Rhyolite private testnet are now included. Use the `private-testnet-rhyolite` chain name when building workflows that target this network.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.10.0...v1.11.0)
+
+## Go SDK v1.10.0 - May 20, 2026
+
+**Go SDK version 1.10.0** adds ADI mainnet support.
+
+- **ADI mainnet**: EVM capabilities for ADI mainnet (`adi-mainnet`) are now included, supporting workflows deployed to ADI mainnet.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.9.0...v1.10.0)
+
+## CLI v1.15.0 - May 14, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.15.0" target="_blank">CRE CLI version 1.15.0</a> is now available.**
+
+- **`cre workflow supported-chains` redesigned**: The command now lists tenant-specific chains and their mock forwarder addresses fetched from the platform, replacing the previous static embedded list. Default output is a table with `CHAIN`, `SELECTOR`, and `MOCK FORWARDER` columns. Authentication is required — run `cre login` or set `CRE_API_KEY` before using this command. Use `--output json` for structured output with `chainName`, `chainSelector`, and `address` fields. Non-EVM chains enabled for your tenant also appear in the output. See [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains).
+- **ADI testnet and Celo Sepolia support**: Two new networks — ADI testnet (`adi-testnet`) and Celo Sepolia (`celo-sepolia`) — are now supported for local simulation. See [Supported Networks](/cre/supported-networks).
+- **Global `--allow-unknown-chains` flag**: A new root-level flag that skips chain-name validation when using experimental or unlisted chains in `cre workflow simulate` and `cre workflow deploy`. Chain-selector and RPC availability are still enforced. See [Global flags](/cre/reference/cli#global-flags).
+- **`cre workflow hash` registry-aware owner**: The command now auto-derives the workflow owner based on your target registry — on-chain targets use `workflow-owner-address` or `CRE_ETH_PRIVATE_KEY`; off-chain targets use the owner from your login session. `--public_key` overrides this if needed. See [`cre workflow hash`](/cre/reference/cli/workflow#cre-workflow-hash).
+- **Bug fixes**: Private registry workflow updates now preserve the paused status of existing workflows; deploy now guards against duplicate registration by checking for an existing workflow ID.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.14.0...v1.15.0)
 
 ## CLI v1.14.0 - May 8, 2026
 
@@ -25,6 +189,14 @@ This page provides detailed release notes for CRE. It includes information on ne
 - **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
 
 [See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.13.0...v1.14.0)
+
+## Go SDK v1.9.0 - May 13, 2026
+
+**Go SDK version 1.9.0** adds ADI testnet and Celo Sepolia support.
+
+- **ADI testnet and Celo Sepolia**: EVM capabilities for ADI testnet (`adi-testnet`) and Celo Sepolia (`celo-sepolia`) are now included, enabling simulation and deployment to these networks.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.8.0...v1.9.0)
 
 ## CLI v1.13.0 - April 30, 2026
 
@@ -134,7 +306,7 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.8.0" target="_blank">CRE CLI version 1.8.0</a> is now available.**
 
-- **Tenant context cache**: The [**Authentication**](/cre/reference/cli/authentication#tenant-context-cache) reference documents **`~/.cre/context.yaml`**, which the CLI updates after login so your local session reflects the platform’s registry manifest.
+- **Tenant context cache**: The [**Authentication**](/cre/reference/cli/authentication#tenant-context-cache) reference documents **`~/.cre/context.yaml`**, which the CLI updates after login so your local session reflects the platform's registry manifest.
 - **Scriptable `cre init`**: [**Project setup**](/cre/reference/cli/project-setup) covers **`cre init --non-interactive`** and related flags for CI and automation without prompts.
 - **`cre templates list --json`**: Use [**Template sources**](/cre/reference/cli/templates) for **`--json`** output when you need machine-readable template listings in scripts.
 

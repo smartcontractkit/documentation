@@ -5,9 +5,9 @@ date: Last Modified
 sdkLang: "ts"
 pageId: "reference-sdk-core"
 metadata:
-  description: "Reference for core TypeScript SDK: Workflow, Handler, Runtime, and essential functions every CRE workflow uses."
+  description: "Reference for core TypeScript SDK: Workflow, Handler, Runtime, report verification (Report.parse), and essential functions every CRE workflow uses."
   datePublished: "2025-11-04"
-  lastModified: "2026-01-20"
+  lastModified: "2026-05-20"
 ---
 
 import { Aside } from "@components"
@@ -107,7 +107,7 @@ Both `Runtime` and `NodeRuntime` provide:
 
 - **`runInNodeMode(...)`**: Execute code on individual nodes with consensus aggregation
 - **`getSecret(...)`**: Access to workflow secrets
-- **`report(...)`**: Generate cryptographically signed reports
+- **`report(...)`**: Generate cryptographically signed reports. To verify received reports, use [`Report.parse()`](#report-verification).
 
 ### Logging
 
@@ -542,3 +542,69 @@ const onTrigger = (runtime: Runtime<Config>): string => {
 <Aside type="note" title="Secrets guide">
   For a complete walkthrough on creating, storing, and using secrets, see the [Secrets guide](/cre/guides/workflow/secrets).
 </Aside>
+
+## Report verification
+
+Parse and verify CRE reports received over HTTP or other offchain channels. Requires **`@chainlink/cre-sdk` v1.8.0** or later.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Guide">
+  For end-to-end examples (HTTP receiver workflow, payload format, private registry notes), see [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts). To **send** reports via HTTP, see [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-ts).
+</Aside>
+
+Verification runs in your callback: signatures are checked offchain, while authorized signers are loaded from the onchain **Capability Registry** (default: `productionEnvironment()` on Ethereum Mainnet). This is not the workflow deployment registry (`private` or onchain).
+
+Import from `@chainlink/cre-sdk`: `Report`, `productionEnvironment`, `zoneFromEnvironment`, and `ReportParseConfig`.
+
+### `Report.parse()`
+
+**Signature:**
+
+```typescript
+Report.parse(
+  runtime: Runtime,
+  rawReport: Uint8Array,
+  signatures: Uint8Array[],
+  reportContext: Uint8Array,
+  config?: ReportParseConfig,
+): Promise<Report>
+```
+
+Parses a report and verifies signatures. Throws on failure. Registry reads are cached per chain and DON.
+
+### `Report` accessors
+
+After a successful parse:
+
+| Method            | Returns      | Description                                |
+| ----------------- | ------------ | ------------------------------------------ |
+| `workflowId()`    | `string`     | Workflow hash (hex)                        |
+| `workflowOwner()` | `string`     | Workflow owner (hex)                       |
+| `workflowName()`  | `string`     | Workflow name from metadata                |
+| `executionId()`   | `string`     | Execution identifier (hex)                 |
+| `donId()`         | `number`     | DON that produced the report               |
+| `body()`          | `Uint8Array` | Payload after the 109-byte metadata header |
+| `seqNr()`         | `bigint`     | Sequence number                            |
+| `configDigest()`  | `Uint8Array` | Config digest                              |
+| `reportContext()` | `Uint8Array` | Full report context bytes                  |
+| `rawReport()`     | `Uint8Array` | Full raw report bytes                      |
+
+### `ReportParseConfig`
+
+| Field                       | Type            | Description                                                        |
+| --------------------------- | --------------- | ------------------------------------------------------------------ |
+| `acceptedEnvironments`      | `Environment[]` | Registry environments to try (defaults to production)              |
+| `acceptedZones`             | `Zone[]`        | Restrict verification to specific DON IDs                          |
+| `skipSignatureVerification` | `boolean`       | Parse metadata only; not for production without another trust path |
+
+### `productionEnvironment()` and `zoneFromEnvironment()`
+
+```typescript
+function productionEnvironment(): Environment
+function zoneFromEnvironment(environment: Environment, donID: number): Zone
+```
+
+| `Environment` field | Type     | Description                                              |
+| ------------------- | -------- | -------------------------------------------------------- |
+| `chainSelector`     | `bigint` | Chain selector for EVM reads (default: Ethereum Mainnet) |
+| `registryAddress`   | `string` | Capability Registry contract address                     |

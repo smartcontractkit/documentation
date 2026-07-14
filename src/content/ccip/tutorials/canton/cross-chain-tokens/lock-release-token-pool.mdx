@@ -1,0 +1,290 @@
+---
+section: ccip
+date: Last Modified
+title: "LockRelease Token Pool Deployment (Canton)"
+metadata:
+  description: "Deploy a CCIP LockRelease token pool on Canton for fixed-supply CIP-56 instruments, register on TAR, and enable a cross-chain lane."
+  excerpt: "CCIP Canton LockRelease token pool, pre-approval, TAR registration, starter kit, cct scripts"
+  datePublished: "2026-06-27"
+  lastModified: "2026-07-06"
+  difficulty: "advanced"
+  estimatedTime: "45 minutes"
+whatsnext:
+  "Explicit Disclosure API": "/ccip/concepts/canton/explicit-disclosure"
+  "BurnMint alternative": "/ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool"
+  "Token pool concepts": "/ccip/concepts/canton/token-pools"
+---
+
+import { Aside } from "@components"
+import { Tabs } from "@components/Tabs"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="cantonAddressesBanner" />
+
+Deploy a **LockRelease** token pool on Canton, fund pool-owner liquidity, register on the Token Admin Registry (TAR), and enable a cross-chain lane. Use the [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton) for pool deployment and TAR registration, or submit Ledger API commands directly.
+
+This guide assumes you have a token instrument live on Canton with supply minted on-ledger, supporting the CIP-56 `TransferFactory` interface and transfer pre-approvals.
+
+**LockRelease** is for **fixed total supply** tokens where cross-chain transfers are backed by locked liquidity — not mint/burn. On send, tokens lock to the pool owner; on receive, the pool releases from its holdings.
+
+**Scope:** Deploy pool, fund liquidity, register on TAR, enable a lane. Excludes [EDS setup](/ccip/concepts/canton/explicit-disclosure) and end-to-end transfer tests.
+
+<Aside type="note" title="Testnet only">
+
+Starter kit `cct:*` scripts target **Canton testnet** only.
+
+</Aside>
+
+## Prerequisites
+
+- **Instrument (token managed on Canton Ledger)** with known `InstrumentId = { admin, id }` supporting `TransferFactory` and pre-approvals.
+- Token liquidity held by the pool owner party for expected release volume.
+- **LockRelease token pool DAR** on your participant — [`ccip-lock-release-token-pool-1.0.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/legacy/ccip-lock-release-token-pool-1.0.0.dar) (bundles its CCIP dependencies — the only DAR you upload).
+- CCIP contract references from Chainlink ops.
+- **Starter kit setup** (if using `cct:*` scripts) — complete [Canton as Source prerequisites](/ccip/tutorials/canton/source/prerequisites) and the [CCT overview](/ccip/tutorials/canton/cross-chain-tokens#starter-kit-cct-scripts).
+
+<Aside type="caution" title="Pool owner trust">
+
+CCIP fully trusts the pool owner. Strongly recommend pool owner equals instrument admin, decentralized across nodes.
+
+</Aside>
+
+## Deployment overview
+
+| Step | Action                           | Starter kit               | Manual                              |
+| :--- | :------------------------------- | :------------------------ | :---------------------------------- |
+| 1    | Deploy `LockReleaseTokenPool`    | `cct:deploy-lock-release` | Ledger API `CreateCommand`          |
+| 2    | Fund holdings + set pre-approval | —                         | Ledger API choices                  |
+| 3    | Register on TAR                  | `cct:set-token`           | TAR choices via Ledger API          |
+| 4    | Enable lane                      | —                         | Rate limiters + `ApplyChainUpdates` |
+| 5    | Go live                          | —                         | EDS + verification                  |
+
+## Step 1 — Deploy the LockRelease Token Pool
+
+Create one [`LockReleaseTokenPool`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/pools/lock-release-token-pool/daml/CCIP/LockReleaseTokenPoolV2.daml). Signatory: `poolOwner`.
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Starter kit</Fragment>
+  <Fragment slot="tab.2">Manual</Fragment>
+  <Fragment slot="panel.1">
+
+```bash filename="Terminal"
+npm run cct:deploy-lock-release -- \
+  --instanceId acme-eur-lr-pool \
+  --instrument 'yourParty::1220…::token-id'
+```
+
+**Flags:**
+
+| Flag           | Required | Description                                                                   |
+| :------------- | :------- | :---------------------------------------------------------------------------- |
+| `--instanceId` | Yes      | Unique pool instance ID (e.g. `acme-eur-lr-pool`)                             |
+| `--instrument` | Yes      | Canton instrument ID: `party::fingerprint::tokenId`                           |
+| `--poolOwner`  | No       | Party that holds pool liquidity (defaults to `party` in `canton-config.json`) |
+| `--ccipOwner`  | No       | Defaults to `ccipParty` in `canton-config.json`                               |
+| `--decimals`   | No       | Token decimals on Canton (default `10`)                                       |
+
+**Expected output:**
+
+```text
+Deploying LockRelease token pool on Canton
+   instanceId: acme-eur-lr-pool
+   instrument: yourParty::1220…::token-id
+   poolOwner:  yourParty::1220…
+✅ LockReleaseTokenPool contract ID: 00abc…
+   Pool address: acme-eur-lr-pool@yourParty::1220…
+
+Next steps:
+   1. Fund the pool owner with token liquidity
+   2. Set the pool receive preapproval (AddPoolReceiveContextContractValue)
+   3. Register on the Token Admin Registry:
+      npm run cct:set-token -- --instrument "…" --poolInstanceId "acme-eur-lr-pool" --poolOwner "…"
+```
+
+  </Fragment>
+  <Fragment slot="panel.2">
+
+| Argument                  | Guidance                                           |
+| :------------------------ | :------------------------------------------------- |
+| `instanceId`              | Unique string, e.g. `acme-eur-lr-pool`             |
+| `poolOwner`               | Recommended: instrument admin                      |
+| `ccipOwner`               | Chainlink CCIP owner party                         |
+| `instrumentId`            | Underlying asset `InstrumentId`                    |
+| `decimals`                | `10`                                               |
+| `rateLimitAdmin`          | Optional                                           |
+| `remoteChainConfigs`      | Empty — configure via `ApplyChainUpdates` (Step 4) |
+| `tokenTransferFeeConfigs` | Optional per-destination fees                      |
+| `poolReceiveContext`      | Empty at creation — set preapproval in Step 2      |
+| `transferTimeout`         | `Indefinite`                                       |
+| `deps`                    | `tokenAdminRegistry`, `rmnRemote`, `feeQuoter`     |
+
+After creation, pool address: `{instanceId}@{poolOwner}`.
+
+  </Fragment>
+</Tabs>
+
+### Transfer-fee fields
+
+When setting `tokenTransferFeeConfigs` (map keyed by destination chain selector):
+
+| Field               | Meaning                                                 |
+| :------------------ | :------------------------------------------------------ |
+| `isEnabled`         | Must be `true` to apply the config                      |
+| `feeUSDCents`       | Flat fee in USD cents (non-negative)                    |
+| `destGasOverhead`   | Gas for destination execution (> 0 when set via choice) |
+| `destBytesOverhead` | Data-availability bytes overhead (≥ 32)                 |
+| `feeBps`            | Proportional fee in basis points (< 10000)              |
+
+### CCIP hosted addresses
+
+| Field                     | Testnet                                                                                                    | Mainnet                                                                                                                |
+| :------------------------ | :--------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| Token Admin Registry      | `tokenadminregistry-lzrnd@ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551` | Contact the [CCIP team](https://chain.link/ccip-contact) for the Token Admin Registry address to register a token pool |
+| RMNRemote                 | `rmn_remote-nzvtd@rmnOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551`          | `rmn_remote-mnprd@rmnOwner::122012714685760dc1927c4cfe119ce2126c48756154e95c06f5c181da05a5519093`                      |
+| FeeQuoter                 | `feequoter-scxln@ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551`          | `feequoter-fpxih@ccipOwner::122012714685760dc1927c4cfe119ce2126c48756154e95c06f5c181da05a5519093`                      |
+| CCIP owner party          | `ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551`                          | `ccipOwner::122012714685760dc1927c4cfe119ce2126c48756154e95c06f5c181da05a5519093`                                      |
+| Global EDS                | `https://eds.testnet.ccip.chain.link`                                                                      | `https://eds.ccip.chain.link`                                                                                          |
+| Indexer                   | `https://indexer-1.testnet.ccip.chain.link`                                                                | Primary: `https://indexer-1.ccip.chain.link` · Backup: `https://indexer-2.ccip.chain.link`                             |
+| Canton chain selector     | `9268731218649498074`                                                                                      | `2308837218439511688`                                                                                                  |
+| Default CommitteeVerifier | `committeeverifier-tqkny@ccvOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551`   | `committeeverifier-mnprd@ccvOwner::122096accf0a84fc7d80d5fce5ea3135317a03eb22e62e0d8cdd7548865f984f11ff`               |
+
+## Step 2 — Fund the pool and configure pre-approval
+
+LockRelease liquidity comes from the **pool owner's token holdings**. Top up those holdings to match expected outbound volume — there is no separate on-pool deposit step. When a receiver executes an inbound transfer on Canton, tokens move from the pool owner's holdings to the recipient.
+
+<Aside type="note" title="Manual step">
+
+The starter kit does not automate funding or pre-approval. Complete this step via the Ledger API before registering on TAR.
+
+</Aside>
+
+### Set pool receive preapproval
+
+Record the token's transfer preapproval in `poolReceiveContext` so inbound transfers to the pool owner succeed atomically on send:
+
+```shell
+curl --request POST \
+  --url https://<your-participant>/api/json/v2/commands/submit-and-wait-for-transaction-tree \
+  --header "authorization: Bearer $JWT" \
+  --header 'content-type: application/json' \
+  --data '{
+  "commands": [
+    {
+      "ExerciseCommand": {
+        "templateId": "#ccip-lock-release-token-pool:CCIP.LockReleaseTokenPool:LockReleaseTokenPool",
+        "contractId": "<POOL_CONTRACT_ID>",
+        "choice": "AddPoolReceiveContextContractValue",
+        "choiceArgument": {
+          "contextKey": "transfer-preapproval",
+          "referredContract": "<PREAPPROVAL_CONTRACT_ID>"
+        }
+      }
+    }
+  ],
+  "commandId": "set-pool-receive-preapproval",
+  "actAs": ["<POOL_OWNER_PARTY>"]
+}'
+```
+
+| Field              | Value                                                        |
+| :----------------- | :----------------------------------------------------------- |
+| `contextKey`       | Key the TransferFactory expects, e.g. `transfer-preapproval` |
+| `referredContract` | ContractId of the pool owner's transfer preapproval          |
+
+Related choices: `AddPoolReceiveContextNonContractValue`, `RemovePoolReceiveContextValue`, `ClearPoolReceiveContext`.
+
+## Step 3 — Register on the Token Admin Registry
+
+TAR maps each instrument to a single token pool. Registration: **propose → accept → set pool**.
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Starter kit</Fragment>
+  <Fragment slot="tab.2">Manual</Fragment>
+  <Fragment slot="panel.1">
+
+```bash filename="Terminal"
+npm run cct:set-token -- \
+  --instrument 'yourParty::1220…::token-id' \
+  --poolInstanceId acme-eur-lr-pool
+```
+
+Use the same flags as [BurnMint Step 2](/ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool#step-2--register-on-the-token-admin-registry). The script runs `ProposeAdministrator` → `AcceptAdminRole` → `SetPool` and prints ledger update links on success.
+
+  </Fragment>
+  <Fragment slot="panel.2">
+
+### Fetch TAR explicit disclosure
+
+```shell
+curl --request POST \
+  --url https://eds.testnet.ccip.chain.link/ccip/v1/global/disclosure/batch \
+  --header 'content-type: application/json' \
+  --data '{
+  "addresses": [
+    "tokenadminregistry-lzrnd@ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551"
+  ]
+}'
+```
+
+Include disclosed contracts in subsequent ledger submissions. OpenAPI: [`eds-global.yaml`](https://github.com/smartcontractkit/chainlink-canton/blob/main/openapi/src/eds/global/eds-global.yaml).
+
+### TAR choices
+
+1. **`ProposeAdministrator`** — CCIP owner or instrument admin. Pass `instrumentId`, `newAdmin`, `caller`. For new instruments, leave `tokenConfigCid` as `None`. Returns `TokenConfig` CID for next steps.
+2. **`AcceptAdminRole`** — Proposed admin exercises with `tokenConfigCid`, `instrumentId`, `caller`.
+3. **`SetPool`** — Admin links instrument to pool via `PoolRegistration` (`poolOwner`, `poolInstanceId` from Step 1).
+
+Admin role can be transferred with `TransferAdminRole` → `AcceptAdminRole`.
+
+  </Fragment>
+</Tabs>
+
+## Step 4 — Enable a lane
+
+Lane enablement is **not** automated by the starter kit.
+
+### 1. Deploy three rate limiters
+
+Each lane requires [`RateLimiter`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/rate-limiter/daml/CCIP/RateLimiterV2.daml) contracts (for testing, deploy disabled with zero capacity/rate):
+
+- **Inbound (default finality)**
+- **Inbound (custom finality)**
+- **Outbound**
+
+Created by `poolOwner` with matching `poolInstanceId`, `poolOwner`, and `remoteChainSelector`.
+
+### 2. Apply the chain update
+
+Call [`ApplyChainUpdates`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/pools/lock-release-token-pool/daml/CCIP/LockReleaseTokenPoolV2.daml) on the pool:
+
+| ChainUpdate field                            | Guidance                                                                   |
+| :------------------------------------------- | :------------------------------------------------------------------------- |
+| `remoteChainSelector`                        | Destination chain selector — see [CCIP Directory](/ccip/directory/testnet) |
+| `remotePools`                                | Remote token pool address(es)                                              |
+| `remoteTokenAddress`                         | Remote token address                                                       |
+| `inboundCCVs` / `outboundCCVs`               | Default CommitteeVerifier (testnet address above) unless custom            |
+| `finalityConfig`                             | `WaitForFinality` for default finalized source tx                          |
+| `inboundRateLimiter`                         | Inbound default limiter CID                                                |
+| `inboundCustomBlockConfirmationsRateLimiter` | Inbound custom limiter CID                                                 |
+| `outboundRateLimiter`                        | Outbound limiter CID                                                       |
+
+Once applied, the on-ledger lane is complete.
+
+## Step 5 — Go live
+
+### Verification checklist
+
+1. TAR maps instrument to pool with your party as admin.
+2. Pool at `{instanceId}@{poolOwner}` with matching `InstrumentId`.
+3. Pool owner holds sufficient liquidity; receive preapproval set in `poolReceiveContext`.
+4. Lane rate limiters in place.
+
+### Stand up EDS
+
+The [reference EDS](https://github.com/smartcontractkit/chainlink-canton/blob/main/eds/eds.Dockerfile) supports LockRelease, including holdings and TransferFactory context for pre-approvals.
+
+### Test transactions
+
+See [CCIP on Canton — Overview](/ccip/concepts/canton/overview) and [CCIP Explorer](/ccip/tools-resources/ccip-explorer).
+
+<CcipCommon callout="educationalDisclaimer" />

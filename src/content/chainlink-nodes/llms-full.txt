@@ -1804,6 +1804,14 @@ See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
 
 ## Webhook Jobs
 
+<Aside type="caution" title="Deprecation">
+  After Chainlink Node version 2.49, Chainlink is deprecating support for the legacy Webhook job type. This job type
+  will no longer be supported in Chainlink node releases. Node operators and developers that continue to rely on it can
+  choose to remain on the last compatible release, but should not expect ongoing development support, including
+  maintenance, bug fixes, security patches, or compatibility with future releases. Teams using this legacy job type
+  should begin planning to upgrade to the [Chainlink Runtime Environment (CRE)](/cre) as an alternative.
+</Aside>
+
 Webhook jobs can be initiated by HTTP request, either by a user or external initiator.
 
 <Aside type="note" />
@@ -3372,7 +3380,7 @@ Before you make any changes to your Chainlink configuration, you must ensure tha
 
 You can increase `ETH_MAX_QUEUED_TRANSACTIONS` if you require high burst throughput. Setting this variable to `0` disables any limit and ensures that no transaction are ever dropped. The default is set automatically based on the chain ID and usually is `250`. Overriding this value does not require any RPC changes and only affects the Chainlink side.
 
-This represents the maximum number of unbroadcast transactions per key that are allowed to be enqueued before jobs start failing and refusing to send further transactions. It acts as a “buffer” for transactions waiting to be sent. If the buffer is exceeded, transactions will be permanently dropped.
+This represents the maximum number of unbroadcast transactions per key that are allowed to be enqueued before jobs start failing and refusing to send further transactions. It acts as a "buffer" for transactions waiting to be sent. If the buffer is exceeded, transactions will be permanently dropped.
 
 Do not set `ETH_MAX_QUEUED_TRANSACTIONS` too high. It acts as a sanity limit and the queue can grow unbounded if you are trying to send transactions consistently faster than they can be confirmed. If you have an issue that must be recovered later, you will have to churn through all the enqueued transactions. As a best practice, set `ETH_MAX_QUEUED_TRANSACTIONS` to the minimum possible value that supports your burst requirements or represents the maximum number of transactions that could be sent in a given 15 minute window.
 
@@ -5841,9 +5849,9 @@ Note: V1.Enabled is true by default, so it must be set false in order to run V2 
 AnnounceAddresses = ['1.2.3.4:9999', '[a52d:0:a88:1274::abcd]:1337'] # Example
 ```
 
-AnnounceAddresses is the addresses the peer will advertise on the network in `host:port` form as accepted by the TCP version of Go’s `net.Dial`.
+AnnounceAddresses is the addresses the peer will advertise on the network in `host:port` form as accepted by the TCP version of Go's `net.Dial`.
 The addresses should be reachable by other nodes on the network. When attempting to connect to another node,
-a node will attempt to dial all of the other node’s AnnounceAddresses in round-robin fashion.
+a node will attempt to dial all of the other node's AnnounceAddresses in round-robin fashion.
 
 ### DefaultBootstrappers
 
@@ -5853,10 +5861,10 @@ DefaultBootstrappers = ['12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U@1.
 
 DefaultBootstrappers is the default bootstrapper peers for libocr's v2 networking stack.
 
-Oracle nodes typically only know each other’s PeerIDs, but not their hostnames, IP addresses, or ports.
-DefaultBootstrappers are special nodes that help other nodes discover each other’s `AnnounceAddresses` so they can communicate.
+Oracle nodes typically only know each other's PeerIDs, but not their hostnames, IP addresses, or ports.
+DefaultBootstrappers are special nodes that help other nodes discover each other's `AnnounceAddresses` so they can communicate.
 Nodes continuously attempt to connect to bootstrappers configured in here. When a node wants to connect to another node
-(which it knows only by PeerID, but not by address), it discovers the other node’s AnnounceAddresses from communications
+(which it knows only by PeerID, but not by address), it discovers the other node's AnnounceAddresses from communications
 received from its DefaultBootstrappers or other discovered nodes. To facilitate discovery,
 nodes will regularly broadcast signed announcements containing their PeerID and AnnounceAddresses.
 
@@ -6313,9 +6321,9 @@ Enabled enables P2P V2.
 AnnounceAddresses = ['1.2.3.4:9999', '[a52d:0:a88:1274::abcd]:1337'] # Example
 ```
 
-AnnounceAddresses is the addresses the peer will advertise on the network in `host:port` form as accepted by the TCP version of Go’s `net.Dial`.
+AnnounceAddresses is the addresses the peer will advertise on the network in `host:port` form as accepted by the TCP version of Go's `net.Dial`.
 The addresses should be reachable by other nodes on the network. When attempting to connect to another node,
-a node will attempt to dial all of the other node’s AnnounceAddresses in round-robin fashion.
+a node will attempt to dial all of the other node's AnnounceAddresses in round-robin fashion.
 
 ### DefaultBootstrappers
 
@@ -6325,10 +6333,10 @@ DefaultBootstrappers = ['12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U@1.
 
 DefaultBootstrappers is the default bootstrapper peers for libocr's v2 networking stack.
 
-Oracle nodes typically only know each other’s PeerIDs, but not their hostnames, IP addresses, or ports.
-DefaultBootstrappers are special nodes that help other nodes discover each other’s `AnnounceAddresses` so they can communicate.
+Oracle nodes typically only know each other's PeerIDs, but not their hostnames, IP addresses, or ports.
+DefaultBootstrappers are special nodes that help other nodes discover each other's `AnnounceAddresses` so they can communicate.
 Nodes continuously attempt to connect to bootstrappers configured in here. When a node wants to connect to another node
-(which it knows only by PeerID, but not by address), it discovers the other node’s AnnounceAddresses from communications
+(which it knows only by PeerID, but not by address), it discovers the other node's AnnounceAddresses from communications
 received from its DefaultBootstrappers or other discovered nodes. To facilitate discovery,
 nodes will regularly broadcast signed announcements containing their PeerID and AnnounceAddresses.
 

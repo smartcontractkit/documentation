@@ -6,6 +6,7 @@
 import { Sections } from "../content.config.ts"
 import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
 import { CCIP_SIDEBAR_CONTENT } from "./sidebar/ccip-dynamic.ts"
+import { AI_AGENT_RESOURCES_SECTION } from "./sidebar/ai-agent-resources.ts"
 import type { ChainType } from "./types.js"
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
@@ -359,6 +360,32 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Solana Chain Interactions",
+          url: "cre/guides/workflow/using-solana-client/overview",
+          highlightAsCurrent: [
+            "cre/guides/workflow/using-solana-client/overview-ts",
+            "cre/guides/workflow/using-solana-client/overview-go",
+          ],
+          children: [
+            {
+              title: "Generating Bindings",
+              url: "cre/guides/workflow/using-solana-client/generating-bindings",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-solana-client/generating-bindings-ts",
+                "cre/guides/workflow/using-solana-client/generating-bindings-go",
+              ],
+            },
+            {
+              title: "Onchain Write",
+              url: "cre/guides/workflow/using-solana-client/onchain-write",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-solana-client/onchain-write-ts",
+                "cre/guides/workflow/using-solana-client/onchain-write-go",
+              ],
+            },
+          ],
+        },
+        {
           title: "API Interactions",
           url: "cre/guides/workflow/using-http-client",
           children: [
@@ -384,6 +411,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               highlightAsCurrent: [
                 "cre/guides/workflow/using-http-client/submitting-reports-http-ts",
                 "cre/guides/workflow/using-http-client/submitting-reports-http-go",
+              ],
+            },
+            {
+              title: "Verifying CRE Reports Offchain",
+              url: "cre/guides/workflow/using-http-client/verifying-reports-offchain",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-http-client/verifying-reports-offchain-ts",
+                "cre/guides/workflow/using-http-client/verifying-reports-offchain-go",
               ],
             },
           ],
@@ -449,6 +484,24 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Deploying Workflows",
           url: "cre/guides/operations/deploying-workflows",
+          children: [
+            {
+              title: "Deploying to the Private Registry",
+              url: "cre/guides/operations/deploying-to-private-registry",
+              highlightAsCurrent: [
+                "cre/guides/operations/deploying-to-private-registry-ts",
+                "cre/guides/operations/deploying-to-private-registry-go",
+              ],
+            },
+            {
+              title: "Deploying to the Onchain Registry",
+              url: "cre/guides/operations/deploying-to-onchain-registry",
+              highlightAsCurrent: [
+                "cre/guides/operations/deploying-to-onchain-registry-ts",
+                "cre/guides/operations/deploying-to-onchain-registry-go",
+              ],
+            },
+          ],
         },
         {
           title: "Activating & Pausing Workflows",
@@ -545,6 +598,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           highlightAsCurrent: ["cre/capabilities/confidential-http-ts", "cre/capabilities/confidential-http-go"],
         },
         { title: "EVM Read & Write", url: "cre/capabilities/evm-read-write" },
+        { title: "Solana Write", url: "cre/capabilities/solana-write" },
       ],
     },
     {
@@ -613,6 +667,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
             { title: "Account Management", url: "cre/reference/cli/account" },
             { title: "Workflow Commands", url: "cre/reference/cli/workflow" },
+            { title: "Execution Commands", url: "cre/reference/cli/execution" },
             { title: "Registry Commands", url: "cre/reference/cli/registry" },
             { title: "Secrets Management", url: "cre/reference/cli/secrets" },
             { title: "Template Sources", url: "cre/reference/cli/templates" },
@@ -666,6 +721,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               highlightAsCurrent: ["cre/reference/sdk/evm-client-ts", "cre/reference/sdk/evm-client-go"],
             },
             {
+              title: "Solana Client",
+              url: "cre/reference/sdk/solana-client",
+              highlightAsCurrent: ["cre/reference/sdk/solana-client-ts", "cre/reference/sdk/solana-client-go"],
+            },
+            {
               title: "HTTP Client",
               url: "cre/reference/sdk/http-client",
               highlightAsCurrent: ["cre/reference/sdk/http-client-ts", "cre/reference/sdk/http-client-go"],
@@ -698,6 +758,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Migrate from Gelato",
           url: "cre/reference/gelato-migration",
           highlightAsCurrent: ["cre/reference/gelato-migration-ts", "cre/reference/gelato-migration-go"],
+        },
+        {
+          title: "Migrate from Chainlink Automation",
+          url: "cre/reference/cla-migration",
+          highlightAsCurrent: ["cre/reference/cla-migration-ts", "cre/reference/cla-migration-go"],
+        },
+        {
+          title: "Migrate from Chainlink Functions",
+          url: "cre/reference/clf-migration",
+          highlightAsCurrent: ["cre/reference/clf-migration-ts", "cre/reference/clf-migration-go"],
         },
       ],
     },
@@ -770,7 +840,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                 {
                   title: "Provider Catalog",
                   url: "data-feeds/tokenized-equity-feeds/providers",
-                  children: [{ title: "Ondo Finance", url: "data-feeds/tokenized-equity-feeds/ondo" }],
+                  children: [
+                    { title: "Ondo Finance", url: "data-feeds/tokenized-equity-feeds/ondo" },
+                    { title: "Robinhood", url: "data-feeds/tokenized-equity-feeds/robinhood" },
+                  ],
                 },
               ],
             },
@@ -1048,6 +1121,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams",
         },
         {
+          title: "Sign Up for Data Streams",
+          url: "data-streams/sign-up",
+        },
+        {
+          title: "Get Support",
+          url: "data-streams/get-support",
+        },
+        {
           title: "Developer Responsibilities",
           url: "data-streams/developer-responsibilities",
         },
@@ -1121,6 +1202,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "24/5 US Equities User Guide",
               url: "data-streams/rwa-streams/24-5-us-equities-user-guide",
             },
+            {
+              title: "APAC Equities",
+              url: "data-streams/rwa-streams/apac-equities",
+            },
           ],
         },
         {
@@ -1150,6 +1235,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Market Hours",
           url: "data-streams/market-hours",
+        },
+        {
+          title: "Selecting Quality Data Streams",
+          url: "data-streams/selecting-data-streams",
         },
         {
           title: "Deprecating Streams",
@@ -1280,28 +1369,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Candlestick API",
           url: "data-streams/reference/candlestick-api",
-        },
-      ],
-    },
-    {
-      section: "Streams Trade",
-      contents: [
-        {
-          title: "Overview",
-          url: "data-streams/streams-trade",
-        },
-        {
-          title: "Getting Started",
-          url: "data-streams/tutorials/streams-trade/getting-started",
-          highlightAsCurrent: ["data-streams/tutorials/streams-trade/getting-started-hardhat"],
-        },
-        {
-          title: "Handle StreamsLookup errors",
-          url: "data-streams/tutorials/streams-trade/streams-trade-lookup-error-handler",
-        },
-        {
-          title: "Reference (Interfaces)",
-          url: "data-streams/streams-trade/interfaces",
         },
       ],
     },
@@ -2306,6 +2373,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     },
   ],
   [SIDEBAR_SECTIONS.GLOBAL]: [
+    AI_AGENT_RESOURCES_SECTION,
     {
       section: "General Documentation",
       contents: [
@@ -2326,10 +2394,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "resources/fund-your-contract",
             },
           ],
-        },
-        {
-          title: "Chainlink Developer Agent Skills",
-          url: "resources/chainlink-developer-agent-skills",
         },
         {
           title: "Starter Kits and Frameworks",

@@ -28,7 +28,7 @@ This tutorial demonstrates how to send a CCIP arbitrary message from the TON blo
 This tutorial covers sending a data-only message from TON Testnet to Ethereum Sepolia without any token transfer. When you send a message using CCIP:
 
 1. The `Router_CCIPSend` Cell is submitted to the CCIP Router on TON.
-1. The Router validates the message, deducts the protocol fee from the attached TON, and forwards the message to the CCIP Decentralized Oracle Network (DON).
+1. The Router validates the message, deducts the protocol fee from the attached GRAM, and forwards the message to the CCIP Decentralized Oracle Network (DON).
 1. The DON delivers the message to the `_ccipReceive` function of the receiver contract on Ethereum Sepolia.
 
 ## What You Will Build
@@ -37,14 +37,14 @@ In this tutorial, you will:
 
 - Use a script to configure a CCIP message with a text payload.
 - Send the message from TON Testnet to a receiver contract on Ethereum Sepolia.
-- Pay for CCIP transaction fees using native TON.
+- Pay for CCIP transaction fees using native GRAM.
 - Monitor and verify your cross-chain message.
 
 <Aside title="Minimum Requirements">
 
 To successfully complete this tutorial, ensure you have:
 
-- TON for transaction fees and the CCIP protocol fee (at least 1 TON recommended).
+- GRAM for transaction fees and the CCIP protocol fee (at least 1 GRAM recommended).
 - A deployed `MessageReceiver` contract on Ethereum Sepolia to receive the message. You will deploy this in the prerequisites check below.
 - A configured TON wallet with its 24-word mnemonic set in the `.env` file.
 - An Ethereum Sepolia RPC URL set in the `.env` file.
@@ -60,7 +60,7 @@ The wallet and `.env` setup are covered in the [prerequisites](/ccip/tutorials/t
 This tutorial focuses on data-only cross-chain messages from your TON Testnet wallet to a contract on Ethereum Sepolia. Key points specific to arbitrary messaging from TON:
 
 - **Data only**: TON CCIP lanes support arbitrary messaging only. No tokens are transferred — only a bytes payload is delivered to the receiver contract.
-- **Fee Payment**: Transaction fees are paid on TON using native TON tokens. Paying with LINK is not available on TON-to-EVM lanes.
+- **Fee Payment**: Transaction fees are paid on TON using native GRAM tokens. Paying with LINK is not available on TON-to-EVM lanes.
 - **Message Construction**: A script constructs and delivers the `Router_CCIPSend` Cell by calling helpers from `scripts/utils/utils.ts` and sending it to the CCIP Router address on TON Testnet.
 
 ## How the Script Works
@@ -70,8 +70,8 @@ The `ton2evm/sendMessage.ts` script handles the interaction with the CCIP Router
 1.  **Context Initialization**: The script connects to TON Testnet and loads your wallet from the `TON_MNEMONIC` environment variable.
 1.  **Argument Parsing**: It reads your command-line arguments (`--destChain`, `--evmReceiver`, `--msg`, and optionally `--tonSender`) to determine the destination chain, receiver address, message content, and sending mode.
 1.  **Message Construction**: It encodes the EVM receiver address using `encodeEVMAddress`, builds the `GenericExtraArgsV2` Cell using `buildExtraArgsForEVM(100_000, true)`, and assembles the full `Router_CCIPSend` Cell using `buildCCIPMessageForEVM`. Note that `allowOutOfOrderExecution` **must** be `true` — TON-to-EVM lanes require it, and the Router will reject the message otherwise.
-1.  **Fee Estimation**: It calls `getCCIPFeeForEVM`, which walks the `Router → OnRamp → FeeQuoter` on-chain getter chain to retrieve the protocol fee in nanoTON.
-1.  **Fee Buffering**: It applies a 10% buffer to the quoted fee and adds a fixed 0.5 TON gas reserve to cover wallet-level transaction costs and source-chain execution.
+1.  **Fee Estimation**: It calls `getCCIPFeeForEVM`, which walks the `Router → OnRamp → FeeQuoter` on-chain getter chain to retrieve the protocol fee in nanoGRAM.
+1.  **Fee Buffering**: It applies a 10% buffer to the quoted fee and adds a fixed 0.5 GRAM gas reserve to cover wallet-level transaction costs and source-chain execution.
 1.  **Sending**: It submits the `Router_CCIPSend` Cell directly from the wallet to the CCIP Router. If `--tonSender` is provided, it instead sends a `CCIPSender_RelayCCIPSend` message to the `MinimalSender` contract, which forwards the Cell to the Router.
 
 ## Running the Arbitrary Message
@@ -84,7 +84,7 @@ Before running the script:
 
 1.  Make sure your `.env` file contains `TON_MNEMONIC` (your 24-word phrase) and `ETHEREUM_SEPOLIA_RPC_URL`.
 
-1.  Verify you have sufficient TON balance in your testnet wallet. At least **1 TON** is recommended to cover the CCIP protocol fee plus gas.
+1.  Verify you have sufficient GRAM balance in your testnet wallet. At least **1 GRAM** is recommended to cover the CCIP protocol fee plus gas.
 
 1.  Deploy the `MessageReceiver` contract on Ethereum Sepolia. This EVM contract receives and stores the CCIP message. The `EVM_PRIVATE_KEY` in your `.env` must correspond to a wallet with Sepolia ETH.
 
@@ -161,12 +161,14 @@ When the script executes successfully, you will see logs similar to the followin
 💸 Fee Token: native
 ✅ Connected to TON, Block: 49273773
 📤 Sending from: EQBTzZB_jpRo1oR3wLsxhrS7tPLUDteL9NN_83S1fWwanyHK
-💰 Balance: 106.80152516 TON
+💰 Balance: 106.80152516 GRAM
+
 
 🔑 QueryID (seqno): 71
-💸 Estimated CCIP fee: 894032 nanoTON (0.000894032 TON)
-💸 Fee with 10% buffer: 983435 nanoTON (0.000983435 TON)
-💸 Gas reserve: 0.5 TON
+💸 Estimated CCIP fee: 894032 nanoGRAM (0.000894032 GRAM))
+💸 Fee with 10% buffer: 983435 nanoGRAM (0.000983435 GRAM))
+💸 Gas reserve: 0.5 GRAM
+
 ✅ Transaction sent!
 
 🔍 Monitor your transaction:
@@ -214,7 +216,7 @@ An ACK confirms the Router accepted the message and submitted it to the DON for 
 <Aside type="note" title="ACK vs NACK">
   - **ACK**: The Router accepted the message. CCIP will deliver it to the destination EVM chain. The protocol fee is
   consumed. - **NACK**: The Router rejected the message (for example, insufficient fee or invalid parameters). Both the
-  fee and any TON surplus are returned to the sender.
+  fee and any GRAM surplus are returned to the sender.
 </Aside>
 
 ### Track on CCIP Explorer

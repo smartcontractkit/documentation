@@ -21,7 +21,7 @@ This section details the data structures used for sending and receiving CCIP mes
 
 **Opcode:** `0x31768d95`
 
-The primary message to send a cross-chain message from TON to a destination chain. Send this to the CCIP Router contract with sufficient TON attached to cover the CCIP fee plus a gas reserve.
+The primary message to send a cross-chain message from TON to a destination chain. Send this to the CCIP Router contract with sufficient GRAM attached to cover the CCIP fee plus a gas reserve.
 
 ```tolk
 struct (0x31768d95) Router_CCIPSend {
@@ -44,15 +44,15 @@ struct (0x31768d95) Router_CCIPSend {
 | <nobr>`receiver`</nobr>          | <nobr>`CrossChainAddress`</nobr>       | The 32-byte address of the receiver on the destination chain. For EVM destinations, left-pad the 20-byte address with 12 zero bytes. |
 | <nobr>`data`</nobr>              | <nobr>`cell`</nobr>                    | Arbitrary payload to deliver to the receiver contract.                                                                               |
 | <nobr>`tokenAmounts`</nobr>      | <nobr>`SnakedCell<TokenAmount>`</nobr> | Token transfers to include. Pass an empty cell — token transfers are not yet supported on TON.                                       |
-| <nobr>`feeToken`</nobr>          | <nobr>`address?`</nobr>                | Fee token address. Currently only native TON is supported; pass the wrapped native address or `null`.                                |
+| <nobr>`feeToken`</nobr>          | <nobr>`address?`</nobr>                | Fee token address. Currently only native GRAM is supported; pass the wrapped native address or `null`.                               |
 | <nobr>`extraArgs`</nobr>         | <nobr>`cell`</nobr>                    | Encoded extra arguments. See [GenericExtraArgsV2](#genericextraargsv2).                                                              |
 
 **Value to attach**
 
-When sending `Router_CCIPSend`, you must attach enough TON to cover:
+When sending `Router_CCIPSend`, you must attach enough GRAM to cover:
 
 1. The CCIP fee (query `validatedFeeCell` on the FeeQuoter beforehand)
-2. A gas reserve for execution on TON (~0.5 TON recommended, add a 10% buffer to the fee)
+2. A gas reserve for execution on TON (~0.5 GRAM recommended, add a 10% buffer to the fee)
 
 #### Responses
 
@@ -154,23 +154,24 @@ export function buildExtraArgsForEVM(gasLimitEVMUnits: number, allowOutOfOrderEx
 ```
 
 <Aside type="caution">
-  `gasLimit` in `GenericExtraArgsV2` for EVM destinations is in **EVM gas units** (e.g., `100_000`), not nanoTON. This
-  is the inverse of the EVM→TON direction where `gasLimit` represents nanoTON.
+  `gasLimit` in `GenericExtraArgsV2` for EVM destinations is in **EVM gas units** (e.g., `100_000`), not nanoGRAM. This
+  is the inverse of the EVM→TON direction where `gasLimit` represents nanoGRAM.
 </Aside>
 
 ---
 
-### EVM → TON: `gasLimit` in nanoTON
+### EVM → TON: `gasLimit` in nanoGRAM
 
-When sending from an EVM chain to TON, the `gasLimit` field in `GenericExtraArgsV2` represents the TON execution budget in **nanoTON** (not EVM gas units). This value is forwarded by the OffRamp to your receiver contract as the attached value.
+When sending from an EVM chain to TON, the `gasLimit` field in `GenericExtraArgsV2` represents the TON execution budget in **nanoGRAM** (not EVM gas units). This value is forwarded by the OffRamp to your receiver contract as the attached value.
 
 ```typescript
-// EVM → TON: gasLimit is in nanoTON
-// 100_000_000n = 0.1 TON
-export function buildExtraArgsForTON(gasLimitNanoTON: bigint | number, allowOutOfOrderExecution: boolean): Uint8Array {
+// EVM → TON: gasLimit is in nanoGRAM
+// 100_000_000n = 0.1 GRAM
+
+export function buildExtraArgsForTON(gasLimitNanoGRAM: bigint | number, allowOutOfOrderExecution: boolean): Uint8Array {
   const encoded = ethers.AbiCoder.defaultAbiCoder().encode(
     ["uint256", "bool"],
-    [gasLimitNanoTON, allowOutOfOrderExecution]
+    [gasLimitNanoGRAM, allowOutOfOrderExecution]
   )
   return ethers.getBytes(ethers.concat(["0x181dcf10", encoded]))
 }
@@ -178,7 +179,7 @@ export function buildExtraArgsForTON(gasLimitNanoTON: bigint | number, allowOutO
 
 <Aside type="caution">
   Set `gasLimit` to a high enough value or your message could fail in a non-retriable way. Setting `gasLimit` to at
-  least **0.1 TON** (`100_000_000n` nanoTON) should be enough to guarantee that receivers following [CCIP TON best
+  least **0.1 GRAM** (`100_000_000n` nanoGRAM) should be enough to guarantee that receivers following [CCIP TON best
   practices](/ccip/api-reference/ton/v1.6.0/receiver#implementation-requirements) will manually revert before running
   out of gas and leave your message in a retriable state if the value was not enough.
 </Aside>

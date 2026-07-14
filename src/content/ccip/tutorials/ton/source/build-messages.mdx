@@ -21,7 +21,7 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 This guide explains how to construct CCIP messages from the TON blockchain to EVM chains (e.g., Ethereum Sepolia, Arbitrum Sepolia). TON's CCIP integration currently supports **arbitrary messaging only** — token transfers are not supported on TON lanes.
 
-You send a CCIP message from TON by constructing a [Cell](https://docs.ton.org/foundations/serialization/cells) in the specific [TL-B layout](https://docs.ton.org/languages/tl-b/overview) expected by the CCIP Router contract, then sending that Cell as the body of an internal TON message to the Router address with enough TON attached to cover both the CCIP protocol fee and source-chain execution costs.
+You send a CCIP message from TON by constructing a [Cell](https://docs.ton.org/foundations/serialization/cells) in the specific [TL-B layout](https://docs.ton.org/languages/tl-b/overview) expected by the CCIP Router contract, then sending that Cell as the body of an internal TON message to the Router address with enough GRAM attached to cover both the CCIP protocol fee and source-chain execution costs.
 
 <Aside title="Note">
   The code snippets in this guide use the [`@ton/core`](https://www.npmjs.com/package/@ton/core),
@@ -46,7 +46,7 @@ export function buildCCIPMessageForEVM(
   destChainSelector: bigint | number,
   receiverBytes: Buffer, // 32 bytes: 12 zero-bytes + 20-byte EVM address
   data: Cell, // message payload
-  feeToken: Address, // native TON address
+  feeToken: Address, // native GRAM address
   extraArgs: Cell // GenericExtraArgsV2 cell
 ): Cell {
   return beginCell()
@@ -57,7 +57,7 @@ export function buildCCIPMessageForEVM(
     .storeBuffer(receiverBytes) // encoded EVM receiver address
     .storeRef(data) // message payload cell
     .storeRef(Cell.EMPTY) // tokenAmounts — always empty for TON
-    .storeAddress(feeToken) // fee token (native TON only)
+    .storeAddress(feeToken) // fee token (native GRAM only)
     .storeRef(extraArgs) // GenericExtraArgsV2 cell
     .endCell()
 }
@@ -164,7 +164,7 @@ The EVM receiver contract receives these bytes as `message.data` and is responsi
 ### feeToken
 
 - **Definition**: The token used to pay the CCIP protocol fee on TON.
-- **Supported value**: Only native TON is supported. Paying fees in LINK is not available for TON-to-EVM messages.
+- **Supported value**: Only native GRAM is supported. Paying fees in LINK is not available for TON-to-EVM messages.
 - **Address**: `EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAd99`
 
 ```typescript filename="scripts/ton2evm/sendMessage.ts"
@@ -172,7 +172,7 @@ const feeToken = Address.parse(networkConfig.tonTestnet.nativeTokenAddress)
 // "EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAd99"
 ```
 
-The CCIP protocol fee is deducted from the TON value attached to the Router message, not from a separate token transfer.
+The CCIP protocol fee is deducted from the GRAM value attached to the Router message, not from a separate token transfer.
 
 ---
 
@@ -221,12 +221,12 @@ Router to reject the message.
 
 ## Estimating the CCIP Fee
 
-Before sending, query the protocol fee. The fee is returned in [nanoTON](https://docs.ton.org/foundations/fees) and is computed by the FeeQuoter contract, reachable through a chain of on-chain getter calls:
+Before sending, query the protocol fee. The fee is returned in [nanoGRAM](https://docs.ton.org/foundations/fees) and is computed by the FeeQuoter contract, reachable through a chain of on-chain getter calls:
 
 ```
 Router.onRamp(destChainSelector)         → OnRamp address
 OnRamp.feeQuoter(destChainSelector)      → FeeQuoter address
-FeeQuoter.validatedFeeCell(ccipSendCell) → fee in nanoTON
+FeeQuoter.validatedFeeCell(ccipSendCell) → fee in nanoGRAM
 ```
 
 The `getCCIPFeeForEVM` helper in the Starter Kit performs this lookup. The CCIP message Cell passed to it must be fully populated — `queryID`, `destChainSelector`, `receiver`, `data`, `feeToken`, and `extraArgs` must all match the values used in the final send.
@@ -236,7 +236,7 @@ import { TonClient } from "@ton/ton"
 import { fromNano } from "@ton/core"
 
 const fee = await getCCIPFeeForEVM(client, routerAddress, destChainSelector, ccipSendMessage)
-console.log(`CCIP fee: ${fromNano(fee)} TON`)
+console.log(`CCIP fee: ${fromNano(fee)} GRAM`)
 ```
 
 ### Applying a buffer and gas reserve
@@ -244,12 +244,12 @@ console.log(`CCIP fee: ${fromNano(fee)} TON`)
 Add a buffer on top of the quoted fee to account for minor variations between quote time and execution:
 
 - **10% fee buffer**: Covers small fluctuations in the protocol fee.
-- **0.5 TON gas reserve**: Covers the wallet-level transaction fee and source-chain execution. This is sent to the Router along with the fee and any surplus is returned via the ACK message.
+- **0.5 GRAM gas reserve**: Covers the wallet-level transaction fee and source-chain execution. This is sent to the Router along with the fee and any surplus is returned via the ACK message.
 
 ```typescript filename="scripts/ton2evm/sendMessage.ts"
 const fee = await getCCIPFeeForEVM(client, routerAddress, destChainSelector, ccipSendMessage)
 const feeWithBuffer = (fee * 110n) / 100n // +10%
-const gasReserve = 500_000_000n // 0.5 TON in nanoTON
+const gasReserve = 500_000_000n // 0.5 GRAM in nanoGRAM
 
 const valueToAttach = feeWithBuffer + gasReserve // total value sent to Router
 ```
@@ -326,9 +326,9 @@ After building the Cell and calculating the total value to attach, you have two 
     ```
 
     <Aside title="Sender contract overhead">
-      When routing through a Sender contract, attach an additional ~0.1 TON on top of `valueToAttach` to cover the
+      When routing through a Sender contract, attach an additional ~0.1 GRAM on top of `valueToAttach` to cover the
       Sender's own execution costs. The Sender forwards exactly `valueToAttach` to the Router and consumes the remainder
-      for gas. Any TON surplus above actual compute costs is returned via `Router_CCIPSendACK` (message accepted) or
+      for gas. Any GRAM surplus above actual compute costs is returned via `Router_CCIPSendACK` (message accepted) or
       `Router_CCIPSendNACK` (message rejected — both fee and surplus are returned on rejection).
     </Aside>
 
@@ -343,7 +343,7 @@ After building the Cell and calculating the total value to attach, you have two 
     }
     Router_CCIPSendNACK => {
         // Message rejected by the Router.
-        // Both the fee and surplus TON are returned to the Sender.
+        // Both the fee and surplus GRAM are returned to the Sender.
         // msg.error contains the Router exit code.
         // Add your on-chain failure logic here (e.g., retry, refund).
         throw msg.error;

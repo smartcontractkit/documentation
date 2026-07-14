@@ -5,7 +5,7 @@ title: "Workflow Commands"
 metadata:
   description: "Manage workflows with CLI: complete command reference for simulating, deploying, activating, pausing, and deleting workflows."
   datePublished: "2025-11-04"
-  lastModified: "2026-05-08"
+  lastModified: "2026-07-09"
 ---
 
 import { Aside } from "@components"
@@ -81,17 +81,19 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| <div style={{ width: "200px" }}>Flag</div> | Description                                                                                                                                                                                                                                                                      |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--broadcast`                              | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                                                                                                               |
-| `-g, --engine-logs`                        | Enable non-fatal engine logging                                                                                                                                                                                                                                                  |
-| `--non-interactive`                        | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                                                                                                                    |
-| `--trigger-index <int>`                    | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`                                                                                                             |
-| `--http-payload <string>`                  | HTTP trigger payload as JSON string or path to a JSON file. File paths are resolved relative to the directory where you ran the command. For HTTP triggers only                                                                                                                  |
-| `--evm-tx-hash <string>`                   | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                                                                                                                          |
-| `--evm-event-index <int>`                  | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only                                                                                                |
-| `--limits <string>`                        | Production limits to enforce during simulation: `default` (embedded prod limits), a path to a limits JSON file (e.g. from `cre workflow limits export`), or `none` to disable. See [Testing Production Limits](/cre/guides/operations/understanding-limits) (default: `default`) |
-| `--skip-type-checks`                       | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                                                                                                                                      |
+| <div style={{ width: "200px" }}>Flag</div> | Description                                                                                                                                                                                                                                                                                                      |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--broadcast`                              | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                                                                                                                                               |
+| `-g, --engine-logs`                        | Enable non-fatal engine logging                                                                                                                                                                                                                                                                                  |
+| `--listen`                                 | Keep the simulator alive and re-run it for each incoming trigger event. For HTTP triggers, listens for POST requests on port `2000`. For EVM log triggers, watches the chain and re-runs on each matching event. Useful when iterating on trigger-driven workflows without restarting the simulator between runs |
+| `--non-interactive`                        | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                                                                                                                                                    |
+| `--trigger-index <int>`                    | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`                                                                                                                                             |
+| `--http-payload <string>`                  | HTTP trigger payload as JSON string or path to a JSON file. File paths are resolved relative to the directory where you ran the command. For HTTP triggers only                                                                                                                                                  |
+| `--evm-tx-hash <string>`                   | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                                                                                                                                                          |
+| `--evm-event-index <int>`                  | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only                                                                                                                                |
+| `--evm-receipt-timeout <duration>`         | How long to wait for an EVM transaction receipt before timing out (e.g. `30s`, `2m`). For EVM log triggers only (default: `1m`)                                                                                                                                                                                  |
+| `--limits <string>`                        | Production limits to enforce during simulation: `default` (embedded prod limits), a path to a limits JSON file (e.g. from `cre workflow limits export`), or `none` to disable. See [Testing Production Limits](/cre/guides/operations/understanding-limits) (default: `default`)                                 |
+| `--skip-type-checks`                       | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                                                                                                                                                                      |
 
 **Examples:**
 
@@ -122,6 +124,18 @@ cre workflow simulate <workflow-name-or-path> [flags]
   cre workflow simulate my-workflow --non-interactive --trigger-index 1 --evm-tx-hash 0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e --evm-event-index 0 --target staging-settings
   ```
 
+- Listen mode — re-run on every HTTP trigger POST (port 2000)
+
+  ```bash
+  cre workflow simulate ./my-workflow --listen --target local-simulation
+  ```
+
+- Listen mode — re-run on every matching EVM log event
+
+  ```bash
+  cre workflow simulate ./my-workflow --listen --trigger-index 1 --target staging-settings
+  ```
+
 {/* prettier-ignore */}
 <Aside type="note" title="Dry run by default">
   By default, `cre workflow simulate` performs a **dry run** for onchain write operations. It simulates the transaction to confirm it would succeed, but does not broadcast it to the network. This results in a successful log with an empty transaction hash (`0x`). To send a real transaction, use the `--broadcast` flag.
@@ -129,14 +143,21 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
 {/* prettier-ignore */}
 <Aside type="tip" title="Which chains can I simulate?">
-  Run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) to print every **supported chain name** the CLI knows for simulation, then configure matching RPC URLs for your target.
+  Run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) to list the chains and mock forwarder addresses enabled for your tenant. Authentication is required — run `cre login` first.
 </Aside>
 
 ## `cre workflow supported-chains`
 
-Prints the supported chain names for EVM local simulation. Default output is a `Supported chain names:` heading followed by one indented name per line (for example `ethereum-testnet-sepolia`, `ethereum-mainnet-arbitrum-1`).
+{/* prettier-ignore */}
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
 
-Use `cre workflow supported-chains` to confirm a chain is supported before you wire RPC URLs and triggers in `project.yaml` / `workflow.yaml`. The command reads the embedded list only; it does not query your RPC endpoints.
+Lists the chains enabled for your tenant and their mock Keystone forwarder addresses. Chains are returned from the platform based on your login session (`cre login` or `CRE_API_KEY`). Non-EVM chains configured for your tenant also appear in the output.
+
+Use this command before setting up a simulation target to confirm chain availability and copy the forwarder address for use in consumer contracts. If no authenticated context is found, the CLI will prompt you to run `cre login`.
 
 **Usage:**
 
@@ -146,9 +167,9 @@ cre workflow supported-chains [flags]
 
 **Flags:**
 
-| <div style={{ width: "160px" }}>Flag</div> | Description                                                                   |
-| ------------------------------------------ | ----------------------------------------------------------------------------- |
-| `--output <string>`                        | Output format. Use `json` to print a JSON array to stdout for scripting cases |
+| <div style={{ width: "160px" }}>Flag</div> | Description                                                                            |
+| ------------------------------------------ | -------------------------------------------------------------------------------------- |
+| `--output <string>`                        | Output format. Use `json` to print a JSON array to stdout for scripting and automation |
 
 **Examples:**
 
@@ -157,16 +178,42 @@ cre workflow supported-chains
 cre workflow supported-chains --output json
 ```
 
-**Example (default, excerpt):**
+**Example (default output, excerpt):**
 
 ```text
-Supported chain names:
-  ethereum-testnet-sepolia
-  ethereum-mainnet
-  polygon-mainnet
+Chains and mock forwarders (tenant-scoped):
+
+CHAIN                              SELECTOR              MOCK FORWARDER
+ethereum-mainnet-arbitrum-1        4949039107694359620   0xF8344CFd5c43616a4366C34E3EEE75af79a74482
+ethereum-mainnet                   5009297550715157269   0x0b93082D9b3C7C97fAcd250082899BAcf3af3885
+ethereum-testnet-sepolia           16015286601757825753  0xF8344CFd5c43616a4366C34E3EEE75af79a74482
+polygon-mainnet                    4051577828743386545   0x76c9cf548b4179F8901cda1f8623568b58215E62
+...
 ```
 
-The full list is longer and can change between CLI releases; run the command locally for the complete set.
+**Example (JSON output, excerpt):**
+
+```json
+[
+  {
+    "chainName": "ethereum-mainnet-arbitrum-1",
+    "chainSelector": 4949039107694359620,
+    "address": "0xF8344CFd5c43616a4366C34E3EEE75af79a74482"
+  },
+  {
+    "chainName": "ethereum-mainnet",
+    "chainSelector": 5009297550715157269,
+    "address": "0x0b93082D9b3C7C97fAcd250082899BAcf3af3885"
+  },
+  {
+    "chainName": "ethereum-testnet-sepolia",
+    "chainSelector": 16015286601757825753,
+    "address": "0xF8344CFd5c43616a4366C34E3EEE75af79a74482"
+  }
+]
+```
+
+The chain list is tenant-specific and may vary between organizations. Run the command locally for the full set of chains and forwarder addresses enabled for your account. For a full reference of mock and production forwarder addresses by network, see the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory).
 
 ## `cre workflow deploy`
 
@@ -184,7 +231,7 @@ The full list is longer and can change between CLI releases; run the command loc
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Deploys a workflow to the Workflow Registry — the onchain contract where workflows are enrolled so the Chainlink DON knows they exist and should run them. This command compiles your workflow, uploads the artifacts to the CRE Storage Service, and submits a registration transaction to the registry. Use [`cre registry list`](/cre/reference/cli/registry) to see which registry your organization is configured to use.
+Deploys a workflow to the registry selected by `user-workflow.deployment-registry` in `workflow.yaml`. This command compiles your workflow, uploads the artifacts to the CRE Storage Service, and registers the workflow with either the public onchain Workflow Registry or the Chainlink-hosted private registry. Use [`cre registry list`](/cre/reference/cli/registry) to see which registries your organization can use.
 
 **Usage:**
 
@@ -204,7 +251,7 @@ cre workflow deploy <workflow-name-or-path> [flags]
 | `--wasm`                                   | Path to a pre-built WASM binary (skips compilation). Use with [`cre workflow build`](#cre-workflow-build) for CI/CD pipelines |
 | `--config`                                 | Override the config file path from `workflow.yaml`                                                                            |
 | `--no-config`                              | Deploy without a config file                                                                                                  |
-| `--unsigned`                               | Return the raw transaction instead of sending it to the network                                                               |
+| `--unsigned`                               | Onchain registry only: return the raw transaction instead of sending it to the network                                        |
 | `--yes`                                    | Skip the confirmation prompt and proceed with the operation                                                                   |
 | `--skip-type-checks`                       | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds   |
 
@@ -247,7 +294,7 @@ For more details, see [Deploying Workflows](/cre/guides/operations/deploying-wor
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Changes the workflow status to active on the Workflow Registry contract. Active workflows can respond to their configured triggers.
+Changes the workflow status to active in the registry selected by `deployment-registry`. Active workflows can respond to their configured triggers.
 
 **Usage:**
 
@@ -261,10 +308,10 @@ cre workflow activate <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag         | Description                                                     |
-| ------------ | --------------------------------------------------------------- |
-| `--unsigned` | Return the raw transaction instead of sending it to the network |
-| `--yes`      | Skip the confirmation prompt and proceed with the operation     |
+| Flag         | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `--unsigned` | Onchain registry only: return the raw transaction instead of sending it to the network |
+| `--yes`      | Skip the confirmation prompt and proceed with the operation                            |
 
 **Example:**
 
@@ -282,7 +329,7 @@ For more details, see [Activating & Pausing Workflows](/cre/guides/operations/ac
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Changes the workflow status to paused on the Workflow Registry contract. Paused workflows will not respond to triggers.
+Changes the workflow status to paused in the registry selected by `deployment-registry`. Paused workflows will not respond to triggers.
 
 **Usage:**
 
@@ -296,10 +343,10 @@ cre workflow pause <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag         | Description                                                     |
-| ------------ | --------------------------------------------------------------- |
-| `--unsigned` | Return the raw transaction instead of sending it to the network |
-| `--yes`      | Skip the confirmation prompt and proceed with the operation     |
+| Flag         | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `--unsigned` | Onchain registry only: return the raw transaction instead of sending it to the network |
+| `--yes`      | Skip the confirmation prompt and proceed with the operation                            |
 
 **Example:**
 
@@ -322,7 +369,7 @@ For more details, see [Activating & Pausing Workflows](/cre/guides/operations/ac
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Deletes a workflow from the Workflow Registry.
+Deletes a workflow from the registry selected by `deployment-registry`.
 
 **Usage:**
 
@@ -336,10 +383,10 @@ cre workflow delete <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag         | Description                                                     |
-| ------------ | --------------------------------------------------------------- |
-| `--unsigned` | Return the raw transaction instead of sending it to the network |
-| `--yes`      | Skip the confirmation prompt and proceed with the operation     |
+| Flag         | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `--unsigned` | Onchain registry only: return the raw transaction instead of sending it to the network |
+| `--yes`      | Skip the confirmation prompt and proceed with the operation                            |
 
 **Example:**
 
@@ -434,7 +481,7 @@ cre workflow list [flags]
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Shows metadata for the workflow configured in `workflow.yaml`. The command reads the workflow name for the selected `--target`, searches the CRE platform for matching workflow metadata, and filters results to the workflow's configured `deployment-registry` by default.
+Shows deployment health and the most recent execution for the workflow configured in `workflow.yaml`. The command reads the workflow name for the selected `--target`, resolves the workflow on the CRE platform (scoped to the configured `deployment-registry` by default), and prints deployment health plus the latest execution.
 
 **Usage:**
 
@@ -448,25 +495,33 @@ cre workflow get <workflow-folder-path> [flags]
 
 **Flags:**
 
-| <div style={{ width: "170px" }}>Flag</div> | Description                                                              |
-| ------------------------------------------ | ------------------------------------------------------------------------ |
-| `--all-registries`                         | Do not filter results by the workflow's configured `deployment-registry` |
+| <div style={{ width: "170px" }}>Flag</div> | Description                                                                                |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| `--all-registries`                         | Resolve the workflow across every registry instead of the configured `deployment-registry` |
+| `--output <string>`                        | Output format. Use `json` to print JSON to stdout for scripting                            |
+| `--json`                                   | Shorthand for `--output=json`                                                              |
 
 **Examples:**
 
-- Show metadata for the workflow configured for a target
+- Show deployment health and recent execution for the workflow configured for a target
 
   ```bash
   cre workflow get ./my-workflow --target staging-settings
   ```
 
-- Search across all registries in your organization
+- Resolve across all registries in your organization
 
   ```bash
   cre workflow get ./my-workflow --target staging-settings --all-registries
   ```
 
-The command prints the same human-readable workflow metadata fields as [`cre workflow list`](#cre-workflow-list): workflow name, workflow ID, owner address, status, registry, and registry address when available.
+- Export as JSON
+
+  ```bash
+  cre workflow get ./my-workflow --target staging-settings --output json
+  ```
+
+For a full execution history, use [`cre execution list`](/cre/reference/cli/execution#cre-execution-list).
 
 ---
 
@@ -530,17 +585,17 @@ cre workflow hash <workflow-folder-path> [flags]
 
 **Flags:**
 
-| <div style={{ width: "180px" }}>Flag</div> | Description                                                                                                                                                          |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--public_key`                             | Owner address to use when computing the workflow hash. Required when `CRE_ETH_PRIVATE_KEY` is not set and no `workflow-owner-address` is configured in your settings |
-| `--wasm`                                   | Path or URL to a pre-built WASM binary (skips compilation)                                                                                                           |
-| `--config`                                 | Override the config file path from `workflow.yaml`                                                                                                                   |
-| `--no-config`                              | Compute hash without a config file                                                                                                                                   |
-| `--skip-type-checks`                       | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                          |
+| <div style={{ width: "180px" }}>Flag</div> | Description                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--public_key`                             | Owner address to use when computing the workflow hash. The command auto-derives the owner based on your registry type: on-chain uses `workflow-owner-address` or `CRE_ETH_PRIVATE_KEY`; off-chain uses the owner from your login session. Pass `--public_key` to override the auto-derived address |
+| `--wasm`                                   | Path or URL to a pre-built WASM binary (skips compilation)                                                                                                                                                                                                                                         |
+| `--config`                                 | Override the config file path from `workflow.yaml`                                                                                                                                                                                                                                                 |
+| `--no-config`                              | Compute hash without a config file                                                                                                                                                                                                                                                                 |
+| `--skip-type-checks`                       | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                                                                                                                                                        |
 
 {/* prettier-ignore */}
 <Aside type="note" title="Owner address required">
-  This command needs your owner address to compute the workflow hash, since the hash incorporates the owner. It derives this from `CRE_ETH_PRIVATE_KEY` by default. If you don't want to provide a private key, pass your address directly with `--public_key`.
+  The workflow hash incorporates the owner address. The command auto-derives this based on your registry: **on-chain** uses `workflow-owner-address` from settings or `CRE_ETH_PRIVATE_KEY`; **off-chain** uses the owner from your `cre login` session or `CRE_API_KEY`. Use `--public_key` to override the auto-derived address.
 </Aside>
 
 **Examples:**

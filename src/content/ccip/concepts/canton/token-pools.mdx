@@ -1,0 +1,96 @@
+---
+section: ccip
+date: Last Modified
+title: "Token Pools (Canton)"
+metadata:
+  description: "CCIP token pools on Canton: BurnMint and LockRelease pool types, CIP-56 integration, trust model, and Token Admin Registry registration."
+  excerpt: "CCIP Canton token pools, CIP-56, BurnMint, LockRelease, Token Admin Registry, instrument admin, cross-chain tokens"
+  datePublished: "2026-06-27"
+  lastModified: "2026-06-27"
+  difficulty: "intermediate"
+  estimatedTime: "10 minutes"
+whatsnext:
+  "Upgradability": "/ccip/concepts/canton/upgradability"
+  "BurnMint deployment guide": "/ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool"
+  "LockRelease deployment guide": "/ccip/tutorials/canton/cross-chain-tokens/lock-release-token-pool"
+  "Explicit Disclosure API": "/ccip/concepts/canton/explicit-disclosure"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="cantonAddressesBanner" />
+
+CCIP supports the [CIP-56 Token Standard](https://github.com/canton-foundation/cips/blob/main/cip-0056/cip-0056.md). Making tokens transferable via CCIP is unpermissioned: the owner of a token or asset can deploy and configure a token pool to allow users to transfer the underlying asset to and from Canton.
+
+A token pool deployment consists of:
+
+- **On-ledger**: Token pool contract and Token Admin Registry (TAR) entry.
+- **Off-ledger**: [Explicit Disclosure Service](/ccip/concepts/canton/explicit-disclosure) for the pool so users can obtain contract disclosures during send and execute flows.
+
+## Token pool types
+
+### BurnMint Token Pool
+
+Designed for tokens whose supply can vary across chains. Requires the optional [`BurnMintFactory`](https://docs.canton.network/sdks-tools/api-reference/splice-daml/splice-api-token-burn-mint-v1/splice-api-token-burnmintv1) interface on the underlying token.
+
+| Direction                 | Behavior                                                                               |
+| :------------------------ | :------------------------------------------------------------------------------------- |
+| **Send (source)**         | Sender tokens are **burned**; supply decreases on the source chain.                    |
+| **Receive (destination)** | New tokens are **minted** for the receiver; supply increases on the destination chain. |
+
+**Characteristics:**
+
+- No pool liquidity required — mints on demand on receive.
+- Underlying token must support `BurnMintFactory`.
+- Pool owner **must** be the instrument admin (`instrumentId.admin == poolOwner`).
+
+[Deploy a BurnMint pool →](/ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool)
+
+### LockRelease Token Pool
+
+Designed for fixed-supply tokens where cross-chain transfers are backed by locked liquidity. Uses the CIP-56 `TransferFactory` interface.
+
+| Direction                 | Behavior                                                                                                         |
+| :------------------------ | :--------------------------------------------------------------------------------------------------------------- |
+| **Send (source)**         | Sender tokens are **locked** (transferred to the pool owner via pre-approval).                                   |
+| **Receive (destination)** | Tokens are **released** from pool holdings to the receiver — immediately or via a pending `TransferInstruction`. |
+
+**Characteristics:**
+
+- Pool must hold sufficient liquidity for inbound releases.
+- Total supply remains constant; tokens move between pool and users.
+- Token must support transfer pre-approvals.
+- Pool owner is not enforced to be instrument admin, but **strongly recommended** (see trust model below).
+- Caller must provide pool holdings via `extraContext` on execute.
+
+[Deploy a LockRelease pool →](/ccip/tutorials/canton/cross-chain-tokens/lock-release-token-pool)
+
+## Token pool owner trust model
+
+<Aside type="caution" title="Trust boundary">
+
+CCIP fully trusts the **token pool owner party**. The pool owner controls remote-chain configuration, rate limits, fees, and how tokens are locked, burned, released, or minted. CCIP is not a stakeholder of the pool contract and delegates all token handling to the owner. CCIP cannot verify on Canton that tokens were actually locked or burned — it only verifies that the pool owner signed the outgoing transfer.
+
+</Aside>
+
+**Recommendations:**
+
+- Use the **same party** for pool owner and instrument admin.
+- **Decentralize** the party across multiple nodes so no single node is a point of failure. See [Digital Asset decentralization docs](https://docs.digitalasset.com/overview/3.5/explanations/canton/decentralization.html#decentralized-parties) and [Canton Foundation validators](https://canton.foundation/validators/).
+
+## Registering on the Token Admin Registry
+
+The Token Admin Registry maps each instrument to a single token pool. Registration is a three-step flow:
+
+1. **Propose an administrator** — Instrument admin or CCIP owner calls `ProposeAdministrator` with a proposed admin party.
+2. **Accept the admin role** — Proposed admin calls `AcceptAdminRole`.
+3. **Set the pool** — Admin calls `SetPool` to link the instrument to the pool.
+
+The admin role can be transferred via `TransferAdminRole` followed by `AcceptAdminRole`.
+
+Deployment guides walk through TAR registration step by step:
+
+- [BurnMint Token Pool Deployment](/ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool)
+- [LockRelease Token Pool Deployment](/ccip/tutorials/canton/cross-chain-tokens/lock-release-token-pool)
+- [Registry Issuer Guide](/ccip/tutorials/canton/cross-chain-tokens/registry-issuer-guide) (includes `SetBurnMintFactory` for Registry instruments)

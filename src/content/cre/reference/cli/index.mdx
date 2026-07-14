@@ -6,7 +6,7 @@ isIndex: true
 metadata:
   description: "Explore all CRE CLI commands: complete reference for project setup, workflow deployment, account management, and development tools."
   datePublished: "2025-11-04"
-  lastModified: "2026-05-08"
+  lastModified: "2026-07-09"
 ---
 
 import { Aside } from "@components"
@@ -26,15 +26,17 @@ The CRE Command Line Interface (CLI) is your primary tool for developing, testin
 
 These flags can be used with any `cre` command.
 
-| <div style="width: 150px;">Flag</div> | Description                                                                                                                                                                                |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `-h, --help`                          | Displays help information for any command                                                                                                                                                  |
-| `-e, --env`                           | Specifies the path to your `.env` file (default: `".env"`)                                                                                                                                 |
-| `-E, --public-env`                    | Specifies the path to your `.env.public` file, which contains shared, non-sensitive build configuration                                                                                    |
-| `-T, --target`                        | Sets the target environment from your configuration files                                                                                                                                  |
-| `-R, --project-root`                  | Specifies the path to the project root directory. By default, the CLI automatically finds the project root by searching for `project.yaml` in the current directory and parent directories |
-| `-v, --verbose`                       | Enables verbose logging to print `DEBUG` level logs                                                                                                                                        |
-| `--non-interactive`                   | Fails instead of prompting; provide all required inputs with flags or environment variables. Use this for CI/CD, scripts, and other headless environments                                  |
+| <div style="width: 150px;">Flag</div> | Description                                                                                                                                                                                                             |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-h, --help`                          | Displays help information for any command                                                                                                                                                                               |
+| `-e, --env`                           | Specifies the path to your `.env` file (default: `".env"`)                                                                                                                                                              |
+| `-E, --public-env`                    | Specifies the path to your `.env.public` file, which contains shared, non-sensitive build configuration                                                                                                                 |
+| `-T, --target`                        | Sets the target environment from your configuration files                                                                                                                                                               |
+| `-R, --project-root`                  | Specifies the path to the project root directory. By default, the CLI automatically finds the project root by searching for `project.yaml` in the current directory and parent directories                              |
+| `-v, --verbose`                       | Enables verbose logging to print `DEBUG` level logs                                                                                                                                                                     |
+| `--non-interactive`                   | Fails instead of prompting; provide all required inputs with flags or environment variables. Use this for CI/CD, scripts, and other headless environments                                                               |
+| `--allow-unknown-chains`              | Skips chain-name validation against the chain-selectors registry for `cre workflow simulate` and `cre workflow deploy`. Use for experimental or unlisted chains. Chain-selector and RPC availability are still enforced |
+| `--allow-insecure-rpc`                | Allows non-localhost HTTP RPC URLs. By default, the CLI blocks cleartext RPC endpoints to reduce accidental secret exposure over insecure connections                                                                   |
 
 {/* prettier-ignore */}
 <Aside type="note" title="Non-interactive authentication">
@@ -60,7 +62,7 @@ Manage your authentication and account credentials.
 Initialize projects and generate contract bindings (Go only).
 
 - [**`cre init`**](/cre/reference/cli/project-setup) — Initialize a new CRE project (interactive wizard or **`--non-interactive`** with flags for CI/CD)
-- **`cre generate-bindings`** (Go only) — Generate Go bindings from contract ABI files for type-safe contract interactions
+- **`cre generate-bindings`** — Generate contract bindings from ABI or Anchor IDL files (Go and TypeScript for Solana)
 
 [View project setup commands →](/cre/reference/cli/project-setup)
 
@@ -91,11 +93,24 @@ Manage workflows throughout their entire lifecycle.
 - **`cre workflow pause`** — Pause a workflow on the Workflow Registry contract
 - **`cre workflow delete`** — Delete all versions of a workflow from the Workflow Registry
 - **`cre workflow list`** — List workflows deployed for your organization; use `--output json` for scripts
-- **`cre workflow get`** — Show metadata for the workflow configured in `workflow.yaml`
+- **`cre workflow get`** — Show deployment health and the most recent execution for the workflow configured in `workflow.yaml`
 - **`cre workflow supported-chains`** — List chain names the CLI supports for local simulation; use `--output json` for scripts
 - **`cre workflow custom-build`** — Convert a workflow to use a custom self-compiled WASM build
 
 [View workflow commands →](/cre/reference/cli/workflow)
+
+---
+
+### Execution Commands
+
+Inspect deployed workflow runs from the terminal.
+
+- **`cre execution list`** — List recent executions; filter by workflow, status, and time range
+- **`cre execution status`** — Show detailed status for a single execution
+- **`cre execution events`** — Show the capability event timeline for an execution
+- **`cre execution logs`** — Show log lines emitted during an execution
+
+[View execution commands →](/cre/reference/cli/execution)
 
 ---
 

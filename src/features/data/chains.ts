@@ -94,7 +94,7 @@ export const CHAINS: Chain[] = [
         rddBundleUrl:
           "https://reference-data-directory.vercel.app/bundle-proxies-ethereum-testnet-sepolia-arbitrum-1.json",
         queryString: "arbitrum-sepolia",
-        tags: ["rates", "streams", "smartData"],
+        tags: ["rates", "streams", "smartData", "usGovernmentMacroeconomicData"],
       },
     ],
   },
@@ -121,7 +121,7 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-fuji-testnet.json",
         queryString: "avalanche-fuji",
-        tags: ["rates", "streams"],
+        tags: ["rates", "streams", "smartData"],
       },
     ],
     label: "Avalanche",
@@ -273,7 +273,7 @@ export const CHAINS: Chain[] = [
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia.json",
         rddBundleUrl: "https://reference-data-directory.vercel.app/bundle-proxies-ethereum-testnet-sepolia.json",
         queryString: "ethereum-sepolia",
-        tags: ["rates"],
+        tags: ["rates", "smartData"],
       },
     ],
     label: "Ethereum",
@@ -327,7 +327,7 @@ export const CHAINS: Chain[] = [
     title: "HyperEVM Data Feeds",
     img: "/assets/chains/hyperevm.svg",
     networkStatusUrl: "https://hyperevmscan.statuspage.io/",
-    tags: ["default"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -336,6 +336,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-hyperliquid-mainnet.json",
         queryString: "hyperliquid-mainnet",
+        tags: ["smartData"],
       },
     ],
   },
@@ -464,7 +465,7 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "MegaETH Mainnet",
-        explorerUrl: "https://megaeth.blockscout.com/address/%s",
+        explorerUrl: "https://mega.etherscan.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-megaeth-mainnet.json",
         queryString: "megaeth-mainnet",
@@ -486,13 +487,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-monad-mainnet.json",
         queryString: "monad-mainnet",
-      },
-      {
-        name: "Monad Testnet",
-        explorerUrl: "https://testnet.monadvision.com/address/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-monad-testnet.json",
-        queryString: "monad-testnet",
+        tags: ["smartData"],
       },
     ],
   },
@@ -596,6 +591,25 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
+    page: "robinhood",
+    label: "Robinhood Chain",
+    title: "Robinhood Chain Data Feeds",
+    img: "/assets/chains/robinhood-chain.svg",
+    networkStatusUrl: "https://docs.robinhood.com/chain/",
+    tags: ["default", "tokenizedEquity"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Robinhood Chain Mainnet",
+        explorerUrl: "https://robinhoodchain.blockscout.com/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-robinhood-mainnet.json",
+        queryString: "robinhood-mainnet",
+        tags: ["tokenizedEquity"],
+      },
+    ],
+  },
+  {
     page: "ronin",
     label: "Ronin",
     title: "Ronin Data Feeds",
@@ -679,7 +693,7 @@ export const CHAINS: Chain[] = [
     title: "Solana Data Feeds",
     img: "/assets/chains/solana.svg",
     networkStatusUrl: "https://status.solana.com/",
-    tags: ["default", "smartData"],
+    tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -688,7 +702,6 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-solana-mainnet.json",
         queryString: "solana-mainnet",
-        tags: ["smartData"],
       },
       {
         name: "Solana Devnet",
@@ -815,13 +828,6 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-xlayer-1.json",
         queryString: "xlayer-mainnet",
-      },
-      {
-        name: "X Layer Sepolia Testnet",
-        explorerUrl: "https://www.oklink.com/xlayer-test/address/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-xlayer-1.json",
-        queryString: "xlayer-testnet",
       },
     ],
   },

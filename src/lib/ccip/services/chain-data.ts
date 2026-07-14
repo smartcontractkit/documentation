@@ -407,15 +407,86 @@ class AptosChainStrategy extends BaseChainStrategy {
   }
 }
 
+// Canton Chain Strategy
+class CantonChainStrategy extends BaseChainStrategy {
+  validateChainData(
+    chainId: number | string | undefined,
+    networkId: string,
+    chainConfig: ChainsConfig[string],
+    selectorEntry?: { selector: string; name: string },
+    supportedChain?: SupportedChain
+  ): {
+    isValid: boolean
+    missingFields: string[]
+    validatedData?: ChainDetails
+  } {
+    const baseValidation = this.validateBaseFields(chainId, networkId, chainConfig, selectorEntry, supportedChain)
+
+    if (!baseValidation.isValid || !baseValidation.baseData) {
+      return {
+        isValid: false,
+        missingFields: baseValidation.missingFields,
+      }
+    }
+
+    const cantonRequiredFields = {
+      committeeVerifier: !chainConfig.committeeVerifier?.address,
+      feeQuoterModule: !chainConfig.feeQuoterModule?.address,
+    }
+
+    const missingFields: string[] = []
+
+    Object.entries(cantonRequiredFields).forEach(([field, isMissing]) => {
+      if (isMissing) missingFields.push(field)
+    })
+
+    if (missingFields.length > 0) {
+      logger.warn({
+        message: "Missing Canton-specific fields in chain configuration",
+        requestId: this.requestId,
+        networkId,
+        missingFields,
+      })
+
+      return {
+        isValid: false,
+        missingFields,
+      }
+    }
+
+    const { baseData } = baseValidation
+    const tokenAdminRegistry = chainConfig.tokenAdminRegistry?.address || undefined
+    const validatedData: ChainDetails = {
+      chainId: baseData.chainId!,
+      displayName: baseData.displayName!,
+      selector: baseData.selector!,
+      internalId: baseData.internalId!,
+      feeTokens: baseData.feeTokens!,
+      router: baseData.router!,
+      rmn: baseData.rmn!,
+      chainType: baseData.chainType!,
+      chainFamily: baseData.chainFamily!,
+      supported: true,
+      ...(tokenAdminRegistry ? { tokenAdminRegistry } : {}),
+    }
+
+    return {
+      isValid: true,
+      missingFields: [],
+      validatedData,
+    }
+  }
+}
+
 class ChainStrategyFactory {
   private static readonly strategies = new Map<ChainType, new (requestId: string) => IChainProcessingStrategy>([
     ["evm", EvmChainStrategy],
     ["solana", SolanaChainStrategy],
     ["aptos", AptosChainStrategy],
     ["sui", AptosChainStrategy], // Sui uses Move VM like Aptos
+    ["canton", CantonChainStrategy],
     // New chain types use EVM strategy as fallback until specific strategies are implemented
     ["tron", EvmChainStrategy],
-    ["canton", EvmChainStrategy],
     ["ton", EvmChainStrategy],
     ["stellar", EvmChainStrategy],
     ["starknet", EvmChainStrategy],

@@ -5,7 +5,7 @@ import { getNetwork, getTokenData } from "~/config/data/ccip/data.ts"
 import { displayCapacity, determineTokenMechanism, isTokenPaused } from "~/config/data/ccip/utils.ts"
 import { useState } from "react"
 import LaneDetailsHero from "../ChainHero/LaneDetailsHero.tsx"
-import { getExplorerAddressUrl, getTokenIconUrl, fallbackTokenIconUrl } from "~/features/utils/index.ts"
+import { getContractExplorerUrl, getTokenIconUrl, fallbackTokenIconUrl } from "~/features/utils/index.ts"
 import TableSearchInput from "../Tables/TableSearchInput.tsx"
 import RateTooltip from "../Tooltip/RateTooltip.tsx"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
@@ -30,11 +30,6 @@ function LaneDrawer({
   const destinationNetworkDetails = getNetwork({
     filter: environment,
     chain: destinationNetwork.key,
-  })
-
-  const sourceNetworkDetails = getNetwork({
-    filter: environment,
-    chain: sourceNetwork.key,
   })
 
   return (
@@ -137,7 +132,6 @@ function LaneDrawer({
 
                     // Check if token is paused
                     const tokenPaused = isTokenPaused(
-                      data[sourceNetwork.key].decimals,
                       lane.supportedTokens?.[token]?.rateLimiterConfig?.[
                         inOutbound === LaneFilter.Inbound ? "in" : "out"
                       ]
@@ -172,7 +166,10 @@ function LaneDrawer({
                           <Address
                             address={data[sourceNetwork.key].tokenAddress}
                             endLength={6}
-                            contractUrl={getExplorerAddressUrl(explorer)(data[sourceNetwork.key].tokenAddress)}
+                            contractUrl={getContractExplorerUrl(
+                              explorer,
+                              sourceNetwork.chainType
+                            )(data[sourceNetwork.key].tokenAddress)}
                           />
                         </td>
                         <td>{data[sourceNetwork.key].decimals}</td>

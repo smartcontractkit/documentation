@@ -1,0 +1,155 @@
+---
+section: ccip
+date: Last Modified
+title: "Arbitrary Messaging: Canton as Source"
+isIndex: false
+metadata:
+  description: "Send a data-only CCIP message from Canton to Ethereum Sepolia using the CCIP Canton Starter Kit and canton2any scripts."
+  image: "/images/ccip/concepts/architecture/ccip-canton-source-chain.png"
+  excerpt: "Canton as Source, canton2any, arbitrary messaging, CCIPSender, data transfer"
+  datePublished: "2026-07-06"
+  lastModified: "2026-07-06"
+  estimatedTime: "20 minutes"
+  difficulty: "intermediate"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="cantonAddressesBanner" />
+
+This tutorial demonstrates how to send a data-only CCIP message from Canton testnet to a receiver contract on Ethereum Sepolia using the [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton).
+
+<Aside title="Prerequisites">
+
+Complete the [Canton as Source prerequisites](/ccip/tutorials/canton/source/prerequisites) before starting this tutorial. Your Canton party needs **Amulet** holdings to pay CCIP fees (or use `--feeToken link`).
+
+These steps use **Canton testnet** and **Ethereum Sepolia** only.
+
+</Aside>
+
+## Introduction
+
+This tutorial covers sending arbitrary data from Canton to Ethereum Sepolia without any token transfer. When you send a message using CCIP:
+
+1. The SDK fetches explicit disclosures from Global CCIP EDS and creates or reuses `CCIPSender` and `PerPartyRouter` on Canton.
+2. The message is submitted via `PerPartyRouter_CCIPSend` with CommitteeVerifier tickets.
+3. CommitteeVerifier operators validate the message and aggregate proofs to the indexer.
+4. The message is executed on Sepolia — automatically by default, or manually with `canton2any:manual-exec`.
+
+## What You Will Build
+
+In this tutorial, you will:
+
+- Run `canton2any:data` to send a UTF-8 data payload from Canton to Sepolia.
+- Pay CCIP fees in Amulet (default) or LINK.
+- Track delivery in the [CCIP Explorer](/ccip/tools-resources/ccip-explorer).
+- Optionally execute manually on Sepolia with `canton2any:manual-exec`.
+
+## Understanding Arbitrary Messaging (canton2any)
+
+Key points for data-only sends from Canton:
+
+- **Data only**: No `tokenAmounts` — only a `data` payload is delivered to the Sepolia receiver contract's `ccipReceive` function.
+- **Fee payment**: CCIP fees are paid on Canton in **Amulet** by default. Pass `--feeToken link` to pay in CCIP LINK instead.
+- **Auto-execution**: By default, the starter kit allows automatic execution on Sepolia when an executor is configured. Pass `--no-exec` to skip auto-execution and run `canton2any:manual-exec` after Committee Verifier proofs are on the indexer.
+- **Receiver**: Defaults to the starter kit's demo receiver on Sepolia. Override with `--evmReceiver`.
+
+See the [Canton as Source flow](/ccip/concepts/canton/overview#canton--public-chain) in the overview for the full on-ledger and off-ledger path.
+
+## How the Script Works
+
+The `scripts/canton2any/ccipSendData.ts` script uses `@chainlink/ccip-sdk` `CantonChain.sendMessage`:
+
+1. **Context initialization**: Loads `canton-config.json`, authenticates to the Ledger API, and connects.
+2. **Argument parsing**: Reads `--dataString`, `--feeToken`, `--evmReceiver`, `--gasLimit` (default `200000`), and `--no-exec`.
+3. **Message construction**: Builds a CCIP message with encoded data, fee token, and `extraArgs` (gas limit and optional `executorMode: 'none'`).
+4. **Ledger submit**: Submits the send via authenticated direct ledger submit — no local Canton signing key required.
+5. **Output**: Prints the CCIP Message ID, CCIP Explorer URL, and Canton Lighthouse transaction link.
+
+## Running the Arbitrary Message
+
+### Prerequisites Check
+
+Before running the script:
+
+1. Complete [prerequisites](/ccip/tutorials/canton/source/prerequisites) setup (`npm install`, `.env`, `canton-config.json`).
+2. Confirm Amulet balance for fees:
+
+   ```bash filename="Terminal"
+   npm run check-balance -- --chain canton --token amulet
+   ```
+
+3. Ensure `ETHEREUM_SEPOLIA_RPC_URL` and `EVM_PRIVATE_KEY` are set if you plan to run `canton2any:manual-exec`.
+
+### Execute the Script
+
+Send a data-only message from Canton to Sepolia:
+
+```bash filename="Terminal"
+npm run canton2any:data -- --dataString "Hello Sepolia"
+```
+
+Pay the CCIP fee in LINK instead of Amulet:
+
+```bash filename="Terminal"
+npm run canton2any:data -- --dataString "Hello Sepolia" --feeToken link
+```
+
+Skip automatic execution on Sepolia and execute manually after Committee Verifier proofs are on the indexer:
+
+```bash filename="Terminal"
+npm run canton2any:data -- --dataString "Hello Sepolia" --no-exec
+```
+
+Override the Sepolia receiver contract:
+
+```bash filename="Terminal"
+npm run canton2any:data -- --dataString "Hello Sepolia" --evmReceiver 0xYourReceiverAddress
+```
+
+### Understanding the Output
+
+On success, you should see output similar to:
+
+```text
+📧 Sending data from Canton → Sepolia: "Hello Sepolia"
+   Executor: default (auto-execution on Sepolia when an executor is configured)
+Canton bearer token obtained via OIDC client credentials.
+🆔 CCIP Message ID: 0x1220e4133ede8f2daf2e665b53321da54d1bd0b8e00fb1cece20b63079c1d48d6a5b
+🔗 CCIP Explorer: https://ccip.chain.link/#/side-drawer/msg/0x1220…
+📜 Canton transaction: https://lighthouse.testnet.cantonloop.com/transactions/…
+```
+
+If you used `--no-exec`, the script also prints a copy-pasteable `canton2any:manual-exec` command.
+
+## Verification and Monitoring
+
+### Track on CCIP Explorer
+
+Open the CCIP Explorer URL from the script output to monitor message status from send through destination execution.
+
+### Manual execution on Sepolia
+
+If you passed `--no-exec`, wait until proofs are on the indexer (check the CCIP Explorer), then run:
+
+```bash filename="Terminal"
+npm run canton2any:manual-exec -- <cantonUpdateId | messageId>
+```
+
+Pass either the Canton **update ID** from the send output (`📜 Canton transaction` / Lighthouse link) or the **CCIP Message ID** (`🆔 CCIP Message ID`, `0x…`). `canton2any:manual-exec` accepts both — resolving by message ID lets the SDK fetch the OffRamp and Committee Verifier proofs from the CCIP API automatically.
+
+On success:
+
+```text
+⚙️  Executing on Sepolia OffRamp 0x…
+✅ Execution transaction: https://sepolia.etherscan.io/tx/0x…
+```
+
+<Aside type="note" title="Execution timing">
+
+End-to-end delivery time depends on Canton finality and CommitteeVerifier proof aggregation. Allow several minutes before manual execution if the message is not yet ready.
+
+</Aside>
+
+<CcipCommon callout="educationalDisclaimer" />
