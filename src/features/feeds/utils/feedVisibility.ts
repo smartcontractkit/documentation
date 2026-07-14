@@ -1,5 +1,5 @@
 import type { DataFeedType } from "../types.ts"
-import { getSchemaVersion, normalizeCategoryKey } from "./feedMetadata.ts"
+import { getSchemaVersion, isApacEquitiesStreamFeed, normalizeCategoryKey } from "./feedMetadata.ts"
 
 /**
  * Proxy addresses (lowercase) for feeds that should display the contact email
@@ -13,6 +13,8 @@ import { getSchemaVersion, normalizeCategoryKey } from "./feedMetadata.ts"
  */
 export const CONTACT_EMAIL_PROXY_ADDRESSES = new Set<string>([
   "0x0101166b3b000332000000000000000000000000000000000000000000000000",
+  "0x7cf132bd0456af4ecfceaae684fd7967df931141",
+  "0xbb65fa58bdb7d33e4a3d1a40a7a9bd99e746367b",
 ])
 
 /**
@@ -21,10 +23,25 @@ export const CONTACT_EMAIL_PROXY_ADDRESSES = new Set<string>([
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function shouldHideAddress(feed: any, riskTier?: string | null): boolean {
+  // Robinhood tokenized equity feeds display their proxy address directly.
+  if (feed.docs?.blockchainName === "Robinhood" && feed.docs?.productTypeCode === "primaryTokenizedPrice") {
+    return false
+  }
+
   if (feed.docs?.productSubType === "calculatedPrice") return true
   const proxy: string | null | undefined = feed.proxyAddress
   if (proxy != null && CONTACT_EMAIL_PROXY_ADDRESSES.has(proxy.toLowerCase())) return true
   return normalizeCategoryKey(riskTier) === "veryhigh"
+}
+
+/**
+ * Returns true when a stream's feedId should be hidden and replaced with a
+ * contact link. Add new feed-type checks here to extend the behaviour; remove
+ * them when the stream goes live.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function shouldHideStreamFeedId(feed: any): boolean {
+  return isApacEquitiesStreamFeed(feed)
 }
 
 /**
@@ -36,7 +53,7 @@ export function shouldHideAddress(feed: any, riskTier?: string | null): boolean 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const DATALINK_STREAM_MATCH: Partial<Record<string, (feed: any) => boolean>> = {
   streamsCrypto: (feed) => feed.docs?.assetClass === "Crypto",
-  streamsNav: (feed) => feed.docs?.assetClass === "Net Asset Value",
+  streamsNav: (feed) => getSchemaVersion(feed) === "v9",
   streamsExRate: (feed) => feed.docs?.productTypeCode === "ExRate",
   streamsBacked: (feed) => feed.docs?.assetClass === "Tokenized Equities",
 }
@@ -103,7 +120,7 @@ export function isFeedVisible(
       } else if (dataFeedType === "streamsRwa") {
         isVisible = ["Equities", "Forex"].includes(feed.docs?.feedType)
       } else if (dataFeedType === "streamsNav") {
-        isVisible = feed.docs?.feedType === "Net Asset Value"
+        isVisible = getSchemaVersion(feed) === "v9"
       } else if (dataFeedType === "streamsExRate") {
         isVisible = feed.docs?.productTypeCode === "ExRate"
       } else if (dataFeedType === "streamsBacked") {
@@ -123,8 +140,9 @@ export function isFeedVisible(
   } else if (isRates) {
     isVisible = feed.docs?.productType === "Rates" || feed.docs?.productSubType === "Realized Volatility"
   } else if (isTokenizedEquity) {
+    const assetClass = feed.docs?.assetClass
     isVisible =
-      feed.docs?.assetClass === "Equity" &&
+      (assetClass === "Equity" || assetClass === "Equities") &&
       feed.contractType !== "verifier" &&
       feed.docs?.productTypeCode === "primaryTokenizedPrice"
   } else {
@@ -173,6 +191,20 @@ export function isFeedVisible(
       const assetName = (feed.assetName || "").toLowerCase()
       const isOndoFeed = assetName.includes("ondo") && feed.docs?.productTypeCode === "primaryTokenizedPrice"
       if (!isOndoFeed) return false
+    }
+
+    if (provider === "robinhood") {
+      if (feed.docs?.productTypeCode !== "primaryTokenizedPrice") return false
+
+      const assetName = (feed.assetName || "").toLowerCase()
+      const baseAsset = (feed.docs?.baseAsset || "").toUpperCase()
+      const isRobinhoodFeed =
+        feed.docs?.blockchainName === "Robinhood" ||
+        baseAsset.startsWith("RH") ||
+        assetName.includes("robinhood") ||
+        (feed.name || "").toLowerCase().startsWith("robinhood ")
+
+      if (!isRobinhoodFeed) return false
     }
   }
 

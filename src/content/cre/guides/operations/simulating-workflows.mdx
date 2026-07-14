@@ -5,7 +5,7 @@ title: "Simulating Workflows"
 metadata:
   description: "Simulate your workflows: learn to simulate CRE workflows with real API and testnet calls before deploying them."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-06-11"
 ---
 
 import { Aside, CopyText } from "@components"
@@ -111,6 +111,19 @@ cre workflow simulate my-workflow --non-interactive --trigger-index 0 --target s
   multiple handlers (e.g., one for an HTTP trigger and one for an EVM log trigger), use `0` for the first, `1` for the
   second, etc., based on their order in your code.
 </Aside>
+
+## Listen mode
+
+The `--listen` flag keeps the simulator alive and re-runs it for each incoming trigger event, instead of compiling and executing once then exiting.
+
+- **HTTP triggers**: starts a local HTTP server on port `2000`. Each POST request triggers a fresh simulation run.
+- **EVM log triggers**: watches the configured chain and re-runs on each matching log event.
+
+```bash
+cre workflow simulate my-workflow --listen --target staging-settings
+```
+
+This is useful during active development — make a code change, resave, send another event, and see the result immediately without restarting the CLI. See [Testing HTTP Triggers in Simulation](/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation) for a detailed walkthrough with HTTP triggers.
 
 ## The `--broadcast` flag
 

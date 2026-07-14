@@ -30,10 +30,10 @@ import {
 import { ErrorBoundary } from "../../../components/ErrorBoundary.tsx"
 
 enum LoadingState {
-  "START",
+  START,
   "LOADING...",
-  "ERROR",
-  "END",
+  ERROR,
+  END,
 }
 
 interface Props {

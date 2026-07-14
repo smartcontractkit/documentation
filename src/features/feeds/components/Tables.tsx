@@ -17,11 +17,17 @@ import {
 } from "../../../db/feedCategories.js"
 import type { MarketPricingRiskProduct } from "../content/marketPricingRiskTerms.ts"
 import { REPORT_SCHEMA_DEFINITIONS, type SchemaDefinition } from "./reportSchemaData.ts"
+import schemaFieldsTableStyles from "../../data-streams/common/schemaFieldsTable.module.css"
 import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
 import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
-import { shouldHideAddress } from "~/features/feeds/utils/feedVisibility.ts"
-import { TOKENIZED_EQUITY_CONTACT_EMAIL } from "~/features/feeds/constants.ts"
-import { getSchemaVersion } from "~/features/feeds/utils/feedMetadata.ts"
+import { shouldHideAddress, shouldHideStreamFeedId } from "~/features/feeds/utils/feedVisibility.ts"
+import { DATA_STREAMS_CONTACT_URL, TOKENIZED_EQUITY_CONTACT_EMAIL } from "~/features/feeds/constants.ts"
+import {
+  getSchemaVersion,
+  getMarketStatusDocLink,
+  getTradingHoursDocLink,
+  isApacEquitiesStreamFeed,
+} from "~/features/feeds/utils/feedMetadata.ts"
 import { getFeedTypeFlags } from "~/features/feeds/types.ts"
 import { useFilteredFeedMetadata } from "~/features/feeds/hooks/useFilteredFeedMetadata.ts"
 
@@ -64,78 +70,112 @@ const getMaxSubmissionValueBound = (
 
 const getSchemaDefinitionKey = (metadata: any): string | undefined => {
   const feedType = metadata.feedType || metadata.docs?.feedType
-
-  if (metadata.feedType === "Crypto-DEX") return "v3-dex"
-  if (metadata.feedType === "Crypto" && metadata.docs?.productTypeCode !== "ExRate") return "v3-crypto"
-
   const schemaVersion = getSchemaVersion(metadata)
+
+  // Explicit docs.schema (or clicProductName suffix) takes precedence over feedType heuristics.
+  if (schemaVersion === "v9") return "v9"
+  if (schemaVersion === "v12") return "v12"
+  if (schemaVersion === "v8") return "v8"
+  if (schemaVersion === "v10") return "v10"
+  if (schemaVersion === "v11") {
+    return isApacEquitiesStreamFeed(metadata) ? "v11-apac" : "v11"
+  }
+  if (schemaVersion === "v7") return "v7"
+  if (schemaVersion === "v3") {
+    return feedType === "Crypto-DEX" ? "v3-dex" : "v3-crypto"
+  }
+
+  if (feedType === "Crypto-DEX") return "v3-dex"
+  if (feedType === "Crypto" && metadata.docs?.productTypeCode !== "ExRate") return "v3-crypto"
+
   if (feedType === "Equities" || feedType === "Forex" || feedType === "Datalink") {
-    if (schemaVersion === "v11") return "v11"
-    if (schemaVersion === "v8") return "v8"
     return undefined
   }
 
   if (metadata.docs?.productTypeCode === "ExRate") return "v7"
-  if (feedType === "Net Asset Value") return "v9"
   if (feedType === "Tokenized Equities") return "v10"
 
   return undefined
 }
 
-const SchemaInlineExpander = ({ schemaDef }: { schemaDef: SchemaDefinition }) => (
-  <div className={tableStyles.schemaRow}>
-    <div className={tableStyles.definitionGroup}>
-      <dt>
-        <span className="label">Report Schema:</span>
-      </dt>
-      <dd>
-        <a href={schemaDef.url} rel="noreferrer" target="_blank">
-          {schemaDef.label}
-        </a>
-      </dd>
-    </div>
-    <details className={tableStyles.schemaDetails}>
-      <summary>View {schemaDef.shortLabel} schema fields</summary>
-      <div className={tableStyles.schemaDetailsContent}>
-        <table className={tableStyles.schemaTable}>
-          <thead>
-            <tr>
-              <th>Field</th>
-              <th>Type</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            {schemaDef.fields.map((f) => (
-              <tr key={f.field}>
-                <td>
-                  <code>{f.field}</code>
-                </td>
-                <td>
-                  <code>{f.type}</code>
-                </td>
-                <td>
-                  {f.description}
-                  {f.link && (
-                    <>
-                      {" — "}
-                      <a href={f.link.href} rel="noreferrer" target="_blank">
-                        {f.link.label}
-                      </a>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+const SchemaInlineExpander = ({
+  schemaDef,
+  schemaKey,
+  metadata,
+}: {
+  schemaDef: SchemaDefinition
+  schemaKey: string
+  metadata: any
+}) => {
+  const marketHoursLink = getTradingHoursDocLink(metadata, schemaKey)
+
+  return (
+    <div className={tableStyles.schemaRow}>
+      <div className={tableStyles.definitionGroup}>
+        <dt>
+          <span className="label">Report Schema:</span>
+        </dt>
+        <dd>
+          <a href={schemaDef.url} rel="noreferrer" target="_blank">
+            {schemaDef.label}
+          </a>
+        </dd>
       </div>
-      <a href={schemaDef.url} rel="noreferrer" target="_blank" className={tableStyles.schemaFullLink}>
-        View full schema documentation ↗
-      </a>
-    </details>
-  </div>
-)
+      <details className={tableStyles.schemaDetails}>
+        <summary>View {schemaDef.shortLabel} schema fields</summary>
+        <div className={schemaFieldsTableStyles.wrapper}>
+          <table className={schemaFieldsTableStyles.table}>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {schemaDef.fields.map((f) => {
+                const fieldLink = f.field === "marketStatus" ? getMarketStatusDocLink(metadata, schemaKey) : f.link
+
+                return (
+                  <tr key={f.field}>
+                    <td>
+                      <code>{f.field}</code>
+                    </td>
+                    <td>
+                      <code>{f.type}</code>
+                    </td>
+                    <td>
+                      {f.description}
+                      {fieldLink && (
+                        <>
+                          {" See "}
+                          <a href={fieldLink.href} rel="noreferrer" target="_blank">
+                            {fieldLink.label}
+                          </a>
+                          {"."}
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div className={tableStyles.schemaFooterLinks}>
+          <a href={schemaDef.url} rel="noreferrer" target="_blank" className={tableStyles.schemaFullLink}>
+            Full schema documentation ↗
+          </a>
+          {marketHoursLink && (
+            <a href={marketHoursLink.href} rel="noreferrer" target="_blank" className={tableStyles.schemaFullLink}>
+              {marketHoursLink.label} ↗
+            </a>
+          )}
+        </div>
+      </details>
+    </div>
+  )
+}
 
 // Helper function to parse markdown links and render them
 const parseMarkdownLink = (text: string) => {
@@ -438,6 +478,15 @@ const HiddenAddressContact = ({ className }: { className?: string }) => (
     Contact us:{" "}
     <a href={`mailto:${TOKENIZED_EQUITY_CONTACT_EMAIL}`} className={className}>
       {TOKENIZED_EQUITY_CONTACT_EMAIL}
+    </a>
+  </span>
+)
+
+const HiddenStreamFeedIdContact = ({ className }: { className?: string }) => (
+  <span>
+    Contact us:{" "}
+    <a href={DATA_STREAMS_CONTACT_URL} target="_blank" rel="noopener noreferrer" className={className}>
+      chain.link/contact
     </a>
   </span>
 )
@@ -1301,8 +1350,8 @@ const streamsCategoryMap = {
 
 export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) => {
   const finalTier = metadata.finalCategory
-  // Determine if stream is deprecating
   const isDeprecating = !!metadata.docs?.shutdownDate
+  const hideFeedId = shouldHideStreamFeedId(metadata)
 
   // Temporary calculated stream detection until proper metadata tagging is implemented
   // TODO: Replace with metadata.docs.isCalculated or similar once available
@@ -1365,23 +1414,29 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
       </td>
       <td style="width:80%;">
         <div className={tableStyles.assetAddress}>
-          <span className={tableStyles.streamAddress}>{metadata.feedId}</span>
-          <button
-            className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-            style={{ height: "16px", width: "16px" }}
-            data-clipboard-text={metadata.feedId}
-            onClick={(e) =>
-              handleClick(e, {
-                product: "STREAMS",
-                action: "feedId_copied",
-                extraInfo1: isMainnet ? "Mainnet" : "Testnet",
-                extraInfo2: metadata.pair[0],
-                extraInfo3: metadata.feedId,
-              })
-            }
-          >
-            <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-          </button>
+          {hideFeedId ? (
+            <HiddenStreamFeedIdContact className={tableStyles.addressLink} />
+          ) : (
+            <>
+              <span className={tableStyles.streamAddress}>{metadata.feedId}</span>
+              <button
+                className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                style={{ height: "16px", width: "16px" }}
+                data-clipboard-text={metadata.feedId}
+                onClick={(e) =>
+                  handleClick(e, {
+                    product: "STREAMS",
+                    action: "feedId_copied",
+                    extraInfo1: isMainnet ? "Mainnet" : "Testnet",
+                    extraInfo2: metadata.pair[0],
+                    extraInfo3: metadata.feedId,
+                  })
+                }
+              >
+                <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+              </button>
+            </>
+          )}
         </div>
         <div>
           <dl className={tableStyles.listContainer}>
@@ -1448,9 +1503,8 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
                     </dt>
                     <dd>
                       <a href="/data-streams/market-hours" target="_blank">
-                        <strong>{hoursType}</strong>
-                      </a>{" "}
-                      — {timeRange} ET
+                        <strong>{hoursType}</strong> ({timeRange} ET)
+                      </a>
                     </dd>
                   </div>
                 )
@@ -1492,8 +1546,8 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
             {(() => {
               const schemaKey = getSchemaDefinitionKey(metadata)
               const schemaDef = schemaKey ? REPORT_SCHEMA_DEFINITIONS[schemaKey] : undefined
-              if (!schemaDef) return null
-              return <SchemaInlineExpander schemaDef={schemaDef} />
+              if (!schemaDef || !schemaKey) return null
+              return <SchemaInlineExpander schemaDef={schemaDef} schemaKey={schemaKey} metadata={metadata} />
             })()}
           </dl>
         </div>
@@ -1512,6 +1566,7 @@ export const MainnetTable = ({
   rwaSchemaFilter,
   streamCategoryFilter,
   show24x5Feeds,
+  showApacEquitiesFeeds,
   tradingHoursFilter,
   dataFeedType,
   ecosystem,
@@ -1533,6 +1588,7 @@ export const MainnetTable = ({
   rwaSchemaFilter?: "all" | "v8" | "v11"
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
   show24x5Feeds?: boolean
+  showApacEquitiesFeeds?: boolean
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
   dataFeedType: string
   ecosystem: string
@@ -1559,6 +1615,7 @@ export const MainnetTable = ({
     searchVariant: "mainnet",
     showOnlySVR,
     show24x5Feeds,
+    showApacEquitiesFeeds,
     tradingHoursFilter,
     visibilityOptions: {
       showOnlyDEXFeeds,
@@ -1666,6 +1723,7 @@ export const TestnetTable = ({
   rwaSchemaFilter,
   streamCategoryFilter,
   show24x5Feeds,
+  showApacEquitiesFeeds,
   tradingHoursFilter,
   tokenizedEquityProvider,
 }: {
@@ -1686,6 +1744,7 @@ export const TestnetTable = ({
   rwaSchemaFilter?: "all" | "v8" | "v11"
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
   show24x5Feeds?: boolean
+  showApacEquitiesFeeds?: boolean
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
   tokenizedEquityProvider?: string
 }) => {
@@ -1707,6 +1766,7 @@ export const TestnetTable = ({
     searchValue,
     searchVariant: "testnet",
     show24x5Feeds,
+    showApacEquitiesFeeds,
     tradingHoursFilter,
     visibilityOptions: {
       showOnlyDEXFeeds,

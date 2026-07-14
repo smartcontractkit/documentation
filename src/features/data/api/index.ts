@@ -66,13 +66,15 @@ export const getFeedsMetadata = (url: string): Promise<ChainMetadata[]> => {
 export const getChainMetadata = async (chain: Chain): Promise<ChainMetadata | any> => {
   const requests = chain.networks.map((network) =>
     network?.rddUrl
-      ? getFeedsMetadata(network?.rddUrl).then((metadata) => ({
-          ...network,
-          metadata: metadata.filter(
-            (meta) => meta.docs?.hidden !== true && (meta.proxyAddress || meta.transmissionsAccount || meta.feedId)
-          ),
-        }))
-      : undefined
+      ? getFeedsMetadata(network?.rddUrl)
+          .then((metadata) => ({
+            ...network,
+            metadata: metadata.filter(
+              (meta) => meta.docs?.hidden !== true && (meta.proxyAddress || meta.transmissionsAccount || meta.feedId)
+            ),
+          }))
+          .catch(() => ({ ...network, metadata: [] }))
+      : { ...network, metadata: [] }
   )
   const networks = await Promise.all(requests)
 

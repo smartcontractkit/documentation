@@ -60,8 +60,8 @@ export default defineConfig({
       customPages: [
         "https://docs.chain.link/llms.txt",
         "https://docs.chain.link/ace/llms-full.txt",
-        "https://docs.chain.link/cre/llms-full-go.txt",
-        "https://docs.chain.link/cre/llms-full-ts.txt",
+        "https://docs.chain.link/cre/go/llms-full.txt",
+        "https://docs.chain.link/cre/ts/llms-full.txt",
         "https://docs.chain.link/vrf/llms-full.txt",
         "https://docs.chain.link/ccip/llms-full.txt",
         "https://docs.chain.link/data-feeds/llms-full.txt",

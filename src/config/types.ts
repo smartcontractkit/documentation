@@ -273,6 +273,7 @@ export type SupportedChain =
   | "EDGE_MAINNET"
   | "EDGE_TESTNET"
   | "ROBINHOOD_TESTNET"
+  | "ROBINHOOD_MAINNET"
   | "TON_TESTNET"
   | "TON_MAINNET"
   | "CREDITCOIN_MAINNET"

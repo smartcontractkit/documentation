@@ -99,17 +99,18 @@ Learn more about [Consensus Computing in CRE](/cre/concepts/consensus-computing)
 
 ## Glossary: Building blocks
 
-| Concept            | One-liner                                                         |
-| ------------------ | ----------------------------------------------------------------- |
-| **Workflow**       | Compiled WebAssembly (WASM) binary.                               |
-| **Handler**        | `handler(trigger, callback)` pair; the atom of execution.         |
-| **Trigger**        | Event that starts an execution (cron, HTTP, EVM log, …).          |
-| **Callback**       | Function that runs when its trigger fires; contains your logic.   |
-| **Runtime**        | Object passed to a callback; used to invoke capabilities.         |
-| **Capability**     | Decentralized microservice (chain read/write, HTTP Fetch, ...).   |
-| **Workflow DON**   | Watches triggers and coordinates the workflow.                    |
-| **Capability DON** | Executes a specific capability.                                   |
-| **Consensus**      | BFT protocol that merges node results into one verifiable report. |
+| Concept            | One-liner                                                        |
+| ------------------ | ---------------------------------------------------------------- |
+| **Workflow**       | Compiled WebAssembly (WASM) binary.                              |
+| **Handler**        | `handler(trigger, callback)` pair; the atom of execution.        |
+| **Trigger**        | Event that starts an execution (cron, HTTP, EVM log, …).         |
+| **Callback**       | Function that runs when its trigger fires; contains your logic.  |
+| **Runtime**        | Object passed to a callback; used to invoke capabilities.        |
+| **Capability**     | Decentralized microservice (chain read/write, HTTP Fetch, ...).  |
+| **Workflow DON**   | Watches triggers and coordinates the workflow.                   |
+| **Capability DON** | Executes a specific capability.                                  |
+| **Consensus**      | BFT protocol that merges node results into one trusted outcome.  |
+| **Report**         | DON-signed package from `runtime.report()` / `GenerateReport()`. |
 
 Full definitions live on **[Key Terms and Concepts](/cre/key-terms)**.
 
@@ -149,7 +150,7 @@ Jump to what you need:
 
 # Key Terms and Concepts
 Source: https://docs.chain.link/cre/key-terms
-Last Updated: 2025-11-04
+Last Updated: 2026-05-20
 
 This page defines the fundamental terms and concepts for the Chainlink Runtime Environment (CRE).
 
@@ -215,6 +216,12 @@ Short-lived objects passed to your callback function during a specific execution
 - **`NodeRuntime`**: Think of this as the "Manual Mode". It is used when a BFT guarantee cannot be provided automatically (e.g. calling a standard API). You tell each node to perform a task on its own. Each node returns its own individual answer, and you are responsible for telling the SDK how to combine them into a single, trusted result by providing an aggregation algorithm. This is always used inside a `cre.RunInNodeMode` block.
 
 Learn more about [Consensus and Aggregation](/cre/reference/sdk/consensus).
+
+### Report (CRE report)
+
+A cryptographically signed package your workflow [DON](/cre/key-terms#decentralized-oracle-network-don) produces after your callback encodes its result: payload bytes, report context, and DON signatures. Create it with [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime) (TypeScript) or [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) (Go).
+
+Deliver onchain with [`writeReport()`](/cre/reference/sdk/evm-client-ts#writereport) / [`WriteReport()`](/cre/reference/sdk/evm-client-go#writereport), or offchain with [`sendReport()`](/cre/reference/sdk/http-client-ts#using-sendreport) / [`SendReport()`](/cre/reference/sdk/http-client-go#sendrequestersendreport). Receivers verify with [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) or [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport). See [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http) and [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain).
 
 ### SDK Clients: `EVMClient` & `HTTPClient`
 
@@ -507,9 +514,100 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-06-04
+Last Updated: 2026-07-09
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.24.0 - July 9, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.24.0" target="_blank">CRE CLI version 1.24.0</a> is now available.**
+
+- **Execution observability from the CLI**: New [`cre execution`](/cre/reference/cli/execution) commands let you inspect deployed workflow runs without opening the UI — `list` for recent executions (filter by status and time range), `status` for a single run, `events` for the capability timeline, and `logs` for emitted log lines. All support `--output json` for scripting.
+- **Enhanced `cre workflow get`**: [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get) now resolves the workflow from your `workflow.yaml` settings and shows deployment health plus the most recent execution, not just registry metadata.
+- **Solana Write capability**: Workflows can now submit DON-consensus signed reports to Solana programs on Mainnet and Devnet via the Keystone Forwarder — the same secure write model as EVM. See the [Solana Write capability](/cre/capabilities/solana-write), [Solana chain interactions](/cre/guides/workflow/using-solana-client/overview), [generating Solana bindings](/cre/guides/workflow/using-solana-client/generating-bindings) (`cre generate-bindings solana`), and [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write). Local write simulation uses `cre workflow simulate` with `CRE_SOLANA_PRIVATE_KEY`; chain selectors are listed under [Supported Networks](/cre/supported-networks).
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.23.0...v1.24.0)
+
+## CLI v1.23.0 - July 2, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.23.0" target="_blank">CRE CLI version 1.23.0</a> is now available.**
+
+- **Simulator rate limits enforced**: The local simulator now enforces rate limits during workflow execution, aligning simulation behavior more closely with production. When a rate limit is reached the workflow is not terminated — execution continues within the allowed limits.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.22.0...v1.23.0)
+
+## CLI v1.22.0 - June 25, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.22.0" target="_blank">CRE CLI version 1.22.0</a> is now available.**
+
+- **Secrets security hardening**: Two improvements to the browser OAuth secrets flow: all gateway requests are now forced to HTTPS (preventing accidental use of insecure endpoints), and OCR response payload signatures are validated before consuming secrets responses.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.21.0...v1.22.0)
+
+## CLI v1.21.0 - June 18, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.21.0" target="_blank">CRE CLI version 1.21.0</a> is now available.**
+
+- **MSIG mode guard**: Using `--unsigned` or `--changeset` with `--secrets-auth=browser` or a private registry now produces a clear upfront error instead of a confusing failure mid-operation.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.20.0...v1.21.0)
+
+## CLI v1.20.0 - June 12, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.20.0" target="_blank">CRE CLI version 1.20.0</a> is now available.**
+
+- **Simulation limits aligned with production**: The local simulator's resource limits now match production. Notable increases: execution concurrency (10 → 50), EVM transaction gas limit (5M → 10M), chain write report size (5 KB → 50 KB), HTTP action payload sizes (10 KB request / 100 KB response → 120 KB / 250 KB), and ConfidentialHTTP payload sizes (10 KB / 100 KB → 125 KB / 500 KB). Workflows that previously hit local-only caps should now simulate more faithfully.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.19.0...v1.20.0)
+
+## CLI v1.19.0 - June 11, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.19.0" target="_blank">CRE CLI version 1.19.0</a> is now available.**
+
+- **`--listen` flag for `cre workflow simulate`**: A new `--listen` flag keeps the simulator alive and re-runs it for each incoming event — HTTP POST requests on port 2000 or matching EVM log trigger events. Use it when iterating on trigger-driven workflows without restarting the simulator between runs. Also added `--evm-receipt-timeout` (default `1m`) to control how long the simulator waits for an EVM transaction receipt.
+- **Browser OAuth secrets auth in production**: Browser-based OAuth authentication for secrets is now fully enabled in production environments. A related fix prevents secrets flows from failing when the default `CRE_ETH_PRIVATE_KEY` placeholder is set in your environment.
+- **DON Family shown in workflow output**: The `DON Family` field is now displayed in the details section after `cre workflow deploy`, `activate`, and `pause`. The underlying resolution now uses your tenant's platform default instead of the embedded config, so the displayed value reflects what the platform actually uses.
+- **Capability registry RPC auto-resolution**: The CLI now resolves RPC endpoints for the capability registry chain automatically and prompts for consent when needed, removing the need to configure these connections manually in your secrets workflows.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.18.0...v1.19.0)
+
+## Go SDK v1.12.0 - June 11, 2026
+
+**Go SDK version 1.12.0** adds Solana mainnet support.
+
+- **Solana mainnet**: Solana mainnet chain selectors and workflow bindings are now included in the SDK, enabling production workflows that target Solana mainnet.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.11.0...v1.12.0)
 
 ## CLI v1.18.0 - June 4, 2026
 
@@ -551,6 +649,22 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 [See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.15.0...v1.16.0)
 
+## Go SDK v1.11.0 - May 21, 2026
+
+**Go SDK version 1.11.0** adds private Rhyolite testnet support.
+
+- **`private-testnet-rhyolite` support**: EVM capabilities for the Rhyolite private testnet are now included. Use the `private-testnet-rhyolite` chain name when building workflows that target this network.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.10.0...v1.11.0)
+
+## Go SDK v1.10.0 - May 20, 2026
+
+**Go SDK version 1.10.0** adds ADI mainnet support.
+
+- **ADI mainnet**: EVM capabilities for ADI mainnet (`adi-mainnet`) are now included, supporting workflows deployed to ADI mainnet.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.9.0...v1.10.0)
+
 ## CLI v1.15.0 - May 14, 2026
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.15.0" target="_blank">CRE CLI version 1.15.0</a> is now available.**
@@ -581,6 +695,14 @@ This page provides detailed release notes for CRE. It includes information on ne
 - **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
 
 [See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.13.0...v1.14.0)
+
+## Go SDK v1.9.0 - May 13, 2026
+
+**Go SDK version 1.9.0** adds ADI testnet and Celo Sepolia support.
+
+- **ADI testnet and Celo Sepolia**: EVM capabilities for ADI testnet (`adi-testnet`) and Celo Sepolia (`celo-sepolia`) are now included, enabling simulation and deployment to these networks.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.8.0...v1.9.0)
 
 ## CLI v1.13.0 - April 30, 2026
 
@@ -1528,7 +1650,7 @@ This section provides detailed guides for each available trigger type:
 
 # Testing HTTP Triggers in Simulation
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation
-Last Updated: 2025-11-10
+Last Updated: 2026-06-11
 
 During development, you can test your HTTP trigger workflows locally using the `cre workflow simulate` command. The simulator allows you to provide test payloads without setting up authorization keys or JWT authentication.
 
@@ -1562,6 +1684,24 @@ cre workflow simulate my-http-workflow --target staging-settings
 ```
 
 The simulator will detect your HTTP trigger and prompt you to select it from available triggers.
+
+## Listen mode
+
+Use `--listen` to keep the simulator alive between runs. Instead of simulating once and exiting, the CLI starts a local HTTP server on port `2000` and re-runs the simulator every time it receives a POST request — no need to restart between tests.
+
+```bash
+cre workflow simulate my-http-workflow --listen --target staging-settings
+```
+
+Once running, send payloads with any HTTP client:
+
+```bash
+curl -X POST http://localhost:2000 \
+  -H "Content-Type: application/json" \
+  -d '{"userId":"123","action":"purchase","amount":100}'
+```
+
+Each POST triggers a fresh simulation run. Press `Ctrl+C` to stop.
 
 ## Providing input data
 
@@ -1829,9 +1969,15 @@ Once you've tested your workflow locally:
 
 # Triggering Deployed Workflows
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows
-Last Updated: 2025-11-10
+Last Updated: 2026-07-05
 
 Once you've [deployed a workflow](/cre/guides/operations/deploying-workflows) with an HTTP trigger, you can execute it by sending authenticated HTTP requests to the CRE gateway. This guide explains how to trigger deployed workflows in production.
+
+<Aside type="note" title="One HTTP trigger per workflow">
+  Each workflow supports only one HTTP trigger handler. There is currently no mechanism to route requests to different
+  HTTP trigger handlers within the same workflow. If you need to handle different use cases or execution paths, include
+  routing logic in your request payload and branch within a single handler function.
+</Aside>
 
 ## What you'll learn
 
@@ -3828,7 +3974,9 @@ writePromise := reserveManager.WriteReportFromUpdateReserves(runtime, updateData
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values
 Last Updated: 2025-11-04
 
-This guide shows how to manually generate a report containing a single value (like `uint256`, `address`, or `bool`). This is useful when you need to send a simple value onchain but don't have a struct or binding helper available.
+This guide shows how to manually generate a **[CRE report](/cre/key-terms#report-cre-report)** containing a single value (like `uint256`, `address`, or `bool`). See [Key Terms: Report](/cre/key-terms#report-cre-report) for the full definition; in short, it is a DON-signed package from [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) / [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime) with your encoded data, workflow metadata, and signatures.
+
+This guide covers **creating** the signed report ([`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) / [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime)). **Delivering** it is a separate step: see the table below.
 
 **Use this approach when:**
 
@@ -3846,12 +3994,14 @@ This guide shows how to manually generate a report containing a single value (li
 Manually generating a report for a single value involves two main steps:
 
 1. **ABI-encode the value** into bytes using the `go-ethereum/accounts/abi` package
-2. **Generate a cryptographically signed report** using `runtime.GenerateReport()`
+2. **Generate a cryptographically signed report** using [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values)
 
-The resulting report can then be:
+| After [`GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) / [`report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime) | Guide                                                                                                        | Who verifies?                                                                                                             |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| [`WriteReport()`](/cre/reference/sdk/evm-client-go#writereport) / [`writeReport()`](/cre/reference/sdk/evm-client-ts#writereport)                                                   | [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain) | `KeystoneForwarder` onchain                                                                                               |
+| [`SendReport()`](/cre/reference/sdk/http-client-go#sendrequestersendreport) / [`sendReport()`](/cre/reference/sdk/http-client-ts#using-sendreport)                                  | [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http)                | Receiver: [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain) or your API |
 
-- Submitted to the blockchain via `evm.Client.WriteReport()` (see [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain))
-- Sent to an HTTP endpoint via `http.Client` (see [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http))
+See [API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http) for the sender → receiver mental model.
 
 <Aside type="note" title="Have a struct in your contract's ABI?">
   If your struct appears in a public/external function's signature, you can use the simpler `WriteReportFrom<StructName>()` helper instead. See [Using WriteReportFrom Helpers](/cre/guides/workflow/using-evm-client/onchain-write/using-write-report-helpers).
@@ -4090,7 +4240,9 @@ func main() {
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-structs
 Last Updated: 2025-11-04
 
-This guide shows how to generate a report containing a struct with multiple fields. There are two approaches depending on whether you have generated bindings for your contract.
+This guide shows how to generate a **[CRE report](/cre/key-terms#report-cre-report)** containing a struct with multiple fields. See [Key Terms: Report](/cre/key-terms#report-cre-report) for the full definition. After generation, deliver it [onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain) or via [HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http); HTTP receivers should [verify offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain). See [API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http).
+
+There are two encoding approaches depending on whether you have generated bindings for your contract.
 
 ## Choosing your approach
 
@@ -4466,7 +4618,12 @@ func main() {
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain
 Last Updated: 2025-11-04
 
-This guide shows how to manually submit a generated report to the blockchain using the low-level `evm.Client.WriteReport()` method.
+This guide shows how to manually submit a generated **CRE report** to the blockchain using the low-level `evm.Client.WriteReport()` method. The forwarder verifies signatures onchain: no separate [offchain verification](/cre/guides/workflow/using-http-client/verifying-reports-offchain) step.
+
+
+<Aside type="note" title="HTTP delivery instead?">
+  If you need to POST the report to an API rather than a contract, generate the report the same way ([single values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) or [structs](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-structs)), then follow [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http). See [API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http).
+</Aside>
 
 **Use this approach when:**
 
@@ -4768,7 +4925,7 @@ See the [CLI Reference](/cre/reference/cli/workflow#cre-workflow-simulate) for m
 
 # API Interactions
 Source: https://docs.chain.link/cre/guides/workflow/using-http-client
-Last Updated: 2026-03-17
+Last Updated: 2026-05-20
 
 The CRE SDK provides an HTTP client that allows your workflows to interact with external APIs. Use it to fetch offchain data, send results to other systems, or trigger external events.
 
@@ -4779,16 +4936,26 @@ The CRE SDK provides an HTTP client that allows your workflows to interact with 
 
 
 <Aside type="caution" title="Parse responses before aggregation">
-  When using a numeric aggregation method (such as `median`), always parse the HTTP response **inside** your node function and return a numeric value — never pass the raw response body to the aggregation step. If your endpoint returns an error string and your node function passes that string to a median aggregation, consensus will fail with `unsupported type for median aggregation`. See the [best practices section](/cre/guides/workflow/using-http-client/get-request#best-practices) of the GET request guide for correct and incorrect patterns.
+  When using a numeric aggregation method (such as `median`), always parse the HTTP response **inside** your node function and return a numeric value: never pass the raw response body to the aggregation step. If your endpoint returns an error string and your node function passes that string to a median aggregation, consensus will fail with `unsupported type for median aggregation`. See the [best practices section](/cre/guides/workflow/using-http-client/get-request#best-practices) of the GET request guide for correct and incorrect patterns.
 </Aside>
-
-These guides will walk you through the common use cases for the HTTP client.
 
 ## Guides
 
 - **[Making GET Requests](/cre/guides/workflow/using-http-client/get-request)**: Learn how to fetch data from a public API using a `GET` request.
 - **[Making POST Requests](/cre/guides/workflow/using-http-client/post-request)**: Learn how to send data to an external endpoint using a `POST` request.
 - **[Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http)**: Learn how to submit cryptographically signed reports to an external HTTP endpoint.
+- **[Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain)**: Verify report signatures and read workflow metadata when receiving reports over HTTP or other offchain channels.
+
+## CRE reports over HTTP
+
+A **[CRE report](/cre/key-terms#report-cre-report)** is a DON-signed package your workflow creates with [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime) (TypeScript) or [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) (Go). It bundles your encoded payload, workflow metadata, report context, and cryptographic signatures from the DON. See [Key Terms: Report](/cre/key-terms#report-cre-report) for the full definition, including how onchain delivery differs from HTTP.
+
+A typical secure integration uses two parties:
+
+1. **Sender:** a CRE workflow that runs your logic, signs a report, and POSTs it to a URL. See [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http).
+2. **Receiver:** your API or another CRE workflow that verifies the report before using the data. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain).
+
+The sender creates the report inside the workflow; the receiver must verify signatures before trusting the payload.
 
 ---
 
@@ -5491,7 +5658,7 @@ Yes. Once you call `runtime.Rand()` and get a `*rand.Rand` object, you can reuse
 
 # Simulating Workflows
 Source: https://docs.chain.link/cre/guides/operations/simulating-workflows
-Last Updated: 2025-11-04
+Last Updated: 2026-06-11
 
 Workflow simulation is a local execution environment that **compiles your workflow to <a href="https://webassembly.org" target="blank" ref="noopener noreferrer">WebAssembly (WASM)</a>** and runs it on **your machine**. It allows you to test and debug your workflow logic before deploying it. The simulator makes real calls to public testnets and live HTTP endpoints, giving you high confidence that your code will work as expected when deployed.
 
@@ -5594,6 +5761,19 @@ cre workflow simulate my-workflow --non-interactive --trigger-index 0 --target s
   multiple handlers (e.g., one for an HTTP trigger and one for an EVM log trigger), use `0` for the first, `1` for the
   second, etc., based on their order in your code.
 </Aside>
+
+## Listen mode
+
+The `--listen` flag keeps the simulator alive and re-runs it for each incoming trigger event, instead of compiling and executing once then exiting.
+
+- **HTTP triggers**: starts a local HTTP server on port `2000`. Each POST request triggers a fresh simulation run.
+- **EVM log triggers**: watches the configured chain and re-runs on each matching log event.
+
+```bash
+cre workflow simulate my-workflow --listen --target staging-settings
+```
+
+This is useful during active development — make a code change, resave, send another event, and see the result immediately without restarting the CLI. See [Testing HTTP Triggers in Simulation](/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation) for a detailed walkthrough with HTTP triggers.
 
 ## The `--broadcast` flag
 
@@ -7450,7 +7630,7 @@ CRE uses a simple role-based access control system with two roles:
 
 # Linking Wallet Keys
 Source: https://docs.chain.link/cre/organization/linking-keys
-Last Updated: 2025-11-04
+Last Updated: 2026-06-24
 
 Before you can deploy workflows to the public onchain registry (`deployment-registry: "onchain:ethereum-mainnet"`), you must link a public key address to your CRE organization. This process registers your wallet address onchain in the Workflow Registry contract—the smart contract on Ethereum Mainnet that stores and manages public CRE workflows—associating it with your organization and allowing you to deploy and manage workflows through the onchain registry.
 
@@ -7470,7 +7650,7 @@ Key linking is the process of connecting a blockchain wallet address to your CRE
 **Important constraints:**
 
 - **One organization per address**: Each wallet address can only be linked to one CRE organization at a time. If you need to use the same address with a different organization, you must first [unlink it](#unlinking-a-key) from the current organization.
-- **Maximum 2 keys per organization**: Each organization can link a maximum of 2 web3 keys. If you need to link a third key, you must first [unlink](#unlinking-a-key) one of the existing keys.
+- **Per-organization key limit**: The number of web3 keys your organization can link is subject to your plan quota. See [Service Quotas](/cre/service-quotas#registry-quotas) for the current limit. To request an increase, [contact us](/cre/support-feedback).
 
 However, an organization can have multiple wallet addresses linked to it, allowing team members to use their own addresses or enabling separation between development, staging, and production environments.
 
@@ -7627,7 +7807,7 @@ Linked Owners:
 
 ## Linking multiple addresses
 
-Your organization can link **up to 2 wallet addresses**. Each individual address can only be linked to one organization at a time.
+Your organization can link more than one wallet address, subject to your plan's key limit. See [Service Quotas](/cre/service-quotas#registry-quotas) for the current limit, or [contact us](/cre/support-feedback) to request an increase. Each individual address can only be linked to one organization at a time.
 
 This is useful for:
 
@@ -7950,7 +8130,18 @@ Each capability is powered by its own independent Decentralized Oracle Network (
 
 ## Invoking Capabilities via the SDK
 
-As a developer, you do not interact with these capability DONs directly. Instead, you invoke them through the developer-friendly interfaces provided by the **CRE SDKs** ([Go](/cre/reference/sdk/core-go) and [TypeScript](/cre/reference/sdk/core-ts)), such as the [`evm.Client`](/cre/reference/sdk/evm-client) or the [`http.Client`](/cre/reference/sdk/http-client). The SDK handles the low-level complexity of communicating with the correct DON and processing the consensus-verified result, allowing you to focus on your business logic.
+As a developer, you do not interact with these capability DONs directly. Instead, you invoke them through the developer-friendly interfaces provided by the **CRE SDKs** ([Go](/cre/reference/sdk/core-go) and [TypeScript](/cre/reference/sdk/core-ts)), such as the [`evm.Client`](/cre/reference/sdk/evm-client), the [`solana.Client`](/cre/reference/sdk/solana-client), or the [`http.Client`](/cre/reference/sdk/http-client). The SDK handles the low-level complexity of communicating with the correct DON and processing the consensus-verified result, allowing you to focus on your business logic.
+
+## Chain Families
+
+CRE supports blockchain capabilities across multiple **chain families** — groups of networks that share the same virtual machine, serialization format, and address encoding. The chain family determines which SDK client you use and how payloads are encoded.
+
+| Chain Family | Networks                                                           | SDK Client                       | Payload Encoding         |
+| ------------ | ------------------------------------------------------------------ | -------------------------------- | ------------------------ |
+| EVM          | Ethereum, Base, Arbitrum, and [many more](/cre/supported-networks) | `EVMClient` / `evm.Client`       | ABI (viem / go-ethereum) |
+| Solana       | Solana Mainnet, Solana Devnet                                      | `SolanaClient` / `solana.Client` | Borsh                    |
+
+Additional chain families may be added in future releases.
 
 ## Available Capabilities
 
@@ -7960,8 +8151,9 @@ This section provides a high-level, conceptual overview of the capabilities curr
 - **[HTTP](/cre/capabilities/http)**: Fetch and post data from external APIs with decentralized consensus.
 - **[Confidential HTTP](/cre/capabilities/confidential-http)**: Make privacy-preserving API calls with enclave execution, secret injection, and optional response encryption.
 - **[EVM Read & Write](/cre/capabilities/evm-read-write)**: Interact with smart contracts on EVM-compatible blockchains with decentralized consensus.
+- **[Solana Write](/cre/capabilities/solana-write)**: Write verified workflow results to Solana programs via the Keystone Forwarder.
 
-All execution capabilities (HTTP, Confidential HTTP, EVM) automatically use [built-in consensus](/cre/concepts/consensus-computing) to validate results across multiple nodes, ensuring security and reliability.
+All execution capabilities automatically use [built-in consensus](/cre/concepts/consensus-computing) to validate results across multiple nodes, ensuring security and reliability.
 
 ---
 
@@ -8072,6 +8264,57 @@ Learn more in the [Onchain Write guide](/cre/guides/workflow/using-evm-client/on
 
 - **[EVM Chain Interactions Guide](/cre/guides/workflow/using-evm-client/overview)**: Learn how to read from and write to smart contracts
 - **[EVM Client SDK Reference](/cre/reference/sdk/evm-client)**: Detailed API reference for the `evm.Client`
+
+---
+
+# The Solana Write Capability
+Source: https://docs.chain.link/cre/capabilities/solana-write
+Last Updated: 2026-07-13
+
+The **Solana Write** capability lets your CRE workflow submit cryptographically signed reports to Solana programs. Your workflow calls a single method while the underlying Decentralized Oracle Network (DON) handles consensus, report signing, and onchain submission through the Keystone Forwarder program.
+
+## How it works
+
+The Solana Write capability shares the same conceptual model as [EVM Write](/cre/capabilities/evm-read-write): your workflow generates a signed report, and the DON submits it to a Keystone Forwarder program onchain. The forwarder verifies the oracle signatures, then cross-program invokes (CPI) your receiver program's `on_report` instruction.
+
+### The secure write flow
+
+1. **Payload encoding**: Your workflow Borsh-encodes the data to deliver and wraps it in a `ForwarderReport` struct containing an account hash.
+2. **Report generation**: `runtime.report()` signs the encoded payload using the `solana` encoder (`ecdsa` + `keccak256`).
+3. **DON consensus**: Multiple DON nodes independently validate the report before any onchain submission.
+4. **Forwarder submission**: A DON node calls the Keystone Forwarder program with the signed report and the required accounts.
+5. **Delivery to your program**: The forwarder verifies the signatures and CPIs into your receiver program's `on_report` instruction.
+
+### Account layout
+
+Every Solana write request includes a `remainingAccounts` list. The Keystone Forwarder expects accounts in the following order:
+
+| Index | Account              | Writable  | Description                                                                                      |
+| ----- | -------------------- | --------- | ------------------------------------------------------------------------------------------------ |
+| 0     | `forwarderState`     | No        | The Keystone Forwarder's onchain state account                                                   |
+| 1     | `forwarderAuthority` | No        | PDA derived from `["forwarder", forwarderState, receiverProgram]` under the forwarder program ID |
+| 2+    | Receiver accounts    | As needed | Accounts your program's `on_report` instruction requires                                         |
+
+The public keys of all accounts in this list are concatenated and SHA-256 hashed to produce the `accountHash` field in the report. The forwarder strips indices 0–1 before CPIing into your receiver, so they must be present and in the correct positions.
+
+## Key features
+
+- **DON consensus**: Reports are signed by multiple oracle nodes before submission.
+- **Borsh encoding**: Payloads use Borsh, the standard serialization format for Solana programs.
+- **Type-safe bindings**: The CLI binding generator creates typed `writeReportFrom<StructName>()` helpers from your Anchor IDL.
+- **Configurable compute budget**: Override the default 290,000 compute unit limit via `ComputeConfig`.
+- **Chain selector support**: Target Solana Mainnet or Devnet using Chainlink's chain selector system.
+
+<Aside type="note" title="CLI and simulation">
+  Solana write requires **CRE CLI v1.24.0 or later**. Local `cre workflow simulate` dry-runs the write path against the
+  Devnet forwarder built into the CLI. Deployed workflows use the live Keystone Forwarder on your target network.
+</Aside>
+
+## Learn more
+
+- **[Solana Chain Interactions Guide](/cre/guides/workflow/using-solana-client/overview)**: Learn how to write data to Solana programs using the `SolanaClient`
+- **[Solana Client SDK Reference](/cre/reference/sdk/solana-client)**: Detailed API reference for `SolanaClient` and helper functions
+- **[Supported Networks](/cre/supported-networks)**: Chain selector values and minimum SDK versions for Solana networks
 
 ---
 
@@ -8278,7 +8521,7 @@ See the [repository README](https://github.com/smartcontractkit/cre-gcp-predicti
 
 # CLI Reference
 Source: https://docs.chain.link/cre/reference/cli
-Last Updated: 2026-05-14
+Last Updated: 2026-07-09
 
 export const CRE_CLI_VERSION = VERSIONS["cre-cli"].LATEST
 
@@ -8304,6 +8547,7 @@ These flags can be used with any `cre` command.
 | `-v, --verbose`          | Enables verbose logging to print `DEBUG` level logs                                                                                                                                                                     |
 | `--non-interactive`      | Fails instead of prompting; provide all required inputs with flags or environment variables. Use this for CI/CD, scripts, and other headless environments                                                               |
 | `--allow-unknown-chains` | Skips chain-name validation against the chain-selectors registry for `cre workflow simulate` and `cre workflow deploy`. Use for experimental or unlisted chains. Chain-selector and RPC availability are still enforced |
+| `--allow-insecure-rpc`   | Allows non-localhost HTTP RPC URLs. By default, the CLI blocks cleartext RPC endpoints to reduce accidental secret exposure over insecure connections                                                                   |
 
 
 <Aside type="note" title="Non-interactive authentication">
@@ -8329,7 +8573,7 @@ Manage your authentication and account credentials.
 Initialize projects and generate contract bindings (Go only).
 
 - [**`cre init`**](/cre/reference/cli/project-setup) — Initialize a new CRE project (interactive wizard or **`--non-interactive`** with flags for CI/CD)
-- **`cre generate-bindings`** (Go only) — Generate Go bindings from contract ABI files for type-safe contract interactions
+- **`cre generate-bindings`** — Generate contract bindings from ABI or Anchor IDL files (Go and TypeScript for Solana)
 
 [View project setup commands →](/cre/reference/cli/project-setup)
 
@@ -8360,11 +8604,24 @@ Manage workflows throughout their entire lifecycle.
 - **`cre workflow pause`** — Pause a workflow on the Workflow Registry contract
 - **`cre workflow delete`** — Delete all versions of a workflow from the Workflow Registry
 - **`cre workflow list`** — List workflows deployed for your organization; use `--output json` for scripts
-- **`cre workflow get`** — Show metadata for the workflow configured in `workflow.yaml`
+- **`cre workflow get`** — Show deployment health and the most recent execution for the workflow configured in `workflow.yaml`
 - **`cre workflow supported-chains`** — List chain names the CLI supports for local simulation; use `--output json` for scripts
 - **`cre workflow custom-build`** — Convert a workflow to use a custom self-compiled WASM build
 
 [View workflow commands →](/cre/reference/cli/workflow)
+
+***
+
+### Execution Commands
+
+Inspect deployed workflow runs from the terminal.
+
+- **`cre execution list`** — List recent executions; filter by workflow, status, and time range
+- **`cre execution status`** — Show detailed status for a single execution
+- **`cre execution events`** — Show the capability event timeline for an execution
+- **`cre execution logs`** — Show log lines emitted during an execution
+
+[View execution commands →](/cre/reference/cli/execution)
 
 ***
 
@@ -8788,7 +9045,7 @@ When you run this command, the CLI will:
 
 # Workflow Commands
 Source: https://docs.chain.link/cre/reference/cli/workflow
-Last Updated: 2026-05-14
+Last Updated: 2026-07-09
 
 The `cre workflow` commands manage workflows throughout their entire lifecycle, from local testing to deployment and ongoing management.
 
@@ -8861,17 +9118,19 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag                      | Description                                                                                                                                                                                                                                                                      |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--broadcast`             | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                                                                                                               |
-| `-g, --engine-logs`       | Enable non-fatal engine logging                                                                                                                                                                                                                                                  |
-| `--non-interactive`       | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                                                                                                                    |
-| `--trigger-index <int>`   | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`                                                                                                             |
-| `--http-payload <string>` | HTTP trigger payload as JSON string or path to a JSON file. File paths are resolved relative to the directory where you ran the command. For HTTP triggers only                                                                                                                  |
-| `--evm-tx-hash <string>`  | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                                                                                                                          |
-| `--evm-event-index <int>` | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only                                                                                                |
-| `--limits <string>`       | Production limits to enforce during simulation: `default` (embedded prod limits), a path to a limits JSON file (e.g. from `cre workflow limits export`), or `none` to disable. See [Testing Production Limits](/cre/guides/operations/understanding-limits) (default: `default`) |
-| `--skip-type-checks`      | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                                                                                                                                      |
+| Flag                               | Description                                                                                                                                                                                                                                                                                                      |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--broadcast`                      | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                                                                                                                                               |
+| `-g, --engine-logs`                | Enable non-fatal engine logging                                                                                                                                                                                                                                                                                  |
+| `--listen`                         | Keep the simulator alive and re-run it for each incoming trigger event. For HTTP triggers, listens for POST requests on port `2000`. For EVM log triggers, watches the chain and re-runs on each matching event. Useful when iterating on trigger-driven workflows without restarting the simulator between runs |
+| `--non-interactive`                | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                                                                                                                                                    |
+| `--trigger-index <int>`            | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`                                                                                                                                             |
+| `--http-payload <string>`          | HTTP trigger payload as JSON string or path to a JSON file. File paths are resolved relative to the directory where you ran the command. For HTTP triggers only                                                                                                                                                  |
+| `--evm-tx-hash <string>`           | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                                                                                                                                                          |
+| `--evm-event-index <int>`          | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only                                                                                                                                |
+| `--evm-receipt-timeout <duration>` | How long to wait for an EVM transaction receipt before timing out (e.g. `30s`, `2m`). For EVM log triggers only (default: `1m`)                                                                                                                                                                                  |
+| `--limits <string>`                | Production limits to enforce during simulation: `default` (embedded prod limits), a path to a limits JSON file (e.g. from `cre workflow limits export`), or `none` to disable. See [Testing Production Limits](/cre/guides/operations/understanding-limits) (default: `default`)                                 |
+| `--skip-type-checks`               | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                                                                                                                                                                      |
 
 **Examples:**
 
@@ -8900,6 +9159,18 @@ cre workflow simulate <workflow-name-or-path> [flags]
   # If your EVM log trigger handler is the second handler in your workflow, use --trigger-index 1
   # --evm-event-index 0 means you want the first event from that transaction
   cre workflow simulate my-workflow --non-interactive --trigger-index 1 --evm-tx-hash 0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e --evm-event-index 0 --target staging-settings
+  ```
+
+- Listen mode — re-run on every HTTP trigger POST (port 2000)
+
+  ```bash
+  cre workflow simulate ./my-workflow --listen --target local-simulation
+  ```
+
+- Listen mode — re-run on every matching EVM log event
+
+  ```bash
+  cre workflow simulate ./my-workflow --listen --trigger-index 1 --target staging-settings
   ```
 
 
@@ -9246,7 +9517,7 @@ cre workflow list [flags]
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Shows metadata for the workflow configured in `workflow.yaml`. The command reads the workflow name for the selected `--target`, searches the CRE platform for matching workflow metadata, and filters results to the workflow's configured `deployment-registry` by default.
+Shows deployment health and the most recent execution for the workflow configured in `workflow.yaml`. The command reads the workflow name for the selected `--target`, resolves the workflow on the CRE platform (scoped to the configured `deployment-registry` by default), and prints deployment health plus the latest execution.
 
 **Usage:**
 
@@ -9260,25 +9531,33 @@ cre workflow get <workflow-folder-path> [flags]
 
 **Flags:**
 
-| Flag               | Description                                                              |
-| ------------------ | ------------------------------------------------------------------------ |
-| `--all-registries` | Do not filter results by the workflow's configured `deployment-registry` |
+| Flag                | Description                                                                                |
+| ------------------- | ------------------------------------------------------------------------------------------ |
+| `--all-registries`  | Resolve the workflow across every registry instead of the configured `deployment-registry` |
+| `--output <string>` | Output format. Use `json` to print JSON to stdout for scripting                            |
+| `--json`            | Shorthand for `--output=json`                                                              |
 
 **Examples:**
 
-- Show metadata for the workflow configured for a target
+- Show deployment health and recent execution for the workflow configured for a target
 
   ```bash
   cre workflow get ./my-workflow --target staging-settings
   ```
 
-- Search across all registries in your organization
+- Resolve across all registries in your organization
 
   ```bash
   cre workflow get ./my-workflow --target staging-settings --all-registries
   ```
 
-The command prints the same human-readable workflow metadata fields as [`cre workflow list`](#cre-workflow-list): workflow name, workflow ID, owner address, status, registry, and registry address when available.
+- Export as JSON
+
+  ```bash
+  cre workflow get ./my-workflow --target staging-settings --output json
+  ```
+
+For a full execution history, use [`cre execution list`](/cre/reference/cli/execution#cre-execution-list).
 
 ***
 
@@ -9443,6 +9722,161 @@ The typical workflow lifecycle uses these commands in sequence:
 - [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows) — Managing workflow state
 - [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows) — Version management
 - [Deleting Workflows](/cre/guides/operations/deleting-workflows) — Cleanup and removal
+
+---
+
+# Execution Commands
+Source: https://docs.chain.link/cre/reference/cli/execution
+Last Updated: 2026-07-09
+
+The `cre execution` commands query workflow execution history from the CRE platform. Use them to debug failures, review capability timelines, and pull log lines without opening the web UI.
+
+
+<Aside type="note" title="Authentication required">
+  Running `cre execution` commands requires you to be logged in. Run `cre whoami` to verify your session, or `cre login` to authenticate. See [Logging in with the CLI](/cre/account/cli-login) for details.
+</Aside>
+
+
+<Aside type="note" title="Global flags">
+  All `cre` commands support [global flags](/cre/reference/cli#global-flags) like `--env`, `--target`, `--project-root`, and `--verbose`.
+</Aside>
+
+For a quick health check on the workflow configured in your project, see [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get), which shows deployment health and the most recent execution.
+
+## `cre execution list`
+
+Lists recent workflow executions from the CRE platform.
+
+**Usage:**
+
+```bash
+cre execution list [workflow-id-or-name] [flags]
+```
+
+**Arguments:**
+
+- `[workflow-id-or-name]` — (Optional) On-chain workflow ID (64-char hex, visible in [`cre workflow list`](/cre/reference/cli/workflow#cre-workflow-list)) or workflow name. When omitted, executions across all workflows are returned.
+
+**Flags:**
+
+| Flag                | Description                                                                     |
+| ------------------- | ------------------------------------------------------------------------------- |
+| `--status <string>` | Filter by execution status: `TRIGGERED`, `IN_PROGRESS`, `SUCCESS`, or `FAILURE` |
+| `--start <string>`  | Start of time range in ISO8601 format (e.g. `2026-01-01T00:00:00Z`)             |
+| `--end <string>`    | End of time range in ISO8601 format (e.g. `2026-01-02T00:00:00Z`)               |
+| `--limit <int>`     | Maximum number of executions to return (max 100, default 20)                    |
+| `--output <string>` | Output format. Use `json` to print a JSON array to stdout for scripting         |
+| `--json`            | Shorthand for `--output=json`                                                   |
+
+**Examples:**
+
+```bash
+cre execution list
+cre execution list my-workflow
+cre execution list my-workflow --status FAILURE
+cre execution list my-workflow --start 2026-01-01T00:00:00Z --end 2026-01-02T00:00:00Z
+cre execution list my-workflow --limit 50 --output json
+```
+
+***
+
+## `cre execution status`
+
+Shows detailed status for a single workflow execution, including top-level errors when the run has failed.
+
+**Usage:**
+
+```bash
+cre execution status <execution-uuid> [flags]
+```
+
+**Arguments:**
+
+- `<execution-uuid>` — (Required) Execution UUID from `cre execution list` or the CRE UI
+
+**Flags:**
+
+| Flag                | Description                                       |
+| ------------------- | ------------------------------------------------- |
+| `--output <string>` | Output format. Use `json` to print JSON to stdout |
+| `--json`            | Shorthand for `--output=json`                     |
+
+**Examples:**
+
+```bash
+cre execution status 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g
+cre execution status 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g --output json
+```
+
+***
+
+## `cre execution events`
+
+Shows the ordered capability event timeline for a workflow execution, including per-event status, method, duration, and errors.
+
+**Usage:**
+
+```bash
+cre execution events <execution-uuid> [flags]
+```
+
+**Arguments:**
+
+- `<execution-uuid>` — (Required) Execution UUID
+
+**Flags:**
+
+| Flag                    | Description                                               |
+| ----------------------- | --------------------------------------------------------- |
+| `--capability <string>` | Filter events to a specific capability ID                 |
+| `--status <string>`     | Filter events by status (e.g. `FAILURE`)                  |
+| `--output <string>`     | Output format. Use `json` to print a JSON array to stdout |
+| `--json`                | Shorthand for `--output=json`                             |
+
+**Examples:**
+
+```bash
+cre execution events 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g
+cre execution events 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g --capability fetch-price
+cre execution events 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g --status FAILURE --output json
+```
+
+***
+
+## `cre execution logs`
+
+Shows log lines emitted during a workflow execution.
+
+**Usage:**
+
+```bash
+cre execution logs <execution-uuid> [flags]
+```
+
+**Arguments:**
+
+- `<execution-uuid>` — (Required) Execution UUID
+
+**Flags:**
+
+| Flag                | Description                                                        |
+| ------------------- | ------------------------------------------------------------------ |
+| `--node <string>`   | Filter logs to a specific node or capability ID (case-insensitive) |
+| `--output <string>` | Output format. Use `json` to print a JSON array to stdout          |
+| `--json`            | Shorthand for `--output=json`                                      |
+
+**Examples:**
+
+```bash
+cre execution logs 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g
+cre execution logs 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g --node ProcessData
+cre execution logs 7f3d8a12-b1c2-4d3e-9f0a-1b2c3d4e5f6g --output json
+```
+
+## Learn more
+
+- [Monitoring & Debugging Workflows](/cre/guides/operations/monitoring-workflows) — Web UI monitoring dashboard
+- [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get) — Deployment health and recent execution for the workflow in `workflow.yaml`
 
 ---
 
@@ -10513,7 +10947,7 @@ When diagnosing errors, the skill identifies the capability involved, fetches th
 
 If you prefer to work directly in an AI assistant, you can load the full CRE Go documentation into the context window and prompt from there. This is useful for broad exploration, but loads the entire SDK reference upfront — the skill approach above keeps your context window focused on your current task.
 
-**Context file**: https\://docs.chain.link/cre/llms-full-go.txt
+**Context file**: https\://docs.chain.link/cre/go/llms-full.txt
 
 Alternatively, you can click the "Copy Page" button in the top right corner of any Chainlink docs page to load the full page content into the context window of your preferred AI assistant. Loading a single page — for example, just the triggers reference or the EVM client page — rather than the entire SDK consumes fewer tokens (lower cost per request for pay-per-token APIs), keeps you within the limits of smaller context windows, and gives the model more relevant signal to attend to, which tends to produce more accurate output.
 
@@ -10523,7 +10957,7 @@ Copy the starter prompt below, replace the placeholder at the end with your use 
 I'm building a Chainlink CRE workflow using the Go SDK.
 
 Here is the full CRE Go documentation:
-https://docs.chain.link/cre/llms-full-go.txt
+https://docs.chain.link/cre/go/llms-full.txt
 
 Please fetch and read that file. After you've read it, please:
 - Help me build a CRE workflow based on what I describe
@@ -13361,10 +13795,16 @@ For the full list of types and methods available on the Confidential HTTP client
 
 # Forwarder Directory
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-go
-Last Updated: 2026-05-22
+Last Updated: 2026-06-24
 
 <Aside type="note" title="Looking for supported networks?">
   For a complete list of supported networks and version requirements, see [Supported Networks](/cre/supported-networks).
+</Aside>
+
+<Aside type="tip" title="Tenant-scoped chain list">
+  Chain availability and mock forwarder addresses depend on your CRE tenant. Run [`cre workflow
+    supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) after `cre login` to see the chains and
+  mock forwarder addresses enabled for your organization. Use `--output json` for scripting.
 </Aside>
 
 This page lists forwarder contract addresses for CRE workflows, organized by network.
@@ -13400,66 +13840,67 @@ If you configure forwarder validation in your consumer contract, **remember to u
 
 These `MockKeystoneForwarder` addresses are used when running `cre workflow simulate` with the `--broadcast` flag. Use these addresses **only** during local development and testing.
 
+The tables below reflect chains commonly enabled for simulation. Your tenant may have a different set — run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) for the authoritative list and mock forwarder addresses for your organization.
+
 ### Simulation Mainnets
 
-| Network                                                                                                                                                             | Chain Name                    | Mock Forwarder Address                     |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------ |
-| <a href="https://explorer.adifoundation.ai/address/0x6Aa382fb8762E1232936478DD9DbC04F637028f1" target="_blank" rel="noopener noreferrer">ADI Mainnet</a>            | adi-mainnet                   | 0x6Aa382fb8762E1232936478DD9DbC04F637028f1 |
-| <a href="https://arbiscan.io/address/0xd770499057619c9a76205fd4168161cf94abc532" target="_blank" rel="noopener noreferrer">Arbitrum One</a>                         | ethereum-mainnet-arbitrum-1   | 0xd770499057619c9a76205fd4168161cf94abc532 |
-| <a href="https://snowscan.xyz/address/0xdc21e279934ff6721cadfdd112dafb3261f09a2c" target="_blank" rel="noopener noreferrer">Avalanche</a>                           | avalanche-mainnet             | 0xdc21e279934ff6721cadfdd112dafb3261f09a2c |
-| <a href="https://basescan.org/address/0x5e342a8438b4f5d39e72875fcee6f76b39cce548" target="_blank" rel="noopener noreferrer">Base</a>                                | ethereum-mainnet-base-1       | 0x5e342a8438b4f5d39e72875fcee6f76b39cce548 |
-| <a href="https://bscscan.com/address/0x6f3239bbb26e98961e1115aba83f8a282e5508c8" target="_blank" rel="noopener noreferrer">BNB Chain</a>                            | binance_smart_chain-mainnet | 0x6f3239bbb26e98961e1115aba83f8a282e5508c8 |
-| <a href="https://explorer.celo.org/mainnet/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Celo</a>                   | celo-mainnet                  | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://etherscan.io/address/0xa3d1ad4ac559a6575a114998affb2fb2ec97a7d9" target="_blank" rel="noopener noreferrer">Ethereum Mainnet</a>                    | ethereum-mainnet              | 0xa3d1ad4ac559a6575a114998affb2fb2ec97a7d9 |
-| <a href="https://gnosisscan.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Gnosis Chain</a>                       | gnosis-chain-mainnet          | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://app.hyperliquid.xyz/explorer/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Hyperliquid Mainnet</a> | hyperliquid-mainnet           | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://explorer.inkonchain.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Ink</a>                      | ethereum-mainnet-ink-1        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://explorer.jovay.io/address/0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4" target="_blank" rel="noopener noreferrer">Jovay Mainnet</a>                  | jovay-mainnet                 | 0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4 |
-| <a href="https://lineascan.build/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Linea</a>                            | ethereum-mainnet-linea-1      | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://mantlescan.xyz/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Mantle</a>                            | ethereum-mainnet-mantle-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://megaeth.blockscout.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">MegaETH</a>                   | megaeth-mainnet               | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://optimistic.etherscan.io/address/0x9119a1501550ed94a3f2794038ed9258337afa18" target="_blank" rel="noopener noreferrer">OP Mainnet</a>               | ethereum-mainnet-optimism-1   | 0x9119a1501550ed94a3f2794038ed9258337afa18 |
-| <a href="https://pharosscan.xyz/address/0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4" target="_blank" rel="noopener noreferrer">Pharos Mainnet</a>                    | pharos-mainnet                | 0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4 |
-| <a href="https://plasmascan.to/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Plasma</a>                             | plasma-mainnet                | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://polygonscan.com/address/0xf458d621885e29a5003ea9bbba5280d54e19b1ce" target="_blank" rel="noopener noreferrer">Polygon</a>                          | polygon-mainnet               | 0xf458d621885e29a5003ea9bbba5280d54e19b1ce |
-| <a href="https://scrollscan.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Scroll</a>                            | ethereum-mainnet-scroll-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://sonicscan.org/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Sonic</a>                              | sonic-mainnet                 | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://worldscan.org/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">World Chain</a>                        | ethereum-mainnet-worldchain-1 | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://www.oklink.com/xlayer/address/0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4" target="_blank" rel="noopener noreferrer">XLayer Mainnet</a>             | ethereum-mainnet-xlayer-1     | 0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4 |
-| <a href="https://explorer.zksync.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">ZKSync Era</a>                    | ethereum-mainnet-zksync-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Network             | Chain Name                    | Mock Forwarder Address                     |
+| ------------------- | ----------------------------- | ------------------------------------------ |
+| Arbitrum One        | ethereum-mainnet-arbitrum-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| Avalanche           | avalanche-mainnet             | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Base                | ethereum-mainnet-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| BNB Chain           | binance_smart_chain-mainnet | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Celo                | celo-mainnet                  | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| Ethereum Mainnet    | ethereum-mainnet              | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
+| Gnosis Chain        | gnosis_chain-mainnet         | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| Hyperliquid Mainnet | hyperliquid-mainnet           | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| Ink                 | ethereum-mainnet-ink-1        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| Jovay Mainnet       | jovay-mainnet                 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Linea               | ethereum-mainnet-linea-1      | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| Mantle              | ethereum-mainnet-mantle-1     | 0xB9F79d863261869B234c481D1f9A7af84AeAd192 |
+| MegaETH             | megaeth-mainnet               | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
+| OP Mainnet          | ethereum-mainnet-optimism-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| Pharos Mainnet      | pharos-mainnet                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Plasma              | plasma-mainnet                | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
+| Polygon             | polygon-mainnet               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Scroll              | ethereum-mainnet-scroll-1     | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| Sonic               | sonic-mainnet                 | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| World Chain         | ethereum-mainnet-worldchain-1 | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| XLayer Mainnet      | ethereum-mainnet-xlayer-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| ZKSync Era          | ethereum-mainnet-zksync-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 
 ### Simulation Testnets
 
-| Network                                                                                                                                                            | Chain Name                            | Mock Forwarder Address                     |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- | ------------------------------------------ |
-| <a href="https://explorer.testnet.adifoundation.ai/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">ADI Testnet</a>   | adi-testnet                           | 0x9eF6468C5f37b976E57d52054c693269479A784d |
-| <a href="https://explorer.curtis.apechain.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Apechain Curtis</a>    | apechain-testnet-curtis               | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://testnet.arcscan.app/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Arc Testnet</a>                 | arc-testnet                           | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://sepolia.arbiscan.io/address/0xd41263567ddfead91504199b8c6c87371e83ca5d" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>            | ethereum-testnet-sepolia-arbitrum-1   | 0xd41263567ddfead91504199b8c6c87371e83ca5d |
-| <a href="https://testnet.snowscan.xyz/address/0x2e7371a5d032489e4f60216d8d898a4c10805963" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>             | avalanche-testnet-fuji                | 0x2e7371a5d032489e4f60216d8d898a4c10805963 |
-| <a href="https://sepolia.basescan.org/address/0x82300bd7c3958625581cc2f77bc6464dcecdf3e5" target="_blank" rel="noopener noreferrer">Base Sepolia</a>               | ethereum-testnet-sepolia-base-1       | 0x82300bd7c3958625581cc2f77bc6464dcecdf3e5 |
-| <a href="https://testnet.bscscan.com/address/0xa238e42cb8782808dbb2f37e19859244ec4779b0" target="_blank" rel="noopener noreferrer">BNB Chain Testnet</a>           | binance_smart_chain-testnet         | 0xa238e42cb8782808dbb2f37e19859244ec4779b0 |
-| <a href="https://celo-sepolia.blockscout.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Celo Sepolia</a>        | celo-sepolia                          | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://explorer.cronos.org/testnet/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Cronos Testnet</a>      | cronos-testnet                        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://sepolia.etherscan.io/address/0x15fC6ae953E024d975e77382eEeC56A9101f9F88" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>           | ethereum-testnet-sepolia              | 0x15fC6ae953E024d975e77382eEeC56A9101f9F88 |
-| <a href="https://gnosis-chiado.blockscout.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Gnosis Chiado</a>      | gnosis-chain-testnet-chiado           | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://explore-testnet.hyperpc.app/address/0xB27fA1c28288c50542527F64BCda22C9FbAc24CB" target="_blank" rel="noopener noreferrer">Hyperliquid Testnet</a> | hyperliquid-testnet                   | 0xB27fA1c28288c50542527F64BCda22C9FbAc24CB |
-| <a href="https://explorer-sepolia.inkonchain.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Ink Sepolia</a>     | ink-testnet-sepolia                   | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://sepolia-explorer.jovay.io/l2/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Jovay Testnet</a>      | jovay-testnet                         | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://sepolia.lineascan.build/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Linea Sepolia</a>           | ethereum-testnet-sepolia-linea-1      | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://sepolia.mantlescan.xyz/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Mantle Sepolia</a>           | ethereum-testnet-sepolia-mantle-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://megaexplorer.xyz/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">MegaETH Testnet 2</a>              | megaeth-testnet-2                     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://sepolia-optimism.etherscan.io/address/0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3" target="_blank" rel="noopener noreferrer">OP Sepolia</a>        | ethereum-testnet-sepolia-optimism-1   | 0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3 |
-| <a href="https://atlantic.pharosscan.xyz/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Pharos Atlantic Testnet</a> | pharos-atlantic-testnet               | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://testnet.plasmascan.to/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Plasma Testnet</a>            | plasma-testnet                        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://amoy.polygonscan.com/address/0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>               | polygon-testnet-amoy                  | 0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74 |
-| <a href="https://sepolia-blockscout.scroll.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Scroll Sepolia</a>     | ethereum-testnet-sepolia-scroll-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://explorer.testnet.soniclabs.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Sonic Testnet</a>    | sonic-testnet                         | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://spb.explorer.tac.build/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">TAC Testnet</a>              | tac-testnet                           | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://sepolia.uniscan.xyz/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Unichain Sepolia</a>            | ethereum-testnet-sepolia-unichain-1   | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://sepolia.worldscan.org/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">World Chain Sepolia</a>       | ethereum-testnet-sepolia-worldchain-1 | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://www.oklink.com/xlayer-test/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">XLayer Testnet</a>       | xlayer-testnet                        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://sepolia.explorer.zksync.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">ZKSync Era Sepolia</a>   | ethereum-testnet-sepolia-zksync-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Network                 | Chain Name                            | Mock Forwarder Address                     |
+| ----------------------- | ------------------------------------- | ------------------------------------------ |
+| ADI Testnet             | adi-testnet                           | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Apechain Curtis         | apechain-testnet-curtis               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Arc Testnet             | arc-testnet                           | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Arbitrum Sepolia        | ethereum-testnet-sepolia-arbitrum-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Avalanche Fuji          | avalanche-testnet-fuji                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Base Sepolia            | ethereum-testnet-sepolia-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| BNB Chain Testnet       | binance_smart_chain-testnet         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Celo Sepolia            | celo-sepolia                          | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| Cronos Testnet          | cronos-testnet                        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| Ethereum Sepolia        | ethereum-testnet-sepolia              | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| Gnosis Chiado           | gnosis_chain-testnet-chiado          | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
+| Hyperliquid Testnet     | hyperliquid-testnet                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Ink Sepolia             | ink-testnet-sepolia                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Jovay Testnet           | jovay-testnet                         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Linea Sepolia           | ethereum-testnet-sepolia-linea-1      | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Mantle Sepolia          | ethereum-testnet-sepolia-mantle-1     | 0xB9F79d863261869B234c481D1f9A7af84AeAd192 |
+| MegaETH Testnet 2       | megaeth-testnet-2                     | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| OP Sepolia              | ethereum-testnet-sepolia-optimism-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Pharos Atlantic Testnet | pharos-atlantic-testnet               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Plasma Testnet          | plasma-testnet                        | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Polygon Amoy            | polygon-testnet-amoy                  | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Scroll Sepolia          | ethereum-testnet-sepolia-scroll-1     | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| Sonic Testnet           | sonic-testnet                         | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| TAC Testnet             | tac-testnet                           | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
+| Unichain Sepolia        | ethereum-testnet-sepolia-unichain-1   | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| World Chain Sepolia     | ethereum-testnet-sepolia-worldchain-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| XLayer Testnet          | xlayer-testnet                        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| ZKSync Era Sepolia      | ethereum-testnet-sepolia-zksync-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 
 ## Production Forwarders
 
@@ -13476,13 +13917,13 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 | <a href="https://bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">BNB Chain</a>                            | binance_smart_chain-mainnet | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://explorer.celo.org/mainnet/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Celo</a>                   | celo-mainnet                  | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
 | <a href="https://etherscan.io/address/0x0b93082D9b3C7C97fAcd250082899BAcf3af3885" target="_blank" rel="noopener noreferrer">Ethereum Mainnet</a>                    | ethereum-mainnet              | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
-| <a href="https://gnosisscan.io/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Gnosis Chain</a>                       | gnosis-chain-mainnet          | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| <a href="https://gnosisscan.io/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Gnosis Chain</a>                       | gnosis_chain-mainnet         | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | <a href="https://app.hyperliquid.xyz/explorer/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Hyperliquid Mainnet</a> | hyperliquid-mainnet           | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | <a href="https://explorer.inkonchain.com/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Ink</a>                      | ethereum-mainnet-ink-1        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | <a href="https://explorer.jovay.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Jovay Mainnet</a>                  | jovay-mainnet                 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://lineascan.build/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Linea</a>                            | ethereum-mainnet-linea-1      | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | <a href="https://mantlescan.xyz/address/0xB9F79d863261869B234c481D1f9A7af84AeAd192" target="_blank" rel="noopener noreferrer">Mantle</a>                            | ethereum-mainnet-mantle-1     | 0xB9F79d863261869B234c481D1f9A7af84AeAd192 |
-| <a href="https://megaeth.blockscout.com/address/0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c" target="_blank" rel="noopener noreferrer">MegaETH</a>                   | megaeth-mainnet               | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
+| <a href="https://mega.etherscan.io/address/0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c" target="_blank" rel="noopener noreferrer">MegaETH</a>                        | megaeth-mainnet               | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
 | <a href="https://optimistic.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">OP Mainnet</a>               | ethereum-mainnet-optimism-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
 | <a href="https://pharosscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Pharos Mainnet</a>                    | pharos-mainnet                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://plasmascan.to/address/0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c" target="_blank" rel="noopener noreferrer">Plasma</a>                             | plasma-mainnet                | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
@@ -13507,7 +13948,7 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 | <a href="https://celo-sepolia.blockscout.com/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Celo Sepolia</a>        | celo-sepolia                          | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | <a href="https://explorer.cronos.org/testnet/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Cronos Testnet</a>      | cronos-testnet                        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | <a href="https://sepolia.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>           | ethereum-testnet-sepolia              | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| <a href="https://gnosis-chiado.blockscout.com/address/0x0b93082D9b3C7C97fAcd250082899BAcf3af3885" target="_blank" rel="noopener noreferrer">Gnosis Chiado</a>      | gnosis-chain-testnet-chiado           | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
+| <a href="https://gnosis-chiado.blockscout.com/address/0x0b93082D9b3C7C97fAcd250082899BAcf3af3885" target="_blank" rel="noopener noreferrer">Gnosis Chiado</a>      | gnosis_chain-testnet-chiado          | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
 | <a href="https://explore-testnet.hyperpc.app/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Hyperliquid Testnet</a> | hyperliquid-testnet                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://explorer-sepolia.inkonchain.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Ink Sepolia</a>     | ink-testnet-sepolia                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://sepolia-explorer.jovay.io/l2/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Jovay Testnet</a>      | jovay-testnet                         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
@@ -14368,6 +14809,17 @@ Here's the journey your workflow's data takes to reach the blockchain:
 4. **Delivery to your contract**: The Forwarder validates the report's signatures and calls your consumer contract's `onReport()` function with the data
 
 Your workflow code handles this process using the [`evm.Client`](/cre/reference/sdk/evm-client), which manages the interaction with the Forwarder contract. Depending on your approach (covered below), this can be fully automated via generated binding helpers or done manually with direct client calls.
+
+### Where reports can go after generation
+
+The same signed report from `runtime.GenerateReport()` can be delivered in different ways:
+
+| Destination                    | Guide                                                                                                                       | Verification                                                                                                           |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Smart contract (via Forwarder) | This section + [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain) | Onchain in `KeystoneForwarder`                                                                                         |
+| HTTP API                       | [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go)                            | [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go) on the receiver |
+
+See [API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http) for the sender → receiver flow.
 
 
 <Aside type="caution" title="Replay attacks">
@@ -15399,13 +15851,13 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 
 # Submitting Reports via HTTP
 Source: https://docs.chain.link/cre/guides/workflow/using-http-client/submitting-reports-http-go
-Last Updated: 2025-11-04
+Last Updated: 2026-05-20
 
-This guide shows how to send a cryptographically signed report (generated by your workflow) to an external HTTP API. You'll learn how to write a transformation function that formats the report for your specific API's requirements.
+This guide is for the **sender** side: a CRE workflow that **creates** a signed report and **POSTs** it to an HTTP endpoint.
 
 **What you'll learn:**
 
-- How to use `SendReport` to submit reports via HTTP
+- How to use [`SendReport()`](/cre/reference/sdk/http-client-go#sendrequestersendreport) to submit reports via HTTP
 - How to write transformation functions for different API formats
 - Best practices for report submission and deduplication
 
@@ -15414,20 +15866,54 @@ This guide shows how to send a cryptographically signed report (generated by you
   This guide covers HTTP submission. For submitting reports to smart contracts, see [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain).
 </Aside>
 
+## What is a CRE report?
+
+A **[CRE report](/cre/key-terms#report-cre-report)** is the signed output your workflow DON produces when you call [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values). It packages your encoded data (the payload you computed in the callback), fixed workflow metadata, a report context (config digest and sequence number), and ECDSA signatures from DON nodes.
+
+This guide covers the **sender** path: create the report in your workflow, then POST it to an HTTP endpoint. The receiver must verify those signatures before trusting the data. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go) on the receiver side.
+
+## Where this guide fits
+
+| Question                    | Answer                                                                                                                                                                                                                                                                                                                |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| What is the report?         | A [CRE report](/cre/key-terms#report-cre-report): output of [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) after DON consensus (encoded payload + metadata + signatures).                                                                         |
+| Where does it come from?    | **Inside this workflow:** after your logic runs (fetch data, compute, encode). There is no separate "get report" step.                                                                                                                                                                                                |
+| What does this guide cover? | Steps 3–4 below: [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values), then [`SendReport()`](/cre/reference/sdk/http-client-go#sendrequestersendreport) to your API. Steps 1–2 (trigger and your callback logic) are prerequisites, not the focus here. |
+| Who verifies it?            | The **receiver:** your HTTP service or a separate CRE workflow. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go).                                                                                                                                           |
+
+**Sender flow in one workflow execution:**
+
+1. Trigger fires (cron, HTTP, …).
+2. Your callback runs (API calls, encoding, etc.).
+3. [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values): DON produces a signed `sdk.ReportResponse`.
+4. [`SendReport()`](/cre/reference/sdk/http-client-go#sendrequestersendreport): format and POST to your URL.
+
 ## Prerequisites
 
 - Familiarity with [making POST requests](/cre/guides/workflow/using-http-client/post-request)
 - Understanding of [generating reports](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values)
-- A generated report from `runtime.GenerateReport()`
+- A generated report from [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values)
 
 
 <Aside type="caution" title="Redirects are not supported">
   HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
 </Aside>
 
-## Quick start: Minimal example
+## Payload contract (if you verify offchain)
 
-Here's the simplest possible workflow that generates and submits a report via HTTP:
+Receivers using [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go) expect JSON with hex fields **without** `0x`. Use JSON key `context` for `reportContext`:
+
+| JSON field   | SDK field on `ReportResponse` |
+| ------------ | ----------------------------- |
+| `report`     | `RawReport`                   |
+| `context`    | `ReportContext`               |
+| `signatures` | per-node signatures in `Sigs` |
+
+## Quick start: Minimal example (binary only)
+
+Posts **raw `RawReport` bytes** only. Not compatible with the verify guide’s JSON receiver. For local testing, use the [complete working example](#complete-working-example) or [Pattern 4 for offchain verification (hex)](#pattern-4-for-offchain-verification-hex).
+
+Here's the simplest workflow that generates and submits a report via HTTP:
 
 ```go
 func formatReportSimple(r *sdk.ReportResponse) (*http.Request, error) {
@@ -15458,7 +15944,7 @@ func submitReport(config *Config, logger *slog.Logger, sendRequester *http.SendR
 **What's happening here:**
 
 1. `formatReportSimple` transforms the report into an HTTP request that your API understands
-2. `sendRequester.SendReport()` calls your transformation function and sends the request
+2. [`sendRequester.SendReport()`](/cre/reference/sdk/http-client-go#sendrequestersendreport) calls your transformation function and sends the request
 3. The SDK handles consensus and returns the result
 
 The rest of this guide explains how this works and shows different formatting patterns for various API requirements.
@@ -15467,7 +15953,7 @@ The rest of this guide explains how this works and shows different formatting pa
 
 ### The report structure
 
-When you call `runtime.GenerateReport()`, the SDK creates a `sdk.ReportResponse` containing:
+After [consensus](/cre/key-terms#consensus), [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) returns a `sdk.ReportResponse`: the wire-format view of a [CRE report](/cre/key-terms#report-cre-report). It contains:
 
 ```go
 type sdk.ReportResponse struct {
@@ -15496,7 +15982,7 @@ func(reportResponse *sdk.ReportResponse) (*http.Request, error)
 
 **The SDK calls this function internally:**
 
-1. You pass your transformation function to `SendReport`
+1. You pass your transformation function to [`SendReport()`](/cre/reference/sdk/http-client-go#sendrequestersendreport)
 2. The SDK calls it with the generated `sdk.ReportResponse`
 3. Your function returns an `http.Request` formatted for your API
 4. The SDK sends the request and handles consensus
@@ -15664,6 +16150,51 @@ func formatReportAsJSON(r *sdk.ReportResponse) (*http.Request, error) {
 }
 ```
 
+### Pattern 4 for offchain verification (hex)
+
+Use when testing [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go). The verify examples decode **hex without `0x`** in JSON. Base64 Pattern 4 above does not match unless you change the receiver.
+
+```go
+import (
+	"encoding/hex"
+	"encoding/json"
+)
+
+type ReportPayload struct {
+	Report     string   `json:"report"`
+	Context    string   `json:"context"`
+	Signatures []string `json:"signatures"`
+}
+
+func formatReportAsJSONHex(config *Config) func(r *sdk.ReportResponse) (*http.Request, error) {
+	return func(r *sdk.ReportResponse) (*http.Request, error) {
+		sigs := make([]string, len(r.Sigs))
+		for i, sig := range r.Sigs {
+			sigs[i] = hex.EncodeToString(sig.Signature)
+		}
+		payload := ReportPayload{
+			Report:     hex.EncodeToString(r.RawReport),
+			Context:    hex.EncodeToString(r.ReportContext),
+			Signatures: sigs,
+		}
+		body, err := json.Marshal(payload)
+		if err != nil {
+			return nil, err
+		}
+		return &http.Request{
+			Url:    config.ApiUrl,
+			Method: "POST",
+			Body:   body,
+			Headers: map[string]string{"Content-Type": "application/json"},
+			CacheSettings: &http.CacheSettings{
+				Store:  true,
+				MaxAge: durationpb.New(60 * time.Second),
+			},
+		}, nil
+	}
+}
+```
+
 ### Understanding `CacheSettings` for reports
 
 You'll notice that all the patterns above include `CacheSettings`. This is critical for report submissions, just like it is for [POST requests](/cre/guides/workflow/using-http-client/post-request).
@@ -15696,7 +16227,7 @@ This approach is reliable because the `RawReport` is identical across all nodes�
 
 ## Using `SendReport` (recommended approach)
 
-Use the high-level `http.SendRequest` pattern with `sendRequester.SendReport()`:
+Use the high-level `http.SendRequest` pattern with [`sendRequester.SendReport()`](/cre/reference/sdk/http-client-go#sendrequestersendreport):
 
 ```go
 func submitReportViaHTTP(config *Config, logger *slog.Logger, sendRequester *http.SendRequester) (*SubmitResponse, error) {
@@ -15739,8 +16270,8 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 This example shows a workflow that:
 
 1. Generates a report from a single value
-2. Submits it to an HTTP API
-3. Uses the simple "report in body" format
+2. Submits it via **Pattern 4 JSON with hex fields** (compatible with the verify guide sim loop)
+3. Uses `config.ApiUrl` from your target config
 
 ```go
 //go:build wasip1
@@ -15748,6 +16279,8 @@ This example shows a workflow that:
 package main
 
 import (
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"math/big"
@@ -15779,28 +16312,47 @@ func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.Secre
 	}, nil
 }
 
-// Transformation function: defines how the API expects the report
-func formatReportForMyAPI(r *sdk.ReportResponse) (*http.Request, error) {
-	return &http.Request{
-		Url:    "https://webhook.site/your-unique-id",  // Replace with your API
-		Method: "POST",
-		Body:   r.RawReport,
-		Headers: map[string]string{
-			"Content-Type": "application/octet-stream",
-			"X-Report-SeqNr": fmt.Sprintf("%d", r.SeqNr),
-		},
-		CacheSettings: &http.CacheSettings{
-			Store:  true,                             // Prevent duplicate submissions
-			MaxAge: durationpb.New(60 * time.Second), // Accept cached responses up to 60 seconds old
-		},
-	}, nil
+type reportPayload struct {
+	Report     string   `json:"report"`
+	Context    string   `json:"context"`
+	Signatures []string `json:"signatures"`
+}
+
+func formatReportForMyAPI(config *Config) func(r *sdk.ReportResponse) (*http.Request, error) {
+	return func(r *sdk.ReportResponse) (*http.Request, error) {
+		sigs := make([]string, len(r.Sigs))
+		for i, sig := range r.Sigs {
+			sigs[i] = hex.EncodeToString(sig.Signature)
+		}
+		body, err := json.Marshal(reportPayload{
+			Report:     hex.EncodeToString(r.RawReport),
+			Context:    hex.EncodeToString(r.ReportContext),
+			Signatures: sigs,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return &http.Request{
+			Url:    config.ApiUrl,
+			Method: "POST",
+			Body:   body,
+			Headers: map[string]string{
+				"Content-Type":   "application/json",
+				"X-Report-SeqNr": fmt.Sprintf("%d", r.SeqNr),
+			},
+			CacheSettings: &http.CacheSettings{
+				Store:  true,
+				MaxAge: durationpb.New(60 * time.Second),
+			},
+		}, nil
+	}
 }
 
 // Function that submits the report via HTTP
 func submitReportViaHTTP(config *Config, logger *slog.Logger, sendRequester *http.SendRequester, report *cre.Report) (*SubmitResponse, error) {
 	logger.Info("Submitting report to API", "url", config.ApiUrl)
 
-	resp, err := sendRequester.SendReport(*report, formatReportForMyAPI).Await()
+	resp, err := sendRequester.SendReport(*report, formatReportForMyAPI(config)).Await()
 	if err != nil {
 		return nil, fmt.Errorf("failed to send report: %w", err)
 	}
@@ -15892,7 +16444,11 @@ func main() {
    ```bash
    cre workflow simulate my-workflow --target staging-settings
    ```
-4. Check webhook.site to see the report data received
+4. On webhook.site, open **Content** and confirm JSON with `report`, `context`, and `signatures` (hex). Use that JSON to test a receiver workflow in [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go#testing-locally-with-simulation).
+
+## Next step: verify on the receiver
+
+The sender does not validate the report for the receiver. After submission, the ingesting side must verify signatures before trusting the payload. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go).
 
 ## Advanced: Low-level pattern
 
@@ -15935,15 +16491,13 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 
 1. **Always use `CacheSettings`**: Include caching in every transformation function to prevent worst-case duplicate submission scenarios
 2. **Implement API-side deduplication**: Your receiving API must implement deduplication using the **hash of the report** (`keccak256(RawReport)`) to detect and reject duplicate submissions
-3. **Verify signatures before processing**: Your API must verify the cryptographic signatures against DON public keys before trusting report data (see note below about signature verification)
+3. **Verify on the receiver**: The sender does not validate the report; your API or a [receiver CRE workflow](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go) must verify before trusting payload data
 4. **Match your API's format exactly**: Study your API's documentation to understand the expected format (binary, JSON, headers, etc.)
 5. **Handle errors gracefully**: Check HTTP status codes and provide meaningful error messages
 
 
 <Aside type="caution" title="Signature verification is your responsibility">
-  Unlike onchain submissions (where the `KeystoneForwarder` contract verifies signatures), **HTTP submissions require your API to verify signatures** before trusting the report data.
-
-  **Documentation coming soon**: "Verifying CRE Reports Offchain" guide.
+  Unlike onchain submissions (where the `KeystoneForwarder` contract verifies signatures), **HTTP submissions require you to verify signatures** before trusting the report data. Use [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport) in a receiver workflow or implement equivalent checks in your API. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go).
 </Aside>
 
 ## Troubleshooting
@@ -15961,11 +16515,1284 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 
 ## Learn more
 
-- **[HTTP Client SDK Reference](/cre/reference/sdk/http-client)** — Complete API reference including `SendReport` and `sdk.ReportResponse`
-- **[POST Requests](/cre/guides/workflow/using-http-client/post-request)** — Learn about HTTP request patterns and caching
-- **[Generating Reports: Single Values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values)** — How to create reports from single values
-- **[Generating Reports: Structs](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-structs)** — How to create reports from struct data
-- **[Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain)** — Alternative: Submit reports to smart contracts instead of HTTP
+- **[Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go):** verify signatures on the receiver before trusting payload data
+- **[HTTP Client SDK Reference](/cre/reference/sdk/http-client):** complete API reference including `SendReport` and `sdk.ReportResponse`
+- **[POST Requests](/cre/guides/workflow/using-http-client/post-request):** HTTP request patterns and caching
+- **[Generating Reports: Single Values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values):** create reports from single values
+- **[Generating Reports: Structs](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-structs):** create reports from struct data
+- **[Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain):** submit reports to smart contracts instead of HTTP
+
+---
+
+# Verifying CRE Reports Offchain
+Source: https://docs.chain.link/cre/guides/workflow/using-http-client/verifying-reports-offchain-go
+Last Updated: 2026-05-20
+
+This guide is for the **receiver** side: you already received a CRE report package — typically via HTTP from a [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go) sender workflow — and need to **prove it is authentic** before using the payload.
+
+When a workflow delivers results via HTTP (or another offchain channel), nothing onchain automatically validates the report. **You must verify signatures before trusting the data.**
+
+There are two ways to verify, depending on who receives the POST:
+
+| My receiver is...                               | Use                                                                                                                    |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **My own API or server** (Go HTTP server, etc.) | [Verifying outside CRE](#verifying-outside-cre) — standard crypto libraries, no CRE SDK needed                         |
+| **A CRE workflow** with an HTTP trigger         | [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport) — see [CRE receiver workflow](#cre-receiver-workflow) |
+
+Both paths run the same cryptographic checks against the same onchain Capability Registry. The difference is whether you use the CRE SDK's helper (which requires `runtime`) or implement it yourself with standard libraries.
+
+## What is a CRE report?
+
+A **[CRE report](/cre/key-terms#report-cre-report)** is a DON-signed package another workflow (or system) created with [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values). You receive its bytes over HTTP (or another channel) as `rawReport`, `reportContext`, and `signatures`. Before you use the encoded payload, you must confirm the signatures match authorized DON signers on the Capability Registry.
+
+See [Key Terms: Report](/cre/key-terms#report-cre-report) for how reports are created and delivered. Pair this guide with [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go) on the sender side.
+
+**Receiver flow (both paths):**
+
+1. Your endpoint (API or CRE HTTP trigger) receives the POST payload.
+2. Decode hex fields into bytes.
+3. Verify signatures against the Capability Registry.
+4. Use the trusted payload body in your logic.
+
+## What you'll learn
+
+- When to verify reports offchain vs relying on onchain forwarders
+- How [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport) validates signatures and reads metadata (inside a CRE workflow)
+- How to build a CRE receiver workflow that accepts reports over HTTP
+- How to verify reports in your own API server without a CRE receiver workflow
+- How to restrict verification to specific CRE environments or zones
+
+## Prerequisites
+
+- **A report payload to verify** — three hex fields: `report`, `context`, `signatures`. If you don't have one yet, follow [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go) to create a sender workflow and capture its output first.
+- **SDK**: `cre-sdk-go` v1.8.0 or later (for the CRE receiver workflow path)
+- For HTTP-triggered receivers: [HTTP Trigger configuration](/cre/guides/workflow/using-triggers/http-trigger/configuration-go)
+
+## Onchain vs offchain verification
+
+| Aspect               | Offchain ([`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport)) | Onchain (`KeystoneForwarder`)     |
+| -------------------- | --------------------------------------------------------------------------- | --------------------------------- |
+| **Where it runs**    | Inside your CRE workflow callback                                           | In a smart contract transaction   |
+| **Signature check**  | Local `ecrecover` on report hash                                            | Contract logic onchain            |
+| **Signer allowlist** | Read from Capability Registry (`getDON`, `getNodesByP2PIds`)                | Forwarder + registry              |
+| **Typical use**      | CRE receiver workflows with an HTTP trigger                                 | Consumer contracts via `onReport` |
+
+Offchain verification still uses **onchain data as a trust anchor**: the first time a DON is seen, the SDK reads the production Capability Registry on Ethereum Mainnet to learn `f` and authorized signer addresses.
+
+Default (`cre.ProductionEnvironment()`):
+
+- **Chain**: Ethereum Mainnet (chain selector `5009297550715157269`)
+- **Registry**: `0x76c9cf548b4179F8901cda1f8623568b58215E62`
+
+## How verification works
+
+At its core, verification answers one question: did enough authorized nodes from the right DON sign this exact report? To answer it, the receiver decodes the report's metadata header to find which DON produced it, asks the onchain Capability Registry for that DON's authorized signers and quorum threshold (`f`), then checks that at least `f+1` of the provided signatures come from those addresses. Both paths in this guide — the outside-CRE program and the CRE receiver workflow — run this same sequence:
+
+1. **Parse the report header** from `rawReport` (109-byte metadata + body).
+2. **Fetch DON info** from the registry (if not cached): fault tolerance `f` and signer addresses.
+3. **Verify signatures**: compute `keccak256(keccak256(rawReport) || reportContext)`, recover signers, require **f+1** valid signatures from authorized nodes.
+4. **Return a `*cre.Report`** with accessors for workflow ID, owner, execution ID, body, and more.
+
+If verification fails, [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport) returns an error (for example, `ErrUnknownSigner`, `ErrWrongSignatureCount`, or registry read failure).
+
+## Verifying outside CRE
+
+[`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport) requires the CRE `runtime` object and can only run inside a CRE workflow callback. If your API server receives reports directly, you can verify without the CRE SDK using standard libraries.
+
+If you followed the [submit guide](/cre/guides/workflow/using-http-client/submitting-reports-http-go), you already have a JSON payload with `report`, `context`, and `signatures` as hex strings — this section shows how to verify it.
+
+1. Create a new folder for your verification program and initialize a module:
+
+   ```bash
+   mkdir verify-report && cd verify-report
+   go mod init verify-report
+   go get github.com/ethereum/go-ethereum
+   ```
+
+2. Save the following as `main.go`.
+
+   Parses the 109-byte report header to identify the DON, reads the authorized signer list and fault tolerance `f` from the Capability Registry on Ethereum Mainnet, then recovers each signature and requires at least `f+1` to match. The ABI layout mirrors [`report_verification.go` in cre-sdk-go](https://github.com/smartcontractkit/cre-sdk-go).
+
+   ```go
+   // verify-report/main.go
+   package main
+
+   import (
+   	"context"
+   	"encoding/binary"
+   	"encoding/hex"
+   	"fmt"
+   	"math/big"
+   	"sync"
+
+   	"github.com/ethereum/go-ethereum"
+   	"github.com/ethereum/go-ethereum/common"
+   	"github.com/ethereum/go-ethereum/crypto"
+   	"github.com/ethereum/go-ethereum/ethclient"
+   )
+
+   const (
+   	reportHeaderLength = 109
+   	capabilityRegistry = "0x76c9cf548b4179F8901cda1f8623568b58215E62"
+   )
+
+   // parseHeader extracts key fields from the 109-byte rawReport metadata header.
+   func parseHeader(rawReport []byte) (donId uint32, workflowId string, body []byte, err error) {
+   	if len(rawReport) < reportHeaderLength {
+   		return 0, "", nil, fmt.Errorf("rawReport too short: need %d bytes, got %d", reportHeaderLength, len(rawReport))
+   	}
+   	donId = binary.BigEndian.Uint32(rawReport[37:41])
+   	workflowId = hex.EncodeToString(rawReport[45:77])
+   	body = rawReport[reportHeaderLength:]
+   	return
+   }
+
+   // reportHash computes keccak256(keccak256(rawReport) || reportContext).
+   func reportHash(rawReport, reportContext []byte) []byte {
+   	inner := crypto.Keccak256(rawReport)
+   	return crypto.Keccak256(append(inner, reportContext...))
+   }
+
+   // padUint256 encodes a uint64 as a big-endian 32-byte ABI word.
+   func padUint256(v uint64) []byte {
+   	b := make([]byte, 32)
+   	binary.BigEndian.PutUint64(b[24:], v)
+   	return b
+   }
+
+   type donInfo struct {
+   	f       int
+   	signers map[common.Address]bool
+   }
+
+   // signerCache caches registry lookups by DON ID. Registry data only changes
+   // during DON reconfiguration; clear and retry if you see unexpected signer errors after a DON upgrade.
+   var signerCache sync.Map
+
+   // fetchSigners calls the Capability Registry on Ethereum Mainnet to get
+   // the fault tolerance f and authorized signer addresses for the given DON.
+   // Makes two eth_call reads: getDON(donId) then getNodesByP2PIds(nodeP2PIds).
+   // Result is cached by DON ID.
+   func fetchSigners(client *ethclient.Client, donId uint32) (f int, signers map[common.Address]bool, err error) {
+   	if cached, ok := signerCache.Load(donId); ok {
+   		info := cached.(donInfo)
+   		return info.f, info.signers, nil
+   	}
+
+   	registry := common.HexToAddress(capabilityRegistry)
+   	ctx := context.Background()
+
+   	// Step 1: getDON(uint32 donId) — selector keccak256("getDON(uint32)")[0:4] = 0x23537405
+   	var donIdPadded [32]byte
+   	binary.BigEndian.PutUint32(donIdPadded[28:], donId)
+   	getDONCalldata := append([]byte{0x23, 0x53, 0x74, 0x05}, donIdPadded[:]...)
+
+   	getDONBytes, err := client.CallContract(ctx, ethereum.CallMsg{To: &registry, Data: getDONCalldata}, nil)
+   	if err != nil {
+   		return 0, nil, fmt.Errorf("getDON call failed: %w", err)
+   	}
+   	if len(getDONBytes) < 224 {
+   		return 0, nil, fmt.Errorf("getDON response too short: %d bytes", len(getDONBytes))
+   	}
+
+   	// Response layout (see report_verification.go in cre-sdk-go for full ABI documentation):
+   	//   slot 3 (bytes  96-127): f               (uint8, zero-padded to 32)
+   	//   slot 6 (bytes 192-223): ptr[nodeP2PIds] relative to tupleStart = 32
+   	f = int(new(big.Int).SetBytes(getDONBytes[96:128]).Int64())
+   	nodeP2PIdsPtr := int(new(big.Int).SetBytes(getDONBytes[192:224]).Int64())
+   	nodeCountOff := 32 + nodeP2PIdsPtr
+   	nodeCount := int(new(big.Int).SetBytes(getDONBytes[nodeCountOff : nodeCountOff+32]).Int64())
+
+   	nodeP2PIds := make([][]byte, nodeCount)
+   	for i := 0; i < nodeCount; i++ {
+   		start := nodeCountOff + 32 + i*32
+   		id := make([]byte, 32)
+   		copy(id, getDONBytes[start:start+32])
+   		nodeP2PIds[i] = id
+   	}
+
+   	if nodeCount == 0 {
+   		info := donInfo{f: f, signers: nil}
+   		signerCache.Store(donId, info)
+   		return f, nil, nil
+   	}
+
+   	// Step 2: getNodesByP2PIds(bytes32[]) — selector 0x05a51966
+   	// ABI-encode bytes32[]: [ptr=32][count][id0]...[idN]
+   	getNodesCalldata := append([]byte{0x05, 0xa5, 0x19, 0x66}, padUint256(32)...)
+   	getNodesCalldata = append(getNodesCalldata, padUint256(uint64(nodeCount))...)
+   	for _, id := range nodeP2PIds {
+   		getNodesCalldata = append(getNodesCalldata, id...)
+   	}
+
+   	getNodesBytes, err := client.CallContract(ctx, ethereum.CallMsg{To: &registry, Data: getNodesCalldata}, nil)
+   	if err != nil {
+   		return 0, nil, fmt.Errorf("getNodesByP2PIds call failed: %w", err)
+   	}
+   	if len(getNodesBytes) < 64 {
+   		return 0, nil, fmt.Errorf("getNodesByP2PIds response too short: %d bytes", len(getNodesBytes))
+   	}
+
+   	// Response layout: [outerPtr][count][elem0-ptr][elem1-ptr]...[tuple0][tuple1]...
+   	// Each NodeInfo tuple (9 slots × 32 bytes): slot 3 = signer bytes32, first 20 bytes = address
+   	outerPtr := int(new(big.Int).SetBytes(getNodesBytes[0:32]).Int64())
+   	returnedCount := int(new(big.Int).SetBytes(getNodesBytes[outerPtr : outerPtr+32]).Int64())
+   	const nodeTupleHead = 288 // 9 slots × 32 bytes
+
+   	signers = make(map[common.Address]bool, returnedCount)
+   	for i := 0; i < returnedCount; i++ {
+   		elemPtrOff := outerPtr + 32 + i*32
+   		elemPtr := int(new(big.Int).SetBytes(getNodesBytes[elemPtrOff : elemPtrOff+32]).Int64())
+   		tupleBase := outerPtr + 32 + elemPtr
+   		if tupleBase+nodeTupleHead > len(getNodesBytes) {
+   			break
+   		}
+   		signerSlot := tupleBase + 3*32
+   		addr := common.BytesToAddress(getNodesBytes[signerSlot : signerSlot+20])
+   		signers[addr] = true
+   	}
+
+   	signerCache.Store(donId, donInfo{f: f, signers: signers})
+   	return f, signers, nil
+   }
+
+   // verifyReport checks that ≥ f+1 signatures are from authorized DON signers.
+   func verifyReport(rawReport []byte, signatures [][]byte, reportContext []byte, client *ethclient.Client) error {
+   	donId, _, _, err := parseHeader(rawReport)
+   	if err != nil {
+   		return err
+   	}
+   	f, signers, err := fetchSigners(client, donId)
+   	if err != nil {
+   		return err
+   	}
+   	hash := reportHash(rawReport, reportContext)
+   	required := f + 1
+   	valid := 0
+
+   	for _, sig := range signatures {
+   		if len(sig) != 65 {
+   			continue
+   		}
+   		norm := make([]byte, 65)
+   		copy(norm, sig)
+   		if norm[64] >= 27 {
+   			norm[64] -= 27 // normalize recovery byte
+   		}
+   		pubKey, err := crypto.SigToPub(hash, norm)
+   		if err != nil {
+   			continue
+   		}
+   		addr := crypto.PubkeyToAddress(*pubKey)
+   		if signers[addr] {
+   			valid++
+   		}
+   		if valid >= required {
+   			return nil
+   		}
+   	}
+   	return fmt.Errorf("insufficient valid signatures: %d/%d", valid, required)
+   }
+
+   // Usage — create the client once for your server, reuse it across requests:
+   //
+   //   client, err := ethclient.Dial(os.Getenv("ETH_MAINNET_RPC_URL"))
+   //
+   // For each incoming report POST:
+   //   if err := verifyReport(rawReport, signatures, reportContext, client); err != nil {
+   //       // reject the request
+   //   }
+   //   // verified: use parseHeader(rawReport) to read the payload body
+   ```
+
+3. Set your RPC URL and run:
+
+   ```bash
+   export ETH_MAINNET_RPC_URL=https://your-mainnet-rpc-endpoint
+   go run main.go
+   ```
+
+4. Check the output.
+
+   With a **sim-signed report** (from the submit guide sender simulation):
+
+   ```
+   insufficient valid signatures: 0/4
+   ```
+
+   This is correct. Simulation uses local test keys that are not registered in the mainnet Capability Registry. The registry call succeeded and returned the real signer list; none of the sim signatures matched it. The verification logic is working as intended.
+
+   With a **production-signed report** from a deployed sender, `verifyReport` returns `nil`. Read the payload:
+
+   ```go
+   donId, workflowId, body, err := parseHeader(rawReport)
+   // body is the ABI-encoded payload the sender embedded
+   ```
+
+
+<Aside type="caution" title="Cache registry results">
+  `fetchSigners` caches by DON ID using a `sync.Map` for the lifetime of the process. Registry data only changes during DON reconfiguration. If you see unexpected `ErrUnknownSigner` errors after a DON upgrade, clear the cache (for example, by restarting the process) and retry.
+</Aside>
+
+## CRE receiver workflow
+
+Use this path if you want the receiver itself to be a CRE workflow with an HTTP trigger. [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport) handles Capability Registry reads and caching automatically.
+
+
+<Aside type="caution" title="Educational Example Disclaimer">
+  This page includes an educational example to use a Chainlink system, product, or service and is provided to
+  demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
+  template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may be
+  missing key checks or error handling to make the usage of the system, product or service more clear. Do not use the
+  code in this example in a production environment without completing your own audits and application of best practices.
+  Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
+  that are generated due to errors in code.
+</Aside>
+
+
+<Aside type="note" title="Using the private registry?">
+  This guide uses the **Capability Registry** (DON signers), not the **workflow registry** where you deploy. [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport) works the same way regardless of which registry you deployed with. For HTTP-triggered receivers, use the [enterprise gateway URL](/cre/guides/operations/deploying-to-private-registry-go#http-triggers-with-the-private-registry). Local simulation may need an `ethereum-mainnet` RPC in `project.yaml` for registry reads.
+</Aside>
+
+### Testing with simulation
+
+If you ran the [submit guide complete example](/cre/guides/workflow/using-http-client/submitting-reports-http-go#complete-working-example), you already copied JSON from webhook.site. Use that payload here.
+
+
+<Aside type="note" title="CRE project required">
+  The directory you run `cre` from must contain a `project.yaml`. If you do not have one, run `cre init` from your project folder or follow the [Getting Started guide](/cre/getting-started/overview).
+</Aside>
+
+1. Save the webhook JSON as `test-report-payload.json` inside your receiver workflow folder:
+
+   ```
+   verify-report-receiver/test-report-payload.json
+   ```
+
+2. Create a `verify-report-receiver/` folder in your CRE project with the following files.
+
+   `config.staging.json` — enables wiring tests without mainnet signer validation:
+
+   ```json
+   {
+     "skipSignatureVerification": true
+   }
+   ```
+
+   `main.go` — uses an empty HTTP trigger (add `AuthorizedKeys` before deploying):
+
+   ```go
+   // verify-report-receiver/main.go
+   //go:build wasip1
+
+   package main
+
+   import (
+   	"encoding/hex"
+   	"encoding/json"
+   	"log/slog"
+
+   	"github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http"
+   	"github.com/smartcontractkit/cre-sdk-go/cre"
+   	"github.com/smartcontractkit/cre-sdk-go/cre/wasm"
+   )
+
+   type Config struct {
+   	SkipSignatureVerification bool `json:"skipSignatureVerification"`
+   }
+
+   type parsedPayload struct {
+   	Report     string   `json:"report"`
+   	Context    string   `json:"context"`
+   	Signatures []string `json:"signatures"`
+   }
+
+   func InitWorkflow(_ *Config, _ *slog.Logger, _ cre.SecretsProvider) (cre.Workflow[*Config], error) {
+   	return cre.Workflow[*Config]{
+   		cre.Handler(http.Trigger(&http.Config{}), run),
+   	}, nil
+   }
+
+   func run(cfg *Config, runtime cre.Runtime, payload *http.Payload) (bool, error) {
+   	var parsed parsedPayload
+   	if err := json.Unmarshal(payload.Input, &parsed); err != nil {
+   		return false, err
+   	}
+
+   	rawReport, err := hex.DecodeString(parsed.Report)
+   	if err != nil {
+   		return false, err
+   	}
+   	reportContext, err := hex.DecodeString(parsed.Context)
+   	if err != nil {
+   		return false, err
+   	}
+   	sigs := make([][]byte, len(parsed.Signatures))
+   	for i, sigHex := range parsed.Signatures {
+   		sigs[i], err = hex.DecodeString(sigHex)
+   		if err != nil {
+   			return false, err
+   		}
+   	}
+
+   	report, err := cre.ParseReportWithConfig(runtime, rawReport, sigs, reportContext, cre.ReportParseConfig{
+   		SkipSignatureVerification: cfg.SkipSignatureVerification,
+   	})
+   	if err != nil {
+   		return false, err
+   	}
+
+   	runtime.Logger().Info("Verified report",
+   		"workflowId", report.WorkflowID(),
+   		"executionId", report.ExecutionID(),
+   		"donId", report.DONID(),
+   	)
+
+   	_ = report.Body()
+   	return true, nil
+   }
+
+   func main() {
+   	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
+   }
+   ```
+
+3. From the CRE project root, run the simulation:
+
+   ```bash
+   cre workflow simulate verify-report-receiver \
+     --target staging-settings \
+     --non-interactive \
+     --trigger-index 0 \
+     --http-payload verify-report-receiver/test-report-payload.json
+   ```
+
+4. Check the output.
+
+   A successful wiring run logs the decoded report metadata and returns successfully:
+
+   ```
+   [USER LOG] msg="Verified report" workflowId=... executionId=... donId=1
+   ✓ Workflow Simulation Result: true
+   ```
+
+   This confirms JSON decoding, hex parsing, and [`cre.ParseReportWithConfig`](/cre/reference/sdk/core-go#creparsereportwithconfig) are wired correctly. Signatures are not verified against the mainnet registry in this mode — that requires a production-signed report from a deployed sender.
+
+### Deploying to production
+
+The `run` handler you simulated is the same code you deploy. For production, make two configuration changes:
+
+1. **Remove `skipSignatureVerification`** from your target config (or omit it; the default is `false`). Reports from a deployed sender must pass real signature verification.
+2. **Add `AuthorizedKeys`** to your HTTP trigger — required for deployed workflows, not just simulation. See [HTTP Trigger configuration](/cre/guides/workflow/using-triggers/http-trigger/configuration-go).
+
+
+<Aside type="caution" title="Hex encoding">
+  The example expects **hex strings without a `0x` prefix** in JSON. Adjust decoding if your API sends `0x`-prefixed values or base64 instead. Pattern 4 in the [submit guide](/cre/guides/workflow/using-http-client/submitting-reports-http-go#pattern-4-json-formatted-report) uses base64 by default; use [Pattern 4 for offchain verification (hex)](/cre/guides/workflow/using-http-client/submitting-reports-http-go#pattern-4-for-offchain-verification-hex) when testing this receiver.
+</Aside>
+
+## Report payload format
+
+When a sender POSTs a [CRE report](/cre/key-terms#report-cre-report) as JSON for offchain verification, receivers need three fields. The JSON key is `context` even though the SDK field is `ReportContext`. See [Payload contract](/cre/guides/workflow/using-http-client/submitting-reports-http-go#payload-contract-if-you-verify-offchain) in the submit guide for how the sender produces these fields.
+
+| JSON field   | SDK field       | Description                                                     |
+| ------------ | --------------- | --------------------------------------------------------------- |
+| `report`     | `RawReport`     | Hex-encoded bytes (metadata header + workflow payload), no `0x` |
+| `context`    | `ReportContext` | Hex-encoded config digest + sequence number                     |
+| `signatures` | `Sigs`          | Array of hex-encoded 65-byte ECDSA signatures, no `0x`          |
+
+## API reference
+
+For full signatures, types, and `ReportParseConfig` options (including deferred verification), see [SDK Reference: Core: Report verification](/cre/reference/sdk/core-go#report-verification).
+
+### `*cre.Report` accessors
+
+After a successful [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport):
+
+| Method            | Description                               |
+| ----------------- | ----------------------------------------- |
+| `WorkflowID()`    | Workflow hash (`bytes32` as hex)          |
+| `WorkflowOwner()` | Deployer address (hex)                    |
+| `WorkflowName()`  | Workflow name field from metadata         |
+| `ExecutionID()`   | Unique execution identifier               |
+| `DONID()`         | DON that produced the report              |
+| `Timestamp()`     | Report timestamp (Unix seconds)           |
+| `Body()`          | Encoded payload after the 109-byte header |
+| `SeqNr()`         | Sequence number from report context       |
+| `ConfigDigest()`  | Config digest from report context         |
+
+## Best practices
+
+1. **Verify before side effects**: Call [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport) before writing to databases, chains, or external systems.
+2. **Permission on metadata**: After verification, check `WorkflowID()`, `WorkflowOwner()`, or `DONID()` match your expectations.
+3. **Deduplicate by execution ID**: Use `ExecutionID()` or `keccak256(rawReport)` to reject replays (see [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go#understanding-cachesettings-for-reports)).
+4. **Do not skip signature verification in production** unless you have another trust path.
+
+## Troubleshooting
+
+**`ErrUnknownSigner` / `invalid signature` in sim with fresh webhook JSON**
+
+- **Expected** when using default [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport) on a **sim-signed** report: simulator DON keys do not match mainnet registry signers.
+- For local wiring tests, use `SkipSignatureVerification: true`. For real crypto verify, use a **deployed sender** or production-signed reports.
+
+**`ErrUnknownSigner` (deployed)**
+
+- Signatures may be from a different DON or stale registry config.
+- Confirm the sender workflow used production CRE and the report was not tampered with.
+
+**Wrong `--http-payload` path**
+
+- Invoke `cre` from the **project root**. Use `verify-report-receiver/test-report-payload.json`, not a bare filename unless your cwd matches.
+
+**Receiver JSON / hex decode error**
+
+- You copied a **binary** webhook body instead of Pattern 4 JSON with hex fields.
+
+**`ErrWrongSignatureCount`**
+
+- At least **f+1** valid signatures are required.
+
+**`could not read from chain ...`** *(CRE receiver workflow only)*
+
+- Registry read failed (RPC/network). Configure an **`ethereum-mainnet` RPC** in `project.yaml` — required for default [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport), including during sim.
+
+**`ErrRawReportTooShort`**
+
+- `rawReport` is missing the 109-byte metadata header.
+
+## Learn more
+
+- **[Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go):** sender workflow; create and POST the report
+- **[SDK Reference: Core: Report verification](/cre/reference/sdk/core-go#report-verification):** `ParseReport`, `Report`, and `ReportParseConfig`
+- **[HTTP Trigger Overview](/cre/guides/workflow/using-triggers/http-trigger/overview-go):** trigger deployed receiver workflows
+- **[Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain):** onchain forwarder verification path
+- **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts):** permissioning `onReport` with workflow metadata
+
+---
+
+# Generating Solana Bindings
+Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/generating-bindings-go
+Last Updated: 2026-07-08
+
+To interact with a Solana program from your Go workflow, you generate **bindings** from the program's [Anchor IDL](https://www.anchor-lang.com/docs/references/idl). Bindings are typed Go structs and methods that handle Borsh encoding, account hashing, and report submission automatically.
+
+The Solana CRE capability is write-only. For each Anchor struct in your IDL, the generator creates a `WriteReportFrom<StructName>()` method. Your workflow calls this method with the struct data and the required accounts; the generated code handles everything else.
+
+<Aside type="note" title="CLI version requirement">
+  Solana binding generation and Solana write simulation require **CRE CLI v1.24.0 or later**. Run `cre version` to
+  check, then `cre update` if needed.
+</Aside>
+
+<Aside type="note" title="TypeScript support">
+  `cre generate-bindings solana` also supports TypeScript. See [Generating Solana Bindings
+  (TypeScript)](/cre/guides/workflow/using-solana-client/generating-bindings-ts) for details.
+</Aside>
+
+## The generation process
+
+The CRE CLI provides an automated binding generator that reads Anchor IDLs and creates corresponding Go packages.
+
+The target language is **auto-detected** from your project files (presence of `go.mod` picks Go). You can also force Go explicitly with the `--language` flag:
+
+```bash
+cre generate-bindings solana --language go
+```
+
+Your project must already be a Go module (`go.mod` at the project root, as created by `cre init`). Without `go.mod`, the generator writes files but then fails when resolving Go dependencies.
+
+### Step 1: Add your Anchor IDL
+
+Place your program's Anchor IDL file in `contracts/solana/src/idl/`. The IDL is a JSON file that Anchor generates when you build your program:
+
+```bash
+# In your Anchor project
+anchor build
+# IDL is written to: target/idl/<program-name>.json
+```
+
+Copy it into your CRE project:
+
+```bash
+mkdir -p contracts/solana/src/idl
+cp /path/to/your-anchor-project/target/idl/my_program.json contracts/solana/src/idl/
+```
+
+### Step 2: Generate the bindings
+
+From your **project root**, run:
+
+```bash
+cre generate-bindings solana
+```
+
+This reads all `.json` IDL files in `contracts/solana/src/idl/` and generates Go packages in `contracts/solana/src/generated/`. For each IDL, the generator creates a package directory (for example `data_storage/`) with the binding sources, including:
+
+- Struct types and `WriteReportFrom<StructName>()` methods
+- A mock for testing without a live network
+
+After generation, run `go mod tidy` if you need to sync new dependencies.
+
+## Using generated bindings
+
+### For onchain writes
+
+For each struct in your IDL's `types` section, the generator creates a `WriteReportFrom<StructName>()` method that Borsh-encodes your data, builds the forwarder report, and submits it in one step. These methods return a `Promise`, which you must `.Await()` to get the result after consensus.
+
+**Example: A minimal `DataStorage` IDL**
+
+The following IDL is enough to generate a `WriteReportFromUserData()` helper. Save it as `contracts/solana/src/idl/data_storage.json`. You can run this example without deploying your own Anchor program: the program ID in the IDL is used as the write receiver, and simulation uses the Solana Devnet mock forwarder built into the CLI.
+
+```json
+{
+  "address": "ECL8142j2YQAvs9R9geSsRnkVH2wLEi7soJCRyJ74cfL",
+  "metadata": {
+    "name": "data_storage",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Minimal CRE Solana write example IDL"
+  },
+  "instructions": [
+    {
+      "name": "on_report",
+      "discriminator": [214, 173, 18, 221, 173, 148, 151, 208],
+      "accounts": [],
+      "args": [
+        { "name": "_metadata", "type": "bytes" },
+        { "name": "payload", "type": "bytes" }
+      ]
+    }
+  ],
+  "accounts": [],
+  "events": [],
+  "errors": [],
+  "types": [
+    {
+      "name": "UserData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "key", "type": "string" },
+          { "name": "value", "type": "string" }
+        ]
+      }
+    }
+  ]
+}
+```
+
+1. Generate the bindings from your project root.
+
+   ```bash
+   cre generate-bindings solana
+   ```
+
+   This creates `contracts/solana/src/generated/data_storage/` with a `UserData` struct and `WriteReportFromUserData(runtime, input, remainingAccounts, computeConfig)`.
+
+2. Sync dependencies.
+
+   ```bash
+   go mod tidy
+   ```
+
+3. Add Solana Devnet to `project.yaml` under your simulation target.
+
+   ```yaml
+   staging-settings:
+     rpcs:
+       - chain-name: solana-devnet
+         url: https://api.devnet.solana.com
+   ```
+
+4. Save the following as `config.staging.json` in your workflow folder.
+
+   These addresses are the Solana Devnet **mock forwarder** values used by `cre workflow simulate`. The `forwarderAuthority` PDA is derived from `["forwarder", forwarderState, receiverProgram]` under the mock forwarder program ID for the `DataStorage` receiver above. `reportState` is a placeholder writable account for this dry-run example.
+
+   ```json
+   {
+     "schedule": "*/30 * * * * *",
+     "chainSelector": "16423721717087811551",
+     "forwarderState": "5Tipz3yhTBdVsDbaBxZkrp7Gjf3brGq5SKkxReefPMP7",
+     "forwarderAuthority": "5wxb2QHeB4iyN1mPfmsjdsaxoP4P9EmTU7zBzpp4UgVu",
+     "reportState": "11111111111111111111111111111111"
+   }
+   ```
+
+5. Save the following as `my-workflow/workflow.go`.
+
+   A Go project is split across two files: `main.go` is the WASM entry point (generated by `cre init` and unchanged), and your workflow logic lives in a separate file such as `workflow.go`. Replace `<project-name>` with your Go module name from `go.mod`.
+
+   ```go
+   // my-workflow/workflow.go
+   package main
+
+   import (
+   	"log/slog"
+
+   	solanago "github.com/gagliardetto/solana-go"
+   	solana "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana"
+   	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+   	"github.com/smartcontractkit/cre-sdk-go/cre"
+
+   	"<project-name>/contracts/solana/src/generated/data_storage"
+   )
+
+   type Config struct {
+   	Schedule           string `json:"schedule"`
+   	ChainSelector      uint64 `json:"chainSelector,string"`
+   	ForwarderState     string `json:"forwarderState"`
+   	ForwarderAuthority string `json:"forwarderAuthority"`
+   	ReportState        string `json:"reportState"`
+   }
+
+   func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+   	cronTrigger := cron.Trigger(&cron.Config{Schedule: config.Schedule})
+
+   	return cre.Workflow[*Config]{
+   		cre.Handler(cronTrigger, onCronTrigger),
+   	}, nil
+   }
+
+   func onCronTrigger(config *Config, runtime cre.Runtime, _ *cron.Payload) (string, error) {
+   	client := &solana.Client{ChainSelector: config.ChainSelector}
+
+   	// NewDataStorage uses the program ID baked into the IDL
+   	ds, err := data_storage.NewDataStorage(client)
+   	if err != nil {
+   		return "", err
+   	}
+
+   	forwarderStatePk := solanago.MustPublicKeyFromBase58(config.ForwarderState)
+   	forwarderAuthPk := solanago.MustPublicKeyFromBase58(config.ForwarderAuthority)
+   	reportStatePk := solanago.MustPublicKeyFromBase58(config.ReportState)
+
+   	// remainingAccounts layout required by the forwarder:
+   	//   Index 0: forwarderState (read-only)
+   	//   Index 1: forwarderAuthority PDA (read-only)
+   	//   Index 2+: receiver-specific accounts
+   	accounts := []*solana.AccountMeta{
+   		{PublicKey: forwarderStatePk[:], IsWritable: false},
+   		{PublicKey: forwarderAuthPk[:], IsWritable: false},
+   		{PublicKey: reportStatePk[:], IsWritable: true},
+   	}
+
+   	runtime.Logger().Info("Submitting UserData to Solana DataStorage program")
+
+   	// Solana simulate requires a non-nil ComputeConfig with ComputeLimit > 0
+   	computeConfig := &solana.ComputeConfig{ComputeLimit: 200_000}
+
+   	result, err := ds.WriteReportFromUserData(runtime, data_storage.UserData{
+   		Key:   "price",
+   		Value: "500000",
+   	}, accounts, computeConfig).Await()
+   	if err != nil {
+   		return "", err
+   	}
+
+   	runtime.Logger().Info("Write completed",
+   		"txStatus", result.GetTxStatus().String(),
+   		"errorMessage", result.GetErrorMessage(),
+   	)
+   	return "ok", nil
+   }
+   ```
+
+6. Set `CRE_SOLANA_PRIVATE_KEY` in your project `.env`, then run the simulation.
+
+   Solana simulation requires a 64-byte base58 keypair even for dry-run (no `--broadcast`). The transmitter account derived from that key must exist and be funded on Solana Devnet. Generate a key with `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and put the keypair in `.env`:
+
+   ```bash
+   CRE_SOLANA_PRIVATE_KEY=<your-64-byte-base58-keypair>
+   ```
+
+   Then from your project root:
+
+   ```bash
+   cre workflow simulate my-workflow --target staging-settings
+   ```
+
+   Expected output (dry-run against the mock forwarder). This example uses a placeholder receiver program ID, so the
+   write path completes through the mock forwarder and the CPI into the receiver returns `Custom:2007`. That confirms
+   bindings, encoding, and report submission worked:
+
+   ```
+   ✓ Workflow compiled
+   [SIMULATION] Simulator Initialized
+   [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+   [USER LOG] msg="Submitting UserData to Solana DataStorage program"
+   [USER LOG] msg="Write completed" txStatus=TX_STATUS_FATAL errorMessage="map[InstructionError:[0 map[Custom:2007]]]"
+
+   ✓ Workflow Simulation Result:
+   "ok"
+   ```
+
+<Aside type="note" title="What does the WriteReport helper do?">
+  The `WriteReportFromUserData` method Borsh-encodes the `UserData` struct, hashes `remainingAccounts` via
+  `CalculateAccountsHash`, encodes a forwarder report and calls `runtime.GenerateReport()` with the `solana` encoder,
+  calls the Solana client's `WriteReport` method to submit it, and returns a `Promise` that resolves with the
+  transaction details once confirmed.
+</Aside>
+
+## What the CLI generates
+
+The generator creates a Go package for each IDL file in `contracts/solana/src/generated/<program_name>/`.
+
+What's inside depends on your IDL:
+
+- **For all programs**:
+  - A `<ProgramName>` struct and `New<ProgramName>(client)` constructor (program ID from the IDL).
+  - Codec helpers for encoding structs.
+- **For onchain writes** (each struct in `types`):
+  - A `WriteReportFrom<StructName>(runtime, input, remainingAccounts, computeConfig)` method that returns a `cre.Promise[*solana.WriteReportReply]` you `.Await()`.
+  - A `WriteReportFrom<StructName>s(...)` variant for Borsh `Vec` payloads.
+
+## `accounts` layout
+
+Every Solana write requires an `[]*solana.AccountMeta` slice. The Keystone Forwarder (and the Devnet mock forwarder used in simulation) expects:
+
+| Index | Account              | `IsWritable`            | How to obtain                                                                                      |
+| ----- | -------------------- | ----------------------- | -------------------------------------------------------------------------------------------------- |
+| 0     | `forwarderState`     | `false`                 | Provided by Chainlink for the forwarder deployment (mock values are built into the CLI for Devnet) |
+| 1     | `forwarderAuthority` | `false`                 | PDA derived from `["forwarder", forwarderState, receiverProgram]` under the forwarder program ID   |
+| 2+    | Receiver accounts    | Depends on your program | Defined by your Anchor program's `on_report` instruction                                           |
+
+| Field        | Type     | Description                                  |
+| ------------ | -------- | -------------------------------------------- |
+| `PublicKey`  | `[]byte` | 32-byte raw public key (decoded from base58) |
+| `IsWritable` | `bool`   | Whether the account is writable              |
+
+<Aside type="tip" title="forwarderAuthority derivation">
+  Use `github.com/gagliardetto/solana-go`'s `FindProgramAddress` to derive the `forwarderAuthority` PDA and store it in
+  config. The seeds are: `[][]byte{[]byte("forwarder"), forwarderStateBytes, receiverProgramBytes}` under the forwarder
+  program ID.
+</Aside>
+
+## Best practices
+
+1. **Regenerate when needed**: Re-run `cre generate-bindings solana` whenever your Anchor IDL changes. Do not edit generated files by hand.
+2. **Always pass `ComputeConfig`**: Solana simulation rejects a nil or zero `ComputeLimit`. Pass `&solana.ComputeConfig{ComputeLimit: 200_000}` (or another positive limit within the simulator's CU cap).
+3. **Handle errors**: Always check errors from constructors and `.Await()`.
+4. **Store addresses in config**: Put forwarder and account addresses in `config.staging.json` / `config.production.json`.
+5. **`chainSelector` as string in config**: Use `json:"chainSelector,string"` on your config struct to avoid precision loss when unmarshalling `uint64` values from JSON.
+
+## Where to go next
+
+- [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-go) — Full write walkthrough (deploy, broadcast, production forwarder addresses)
+- [Solana Client SDK Reference](/cre/reference/sdk/solana-client-go) — Full API reference for `solana.Client` and helper functions
+
+---
+
+# Writing to Solana
+Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/onchain-write-go
+Last Updated: 2026-07-13
+
+This guide walks through your first Solana write from a CRE workflow using the Go SDK. The preferred path is
+**generated bindings**: you place your Anchor IDL in the project, run `cre generate-bindings solana`, and call a typed
+`WriteReportFrom...` helper. The binding Borsh-encodes your payload, builds the forwarder report, and submits it — you
+do not hand-roll encoding.
+
+Onchain, the DON does not call your program directly. It submits a signed report to the **Keystone Forwarder** — a
+Chainlink-managed Solana program that verifies DON signatures, then cross-program invokes (CPI) your receiver's
+`on_report`. That is the same forwarder model as [EVM Write](/cre/capabilities/evm-read-write); see
+[Solana Write](/cre/capabilities/solana-write) for the full flow. Local simulation uses a Devnet stand-in of that
+forwarder so you can dry-run without deploying. After you deploy, the live forwarder addresses apply.
+
+For IDL layout, generator output, and what each `WriteReportFrom...` method does under the hood, see
+[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-go).
+
+## Prerequisites
+
+- A CRE Go project initialized with `cre init`. See [Part 1: Project Setup](/cre/getting-started/part-1-project-setup-go) if you are starting from scratch.
+- CRE CLI **v1.24.0 or later** (`cre version` / `cre update`) with Solana binding generation.
+- A funded Solana Devnet keypair for `CRE_SOLANA_PRIVATE_KEY` (required even for dry-run). Generate one with `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and put the 64-byte base58 keypair in your project `.env`. See [Step 4](#step-4-run-the-simulation).
+
+## What you need: a receiver program
+
+Your Solana program must implement an `on_report` instruction that accepts the payload delivered by the forwarder. The
+forwarder CPIs into your program after verifying the DON signatures. Your Anchor IDL's `types` section defines the
+struct(s) you will write; the generator turns each into a `WriteReportFrom<StructName>()` method.
+
+This guide uses a minimal `DataStorage` / `UserData` IDL so you can simulate without deploying your own program. Swap in
+your IDL and call the generated helpers for your structs when you are ready.
+
+<Aside type="note" title="Forwarder strips leading accounts">
+  The forwarder passes only indices 2+ of your `accounts` slice to your program's CPI call. Indices 0 (`forwarderState`)
+  and 1 (`forwarderAuthority`) are consumed by the forwarder itself.
+</Aside>
+
+## Step 1: Add your IDL and generate bindings
+
+1. Save the following as `contracts/solana/src/idl/data_storage.json` (or copy your own Anchor IDL into that folder).
+
+   ```json
+   {
+     "address": "ECL8142j2YQAvs9R9geSsRnkVH2wLEi7soJCRyJ74cfL",
+     "metadata": {
+       "name": "data_storage",
+       "version": "0.1.0",
+       "spec": "0.1.0",
+       "description": "Minimal CRE Solana write example IDL"
+     },
+     "instructions": [
+       {
+         "name": "on_report",
+         "discriminator": [214, 173, 18, 221, 173, 148, 151, 208],
+         "accounts": [],
+         "args": [
+           { "name": "_metadata", "type": "bytes" },
+           { "name": "payload", "type": "bytes" }
+         ]
+       }
+     ],
+     "accounts": [],
+     "events": [],
+     "errors": [],
+     "types": [
+       {
+         "name": "UserData",
+         "type": {
+           "kind": "struct",
+           "fields": [
+             { "name": "key", "type": "string" },
+             { "name": "value", "type": "string" }
+           ]
+         }
+       }
+     ]
+   }
+   ```
+
+2. From your project root, generate the bindings:
+
+   ```bash
+   cre generate-bindings solana
+   ```
+
+   This creates `contracts/solana/src/generated/data_storage/` with a `UserData` struct and
+   `WriteReportFromUserData(runtime, input, remainingAccounts, computeConfig)`.
+
+3. Sync dependencies.
+
+   ```bash
+   go mod tidy
+   ```
+
+## Step 2: Configure the workflow
+
+1. Open (or create) `config.staging.json` and add the Solana Devnet simulation parameters.
+
+   For `cre workflow simulate`, use these fixed Devnet forwarder program and state accounts (baked into the CLI).
+   `receiverProgramId` matches the IDL address above for this example; with your own program, use your Devnet program
+   ID.
+
+   ```json
+   {
+     "schedule": "*/30 * * * * *",
+     "chainSelector": "16423721717087811551",
+     "receiverProgramId": "ECL8142j2YQAvs9R9geSsRnkVH2wLEi7soJCRyJ74cfL",
+     "forwarderProgramId": "7kuEAA3mSC1Tz8gQjnvH7bKFda9xSPRRin9SZbH49cNK",
+     "forwarderState": "5Tipz3yhTBdVsDbaBxZkrp7Gjf3brGq5SKkxReefPMP7",
+     "reportState": "11111111111111111111111111111111",
+     "computeLimit": 200000
+   }
+   ```
+
+   | Field                | Description                                                                                 |
+   | -------------------- | ------------------------------------------------------------------------------------------- |
+   | `chainSelector`      | Solana Devnet (`"16423721717087811551"`). Store as a string to avoid JSON precision loss.   |
+   | `receiverProgramId`  | Your receiver program (IDL address for this example)                                        |
+   | `forwarderProgramId` | Forwarder program ID used for local simulation (fixed Devnet value)                         |
+   | `forwarderState`     | Forwarder state account used for local simulation (fixed Devnet value)                      |
+   | `reportState`        | Writable account required by your receiver (placeholder system program ID for this dry-run) |
+   | `computeLimit`       | Solana compute units; must be greater than 0 for simulation                                 |
+
+   The workflow derives `forwarderAuthority` at runtime from
+   `[]byte("forwarder")`, forwarder state bytes, and receiver program bytes under `forwarderProgramId`. When you deploy
+   in [Step 5](#step-5-deploy-the-workflow), keep that derivation and point `forwarderProgramId` / `forwarderState` at
+   the live forwarder addresses for your network.
+
+## Step 3: Write the workflow
+
+This step is a complete, pasteable workflow that performs one Solana write on a cron trigger using **generated
+bindings**. It reads config, derives the forwarder authority PDA, builds the account list the forwarder expects, and
+calls `WriteReportFromUserData()`. Replace `data_storage` / `UserData` with your generated package and struct when you
+use your own IDL.
+
+1. Save the following as `my-workflow/workflow.go`.
+
+   A Go project is split across two files: `main.go` is the WASM entry point (generated by `cre init` and unchanged), and
+   your workflow logic lives in a separate file such as `workflow.go`. Replace `<project-name>` with your Go module name
+   from `go.mod`.
+
+   ```go
+   // my-workflow/workflow.go
+   package main
+
+   import (
+   	"log/slog"
+
+   	solanago "github.com/gagliardetto/solana-go"
+   	solana "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana"
+   	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+   	"github.com/smartcontractkit/cre-sdk-go/cre"
+
+   	"<project-name>/contracts/solana/src/generated/data_storage"
+   )
+
+   const defaultComputeLimit uint32 = 200_000
+
+   type Config struct {
+   	Schedule           string `json:"schedule"`
+   	ChainSelector      uint64 `json:"chainSelector,string"`
+   	ReceiverProgramID  string `json:"receiverProgramId"`
+   	ForwarderProgramID string `json:"forwarderProgramId"`
+   	ForwarderState     string `json:"forwarderState"`
+   	ReportState        string `json:"reportState"`
+   	ComputeLimit       uint32 `json:"computeLimit"`
+   }
+
+   func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+   	cronTrigger := cron.Trigger(&cron.Config{Schedule: config.Schedule})
+
+   	return cre.Workflow[*Config]{
+   		cre.Handler(cronTrigger, onCronTrigger),
+   	}, nil
+   }
+
+   func deriveForwarderAuthority(forwarderState, receiverProgram, forwarderProgram solanago.PublicKey) (solanago.PublicKey, error) {
+   	authority, _, err := solanago.FindProgramAddress(
+   		[][]byte{
+   			[]byte("forwarder"),
+   			forwarderState[:],
+   			receiverProgram[:],
+   		},
+   		forwarderProgram,
+   	)
+   	return authority, err
+   }
+
+   func onCronTrigger(config *Config, runtime cre.Runtime, _ *cron.Payload) (string, error) {
+   	client := &solana.Client{ChainSelector: config.ChainSelector}
+
+   	// NewDataStorage uses the program ID baked into the IDL (regenerate bindings when it changes).
+   	ds, err := data_storage.NewDataStorage(client)
+   	if err != nil {
+   		return "", err
+   	}
+
+   	forwarderStatePk := solanago.MustPublicKeyFromBase58(config.ForwarderState)
+   	receiverPk := solanago.MustPublicKeyFromBase58(config.ReceiverProgramID)
+   	forwarderProgramPk := solanago.MustPublicKeyFromBase58(config.ForwarderProgramID)
+   	reportStatePk := solanago.MustPublicKeyFromBase58(config.ReportState)
+
+   	forwarderAuthority, err := deriveForwarderAuthority(forwarderStatePk, receiverPk, forwarderProgramPk)
+   	if err != nil {
+   		return "", err
+   	}
+
+   	// Index 0 forwarderState, 1 forwarderAuthority (derived), 2+ reportState.
+   	accounts := []*solana.AccountMeta{
+   		{PublicKey: forwarderStatePk[:], IsWritable: false},
+   		{PublicKey: forwarderAuthority[:], IsWritable: false},
+   		{PublicKey: reportStatePk[:], IsWritable: true},
+   	}
+
+   	payload := data_storage.UserData{
+   		Key:   "price",
+   		Value: "500000",
+   	}
+
+   	runtime.Logger().Info("Submitting UserData via bindings",
+   		"key", payload.Key,
+   		"forwarderAuthority", forwarderAuthority.String(),
+   	)
+
+   	computeLimit := config.ComputeLimit
+   	if computeLimit == 0 {
+   		computeLimit = defaultComputeLimit
+   	}
+   	computeConfig := &solana.ComputeConfig{ComputeLimit: computeLimit}
+
+   	result, err := ds.WriteReportFromUserData(runtime, payload, accounts, computeConfig).Await()
+   	if err != nil {
+   		return "", err
+   	}
+
+   	runtime.Logger().Info("Write completed",
+   		"txStatus", result.GetTxStatus().String(),
+   		"errorMessage", result.GetErrorMessage(),
+   		"txSignature", result.GetTxSignature(),
+   	)
+   	if msg := result.GetErrorMessage(); msg != "" {
+   		return msg, nil
+   	}
+   	return "Success", nil
+   }
+   ```
+
+## Step 4: Run the simulation
+
+Use this step to confirm compile, trigger, and the bindings write path with `cre workflow simulate`.
+
+1. Add a Solana RPC endpoint to your `project.yaml` under your simulation target.
+
+   ```yaml
+   staging-settings:
+     rpcs:
+       - chain-name: solana-devnet
+         url: https://api.devnet.solana.com
+   ```
+
+2. Set `CRE_SOLANA_PRIVATE_KEY` in your project `.env`.
+
+   Solana simulation requires a 64-byte base58 keypair even for dry-run. The transmitter account must exist and be
+   funded on Solana Devnet. Generate a key with `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and
+   put the keypair in `.env`:
+
+   ```bash
+   CRE_SOLANA_PRIVATE_KEY=<your-64-byte-base58-keypair>
+   ```
+
+3. Run the dry-run simulation.
+
+   ```bash
+   cre workflow simulate my-workflow --target staging-settings
+   ```
+
+   Confirm the workflow compiles, the cron trigger runs, and your USER LOGs appear. This example uses a placeholder
+   receiver program ID, so the simulation write may complete with a receiver CPI error such as `Custom:2007`. That still
+   confirms bindings, encoding, and report submission worked:
+
+   ```
+   ✓ Workflow compiled
+   [SIMULATION] Simulator Initialized
+   [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+   [USER LOG] msg="Submitting UserData via bindings" key=price forwarderAuthority=...
+   [USER LOG] msg="Write completed" txStatus=... errorMessage=...
+
+   ✓ Workflow Simulation Result:
+   ...
+   ```
+
+   When you are ready to run on the DON with **your** receiver, continue to [Step 5](#step-5-deploy-the-workflow).
+
+## Step 5: Deploy the workflow
+
+A deployed workflow runs on the DON, which submits reports through the live Keystone Forwarder on Solana Devnet. Prefer
+the [private registry](/cre/guides/operations/deploying-to-private-registry-go) for this example (CRE login session; no
+Ethereum gas for registry ops). You need [Deploy Access](/cre/account/deploy-access).
+
+Use **your** receiver program ID and accounts — not the placeholder `DataStorage` address from the dry-run IDL unless
+that program is actually deployed and ready to accept writes. Update the IDL address, regenerate bindings, and set
+`receiverProgramId` to the same value (Go bindings use the program ID baked into the generated package for the write
+receiver; config is used to derive the forwarder authority PDA).
+
+1. Create `config.production.json` with the live forwarder addresses for your network (same receiver and report state
+   your program expects).
+
+   ```json
+   {
+     "schedule": "30 */5 * * * *",
+     "chainSelector": "16423721717087811551",
+     "receiverProgramId": "<RECEIVER_PROGRAM_ID>",
+     "forwarderProgramId": "<FORWARDER_PROGRAM_ID>",
+     "forwarderState": "<FORWARDER_STATE>",
+     "reportState": "<REPORT_STATE>",
+     "computeLimit": 290000
+   }
+   ```
+
+   Get forwarder program and state addresses from your Chainlink representative. The workflow still derives
+   `forwarderAuthority` from `[]byte("forwarder")`, forwarder state bytes, and receiver program bytes under that
+   `forwarderProgramId`.
+
+2. Point a deploy target at that config and the private registry in `my-workflow/workflow.yaml`.
+
+   ```yaml
+   production-settings:
+     user-workflow:
+       workflow-name: "my-solana-write"
+       deployment-registry: "private"
+     workflow-artifacts:
+       workflow-path: "./main.go"
+       config-path: "./config.production.json"
+       secrets-path: ""
+   ```
+
+3. Add the Solana Devnet RPC under `production-settings` in `project.yaml` (same URL as staging is fine).
+
+4. Deploy from your project root.
+
+   ```bash
+   cre workflow deploy my-workflow --target production-settings
+   ```
+
+   Expected shape:
+
+   ```
+   Deploying Workflow: my-solana-write
+     Registry:      private
+     ...
+   ✓ Workflow registered in private registry
+   ...
+        Status:           Active
+   ```
+
+5. After the cron fires, open the workflow in the [CRE platform](https://app.chain.link/cre/workflows) (or run
+   `cre execution list my-solana-write`) and confirm node logs reach the write path:
+
+   ```
+   Submitting UserData via bindings key=...
+   ```
+
+   If WriteReport returns a Solana `txSignature`, confirm the transaction on
+   [Solana Explorer](https://explorer.solana.com/?cluster=devnet) (forwarder as the top-level program, your receiver as
+   a CPI).
+
+See [Deploying to the Private Registry](/cre/guides/operations/deploying-to-private-registry-go) for registry details, activate/pause, and CI flags.
+
+## What happens onchain
+
+When the deployed workflow runs on the DON:
+
+1. The DON nodes each execute your workflow and reach consensus on the encoded payload.
+2. A DON node calls the Keystone Forwarder program with the signed report and account list.
+3. The forwarder verifies all DON signatures.
+4. The forwarder CPIs into your program's `on_report` instruction with the decoded payload and receiver accounts.
+
+The transaction on Solana Explorer will show the forwarder program as the initial callee, with your program appearing as a CPI target.
+
+## Next steps
+
+- **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-go)**: IDL layout, generator output, and what `WriteReportFrom...` does
+- **[Solana Client SDK Reference](/cre/reference/sdk/solana-client-go)**: Full API reference for `solana.Client` and helpers
+- **[Solana Write Capability](/cre/capabilities/solana-write)**: Architecture and account layout reference
+
+---
+
+# Solana Chain Interactions
+Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/overview-go
+Last Updated: 2026-07-13
+
+`solana.Client` is the Go SDK's interface for Solana chain interactions from CRE workflows. Writes submit cryptographically signed reports through the Keystone Forwarder program, which verifies DON signatures and CPIs into your receiver program.
+
+<Aside type="note" title="Write only — for now">
+  The current release supports **onchain writes** only. Solana Read and Solana Log Trigger capabilities are in active
+  development and will be documented when available.
+</Aside>
+
+## How it works
+
+For Solana program interactions, CRE can **generate typed bindings** from your program's [Anchor IDL](https://www.anchor-lang.com/docs/references/idl). You place the IDL in your project, run `cre generate-bindings solana`, and the CLI creates Go packages with helpers such as `WriteReportFrom<StructName>()` that handle encoding, account hashing, and report submission for you.
+
+Typical flow:
+
+1. Add your Anchor IDL under `contracts/solana/src/idl/`
+2. Run `cre generate-bindings solana` from your project root
+3. Call the generated helpers from your workflow
+
+## Guides
+
+- **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-go)**: Generate typed Go structs from your Anchor IDL using the CRE CLI
+- **[Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-go)**: End-to-end first write with generated bindings, simulate, and deploy
 
 ---
 
@@ -16613,7 +18440,7 @@ func onHttpTrigger(config *Config, runtime cre.Runtime, payload *http.Payload) (
 
 # HTTP Trigger Overview
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/overview-go
-Last Updated: 2025-11-10
+Last Updated: 2026-07-05
 
 The HTTP trigger allows external systems to initiate your workflow execution by making HTTP requests to a designated endpoint. This enables on-demand workflow execution, webhook integration, and API-driven automation.
 
@@ -16632,6 +18459,12 @@ When you deploy a workflow with an HTTP trigger:
   your workflow. During **local simulation**, you can use empty authorization configs to simplify testing—just remember
   to add `authorizedKeys` before deploying. Learn more: [Configuration &
   Handler](/cre/guides/workflow/using-triggers/http-trigger/configuration-go#configuration-and-handler).
+</Aside>
+
+<Aside type="note" title="One HTTP trigger per workflow">
+  Each workflow supports only one HTTP trigger handler. There is currently no mechanism to route requests to different
+  HTTP trigger handlers within the same workflow. If you need to handle different use cases or execution paths, include
+  routing logic in your request payload and branch within a single handler function.
 </Aside>
 
 ## When to use HTTP triggers
@@ -18313,7 +20146,7 @@ You can apply the `consensus_aggregation` tag to the fields of your struct.
 
 # SDK Reference: Core
 Source: https://docs.chain.link/cre/reference/sdk/core-go
-Last Updated: 2026-04-20
+Last Updated: 2026-05-20
 
 This page provides a reference for the core data structures and functions of the CRE Go SDK. These are the fundamental building blocks that every workflow uses, regardless of trigger types or capabilities.
 
@@ -18621,6 +20454,83 @@ func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
   For a complete walkthrough on creating, storing, and using secrets, see the [Secrets
   guide](/cre/guides/workflow/secrets).
 </Aside>
+
+## Report verification
+
+Parse and verify CRE reports received over HTTP or other offchain channels. Requires **cre-sdk-go v1.8.0** or later.
+
+
+<Aside type="note" title="Guide">
+  For end-to-end examples (HTTP receiver workflow, payload format, private registry notes), see [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go). To **send** reports via HTTP, see [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go).
+</Aside>
+
+Verification runs in your callback: signatures are checked offchain, while authorized signers are loaded from the onchain **Capability Registry** (default: `cre.ProductionEnvironment()` on Ethereum Mainnet). This is not the workflow deployment registry (`private` or onchain).
+
+### `cre.ParseReport`
+
+**Signature:**
+
+```go
+func ParseReport(runtime Runtime, rawReport []byte, signatures [][]byte, reportContext []byte) (*Report, error)
+```
+
+Parses a report and verifies signatures against `cre.ProductionEnvironment()`. Registry reads are cached per chain and DON.
+
+### `cre.ParseReportWithConfig`
+
+**Signature:**
+
+```go
+func ParseReportWithConfig(runtime Runtime, rawReport []byte, signatures [][]byte, reportContext []byte, config ReportParseConfig) (*Report, error)
+```
+
+Same as `ParseReport`, with custom accepted environments or zones. Set `SkipSignatureVerification: true` to parse metadata only; call `report.VerifySignatures()` afterward when ready.
+
+### `Report` accessors
+
+After a successful parse:
+
+| Method            | Returns  | Description                                |
+| ----------------- | -------- | ------------------------------------------ |
+| `WorkflowID()`    | `string` | Workflow hash (hex)                        |
+| `WorkflowOwner()` | `string` | Workflow owner (hex)                       |
+| `WorkflowName()`  | `string` | Workflow name from metadata                |
+| `ExecutionID()`   | `string` | Execution identifier (hex)                 |
+| `DONID()`         | `uint32` | DON that produced the report               |
+| `Body()`          | `[]byte` | Payload after the 109-byte metadata header |
+| `SeqNr()`         | `uint64` | Sequence number                            |
+| `ConfigDigest()`  | `[]byte` | Config digest                              |
+| `ReportContext()` | `[]byte` | Full report context bytes                  |
+| `RawReport()`     | `[]byte` | Full raw report bytes                      |
+
+### `ReportParseConfig`
+
+| Field                       | Type            | Description                                           |
+| --------------------------- | --------------- | ----------------------------------------------------- |
+| `AcceptedEnvironments`      | `[]Environment` | Registry environments to try (defaults to production) |
+| `AcceptedZones`             | `[]Zone`        | Restrict verification to specific DON IDs             |
+| `SkipSignatureVerification` | `bool`          | Parse header only; call `VerifySignatures` separately |
+
+### `cre.ProductionEnvironment` and `cre.ZoneFromEnvironment`
+
+```go
+func ProductionEnvironment() Environment  // mainnet Capability Registry
+func ZoneFromEnvironment(env Environment, donId uint32) Zone
+```
+
+| `Environment` field | Type     | Description                                              |
+| ------------------- | -------- | -------------------------------------------------------- |
+| `ChainSelector`     | `uint64` | Chain selector for EVM reads (default: Ethereum Mainnet) |
+| `RegistryAddress`   | `string` | Capability Registry contract address                     |
+
+### Verification errors
+
+| Error                    | When                                         |
+| ------------------------ | -------------------------------------------- |
+| `ErrUnknownSigner`       | Recovered signer not in registry allowlist   |
+| `ErrWrongSignatureCount` | Fewer than f+1 valid signatures              |
+| `ErrRawReportTooShort`   | `rawReport` missing 109-byte metadata header |
+| `ErrDuplicateSigner`     | Same signer twice in accepted set            |
 
 ## `cre.OrderedEntries` and `cre.OrderedEntriesFunc`
 
@@ -19069,7 +20979,7 @@ if err != nil {
 
 # SDK Reference: HTTP Client
 Source: https://docs.chain.link/cre/reference/sdk/http-client-go
-Last Updated: 2026-01-26
+Last Updated: 2026-07-06
 
 The HTTP Client lets you make requests to external APIs from your workflow. Each node in the DON executes the request independently, and the SDK uses consensus to provide a single, reliable result.
 
@@ -19078,15 +20988,17 @@ The HTTP Client lets you make requests to external APIs from your workflow. Each
 - Fetching data from REST APIs ([GET requests](/cre/guides/workflow/using-http-client/get-request))
 - Sending data to webhooks ([POST requests](/cre/guides/workflow/using-http-client/post-request))
 - Submitting reports to offchain systems ([Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http))
+- Verifying reports received over HTTP ([Report verification](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go))
 
 ## Quick reference
 
-| Method                                                 | Use When                                  | Guide                                                                                                                   |
-| ------------------------------------------------------ | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| [`http.SendRequest`](#httpsendrequest)                 | Making HTTP calls (recommended)           | [GET](/cre/guides/workflow/using-http-client/get-request) / [POST](/cre/guides/workflow/using-http-client/post-request) |
-| [`client.SendRequest`](#clientsendrequest)             | Complex scenarios requiring fine control  | [GET](/cre/guides/workflow/using-http-client/get-request#2-the-creruninnodemode-pattern-low-level)                      |
-| [`sendRequester.SendReport`](#sendrequestersendreport) | Submitting reports via HTTP (recommended) | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http)                                     |
-| [`client.SendReport`](#clientsendreport)               | Complex report submission scenarios       | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http#advanced-low-level-pattern)          |
+| Method                                                              | Use When                                  | Guide                                                                                                                   |
+| ------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| [`http.SendRequest`](#httpsendrequest)                              | Making HTTP calls (recommended)           | [GET](/cre/guides/workflow/using-http-client/get-request) / [POST](/cre/guides/workflow/using-http-client/post-request) |
+| [`client.SendRequest`](#clientsendrequest)                          | Complex scenarios requiring fine control  | [GET](/cre/guides/workflow/using-http-client/get-request#2-the-creruninnodemode-pattern-low-level)                      |
+| [`sendRequester.SendReport`](#sendrequestersendreport)              | Submitting reports via HTTP (recommended) | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http)                                     |
+| [`client.SendReport`](#clientsendreport)                            | Complex report submission scenarios       | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http#advanced-low-level-pattern)          |
+| [`cre.ParseReport`](/cre/reference/sdk/core-go#report-verification) | Verifying received reports (receiver)     | [Report verification](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go)                             |
 
 ## Core types
 
@@ -19099,14 +21011,15 @@ Defines the parameters for an outgoing HTTP request.
   HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
 </Aside>
 
-| Field           | Type                   | Description                                                                                              |
-| --------------- | ---------------------- | -------------------------------------------------------------------------------------------------------- |
-| `Url`           | `string`               | The URL of the API endpoint.                                                                             |
-| `Method`        | `string`               | The HTTP method (e.g., `"GET"`, `"POST"`).                                                               |
-| `Headers`       | `map[string]string`    | Optional HTTP headers.                                                                                   |
-| `Body`          | `[]byte`               | Optional raw request body.                                                                               |
-| `Timeout`       | `*durationpb.Duration` | Optional request timeout. See [Request Timeout](#request-timeout) below for usage, defaults, and limits. |
-| `CacheSettings` | `*CacheSettings`       | Optional caching behavior for the request.                                                               |
+| Field           | Type                       | Description                                                                                                                    |
+| --------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `Url`           | `string`                   | The URL of the API endpoint.                                                                                                   |
+| `Method`        | `string`                   | The HTTP method (e.g., `"GET"`, `"POST"`).                                                                                     |
+| `MultiHeaders`  | `map[string]*HeaderValues` | Optional HTTP headers (recommended). Supports multiple values per header name. See [`HeaderValues`](#http-headervalues) below. |
+| `Headers`       | `map[string]string`        | **Deprecated.** Use `MultiHeaders` instead. Single-value headers only.                                                         |
+| `Body`          | `[]byte`                   | Optional raw request body.                                                                                                     |
+| `Timeout`       | `*durationpb.Duration`     | Optional request timeout. See [Request Timeout](#request-timeout) below for usage, defaults, and limits.                       |
+| `CacheSettings` | `*CacheSettings`           | Optional caching behavior for the request.                                                                                     |
 
 ### Request Timeout
 
@@ -19193,11 +21106,12 @@ timeout: "8s" # Go's time.ParseDuration format (max: 10s)
 
 The result of the HTTP call from a single node. If the request fails, the error is returned by the `.Await()` call on the `Promise`.
 
-| Field        | Type                | Description                |
-| ------------ | ------------------- | -------------------------- |
-| `StatusCode` | `uint32`            | The HTTP status code.      |
-| `Headers`    | `map[string]string` | The HTTP response headers. |
-| `Body`       | `[]byte`            | The raw response body.     |
+| Field          | Type                       | Description                                                                |
+| -------------- | -------------------------- | -------------------------------------------------------------------------- |
+| `StatusCode`   | `uint32`                   | The HTTP status code.                                                      |
+| `MultiHeaders` | `map[string]*HeaderValues` | The HTTP response headers, with multiple values per name where applicable. |
+| `Headers`      | `map[string]string`        | **Deprecated.** Use `MultiHeaders` instead.                                |
+| `Body`         | `[]byte`                   | The raw response body.                                                     |
 
 ### `http.CacheSettings`
 
@@ -19236,6 +21150,27 @@ When you make HTTP requests in CRE, **all nodes in the DON execute the request b
   - For GET operations where you want to reuse data: Set this to your desired cache duration
 
 For practical examples, see the [POST request guide](/cre/guides/workflow/using-http-client/post-request#1-understanding-single-execution-with-cachesettings).
+
+### `http.HeaderValues`
+
+Holds one or more values for a single HTTP header name. Used as the value type in `MultiHeaders` on both requests and responses.
+
+| Field    | Type       | Description                                    |
+| -------- | ---------- | ---------------------------------------------- |
+| `Values` | `[]string` | One or more string values for the header name. |
+
+**Example:**
+
+```go
+req := &http.Request{
+    Url:    config.ApiUrl,
+    Method: "GET",
+    MultiHeaders: map[string]*http.HeaderValues{
+        "Accept":       {Values: []string{"application/json"}},
+        "X-Custom-Key": {Values: []string{"value1", "value2"}},
+    },
+}
+```
 
 ## Making HTTP requests
 
@@ -19458,6 +21393,11 @@ func formatReport(r *sdk.ReportResponse) (*http.Request, error) {
 
 For complete examples of including signatures in different formats (body, headers, JSON), see the [Submitting Reports via HTTP guide](/cre/guides/workflow/using-http-client/submitting-reports-http#formatting-patterns).
 
+
+<Aside type="note" title="Receiving and verifying reports">
+  If your workflow **receives** reports (for example via an HTTP trigger), use [`cre.ParseReport`](/cre/reference/sdk/core-go#report-verification) before trusting payload data. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go).
+</Aside>
+
 ---
 
 # SDK Reference
@@ -19470,7 +21410,7 @@ This section provides a detailed technical reference for the public interfaces o
 
 The SDK Reference is broken down into several pages, each corresponding to a core part of the SDK's functionality:
 
-- **[Core SDK](/cre/reference/sdk/core)**: Covers the fundamental building blocks of any workflow, including `cre.Handler`, `cre.Runtime`, `cre.Promise`, and map iteration helpers `cre.OrderedEntries` / `cre.OrderedEntriesFunc`.
+- **[Core SDK](/cre/reference/sdk/core)**: Covers the fundamental building blocks of any workflow, including `cre.Handler`, `cre.Runtime`, `cre.Promise`, report verification (`cre.ParseReport`), and map iteration helpers `cre.OrderedEntries` / `cre.OrderedEntriesFunc`.
 - **[Triggers](/cre/reference/sdk/triggers)**: Details the configuration and payload structures for all available trigger types (`Cron`, `HTTP`, `EVM Log`).
 - **[EVM Client](/cre/reference/sdk/evm-client)**: Provides a reference for the `evm.Client`, the primary tool for all EVM interactions, including reads and writes.
 - **[HTTP Client](/cre/reference/sdk/http-client)**: Provides a reference for the `http.Client`, used for making offchain API requests from individual nodes.
@@ -19480,6 +21420,253 @@ The SDK Reference is broken down into several pages, each corresponding to a cor
 ## Contract Bindings
 
 For interacting with smart contracts, use the [CRE CLI's binding generator](/cre/guides/workflow/using-evm-client/generating-bindings) to automatically create type-safe Go bindings from your contract ABIs. These generated bindings work seamlessly with the EVM Client to provide a simple and reliable developer experience.
+
+---
+
+# SDK Reference: Solana Client
+Source: https://docs.chain.link/cre/reference/sdk/solana-client-go
+Last Updated: 2026-07-06
+
+This page provides a reference for `solana.Client`, the Go SDK interface for writing data to Solana programs via the Keystone Forwarder. It covers the client type, the `bindings` package helpers, and the chain selector reference for Solana networks.
+
+<Aside type="note" title="Write only — for now">
+  The current release supports onchain **writes** only. Solana Read and Solana Log Trigger capabilities are in
+  development.
+</Aside>
+
+## Import paths
+
+```go
+import (
+    solana "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana"
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana/bindings"
+)
+```
+
+## Client instantiation
+
+```go
+import solana "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana"
+
+// Solana Mainnet using the package constant
+client := &solana.Client{ChainSelector: solana.SolanaMainnet}
+
+// Solana Devnet
+client := &solana.Client{ChainSelector: solana.SolanaDevnet}
+
+// Or use ChainSelectorFromName
+selector, err := solana.ChainSelectorFromName("solana-mainnet")
+client := &solana.Client{ChainSelector: selector}
+```
+
+### Chain selector constants
+
+| Constant               | Value                  |
+| ---------------------- | ---------------------- |
+| `solana.SolanaMainnet` | `124615329519749607`   |
+| `solana.SolanaDevnet`  | `16423721717087811551` |
+
+### `ChainSelectorFromName()`
+
+```go
+func ChainSelectorFromName(name string) (uint64, error)
+```
+
+Accepts `"solana-mainnet"` or `"solana-devnet"`. Returns an error for unknown names.
+
+***
+
+## Write methods
+
+### `Client.WriteReport()`
+
+Submits a cryptographically signed report to a Solana program via the Keystone Forwarder. In most workflows, you call generated binding methods (`WriteReportFrom<StructName>()`) rather than this method directly.
+
+**Signature:**
+
+```go
+func (c *Client) WriteReport(runtime cre.Runtime, input *WriteCreReportRequest) cre.Promise[*WriteReportReply]
+```
+
+#### `WriteCreReportRequest`
+
+| Field               | Type             | Description                                             |
+| ------------------- | ---------------- | ------------------------------------------------------- |
+| `RemainingAccounts` | `[]*AccountMeta` | Ordered accounts required by the forwarder and receiver |
+| `Receiver`          | `[]byte`         | 32-byte raw program ID of the receiver program          |
+| `ComputeConfig`     | `*ComputeConfig` | Optional compute budget configuration                   |
+| `Report`            | `*cre.Report`    | The signed report returned by `runtime.Report()`        |
+
+#### `AccountMeta`
+
+| Field        | Type     | Description                     |
+| ------------ | -------- | ------------------------------- |
+| `PublicKey`  | `[]byte` | 32-byte raw public key          |
+| `IsWritable` | `bool`   | Whether the account is writable |
+
+#### `ComputeConfig`
+
+| Field              | Type     | Description                                                   |
+| ------------------ | -------- | ------------------------------------------------------------- |
+| `ComputeUnitLimit` | `uint32` | Maximum compute units for the transaction (default: `290000`) |
+
+#### `WriteReportReply`
+
+| Field          | Type       | Description                                                             |
+| -------------- | ---------- | ----------------------------------------------------------------------- |
+| `TxStatus`     | `TxStatus` | `TX_STATUS_SUCCESS`, `TX_STATUS_ABORTED`, or `TX_STATUS_FATAL`          |
+| `TxSignature`  | `[]byte`   | Transaction signature bytes, accessed via `GetTxSignature()` (optional) |
+| `ErrorMessage` | `string`   | Error message if the transaction failed (optional)                      |
+
+#### Usage example
+
+The low-level call, shown for reference. In most workflows, use a generated binding instead.
+
+```go
+import (
+    "encoding/base58"
+    "time"
+
+    "github.com/smartcontractkit/cre-sdk-go/cre"
+    solana "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana"
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana/bindings"
+    binary "github.com/gagliardetto/binary"
+)
+
+client := &solana.Client{ChainSelector: solana.SolanaMainnet}
+
+forwarderStateBytes, _ := base58.Decode("ForwarderStateBase58...")
+forwarderAuthBytes, _ := base58.Decode("ForwarderAuthBase58...")
+reportStateBytes, _ := base58.Decode("ReportStateBase58...")
+receiverBytes, _ := base58.Decode("ReceiverProgramBase58...")
+
+accounts := []*solana.AccountMeta{
+    {PublicKey: forwarderStateBytes, IsWritable: false},
+    {PublicKey: forwarderAuthBytes, IsWritable: false},
+    {PublicKey: reportStateBytes, IsWritable: true},
+}
+
+// 1. Borsh-encode your payload (generated bindings do this automatically)
+type PriceData struct {
+    Price     uint64
+    Timestamp int64
+}
+var buf bytes.Buffer
+enc := binary.NewBorshEncoder(&buf)
+enc.Encode(PriceData{Price: 500000, Timestamp: time.Now().Unix()})
+payload := buf.Bytes()
+
+// 2. Compute the account hash and build the forwarder report
+accountHash := bindings.CalculateAccountsHash(accounts)
+forwarderReport := bindings.ForwarderReport{AccountHash: accountHash, Payload: payload}
+encoded, err := forwarderReport.Marshal()
+
+// 3. Generate a signed report
+report := runtime.Report(cre.ReportRequest{
+    EncodedPayload: base64.StdEncoding.EncodeToString(encoded),
+    EncoderName:    "solana",
+    SigningAlgo:    "ecdsa",
+    HashingAlgo:    "keccak256",
+}).Result()
+
+// 4. Submit the report
+result := client.WriteReport(runtime, &solana.WriteCreReportRequest{
+    RemainingAccounts: accounts,
+    Receiver:          receiverBytes,
+    Report:            report,
+}).Result()
+```
+
+***
+
+## `bindings` package
+
+The `bindings` package (`github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana/bindings`) provides the serialization primitives used by generated binding code. You can also use them directly when writing low-level Solana write logic.
+
+### `ForwarderReport`
+
+Represents the Borsh-serialized report format expected by the Keystone Forwarder program.
+
+```go
+type ForwarderReport struct {
+    AccountHash [32]byte
+    Payload     []byte
+}
+```
+
+#### `ForwarderReport.Marshal()`
+
+Serializes the report into Borsh bytes: `[32-byte accountHash][u32-LE payload length][payload]`.
+
+```go
+func (obj ForwarderReport) Marshal() ([]byte, error)
+```
+
+**Usage:**
+
+```go
+report := bindings.ForwarderReport{
+    AccountHash: bindings.CalculateAccountsHash(accounts),
+    Payload:     borshEncodedPayload,
+}
+
+encoded, err := report.Marshal()
+```
+
+***
+
+### `CalculateAccountsHash()`
+
+Computes the SHA-256 hash of the concatenated 32-byte public keys of the given accounts. This hash is embedded in the report payload and verified on-chain by the Keystone Forwarder.
+
+```go
+func CalculateAccountsHash(accs []*solana.AccountMeta) [32]byte
+```
+
+`nil` entries in the slice are skipped. Account order matters: swapping two accounts produces a different hash.
+
+**Usage:**
+
+```go
+accounts := []*solana.AccountMeta{
+    {PublicKey: forwarderStateBytes},
+    {PublicKey: forwarderAuthBytes},
+    {PublicKey: reportStateBytes},
+}
+
+hash := bindings.CalculateAccountsHash(accounts)
+// → [32]byte
+```
+
+***
+
+## Chain selectors
+
+| Network        | String Name    | Numeric ID           |
+| -------------- | -------------- | -------------------- |
+| Solana Mainnet | solana-mainnet | 124615329519749607   |
+| Solana Devnet  | solana-devnet  | 16423721717087811551 |
+
+In your workflow config (e.g., `config.staging.json`), store the numeric ID as a **string** to avoid precision loss, and use the `json:",string"` struct tag:
+
+```json
+{
+  "chainSelector": "124615329519749607"
+}
+```
+
+```go
+type Config struct {
+    ChainSelector uint64 `json:"chainSelector,string"`
+}
+```
+
+## Related resources
+
+- **[Solana Write Capability](/cre/capabilities/solana-write)**: Architecture reference and account layout
+- **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-go)**: How to generate typed Go structs from your Anchor IDL
+- **[Writing to Solana guide](/cre/guides/workflow/using-solana-client/onchain-write-go)**: Step-by-step tutorial
+- **[Supported Networks](/cre/supported-networks-go)**: Chain selector values for all supported networks
 
 ---
 
@@ -19712,9 +21899,16 @@ This section provides a reference for the built-in trigger capabilities of the C
 
 # Supported Networks
 Source: https://docs.chain.link/cre/supported-networks-go
-Last Updated: 2026-05-22
+Last Updated: 2026-07-13
 
-This page lists all EVM-compatible networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network.
+This page lists networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network. CRE supports two [chain families](/cre/capabilities#chain-families): EVM-compatible chains and Solana.
+
+<Aside type="tip" title="Check chains enabled for your tenant">
+  The tables below show minimum version requirements for each network. To see which chains and mock forwarder addresses
+  are enabled for **your** organization, run [`cre workflow
+    supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) after `cre login` (or with `CRE_API_KEY`
+  set). Use `--output json` for machine-readable output.
+</Aside>
 
 ## Version Requirements
 
@@ -19786,7 +21980,27 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 
 ## Forwarder Addresses
 
-For forwarder contract addresses and chain names, see the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory). Forwarder addresses are used when building consumer contracts that receive workflow reports onchain. Learn more about [Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write/overview).
+For EVM forwarder contract addresses and chain names, see the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory). Forwarder addresses are used when building consumer contracts that receive workflow reports onchain. Learn more about [EVM Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write/overview-go).
+
+Run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) anytime to list the chains and mock forwarder addresses currently enabled for your tenant.
+
+***
+
+## Solana Networks
+
+Solana support is currently **write-only**. Read and Log Trigger capabilities are in development. Solana write requires
+**CRE CLI v1.24.0 or later** (`cre version` / `cre update`).
+
+| Network        | CLI      | Capabilities | Chain Selector         |
+| -------------- | -------- | ------------ | ---------------------- |
+| Solana Mainnet | v1.24.0+ | Write        | `124615329519749607`   |
+| Solana Devnet  | v1.24.0+ | Write        | `16423721717087811551` |
+
+Use `solana.SolanaMainnet` and `solana.SolanaDevnet` constants in your Go workflow code, or pass the numeric selector directly to `solana.Client`.
+
+For the Solana Keystone Forwarder program addresses, contact your Chainlink representative or run `cre workflow supported-chains` after enabling Solana for your organization.
+
+Learn more in the [Solana Chain Interactions guide](/cre/guides/workflow/using-solana-client/overview-go).
 
 ---
 

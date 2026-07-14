@@ -51,6 +51,7 @@ const NETWORK_ENDPOINTS: Record<string, string> = {
   plasma: "https://reference-data-directory.vercel.app/feeds-plasma-mainnet.json",
   hyperevm: "https://reference-data-directory.vercel.app/feeds-hyperliquid-mainnet.json",
   megaeth: "https://reference-data-directory.vercel.app/feeds-megaeth-mainnet.json",
+  robinhood: "https://reference-data-directory.vercel.app/feeds-robinhood-mainnet.json",
 }
 
 const STREAM_DEPRECATION_ENDPOINTS: Array<{ network: string; networkType: "mainnet" | "testnet"; url: string }> = [

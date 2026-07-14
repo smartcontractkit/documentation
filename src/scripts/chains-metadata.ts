@@ -87,8 +87,7 @@ function normalizeChainName(name: string): string {
 }
 
 type ChainMatchResult =
-  | { matched: true; reason: "name" | "nativeCurrency" }
-  | { matched: false; existingName: string | undefined }
+  { matched: true; reason: "name" | "nativeCurrency" } | { matched: false; existingName: string | undefined }
 
 /**
  * When chainid.network flags a chain as reusedChainId, determines whether the incoming

@@ -4,6 +4,7 @@ import type { TradingHoursFilterValue } from "../types.ts"
 import type { FeedCategoryData } from "../components/useBatchedFeedCategories.ts"
 import { getFeedCategoryFromBatch, getNetworkIdentifier } from "../components/useBatchedFeedCategories.ts"
 import { getStreamCategoryFromBatch } from "../components/useBatchedStreamCategories.ts"
+import { StreamsNetworksData } from "../data/StreamsNetworksData.ts"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type FeedMetadata = any
@@ -32,6 +33,7 @@ export function getSchemaVersion(feed: FeedMetadata): string | undefined {
   if (!match) return undefined
 
   if (match[1] === "04" || match[1] === "08") return "v8"
+  if (match[1] === "09") return "v9"
   if (match[1] === "11") return "v11"
 
   return undefined
@@ -95,6 +97,41 @@ function matchesTradingHours(metadata: FeedMetadata, tradingHoursFilter: Trading
   return true
 }
 
+/** 24/5 US Equities session feeds (Regular, Extended, Overnight). Identified by RDD session metadata. */
+export function isV1124x5SessionFeed(metadata: FeedMetadata): boolean {
+  const assetSubClass = metadata.docs?.assetSubClass
+  if (assetSubClass === "Regular Hours" || assetSubClass === "Extended Hours" || assetSubClass === "Overnight Hours") {
+    return true
+  }
+
+  const marketHours = metadata.docs?.marketHours
+  if (typeof marketHours === "string" && marketHours.startsWith("US Equities")) {
+    return true
+  }
+
+  const attributeType = metadata.docs?.attributeType
+  if (
+    typeof attributeType === "string" &&
+    (attributeType.includes("RegularHours") ||
+      attributeType.includes("ExtendedHours") ||
+      attributeType.includes("OvernightHours"))
+  ) {
+    return true
+  }
+
+  const clicProductName = metadata.docs?.clicProductName || ""
+  return (
+    clicProductName.includes("RegularHours") ||
+    clicProductName.includes("ExtendedHours") ||
+    clicProductName.includes("OvernightHours")
+  )
+}
+
+/** v11 streams with US 24/5 session coverage (Regular, Extended, or Overnight hours). */
+export function is24x5StreamFeed(metadata: FeedMetadata): boolean {
+  return getSchemaVersion(metadata) === "v11" && isV1124x5SessionFeed(metadata)
+}
+
 /** 24/5 stream filter used by FeedList and feed tables. */
 export function matches24x5StreamFilter(
   metadata: FeedMetadata,
@@ -103,13 +140,72 @@ export function matches24x5StreamFilter(
 ): boolean {
   if (!show24x5Feeds) return true
 
-  const schemaVersion = getSchemaVersion(metadata)
-  const feedType = metadata.feedType || metadata.docs?.feedType
-  const is24x5Feed = (feedType === "Equities" || feedType === "Forex") && schemaVersion === "v11"
-
-  if (!is24x5Feed) return false
+  if (!is24x5StreamFeed(metadata)) return false
 
   return matchesTradingHours(metadata, tradingHoursFilter ?? "all")
+}
+
+/** APAC exchange market-hours tags as they appear in the RDD `docs.marketHours` field. */
+const APAC_MARKET_HOURS_TAGS = new Set(["Tokyo", "Seoul", "Taiwan", "Taipei", "Shanghai", "Shenzhen"])
+
+export function isApacEquitiesStreamFeed(metadata: FeedMetadata): boolean {
+  const feedType = metadata.feedType || metadata.docs?.feedType
+  if (feedType !== "Equities") return false
+
+  const marketHours = metadata.docs?.marketHours
+  return typeof marketHours === "string" && APAC_MARKET_HOURS_TAGS.has(marketHours)
+}
+
+/** APAC equities stream filter used by FeedList and feed tables. */
+export function matchesApacEquitiesStreamFilter(
+  metadata: FeedMetadata,
+  showApacEquitiesFeeds: boolean | undefined
+): boolean {
+  if (!showApacEquitiesFeeds) return true
+  return isApacEquitiesStreamFeed(metadata)
+}
+
+/** Doc links for marketStatus and trading hours, resolved per feed in the stream table schema expander. */
+export function getMarketStatusDocLink(
+  metadata: FeedMetadata,
+  schemaKey: string
+): { label: string; href: string } | undefined {
+  if (schemaKey === "v8") {
+    return { label: "Status values", href: "/data-streams/reference/report-schema-v8#market-status-values" }
+  }
+
+  if (schemaKey === "v10") {
+    return { label: "Market hours", href: "/data-streams/market-hours" }
+  }
+
+  if (schemaKey === "v11") {
+    if (isApacEquitiesStreamFeed(metadata)) {
+      return { label: "Status values", href: "/data-streams/reference/report-schema-v11#standard-hours-feeds" }
+    }
+    if (isV1124x5SessionFeed(metadata)) {
+      return { label: "Status values", href: "/data-streams/reference/report-schema-v11#24-5-us-equities-feeds" }
+    }
+    return { label: "Status values", href: "/data-streams/reference/report-schema-v11#market-status-values" }
+  }
+
+  return undefined
+}
+
+export function getTradingHoursDocLink(
+  metadata: FeedMetadata,
+  schemaKey: string
+): { label: string; href: string } | undefined {
+  if (schemaKey !== "v8" && schemaKey !== "v11" && schemaKey !== "v10") return undefined
+
+  if (isApacEquitiesStreamFeed(metadata)) {
+    return { label: "Trading hours", href: "/data-streams/market-hours#apac-equities" }
+  }
+
+  if (schemaKey === "v11" && isV1124x5SessionFeed(metadata)) {
+    return { label: "Trading hours", href: "/data-streams/market-hours#rwa-market-hours" }
+  }
+
+  return { label: "Trading hours", href: "/data-streams/market-hours" }
 }
 
 /** Canonical asset type label for filtering (matches the "Asset type" column in tables). */
@@ -163,4 +259,24 @@ export function matchesFeedSearch(metadata: FeedMetadata, searchValue: string, v
   }
 
   return fields.some((field) => normalizeSearchText(field).includes(query))
+}
+
+/** Whether streams verifier address data exists for each environment. */
+export function getStreamsVerifierEnvironmentAvailability(): { mainnet: boolean; testnet: boolean } {
+  return {
+    mainnet: StreamsNetworksData.some((network) => Boolean(network.mainnet)),
+    testnet: StreamsNetworksData.some((network) => Boolean(network.testnet)),
+  }
+}
+
+export function mergeStreamEnvironmentAvailability(feedAvailability: { mainnet: boolean; testnet: boolean }): {
+  mainnet: boolean
+  testnet: boolean
+} {
+  const verifierAvailability = getStreamsVerifierEnvironmentAvailability()
+
+  return {
+    mainnet: feedAvailability.mainnet || verifierAvailability.mainnet,
+    testnet: feedAvailability.testnet || verifierAvailability.testnet,
+  }
 }

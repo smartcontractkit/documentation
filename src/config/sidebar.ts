@@ -360,6 +360,32 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Solana Chain Interactions",
+          url: "cre/guides/workflow/using-solana-client/overview",
+          highlightAsCurrent: [
+            "cre/guides/workflow/using-solana-client/overview-ts",
+            "cre/guides/workflow/using-solana-client/overview-go",
+          ],
+          children: [
+            {
+              title: "Generating Bindings",
+              url: "cre/guides/workflow/using-solana-client/generating-bindings",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-solana-client/generating-bindings-ts",
+                "cre/guides/workflow/using-solana-client/generating-bindings-go",
+              ],
+            },
+            {
+              title: "Onchain Write",
+              url: "cre/guides/workflow/using-solana-client/onchain-write",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-solana-client/onchain-write-ts",
+                "cre/guides/workflow/using-solana-client/onchain-write-go",
+              ],
+            },
+          ],
+        },
+        {
           title: "API Interactions",
           url: "cre/guides/workflow/using-http-client",
           children: [
@@ -385,6 +411,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               highlightAsCurrent: [
                 "cre/guides/workflow/using-http-client/submitting-reports-http-ts",
                 "cre/guides/workflow/using-http-client/submitting-reports-http-go",
+              ],
+            },
+            {
+              title: "Verifying CRE Reports Offchain",
+              url: "cre/guides/workflow/using-http-client/verifying-reports-offchain",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-http-client/verifying-reports-offchain-ts",
+                "cre/guides/workflow/using-http-client/verifying-reports-offchain-go",
               ],
             },
           ],
@@ -564,6 +598,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           highlightAsCurrent: ["cre/capabilities/confidential-http-ts", "cre/capabilities/confidential-http-go"],
         },
         { title: "EVM Read & Write", url: "cre/capabilities/evm-read-write" },
+        { title: "Solana Write", url: "cre/capabilities/solana-write" },
       ],
     },
     {
@@ -632,6 +667,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
             { title: "Account Management", url: "cre/reference/cli/account" },
             { title: "Workflow Commands", url: "cre/reference/cli/workflow" },
+            { title: "Execution Commands", url: "cre/reference/cli/execution" },
             { title: "Registry Commands", url: "cre/reference/cli/registry" },
             { title: "Secrets Management", url: "cre/reference/cli/secrets" },
             { title: "Template Sources", url: "cre/reference/cli/templates" },
@@ -683,6 +719,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "EVM Client",
               url: "cre/reference/sdk/evm-client",
               highlightAsCurrent: ["cre/reference/sdk/evm-client-ts", "cre/reference/sdk/evm-client-go"],
+            },
+            {
+              title: "Solana Client",
+              url: "cre/reference/sdk/solana-client",
+              highlightAsCurrent: ["cre/reference/sdk/solana-client-ts", "cre/reference/sdk/solana-client-go"],
             },
             {
               title: "HTTP Client",
@@ -799,7 +840,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                 {
                   title: "Provider Catalog",
                   url: "data-feeds/tokenized-equity-feeds/providers",
-                  children: [{ title: "Ondo Finance", url: "data-feeds/tokenized-equity-feeds/ondo" }],
+                  children: [
+                    { title: "Ondo Finance", url: "data-feeds/tokenized-equity-feeds/ondo" },
+                    { title: "Robinhood", url: "data-feeds/tokenized-equity-feeds/robinhood" },
+                  ],
                 },
               ],
             },
@@ -1081,6 +1125,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/sign-up",
         },
         {
+          title: "Get Support",
+          url: "data-streams/get-support",
+        },
+        {
           title: "Developer Responsibilities",
           url: "data-streams/developer-responsibilities",
         },
@@ -1153,6 +1201,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "24/5 US Equities User Guide",
               url: "data-streams/rwa-streams/24-5-us-equities-user-guide",
+            },
+            {
+              title: "APAC Equities",
+              url: "data-streams/rwa-streams/apac-equities",
             },
           ],
         },
