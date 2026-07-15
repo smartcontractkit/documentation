@@ -17623,35 +17623,23 @@ Use this step to confirm compile, trigger, and the bindings write path with `cre
    cre workflow simulate my-workflow --target staging-settings
    ```
 
-   Confirm the workflow compiles, the cron trigger runs, and your USER LOGs appear. The simulation uses a local
-   Solana runtime, not the real Devnet, so the receiver's on-chain account state is not available. The write
-   completes with a receiver CPI error such as `Custom:6002`. This is expected: the mock forwarder successfully
-   verifies the report, encodes the payload, and submits the transaction, but the CPI into the receiver fails because
-   the local simulation environment does not have the receiver's on-chain accounts. Seeing this error confirms the
-   entire write path (bindings, Borsh encoding, report generation, forwarder submission) worked end-to-end. A
-   successful onchain write requires deploying your workflow to the DON with the production Keystone Forwarder (see
-   [Step 5](#step-5-deploy-the-workflow)).
+   Confirm the workflow compiles, the cron trigger runs, and your USER LOGs appear. A successful onchain write
+   requires deploying to the DON with the production Keystone Forwarder (see [Step 5](#step-5-deploy-the-workflow)).
 
    ```
    ✓ Workflow compiled
    [SIMULATION] Simulator Initialized
    [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
    [USER LOG] msg="Submitting UserData via bindings" key=price forwarderAuthority=...
-   [USER LOG] msg="Write completed" txStatus=... errorMessage=...
+   [USER LOG] msg="Write completed" txStatus=... errorMessage=... txSignature=""
 
    ✓ Workflow Simulation Result:
    ...
    ```
 
 
-   <Aside type="note" title="What does the simulation error mean?">
-     The `Custom:6002` error occurs during the mock forwarder's CPI into the receiver. The local simulation runtime
-     does not replicate the receiver's on-chain account state, so the CPI cannot complete. This does not indicate a
-     problem with your workflow code — it confirms the write path (bindings, encoding, report generation, forwarder
-     submission) executed successfully. On production, the Keystone Forwarder submits real transactions to Solana
-     where the receiver's accounts exist, and the write succeeds. See
-     [Step 5](#step-5-deploy-the-workflow) and the
-     [confirmed example transaction](https://explorer.solana.com/tx/2tfcA2jKvaP3JrVaURQEPuWCLtjV8ZdzMCppCUa9a41LQoG5847MzJNJmwdepzjQHxrJak8Umr4fHebkhBMGTqFM?cluster=devnet).
+   <Aside type="note" title="Simulation error: Custom:6002">
+     `Custom:6002` is a known limitation of the current simulator and will be patched in a future CLI update.
    </Aside>
 
    When you are ready to run on the DON with **your** receiver, continue to [Step 5](#step-5-deploy-the-workflow).
