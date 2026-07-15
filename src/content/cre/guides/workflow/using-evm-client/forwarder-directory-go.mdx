@@ -181,3 +181,32 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 | <a href="https://sepolia.worldscan.org/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">World Chain Sepolia</a>       | <CopyText text="ethereum-testnet-sepolia-worldchain-1" code/> | <CopyText text="0x76c9cf548b4179F8901cda1f8623568b58215E62" code/> |
 | <a href="https://www.oklink.com/xlayer-test/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">XLayer Testnet</a>       | <CopyText text="xlayer-testnet" code/>                        | <CopyText text="0x9eF6468C5f37b976E57d52054c693269479A784d" code/> |
 | <a href="https://sepolia.explorer.zksync.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ZKSync Era Sepolia</a>   | <CopyText text="ethereum-testnet-sepolia-zksync-1" code/>     | <CopyText text="0x76c9cf548b4179F8901cda1f8623568b58215E62" code/> |
+
+## Solana Forwarders
+
+Solana uses a different forwarder model than EVM. Instead of a single contract address, each Solana forwarder deployment has a **program ID** and a **state account**. Your workflow config needs both values. Learn more: [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-go).
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Different addresses for simulation vs production">
+  The mock forwarder addresses used during simulation are **different** from the production Keystone Forwarder addresses
+  used by deployed workflows. After testing with simulation, update `forwarderProgramId` and `forwarderState` in your
+  production config. See [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-go#simulation-vs-production-forwarder-addresses).
+</Aside>
+
+### Simulation (mock forwarder)
+
+These addresses are baked into the CLI and used automatically by `cre workflow simulate`. Use these **only** during local development and testing.
+
+| Network        | Mock Forwarder Program ID                                            | Mock Forwarder State Account                                         |
+| -------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Solana Devnet  | <CopyText text="7kuEAA3mSC1Tz8gQjnvH7bKFda9xSPRRin9SZbH49cNK" code/> | <CopyText text="5Tipz3yhTBdVsDbaBxZkrp7Gjf3brGq5SKkxReefPMP7" code/> |
+| Solana Mainnet | <CopyText text="7kuEAA3mSC1Tz8gQjnvH7bKFda9xSPRRin9SZbH49cNK" code/> | <CopyText text="jhCjuD4Z3V7HeSUChMRpkRwpw6B9yC63mxDMv8SdLNX" code/>  |
+
+### Production (Keystone Forwarder)
+
+For production deployments, use these live Keystone Forwarder addresses:
+
+| Network        | Keystone Forwarder Program ID                                        | Keystone Forwarder State Account                                     |
+| -------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Solana Devnet  | <CopyText text="CXsKEJcs25TQEYU2e5jZ8QTPE3ffMLZhH6BWHrdcCCB5" code/> | <CopyText text="8QoomCQyPSkJ8WopJbX9B4HyvrFzziwvJdU8hZE6DCr9" code/> |
+| Solana Mainnet | <CopyText text="GFrSSvQXaVGkc6Nrr8y2msie6pivJkR1s2EnDk4et294" code/> | <CopyText text="9FgdPyU28bGMCuJyD34pzw9W7Ys36ziLbT9cbZtsaraV" code/> |

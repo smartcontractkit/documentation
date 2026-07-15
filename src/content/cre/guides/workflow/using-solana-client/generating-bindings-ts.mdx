@@ -33,7 +33,7 @@ cre generate-bindings solana --language typescript
 
 ### Step 1: Add your Anchor IDL
 
-Place your program's Anchor IDL file in `contracts/solana/src/idl/`. The IDL is a JSON file that Anchor generates when you build your program:
+Place your program's Anchor IDL file in `my-workflow/contracts/solana/src/idl/`. The IDL is a JSON file that Anchor generates when you build your program:
 
 ```bash
 # In your Anchor project
@@ -44,19 +44,19 @@ anchor build
 Copy or symlink it into your CRE project:
 
 ```bash
-mkdir -p contracts/solana/src/idl
-cp /path/to/your-anchor-project/target/idl/my_program.json contracts/solana/src/idl/
+mkdir -p my-workflow/contracts/solana/src/idl
+cp /path/to/your-anchor-project/target/idl/my_program.json my-workflow/contracts/solana/src/idl/
 ```
 
 ### Step 2: Generate the bindings
 
-From your **project root**, run:
+From your **workflow directory**, run:
 
 ```bash
 cre generate-bindings solana
 ```
 
-This reads all `.json` IDL files in `contracts/solana/src/idl/` and generates TypeScript files in `contracts/solana/ts/generated/`. For each IDL, three files are generated:
+This reads all `.json` IDL files in `contracts/solana/src/idl/` and generates TypeScript files in `contracts/solana/ts/generated/` (relative to your workflow directory). For each IDL, three files are generated:
 
 - `<ProgramName>.ts` — The typed binding class with `writeReportFrom<StructName>()` methods
 - `<ProgramName>_mock.ts` — A mock for testing without a live network
@@ -70,7 +70,7 @@ For each struct in your IDL's `types` section, the generator creates a `writeRep
 
 **Example: A minimal `DataStorage` IDL**
 
-The following IDL is enough to generate a `writeReportFromUserData()` helper. Save it as `contracts/solana/src/idl/data_storage.json`. You can run this example without deploying your own Anchor program: the program ID in the IDL is used as the write receiver, and simulation uses the Solana Devnet mock forwarder built into the CLI.
+The following IDL is enough to generate a `writeReportFromUserData()` helper. Save it as `my-workflow/contracts/solana/src/idl/data_storage.json`.
 
 ```json
 {
@@ -110,124 +110,30 @@ The following IDL is enough to generate a `writeReportFromUserData()` helper. Sa
 }
 ```
 
-1. Generate the bindings from your project root.
+After running `cre generate-bindings solana`, use the generated `DataStorage` class in your workflow:
 
-   ```bash
-   cre generate-bindings solana
-   ```
+```typescript
+import { SolanaClient, solanaAccountMeta, type Runtime } from "@chainlink/cre-sdk"
+import { DataStorage } from "./contracts/solana/ts/generated/DataStorage"
 
-   This creates `contracts/solana/ts/generated/DataStorage.ts` (plus `DataStorage_mock.ts` and `index.ts`). The generated `DataStorage` class includes `writeReportFromUserData(runtime, input, remainingAccounts, computeConfig?)`.
+// In your workflow handler...
+const client = new SolanaClient(BigInt(config.chainSelector))
+const ds = new DataStorage(client)
 
-1. Add Solana Devnet to `project.yaml` under your simulation target.
+// remainingAccounts: Index 0 forwarderState, 1 forwarderAuthority, 2+ receiver accounts
+const remainingAccounts = [
+  solanaAccountMeta(config.forwarderState, false),
+  solanaAccountMeta(config.forwarderAuthority, false),
+  solanaAccountMeta(config.reportState, true),
+]
 
-   ```yaml
-   staging-settings:
-     rpcs:
-       - chain-name: solana-devnet
-         url: https://api.devnet.solana.com
-   ```
+// Pass the struct data directly — types are derived from the IDL
+const result = ds.writeReportFromUserData(runtime, { key: "price", value: "500000" }, remainingAccounts, {
+  computeLimit: 200_000,
+})
+```
 
-1. Save the following as `config.staging.json` in your workflow folder.
-
-   These addresses are the Solana Devnet **mock forwarder** values used by `cre workflow simulate`. The `forwarderAuthority` PDA is derived from `["forwarder", forwarderState, receiverProgram]` under the mock forwarder program ID for the `DataStorage` receiver above. `reportState` is a placeholder writable account for this dry-run example.
-
-   ```json
-   {
-     "schedule": "*/30 * * * * *",
-     "chainSelector": "16423721717087811551",
-     "forwarderState": "5Tipz3yhTBdVsDbaBxZkrp7Gjf3brGq5SKkxReefPMP7",
-     "forwarderAuthority": "5wxb2QHeB4iyN1mPfmsjdsaxoP4P9EmTU7zBzpp4UgVu",
-     "reportState": "11111111111111111111111111111111"
-   }
-   ```
-
-1. Save the following as `my-workflow/main.ts`.
-
-   ```typescript
-   // my-workflow/main.ts
-   import { CronCapability, handler, Runner, SolanaClient, solanaAccountMeta, type Runtime } from "@chainlink/cre-sdk"
-   import { DataStorage } from "../contracts/solana/ts/generated/DataStorage"
-
-   type Config = {
-     schedule: string
-     chainSelector: string
-     forwarderState: string
-     forwarderAuthority: string
-     reportState: string
-   }
-
-   const onCronTrigger = (runtime: Runtime<Config>) => {
-     const config = runtime.config
-
-     const client = new SolanaClient(BigInt(config.chainSelector))
-     // Program ID defaults to the address baked into the IDL
-     const ds = new DataStorage(client)
-
-     // remainingAccounts layout required by the forwarder:
-     //   Index 0: forwarderState (read-only)
-     //   Index 1: forwarderAuthority PDA (read-only)
-     //   Index 2+: receiver-specific accounts
-     const remainingAccounts = [
-       solanaAccountMeta(config.forwarderState, false),
-       solanaAccountMeta(config.forwarderAuthority, false),
-       solanaAccountMeta(config.reportState, true),
-     ]
-
-     runtime.log("Submitting UserData to Solana DataStorage program")
-
-     // Solana simulate requires a non-nil computeConfig with computeLimit > 0
-     const result = ds.writeReportFromUserData(runtime, { key: "price", value: "500000" }, remainingAccounts, {
-       computeLimit: 200_000,
-     })
-
-     runtime.log(`Write completed txStatus=${result.txStatus} errorMessage=${result.errorMessage ?? ""}`)
-     return result
-   }
-
-   export const initWorkflow = (config: Config) => {
-     const cron = new CronCapability()
-     return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
-   }
-
-   export async function main() {
-     const runner = await Runner.newRunner<Config>()
-     await runner.run(initWorkflow)
-   }
-   ```
-
-1. Set `CRE_SOLANA_PRIVATE_KEY` in your project `.env`, then run the simulation.
-
-   Solana simulation requires a 64-byte base58 keypair even for dry-run (no `--broadcast`). The transmitter account derived from that key must exist and be funded on Solana Devnet. Generate a key with `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and put the keypair in `.env`:
-
-   ```bash
-   CRE_SOLANA_PRIVATE_KEY=<your-64-byte-base58-keypair>
-   ```
-
-   Then from your project root:
-
-   ```bash
-   cre workflow simulate my-workflow --target staging-settings
-   ```
-
-   Expected output (dry-run against the mock forwarder). This example uses a placeholder receiver program ID, so the
-   write path completes through the mock forwarder and the CPI into the receiver returns `Custom:2007`. That confirms
-   bindings, encoding, and report submission worked:
-
-   ```
-   ✓ Workflow compiled
-   [SIMULATION] Simulator Initialized
-   [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-   [USER LOG] Submitting UserData to Solana DataStorage program
-   [USER LOG] Write completed txStatus=0 errorMessage=map[InstructionError:[0 map[Custom:2007]]]
-
-   ✓ Workflow Simulation Result:
-   {
-     "$typeName": "capabilities.blockchain.solana.v1alpha.WriteReportReply",
-     "errorMessage": "map[InstructionError:[0 map[Custom:2007]]]",
-     "transactionFee": 7262,
-     "txStatus": 0
-   }
-   ```
+For a full walkthrough including config, simulation, and production deployment, see [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-ts).
 
 <Aside type="note" title="What does writeReportFrom do?">
   The generated method Borsh-encodes the struct with `@solana/codecs`, hashes `remainingAccounts` via
@@ -237,7 +143,7 @@ The following IDL is enough to generate a `writeReportFromUserData()` helper. Sa
 
 ## What the CLI generates
 
-For each IDL file, the generator creates three files in `contracts/solana/ts/generated/`:
+For each IDL file, the generator creates three files in `contracts/solana/ts/generated/` (inside your workflow directory):
 
 - `<ProgramName>.ts` — The main binding class
 - `<ProgramName>_mock.ts` — A mock implementation for testing
@@ -255,7 +161,7 @@ What's inside depends on your IDL:
 You can import from the barrel file to keep imports clean:
 
 ```typescript
-import { DataStorage } from "../contracts/solana/ts/generated"
+import { DataStorage } from "./contracts/solana/ts/generated"
 ```
 
 ## `remainingAccounts` layout
