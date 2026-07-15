@@ -18479,9 +18479,12 @@ const initWorkflow = (config: Config) => {
 
 ## Task Authoring: The "Bridge" Pattern
 
-The fastest way to migrate is using the official **Automation Migration** starter template. This template uses a "Bridge" pattern: you deploy a generic [`AutomationReceiver.sol`](https://github.com/smartcontractkit/cre-templates/blob/main/starter-templates/automation-migration/contracts/evm/src/AutomationReceiver.sol) contract, which receives CRE reports and forwards approved calls to your existing Automation contracts.
+The fastest way to migrate is using the official **Automation Migration** starter template. This template uses a "Bridge" pattern:
 
-Your Solidity consumer contract usually does not need to reimplement `checkUpkeep`, `checkLog`, or `performUpkeep`, but some contracts still need a permission update. If your existing contract checks `msg.sender`, uses an Automation Forwarder allowlist, or has role-based permissions, authorize the new `AutomationReceiver` or adjust that permission boundary before deployment.
+1. **[`AutomationReceiver.sol`](https://github.com/smartcontractkit/cre-templates/blob/main/starter-templates/automation-migration/contracts/evm/src/AutomationReceiver.sol)** — a bridge contract you deploy once on-chain. It receives CRE reports and forwards execution to your existing legacy contracts. It enforces two independent authorization layers (see [Security Model](#security-model) below).
+2. **Workflows** — CRE workflows that poll your legacy `checkUpkeep` or `checkLog` functions and trigger the bridge when needed. The `CUSTOM`/`LOG` paths use generated, type-safe contract bindings; the `CRON` path ABI-encodes a configured function signature at runtime.
+
+You can usually migrate to CRE without rewriting your original upkeep logic — provided your legacy contract lets you re-point who is allowed to call it (see [Compatibility](#compatibility)). If your existing contract checks `msg.sender`, uses an Automation Forwarder allowlist, or has role-based permissions, authorize the deployed `AutomationReceiver` there before relying on the workflow.
 
 ### Logic Migration (`checkUpkeep` → Handler)
 
@@ -18489,29 +18492,36 @@ In the handler, you use `evmClient.callContract()` to perform the same checks pr
 
 ### On-chain Execution (`performUpkeep` → `onReport`)
 
-Your workflow generates a signed report and submits it to the `AutomationReceiver`. The receiver then calls the original `performUpkeep` function on your target contract.
+Your workflow generates a signed report and submits it to the `AutomationReceiver`. The report payload is ABI-encoded as `(address target, uint256 blockNumber, bytes data)`, where `data` is a full function call (4-byte selector followed by its arguments). The receiver executes `target.call(data)`, so it can drive any function signature — `performUpkeep(bytes)` for custom-logic/log upkeeps, or a custom function like `performAction(uint256)` for time-based ones. The `blockNumber` field feeds the optional monotonicity check ([3e](#3e-configure-block-number-monotonicity--staleness-protection-optional)) and is otherwise ignored. Every call is gated by the closed-by-default `(target, selector)` allowlist ([3a](#3a-allow-upkeep-calls)).
 
-```
-// AutomationReceiver.sol (included in template)
-function _processReport(bytes calldata report) internal override {
-    (address target, bytes memory data) = abi.decode(report, (address, bytes));
+`_processReport` distinguishes five outcomes:
 
-    if (target == address(0)) {
-        revert InvalidTargetAddress();
-    }
+- **Authorization failure** — a zero target, a target with no deployed code, calldata shorter than a 4-byte selector, or a `(target, selector)` that is not allowlisted — **reverts** (`InvalidTargetAddress` / `TargetHasNoCode` / `MissingSelector` / `CallNotAllowed`).
+- **Stale report** — the block-number monotonicity check is enabled for the pair and the report's block number is older than the last accepted one — does **not** revert. The receiver emits `StaleReportSkipped` and consumes the report.
+- **Gas guard failure** — `setConsumerGasLimit` is configured for the pair and the incoming gas is below the required threshold — **reverts** with `InsufficientGas`, so the CRE Forwarder records the delivery as failed and retryable.
+- **Paused** — the owner has called `pause(bool retryable)`. With `pause(true)` it **reverts** with `EnforcedPause` (retryable); with `pause(false)` it emits `ReportSkippedWhilePaused` and consumes the report.
+- **Execution failure** — an allowed call that itself reverts — does **not** revert `onReport`. The receiver emits `CallFailed(target, selector, reason)` and the report is consumed. This mirrors Chainlink Automation's fire-and-forget behavior, where a failed `performUpkeep` simply ends that round and the next trigger re-evaluates eligibility.
 
-    (bool success, bytes memory returnData) = target.call(data);
-    if (!success) {
-        revert CallExecutionFailed(target, returnData);
-    }
-}
-```
+### Security Model
 
-`AutomationReceiver` inherits `ReceiverTemplate`, so it validates the configured CRE forwarder before processing reports. For production, also configure workflow identity checks such as expected workflow ID and/or expected workflow owner address, or narrow the receiver to known target contracts and function selectors. A generic receiver that accepts arbitrary `(target, data)` is convenient for migration, but it should not be left broadly reusable without explicit authorization controls.
+`AutomationReceiver` authorizes reports on two separate layers, and **both** apply:
+
+- **Inbound — who may deliver a report**: the CRE Forwarder address is set at construction and validated by `ReceiverTemplate`. `AutomationReceiver._processReport` adds two hard guards: it rejects any delivery if the forwarder was ever set to `address(0)` post-deployment, and it requires at least one complete workflow identity option to be configured — an unconfigured receiver rejects all reports with `WorkflowIdentityNotConfigured`. Two options are accepted: **(a)** `workflowId` is set (binds the receiver to one specific workflow), or **(b)** both `workflowOwner` and `workflowName` are set together (binds to a named workflow from a specific owner). Either piece of option (b) alone is insufficient.
+- **Outbound — what a report may make the receiver do**: a **closed-by-default allowlist** of `(target, function-selector)` pairs. Inbound checks only prove a report came from your workflow; they do **not** constrain the `(target, data)` it carries. Until you allowlist a pair with `setCallAllowed`, the receiver rejects it.
+
+On top of these layers, the owner can trigger a global **emergency pause** via `pause(bool retryable)`. While paused, all deliveries are rejected; the `retryable` flag chosen at pause time decides whether they stay retryable (revert) or are dropped (consumed). See [Emergency Pause](#3d-emergency-pause-optional-but-recommended-for-production).
+
+## Migration Path Mapping
+
+| Your Automation Setup | CRE Equivalent  | Migration Type |
+| :-------------------- | :-------------- | :------------- |
+| Time-based upkeep     | Cron Trigger    | `CRON`         |
+| Custom logic upkeep   | Cron + EVM Read | `CUSTOM`       |
+| Log trigger upkeep    | EVM Log Trigger | `LOG`          |
 
 ## Get started
 
-### 1. Initialize your project
+### 1. Initialize the template
 
 Use the CRE CLI to scaffold a new project using the migration template:
 
@@ -18519,133 +18529,180 @@ Use the CRE CLI to scaffold a new project using the migration template:
 cre init --template=automation-migration-ts --project-name my-automation-migration --workflow-name my-workflow
 ```
 
-The template is available in the `main` branch. You can scaffold a new project using the CRE CLI:
-
-```shell
-cre init --template=automation-migration-ts
-```
-
 Or browse the template directly at [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/automation-migration).
 
-### 2. Deploy the Bridge
+### 2. Build and deploy the Bridge
 
-Deploy `AutomationReceiver.sol` (found in the template) to your target chain, passing the CRE `KeystoneForwarder` address for that network to the constructor. Find the correct forwarder address for your chain in the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory-ts). This contract acts as a translation layer, allowing you to reuse your existing `checkUpkeep`, `checkLog`, and `performUpkeep` logic while moving trigger and check orchestration into CRE.
+Deploy `AutomationReceiver.sol` to your target chain. You only need to do this once to support multiple upkeeps.
 
-### 3. Configure and Authorize the Receiver
+The `contracts/evm` directory ships a ready-to-use [Foundry](https://book.getfoundry.sh/) project — a `foundry.toml` and a vendored copy of the only OpenZeppelin files used (`Ownable`, `Pausable`, `Context`). No `forge install` or local node is required:
 
-Update `my-workflow/config.test.json` in your new project with your previously deployed AutomationReceiver contract address, target contract address, migration type (`CRON`, `CUSTOM`, or `LOG`), schedule, and log filters if applicable.
+```shell
+cd contracts/evm
+forge build
+forge test          # 54 tests covering the receiver + permission template
+
+# Deploy, passing the CRE Forwarder address for your DON as the constructor arg
+forge create src/AutomationReceiver.sol:AutomationReceiver \
+  --rpc-url "$RPC_URL" \
+  --private-key "$PRIVATE_KEY" \
+  --constructor-args "$FORWARDER_ADDRESS"
+```
+
+`FORWARDER_ADDRESS` is the CRE Forwarder for your target network — it is the **only** address allowed to call `onReport`. Look it up in the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory-ts) for your network; do not guess it. A wrong value means the DON's reports are rejected. The constructor blocks `address(0)`, and even if the owner ever sets the forwarder to `address(0)` post-deployment (via `setForwarderAddress`), `AutomationReceiver._processReport` will reject all subsequent deliveries with `InvalidForwarderAddress`.
+
+### 3. Configure and authorize the receiver
+
+The receiver rejects every outbound call until you allowlist it. You must set up both the call allowlist and the workflow identity checks.
 
 #### 3a. Allow Upkeep Calls
 
-Before your workflow can call your target contract through the receiver, you must authorize the function call using `setCallAllowed()`. This setter transaction grants the receiver permission to forward calls to your target contract with a specific function selector.
+For each migrated upkeep, allowlist the exact `(target, selector)` the workflow will invoke:
+
+```shell
+# Custom-logic / log-trigger upkeeps call performUpkeep(bytes)
+cast send "$RECEIVER_ADDRESS" \
+  "setCallAllowed(address,bytes4,bool)" \
+  "$TARGET_ADDRESS" "$(cast sig 'performUpkeep(bytes)')" true \
+  --rpc-url "$RPC_URL" --private-key "$PRIVATE_KEY"
+
+# Time-based upkeeps call your specific function, e.g. performAction(uint256)
+cast send "$RECEIVER_ADDRESS" \
+  "setCallAllowed(address,bytes4,bool)" \
+  "$TARGET_ADDRESS" "$(cast sig 'performAction(uint256)')" true \
+  --rpc-url "$RPC_URL" --private-key "$PRIVATE_KEY"
+```
 
 **Parameters:**
 
-- **target** (address): The address of your existing Automation upkeep contract
-- **selector** (bytes4): The 4-byte function selector you want to allow (e.g., `0x4585e33b` for `performUpkeep`)
-- **allowed** (bool): Set to `true` to enable the call
+- **target** (address): The address of your existing upkeep contract. When allowing (`allowed = true`) it must be a deployed contract — `setCallAllowed` reverts with `TargetHasNoCode` if the address has no code. The code check is skipped when revoking (`allowed = false`), so an entry can always be removed even if the target has since self-destructed.
+- **selector** (bytes4): The 4-byte function selector, computed from the function signature via `cast sig`. It must match the function the workflow encodes (`performUpkeep` for `CUSTOM`/`LOG`, or your `targetFunction` for `CRON`) — a mismatch makes `onReport` revert with `CallNotAllowed`.
+- **allowed** (bool): `true` to allow, `false` to revoke.
 
-**Example transaction:**
+#### 3b. Configure the Consumer Gas Limit (Recommended)
 
-```
-Function: setCallAllowed (0xb1e17766)
-target (address): 0x0971Ad145A5462f6Ae18b1aD2b9c9b0c6d8CC9C8
-selector (bytes4): 0x4585e33b
-allowed (bool): true
-```
+Set the minimum gas the receiver must have available before forwarding the call to your upkeep consumer contract. When configured, `_processReport` reverts with `InsufficientGas` — causing the CRE Forwarder to record the delivery as **failed and retryable** — if the incoming gas is below `consumerGasLimit + consumerGasLimit / 63 + 7,000` (the on-chain overhead).
 
-#### 3b. Set Workflow Identity Checks
-
-For production deployments, configure additional authorization layers by setting expected workflow identity parameters. These optional checks ensure only authorized workflows can invoke your receiver.
-
-**Available setters:**
-
-- **setExpectedAuthor** — Restrict calls to workflows authored by a specific address
-  - Parameter: `_author` (address)
-- **setExpectedWorkflowId** — Restrict calls to a specific workflow ID
-  - Parameter: `_workflowId` (string)
-- **setExpectedWorkflowName** — Restrict calls to workflows with a specific name
-  - Parameter: `_workflowName` (string)
-
-**Example transactions:**
-
-```
-Function: setExpectedAuthor
-_author (address): 0x5c5c48fc95d68f88b4a13e0c9b0c6d8cc9c8c8c
-
-Function: setExpectedWorkflowId
-_workflowId (string): 0x0971ad145a5462f6ae18b1ad2b9c9b0c6d8cc9c8
-
-Function: setExpectedWorkflowName
-_workflowName (string): automation-migration-test
-```
-
-### Parameters Quick Reference
-
-#### Getting the Target Address
-
-The target address is the address of your existing **Automation upkeep contract** — the contract that currently implements `performUpkeep()`. You can find this by:
-
-- Reviewing your Automation registry registration
-- Checking your deployment scripts or configuration
-- Looking up the contract address in your blockchain explorer
-
-#### Computing the Function Selector
-
-The function selector is the first 4 bytes of the keccak256 hash of the function signature. Use the `cast` command-line tool to compute it:
+The limit is configured **per `(target, selector)` pair**. Zero (the default) disables the guard and preserves fire-and-forget semantics, mirroring Chainlink Automation's behavior where a failed `performUpkeep` simply ends that round.
 
 ```shell
-# For performUpkeep(bytes)
-cast sig 'performUpkeep(bytes)'
-# Output: 0x4585e33b
+# Custom-logic / log-trigger upkeeps: performUpkeep(bytes)
+cast send "$RECEIVER_ADDRESS" \
+  "setConsumerGasLimit(address,bytes4,uint256)" \
+  "$TARGET_ADDRESS" "$(cast sig 'performUpkeep(bytes)')" "$PERFORM_GAS_LIMIT" \
+  --rpc-url "$RPC_URL" --private-key "$PRIVATE_KEY"
 
-# For custom functions
-cast sig 'myCustomFunction(uint256,address)'
-# Output: 0xabcdef12
+# Time-based upkeeps: your specific function, e.g. performAction(uint256)
+cast send "$RECEIVER_ADDRESS" \
+  "setConsumerGasLimit(address,bytes4,uint256)" \
+  "$TARGET_ADDRESS" "$(cast sig 'performAction(uint256)')" "$PERFORM_GAS_LIMIT" \
+  --rpc-url "$RPC_URL" --private-key "$PRIVATE_KEY"
 ```
 
-Alternatively, compute it programmatically in your test or deployment script:
+#### 3c. Set Workflow Identity Checks
 
-```ts
-import { getAddress, toFunctionSelector } from "viem"
+<Aside type="caution" title="Required before the receiver accepts any report">
+  At least one complete identity option must be configured, or `_processReport` reverts with
+  `WorkflowIdentityNotConfigured` on every delivery attempt.
+</Aside>
 
-const selector = toFunctionSelector("performUpkeep(bytes)")
-// Result: 0x4585e33b
+- **Option A — `workflowId`**: set the workflow ID; owner and name are not required.
+- **Option B — `workflowOwner` + `workflowName`**: set both together; either piece alone is insufficient, and `workflowId` is not required.
+
+```shell
+# Option A — identify by workflow ID
+cast send "$RECEIVER_ADDRESS" \
+  "setExpectedWorkflowId(bytes32)" \
+  "$WORKFLOW_ID" \
+  --rpc-url "$RPC_URL" --private-key "$PRIVATE_KEY"
+
+# Option B — identify by owner and name (both required)
+cast send "$RECEIVER_ADDRESS" \
+  "setExpectedAuthor(address)" \
+  "$WORKFLOW_OWNER_ADDRESS" \
+  --rpc-url "$RPC_URL" --private-key "$PRIVATE_KEY"
+
+cast send "$RECEIVER_ADDRESS" \
+  "setExpectedWorkflowName(string)" \
+  "$WORKFLOW_NAME" \
+  --rpc-url "$RPC_URL" --private-key "$PRIVATE_KEY"
 ```
 
-### Example Transaction Outputs
+You may also combine both options for the strongest guarantee (e.g. set all three fields). Note that `setExpectedWorkflowName` must always be paired with `setExpectedAuthor` — workflow names are unique per owner, not globally.
 
-A successful `setCallAllowed` transaction on a block explorer shows:
+#### 3d. Emergency Pause (Optional but recommended for production)
 
+The receiver includes an owner-only global emergency stop built on OpenZeppelin's `Pausable`. This is the CRE equivalent of Chainlink Automation's registry-wide pause: it halts report processing across the whole receiver (there is no per-upkeep `pauseUpkeep` equivalent).
+
+`pause(bool retryable)` lets you decide, per pause, what happens to reports delivered while paused:
+
+- **`pause(true)` — retryable**: `_processReport` reverts with `EnforcedPause`, so the CRE Forwarder records the transmission as failed and retryable. Reports resume delivery once you `unpause()`.
+- **`pause(false)` — drop**: `_processReport` emits `ReportSkippedWhilePaused` and consumes the report. Dropped reports are not redelivered after `unpause()`.
+
+```shell
+# Halt processing, keeping reports retryable
+cast send "$RECEIVER_ADDRESS" "pause(bool)" true --rpc-url "$RPC_URL" --private-key "$PRIVATE_KEY"
+
+# Halt processing, dropping reports delivered while paused
+cast send "$RECEIVER_ADDRESS" "pause(bool)" false --rpc-url "$RPC_URL" --private-key "$PRIVATE_KEY"
+
+# Resume report processing
+cast send "$RECEIVER_ADDRESS" "unpause()" --rpc-url "$RPC_URL" --private-key "$PRIVATE_KEY"
 ```
-Transaction Type: Contract Interaction
-Function: setCallAllowed(address,bytes4,bool)
-Status: ✓ Success
-From: 0xYourAddress
-To: 0xAutomationReceiverAddress
-Gas Used: 35,400 gas
 
-Decoded Input:
-target: 0x0971Ad145A5462f6Ae18b1aD2b9c9b0c6d8CC9C8
-selector: 0x4585e33b
-allowed: true
+Pausing or deleting a workflow stops the DON from producing *new* reports, but reports already signed remain permissionlessly deliverable afterward. The on-chain `pause()` closes that gap by rejecting those in-flight reports at the receiver.
+
+#### 3e. Configure Block Number Monotonicity / Staleness Protection (Optional)
+
+Chainlink Automation's registry rejected any report whose trigger block preceded the last performed block. CRE's delivery path does **not** preserve this ordering — the Forwarder deduplicates only exact retransmissions of the same report. If your upkeep relied on that implicit ordering (typical for conditional-trigger and log-trigger upkeeps), enable this opt-in check per `(target, selector)` pair (off by default). The workflow always stamps a block number into the report payload, so you can enable this later without any workflow change.
+
+```shell
+# Enable with an explicit floor (recommended): the first accepted report must be >= this block
+cast send "$RECEIVER_ADDRESS" \
+  "setBlockNumberCheck(address,bytes4,bool,uint256)" \
+  "$TARGET_ADDRESS" "$(cast sig 'performUpkeep(bytes)')" true "$INITIAL_BLOCK" \
+  --rpc-url "$RPC_URL" --private-key "$PRIVATE_KEY"
+
+# Disable the check (also clears the stored floor)
+cast send "$RECEIVER_ADDRESS" \
+  "setBlockNumberCheck(address,bytes4,bool,uint256)" \
+  "$TARGET_ADDRESS" "$(cast sig 'performUpkeep(bytes)')" false 0 \
+  --rpc-url "$RPC_URL" --private-key "$PRIVATE_KEY"
 ```
 
-### 3c. Configure and Simulate
+Prefer an explicit `initialBlockNumber` over passing `0` (which snapshots `block.number` at that moment) — a report generated between deployment and that snapshot could still carry a higher block number and would not be rejected. Disabling the check is not retroactive: it resets the floor to `0` so out-of-order reports execute again going forward, but it does not revive reports already skipped as stale.
 
-Then install dependencies and simulate from the project root. The CRE CLI prepares the workflow build tooling during simulation.
+### 4. Configure the workflow
+
+Update `my-workflow/config.test.json`:
+
+- `receiverAddress`: Your deployed `AutomationReceiver`.
+- `targetAddress`: Your existing Automation contract.
+- `migrationType`: `CRON`, `CUSTOM`, or `LOG`.
+- `schedule`: Required for `CRON` and `CUSTOM`.
+- `targetFunction` and `targetInputs`: Required for `CRON`. These are ABI-encoded at runtime from the config string (e.g. `"performAction(uint256)"`), so unlike the `CUSTOM`/`LOG` paths they are not statically type-checked — a malformed signature or mismatched inputs fails when the workflow runs.
+- `logTriggerAddress`, `logTriggerEventSignature`, and optional `topic1`/`topic2`/`topic3`: Required for `LOG`.
+
+<Aside type="note" title="Workflow throws on startup with the zero address">
+  The workflow throws if `receiverAddress` or `targetAddress` is still the zero address, so configure this step before
+  simulating.
+</Aside>
+
+Install workflow dependencies once:
 
 ```shell
 cd my-workflow
 bun install
 cd ..
-
-cre workflow simulate my-workflow --target=test-settings
 ```
 
-For log-trigger migrations, provide a transaction hash containing the event so simulation does not wait for a live event:
+### 5. Simulate
 
 ```shell
+# For CRON (time-based) or CUSTOM (custom logic) — both run on the cron scheduler
+cre workflow simulate my-workflow --target=test-settings
+
+# For Log Trigger (requires a transaction hash containing the event)
 cre workflow simulate my-workflow \
   --target=test-settings \
   --non-interactive \
@@ -18654,7 +18711,7 @@ cre workflow simulate my-workflow \
   --evm-event-index=0
 ```
 
-### 4. Deploy
+### 6. Deploy
 
 Once verified, deploy your workflow to the CRE DON:
 
@@ -18664,19 +18721,72 @@ cre workflow deploy my-workflow --target=production-settings
 
 For end-to-end runnable examples, see the [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/automation-migration) repository.
 
+## Technical Details
+
+### Log Mapping
+
+Legacy Automation contracts expect a specific `Log` struct in `checkLog`. The template includes a utility (`mapLogToAutomation`) that maps the CRE `EVMLog` into that struct so your existing on-chain decoding logic keeps working.
+
+The CRE log does not carry the block timestamp, so `log.timestamp` is always mapped to `0`. If your `checkLog` relies on `log.timestamp`, read it from another source (e.g. an EVM read of the block) instead.
+
+### Read Finality
+
+The generated `checkUpkeep` / `checkLog` bindings read at the **last finalized block** so every DON node observes the same state and reaches consensus deterministically. This differs from Automation, which simulates against the chain head. On Ethereum mainnet finality lags the head by \~13 minutes; on most L2s it is seconds. Account for this latency when migrating time-sensitive interval checks.
+
+### Gas Limit
+
+`writeGasLimit` (default `"500000"`) caps the on-chain execution gas forwarded to `onReport`. The on-chain guard formula is `consumerGasLimit + consumerGasLimit/63 + 7,000`, but on the **first** delivery to a `(target, selector)` pair an additional \~17,500 gas is consumed before that check point (cold `SLOAD`s for identity checks, the allowlist lookup, the gas-limit read, and `paused()`). After slots warm, pre-guard overhead drops to \~5,500 gas. With the block-number monotonicity check enabled, budget a further \~10,000 gas. Set `writeGasLimit` to at least your `performGasLimit` plus \~30,000 (or \~40,000 with the monotonicity check enabled). If deliveries still fail with `InsufficientGas`, increase `writeGasLimit` in 10,000-gas increments until they pass.
+
+## Compatibility
+
+Migrating **without redeploying** your upkeep contract requires that contract to let you re-point who is authorized to call it:
+
+- Contracts that expose a setter for the Automation Forwarder / caller (the recommended Automation pattern) can simply point it at the deployed `AutomationReceiver`.
+- Contracts that **hardcode** the Automation registry/forwarder with no setter, or that have an immutable role for it, cannot be migrated in place and must be redeployed.
+
+After migration, the `msg.sender` your target sees is the `AutomationReceiver` address (not the Automation Forwarder), so authorize that address in whatever permission check your contract uses.
+
+## Out of Scope
+
+Off-chain `offchainConfig` / gas-price-threshold controls are out of scope for this template. In CRE these are expressed in the workflow, not on the registry.
+
+<Aside type="note" title="Changing AutomationReceiver.sol">
+  If you change `AutomationReceiver.sol`, regenerate the TypeScript bindings in `contracts/evm/ts/generated/` and the
+  committed ABI in `contracts/evm/src/abi/`. The workflow itself only uses the generic `writeReport` entrypoint, so it
+  is unaffected by the receiver's other ABI changes.
+</Aside>
+
 ## Troubleshooting
 
 ### CallNotAllowed Error
 
 If your workflow execution fails with a `CallNotAllowed` error, verify the following:
 
-1. **Function selector mismatch** — Ensure the selector you configured in `setCallAllowed()` matches the function your workflow is attempting to call. Use `cast sig 'functionName(types)'` to compute the correct selector. For more information, see the [Function Selector Reference](https://rareskills.io/post/function-selector).
-
+1. **Function selector mismatch** — Ensure the selector you configured in `setCallAllowed()` matches the function your workflow is attempting to call. Use `cast sig 'functionName(types)'` to compute the correct selector.
 2. **Permission not set** — Confirm that `setCallAllowed()` was called with `allowed: true` for your target contract and function selector.
+3. **Target has no code** — `setCallAllowed` reverts with `TargetHasNoCode` if `target` isn't a deployed contract when `allowed` is `true`.
 
-3. **Workflow authorization** — If you set workflow identity checks (`setExpectedAuthor`, `setExpectedWorkflowId`, or `setExpectedWorkflowName`), ensure the workflow deploying the call matches those values.
+### WorkflowIdentityNotConfigured Error
 
-4. **Forwarder mismatch** — Verify that the `KeystoneForwarder` address passed to the `AutomationReceiver` constructor matches the address for your chain in the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory-ts).
+The receiver rejects all reports until at least one complete workflow identity option is set: `setExpectedWorkflowId`, or both `setExpectedAuthor` and `setExpectedWorkflowName` together. See [3c. Set Workflow Identity Checks](#3c-set-workflow-identity-checks).
+
+### InsufficientGas Error
+
+The gas forwarded with the report fell below `consumerGasLimit + consumerGasLimit / 63 + 7,000` for that `(target, selector)` pair. Increase `writeGasLimit` in your workflow config — see [Gas Limit](#gas-limit).
+
+### EnforcedPause Error / ReportSkippedWhilePaused Event
+
+The receiver is paused. Check `paused()` and `retryableWhilePaused()`, and call `unpause()` to resume processing.
+
+### Forwarder mismatch
+
+Verify that the `KeystoneForwarder` address passed to the `AutomationReceiver` constructor matches the address for your chain in the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory-ts).
+
+## Resources
+
+- [Chainlink Automation Documentation](https://docs.chain.link/automation)
+- [CRE Getting Started Guide](/cre)
+- [Legacy Migration Toolkit](https://github.com/smartcontractkit/cla-cre-migration) (alternative manual-encoding approach)
 
 ---
 

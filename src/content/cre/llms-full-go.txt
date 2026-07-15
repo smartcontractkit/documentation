@@ -18635,204 +18635,27 @@ func InitWorkflow(config *Config) []cre.HandlerDefinition {
 
 ## Task Authoring: The "Bridge" Pattern
 
-The fastest way to migrate is using the official **Automation Migration** starter template. This template uses a "Bridge" pattern: you deploy a generic [`AutomationReceiver.sol`](https://github.com/smartcontractkit/cre-templates/blob/main/starter-templates/automation-migration/contracts/evm/src/AutomationReceiver.sol) contract, which receives CRE reports and forwards approved calls to your existing Automation contracts.
-
-Your Solidity consumer contract usually does not need to reimplement `checkUpkeep`, `checkLog`, or `performUpkeep`, but some contracts still need a permission update. If your existing contract checks `msg.sender`, uses an Automation Forwarder allowlist, or has role-based permissions, authorize the new `AutomationReceiver` or adjust that permission boundary before deployment.
-
-### Logic Migration (`checkUpkeep` → Handler)
-
-In the handler, you use `evmClient.callContract()` to perform the same checks previously done in `checkUpkeep`. Since this runs off-chain, you are not limited by on-chain gas constraints for the "check" phase.
-
-### On-chain Execution (`performUpkeep` → `onReport`)
-
-Your workflow generates a signed report and submits it to the `AutomationReceiver`. The receiver then calls the original `performUpkeep` function on your target contract.
-
-```
-// AutomationReceiver.sol (included in template)
-function _processReport(bytes calldata report) internal override {
-    (address target, bytes memory data) = abi.decode(report, (address, bytes));
-
-    if (target == address(0)) {
-        revert InvalidTargetAddress();
-    }
-
-    (bool success, bytes memory returnData) = target.call(data);
-    if (!success) {
-        revert CallExecutionFailed(target, returnData);
-    }
-}
-```
-
-`AutomationReceiver` inherits `ReceiverTemplate`, so it validates the configured CRE forwarder before processing reports. For production, also configure workflow identity checks such as expected workflow ID and/or expected workflow owner address, or narrow the receiver to known target contracts and function selectors. A generic receiver that accepts arbitrary `(target, data)` is convenient for migration, but it should not be left broadly reusable without explicit authorization controls.
-
-## Get started
-
-### 1. Initialize your project
-
-Use the CRE CLI to scaffold a new project using the migration template:
-
-```shell
-cre init --template=automation-migration-go --project-name my-automation-migration --workflow-name my-workflow
-```
-
-The template is available in the `main` branch. You can scaffold a new project using the CRE CLI:
-
-```shell
-cre init --template=automation-migration-go
-```
-
-Or browse the template directly at [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/automation-migration).
-
-### 2. Deploy the Bridge
-
-Deploy `AutomationReceiver.sol` (found in the template) to your target chain, passing the CRE `KeystoneForwarder` address for that network to the constructor. Find the correct forwarder address for your chain in the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory-go). This contract acts as a translation layer, allowing you to reuse your existing `checkUpkeep`, `checkLog`, and `performUpkeep` logic while moving trigger and check orchestration into CRE.
-
-### 3. Configure and Authorize the Receiver
-
-Update `my-workflow/config.test.json` in your new project with your previously deployed AutomationReceiver contract address, target contract address, migration type (`CRON`, `CUSTOM`, or `LOG`), schedule, and log filters if applicable.
-
-#### 3a. Allow Upkeep Calls
-
-Before your workflow can call your target contract through the receiver, you must authorize the function call using `setCallAllowed()`. This setter transaction grants the receiver permission to forward calls to your target contract with a specific function selector.
-
-**Parameters:**
-
-- **target** (address): The address of your existing Automation upkeep contract
-- **selector** (bytes4): The 4-byte function selector you want to allow (e.g., `0x4585e33b` for `performUpkeep`)
-- **allowed** (bool): Set to `true` to enable the call
-
-**Example transaction:**
-
-```
-Function: setCallAllowed (0xb1e17766)
-target (address): 0x0971Ad145A5462f6Ae18b1aD2b9c9b0c6d8CC9C8
-selector (bytes4): 0x4585e33b
-allowed (bool): true
-```
-
-#### 3b. Set Workflow Identity Checks
-
-For production deployments, configure additional authorization layers by setting expected workflow identity parameters. These optional checks ensure only authorized workflows can invoke your receiver.
-
-**Available setters:**
-
-- **setExpectedAuthor** — Restrict calls to workflows authored by a specific address
-  - Parameter: `_author` (address)
-- **setExpectedWorkflowId** — Restrict calls to a specific workflow ID
-  - Parameter: `_workflowId` (string)
-- **setExpectedWorkflowName** — Restrict calls to workflows with a specific name
-  - Parameter: `_workflowName` (string)
-
-**Example transactions:**
-
-```
-Function: setExpectedAuthor
-_author (address): 0x5c5c48fc95d68f88b4a13e0c9b0c6d8cc9c8c8c
-
-Function: setExpectedWorkflowId
-_workflowId (string): 0x0971ad145a5462f6ae18b1ad2b9c9b0c6d8cc9c8
-
-Function: setExpectedWorkflowName
-_workflowName (string): automation-migration-test
-```
-
-### Parameters Quick Reference
-
-#### Getting the Target Address
-
-The target address is the address of your existing **Automation upkeep contract** — the contract that currently implements `performUpkeep()`. You can find this by:
-
-- Reviewing your Automation registry registration
-- Checking your deployment scripts or configuration
-- Looking up the contract address in your blockchain explorer
-
-#### Computing the Function Selector
-
-The function selector is the first 4 bytes of the keccak256 hash of the function signature. Use the `cast` command-line tool to compute it:
-
-```shell
-# For performUpkeep(bytes)
-cast sig 'performUpkeep(bytes)'
-# Output: 0x4585e33b
-
-# For custom functions
-cast sig 'myCustomFunction(uint256,address)'
-# Output: 0xabcdef12
-```
-
-Alternatively, compute it programmatically in your test or deployment script:
-
-```go
-import "github.com/ethereum/go-ethereum/crypto"
-
-selector := crypto.Keccak256([]byte("performUpkeep(bytes)"))[:4]
-// Result: 0x4585e33b
-```
-
-### Example Transaction Outputs
-
-A successful `setCallAllowed` transaction on a block explorer shows:
-
-```
-Transaction Type: Contract Interaction
-Function: setCallAllowed(address,bytes4,bool)
-Status: ✓ Success
-From: 0xYourAddress
-To: 0xAutomationReceiverAddress
-Gas Used: 35,400 gas
-
-Decoded Input:
-target: 0x0971Ad145A5462f6Ae18b1aD2b9c9b0c6d8CC9C8
-selector: 0x4585e33b
-allowed: true
-```
-
-### 3c. Configure and Simulate
-
-Then install dependencies and simulate from the project root. The CRE CLI prepares the workflow build tooling during simulation.
-
-```shell
-cd my-workflow
-bun install
-cd ..
-
-cre workflow simulate my-workflow --target=test-settings
-```
-
-For log-trigger migrations, provide a transaction hash containing the event so simulation does not wait for a live event:
-
-```shell
-cre workflow simulate my-workflow \
-  --target=test-settings \
-  --non-interactive \
-  --trigger-index=0 \
-  --evm-tx-hash=0x... \
-  --evm-event-index=0
-```
-
-### 4. Deploy
-
-Once verified, deploy your workflow to the CRE DON:
-
-```shell
-cre workflow deploy my-workflow --target=production-settings
-```
-
-For end-to-end runnable examples, see the [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/automation-migration) repository.
-
-## Troubleshooting
-
-### CallNotAllowed Error
-
-If your workflow execution fails with a `CallNotAllowed` error, verify the following:
-
-1. **Function selector mismatch** — Ensure the selector you configured in `setCallAllowed()` matches the function your workflow is attempting to call. Use `cast sig 'functionName(types)'` to compute the correct selector. For more information, see the [Function Selector Reference](https://rareskills.io/post/function-selector).
-
-2. **Permission not set** — Confirm that `setCallAllowed()` was called with `allowed: true` for your target contract and function selector.
-
-3. **Workflow authorization** — If you set workflow identity checks (`setExpectedAuthor`, `setExpectedWorkflowId`, or `setExpectedWorkflowName`), ensure the workflow deploying the call matches those values.
-
-4. **Forwarder mismatch** — Verify that the `KeystoneForwarder` address passed to the `AutomationReceiver` constructor matches the address for your chain in the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory-go).
+<Aside type="caution" title="Automation Migration template is TypeScript-only">
+  The official **Automation Migration** starter template — the `AutomationReceiver.sol` bridge contract, its Foundry
+  deployment tooling, and the full guided setup (allowlisting, workflow identity checks, gas limits, emergency pause,
+  staleness protection) — is currently only published for TypeScript workflows
+  (`cre init --template=automation-migration-ts`). There is no `automation-migration-go` template yet.
+
+  **To migrate a Go project today**, follow the [TypeScript CLA migration guide](/cre/reference/cla-migration-ts) to
+  scaffold the template, deploy and configure `AutomationReceiver.sol`, and author the bridge workflow — the on-chain
+  contract and its `cast`/Foundry configuration steps are language-agnostic and apply the same way regardless of which
+  language your other workflows use. Author any additional Go workflows separately using the trigger patterns on this
+  page, and consult the [Chainlink Automation Documentation](https://docs.chain.link/automation) or the
+  [Legacy Migration Toolkit](https://github.com/smartcontractkit/cla-cre-migration) for a manual, template-free
+  encoding approach if you'd prefer to keep the whole migration in Go.
+</Aside>
+
+## Resources
+
+- [Migrate from Chainlink Automation to Chainlink CRE (TypeScript)](/cre/reference/cla-migration-ts) — the full Bridge-pattern walkthrough, including `AutomationReceiver.sol` deployment and configuration
+- [Chainlink Automation Documentation](https://docs.chain.link/automation)
+- [CRE Getting Started Guide](/cre)
+- [Legacy Migration Toolkit](https://github.com/smartcontractkit/cla-cre-migration) (alternative manual-encoding approach)
 
 ---
 
