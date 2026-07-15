@@ -383,6 +383,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                 "cre/guides/workflow/using-solana-client/onchain-write-go",
               ],
             },
+            {
+              title: "Forwarder Directory",
+              url: "cre/guides/workflow/using-solana-client/forwarder-directory",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-solana-client/forwarder-directory-ts",
+                "cre/guides/workflow/using-solana-client/forwarder-directory-go",
+              ],
+            },
           ],
         },
         {
