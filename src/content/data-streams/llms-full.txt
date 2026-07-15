@@ -7710,18 +7710,21 @@ Deploy `ClientReportsVerifier` to *Arbitrum Sepolia*, passing the Chainlink-depl
 forge create src/ClientReportsVerifier.sol:ClientReportsVerifier \
   --rpc-url $RPC_URL \
   --account dataStreamsWallet \
+  --broadcast \
   --constructor-args 0x2ff010DEbC1297f19579B4246cad07bd24F2488A
 ```
 
 Expect output similar to:
 
 ```bash
-[⠒] Compiling...
+[⠊] Compiling...
 No files changed, compilation skipped
 Deployer: 0xYourWalletAddress
 Deployed to: 0xYourContractAddress
 Transaction hash: 0xYourTransactionHash
 ```
+
+You can view the deployed contract on the [Arbitrum Sepolia explorer](https://sepolia.arbiscan.io/address/0xYourContractAddress). For a real example, see this [deployed contract](https://sepolia.arbiscan.io/address/0x546BD7DEFa79060eEf1fB5F99F5790B335376A7D) from a test run.
 
 Save the `Deployed to` address — you'll need it for the remaining steps. Export it as an environment variable:
 
@@ -7804,17 +7807,17 @@ cast send $CONTRACT_ADDRESS \
 Expect output similar to:
 
 ```bash
-blockHash            0x...
-blockNumber          12345678
+blockHash            0xecdaf4164a7b440557a7f3ac1dd6a95b74d6ff22a8f1dc8d02778c403e449d96
+blockNumber          287851808
 contractAddress
 from                 0xYourWalletAddress
-gasUsed              250000
+gasUsed              118541
 status               1 (success)
 to                   0xYourContractAddress
-transactionHash      0x...
+transactionHash      0xac09ea7b489fe0d41dad9dd82e7ed3ebabe9124f89ffe350ec7df746b9f8b6da
 ```
 
-A `status` of `1` means the transaction succeeded and the report was verified.
+A `status` of `1` means the transaction succeeded and the report was verified. You can view the transaction on the [Arbitrum Sepolia explorer](https://sepolia.arbiscan.io/tx/0xac09ea7b489fe0d41dad9dd82e7ed3ebabe9124f89ffe350ec7df746b9f8b6da).
 
 ### Read the decoded price
 
@@ -7829,10 +7832,10 @@ cast call $CONTRACT_ADDRESS \
 Example output:
 
 ```bash
-3865052126782320350000
+1926616346301577350000
 ```
 
-This is the ETH/USD price with 18 decimal places: **3,865.05 USD**. Each stream uses a different number of decimal places — see the [Stream Addresses](/data-streams/crypto-streams) page for details.
+This is the ETH/USD price with 18 decimal places: **\~1,926.62 USD**. Each stream uses a different number of decimal places — see the [Stream Addresses](/data-streams/crypto-streams) page for details.
 
 ## Verify multiple reports
 
@@ -7862,21 +7865,45 @@ cast send $CONTRACT_ADDRESS \
   --account dataStreamsWallet
 ```
 
+Expect output similar to:
+
+```bash
+blockHash            0x5d89e4caf23eac7339e3a64348364821a622b0c30617954bdf250512e7ac78f1
+blockNumber          287851901
+contractAddress
+from                 0xYourWalletAddress
+gasUsed              207014
+status               1 (success)
+to                   0xYourContractAddress
+transactionHash      0x67ba5902005ed54cb38826381ca3cede6938442996839bb5cb9341e732e6ec77
+```
+
+A `status` of `1` means the transaction succeeded and both reports were verified. You can view the transaction on the [Arbitrum Sepolia explorer](https://sepolia.arbiscan.io/tx/0x67ba5902005ed54cb38826381ca3cede6938442996839bb5cb9341e732e6ec77).
+
 After the transaction succeeds, read the decoded prices. `lastDecodedPrices` is a dynamic array — you can read individual entries by index:
 
 ```bash
-# First price (index 0)
+# First price (index 0) — ETH/USD
 cast call $CONTRACT_ADDRESS \
   "lastDecodedPrices(uint256)(int192)" \
   0 \
   --rpc-url $RPC_URL
 
-# Second price (index 1)
+# Second price (index 1) — LINK/USD
 cast call $CONTRACT_ADDRESS \
   "lastDecodedPrices(uint256)(int192)" \
   1 \
   --rpc-url $RPC_URL
 ```
+
+Example output:
+
+```bash
+1926607236156530850000
+8531864121895529000
+```
+
+These are the ETH/USD and LINK/USD prices with 18 decimal places: **\~1,926.61 USD** and **\~8.53 USD** respectively.
 
 ## Recover tokens
 
