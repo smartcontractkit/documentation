@@ -7,7 +7,7 @@ pageId: "reference-sdk-http-client"
 metadata:
   description: "Reference for Go HTTP Client: complete API for GET/POST requests, headers, authentication, and consensus aggregation methods."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-07-06"
 ---
 
 import { Aside } from "@components"
@@ -19,15 +19,17 @@ The HTTP Client lets you make requests to external APIs from your workflow. Each
 - Fetching data from REST APIs ([GET requests](/cre/guides/workflow/using-http-client/get-request))
 - Sending data to webhooks ([POST requests](/cre/guides/workflow/using-http-client/post-request))
 - Submitting reports to offchain systems ([Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http))
+- Verifying reports received over HTTP ([Report verification](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go))
 
 ## Quick reference
 
-| Method                                                 | Use When                                  | Guide                                                                                                                   |
-| ------------------------------------------------------ | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| [`http.SendRequest`](#httpsendrequest)                 | Making HTTP calls (recommended)           | [GET](/cre/guides/workflow/using-http-client/get-request) / [POST](/cre/guides/workflow/using-http-client/post-request) |
-| [`client.SendRequest`](#clientsendrequest)             | Complex scenarios requiring fine control  | [GET](/cre/guides/workflow/using-http-client/get-request#2-the-creruninnodemode-pattern-low-level)                      |
-| [`sendRequester.SendReport`](#sendrequestersendreport) | Submitting reports via HTTP (recommended) | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http)                                     |
-| [`client.SendReport`](#clientsendreport)               | Complex report submission scenarios       | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http#advanced-low-level-pattern)          |
+| Method                                                              | Use When                                  | Guide                                                                                                                   |
+| ------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| [`http.SendRequest`](#httpsendrequest)                              | Making HTTP calls (recommended)           | [GET](/cre/guides/workflow/using-http-client/get-request) / [POST](/cre/guides/workflow/using-http-client/post-request) |
+| [`client.SendRequest`](#clientsendrequest)                          | Complex scenarios requiring fine control  | [GET](/cre/guides/workflow/using-http-client/get-request#2-the-creruninnodemode-pattern-low-level)                      |
+| [`sendRequester.SendReport`](#sendrequestersendreport)              | Submitting reports via HTTP (recommended) | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http)                                     |
+| [`client.SendReport`](#clientsendreport)                            | Complex report submission scenarios       | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http#advanced-low-level-pattern)          |
+| [`cre.ParseReport`](/cre/reference/sdk/core-go#report-verification) | Verifying received reports (receiver)     | [Report verification](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go)                             |
 
 ## Core types
 
@@ -35,24 +37,112 @@ The HTTP Client lets you make requests to external APIs from your workflow. Each
 
 Defines the parameters for an outgoing HTTP request.
 
-| <div style="width: 120px;">Field</div> | <div style="width: 200px;">Type</div> | Description                                                                                                               |
-| -------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `Url`                                  | `string`                              | The URL of the API endpoint.                                                                                              |
-| `Method`                               | `string`                              | The HTTP method (e.g., `"GET"`, `"POST"`).                                                                                |
-| `Headers`                              | `map[string]string`                   | Optional HTTP headers.                                                                                                    |
-| `Body`                                 | `[]byte`                              | Optional raw request body.                                                                                                |
-| `Timeout`                              | `*durationpb.Duration`                | Optional request timeout duration. Set using `durationpb.New()`, e.g., `durationpb.New(30 * time.Second)` for 30 seconds. |
-| `CacheSettings`                        | `*CacheSettings`                      | Optional caching behavior for the request.                                                                                |
+{/* prettier-ignore */}
+<Aside type="caution" title="Redirects are not supported">
+  HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
+</Aside>
+
+| <div style="width: 120px;">Field</div> | <div style="width: 200px;">Type</div> | Description                                                                                                                    |
+| -------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `Url`                                  | `string`                              | The URL of the API endpoint.                                                                                                   |
+| `Method`                               | `string`                              | The HTTP method (e.g., `"GET"`, `"POST"`).                                                                                     |
+| `MultiHeaders`                         | `map[string]*HeaderValues`            | Optional HTTP headers (recommended). Supports multiple values per header name. See [`HeaderValues`](#http-headervalues) below. |
+| `Headers`                              | `map[string]string`                   | **Deprecated.** Use `MultiHeaders` instead. Single-value headers only.                                                         |
+| `Body`                                 | `[]byte`                              | Optional raw request body.                                                                                                     |
+| `Timeout`                              | `*durationpb.Duration`                | Optional request timeout. See [Request Timeout](#request-timeout) below for usage, defaults, and limits.                       |
+| `CacheSettings`                        | `*CacheSettings`                      | Optional caching behavior for the request.                                                                                     |
+
+### Request Timeout
+
+The `Timeout` field specifies how long to wait for an HTTP request to complete before cancelling it.
+
+**Format:**
+
+- Use `*durationpb.Duration` from the [`google.golang.org/protobuf/types/known/durationpb` package](https://pkg.go.dev/google.golang.org/protobuf/types/known/durationpb)
+- Create using `durationpb.New()` with a `time.Duration` value
+- Or manually construct with `&durationpb.Duration{Seconds: int64}`
+
+**Default and Limits:**
+
+- **Default**: If not specified, a default timeout of **5 seconds** is applied.
+- **Maximum**: Default maximum is **10 seconds**. Requests exceeding this limit will error.
+
+**Pattern 1: Using `durationpb.New()`:**
+
+```go
+import (
+    "time"
+    "google.golang.org/protobuf/types/known/durationpb"
+)
+
+resp, err := sendRequester.SendRequest(&http.Request{
+    Url:     config.ApiUrl,
+    Method:  "GET",
+    Timeout: durationpb.New(8 * time.Second), // 8 second timeout
+}).Await()
+```
+
+**Pattern 2: Parsing from config:**
+
+```go
+import (
+    "time"
+    "fmt"
+    "google.golang.org/protobuf/types/known/durationpb"
+)
+
+type Config struct {
+    ApiUrl    string `yaml:"apiUrl"`
+    TimeoutMs string `yaml:"timeout"` // e.g., "5s", "10s"
+}
+
+func fetchData(config *Config, logger *slog.Logger, sendRequester *http.SendRequester) (string, error) {
+    // Parse duration string from config
+    t, err := time.ParseDuration(config.TimeoutMs)
+    if err != nil {
+        return "", fmt.Errorf("failed to parse duration (%s): %w", config.TimeoutMs, err)
+    }
+
+    logger.Info("parsed timeout", "seconds", t.Seconds(), "raw", config.TimeoutMs)
+
+    // Create Duration from parsed time
+    timeout := &durationpb.Duration{
+        Seconds: int64(t.Seconds()),
+    }
+
+    resp, err := sendRequester.SendRequest(&http.Request{
+        Url:     config.ApiUrl,
+        Method:  "GET",
+        Timeout: timeout,
+    }).Await()
+
+    if err != nil {
+        logger.Info("http request failed", "error", err)
+        return "", err
+    }
+
+    return string(resp.Body), nil
+}
+```
+
+**Example configuration:**
+
+```yaml
+# config.yaml
+apiUrl: "https://api.example.com/data"
+timeout: "8s" # Go's time.ParseDuration format (max: 10s)
+```
 
 ### `http.Response`
 
 The result of the HTTP call from a single node. If the request fails, the error is returned by the `.Await()` call on the `Promise`.
 
-| Field        | Type                | Description                |
-| ------------ | ------------------- | -------------------------- |
-| `StatusCode` | `uint32`            | The HTTP status code.      |
-| `Headers`    | `map[string]string` | The HTTP response headers. |
-| `Body`       | `[]byte`            | The raw response body.     |
+| Field          | Type                       | Description                                                                |
+| -------------- | -------------------------- | -------------------------------------------------------------------------- |
+| `StatusCode`   | `uint32`                   | The HTTP status code.                                                      |
+| `MultiHeaders` | `map[string]*HeaderValues` | The HTTP response headers, with multiple values per name where applicable. |
+| `Headers`      | `map[string]string`        | **Deprecated.** Use `MultiHeaders` instead.                                |
+| `Body`         | `[]byte`                   | The raw response body.                                                     |
 
 ### `http.CacheSettings`
 
@@ -90,6 +180,27 @@ When you make HTTP requests in CRE, **all nodes in the DON execute the request b
   - For GET operations where you want to reuse data: Set this to your desired cache duration
 
 For practical examples, see the [POST request guide](/cre/guides/workflow/using-http-client/post-request#1-understanding-single-execution-with-cachesettings).
+
+### `http.HeaderValues`
+
+Holds one or more values for a single HTTP header name. Used as the value type in `MultiHeaders` on both requests and responses.
+
+| Field    | Type       | Description                                    |
+| -------- | ---------- | ---------------------------------------------- |
+| `Values` | `[]string` | One or more string values for the header name. |
+
+**Example:**
+
+```go
+req := &http.Request{
+    Url:    config.ApiUrl,
+    Method: "GET",
+    MultiHeaders: map[string]*http.HeaderValues{
+        "Accept":       {Values: []string{"application/json"}},
+        "X-Custom-Key": {Values: []string{"value1", "value2"}},
+    },
+}
+```
 
 ## Making HTTP requests
 
@@ -311,3 +422,8 @@ func formatReport(r *sdk.ReportResponse) (*http.Request, error) {
 ```
 
 For complete examples of including signatures in different formats (body, headers, JSON), see the [Submitting Reports via HTTP guide](/cre/guides/workflow/using-http-client/submitting-reports-http#formatting-patterns).
+
+{/* prettier-ignore */}
+<Aside type="note" title="Receiving and verifying reports">
+  If your workflow **receives** reports (for example via an HTTP trigger), use [`cre.ParseReport`](/cre/reference/sdk/core-go#report-verification) before trusting payload data. See [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go).
+</Aside>

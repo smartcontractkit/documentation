@@ -45,7 +45,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 ## Requirements
 
 - **Rust**: Make sure you have Rust installed. You can install Rust by following the instructions on the official [Rust website](https://www.rust-lang.org/tools/install).
-- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
+- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chain.link/contact?ref_id=datastreams) to request mainnet or testnet access.
 
 ## Tutorial
 
@@ -231,7 +231,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
    ).build()?;
    ```
 
-   This configuration also specifies the `rest_url`, which is the base URL for the API, along with the WebSocket endpoint [for subscribing to a streamed data report](rust-sdk-stream). In this example, both are set to the testnet URLs for Data Streams.
+   This configuration also specifies the `rest_url`, which is the base URL for the API, along with the WebSocket endpoint for subscribing to a streamed data report. In this example, both are set to the testnet URLs for Data Streams.
 
    See the [Rust SDK Reference](/data-streams/reference/data-streams-api/rust-sdk#configuration-reference) page for more configuration options.
 
@@ -348,7 +348,7 @@ let config = Config::new(
     api_key,
     api_secret,
     "https://api.dataengine.chain.link".to_string(), // Mainnet endpoint
-    "wss://ws.dataengine.chain.link,wss://ws.dataengine.chain.link".to_string(), // Multiple WebSocket endpoints
+    "wss://ws.dataengine.chain.link".to_string(), // Mainnet WebSocket endpoint
 )
 .with_ws_ha(WebSocketHighAvailability::Enabled) // Enable WebSocket High Availability Mode
 .build()?;
@@ -356,6 +356,8 @@ let config = Config::new(
 
 // ... existing code ...
 ```
+
+When `WebSocketHighAvailability::Enabled` is set, the SDK automatically discovers multiple origin endpoints behind the single URL and establishes separate connections to each origin.
 
 See more details about HA mode in the [SDK Reference](/data-streams/reference/data-streams-api/rust-sdk#high-availability-mode).
 

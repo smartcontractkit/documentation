@@ -44,7 +44,7 @@ func onHttpTrigger(config *Config, runtime cre.Runtime, payload *http.Payload) (
     logger := runtime.Logger()
 
     // Unmarshal the JSON input from bytes
-    var requestData map[string]interface{}
+    var requestData map[string]any
     if err := json.Unmarshal(payload.Input, &requestData); err != nil {
         return nil, fmt.Errorf("failed to unmarshal input: %w", err)
     }
@@ -92,7 +92,7 @@ func onHttpTrigger(config *Config, runtime cre.Runtime, payload *http.Payload) (
 
     // The payload.Input is []byte containing JSON data.
     // Unmarshal it into a map or a custom struct.
-    var requestData map[string]interface{}
+    var requestData map[string]any
     if err := json.Unmarshal(payload.Input, &requestData); err != nil {
         return nil, fmt.Errorf("failed to unmarshal input: %w", err)
     }

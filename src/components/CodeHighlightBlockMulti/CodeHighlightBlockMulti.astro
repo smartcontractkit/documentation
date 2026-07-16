@@ -789,6 +789,13 @@ const languageDisplay = getLanguageDisplayName(currentLang)
 
     // Simple syntax highlighting function
     function highlightInIsolation(code, language) {
+      // First, HTML-escape the code to prevent code parts from being interpreted as tags
+      const escapeHtml = (text) => {
+        const div = document.createElement("div")
+        div.textContent = text
+        return div.innerHTML
+      }
+
       const goKeywords = ["package", "import", "func", "type", "struct", "if", "else", "for", "return", "var", "const"]
       const goTypes = ["string", "int", "bool", "error", "interface{}"]
 
@@ -813,7 +820,7 @@ const languageDisplay = getLanguageDisplayName(currentLang)
       ]
       const tsTypes = ["string", "number", "boolean", "void", "any", "unknown", "object", "Array"]
 
-      let highlighted = code
+      let highlighted = escapeHtml(code)
 
       if (language === "go") {
         // Highlight strings

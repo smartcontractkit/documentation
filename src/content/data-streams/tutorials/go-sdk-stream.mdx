@@ -46,7 +46,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 
 - **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
 - **Go Version**: Make sure you have Go version 1.21 or higher. You can check your current version by running `go version` in your terminal and download the latest version from the official [Go website](https://go.dev/) if necessary.
-- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
+- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chain.link/contact?ref_id=datastreams) to request mainnet or testnet access.
 
 ## Tutorial
 
@@ -394,9 +394,24 @@ See more details about HA mode in the [SDK Reference](/data-streams/reference/da
 
 ### Payload for onchain verification
 
-In this tutorial, you logged and decoded the `full_report` payloads to extract the report data. However, in a production environment, you should verify the data to ensure its integrity and authenticity.
+The `fullReport` field in each streamed report is the signed payload you pass directly to `VerifierProxy.verify()` (or `verifyBulk()`) for onchain verification. No transformation or re-encoding is needed — the raw bytes from the stream are the input.
 
-Refer to the [Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification) tutorial to learn more.
+From the example output above, the `fullReport` for the first ETH/USD report looks like this:
+
+```
+0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff15780000000000000000000000000000000000000000000000000000000035252f11000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000066aa9fd30000000000000000000000000000000000000000000000000000000066aa9fd300000000000000000000000000000000000000000000000000001c23cdce76d0000000000000000000000000000000000000000000000000001ba0a27c8b79d40000000000000000000000000000000000000000000000000000000066abf1530000000000000000000000000000000000000000000000af35b91cbc421fe2800000000000000000000000000000000000000000000000af354910dbd1830c200000000000000000000000000000000000000000000000af3629289cb2be3f800000000000000000000000000000000000000000000000000000000000000002e03c8b14707a80c59922eeb6b89c79dd8ac6b4b925203b3fe2f0903ba6765934aaf6c4170522c0e54abecb90e7ba7b26e27a83b12740e6a6fd5835c5ece9034c000000000000000000000000000000000000000000000000000000000000000252088e89df570d7022fd2bfc71eb53bfe72423ccba1834a785d80c278b334fab65d4acced307504358554844c2007ab0322b7ab2b7bfa2bc39563bf823654a36
+```
+
+This payload is ABI-encoded and contains the report header, the DON-signed report body, and the signatures used for onchain verification. You do not need to decode or inspect it before passing it to the Verifier — the `VerifierProxy` handles all of that.
+
+In Go, `reportResponse.FullReport` holds this value and can be passed directly to your verification contract:
+
+```go
+// reportResponse.FullReport is the bytes value to pass as `payload` to VerifierProxy.verify()
+decodedReport, err := report.Decode[v3.Data](reportResponse.FullReport)
+```
+
+Refer to the [Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification) tutorial for a step-by-step walkthrough of the full onchain verification flow.
 
 ## Adapting code for different report schema versions
 

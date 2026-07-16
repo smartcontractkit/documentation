@@ -7,7 +7,7 @@ pageId: "cli-project-setup"
 metadata:
   description: "Initialize Go projects with CLI: complete reference for cre init and generate-bindings commands to start building workflows."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-03-26"
 ---
 
 import { Aside } from "@components"
@@ -40,11 +40,17 @@ cre init [flags]
 
 **Flags:**
 
-| Flag                  | Description                        |
-| --------------------- | ---------------------------------- |
-| `-p, --project-name`  | Name for the new project           |
-| `-t, --template-id`   | ID of the workflow template to use |
-| `-w, --workflow-name` | Name for the new workflow          |
+| Flag                    | Description                                                                                                                                                                                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--non-interactive`     | Fail instead of prompting; supply all inputs via flags (for **CI/CD** and non-TTY environments).                                                                                                                                                 |
+| `-p, --project-name`    | Name for the new project (required for a new project when using `--non-interactive`).                                                                                                                                                            |
+| `-t, --template`        | Template name to use (for example `hello-world-go`). Run `cre templates list` to see IDs and required networks.                                                                                                                                  |
+| `-w, --workflow-name`   | Name for the new workflow.                                                                                                                                                                                                                       |
+| `--deployment-registry` | Registry ID to write into the generated `workflow.yaml` (e.g. `private` or `onchain:ethereum-mainnet`). Run `cre registry list` to see available IDs. In `--non-interactive` mode, omitting this flag prints a warning and defaults to on-chain. |
+| `--refresh`             | Bypass the template cache and fetch fresh data from GitHub.                                                                                                                                                                                      |
+| `--rpc-url`             | RPC endpoint for a chain, repeatable. Format: `chain-name=url`. Often **required** with `--non-interactive` when the template needs RPCs.                                                                                                        |
+
+Inherited [global flags](/cre/reference/cli#global-flags) include **`-R, --project-root`**, which `cre init` uses as the directory where the project is created when you pass it explicitly.
 
 **Interactive mode (recommended):**
 
@@ -52,8 +58,14 @@ Running `cre init` without flags starts an interactive setup that guides you thr
 
 1. **Project name** (only if creating a new project)
 1. **Language** (Go or TypeScript)
-1. **Workflow template** (example templates for the chosen language)
+1. **Workflow template** (fetched dynamically from configured template sources)
 1. **Workflow name**
+1. **Deployment registry** — select which registry the generated `workflow.yaml` targets. Private (off-chain) registries appear first with the cursor defaulted to them. If your organization has no registries configured, this step is skipped and the field is omitted from `workflow.yaml`.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Template sources">
+  Templates are fetched at runtime from GitHub. The Chainlink official repository is included by default. To browse available templates or add custom sources, see [Template Sources](/cre/reference/cli/templates).
+</Aside>
 
 **Example:**
 
@@ -62,19 +74,23 @@ Running `cre init` without flags starts an interactive setup that guides you thr
 cre init
 ```
 
-**Non-interactive mode:**
+**Non-interactive mode (scripting / CI):**
+
+Pass **`--non-interactive`** plus the flags your template needs. Use **`cre templates list`** (or **`cre templates list --json`**) to see **required networks** and choose **`--rpc-url`** values.
 
 ```bash
-# Create a new project with initial workflow
 cre init \
+  --non-interactive \
   --project-name my-cre-project \
   --workflow-name my-workflow \
-  --template-id 1
+  --template hello-world-go \
+  --deployment-registry private \
+  --rpc-url sepolia=https://sepolia.infura.io/v3/YOUR_KEY
 ```
 
+{/* prettier-ignore */}
 <Aside type="note" title="Interactive vs. non-interactive">
-  For most users, running `cre init` without flags (interactive mode) is the easiest way to set up a project. The CLI
-  will guide you through the setup process with clear prompts.
+  For most users, `cre init` without flags is easiest. With **`--non-interactive`**, the CLI does not prompt; if RPC URLs are required and there is no TTY, you get a clear error — pass the needed flags up front. If `--deployment-registry` is omitted in `--non-interactive` mode, the CLI prints a warning and defaults to the onchain registry.
 </Aside>
 
 For a detailed walkthrough, see [Part 1 of the Getting Started guide](/cre/getting-started/part-1-project-setup).
@@ -108,6 +124,17 @@ cre generate-bindings <chain-family> [flags]
 | `-k, --pkg`                                | Base package name; each contract gets its own subdirectory (default: `"bindings"`) |
 | `-p, --project-root`                       | Path to project root directory (default: current directory)                        |
 
+**Supported input file formats:**
+
+The command accepts two ABI file formats in the same directory:
+
+| Format        | Extension | Description                                                                             |
+| ------------- | --------- | --------------------------------------------------------------------------------------- |
+| Raw ABI       | `*.abi`   | A JSON array of ABI entries, as output by `solc` or extracted from a compiled artifact  |
+| JSON artifact | `*.json`  | A compiled artifact file (Hardhat, Foundry, or any tool) with a top-level `"abi"` field |
+
+Both formats can coexist in the same `--abi` directory. The CLI detects the format automatically based on file extension and content.
+
 **How it works:**
 
 - Supports EVM chain family and Go language
@@ -123,6 +150,14 @@ cre generate-bindings <chain-family> [flags]
 - Generate bindings for all ABI files in the default directory
 
   ```bash
+  cre generate-bindings evm
+  ```
+
+- Generate bindings from Hardhat/Foundry artifact files (`.json`)
+
+  ```bash
+  # Place your compiled artifact files in contracts/evm/src/abi/
+  # The CLI reads the "abi" field from each .json file automatically
   cre generate-bindings evm
   ```
 

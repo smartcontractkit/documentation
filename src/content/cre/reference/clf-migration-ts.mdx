@@ -1,0 +1,294 @@
+---
+section: cre
+date: Last Modified
+title: "Migrate from Chainlink Functions to Chainlink CRE"
+pageId: "clf-migration"
+sdkLang: "ts"
+metadata:
+  description: "Migrate from Chainlink Functions (CLF) to Chainlink CRE. Concept mapping, chain support, triggers, task authoring, secrets, onchain writes, deployment, and monitoring."
+  datePublished: "2026-05-11"
+  lastModified: "2026-05-11"
+---
+
+import { Aside } from "@components"
+
+<Aside type="caution" title="Chainlink Functions sunsets June 30, 2026 (testnet: June 15, 2026)">
+  Migrate to the [Chainlink Runtime Environment (CRE)](/cre), which does everything and more →. Migrate your existing subscriptions before these dates to avoid service disruption.
+
+**Temporary Service Interruptions:**
+
+- Jun 18, 9:00 AM–1:00 PM EDT (4 hours)
+- Jun 22, 6:00 AM–2:00 PM EDT (8 hours)
+- Jun 24, 9:00 AM–Jun 25, 9:00 AM EDT (24 hours)
+
+</Aside>
+
+<Aside type="note" title="SDK Language: TypeScript">
+  You're viewing the **TypeScript** version of this guide. If you prefer Go, use the language selector in the left
+  sidebar to switch to the Go version.
+</Aside>
+
+This guide is for developers with production [Chainlink Functions (CLF)](/chainlink-functions) subscriptions migrating their requests to the [Chainlink Runtime Environment (CRE)](/cre) before mainnet shutdown on **June 30, 2026**.
+
+The majority of CLF use cases involve fetching off-chain data over HTTP and returning it to a consumer contract. That maps cleanly to a CRE workflow: a trigger (Cron, HTTP, or EVM Log) → an HTTP fetch → a signed report written on-chain to an `IReceiver` consumer.
+
+## How CLF and CRE differ
+
+In CLF, you trigger an execution by calling `sendRequest()` on your Functions consumer contract, which calls `_sendRequest()` on the Functions Router with an inline JavaScript source string. The DON runs the JS, reaches consensus on the return value, and posts it back to your consumer's `fulfillRequest()` callback.
+
+In CRE, the unit of execution is a [**workflow**](/cre/key-terms#workflow) - a TypeScript (or Go) project compiled to WebAssembly and registered with the network. Workflows are started by [**triggers**](/cre/key-terms#trigger) (cron schedule, HTTP request, or onchain log event), can perform multiple steps (HTTP fetches, onchain reads, onchain writes, calls to other [capabilities](/cre/key-terms#capability)) wrapped in your own business logic, and write data onchain through a signed-report flow that any contract implementing `IReceiver` can consume.
+
+Functionally, CRE is a superset of CLF: anything CLF does today, CRE does, and most multi-step patterns that previously required CLF + Automation + an offchain relayer collapse into a single workflow.
+
+## Chain support
+
+CRE supports every chain CLF runs on today **except Soneium** (mainnet and Minato testnet) and **Celo Alfajores** testnet. CRE also runs on a long list of networks that CLF never supported.
+
+For the canonical, up-to-date list of supported chains, see [Supported Networks](/cre/supported-networks-ts).
+
+## Terminology
+
+| Chainlink Functions                                 | Chainlink CRE                                                              |
+| :-------------------------------------------------- | :------------------------------------------------------------------------- |
+| `FunctionsClient` consumer contract                 | `IReceiver` consumer contract (use `ReceiverTemplate`)                     |
+| `_sendRequest()` from a consumer                    | EVM Log trigger (replaces on-chain entry path)                             |
+| Inline JavaScript source (Deno sandbox)             | TypeScript (or Go) workflow compiled to WASM (not compatible with node.js) |
+| `Functions.makeHttpRequest()`                       | `runtime.http.sendRequest()`                                               |
+| `fulfillRequest(requestId, response, err)` callback | `_onReport(metadata, payload)` on the receiver                             |
+| DON-hosted / remote-hosted secrets                  | Vault DON + `secrets.yaml` + `runtime.getSecret()`                         |
+| `@chainlink/functions-toolkit`, Hardhat Starter Kit | `@chainlink/cre-sdk`, `cre-cli`, `cre-templates`                           |
+| Functions Playground UI                             | CRE CLI `cre workflow simulate`                                            |
+| Automation Time-based Upkeep → `sendRequest()`      | Built-in Cron trigger - no Automation upkeep needed                        |
+| `donId` + router address per chain                  | Chain selector + forwarder address per chain                               |
+
+## Configuration
+
+A CRE project is a standalone repository, not a string-encoded JavaScript source. The CLI (`cre`) scaffolds a project with the following files:
+
+- **`main.ts`** - workflow code: trigger registration, handler logic, and capability calls.
+- **`config.json`** - non-secret runtime configuration (API URLs, contract addresses, chain selectors).
+- **`secrets.yaml`** - secret declarations; values are supplied via `.env` files locally and via the Vault DON in production.
+- **`workflow.yaml`** - workflow metadata: name, owner, secrets path, and target network.
+- **`project.yaml`** - project-level CRE settings.
+
+There is no equivalent in CLF, where the entire program is a string passed directly to `_sendRequest()`.
+
+## Triggers
+
+CLF has exactly one entry path: a Solidity transaction calling `sendRequest()`. Anything else (scheduled execution, offchain trigger, reaction to an event) requires gluing CLF together with Automation, an offchain cron, or a custom indexer. CRE makes the [trigger](/cre/guides/workflow/using-triggers/overview) first-class.
+
+### Time-based
+
+Replaces "[Automation Time-based Upkeep](/chainlink-functions/tutorials/automate-functions) calling `sendRequest()`." Use a [cron trigger](/cre/guides/workflow/using-triggers/cron-trigger-ts) directly.
+
+```ts
+const trigger = cre.capabilities.cron.trigger({ schedule: "*/5 * * * *" }) // every 5 min
+```
+
+Standard 5- or 6-field cron expressions; minimum interval is 30 seconds. Prefix with `TZ=<timezone>` for timezone-aware scheduling.
+
+### Onchain events
+
+Directly replaces the on-chain entry path of `_sendRequest()`. Instead of your contract calling the DON, the DON watches for a specific event emitted by your contract (or any contract) and fires the handler with the decoded event data.
+
+```ts
+const evmClient = new cre.evm.EVMClient(CHAIN_SELECTOR)
+const trigger = evmClient.logTrigger({
+  addresses: [/* base64-encoded contract address */],
+  topics: [/* base64-encoded event signature hash */],
+})
+```
+
+### HTTP triggers
+
+Replaces patterns where an off-chain application or webhook would send a Solidity transaction solely to trigger a Functions request. The workflow exposes an HTTPS endpoint on the CRE gateway; callers POST a JSON payload signed with an authorized EVM key.
+
+```ts
+const trigger = cre.capabilities.http.trigger({
+  authorizedKeys: [{ type: "EVM", key: "0xYourAuthorizedSigner" }],
+})
+```
+
+`authorizedKeys` is required for deployed workflows; an empty config is only valid in simulation.
+
+### Per-block triggers
+
+CRE does not offer a "fire on every block" trigger; for high-frequency onchain reactions, use the EVM Log trigger with a [`LATEST` confidence level](/cre/concepts/finality-ts). For periodic state polling, use a cron trigger and call `evmClient.callContract()` from the handler.
+
+## Task authoring and output
+
+<Aside type="caution" title="Determinism requirement">
+  CRE workflows run on multiple nodes that must reach consensus on a single result. Any code that produces different
+  output per node — `Date.now()`, `Math.random()`, non-deterministic iteration, or reading mutable global state — will
+  cause the workflow to fail at the consensus step. Review the [Avoiding
+  Non-Determinism](/cre/concepts/non-determinism-ts) guide before porting your CLF logic.
+</Aside>
+
+### Language and runtime
+
+CLF runs an inline JavaScript string in a per-request sandbox. Each request is independent; there is no project, no dependencies, and no compile step.
+
+CRE workflows are full TypeScript or Go projects compiled to WebAssembly. You manage dependencies with your standard package manager (like `npm` or `pnpm`) and run `cre workflow simulate` for a local execution that mirrors production.
+
+<Aside type="caution" title="WASM Compatibility">
+  Because workflows compile to WASM, they are not compatible with the Node.js runtime. Some common Node.js libraries
+  (like `fs`, `path`, or others that rely on native C++ bindings) will not work in a CRE environment. Ensure your
+  dependencies are WASM-compatible or browser-compatible.
+</Aside>
+
+The handler is single-threaded; SDK capability calls return an object that you resolve with `.result()` (TypeScript) or `.Await()` (Go).
+
+### HTTP / API calls
+
+Direct replacement for [`Functions.makeHttpRequest()`](/chainlink-functions/api-reference/javascript-source). Supports GET and POST; consensus aggregation is automatic. See [API Interactions](/cre/guides/workflow/using-http-client) for full documentation.
+
+```ts
+const apiKey = await runtime.getSecret({ id: "API_KEY" }).result()
+
+const res = await runtime.http
+  .sendRequest({
+    url: "https://api.example.com/price",
+    method: "GET",
+    headers: { Authorization: `Bearer ${apiKey}` },
+  })
+  .result()
+
+const price = BigInt(Math.round(res.json().price * 100))
+```
+
+**Note:** 3xx redirects are not automatically followed; ensure you use the final resolved URL. For non-idempotent POSTs, set `cacheSettings` so the request is only executed once across the DON. Use `runtime.now()` (not `Date.now()`) for any timestamps included in a request payload.
+
+### Onchain reads
+
+CLF has no built-in onchain read; users typically pre-fetch state in Solidity before calling `_sendRequest()`, or read it inside the JS via an RPC HTTP call.
+
+CRE workflows can read on-chain state directly from within the handler using built-in connectivity:
+
+```ts
+const evm = new cre.evm.EVMClient(CHAIN_SELECTOR)
+const result = await evm
+  .callContract({
+    to: CONTRACT_ADDRESS,
+    data: encodeFunctionData({ abi, functionName: "latestAnswer" }),
+    blockNumber: cre.evm.LAST_FINALIZED_BLOCK_NUMBER,
+  })
+  .result()
+```
+
+You can also still use HTTP requests to interact with your own RPCs.
+
+### Onchain writes
+
+The on-chain write process represents the most significant structural change when migrating from CLF. In CLF, the DON posts the response to your consumer's `fulfillRequest(bytes32 requestId, bytes response, bytes err)` callback. In CRE, the workflow generates a cryptographically signed report and submits it to a consumer contract that implements `IReceiver` - typically by extending `ReceiverTemplate`. The handler is `_onReport(bytes metadata, bytes payload)`.
+
+This process involves two steps: ABI-encode the payload and call `runtime.report()`, then submit the signed report with `evmClient.writeReport()`.
+
+```ts
+import { cre } from "@chainlink/cre-sdk"
+import { encodeAbiParameters } from "viem"
+
+export async function main() {
+  const trigger = cre.capabilities.cron.trigger({ schedule: "*/5 * * * *" })
+
+  cre.handler(trigger, async (runtime) => {
+    const apiKey = await runtime.getSecret({ id: "API_KEY" }).result()
+    const res = await runtime.http
+      .sendRequest({
+        url: "https://api.example.com/price",
+        headers: { Authorization: `Bearer ${apiKey}` },
+      })
+      .result()
+
+    const price = BigInt(Math.round(res.json().price * 100))
+    const payload = encodeAbiParameters([{ type: "uint256" }], [price])
+
+    const report = await runtime.report(payload).result()
+    const evm = new cre.evm.EVMClient(CHAIN_SELECTOR)
+    await evm
+      .writeReport({
+        receiver: RECEIVER_ADDRESS,
+        report,
+        gasLimit: "200000",
+      })
+      .result()
+  })
+
+  return cre.workflow()
+}
+```
+
+Receiver contract:
+
+```solidity
+import {ReceiverTemplate} from "@chainlink/cre-contracts/ReceiverTemplate.sol";
+
+contract PriceReceiver is ReceiverTemplate {
+  uint256 public price;
+
+  constructor(address forwarder) ReceiverTemplate(forwarder) {}
+
+  function _onReport(bytes calldata /* metadata */, bytes calldata payload) internal override {
+    price = abi.decode(payload, (uint256));
+  }
+}
+```
+
+Chain selectors and forwarder addresses are network-specific; see the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory-ts) and [Supported Networks](/cre/supported-networks-ts) for the values to substitute for `CHAIN_SELECTOR` and `RECEIVER_ADDRESS`. Use `MockKeystoneForwarder` for local simulation and the production `KeystoneForwarder` per chain when deploying. See [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts) to learn how to permission your `IReceiver`.
+
+### Secrets
+
+CLF supports [DON-hosted secrets](/chainlink-functions/resources/secrets) (uploaded once via the Functions toolkit) and [user-hosted secrets](/chainlink-functions/tutorials/api-use-secrets-gist) (gist URL passed at request time). CRE [consolidates this through the Vault DON](/cre/guides/workflow/secrets).
+
+- **Locally:** declare the name in `secrets.yaml`, supply the value via a `.env` file or env var.
+- **Deployed:** upload to Vault DON via `cre secrets create`.
+- **In code:** `runtime.getSecret({ id: "API_KEY" }).result()` works the same in both environments.
+
+Important: **DON-hosted CLF secrets cannot be exported.** When migrating, you must register your secrets again using the `cre` CLI. See the [Project Configuration](/cre/reference/project-configuration-ts#33-secrets-configuration-secretsyaml) documentation for detailed instructions on managing secrets with the Vault DON.
+
+## Monitoring
+
+The [CRE dashboard](/cre/guides/operations/monitoring-workflows) provides per-workflow execution history, handler logs (via `runtime.log()`), per-step timings, [consensus](/cre/concepts/consensus-computing) outcomes, and onchain submission status, replacing the per-request views in the [Functions Subscription Manager](/chainlink-functions/resources/subscriptions). Failed executions and reverted onchain writes surface directly in the workflow detail view.
+
+## Deployment and lifecycle
+
+| Action            | Chainlink Functions                                                                                             | Chainlink CRE                                                                                                                                                              |
+| :---------------- | :-------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Author code       | Inline JS string in your consumer contract                                                                      | TypeScript/Go project; `cre workflow init` to scaffold                                                                                                                     |
+| Local test        | [Functions Playground](/chainlink-functions/resources/simulation) / `simulateScript`                            | [`cre workflow simulate`](/cre/guides/operations/simulating-workflows)                                                                                                     |
+| Deploy            | Deploy `FunctionsClient` consumer; [create and fund subscription](/chainlink-functions/resources/subscriptions) | Deploy `IReceiver` consumer; [`cre workflow deploy`](/cre/guides/operations/deploying-workflows); [activate workflow](/cre/guides/operations/activating-pausing-workflows) |
+| Update logic      | Re-deploy consumer (source baked into requests) or update gist                                                  | [`cre workflow update`](/cre/guides/operations/updating-deployed-workflows) (workflow code only; receiver unchanged)                                                       |
+| Pause             | Cancel subscription / set consumer flag                                                                         | [`cre workflow pause`](/cre/guides/operations/activating-pausing-workflows)                                                                                                |
+| Delete            | Remove consumer; withdraw remaining LINK from the subscription                                                  | [`cre workflow delete`](/cre/guides/operations/deleting-workflows)                                                                                                         |
+| Manage secrets    | [DON-hosted upload](/chainlink-functions/resources/secrets) via toolkit, expires after threshold                | [`cre secrets create / update / delete`](/cre/guides/workflow/secrets) against Vault DON                                                                                   |
+| Monitor and Debug | No alerts; DON logs UI with onchain transaction data only                                                       | [Built-in email alerts on workflow failures; UI showing executions and DON logs](/cre/guides/operations/monitoring-workflows)                                              |
+
+## Get started
+
+To begin your migration, follow the [CRE Getting Started guide](/cre/getting-started/cli-installation) to install the CLI and initialize your first project.
+
+When mapping your existing CLF script:
+
+- Use `cre workflow init` to scaffold your project.
+- Replace your `_sendRequest()` logic with the appropriate [Triggers](#triggers) and [handler logic](#task-authoring-and-output).
+- Deploy a `ReceiverTemplate`-based consumer contract to receive reports.
+- Test your logic locally with `cre workflow simulate` before deploying with `cre workflow deploy`.
+
+Migrate your workflows one at a time and decommission your CLF subscriptions only after confirming the CRE workflows are successfully producing reports on-chain.
+
+For end-to-end runnable examples covering different use cases, see the [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates) repo.
+
+### Reference template for CLF migration
+
+The closest one-to-one mapping for the typical CLF use case ("fetch offchain data over HTTP and return it to a consumer contract") is the **Custom Data Feed** starter template, available in both TypeScript and Go:
+
+- [`starter-templates/custom-data-feed/cre-custom-data-feed-ts`](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/custom-data-feed/cre-custom-data-feed-ts)
+- [`starter-templates/custom-data-feed/cre-custom-data-feed-go`](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/custom-data-feed/cre-custom-data-feed-go)
+
+It demonstrates each piece of the migration end-to-end:
+
+- A [**cron trigger**](/cre/guides/workflow/using-triggers/cron-trigger-ts) scheduling the workflow (replaces an Automation Time-based Upkeep calling `sendRequest()`) and a [**log trigger**](/cre/guides/workflow/using-triggers/evm-log-trigger-ts) variant (replaces an offchain listener reacting to an onchain event).
+- An **HTTP fetch** against an external API with credentials pulled from the Vault DON via `runtime.getSecret()` (replaces `Functions.makeHttpRequest()` + DON-hosted secrets).
+- ABI-encoding the result, calling `runtime.report()` to produce a signed report, and submitting it with `evmClient.writeReport()` to a `ReceiverTemplate`-based consumer contract (replaces the `fulfillRequest()` callback flow).
+- A complete project layout — `main.ts`, `config.json`, `secrets.yaml`, `workflow.yaml`, `project.yaml`, contracts, and bindings — that can be cloned and adapted to your existing CLF source.
+
+If your CLF script also reads onchain state via an RPC HTTP call, the [`building-blocks/read-data-feeds`](https://github.com/smartcontractkit/cre-templates/tree/main/building-blocks/read-data-feeds) example shows the native `evmClient.callContract()` replacement covered in the [Onchain reads](#onchain-reads) section above.

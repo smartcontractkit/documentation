@@ -16,11 +16,16 @@ metadata:
       "Post-market",
       "Real World Assets",
       "US Equities",
+      "APAC Equities",
+      "marketStatus",
     ]
 ---
 
 import DataStreams from "@features/data-streams/common/DataStreams.astro"
 import ReportSchemaTabs from "@features/data-streams/common/ReportSchemaTabs.astro"
+import SchemaFieldsTable from "@features/data-streams/common/SchemaFieldsTable.astro"
+
+import { Aside } from "@components"
 
 <DataStreams section="dsNotes" />
 
@@ -30,41 +35,69 @@ Chainlink Data Streams that use the RWA Advanced (v11) schema adhere to the stru
 
 ## Schema Fields
 
-| Field                   | Type      | Description                                                                                                                                                                                                                                                                 |
-| ----------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                                                                                                                                                                                                                                 |
-| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                                                                                                                                                                                                                        |
-| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                                                                                                                                                                                                                          |
-| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                                                                                                                                                                                                                |
-| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                                                                                                                                                                                                        |
-| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                                                                                                                                                                                                                     |
-| `mid`                   | `int192`  | Liquidity-weighted mid price                                                                                                                                                                                                                                                |
-| `lastSeenTimestampNs`   | `uint64`  | Staleness indicator based on mid price (nanoseconds)                                                                                                                                                                                                                        |
-| `bid`                   | `int192`  | Median bid price                                                                                                                                                                                                                                                            |
-| `bidVolume`             | `int192`  | Volume at bid price                                                                                                                                                                                                                                                         |
-| `ask`                   | `int192`  | Median ask price                                                                                                                                                                                                                                                            |
-| `askVolume`             | `int192`  | Volume at ask price                                                                                                                                                                                                                                                         |
-| `lastTradedPrice`       | `int192`  | Last traded price                                                                                                                                                                                                                                                           |
-| `marketStatus`          | `uint32`  | Status of the real-world equity market. <br/> Possible values: <br/> `0` (Unknown), <br/> `1` (Pre-market extended hours), <br/> `2` (Regular hours), <br/> `3` (Post-market hours), <br/> `4` (Overnight), <br/> `5` (Weekend) <br/> [More details](#market-status-values) |
+<SchemaFieldsTable schema="v11" />
 
 ### Market Status Values
 
-The `marketStatus` field reflects the current state of the equity market:
+<Aside type="caution" title="Use marketStatus, not timestamps">
+  Always use <code>marketStatus</code> to determine whether a market is open. Do <strong>not</strong> use{" "}
+  <code>observationsTimestamp</code>, <code>lastSeenTimestampNs</code>, or other timestamp fields — timestamps indicate
+  when data was last recorded, not whether the market is currently active.
+</Aside>
 
-| Value | Status            | Hours (ET)                            | Description                                    |
-| ----- | ----------------- | ------------------------------------- | ---------------------------------------------- |
-| `0`   | **Unknown**       | —                                     | Market status cannot be determined             |
-| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                 | Extended hours before regular trading session  |
-| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                 | Primary trading session with highest liquidity |
-| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session   |
-| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity       |
-| `5`   | **Weekend**       | 8:00pm Fri–8:00pm Sun                 | Weekend period when primary markets are closed |
+The v11 schema defines six numeric values (`0`–`5`), but **the values that appear on a given feed depend on its trading-hours model**. Check which mapping applies to your stream before implementing logic. For full trading schedules, see [Market Hours](/data-streams/market-hours).
 
-Users should implement appropriate safeguards based on market status, such as pausing trading, adjusting risk parameters, or implementing staleness checks during non-regular hours.
+#### Standard-hours feeds
+
+Used by [APAC Equities](/data-streams/rwa-streams/apac-equities) and any v11 feed without 24/5 extended hours.
+
+| Value | Status      | Used?  | Description                                                                                     |
+| ----- | ----------- | ------ | ----------------------------------------------------------------------------------------------- |
+| `0`   | **Unknown** | Yes    | Market status cannot be determined                                                              |
+| `1`   | N/A         | **No** | Not mapped. Do not treat as Closed or Pre-market.                                               |
+| `2`   | **Open**    | Yes    | Market is open during a regular trading session                                                 |
+| `3`   | N/A         | **No** | Not mapped. Do not treat as Post-market.                                                        |
+| `4`   | N/A         | **No** | Not mapped. Do not treat as Overnight.                                                          |
+| `5`   | **Closed**  | Yes    | Market is closed (outside trading hours, lunch breaks, closing auctions, weekends, or holidays) |
+
+<Aside type="caution">
+  Values <code>1</code>, <code>3</code>, and <code>4</code> are reserved for 24/5 session types and **will not appear**
+  on these feeds. On standard-hours feeds, <code>5</code> covers intraday closures such as lunch breaks and closing
+  auctions — not only weekends and holidays.
+</Aside>
+
+During closing auction periods and daily lunch breaks on APAC exchanges, `marketStatus` is `5` (Closed) even though the exchange trading day has not fully ended. See [Market Hours (APAC Equities)](/data-streams/market-hours#apac-equities) for session schedules.
+
+#### 24/5 US Equities feeds
+
+Used by [24/5 US Equities](/data-streams/rwa-streams/24-5-us-equities-user-guide) streams with extended and overnight sessions.
+
+| Value | Status            | Hours (ET)                            | Description                                                                           |
+| ----- | ----------------- | ------------------------------------- | ------------------------------------------------------------------------------------- |
+| `0`   | **Unknown**       | N/A                                   | Market status cannot be determined                                                    |
+| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                 | Extended hours before regular trading session                                         |
+| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                 | Primary trading session with highest liquidity                                        |
+| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session                                          |
+| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                                              |
+| `5`   | **Closed**        | N/A                                   | Market closed (weekends, holidays, or unexpected closures; ~8:00pm Fri–8:00pm Sun ET) |
+
+Implement appropriate safeguards based on market status — such as pausing trading, adjusting risk parameters, or adding staleness checks during non-regular or closed periods. See [Best Practices](/data-streams/concepts/best-practices#market-hours) for guidance.
 
 ### Notes
 
+#### Last Seen Timestamp
+
+- `lastSeenTimestampNs` helps applications detect stale data for the mid price, especially important during market transitions and holidays.
+- **IMPORTANT**: The `lastSeenTimestampNs` field reflects the timestamp of the last update for the `mid` price only. Do not assume this timestamp applies to `bid`, `ask`, `bidVolume`, `askVolume`, or `lastTradedPrice`. Different fields may have been updated at different times.
+- **Do not use `lastSeenTimestampNs` (or any other timestamp field) to determine which stream to select or to infer whether the market is open.** Timestamps indicate when data was last recorded, not whether the market is currently active. Use the `marketStatus` field as the authoritative signal for market availability and stream selection.
+
+#### Bid/Ask Volume
+
+For U.S. equities, there is no single consolidated order book. Instead, multiple venues each maintain their own order books. Because data providers source from different markets, the `bidVolume` and `askVolume` reported at each update come from one specific order book at a time, not an aggregate across all venues.
+
+As a result, these volume fields should not be treated as a proxy for total market liquidity at the top of book. They are informational and not especially representative in fragmented markets like U.S. equities.
+
+#### Additional Notes
+
 - Future streams using this format may adopt different report schemas as needed.
-- `lastSeenTimestampNs` helps applications detect stale data, especially important during market transitions and holidays.
-- Market status cannot detect public holidays. See [Market Hours](/data-streams/market-hours) for major holiday periods.
 - Data availability and sourcing vary by session. Liquidity is typically highest during regular hours and lower during extended and overnight sessions.

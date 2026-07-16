@@ -42,7 +42,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 - **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
 - **Node.js**: Make sure you have Node.js 20.0 or higher. You can check your current version by running <CopyText text="node --version" code/> in your terminal and download the latest version from the official [Node.js website](https://nodejs.org/) if necessary.
 - **TypeScript**: Make sure you have TypeScript 5.3 or higher. You can check your current version by running <CopyText text="npx tsc --version" code/> in your terminal and install or update TypeScript by running <CopyText text="npm install -g typescript" code/> if necessary.
-- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
+- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chain.link/contact?ref_id=datastreams) to request mainnet or testnet access.
 
 ## Tutorial
 
@@ -357,9 +357,24 @@ The decoded [crypto v3 report](/data-streams/reference/report-schema-v3) details
 
 ### Payload for onchain verification
 
-In this tutorial, you logged and decoded the `full_report` payloads to extract the report data. However, in a production environment, you should verify the data to ensure its integrity and authenticity.
+The `fullReport` field in the API response is the signed payload you pass directly to `VerifierProxy.verify()` (or `verifyBulk()`) for onchain verification. No transformation or re-encoding is needed — the raw bytes from the API are the input.
 
-Refer to the [Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification) tutorial to learn more.
+From the example output above, the `fullReport` for the ETH/USD stream looks like this:
+
+```
+0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd690000000000000000000000000000000000000000000000000000000001f6f486000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000068d1e54c0000000000000000000000000000000000000000000000000000000068d1e54c00000000000000000000000000000000000000000000000000004539f757bc7c0000000000000000000000000000000000000000000000000034754304206ea30000000000000000000000000000000000000000000000000000000068f9724c0000000000000000000000000000000000000000000000e3e84d950bcd8d80000000000000000000000000000000000000000000000000e3e48f23626b5660000000000000000000000000000000000000000000000000e3eb7a12d8af1b00000000000000000000000000000000000000000000000000000000000000000002e7c71643e93efb8e759b1d1a8826579853d3aa2c96f59a2813e833a374c786f8f13a497a753af14c6b7329f704f148779b20aae62ed450167c61b9b5d8fcb0e100000000000000000000000000000000000000000000000000000000000000024905f1b4a6313246988a33d2aa923e3023065bbc8c874956aa5df25ec8b7b3e918a25b251713158aae6be85a188c1292e6b5288f2f96e75d632c4e6b659dfa53
+```
+
+This payload is ABI-encoded and contains the report header, the DON-signed report body, and the signatures used for onchain verification. You do not need to decode or inspect it before passing it to the Verifier — the `VerifierProxy` handles all of that.
+
+In TypeScript, `report.fullReport` holds this value and can be passed directly to your verification contract:
+
+```typescript
+// report.fullReport is the value to pass as `payload` to VerifierProxy.verify()
+const decodedData = decodeReport(report.fullReport, report.feedID)
+```
+
+Refer to the [Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification) tutorial for a step-by-step walkthrough of the full onchain verification flow.
 
 ## Explanation
 

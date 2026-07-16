@@ -11,7 +11,7 @@ export const prerender = false
 export class FaucetAdapterFactory {
   static getAdapter(family: ChainFamily): FamilyAdapter {
     switch (family) {
-      case "svm":
+      case "solana":
         return new SvmAdapter()
       default:
         throw new Error(`Faucet not available for chain family: ${family}`)

@@ -11,7 +11,7 @@ metadata:
 ---
 
 import { Aside } from "@components"
-import { CodeHighlightBlock } from "@components"
+import { CodeHighlightBlock, CodeSample } from "@components"
 import part4Code from "./snippets/part-4-main.ts?raw"
 
 In the previous parts, you successfully fetched offchain data and read from a smart contract. Now, you'll complete the "Onchain Calculator" by writing your computed result back to the blockchain.
@@ -35,75 +35,9 @@ Here is the source code for the contract so you can see how it works:
   of how this works in a later guide.
 </Aside>
 
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+<CodeSample src="samples/CRE/CalculatorConsumer.sol" />
 
-import { ReceiverTemplate } from "./ReceiverTemplate.sol";
-
-/**
- * @title CalculatorConsumer (Testing Version)
- * @notice This contract receives reports from a CRE workflow and stores the results of a calculation onchain.
- * @dev This version uses ReceiverTemplate without configuring any security checks, making it compatible
- * with the mock Forwarder used during simulation. All permission fields remain at their default zero
- * values (disabled).
- */
-contract CalculatorConsumer is ReceiverTemplate {
-  // Struct to hold the data sent in a report from the workflow
-  struct CalculatorResult {
-    uint256 offchainValue;
-    int256 onchainValue;
-    uint256 finalResult;
-  }
-
-  // --- State Variables ---
-  CalculatorResult public latestResult;
-  uint256 public resultCount;
-  mapping(uint256 => CalculatorResult) public results;
-
-  // --- Events ---
-  event ResultUpdated(uint256 indexed resultId, uint256 finalResult);
-
-  /**
-   * @dev The constructor doesn't set any security checks.
-   * The ReceiverTemplate parent constructor will initialize all permission fields to zero (disabled).
-   */
-  constructor() {}
-
-  /**
-   * @notice Implements the core business logic for processing reports.
-   * @dev This is called automatically by ReceiverTemplate's onReport function after security checks.
-   */
-  function _processReport(bytes calldata report) internal override {
-    // Decode the report bytes into our CalculatorResult struct
-    CalculatorResult memory calculatorResult = abi.decode(report, (CalculatorResult));
-
-    // --- Core Logic ---
-    // Update contract state with the new result
-    resultCount++;
-    results[resultCount] = calculatorResult;
-    latestResult = calculatorResult;
-
-    emit ResultUpdated(resultCount, calculatorResult.finalResult);
-  }
-
-  // This function is a "dry-run" utility. It allows an offchain system to check
-  // if a prospective result is an outlier before submitting it for a real onchain update.
-  // It is also used to guide the binding generator to create a method that accepts the CalculatorResult struct.
-  function isResultAnomalous(CalculatorResult memory _prospectiveResult) public view returns (bool) {
-    // A result is not considered anomalous if it's the first one.
-    if (resultCount == 0) {
-      return false;
-    }
-
-    // Business logic: Define an anomaly as a new result that is more than double the previous result.
-    // This is just one example of a validation rule you could implement.
-    return _prospectiveResult.finalResult > (latestResult.finalResult * 2);
-  }
-}
-```
-
-The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#code" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>. You will use this address in your configuration file.
+The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb#code" target="_blank" rel="noopener noreferrer">`0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb`</a>. You will use this address in your configuration file.
 
 ## Step 2: Update your workflow configuration
 
@@ -116,7 +50,7 @@ Add the `CalculatorConsumer` contract address to your `config.staging.json`:
   "evms": [
     {
       "storageAddress": "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4",
-      "calculatorConsumerAddress": "0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52",
+      "calculatorConsumerAddress": "0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb",
       "chainName": "ethereum-testnet-sepolia",
       "gasLimit": "500000"
     }
@@ -184,7 +118,7 @@ These helpers are great for production code, but we use the explicit approach he
 <Aside type="note" title="Funding Your Account">
   This step submits an onchain transaction, which requires gas. Before running the simulation, verify that the account
   associated with the private key from [Part
-  1](/cre/getting-started/part-1-project-setup#step-3-configure-your-workflow) is funded with sufficient Sepolia ETH.
+  1](/cre/getting-started/part-1-project-setup-ts#set-up-your-private-key) is funded with sufficient Sepolia ETH.
   An unfunded account will cause the transaction to fail, often with an error message like `gas required exceeds
   allowance`.
   <br/>
@@ -208,34 +142,34 @@ Your workflow will now show the complete end-to-end execution, including the fin
 
 ```bash
 Workflow compiled
-2025-12-09T13:31:18Z [SIMULATION] Simulator Initialized
+2026-01-09T17:52:05Z [SIMULATION] Simulator Initialized
 
-2025-12-09T13:31:18Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-2025-12-09T13:31:18Z [USER LOG] Successfully fetched offchain value: 62
-2025-12-09T13:31:18Z [USER LOG] Successfully read onchain value: 22
-2025-12-09T13:31:18Z [USER LOG] Final calculated result: 84
-2025-12-09T13:31:18Z [USER LOG] Updating calculator result for consumer: 0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52
-2025-12-09T13:31:18Z [USER LOG] Writing report to consumer contract - offchainValue: 62, onchainValue: 22, finalResult: 84
-2025-12-09T13:31:48Z [USER LOG] Waiting for write report response
-2025-12-09T13:31:48Z [USER LOG] Write report transaction succeeded: 0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2
-2025-12-09T13:31:48Z [USER LOG] View transaction at https://sepolia.etherscan.io/tx/0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2
-2025-12-09T13:31:48Z [USER LOG] Workflow finished successfully! offchainValue: 62, onchainValue: 22, finalResult: 84, txHash: 0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2
+2026-01-09T17:52:05Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2026-01-09T17:52:06Z [USER LOG] Successfully fetched offchain value: 68
+2026-01-09T17:52:06Z [USER LOG] Successfully read onchain value: 22
+2026-01-09T17:52:06Z [USER LOG] Final calculated result: 90
+2026-01-09T17:52:06Z [USER LOG] Updating calculator result for consumer: 0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb
+2026-01-09T17:52:06Z [USER LOG] Writing report to consumer contract - offchainValue: 68, onchainValue: 22, finalResult: 90
+2026-01-09T17:52:12Z [USER LOG] Waiting for write report response
+2026-01-09T17:52:12Z [USER LOG] Write report transaction succeeded: 0x6346d9eeca2f2875131d38aa9903a216f16e3cc7188f0ac6a1d5cd1fcbfbf9e6
+2026-01-09T17:52:12Z [USER LOG] View transaction at https://sepolia.etherscan.io/tx/0x6346d9eeca2f2875131d38aa9903a216f16e3cc7188f0ac6a1d5cd1fcbfbf9e6
+2026-01-09T17:52:12Z [USER LOG] Workflow finished successfully! offchainValue: 68, onchainValue: 22, finalResult: 90, txHash: 0x6346d9eeca2f2875131d38aa9903a216f16e3cc7188f0ac6a1d5cd1fcbfbf9e6
 
 Workflow Simulation Result:
  {
-  "finalResult": 84,
-  "offchainValue": 62,
+  "finalResult": 90,
+  "offchainValue": 68,
   "onchainValue": 22,
-  "txHash": "0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2"
+  "txHash": "0x6346d9eeca2f2875131d38aa9903a216f16e3cc7188f0ac6a1d5cd1fcbfbf9e6"
 }
 
-2025-12-09T13:31:48Z [SIMULATION] Execution finished signal received
-2025-12-09T13:31:48Z [SIMULATION] Skipping WorkflowEngineV2
+2026-01-09T17:52:12Z [SIMULATION] Execution finished signal received
+2026-01-09T17:52:12Z [SIMULATION] Skipping WorkflowEngineV2
 ```
 
-- **`[USER LOG]`**: You can see all of your `logger.info()` calls showing the complete workflow execution, including the offchain value (`62`), onchain value (`22`), final calculation (`84`), and the transaction hash.
+- **`[USER LOG]`**: You can see all of your `logger.info()` calls showing the complete workflow execution, including the offchain value (`68`), onchain value (`22`), final calculation (`90`), and the transaction hash.
 - **`[SIMULATION]`**: These are system-level messages from the simulator showing its internal state.
-- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `MyResult` object contains all the values (62 + 22 = 84) and the transaction hash confirming the write operation succeeded.
+- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `MyResult` object contains all the values (68 + 22 = 90) and the transaction hash confirming the write operation succeeded.
 
 ## Step 5: Verify the result onchain
 
@@ -257,7 +191,7 @@ You'll notice the transaction's `to` address is not the `CalculatorConsumer` con
 
 While your wallet interacted with the Forwarder, the `CalculatorConsumer` contract's state was still updated. You can verify this change directly on Etherscan:
 
-- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#readContract" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>.
+- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb#readContract" target="_blank" rel="noopener noreferrer">`0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb`</a>.
 - Expand the `latestResult` function and click **Query**. The values should match the `finalResult`, `offchainValue`, and `onchainValue` from your workflow logs.
 
 This completes the end-to-end loop: triggering a workflow, fetching data, reading onchain state, and verifiably writing the result back to a public blockchain.
@@ -271,4 +205,4 @@ To learn more about implementing consumer contracts and the secure write process
 
 You've now mastered the complete CRE development workflow!
 
-- **[Conclusion & Next Steps](/cre/getting-started/conclusion)**: Review what you've learned and find resources for advanced topics.
+- **[Before You Build](/cre/getting-started/before-you-build-ts)**: Don't skip this — critical tips before building your own workflows.

@@ -52,14 +52,29 @@ body {
 :where(a:hover) {
   color: var(--color-text-link-hover);
 }
-:where(a:focus) {
-  color: var(--color-text-link-clicked);
+:where(a:focus-visible) {
+  color: var(--color-text-link-active);
 }
 
-a > code {
-  color: inherit !important;
-  background: transparent;
+/*
+ * Inline code inside links must use link colors. MDX often nests `code` under `a`
+ * with a span between them, so `a > code` misses; `:not(pre) > code` would otherwise
+ * paint code as gray (`--theme-code-inline-text`). Keep the same pill background as
+ * other inline code.
+ */
+a code:not(pre code):not([class*="language-"]) {
+  color: var(--color-text-link) !important;
+  background-color: var(--theme-code-inline-bg) !important;
+  border-radius: var(--border-radius, 0.2rem);
   text-underline-offset: var(--padding-block);
+}
+
+a:hover code:not(pre code):not([class*="language-"]) {
+  color: var(--color-text-link-hover) !important;
+}
+
+a:focus-visible code:not(pre code):not([class*="language-"]) {
+  color: var(--color-text-link-active) !important;
 }
 
 a:focus {

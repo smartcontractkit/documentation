@@ -40,16 +40,32 @@ const NETWORK_ENDPOINTS: Record<string, string> = {
   aptos: "https://docs.chain.link/files/json/feeds-aptos-mainnet.json",
   sonic: "https://reference-data-directory.vercel.app/feeds-sonic-mainnet.json",
   mantle: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-mantle-1.json",
+  unichain: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-unichain-1.json",
   xlayer: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-xlayer-1.json",
   ronin: "https://reference-data-directory.vercel.app/feeds-ronin-mainnet.json",
-  tron: "https://docs.chain.link/files/json/feeds-tron-mainnet.json",
+  tron: "https://reference-data-directory.vercel.app/feeds-tron-mainnet.json",
   botanix: "https://reference-data-directory.vercel.app/feeds-bitcoin-mainnet-botanix.json",
-  monad: "https://reference-data-directory.vercel.app/feeds-monad-testnet.json",
+  monad: "https://reference-data-directory.vercel.app/feeds-monad-mainnet.json",
   polygonkatana: "https://reference-data-directory.vercel.app/feeds-polygon-mainnet-katana.json",
   bob: "https://reference-data-directory.vercel.app/feeds-bitcoin-mainnet-bob-1.json",
   plasma: "https://reference-data-directory.vercel.app/feeds-plasma-mainnet.json",
   hyperevm: "https://reference-data-directory.vercel.app/feeds-hyperliquid-mainnet.json",
+  megaeth: "https://reference-data-directory.vercel.app/feeds-megaeth-mainnet.json",
+  robinhood: "https://reference-data-directory.vercel.app/feeds-robinhood-mainnet.json",
 }
+
+const STREAM_DEPRECATION_ENDPOINTS: Array<{ network: string; networkType: "mainnet" | "testnet"; url: string }> = [
+  {
+    network: "arbitrum",
+    networkType: "mainnet",
+    url: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
+  },
+  {
+    network: "arbitrum",
+    networkType: "testnet",
+    url: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-arbitrum-1.json",
+  },
+]
 
 // Path to the baseline JSON file that contains known feed IDs
 // This file serves as our reference point for what feeds already exist
@@ -66,11 +82,34 @@ interface DataItem {
   feedID: string
   hidden?: boolean
   productTypeCode?: string
+  productType?: string
+  productSubType?: string
   deliveryChannelCode?: string
+  feedType?: string
+  /** RDD docs.feedCategory (e.g. "deprecating", "new") */
+  feedCategory?: string
   network: string
+  networkType?: "mainnet" | "testnet"
   assetName?: string
   baseAsset?: string
   quoteAsset?: string
+  shutdownDate?: string
+  streamID?: string
+  isMVR?: boolean
+  porType?: string
+}
+
+interface DeprecatingBaselineItem {
+  feedID: string
+  shutdownDate: string
+  url?: string
+}
+
+interface Baseline {
+  timestamp: string
+  knownIds: string[]
+  knownDeprecatingFeeds?: DeprecatingBaselineItem[]
+  knownDeprecatingStreams?: DeprecatingBaselineItem[]
 }
 
 /**
@@ -98,6 +137,23 @@ function buildFeedUrl(item: DataItem): string {
   if (item.deliveryChannelCode === "DS") {
     const base = (item.baseAsset || "BASE").toLowerCase()
     const quote = (item.quoteAsset || "QUOTE").toLowerCase()
+
+    // Equity streams have multiple hour-variant feeds for the same asset
+    // (regularhoursequityprice, overnighthoursequityprice, extendedhoursequityprice,
+    // equityprice-timestamped). Their URLs include the variant suffix to distinguish them.
+    // Pattern in feedID: {network}-{base}-{quote}-streams-{variant}-mainnet-production
+    const EQUITY_STREAM_VARIANTS = [
+      "regularhoursequityprice",
+      "overnighthoursequityprice",
+      "extendedhoursequityprice",
+      "equityprice-timestamped",
+    ]
+    const feedIdLower = item.feedID.toLowerCase()
+    const matchedVariant = EQUITY_STREAM_VARIANTS.find((v) => feedIdLower.includes(`-streams-${v}-`))
+    if (matchedVariant) {
+      return `https://data.chain.link/streams/${base}-${quote}-${matchedVariant}-streams`
+    }
+
     return `https://data.chain.link/streams/${base}-${quote}`
   }
 
@@ -151,6 +207,98 @@ function buildFeedUrl(item: DataItem): string {
 }
 
 /**
+ * Links deprecation changelog feed rows to the live filtered docs page. The page
+ * remains the source of truth for shutdown dates, which lets changelog entries
+ * survive date edits without duplicating stale schedule text.
+ */
+function buildDeprecatingFeedUrl(item: DataItem): string {
+  const searchParam = encodeURIComponent(item.baseAsset || item.assetName || "")
+  return `https://docs.chain.link/data-feeds/deprecating-feeds?network=${item.network}&search=${searchParam}`
+}
+
+function buildDeprecatingStreamUrl(item: DataItem): string {
+  const searchParam = encodeURIComponent(item.baseAsset || item.assetName || item.streamID || "")
+
+  if (item.networkType === "testnet") {
+    return `https://docs.chain.link/data-streams/deprecating-streams?testnetSearch=${searchParam}&testnetPage=1`
+  }
+
+  return `https://docs.chain.link/data-streams/deprecating-streams?page=1&search=${searchParam}`
+}
+
+function toOutputItem(item: DataItem, urlBuilder: (item: DataItem) => string) {
+  const iconUrl = buildIconUrl(item.baseAsset || "")
+  const url = urlBuilder(item)
+
+  return {
+    feedID: item.feedID,
+    network: item.network,
+    productTypeCode: item.productTypeCode,
+    deliveryChannelCode: item.deliveryChannelCode,
+    feedType: item.feedType,
+    assetName: item.assetName,
+    baseAsset: item.baseAsset,
+    quoteAsset: item.quoteAsset,
+    networkType: item.networkType,
+    shutdownDate: item.shutdownDate,
+    streamID: item.streamID,
+    iconUrl,
+    url,
+  }
+}
+
+function isDeprecatingDataFeed(item: DataItem): item is DataItem & { shutdownDate: string } {
+  if (!item.shutdownDate) return false
+  if (item.deliveryChannelCode === "DS") return false
+
+  const productTypeCode = (item.productTypeCode || "").toUpperCase().trim()
+  if (["POR", "NAV", "AUM", "REFMACRO"].includes(productTypeCode)) return false
+
+  if (item.isMVR) return false
+  if (item.porType) return false
+  if (["Proof of Reserve", "NAVLink", "SmartAUM", "Rates"].includes(item.productType || "")) return false
+
+  return true
+}
+
+function isDeprecatingDataStream(item: DataItem): item is DataItem & { shutdownDate: string } {
+  return !!item.shutdownDate && item.deliveryChannelCode === "DS" && !!item.streamID
+}
+
+/** RDD marks shutdown / deprecating streams; those must not become "Added support" changelog rows when unhidden. */
+function shouldExcludeFromNewlyFoundIntegrations(item: DataItem): boolean {
+  if ((item.feedCategory || "").toLowerCase() === "deprecating") {
+    return true
+  }
+  if (item.shutdownDate && item.deliveryChannelCode === "DS") {
+    return true
+  }
+  if (isDeprecatingDataFeed(item)) {
+    return true
+  }
+  return false
+}
+
+/** Changelog list labels: same base asset on mainnet vs testnet needs visible distinction. */
+function withStreamDeprecationDisplayName(item: DataItem, assetName: string): string {
+  if (item.networkType === "testnet") {
+    return `${assetName} (${item.network} testnet)`
+  }
+  if (item.networkType === "mainnet") {
+    return `${assetName} (${item.network} mainnet)`
+  }
+  return assetName
+}
+
+function toDeprecatingStreamOutputItem(item: DataItem & { shutdownDate: string }) {
+  const base = toOutputItem(item, buildDeprecatingStreamUrl)
+  return {
+    ...base,
+    assetName: withStreamDeprecationDisplayName(item, base.assetName || ""),
+  }
+}
+
+/**
  * Main function to detect new data feeds across all configured networks
  * This function:
  * 1. Loads the baseline of known feeds
@@ -163,6 +311,14 @@ async function detectNewData(): Promise<void> {
     // 1) Read baseline
     const baseline = loadBaseline(BASELINE_PATH)
     const knownIds = new Set(baseline.knownIds)
+    const hasDeprecatingBaseline = Object.prototype.hasOwnProperty.call(baseline, "knownDeprecatingFeeds")
+    const knownDeprecatingFeeds = new Map(
+      (baseline.knownDeprecatingFeeds || []).map((item) => [item.feedID, item.shutdownDate])
+    )
+    const hasDeprecatingStreamsBaseline = Object.prototype.hasOwnProperty.call(baseline, "knownDeprecatingStreams")
+    const knownDeprecatingStreams = new Map(
+      (baseline.knownDeprecatingStreams || []).map((item) => [item.feedID, item.shutdownDate])
+    )
 
     // 2) Fetch and parse each network's JSON
     const allItems: DataItem[] = []
@@ -178,45 +334,151 @@ async function detectNewData(): Promise<void> {
       }
     }
 
+    const streamItems: DataItem[] = []
+    for (const endpoint of STREAM_DEPRECATION_ENDPOINTS) {
+      const rawJson = await fetchNetworkJson(endpoint.url)
+      for (const obj of Object.values(rawJson)) {
+        const item = convertToStreamDataItem(obj, endpoint.network, endpoint.networkType)
+        if (item && !item.hidden) {
+          streamItems.push(item)
+        }
+      }
+    }
+
     // 3) Identify newly added items (not in baseline)
     const newlyFound: DataItem[] = []
     for (const item of allItems) {
-      if (!knownIds.has(item.feedID)) {
+      if (!item.hidden && !knownIds.has(item.feedID) && !shouldExcludeFromNewlyFoundIntegrations(item)) {
         newlyFound.push(item)
       }
     }
 
-    if (newlyFound.length === 0) {
+    // 4) Identify deprecating feeds whose shutdown date was added, removed, or changed
+    const allItemsById = new Map(allItems.map((item) => [item.feedID, item]))
+    const allStreamItemsById = new Map(streamItems.map((item) => [item.feedID, item]))
+    const currentDeprecatedItems = allItems.filter(isDeprecatingDataFeed)
+    const currentDeprecatingFeeds = new Map(currentDeprecatedItems.map((item) => [item.feedID, item]))
+    const currentDeprecatedStreams = streamItems.filter(isDeprecatingDataStream)
+    const currentDeprecatingStreams = new Map(currentDeprecatedStreams.map((item) => [item.feedID, item]))
+    const newlyDeprecatedItems: Array<DataItem & { shutdownDate: string }> = []
+    const resolvedDeprecatedItems: DeprecatingBaselineItem[] = []
+    const changedDeprecatedItems: Array<{
+      previous: DeprecatingBaselineItem
+      current: DataItem & { shutdownDate: string }
+    }> = []
+    const newlyDeprecatedStreams: Array<DataItem & { shutdownDate: string }> = []
+    const resolvedDeprecatedStreams: DeprecatingBaselineItem[] = []
+    const changedDeprecatedStreams: Array<{
+      previous: DeprecatingBaselineItem
+      current: DataItem & { shutdownDate: string }
+    }> = []
+
+    if (hasDeprecatingBaseline) {
+      for (const item of currentDeprecatedItems) {
+        const knownShutdownDate = knownDeprecatingFeeds.get(item.feedID)
+        if (!knownShutdownDate) {
+          newlyDeprecatedItems.push(item)
+        } else if (knownShutdownDate !== item.shutdownDate) {
+          changedDeprecatedItems.push({
+            previous: { feedID: item.feedID, shutdownDate: knownShutdownDate, url: buildDeprecatingFeedUrl(item) },
+            current: item,
+          })
+        }
+      }
+
+      for (const [feedID, shutdownDate] of knownDeprecatingFeeds.entries()) {
+        if (!currentDeprecatingFeeds.has(feedID)) {
+          const item = allItemsById.get(feedID)
+          resolvedDeprecatedItems.push({
+            feedID,
+            shutdownDate,
+            ...(item ? { url: buildDeprecatingFeedUrl(item) } : {}),
+          })
+        }
+      }
+    }
+
+    if (hasDeprecatingStreamsBaseline) {
+      for (const item of currentDeprecatedStreams) {
+        const knownShutdownDate = knownDeprecatingStreams.get(item.feedID)
+        if (!knownShutdownDate) {
+          newlyDeprecatedStreams.push(item)
+        } else if (knownShutdownDate !== item.shutdownDate) {
+          changedDeprecatedStreams.push({
+            previous: { feedID: item.feedID, shutdownDate: knownShutdownDate, url: buildDeprecatingStreamUrl(item) },
+            current: item,
+          })
+        }
+      }
+
+      for (const [feedID, shutdownDate] of knownDeprecatingStreams.entries()) {
+        if (!currentDeprecatingStreams.has(feedID)) {
+          const item = allStreamItemsById.get(feedID)
+          resolvedDeprecatedStreams.push({
+            feedID,
+            shutdownDate,
+            ...(item ? { url: buildDeprecatingStreamUrl(item) } : {}),
+          })
+        }
+      }
+    }
+
+    const deprecationBaselineInitialized = !hasDeprecatingBaseline
+    const streamDeprecationBaselineInitialized = !hasDeprecatingStreamsBaseline
+    const hasChanges =
+      newlyFound.length > 0 ||
+      newlyDeprecatedItems.length > 0 ||
+      resolvedDeprecatedItems.length > 0 ||
+      changedDeprecatedItems.length > 0 ||
+      newlyDeprecatedStreams.length > 0 ||
+      resolvedDeprecatedStreams.length > 0 ||
+      changedDeprecatedStreams.length > 0 ||
+      deprecationBaselineInitialized ||
+      streamDeprecationBaselineInitialized
+
+    if (!hasChanges) {
       // No new items, clean up any leftover file and exit
       if (fs.existsSync(OUTPUT_PATH)) {
         fs.unlinkSync(OUTPUT_PATH)
       }
-      console.log("No new data items found.")
+      console.log("No new data items or deprecation changes found.")
       process.exit(0)
     }
 
-    // 4) Build the object describing newly found items
+    // 5) Build the object describing newly found items and deprecation changes
     const output = {
-      newDataFound: true,
+      newDataFound: newlyFound.length > 0,
+      deprecationChangesFound:
+        newlyDeprecatedItems.length > 0 || resolvedDeprecatedItems.length > 0 || changedDeprecatedItems.length > 0,
+      streamDeprecationChangesFound:
+        newlyDeprecatedStreams.length > 0 ||
+        resolvedDeprecatedStreams.length > 0 ||
+        changedDeprecatedStreams.length > 0,
+      deprecationBaselineInitialized,
+      streamDeprecationBaselineInitialized,
       timestamp: new Date().toISOString(),
-      newlyFoundItems: newlyFound.map((item) => {
-        const iconUrl = buildIconUrl(item.baseAsset || "")
-        const feedUrl = buildFeedUrl(item)
-        return {
-          feedID: item.feedID,
-          network: item.network,
-          productTypeCode: item.productTypeCode,
-          deliveryChannelCode: item.deliveryChannelCode,
-          assetName: item.assetName,
-          baseAsset: item.baseAsset,
-          quoteAsset: item.quoteAsset,
-          iconUrl,
-          url: feedUrl,
-        }
-      }),
+      newlyFoundItems: newlyFound.map((item) => toOutputItem(item, buildFeedUrl)),
+      newlyDeprecatedItems: newlyDeprecatedItems.map((item) => toOutputItem(item, buildDeprecatingFeedUrl)),
+      resolvedDeprecatedItems,
+      changedDeprecatedItems: changedDeprecatedItems.map(({ previous, current }) => ({
+        previous,
+        current: toOutputItem(current, buildDeprecatingFeedUrl),
+      })),
+      newlyDeprecatedStreams: newlyDeprecatedStreams.map((item) => toDeprecatingStreamOutputItem(item)),
+      resolvedDeprecatedStreams,
+      changedDeprecatedStreams: changedDeprecatedStreams.map(({ previous, current }) => ({
+        previous,
+        current: toDeprecatingStreamOutputItem(current),
+      })),
+      currentDeprecatedItems: deprecationBaselineInitialized
+        ? currentDeprecatedItems.map((item) => toOutputItem(item, buildDeprecatingFeedUrl))
+        : undefined,
+      currentDeprecatedStreams: streamDeprecationBaselineInitialized
+        ? currentDeprecatedStreams.map((item) => toDeprecatingStreamOutputItem(item))
+        : undefined,
     }
 
-    // 5) Write to temp/NEW_DATA_FOUND.json with proper formatting
+    // 6) Write to temp/NEW_DATA_FOUND.json with proper formatting
     ensureDirectoryExists(path.dirname(OUTPUT_PATH))
 
     // Format the JSON with prettier using project config
@@ -242,7 +504,7 @@ async function detectNewData(): Promise<void> {
  * @param filePath - Path to the baseline JSON file
  * @returns Object containing timestamp and array of known feed IDs
  */
-function loadBaseline(filePath: string): { timestamp: string; knownIds: string[] } {
+function loadBaseline(filePath: string): Baseline {
   if (!fs.existsSync(filePath)) {
     return { timestamp: "", knownIds: [] }
   }
@@ -253,7 +515,16 @@ function loadBaseline(filePath: string): { timestamp: string; knownIds: string[]
     return { timestamp: "", knownIds: [] }
   }
 
-  return JSON.parse(text)
+  const parsed = JSON.parse(text)
+
+  return {
+    timestamp: parsed.timestamp || "",
+    knownIds: Array.isArray(parsed.knownIds) ? parsed.knownIds : [],
+    ...(Array.isArray(parsed.knownDeprecatingFeeds) ? { knownDeprecatingFeeds: parsed.knownDeprecatingFeeds } : {}),
+    ...(Array.isArray(parsed.knownDeprecatingStreams)
+      ? { knownDeprecatingStreams: parsed.knownDeprecatingStreams }
+      : {}),
+  }
 }
 
 /**
@@ -285,6 +556,8 @@ async function fetchNetworkJson(url: string): Promise<any[]> {
 function convertToDataItem(obj: any, network: string): DataItem | null {
   // Get product type code to check for special cases
   const productTypeCode = obj.docs?.productTypeCode || ""
+  const productType = obj.docs?.productType || ""
+  const productSubType = obj.docs?.productSubType || ""
   const isRefMacro = productTypeCode.toUpperCase().trim() === "REFMACRO"
 
   // 1) Must have a `path`
@@ -328,14 +601,56 @@ function convertToDataItem(obj: any, network: string): DataItem | null {
     feedID: `${network}-${path}`,
     hidden: false,
     productTypeCode,
+    productType,
+    productSubType,
     deliveryChannelCode: deliveryChannel,
+    feedCategory: typeof obj.docs?.feedCategory === "string" ? obj.docs.feedCategory : undefined,
     network,
     assetName: topLevelAssetName,
     baseAsset: baseAsset || (isRefMacro ? topLevelAssetName : undefined),
     quoteAsset,
+    shutdownDate: obj.docs?.shutdownDate,
+    isMVR: obj.docs?.isMVR === true,
+    porType: obj.docs?.porType,
   }
 
   return result
+}
+
+/**
+ * Converts an RDD stream definition into the same internal shape used by
+ * deprecation detection. This intentionally mirrors the deprecating streams
+ * page: Arbitrum verifier streams with feed IDs, excluding hidden rows.
+ */
+function convertToStreamDataItem(obj: any, network: string, networkType: "mainnet" | "testnet"): DataItem | null {
+  if (obj.docs?.hidden === true) {
+    return null
+  }
+
+  if (obj.contractType !== "verifier" || !obj.feedId) {
+    return null
+  }
+
+  const baseAsset = obj.docs?.baseAsset || obj.assetName || obj.docs?.assetName || ""
+  const assetName = obj.assetName || obj.docs?.assetName || obj.docs?.clicProductName || baseAsset || obj.feedId
+
+  return {
+    feedID: `${network}-${networkType}-${obj.feedId}`,
+    hidden: false,
+    productTypeCode: obj.docs?.productTypeCode || "",
+    productType: obj.docs?.productType || "",
+    productSubType: obj.docs?.productSubType || "",
+    deliveryChannelCode: obj.docs?.deliveryChannelCode || "DS",
+    feedType: obj.docs?.feedType || obj.feedType || "",
+    feedCategory: typeof obj.docs?.feedCategory === "string" ? obj.docs.feedCategory : undefined,
+    network,
+    networkType,
+    assetName,
+    baseAsset,
+    quoteAsset: obj.docs?.quoteAsset || "",
+    shutdownDate: obj.docs?.shutdownDate,
+    streamID: obj.feedId,
+  }
 }
 
 /**

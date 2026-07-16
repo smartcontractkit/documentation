@@ -1,0 +1,118 @@
+---
+section: ccip
+date: Last Modified
+title: "Programmable Token Transfers: Canton as Destination"
+isIndex: false
+metadata:
+  description: "Send TEST tokens with a data payload from Ethereum Sepolia and execute the programmable token transfer on Canton."
+  image: "/images/ccip/concepts/architecture/ccip-canton-destination-chain.png"
+  excerpt: "Canton as Destination, any2canton, programmable token transfer, PTT, manual execution"
+  datePublished: "2026-07-06"
+  lastModified: "2026-07-06"
+  estimatedTime: "30 minutes"
+  difficulty: "intermediate"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="cantonAddressesBanner" />
+
+This tutorial demonstrates how to send a **programmable token transfer (PTT)** from Ethereum Sepolia to Canton — TEST tokens plus arbitrary data — and execute it on Canton using the [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton).
+
+<Aside title="Prerequisites">
+
+Complete the [Canton as Destination prerequisites](/ccip/tutorials/canton/destination/prerequisites) and review [Token Transfers (Canton as Destination)](/ccip/tutorials/canton/destination/token-transfers). You need Sepolia TEST tokens (`npm run faucet:evm-test`) and Canton ledger access.
+
+These steps use **Canton testnet** and **Ethereum Sepolia** only.
+
+</Aside>
+
+## Introduction
+
+A programmable token transfer delivers both tokens and a data payload to the destination. On Canton, execution:
+
+1. Resolves or creates a `CCIPReceiver` for the message finality.
+2. Processes `TokenReceiveTicket` and mints LINK via the token pool.
+3. Delivers the attached data to your receiver logic through `ccipReceive` on Canton.
+
+## What You Will Build
+
+In this tutorial, you will:
+
+- Send `1` TEST plus a UTF-8 data string from Sepolia with `any2canton:data-and-token`.
+- Execute on Canton with `any2canton:manual-exec`.
+- Verify LINK balance and message execution.
+
+## Understanding Programmable Token Transfers (any2canton)
+
+| Aspect               | Token-only                               | Programmable token transfer            |
+| :------------------- | :--------------------------------------- | :------------------------------------- |
+| **Send script**      | `any2canton:token`                       | `any2canton:data-and-token`            |
+| **Data**             | Empty                                    | `--dataString` payload                 |
+| **Canton execution** | LINK mint + accept `TransferInstruction` | LINK mint + data delivered to receiver |
+
+The execution path fetches proofs, Global CCIP EDS disclosures, and token pool operator EDS inputs — see the [Canton as Destination flow](/ccip/concepts/canton/overview#public-chain--canton).
+
+## Running the Tutorial
+
+### Prerequisites Check
+
+1. Complete [prerequisites](/ccip/tutorials/canton/destination/prerequisites).
+2. Mint TEST on Sepolia:
+
+   ```bash filename="Terminal"
+   npm run faucet:evm-test
+   ```
+
+## Step 1: Send data + TEST from Sepolia
+
+```bash filename="Terminal"
+npm run any2canton:data-and-token -- --dataString "Hello" --amount 1
+```
+
+Pay CCIP fee in LINK and use block-depth finality:
+
+```bash filename="Terminal"
+npm run any2canton:data-and-token -- \
+  --dataString "Hello" \
+  --amount 1 \
+  --feeToken link \
+  --finality 32
+```
+
+### Expected send output
+
+```text
+📧🪙 Sending data + 1 TEST from Sepolia → Canton: "Hello"
+   Receiver party: yourParty::1220…
+   LINK is minted on Canton only after manual execution.
+🆔 CCIP Message ID: 0x…
+
+⚙️  Execute on Canton once Sepolia reaches 32 block confirmations for this message:
+   npm run any2canton:manual-exec -- 0x<messageId>
+```
+
+## Step 2: Execute on Canton
+
+After finality and Committee Verifier proofs are on the indexer:
+
+```bash filename="Terminal"
+npm run any2canton:manual-exec -- <sepoliaTxHash | messageId>
+```
+
+Pass either the **Sepolia source transaction hash** (`📜 Source transaction`) or the **CCIP Message ID** (`🆔 CCIP Message ID`, `0x…`) — `any2canton:manual-exec` accepts both.
+
+Optional custom receiver hint:
+
+```bash filename="Terminal"
+npm run any2canton:manual-exec -- <sepoliaTxHash | messageId> --receiver 'yourParty::1220…'
+```
+
+## Verification
+
+1. **CCIP Explorer**: Confirm SUCCESS for the transfer.
+2. **LINK balance**: `npm run check-balance -- --chain canton --token link`
+3. **Canton Lighthouse**: Inspect the execution transaction for token pool and receiver activity.
+
+<CcipCommon callout="educationalDisclaimer" />

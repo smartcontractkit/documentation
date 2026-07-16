@@ -1,0 +1,280 @@
+---
+section: ccip
+date: Last Modified
+title: "BurnMint Token Pool Deployment (Canton)"
+metadata:
+  description: "Deploy a CCIP BurnMint token pool on Canton, register on the Token Admin Registry, and enable a cross-chain lane using the starter kit or Ledger API."
+  excerpt: "CCIP Canton BurnMint token pool, TAR registration, ApplyChainUpdates, starter kit, cct scripts"
+  datePublished: "2026-06-27"
+  lastModified: "2026-07-06"
+  difficulty: "advanced"
+  estimatedTime: "45 minutes"
+whatsnext:
+  "Explicit Disclosure API": "/ccip/concepts/canton/explicit-disclosure"
+  "Cross-chain overview": "/ccip/concepts/canton/overview"
+  "LockRelease alternative": "/ccip/tutorials/canton/cross-chain-tokens/lock-release-token-pool"
+---
+
+import { Aside } from "@components"
+import { Tabs } from "@components/Tabs"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="cantonAddressesBanner" />
+
+Deploy a **BurnMint** token pool on Canton, register it on the Token Admin Registry (TAR), and enable a cross-chain lane. Use the [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton) for pool deployment and TAR registration, or submit Ledger API commands directly.
+
+This guide assumes you already have a token instrument live on Canton with supply minted on-ledger — for example a Registry instrument from Digital Asset's [Registry utility](https://docs.digitalasset.com/utilities/mainnet/overview/registry-user-guide/index.html), or any instrument supporting CIP-56 with the `BurnMintFactory` interface.
+
+**Scope:** On-ledger pool connection — deploy, TAR registration, and lane enablement. Does not cover [EDS setup](/ccip/concepts/canton/explicit-disclosure) or end-to-end transfer tests.
+
+<Aside type="note" title="Testnet only">
+
+Starter kit `cct:*` scripts target **Canton testnet** only.
+
+</Aside>
+
+## Prerequisites
+
+- **Instrument (token managed on Canton Ledger)** with known `InstrumentId = { admin, id }`. The admin party must be the same party that will own the token pool.
+- **Burn/mint authority** — `instrumentId.admin == poolOwner` (enforced by the BurnMint template and by the starter kit).
+- **BurnMint token pool DAR** on your participant — [`ccip-burn-mint-token-pool-1.0.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/legacy/ccip-burn-mint-token-pool-1.0.0.dar) (bundles its CCIP dependencies — the only DAR you upload).
+- **CCIP contract references** from Chainlink ops: CCIP owner party, Token Admin Registry, RMNRemote, FeeQuoter.
+- **Starter kit setup** (if using `cct:*` scripts) — complete [Canton as Source prerequisites](/ccip/tutorials/canton/source/prerequisites) and the [CCT overview](/ccip/tutorials/canton/cross-chain-tokens#starter-kit-cct-scripts).
+
+<Aside type="caution" title="Pool owner trust">
+
+CCIP fully trusts the pool owner party. Whoever owns the pool controls remote-chain configuration, rate limits, fees, and token handling. We strongly recommend pool owner and instrument admin be the same party, decentralized across multiple nodes.
+
+</Aside>
+
+## Deployment overview
+
+| Step | Action                     | Starter kit            | Manual                              |
+| :--- | :------------------------- | :--------------------- | :---------------------------------- |
+| 1    | Deploy `BurnMintTokenPool` | `cct:deploy-burn-mint` | Ledger API `CreateCommand`          |
+| 2    | Register on TAR            | `cct:set-token`        | TAR choices via Ledger API          |
+| 3    | Enable lane                | —                      | Rate limiters + `ApplyChainUpdates` |
+| 4    | Go live                    | —                      | EDS + verification                  |
+
+## Step 1 — Deploy the BurnMint Token Pool
+
+Create one [`BurnMintTokenPool`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/pools/burn-mint-token-pool/daml/CCIP/BurnMintTokenPoolV2.daml). `poolOwner` + `instanceId` uniquely identifies the pool. Signatory: `poolOwner`.
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Starter kit</Fragment>
+  <Fragment slot="tab.2">Manual</Fragment>
+  <Fragment slot="panel.1">
+
+From the starter kit root:
+
+```bash filename="Terminal"
+npm run cct:deploy-burn-mint -- \
+  --instanceId acme-eur-bm-pool \
+  --instrument 'yourParty::1220…::token-id'
+```
+
+**Flags:**
+
+| Flag           | Required | Description                                                               |
+| :------------- | :------- | :------------------------------------------------------------------------ |
+| `--instanceId` | Yes      | Unique pool instance ID for your party (e.g. `acme-eur-bm-pool`)          |
+| `--instrument` | Yes      | Canton instrument ID: `party::fingerprint::tokenId`                       |
+| `--poolOwner`  | No       | Defaults to `party` in `canton-config.json` (must equal instrument admin) |
+| `--ccipOwner`  | No       | Defaults to `ccipParty` in `canton-config.json`                           |
+| `--decimals`   | No       | Token decimals on Canton (default `10`)                                   |
+
+**Expected output:**
+
+```text
+Deploying BurnMint token pool on Canton
+   instanceId: acme-eur-bm-pool
+   instrument: yourParty::1220…::token-id
+   poolOwner:  yourParty::1220…
+Canton bearer token obtained via OIDC client credentials.
+✅ BurnMintTokenPool contract ID: 00abc…
+   Pool address: acme-eur-bm-pool@yourParty::1220…
+   Update: https://lighthouse.testnet.cantonloop.com/transactions/…
+
+Next step: register the pool on the Token Admin Registry:
+   npm run cct:set-token -- --instrument "yourParty::1220…::token-id" --poolInstanceId "acme-eur-bm-pool" --poolOwner "yourParty::1220…"
+```
+
+Save the **pool address** (`{instanceId}@{poolOwner}`) and contract ID for verification.
+
+  </Fragment>
+  <Fragment slot="panel.2">
+
+Submit a `CreateCommand` for `BurnMintTokenPool` via your participant's JSON Ledger API (`submit-and-wait-for-transaction-tree`).
+
+| Argument                  | Guidance                                                                                  |
+| :------------------------ | :---------------------------------------------------------------------------------------- |
+| `instanceId`              | Unique string for your party, e.g. `acme-eur-bm-pool`                                     |
+| `poolOwner`               | Party that owns the pool. Recommended: instrument admin.                                  |
+| `ccipOwner`               | Chainlink CCIP owner party from ops                                                       |
+| `instrumentId`            | Your underlying asset's `InstrumentId`                                                    |
+| `decimals`                | Standard value: `10`                                                                      |
+| `rateLimitAdmin`          | Optional — leave unset unless a separate party manages limits                             |
+| `remoteChainConfigs`      | Leave empty — configure via `ApplyChainUpdates` (Step 3)                                  |
+| `tokenTransferFeeConfigs` | Optional per-destination fees — set at deploy or via `ApplyTokenTransferFeeConfigUpdates` |
+| `poolReceiveContext`      | Leave empty at creation                                                                   |
+| `transferTimeout`         | `Indefinite` to disable expiry on pending outgoing transfers                              |
+| `deps`                    | `tokenAdminRegistry`, `rmnRemote`, `feeQuoter` references from ops                        |
+
+After creation, your pool address is `{instanceId}@{poolOwner}`.
+
+  </Fragment>
+</Tabs>
+
+### Transfer-fee fields
+
+When setting `tokenTransferFeeConfigs` (map keyed by destination chain selector):
+
+| Field               | Meaning                                                 |
+| :------------------ | :------------------------------------------------------ |
+| `isEnabled`         | Must be `true` to apply the config                      |
+| `feeUSDCents`       | Flat fee in USD cents (non-negative)                    |
+| `destGasOverhead`   | Gas for destination execution (> 0 when set via choice) |
+| `destBytesOverhead` | Data-availability bytes overhead (≥ 32)                 |
+| `feeBps`            | Proportional fee in basis points (< 10000)              |
+
+### CCIP hosted addresses
+
+| Field                     | Testnet                                                                                                    | Mainnet                                                                                                                |
+| :------------------------ | :--------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| Token Admin Registry      | `tokenadminregistry-lzrnd@ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551` | Contact the [CCIP team](https://chain.link/ccip-contact) for the Token Admin Registry address to register a token pool |
+| RMNRemote                 | `rmn_remote-nzvtd@rmnOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551`          | `rmn_remote-mnprd@rmnOwner::122012714685760dc1927c4cfe119ce2126c48756154e95c06f5c181da05a5519093`                      |
+| FeeQuoter                 | `feequoter-scxln@ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551`          | `feequoter-fpxih@ccipOwner::122012714685760dc1927c4cfe119ce2126c48756154e95c06f5c181da05a5519093`                      |
+| CCIP owner party          | `ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551`                          | `ccipOwner::122012714685760dc1927c4cfe119ce2126c48756154e95c06f5c181da05a5519093`                                      |
+| Global EDS                | `https://eds.testnet.ccip.chain.link`                                                                      | `https://eds.ccip.chain.link`                                                                                          |
+| Indexer                   | `https://indexer-1.testnet.ccip.chain.link`                                                                | Primary: `https://indexer-1.ccip.chain.link` · Backup: `https://indexer-2.ccip.chain.link`                             |
+| Canton chain selector     | `9268731218649498074`                                                                                      | `2308837218439511688`                                                                                                  |
+| Default CommitteeVerifier | `committeeverifier-tqkny@ccvOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551`   | `committeeverifier-mnprd@ccvOwner::122096accf0a84fc7d80d5fce5ea3135317a03eb22e62e0d8cdd7548865f984f11ff`               |
+
+## Step 2 — Register on the Token Admin Registry
+
+TAR maps each instrument to a single token pool. Registration: **propose → accept → set pool**.
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Starter kit</Fragment>
+  <Fragment slot="tab.2">Manual</Fragment>
+  <Fragment slot="panel.1">
+
+```bash filename="Terminal"
+npm run cct:set-token -- \
+  --instrument 'yourParty::1220…::token-id' \
+  --poolInstanceId acme-eur-bm-pool
+```
+
+**Flags:**
+
+| Flag               | Required | Description                                                                     |
+| :----------------- | :------- | :------------------------------------------------------------------------------ |
+| `--instrument`     | Yes      | Same instrument ID used in Step 1                                               |
+| `--poolInstanceId` | Yes      | `instanceId` from Step 1                                                        |
+| `--poolOwner`      | No       | Party that owns the pool contract (defaults to `party` in `canton-config.json`) |
+| `--poolAdmin`      | No       | TAR admin party (defaults to `poolOwner`)                                       |
+| `--proposeCaller`  | No       | Party that calls `ProposeAdministrator` (defaults to instrument admin)          |
+| `--tokenConfigCid` | No       | Resume at `AcceptAdminRole` if `ProposeAdministrator` already succeeded         |
+| `--skipAccept`     | No       | Resume at `SetPool` only (skip propose and accept)                              |
+
+The script fetches TAR disclosures from Global EDS, then submits all three TAR choices in sequence.
+
+**Expected output:**
+
+```text
+Registering token pool on the Token Admin Registry (TAR)
+   instrument:     yourParty::1220…::token-id
+   poolInstanceId: acme-eur-bm-pool
+   pool address:   acme-eur-bm-pool@yourParty::1220…
+Step 1/3 — ProposeAdministrator on Token Admin Registry
+   tokenConfigCid: 00def…
+Step 2/3 — AcceptAdminRole on Token Admin Registry
+Step 3/3 — SetPool on Token Admin Registry
+✅ Token pool registered for yourParty::1220…::token-id
+   tokenConfigCid: 00ghi…
+
+Next step: enable a cross-chain lane (rate limiters + ApplyChainUpdates on the pool).
+```
+
+  </Fragment>
+  <Fragment slot="panel.2">
+
+### Fetch TAR explicit disclosure
+
+Your party is not an observer on TAR. Query the Global EDS batch endpoint:
+
+```shell
+curl --request POST \
+  --url https://eds.testnet.ccip.chain.link/ccip/v1/global/disclosure/batch \
+  --header 'content-type: application/json' \
+  --data '{
+  "addresses": [
+    "tokenadminregistry-lzrnd@ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551"
+  ]
+}'
+```
+
+Include disclosed contracts in subsequent ledger submissions. OpenAPI: [`eds-global.yaml`](https://github.com/smartcontractkit/chainlink-canton/blob/main/openapi/src/eds/global/eds-global.yaml).
+
+### TAR choices
+
+1. **`ProposeAdministrator`** — CCIP owner or instrument admin. Pass `instrumentId`, `newAdmin`, `caller`. For new instruments, leave `tokenConfigCid` as `None`. Returns `TokenConfig` CID for next steps.
+2. **`AcceptAdminRole`** — Proposed admin exercises with `tokenConfigCid`, `instrumentId`, `caller`.
+3. **`SetPool`** — Admin links instrument to pool via `PoolRegistration` (`poolOwner`, `poolInstanceId` from Step 1).
+
+Admin role can be transferred with `TransferAdminRole` → `AcceptAdminRole`.
+
+  </Fragment>
+</Tabs>
+
+## Step 3 — Enable a lane
+
+Lane enablement is **not** automated by the starter kit. Deploy rate limiters and call `ApplyChainUpdates` on your pool via the Ledger API.
+
+### 1. Deploy three rate limiters
+
+Each lane requires [`RateLimiter`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/rate-limiter/daml/CCIP/RateLimiterV2.daml) contracts (for testing, deploy disabled with zero capacity/rate):
+
+- **Inbound (default finality)**
+- **Inbound (custom finality)**
+- **Outbound**
+
+Created by `poolOwner` with matching `poolInstanceId`, `poolOwner`, and `remoteChainSelector`.
+
+### 2. Apply the chain update
+
+Call [`ApplyChainUpdates`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/pools/burn-mint-token-pool/daml/CCIP/BurnMintTokenPoolV2.daml) on the pool:
+
+| ChainUpdate field                            | Guidance                                                                   |
+| :------------------------------------------- | :------------------------------------------------------------------------- |
+| `remoteChainSelector`                        | Destination chain selector — see [CCIP Directory](/ccip/directory/testnet) |
+| `remotePools`                                | Remote token pool address(es)                                              |
+| `remoteTokenAddress`                         | Remote token address                                                       |
+| `inboundCCVs` / `outboundCCVs`               | Default CommitteeVerifier (testnet address above) unless custom            |
+| `finalityConfig`                             | `WaitForFinality` for default finalized source tx                          |
+| `inboundRateLimiter`                         | Inbound default limiter CID                                                |
+| `inboundCustomBlockConfirmationsRateLimiter` | Inbound custom limiter CID                                                 |
+| `outboundRateLimiter`                        | Outbound limiter CID                                                       |
+
+Once applied, the on-ledger lane is complete.
+
+## Step 4 — Go live
+
+### Verification checklist
+
+1. `InstrumentId.admin` equals pool owner.
+2. TAR maps your instrument to your pool with your party as admin.
+3. Pool exists at `{instanceId}@{poolOwner}` with matching `InstrumentId`.
+4. Lane rate limiters are in place.
+
+### Stand up EDS for your pool
+
+Users need [explicit disclosures](/ccip/concepts/canton/explicit-disclosure) for your pool to send and execute transfers. The [reference EDS Docker image](https://github.com/smartcontractkit/chainlink-canton/blob/main/eds/eds.Dockerfile) supports BurnMint out of the box.
+
+### Test transactions
+
+See [CCIP on Canton — Overview](/ccip/concepts/canton/overview) for user flows. Track messages in [CCIP Explorer](/ccip/tools-resources/ccip-explorer).
+
+For Registry-issued tokens, also complete [`SetBurnMintFactory`](/ccip/tutorials/canton/cross-chain-tokens/registry-issuer-guide) with your `AllocationFactory` contract ID.
+
+<CcipCommon callout="educationalDisclaimer" />

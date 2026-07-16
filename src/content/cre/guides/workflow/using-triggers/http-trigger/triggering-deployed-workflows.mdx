@@ -5,12 +5,18 @@ date: Last Modified
 metadata:
   description: "Trigger deployed CRE workflows with HTTP requests: learn the JSON-RPC format, JWT authentication, and signature generation for production use."
   datePublished: "2025-11-10"
-  lastModified: "2025-11-10"
+  lastModified: "2026-07-05"
 ---
 
 import { Aside } from "@components"
 
 Once you've [deployed a workflow](/cre/guides/operations/deploying-workflows) with an HTTP trigger, you can execute it by sending authenticated HTTP requests to the CRE gateway. This guide explains how to trigger deployed workflows in production.
+
+<Aside type="note" title="One HTTP trigger per workflow">
+  Each workflow supports only one HTTP trigger handler. There is currently no mechanism to route requests to different
+  HTTP trigger handlers within the same workflow. If you need to handle different use cases or execution paths, include
+  routing logic in your request payload and branch within a single handler function.
+</Aside>
 
 ## What you'll learn
 
@@ -59,7 +65,7 @@ Details:
 
 ### From the CRE UI
 
-1. Log in to <a href="https://cre.chain.link/workflows" target="_blank" rel="noopener noreferrer">cre.chain.link/workflows</a>
+1. Log in to <a href="https://app.chain.link/cre/workflows" target="_blank" rel="noopener noreferrer">app.chain.link/cre/workflows</a>
 1. Click on your workflow name
 1. In the **Overview** section, find the **Workflow ID** field
 1. Click the copy button to copy it to your clipboard
@@ -67,6 +73,17 @@ Details:
 ## Request format
 
 All workflow executions use JSON-RPC 2.0 format:
+
+{/* prettier-ignore */}
+<Aside type="note" title="Gateway URL depends on your registry">
+  The gateway URL differs based on how your workflow is deployed:
+
+- **Public (onchain) registry**: `https://01.gateway.zone-a.cre.chain.link`
+- **Private registry** (`deployment-registry: "private"`): `https://01.enterprise-gateway.zone-a.cre.chain.link/`
+
+Use the URL that matches the registry your workflow is deployed to. Run `cre registry list` or check your `workflow.yaml` if you're unsure.
+
+</Aside>
 
 ```http
 POST https://01.gateway.zone-a.cre.chain.link
@@ -230,7 +247,7 @@ If you're testing deployed workflows during development, use the [Local Testing 
 
 ## Example request (conceptual)
 
-Here's what a complete curl request looks like:
+Here's what a complete curl request looks like (using the public registry gateway — substitute `https://01.enterprise-gateway.zone-a.cre.chain.link/` if your workflow is deployed to the private registry):
 
 ```bash
 curl -X POST https://01.gateway.zone-a.cre.chain.link \
@@ -284,8 +301,8 @@ When your request is successfully accepted, the gateway returns a JSON-RPC respo
 | `result.status`                | Execution status (typically `"ACCEPTED"` when the workflow trigger is successfully accepted by the gateway) |
 
 <Aside type="tip" title="Track your execution">
-  Copy the `workflow_execution_id` to track this specific execution in the [CRE UI](https://cre.chain.link/workflows).
-  You can view logs, events, and execution details using this ID.
+  Copy the `workflow_execution_id` to track this specific execution in the [CRE
+  UI](https://app.chain.link/cre/workflows). You can view logs, events, and execution details using this ID.
 </Aside>
 
 ### Error response
@@ -313,7 +330,7 @@ If the request fails (e.g., invalid JWT, unauthorized key, workflow not found), 
 
 After triggering your workflow, verify execution in the CRE UI:
 
-1. Go to <a href="https://cre.chain.link/workflows" target="_blank" rel="noopener noreferrer">cre.chain.link/workflows</a>
+1. Go to <a href="https://app.chain.link/cre/workflows" target="_blank" rel="noopener noreferrer">app.chain.link/cre/workflows</a>
 1. Click on your workflow
 1. Check the **Execution** tab for recent runs
 1. Click on an **Execution ID** to view detailed logs and events

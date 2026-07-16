@@ -1,7 +1,7 @@
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
 import AddressComponent from "~/components/AddressReact.tsx"
 import "./LaneDetailsHero.css"
-import { getExplorerAddressUrl } from "~/features/utils/index.ts"
+import { getContractExplorerUrl } from "~/features/utils/index.ts"
 import CopyValue from "../CopyValue/CopyValue.tsx"
 import { LaneFilter } from "~/config/data/ccip/types.ts"
 import { ChainType, ExplorerInfo } from "@config/types.ts"
@@ -121,7 +121,7 @@ function LaneDetailsHero({
             <AddressComponent
               address={offRamp}
               endLength={6}
-              contractUrl={getExplorerAddressUrl(explorer, destinationNetwork.chainType)(offRamp)}
+              contractUrl={getContractExplorerUrl(explorer, destinationNetwork.chainType)(offRamp)}
             />
           </DetailItem>
         ) : (
@@ -133,7 +133,7 @@ function LaneDetailsHero({
             <AddressComponent
               address={onRamp}
               endLength={6}
-              contractUrl={getExplorerAddressUrl(explorer, sourceNetwork.chainType)(onRamp)}
+              contractUrl={getContractExplorerUrl(explorer, sourceNetwork.chainType)(onRamp)}
             />
           </DetailItem>
         )}
@@ -147,7 +147,7 @@ function LaneDetailsHero({
             label="Out of Order Execution"
             clipboardType="out-of-order-execution"
             tooltip={
-              <StyledTooltip tip="Controls the execution order of your messages on the destination blockchain. Setting this to true allows messages to be executed in any order. Setting it to false ensures messages are executed in sequence, so a message will only be executed if the preceding one has been executed. On lanes where 'Out of Order Execution' is required, you must set this to true; otherwise, the transaction will revert." />
+              <StyledTooltip tip="Currently controls the execution order of your messages on the destination blockchain. Required = Must be set for all messages, and to True. Optional = Can be set, and if set to True, enables Out-of-Order messaging. Note: Being deprecated in early 2026; OOO becomes default and only option." />
             }
           >
             {getOutOfOrderText(enforceOutOfOrder)}

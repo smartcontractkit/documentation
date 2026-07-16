@@ -6,7 +6,7 @@ import { areAllLanesPaused } from "~/config/data/ccip/utils.ts"
 import { ChainType, ExplorerInfo } from "~/config/types.ts"
 import TableSearchInput from "./TableSearchInput.tsx"
 import { useState } from "react"
-import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils/index.ts"
+import { getContractExplorerUrl, fallbackTokenIconUrl, isCantonNativeFeeToken } from "~/features/utils/index.ts"
 import TokenDrawer from "../Drawer/TokenDrawer.tsx"
 
 interface TableProps {
@@ -23,6 +23,7 @@ interface TableProps {
     tokenAddress: string
     tokenPoolType: PoolType
     tokenPoolAddress: string
+    tokenPoolVersion: string
     explorer: ExplorerInfo
   }[]
   token: {
@@ -67,7 +68,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
               ?.filter((network) => network.name.toLowerCase().includes(search.toLowerCase()))
               .map((network, index) => {
                 // Check if all lanes for this token on this network are paused
-                const allLanesPaused = areAllLanesPaused(network.tokenDecimals, lanes[network.key] || {})
+                const allLanesPaused = areAllLanesPaused(lanes[network.key] || {})
 
                 return (
                   <tr key={index} className={allLanesPaused ? "ccip-table__row--paused" : ""}>
@@ -123,7 +124,11 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                     <td>{network.tokenDecimals}</td>
                     <td data-clipboard-type="token">
                       <Address
-                        contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.tokenAddress)}
+                        contractUrl={
+                          isCantonNativeFeeToken(network.key, network.tokenId)
+                            ? undefined
+                            : getContractExplorerUrl(network.explorer, network.chainType)(network.tokenAddress)
+                        }
                         address={network.tokenAddress}
                         endLength={6}
                       />
@@ -131,7 +136,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                     <td>{tokenPoolDisplay(network.tokenPoolType)}</td>
                     <td data-clipboard-type="token-pool">
                       <Address
-                        contractUrl={getExplorerAddressUrl(
+                        contractUrl={getContractExplorerUrl(
                           network.explorer,
                           network.chainType
                         )(network.tokenPoolAddress)}

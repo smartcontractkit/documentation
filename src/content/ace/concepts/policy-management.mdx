@@ -1,0 +1,192 @@
+---
+section: ace
+title: "Policy Management"
+date: Last Modified
+metadata:
+  description: "Understand ACE Policy Management: how modular, composable onchain policies separate compliance logic from business logic, enabling dynamic rule updates without contract redeployment."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+This page explains in depth how ACE's Policy Management system works — the design rationale, the execution model, and how the components interact. For a high-level overview of the components themselves (PolicyProtected, PolicyEngine, Policies, Extractors), see the [Architecture page](/ace/concepts/architecture#policy-management-contracts).
+
+## Why separate compliance from business logic?
+
+Hardcoding compliance rules directly into a smart contract makes your application rigid and difficult to maintain. Every time a regulation changes or a new rule is required, you face a contract upgrade or redeployment — a costly, risky process that requires re-auditing.
+
+Policy Management solves this by separating your application's core logic from its compliance rules. Your contract handles what it was built to do (transfers, minting, trading), while a separate layer of modular policies handles the compliance checks. Policies can be added, removed, reordered, or reconfigured through the [Policy Manager](/ace/concepts/key-terms#policy-manager) without ever touching your application contract.
+
+This separation provides:
+
+- **Adaptability** — Respond to regulatory changes by updating policies, not your core contract.
+- **Auditability** — Each policy is a small, focused contract that can be reviewed and audited independently.
+- **Composability** — Chain multiple policies on the same function to build sophisticated rulesets from simple building blocks.
+- **Reusability** — The same policy contract can protect functions across multiple contracts and chains.
+
+## How policy chains work
+
+When a user calls a protected function, the `runPolicy` modifier intercepts the call and hands control to the PolicyEngine. The engine runs each attached policy in order — a chain of responsibility where each policy's result determines what happens next.
+
+<ClickToZoom src="/images/ace/policy-management-policy-chains.png" />
+
+In this diagram, the user calls a protected function on your contract. The `runPolicy` modifier forwards the call to the PolicyEngine, which begins executing the policy chain. Policy 1 runs first and returns **Continue** — its check passed, but the decision is deferred. The engine moves to Policy 2, which can produce one of three outcomes:
+
+- **Reject** — The policy reverts with `PolicyRejected` and a reason. The entire transaction reverts immediately.
+- **Allow** — The policy approves the transaction. Execution succeeds without checking any further policies.
+- **Continue** — The check passed but no final decision was made. If no policies remain, the engine applies its configurable **default result** (allow or reject).
+
+<Aside type="note" title="Any policy can short-circuit the chain">
+  The diagram above shows Policy 1 returning Continue, but any policy in the chain can also return Reject or Allow. If
+  Policy 1 had rejected, the transaction would revert immediately and Policy 2 would never run. If Policy 1 had returned
+  Allow, the transaction would succeed immediately and Policy 2 would also be skipped. This is why policy ordering is
+  critical — a policy that makes a final decision prevents all subsequent policies from executing.
+</Aside>
+
+## The policy execution flow
+
+The overview above shows the decision logic. Under the hood, the PolicyEngine does more work before and after each policy runs: it extracts named parameters from the raw calldata and maps the right subset to each policy. This section covers the full execution flow.
+
+1. **Invocation** — The `runPolicy` modifier calls `PolicyEngine.run()` with a payload containing the function selector, caller address, calldata, and optional context.
+1. **Extraction** — The PolicyEngine calls the registered Extractor for that function selector. The Extractor parses the raw calldata and returns a list of named parameters (e.g., `to`, `value` for an ERC-20 transfer).
+1. **Parameter mapping** — For each policy in the chain, the engine maps the extracted parameters to the subset that policy needs. This mapping works by name: when a policy is added to a function selector, you specify which parameter names it requires (for example, a sanctions policy might need `from` and `to`, while a volume limit needs only `amount`). The engine provides only those parameters to each policy. See [Worked example: ERC-20 transfer](#worked-example-erc-20-transfer) for a concrete walkthrough.
+1. **Policy execution** — The engine calls each policy's `run()` function in order, passing the mapped parameters and context.
+1. **Result processing** — Based on each policy's response, the engine decides whether to continue, allow, or reject.
+
+<ClickToZoom src="/images/ace/policy-management-execution-flow.png" />
+
+### Post-run hooks
+
+After a policy returns **Allow** or **Continue**, the engine calls that policy's optional `postRun()` function. This hook is for state changes that depend on the transaction being approved — for example, the [VolumeRatePolicy](/ace/reference/policy-library/volume-rate-policy) uses `postRun()` to increment a cumulative volume counter for the current time period.
+
+Most policies leave `postRun()` empty. It only matters for policies that need to track state across transactions. If a policy **rejects**, its `postRun()` is never called — the entire transaction reverts.
+
+## Policy outcomes in detail
+
+Each policy's `run()` function produces one of three outcomes. Understanding them — and their interaction with `postRun()` — is essential for designing effective policy chains.
+
+### Reject
+
+The policy reverts with `PolicyRejected` and a descriptive reason. This is a **final** decision: the entire transaction reverts immediately, no subsequent policies run, and the policy's `postRun()` is **not** called.
+
+Use Reject for hard blocks: sanctions screening, unauthorized senders, expired credentials.
+
+### Allow
+
+The policy returns `Allowed`. This is also a **final** decision: all subsequent policies in the chain are **skipped**. The policy's `postRun()` **is** called before the transaction proceeds.
+
+Use Allow sparingly — it acts as a bypass. A common pattern is a BypassPolicy at the start of the chain that allows admin addresses to skip all subsequent checks.
+
+<Aside type="caution" title="Allow bypasses everything after it">
+  Because Allow skips all subsequent policies, place permissive policies (like admin bypass) with extreme care. A
+  misplaced Allow can inadvertently bypass critical security checks.
+</Aside>
+
+### Continue
+
+The policy's check passed, but the decision is deferred to the next policy. The policy's `postRun()` **is** called, and the engine moves to the next policy in the chain.
+
+If the last policy in the chain returns Continue and no policy has given a final verdict, the PolicyEngine applies its **default result**. The default can be configured to either allow or reject — this is set per target contract and can also be set globally for the engine.
+
+Most policies return Continue. This is what makes composability work: each policy handles one concern and passes control forward.
+
+## Policy composition
+
+The real power of Policy Management emerges when you chain multiple policies on the same function. Each policy handles one concern, and together they form a comprehensive ruleset:
+
+- A **sanctions check** rejects flagged addresses.
+- A **credential check** verifies the caller holds a valid KYC credential.
+- A **volume limit** enforces a daily transfer cap.
+- A **pause control** lets an administrator halt the function in an emergency.
+
+By composing these independent checks into a single chain, you build a comprehensive ruleset from simple, auditable building blocks — and you can adjust any single rule without affecting the others.
+
+Policies execute in their configured order. Because Allow and Reject are both final decisions that skip remaining policies, the order you place them in determines which checks actually execute. Different use cases call for different orderings — for example, placing a bypass policy first lets admins skip all checks, while placing a credential check first ensures every caller is verified.
+
+For a detailed guide on ordering strategies, see [Policy Ordering & Composition](/ace/concepts/policy-ordering).
+
+## The Extractor and Mapper pattern
+
+A key design principle is the separation between **parsing data** and **enforcing rules**. Extractors handle parsing; Policies handle rules. This means policies don't need to know how to decode raw calldata — they receive clean, named parameters.
+
+### The default flow
+
+For most use cases, the process is straightforward:
+
+1. **One Extractor per function selector** — An Extractor is registered for a specific function signature (e.g., `transfer(address,uint256)`). It parses the calldata and returns all relevant parameters as a named list (e.g., `to` and `value`).
+1. **Name-based mapping** — When you add a policy to a function selector, you specify which parameter names that policy needs. The PolicyEngine's built-in mapper automatically provides the right subset to each policy.
+1. **Multiple policies, one extraction** — The Extractor runs once per transaction, and the engine distributes the parameters to each policy by name. This keeps gas costs efficient.
+
+For example, an ERC-20 transfer might have an Extractor that produces `to` and `value`. A sanctions policy might only need `to`, while a volume limit policy only needs `value`. Each gets exactly what it asks for.
+
+<Aside type="note" title="ACE Beta: pre-built extractors only">
+  During ACE Beta, the platform provides pre-built extractors for ERC-20 and ERC-3643 function signatures only. Custom
+  extractors for other contract types are not available through the platform. See [Beta
+  Scope](/ace/beta-scope#no-custom-policies-extractors-or-mappers) for details.
+</Aside>
+
+### Worked example: ERC-20 transfer
+
+Consider a protected `transfer(address from, address to, uint256 amount)` function with two policies attached: a [RejectPolicy](/ace/reference/policy-library/reject-policy) for sanctions screening and a [VolumeRatePolicy](/ace/reference/policy-library/volume-rate-policy) for daily transfer limits.
+
+<ClickToZoom src="/images/ace/policy-management-extractor-mapper-example.png" />
+
+Here is what happens step by step:
+
+1. **Extraction** — The registered Extractor decodes the raw calldata and produces three named parameters: `from`, `to`, and `amount`.
+1. **Mapping for the RejectPolicy** — The RejectPolicy was configured to receive `from` and `to`. The engine provides both addresses to the policy.
+1. **Mapping for the VolumeRatePolicy** — The VolumeRatePolicy was configured to receive `amount`. The engine provides only the transfer size.
+1. **Policy execution** — Each policy receives exactly the parameters it was mapped to, and nothing else. The RejectPolicy sees two addresses; the VolumeRatePolicy sees one `uint256`.
+
+The parameters a policy receives are determined by the mapper configuration — not by the policy itself. A RejectPolicy configured to receive only `to` would check only the recipient; configured to receive both `from` and `to`, it checks both.
+
+<Aside type="tip" title="Why check all mapped addresses?">
+  Checking every address delivered by the mapper is a deliberate security choice. If a sanctions policy only checked the
+  recipient but not the sender, a sanctioned address could still initiate transfers freely. By mapping both `from` and
+  `to` to the policy, you ensure neither participant can be a sanctioned entity.
+</Aside>
+
+### Custom Mappers
+
+In rare cases, name-based mapping isn't enough — you need to **transform or combine** parameters before a policy can use them. This is where a custom Mapper comes in.
+
+A Mapper sits between the Extractor and a specific policy. It takes extracted parameters as input, transforms them, and returns the result for that policy.
+
+For example, a policy that enforces a USD volume limit might need a `usdValue` parameter, but the Extractor only provides `tokenAmount`. A custom Mapper could multiply `tokenAmount` by a price feed value to produce `usdValue`.
+
+Mappers are set per policy using `setPolicyMapper` and override the default name-based mapping for that policy only.
+
+<Aside type="note" title="ACE Beta: custom mappers not available">
+  Custom Mappers are not available through the ACE Platform during Beta. The platform uses the default name-based
+  parameter mapping for all policies. See [Beta Scope](/ace/beta-scope#no-custom-policies-extractors-or-mappers) for
+  details.
+</Aside>
+
+## The context parameter
+
+Throughout the policy execution flow, a `bytes` field called **context** is passed to every policy's `run()` and `postRun()` functions. This is a flexible data channel for passing arbitrary, transaction-specific information that isn't part of the protected function's arguments.
+
+### Common use cases
+
+- **Offchain signatures** — A user signs a message offchain (e.g., approving a high-value transaction), and the front end passes the signature in the context. A policy decodes and verifies it.
+- **Merkle proofs** — To check membership in a large offchain allowlist, the caller provides a Merkle proof in the context. The policy verifies it against a stored root.
+- **Dynamic risk parameters** — An integrator passes in offchain risk scores or session data, allowing policies to make context-aware decisions.
+
+<Aside type="note" title="Context is a developer-level feature">
+  The context parameter is handled entirely in your contract's Solidity code. It is not configurable or visible in the
+  ACE Platform UI or API.
+</Aside>
+
+### Two methods for passing context
+
+The `PolicyProtected` contract supports two approaches:
+
+**Direct argument (recommended for custom functions)** — If you control the function signature, add a `bytes calldata context` parameter and use the `runPolicyWithContext(context)` modifier. This is the cleanest and most gas-efficient approach.
+
+**Two-step method (for standard interfaces)** — When protecting a function with a fixed signature (like an ERC-20 `transfer`), the caller first calls `setContext(bytes)` on your contract and then calls the protected function in the same transaction. The `runPolicy` modifier retrieves and clears the stored context automatically.
+
+<Aside type="caution" title="Context must be consumed atomically">
+  When using the two-step method, always set and consume the context in the same atomic transaction. Context is stored
+  per sender — if it isn't consumed immediately, stale context could be reused by a subsequent call.
+</Aside>

@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Learn essential CRE concepts: workflows, handlers, triggers, callbacks, Runtime, capabilities, DONs, and consensus."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-05-20"
 ---
 
 import { Aside } from "@components"
@@ -21,6 +21,29 @@ The all-in-one orchestration layer unlocking institutional-grade smart contracts
 ### Decentralized Oracle Network (DON)
 
 A decentralized, peer-to-peer network of independent nodes that work together to execute a specific task. In CRE, there are two primary types of DONs: **Workflow DONs** that orchestrates the workflow, and specialized **Capability DONs** that execute specific tasks like blockchain interactions.
+
+### Control plane
+
+How you manage a workflow's lifecycle (deploy, activate, pause, update, delete) and its secrets. CRE supports two modes, selected per target via `user-workflow.deployment-registry` in `workflow.yaml`:
+
+- **Web3 key** — operations sign onchain transactions to the public Workflow Registry contract on Ethereum Mainnet. Requires a [linked wallet key](/cre/organization/linking-keys) and gas for registry transactions. Used when `deployment-registry: "onchain:ethereum-mainnet"`.
+- **Auth only** — operations are authorized by your CRE login session against the Chainlink-hosted private registry. No wallet, no Ethereum Mainnet RPC, and no gas are required for registry management. Used when `deployment-registry: "private"`.
+
+See [Choosing your registry](/cre/guides/operations/deploying-workflows#comparing-registries) for the deploy-time view and [Auth modes](/cre/guides/workflow/secrets/using-secrets-deployed#auth-modes-web3-key-vs-browser-auth) for the secrets equivalent.
+
+### Public workflow
+
+A workflow whose lifecycle is managed through the public onchain Workflow Registry. In `workflow.yaml`, this is selected with `deployment-registry: "onchain:ethereum-mainnet"`.
+
+### Private workflow
+
+A workflow whose lifecycle is managed through the Chainlink-hosted private registry. In `workflow.yaml`, this is selected with `deployment-registry: "private"`. Private workflow management is centralized and offchain.
+
+Private does not mean confidential. A private workflow uses a private registry for management, but its execution is not confidential unless it explicitly uses a confidential execution feature or capability.
+
+### Confidential workflow or confidential execution
+
+Execution that uses a confidential runtime, TEE, enclave, or confidential capability to protect data during execution. This is separate from registry selection. Confidential execution does not require the private registry, and a workflow can use confidential execution while still being managed through the public onchain registry.
 
 ## Workflow architecture
 
@@ -51,6 +74,12 @@ Short-lived objects passed to your callback function during a specific execution
 - **`NodeRuntime`**: Think of this as the "Manual Mode". It is used when a BFT guarantee cannot be provided automatically (e.g. calling a standard API). You tell each node to perform a task on its own. Each node returns its own individual answer, and you are responsible for telling the SDK how to combine them into a single, trusted result by providing an aggregation algorithm. This is always used inside a `cre.RunInNodeMode` block.
 
 Learn more about [Consensus and Aggregation](/cre/reference/sdk/consensus).
+
+### Report (CRE report)
+
+A cryptographically signed package your workflow [DON](/cre/key-terms#decentralized-oracle-network-don) produces after your callback encodes its result: payload bytes, report context, and DON signatures. Create it with [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime) (TypeScript) or [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) (Go).
+
+Deliver onchain with [`writeReport()`](/cre/reference/sdk/evm-client-ts#writereport) / [`WriteReport()`](/cre/reference/sdk/evm-client-go#writereport), or offchain with [`sendReport()`](/cre/reference/sdk/http-client-ts#using-sendreport) / [`SendReport()`](/cre/reference/sdk/http-client-go#sendrequestersendreport). Receivers verify with [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) or [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport). See [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http) and [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain).
 
 ### SDK Clients: `EVMClient` & `HTTPClient`
 

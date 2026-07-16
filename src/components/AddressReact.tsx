@@ -23,9 +23,15 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
 
   return (
     <span className={`addressContainer ${urlClass || ""}`} id={urlId}>
-      <a title={address} className="addressLink" href={contractUrl} target="_blank" rel="noopener noreferrer">
-        {endLength && address ? address.slice(0, endLength + 2) + "..." + address.slice(-endLength) : address}
-      </a>
+      {contractUrl ? (
+        <a title={address} className="addressLink" href={contractUrl} target="_blank" rel="noopener noreferrer">
+          {endLength && address ? address.slice(0, endLength + 2) + "..." + address.slice(-endLength) : address}
+        </a>
+      ) : (
+        <span title={address} className="addressLink">
+          {endLength && address ? address.slice(0, endLength + 2) + "..." + address.slice(-endLength) : address}
+        </span>
+      )}
       <button
         className={clsx("copyBtn", "copy-iconbutton")}
         style={{ height: "16px", width: "16px", minWidth: "12px" }}
@@ -36,6 +42,20 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
       </button>
 
       <style>{`
+        a.addressLink {
+          color: var(--color-text-link);
+          text-decoration: none;
+        }
+
+        a.addressLink:hover {
+          color: var(--color-text-link-hover);
+          text-decoration: underline;
+        }
+
+        a.addressLink:visited {
+          color: var(--color-text-link);
+        }
+
         .addressLink {
           padding: 1px 0px;
           border-radius: var(--border-radius-10);

@@ -8,7 +8,9 @@ export type LlmsSectionConfig = {
 
 // Central list of sections that expose llms-full.txt or llms-full-[lang].txt
 export const SUPPORTED_LLM_SECTIONS = [
+  "ace",
   "cre",
+  "crec",
   "vrf",
   "ccip",
   "data-feeds",
@@ -28,10 +30,18 @@ export type SupportedSection = (typeof SUPPORTED_LLM_SECTIONS)[number]
 
 // Configuration for each section
 export const LLM_SECTIONS_CONFIG: Record<SupportedSection, LlmsSectionConfig> = {
+  ace: {
+    root: "src/content/ace",
+    includeGlobs: ["**/*.mdx"],
+  },
   cre: {
     root: "src/content/cre",
     includeGlobs: ["**/*.mdx"],
     languages: ["go", "ts"], // CRE has language-specific files
+  },
+  crec: {
+    root: "src/content/crec",
+    includeGlobs: ["**/*.mdx"],
   },
   vrf: {
     root: "src/content/vrf",

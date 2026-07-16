@@ -11,7 +11,9 @@ metadata:
 
 import { Aside } from "@components"
 
-This guide shows how to generate a report containing a struct with multiple fields. There are two approaches depending on whether you have generated bindings for your contract.
+This guide shows how to generate a **[CRE report](/cre/key-terms#report-cre-report)** containing a struct with multiple fields. See [Key Terms: Report](/cre/key-terms#report-cre-report) for the full definition. After generation, deliver it [onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain) or via [HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http); HTTP receivers should [verify offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain). See [API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http).
+
+There are two encoding approaches depending on whether you have generated bindings for your contract.
 
 ## Choosing your approach
 
@@ -121,6 +123,17 @@ This report is designed to be passed directly to either:
 
 - `evm.Client.WriteReport()` for onchain delivery
 - `http.Client` for offchain delivery
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Protect against replay attacks before submitting">
+  If your workflow performs state-changing actions (payments, minting, position updates), add protective fields to your struct before encoding:
+
+- **Chain selector**: Include the target chain selector so the consumer contract can reject reports replayed on a different chain.
+- **Execution timestamp**: Include the cron trigger's scheduled slot time so the consumer can reject stale reports that were previously reverted and are being replayed by an attacker.
+
+See [Replay attacks](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#replay-attacks) in the Building Consumer Contracts guide for full code examples.
+
+</Aside>
 
 The report can now be [submitted onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain) or [sent via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http).
 

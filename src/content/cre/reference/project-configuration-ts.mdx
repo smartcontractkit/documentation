@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Configure your TypeScript project: learn to manage project.yaml, workflow.yaml, and targets for different environments."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-05-08"
 ---
 
 import { ClickToZoom, Aside } from "@components"
@@ -53,7 +53,7 @@ myProject/
 │   ├── tsconfig.json       # TypeScript configuration
 │   ├── bun.lock            # Dependency lock file
 │   ├── node_modules/       # Installed dependencies
-│   ├── workflow.yaml       # Workflow-specific configuration (optional)
+│   ├── workflow.yaml       # Workflow-specific configuration
 │   ├── main.ts             # Your workflow code
 │   └── …
 ├── workflow2/
@@ -61,14 +61,14 @@ myProject/
 │   ├── tsconfig.json       # TypeScript configuration
 │   ├── bun.lock            # Dependency lock file
 │   ├── node_modules/       # Installed dependencies
-│   ├── workflow.yaml       # Workflow-specific configuration (optional)
+│   ├── workflow.yaml       # Workflow-specific configuration
 │   ├── main.ts             # Your workflow code
 │   └── …
 └── …
 ```
 
 - `project.yaml`: **Global settings**, shared by every workflow in the project.
-- `workflow.yaml`: **Local settings** for a single workflow. Add this file only when the workflow needs overrides.
+- `workflow.yaml`: **Local settings** for a single workflow. Define each target's `workflow-name`, `deployment-registry`, workflow artifacts, and any workflow-specific overrides here.
 - `secrets.yaml`: **Secret declarations**, a manifest of logical secret names used across the project.
 - `contracts/abi/`: **TypeScript ABI definitions**, where you place `.ts` files that export contract ABIs using viem's type system. Unlike Go, TypeScript doesn't require generating bindings—ABIs are used directly with viem.
 - `package.json` / `tsconfig.json`: **Workflow-specific dependencies and TypeScript configuration**. Each workflow manages its own dependencies independently.
@@ -99,9 +99,9 @@ production-settings:
 ```
 
 <Aside type="note" title="Available chain names">
-  For a complete list of supported networks and their chain names, see [Supported
-  Networks](/cre/guides/workflow/using-evm-client/supported-networks). For details on using chain selectors in your
-  workflow code, see [Chain Selectors](/cre/reference/sdk/evm-client-ts#chain-selectors).
+  For a complete list of supported networks and their chain names, see [Supported Networks](/cre/supported-networks).
+  For details on using chain selectors in your workflow code, see [Chain
+  Selectors](/cre/reference/sdk/evm-client-ts#chain-selectors).
 </Aside>
 
 #### Configuration fields
@@ -110,6 +110,22 @@ production-settings:
 | -------------------------------------- | -------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `account.workflow-owner-address`       | No       | Multi-sig only                               | Multi-sig wallet address that owns the workflow. Required when using the `--unsigned` flag to generate unsigned transactions. For standard (non-multi-sig) deployments, omit this field—the CLI uses the address from `CRE_ETH_PRIVATE_KEY`. See [Using Multi-sig Wallets](/cre/guides/operations/using-multisig-wallets). |
 | `rpcs`                                 | Yes      | Always (if using EVM)                        | Array of RPC endpoints for chains your workflow interacts with. Each entry requires `chain-name` (e.g., `ethereum-mainnet`) and `url` (the RPC endpoint). **Required for both simulation and deployed workflows** that use EVM capabilities. The CLI pre-populates a public Sepolia RPC URL by default.                    |
+
+#### Environment variable interpolation in RPC URLs
+
+RPC URLs support `${VAR_NAME}` syntax to inject values from environment variables. This keeps sensitive API keys and endpoint tokens out of `project.yaml`, which is typically committed to version control.
+
+```yaml
+# project.yaml
+production-settings:
+  rpcs:
+    - chain-name: ethereum-mainnet
+      url: https://mainnet.infura.io/v3/${INFURA_API_KEY}
+    - chain-name: ethereum-testnet-sepolia
+      url: https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}
+```
+
+Variable values are resolved from environment variables at runtime. This works across all CLI commands: `cre workflow simulate`, `cre workflow deploy`, and others.
 
 <Aside type="caution" title="Missing RPC causes simulation failure">
   If your workflow uses EVM capabilities, you must configure RPC endpoints. Without them, the simulator cannot register
@@ -125,6 +141,7 @@ production-settings:
 staging-settings:
   user-workflow:
     workflow-name: "my-por-workflow-staging"
+    # deployment-registry: "private" # Optional (new in v1.14.0). Omit to use the default onchain registry.
   workflow-artifacts:
     workflow-path: "./main.ts" # Points to the TypeScript entry file
     config-path: "./config.staging.json"
@@ -134,6 +151,7 @@ production-settings:
   user-workflow:
     workflow-owner-address: "<address>" # Optional: For multi-sig wallets
     workflow-name: "my-por-workflow-production"
+    # deployment-registry: "onchain:ethereum-mainnet" # Explicit onchain registry (also the default when omitted).
   workflow-artifacts:
     workflow-path: "./main.ts" # Points to the TypeScript entry file
     config-path: "./config.production.json"
@@ -142,17 +160,20 @@ production-settings:
 
 #### Configuration fields
 
-| <div style="width: 220px;">Field</div> | Required | Description                                                                                                                                                                                                     |
-| -------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `user-workflow.workflow-name`          | Yes      | The name of your workflow. This name is used to identify the workflow when deploying, activating, or managing it via CLI commands. Best practice: include environment suffix (e.g., `-staging`, `-production`). |
-| `user-workflow.workflow-owner-address` | No       | Multi-sig wallet address (if applicable). Overrides the value from `project.yaml` for this specific workflow. See the `project.yaml` configuration table above for details.                                     |
-| `workflow-artifacts.workflow-path`     | Yes      | Path to your workflow entry point. For TypeScript: `"./main.ts"` (or your entry file name). For Go: `"."` (current directory).                                                                                  |
-| `workflow-artifacts.config-path`       | Yes      | Path to your workflow configuration JSON file (e.g., `"./config.staging.json"` or `"./config.production.json"`).                                                                                                |
-| `workflow-artifacts.secrets-path`      | No       | Path to your secrets YAML file (e.g., `"../secrets.yaml"`). Use `""` (empty string) if not using secrets. See [Secrets Management](/cre/guides/workflow/secrets) for details.                                   |
+| <div style="width: 220px;">Field</div> | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| -------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `user-workflow.workflow-name`          | Yes      | The name of your workflow. This name is used to identify the workflow when deploying, activating, or managing it via CLI commands. Best practice: include environment suffix (e.g., `-staging`, `-production`).                                                                                                                                                                                                                                                                                                                                     |
+| `user-workflow.workflow-owner-address` | No       | Multi-sig wallet address (if applicable). Overrides the value from `project.yaml` for this specific workflow. See the `project.yaml` configuration table above for details.                                                                                                                                                                                                                                                                                                                                                                         |
+| `user-workflow.deployment-registry`    | No       | New in v1.14.0. Selects which registry receives this target's deployment. When omitted, the CLI defaults to the public onchain Workflow Registry (same behavior as before v1.14.0). Set to `"private"` for Chainlink-hosted private registry management via your CRE login session (no linked key or gas required for registry operations). Set to `"onchain:ethereum-mainnet"` to explicitly target the public onchain Workflow Registry. Run [`cre registry list`](/cre/reference/cli/registry) to see registries available to your organization. |
+| `workflow-artifacts.workflow-path`     | Yes      | Path to your workflow entry point. For TypeScript: `"./main.ts"` (or your entry file name). For Go: `"."` (current directory).                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `workflow-artifacts.config-path`       | Yes      | Path to your workflow configuration JSON file (e.g., `"./config.staging.json"` or `"./config.production.json"`).                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `workflow-artifacts.secrets-path`      | No       | Path to your secrets YAML file (e.g., `"../secrets.yaml"`). Use `""` (empty string) if not using secrets. See [Secrets Management](/cre/guides/workflow/secrets) for details.                                                                                                                                                                                                                                                                                                                                                                       |
 
 <Aside type="note" title="When is workflow.yaml required?">
-  Every workflow directory must have a `workflow.yaml` file that defines `workflow-name` and `workflow-artifacts`. You
-  can optionally override project-level settings (like `workflow-owner-address`) for specific workflows.
+  To deploy or manage a workflow with the CLI, the workflow directory must have a `workflow.yaml` file that defines
+  `workflow-name` and `workflow-artifacts` for each target. `deployment-registry` is optional — omit it to use the
+  default onchain registry, or set it to `"private"` to use the Chainlink-hosted private registry. You can optionally
+  override project-level settings (like `workflow-owner-address`) for specific workflows.
 </Aside>
 
 <Aside type="note" title="TypeScript workflow-path">
@@ -241,3 +262,38 @@ When you run a CLI command with a target, e.g., `--target staging-settings`:
   If your workflow directory contains a `workflow.yaml`, the target you specify must exist in both `project.yaml` and
   `workflow.yaml`. A mismatch causes the CLI to abort with a clear error message.
 </Aside>
+
+## 5. Updating dependencies
+
+When new networks or SDK features are released, you may need to update your project dependencies.
+
+### Updating the CLI
+
+Run [cre update](/cre/reference/cli/utilities#cre-update) to download and install the latest CLI version:
+
+```bash
+cre update
+```
+
+New projects created with an updated CLI automatically use compatible SDK versions.
+
+### Updating the SDK (existing projects)
+
+If you created your project with an older CLI version, update the `@chainlink/cre-sdk` dependency in your workflow's `package.json`:
+
+```json
+{
+  "dependencies": {
+    "@chainlink/cre-sdk": "^1.6.0"
+  }
+}
+```
+
+Then run `bun install` from your workflow directory to update `bun.lock`.
+
+### Checking your versions
+
+- **CLI version:** Run `cre version`
+- **SDK version:** Check `package.json` or `bun.lock` in your workflow directory
+
+For a list of which versions support which networks, see [Supported Networks](/cre/supported-networks).

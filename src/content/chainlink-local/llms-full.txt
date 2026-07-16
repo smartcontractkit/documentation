@@ -8519,9 +8519,183 @@ does not persist the files that you open from an external source. To save files,
 
 3. Copy the content of the [Test CCIP Local Simulator contract](https://docs.chain.link/samples/CCIP/TestCCIPLocalSimulator.sol) into a new file in the workspace.
 
+   ```sol
+   // SPDX-License-Identifier: MIT
+   pragma solidity 0.8.24;
+
+   // solhint-disable no-unused-import
+   // import {CCIPLocalSimulator} from "@chainlink/local/src/ccip/CCIPLocalSimulator.sol";
+   ```
+
 4. Copy the content of the [Sender contract](https://docs.chain.link/samples/CCIP/Sender.sol) into a new file in the workspace.
 
+   ```sol
+   // SPDX-License-Identifier: MIT
+   pragma solidity 0.8.24;
+
+   import {IRouterClient} from "@chainlink/contracts-ccip/contracts/interfaces/IRouterClient.sol";
+
+   import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
+   import {OwnerIsCreator} from "@chainlink/contracts/src/v0.8/shared/access/OwnerIsCreator.sol";
+   import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
+
+   /**
+    * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+    * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+    * DO NOT USE THIS CODE IN PRODUCTION.
+    */
+
+   /// @title - A simple contract for sending string data across chains.
+   contract Sender is OwnerIsCreator {
+     // Custom errors to provide more descriptive revert messages.
+     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough
+     // balance.
+
+     // Event emitted when a message is sent to another chain.
+     // The chain selector of the destination chain.
+     // The address of the receiver on the destination chain.
+     // The text being sent.
+     // the token address used to pay CCIP fees.
+     // The fees paid for sending the CCIP message.
+     event MessageSent( // The unique ID of the CCIP message.
+       bytes32 indexed messageId,
+       uint64 indexed destinationChainSelector,
+       address receiver,
+       string text,
+       address feeToken,
+       uint256 fees
+     );
+
+     IRouterClient private s_router;
+
+     LinkTokenInterface private s_linkToken;
+
+     /// @notice Constructor initializes the contract with the router address.
+     /// @param _router The address of the router contract.
+     /// @param _link The address of the link contract.
+     constructor(
+       address _router,
+       address _link
+     ) {
+       s_router = IRouterClient(_router);
+       s_linkToken = LinkTokenInterface(_link);
+     }
+
+     /// @notice Sends data to receiver on the destination chain.
+     /// @dev Assumes your contract has sufficient LINK.
+     /// @param destinationChainSelector The identifier (aka selector) for the destination blockchain.
+     /// @param receiver The address of the recipient on the destination blockchain.
+     /// @param text The string text to be sent.
+     /// @return messageId The ID of the message that was sent.
+     function sendMessage(
+       uint64 destinationChainSelector,
+       address receiver,
+       string calldata text
+     ) external onlyOwner returns (bytes32 messageId) {
+       // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
+       Client.EVM2AnyMessage memory evm2AnyMessage = Client.EVM2AnyMessage({
+         receiver: abi.encode(receiver), // ABI-encoded receiver address
+         data: abi.encode(text), // ABI-encoded string
+         tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array indicating no tokens are being sent
+         extraArgs: Client._argsToBytes(
+           // Additional arguments, setting gas limit and allowing out-of-order execution.
+           // Best Practice: For simplicity, the values are hardcoded. It is advisable to use a more dynamic approach
+           // where you set the extra arguments off-chain. This allows adaptation depending on the lanes, messages,
+           // and ensures compatibility with future CCIP upgrades. Read more about it here:
+           // https://docs.chain.link/ccip/concepts/best-practices/evm#using-extraargs
+           Client.GenericExtraArgsV2({
+             gasLimit: 200_000, // Gas limit for the callback on the destination chain
+             allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages
+             // from
+             // the same sender
+           })
+         ),
+         // Set the feeToken  address, indicating LINK will be used for fees
+         feeToken: address(s_linkToken)
+       });
+
+       // Get the fee required to send the message
+       uint256 fees = s_router.getFee(destinationChainSelector, evm2AnyMessage);
+
+       if (fees > s_linkToken.balanceOf(address(this))) {
+         revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
+       }
+
+       // approve the Router to transfer LINK tokens on contract's behalf. It will spend the fees in LINK
+       s_linkToken.approve(address(s_router), fees);
+
+       // Send the message through the router and store the returned message ID
+       messageId = s_router.ccipSend(destinationChainSelector, evm2AnyMessage);
+
+       // Emit an event with message details
+       emit MessageSent(messageId, destinationChainSelector, receiver, text, address(s_linkToken), fees);
+
+       // Return the message ID
+       return messageId;
+     }
+   }
+   ```
+
 5. Copy the content of the [Receiver contract](https://docs.chain.link/samples/CCIP/Receiver.sol) into a new file in the workspace.
+
+   ```sol
+   // SPDX-License-Identifier: MIT
+   pragma solidity 0.8.24;
+
+   import {CCIPReceiver} from "@chainlink/contracts-ccip/contracts/applications/CCIPReceiver.sol";
+   import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
+
+   /**
+    * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+    * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+    * DO NOT USE THIS CODE IN PRODUCTION.
+    */
+
+   /// @title - A simple contract for receiving string data across chains.
+   contract Receiver is CCIPReceiver {
+     // Event emitted when a message is received from another chain.
+     event MessageReceived( // The unique ID of the message.
+       // The chain selector of the source chain.
+       // The address of the sender from the source chain.
+       // The text that was received.
+       bytes32 indexed messageId,
+       uint64 indexed sourceChainSelector,
+       address sender,
+       string text
+     );
+
+     bytes32 private s_lastReceivedMessageId; // Store the last received messageId.
+     string private s_lastReceivedText; // Store the last received text.
+
+     /// @notice Constructor initializes the contract with the router address.
+     /// @param router The address of the router contract.
+     constructor(
+       address router
+     ) CCIPReceiver(router) {}
+
+     /// handle a received message
+     function _ccipReceive(
+       Client.Any2EVMMessage memory any2EvmMessage
+     ) internal override {
+       s_lastReceivedMessageId = any2EvmMessage.messageId; // fetch the messageId
+       s_lastReceivedText = abi.decode(any2EvmMessage.data, (string)); // abi-decoding of the sent text
+
+       emit MessageReceived(
+         any2EvmMessage.messageId,
+         any2EvmMessage.sourceChainSelector, // fetch the source chain identifier (aka selector)
+         abi.decode(any2EvmMessage.sender, (address)), // abi-decoding of the sender address,
+         abi.decode(any2EvmMessage.data, (string))
+       );
+     }
+
+     /// @notice Fetches the details of the last received message.
+     /// @return messageId The ID of the last received message.
+     /// @return text The last received text.
+     function getLastReceivedMessageDetails() external view returns (bytes32 messageId, string memory text) {
+       return (s_lastReceivedMessageId, s_lastReceivedText);
+     }
+   }
+   ```
 
 At this point, you should have three files in your workspace:
 

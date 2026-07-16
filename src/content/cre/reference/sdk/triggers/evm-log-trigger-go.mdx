@@ -61,9 +61,9 @@ The configuration struct for the EVM log trigger.
 | `Topics`                               | `[]*evm.TopicValues`                  | A fixed 4-element array to filter event topics. The first element contains event signatures, and the next three elements contain indexed argument values. An empty array element acts as a wildcard.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `Confidence`                           | `ConfidenceLevel`                     | The block confirmation level to monitor. Can be: <ul><li>**`evm.ConfidenceLevel_CONFIDENCE_LEVEL_SAFE` (default):** A block that is considered unlikely to be reorged but is not yet irreversible.</li><li>**`evm.ConfidenceLevel_CONFIDENCE_LEVEL_LATEST`:** The most recent block. This is the fastest but least secure, as the block could be orphaned. Best for non-critical, time-sensitive actions.</li><li>**`evm.ConfidenceLevel_CONFIDENCE_LEVEL_FINALIZED`:** A block that is considered irreversible. This is the safest option, as the event is guaranteed to be on the canonical chain, but it requires waiting longer for finality.</li></ul> |
 
-{/* prettier-ignore */}
-<Aside type="caution" title="SAFE block tag fallback">
-  **Some chains do not support the SAFE block tag** (e.g., Shibarium). When you specify `CONFIDENCE_LEVEL_SAFE` on chains that don't support it, CRE automatically falls back to `CONFIDENCE_LEVEL_FINALIZED` for safety. Users are responsible for knowing which chains support the SAFE tag. If you need consistent behavior across all chains, explicitly use `CONFIDENCE_LEVEL_FINALIZED` or `CONFIDENCE_LEVEL_LATEST`.
+<Aside type="note" title="Finality details">
+  For details on how each confidence level maps to specific chains and estimated wait times, see [Finality and
+  Confidence Levels](/cre/concepts/finality).
 </Aside>
 
 ### `evm.Log`

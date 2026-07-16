@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
-import { useState } from "preact/hooks"
-import { Fragment } from "preact"
+import { useEffect, useState } from "preact/hooks"
+import { Fragment, render } from "preact"
 import feedList from "./FeedList.module.css"
 import { clsx } from "~/lib/clsx/clsx.ts"
 import { ChainNetwork } from "~/features/data/chains.ts"
@@ -9,13 +9,173 @@ import button from "@chainlink/design-system/button.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
 import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksData.ts"
-import { FEED_CATEGORY_CONFIG } from "../../../db/feedCategories.js"
-import { useBatchedFeedCategories, getFeedCategoryFromBatch, getNetworkIdentifier } from "./useBatchedFeedCategories.ts"
+import {
+  FEED_CATEGORY_CONFIG,
+  getRiskCategoryLink,
+  getRiskCategoryTitle,
+  type CategoryKey,
+} from "../../../db/feedCategories.js"
+import type { MarketPricingRiskProduct } from "../content/marketPricingRiskTerms.ts"
+import { REPORT_SCHEMA_DEFINITIONS, type SchemaDefinition } from "./reportSchemaData.ts"
+import schemaFieldsTableStyles from "../../data-streams/common/schemaFieldsTable.module.css"
 import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
 import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
-import { isFeedVisible } from "~/features/feeds/utils/feedVisibility.ts"
+import { shouldHideAddress, shouldHideStreamFeedId } from "~/features/feeds/utils/feedVisibility.ts"
+import { DATA_STREAMS_CONTACT_URL, TOKENIZED_EQUITY_CONTACT_EMAIL } from "~/features/feeds/constants.ts"
+import {
+  getSchemaVersion,
+  getMarketStatusDocLink,
+  getTradingHoursDocLink,
+  isApacEquitiesStreamFeed,
+} from "~/features/feeds/utils/feedMetadata.ts"
+import { getFeedTypeFlags } from "~/features/feeds/types.ts"
+import { useFilteredFeedMetadata } from "~/features/feeds/hooks/useFilteredFeedMetadata.ts"
 
 const feedItems = monitoredFeeds.mainnet
+type StreamNetworkType = "mainnet" | "testnet"
+
+/**
+ * Decodes a raw maxSubmissionValue (BigInt string scaled by 10^decimals) into a
+ * human-readable USD price string. Returns null if the value is effectively unbounded
+ * (i.e. the contract's default max sentinel — all 0xff bytes) or otherwise too large
+ * to represent a real price cap.
+ *
+ * The raw value lives on-chain and is stored as a string to avoid JS number precision
+ * loss. We divide by 10^decimals to recover the actual price, then format it.
+ */
+const getMaxSubmissionValueBound = (
+  maxSubmissionValue: string | undefined,
+  decimals: number | undefined
+): string | null => {
+  if (!maxSubmissionValue || decimals == null || decimals < 0) return null
+  try {
+    const raw = BigInt(maxSubmissionValue)
+    const divisor = BigInt(10) ** BigInt(decimals)
+    // Hide the badge if the decoded price exceeds $2.00 (fixed-point compare avoids
+    // float drift). The all-0xff unbounded sentinel decodes to ~9.578e44 and is filtered here.
+    if (raw > BigInt(2) * divisor) return null
+    const wholePart = raw / divisor
+    const remainder = raw % divisor
+    const price = Number(wholePart) + Number(remainder) / Number(divisor)
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(price)
+  } catch {
+    return null
+  }
+}
+
+const getSchemaDefinitionKey = (metadata: any): string | undefined => {
+  const feedType = metadata.feedType || metadata.docs?.feedType
+  const schemaVersion = getSchemaVersion(metadata)
+
+  // Explicit docs.schema (or clicProductName suffix) takes precedence over feedType heuristics.
+  if (schemaVersion === "v9") return "v9"
+  if (schemaVersion === "v12") return "v12"
+  if (schemaVersion === "v8") return "v8"
+  if (schemaVersion === "v10") return "v10"
+  if (schemaVersion === "v11") {
+    return isApacEquitiesStreamFeed(metadata) ? "v11-apac" : "v11"
+  }
+  if (schemaVersion === "v7") return "v7"
+  if (schemaVersion === "v3") {
+    return feedType === "Crypto-DEX" ? "v3-dex" : "v3-crypto"
+  }
+
+  if (feedType === "Crypto-DEX") return "v3-dex"
+  if (feedType === "Crypto" && metadata.docs?.productTypeCode !== "ExRate") return "v3-crypto"
+
+  if (feedType === "Equities" || feedType === "Forex" || feedType === "Datalink") {
+    return undefined
+  }
+
+  if (metadata.docs?.productTypeCode === "ExRate") return "v7"
+  if (feedType === "Tokenized Equities") return "v10"
+
+  return undefined
+}
+
+const SchemaInlineExpander = ({
+  schemaDef,
+  schemaKey,
+  metadata,
+}: {
+  schemaDef: SchemaDefinition
+  schemaKey: string
+  metadata: any
+}) => {
+  const marketHoursLink = getTradingHoursDocLink(metadata, schemaKey)
+
+  return (
+    <div className={tableStyles.schemaRow}>
+      <div className={tableStyles.definitionGroup}>
+        <dt>
+          <span className="label">Report Schema:</span>
+        </dt>
+        <dd>
+          <a href={schemaDef.url} rel="noreferrer" target="_blank">
+            {schemaDef.label}
+          </a>
+        </dd>
+      </div>
+      <details className={tableStyles.schemaDetails}>
+        <summary>View {schemaDef.shortLabel} schema fields</summary>
+        <div className={schemaFieldsTableStyles.wrapper}>
+          <table className={schemaFieldsTableStyles.table}>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {schemaDef.fields.map((f) => {
+                const fieldLink = f.field === "marketStatus" ? getMarketStatusDocLink(metadata, schemaKey) : f.link
+
+                return (
+                  <tr key={f.field}>
+                    <td>
+                      <code>{f.field}</code>
+                    </td>
+                    <td>
+                      <code>{f.type}</code>
+                    </td>
+                    <td>
+                      {f.description}
+                      {fieldLink && (
+                        <>
+                          {" See "}
+                          <a href={fieldLink.href} rel="noreferrer" target="_blank">
+                            {fieldLink.label}
+                          </a>
+                          {"."}
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div className={tableStyles.schemaFooterLinks}>
+          <a href={schemaDef.url} rel="noreferrer" target="_blank" className={tableStyles.schemaFullLink}>
+            Full schema documentation ↗
+          </a>
+          {marketHoursLink && (
+            <a href={marketHoursLink.href} rel="noreferrer" target="_blank" className={tableStyles.schemaFullLink}>
+              {marketHoursLink.label} ↗
+            </a>
+          )}
+        </div>
+      </details>
+    </div>
+  )
+}
 
 // Helper function to parse markdown links and render them
 const parseMarkdownLink = (text: string) => {
@@ -47,17 +207,135 @@ const parseMarkdownLink = (text: string) => {
   return parts.length > 0 ? parts : text
 }
 
-// Render a category icon/link from the config
-const getFeedCategoryElement = (riskTier: string | undefined) => {
-  if (!riskTier) return ""
-  const category = FEED_CATEGORY_CONFIG[riskTier.toLowerCase()]
-  if (!category) return ""
+const RISK_TIER_SHORT_LABELS: Record<string, string> = {
+  low: "Low risk",
+  medium: "Medium risk",
+  high: "High risk",
+  veryhigh: "Very high risk",
+  new: "New token",
+  custom: "Custom",
+  deprecating: "Deprecating",
+}
+
+const normalizeRiskKey = (riskTier?: string | null) => riskTier?.toLowerCase().replace(/\s+/g, "") ?? ""
+
+const getRiskTooltipText = (normalizedKey: CategoryKey, product: MarketPricingRiskProduct) => {
+  const title = getRiskCategoryTitle(normalizedKey, product)
+
+  if (normalizedKey === "veryhigh") {
+    const assetLabel = product === "streams" ? "streams" : "feeds"
+    const assetSingular = product === "streams" ? "stream" : "feed"
+
+    return `${title} The contract address is hidden to help prevent accidental onboarding to inherently risky ${assetLabel}. Contact ${TOKENIZED_EQUITY_CONTACT_EMAIL} if you would like to use this ${assetSingular}.`
+  }
+
+  return title
+}
+
+const RISK_TOOLTIP_MAX_WIDTH = 280
+const RISK_TOOLTIP_VIEWPORT_PADDING = 8
+
+const getRiskTooltipPosition = (anchor: HTMLElement) => {
+  const rect = anchor.getBoundingClientRect()
+  const maxWidth = Math.min(RISK_TOOLTIP_MAX_WIDTH, window.innerWidth - RISK_TOOLTIP_VIEWPORT_PADDING * 2)
+  let left = rect.left
+
+  if (left + maxWidth > window.innerWidth - RISK_TOOLTIP_VIEWPORT_PADDING) {
+    left = window.innerWidth - maxWidth - RISK_TOOLTIP_VIEWPORT_PADDING
+  }
+
+  const spaceBelow = window.innerHeight - rect.bottom - RISK_TOOLTIP_VIEWPORT_PADDING
+  const showAbove = spaceBelow < 120 && rect.top > spaceBelow
+
+  return {
+    top: rect.bottom + 6,
+    anchorTop: rect.top,
+    left: Math.max(RISK_TOOLTIP_VIEWPORT_PADDING, left),
+    maxWidth,
+    showAbove,
+  }
+}
+
+const RiskTHeadCell = () => <th className={clsx(tableStyles.heading, tableStyles.riskCol)}>Risk</th>
+
+const getFeedTableColSpan = (isStreams: boolean, showRiskColumn: boolean) =>
+  (isStreams ? 2 : 5) + (showRiskColumn ? 1 : 0)
+
+const RiskCell = ({
+  riskTier,
+  product = "feeds",
+}: {
+  riskTier?: string | null
+  product?: MarketPricingRiskProduct
+}) => {
+  const [tooltipPos, setTooltipPos] = useState<ReturnType<typeof getRiskTooltipPosition> | null>(null)
+  const normalizedKey = normalizeRiskKey(riskTier)
+  const category = normalizedKey ? FEED_CATEGORY_CONFIG[normalizedKey as CategoryKey] : undefined
+  const tooltipText = category ? getRiskTooltipText(normalizedKey as CategoryKey, product) : ""
+  const riskLink = category ? getRiskCategoryLink(normalizedKey as CategoryKey, product) : ""
+
+  useEffect(() => {
+    if (!tooltipPos || typeof document === "undefined") return
+
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+
+    render(
+      <div
+        className={tableStyles.riskTooltipBubble}
+        style={{
+          top: tooltipPos.showAbove ? undefined : `${tooltipPos.top}px`,
+          bottom: tooltipPos.showAbove ? `${window.innerHeight - tooltipPos.anchorTop + 6}px` : undefined,
+          left: `${tooltipPos.left}px`,
+          maxWidth: `${tooltipPos.maxWidth}px`,
+        }}
+        role="tooltip"
+      >
+        <p className={tableStyles.riskTooltipText}>{tooltipText}</p>
+        <p className={tableStyles.riskTooltipHint}>Click to view the risk selection page.</p>
+      </div>,
+      container
+    )
+
+    return () => {
+      render(null, container)
+      container.remove()
+    }
+  }, [tooltipPos, tooltipText])
+
+  if (!category) {
+    return (
+      <td className={tableStyles.riskCol}>
+        <span className={tableStyles.riskUnavailable}>—</span>
+      </td>
+    )
+  }
+
+  const showTooltip = (event: Event) => {
+    setTooltipPos(getRiskTooltipPosition(event.currentTarget as HTMLElement))
+  }
+
+  const hideTooltip = () => setTooltipPos(null)
+
   return (
-    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title={category.title}>
-      <a href={category.link} aria-label={category.name} target="_blank">
-        {category.icon}
-      </a>
-    </span>
+    <td className={tableStyles.riskCol}>
+      <div className={tableStyles.riskCell}>
+        <span className={tableStyles.riskIcon} aria-hidden="true">
+          {category.icon}
+        </span>
+        <a
+          href={riskLink}
+          className={tableStyles.riskLabelLink}
+          aria-label={category.name}
+          onMouseEnter={showTooltip}
+          onMouseLeave={hideTooltip}
+          onFocus={showTooltip}
+          onBlur={hideTooltip}
+        >
+          {RISK_TIER_SHORT_LABELS[normalizedKey] ?? category.name}
+        </a>
+      </div>
+    </td>
   )
 }
 
@@ -171,10 +449,12 @@ const DefaultTHead = ({
   showExtraDetails,
   networkName,
   dataFeedType,
+  showRiskColumn = true,
 }: {
   showExtraDetails: boolean
   networkName: string
   dataFeedType: string
+  showRiskColumn?: boolean
 }) => {
   const isAptosNetwork = networkName === "Aptos Mainnet" || networkName === "Aptos Testnet"
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
@@ -182,6 +462,7 @@ const DefaultTHead = ({
   return (
     <thead>
       <tr>
+        {showRiskColumn && <RiskTHeadCell />}
         <th className={tableStyles.heading}>{isUSGovernmentMacroeconomicData ? "Feed" : "Pair"}</th>
         <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Deviation</th>
         <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Heartbeat</th>
@@ -192,13 +473,54 @@ const DefaultTHead = ({
   )
 }
 
-const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, dataFeedType }) => {
+const HiddenAddressContact = ({ className }: { className?: string }) => (
+  <span>
+    Contact us:{" "}
+    <a href={`mailto:${TOKENIZED_EQUITY_CONTACT_EMAIL}`} className={className}>
+      {TOKENIZED_EQUITY_CONTACT_EMAIL}
+    </a>
+  </span>
+)
+
+const HiddenStreamFeedIdContact = ({ className }: { className?: string }) => (
+  <span>
+    Contact us:{" "}
+    <a href={DATA_STREAMS_CONTACT_URL} target="_blank" rel="noopener noreferrer" className={className}>
+      chain.link/contact
+    </a>
+  </span>
+)
+
+const DefaultTr = ({
+  network,
+  metadata,
+  showExtraDetails,
+  batchedCategoryData,
+  dataFeedType,
+  showRiskColumn = true,
+}) => {
   // Use the pre-computed finalCategory from enriched metadata
   // (already includes deprecating status and Supabase risk tier)
-  const finalTier = metadata.finalCategory || metadata.feedCategory
+  const finalTier = metadata.finalCategory ?? null
 
-  // US Government Macroeconomic Data logic
+  // Feed type checks
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
+  // True tokenized equity feeds (e.g. Ondo) — controls the "Tokenized Equity" badge.
+  const isTokenizedEquityFeed =
+    metadata.docs?.assetClass === "Equity" &&
+    metadata.contractType !== "verifier" &&
+    metadata.docs?.productTypeCode === "primaryTokenizedPrice"
+
+  // Any feed with a calculated price, or one explicitly listed in CONTACT_EMAIL_PROXY_ADDRESSES,
+  // should have its address hidden and show a contact email instead.
+  const hideAddress = shouldHideAddress(metadata, finalTier)
+
+  // Stablecoin price-bound note: only when the source marks the feed as explicitly capped
+  const stablecoinBound =
+    metadata.docs?.stablecoinCapped === true
+      ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
+      : null
+
   const label = isUSGovernmentMacroeconomicData ? "Category" : "Asset type"
   const value = isUSGovernmentMacroeconomicData
     ? metadata.docs.assetClass === "Macroeconomics"
@@ -207,12 +529,10 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
     : metadata.feedType
   return (
     <tr>
+      {showRiskColumn && <RiskCell riskTier={finalTier} />}
       <td className={tableStyles.pairCol}>
         <div className={tableStyles.assetPair}>
-          <div className={tableStyles.pairNameRow}>
-            {getFeedCategoryElement(finalTier || undefined)}
-            {metadata.name}
-          </div>
+          <div className={tableStyles.pairNameRow}>{metadata.name}</div>
           {metadata.secondaryProxyAddress && (
             <div style={{ marginTop: "5px" }}>
               <a
@@ -230,6 +550,29 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                 }
               >
                 {isAaveSVR(metadata) ? "Aave SVR" : isSharedSVR(metadata) ? "SVR" : "SVR"}
+              </a>
+            </div>
+          )}
+          {isTokenizedEquityFeed && (
+            <div style={{ marginTop: "5px" }}>
+              <a
+                href="/data-feeds/tokenized-equity-feeds"
+                className={tableStyles.feedVariantBadge}
+                title="Tokenized Equity Feed"
+              >
+                Tokenized Equity
+              </a>
+            </div>
+          )}
+          {stablecoinBound && (
+            <div>
+              <a
+                href="/data-feeds/selecting-data-feeds#bounded-market-price-feeds"
+                className={tableStyles.boundedNote}
+                title="This feed has a maximum reportable price"
+                target="_blank"
+              >
+                Bounded (Upper): {stablecoinBound}
               </a>
             </div>
           )}
@@ -262,30 +605,34 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                 </dt>
               )}
               <dd>
-                <div className={tableStyles.assetAddress}>
-                  <button
-                    className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                    data-clipboard-text={metadata.proxyAddress ?? metadata.transmissionsAccount}
-                    onClick={(e) =>
-                      handleClick(e, {
-                        product: "FEEDS",
-                        action: "feedId_copied",
-                        extraInfo1: network.name,
-                        extraInfo2: metadata.name,
-                        extraInfo3: metadata.proxyAddress,
-                      })
-                    }
-                  >
-                    <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-                  </button>
-                  <a
-                    className={tableStyles.addressLink}
-                    href={network.explorerUrl.replace("%s", metadata.proxyAddress ?? metadata.transmissionsAccount)}
-                    target="_blank"
-                  >
-                    {metadata.proxyAddress ?? metadata.transmissionsAccount}
-                  </a>
-                </div>
+                {hideAddress ? (
+                  <HiddenAddressContact className={tableStyles.addressLink} />
+                ) : (
+                  <div className={tableStyles.assetAddress}>
+                    <button
+                      className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                      data-clipboard-text={metadata.proxyAddress ?? metadata.transmissionsAccount}
+                      onClick={(e) =>
+                        handleClick(e, {
+                          product: "FEEDS",
+                          action: "feedId_copied",
+                          extraInfo1: network.name,
+                          extraInfo2: metadata.name,
+                          extraInfo3: metadata.proxyAddress,
+                        })
+                      }
+                    >
+                      <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                    </button>
+                    <a
+                      className={tableStyles.addressLink}
+                      href={network.explorerUrl.replace("%s", metadata.proxyAddress ?? metadata.transmissionsAccount)}
+                      target="_blank"
+                    >
+                      {metadata.proxyAddress ?? metadata.transmissionsAccount}
+                    </a>
+                  </div>
+                )}
               </dd>
             </div>
             {metadata.assetName && (
@@ -327,31 +674,37 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                     <span className="label">{isAaveSVR(metadata) ? "AAVE SVR Proxy:" : "SVR Proxy:"}</span>
                   </dt>
                   <dd>
-                    <button
-                      className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                      data-clipboard-text={metadata.secondaryProxyAddress}
-                      onClick={(e) =>
-                        handleClick(e, {
-                          product: "FEEDS",
-                          action: "SVR_proxy_copied",
-                          extraInfo1: network.name,
-                          extraInfo2: metadata.name,
-                          extraInfo3: metadata.secondaryProxyAddress,
-                        })
-                      }
-                    >
-                      <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-                    </button>
-                    <a
-                      className={tableStyles.addressLink}
-                      href={network.explorerUrl.replace("%s", metadata.secondaryProxyAddress)}
-                      target="_blank"
-                    >
-                      {metadata.secondaryProxyAddress}
-                    </a>
+                    {hideAddress ? (
+                      <HiddenAddressContact className={tableStyles.addressLink} />
+                    ) : (
+                      <>
+                        <button
+                          className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                          data-clipboard-text={metadata.secondaryProxyAddress}
+                          onClick={(e) =>
+                            handleClick(e, {
+                              product: "FEEDS",
+                              action: "SVR_proxy_copied",
+                              extraInfo1: network.name,
+                              extraInfo2: metadata.name,
+                              extraInfo3: metadata.secondaryProxyAddress,
+                            })
+                          }
+                        >
+                          <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                        </button>
+                        <a
+                          className={tableStyles.addressLink}
+                          href={network.explorerUrl.replace("%s", metadata.secondaryProxyAddress)}
+                          target="_blank"
+                        >
+                          {metadata.secondaryProxyAddress}
+                        </a>
+                      </>
+                    )}
                   </dd>
                 </div>
-                {isAaveSVR(metadata) && (
+                {isAaveSVR(metadata) && !hideAddress && (
                   <div className={clsx(tableStyles.aaveCallout)}>
                     <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
                     Aave protocol. Learn more about{" "}
@@ -361,7 +714,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                     .
                   </div>
                 )}
-                {isSharedSVR(metadata) && (
+                {isSharedSVR(metadata) && !hideAddress && (
                   <div className={clsx(tableStyles.sharedCallout)}>
                     <strong>🔗 SVR Feed:</strong> This SVR proxy feed is usable by any protocol. Learn more about{" "}
                     <a href="/data-feeds/svr-feeds" target="_blank">
@@ -379,9 +732,16 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
   )
 }
 
-const SmartDataTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
+const SmartDataTHead = ({
+  showExtraDetails,
+  showRiskColumn = true,
+}: {
+  showExtraDetails: boolean
+  showRiskColumn?: boolean
+}) => (
   <thead>
     <tr>
+      {showRiskColumn && <RiskTHeadCell />}
       <th className={tableStyles.heading}>SmartData Feed</th>
       <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Deviation</th>
       <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Heartbeat</th>
@@ -391,7 +751,7 @@ const SmartDataTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => 
   </thead>
 )
 
-const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData }) => {
+const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData, showRiskColumn = true }) => {
   // Check if this is an MVR feed
   const hasDecoding = Array.isArray(metadata.docs?.decoding) && metadata.docs.decoding.length > 0
   const isMVRFlagSet = metadata.docs?.isMVR === true
@@ -401,10 +761,19 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
 
   // Use the pre-computed finalCategory from enriched metadata
   // (already includes deprecating status and Supabase risk tier)
-  const finalTier = metadata.finalCategory || metadata.feedCategory
+  const finalTier = metadata.finalCategory ?? null
+
+  // Stablecoin price-bound note: only when the source marks the feed as explicitly capped
+  const stablecoinBound =
+    metadata.docs?.stablecoinCapped === true
+      ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
+      : null
+
+  const hideAddress = shouldHideAddress(metadata, finalTier)
 
   return (
     <tr>
+      {showRiskColumn && <RiskCell riskTier={finalTier} />}
       <td className={tableStyles.pairCol}>
         {feedItems.map((feedItem: FeedDataItem) => {
           const [feedAddress] = Object.keys(feedItem)
@@ -421,9 +790,7 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
           }
           return ""
         })}
-        <div className={tableStyles.assetPair}>
-          {getFeedCategoryElement(finalTier || undefined)} {metadata.name}
-        </div>
+        <div className={tableStyles.assetPair}>{metadata.name}</div>
         {metadata.docs.shutdownDate && (
           <div className={clsx(feedList.shutDate)}>
             <hr />
@@ -453,6 +820,18 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
             </a>
           </div>
         )}
+        {stablecoinBound && (
+          <div style={{ textAlign: "center" }}>
+            <a
+              href="/data-feeds/selecting-data-feeds#bounded-market-price-feeds"
+              className={tableStyles.boundedNote}
+              title="This feed has a maximum reportable price"
+              target="_blank"
+            >
+              Bounded (Upper): {stablecoinBound}
+            </a>
+          </div>
+        )}
       </td>
 
       <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
@@ -466,29 +845,35 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
       </td>
       <td>
         <div className={tableStyles.assetAddress}>
-          <a
-            className={tableStyles.addressLink}
-            href={network.explorerUrl.replace("%s", metadata.proxyAddress ?? metadata.transmissionsAccount)}
-            target="_blank"
-          >
-            {metadata.proxyAddress ?? metadata.transmissionsAccount}
-          </a>
-          <button
-            className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-            style={{ height: "16px", width: "16px" }}
-            data-clipboard-text={metadata.proxyAddress ?? metadata.transmissionsAccount}
-            onClick={(e) =>
-              handleClick(e, {
-                product: "FEEDS-POR",
-                action: "feedId_copied",
-                extraInfo1: network.name,
-                extraInfo2: metadata.name,
-                extraInfo3: metadata.proxyAddress ?? metadata.transmissionsAccount,
-              })
-            }
-          >
-            <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-          </button>
+          {hideAddress ? (
+            <HiddenAddressContact className={tableStyles.addressLink} />
+          ) : (
+            <>
+              <a
+                className={tableStyles.addressLink}
+                href={network.explorerUrl.replace("%s", metadata.proxyAddress ?? metadata.transmissionsAccount)}
+                target="_blank"
+              >
+                {metadata.proxyAddress ?? metadata.transmissionsAccount}
+              </a>
+              <button
+                className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                style={{ height: "16px", width: "16px" }}
+                data-clipboard-text={metadata.proxyAddress ?? metadata.transmissionsAccount}
+                onClick={(e) =>
+                  handleClick(e, {
+                    product: "FEEDS-POR",
+                    action: "feedId_copied",
+                    extraInfo1: network.name,
+                    extraInfo2: metadata.name,
+                    extraInfo3: metadata.proxyAddress ?? metadata.transmissionsAccount,
+                  })
+                }
+              >
+                <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+              </button>
+            </>
+          )}
         </div>
         <div>
           <dl className={tableStyles.listContainer}>
@@ -611,48 +996,153 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
 export const StreamsNetworkAddressesTable = ({
   allowExpansion = false,
   defaultExpanded = false,
+  initialSearch = "",
+  lockSearch = false,
+  networkType,
+  onNetworkTypeChange,
+  showNetworkTypeFilter = false,
 }: {
   allowExpansion?: boolean
   defaultExpanded?: boolean
+  initialSearch?: string
+  lockSearch?: boolean
+  networkType?: StreamNetworkType
+  onNetworkTypeChange?: (networkType: StreamNetworkType) => void
+  showNetworkTypeFilter?: boolean
 } = {}) => {
-  const [searchValue, setSearchValue] = useState("")
+  // null = untouched; string = user has set a value
+  const [searchState, setSearchState] = useState<string | null>(null)
+  const getNetworkTypeFromURL = (): StreamNetworkType => {
+    if (typeof window === "undefined") return "mainnet"
+    return new URLSearchParams(window.location.search).get("networkType") === "testnet" ? "testnet" : "mainnet"
+  }
+  const [internalNetworkType, setInternalNetworkType] = useState<StreamNetworkType>(getNetworkTypeFromURL)
+  const [isHydrated, setIsHydrated] = useState(false)
+  const selectedNetworkType = networkType ?? internalNetworkType
+
+  useEffect(() => {
+    const syncNetworkTypeFromURL = () => {
+      setInternalNetworkType((current) => {
+        const networkTypeFromURL = getNetworkTypeFromURL()
+        return networkTypeFromURL === current ? current : networkTypeFromURL
+      })
+    }
+
+    setIsHydrated(true)
+    syncNetworkTypeFromURL()
+    window.addEventListener("popstate", syncNetworkTypeFromURL)
+    window.addEventListener("pageshow", syncNetworkTypeFromURL)
+
+    return () => {
+      window.removeEventListener("popstate", syncNetworkTypeFromURL)
+      window.removeEventListener("pageshow", syncNetworkTypeFromURL)
+    }
+  }, [])
+
+  const urlSearch =
+    typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("streamsNetwork") ?? "") : ""
+
+  // When lockSearch is true, always use initialSearch and ignore user input / URL params
+  const searchValue = lockSearch ? initialSearch : (searchState ?? (initialSearch || urlSearch))
+
+  const updateSearch = (value: string) => {
+    if (lockSearch) return
+    setSearchState(value)
+    if (typeof window === "undefined") return
+    const params = new URLSearchParams(window.location.search)
+    if (value) {
+      params.set("streamsNetwork", value)
+    } else {
+      params.delete("streamsNetwork")
+    }
+    const queryString = params.toString()
+    const newUrl = window.location.pathname + (queryString ? "?" + queryString : "") + window.location.hash
+    window.history.replaceState({ path: newUrl }, "", newUrl)
+  }
+
+  const updateNetworkType = (nextNetworkType: StreamNetworkType) => {
+    onNetworkTypeChange?.(nextNetworkType)
+    if (!networkType) {
+      setInternalNetworkType(nextNetworkType)
+    }
+    if (typeof window === "undefined") return
+    const params = new URLSearchParams(window.location.search)
+    if (nextNetworkType === "testnet") {
+      params.set("networkType", "testnet")
+    } else {
+      params.delete("networkType")
+    }
+    const queryString = params.toString()
+    const newUrl = window.location.pathname + (queryString ? "?" + queryString : "") + window.location.hash
+    window.history.replaceState({ path: newUrl }, "", newUrl)
+  }
 
   const normalizedSearch = searchValue.toLowerCase().replaceAll(" ", "")
 
   const match = (value?: string) => !!value && value.toLowerCase().replaceAll(" ", "").includes(normalizedSearch)
 
   const filteredNetworks = StreamsNetworksData.filter((network) => {
+    const selectedNetwork = network[selectedNetworkType]
+    if (!selectedNetwork) return false
     if (!normalizedSearch) return true
 
     const networkMatch = match(network.network)
+    const selectedLabel = selectedNetwork.label
+    const selectedAddr = network.isSolana ? selectedNetwork.verifierProgramId : selectedNetwork.verifierProxy
 
-    const mainnetLabel = network.mainnet?.label
-    const testnetLabel = network.testnet?.label
-
-    const mainnetAddr = network.isSolana ? network.mainnet?.verifierProgramId : network.mainnet?.verifierProxy
-    const testnetAddr = network.isSolana ? network.testnet?.verifierProgramId : network.testnet?.verifierProxy
-
-    return networkMatch || match(mainnetLabel) || match(testnetLabel) || match(mainnetAddr) || match(testnetAddr)
+    return networkMatch || match(selectedLabel) || match(selectedAddr)
   })
 
   const tableContent = (
     <>
-      <div className={feedList.filterDropdown_search} style={{ padding: "0.5rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1 }}>
-          <input
-            type="text"
-            placeholder="Search"
-            className={feedList.filterDropdown_searchInput}
-            value={searchValue}
-            onInput={(e) => setSearchValue((e.target as HTMLInputElement).value)}
-          />
-          {searchValue && (
-            <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => setSearchValue("")}>
-              Clear filter
+      {showNetworkTypeFilter && isHydrated && (
+        <div className={feedList.streamNetworkSelector} style={{ padding: "0.5rem 0.5rem 0" }}>
+          <span className={feedList.streamNetworkSelectorLabel}>Environment</span>
+          <div className={feedList.streamNetworkToggleGroup} role="group" aria-label="Select network environment">
+            <button
+              type="button"
+              className={clsx(
+                feedList.streamNetworkToggle,
+                selectedNetworkType === "mainnet" && feedList.streamNetworkToggleActive
+              )}
+              onClick={() => updateNetworkType("mainnet")}
+              aria-pressed={selectedNetworkType === "mainnet"}
+            >
+              Mainnet
             </button>
-          )}
+            <button
+              type="button"
+              className={clsx(
+                feedList.streamNetworkToggle,
+                selectedNetworkType === "testnet" && feedList.streamNetworkToggleActive
+              )}
+              onClick={() => updateNetworkType("testnet")}
+              aria-pressed={selectedNetworkType === "testnet"}
+            >
+              Testnet
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {!lockSearch && (
+        <div className={feedList.filterDropdown_search} style={{ padding: "0.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1 }}>
+            <input
+              type="text"
+              placeholder="Search"
+              className={feedList.filterDropdown_searchInput}
+              value={searchValue}
+              onInput={(e) => updateSearch((e.target as HTMLInputElement).value)}
+            />
+            {searchValue && (
+              <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => updateSearch("")}>
+                Clear filter
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       <table className={tableStyles.networksTable}>
         <thead>
@@ -663,7 +1153,7 @@ export const StreamsNetworkAddressesTable = ({
           </tr>
         </thead>
         <tbody>
-          {filteredNetworks.length === 0 ? (
+          {typeof window === "undefined" ? null : filteredNetworks.length === 0 ? (
             <tr>
               <td colSpan={3} style={{ textAlign: "center", padding: "2rem", fontStyle: "italic" }}>
                 No results found
@@ -672,8 +1162,10 @@ export const StreamsNetworkAddressesTable = ({
           ) : (
             filteredNetworks.map((network: NetworkData, index: number) => {
               const statusUrl = getNetworkStatusUrl(network)
+              const environmentDetails = network[selectedNetworkType]
 
               const showMainnet =
+                selectedNetworkType === "mainnet" &&
                 network.mainnet &&
                 (!normalizedSearch ||
                   match(network.network) ||
@@ -681,6 +1173,7 @@ export const StreamsNetworkAddressesTable = ({
                   match(network.isSolana ? network.mainnet.verifierProgramId : network.mainnet.verifierProxy))
 
               const showTestnet =
+                selectedNetworkType === "testnet" &&
                 network.testnet &&
                 (!normalizedSearch ||
                   match(network.network) ||
@@ -700,9 +1193,19 @@ export const StreamsNetworkAddressesTable = ({
                           <span>{network.network}</span>
                         </div>
                       </td>
-                      <td>{network.mainnet?.label}</td>
+                      <td>
+                        {network.mainnet?.label}
+                        {network.mainnet?.note && (
+                          <div
+                            className={tableStyles.note}
+                            dangerouslySetInnerHTML={{ __html: network.mainnet.note }}
+                          />
+                        )}
+                      </td>
                       <td className={tableStyles.addressColumn}>
-                        {network.isSolana ? (
+                        {network.isCanton ? (
+                          <a href="/data-streams/canton-integration">See Canton integration guide →</a>
+                        ) : network.isSolana ? (
                           <>
                             <div>
                               <small className={tableStyles.addressLabel}>Verifier Program ID:</small>
@@ -738,17 +1241,23 @@ export const StreamsNetworkAddressesTable = ({
                   {showTestnet && (
                     <tr
                       key={`${network.network}-testnet`}
-                      className={!showMainnet && index > 0 ? tableStyles.firstNetworkRow : tableStyles.testnetRow}
+                      className={index > 0 ? tableStyles.firstNetworkRow : tableStyles.testnetRow}
                     >
                       <td className={tableStyles.networkColumn}>
-                        {!showMainnet && (
-                          <div className={tableStyles.networkInfo}>
-                            <img src={network.logoUrl} alt={`${network.network} logo`} />
-                            <span>{network.network}</span>
-                          </div>
+                        <div className={tableStyles.networkInfo}>
+                          <img src={network.logoUrl} alt={`${network.network} logo`} />
+                          <span>{network.network}</span>
+                        </div>
+                      </td>
+                      <td>
+                        {network.testnet?.label}
+                        {network.testnet?.note && (
+                          <div
+                            className={tableStyles.note}
+                            dangerouslySetInnerHTML={{ __html: network.testnet.note }}
+                          />
                         )}
                       </td>
-                      <td>{network.testnet?.label}</td>
                       <td className={tableStyles.addressColumn}>
                         {network.isSolana ? (
                           <>
@@ -782,7 +1291,7 @@ export const StreamsNetworkAddressesTable = ({
                       </td>
                     </tr>
                   )}
-                  {statusUrl && (
+                  {statusUrl && environmentDetails && (
                     <tr key={`${network.network}-status-explorer`} className={tableStyles.statusRow}>
                       <td colSpan={3} className={tableStyles.statusCell}>
                         <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
@@ -822,9 +1331,10 @@ export const StreamsNetworkAddressesTable = ({
   )
 }
 
-export const StreamsTHead = () => (
+export const StreamsTHead = ({ showRiskColumn = true }: { showRiskColumn?: boolean } = {}) => (
   <thead>
     <tr>
+      {showRiskColumn && <RiskTHeadCell />}
       <th className={tableStyles.heading}>Stream</th>
       <th>Details</th>
     </tr>
@@ -832,68 +1342,101 @@ export const StreamsTHead = () => (
 )
 
 const streamsCategoryMap = {
-  custom: {
-    text: "Custom",
-    link: "/data-streams/developer-responsibilities/#custom-data-streams",
-  },
   new_token: {
     text: "New token",
     link: "/data-streams/developer-responsibilities#new-token-data-streams",
   },
 }
 
-export const StreamsTr = ({ metadata, isMainnet }) => {
-  // Determine if stream is deprecating
+export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) => {
+  const finalTier = metadata.finalCategory
   const isDeprecating = !!metadata.docs?.shutdownDate
+  const hideFeedId = shouldHideStreamFeedId(metadata)
+
+  // Temporary calculated stream detection until proper metadata tagging is implemented
+  // TODO: Replace with metadata.docs.isCalculated or similar once available
+  const isCalculatedStream =
+    metadata.docs?.productTypeCode === "ExRate" &&
+    metadata.docs?.attributeType === "ExchangeRate" &&
+    metadata.docs?.assetClass === "Tokenized Debt"
 
   return (
     <tr>
+      {showRiskColumn && <RiskCell riskTier={finalTier} product="streams" />}
       <td className={tableStyles.pairCol}>
         <div className={tableStyles.assetPair}>
-          {metadata.pair[0]}/{metadata.pair[1]}
-          {metadata.feedType === "Crypto-DEX" && (
-            <a
-              href="/data-streams/concepts/dex-state-price-streams"
-              target="_blank"
-              className={tableStyles.feedVariantBadge}
-            >
-              DEX State Price
-            </a>
+          <div className={tableStyles.pairNameRow}>
+            {metadata.pair[0]}/{metadata.pair[1]}
+            {metadata.feedType === "Crypto-DEX" && (
+              <a
+                href="/data-streams/concepts/dex-state-price-streams"
+                target="_blank"
+                className={tableStyles.feedVariantBadge}
+              >
+                DEX State Price
+              </a>
+            )}
+            {metadata.feedType === "Datalink" && (
+              <a
+                href="/data-streams/stream-ids"
+                target="_blank"
+                className={tableStyles.feedVariantBadge}
+                title="Datalink Stream"
+              >
+                Datalink
+              </a>
+            )}
+            {isCalculatedStream && (
+              <a
+                href="/data-streams/concepts/calculated-streams"
+                target="_blank"
+                className={tableStyles.feedVariantBadge}
+                title="Calculated Stream"
+              >
+                Calculated
+              </a>
+            )}
+          </div>
+          {metadata.docs.shutdownDate && (
+            <div className={clsx(feedList.shutDate)}>
+              <hr />
+              <a
+                href="/data-streams/deprecating-streams"
+                style={{ color: "inherit", textDecoration: "underline dotted" }}
+              >
+                Deprecating:
+              </a>
+              <br />
+              {metadata.docs.shutdownDate}
+            </div>
           )}
         </div>
-        {metadata.docs.shutdownDate && (
-          <div className={clsx(feedList.shutDate)}>
-            <hr />
-            <a
-              href="/data-streams/deprecating-streams"
-              style={{ color: "inherit", textDecoration: "underline dotted" }}
-            >
-              Deprecating:
-            </a>
-            <br />
-            {metadata.docs.shutdownDate}
-          </div>
-        )}
       </td>
       <td style="width:80%;">
         <div className={tableStyles.assetAddress}>
-          <span className={tableStyles.streamAddress}>{metadata.feedId}</span>
-          <button
-            className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-            style={{ height: "16px", width: "16px" }}
-            data-clipboard-text={metadata.feedId}
-            onClick={(e) =>
-              handleClick(e, {
-                product: "STREAMS",
-                action: "feedId_copied",
-                extraInfo1: isMainnet ? "Mainnet" : "Testnet",
-                extraInfo2: metadata.pair[0],
-                extraInfo3: metadata.feedId,
-              })
-            }
-          >
-            <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-          </button>
+          {hideFeedId ? (
+            <HiddenStreamFeedIdContact className={tableStyles.addressLink} />
+          ) : (
+            <>
+              <span className={tableStyles.streamAddress}>{metadata.feedId}</span>
+              <button
+                className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                style={{ height: "16px", width: "16px" }}
+                data-clipboard-text={metadata.feedId}
+                onClick={(e) =>
+                  handleClick(e, {
+                    product: "STREAMS",
+                    action: "feedId_copied",
+                    extraInfo1: isMainnet ? "Mainnet" : "Testnet",
+                    extraInfo2: metadata.pair[0],
+                    extraInfo3: metadata.feedId,
+                  })
+                }
+              >
+                <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+              </button>
+            </>
+          )}
         </div>
         <div>
           <dl className={tableStyles.listContainer}>
@@ -928,6 +1471,46 @@ export const StreamsTr = ({ metadata, isMainnet }) => {
                 </dd>
               </div>
             ) : null}
+            {(() => {
+              const assetSubClass = (metadata.docs as any)?.assetSubClass
+              const clicProductName = (metadata.docs as any)?.clicProductName || ""
+
+              // Determine the trading hours type from either assetSubClass or clicProductName
+              let hoursType = ""
+              let timeRange = ""
+
+              if (
+                assetSubClass === "Regular Hours" ||
+                (clicProductName.includes("RegularHours") &&
+                  !clicProductName.includes("ExtendedHours") &&
+                  !clicProductName.includes("OvernightHours"))
+              ) {
+                hoursType = "Regular Hours"
+                timeRange = "9:30am–4:00pm Mon–Fri"
+              } else if (assetSubClass === "Extended Hours" || clicProductName.includes("ExtendedHours")) {
+                hoursType = "Extended Hours"
+                timeRange = "4:00am–9:30am & 4:00pm–8:00pm Mon–Fri"
+              } else if (assetSubClass === "Overnight Hours" || clicProductName.includes("OvernightHours")) {
+                hoursType = "Overnight Hours"
+                timeRange = "8:00pm–4:00am Sun evening–Fri morning"
+              }
+
+              if (hoursType) {
+                return (
+                  <div className={tableStyles.definitionGroup}>
+                    <dt>
+                      <span className="label">Trading hours:</span>
+                    </dt>
+                    <dd>
+                      <a href="/data-streams/market-hours" target="_blank">
+                        <strong>{hoursType}</strong> ({timeRange} ET)
+                      </a>
+                    </dd>
+                  </div>
+                )
+              }
+              return null
+            })()}
             {metadata.docs.marketHours ? (
               <div className={tableStyles.definitionGroup}>
                 <dt>
@@ -960,90 +1543,12 @@ export const StreamsTr = ({ metadata, isMainnet }) => {
                 <dd>{metadata.decimals}</dd>
               </div>
             ) : null}
-            {metadata.feedType === "Crypto-DEX" && (
-              <div className={tableStyles.definitionGroup}>
-                <dt>
-                  <span className="label">Report Schema:</span>
-                </dt>
-                <dd>
-                  <a href="/data-streams/reference/report-schema-v3-dex" rel="noreferrer" target="_blank">
-                    Report Schema v3 (Crypto DEX)
-                  </a>
-                </dd>
-              </div>
-            )}
-            {metadata.feedType === "Crypto" && metadata.docs?.productTypeCode !== "ExRate" && (
-              <div className={tableStyles.definitionGroup}>
-                <dt>
-                  <span className="label">Report Schema:</span>
-                </dt>
-                <dd>
-                  <a href="/data-streams/reference/report-schema-v3" rel="noreferrer" target="_blank">
-                    Report Schema v3 (Crypto)
-                  </a>
-                </dd>
-              </div>
-            )}
-            {(metadata.feedType === "Equities" || metadata.feedType === "Forex") && metadata.docs?.schema !== "v11" && (
-              <div className={tableStyles.definitionGroup}>
-                <dt>
-                  <span className="label">Report Schema:</span>
-                </dt>
-                <dd>
-                  <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
-                    Report Schema v8 (RWA)
-                  </a>
-                </dd>
-              </div>
-            )}
-            {metadata.docs?.productTypeCode === "ExRate" && (
-              <div className={tableStyles.definitionGroup}>
-                <dt>
-                  <span className="label">Report Schema:</span>
-                </dt>
-                <dd>
-                  <a href="/data-streams/reference/report-schema-v7" rel="noreferrer" target="_blank">
-                    Report Schema v7 (Redemption Rates)
-                  </a>
-                </dd>
-              </div>
-            )}
-            {metadata.feedType === "Net Asset Value" && (
-              <div className={tableStyles.definitionGroup}>
-                <dt>
-                  <span className="label">Report Schema:</span>
-                </dt>
-                <dd>
-                  <a href="/data-streams/reference/report-schema-v9" rel="noreferrer" target="_blank">
-                    Report Schema v9 (NAV)
-                  </a>
-                </dd>
-              </div>
-            )}
-            {metadata.feedType === "Tokenized Equities" && (
-              <div className={tableStyles.definitionGroup}>
-                <dt>
-                  <span className="label">Report Schema:</span>
-                </dt>
-                <dd>
-                  <a href="/data-streams/reference/report-schema-v10" rel="noreferrer" target="_blank">
-                    Report Schema v10 (Tokenized Assets)
-                  </a>
-                </dd>
-              </div>
-            )}
-            {metadata.docs?.schema === "v11" && (
-              <div className={tableStyles.definitionGroup}>
-                <dt>
-                  <span className="label">Report Schema:</span>
-                </dt>
-                <dd>
-                  <a href="/data-streams/reference/report-schema-v11" rel="noreferrer" target="_blank">
-                    RWA Advanced (v11)
-                  </a>
-                </dd>
-              </div>
-            )}
+            {(() => {
+              const schemaKey = getSchemaDefinitionKey(metadata)
+              const schemaDef = schemaKey ? REPORT_SCHEMA_DEFINITIONS[schemaKey] : undefined
+              if (!schemaDef || !schemaKey) return null
+              return <SchemaInlineExpander schemaDef={schemaDef} schemaKey={schemaKey} metadata={metadata} />
+            })()}
           </dl>
         </div>
       </td>
@@ -1057,8 +1562,12 @@ export const MainnetTable = ({
   showOnlySVR,
   showOnlyMVRFeeds,
   showOnlyDEXFeeds,
+  showOnlyDatalinkFeeds,
   rwaSchemaFilter,
   streamCategoryFilter,
+  show24x5Feeds,
+  showApacEquitiesFeeds,
+  tradingHoursFilter,
   dataFeedType,
   ecosystem,
   selectedFeedCategories,
@@ -1068,14 +1577,19 @@ export const MainnetTable = ({
   currentPage,
   paginate,
   searchValue,
+  tokenizedEquityProvider,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
   showOnlySVR: boolean
   showOnlyMVRFeeds: boolean
   showOnlyDEXFeeds: boolean
+  showOnlyDatalinkFeeds?: boolean
   rwaSchemaFilter?: "all" | "v8" | "v11"
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
+  show24x5Feeds?: boolean
+  showApacEquitiesFeeds?: boolean
+  tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
   dataFeedType: string
   ecosystem: string
   selectedFeedCategories: string[]
@@ -1085,126 +1599,37 @@ export const MainnetTable = ({
   currentPage: number
   paginate
   searchValue: string
+  tokenizedEquityProvider?: string
 }) => {
   if (!network.metadata) return null
 
-  const { data: batchedCategoryData, isLoading: isBatchLoading } = useBatchedFeedCategories(network)
+  const feedTypeFlags = getFeedTypeFlags(dataFeedType, "mainnet")
+  const { isStreams, isSmartData, isUSGovernmentMacroeconomicData, isDefaultTable: isDefault } = feedTypeFlags
 
-  const isStreams =
-    dataFeedType === "streamsCrypto" ||
-    dataFeedType === "streamsRwa" ||
-    dataFeedType === "streamsNav" ||
-    dataFeedType === "streamsExRate" ||
-    dataFeedType === "streamsBacked"
-  const isSmartData = dataFeedType === "smartdata"
-  const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
-  const isDefault = !isStreams && !isSmartData && !isUSGovernmentMacroeconomicData
-  const isDeprecating = ecosystem === "deprecating"
-
-  // Enrich metadata with final category (combining RDD and Supabase data)
-  // Priority: deprecating status from RDD > Supabase risk tier > RDD category fallback
-  const enrichedMetadata = network.metadata.map((metadata) => {
-    // Check for deprecating status from RDD first (has shutdown date)
-    if (metadata.docs?.shutdownDate) {
-      return { ...metadata, finalCategory: "deprecating" }
-    }
-
-    // Otherwise, get risk category from Supabase (or fall back to RDD)
-    const contractAddress = metadata.contractAddress || metadata.proxyAddress
-    const networkIdentifier = getNetworkIdentifier(network)
-    let finalCategory = metadata.feedCategory
-
-    if (contractAddress && batchedCategoryData?.size) {
-      const categoryResult = getFeedCategoryFromBatch(
-        batchedCategoryData,
-        contractAddress,
-        networkIdentifier,
-        metadata.feedCategory
-      )
-      const supabaseCategory = categoryResult?.final ?? null
-
-      if (supabaseCategory) {
-        finalCategory = supabaseCategory
-      }
-    }
-
-    return { ...metadata, finalCategory }
+  const { batchedCategoryData, filteredMetadata, isBatchLoading } = useFilteredFeedMetadata({
+    network,
+    dataFeedType,
+    ecosystem,
+    selectedFeedCategories,
+    searchValue,
+    searchVariant: "mainnet",
+    showOnlySVR,
+    show24x5Feeds,
+    showApacEquitiesFeeds,
+    tradingHoursFilter,
+    visibilityOptions: {
+      showOnlyDEXFeeds,
+      showOnlyDatalinkFeeds,
+      streamCategoryFilter,
+      rwaSchemaFilter,
+      showOnlyMVRFeeds,
+      tokenizedEquityProvider,
+    },
   })
-
-  const filteredMetadata = enrichedMetadata
-    .sort((a, b) => (a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1))
-    .filter((metadata) => {
-      // Filter out hidden feeds (from Supabase)
-      if (metadata.finalCategory === "hidden") return false
-      if (showOnlySVR && !metadata.secondaryProxyAddress) {
-        return false
-      }
-
-      if (isDeprecating) {
-        // Only show feeds (not streams) with shutdown dates
-        return !!metadata.docs.shutdownDate && !(metadata.contractType === "verifier" && metadata.feedId)
-      }
-
-      // Use shared visibility logic with filters
-      return isFeedVisible(metadata, dataFeedType as any, ecosystem, {
-        showOnlyDEXFeeds,
-        streamCategoryFilter,
-        rwaSchemaFilter,
-        showOnlyMVRFeeds,
-      })
-    })
-    .filter((metadata) => {
-      if (isSmartData) {
-        // Include MVR category in SmartData filter
-        if (selectedFeedCategories.includes("MVR") && metadata.docs?.isMVR) {
-          return true
-        }
-
-        const included =
-          selectedFeedCategories.length === 0 ||
-          (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType)) ||
-          (metadata.docs.assetClass && selectedFeedCategories.includes(metadata.docs.assetClass))
-
-        return included
-      }
-      // Filter by final category (Supabase risk tier takes precedence over RDD)
-      return (
-        selectedFeedCategories.length === 0 ||
-        selectedFeedCategories.map((cat) => cat.toLowerCase()).includes(metadata.finalCategory?.toLowerCase())
-      )
-    })
-    .filter(
-      (metadata) =>
-        metadata.name.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.proxyAddress
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.secondaryProxyAddress
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.assetName.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.feedType.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.docs.porType
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.docs.porAuditor
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.docs.porSource
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.feedId?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", ""))
-    )
 
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
 
-  // For non-streams tables, wait for batch categories to load to prevent icon flashing
-  if (!isStreams && isBatchLoading) {
+  if (isBatchLoading) {
     return <p style="font-style: italic;">Loading...</p>
   }
 
@@ -1215,7 +1640,7 @@ export const MainnetTable = ({
           {slicedFilteredMetadata.length === 0 ? (
             <tbody>
               <tr>
-                <td colSpan={showExtraDetails ? 4 : 2} style={{ textAlign: "center" }}>
+                <td colSpan={isStreams ? 3 : 6} style={{ textAlign: "center" }}>
                   <img
                     src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
                     style={{ height: "160px" }}
@@ -1282,6 +1707,7 @@ export const TestnetTable = ({
   network,
   showExtraDetails,
   dataFeedType,
+  ecosystem = "",
   selectedFeedCategories = [],
   firstAddr = 0,
   lastAddr = 1000,
@@ -1293,12 +1719,18 @@ export const TestnetTable = ({
   searchValue = "",
   showOnlyMVRFeeds,
   showOnlyDEXFeeds,
+  showOnlyDatalinkFeeds,
   rwaSchemaFilter,
   streamCategoryFilter,
+  show24x5Feeds,
+  showApacEquitiesFeeds,
+  tradingHoursFilter,
+  tokenizedEquityProvider,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
   dataFeedType: string
+  ecosystem?: string
   selectedFeedCategories?: string[]
   firstAddr?: number
   lastAddr?: number
@@ -1308,100 +1740,49 @@ export const TestnetTable = ({
   searchValue?: string
   showOnlyMVRFeeds?: boolean
   showOnlyDEXFeeds?: boolean
+  showOnlyDatalinkFeeds?: boolean
   rwaSchemaFilter?: "all" | "v8" | "v11"
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
+  show24x5Feeds?: boolean
+  showApacEquitiesFeeds?: boolean
+  tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
+  tokenizedEquityProvider?: string
 }) => {
   if (!network.metadata) return null
 
-  const { data: batchedCategoryData, isLoading: isBatchLoading } = useBatchedFeedCategories(network)
+  const {
+    isStreams,
+    isSmartData,
+    isRates,
+    isUSGovernmentMacroeconomicData,
+    isDefaultTable: isDefault,
+  } = getFeedTypeFlags(dataFeedType, "testnet")
 
-  const isStreams =
-    dataFeedType === "streamsCrypto" ||
-    dataFeedType === "streamsRwa" ||
-    dataFeedType === "streamsNav" ||
-    dataFeedType === "streamsExRate" ||
-    dataFeedType === "streamsBacked"
-  const isSmartData = dataFeedType === "smartdata"
-  const isRates = dataFeedType === "rates"
-  const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
-  const isDefault = !isSmartData && !isRates && !isStreams && !isUSGovernmentMacroeconomicData
-
-  // Enrich metadata with final category (combining RDD and Supabase data)
-  // Priority: deprecating status from RDD > Supabase risk tier > RDD category fallback
-  const enrichedMetadata = network.metadata.map((metadata) => {
-    // Check for deprecating status from RDD first (has shutdown date)
-    if (metadata.docs?.shutdownDate) {
-      return { ...metadata, finalCategory: "deprecating" }
-    }
-
-    // Otherwise, get risk category from Supabase (or fall back to RDD)
-    const contractAddress = metadata.contractAddress || metadata.proxyAddress
-    const networkIdentifier = getNetworkIdentifier(network)
-    let finalCategory = metadata.feedCategory
-
-    if (contractAddress && batchedCategoryData?.size) {
-      const categoryResult = getFeedCategoryFromBatch(
-        batchedCategoryData,
-        contractAddress,
-        networkIdentifier,
-        metadata.feedCategory
-      )
-      const supabaseCategory = categoryResult?.final ?? null
-
-      if (supabaseCategory) {
-        finalCategory = supabaseCategory
-      }
-    }
-
-    return { ...metadata, finalCategory }
+  const { batchedCategoryData, filteredMetadata, isBatchLoading } = useFilteredFeedMetadata({
+    network,
+    dataFeedType,
+    ecosystem,
+    selectedFeedCategories,
+    searchValue,
+    searchVariant: "testnet",
+    show24x5Feeds,
+    showApacEquitiesFeeds,
+    tradingHoursFilter,
+    visibilityOptions: {
+      showOnlyDEXFeeds,
+      showOnlyDatalinkFeeds,
+      streamCategoryFilter,
+      rwaSchemaFilter,
+      showOnlyMVRFeeds,
+      tokenizedEquityProvider,
+    },
   })
-
-  const filteredMetadata = enrichedMetadata
-    .sort((a, b) => (a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1))
-    .filter((metadata) => {
-      // Filter out hidden feeds (from Supabase)
-      if (metadata.finalCategory === "hidden") return false
-      // Use shared visibility logic with filters
-      return isFeedVisible(metadata, dataFeedType as any, undefined, {
-        showOnlyDEXFeeds,
-        streamCategoryFilter,
-        rwaSchemaFilter,
-        showOnlyMVRFeeds,
-      })
-    })
-    .filter((metadata) => {
-      if (isSmartData) {
-        if (selectedFeedCategories.includes("MVR") && metadata.docs?.isMVR) {
-          return true
-        }
-
-        const included =
-          selectedFeedCategories.length === 0 ||
-          (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType)) ||
-          (metadata.docs.assetClass && selectedFeedCategories.includes(metadata.docs.assetClass))
-
-        return included
-      }
-      // Filter by final category (Supabase risk tier takes precedence over RDD)
-      return (
-        selectedFeedCategories.length === 0 ||
-        selectedFeedCategories.map((cat) => cat.toLowerCase()).includes(metadata.finalCategory?.toLowerCase())
-      )
-    })
-    .filter(
-      (pair) =>
-        !searchValue ||
-        pair.name?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        pair.proxyAddress?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        pair.assetName?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        pair.feedType?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        pair.feedId?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", ""))
-    )
 
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
 
-  // For non-streams tables, wait for batch categories to load to prevent icon flashing
-  if (!isStreams && isBatchLoading) {
+  const showRiskColumn = false
+
+  if (isBatchLoading) {
     return <p style="font-style: italic;">Loading...</p>
   }
 
@@ -1412,7 +1793,7 @@ export const TestnetTable = ({
           {slicedFilteredMetadata.length === 0 ? (
             <tbody>
               <tr>
-                <td style={{ textAlign: "center" }}>
+                <td colSpan={getFeedTableColSpan(isStreams, showRiskColumn)} style={{ textAlign: "center" }}>
                   <img
                     src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
                     style={{ height: "160px" }}
@@ -1424,13 +1805,14 @@ export const TestnetTable = ({
             </tbody>
           ) : (
             <>
-              {isStreams && <StreamsTHead />}
-              {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} />}
+              {isStreams && <StreamsTHead showRiskColumn={showRiskColumn} />}
+              {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} showRiskColumn={showRiskColumn} />}
               {(isDefault || isUSGovernmentMacroeconomicData) && (
                 <DefaultTHead
                   showExtraDetails={showExtraDetails}
                   networkName={network.name}
                   dataFeedType={dataFeedType}
+                  showRiskColumn={showRiskColumn}
                 />
               )}
               {isRates && (
@@ -1438,18 +1820,20 @@ export const TestnetTable = ({
                   showExtraDetails={showExtraDetails}
                   networkName={network.name}
                   dataFeedType={dataFeedType}
+                  showRiskColumn={showRiskColumn}
                 />
               )}
               <tbody>
                 {slicedFilteredMetadata.map((metadata) => (
                   <>
-                    {isStreams && <StreamsTr metadata={metadata} isMainnet={false} />}
+                    {isStreams && <StreamsTr metadata={metadata} isMainnet={false} showRiskColumn={showRiskColumn} />}
                     {isSmartData && (
                       <SmartDataTr
                         network={network}
                         metadata={metadata}
                         showExtraDetails={showExtraDetails}
                         batchedCategoryData={batchedCategoryData}
+                        showRiskColumn={showRiskColumn}
                       />
                     )}
                     {(isDefault || isUSGovernmentMacroeconomicData) && (
@@ -1459,6 +1843,7 @@ export const TestnetTable = ({
                         showExtraDetails={showExtraDetails}
                         dataFeedType={dataFeedType}
                         batchedCategoryData={batchedCategoryData}
+                        showRiskColumn={showRiskColumn}
                       />
                     )}
                     {isRates && (
@@ -1468,6 +1853,7 @@ export const TestnetTable = ({
                         showExtraDetails={showExtraDetails}
                         dataFeedType={dataFeedType}
                         batchedCategoryData={batchedCategoryData}
+                        showRiskColumn={showRiskColumn}
                       />
                     )}
                   </>

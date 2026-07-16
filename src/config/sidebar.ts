@@ -6,6 +6,7 @@
 import { Sections } from "../content.config.ts"
 import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
 import { CCIP_SIDEBAR_CONTENT } from "./sidebar/ccip-dynamic.ts"
+import { AI_AGENT_RESOURCES_SECTION } from "./sidebar/ai-agent-resources.ts"
 import type { ChainType } from "./types.js"
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
@@ -65,6 +66,89 @@ export type SectionEntry = {
  * }
  */
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
+  [SIDEBAR_SECTIONS.ACE]: [
+    {
+      section: "Chainlink ACE",
+      contents: [
+        { title: "Overview", url: "ace" },
+        { title: "Beta Scope", url: "ace/beta-scope" },
+        { title: "Supported Networks", url: "ace/supported-networks" },
+        { title: "Release Notes", url: "ace/release-notes" },
+      ],
+    },
+    {
+      section: "Core Concepts",
+      contents: [
+        { title: "Architecture", url: "ace/concepts/architecture" },
+        { title: "Key Terms", url: "ace/concepts/key-terms" },
+        {
+          title: "Policy Management",
+          url: "ace/concepts/policy-management",
+          children: [{ title: "Policy Ordering & Composition", url: "ace/concepts/policy-ordering" }],
+        },
+        { title: "Cross-Chain Identity", url: "ace/concepts/cross-chain-identity" },
+        { title: "Reporting", url: "ace/concepts/reporting" },
+        { title: "Off-Chain Policy Execution", url: "ace/concepts/off-chain-policies" },
+      ],
+    },
+    {
+      section: "Getting Started",
+      contents: [{ title: "Get Access", url: "ace/getting-started" }],
+    },
+    {
+      section: "Reference",
+      contents: [
+        {
+          title: "Policy Management",
+          children: [
+            { title: "Core Contracts", url: "ace/reference/policy-management-contracts" },
+            {
+              title: "Policy Library",
+              url: "ace/reference/policy-library",
+              children: [
+                { title: "AllowPolicy", url: "ace/reference/policy-library/allow-policy" },
+                { title: "BypassPolicy", url: "ace/reference/policy-library/bypass-policy" },
+                {
+                  title: "CertifiedActionDONValidatorPolicy",
+                  url: "ace/reference/policy-library/certified-action-don-validator-policy",
+                },
+                {
+                  title: "CredentialRegistryIdentityValidatorPolicy",
+                  url: "ace/reference/policy-library/credential-registry-identity-validator-policy",
+                },
+                { title: "IntervalPolicy", url: "ace/reference/policy-library/interval-policy" },
+                { title: "MaxPolicy", url: "ace/reference/policy-library/max-policy" },
+                {
+                  title: "OnlyAuthorizedSenderPolicy",
+                  url: "ace/reference/policy-library/only-authorized-sender-policy",
+                },
+                { title: "PausePolicy", url: "ace/reference/policy-library/pause-policy" },
+                { title: "RejectPolicy", url: "ace/reference/policy-library/reject-policy" },
+                {
+                  title: "RoleBasedAccessControlPolicy",
+                  url: "ace/reference/policy-library/role-based-access-control-policy",
+                },
+                { title: "SecureMintPolicy", url: "ace/reference/policy-library/secure-mint-policy" },
+                { title: "VolumePolicy", url: "ace/reference/policy-library/volume-policy" },
+                { title: "VolumeRatePolicy", url: "ace/reference/policy-library/volume-rate-policy" },
+              ],
+            },
+          ],
+        },
+        {
+          title: "Cross-Chain Identity",
+          children: [{ title: "Identity Contracts", url: "ace/reference/cross-chain-identity-contracts" }],
+        },
+        {
+          title: "APIs",
+          children: [
+            { title: "Coordinator API", url: "ace/reference/api/coordinator" },
+            { title: "Reporting API", url: "ace/reference/api/reporting" },
+          ],
+        },
+      ],
+    },
+  ],
   [SIDEBAR_SECTIONS.CRE]: [
     {
       section: "Chainlink CRE",
@@ -80,6 +164,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Service Quotas",
           url: "cre/service-quotas",
+        },
+        {
+          title: "Supported Networks",
+          url: "cre/supported-networks",
+          highlightAsCurrent: ["cre/supported-networks-ts", "cre/supported-networks-go"],
         },
         {
           title: "Support & Feedback",
@@ -135,7 +224,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             "cre/getting-started/part-4-writing-onchain-go",
           ],
         },
-        { title: "Conclusion & Next Steps", url: "cre/getting-started/conclusion" },
+        {
+          title: "Before You Build",
+          url: "cre/getting-started/before-you-build",
+          highlightAsCurrent: ["cre/getting-started/before-you-build-ts", "cre/getting-started/before-you-build-go"],
+        },
+        {
+          title: "Build with AI (Skill, Prompting)",
+          url: "cre/getting-started/build-with-ai",
+          highlightAsCurrent: ["cre/getting-started/build-with-ai-ts", "cre/getting-started/build-with-ai-go"],
+        },
       ],
     },
     {
@@ -204,6 +302,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Generating Bindings",
               url: "cre/guides/workflow/using-evm-client/generating-bindings",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-evm-client/generating-bindings-ts",
+                "cre/guides/workflow/using-evm-client/generating-bindings-go",
+              ],
             },
             {
               title: "Onchain Read",
@@ -248,11 +350,37 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               ],
             },
             {
-              title: "Supported Networks",
-              url: "cre/guides/workflow/using-evm-client/supported-networks",
+              title: "Forwarder Directory",
+              url: "cre/guides/workflow/using-evm-client/forwarder-directory",
               highlightAsCurrent: [
-                "cre/guides/workflow/using-evm-client/supported-networks-ts",
-                "cre/guides/workflow/using-evm-client/supported-networks-go",
+                "cre/guides/workflow/using-evm-client/forwarder-directory-ts",
+                "cre/guides/workflow/using-evm-client/forwarder-directory-go",
+              ],
+            },
+          ],
+        },
+        {
+          title: "Solana Chain Interactions",
+          url: "cre/guides/workflow/using-solana-client/overview",
+          highlightAsCurrent: [
+            "cre/guides/workflow/using-solana-client/overview-ts",
+            "cre/guides/workflow/using-solana-client/overview-go",
+          ],
+          children: [
+            {
+              title: "Generating Bindings",
+              url: "cre/guides/workflow/using-solana-client/generating-bindings",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-solana-client/generating-bindings-ts",
+                "cre/guides/workflow/using-solana-client/generating-bindings-go",
+              ],
+            },
+            {
+              title: "Onchain Write",
+              url: "cre/guides/workflow/using-solana-client/onchain-write",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-solana-client/onchain-write-ts",
+                "cre/guides/workflow/using-solana-client/onchain-write-go",
               ],
             },
           ],
@@ -285,6 +413,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                 "cre/guides/workflow/using-http-client/submitting-reports-http-go",
               ],
             },
+            {
+              title: "Verifying CRE Reports Offchain",
+              url: "cre/guides/workflow/using-http-client/verifying-reports-offchain",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-http-client/verifying-reports-offchain-ts",
+                "cre/guides/workflow/using-http-client/verifying-reports-offchain-go",
+              ],
+            },
+          ],
+        },
+        {
+          title: "Confidential API Interactions",
+          url: "cre/guides/workflow/using-confidential-http-client",
+          children: [
+            {
+              title: "Making Confidential Requests",
+              url: "cre/guides/workflow/using-confidential-http-client/making-requests",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-confidential-http-client/making-requests-ts",
+                "cre/guides/workflow/using-confidential-http-client/making-requests-go",
+              ],
+            },
           ],
         },
         {
@@ -309,6 +459,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
           ],
         },
+        {
+          title: "Using Time in Workflows",
+          url: "cre/guides/workflow/time-in-workflows",
+          highlightAsCurrent: ["cre/guides/workflow/time-in-workflows-ts", "cre/guides/workflow/time-in-workflows-go"],
+        },
+        {
+          title: "Using Randomness in Workflows",
+          url: "cre/guides/workflow/using-randomness",
+        },
       ],
     },
     {
@@ -319,8 +478,30 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/guides/operations/simulating-workflows",
         },
         {
+          title: "Testing Production Limits",
+          url: "cre/guides/operations/understanding-limits",
+        },
+        {
           title: "Deploying Workflows",
           url: "cre/guides/operations/deploying-workflows",
+          children: [
+            {
+              title: "Deploying to the Private Registry",
+              url: "cre/guides/operations/deploying-to-private-registry",
+              highlightAsCurrent: [
+                "cre/guides/operations/deploying-to-private-registry-ts",
+                "cre/guides/operations/deploying-to-private-registry-go",
+              ],
+            },
+            {
+              title: "Deploying to the Onchain Registry",
+              url: "cre/guides/operations/deploying-to-onchain-registry",
+              highlightAsCurrent: [
+                "cre/guides/operations/deploying-to-onchain-registry-ts",
+                "cre/guides/operations/deploying-to-onchain-registry-go",
+              ],
+            },
+          ],
         },
         {
           title: "Activating & Pausing Workflows",
@@ -329,6 +510,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Updating Deployed Workflows",
           url: "cre/guides/operations/updating-deployed-workflows",
+        },
+        {
+          title: "Verifying Workflows",
+          url: "cre/guides/operations/verifying-workflows",
+          highlightAsCurrent: [
+            "cre/guides/operations/verifying-workflows-ts",
+            "cre/guides/operations/verifying-workflows-go",
+          ],
         },
         {
           title: "Deleting Workflows",
@@ -341,6 +530,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Monitoring & Debugging Workflows",
           url: "cre/guides/operations/monitoring-workflows",
+        },
+        {
+          title: "Custom WASM Builds",
+          url: "cre/guides/operations/custom-build",
+        },
+        {
+          title: "Custom Rust Plugins",
+          url: "cre/guides/operations/custom-rust-plugins-ts",
         },
       ],
     },
@@ -362,6 +559,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Managing Authentication",
               url: "cre/account/managing-auth",
+            },
+            {
+              title: "Requesting Deploy Access",
+              url: "cre/account/deploy-access",
             },
           ],
         },
@@ -391,7 +592,13 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         { title: "Overview", url: "cre/capabilities" },
         { title: "Triggers", url: "cre/capabilities/triggers" },
         { title: "HTTP", url: "cre/capabilities/http" },
+        {
+          title: "Confidential HTTP",
+          url: "cre/capabilities/confidential-http",
+          highlightAsCurrent: ["cre/capabilities/confidential-http-ts", "cre/capabilities/confidential-http-go"],
+        },
         { title: "EVM Read & Write", url: "cre/capabilities/evm-read-write" },
+        { title: "Solana Write", url: "cre/capabilities/solana-write" },
       ],
     },
     {
@@ -407,16 +614,13 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           highlightAsCurrent: ["cre/concepts/non-determinism-go", "cre/concepts/non-determinism-ts"],
         },
         {
-          title: "Time in CRE",
-          url: "cre/concepts/time-in-cre",
-        },
-        {
-          title: "Random in CRE",
-          url: "cre/concepts/random-in-cre",
-        },
-        {
           title: "TypeScript Runtime Environment",
           url: "cre/concepts/typescript-wasm-runtime",
+        },
+        {
+          title: "Finality & Confidence Levels",
+          url: "cre/concepts/finality",
+          highlightAsCurrent: ["cre/concepts/finality-go", "cre/concepts/finality-ts"],
         },
       ],
     },
@@ -424,8 +628,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Templates",
       contents: [
         {
-          title: "Overview",
-          url: "cre/templates",
+          title: "CRE Templates Hub",
+          url: "https://docs.chain.link/cre-templates",
         },
         {
           title: "Custom Data Feed Template",
@@ -463,7 +667,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
             { title: "Account Management", url: "cre/reference/cli/account" },
             { title: "Workflow Commands", url: "cre/reference/cli/workflow" },
+            { title: "Execution Commands", url: "cre/reference/cli/execution" },
+            { title: "Registry Commands", url: "cre/reference/cli/registry" },
             { title: "Secrets Management", url: "cre/reference/cli/secrets" },
+            { title: "Template Sources", url: "cre/reference/cli/templates" },
             { title: "Utilities", url: "cre/reference/cli/utilities" },
           ],
         },
@@ -514,17 +721,91 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               highlightAsCurrent: ["cre/reference/sdk/evm-client-ts", "cre/reference/sdk/evm-client-go"],
             },
             {
+              title: "Solana Client",
+              url: "cre/reference/sdk/solana-client",
+              highlightAsCurrent: ["cre/reference/sdk/solana-client-ts", "cre/reference/sdk/solana-client-go"],
+            },
+            {
               title: "HTTP Client",
               url: "cre/reference/sdk/http-client",
               highlightAsCurrent: ["cre/reference/sdk/http-client-ts", "cre/reference/sdk/http-client-go"],
+            },
+            {
+              title: "Confidential HTTP Client",
+              url: "cre/reference/sdk/confidential-http-client",
+              highlightAsCurrent: [
+                "cre/reference/sdk/confidential-http-client-ts",
+                "cre/reference/sdk/confidential-http-client-go",
+              ],
             },
             {
               title: "Consensus & Aggregation",
               url: "cre/reference/sdk/consensus",
               highlightAsCurrent: ["cre/reference/sdk/consensus-ts", "cre/reference/sdk/consensus-go"],
             },
+            {
+              title: "Type Conversions",
+              url: "cre/reference/sdk/type-conversions-ts",
+            },
           ],
         },
+      ],
+    },
+    {
+      section: "Migrate to CRE",
+      contents: [
+        {
+          title: "Migrate from Gelato",
+          url: "cre/reference/gelato-migration",
+          highlightAsCurrent: ["cre/reference/gelato-migration-ts", "cre/reference/gelato-migration-go"],
+        },
+        {
+          title: "Migrate from Chainlink Automation",
+          url: "cre/reference/cla-migration",
+          highlightAsCurrent: ["cre/reference/cla-migration-ts", "cre/reference/cla-migration-go"],
+        },
+        {
+          title: "Migrate from Chainlink Functions",
+          url: "cre/reference/clf-migration",
+          highlightAsCurrent: ["cre/reference/clf-migration-ts", "cre/reference/clf-migration-go"],
+        },
+      ],
+    },
+  ],
+  [SIDEBAR_SECTIONS.CREC]: [
+    {
+      section: "Chainlink CRE Connect",
+      contents: [
+        { title: "Overview", url: "crec" },
+        { title: "Supported Networks", url: "crec/supported-networks" },
+        { title: "Release Notes", url: "crec/release-notes" },
+      ],
+    },
+    {
+      section: "Getting Started",
+      contents: [{ title: "Get Access", url: "crec/getting-started" }],
+    },
+    {
+      section: "Concepts",
+      contents: [
+        { title: "Architecture", url: "crec/concepts/architecture" },
+        { title: "Channels", url: "crec/concepts/channels" },
+        { title: "Watchers", url: "crec/concepts/watchers" },
+        { title: "Verifiable Events", url: "crec/concepts/verifiable-events" },
+        { title: "Event Verification", url: "crec/concepts/event-verification" },
+        { title: "Operations & Transactions", url: "crec/concepts/operations" },
+        { title: "EIP-712 Signing", url: "crec/concepts/eip712-signing" },
+        { title: "Smart Accounts", url: "crec/concepts/smart-accounts" },
+        { title: "Account Abstraction & Gas Sponsorship", url: "crec/concepts/account-abstraction" },
+        { title: "Confidence Levels", url: "crec/concepts/confidence-levels" },
+        { title: "Extensions", url: "crec/concepts/extensions" },
+      ],
+    },
+    {
+      section: "Extensions",
+      contents: [
+        { title: "Overview", url: "crec/extensions" },
+        { title: "DTA (Digital Transfer Agent)", url: "crec/extensions/dta" },
       ],
     },
   ],
@@ -548,15 +829,46 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Feed Types",
           url: "data-feeds/feed-types",
           children: [
-            { title: "Price Feeds", url: "data-feeds/price-feeds" },
+            {
+              title: "Price Feeds",
+              url: "data-feeds/price-feeds",
+            },
+            {
+              title: "Tokenized Equity Feeds",
+              url: "data-feeds/tokenized-equity-feeds",
+              children: [
+                {
+                  title: "Provider Catalog",
+                  url: "data-feeds/tokenized-equity-feeds/providers",
+                  children: [
+                    { title: "Ondo Finance", url: "data-feeds/tokenized-equity-feeds/ondo" },
+                    { title: "Robinhood", url: "data-feeds/tokenized-equity-feeds/robinhood" },
+                  ],
+                },
+              ],
+            },
             {
               title: "SmartData",
               url: "data-feeds/smartdata",
               children: [{ title: "Multiple-Variable Response (MVR) Feeds", url: "data-feeds/mvr-feeds" }],
             },
-            { title: "Smart Value Recapture (SVR) Feeds", url: "data-feeds/svr-feeds" },
+            {
+              title: "Smart Value Recapture (SVR) Feeds",
+              url: "data-feeds/svr-feeds",
+              children: [
+                {
+                  title: "Searcher Onboarding: Ethereum Mainnet",
+                  url: "data-feeds/svr-feeds/searcher-onboarding-ethereum",
+                },
+                {
+                  title: "Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain)",
+                  url: "data-feeds/svr-feeds/searcher-onboarding-atlas",
+                },
+              ],
+            },
             { title: "Rate and Volatility Feeds", url: "data-feeds/rates-feeds" },
             { title: "L2 Sequencer Uptime Feeds", url: "data-feeds/l2-sequencer-feeds" },
+            { title: "Self-Managed Feeds", url: "data-feeds/self-managed-feeds" },
           ],
         },
         {
@@ -809,6 +1121,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams",
         },
         {
+          title: "Sign Up for Data Streams",
+          url: "data-streams/sign-up",
+        },
+        {
+          title: "Get Support",
+          url: "data-streams/get-support",
+        },
+        {
           title: "Developer Responsibilities",
           url: "data-streams/developer-responsibilities",
         },
@@ -873,31 +1193,52 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Report Schema v11 (RWA Advanced)",
               url: "data-streams/reference/report-schema-v11",
             },
+            {
+              title: "Handling Market Events",
+              url: "data-streams/rwa-streams/handling-market-events",
+              highlightAsCurrent: ["data-streams/rwa-streams/handling-market-events-v11"],
+            },
+            {
+              title: "24/5 US Equities User Guide",
+              url: "data-streams/rwa-streams/24-5-us-equities-user-guide",
+            },
+            {
+              title: "APAC Equities",
+              url: "data-streams/rwa-streams/apac-equities",
+            },
           ],
         },
         {
-          title: "Net Asset Value (NAV)",
-          url: "data-streams/nav-streams",
+          title: "SmartData",
+          url: "data-streams/smartdata-streams",
           children: [
             {
-              title: "Report Schema v9 (NAV)",
+              title: "Report Schema v9 (SmartData)",
               url: "data-streams/reference/report-schema-v9",
             },
           ],
         },
         {
           title: "Tokenized Asset",
-          url: "data-streams/backed-streams",
+          url: "data-streams/tokenized-asset-streams",
           children: [
             {
               title: "Report Schema v10 (Tokenized Asset)",
               url: "data-streams/reference/report-schema-v10",
+            },
+            {
+              title: "Handling Stock Splits",
+              url: "data-streams/tokenized-asset-streams/handling-stock-splits",
             },
           ],
         },
         {
           title: "Market Hours",
           url: "data-streams/market-hours",
+        },
+        {
+          title: "Selecting Quality Data Streams",
+          url: "data-streams/selecting-data-streams",
         },
         {
           title: "Deprecating Streams",
@@ -931,6 +1272,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/tutorials/solana-onchain-report-verification",
           highlightAsCurrent: ["data-streams/tutorials/solana-offchain-report-verification"],
         },
+        {
+          title: "Verify report data (Stellar)",
+          url: "data-streams/tutorials/stellar-onchain-report-verification",
+        },
+        {
+          title: "Canton Integration",
+          url: "data-streams/canton-integration",
+        },
       ],
     },
     {
@@ -943,6 +1292,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Best Practices",
           url: "data-streams/concepts/best-practices",
+        },
+        {
+          title: "Calculated Streams",
+          url: "data-streams/concepts/calculated-streams",
         },
         {
           title: "Liquidity-Weighted Bid and Ask prices",
@@ -1007,33 +1360,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Onchain report verification (EVM chains)",
               url: "data-streams/reference/data-streams-api/onchain-verification",
             },
+            {
+              title: "Onchain report verification (Stellar)",
+              url: "data-streams/tutorials/stellar-onchain-report-verification",
+            },
           ],
         },
         {
           title: "Candlestick API",
           url: "data-streams/reference/candlestick-api",
-        },
-      ],
-    },
-    {
-      section: "Streams Trade",
-      contents: [
-        {
-          title: "Overview",
-          url: "data-streams/streams-trade",
-        },
-        {
-          title: "Getting Started",
-          url: "data-streams/tutorials/streams-trade/getting-started",
-          highlightAsCurrent: ["data-streams/tutorials/streams-trade/getting-started-hardhat"],
-        },
-        {
-          title: "Handle StreamsLookup errors",
-          url: "data-streams/tutorials/streams-trade/streams-trade-lookup-error-handler",
-        },
-        {
-          title: "Reference (Interfaces)",
-          url: "data-streams/streams-trade/interfaces",
         },
       ],
     },
@@ -2038,6 +2373,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     },
   ],
   [SIDEBAR_SECTIONS.GLOBAL]: [
+    AI_AGENT_RESOURCES_SECTION,
     {
       section: "General Documentation",
       contents: [
@@ -2277,6 +2613,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "DataLink Providers",
           url: "datalink/provider-catalog",
+        },
+        {
+          title: "Available Streams",
+          url: "datalink/provider-catalog/streams",
         },
       ],
     },

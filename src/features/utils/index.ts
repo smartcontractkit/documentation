@@ -11,6 +11,7 @@ import {
 import { CCIP_TOKEN_ICON_MAPPINGS } from "@config/data/ccip/tokenIconMappings.ts"
 import { toQuantity } from "ethers"
 import referenceChains from "~/scripts/reference/chains.json" with { type: "json" }
+import { c } from "node_modules/vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf.js"
 
 interface AddEthereumChainParameter {
   chainId: string
@@ -32,6 +33,17 @@ export const getEthereumChainParameter = (chainId: string) => {
     throw new Error(`Chain with chainId '${chainId}' not found in reference data`)
   }
 
+  const rpcUrls = (Array.isArray(chain.rpc) ? chain.rpc : [])
+    .filter((url: unknown): url is string => typeof url === "string")
+    .filter((url) => url.startsWith("https://"))
+    // Drop placeholder endpoints like https://.../${INFURA_API_KEY}
+    .filter((url) => !url.includes("$"))
+    .slice(0, 3)
+
+  if (rpcUrls.length === 0) {
+    throw new Error(`No valid https rpcUrls found for chainId '${chainId}'`)
+  }
+
   const params: AddEthereumChainParameter = {
     chainId,
     chainName: chain.name,
@@ -41,7 +53,7 @@ export const getEthereumChainParameter = (chainId: string) => {
         ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
           chain.explorers.map((explorer: any) => explorer.url)
         : [chain.infoURL],
-    rpcUrls: chain.rpc,
+    rpcUrls,
   }
   return params
 }
@@ -76,6 +88,51 @@ export const getExplorerAddressUrl =
       .join("&")
 
     return queryString ? `${url}?${queryString}` : url
+  }
+
+/** Canton contract IDs are hashes — only party IDs are explorable in Lighthouse. */
+export const getCantonPartyIdFromAddress = (address?: string): string | undefined => {
+  if (!address) return undefined
+
+  const atIndex = address.indexOf("@")
+  if (atIndex !== -1) {
+    const partyId = address.slice(atIndex + 1)
+    return partyId || undefined
+  }
+
+  // Values like ccipOwner::1220... are already party IDs.
+  if (address.includes("::")) {
+    return address
+  }
+
+  return undefined
+}
+
+export const getCantonPartyExplorerUrl = (explorer: ExplorerInfo, partyId?: string): string | undefined => {
+  if (!partyId) return undefined
+  return `${explorer.baseUrl}/party/${encodeURIComponent(partyId)}`
+}
+
+export const getCantonAddressExplorerUrl = (explorer: ExplorerInfo, address?: string): string | undefined => {
+  const partyId = getCantonPartyIdFromAddress(address)
+  return getCantonPartyExplorerUrl(explorer, partyId)
+}
+
+/** Canton token addresses that should be copy-only (no Lighthouse link). */
+export const isCantonNativeFeeToken = (chain: string, tokenId: string): boolean => {
+  if (!chain.startsWith("canton-")) return false
+  if (tokenId === "LINK") return true
+  return (chain === "canton-mainnet" && tokenId === "CC") || (chain === "canton-testnet" && tokenId === "Amulet")
+}
+
+export const getContractExplorerUrl =
+  (explorer: ExplorerInfo, chainType: ChainType = "evm") =>
+  (contractAddress?: string): string | undefined => {
+    if (!contractAddress) return undefined
+    if (chainType === "canton") {
+      return getCantonAddressExplorerUrl(explorer, contractAddress)
+    }
+    return getExplorerAddressUrl(explorer, chainType)(contractAddress)
   }
 
 export const getExplorerTransactionUrl = (explorer: ExplorerInfo) => (transactionSignature: string) => {
@@ -117,10 +174,28 @@ export const getChainTypeAndFamily = (supportedChain: SupportedChain): ChainType
       chainFamily = "evm"
       break
     case "aptos":
-      chainFamily = "mvm"
+      chainFamily = "aptos"
+      break
+    case "sui":
+      chainFamily = "sui"
       break
     case "solana":
-      chainFamily = "svm"
+      chainFamily = "solana"
+      break
+    case "tron":
+      chainFamily = "tron"
+      break
+    case "canton":
+      chainFamily = "canton"
+      break
+    case "ton":
+      chainFamily = "ton"
+      break
+    case "stellar":
+      chainFamily = "stellar"
+      break
+    case "starknet":
+      chainFamily = "starknet"
       break
     default:
       throw new Error(`Unknown chain type: ${chainType}`)
@@ -276,6 +351,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SONEIUM_MINATO"
     case "ethereum-testnet-holesky":
       return "ETHEREUM_HOLESKY"
+    case "ethereum-testnet-hoodi":
+      return "ETHEREUM_HOODI"
     case "polkadot-mainnet-astar":
       return "ASTAR_MAINNET"
     case "polkadot-testnet-astar-shibuya":
@@ -292,6 +369,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "RONIN_MAINNET"
     case "ronin-testnet-saigon":
       return "RONIN_SAIGON"
+    case "ethereum-testnet-sepolia-ronin-1":
+      return "RONIN_SEPOLIA"
     case "bitcoin-mainnet-bsquared-1":
       return "BSQUARED_MAINNET"
     case "bitcoin-testnet-bsquared-1":
@@ -302,8 +381,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SHIBARIUM_PUPPYNET"
     case "sonic-mainnet":
       return "SONIC_MAINNET"
+    case "sonic-testnet":
+      return "SONIC_TESTNET"
     case "sonic-testnet-blaze":
-      return "SONIC_BLAZE"
+      return "SONIC_TESTNET_BLAZE"
     case "bitcoin-mainnet-bob-1":
       return "BOB_MAINNET"
     case "bitcoin-testnet-sepolia-bob-1":
@@ -398,10 +479,16 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "CRONOS_ZKEVM_MAINNET"
     case "0g-testnet-galileo":
       return "0G_GALILEO_TESTNET"
+    case "0g-testnet-galileo-1":
+      return "0G_GALILEO_TESTNET_1"
     case "0g-mainnet":
       return "0G_MAINNET"
     case "megaeth-testnet":
       return "MEGAETH_TESTNET"
+    case "megaeth-testnet-2":
+      return "MEGAETH_TESTNET_2"
+    case "megaeth-mainnet":
+      return "MEGAETH_MAINNET"
     case "mind-testnet":
       return "MIND_NETWORK_TESTNET"
     case "mind-mainnet":
@@ -514,6 +601,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "NEXON_HENESYS_MAINNET"
     case "pharos-atlantic-testnet":
       return "PHAROS_ATLANTIC_TESTNET"
+    case "pharos-mainnet":
+      return "PHAROS_MAINNET"
     case "morph-mainnet":
       return "MORPH_MAINNET"
     case "ethereum-testnet-hoodi-morph":
@@ -524,6 +613,39 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "JOVAY_TESTNET"
     case "stable-mainnet":
       return "STABLE_MAINNET"
+    case "tempo-testnet":
+      return "TEMPO_TESTNET"
+    case "tempo-testnet-moderato":
+      return "TEMPO_TESTNET_MODERATO"
+    case "tempo-mainnet":
+      return "TEMPO_MAINNET"
+    case "arc-testnet":
+      return "ARC_NETWORK_TESTNET"
+    case "doge-os-chikyu-testnet":
+    case "dogeos-testnet-chikyu":
+      return "DOGE_OS_CHIKYU_TESTNET"
+    case "adi-testnet":
+      return "ADI_NETWORK_AB_TESTNET"
+    case "adi-mainnet":
+      return "ADI_NETWORK_MAINNET"
+    case "edge-testnet":
+      return "EDGE_TESTNET"
+    case "edge-mainnet":
+      return "EDGE_MAINNET"
+    case "robinhood-testnet":
+      return "ROBINHOOD_TESTNET"
+    case "robinhood-mainnet":
+      return "ROBINHOOD_MAINNET"
+    case "ton-testnet":
+      return "TON_TESTNET"
+    case "ton-mainnet":
+      return "TON_MAINNET"
+    case "canton-testnet":
+      return "CANTON_TESTNET"
+    case "canton-mainnet":
+      return "CANTON_MAINNET"
+    case "creditcoin-mainnet":
+      return "CREDITCOIN_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -605,6 +727,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-sepolia-soneium-1"
     case "ETHEREUM_HOLESKY":
       return "ethereum-testnet-holesky"
+    case "ETHEREUM_HOODI":
+      return "ethereum-testnet-hoodi"
     case "ASTAR_MAINNET":
       return "polkadot-mainnet-astar"
     case "ASTAR_SHIBUYA":
@@ -621,6 +745,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ronin-mainnet"
     case "RONIN_SAIGON":
       return "ronin-testnet-saigon"
+    case "RONIN_SEPOLIA":
+      return "ethereum-testnet-sepolia-ronin-1"
     case "BSQUARED_MAINNET":
       return "bitcoin-mainnet-bsquared-1"
     case "BSQUARED_TESTNET":
@@ -631,7 +757,9 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "shibarium-testnet-puppynet"
     case "SONIC_MAINNET":
       return "sonic-mainnet"
-    case "SONIC_BLAZE":
+    case "SONIC_TESTNET":
+      return "sonic-testnet"
+    case "SONIC_TESTNET_BLAZE":
       return "sonic-testnet-blaze"
     case "BOB_MAINNET":
       return "bitcoin-mainnet-bob-1"
@@ -723,10 +851,16 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "cronos-zkevm-mainnet"
     case "0G_GALILEO_TESTNET":
       return "0g-testnet-galileo"
+    case "0G_GALILEO_TESTNET_1":
+      return "0g-testnet-galileo-1"
     case "0G_MAINNET":
       return "0g-mainnet"
     case "MEGAETH_TESTNET":
       return "megaeth-testnet"
+    case "MEGAETH_TESTNET_2":
+      return "megaeth-testnet-2"
+    case "MEGAETH_MAINNET":
+      return "megaeth-mainnet"
     case "MIND_NETWORK_TESTNET":
       return "mind-testnet"
     case "MIND_NETWORK_MAINNET":
@@ -837,6 +971,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "nexon-mainnet-henesys"
     case "PHAROS_ATLANTIC_TESTNET":
       return "pharos-atlantic-testnet"
+    case "PHAROS_MAINNET":
+      return "pharos-mainnet"
     case "MORPH_MAINNET":
       return "morph-mainnet"
     case "MORPH_HOODI_TESTNET":
@@ -847,6 +983,38 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "jovay-testnet"
     case "STABLE_MAINNET":
       return "stable-mainnet"
+    case "TEMPO_TESTNET":
+      return "tempo-testnet"
+    case "TEMPO_TESTNET_MODERATO":
+      return "tempo-testnet-moderato"
+    case "TEMPO_MAINNET":
+      return "tempo-mainnet"
+    case "ARC_NETWORK_TESTNET":
+      return "arc-testnet"
+    case "DOGE_OS_CHIKYU_TESTNET":
+      return "dogeos-testnet-chikyu"
+    case "ADI_NETWORK_AB_TESTNET":
+      return "adi-testnet"
+    case "ADI_NETWORK_MAINNET":
+      return "adi-mainnet"
+    case "EDGE_TESTNET":
+      return "edge-testnet"
+    case "EDGE_MAINNET":
+      return "edge-mainnet"
+    case "ROBINHOOD_TESTNET":
+      return "robinhood-testnet"
+    case "ROBINHOOD_MAINNET":
+      return "robinhood-mainnet"
+    case "TON_TESTNET":
+      return "ton-testnet"
+    case "TON_MAINNET":
+      return "ton-mainnet"
+    case "CANTON_TESTNET":
+      return "canton-testnet"
+    case "CANTON_MAINNET":
+      return "canton-mainnet"
+    case "CREDITCOIN_MAINNET":
+      return "creditcoin-mainnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

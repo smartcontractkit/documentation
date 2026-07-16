@@ -69,6 +69,10 @@ export type ChainConfig = {
     address: string
     version: string
   }
+  ccipHome?: {
+    address: string
+    version: string
+  }
   feeQuoter?: string
   nativeToken?: {
     name: string
@@ -77,6 +81,20 @@ export type ChainConfig = {
   }
   mcms?: {
     address: string
+  }
+  ccipOwnerParty?: string
+  ccipExplicitDisclosureServer?: string
+  committeeVerifier?: {
+    address: string
+    version: string
+  }
+  feeQuoterModule?: {
+    address: string
+    version: string
+  }
+  indexer?: {
+    primary: string
+    backup: string | null
   }
   poolPrograms?: {
     BurnMintTokenPool?: string
@@ -117,9 +135,11 @@ export type NetworkFeeStructure = {
 
 export type LaneSpecificFees = {
   fromToEthereum?: NetworkFeeStructure
-  fromEthereum?: NetworkFeeStructure
-  toEthereum?: NetworkFeeStructure
-  nonEthereum?: NetworkFeeStructure
+  fromEthereumToNonEthereum?: NetworkFeeStructure
+  fromEthereumToSolana?: NetworkFeeStructure
+  fromNonEthereumToEthereum?: NetworkFeeStructure
+  fromNonEthereumToNonEthereum?: NetworkFeeStructure
+  fromNonEthereumToSolana?: NetworkFeeStructure
   allLanes?: NetworkFeeStructure
 }
 
@@ -189,6 +209,8 @@ export interface Network {
   key: string
   chainType: ChainType
   tokenAdminRegistry?: string
+  tokenPoolFactory?: string
+  ccipHome?: string
   explorer: ExplorerInfo
   registryModule?: string
   router?: {
@@ -208,13 +230,26 @@ export interface Network {
     address: string
     version: string
   }
-  routerExplorerUrl: string
   feeQuoter?: string
   mcms?: string
   poolPrograms?: {
     BurnMintTokenPool?: string
     LockReleaseTokenPool?: string
     CCTPTokenPool?: string
+  }
+  ccipOwnerParty?: string
+  ccipExplicitDisclosureServer?: string
+  committeeVerifier?: {
+    address: string
+    version: string
+  }
+  feeQuoterModule?: {
+    address: string
+    version: string
+  }
+  indexer?: {
+    primary: string
+    backup: string | null
   }
 }
 

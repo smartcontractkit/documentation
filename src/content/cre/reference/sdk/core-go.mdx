@@ -5,9 +5,9 @@ date: Last Modified
 sdkLang: "go"
 pageId: "reference-sdk-core"
 metadata:
-  description: "Reference for core Go SDK: Workflow, Handler, Runtime, NodeRuntime, and essential functions every CRE workflow uses."
+  description: "Reference for core Go SDK: Workflow, Handler, Runtime, NodeRuntime, report verification (ParseReport), and essential functions every CRE workflow uses."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-05-20"
 ---
 
 import { Aside } from "@components"
@@ -50,7 +50,7 @@ These interfaces provide access to capabilities and manage the execution context
 
 - **`cre.Runtime` ("Easy Mode")**: Passed to your main trigger callback, this represents the **DON's (Decentralized Oracle Network) execution context**. It is used for operations that are already guaranteed to be Byzantine Fault Tolerant (BFT). When you use the `Runtime`, you ask the network to execute something, and CRE handles the underlying complexity to ensure you get back one final, secure, and trustworthy result. A common use case is writing a transaction to a blockchain with the EVM client.
 
-- **`cre.NodeRuntime` ("Manual Mode")**: Represents an **individual node's execution context**. This is used when a BFT guarantee cannot be provided automatically (e.g., calling a third-party API). You tell each node to perform a task on its own, and each node returns its own individual answer. You are then responsible for telling the SDK how to combine them into a single, trusted result by providing a consensus and aggregation algorithm. It is used exclusively inside a [`RunInNodeMode`](#sdkruninnodemode) block and is provided by that function—you do not get this type directly in your handler's callback.
+- **`cre.NodeRuntime` ("Manual Mode")**: Represents an **individual node's execution context**. This is used when a BFT guarantee cannot be provided automatically (e.g., calling a third-party API). You tell each node to perform a task on its own, and each node returns its own individual answer. You are then responsible for telling the SDK how to combine them into a single, trusted result by providing a consensus and aggregation algorithm. It is used exclusively inside a [`RunInNodeMode`](#creruninnodemode) block and is provided by that function—you do not get this type directly in your handler's callback.
 
 To learn more about how to aggregate results from `NodeRuntime`, see the [Consensus & Aggregation](/cre/reference/sdk/consensus) reference.
 
@@ -253,3 +253,208 @@ func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
     //...
 }
 ```
+
+## `runtime.GetSecret()`
+
+Retrieves a secret from the Vault DON. Secrets are key-value pairs stored securely and made available to your workflow at runtime. The `GetSecret` method is available on the `Runtime` interface through the embedded `SecretsProvider`.
+
+**Signature:**
+
+```go
+runtime.GetSecret(req *SecretRequest) Promise[*Secret]
+```
+
+### `SecretRequest`
+
+| Field       | Type     | Required | Description                                                           |
+| ----------- | -------- | -------- | --------------------------------------------------------------------- |
+| `Id`        | `string` | Yes      | The identifier of the secret to retrieve.                             |
+| `Namespace` | `string` | No       | The namespace the secret belongs to. Defaults to `"main"` if omitted. |
+
+### `Secret`
+
+The value returned when the promise resolves.
+
+| Field       | Type     | Description                      |
+| ----------- | -------- | -------------------------------- |
+| `Id`        | `string` | The secret identifier.           |
+| `Namespace` | `string` | The secret namespace.            |
+| `Owner`     | `string` | The address of the secret owner. |
+| `Value`     | `string` | The secret value.                |
+
+### `SecretsProvider` interface
+
+The `SecretsProvider` interface is embedded in `Runtime`, which means `GetSecret` is available directly on the runtime object. It is also passed as a parameter to [`InitWorkflow`](#initworkflow), allowing you to access secrets during workflow initialization.
+
+```go
+type SecretsProvider interface {
+    GetSecret(req *SecretRequest) Promise[*Secret]
+}
+```
+
+### Example
+
+```go
+import "github.com/smartcontractkit/cre-sdk-go/cre"
+
+func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
+    secretPromise := runtime.GetSecret(&cre.SecretRequest{
+        Id:        "my-api-key",
+        Namespace: "default",
+    })
+
+    secret, err := secretPromise.Await()
+    if err != nil {
+        return "", fmt.Errorf("failed to get secret: %w", err)
+    }
+
+    logger := runtime.Logger()
+    logger.Info("Secret retrieved", "owner", secret.Owner)
+
+    // Use secret.Value in your workflow logic
+    return "done", nil
+}
+```
+
+<Aside type="note" title="Secrets guide">
+  For a complete walkthrough on creating, storing, and using secrets, see the [Secrets
+  guide](/cre/guides/workflow/secrets).
+</Aside>
+
+## Report verification
+
+Parse and verify CRE reports received over HTTP or other offchain channels. Requires **cre-sdk-go v1.8.0** or later.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Guide">
+  For end-to-end examples (HTTP receiver workflow, payload format, private registry notes), see [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go). To **send** reports via HTTP, see [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http-go).
+</Aside>
+
+Verification runs in your callback: signatures are checked offchain, while authorized signers are loaded from the onchain **Capability Registry** (default: `cre.ProductionEnvironment()` on Ethereum Mainnet). This is not the workflow deployment registry (`private` or onchain).
+
+### `cre.ParseReport`
+
+**Signature:**
+
+```go
+func ParseReport(runtime Runtime, rawReport []byte, signatures [][]byte, reportContext []byte) (*Report, error)
+```
+
+Parses a report and verifies signatures against `cre.ProductionEnvironment()`. Registry reads are cached per chain and DON.
+
+### `cre.ParseReportWithConfig`
+
+**Signature:**
+
+```go
+func ParseReportWithConfig(runtime Runtime, rawReport []byte, signatures [][]byte, reportContext []byte, config ReportParseConfig) (*Report, error)
+```
+
+Same as `ParseReport`, with custom accepted environments or zones. Set `SkipSignatureVerification: true` to parse metadata only; call `report.VerifySignatures()` afterward when ready.
+
+### `Report` accessors
+
+After a successful parse:
+
+| Method            | Returns  | Description                                |
+| ----------------- | -------- | ------------------------------------------ |
+| `WorkflowID()`    | `string` | Workflow hash (hex)                        |
+| `WorkflowOwner()` | `string` | Workflow owner (hex)                       |
+| `WorkflowName()`  | `string` | Workflow name from metadata                |
+| `ExecutionID()`   | `string` | Execution identifier (hex)                 |
+| `DONID()`         | `uint32` | DON that produced the report               |
+| `Body()`          | `[]byte` | Payload after the 109-byte metadata header |
+| `SeqNr()`         | `uint64` | Sequence number                            |
+| `ConfigDigest()`  | `[]byte` | Config digest                              |
+| `ReportContext()` | `[]byte` | Full report context bytes                  |
+| `RawReport()`     | `[]byte` | Full raw report bytes                      |
+
+### `ReportParseConfig`
+
+| Field                       | Type            | Description                                           |
+| --------------------------- | --------------- | ----------------------------------------------------- |
+| `AcceptedEnvironments`      | `[]Environment` | Registry environments to try (defaults to production) |
+| `AcceptedZones`             | `[]Zone`        | Restrict verification to specific DON IDs             |
+| `SkipSignatureVerification` | `bool`          | Parse header only; call `VerifySignatures` separately |
+
+### `cre.ProductionEnvironment` and `cre.ZoneFromEnvironment`
+
+```go
+func ProductionEnvironment() Environment  // mainnet Capability Registry
+func ZoneFromEnvironment(env Environment, donId uint32) Zone
+```
+
+| `Environment` field | Type     | Description                                              |
+| ------------------- | -------- | -------------------------------------------------------- |
+| `ChainSelector`     | `uint64` | Chain selector for EVM reads (default: Ethereum Mainnet) |
+| `RegistryAddress`   | `string` | Capability Registry contract address                     |
+
+### Verification errors
+
+| Error                    | When                                         |
+| ------------------------ | -------------------------------------------- |
+| `ErrUnknownSigner`       | Recovered signer not in registry allowlist   |
+| `ErrWrongSignatureCount` | Fewer than f+1 valid signatures              |
+| `ErrRawReportTooShort`   | `rawReport` missing 109-byte metadata header |
+| `ErrDuplicateSigner`     | Same signer twice in accepted set            |
+
+## `cre.OrderedEntries` and `cre.OrderedEntriesFunc`
+
+Go maps iterate in random order, which causes consensus failures in DON mode because different nodes process entries in different sequences. These helpers return a deterministic iterator over a map's entries, sorted by key, so all nodes process items in the same order.
+
+### `cre.OrderedEntries`
+
+Returns an iterator that yields map entries in the natural ascending sort order of the keys. Use this for any map whose key type implements `cmp.Ordered` (strings, integers, floats, etc.).
+
+**Signature:**
+
+```go
+func OrderedEntries[K cmp.Ordered, V any](m map[K]V) iter.Seq2[K, V]
+```
+
+**Example:**
+
+```go
+import "github.com/smartcontractkit/cre-sdk-go/cre"
+
+prices := map[string]float64{"BTC": 50000, "ETH": 3000, "SOL": 100}
+
+// Iterates in alphabetical key order: BTC, ETH, SOL
+for token, price := range cre.OrderedEntries(prices) {
+    processPrice(token, price)
+}
+```
+
+### `cre.OrderedEntriesFunc`
+
+Returns an iterator that yields map entries sorted using a custom comparator. Use this when the key type does not implement `cmp.Ordered` — for example, struct keys.
+
+**Signature:**
+
+```go
+func OrderedEntriesFunc[K comparable, V any](m map[K]V, cmp func(a, b K) int) iter.Seq2[K, V]
+```
+
+**Example:**
+
+```go
+import (
+    "cmp"
+    "github.com/smartcontractkit/cre-sdk-go/cre"
+)
+
+type Asset struct{ symbol string }
+
+assets := map[Asset]float64{{symbol: "BTC"}: 50000, {symbol: "ETH"}: 3000}
+
+for asset, price := range cre.OrderedEntriesFunc(assets, func(a, b Asset) int {
+    return cmp.Compare(a.symbol, b.symbol)
+}) {
+    processPrice(asset, price)
+}
+```
+
+<Aside type="note" title="Non-determinism">
+  For a full explanation of why map iteration order matters in DON mode, see [Avoiding
+  Non-Determinism](/cre/concepts/non-determinism-go#1-map-iteration).
+</Aside>

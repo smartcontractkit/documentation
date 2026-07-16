@@ -20,6 +20,7 @@ import {
   getChainTypeAndFamily,
   directoryToSupportedChain,
 } from "../../../features/utils/index.ts"
+import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
 
 export const prerender = false
 
@@ -214,11 +215,16 @@ export class LaneDataService {
         return null
       }
 
+      // Resolve internalId from the selector YAML name (consistent with chains and tokens endpoints)
+      // Falls back to the RDD directory key if the selector entry is not found
+      const selectorEntry = getSelectorEntry(chainId, chainType)
+      const internalId = selectorEntry?.name ?? chainKey
+
       return {
         chainId,
         displayName,
         selector,
-        internalId: chainKey,
+        internalId,
         chainType,
         chainFamily,
       }

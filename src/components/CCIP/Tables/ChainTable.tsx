@@ -3,7 +3,7 @@ import "./Table.css"
 import Tabs from "./Tabs.tsx"
 import TableSearchInput from "./TableSearchInput.tsx"
 import { useEffect, useState } from "react"
-import { getExplorerAddressUrl } from "~/features/utils/index.ts"
+import { getContractExplorerUrl, getChainTypeAndFamily, fallbackTokenIconUrl } from "~/features/utils/index.ts"
 import { drawerContentStore } from "../Drawer/drawerStore.ts"
 import LaneDrawer from "../Drawer/LaneDrawer.tsx"
 import { Environment, Version, LaneFilter } from "~/config/data/ccip/types.ts"
@@ -116,59 +116,61 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
             {lanes
               ?.filter((network) => network.name.toLowerCase().includes(search.toLowerCase()))
               .slice(0, seeMore ? lanes.length : BEFORE_SEE_MORE)
-              .map((network, index) => (
-                <tr key={index}>
-                  <td>
-                    <button
-                      type="button"
-                      className="ccip-table__network-name"
-                      onClick={() => {
-                        const laneData = getLane({
-                          sourceChain: sourceNetwork.key as SupportedChain,
-                          destinationChain: network.key as SupportedChain,
-                          environment,
-                          version: Version.V1_2_0,
-                        })
+              .map((network, index) => {
+                const remoteChainType = network.chainType ?? getChainTypeAndFamily(network.directory).chainType
+                const addressChainType = inOutbound === LaneFilter.Outbound ? sourceNetwork.chainType : remoteChainType
+                const laneAddress =
+                  inOutbound === LaneFilter.Outbound ? network.onRamp?.address : network.offRamp?.address
 
-                        drawerContentStore.set(() => (
-                          <LaneDrawer
-                            environment={environment}
-                            lane={laneData}
-                            sourceNetwork={sourceNetwork}
-                            destinationNetwork={{
-                              name: network?.name || "",
-                              logo: network?.logo || "",
-                              key: network.key,
-                            }}
-                            inOutbound={inOutbound}
-                            explorer={explorer}
-                          />
-                        ))
-                      }}
-                      aria-label={`View lane details for ${network.name}`}
+                return (
+                  <tr key={index}>
+                    <td>
+                      <button
+                        type="button"
+                        className="ccip-table__network-name"
+                        onClick={() => {
+                          const laneData = getLane({
+                            sourceChain: sourceNetwork.key as SupportedChain,
+                            destinationChain: network.key as SupportedChain,
+                            environment,
+                            version: Version.V1_2_0,
+                          })
+
+                          drawerContentStore.set(() => (
+                            <LaneDrawer
+                              environment={environment}
+                              lane={laneData}
+                              sourceNetwork={sourceNetwork}
+                              destinationNetwork={{
+                                name: network?.name || "",
+                                logo: network?.logo || "",
+                                key: network.key,
+                              }}
+                              inOutbound={inOutbound}
+                              explorer={explorer}
+                            />
+                          ))
+                        }}
+                        aria-label={`View lane details for ${network.name}`}
+                      >
+                        <img src={network.logo} alt={`${network.name} blockchain logo`} className="ccip-table__logo" />
+                        {network.name}
+                      </button>
+                    </td>
+                    <td
+                      style={{ textAlign: "right" }}
+                      data-clipboard-type={inOutbound === LaneFilter.Outbound ? "onramp" : "offramp"}
                     >
-                      <img src={network.logo} alt={`${network.name} blockchain logo`} className="ccip-table__logo" />
-                      {network.name}
-                    </button>
-                  </td>
-                  <td
-                    style={{ textAlign: "right" }}
-                    data-clipboard-type={inOutbound === LaneFilter.Outbound ? "onramp" : "offramp"}
-                  >
-                    <Address
-                      address={inOutbound === LaneFilter.Outbound ? network.onRamp?.address : network.offRamp?.address}
-                      endLength={4}
-                      contractUrl={getExplorerAddressUrl(
-                        explorer,
-                        inOutbound === LaneFilter.Outbound ? sourceNetwork.chainType : network.chainType
-                      )(
-                        (inOutbound === LaneFilter.Outbound ? network.onRamp?.address : network.offRamp?.address) || ""
-                      )}
-                    />
-                  </td>
-                  <td>{inOutbound === LaneFilter.Outbound ? network.onRamp?.version : network.offRamp?.version}</td>
-                </tr>
-              ))}
+                      <Address
+                        address={laneAddress}
+                        endLength={4}
+                        contractUrl={getContractExplorerUrl(explorer, addressChainType)(laneAddress)}
+                      />
+                    </td>
+                    <td>{inOutbound === LaneFilter.Outbound ? network.onRamp?.version : network.offRamp?.version}</td>
+                  </tr>
+                )
+              })}
           </tbody>
         </table>
       </div>

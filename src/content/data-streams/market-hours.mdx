@@ -3,8 +3,8 @@ section: dataStreams
 date: "Last Modified"
 title: "Data Streams Market Hours"
 metadata:
-  title: "Chainlink Data Streams Market Hours | Trading Hours by Asset Class"
-  description: "Market-open schedules for Chainlink Data Streams, covering crypto, forex, precious metals, US equities, and commodities."
+  title: "Chainlink Data Streams Market Hours | Trading Hours & marketStatus Reference"
+  description: "Trading hours and marketStatus field mappings for all Chainlink Data Streams asset classes: crypto, forex, precious metals, US equities (standard and 24/5), APAC equities, and commodities."
   keywords:
     [
       "Market Hours",
@@ -13,69 +13,192 @@ metadata:
       "Forex",
       "Precious Metals",
       "US Equities",
+      "APAC Equities",
       "Commodities",
       "RWA",
       "Data Streams",
+      "marketStatus",
     ]
 whatsnext:
   {
     "Find the list of available Crypto streams": "/data-streams/crypto-streams",
     "Find the list of available RWA streams": "/data-streams/rwa-streams",
-    "Find the schema of data to expect from Data Streams reports: Crypto": "/data-streams/reference/report-schema-v3",
-    "Find the schema of data to expect from Data Streams reports: RWA": "/data-streams/reference/report-schema-v8",
+    "Learn about APAC Equities streams": "/data-streams/rwa-streams/apac-equities",
+    "Find the schema of data to expect from Data Streams reports: RWA Standard (v8)": "/data-streams/reference/report-schema-v8",
+    "Find the schema of data to expect from Data Streams reports: RWA Advanced (v11)": "/data-streams/reference/report-schema-v11",
     "Learn best practices for managing market hours risks": "/data-streams/concepts/best-practices",
   }
 ---
 
 import { Aside } from "@components"
 
-Markets for several assets are actively traded only during certain hours.
+<Aside type="caution" title="Use marketStatus, not timestamps">
+  Always use the `marketStatus` field in each report to determine whether a market is open. Do **not** use
+  `observationsTimestamp`, `lastSeenTimestampNs`, `lastUpdateTimestamp`, or any other timestamp field — timestamps
+  indicate when data was last recorded, not whether the market is currently active.
+</Aside>
+
+This page covers trading schedules and `marketStatus` value mappings for each Chainlink Data Streams asset class. The correct `marketStatus` values depend on both the **report schema version** and the **feed's trading-hours model**. Find your specific feed type below — each section shows hours and status values together.
+
+---
+
+## Asset class overview
+
+| Asset class                                                                              | Weekly open                                      | Weekly close                                     | Daily breaks        | Bank holidays                                                                                  |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------ | ------------------- | ---------------------------------------------------------------------------------------------- |
+| [**Crypto**](#cryptocurrency)                                                            | 24/7/365                                         | —                                                | None                | None                                                                                           |
+| [**US Equities and ETFs**](#v11-standard-hours-feeds) (Standard)                         | **09:30 Mon**                                    | **16:00 Fri**                                    | 16:00–09:30 daily   | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                          |
+| [**24/5 US Equities and ETFs**](#24-5-us-equities)                                       | **20:00 Sun**                                    | **20:00 Fri**                                    | None                | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                          |
+| [**APAC Equities**](#apac-equities)<br/>(indices & single-name stocks)                   | Varies by exchange ([see below](#apac-equities)) | Varies by exchange ([see below](#apac-equities)) | Varies by exchange  | Consult each exchange's official holiday calendar                                              |
+| [**FX Majors**](#forex-precious-metals-and-commodities)<br/>(G10 + KRW, SGD, HKD, CNH …) | **17:00 Sun**                                    | **17:00 Fri**                                    | None                | Jan 1, Dec 25                                                                                  |
+| [**Precious Metals Spot**](#forex-precious-metals-and-commodities)<br/>(XAU, XAG)        | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu | Major US holidays ([early closures](#precious-metals-early-closures)); Jan 1, Good Fri, Dec 25 |
+| [**Commodities**](#forex-precious-metals-and-commodities)<br/>(WTI Synthetic Spot)       | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/)         |
+
+US Equities, FX Majors, Precious Metals Spot, and Commodities times are **ET (Eastern Time)** and follow US daylight saving time. APAC Equities times are **local exchange time**. Early closes may apply on major US holidays for Precious Metals Spot — see [Precious Metals Spot early closures](#precious-metals-early-closures).
 
 ---
 
 ## Cryptocurrency
 
-Cryptocurrency markets operate continuously, with no designated market close.
-
-| Asset class | Hours                       |
-| ----------- | --------------------------- |
-| **Crypto**  | 24/7/365 — No market close. |
+Cryptocurrency markets operate continuously. There is no designated market close and no `marketStatus` field on crypto streams.
 
 ---
 
-## Real-World Asset (RWA) market hours <span id="rwa-market-hours"></span>
+## US Equities <span id="rwa-market-hours"></span>
 
-RWA markets operate during specific hours, with breaks for holidays and sometimes daily pauses.
+All times are **ET (Eastern Time)**. US Equities streams use the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11).
 
-{/* prettier-ignore */}
-<Aside type="note" title="marketStatus field differences">
-  The <code>marketStatus</code> field varies by schema version:<br/><br/>
-  <strong>RWA Standard (v8)</strong> — [View schema](/data-streams/reference/report-schema-v8)<br/>
-  • <code>0</code> → <strong>Unknown</strong><br/>
-  • <code>1</code> → <strong>Closed</strong><br/>
-  • <code>2</code> → <strong>Open</strong><br/>
-  <br/>
-  <strong>RWA Advanced (v11)</strong> — [View schema](/data-streams/reference/report-schema-v11)<br/>
-  • <code>0</code> → <strong>Unknown</strong><br/>
-  • <code>1</code> → <strong>Pre-market</strong><br/>
-  • <code>2</code> → <strong>Regular hours</strong><br/>
-  • <code>3</code> → <strong>Post-market</strong><br/>
-  • <code>4</code> → <strong>Overnight</strong><br/>
-  • <code>5</code> → <strong>Weekend</strong><br/>
-  </Aside>
+### Standard US Equities <span id="v11-standard-hours-feeds"></span>
 
-| Asset class                                                     | Weekly Open   | Weekly Close  | Daily Breaks \*     | Bank Holidays \*\*                                                                     |
-| --------------------------------------------------------------- | ------------- | ------------- | ------------------- | -------------------------------------------------------------------------------------- |
-| **US Equities**<br/>(top-50 by market cap&nbsp;+ selected ETFs) | **09:30 Mon** | **16:00 Fri** | —                   | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                  |
-| **FX Majors**<br/>(G10 + KRW, SGD, HKD, CNH …)                  | **17:00 Sun** | **17:00 Fri** | —                   | Jan 1, Dec 25                                                                          |
-| **Precious Metals (Spot)**<br/>(XAU, XAG)                       | **18:00 Sun** | **17:00 Fri** | 17:00–18:00 Mon-Thu | Jan 1, Good Fri, Dec 25                                                                |
-| **Commodities** <br/> (WTI Synthetic Spot)                      | **18:00 Sun** | **17:00 Fri** | 17:00–18:00 Mon-Thu | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/) |
+Standard US Equities streams cover regular NYSE/NASDAQ trading sessions only (9:30am–4:00pm Mon–Fri).
 
-\* Times shown as **HH:MM ET**.  
-\*\* Half-day trading may apply on the eve of certain U.S. holidays (e.g., Jul 3, Nov 28). Consult the linked exchange calendars for exact cut-off times.
+| Value | Status      | Description                                                     |
+| ----- | ----------- | --------------------------------------------------------------- |
+| `0`   | **Unknown** | Market status cannot be determined                              |
+| `2`   | **Open**    | Market is open during a regular trading session                 |
+| `5`   | **Closed**  | Market is closed (outside trading hours, weekends, or holidays) |
+
+<Aside type="caution">
+  Values `1`, `3`, and `4` are reserved for 24/5 extended-session feeds and **will never appear** on standard-hours
+  feeds. Do not treat them as Closed or any other status if encountered unexpectedly.
+</Aside>
+
+### 24/5 US Equities <span id="24-5-us-equities"></span>
+
+24/5 US Equities streams cover three distinct trading sessions across the week. Use `marketStatus` to determine the active session before consuming price data. See the [24/5 US Equities User Guide](/data-streams/rwa-streams/24-5-us-equities-user-guide) for continuous price feed construction and session transitions.
+
+| Value | Status            | Hours (ET)                            | Description                                                                           |
+| ----- | ----------------- | ------------------------------------- | ------------------------------------------------------------------------------------- |
+| `0`   | **Unknown**       | N/A                                   | Market status cannot be determined                                                    |
+| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                 | Extended hours before regular trading session                                         |
+| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                 | Primary trading session with highest liquidity                                        |
+| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session                                          |
+| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                                              |
+| `5`   | **Closed**        | N/A                                   | Market closed (weekends, holidays, or unexpected closures; ~8:00pm Fri–8:00pm Sun ET) |
 
 ---
 
-## User Recommendations
+## APAC Equities <span id="apac-equities"></span>
+
+APAC Equities streams use the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11) with standard-hours mapping. There are no extended or overnight sessions.
+
+| Value | Status      | Description                                                                                     |
+| ----- | ----------- | ----------------------------------------------------------------------------------------------- |
+| `0`   | **Unknown** | Market status cannot be determined                                                              |
+| `2`   | **Open**    | Market is open during a regular trading session                                                 |
+| `5`   | **Closed**  | Market is closed (outside trading hours, lunch breaks, closing auctions, weekends, or holidays) |
+
+<Aside type="caution">
+  Values `1`, `3`, and `4` are reserved for 24/5 session types and **will not appear** on these feeds.
+</Aside>
+
+<Aside type="note" title="Closing auctions and lunch breaks">
+  During **closing auction periods** and **daily lunch breaks**, `marketStatus` is `5` (Closed), even though the
+  exchange trading day has not fully ended.
+</Aside>
+
+### Session schedules
+
+APAC streams quote in each exchange's local currency (for example, `/JPY` for Japanese equities). All times are **local exchange time** (Mon–Fri unless noted). UTC offsets are fixed for the listed timezone.
+
+| Exchange                     | Code | Currency | Status    | Time zone   | Session   | Hours (local) | UTC equivalent  | Notes                                                                               |
+| ---------------------------- | ---- | -------- | --------- | ----------- | --------- | ------------- | --------------- | ----------------------------------------------------------------------------------- |
+| **Korean Equities + ETFs**   | KRX  | KRW      | Available | KST (UTC+9) | Regular   | 09:00–15:20   | 00:00–06:20 UTC |                                                                                     |
+| **Japanese Equities + ETFs** | TSE  | JPY      | Available | JST (UTC+9) | Morning   | 09:00–11:30   | 00:00–02:30 UTC |                                                                                     |
+|                              |      |          |           |             | Afternoon | 12:30–15:25   | 03:30–06:25 UTC | One-hour lunch break 11:30–12:30. Closing auction 15:25–15:30 (`marketStatus = 5`). |
+
+See the [APAC Equities](/data-streams/rwa-streams/apac-equities) page for coverage and risk considerations.
+
+---
+
+## Forex, Precious Metals, and Commodities <span id="forex-precious-metals-and-commodities"></span>
+
+These asset classes use the [RWA Standard (v8) schema](/data-streams/reference/report-schema-v8). All times are **ET (Eastern Time)** and follow US daylight saving time.
+
+| Value | Status      | Description                        |
+| ----- | ----------- | ---------------------------------- |
+| `0`   | **Unknown** | Market status cannot be determined |
+| `1`   | **Closed**  | Market is closed                   |
+| `2`   | **Open**    | Market is open                     |
+
+| Asset class                                    | Weekly open | Weekly close | Daily breaks        | Bank holidays                                                                                  |
+| ---------------------------------------------- | ----------- | ------------ | ------------------- | ---------------------------------------------------------------------------------------------- |
+| **FX Majors**<br/>(G10 + KRW, SGD, HKD, CNH …) | 17:00 Sun   | 17:00 Fri    | None                | Jan 1, Dec 25                                                                                  |
+| **Precious Metals Spot**<br/>(XAU, XAG)        | 18:00 Sun   | 17:00 Fri    | 17:00–18:00 Mon–Thu | Major US holidays ([early closures](#precious-metals-early-closures)); Jan 1, Good Fri, Dec 25 |
+| **Commodities**<br/>(WTI Synthetic Spot)       | 18:00 Sun   | 17:00 Fri    | 17:00–18:00 Mon–Thu | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/)         |
+
+### Precious Metals Spot early closures <span id="precious-metals-early-closures"></span>
+
+On major US holidays, Precious Metals Spot markets may close early instead of at the regular weekly close. Full-day closures apply on Jan 1, Good Friday, and Dec 25. Always use `marketStatus` in each report to determine whether the market is open.
+
+| Date        | Holiday                        | Early close (ET) |
+| ----------- | ------------------------------ | ---------------- |
+| Jul 3, 2026 | US Independence Day (observed) | 13:00            |
+
+---
+
+## marketStatus quick reference <span id="marketstatus-reference"></span>
+
+A compact lookup by schema and feed type. Using the wrong mapping for your feed type will cause incorrect integration behavior.
+
+### RWA Standard (v8) <span id="v8-market-status"></span>
+
+Used by Forex, precious metals, and commodity streams.
+
+| Value | Status      | Description                        |
+| ----- | ----------- | ---------------------------------- |
+| `0`   | **Unknown** | Market status cannot be determined |
+| `1`   | **Closed**  | Market is closed                   |
+| `2`   | **Open**    | Market is open                     |
+
+### RWA Advanced (v11) — Standard-hours feeds <span id="v11-market-status"></span>
+
+Used by APAC Equities and US Equities feeds without 24/5 extended hours.
+
+| Value | Status      | Used?  | Description                                                                                     |
+| ----- | ----------- | ------ | ----------------------------------------------------------------------------------------------- |
+| `0`   | **Unknown** | Yes    | Market status cannot be determined                                                              |
+| `1`   | N/A         | **No** | Not mapped. Do not treat as Closed or Pre-market.                                               |
+| `2`   | **Open**    | Yes    | Market is open during a regular trading session                                                 |
+| `3`   | N/A         | **No** | Not mapped. Do not treat as Post-market.                                                        |
+| `4`   | N/A         | **No** | Not mapped. Do not treat as Overnight.                                                          |
+| `5`   | **Closed**  | Yes    | Market is closed (outside trading hours, lunch breaks, closing auctions, weekends, or holidays) |
+
+### RWA Advanced (v11) — 24/5 US Equities feeds <span id="v11-24-5-feeds"></span>
+
+Used by 24/5 US Equities streams with extended and overnight sessions.
+
+| Value | Status            | Normal hours (ET)                     | Description                                                |
+| ----- | ----------------- | ------------------------------------- | ---------------------------------------------------------- |
+| `0`   | **Unknown**       | N/A                                   | Market status cannot be determined                         |
+| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                 | Extended hours before regular trading session              |
+| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                 | Primary trading session with highest liquidity             |
+| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session               |
+| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                   |
+| `5`   | **Closed**        | N/A                                   | Market closed (weekends, holidays, or unexpected closures) |
+
+---
+
+## Best practices
 
 For comprehensive guidance on managing risks related to market hours, market gaps, volatility, and corporate actions, see the [Best Practices](/data-streams/concepts/best-practices#market-hours) page.

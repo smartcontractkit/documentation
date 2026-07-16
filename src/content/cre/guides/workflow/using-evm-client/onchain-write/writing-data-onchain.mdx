@@ -6,7 +6,7 @@ date: Last Modified
 metadata:
   description: "Write workflow results to the blockchain in TypeScript: complete guide to generating and submitting verified data to smart contracts."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside } from "@components"
@@ -69,7 +69,7 @@ This example shows how to write a single `uint256` value to your consumer contra
 ### Step 1: Set up your imports
 
 ```typescript
-import { cre, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
 import { encodeAbiParameters, parseAbiParameters } from "viem"
 ```
 
@@ -88,9 +88,37 @@ const reportData = encodeAbiParameters(parseAbiParameters("address"), ["0x123456
 const reportData = encodeAbiParameters(parseAbiParameters("bool"), [true])
 ```
 
-<Aside type="note" title="BigInt literals">
-  Use the `n` suffix for integer literals to create `bigint` values in TypeScript. This is required for **all** Solidity
-  integer types (`uint8`, `uint256`, `int8`, `int256`, etc.) when using viem: `12345n`, `1000000000000000000n`, etc.
+{/* prettier-ignore */}
+<Aside type="caution" title="Always use bigint for Solidity integers">
+  JavaScript `number` loses precision for values above ~9 quadrillion (<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER" target="_blank" rel="noopener noreferrer">Number.MAX_SAFE_INTEGER</a>). This causes **silent precision loss** — your workflow sends the wrong value without any error.
+
+**Always use `bigint`** (with the `n` suffix) for all Solidity integer types: `12345n`, `1000000000000000000n`, etc.
+
+```typescript
+// WRONG - silent precision loss
+const amount = 10000000000000001 // 10 quadrillion + 1
+// Silently becomes 10000000000000000 (the +1 vanishes)
+
+// CORRECT - use bigint
+const amount = 10000000000000001n // Stays exactly 10000000000000001
+```
+
+</Aside>
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Use safe scaling for decimal values">
+  When scaling values to match a token's decimals (e.g., converting `"1.5"` to `1500000000000000000n`), use <a href="https://viem.sh/docs/utilities/parseUnits" target="_blank">viem's `parseUnits()`</a> instead of `BigInt(value * 1e18)`. Floating-point multiplication causes silent precision loss. See [Safe decimal scaling](/cre/getting-started/before-you-build-ts#safe-decimal-scaling) for details and examples.
+</Aside>
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Protect against replay attacks before generating the report">
+  If your workflow performs state-changing actions (payments, minting, position updates), embed protective fields in the payload you ABI-encode **before** calling `runtime.report()`:
+
+- **Chain selector**: Include the target chain selector so the consumer contract can reject reports replayed on a different chain.
+- **Execution timestamp**: Include the cron trigger's scheduled slot time so the consumer can reject stale reports that were previously reverted and are being replayed by an attacker.
+
+See [Replay attacks](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#replay-attacks) in the Building Consumer Contracts guide for full Solidity and workflow code examples.
+
 </Aside>
 
 ### Step 3: Generate the signed report
@@ -270,7 +298,7 @@ export { CalculatorResultParams, type CalculatorResult } from "./ConsumerContrac
 Now you can import and use these definitions in your workflow:
 
 ```typescript
-import { cre, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
 import { encodeAbiParameters } from "viem"
 import { CalculatorResultParams, type CalculatorResult } from "../contracts/abi"
 
@@ -278,14 +306,13 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
   const network = getNetwork({
     chainFamily: "evm",
     chainSelectorName: runtime.config.chainSelectorName,
-    isTestnet: true,
   })
 
   if (!network) {
     throw new Error(`Network not found`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   // Create type-safe data object
   const data: CalculatorResult = {
@@ -357,7 +384,16 @@ Here's a full workflow that writes a struct to a consumer contract:
 ### Workflow code (`main.ts`)
 
 ```typescript
-import { cre, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime, Runner } from "@chainlink/cre-sdk"
+import {
+  CronCapability,
+  EVMClient,
+  getNetwork,
+  hexToBase64,
+  bytesToHex,
+  TxStatus,
+  type Runtime,
+  Runner,
+} from "@chainlink/cre-sdk"
 import { encodeAbiParameters, parseAbiParameters } from "viem"
 import { z } from "zod"
 
@@ -376,7 +412,6 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
   const network = getNetwork({
     chainFamily: "evm",
     chainSelectorName: runtime.config.chainSelectorName,
-    isTestnet: true,
   })
 
   if (!network) {
@@ -384,7 +419,7 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
   }
 
   // Create EVM client
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   // 1. Encode your data (struct with 3 fields)
   const reportData = encodeAbiParameters(
@@ -428,9 +463,10 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
 }
 
 const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    cron.handler(
+      cron.trigger({
         schedule: config.schedule,
       }),
       writeDataOnchain
@@ -442,8 +478,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Working with complex types

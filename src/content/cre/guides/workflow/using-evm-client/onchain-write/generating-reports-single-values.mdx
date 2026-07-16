@@ -11,7 +11,9 @@ metadata:
 
 import { Aside } from "@components"
 
-This guide shows how to manually generate a report containing a single value (like `uint256`, `address`, or `bool`). This is useful when you need to send a simple value onchain but don't have a struct or binding helper available.
+This guide shows how to manually generate a **[CRE report](/cre/key-terms#report-cre-report)** containing a single value (like `uint256`, `address`, or `bool`). See [Key Terms: Report](/cre/key-terms#report-cre-report) for the full definition; in short, it is a DON-signed package from [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) / [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime) with your encoded data, workflow metadata, and signatures.
+
+This guide covers **creating** the signed report ([`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) / [`runtime.report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime)). **Delivering** it is a separate step: see the table below.
 
 **Use this approach when:**
 
@@ -29,12 +31,14 @@ This guide shows how to manually generate a report containing a single value (li
 Manually generating a report for a single value involves two main steps:
 
 1. **ABI-encode the value** into bytes using the `go-ethereum/accounts/abi` package
-1. **Generate a cryptographically signed report** using `runtime.GenerateReport()`
+1. **Generate a cryptographically signed report** using [`runtime.GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values)
 
-The resulting report can then be:
+| After [`GenerateReport()`](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) / [`report()`](/cre/reference/sdk/core-ts#runtime-and-noderuntime) | Guide                                                                                                        | Who verifies?                                                                                                             |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| [`WriteReport()`](/cre/reference/sdk/evm-client-go#writereport) / [`writeReport()`](/cre/reference/sdk/evm-client-ts#writereport)                                                   | [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain) | `KeystoneForwarder` onchain                                                                                               |
+| [`SendReport()`](/cre/reference/sdk/http-client-go#sendrequestersendreport) / [`sendReport()`](/cre/reference/sdk/http-client-ts#using-sendreport)                                  | [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http)                | Receiver: [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain) or your API |
 
-- Submitted to the blockchain via `evm.Client.WriteReport()` (see [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain))
-- Sent to an HTTP endpoint via `http.Client` (see [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http))
+See [API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http) for the sender → receiver mental model.
 
 <Aside type="note" title="Have a struct in your contract's ABI?">
   If your struct appears in a public/external function's signature, you can use the simpler `WriteReportFrom<StructName>()` helper instead. See [Using WriteReportFrom Helpers](/cre/guides/workflow/using-evm-client/onchain-write/using-write-report-helpers).
@@ -125,6 +129,17 @@ This report is designed to be passed directly to either:
 
 - `evm.Client.WriteReport()` for onchain delivery
 - `http.Client` for offchain delivery
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Protect against replay attacks before submitting">
+  If your workflow performs state-changing actions (payments, minting, position updates), embed protective metadata in the payload you pass to `runtime.GenerateReport()`:
+
+- **Chain selector**: Include the target chain selector so the consumer contract can reject reports replayed on a different chain.
+- **Execution timestamp**: Include the cron trigger's scheduled slot time so the consumer can reject stale reports that were previously reverted and are being replayed by an attacker.
+
+See [Replay attacks](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#replay-attacks) in the Building Consumer Contracts guide for full code examples.
+
+</Aside>
 
 ### 4. Submit the report
 

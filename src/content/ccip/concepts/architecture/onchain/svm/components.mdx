@@ -64,7 +64,7 @@ This section provides more detail on the Onchain components.
 
 **Additional Resources**:
 
-- CCIP provides program examples for a Sender/Receiver in the [Programs folder](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs).
+- CCIP provides program examples for a Sender/Receiver in the [Programs folder](https://github.com/smartcontractkit/chainlink-ccip/tree/solana-v1.6.0/chains/solana/contracts/programs).
 
 ## Router
 
@@ -136,7 +136,7 @@ The OffRamp program operates on the destination SVM chain and processes incoming
           - Makes a CPI call to the receiver program using the accounts specified in the original message.
 
       - **Completion**:
-        - Marks the message as “Success” in the commit report's state tracking.
+        - Marks the message as "Success" in the commit report's state tracking.
         - Emits an `ExecutionStateChanged` event with details, including the source chain selector, sequence number, message ID, message hash and the new state.
         - **Note**: If any part of the execution process fails, the entire transaction will revert. This means no state changes are persisted, no tokens are transferred, and no events are emitted. The message will remain in the previous state, allowing for retry.
 
@@ -188,12 +188,12 @@ The FeeQuoter is a central component in Chainlink CCIP that maintains token and 
 
 - Token Pools are deployed by token developers and exist independently of the core CCIP programs.
 - Token Pools are programs that interact with SPL token programs.
-- Token pools follow standard models (Lock/Release and Burn/Mint), with audited code available in the [CCIP repository](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs).
+- Token pools follow standard models (Lock/Release and Burn/Mint), with audited code available in the [CCIP repository](https://github.com/smartcontractkit/chainlink-ccip/tree/solana-v1.6.0/chains/solana/contracts/programs).
 - For tokens requiring bespoke logic before burn/mint/lock/release, custom pools can be built on top of the base pools. More details are available in the CCT documentation.
 
-## Risk Management Network
+## Risk Management Network (RMN) Contract
 
-The Risk Management Network (RMN) adds an additional security layer to CCIP by maintaining an onchain "cursing" mechanism. The RMN program enables verification of cross-chain messages and can halt message transmission for specific blockchains or globally when security threats are detected.
+The RMN Contract adds an additional security layer to CCIP by maintaining an onchain "cursing" mechanism. The RMN program enables verification of cross-chain messages and can halt message transmission for specific blockchains or globally when security threats are detected.
 
 ### Cursing Mechanism
 
@@ -201,10 +201,12 @@ The Risk Management Network (RMN) adds an additional security layer to CCIP by m
 - Once cursed, any CCIP transaction that performs the verification check for that chain selector (or the global curse) will revert, preventing cross-chain message processing.
 - The owner calls `uncurse` to lift the curse when the threat is resolved, restoring normal CCIP operations.
 
-<Aside type="caution" title="Phased Deployments">
-  Certain blockchains may be integrated with CCIP in a phased approach, with the Committing and Executing DONs deployed
-  first and the Risk Management Network added in a later update. In cases of a phased deployment, merkle roots in
-  relevant Commit Stores are always considered blessed until the Risk Management Network has been deployed for that
-  blockchain. Please see the [CCIP Directory](/ccip/directory) for which integrations utilize a phased approach. Please
-  review [CCIP Service Responsibility](/ccip/service-responsibility) for more information.
+<Aside type="note">
+  Based on user demand, CCIP's architecture is evolving to provide enhanced support for configurable security,
+  compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network's automated
+  offchain role is no longer active in current CCIP deployments, but is expected to be offered as an optional validation
+  layer in future releases. The [onchain RMN contract](/ccip/concepts/architecture/onchain/evm/components#rmn-contract)
+  remains part of CCIP's architecture as an emergency safeguard over certain per-chain or network-wide functions when
+  required. CCIP continues to provide robust risk management controls, including configurable rate limits, developer
+  token attestations, and monitoring capabilities.
 </Aside>

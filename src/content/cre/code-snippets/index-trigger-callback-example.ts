@@ -1,4 +1,4 @@
-cre.handler(
+handler(
   cronTrigger.trigger({ schedule: "0 */10 * * * *" }), // trigger fires every 10 minutes
   onCronTrigger // your callback function
 )

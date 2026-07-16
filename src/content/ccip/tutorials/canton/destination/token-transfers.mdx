@@ -1,0 +1,141 @@
+---
+section: ccip
+date: Last Modified
+title: "Token Transfers: Canton as Destination"
+isIndex: false
+metadata:
+  description: "Send TEST tokens from Ethereum Sepolia and execute the incoming token transfer on Canton using any2canton scripts."
+  image: "/images/ccip/concepts/architecture/ccip-canton-destination-chain.png"
+  excerpt: "Canton as Destination, any2canton, token transfers, manual execution, LINK mint"
+  datePublished: "2026-07-06"
+  lastModified: "2026-07-06"
+  estimatedTime: "30 minutes"
+  difficulty: "intermediate"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="cantonAddressesBanner" />
+
+This tutorial demonstrates how to transfer tokens from Ethereum Sepolia to Canton: burn **TEST** on Sepolia and receive **LINK** on Canton after manual execution.
+
+<Aside title="Prerequisites">
+
+Complete the [Canton as Destination prerequisites](/ccip/tutorials/canton/destination/prerequisites). You need:
+
+- Sepolia **ETH** for CCIP fees (or LINK with `--feeToken link`).
+- Sepolia **TEST** tokens — mint with `npm run faucet:evm-test`.
+- Canton ledger access for `any2canton:manual-exec`.
+
+These steps use **Canton testnet** and **Ethereum Sepolia** only.
+
+</Aside>
+
+## Introduction
+
+The prod testnet lane maps Sepolia **TEST** to Canton **LINK**. Token delivery on Canton happens only after you:
+
+1. Send the token transfer from Sepolia (`any2canton:token`).
+2. Wait for source finality and Committee Verifier proofs on the indexer.
+3. Execute on Canton (`any2canton:manual-exec`) — the SDK processes `TokenReceiveTicket` and issues a `TransferInstruction` for your party to accept.
+
+## What You Will Build
+
+In this tutorial, you will:
+
+- Fund your Sepolia wallet with TEST tokens.
+- Send `1` TEST from Sepolia to your Canton party.
+- Execute on Canton and verify LINK balance.
+
+## Understanding Token Transfers (any2canton)
+
+Key points:
+
+- **Burn and mint**: TEST is burned on Sepolia; LINK is minted on Canton after execution.
+- **Manual execution required**: Unlike `canton2any` default auto-exec on Sepolia, all `any2canton` token transfers require `any2canton:manual-exec` on Canton.
+- **Token pool disclosures**: Execution fetches disclosures from Global CCIP EDS and the token pool operator EDS.
+
+See the [Canton as Destination flow](/ccip/concepts/canton/overview#public-chain--canton) — `TokenReceiveTicket` and token pool release steps.
+
+<Aside type="tip" title="Custom CCIPReceiver">
+
+Use the optional `--receiver` flag on `any2canton:manual-exec` only when you need a specific `CCIPReceiver` contract (custom Committee Verifier or finality configuration on the receiver). The default path finds or creates a compatible receiver automatically.
+
+</Aside>
+
+## Running the Tutorial
+
+### Prerequisites Check
+
+1. Complete [prerequisites](/ccip/tutorials/canton/destination/prerequisites).
+2. Mint TEST on Sepolia:
+
+   ```bash filename="Terminal"
+   npm run faucet:evm-test
+   ```
+
+3. Note your Canton LINK balance before the transfer:
+
+   ```bash filename="Terminal"
+   npm run check-balance -- --chain canton --token link
+   ```
+
+## Step 1: Send TEST from Sepolia
+
+```bash filename="Terminal"
+npm run any2canton:token -- --amount 1
+```
+
+Faster finality (32 block confirmations):
+
+```bash filename="Terminal"
+npm run any2canton:token -- --amount 1 --finality 32
+```
+
+### Expected send output
+
+```text
+🪙 Sending 1 TEST from Sepolia → Canton
+   Receiver party: yourParty::1220…
+   LINK is minted on Canton only after manual execution.
+🆔 CCIP Message ID: 0x…
+🔗 CCIP Explorer: https://ccip.chain.link/#/side-drawer/msg/0x…
+
+⚙️  Execute on Canton once the message is finalized on Sepolia:
+   npm run any2canton:manual-exec -- 0x<messageId>
+```
+
+## Step 2: Execute on Canton
+
+Wait for the requested finality and Committee Verifier proofs on the indexer, then:
+
+```bash filename="Terminal"
+npm run any2canton:manual-exec -- <sepoliaTxHash | messageId>
+```
+
+Pass either the **Sepolia source transaction hash** (`📜 Source transaction`) or the **CCIP Message ID** (`🆔 CCIP Message ID`, `0x…`) — `any2canton:manual-exec` accepts both.
+
+Execution typically takes 1–3 minutes on the ledger after you run the command.
+
+## Verification
+
+### Check LINK balance on Canton
+
+```bash filename="Terminal"
+npm run check-balance -- --chain canton --token link
+```
+
+Your LINK balance should increase after successful execution and `TransferInstruction` acceptance.
+
+### CCIP Explorer
+
+Confirm the message reached **SUCCESS** and inspect the Canton execution update in Lighthouse.
+
+### Verbose holdings (optional)
+
+```bash filename="Terminal"
+npm run check-balance -- --chain canton --token link --show-holdings
+```
+
+<CcipCommon callout="educationalDisclaimer" />

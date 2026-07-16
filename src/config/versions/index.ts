@@ -1,5 +1,3 @@
-import type { Collection } from "~/content.config.ts"
-
 // Base type for version configuration
 export interface VersionConfig {
   LATEST: string
@@ -15,6 +13,7 @@ export interface VMVersionConfig {
   evm: VersionConfig
   svm: VersionConfig
   aptos: VersionConfig
+  ton: VersionConfig
 }
 
 // Registry of all product versions
@@ -48,6 +47,13 @@ export const VERSIONS = {
         "v1.6.0": "2025-06-30T00:00:00Z", // 30 June 2025
       },
     },
+    ton: {
+      LATEST: "v1.6.0",
+      ALL: ["v1.6.0"] as const,
+      RELEASE_DATES: {
+        "v1.6.0": "2026-04-07T00:00:00Z", // 7 April 2026
+      },
+    },
     // Default for backward compatibility
     get LATEST() {
       return this.evm.LATEST
@@ -69,6 +75,48 @@ export const VERSIONS = {
       "v0.2.3": "2024-11-30T00:00:00Z", // 30 November 2024
     },
   },
+  // CRE CLI Versions — update LATEST here for each new release
+  "cre-cli": {
+    LATEST: "v1.24.0",
+    ALL: [
+      "v1.24.0",
+      "v1.23.0",
+      "v1.22.0",
+      "v1.21.0",
+      "v1.20.0",
+      "v1.19.0",
+      "v1.18.0",
+      "v1.17.0",
+      "v1.16.0",
+      "v1.15.0",
+      "v1.14.0",
+      "v1.13.0",
+      "v1.12.0",
+      "v1.11.0",
+      "v1.10.0",
+      "v1.9.0",
+      "v1.8.0",
+    ] as const,
+    RELEASE_DATES: {
+      "v1.24.0": "2026-07-09T00:00:00Z",
+      "v1.23.0": "2026-07-02T00:00:00Z",
+      "v1.22.0": "2026-06-25T00:00:00Z",
+      "v1.21.0": "2026-06-18T00:00:00Z",
+      "v1.20.0": "2026-06-12T00:00:00Z",
+      "v1.19.0": "2026-06-11T00:00:00Z",
+      "v1.18.0": "2026-06-04T00:00:00Z",
+      "v1.17.0": "2026-05-28T00:00:00Z",
+      "v1.16.0": "2026-05-22T00:00:00Z",
+      "v1.15.0": "2026-05-14T00:00:00Z",
+      "v1.14.0": "2026-05-08T00:00:00Z",
+      "v1.13.0": "2026-04-30T00:00:00Z",
+      "v1.12.0": "2026-04-23T00:00:00Z",
+      "v1.11.0": "2026-04-16T00:00:00Z",
+      "v1.10.0": "2026-04-10T00:00:00Z",
+      "v1.9.0": "2026-04-02T00:00:00Z",
+      "v1.8.0": "2026-03-26T00:00:00Z",
+    },
+  },
   // Add new products here following the same pattern
   // example: {
   //   LATEST: "v1.0.0",
@@ -82,8 +130,5 @@ export const VERSIONS = {
 
 // Type helpers
 export type ProductVersions = {
-  [K in Collection]?: VersionConfig | VMVersionConfig
+  [key: string]: VersionConfig | VMVersionConfig
 }
-
-// Re-export for convenience
-export type { Collection }

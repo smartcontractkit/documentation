@@ -6,7 +6,7 @@ sdkLang: "ts"
 metadata:
   description: "Understand how TypeScript workflows compile to WebAssembly, QuickJS compatibility, and library requirements for CRE workflows."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-04-20"
 ---
 
 import { Aside } from "@components"
@@ -34,6 +34,11 @@ Javy uses [QuickJS](https://bellard.org/quickjs), a lightweight JavaScript engin
 
 Not all Node.js built-in modules are available. For example, `node:crypto` is not supported. Before using third-party NPM packages, verify they don't rely on unsupported Node.js APIs.
 
+{/* prettier-ignore */}
+<Aside type="tip" title="Cryptography libraries">
+  If you need cryptographic functions, <a href="https://paulmillr.com/noble/" target="_blank" rel="noopener noreferrer">Noble</a> is a popular JavaScript cryptography library with minimal dependencies that works well with QuickJS. Always verify any third-party library in simulation before deploying.
+</Aside>
+
 <Aside type="note" title="Note on async/await with SDK capabilities">
   While JavaScript `Promise` and `async/await` are supported by QuickJS, **SDK capabilities do not use them**. The CRE
   TypeScript SDK uses a custom `.result()` pattern instead. See the [Core SDK
@@ -46,6 +51,12 @@ Not all Node.js built-in modules are available. For example, `node:crypto` is no
 Before using third-party NPM packages in your workflows, verify they don't rely on unsupported Node.js APIs. The [QuickJS Node.js compatibility documentation](https://sebastianwessel.github.io/quickjs/docs/module-resolution/node-compatibility.html) lists which Node.js modules are available.
 
 **The best way to verify compatibility** is to test with `cre workflow simulate`. Simulation runs your workflow in the same WASM environment as production, so any compatibility issues should surface during simulation.
+
+## Extending with Rust
+
+When a library you need doesn't work in QuickJS, or you need performance beyond what interpreted JavaScript in WASM can provide, you can inject a custom Rust crate into the plugin layer that bridges your TypeScript to the CRE runtime. The compiled Rust code runs natively within the same WASM binary as your workflow and is exposed as a typed global you call from TypeScript.
+
+See [Custom Rust Plugins](/cre/guides/operations/custom-rust-plugins-ts) for a full guide, including prerequisites, both prebuilt and source-extension modes, and step-by-step testing instructions.
 
 ## Why WASM?
 

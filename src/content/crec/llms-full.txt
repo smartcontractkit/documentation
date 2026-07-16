@@ -1,0 +1,904 @@
+# Chainlink CRE Connect
+Source: https://docs.chain.link/crec
+Last Updated: 2026-05-01
+
+**Chainlink CRE Connect (CREC)** is the client-facing interface to the <a href="https://docs.chain.link/cre" target="_blank" rel="noopener noreferrer">Chainlink Runtime Environment</a>. It gives applications two capabilities:
+
+- **Inbound** — subscribe to **verifiable on-chain events** signed end-to-end by a Chainlink Decentralized Oracle Network (DON), on every supported network.
+- **Outbound** — submit **gas-less, account-abstracted operations** (atomic batches of EVM transactions) that the DON broadcasts on-chain through your Smart Account.
+
+You sign with the keys you already have. CRE Connect handles event verification, gas, nonces, relayers, and the on-chain account.
+
+<Aside type="note" title="Beta — permissioned access">
+  CRE Connect is currently in **private beta**. Your organization must be provisioned by Chainlink before you can use
+  the product. See [Get Access](/crec/getting-started) for the onboarding flow.
+</Aside>
+
+## What you can build
+
+| Capability              | What it gives you                                                                                                                                                                                                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Verifiable events**   | A stream of on-chain events signed by the DON using <a href="/architecture-overview/off-chain-reporting" target="_blank" rel="noopener noreferrer">Off-Chain Reporting (OCR)</a>, which your application can poll, decode, and re-verify locally against the on-chain DON signer set. |
+| **Gas-less operations** | A single signed payload becomes one or more EVM transactions executed atomically by your Smart Account — with no gas, nonce, or relayer management on your end.                                                                                                                       |
+| **Protocol extensions** | Pre-packaged, protocol-aware modules layered on top of CRE Connect. The first available is [DTA](/crec/extensions/dta).                                                                                                                                                               |
+
+## Understand the model
+
+Start with the [Architecture](/crec/concepts/architecture) overview, then read the concept pages for the resources that make up the product:
+
+- [Channels](/crec/concepts/channels) — the top-level scoping unit.
+- [Watchers](/crec/concepts/watchers) — how on-chain contracts are observed.
+- [Verifiable Events](/crec/concepts/verifiable-events) and [Event Verification](/crec/concepts/event-verification) — how OCR signatures travel with every event.
+- [Operations & Transactions](/crec/concepts/operations) and [EIP-712 Signing](/crec/concepts/eip712-signing) — how gas-less writes are authorized.
+- [Smart Accounts](/crec/concepts/smart-accounts) and [Account Abstraction & Gas Sponsorship](/crec/concepts/account-abstraction) — the on-chain execution model.
+- [Confidence Levels](/crec/concepts/confidence-levels) — finality and latency trade-offs.
+- [Extensions](/crec/concepts/extensions) — protocol-specific modules.
+
+## Get started
+
+- [Get Access](/crec/getting-started) — request access to the private beta.
+- [Extensions: DTA](/crec/extensions/dta) — the first available protocol extension.
+- [Release Notes](/crec/release-notes) — current status and changes.
+
+---
+
+# Supported Networks
+Source: https://docs.chain.link/crec/supported-networks
+Last Updated: 2026-05-06
+
+CRE Connect Beta is available on the following EVM networks.
+
+## Mainnets
+
+## Testnets
+
+<Aside type="note" title="About chain selectors">
+  A **chain selector** is Chainlink's unique numeric identifier for each blockchain network. Unlike chain IDs, chain
+  selectors are globally unique across all supported networks. CRE Connect uses chain selectors — not chain IDs — to
+  identify the chain a [Watcher](/crec/concepts/watchers), [Smart Account](/crec/concepts/smart-accounts), or
+  [Operation](/crec/concepts/operations) is bound to.
+</Aside>
+
+---
+
+# Release Notes
+Source: https://docs.chain.link/crec/release-notes
+Last Updated: 2026-05-01
+
+## 2026-05-01 — Initial release
+
+Chainlink CRE Connect is now available as a **private beta**.
+
+**Capabilities**
+
+- **Verifiable on-chain events** — subscribe to contract events on supported networks; every event is signed by the Chainlink DON and is verifiable end-to-end against the on-chain DON signer set.
+- **Gas-less, account-abstracted operations** — sign one EIP-712 payload; CRE Connect executes one or more EVM transactions atomically through your Smart Account, with no gas, nonce, or relayer management on your side.
+- **Extensions** — protocol-specific modules layered on top of the core product. Available at launch: [DTA](/crec/extensions/dta).
+
+**Signer integrations**
+
+CRE Connect supports common key-management options at launch, including local ECDSA keys, AWS KMS, HashiCorp Vault, Fireblocks, Privy, and a custom signer extensibility point.
+
+**Access**
+
+Access is permissioned. See [Get Access](/crec/getting-started) for the onboarding flow.
+
+---
+
+# Getting Started with CRE Connect
+Source: https://docs.chain.link/crec/getting-started
+Last Updated: 2026-05-01
+
+## Get Access to CRE Connect
+
+Chainlink CRE Connect is currently in **private beta**. To request access, schedule a demo, or learn more about how CRE Connect can fit into your application, [contact us](https://chain.link/contact).
+
+Once your organization is provisioned, you will be able to:
+
+- Subscribe to **verifiable on-chain events** signed end-to-end by the Chainlink Decentralized Oracle Network (DON), on every supported network.
+- Submit **gas-less, account-abstracted operations** — atomic batches of EVM transactions that the DON broadcasts on-chain through your Smart Account.
+- Use the **DTA extension** to interact with Digital Transfer Agent contracts through typed, protocol-aware operations.
+
+You sign with the keys you already have, and CRE Connect handles event verification, gas, nonces, relayers, and the on-chain account.
+
+For an overview of CRE Connect and its capabilities, see the [Overview](/crec) page and explore the [Concepts](/crec/concepts/architecture) section.
+
+---
+
+# CRE Connect Architecture
+Source: https://docs.chain.link/crec/concepts/architecture
+Last Updated: 2026-05-01
+
+**CRE Connect (CREC)** is the client-facing interface to the Chainlink Runtime Environment (CRE). It gives applications two capabilities:
+
+1. **Inbound — Verifiable on-chain events.** Subscribe to contract events on supported networks and receive them with a Decentralized Oracle Network (DON) signature attached. Every event can be verified end-to-end, off-chain, against the on-chain DON signer set.
+2. **Outbound — Gas-less, account-abstracted operations.** Sign a batch of EVM transactions with EIP-712 and submit it. The Chainlink DON picks the signed Operation up, signs and broadcasts the underlying transaction, and routes it through your Smart Account — without your application managing gas, nonces, or relayers.
+
+Both capabilities share the same architecture: applications talk to a tenant-scoped CRE Connect interface, which orchestrates work on **CRE workflows** that read from and write to chains through the **Chainlink DON**.
+
+## Component overview
+
+CRE Connect is a closed loop. Your application talks to a single platform interface; everything else — DON workflows, on-chain execution, log observation, signature attachment — happens on your behalf and surfaces back as verifiable events.
+
+The diagram below shows the components and the **two flows** that share them:
+
+- **Outbound (Operations).** App → CRE Connect → CRE Workflows → DON-signed transaction → your Smart Account on chain. The Smart Account emits an `OperationExecuted` log that re-enters the loop as an `operation.status` event.
+- **Inbound (Events).** Any watched contract (your Smart Account, your own application contract, or a third-party contract like an ERC-20 token) emits logs → CRE Workflows attach a DON signature → CRE Connect → your app receives a verifiable event.
+
+How to read it:
+
+- The top two layers (**App → CRE Connect → CRE Workflows**) are the same for every interaction, inbound or outbound. The double-headed arrows mean each layer both submits requests downward and receives DON-signed events upward.
+- **Your Smart Account** appears in both flows: it is the *destination* of an Operation (outbound) and a *source* of `OperationExecuted` logs that come back as `operation.status` events (inbound).
+- **Watched contracts** are anything you point a [Watcher](/crec/concepts/watchers) at — your own contracts, contracts deployed by a partner, or public protocol contracts. They never need to know CRE Connect exists.
+- **CRE Workflows** is shown as a single box on purpose: which workflow does what is an implementation detail handled by CRE Connect. From the app's perspective, you only ever see verifiable events at the platform edge.
+
+## How operations and events flow
+
+Two CRE workflows running on the DON handle every CRE Connect interaction end-to-end. You never write or deploy these workflows yourself — they ship with the platform.
+
+| Phase                        | What happens                                                                                                                                                                                                              |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Operation execution**      | When you submit an Operation, CRE Connect hands it to a CRE workflow on the DON. The workflow verifies your EIP-712 signature, then writes a DON-signed transaction on-chain that your Smart Account executes atomically. |
+| **On-chain status feedback** | Your Smart Account emits an `OperationExecuted` log. A second CRE workflow picks that log up, builds a verifiable `operation.status` event, and publishes it back so your application can observe lifecycle transitions.  |
+
+[Extensions](/crec/concepts/extensions) such as DTA contribute their own pre-packaged watchers that run alongside these core flows.
+
+## Smart Accounts on-chain
+
+Operations execute through a **Smart Account** contract deployed per tenant, per chain, per wallet. This contract:
+
+- Verifies the EIP-712 signature attached to each Operation against an allow-list of approved signer keys, configured at wallet creation time.
+- Executes each transaction (`to`, `value`, `data`) atomically — the Operation succeeds or fails as a single unit.
+- Emits an `OperationExecuted` log that CRE Connect picks up and turns into a verifiable `operation.status` event.
+
+The Smart Account is **not an ERC-4337 account**. It is a Chainlink-native contract whose authorization model is rooted in a CRE Connect-specific EIP-712 domain (see [EIP-712 Signing](/crec/concepts/eip712-signing)). The DON acts as the relayer and pays gas for the on-chain execution, giving applications a fully gas-less developer experience (see [Account Abstraction & Gas Sponsorship](/crec/concepts/account-abstraction)).
+
+## Resources and lifecycles
+
+Every interaction in CRE Connect is scoped to one of five resource types:
+
+| Resource                                  | Purpose                                                                                     | Lifecycle states                                                     |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| [Channel](/crec/concepts/channels)        | Logical scope for watchers, events, and operations                                          | `active`, `archived`                                                 |
+| [Watcher](/crec/concepts/watchers)        | On-chain event monitor backed by a CRE workflow                                             | `pending`, `active`, `archiving`, `archived`, `failed`               |
+| [Wallet](/crec/concepts/smart-accounts)   | Smart Account configuration with allowed signers                                            | `pending`, `deploying`, `deployed`, `archived`, `failed`             |
+| [Event](/crec/concepts/verifiable-events) | A single verifiable record (watcher event, operation status, wallet status, watcher status) | n/a (immutable)                                                      |
+| [Operation](/crec/concepts/operations)    | A signed batch of EVM transactions                                                          | `accepted`, `sending`, `sent`, `broadcasting`, `confirmed`, `failed` |
+
+Every state transition above is observable as a verifiable event, which means your application can react to any lifecycle change with the same verifiable event pipeline it uses for on-chain data.
+
+## Related
+
+- [Channels](/crec/concepts/channels) · [Watchers](/crec/concepts/watchers) · [Smart Accounts](/crec/concepts/smart-accounts) · [Operations](/crec/concepts/operations) — every component in detail.
+- [Verifiable Events](/crec/concepts/verifiable-events) — what makes an event "verifiable" in this architecture.
+- [Get Access](/crec/getting-started) — request access to the private beta.
+
+---
+
+# Channels
+Source: https://docs.chain.link/crec/concepts/channels
+Last Updated: 2026-05-01
+
+A **channel** is the top-level scoping unit in CRE Connect. Every other resource — watchers, wallets, events, and operations — lives inside exactly one channel. Channels give you:
+
+- **Isolation.** Two unrelated business flows (for example, a regulated-fund subscription pipeline and a treasury operations pipeline) can run side-by-side without ever sharing event streams or watcher state.
+- **A single, ordered event stream.** All events produced inside a channel — watcher events, operation status updates, wallet status updates, watcher status updates — are delivered through one paginated stream.
+- **A simple lifecycle.** A channel is either `active` or `archived`. Archiving a channel disables it for future writes; the immutable event history remains queryable.
+
+## When to create a separate channel
+
+Use a separate channel whenever you want a separate audit trail, a separate set of subscribers, or a separate set of watchers. Common patterns:
+
+- **One channel per environment** — a `staging` channel for testnets and a `production` channel for mainnets.
+- **One channel per business line** — a `dta-fund-A` channel for one tokenized fund and a `dta-fund-B` channel for another.
+- **One channel per integration** — useful when integrating CRE Connect into multiple downstream services that should not see each other's events.
+
+There is no hard limit on the number of channels per tenant; create as many as your operational model needs.
+
+## What lives in a channel
+
+Each channel owns:
+
+- A set of **Watchers** that monitor on-chain contracts (see [Watchers](/crec/concepts/watchers)).
+- A set of **Wallets** (Smart Accounts) authorized to execute operations (see [Smart Accounts](/crec/concepts/smart-accounts)).
+- An ordered, immutable stream of **Events** in four shapes — `watcher.event`, `watcher.status`, `wallet.status`, and `operation.status` — each carrying an Off-Chain Reporting (OCR) proof for [verification](/crec/concepts/event-verification).
+- A history of submitted **Operations** and their lifecycle transitions.
+
+## Channel lifecycle
+
+Channels move through two states only:
+
+| State      | Meaning                                                       | Allowed actions                                                           |
+| ---------- | ------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `active`   | The channel can accept new watchers, wallets, and operations. | Create / Update watchers, create wallets, submit operations, poll events. |
+| `archived` | The channel is read-only.                                     | Get channel, poll historical events.                                      |
+
+A channel **cannot be archived while it has active watchers**. Every watcher in the channel must be archived first.
+
+<Aside type="tip" title="Channels and polling cadence">
+  A channel is the unit at which event polling and search are scoped. A high-throughput watcher and a low-throughput
+  watcher placed in the same channel will share the same polling loop on the client side. If the volume mix is very
+  uneven, consider separating them into different channels so each can be polled at its own cadence.
+</Aside>
+
+## Related
+
+- [Watchers](/crec/concepts/watchers) and [Smart Accounts](/crec/concepts/smart-accounts) — the resources that live inside a channel.
+- [Verifiable Events](/crec/concepts/verifiable-events) — what the channel-scoped event stream delivers.
+
+---
+
+# Watchers
+Source: https://docs.chain.link/crec/concepts/watchers
+Last Updated: 2026-05-01
+
+A **watcher** is the resource that turns raw on-chain logs into [verifiable events](/crec/concepts/verifiable-events) inside a channel. Each watcher is bound to:
+
+- **One channel** — the scope into which the verifiable events are emitted.
+- **One chain** — identified by a chain selector.
+- **One contract address** — the contract being observed.
+- **One or more event signatures** — the specific logs you care about.
+
+When a matching log is observed and reaches the configured [confidence level](/crec/concepts/confidence-levels), the underlying CRE workflow signs a verifiable record with the DON's Off-Chain Reporting (OCR) keys and posts it back to CRE Connect, where it becomes available as a `watcher.event` event in the channel's stream.
+
+## Two ways to create a watcher
+
+CRE Connect supports two creation paths. You pick the one that best fits your use case.
+
+### Service-backed watcher
+
+A **service-backed** watcher uses a pre-packaged **CRE Connect extension** that already knows how to monitor a class of contracts. You name the service (for example, `dta.v2`), point at a contract address, and pick which of the service's published events you want to receive. The extension ships:
+
+- A protocol-aware monitoring pipeline (provisioned for you by CRE Connect).
+- The ABIs of every contract in scope.
+- Decoded event types so applications do not need to write ABI-decoding glue.
+
+When a CRE Connect extension exists for your protocol, this path lets you reference the service by name (`dta.v2`) instead of supplying the contract ABI yourself.
+
+### ABI-backed watcher (custom)
+
+An **ABI-backed** watcher accepts a raw ABI and one or more event names. CRE Connect generates the watching pipeline on the fly. Use this path for any contract that is not covered by a predefined service.
+
+## Lifecycle
+
+Watchers are stateful resources. The status enum has these values:
+
+| <div style="width: 100px;">Status</div> | Meaning                                                             | What it means in practice                                                           |
+| --------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `pending`                               | The watcher request was accepted; CRE is provisioning the workflow. | Wait for the watcher to become `active` before relying on it.                       |
+| `active`                                | The watcher is observing chain state and emitting events.           | Verifiable events are flowing into the channel.                                     |
+| `archiving`                             | An archive request is in progress.                                  | Async teardown. The watcher is no longer emitting new events.                       |
+| `archived`                              | The watcher is fully torn down.                                     | The watcher is read-only; its historical events remain accessible.                  |
+| `failed`                                | An unrecoverable error occurred during create or archive.           | Inspect the latest watcher status event for the error reason; archive and recreate. |
+
+A separate watcher-event-status enum is carried inside `watcher.status` events. It includes everything in the lifecycle above plus an explicit `archive_failed` value, so subscribers can distinguish a failed deployment from a failed teardown.
+
+## DON family
+
+Every watcher carries a **DON family** field (e.g. `"zone-a"`). It identifies the DON whose nodes provisioned the watcher's workflow and signed its events. You do **not** set `don_family` on creation — the platform assigns it based on your channel's deployment — but it is useful to:
+
+- **Verify event signatures** — match the signers reported in watcher events against the keys announced by that DON family.
+- **Diagnose health issues** — if a watcher stalls, knowing the `don_family` tells the on-call rotation which set of nodes to look at.
+
+## Updating a watcher
+
+Updates after creation are intentionally narrow: only the watcher **name** can be changed. To change the chain, address, ABI, or event list, archive the watcher and create a new one.
+
+<Aside type="tip" title="Naming convention">
+  Watcher names are not unique across a channel, but human-readable, stable
+  names make event filtering, log search, and incident response much
+  easier. A pattern like
+  `<environment>-<protocol>-<contract-purpose>-<chain>` works well in
+  practice (e.g. `prod-dta-fund-alpha-eth`).
+</Aside>
+
+## Related
+
+- [Verifiable Events](/crec/concepts/verifiable-events) — what a watcher emits.
+- [Confidence Levels](/crec/concepts/confidence-levels) — how a watcher decides when an event is "ready".
+- [Channels](/crec/concepts/channels) — the container a watcher lives in.
+
+---
+
+# Verifiable Events
+Source: https://docs.chain.link/crec/concepts/verifiable-events
+Last Updated: 2026-05-01
+
+A **verifiable event** is the unit of observation that CRE Connect delivers to your application. Every event a channel emits — whether it represents a contract log, a watcher state change, a wallet state change, or an operation status — is signed by the Chainlink **Decentralized Oracle Network (DON)** using the <a href="/architecture-overview/off-chain-reporting" target="_blank" rel="noopener noreferrer">**Off-Chain Reporting (OCR)**</a> protocol. Your application can re-verify that signature locally before acting on the data.
+
+This is the property that makes the events *verifiable*: applications do not have to trust CRE Connect's delivery infrastructure. CRE Connect is just a delivery mechanism — the cryptographic proof of authenticity is generated by the DON and travels with the event.
+
+## Event envelope
+
+Every event carries the same envelope:
+
+- An identifier and the channel that produced it.
+- A **type** tag (one of the four kinds of events listed below).
+- A **proof** — an OCR proof signed by the DON, made up of the underlying OCR report, replay-protection context, and a set of OCR signatures.
+- The typed **payload**, decoded according to the event type.
+- The timestamp at which CRE Connect received the event from the DON.
+
+The proof is what makes the event verifiable: an application can recompute the report hash, recover the signer addresses from the signatures, and check that those signers belong to the expected DON signer set, with at least a configured quorum of distinct valid signatures. The detailed algorithm is described in [Event Verification](/crec/concepts/event-verification).
+
+## Event types
+
+CRE Connect emits four kinds of events. All of them share the verifiable envelope above; they differ only in what the payload contains.
+
+| Event type         | Source                                                                                    | Typical payload                                                                                                                               |
+| ------------------ | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `watcher.event`    | A [watcher](/crec/concepts/watchers) observed a matching log on-chain.                    | The decoded event from the underlying contract, plus the on-chain transaction hash, block number, and confidence level.                       |
+| `watcher.status`   | The lifecycle state of a watcher changed.                                                 | The new watcher status (e.g. `pending`, `active`, `archiving`, `archived`, `failed`, `archive_failed`) and an optional human-readable reason. |
+| `wallet.status`    | The lifecycle state of a Smart Account wallet changed.                                    | The new wallet status (e.g. `pending`, `deploying`, `deployed`, `archived`, `failed`) and metadata about the deployment chain.                |
+| `operation.status` | The on-chain Smart Account emitted an `OperationExecuted` log for one of your operations. | The wallet operation ID, the new operation status, and — on `confirmed` — the chain transaction hash and per-transaction execution result.    |
+
+## What "verifiable" really means
+
+The verifiable property gives applications three concrete guarantees:
+
+- **Authenticity.** A successful verification proves that an OCR-signed quorum of DON nodes attested to the underlying observation. A malicious or compromised delivery layer cannot forge an event because it does not have the DON's signing keys.
+- **Integrity.** Any tampering with the payload, the report, the context, or the signatures causes verification to fail. The OCR report binds the event hash, and the signatures bind the report.
+- **Replay protection.** The OCR context (epoch / round / config hash) is part of the signed message, so signatures are not reusable across rounds or configurations.
+
+It does **not** give you:
+
+- **Non-repudiation across tenants.** Other tenants of CRE Connect cannot verify *for whom* an event was generated unless they have access to the same Smart Account / wallet metadata. Verification is about authenticity, not authorization.
+- **Real-time finality.** Verifiability is independent of the [confidence level](/crec/concepts/confidence-levels) at which the underlying observation was made. A `latest` event is just as cryptographically valid as a `finalized` one — but it can still be reorganized away by the chain.
+
+<Aside type="caution" title="Always verify before acting">
+  Treat unverified events as untrusted data. Verification is not automatic, because it has a small CPU cost and some
+  pipelines (read-only dashboards, tail-following loggers) do not need it. For any code path that triggers a side effect
+  — a database write, a fund flow, a downstream API call — verify before acting.
+</Aside>
+
+## Related
+
+- [Event Verification](/crec/concepts/event-verification) — the algorithm used to validate an event.
+- [Confidence Levels](/crec/concepts/confidence-levels) — the orthogonal property: chain finality vs cryptographic authenticity.
+- [Watchers](/crec/concepts/watchers) — the source of `watcher.event` records.
+
+---
+
+# Event Verification
+Source: https://docs.chain.link/crec/concepts/event-verification
+Last Updated: 2026-05-01
+
+This page describes the conceptual algorithm CRE Connect uses to verify that an event is authentic — that it was produced by the right CRE workflow, signed by enough nodes of the Chainlink Decentralized Oracle Network (DON), and not tampered with in transit.
+
+## What verification proves
+
+Verification answers two questions about an event:
+
+1. **Did this event come from my tenant's CRE workflow?** Each verifiable event carries an OCR report whose contents are bound to a specific **workflow owner** address. The verification step checks that this address matches the workflow owner of the application doing the verifying.
+2. **Did enough DON nodes attest to it?** The event carries a set of OCR signatures over the report. Verification recovers the signing addresses from each signature and counts how many of them belong to the configured DON signer set. The event is accepted only when at least a configured quorum of distinct valid signatures is present.
+
+A pass on both questions guarantees authenticity, integrity, and replay protection. A fail on either question means the event must not be acted on.
+
+## Inputs
+
+A verifier needs four pieces of information:
+
+- **The event** — including the OCR proof attached to it (report bytes, replay-protection context, and the set of signatures).
+- **The expected workflow owner** — the on-chain address that identifies the CRE workflow this tenant runs.
+- **The valid signer set** — the set of DON-node signing addresses to accept signatures from.
+- **The signature threshold** — the minimum number of distinct, valid signatures required to consider the event authentic.
+
+## Algorithm at a glance
+
+Step by step:
+
+1. **Type check.** Verification is event-type aware: a verifier for `watcher.event` will not verify an `operation.status` event, and vice versa. The right verifier must be applied for the right event family.
+2. **OCR proof check.** Each verifiable event carries exactly one OCR proof. Missing or duplicate OCR proofs are rejected outright.
+3. **Local event hash.** The verifier hashes the application-visible payload bytes — the same bytes the application would consume — to produce a 32-byte digest.
+4. **Workflow-owner and event-hash binding.** The verifier reads the workflow-owner address and the payload hash from the OCR report and checks that:
+   - The workflow-owner address embedded in the report matches the expected workflow owner for the tenant.
+   - The payload hash embedded in the report matches the locally-computed event hash.
+5. **Signature recovery.** The verifier recomputes the report hash from the report bytes and the replay-protection context, then recovers the signing address from each OCR signature.
+6. **Threshold check.** The number of distinct recovered addresses that belong to the valid signer set must meet or exceed the configured threshold.
+
+If every check passes, the event is authentic. If any check fails, the event is rejected.
+
+## What can go wrong
+
+The algorithm produces actionable failure modes:
+
+| Failure mode                         | What it means                                                                                                               |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| Wrong event type                     | The verifier was applied to an event family it doesn't accept. Use the right verifier for the event type.                   |
+| No OCR proof / multiple OCR proofs   | The event arrived without exactly one OCR proof. For "no proof" cases, the proof may simply not have arrived yet — re-poll. |
+| Workflow-owner / event-hash mismatch | The report was signed for a different workflow or for different payload bytes than what the application observed.           |
+| Signature recovery error             | A signature in the proof is malformed.                                                                                      |
+| Threshold not met                    | Signatures parsed cleanly but fewer than the configured number of distinct, valid signers were recovered.                   |
+
+In practice, the only "transient" failure mode is "no OCR proof yet" — events occasionally surface in the channel stream slightly before their OCR proof has been published. The right response is to skip the event and re-poll on the next cycle.
+
+## Lower-level verification
+
+If a system holds only the OCR report bytes, the replay-protection context, and a list of signatures — for example when bridging events out of one CRE Connect tenant into a different system — it is still possible to perform the cryptographic verification step (signature recovery + threshold check) without the workflow-owner / event-hash binding step.
+
+<Aside type="caution" title="Workflow-owner binding is essential">
+  The workflow-owner check is what proves the event was generated by *your tenant's* workflows, not just by *some* CRE
+  workflow. Skipping it is appropriate only when workflow-owner trust has already been established through another
+  channel.
+</Aside>
+
+## Related
+
+- [Verifiable Events](/crec/concepts/verifiable-events) — what verification actually proves.
+- [Watchers](/crec/concepts/watchers) — the source of `watcher.event` records.
+- [Confidence Levels](/crec/concepts/confidence-levels) — chain finality vs cryptographic authenticity.
+
+---
+
+# Operations and Transactions
+Source: https://docs.chain.link/crec/concepts/operations
+Last Updated: 2026-05-01
+
+An **Operation** is the unit of write in CRE Connect. It packages one or more EVM transactions into a single, atomic, EIP-712-signed batch that a Smart Account executes on behalf of an application — without the application managing gas, nonces, or relayers. If any transaction in the batch reverts, the entire Operation reverts.
+
+For the underlying signing mechanism and the on-chain execution model, see [EIP-712 Signing](/crec/concepts/eip712-signing) and [Smart Accounts](/crec/concepts/smart-accounts).
+
+## Model
+
+An Operation is a small, ordered structure:
+
+| Field               | Meaning                                                                                                                                                                                      |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Wallet operation ID | A monotonically-increasing nonce-like value chosen by the application. Used to detect duplicates and to order operations.                                                                    |
+| Account             | The Smart Account address (the wallet) that will execute the Operation.                                                                                                                      |
+| Deadline            | A Unix timestamp after which the Operation must not be executed. Operations whose deadline has passed are not broadcast.                                                                     |
+| Transactions        | An ordered list of `(to, value, data)` triples — exactly the same shape as the standard EVM transaction call, except the sender is the Smart Account, not the EOA that signed the Operation. |
+
+## End-to-end flow
+
+## Signing
+
+Operations are signed with EIP-712 typed data. The CRE Connect EIP-712 domain identifies the Smart Account contract and the chain on which it lives — not just by chain ID, but as a CRE Connect-native authorization domain (see [EIP-712 Signing](/crec/concepts/eip712-signing) for details).
+
+The signing key can be any of the supported key-management options at launch — local ECDSA keys, AWS KMS, HashiCorp Vault, Fireblocks, Privy, or a custom signer. CRE Connect itself never holds private keys.
+
+## Lifecycle
+
+A submitted Operation is observable through the channel's event stream. Its status enum has six values:
+
+| <div style="width: 120px;">Status</div> | Meaning                                                                                                                                                                  |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `accepted`                              | CRE Connect accepted the signed Operation; the workflow has not yet picked it up.                                                                                        |
+| `sending`                               | The workflow is preparing the on-chain write.                                                                                                                            |
+| `sent`                                  | The transaction has been broadcast to the chain.                                                                                                                         |
+| `broadcasting`                          | Awaiting inclusion in a block.                                                                                                                                           |
+| `confirmed`                             | The Smart Account emitted `OperationExecuted` and CRE Connect attested to it via an `operation.status` event. The on-chain transaction hash is available in the payload. |
+| `failed`                                | An unrecoverable error prevented execution. The payload includes the failure reason.                                                                                     |
+
+Status transitions are themselves verifiable events — applications consume them through the same channel stream they use for on-chain data.
+
+## Atomicity
+
+All transactions in a single Operation execute atomically: the Smart Account either executes every transaction successfully, or it reverts the entire batch. This is the guarantee that makes Operations a useful primitive for **multi-step on-chain flows** — for example, "approve token + call protocol contract + emit auxiliary log" — that would otherwise require careful retry handling on partial failure.
+
+If an application needs *all-or-some* semantics (for example, several independent token transfers that should succeed independently), it should submit them as **separate Operations** — one Operation per transaction.
+
+<Aside type="note" title="How deadlines work">
+  An Operation's `Deadline` is a Unix-second timestamp (or `0` for "no expiration") after which the DON drops the
+  operation instead of broadcasting it. When that happens the application sees a `failed` status and can decide whether
+  to construct a new Operation and retry. Pick a deadline that matches the application's freshness requirements.
+</Aside>
+
+## Related
+
+- [EIP-712 Signing](/crec/concepts/eip712-signing) — what gets signed and why.
+- [Smart Accounts](/crec/concepts/smart-accounts) — the on-chain executor.
+- [Account Abstraction & Gas Sponsorship](/crec/concepts/account-abstraction) — the gas-less execution model.
+
+---
+
+# EIP-712 Signing
+Source: https://docs.chain.link/crec/concepts/eip712-signing
+Last Updated: 2026-05-01
+
+CRE Connect authorizes every [Operation](/crec/concepts/operations) with an **<a href="https://eips.ethereum.org/EIPS/eip-712" target="_blank" rel="noopener noreferrer">EIP-712</a> typed-data signature**. The signature is verified on-chain by the [Smart Account](/crec/concepts/smart-accounts) before any transaction in the Operation runs. EIP-712 was chosen so that a wallet UI — or a key-management operator inspecting a payload — can render a human-readable approval prompt instead of an opaque hash.
+
+## Domain
+
+CRE Connect uses a fixed EIP-712 domain to identify "this is a CRE Connect Smart Account Operation":
+
+| Domain field        | Value                                                                     |
+| ------------------- | ------------------------------------------------------------------------- |
+| `name`              | `CLLSmartAccount`                                                         |
+| `version`           | `1`                                                                       |
+| `chainId`           | The numeric chain ID of the chain on which the Smart Account is deployed. |
+| `verifyingContract` | The Smart Account address — the wallet that will execute the Operation.   |
+
+Because `verifyingContract` is the Smart Account itself, two wallets on the same chain produce *different* domain hashes — a signature for wallet A is unusable on wallet B even if both contracts speak the same protocol. This is what makes the EIP-712 binding **per-account**.
+
+## Typed-data schema
+
+The primary type is `Operation`. It references one dependent type, `Transaction`:
+
+```text
+Operation {
+    id          uint256
+    account     address
+    deadline    uint256
+    transactions Transaction[]
+}
+
+Transaction {
+    to    address
+    value uint256
+    data  bytes
+}
+```
+
+These are the same fields documented in [Operations](/crec/concepts/operations). The signature is a standard EIP-712 digest over this typed structure and the domain — bit-for-bit compatible with any EIP-712 implementation in Solidity, Ethers, viem, or rust-ethereum.
+
+## Hashing pipeline
+
+The application supplies the Operation; CRE Connect builds the typed-data payload, computes the digest, and asks the configured signer to sign it. Signing is a 32-bytes-in, 65-bytes-out operation — the signer never has to understand CRE Connect's domain or types.
+
+## Signers
+
+A signer is anything that can produce an ECDSA signature over a 32-byte hash. CRE Connect supports several common key-management options at launch:
+
+| Adapter             | Notes                                                   |
+| ------------------- | ------------------------------------------------------- |
+| **Local (ECDSA)**   | In-process key. Recommended for local development only. |
+| **AWS KMS**         | KMS-managed `secp256k1` key.                            |
+| **HashiCorp Vault** | Vault Transit secrets engine, ECDSA `secp256k1` key.    |
+| **Fireblocks**      | Hosted custody with optional human approval workflow.   |
+| **Privy**           | Privy embedded wallet via REST.                         |
+| **Custom**          | Any implementation that signs a 32-byte hash.           |
+
+Some signer adapters can also render the EIP-712 typed data directly to a human approver, which makes the contents of the Operation human-readable in the approval UI rather than displaying an opaque hash.
+
+## Authorization vs execution
+
+EIP-712 signing only **authorizes** the Operation. It does not pay gas, and it does not put the Operation on-chain by itself. Execution still goes through the Chainlink DON, which signs and broadcasts the underlying transaction on the Smart Account's behalf (see [Account Abstraction & Gas Sponsorship](/crec/concepts/account-abstraction)).
+
+This separation has two practical consequences:
+
+1. **The signing key never holds gas.** A KMS- or Vault-managed key with no on-chain presence is sufficient.
+2. **The on-chain `tx.origin` is the DON's writer, not the user.** Authorization is anchored on the EIP-712-recovered signer address compared against the wallet's allow-list, not on the message sender — see [Smart Accounts](/crec/concepts/smart-accounts) for the contract-level model.
+
+<Aside type="caution" title="Always sign over the deadline">
+  The `deadline` field is part of the EIP-712 message, so any change to the deadline invalidates the signature. Choose
+  deadlines deliberately: short enough that a stale Operation cannot be replayed days later, long enough to absorb
+  expected backend latency.
+</Aside>
+
+## Related
+
+- [Operations & Transactions](/crec/concepts/operations) — what gets signed.
+- [Smart Accounts](/crec/concepts/smart-accounts) — the on-chain verifier of the signature.
+- — the canonical Ethereum specification.
+
+---
+
+# Smart Accounts
+Source: https://docs.chain.link/crec/concepts/smart-accounts
+Last Updated: 2026-05-01
+
+A **Smart Account** is the on-chain identity that executes Operations. Each Smart Account is:
+
+- **Tenant-owned.** The Account is provisioned by the CRE Connect tenant and configured with an explicit list of authorized signer keys.
+- **Per-chain.** A wallet is created on a specific chain. To operate on multiple chains, create one wallet per chain.
+- **Signature-verifying.** Every Operation submitted to the Account must carry a valid EIP-712 signature from one of the Account's authorized signers.
+
+The off-chain record that represents a Smart Account is called a **Wallet**. The two terms refer to the same thing: a Wallet is the off-chain record; the Smart Account is its on-chain instantiation.
+
+## Account abstraction model
+
+CRE Connect Smart Accounts implement a Chainlink-native account abstraction model. They are **not ERC-4337 accounts** — there is no EntryPoint, UserOperation, paymaster, or bundler in the picture. Instead, the model is:
+
+- **Account creation** is performed through an on-chain factory contract that deterministically deploys a Smart Account per (tenant, wallet) pair.
+- **Authorization** lives entirely inside the Account contract. It accepts a payload of `(operation, signature)` and verifies the EIP-712 signature against its configured signer list before executing.
+- **Execution** is invoked by the Chainlink DON. A Chainlink-operated writer EOA broadcasts the transaction on the Account's behalf, so on-chain `tx.origin` is the DON writer (not the user). The Account contract authorizes the call by recovering the EIP-712 signer from the supplied signature and checking it against the wallet's allow-list — `msg.sender` is only used to enforce that the call comes from one of the approved Chainlink writer addresses.
+
+This keeps the on-chain footprint small (one factory plus one Account contract per wallet) and removes the need for any 4337 infrastructure on the chains the application operates on.
+
+## Signer model
+
+A wallet's authorization rules are fixed at creation time. Two wallet types are supported:
+
+| Wallet type | Allowed signers                     | Notes                                                                                           |
+| ----------- | ----------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `ecdsa`     | A list of EVM signer addresses      | The recovered EIP-712 signer address must be in this list.                                      |
+| `rsa`       | A list of RSA public-key components | Used by Smart Accounts that verify RSA-signed payloads (selected workflows / KMS integrations). |
+
+A wallet is **either ECDSA or RSA**, never both. The signer set is fixed once the wallet is created — to rotate keys, create a new wallet and migrate.
+
+## Wallet lifecycle
+
+A wallet is provisioned asynchronously: the on-chain Smart Account is deployed in the background.
+
+| <div style="width: 120px;">Status</div> | Meaning                                                                                                         |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `pending`                               | The wallet record was created in CRE Connect; on-chain deployment has not started yet.                          |
+| `deploying`                             | The deployment workflow is awaiting on-chain inclusion.                                                         |
+| `deployed`                              | The on-chain Account is live and able to execute Operations. The deployed address appears in the wallet record. |
+| `archived`                              | The wallet is read-only; new Operations are rejected.                                                           |
+| `failed`                                | Deployment failed. The latest `wallet.status` event includes the reason.                                        |
+
+Lifecycle transitions are emitted as `wallet.status` events into the channel that owns the wallet, so applications can drive their provisioning state machines from the same verifiable event stream they use for everything else.
+
+## Predicting addresses
+
+The on-chain Account address is derived deterministically from the factory, the unique account ID, the initial owner, and config data. The wallet record exposes the predicted address before deployment finishes, so applications can reference the address — for funding, RBAC setup, or off-chain bookkeeping — without waiting for the `deployed` status.
+
+<Aside type="tip" title="One wallet, one chain">
+  A wallet is bound to a specific chain. Cross-chain workflows compose multiple wallets — one per chain — into a single
+  business flow. Use the channel-level event stream to coordinate state across them.
+</Aside>
+
+## Related
+
+- [Operations & Transactions](/crec/concepts/operations) · [EIP-712 Signing](/crec/concepts/eip712-signing) — what the Smart Account executes and verifies.
+- [Account Abstraction & Gas Sponsorship](/crec/concepts/account-abstraction) — why these accounts cost no gas to drive.
+
+---
+
+# Account Abstraction and Gas Sponsorship
+Source: https://docs.chain.link/crec/concepts/account-abstraction
+Last Updated: 2026-05-01
+
+CRE Connect Operations are **gas-less** from the application's point of view. The application signs an Operation with a key that holds no on-chain balance, hands it off to CRE Connect, and the on-chain transaction lands without the application paying gas. This page explains the mechanics behind that experience and where it differs from ERC-4337 account abstraction.
+
+## What "gas-less" means here
+
+When an application submits an Operation:
+
+- The signing key (local ECDSA, KMS, Vault, Fireblocks, Privy, or custom) only signs an EIP-712 hash. It is never asked to broadcast a transaction.
+- The Operation is sent to CRE Connect over HTTPS — no gas, no nonce, no chain RPC.
+- A CRE workflow on the Chainlink DON picks up the Operation, signs the underlying transaction with the DON's keys, and broadcasts it on-chain.
+- The DON's writer EOA is the on-chain `tx.origin` and pays the gas. The application's signing key never appears in `tx.origin`.
+
+From the application's perspective, executing an Operation is a single call that returns immediately with a tracking identifier, and a `confirmed` event flows back through the channel stream when the chain transaction is included.
+
+## End-to-end flow
+
+Gas is paid by the DON's writer, not by the application's signer. The signer's only role is producing the EIP-712 signature.
+
+## Why this is "account abstraction"
+
+Account abstraction is the property that the *authorizer* of an Operation does not have to be the *payer* of gas. CRE Connect's model achieves this by:
+
+1. **Authorization is decoupled from gas via EIP-712.** The Smart Account verifies that the EIP-712 signature was produced by an address in its allow-list. That address holds no ETH and is never `tx.origin`.
+2. **Execution is delegated to the DON.** The DON signs and broadcasts the on-chain transaction itself, paying gas from its own writer EOA. The Smart Account treats the DON-attested call as sufficient permission to execute the Operation atomically.
+
+This is functionally equivalent to ERC-4337's "user signs, paymaster pays" model, but the implementation is Chainlink-native and does not depend on EntryPoint, UserOperation, or bundlers.
+
+## How this differs from ERC-4337
+
+| Concept             | ERC-4337                                   | CRE Connect                                              |
+| ------------------- | ------------------------------------------ | -------------------------------------------------------- |
+| Account model       | UserOperation queue → EntryPoint → Account | EIP-712 Operation → Chainlink DON → Smart Account        |
+| Authorization       | Account-defined `validateUserOp`           | Account-defined EIP-712 signer allow-list (ECDSA or RSA) |
+| Gas sponsorship     | Paymaster contract or self-funded          | Chainlink DON pays gas from its own writer EOA           |
+| Bundler             | Off-chain bundler builds UserOp batches    | The DON itself signs and broadcasts each operation       |
+| Network requirement | Any EVM chain with deployed EntryPoint     | Any EVM chain supported by CRE Connect                   |
+| Signing format      | Account-defined                            | EIP-712 with a CRE Connect-native domain                 |
+
+The two models solve the same problem with different infrastructure. CRE Connect's model is a fit when applications also want verifiable inbound events from the same DON that executes their outbound operations — which is the typical CRE Connect integration pattern.
+
+## What gas sponsorship covers
+
+| Sponsored                                                                 | Not sponsored                                                                                                             |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Gas for the on-chain transaction the DON broadcasts.                      | Funding the `value` field of any `Transaction` in the Operation — the Smart Account itself must hold enough native token. |
+| Gas for the Smart Account's `OperationExecuted` log.                      | Tokens transferred or approved by the Operation's transactions.                                                           |
+| Gas for the on-chain status read that triggers `operation.status` events. | Off-chain compute (the application's own infrastructure).                                                                 |
+
+Practically: if an Operation needs to send 1 ETH to a counterparty, the Smart Account needs to hold 1 ETH. Gas for that send is sponsored by the DON.
+
+<Aside type="tip" title="Funding model">
+  The signing key is gas-less, but the Smart Account itself may need to hold native token if Operations transfer
+  `value`. A common pattern is to keep a small native-token float on each Smart Account and top it up through a separate
+  Operation when it dips below a threshold.
+</Aside>
+
+## Related
+
+- [Operations & Transactions](/crec/concepts/operations) — the unit of write that this gas-less model executes.
+- [Smart Accounts](/crec/concepts/smart-accounts) — the on-chain identity that pays no gas.
+- [EIP-712 Signing](/crec/concepts/eip712-signing) — the authorization step that precedes execution.
+
+---
+
+# Confidence Levels
+Source: https://docs.chain.link/crec/concepts/confidence-levels
+Last Updated: 2026-05-01
+
+A **confidence level** specifies how deep into a chain's consensus an event must be before CRE Connect emits it as a verifiable event. The trade-off is the same on every chain: lower confidence means lower latency but a higher chance of being reorganized away; higher confidence means longer waits but stronger guarantees.
+
+## The three levels
+
+| Level       | Semantics                                                                                                                                                                         | When to use                                                                                                   |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `latest`    | The event is included in the most recent block from the chain's perspective. Reorganizations can still drop it.                                                                   | Read-only dashboards, tail-following loggers, low-stakes notifications.                                       |
+| `safe`      | The event is included in a "safe" block under the chain's pre-finality definition (post-Merge `safe` for Ethereum, finalized-by-fast-track on rollups). Reorgs are very unlikely. | Operational alerting, non-financial side effects.                                                             |
+| `finalized` | The event is in a block the chain treats as economically final. It cannot be reorganized away under honest-majority assumptions.                                                  | Anything that triggers irreversible business action — fund flows, regulatory reporting, downstream API calls. |
+
+The exact mapping of `safe` and `finalized` depends on the chain. CRE Connect uses the chain's own definition (e.g. Ethereum's `safe` and `finalized` block tags, the equivalent rollup-specific tags) — consult the chain's documentation for precise semantics and the latency each level implies on that chain.
+
+## How confidence interacts with verification
+
+Confidence and [verification](/crec/concepts/event-verification) are independent properties:
+
+| Property         | Provides                                              | Sensitive to    |
+| ---------------- | ----------------------------------------------------- | --------------- |
+| **Verification** | Cryptographic authenticity ("the DON observed this")  | Tampering       |
+| **Confidence**   | Chain-level finality ("the chain has agreed on this") | Reorganizations |
+
+A `latest`-confidence event can pass verification and still be invalidated by a chain reorganization. Similarly, a `finalized`-confidence event that fails verification is suspect regardless of chain finality. Critical workflows should require **both**: verification passes *and* confidence ≥ `finalized`.
+
+<Aside type="caution" title="Reorganization safety">
+  For irreversible business actions, prefer `finalized`. The added latency is almost always cheaper than the cost of
+  acting on a reorganized event and having to compensate afterward.
+</Aside>
+
+## Per-network defaults
+
+Each network supported by CRE Connect carries a default confidence level chosen by the platform. Watchers created on that network inherit the default unless the underlying extension or service specifies a different one. Applications can read the active confidence level back from each watcher and event so they always know the finality at which a given event was observed.
+
+## Related
+
+- [Watchers](/crec/concepts/watchers) — the resource that emits events at a chosen confidence level.
+- [Verifiable Events](/crec/concepts/verifiable-events) — the cryptographic property that is *independent* of confidence.
+
+---
+
+# Extensions
+Source: https://docs.chain.link/crec/concepts/extensions
+Last Updated: 2026-05-01
+
+An **extension** is an optional module that layers protocol-specific knowledge on top of CRE Connect. Extensions ship three things:
+
+1. **Typed Operation builders.** One builder per supported on-chain action, with strongly-typed arguments. The builder produces a fully-formed Operation ready to sign and submit.
+2. **One-call watcher provisioning.** A registered service name plus the contract ABIs required to monitor a class of contracts. Watchers can be created by referencing the service by name instead of supplying the ABI.
+3. **Decoded event types.** Strongly-typed values for each event the watcher emits, so application code does not need to write ABI-decoding glue.
+
+The currently available extension is **DTA (Digital Transfer Agent)**. Its repository uses contract versioning to expose multiple ABI versions (`v1`, `v2`, …) side-by-side — the CRE Connect documentation focuses on the **v2** ABI.
+
+## Why use an extension
+
+Without an extension, applications can still do anything CRE Connect supports — call any contract through the Operation/Transaction model, monitor any event by supplying its ABI. Extensions exist to remove the per-protocol boilerplate:
+
+| Without an extension                     | With an extension                                                               |
+| ---------------------------------------- | ------------------------------------------------------------------------------- |
+| Hand-craft calldata against the ABI      | One typed call per on-chain action                                              |
+| Supply the contract ABI to every watcher | Reference the service by name (e.g. `dta.v2`)                                   |
+| Decode raw event topics yourself         | Receive a typed value (e.g. `RedemptionRequested { Shares, ReferenceID, ... }`) |
+| Track ABI revisions per protocol upgrade | Upgrade the extension version                                                   |
+
+An extension is, at its heart, a vendored copy of "everything an integrator would otherwise have written by hand" for a protocol — but maintained alongside the protocol's own contracts so it stays accurate.
+
+## Anatomy of an extension
+
+Every CRE Connect extension exposes the same shape:
+
+- **Operation builders** ABI-encode each call and wrap it as a CRE Connect Operation, ready to sign and submit.
+- The **watcher bundle** is the service descriptor consumed by CRE Connect to provision the service's watchers in one call.
+- **Typed events** give the application a strongly-typed value per emitted event, with named fields that match the on-chain event signature.
+- The **decode dispatch** is a single helper that takes a verifiable event from the channel stream and returns the correct typed value.
+
+## Composing extension calls with raw transactions
+
+Because extension builders produce a CRE Connect Operation whose transaction list is open, applications can append extra transactions to the same Operation before submitting it. The whole composed Operation still executes atomically — the same guarantee as a hand-built batch.
+
+This is useful when an extension call needs to be paired with an auxiliary on-chain step, such as logging an internal correlation ID or updating an in-house registry, without losing atomicity.
+
+## Available extensions
+
+| Extension                        | Use when                                                            |
+| -------------------------------- | ------------------------------------------------------------------- |
+| **DTA — Digital Transfer Agent** | Tokenised funds: subscriptions, redemptions, distributor lifecycle. |
+
+For details, see the [DTA extension overview](/crec/extensions/dta).
+
+## Related
+
+- [Extensions Overview](/crec/extensions) — the catalog of available extensions.
+- [DTA Extension](/crec/extensions/dta) — the first available extension.
+- [Watchers](/crec/concepts/watchers) — service-backed provisioning is how an extension's pre-packaged watchers are set up.
+
+---
+
+# Extensions Overview
+Source: https://docs.chain.link/crec/extensions
+Last Updated: 2026-05-01
+
+CRE Connect **extensions** are first-party modules that wrap CRE Connect with service-specific helpers. Each extension provides three things:
+
+1. **An operation builder** that packs calldata for the service's smart contracts so applications don't have to manage the ABI themselves.
+2. **A typed event decoder** so service-specific events arrive as strongly-typed values rather than untyped maps.
+3. **One-call watcher provisioning.** CRE Connect ships pre-packaged watchers for the service so a single call provisions every watcher the service needs.
+
+Extensions are independent modules; applications consume only the ones they need.
+
+## Available extensions
+
+| Extension                                                                           | Use when                                                            |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| **DTA** ([Digital Transfer Agent](https://docs.chain.link/dta-technical-standard/)) | Tokenised funds: subscriptions, redemptions, distributor lifecycle. |
+
+The DTA extension uses **contract versioning** — each deployed contract ABI is exposed as a separate sub-module (`/v1`, `/v2`, …). This versioning matches the on-chain contract ABI version and is independent of the extension's own semantic version. The CRE Connect documentation focuses on the **v2** ABI.
+
+## Why extensions matter
+
+- **No ABI bookkeeping.** Calldata packing happens inside the extension; bumping a contract version is a single dependency upgrade.
+- **Typed events.** Each on-chain event is decoded into a strongly-typed value with named fields, instead of opaque strings or maps.
+- **One-call watcher provisioning.** Naming the extension's service is enough for CRE Connect to set up every watcher the service requires.
+- **Backwards-compatible upgrades.** When an event schema or operation signature changes, the extension version bumps and applications get a compile-time signal rather than silent runtime drift.
+
+## Anatomy of an extension
+
+Every CRE Connect extension exposes the same shape:
+
+- An **operations** surface — one builder per on-chain action the service supports.
+- An **events** surface — one typed value per on-chain event the service emits, plus a single `Decode` helper that dispatches a verifiable event to the matching typed value.
+- A **watcher bundle** — the service descriptor (name plus the set of events it covers) consumed by CRE Connect to provision the service's watchers in one call.
+
+## What's next
+
+- [DTA Overview](/crec/extensions/dta) — the first available CRE Connect extension.
+- [Concepts → Extensions](/crec/concepts/extensions) — design philosophy and how extensions compose with the core product.
+
+---
+
+# DTA v2 Overview
+Source: https://docs.chain.link/crec/extensions/dta
+Last Updated: 2026-05-01
+
+<Aside type="note" title="New to DTA?">
+  This page assumes you already understand the **Digital Transfer Agent (DTA) technical standard** — the
+  roles (Transfer Agent, Fund Administrator, Fund Distributor, Fund Issuer), the contracts (Request
+  Management vs Request Settlement), the request lifecycle, and the settlement models. Read the
+  [**DTA technical standard**](https://docs.chain.link/dta-technical-standard/) first if you haven't.
+
+  This page focuses on **how CRE Connect makes the DTA standard easier to adopt** — typed operation
+  builders, decoded events, and one-call watcher provisioning — not on what DTA is.
+</Aside>
+
+The DTA v2 extension packages everything needed to drive the [DTA contracts](https://docs.chain.link/dta-technical-standard/concepts/architecture) from CRE Connect:
+
+- **Typed operation builders** for every public function on both DTA contracts (Request Management and Request Settlement).
+- **Decoded events** — one strongly-typed value per emitted event, plus a single decode helper.
+- **One-call watcher provisioning** — naming the `dta.v2` service is enough for CRE Connect to set up every watcher the integration needs.
+
+## When to use the DTA v2 extension
+
+Use the extension whenever your application calls the [DTA Request Management or DTA Request Settlement contracts](https://docs.chain.link/dta-technical-standard/concepts/architecture). The extension covers every public function on both contracts, so any flow described in the [DTA standard](https://docs.chain.link/dta-technical-standard/) — onboarding, allowlisting, [subscriptions / redemptions](https://docs.chain.link/dta-technical-standard/concepts/request-lifecycle), [settlement](https://docs.chain.link/dta-technical-standard/concepts/payment-modes) — is a single typed call away.
+
+If you are emitting verifiable events from a **different** smart-contract suite (i.e. not DTA), build a custom watcher against your own ABI through the core CRE Connect product instead.
+
+## What the extension covers
+
+The extension's typed operations group naturally into four families:
+
+| Group                             | Covers                                                                                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Subscriptions & redemptions**   | The full request lifecycle: subscriptions (with optional ERC-20 approval), redemptions, distributor processing, and request completion.    |
+| **Fund & distributor management** | Onboarding fund admins, registering and enabling fund tokens, registering distributors, and authorising / revoking distributors per token. |
+| **Cross-DTA settlement**          | Allowing or disallowing peer DTAs, plus settlement-contract ownership transfer and renouncement.                                           |
+| **Operational**                   | Configuring CCIP gas limits and withdrawing tokens held by Request Management or Request Settlement.                                       |
+
+Every operation is dispatched through the same CRE Connect submission path and emits verifiable events the application can consume back through the standard event stream.
+
+## Watcher provisioning
+
+CRE Connect ships a service descriptor for DTA v2 that lists the events the contracts emit. Provisioning a watcher requires only:
+
+- The chain to watch.
+- The address of the DTA contract to observe.
+- The names of the events the application cares about (e.g. `SubscriptionRequested`, `RedemptionRequested`, `DistributorRequestProcessing`, `DistributorRequestProcessed`).
+
+CRE Connect owns the ABIs — you only need to know the event names you want to receive.
+
+## Decoded events
+
+Each on-chain DTA event is decoded into a strongly-typed value with named fields that match the on-chain event signature. Application code receives a verifiable event from the channel stream, decodes it once, and switches on the concrete event type — no string parsing or ABI handling required.
+
+## Related
+
+- [Extensions Overview](/crec/extensions) — what an extension is and the catalog of available ones.
+- [Concepts → Extensions](/crec/concepts/extensions) — how extensions compose with the core product.
+- [DTA technical standard](https://docs.chain.link/dta-technical-standard/) — the underlying standard.

@@ -3,9 +3,18 @@ import { JsonRpcProvider, Contract } from "ethers"
 import { ChainsConfig, Environment, loadReferenceData, Version } from "@config/data/ccip/index.ts"
 import { SupportedChain } from "@config/index.ts"
 import { directoryToSupportedChain } from "@features/utils/index.ts"
-import { v4 as uuidv4 } from "uuid"
-import type { TokenMetadata, ChainType, OutputKeyType } from "./types/index.ts"
+import type {
+  TokenMetadata,
+  ChainType,
+  OutputKeyType,
+  ChainFamily,
+  SearchType,
+  ChainMetadata,
+  ChainConfigError,
+  FilterType,
+} from "./types/index.ts"
 import { jsonHeaders, commonHeaders as sharedCommonHeaders } from "@lib/api/cacheHeaders.js"
+import { logger } from "@lib/logging/index.js"
 
 export const prerender = false
 
@@ -39,35 +48,8 @@ export class CCIPError extends Error {
   }
 }
 
-/**
- * Metadata structure for chain API responses
- */
-export type ChainMetadata = {
-  environment: Environment
-  timestamp: string
-  requestId: string
-  ignoredChainCount: number
-  validChainCount: number
-}
-
-/**
- * Error structure for chain configuration issues
- */
-export type ChainConfigError = {
-  chainId: number
-  networkId: string
-  reason: string
-  missingFields: string[]
-}
-
-/**
- * Filter parameters for chain queries
- */
-export type FilterType = {
-  chainId?: string
-  selector?: string
-  internalId?: string
-}
+// Re-export types from types/index.ts for backwards compatibility
+export type { ChainMetadata, ChainConfigError, FilterType }
 
 /**
  * Arguments required for ARM proxy contract interactions
@@ -175,7 +157,11 @@ export const checkIfChainIsCursed = async (
   try {
     return await getArmIsCursed({ provider, routerAddress })
   } catch (error) {
-    console.error(`Error checking if chain ${chain} is cursed: ${error}`)
+    logger.error({
+      message: "Error checking if chain is cursed",
+      chain,
+      error: error instanceof Error ? error.message : "Unknown error",
+    })
     return false
   }
 }
@@ -195,12 +181,13 @@ export const withTimeout = <T>(promise: Promise<T>, ms: number, timeoutErrorMess
 /**
  * Creates metadata object for chain API responses
  * @param environment - Current environment (mainnet/testnet)
+ * @param requestId - Optional request ID for correlation (generates new UUID if not provided)
  * @returns Metadata object with timestamp and request tracking
  */
-export const createMetadata = (environment: Environment): ChainMetadata => ({
+export const createMetadata = (environment: Environment, requestId?: string): ChainMetadata => ({
   environment,
   timestamp: new Date().toISOString(),
-  requestId: uuidv4(),
+  requestId: requestId ?? crypto.randomUUID(),
   ignoredChainCount: 0,
   validChainCount: 0,
 })
@@ -255,7 +242,7 @@ export const validateFilters = (filters: FilterType): void => {
 export const validateOutputKey = (outputKey?: string): "chainId" | "selector" | "internalId" => {
   if (!outputKey) return "chainId"
   if (!["chainId", "selector", "internalId"].includes(outputKey)) {
-    throw new CCIPError(400, "outputKey must be one of: chainId, selector, or internalId")
+    throw new CCIPError(400, "outputKey must be one of: chainId, selector, or internalId.")
   }
   return outputKey as "chainId" | "selector" | "internalId"
 }
@@ -270,9 +257,82 @@ export const validateEnrichFeeTokens = (enrichFeeTokens?: string): boolean => {
   if (!enrichFeeTokens) return false
   const normalizedValue = enrichFeeTokens.toLowerCase()
   if (!["true", "false"].includes(normalizedValue)) {
-    throw new CCIPError(400, 'enrichFeeTokens must be "true" or "false"')
+    throw new CCIPError(400, 'enrichFeeTokens must be "true" or "false".')
   }
   return normalizedValue === "true"
+}
+
+/**
+ * Validates search parameter
+ * @param search - Search query string to validate
+ * @returns Trimmed search string or null if empty
+ * @throws CCIPError if search query is invalid
+ */
+export const validateSearch = (search: string | null): string | null => {
+  if (!search) return null
+
+  const trimmed = search.trim()
+
+  if (trimmed.length === 0) return null
+
+  if (trimmed.length > 100) {
+    throw new CCIPError(400, "Search query must not exceed 100 characters.")
+  }
+
+  // Allow alphanumeric, spaces, hyphens, and underscores (explicit ASCII to prevent Unicode issues)
+  if (!/^[a-zA-Z0-9_\s-]+$/.test(trimmed)) {
+    throw new CCIPError(400, "Search query contains invalid characters.")
+  }
+
+  return trimmed
+}
+
+/**
+ * Validates family parameter
+ * @param family - Family string to validate
+ * @returns Normalized ChainFamily or null if empty
+ * @throws CCIPError if family value is invalid
+ */
+export const validateFamily = (family: string | null): ChainFamily | null => {
+  if (!family) return null
+
+  const trimmed = family.trim()
+  if (trimmed.length === 0) return null
+
+  const normalized = trimmed.toLowerCase()
+
+  const familyMap: Record<string, ChainFamily> = {
+    evm: "evm",
+    solana: "solana",
+    aptos: "aptos",
+    sui: "sui",
+    tron: "tron",
+    canton: "canton",
+    ton: "ton",
+    stellar: "stellar",
+    starknet: "starknet",
+  }
+
+  const mapped = familyMap[normalized]
+  if (!mapped) {
+    throw new CCIPError(400, "family must be one of: evm, solana, aptos, sui, tron, canton, ton, stellar, starknet.")
+  }
+
+  return mapped
+}
+
+/**
+ * Validates that search and legacy filters are not combined
+ * @param search - Search query string
+ * @param filters - Legacy filter parameters
+ * @throws CCIPError if search is combined with legacy filters
+ */
+export const validateSearchParams = (search: string | null, filters: FilterType): void => {
+  const hasLegacyFilter = filters.chainId || filters.selector || filters.internalId
+
+  if (search && hasLegacyFilter) {
+    throw new CCIPError(400, "Cannot combine search with chainId, selector, or internalId filters.")
+  }
 }
 
 export const generateChainKey = (chainId: number | string, chainType: ChainType, outputKey: OutputKeyType): string => {
@@ -309,7 +369,11 @@ export const normalizeVersion = (version: string): string => {
   }
 
   // Fallback for unknown formats
-  console.warn(`Unknown version format: ${version}`)
+  logger.warn({
+    message: "Unknown version format, using default",
+    version,
+    defaultVersion: "1.0.0",
+  })
   return "1.0.0"
 }
 
@@ -394,7 +458,10 @@ export const loadChainConfiguration = async (
       sourceRouterAddress,
     }
   } catch (error) {
-    console.error("Error loading chain configuration:", error)
+    logger.error({
+      message: "Error loading chain configuration",
+      error: error instanceof Error ? error.message : "Unknown error",
+    })
     throw new CCIPError(500, "Failed to load chain configuration")
   }
 }
@@ -415,6 +482,7 @@ export enum APIErrorType {
 export interface APIError {
   error: APIErrorType
   message: string
+  requestId?: string
   details?: unknown
 }
 
@@ -424,12 +492,20 @@ export interface APIError {
  * @param message - Error message
  * @param status - HTTP status code
  * @param details - Additional error details
+ * @param requestId - Optional request ID for correlation
  * @returns Response object with error details
  */
-export function createErrorResponse(error: APIErrorType, message: string, status: number, details?: unknown): Response {
+export function createErrorResponse(
+  error: APIErrorType,
+  message: string,
+  status: number,
+  details?: unknown,
+  requestId?: string
+): Response {
   const errorResponse: APIError = {
     error,
     message,
+    ...(requestId ? { requestId } : {}),
     ...(details ? { details } : {}),
   }
 

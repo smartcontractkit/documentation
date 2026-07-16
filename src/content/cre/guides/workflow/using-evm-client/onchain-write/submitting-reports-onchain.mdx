@@ -11,7 +11,12 @@ metadata:
 
 import { Aside } from "@components"
 
-This guide shows how to manually submit a generated report to the blockchain using the low-level `evm.Client.WriteReport()` method.
+This guide shows how to manually submit a generated **CRE report** to the blockchain using the low-level `evm.Client.WriteReport()` method. The forwarder verifies signatures onchain: no separate [offchain verification](/cre/guides/workflow/using-http-client/verifying-reports-offchain) step.
+
+{/* prettier-ignore */}
+<Aside type="note" title="HTTP delivery instead?">
+  If you need to POST the report to an API rather than a contract, generate the report the same way ([single values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) or [structs](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-structs)), then follow [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http). See [API Interactions: CRE reports over HTTP](/cre/guides/workflow/using-http-client#cre-reports-over-http).
+</Aside>
 
 **Use this approach when:**
 
@@ -98,6 +103,11 @@ type WriteReportReply struct {
 - **`TransactionFee`**: The total gas cost paid for the transaction in Wei
 - **`ReceiverContractExecutionStatus`**: Whether your consumer contract's `onReport()` function executed successfully
 - **`ErrorMessage`**: If the transaction failed, this field contains details about what went wrong
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Replay attack risk">
+  A signed report can be replayed on a different chain or resubmitted on the same chain after a revert. If your workflow performs state-changing actions, embed a chain selector and a scheduled execution timestamp in your report payload **before** calling `WriteReport()`, and verify them in your consumer contract. See [Replay attacks](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#replay-attacks) for full examples.
+</Aside>
 
 ## Best practices
 
@@ -258,7 +268,7 @@ By default, `cre workflow simulate` performs a dry run without broadcasting tran
 cre workflow simulate my-workflow --broadcast --target staging-settings
 ```
 
-See the [CLI Reference](/cre/reference/cli#cre-workflow-simulate) for more details.
+See the [CLI Reference](/cre/reference/cli/workflow#cre-workflow-simulate) for more details.
 
 ## Troubleshooting
 
@@ -274,6 +284,7 @@ See the [CLI Reference](/cre/reference/cli#cre-workflow-simulate) for more detai
 - Verify your consumer contract implements the `IReceiver` interface correctly (see [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts))
 - Review your consumer contract's `onReport()` validation logic—it may be rejecting the report
 - Ensure the report data format matches what your consumer contract expects
+- **Important**: A reverted transaction opens a replay window. The forwarder does not mark reverted reports as used, meaning anyone can resubmit the signed report once conditions change. If your workflow takes corrective action after seeing a revert, see [Same-chain replay on failure](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#same-chain-replay-on-failure) for how to protect against double-execution
 
 **"out of gas" error or transaction runs out of gas**
 

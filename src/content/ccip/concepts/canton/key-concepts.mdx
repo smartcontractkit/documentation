@@ -1,0 +1,119 @@
+---
+section: ccip
+date: Last Modified
+title: "Key Concepts (Canton)"
+metadata:
+  description: "Canton Network and CCIP concepts for cross-chain integration: parties, privacy, explicit disclosure, manual execution, fees, and on-ledger components."
+  excerpt: "Canton CCIP key concepts, parties, stakeholders, privacy, PerPartyRouter, Committee Verifier, manual execution, fees, EDS, tooling"
+  datePublished: "2026-07-07"
+  lastModified: "2026-07-07"
+  difficulty: "beginner"
+  estimatedTime: "15 minutes"
+whatsnext:
+  "Manual execution": "/ccip/concepts/canton/manual-execution"
+  "Cross-chain flows": "/ccip/concepts/canton/overview"
+  "Token pools": "/ccip/concepts/canton/token-pools"
+  "Explicit Disclosure API": "/ccip/concepts/canton/explicit-disclosure"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="cantonAddressesBanner" />
+
+Read this page before the [flow overview](/ccip/concepts/canton/overview) or the tutorials. It defines Canton-specific terms and CCIP-on-Canton behavior that appear throughout the docs.
+
+## Who this is for
+
+Engineers at enterprises and institutions who need to:
+
+- Send or receive CCIP messages and token transfers on Canton
+- Connect CIP-56 instruments to CCIP token pools
+- Operate token pool disclosure infrastructure
+
+You do not need Chainlink to permission your party to use CCIP — any party can send to supported lanes programmatically once your participant, validator user, and disclosures are configured.
+
+## Canton fundamentals
+
+Canton is a privacy-preserving network for regulated institutions. Smart contracts are written in **Daml** and run on **participant** nodes operated by institutions.
+
+| Term            | Meaning                                                                                                                                     |
+| :-------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Party**       | An on-ledger identity that owns rights and obligations in contracts. Your `party` in `canton-config.json` is the party your scripts act as. |
+| **User**        | A human or system account that authenticates to a participant and is granted permission to act as one or more parties.                      |
+| **Participant** | A node that hosts contract data for its parties and enforces privacy — it only stores data relevant to those parties.                       |
+| **Signatory**   | A party that owns a contract and must authorize its creation or archival.                                                                   |
+| **Observer**    | A party that can see a contract and its updates but does not own it unless given a specific choice.                                         |
+| **Stakeholder** | Any signatory or observer on a contract — stakeholders can see contract creation and updates.                                               |
+| **Choice**      | An authorized action on a Daml contract (Canton's equivalent of a contract function).                                                       |
+| **DAR**         | A packaged Daml archive deployed to a participant. CCIP and Registry DARs must be present before you can create CCIP contracts.             |
+
+### Privacy and explicit disclosure
+
+Unlike public chains, Canton **compartmentalizes data**: parties only see contracts they are stakeholders on. CCIP core contracts are not visible to arbitrary users by default.
+
+**Explicit disclosure** grants a submitting party temporary visibility into contracts they are not a stakeholder on, so they can exercise choices in a single transaction. Off-ledger **Explicit Disclosure Services (EDS)** return these disclosures before send and execute — see [Explicit Disclosure API](/ccip/concepts/canton/explicit-disclosure).
+
+## Manual execution on Canton
+
+<Aside type="caution" title="No automatic execution on Canton">
+
+When Canton is the **destination**, Chainlink does **not** automatically execute incoming messages. The **receiver** (or a party they authorize via disclosures) must **manually execute** each message after proofs are on the indexer.
+
+</Aside>
+
+This is a core integration requirement on Canton — not an error-recovery path like manual execution on EVM chains. See [Manual Execution (Canton)](/ccip/concepts/canton/manual-execution) for the full workflow and tutorial links.
+
+When Canton is the **source**, remote destination chains may still auto-execute unless you skip execution in your send script.
+
+## Fees on Canton
+
+CCIP fees are quoted and collected by the on-ledger **FeeQuoter** contract as part of the send flow.
+
+| Direction                 | Who pays                   | Typical fee token (testnet starter kit)                                           |
+| :------------------------ | :------------------------- | :-------------------------------------------------------------------------------- |
+| **Canton → remote chain** | Sender party on Canton     | **Amulet** (default) or **LINK** (`--feeToken link`)                              |
+| **Remote chain → Canton** | Sender on the source chain | Native gas token on source (e.g. Sepolia **ETH**) or **LINK** (`--feeToken link`) |
+
+Before sending from Canton, fund your party with the fee token you plan to use. Token transfer demos may also require holdings of the instrument you are bridging (for example LINK on Canton for `canton2any:token`).
+
+Fee rates depend on lane configuration in FeeQuoter. Coordinate with **Chainlink CCIP operations** for production fee tokens and quoting details on your lanes.
+
+## CCIP on-ledger components
+
+Terms you will see in the [overview](/ccip/concepts/canton/overview) and tutorials:
+
+| Component                         | Role                                                                                                                                         |
+| :-------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PerPartyRouter**                | Per-party CCIP state (sequence numbers, execution tracking). One router per party; create via `PerPartyRouterFactory` on first use.          |
+| **CCIPSender** / **CCIPReceiver** | Contracts your party uses to send from or execute on Canton.                                                                                 |
+| **Committee Verifier**            | Validates cross-chain proofs. The default verifier is operated by Chainlink NOPs; custom verifiers may be required for some lanes or assets. |
+| **Committee Verifier ticket**     | Returned when forwarding a message to a Committee Verifier during a Canton send.                                                             |
+| **Token pool ticket**             | Issued by the token pool when locking or burning tokens on send.                                                                             |
+| **Token receive ticket**          | Issued by the OffRamp after successful execution; used to claim tokens from the pool.                                                        |
+| **TransferInstruction**           | CIP-56 token transfer object. Receivers **accept** it to take custody after a token message executes.                                        |
+| **Token Admin Registry (TAR)**    | Maps each instrument to its CCIP token pool.                                                                                                 |
+| **Indexer**                       | Aggregates Committee Verifier proofs so clients know when a message is ready to execute.                                                     |
+| **EDS**                           | Off-ledger API that returns explicit disclosures for CCIP and token pool contracts.                                                          |
+
+### Finality modes
+
+Senders set requested finality in the message. Receivers configure `receiverFinalityConfig` on `CCIPReceiver` to allow:
+
+- **FTF** — faster than finality
+- **FCR** — safe confirmation
+- **Default** — standard finality tag for the lane
+
+The receiver configuration must permit the finality level the sender requested.
+
+## Tooling
+
+| Tool                                                                                     | What it is                                                   | When to use it                                                                                            |
+| :--------------------------------------------------------------------------------------- | :----------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
+| [`ccip-tools-ts`](https://github.com/smartcontractkit/ccip-tools-ts)                     | Source repo for **`@chainlink/ccip-sdk`** and **`ccip-cli`** | Library and CLI for production integrations — disclosures, send, execute, proofs                          |
+| [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton) | Tutorial scripts and testnet config                          | Learn Canton ↔ Sepolia flows; `cct:*` pool deployment helpers                                             |
+| **`ccip-cli`**                                                                           | CLI in `ccip-tools-ts`                                       | Same underlying SDK as the starter kit — direct ledger submit with `canton-config.json` and JWT/OIDC auth |
+
+The starter kit is a thin wrapper around `@chainlink/ccip-sdk`. Scripts load `canton-config.json`, authenticate to your participant, and call the same send/execute paths documented for `ccip-cli` (without `--wallet`).
+
+**Suggested path:** skim this page → [Getting Started (Canton)](/ccip/getting-started/canton) → [Canton as Source prerequisites](/ccip/tutorials/canton/source/prerequisites) → a tutorial matching your direction.

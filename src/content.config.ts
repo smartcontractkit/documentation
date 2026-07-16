@@ -3,7 +3,9 @@ import { glob } from "astro/loaders"
 import { sectionValues } from "./config/sidebarSections.js"
 
 enum Products {
+  ACE = "ace",
   CRE = "cre",
+  CREC = "crec",
   CCIP = "ccip",
   AUTOMATION = "automation",
   FUNCTIONS = "functions",
@@ -16,7 +18,9 @@ enum Products {
 }
 
 export const productsInfo: Record<Products, { name: string; slug: string }> = {
+  ace: { name: "ACE", slug: "ace" },
   cre: { name: "CRE", slug: "cre" },
+  crec: { name: "CRE Connect", slug: "crec" },
   ccip: { name: "CCIP", slug: "ccip" },
   automation: { name: "Automation", slug: "chainlink-automation" },
   functions: { name: "Functions", slug: "chainlink-functions" },
@@ -86,9 +90,40 @@ const quickstartsFrontmatter = z
   })
   .strict()
 
+/** Schema for CRE Templates */
+const creTemplatesFrontmatter = z
+  .object({
+    title: z.string(),
+    description: z.string(),
+    excerpt: z.string().optional(),
+    author: z.string(),
+    githubUrl: z.string(),
+    githubRepoLinks: z.array(
+      z.object({
+        label: z.string(), // e.g., "Go", "TypeScript"
+        url: z.string(),
+      })
+    ), // Links to GitHub folders for each language variant
+    image: z.string(),
+    featured: z.boolean().optional(), // Whether this template is featured on the hub page
+    tags: z.array(z.string()).optional(), // Tags from cre-templates registry (e.g., "data-feeds", "cross-chain")
+    cliTemplateIds: z
+      .array(
+        z.object({
+          label: z.string(), // e.g., "TypeScript", "Go"
+          id: z.string(), // CLI ID used in `cre init --template=<id>`
+        })
+      )
+      .optional(),
+    datePublished: z.string().optional(), // ISO date string
+    lastModified: z.string().optional(), // ISO date string
+  })
+  .strict()
+
 /** Re-export for convenience */
 export type BaseFrontmatter = z.infer<typeof baseFrontmatter>
 export type QuickstartsFrontmatter = z.infer<typeof quickstartsFrontmatter>
+export type CRETemplatesFrontmatter = z.infer<typeof creTemplatesFrontmatter>
 export type Metadata = z.infer<typeof metadata>
 
 /** --------------------------
@@ -183,9 +218,25 @@ const datalinkCollection = defineCollection({
   schema: baseFrontmatter,
 })
 
+const aceCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/ace",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
 const creCollection = defineCollection({
   loader: glob({
     base: "./src/content/cre",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
+const crecCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/crec",
     pattern: "**/*.md?(x)",
   }),
   schema: baseFrontmatter,
@@ -198,6 +249,15 @@ const quickstartsCollection = defineCollection({
     pattern: "**/*.md?(x)",
   }),
   schema: quickstartsFrontmatter,
+})
+
+/** CRE Templates collection */
+const creTemplatesCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/cre-templates",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: creTemplatesFrontmatter,
 })
 
 const architectureOverviewCollection = defineCollection({
@@ -237,6 +297,7 @@ const anyApiCollection = defineCollection({
  * -------------------------- */
 
 export const collections = {
+  ace: aceCollection,
   ccip: ccipCollection,
   "data-feeds": dataFeedsCollection,
   "chainlink-automation": chainlinkAutomationCollection,
@@ -246,10 +307,12 @@ export const collections = {
   "dta-technical-standard": dtaTechnicalStandardCollection,
   datalink: datalinkCollection,
   cre: creCollection,
+  crec: crecCollection,
   resources: resourcesCollection,
   vrf: vrfCollection,
   "chainlink-local": chainlinkLocalCollection,
   quickstarts: quickstartsCollection,
+  "cre-templates": creTemplatesCollection,
   "architecture-overview": architectureOverviewCollection,
   "getting-started": gettingStartedCollection,
   "any-api": anyApiCollection,

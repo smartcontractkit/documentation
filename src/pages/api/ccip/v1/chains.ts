@@ -4,9 +4,11 @@ import {
   validateFilters,
   validateOutputKey,
   validateEnrichFeeTokens,
+  validateSearch,
+  validateFamily,
+  validateSearchParams,
   generateChainKey,
   createMetadata,
-  handleApiError,
   successHeaders,
   commonHeaders,
   loadChainConfiguration,
@@ -17,8 +19,9 @@ import {
 } from "~/lib/ccip/utils.ts"
 import { logger } from "@lib/logging/index.js"
 
-import type { ChainDetails, ChainApiResponse } from "~/lib/ccip/types/index.ts"
-import { ChainDataService } from "~/lib/ccip/services/chain-data.ts"
+import type { ChainDetails, ChainApiResponse, ChainFamily } from "~/lib/ccip/types/index.ts"
+import { ChainDataService, getAllChainsForSearch } from "~/lib/ccip/services/chain-data.ts"
+import { searchChains } from "~/lib/ccip/services/chain-search.ts"
 
 export const prerender = false
 
@@ -43,13 +46,38 @@ export const GET: APIRoute = async ({ request }) => {
       environment,
     })
 
-    // Validate filters
+    // Validate search and family (new unified search params)
+    const search = validateSearch(params.get("search"))
+    const family = validateFamily(params.get("family"))
+    logger.debug({
+      message: "Search params validated",
+      requestId,
+      search,
+      family,
+    })
+
+    // Validate legacy filters
     const filters: FilterType = {
       chainId: params.get("chainId") || undefined,
       selector: params.get("selector") || undefined,
       internalId: params.get("internalId") || undefined,
     }
     validateFilters(filters)
+
+    // Validate mutual exclusion of search and legacy filters
+    validateSearchParams(search, filters)
+
+    // Warn if family is used with legacy filters (family has no effect in legacy mode)
+    const hasLegacyFilter = filters.chainId || filters.selector || filters.internalId
+    if (family && hasLegacyFilter) {
+      logger.warn({
+        message: "family parameter is ignored when using legacy filters (chainId, selector, internalId)",
+        requestId,
+        family,
+        filters,
+      })
+    }
+
     logger.debug({
       message: "Filters validated",
       requestId,
@@ -80,29 +108,97 @@ export const GET: APIRoute = async ({ request }) => {
       chainCount: Object.keys(config.chainsConfig).length,
     })
 
-    const chainDataService = new ChainDataService(config.chainsConfig)
-    const {
-      data,
-      errors,
-      metadata: serviceMetadata,
-    } = await chainDataService.getFilteredChains(environment, filters, enrichFeeTokens)
+    const chainDataService = new ChainDataService(config.chainsConfig, requestId)
 
-    logger.info({
-      message: "Chain data retrieved successfully",
-      requestId,
-      validChainCount: serviceMetadata.validChainCount,
-      errorCount: errors.length,
-      filters,
-    })
+    let data: Record<ChainFamily, ChainDetails[]>
+    let errors: { chainId: number; networkId: string; reason: string; missingFields: string[] }[]
+    const metadata = createMetadata(environment, requestId)
 
-    const metadata = createMetadata(environment)
-    metadata.ignoredChainCount = serviceMetadata.ignoredChainCount
-    metadata.validChainCount = serviceMetadata.validChainCount
+    if (search) {
+      // SEARCH MODE: Get all chains (supported + unsupported) and search
+      const {
+        data: supportedData,
+        errors: supportedErrors,
+        metadata: serviceMetadata,
+      } = await chainDataService.getFilteredChains(environment, {}, enrichFeeTokens)
+
+      // Flatten supported chains from all families
+      const supportedChains = [
+        ...supportedData.evm,
+        ...supportedData.solana,
+        ...supportedData.aptos,
+        ...supportedData.sui,
+        ...supportedData.tron,
+        ...supportedData.canton,
+        ...supportedData.ton,
+        ...supportedData.stellar,
+        ...supportedData.starknet,
+      ]
+
+      // Get all chains including unsupported
+      const allChains = getAllChainsForSearch(environment, supportedChains)
+
+      // Execute search with optional family filter
+      const { results, searchType } = searchChains(search, allChains, family)
+
+      // Group results by family
+      data = { evm: [], solana: [], aptos: [], sui: [], tron: [], canton: [], ton: [], stellar: [], starknet: [] }
+      for (const chain of results) {
+        data[chain.chainFamily].push(chain)
+      }
+
+      errors = supportedErrors
+      metadata.validChainCount = results.length
+      metadata.ignoredChainCount = supportedErrors.length
+      metadata.searchQuery = search
+      metadata.searchType = searchType
+
+      logger.info({
+        message: "Search completed successfully",
+        requestId,
+        searchQuery: search,
+        searchType,
+        resultCount: results.length,
+        family,
+      })
+    } else {
+      // LEGACY MODE: Existing filter behavior (supported chains only)
+      const {
+        data: serviceData,
+        errors: serviceErrors,
+        metadata: serviceMetadata,
+      } = await chainDataService.getFilteredChains(environment, filters, enrichFeeTokens)
+
+      // Add supported: true to all chains in legacy mode
+      data = {
+        evm: serviceData.evm.map((c) => ({ ...c, supported: true })),
+        solana: serviceData.solana.map((c) => ({ ...c, supported: true })),
+        aptos: serviceData.aptos.map((c) => ({ ...c, supported: true })),
+        sui: serviceData.sui.map((c) => ({ ...c, supported: true })),
+        tron: serviceData.tron.map((c) => ({ ...c, supported: true })),
+        canton: serviceData.canton.map((c) => ({ ...c, supported: true })),
+        ton: serviceData.ton.map((c) => ({ ...c, supported: true })),
+        stellar: serviceData.stellar.map((c) => ({ ...c, supported: true })),
+        starknet: serviceData.starknet.map((c) => ({ ...c, supported: true })),
+      }
+
+      errors = serviceErrors
+      metadata.validChainCount = serviceMetadata.validChainCount
+      metadata.ignoredChainCount = serviceMetadata.ignoredChainCount
+
+      logger.info({
+        message: "Chain data retrieved successfully",
+        requestId,
+        validChainCount: serviceMetadata.validChainCount,
+        errorCount: errors.length,
+        filters,
+      })
+    }
 
     // Convert each chain family's array to a keyed object structure as required by the API
     const formattedData = Object.entries(data).reduce(
-      (acc, [family, chainList]) => {
-        acc[family] = chainList.reduce(
+      (acc, [familyKey, chainList]) => {
+        acc[familyKey] = chainList.reduce(
           (familyAcc, chain) => {
             const key =
               outputKey === "chainId"
@@ -149,16 +245,18 @@ export const GET: APIRoute = async ({ request }) => {
         error.statusCode === 400 ? APIErrorType.VALIDATION_ERROR : APIErrorType.SERVER_ERROR,
         error.message,
         error.statusCode,
-        {}
+        undefined,
+        requestId
       )
     }
 
-    // Handle other errors
-    if (error instanceof Error) {
-      return createErrorResponse(APIErrorType.SERVER_ERROR, "Failed to process chain request", 500, {
-        message: error.message,
-      })
-    }
-    return handleApiError(error)
+    // Handle all other errors generically without exposing internal details
+    return createErrorResponse(
+      APIErrorType.SERVER_ERROR,
+      "An unexpected error occurred while processing the request.",
+      500,
+      undefined,
+      requestId
+    )
   }
 }

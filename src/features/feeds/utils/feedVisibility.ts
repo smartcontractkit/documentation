@@ -1,28 +1,77 @@
-import { DataFeedType } from "../components/FeedList.tsx"
+import type { DataFeedType } from "../types.ts"
+import { getSchemaVersion, isApacEquitiesStreamFeed, normalizeCategoryKey } from "./feedMetadata.ts"
 
 /**
- * Determines if a feed should be visible based on:
- * - Hidden flags (feedCategory === "hidden" or docs.hidden)
- * - Data feed type filtering (streams, smartdata, rates, etc.)
- * - Ecosystem filtering (deprecating)
+ * Proxy addresses (lowercase) for feeds that should display the contact email
+ * instead of a clickable contract address.
  *
- * This logic is shared between table filtering and network availability checks.
+ * Add an entry here whenever a feed needs to be "hidden" on the front end
+ * regardless of its productSubType. The address-hiding behaviour already
+ * applies automatically to any feed with productSubType === "calculatedPrice";
+ * this list covers one-off exceptions (e.g. a specific DAI feed on a chain
+ * that does not carry that productSubType).
  */
-export interface FeedVisibilityOptions {
-  showOnlyDEXFeeds?: boolean
-  streamCategoryFilter?: string
-  rwaSchemaFilter?: string
-  showOnlyMVRFeeds?: boolean
+export const CONTACT_EMAIL_PROXY_ADDRESSES = new Set<string>([
+  "0x0101166b3b000332000000000000000000000000000000000000000000000000",
+  "0x7cf132bd0456af4ecfceaae684fd7967df931141",
+  "0xbb65fa58bdb7d33e4a3d1a40a7a9bd99e746367b",
+])
+
+/**
+ * Returns true when the feed's contract address should be hidden and replaced
+ * with the data-feeds contact email in the UI.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function shouldHideAddress(feed: any, riskTier?: string | null): boolean {
+  // Robinhood tokenized equity feeds display their proxy address directly.
+  if (feed.docs?.blockchainName === "Robinhood" && feed.docs?.productTypeCode === "primaryTokenizedPrice") {
+    return false
+  }
+
+  if (feed.docs?.productSubType === "calculatedPrice") return true
+  const proxy: string | null | undefined = feed.proxyAddress
+  if (proxy != null && CONTACT_EMAIL_PROXY_ADDRESSES.has(proxy.toLowerCase())) return true
+  return normalizeCategoryKey(riskTier) === "veryhigh"
 }
 
 /**
- * Determines if a feed should be visible based on:
- * - Hidden flags (feedCategory === "hidden" or docs.hidden)
- * - Data feed type filtering (streams, smartdata, rates, etc.)
- * - Ecosystem filtering (deprecating)
- * - Optional filters (DEX only, MVR only, schema version, etc.)
+ * Returns true when a stream's feedId should be hidden and replaced with a
+ * contact link. Add new feed-type checks here to extend the behaviour; remove
+ * them when the stream goes live.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function shouldHideStreamFeedId(feed: any): boolean {
+  return isApacEquitiesStreamFeed(feed)
+}
+
+/**
+ * Determines whether a Datalink feed belongs on a given stream page.
  *
- * This logic is shared between table filtering and network availability checks.
+ * streamsRwa is the catch-all for ALL Datalink feeds (used by the dedicated
+ * Datalink streams page). Every other stream type opts in via this map.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const DATALINK_STREAM_MATCH: Partial<Record<string, (feed: any) => boolean>> = {
+  streamsCrypto: (feed) => feed.docs?.assetClass === "Crypto",
+  streamsNav: (feed) => getSchemaVersion(feed) === "v9",
+  streamsExRate: (feed) => feed.docs?.productTypeCode === "ExRate",
+  streamsBacked: (feed) => feed.docs?.assetClass === "Tokenized Equities",
+}
+
+export interface FeedVisibilityOptions {
+  showOnlyDEXFeeds?: boolean
+  showOnlyDatalinkFeeds?: boolean
+  streamCategoryFilter?: string
+  rwaSchemaFilter?: string
+  showOnlyMVRFeeds?: boolean
+  tokenizedEquityProvider?: string
+}
+
+/**
+ * Determines if a feed should be visible based on hidden flags, feed page type,
+ * ecosystem (deprecating), and optional UI filters.
+ *
+ * Shared between table filtering and network availability checks.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isFeedVisible(
@@ -34,8 +83,8 @@ export function isFeedVisible(
   // ===========================================================================
   // 1. Universal Exclusions
   // ===========================================================================
-  // Always hide feeds marked as hidden in metadata or docs
-  if (feed.feedCategory === "hidden" || feed.docs?.hidden) return false
+  const isTokenizedEquity = dataFeedType === "tokenizedEquity"
+  if (feed.docs?.hidden && !isTokenizedEquity) return false
 
   const isDeprecating = ecosystem === "deprecating"
   const isStreams =
@@ -51,33 +100,34 @@ export function isFeedVisible(
   // ===========================================================================
   // 2. Ecosystem-Specific Logic
   // ===========================================================================
-  // If we are in the "deprecating" ecosystem view, ONLY show deprecating feeds.
-  if (isDeprecating && feed.feedCategory !== "deprecating") return false
+  if (isDeprecating && !feed.docs?.shutdownDate) return false
 
   let isVisible = false
 
   // ===========================================================================
   // 3. Data Feed Type Logic (Base Visibility)
   // ===========================================================================
-  // Determine if the feed belongs to the requested category (Streams, SmartData, etc.)
-
   if (isStreams) {
-    // Streams feeds must be verified contracts
     if (feed.contractType !== "verifier") return false
 
-    if (dataFeedType === "streamsCrypto") {
-      isVisible = ["Crypto", "Crypto-DEX"].includes(feed.docs?.feedType)
-    } else if (dataFeedType === "streamsRwa") {
-      isVisible = ["Equities", "Forex", "Datalink"].includes(feed.docs?.feedType)
-    } else if (dataFeedType === "streamsNav") {
-      isVisible = feed.docs?.feedType === "Net Asset Value"
-    } else if (dataFeedType === "streamsExRate") {
-      isVisible = feed.docs?.productTypeCode === "ExRate"
-    } else if (dataFeedType === "streamsBacked") {
-      isVisible = feed.docs?.feedType === "Tokenized Equities"
+    const isDatalink = feed.docs?.feedType === "Datalink"
+
+    if (isDatalink) {
+      isVisible = dataFeedType === "streamsRwa" || (DATALINK_STREAM_MATCH[dataFeedType]?.(feed) ?? false)
+    } else {
+      if (dataFeedType === "streamsCrypto") {
+        isVisible = ["Crypto", "Crypto-DEX"].includes(feed.docs?.feedType)
+      } else if (dataFeedType === "streamsRwa") {
+        isVisible = ["Equities", "Forex"].includes(feed.docs?.feedType)
+      } else if (dataFeedType === "streamsNav") {
+        isVisible = getSchemaVersion(feed) === "v9"
+      } else if (dataFeedType === "streamsExRate") {
+        isVisible = feed.docs?.productTypeCode === "ExRate"
+      } else if (dataFeedType === "streamsBacked") {
+        isVisible = feed.docs?.feedType === "Tokenized Equities"
+      }
     }
   } else if (isSmartData) {
-    // SmartData feeds (excluding DS delivery channel)
     if (feed.docs?.deliveryChannelCode === "DS") isVisible = false
     else
       isVisible =
@@ -89,9 +139,13 @@ export function isFeedVisible(
     isVisible = feed.docs?.productTypeCode === "RefMacro"
   } else if (isRates) {
     isVisible = feed.docs?.productType === "Rates" || feed.docs?.productSubType === "Realized Volatility"
+  } else if (isTokenizedEquity) {
+    const assetClass = feed.docs?.assetClass
+    isVisible =
+      (assetClass === "Equity" || assetClass === "Equities") &&
+      feed.contractType !== "verifier" &&
+      feed.docs?.productTypeCode === "primaryTokenizedPrice"
   } else {
-    // Default data feeds (Standard Price Feeds)
-    // Exclude all special types to leave only the standard feeds
     isVisible =
       !feed.docs?.porType &&
       feed.contractType !== "verifier" &&
@@ -108,27 +162,71 @@ export function isFeedVisible(
   // ===========================================================================
   // 4. Optional Filters (User Selection)
   // ===========================================================================
-  // Apply additional filters selected by the user in the UI
-
-  // Filter: Show only DEX feeds (Streams Crypto)
   if (dataFeedType === "streamsCrypto" && options.showOnlyDEXFeeds) {
     if (feed.docs?.feedType !== "Crypto-DEX") return false
   }
 
-  // Filter: RWA Category & Schema (Streams RWA)
+  if (isStreams && options.showOnlyDatalinkFeeds) {
+    if (feed.docs?.feedType !== "Datalink") return false
+  }
+
   if (dataFeedType === "streamsRwa") {
     if (options.streamCategoryFilter === "datalink" && feed.docs.feedType !== "Datalink") return false
     if (options.streamCategoryFilter === "equities" && feed.docs.feedType !== "Equities") return false
     if (options.streamCategoryFilter === "forex" && feed.docs.feedType !== "Forex") return false
 
-    if (options.rwaSchemaFilter === "v8" && feed.docs?.schema === "v11") return false
-    if (options.rwaSchemaFilter === "v11" && feed.docs?.schema !== "v11") return false
+    const schemaVersion = getSchemaVersion(feed)
+    if (options.rwaSchemaFilter === "v8" && schemaVersion !== "v8") return false
+    if (options.rwaSchemaFilter === "v11" && schemaVersion !== "v11") return false
   }
 
-  // Filter: Show only MVR feeds (SmartData)
   if (isSmartData && options.showOnlyMVRFeeds) {
     if (feed.docs?.isMVR !== true) return false
   }
 
+  if (isTokenizedEquity && options.tokenizedEquityProvider) {
+    const provider = options.tokenizedEquityProvider.toLowerCase()
+
+    if (provider === "ondo") {
+      const assetName = (feed.assetName || "").toLowerCase()
+      const isOndoFeed = assetName.includes("ondo") && feed.docs?.productTypeCode === "primaryTokenizedPrice"
+      if (!isOndoFeed) return false
+    }
+
+    if (provider === "robinhood") {
+      if (feed.docs?.productTypeCode !== "primaryTokenizedPrice") return false
+
+      const assetName = (feed.assetName || "").toLowerCase()
+      const baseAsset = (feed.docs?.baseAsset || "").toUpperCase()
+      const isRobinhoodFeed =
+        feed.docs?.blockchainName === "Robinhood" ||
+        baseAsset.startsWith("RH") ||
+        assetName.includes("robinhood") ||
+        (feed.name || "").toLowerCase().startsWith("robinhood ")
+
+      if (!isRobinhoodFeed) return false
+    }
+  }
+
   return true
+}
+
+export function networkHasVisibleFeeds(
+  network: any,
+  dataFeedType: DataFeedType,
+  ecosystem = "",
+  options: FeedVisibilityOptions = {}
+): boolean {
+  return network?.metadata?.some((feed: any) => isFeedVisible(feed, dataFeedType, ecosystem, options)) ?? false
+}
+
+export function chainHasVisibleFeeds(
+  chain: any,
+  dataFeedType: DataFeedType,
+  ecosystem = "",
+  options: FeedVisibilityOptions = {}
+): boolean {
+  return (
+    chain?.networks?.some((network: any) => networkHasVisibleFeeds(network, dataFeedType, ecosystem, options)) ?? false
+  )
 }

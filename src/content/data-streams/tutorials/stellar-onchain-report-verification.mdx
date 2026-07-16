@@ -1,0 +1,487 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Verify report data - Onchain integration (Stellar)"
+metadata:
+  title: "Verify Data Streams Reports Onchain on Stellar | Chainlink Tutorial"
+  description: "Learn how to verify Chainlink Data Streams reports directly within your Stellar Soroban smart contract using the Chainlink Verifier to ensure data integrity."
+  keywords:
+    ["Onchain Verification", "Stellar", "Soroban", "Rust", "Smart Contract", "OCR2", "ECDSA", "Report Verification"]
+whatsnext:
+  {
+    "Find the list of available Stream IDs": "/data-streams/crypto-streams",
+    "Learn how to verify reports onchain (EVM)": "/data-streams/tutorials/evm-onchain-report-verification",
+    "Learn how to verify reports onchain (Solana)": "/data-streams/tutorials/solana-onchain-report-verification",
+  }
+---
+
+import { CodeSample, CopyText, ClickToZoom, PageTabs, Aside, CodeHighlightBlock } from "@components"
+import { Tabs } from "@components/Tabs"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import { StreamsNetworkAddressesTable } from "@features/feeds/components/Tables"
+import stellarConsumerCargo from "./snippets/stellar-consumer-cargo.toml?raw"
+
+<DataStreams section="dsNotes" />
+
+<PageTabs
+  pages={[
+    {
+      name: "EVM Chains (Solidity)",
+      url: "/data-streams/tutorials/evm-onchain-report-verification",
+      icon: "/images/tutorial-icons/solidity_logo.svg",
+    },
+    {
+      name: "Solana (Rust) / onchain integration",
+      url: "/data-streams/tutorials/solana-onchain-report-verification",
+      icon: "/images/tutorial-icons/solanaLogoMark.svg",
+    },
+    {
+      name: "Solana (Rust) / offchain integration",
+      url: "/data-streams/tutorials/solana-offchain-report-verification",
+      icon: "/images/tutorial-icons/solanaLogoMark.svg",
+    },
+    {
+      name: "Stellar (Rust) / onchain integration",
+      url: "/data-streams/tutorials/stellar-onchain-report-verification",
+      icon: "/assets/chains/stellar.svg",
+    },
+  ]}
+/>
+
+In this tutorial, you'll learn how to verify the integrity of Data Streams reports directly within your [Soroban](https://soroban.stellar.org/) smart contract on the Stellar blockchain. The Chainlink Verifier contract validates signed reports using ECDSA multi-signature verification compatible with the Chainlink OCR2 protocol, confirming their authenticity as signed by the Decentralized Oracle Network (DON).
+
+A single Verifier contract manages all feed configurations internally. No separate registry contract is needed.
+
+<DataStreams section="asideDisclaimer" />
+
+## Prerequisites
+
+Before you begin, you should have:
+
+- Familiarity with [Rust](https://www.rust-lang.org/learn) programming
+- Understanding of [Stellar](https://developers.stellar.org/) and [Soroban](https://soroban.stellar.org/docs) smart contract concepts
+- An allowlisted account in the Data Streams Access Controller. ([Contact us](https://chain.link/contact?ref_id=datastreams) to get started.)
+
+{/* TODO: Use contact us aside here rather than parenthesis above */}
+
+## Requirements
+
+To complete this tutorial, you'll need:
+
+- **Rust v1.84.0 or higher** (excluding 1.91.0): Soroban contracts require Rust 1.84.0+ because the `wasm32v1-none` compilation target is only available in recent toolchain versions. The Stellar CLI also blocks specific Rust versions that are known to produce broken WebAssembly output: **1.81, 1.82, 1.83, and 1.91.0** are all rejected at build time.
+
+  Install Rust using [rustup](https://rustup.rs/):
+
+  ```bash
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  ```
+
+  Run <CopyText text="rustc --version" code/> to verify your version. If you're on a blocked version or need to update, run:
+
+  ```bash
+  rustup update stable
+  ```
+
+  > **Note**: Rust 1.91.0 specifically contains a known WASM linker bug (patched in 1.91.1). If you see the error `use a rust version other than 1.81, 1.82, 1.83 or 1.91.0`, run `rustup update stable` to install the latest patch release.
+
+- **WebAssembly target**: Add the `wasm32v1-none` target required for building Soroban contracts:
+
+  ```bash
+  rustup target add wasm32v1-none
+  ```
+
+  > **Note**: The WebAssembly target is installed per-toolchain. If you update your Rust version, you'll need to reinstall this target for the new toolchain.
+
+- **Stellar CLI**: Used to build, deploy, and invoke contracts. Install the latest release:
+
+  ```bash
+  # macOS / Linux (install script)
+  curl -fsSL https://github.com/stellar/stellar-cli/raw/main/install.sh | sh
+
+  # macOS / Linux (Homebrew)
+  brew install stellar-cli
+
+  # Cargo (all platforms)
+  cargo install --locked stellar-cli@25.2.0
+  ```
+
+  Run <CopyText text="stellar --version" code/> to verify your installation. See the [Stellar CLI documentation](https://developers.stellar.org/docs/tools/developer-tools/cli/install-stellar-cli) for more details.
+
+- **Testnet account**: You'll need a funded testnet account. Generate and fund one with the Stellar CLI:
+
+  ```bash
+  stellar keys generate <YOUR_KEY_NAME> --network testnet --fund
+  stellar keys public-key <YOUR_KEY_NAME>
+  ```
+
+  {/* TODO: Have a tab here that shows how to do it via browser extensions + web browser */}
+
+## Implementation
+
+### 1. Create a new Soroban project
+
+1. Use the Stellar CLI to initialize a new project. This creates a Rust workspace with the recommended Soroban contract structure:
+
+   ```bash
+   stellar contract init consumer_example
+   cd consumer_example
+   ```
+
+   The generated project layout looks like this:
+
+   ```
+   consumer_example/
+   ├── Cargo.toml
+   ├── README.md
+   └── contracts/
+       └── hello-world/
+           ├── Cargo.toml
+           ├── Makefile
+           └── src/
+               ├── lib.rs
+               └── test.rs
+   ```
+
+1. Rename the default contract directory to something meaningful:
+
+   ```bash
+   mv contracts/hello-world contracts/consumer_example
+   ```
+
+   {/* TODO: Bloat... maybe remove above section? Or say it's optional? */}
+
+1. The root `Cargo.toml` sets up a Rust workspace and the shared `soroban-sdk` version. It should look like this:
+
+   ```toml
+   [workspace]
+   resolver = "2"
+   members = [
+     "contracts/*",
+   ]
+
+   [workspace.dependencies]
+   soroban-sdk = "25"
+
+   [profile.release]
+   opt-level = "z"
+   overflow-checks = true
+   debug = 0
+   strip = "symbols"
+   debug-assertions = false
+   panic = "abort"
+   codegen-units = 1
+   lto = true
+
+    # For more information about this profile see https://soroban.stellar.org/docs/basic-tutorials/logging#cargotoml-profile
+   [profile.release-with-logs]
+   inherits = "release"
+   debug-assertions = true
+
+   ```
+
+   The release profile is critical — Soroban contracts have a maximum size of 64KB and without these settings most contracts will exceed that limit.
+
+1. Open `contracts/consumer_example/Cargo.toml` and update it to match the following. Lines highlighted in green are the changes from the generated default:
+
+   <CodeHighlightBlock
+     lang="plaintext"
+     code={stellarConsumerCargo}
+     title="contracts/consumer_example/Cargo.toml"
+     highlightLines="2,3,8"
+   />
+
+- **Line 2**: Rename the package from `hello-world` to `consumer_example`.
+- **Line 3**: Update the version to
+  `0.1.0`.
+- **Line 8**: Remove `"lib"` from `crate-type`, keeping only `"cdylib"`. This ensures the output is a
+  `.wasm` file suitable for deployment. Including `"lib"` would produce an additional native library that is not
+  needed.
+
+### 2. Declare the Verifier interface
+
+Create a new file at `contracts/consumer_example/src/verifier_interface.rs`:
+
+```bash
+touch contracts/consumer_example/src/verifier_interface.rs
+```
+
+This is the Soroban equivalent of a Solidity interface — declare only the function signatures you need. No WASM file is required. Open the file and add the following:
+
+```rust
+// verifier_interface.rs
+use soroban_sdk::{contractclient, Address, Bytes, Env};
+
+#[contractclient(name = "VerifierClient")]
+pub trait VerifierInterface {
+    fn verify(env: Env, signed_report: Bytes, sender: Address) -> Bytes;
+}
+```
+
+The `#[contractclient]` attribute generates a `VerifierClient` struct that handles cross-contract invocation to the deployed Verifier contract address at runtime.
+
+### 3. Call the Verifier from your contract
+
+In `contracts/consumer_example/src/lib.rs`, replace the default contents with the following. This imports the `verifier_interface` module you created in the previous step and calls the Verifier's `verify` function using the generated client.
+
+```rust
+// lib.rs
+#![no_std]
+
+mod verifier_interface;
+
+use verifier_interface::VerifierClient;
+use soroban_sdk::{contract, contractimpl, Address, Bytes, Env};
+
+#[contract]
+pub struct Consumer;
+
+#[contractimpl]
+impl Consumer {
+    pub fn consume_price_data(
+        env: Env,
+        verifier_address: Address,
+        signed_report: Bytes,
+        sender: Address,
+    ) -> Bytes {
+        sender.require_auth();
+
+        let verifier = VerifierClient::new(&env, &verifier_address);
+
+        // Verifies all ECDSA signatures and returns the decoded report data.
+        // The config digest is extracted from the report internally.
+        let report_data = verifier.verify(&signed_report, &sender);
+
+        // Process report_data — it is EVM-encoded.
+        // The first 32 bytes are the feed_id; remaining bytes are feed-specific.
+        report_data
+    }
+}
+```
+
+<Aside type="caution" title="Unaudited example code">
+  This is a rough example for illustration purposes and has not been audited. Do not use this code in a production
+  environment without completing your own audits and applying appropriate best practices.
+</Aside>
+
+### 4. Understand report verification
+
+On each call to `verify`, the Verifier contract performs the following steps:
+
+1. Parses the EVM-encoded signed report
+1. Extracts the `configDigest` from `reportContext[0]`
+1. Looks up the registered configuration and asserts it is active
+1. Hashes the report data with `keccak256`
+1. Recovers each signer address via ECDSA (`ecrecover`)
+1. Asserts that exactly `f+1` valid, non-duplicate signatures from registered oracles are present
+1. Returns the raw `report_data` bytes on success, or panics with a `ContractError` on failure
+
+### 5. Process the report data
+
+The `report_data` bytes returned by the Verifier are EVM-encoded. Decode them according to the specific feed schema.
+
+- The **first 32 bytes** of `report_data` are always the `feed_id`.
+- The **remaining fields** (timestamps, prices, etc.) are feed-specific.
+
+The encoding format and schema details can be found in the [Report Schemas](/data-streams/reference/report-schema-overview) documentation or the API specification for your feed.
+
+## Build and deploy
+
+### Run tests
+
+```bash
+cargo test
+```
+
+The included `real_signature_tests` exercise the full verification flow with 16 registered signers, `f=5`, and 6 real ECDSA signatures — no live network required.
+
+### Build your contract
+
+Use the Stellar CLI build command, which automatically targets `wasm32v1-none` and the release profile:
+
+```bash
+stellar contract build
+```
+
+This is equivalent to:
+
+```bash
+cargo build --target wasm32v1-none --release
+```
+
+Output: `target/wasm32v1-none/release/consumer_example.wasm`
+
+> **Tip**: If you get an error like `can't find crate for 'core'`, you didn't install the `wasm32v1-none` target. Run <CopyText text="rustup target add wasm32v1-none" code/> and try again.
+
+### Deploy to testnet
+
+```bash
+stellar contract deploy \
+  --wasm target/wasm32v1-none/release/consumer_example.wasm \
+  --source <YOUR_KEY_NAME> \
+  --network testnet
+```
+
+Replace `<YOUR_KEY_NAME>` with the name you chose when running `stellar keys generate`. Run <CopyText text="stellar keys ls" code/> to list your available keys.
+
+#### Expected output
+
+After a successful deploy, the CLI uploads the WASM, submits two transactions (upload and deploy), prints explorer links, and ends with the new contract address. Transaction hashes, wasm hash, links, and the contract ID will be unique to your run; the flow below is representative:
+
+    ```text
+    ℹ️  Uploading contract WASM…
+    ℹ️  Simulating transaction…
+    ℹ️  Signing transaction: 5cb88fd2931e869605c9e96438b727a21a25c35d986702d7b7ca368cae5e6c64
+    🌎 Sending transaction…
+    ✅ Transaction submitted successfully!
+    🔗 https://stellar.expert/explorer/testnet/tx/5cb88fd2931e869605c9e96438b727a21a25c35d986702d7b7ca368cae5e6c64
+    ℹ️  Deploying contract using wasm hash b7019d9a0659a34e0ceb21f969f81c4c540148aaf098ea14288e8b8ca0726257
+    ℹ️  Simulating transaction…
+    ℹ️  Signing transaction: 67e8a8d8f452f670a4c77d65d863116c7f725b4010a65d1d5f8176b498bd0290
+    🌎 Sending transaction…
+    ✅ Transaction submitted successfully!
+    🔗 https://stellar.expert/explorer/testnet/tx/67e8a8d8f452f670a4c77d65d863116c7f725b4010a65d1d5f8176b498bd0290
+    🔗 https://lab.stellar.org/r/testnet/contract/CDHXWMICLVZ6JILOTVESOOERWDCYS3VZ63UKXMJEKAYJLMACOA7N5G7D
+    ✅ Deployed!
+    CDHXWMICLVZ6JILOTVESOOERWDCYS3VZ63UKXMJEKAYJLMACOA7N5G7D
+    ```
+
+Use the final line (the contract address) as `<YOUR_CONSUMER_CONTRACT_ID>` in the invoke commands below.
+
+### Invoke your contract
+
+Call `consume_price_data` on your deployed consumer contract. The `--signed_report` argument takes raw hex with no `0x` prefix.
+
+The Stellar Verifier validates signatures against DON configurations registered specifically for it. You must use a signed report that was produced for the Stellar testnet Verifier — reports from EVM or Solana flows will fail with error `#9` (`DigestNotSet`) because their `configDigest` is not registered on the Stellar Verifier.
+
+<Aside type="note" title="Getting signed reports for production">
+  The Stellar Verifier only accepts reports for feeds whose DON configuration has been registered on it. To get signed
+  reports for your specific feeds and learn which streams are currently supported on Stellar, [contact
+  us](https://chain.link/contact?ref_id=datastreams).
+</Aside>
+
+The following is an example signed report for the Stellar testnet Verifier. Use it for `--signed_report` to test your integration:
+
+<CopyText
+  text="00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd6900000000000000000000000000000000000000000000000000000000055dec11000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000069cfb8ca0000000000000000000000000000000000000000000000000000000069cfb8ca00000000000000000000000000000000000000000000000000008df4dc2c7e950000000000000000000000000000000000000000000000000082e2f86a9a40fd0000000000000000000000000000000000000000000000000000000069f745ca00000000000000000000000000000000000000000000006f24528cda20d2bd7000000000000000000000000000000000000000000000006f2415d249c56f254000000000000000000000000000000000000000000000006f25889bbe62ce70000000000000000000000000000000000000000000000000000000000000000002e0b88dec92d81f05ff7d1fced36e40b9b1a0f83ef0397fcda201abdca73b920599cb9d047d4e32c385a384801c306874cce05ca3f0f4e2ade196ad136ff42a8900000000000000000000000000000000000000000000000000000000000000025f86ce4a0315adbe7c9c62127744431f49a539b717ba454638158b853e99a6493e930836862f9ea99c02f6faf30e5a96e4faf96c277d2ca1e102eb66b5d688e0"
+  code
+/>
+
+Simulate without submitting a transaction:
+
+```bash
+stellar contract invoke \
+  --id <YOUR_CONSUMER_CONTRACT_ID> \
+  --network testnet \
+  --source <YOUR_KEY_NAME> \
+  --send=no \
+  -- consume_price_data \
+  --verifier_address CA7GVHWH4GRHE6GI7MHEKQZAOYO4GE7KRGSU3EOS3HYJRVLX3XEA4ONQ \
+  --signed_report <hex_encoded_report> \
+  --sender <YOUR_KEY_NAME>
+```
+
+Submit the transaction:
+
+```bash
+stellar contract invoke \
+  --id <YOUR_CONSUMER_CONTRACT_ID> \
+  --network testnet \
+  --source <YOUR_KEY_NAME> \
+  -- consume_price_data \
+  --verifier_address CA7GVHWH4GRHE6GI7MHEKQZAOYO4GE7KRGSU3EOS3HYJRVLX3XEA4ONQ \
+  --signed_report <hex_encoded_report> \
+  --sender <YOUR_KEY_NAME>
+```
+
+On success, the CLI prints the hex-encoded `report_data` and the `verified` event containing the `feed_id`.
+
+## Example testnet report
+
+The following is an example invoke command using the testnet report above. Feed ID: `000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782`
+
+```bash
+stellar contract invoke \
+  --id <YOUR_CONSUMER_CONTRACT_ID> \
+  --network testnet \
+  --source <YOUR_KEY_NAME> \
+  --send=no \
+  -- consume_price_data \
+  --verifier_address CA7GVHWH4GRHE6GI7MHEKQZAOYO4GE7KRGSU3EOS3HYJRVLX3XEA4ONQ \
+  --signed_report 00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd6900000000000000000000000000000000000000000000000000000000055dec11000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000069cfb8ca0000000000000000000000000000000000000000000000000000000069cfb8ca00000000000000000000000000000000000000000000000000008df4dc2c7e950000000000000000000000000000000000000000000000000082e2f86a9a40fd0000000000000000000000000000000000000000000000000000000069f745ca00000000000000000000000000000000000000000000006f24528cda20d2bd7000000000000000000000000000000000000000000000006f2415d249c56f254000000000000000000000000000000000000000000000006f25889bbe62ce70000000000000000000000000000000000000000000000000000000000000000002e0b88dec92d81f05ff7d1fced36e40b9b1a0f83ef0397fcda201abdca73b920599cb9d047d4e32c385a384801c306874cce05ca3f0f4e2ade196ad136ff42a8900000000000000000000000000000000000000000000000000000000000000025f86ce4a0315adbe7c9c62127744431f49a539b717ba454638158b853e99a6493e930836862f9ea99c02f6faf30e5a96e4faf96c277d2ca1e102eb66b5d688e0 \
+  --sender <YOUR_KEY_NAME>
+```
+
+Expected output:
+
+```
+📅 CA7GVHWH4GRHE6GI7MHEKQZAOYO4GE7KRGSU3EOS3HYJRVLX3XEA4ONQ - Success - Event: [{"symbol":"verified"}] = {"vec":[{"bytes":"000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"},{"address":"<YOUR_SENDER_ADDRESS>"}]}
+"000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782  ← feed_id
+ 0000000000000000000000000000000000000000000000000000000069cfb8ca  ← validFromTimestamp
+ 0000000000000000000000000000000000000000000000000000000069cfb8ca  ← observationsTimestamp
+ 00000000000000000000000000000000000000000000000000008df4dc2c7e95  ← nativeFee
+ 0000000000000000000000000000000000000000000000000082e2f86a9a40fd  ← linkFee
+ 0000000000000000000000000000000000000000000000000000000069f745ca  ← expiresAt
+ 00000000000000000000000000000000000000000000006f24528cda20d2bd70  ← benchmark price
+ 00000000000000000000000000000000000000000000006f2415d249c56f2540  ← bid
+ 00000000000000000000000000000000000000000000006f25889bbe62ce7000" ← ask
+```
+
+The first line shows the `verified` event emitted by the Verifier contract, confirming the report was accepted. The quoted hex string that follows is the `report_data` returned by your `consume_price_data` function — a single concatenated hex string containing all decoded feed fields.
+
+You can view the submitted transaction on [Stellar Expert](https://stellar.expert/explorer/testnet/tx/0485114249acb1ce1c5c1926fea02c143aeaa60b3791cfee85c49df8daf7f39b) as a reference example.
+
+## Network addresses
+
+<StreamsNetworkAddressesTable
+  client:idle
+  allowExpansion={false}
+  defaultExpanded={false}
+  initialSearch="Stellar"
+  lockSearch
+/>
+
+## Reference
+
+### Key functions
+
+| Function                                                     | Description                                                                              |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| `verify(signed_report, sender)`                              | Verifies a signed report and returns the decoded `report_data` bytes. Panics on failure. |
+| `set_config(config_digest, signers, f)`                      | Registers a new DON configuration. Owner only.                                           |
+| `update_config(config_digest, prev_signers, new_signers, f)` | Replaces signers for an existing configuration. Owner only.                              |
+| `activate_config(config_digest)`                             | Activates a deactivated configuration. Owner only.                                       |
+| `deactivate_config(config_digest)`                           | Deactivates a configuration. Owner only.                                                 |
+| `transfer_ownership(proposed_owner)`                         | Initiates a two-step ownership transfer. Owner only.                                     |
+| `accept_ownership()`                                         | Completes the ownership transfer. Proposed owner only.                                   |
+| `extend_contract_ttl()`                                      | Extends the contract's onchain TTL. Callable by anyone.                                  |
+| `is_initialized()`                                           | Returns `true` if the contract has been initialized.                                     |
+
+### Configuration parameters
+
+| Parameter       | Description                                                                                                           |
+| --------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `config_digest` | 32-byte identifier for the DON configuration, derived from the feed.                                                  |
+| `signers`       | List of 20-byte Ethereum-style oracle signer addresses.                                                               |
+| `f`             | Fault tolerance threshold. Requires `num_signers > 3 * f` and `f > 0`. Reports must contain exactly `f+1` signatures. |
+
+### Error reference
+
+| Error                          | Code | Description                                           |
+| ------------------------------ | ---- | ----------------------------------------------------- |
+| `NotInitialized`               | 2    | Contract has not been initialized.                    |
+| `ZeroAddress`                  | 3    | A signer address is the zero address.                 |
+| `FaultToleranceMustBePositive` | 4    | `f` must be greater than 0.                           |
+| `ExcessSigners`                | 5    | More than 31 signers provided.                        |
+| `InsufficientSigners`          | 6    | `num_signers` does not satisfy `num_signers > 3 * f`. |
+| `NonUniqueSignatures`          | 7    | Duplicate signature detected.                         |
+| `DigestEmpty`                  | 8    | Config digest is all zeros.                           |
+| `DigestNotSet`                 | 9    | No configuration exists for this config digest.       |
+| `DigestInactive`               | 10   | Configuration has been deactivated.                   |
+| `ConfigDigestAlreadySet`       | 11   | A configuration with this digest already exists.      |
+| `BadVerification`              | 12   | Recovered signer address not found in configuration.  |
+| `MismatchedSignatures`         | 13   | `rs` and `ss` arrays have different lengths.          |
+| `IncorrectSignatureCount`      | 14   | Signature count does not equal `f+1`.                 |
+| `NoProposedOwner`              | 15   | No pending ownership transfer.                        |
+| `InvalidReportFormat`          | 16   | Report bytes cannot be parsed.                        |
+| `SignatureRecoveryFailed`      | 17   | ECDSA recovery failed for a signature.                |
+| `InvalidProposedOwner`         | 18   | Proposed owner is the same as current owner.          |

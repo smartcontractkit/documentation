@@ -1,0 +1,74 @@
+---
+section: ccip
+date: Last Modified
+title: "Upgradability (Canton)"
+metadata:
+  description: "How CCIP on Canton evolves: DAR package updates, rollout expectations, and what users and operators need to upgrade."
+  excerpt: "Canton CCIP upgradability, DAR packages, package vetting, token pool updates"
+  datePublished: "2026-07-09"
+  lastModified: "2026-07-10"
+  difficulty: "advanced"
+  estimatedTime: "8 minutes"
+whatsnext:
+  "Token pools": "/ccip/concepts/canton/token-pools"
+  "Cross-chain flows": "/ccip/concepts/canton/overview"
+  "BurnMint deployment guide": "/ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="cantonAddressesBanner" />
+
+On Canton, CCIP logic ships as **Daml packages** packaged in **DAR** files. Participants load and **vet** packages on their nodes before they can interpret transactions. CCIP evolves by publishing new DAR versions — see the [chainlink-canton](https://github.com/smartcontractkit/chainlink-canton) repository for contract sources.
+
+For participant operations (uploading DARs, vetting, and unvetting packages), see the [Canton Network documentation](https://docs.canton.network/) — for example [Manage Daml packages and archives](https://docs.canton.network/global-synchronizer/production-operations/manage-packages).
+
+## Package structure
+
+CCIP on Canton is organized as a tree of Daml packages with stable **interface** packages at the top, **core** implementations in the middle, and **third-party owned** packages — such as token pools, executors, and Committee Verifier operators — at the bottom.
+
+<ClickToZoom
+  src="/images/ccip/concepts/architecture/ccip-canton-package-dependencies.svg"
+  alt="CCIP Canton package dependency layers: un-upgradeable base, interface packages, core packages, and third-party owned packages"
+/>
+
+_Figure 1. CCIP Canton package dependencies. Downstream packages import upstream packages._
+
+Interface packages are not modified in place. When an implementation package is updated, any **downstream** package that imports it must be rebuilt and released. CCIP minimizes this by keeping extension points behind stable interfaces.
+
+## Upgrading DARs on your participant
+
+When Chainlink CCIP communicates a new version, **every validator that interacts with the updated contracts must upload and vet the new DARs**. In practice:
+
+- **Users** who send or execute CCIP messages must vet new DARs for packages their workflows depend on.
+- **Third-party operators** — token pool owners, Committee Verifier operators, executors, and similar parties — must upgrade when packages they operate are updated.
+
+Typical rollout:
+
+1. Chainlink builds the new DAR and communicates it to affected parties.
+2. Chainlink uploads the DAR on its validators.
+3. After a coordination window, affected parties upload the DAR on their own participants.
+4. Depending on urgency, operators may **unvet** the previous package version so validators still on the old DAR can no longer interpret new transactions.
+
+For low-impact enhancements, step 4 may be skipped — both versions can coexist until participants choose to upgrade.
+
+Upload new DARs on your participant using the process in [Upload a DAR](https://docs.canton.network/global-synchronizer/production-operations/manage-packages#upload-a-dar).
+
+### Token pools
+
+If a new DAR affecting token pools is released, **deploy a new token pool**, register it in the [Token Admin Registry](/ccip/concepts/canton/token-pools#registering-on-the-token-admin-registry), and retire the old pool once traffic has moved.
+
+<Aside type="note" title="No liquidity migration on Canton">
+
+Canton token pools do **not** custody liquidity on-ledger — LockRelease pools use the pool owner's holdings; BurnMint pools mint and burn against instrument supply. As long as there are **no pending cross-chain messages** for the old pool, there is no on-ledger liquidity to migrate. Coordinate the cutover using the [CCIP Explorer](/ccip/tools-resources/ccip-explorer) and complete or execute any in-flight transfers before switching TAR registration to the new pool.
+
+</Aside>
+
+See the [BurnMint](/ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool) and [LockRelease](/ccip/tutorials/canton/cross-chain-tokens/lock-release-token-pool) deployment guides for pool setup and TAR registration.
+
+## Staying current
+
+- Monitor communications from Chainlink CCIP operations for required DAR versions on your lanes.
+- Confirm your participant has the CCIP DARs your workflows need before sending or executing — see [Key Concepts](/ccip/concepts/canton/key-concepts) and [source prerequisites](/ccip/tutorials/canton/source/prerequisites).
+- Confirm party IDs and contract addresses with [Chainlink CCIP](https://chain.link/ccip-contact) when deployments change.

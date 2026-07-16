@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from "preact/hooks"
 import { clsx } from "~/lib/clsx/clsx.ts"
 import { Chain } from "~/features/data/chains.ts"
+import { chainMatchesFeedTypeTag } from "~/features/feeds/utils/chainFilters.ts"
 import styles from "./ChainSelector.module.css"
 
 interface ChainSelectorProps {
@@ -33,17 +34,7 @@ export function ChainSelector({
 
   // Filter chains based on dataFeedType and search term
   const filteredChains = chains.filter((chain) => {
-    // Filter by dataFeedType first
-    const matchesDataFeedType = (() => {
-      if (dataFeedType.includes("streams")) return chain.tags?.includes("streams") ?? false
-      if (dataFeedType === "smartdata") return chain.tags?.includes("smartData") ?? false
-      if (dataFeedType === "rates") return chain.tags?.includes("rates") ?? false
-      if (dataFeedType === "usGovernmentMacroeconomicData")
-        return chain.tags?.includes("usGovernmentMacroeconomicData") ?? false
-      return chain.tags?.includes("default") ?? false
-    })()
-
-    // Filter by search term
+    const matchesDataFeedType = chainMatchesFeedTypeTag(chain, dataFeedType as never)
     const matchesSearch = !searchTerm || chain.label.toLowerCase().includes(searchTerm.toLowerCase())
 
     return matchesDataFeedType && matchesSearch

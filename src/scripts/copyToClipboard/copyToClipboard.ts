@@ -52,6 +52,11 @@ document.addEventListener("DOMContentLoaded", () => {
         return
       }
 
+      // Skip CodeSample-style blocks (they have their own header copy button)
+      if (codeBlock.closest(".code-sample")) {
+        return
+      }
+
       const copyButtonContainer = document.createElement("div")
       copyButtonContainer.className = styles.copyCodeButtonWrapper
 

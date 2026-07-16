@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Test deployed HTTP trigger workflows easily with the cre-http-trigger TypeScript tool: automatic JWT generation, local proxy server, and simple configuration."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-14"
 ---
 
 import { Aside } from "@components"
@@ -39,7 +39,7 @@ The `cre-http-trigger` tool eliminates this complexity by:
 
 ## Prerequisites
 
-- **Bun runtime**: The tool requires <a href="https://bun.sh" target="_blank" rel="noopener noreferrer">Bun</a> version 1.2.21 or higher
+- **Bun runtime**: The tool requires <a href="https://bun.com" target="_blank" rel="noopener noreferrer">Bun</a> version 1.2.21 or higher
 - **Deployed workflow**: Your workflow must be deployed with an HTTP trigger
 - **Workflow ID**: Available from deployment output or the CRE UI
 - **Private key**: The private key corresponding to one of the `authorizedKeys` in your HTTP trigger configuration
@@ -71,6 +71,18 @@ GATEWAY_URL=https://01.gateway.zone-a.cre.chain.link
 ```
 
 Replace `0xYourPrivateKeyHere` with your EVM private key.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Private registry gateway URL">
+  If your workflow is deployed to the **private registry** (`deployment-registry: "private"`), set `GATEWAY_URL` to:
+
+```
+GATEWAY_URL=https://01.enterprise-gateway.zone-a.cre.chain.link/
+```
+
+Use `https://01.gateway.zone-a.cre.chain.link` for workflows deployed to the public onchain registry.
+
+</Aside>
 
 <Aside type="caution" title="Keep your .env file secure">
   Never commit `.env` files to version control. Add `.env` to your `.gitignore` file. The package repository already
@@ -200,8 +212,8 @@ Your curl command receives a JSON response:
 | `result.status`                             | Execution status (typically `"ACCEPTED"` for valid requests)                          |
 
 <Aside type="tip" title="Track your execution">
-  Copy the `workflow_execution_id` to track this specific execution in the [CRE UI](https://cre.chain.link/workflows).
-  You can view logs, events, and execution details using this ID.
+  Copy the `workflow_execution_id` to track this specific execution in the [CRE
+  UI](https://app.chain.link/cre/workflows). You can view logs, events, and execution details using this ID.
 </Aside>
 
 ### Health check endpoint
@@ -263,7 +275,7 @@ All code is available in the <a href="https://github.com/smartcontractkit/cre-sd
 
 After triggering workflows with the tool, verify execution in the CRE UI:
 
-1. Go to <a href="https://cre.chain.link/workflows" target="_blank" rel="noopener noreferrer">cre.chain.link/workflows</a>
+1. Go to <a href="https://app.chain.link/cre/workflows" target="_blank" rel="noopener noreferrer">app.chain.link/cre/workflows</a>
 1. Click on your workflow
 1. Navigate to the **Execution** tab
 1. Find recent executions and click **Execution ID** to view Events and Logs

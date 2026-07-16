@@ -277,7 +277,7 @@ function getLanguageDisplayName(langCode: string): string {
 const languageDisplay = getLanguageDisplayName(lang)
 ---
 
-<div class="code-block-container" id={blockId} data-lang={lang} data-clean-code={cleanCode} {...rest}>
+<div class="code-block-container" id={blockId} data-lang={lang} data-clean-code={JSON.stringify(cleanCode)} {...rest}>
   <div class="code-width-wrapper">
     <div class="code-block-header">
       {
@@ -358,6 +358,13 @@ const languageDisplay = getLanguageDisplayName(lang)
 
     // Simple syntax highlighting function
     function highlightInIsolation(code, language) {
+      // First, HTML-escape the code to prevent code parts from being interpreted as tags
+      const escapeHtml = (text) => {
+        const div = document.createElement("div")
+        div.textContent = text
+        return div.innerHTML
+      }
+
       const goKeywords = ["package", "import", "func", "type", "struct", "if", "else", "for", "return", "var", "const"]
       const goTypes = ["string", "int", "bool", "error", "interface{}"]
 
@@ -382,7 +389,7 @@ const languageDisplay = getLanguageDisplayName(lang)
       ]
       const tsTypes = ["string", "number", "boolean", "void", "any", "unknown", "object", "Array"]
 
-      let highlighted = code
+      let highlighted = escapeHtml(code)
 
       if (language === "go") {
         // Highlight strings
@@ -602,8 +609,8 @@ const languageDisplay = getLanguageDisplayName(lang)
     if (copyButton) {
       copyButton.addEventListener("click", async () => {
         try {
-          // Use the clean code stored specifically in THIS container's data attribute
-          const codeToCopy = container.dataset.cleanCode || ""
+          // Parse the JSON-encoded clean code from the data attribute
+          const codeToCopy = JSON.parse(container.dataset.cleanCode || '""')
 
           await navigator.clipboard.writeText(codeToCopy)
           copyButton.innerHTML = checkmarkIconSVG

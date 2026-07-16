@@ -7,7 +7,7 @@ pageId: "reference-sdk-cron-trigger"
 metadata:
   description: "Reference for TypeScript Cron Trigger: Config interface, Payload fields, and cron expression syntax for time-based workflows."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside } from "@components"
@@ -17,9 +17,9 @@ The Cron Trigger fires at a specified schedule using standard cron expressions. 
 ## Creating the trigger
 
 ```typescript
-import { cre } from "@chainlink/cre-sdk"
+import { CronCapability } from "@chainlink/cre-sdk"
 
-const cron = new cre.capabilities.CronCapability()
+const cron = new CronCapability()
 const trigger = cron.trigger({ schedule: "0 */10 * * * *" }) // Every 10 minutes
 ```
 
@@ -107,7 +107,7 @@ const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string =
 ## Complete Example
 
 ```typescript
-import { cre, Runner, type Runtime, type CronPayload } from "@chainlink/cre-sdk"
+import { CronCapability, handler, Runner, type Runtime, type CronPayload } from "@chainlink/cre-sdk"
 
 type Config = {
   schedule: string
@@ -119,15 +119,13 @@ const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string =
 }
 
 const initWorkflow = (config: Config) => {
-  const cron = new cre.capabilities.CronCapability()
+  const cron = new CronCapability()
 
-  return [cre.handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
 }
 
 export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```

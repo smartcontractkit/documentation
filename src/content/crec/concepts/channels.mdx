@@ -1,0 +1,58 @@
+---
+section: crec
+title: "Channels"
+date: Last Modified
+metadata:
+  description: "Channels are the top-level scope in Chainlink CRE Connect. Watchers, events, and operations all live inside a channel, which provides isolation, lifecycle management, and ordered event delivery."
+  datePublished: "2026-05-01"
+  lastModified: "2026-05-01"
+---
+
+import { Aside } from "@components"
+
+A **channel** is the top-level scoping unit in CRE Connect. Every other resource — watchers, wallets, events, and operations — lives inside exactly one channel. Channels give you:
+
+- **Isolation.** Two unrelated business flows (for example, a regulated-fund subscription pipeline and a treasury operations pipeline) can run side-by-side without ever sharing event streams or watcher state.
+- **A single, ordered event stream.** All events produced inside a channel — watcher events, operation status updates, wallet status updates, watcher status updates — are delivered through one paginated stream.
+- **A simple lifecycle.** A channel is either `active` or `archived`. Archiving a channel disables it for future writes; the immutable event history remains queryable.
+
+## When to create a separate channel
+
+Use a separate channel whenever you want a separate audit trail, a separate set of subscribers, or a separate set of watchers. Common patterns:
+
+- **One channel per environment** — a `staging` channel for testnets and a `production` channel for mainnets.
+- **One channel per business line** — a `dta-fund-A` channel for one tokenized fund and a `dta-fund-B` channel for another.
+- **One channel per integration** — useful when integrating CRE Connect into multiple downstream services that should not see each other's events.
+
+There is no hard limit on the number of channels per tenant; create as many as your operational model needs.
+
+## What lives in a channel
+
+Each channel owns:
+
+- A set of **Watchers** that monitor on-chain contracts (see [Watchers](/crec/concepts/watchers)).
+- A set of **Wallets** (Smart Accounts) authorized to execute operations (see [Smart Accounts](/crec/concepts/smart-accounts)).
+- An ordered, immutable stream of **Events** in four shapes — `watcher.event`, `watcher.status`, `wallet.status`, and `operation.status` — each carrying an Off-Chain Reporting (OCR) proof for [verification](/crec/concepts/event-verification).
+- A history of submitted **Operations** and their lifecycle transitions.
+
+## Channel lifecycle
+
+Channels move through two states only:
+
+| <div style="width: 100px;">State</div> | Meaning                                                       | Allowed actions                                                           |
+| -------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `active`                               | The channel can accept new watchers, wallets, and operations. | Create / Update watchers, create wallets, submit operations, poll events. |
+| `archived`                             | The channel is read-only.                                     | Get channel, poll historical events.                                      |
+
+A channel **cannot be archived while it has active watchers**. Every watcher in the channel must be archived first.
+
+<Aside type="tip" title="Channels and polling cadence">
+  A channel is the unit at which event polling and search are scoped. A high-throughput watcher and a low-throughput
+  watcher placed in the same channel will share the same polling loop on the client side. If the volume mix is very
+  uneven, consider separating them into different channels so each can be polled at its own cadence.
+</Aside>
+
+## Related
+
+- [Watchers](/crec/concepts/watchers) and [Smart Accounts](/crec/concepts/smart-accounts) — the resources that live inside a channel.
+- [Verifiable Events](/crec/concepts/verifiable-events) — what the channel-scoped event stream delivers.

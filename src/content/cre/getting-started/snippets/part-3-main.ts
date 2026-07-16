@@ -1,5 +1,8 @@
 import {
-  cre,
+  CronCapability,
+  HTTPClient,
+  EVMClient,
+  handler,
   consensusMedianAggregation,
   Runner,
   type NodeRuntime,
@@ -31,14 +34,14 @@ type MyResult = {
 }
 
 const initWorkflow = (config: Config) => {
-  const cron = new cre.capabilities.CronCapability()
+  const cron = new CronCapability()
 
-  return [cre.handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
 }
 
 // fetchMathResult is the function passed to the runInNodeMode helper.
 const fetchMathResult = (nodeRuntime: NodeRuntime<Config>): bigint => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const req = {
     url: nodeRuntime.config.apiUrl,
@@ -67,13 +70,12 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
   const network = getNetwork({
     chainFamily: "evm",
     chainSelectorName: evmConfig.chainName,
-    isTestnet: true,
   })
   if (!network) {
     throw new Error(`Unknown chain name: ${evmConfig.chainName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   // Encode the function call using the Storage ABI
   const callData = encodeFunctionData({
@@ -116,5 +118,3 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()

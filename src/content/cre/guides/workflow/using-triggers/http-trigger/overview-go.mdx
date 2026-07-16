@@ -7,7 +7,7 @@ pageId: "guides-workflow-http-trigger-overview"
 metadata:
   description: "Learn how HTTP triggers work in CRE workflows: start workflows via HTTP requests from external systems with cryptographic authorization."
   datePublished: "2025-11-10"
-  lastModified: "2025-11-10"
+  lastModified: "2026-07-05"
 ---
 
 import { Aside } from "@components"
@@ -29,6 +29,12 @@ When you deploy a workflow with an HTTP trigger:
   your workflow. During **local simulation**, you can use empty authorization configs to simplify testing—just remember
   to add `authorizedKeys` before deploying. Learn more: [Configuration &
   Handler](/cre/guides/workflow/using-triggers/http-trigger/configuration-go#configuration-and-handler).
+</Aside>
+
+<Aside type="note" title="One HTTP trigger per workflow">
+  Each workflow supports only one HTTP trigger handler. There is currently no mechanism to route requests to different
+  HTTP trigger handlers within the same workflow. If you need to handle different use cases or execution paths, include
+  routing logic in your request payload and branch within a single handler function.
 </Aside>
 
 ## When to use HTTP triggers
@@ -54,12 +60,12 @@ This section provides everything you need to work with HTTP triggers:
 
 ## Quick comparison: Simulation vs Production
 
-| Aspect             | Simulation                      | Production                                               |
-| ------------------ | ------------------------------- | -------------------------------------------------------- |
-| **Authorization**  | Optional (can use empty config) | Required (`authorizedKeys` must be configured)           |
-| **Trigger method** | CLI with `--input` flag         | HTTP POST to gateway endpoint with JWT                   |
-| **Endpoint**       | Local simulator                 | CRE gateway (`https://01.gateway.zone-a.cre.chain.link`) |
-| **Use case**       | Development, testing, debugging | Live integrations, webhooks, production APIs             |
+| Aspect             | Simulation                      | Production                                                                                                                                           |
+| ------------------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Authorization**  | Optional (can use empty config) | Required (`authorizedKeys` must be configured)                                                                                                       |
+| **Trigger method** | CLI with `--input` flag         | HTTP POST to gateway endpoint with JWT                                                                                                               |
+| **Endpoint**       | Local simulator                 | CRE gateway — public registry: `https://01.gateway.zone-a.cre.chain.link` / private registry: `https://01.enterprise-gateway.zone-a.cre.chain.link/` |
+| **Use case**       | Development, testing, debugging | Live integrations, webhooks, production APIs                                                                                                         |
 
 ## Key concepts
 

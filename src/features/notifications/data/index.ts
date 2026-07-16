@@ -5,5 +5,5 @@ export const NotificationData: BannerContent = {
   type: "info",
   linkText: "Start Building.",
   linkUrl:
-    "https://chain.link/chainlink-runtime-environment/?utm_source=chainlink-docs&utm_campaign=smartcon-2025&utm_medium=referral",
+    "https://chain.link/chainlink-runtime-environment?utm_campaign=global-app-banner&utm_medium=referral&utm_source=docs.chain.link",
 }

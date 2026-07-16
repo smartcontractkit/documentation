@@ -5,7 +5,7 @@ title: "Simulating Workflows"
 metadata:
   description: "Simulate your workflows: learn to simulate CRE workflows with real API and testnet calls before deploying them."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-06-11"
 ---
 
 import { Aside, CopyText } from "@components"
@@ -95,7 +95,7 @@ Non-interactive mode allows you to run simulations without prompts, making it id
 **Requirements:**
 
 - Use the `--non-interactive` flag
-- Specify `--trigger-index` (0-based index of the trigger to run)
+- Specify `--trigger-index` to select which handler to run (0-based position: `0` = first handler, `1` = second, etc.)
 - Provide trigger-specific flags as needed (see [Trigger-specific configuration](#trigger-specific-configuration))
 
 **Example:**
@@ -103,6 +103,27 @@ Non-interactive mode allows you to run simulations without prompts, making it id
 ```bash
 cre workflow simulate my-workflow --non-interactive --trigger-index 0 --target staging-settings
 ```
+
+<Aside type="tip" title="Understanding trigger-index">
+  The `--trigger-index` flag selects **which handler** in your workflow to execute. Handlers are created in your
+  `InitWorkflow` function using `cre.Handler()`, where [each handler connects a trigger to a callback
+  function](/cre/key-terms#handler). If your workflow has only one handler, use `--trigger-index 0`. If you have
+  multiple handlers (e.g., one for an HTTP trigger and one for an EVM log trigger), use `0` for the first, `1` for the
+  second, etc., based on their order in your code.
+</Aside>
+
+## Listen mode
+
+The `--listen` flag keeps the simulator alive and re-runs it for each incoming trigger event, instead of compiling and executing once then exiting.
+
+- **HTTP triggers**: starts a local HTTP server on port `2000`. Each POST request triggers a fresh simulation run.
+- **EVM log triggers**: watches the configured chain and re-runs on each matching log event.
+
+```bash
+cre workflow simulate my-workflow --listen --target staging-settings
+```
+
+This is useful during active development — make a code change, resave, send another event, and see the result immediately without restarting the CLI. See [Testing HTTP Triggers in Simulation](/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation) for a detailed walkthrough with HTTP triggers.
 
 ## The `--broadcast` flag
 
@@ -211,6 +232,19 @@ cre workflow simulate my-workflow \
   --target staging-settings
 ```
 
+{/* prettier-ignore */}
+<Aside type="tip" title="Understanding the two different indexes">
+  **Two separate concepts:**
+  - **`--trigger-index`** selects **which handler** in your workflow to run (e.g., if the
+  handler with an EVM log trigger is the third handler defined, use `--trigger-index 2`)
+  - **`--evm-event-index`**
+  specifies **which log/event within the transaction** to use for testing (e.g., if the transaction emitted 3 events and
+  you want the first one, use `--evm-event-index 0`)
+  <br />
+  These are completely independent: one selects your workflow's
+  handler to execute, the other selects which event data from the blockchain to test with.
+</Aside>
+
 ## Additional flags
 
 ### `--engine-logs` (`-g`)
@@ -317,5 +351,6 @@ Despite these limitations, simulation is an essential tool for catching bugs, va
 
 ## Next steps
 
+- **Test against production limits**: Use the `--limits` flag to enforce production quotas during simulation. See [Testing Production Limits](/cre/guides/operations/understanding-limits).
 - **Deploy your workflow**: Once you're confident your workflow works correctly, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
 - **CLI reference**: For a complete list of flags and options, see the [CLI Workflow Commands reference](/cre/reference/cli/workflow/).

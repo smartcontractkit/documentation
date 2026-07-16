@@ -1,4 +1,4 @@
-import { cre, type Runtime, type HTTPPayload, Runner, decodeJson } from "@chainlink/cre-sdk"
+import { HTTPCapability, handler, type Runtime, type HTTPPayload, Runner, decodeJson } from "@chainlink/cre-sdk"
 
 type Config = {
   minimumAmount: number
@@ -31,10 +31,10 @@ const onHttpTrigger = (runtime: Runtime<Config>, payload: HTTPPayload): string =
 }
 
 const initWorkflow = (config: Config) => {
-  const http = new cre.capabilities.HTTPCapability()
+  const http = new HTTPCapability()
 
   return [
-    cre.handler(http.trigger({}), onHttpTrigger), // Empty config OK for simulation
+    handler(http.trigger({}), onHttpTrigger), // Empty config OK for simulation
   ]
 }
 
@@ -42,5 +42,3 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()

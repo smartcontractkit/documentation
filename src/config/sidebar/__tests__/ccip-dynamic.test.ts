@@ -2,6 +2,7 @@ import { describe, it, expect } from "@jest/globals"
 import { CCIP_SIDEBAR_CONTENT } from "../ccip-dynamic.ts"
 import type { SectionEntry, SectionContent } from "../../sidebar.ts"
 import type { ChainType } from "../../types.ts"
+import { CCIP_SUPPORTED_CHAINS } from "../../chainTypes.ts"
 
 describe("CCIP Sidebar Configuration", () => {
   describe("Structural Integrity", () => {
@@ -43,7 +44,7 @@ describe("CCIP Sidebar Configuration", () => {
         if (item.chainTypes !== undefined) {
           expect(Array.isArray(item.chainTypes)).toBe(true)
           item.chainTypes.forEach((chainType: ChainType) => {
-            expect(["evm", "solana", "aptos"]).toContain(chainType)
+            expect(CCIP_SUPPORTED_CHAINS).toContain(chainType)
           })
         }
       }
@@ -56,7 +57,7 @@ describe("CCIP Sidebar Configuration", () => {
     })
 
     it("should only contain valid chainTypes", () => {
-      const validChainTypes = ["evm", "solana", "aptos"]
+      const validChainTypes = CCIP_SUPPORTED_CHAINS
 
       const checkChainTypes = (item: SectionContent) => {
         if (item.chainTypes) {
@@ -329,39 +330,35 @@ describe("CCIP Sidebar Configuration", () => {
 
       if (toolsSection) {
         const itemTitles = toolsSection.contents.map((item) => item.title)
-        expect(itemTitles).toContain("CLI")
-        expect(itemTitles).toContain("SDK")
+        expect(itemTitles).toContain("CCIP API, SDK & CLI")
         expect(itemTitles).toContain("Token Manager")
       }
     })
   })
 
   describe("Regression Prevention", () => {
-    it("should maintain CLI redirect (formerly Tools)", () => {
-      // Verify that CLI item exists with correct URL
-      const findCLI = (items: SectionContent[]): SectionContent | null => {
+    it("should maintain CCIP API, SDK & CLI sidebar item", () => {
+      // Verify that CCIP API, SDK & CLI item exists with correct URL
+      const findCCIPTools = (items: SectionContent[]): SectionContent | null => {
         for (const item of items) {
-          if (item.title === "CLI") {
+          if (item.title === "CCIP API, SDK & CLI") {
             return item
           }
           if (item.children) {
-            const found = findCLI(item.children)
+            const found = findCCIPTools(item.children)
             if (found) return found
           }
         }
         return null
       }
 
-      let cliItem: SectionContent | null = null
-      for (const section of CCIP_SIDEBAR_CONTENT) {
-        cliItem = findCLI(section.contents)
-        if (cliItem) break
-      }
+      const toolsSection = CCIP_SIDEBAR_CONTENT.find((s) => s.section === "Tools and Resources")
+      const ccipToolsItem = toolsSection ? findCCIPTools(toolsSection.contents) : null
 
-      expect(cliItem).toBeDefined()
-      expect(cliItem?.url).toBe("ccip/tools-resources/cli")
-      // CLI should be universal (no chainTypes restriction)
-      expect(cliItem?.chainTypes).toBeUndefined()
+      expect(ccipToolsItem).toBeDefined()
+      expect(ccipToolsItem?.url).toBe("https://docs.chain.link/ccip/tools")
+      // CCIP API, SDK & CLI should be universal (no chainTypes restriction)
+      expect(ccipToolsItem?.chainTypes).toBeUndefined()
     })
 
     it("should maintain HyperEVM as EVM-specific content", () => {
@@ -388,31 +385,6 @@ describe("CCIP Sidebar Configuration", () => {
         expect(hyperEvmItem.chainTypes).toBeDefined()
         expect(hyperEvmItem.chainTypes).toEqual(["evm"])
       }
-    })
-
-    it("should maintain SDK as EVM-only", () => {
-      const findSDK = (items: SectionContent[]): SectionContent | null => {
-        for (const item of items) {
-          if (item.title === "SDK") {
-            return item
-          }
-          if (item.children) {
-            const found = findSDK(item.children)
-            if (found) return found
-          }
-        }
-        return null
-      }
-
-      let sdkItem: SectionContent | null = null
-      for (const section of CCIP_SIDEBAR_CONTENT) {
-        sdkItem = findSDK(section.contents)
-        if (sdkItem) break
-      }
-
-      expect(sdkItem).toBeDefined()
-      expect(sdkItem?.chainTypes).toBeDefined()
-      expect(sdkItem?.chainTypes).toEqual(["evm"])
     })
 
     it("should maintain Token Manager as EVM-only", () => {

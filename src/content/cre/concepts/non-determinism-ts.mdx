@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Learn how to avoid non-deterministic behaviors in CRE TypeScript workflows that prevent nodes from reaching consensus."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-02-03"
 ---
 
 import { Aside } from "@components"
@@ -45,7 +45,7 @@ const obj = { b: 2, a: 1 }
 
 // Order may vary across runtimes or serialization
 for (const key in obj) {
-  console.log(key) // Could be "b", "a" or "a", "b"
+  // key could be "b", "a" or "a", "b" — non-deterministic!
 }
 ```
 
@@ -56,7 +56,7 @@ const obj = { b: 2, a: 1 }
 
 // Preserves insertion order
 for (const key of Object.keys(obj)) {
-  console.log(key, obj[key]) // "b", "a" (insertion order)
+  // key order: "b", "a" (insertion order)
 }
 ```
 
@@ -67,7 +67,7 @@ const obj = { b: 2, a: 1 }
 
 // Guaranteed alphabetical order
 for (const key of Object.keys(obj).sort()) {
-  console.log(key, obj[key]) // "a", "b" (alphabetically sorted)
+  // key order: "a", "b" (alphabetically sorted)
 }
 ```
 
@@ -83,7 +83,7 @@ map.set("b", 2)
 map.set("a", 1)
 
 for (const [key, value] of map) {
-  console.log(key, value) // Always "b", then "a"
+  // Order: ["b", 2], then ["a", 1] — guaranteed
 }
 ```
 
@@ -93,7 +93,7 @@ for (const [key, value] of map) {
 const set = new Set(["b", "a"])
 
 for (const value of set) {
-  console.log(value) // Always "b", then "a"
+  // Order: "b", then "a" — guaranteed
 }
 ```
 
@@ -125,11 +125,11 @@ const firstSuccess = await Promise.any([fetchFromAPI1(), fetchFromAPI2()])
 **Good: Deterministic order with `.result()`**
 
 ```typescript
-import { cre, type Runtime, type NodeRuntime, consensusMedianAggregation } from "@chainlink/cre-sdk"
+import { HTTPClient, type Runtime, type NodeRuntime, consensusMedianAggregation } from "@chainlink/cre-sdk"
 
 // Fetch from API 1, then API 2, in a fixed order
 const fetchPrice = (nodeRuntime: NodeRuntime<Config>): bigint => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   // Try first API
   const response1 = httpClient
@@ -188,7 +188,7 @@ const now = runtime.now() // Same timestamp across all nodes
 runtime.log(`Current time: ${now.toISOString()}`)
 ```
 
-The `runtime.now()` method returns a `Date` object representing DON Time—a consensus-derived timestamp that all nodes agree on. See [Time in CRE](/cre/concepts/time-in-cre) for more details.
+The `runtime.now()` method returns a `Date` object representing DON Time—a consensus-derived timestamp that all nodes agree on. See [Time in CRE](/cre/guides/workflow/time-in-workflows-ts) for more details.
 
 ## 4. Working with LLMs
 
@@ -217,6 +217,6 @@ Large Language Models (LLMs) generate different responses for the same prompt, e
 
 ## Related concepts
 
-- **[Time in CRE](/cre/concepts/time-in-cre)**: Learn about DON Time and why `runtime.now()` is required
+- **[Time in CRE](/cre/guides/workflow/time-in-workflows-ts)**: Learn about DON Time and why `runtime.now()` is required
 - **[Consensus Computing](/cre/concepts/consensus-computing)**: Deep dive into how nodes reach agreement
 - **[Core SDK Reference](/cre/reference/sdk/core-ts)**: Details on `Runtime`, `NodeRuntime`, and the `.result()` pattern

@@ -7,7 +7,7 @@ pageId: "guides-workflow-http-post-request"
 metadata:
   description: "Send data to external APIs in Go: learn to make POST requests from your workflow with authentication and custom headers."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-02-03"
 ---
 
 import { Aside } from "@components"
@@ -25,6 +25,11 @@ All HTTP requests are wrapped in a consensus mechanism. The SDK provides two way
 
 - **[`http.SendRequest`](#1-the-httpsendrequest-pattern-recommended):** A high-level helper function that simplifies making requests. This is the recommended approach for most use cases.
 - **[`cre.RunInNodeMode`](#2-the-cre-runinnodemode-pattern-low-level):** The lower-level pattern for more complex scenarios.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Using timestamps in requests">
+  If your HTTP request includes timestamps (e.g., for authentication headers or time-based queries), use `runtime.Now()` instead of `time.Now()`. This ensures all nodes use the same timestamp and reach consensus. See [Using Time in Workflows](/cre/guides/workflow/time-in-workflows) for details.
+</Aside>
 
 ## Choosing your approach
 
@@ -51,6 +56,11 @@ For this example, we will use <a href="https://webhook.site/" target="_blank">**
 ## Prerequisites
 
 This guide assumes you have a basic understanding of CRE. If you are new, we strongly recommend completing the [Getting Started tutorial](/cre/getting-started/overview) first.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Redirects are not supported">
+  HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
+</Aside>
 
 ## 1. The `http.SendRequest` Pattern (recommended)
 
