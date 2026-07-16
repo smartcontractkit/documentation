@@ -467,9 +467,24 @@ For descriptions and data types of other report schemas, see the [Report Schema 
 
 ### Payload for onchain verification
 
-In this tutorial, you logged and decoded the `full_report` payloads to extract the report data. However, in a production environment, you should verify the data to ensure its integrity and authenticity.
+The `fullReport` field in the API response is the signed payload you pass directly to `VerifierProxy.verify()` (or `verifyBulk()`) for onchain verification. No transformation or re-encoding is needed — the raw bytes from the API are the input.
 
-Refer to the [Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification) tutorial to learn more.
+From the example output above, the `fullReport` for the ETH/USD stream looks like this:
+
+```
+0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000004f8e8a11000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba78200000000000000000000000000000000000000000000000000000000675e0a5b00000000000000000000000000000000000000000000000000000000675e0a5b00000000000000000000000000000000000000000000000000001787ff5c6fb8000000000000000000000000000000000000000000000000000c01807477ecd000000000000000000000000000000000000000000000000000000000675f5bdb0000000000000000000000000000000000000000000000d1865f8f627c4113300000000000000000000000000000000000000000000000d18572c6cdc3b915000000000000000000000000000000000000000000000000d1879ab8e98f743ad00000000000000000000000000000000000000000000000000000000000000002f3316e5c964d118f6683eecda454985fcc696e4ba34d65edb4a71a8d0cfe970676f465618c7d01196e433cc35b6994e7ad7b8189b0462b51458e663d601fdfaa0000000000000000000000000000000000000000000000000000000000000002219a4493fdf311421d664e0c8d69efa74b776461f8e252d191eda7edb980ab9a5cce69ec0ad35ba210cf60a201ceff6771b35b44860fda859f4aaba242c476bf
+```
+
+This payload is ABI-encoded and contains the report header, the DON-signed report body, and the signatures used for onchain verification. You do not need to decode or inspect it before passing it to the Verifier — the `VerifierProxy` handles all of that.
+
+In Go, `reportResponse.FullReport` holds this value and can be passed directly to your verification contract:
+
+```go
+// reportResponse.FullReport is the bytes value to pass as `payload` to VerifierProxy.verify()
+decodedReport, err := report.Decode[v3.Data](reportResponse.FullReport)
+```
+
+Refer to the [Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification) tutorial for a step-by-step walkthrough of the full onchain verification flow.
 
 ## Adapting code for different report schema versions
 
