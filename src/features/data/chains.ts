@@ -595,7 +595,7 @@ export const CHAINS: Chain[] = [
     label: "Robinhood Chain",
     title: "Robinhood Chain Data Feeds",
     img: "/assets/chains/robinhood-chain.svg",
-    networkStatusUrl: "https://docs.robinhood.com/chain/",
+    networkStatusUrl: "https://status.robinhoodchain.offchain.io/",
     tags: ["default", "tokenizedEquity"],
     supportedFeatures: ["feeds"],
     networks: [
