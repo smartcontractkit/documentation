@@ -12,12 +12,17 @@ using SafeERC20 for IERC20;
  * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE FOR DEMONSTRATION PURPOSES.
  * DO NOT USE THIS CODE IN PRODUCTION.
  *
- *  This contract can verify Chainlink Data Streams reports onchain and pay
- *  the verification fee in LINK (when required).
+ *  This contract verifies Chainlink Data Streams reports onchain and pays
+ *  the verification fee in LINK (when required). It exposes two verification
+ *  functions:
+ *
+ *  - `verifyReport()`      – verifies a single report payload.
+ *  - `verifyBulkReports()` – verifies multiple payloads (across any feed IDs)
+ *                             in a single transaction using `verifyBulk()`.
  *
  * - If `VerifierProxy.s_feeManager()` returns a non-zero address, the network
  *   expects you to interact with that FeeManager for every verification call:
- *   quote fees, approve the RewardManager, then call `verify()`.
+ *   quote fees, approve the RewardManager, then call `verify()` / `verifyBulk()`.
  *
  * - If `s_feeManager()` returns the zero address, no FeeManager contract has
  *   been deployed on that chain. In that case there is nothing to quote or pay
@@ -42,6 +47,14 @@ interface IVerifierProxy {
     bytes calldata parameterPayload
   ) external payable returns (bytes memory verifierResponse);
 
+  /**
+   * @notice Route multiple reports to the correct verifier in a single call.
+   * @param payloads          Array of full report payloads. Each entry may reference
+   *                          a different feed ID. Order is preserved in the output.
+   * @param parameterPayload  ABI-encoded fee token address shared across all reports
+   *                          (or empty bytes if no FeeManager is deployed).
+   * @return verifiedReports  Verified report bytes in the same order as the input.
+   */
   function verifyBulk(
     bytes[] calldata payloads,
     bytes calldata parameterPayload
@@ -80,6 +93,7 @@ contract ClientReportsVerifier {
   error NothingToWithdraw();
   error NotOwner(address caller);
   error InvalidReportVersion(uint16 version);
+  error EmptyReportsArray();
 
   // ----------------- Report schemas -----------------
   // More info: https://docs.chain.link/data-streams/reference/report-schema-v3
@@ -119,6 +133,7 @@ contract ClientReportsVerifier {
   address private immutable i_owner;
 
   int192 public lastDecodedPrice;
+  int192[] public lastDecodedPrices;
 
   // ----------------- Events -----------------
   event DecodedPrice(int192 price);
@@ -201,6 +216,89 @@ contract ClientReportsVerifier {
       lastDecodedPrice = price;
       emit DecodedPrice(price);
     }
+  }
+
+  /**
+   * @notice Verify multiple Data Streams reports (schema v3 or v8) in one transaction.
+   *
+   * @dev Steps:
+   *  1. Decode each payload to extract `reportData` and the schema version.
+   *     - Revert if any version is unsupported.
+   *  2. Fee handling (when FeeManager is deployed):
+   *     - Quote the fee for each report individually via `getFeeAndReward`.
+   *     - Accumulate the total fee across all reports.
+   *     - Approve the RewardManager once for the combined total.
+   *     - ABI-encode the fee token address for `verifyBulk()`.
+   *  3. Call `VerifierProxy.verifyBulk()` once with all payloads.
+   *  4. Decode each verified report, store prices in `lastDecodedPrices`,
+   *     and emit a `DecodedPrice` event per report.
+   *
+   *  @param unverifiedReports Array of full payloads from Streams Direct.
+   *         Each payload may reference a different feed ID.
+   *  @custom:reverts EmptyReportsArray    when called with an empty array.
+   *  @custom:reverts InvalidReportVersion when any schema version ≠ v3/v8.
+   */
+  function verifyBulkReports(
+    bytes[] memory unverifiedReports
+  ) external {
+    if (unverifiedReports.length == 0) revert EmptyReportsArray();
+
+    // ─── 1. Decode all payloads upfront ──
+    bytes[] memory reportDataArray = new bytes[](unverifiedReports.length);
+    uint16[] memory reportVersions = new uint16[](unverifiedReports.length);
+
+    for (uint256 i = 0; i < unverifiedReports.length; i++) {
+      (, bytes memory reportData) = abi.decode(unverifiedReports[i], (bytes32[3], bytes));
+
+      uint16 reportVersion = (uint16(uint8(reportData[0])) << 8) | uint16(uint8(reportData[1]));
+      if (reportVersion != 3 && reportVersion != 8) {
+        revert InvalidReportVersion(reportVersion);
+      }
+
+      reportDataArray[i] = reportData;
+      reportVersions[i] = reportVersion;
+    }
+
+    // ─── 2. Fee handling ──
+    IFeeManager feeManager = IFeeManager(address(i_verifierProxy.s_feeManager()));
+
+    bytes memory parameterPayload;
+    if (address(feeManager) != address(0)) {
+      address feeToken = feeManager.i_linkAddress();
+      uint256 totalFee = 0;
+
+      // Quote per-report fees and accumulate
+      for (uint256 i = 0; i < reportDataArray.length; i++) {
+        (Common.Asset memory fee,,) = feeManager.getFeeAndReward(address(this), reportDataArray[i], feeToken);
+        totalFee += fee.amount;
+      }
+
+      // Single approval covers the combined cost of all reports
+      IERC20(feeToken).approve(feeManager.i_rewardManager(), totalFee);
+      parameterPayload = abi.encode(feeToken);
+    } else {
+      // No FeeManager deployed on this chain
+      parameterPayload = bytes("");
+    }
+
+    // ─── 3. Verify all reports in one proxy call ──
+    bytes[] memory verifiedReports = i_verifierProxy.verifyBulk(unverifiedReports, parameterPayload);
+
+    // ─── 4. Decode verified reports, store prices, emit events ──
+    int192[] memory prices = new int192[](verifiedReports.length);
+
+    for (uint256 i = 0; i < verifiedReports.length; i++) {
+      int192 price;
+      if (reportVersions[i] == 3) {
+        price = abi.decode(verifiedReports[i], (ReportV3)).price;
+      } else {
+        price = abi.decode(verifiedReports[i], (ReportV8)).midPrice;
+      }
+      prices[i] = price;
+      emit DecodedPrice(price);
+    }
+
+    lastDecodedPrices = prices;
   }
 
   /**
