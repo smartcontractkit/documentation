@@ -296,6 +296,32 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
                         )}
                       </div>
                     </div>
+                    {network.committeeVerifier && (
+                      <div className="ccip-chain-hero__details__item">
+                        <div className="ccip-chain-hero__details__label">
+                          Committee verifier
+                          <Tooltip
+                            label=""
+                            tip="The Committee Verifier contract validates cross-chain message proofs."
+                            labelStyle={{
+                              marginRight: "8px",
+                            }}
+                            style={{
+                              display: "inline-block",
+                              verticalAlign: "middle",
+                              marginBottom: "2px",
+                            }}
+                          />
+                        </div>
+                        <div className="ccip-chain-hero__details__value" data-clipboard-type="committee-verifier">
+                          <Address
+                            endLength={addressEndLength}
+                            contractUrl={networkContractUrl?.(network.committeeVerifier.address)}
+                            address={network.committeeVerifier.address}
+                          />
+                        </div>
+                      </div>
+                    )}
                     <div className="ccip-chain-hero__details__item">
                       <div className="ccip-chain-hero__details__label">
                         Registry module owner
@@ -357,6 +383,33 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
                         )}
                       </div>
                     </div>
+
+                    {network.committeeVerifier && (
+                      <div className="ccip-chain-hero__details__item">
+                        <div className="ccip-chain-hero__details__label">
+                          Committee verifier
+                          <Tooltip
+                            label=""
+                            tip="The Committee Verifier contract validates cross-chain message proofs."
+                            labelStyle={{
+                              marginRight: "8px",
+                            }}
+                            style={{
+                              display: "inline-block",
+                              verticalAlign: "middle",
+                              marginBottom: "2px",
+                            }}
+                          />
+                        </div>
+                        <div className="ccip-chain-hero__details__value" data-clipboard-type="committee-verifier">
+                          <Address
+                            endLength={addressEndLength}
+                            contractUrl={networkContractUrl?.(network.committeeVerifier.address)}
+                            address={network.committeeVerifier.address}
+                          />
+                        </div>
+                      </div>
+                    )}
 
                     {network.mcms && (
                       <div className="ccip-chain-hero__details__item">
@@ -422,7 +475,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
                           Committee verifier
                           <Tooltip
                             label=""
-                            tip="The Committee Verifier contract (CCVS) validates cross-chain message proofs on Canton."
+                            tip="The Committee Verifier validates cross-chain message proofs."
                             labelStyle={{
                               marginRight: "8px",
                             }}
@@ -626,7 +679,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
                       CCIP home
                       <Tooltip
                         label=""
-                        tip="The CCIPHome Contract is used for v1.6 config"
+                        tip="The CCIPHome contract is used for v1.6 config"
                         labelStyle={{
                           marginRight: "8px",
                         }}
