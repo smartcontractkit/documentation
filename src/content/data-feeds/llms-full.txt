@@ -774,37 +774,36 @@ In this step, you will interact with your deployed contract to fetch the BTC/USD
 
 ---
 
-# 24/7 Blended Gold Feeds
-Source: https://docs.chain.link/data-feeds/blended-gold-feeds
+# 24/7 Blended Precious Metals Feeds
+Source: https://docs.chain.link/data-feeds/blended-precious-metals-feeds
 
-24/7 blended gold price feeds are [custom feeds](/data-feeds/selecting-data-feeds#-custom-feeds) designed to publish a gold-linked price both during and outside regular [precious metals market hours](/data-feeds/selecting-data-feeds#market-hours). They use a bespoke methodology rather than a continuously open physical gold spot market.
+24/7 blended precious metals price feeds are [custom feeds](/data-feeds/selecting-data-feeds#-custom-feeds) designed to publish a precious-metals-linked price both during and outside regular [precious metals market hours](/data-feeds/selecting-data-feeds#market-hours). They use a bespoke methodology rather than a continuously open physical precious metals spot market.
 
 Developers integrating these feeds should review this page alongside the [Custom Feeds](/data-feeds/selecting-data-feeds#-custom-feeds) section and implement [risk mitigation](/data-feeds/selecting-data-feeds#risk-mitigation) appropriate for their use case.
 
 ## How it works
 
-During open precious metals market hours, the feed reports the XAU/USD price. When the XAU market is closed, the feed starts from the last observed open-market XAU/USD price and adjusts it with a blended signal derived from tokenized gold price streams.
+During [open precious metals market hours](/data-feeds/selecting-data-feeds#market-hours), the feed reports the underlying precious metals spot price (for example, XAU/USD for gold). When the precious metals market is *closed*, the feed starts from the last observed open-market price and adjusts it with a blended signal derived from tokenized precious metals price streams.
 
-The current implementation uses XAUT/USD and PAXG/USD streams for the closed-market signal. For each available tokenized gold stream, the adapter tracks the token's open-market premium or discount to XAU/USD with an EMA, uses that value to derive a spot-equivalent tokenized gold price, averages the valid derived prices, and smooths the resulting deviation from the last XAU/USD price with another EMA. The composite price applies configurable weighting and deviation controls before the closed-market adjustment is reflected in the answer.
+For example, the current tGLD/USD implementation uses [XAUT/USD](/data-streams/crypto-streams?search=XAUT) and [PAXG/USD](/data-streams/crypto-streams?search=PAXG) streams for the closed-market signal. For each available tokenized precious metals stream, the adapter tracks the token's open-market premium or discount to the spot price with an EMA, uses that value to derive a spot-equivalent tokenized price, averages the valid derived prices, and smooths the resulting deviation from the last spot price with another EMA. The composite price applies configurable weighting and deviation controls before the closed-market adjustment is reflected in the answer. Other blended precious metals feeds may use different tokenized streams or methodology variations.
 
 ## Supported feeds
 
-| Feed                          | Network          | Proxy address                                                                                                         |
-| ----------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------- |
-| tGLD/USD - 24/7 Blended Price | Ethereum Mainnet | [0x369C67E8b026CC4Ef98350f332D7Dd52b85b7674](https://etherscan.io/address/0x369C67E8b026CC4Ef98350f332D7Dd52b85b7674) |
+The following table shows the available 24/7 blended precious metals feeds.
 
-Find this feed on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page.
+Find these feeds on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page.
 
 ## Risks
 
-<Aside type="note" title="24/7 blended gold feed risks">
-  This feed is a custom methodology and is not equivalent to a continuously open physical gold spot market. Outside
-  regular precious metals market hours, the answer depends on tokenized gold markets, their liquidity, their premium or
-  discount to physical gold, and the availability of the configured tokenized gold streams. Users should monitor the feed
-  against independent references, enforce freshness checks and value bounds appropriate for their use case, and define
-  pause or fallback behavior before using the feed to secure value, support minting or redemption, trigger liquidations,
-  or automate other protocol actions. If the tokenized inputs stop updating or are unavailable, the adapter can continue
-  from its most recent cached EMA state until valid inputs resume or the XAU market reopens. Contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) with questions.
+<Aside type="note" title="24/7 blended precious metals feed risks">
+  These feeds use a custom methodology and are not equivalent to a continuously open physical precious metals spot
+  market. Outside regular precious metals market hours, the answer depends on tokenized precious metals markets, their
+  liquidity, their premium or discount to the underlying spot price, and the availability of the configured tokenized
+  streams. Users should monitor each feed against independent references, enforce freshness checks and value bounds
+  appropriate for their use case, and define pause or fallback behavior before using the feed to secure value, support
+  minting or redemption, trigger liquidations, or automate other protocol actions. If the tokenized inputs stop updating
+  or are unavailable, the adapter can continue from its most recent cached EMA state until valid inputs resume or the
+  precious metals market reopens. Contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) with questions.
 </Aside>
 
 ---
@@ -3739,7 +3738,7 @@ Custom Feeds have the following categories and compositions:
 - [🟡](#-medium-market-pricing-risk-feeds) **Technical Feeds:** Feeds within this category measure a particular technical metric from a specified blockchain. For example, Fast Gas or Block Difficulty.
 - [🟡](#-medium-market-pricing-risk-feeds) **Total Value Locked Feeds:** These feeds measure the total value locked in a particular protocol.
 - [🟠](#-high-market-pricing-risk-feeds) **Custom Index Feeds:** An index calculates a function of the values for multiple underlying assets. The function is specific to that index and is typically calculated by node operators following an agreed formula.
-- [🟠](#-high-market-pricing-risk-feeds) **24/7 Blended Price Feeds:** Custom feeds that publish outside standard market hours by blending a reference price with other inputs such as tokenized asset streams. See [24/7 blended gold feeds](/data-feeds/blended-gold-feeds) for methodology and risk considerations.
+- [🟠](#-high-market-pricing-risk-feeds) **24/7 Blended Price Feeds:** Custom feeds that publish outside standard market hours by blending a reference price with other inputs such as tokenized asset streams. See [24/7 blended precious metals feeds](/data-feeds/blended-precious-metals-feeds) for methodology and risk considerations.
 - [🟠](#-high-market-pricing-risk-feeds) **Offchain Single Source Feeds:** Some data providers use a single data source, which might be necessary if only one source exists offchain for a specific type of data.
 - [🟠](#-high-market-pricing-risk-feeds) **Offchain Proof of Reserve Feeds:** Chainlink Proof of Reserve uses a large decentralized collection of security-reviewed and Sybil-resistant node operators to acquire and verify reserve data. In this use case, reserves reside offchain.
 - [🟠](#-high-market-pricing-risk-feeds) **LP Token Feeds:** These feeds use a decentralized feed for the underlying asset as well as calculations to value the liquidity pool (LP) tokens.
@@ -3776,7 +3775,7 @@ In addition to categories, be aware that markets for several assets are actively
 | **US_Equities_24/5**          | 24 hours a day, 5 days a week: 18:00 ET Sunday to 17:00 ET Friday. These feeds aggregate data across regular, pre-market, post-market, and overnight equity trading sessions. Used by [tokenized equity feeds](/data-feeds/tokenized-equity-feeds) that require continuous equity pricing outside of standard market hours. Feeds are not updated on weekends or US equity market holidays.                                                                                                                                                                                                                              |
 | **UK_ETF**                     | Standard UK equity market hours: 08:00 - 16:30 UK time M-F excluding UK equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | **Forex**                       | 18:00 ET Sunday to 17:00 ET Friday. <br /> The feeds also follow the global Forex market Christmas and New Year's Day holiday schedule. Many non-G12 currencies primarily trade during local market hours. It is recommended to use those feeds only during local trading hours. We generally observe normal trading within these hours. Prices outside of these hours may be subject to volatility and users are advised to implement additional controls. In addition, local holidays, natural disasters, political unrest or other exogenous shocks are liable to interrupt normal trading in less-liquid currencies. |
-| **Precious_Metals**            | 18:00 ET Sunday to 17:00 ET Friday with a one-hour break Monday through Thursday from 17:00 to 18:00. <br /> The feeds also follow the global Forex market holiday schedule for Christmas and New Year's Day. Some [24/7 blended gold feeds](/data-feeds/blended-gold-feeds) publish outside these hours using a custom methodology.                                                                                                                                                                                                                                                                                     |
+| **Precious_Metals**            | 18:00 ET Sunday to 17:00 ET Friday with a one-hour break Monday through Thursday from 17:00 to 18:00. <br /> The feeds also follow the global Forex market holiday schedule for Christmas and New Year's Day. Some [24/7 blended precious metals feeds](/data-feeds/blended-precious-metals-feeds) publish outside these hours using a custom methodology.                                                                                                                                                                                                                                                               |
 | **NYMEX** (US OIL)              | 18:00 ET Sunday to 17:00 ET Friday, with a one-hour break Monday through Thursday from 17:00 to 18:00. <br /> The feed also follows the NYMEX market holiday schedule.                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | **COMEX** (Non precious metals) | 18:00 ET Sunday to 17:00 ET Friday with a one-hour break Monday through Thursday from 17:00 to 18:00. <br /> The feed also follows the COMEX market holiday schedule.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | **CBOT** (Agricultural)         | Monday - Thursday 00:00-08:45, 09:30-00:00 and Friday 00:00-08:45, 09:30-14:00 ET, excluding CBOT market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
