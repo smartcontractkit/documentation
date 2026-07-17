@@ -25,12 +25,13 @@ The failure pattern: Code diverges → Different request IDs → No quorum → W
 
 ## Quick reference: Common pitfalls
 
-| Don't Use                    | Use Instead                                  |
-| ---------------------------- | -------------------------------------------- |
-| Unordered object iteration   | Sort keys first, then iterate                |
-| `Promise.race()`             | Call `.result()` in deterministic order      |
-| `Date.now()` or `new Date()` | `runtime.now()`                              |
-| LLM free-text responses      | Structured output with field-level consensus |
+| Don't Use                               | Use Instead                                  |
+| --------------------------------------- | -------------------------------------------- |
+| Unordered object iteration              | Sort keys first, then iterate                |
+| `Promise.race()`                        | Call `.result()` in deterministic order      |
+| `Date.now()` or `new Date()`            | `runtime.now()`                              |
+| `Math.random()` outside the CRE runtime | `Math.random()` inside the CRE WASM runtime  |
+| LLM free-text responses                 | Structured output with field-level consensus |
 
 ## 1. Object and Map iteration
 
@@ -190,7 +191,26 @@ runtime.log(`Current time: ${now.toISOString()}`)
 
 The `runtime.now()` method returns a `Date` object representing DON Time—a consensus-derived timestamp that all nodes agree on. See [Time in CRE](/cre/guides/workflow/time-in-workflows-ts) for more details.
 
-## 4. Working with LLMs
+## 4. Randomness
+
+Never use randomness from outside the CRE runtime in DON mode. Standard `Math.random()` in Node.js or the browser uses a per-process seed, so each node would produce a different sequence and break consensus.
+
+**Bad: Using randomness outside the CRE runtime**
+
+```typescript
+// If this code runs outside the CRE WASM runtime, each node gets a different seed
+const randomIndex = Math.floor(Math.random() * 10) // Different on each node
+```
+
+**Good: Use Math.random() inside the CRE WASM runtime**
+
+```typescript
+const randomIndex = Math.floor(Math.random() * 10) // Same on all nodes
+```
+
+Inside the CRE WASM runtime, `Math.random()` is overridden to use a seed coordinated by the CRE platform, so all nodes produce the same sequence. See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness-ts) for more details.
+
+## 5. Working with LLMs
 
 Large Language Models (LLMs) generate different responses for the same prompt, even with temperature set to 0. This inherent non-determinism breaks consensus in workflows.
 
@@ -206,6 +226,7 @@ Large Language Models (LLMs) generate different responses for the same prompt, e
 - Use Maps and Sets when insertion order matters
 - Call `.result()` in a fixed, deterministic order
 - Use `runtime.now()` for all time operations
+- Use `Math.random()` inside the CRE WASM runtime for randomness
 - Request structured output from LLMs
 
 ### Don't:
@@ -213,10 +234,12 @@ Large Language Models (LLMs) generate different responses for the same prompt, e
 - Iterate objects with `for...in` without sorting keys
 - Use `Promise.race()`, `Promise.any()`, or unpredictable `Promise.all()` patterns
 - Use `Date.now()` or `new Date()` for timestamps
+- Use `Math.random()` outside the CRE WASM runtime
 - Rely on free-text LLM responses
 
 ## Related concepts
 
 - **[Time in CRE](/cre/guides/workflow/time-in-workflows-ts)**: Learn about DON Time and why `runtime.now()` is required
+- **[Using Randomness in Workflows](/cre/guides/workflow/using-randomness-ts)**: Understand consensus-safe random number generation
 - **[Consensus Computing](/cre/concepts/consensus-computing)**: Deep dive into how nodes reach agreement
 - **[Core SDK Reference](/cre/reference/sdk/core-ts)**: Details on `Runtime`, `NodeRuntime`, and the `.result()` pattern

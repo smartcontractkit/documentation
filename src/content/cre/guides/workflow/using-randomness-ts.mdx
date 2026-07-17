@@ -1,0 +1,198 @@
+---
+section: cre
+title: "Using Randomness in Workflows"
+sdkLang: "ts"
+pageId: "using-randomness"
+date: Last Modified
+metadata:
+  description: "Generate random numbers safely in CRE: use Math.random() in the CRE WASM runtime to ensure all nodes get the same values and maintain consensus."
+  datePublished: "2025-11-04"
+  lastModified: "2026-07-17"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="TL;DR">
+  Use `Math.random()` inside the CRE WASM runtime to generate random numbers in your TypeScript workflows. The runtime
+  overrides `Math.random()` with a consensus-safe generator that ensures all nodes in the network produce the same
+  sequence and can reach consensus. Do **not** rely on Node.js or browser-specific random APIs. Note that this
+  randomness is **not** cryptographically secure.
+</Aside>
+
+## The problem: Why randomness needs special handling
+
+Workflows often need randomness for various purposes: generating nonces, selecting winners from a list, or creating unpredictable values. However, in a decentralized network, naive use of random number generators creates a critical problem:
+
+**If each node generates different random values, they cannot reach consensus on the workflow's output.**
+
+For example, if your workflow selects a lottery winner using each node's local random generator, different nodes would select different winners, making it impossible to agree on a single result to write onchain.
+
+## The solution: Consensus-safe randomness
+
+CRE provides randomness through the `Math.random()` function inside the CRE WASM runtime. The SDK's WASM plugin overrides `Math.random()` with a seeded pseudo-random generator managed by the CRE platform. This ensures all nodes generate the same sequence of random values, enabling consensus while still providing unpredictability across different workflow executions.
+
+### Usage
+
+```typescript
+// Math.random() returns a value in the range [0, 1)
+const randomFloat = Math.random()
+
+// Convert to an integer in a range [0, 100)
+const randomInt = Math.floor(Math.random() * 100)
+
+// Convert to a bigint in a range [0, max)
+const max = 1000000000000000000n // 1 ETH in wei
+const randomBigInt = BigInt(Math.floor(Number(max) * Math.random()))
+```
+
+## Common use cases
+
+- Selecting a winner from a lottery or pool
+- Generating nonces for transactions
+- Creating random identifiers or values
+- Any random selection that needs to be agreed upon by all nodes
+
+## Working with bigint random values
+
+For Solidity `uint256` types, you often need random `bigint` values:
+
+```typescript
+// Generate a random number in the range [0, max)
+const max = 1000000000000000000n // 1 ETH in wei
+
+const randomAmount = BigInt(Math.floor(Number(max) * Math.random()))
+// randomAmount is a random value between 0 and 1 ETH
+```
+
+Because `Math.random()` returns a JavaScript `number`, be careful not to exceed `Number.MAX_SAFE_INTEGER` when scaling. For ranges larger than `Number.MAX_SAFE_INTEGER`, scale the float by a safe integer first, then combine with additional random draws, or use a deterministic multi-precision approach. For most workflow use cases (nonces, lottery prizes, identifiers), the safe-integer range is sufficient.
+
+## Complete example: Random lottery
+
+Here's a complete example that demonstrates using DON mode randomness to select a lottery winner and generate a prize amount:
+
+```typescript
+import { CronCapability, handler, type Runtime, type CronPayload } from "@chainlink/cre-sdk"
+
+type Config = {
+  schedule: string
+}
+
+type MyResult = {
+  winnerIndex: number
+  winner: string
+  randomBigInt: string
+}
+
+const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): MyResult => {
+  runtime.log("Running random lottery")
+
+  // Define participants
+  const participants = ["Alice", "Bob", "Charlie", "Diana", "Eve"]
+  runtime.log(`Participants in lottery: ${participants.join(", ")}`)
+
+  // Select a random winner (index in range [0, 5))
+  const winnerIndex = Math.floor(Math.random() * participants.length)
+  const winner = participants[winnerIndex]
+  runtime.log(`Selected winner: ${winner} (index ${winnerIndex})`)
+
+  // Generate a random prize amount up to 1,000,000 wei
+  const maxPrize = 1000000n
+  const randomPrize = BigInt(Math.floor(Number(maxPrize) * Math.random()))
+  runtime.log(`Generated random prize: ${randomPrize.toString()}`)
+
+  // Return the results
+  const result: MyResult = {
+    winnerIndex,
+    winner,
+    randomBigInt: randomPrize.toString(),
+  }
+
+  runtime.log(`Random lottery complete! ${JSON.stringify(result)}`)
+  return result
+}
+
+const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+**What this example demonstrates:**
+
+1. **DON mode context**: The randomness is called directly in the trigger callback (DON mode), ensuring all nodes in the network would select the same winner and prize amount.
+
+1. **Random selection**: Uses `Math.floor(Math.random() * participants.length)` to select a random index from the participant list.
+
+1. **Random bigint for Solidity**: Generates a `bigint` value suitable for use with Solidity `uint256` types.
+
+1. **Logging**: Uses `runtime.log()` for output in the WASM environment.
+
+When you run this workflow multiple times, each execution will select different winners and prize amounts (because each execution gets a different seed), but within a single execution, all nodes in the DON would arrive at the same winner.
+
+## Best practices
+
+### Do:
+
+- **Always use `Math.random()` inside the CRE WASM runtime** for randomness in your workflows
+- **Use `runtime.log()`** instead of `console.log` for output in the WASM environment
+
+### Don't:
+
+- **Don't use Node.js or browser random APIs** directly. Always use `Math.random()` inside the CRE WASM runtime.
+
+## Mode-aware behavior
+
+The randomness provided by `Math.random()` is **mode-aware**. The examples above demonstrate DON mode (the default execution mode for workflows). There is also a Node mode with different random behavior, used in advanced scenarios. Each mode provides a different type of randomness.
+
+### DON mode (default)
+
+The examples above all use DON mode. In this mode:
+
+- All nodes generate the **same** random sequence
+- Enables consensus on random values
+- This is the mode your main workflow callback runs in
+
+### Node mode
+
+When using `runtime.runInNodeMode()`, you can access Node mode randomness:
+
+- Each node generates **different** random values
+- Useful for scenarios where per-node variability is accepted
+- `Math.random()` inside the Node mode function uses the node-mode seed
+
+**Example:**
+
+```typescript
+import { consensusMedianAggregation, type Runtime, type NodeRuntime } from "@chainlink/cre-sdk"
+
+const result = runtime
+  .runInNodeMode((nodeRuntime: NodeRuntime<Config>): number => {
+    // Each node generates a different value
+    return Math.floor(Math.random() * 100)
+  }, consensusMedianAggregation<number>())()
+  .result()
+```
+
+### Important: Mode isolation
+
+Random generators are tied to the mode they are called in. **Do not** attempt to use a random value generated in one mode inside another mode in a way that affects consensus — it will cause a panic and crash your workflow.
+
+## FAQ
+
+**Is the randomness cryptographically secure?**
+
+No. `Math.random()` returns values from a seeded pseudo-random number generator. The seed is coordinated by the CRE platform so that all nodes in the DON produce the same sequence — that is what makes consensus possible — but it is not cryptographically secure. Do not use it for key generation, signature nonces, or any security-sensitive purpose. For cryptographic randomness, use a vetted library that works in the QuickJS/WASM environment, such as <a href="https://paulmillr.com/noble/" target="_blank" rel="noopener noreferrer">Noble</a>, and verify it in simulation before deploying.
+
+**What happens if I try to use randomness in the wrong mode?**
+
+The SDK will panic with the error: `"random cannot be used outside the mode it was created in"`. This is intentional — it prevents subtle consensus bugs.
+
+**Can I use the same random generator across multiple calls?**
+
+Yes. Once you are inside the CRE runtime, you can call `Math.random()` multiple times within the same execution mode. Each call produces the next value in the deterministic sequence.
