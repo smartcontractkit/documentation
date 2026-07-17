@@ -20,7 +20,11 @@ import { REPORT_SCHEMA_DEFINITIONS, type SchemaDefinition } from "./reportSchema
 import schemaFieldsTableStyles from "../../data-streams/common/schemaFieldsTable.module.css"
 import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
 import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
-import { shouldHideAddress, shouldHideStreamFeedId, BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES } from "~/features/feeds/utils/feedVisibility.ts"
+import {
+  shouldHideAddress,
+  shouldHideStreamFeedId,
+  BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES,
+} from "~/features/feeds/utils/feedVisibility.ts"
 import { DATA_STREAMS_CONTACT_URL, TOKENIZED_EQUITY_CONTACT_EMAIL } from "~/features/feeds/constants.ts"
 import {
   getSchemaVersion,
