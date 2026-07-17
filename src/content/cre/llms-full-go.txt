@@ -17069,6 +17069,62 @@ After a successful [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparserepo
 
 ---
 
+# Solana Forwarder Directory
+Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/forwarder-directory-go
+Last Updated: 2026-07-15
+
+This page lists forwarder program and state account addresses for CRE Solana workflows. Solana uses a different forwarder
+model than EVM: instead of a single contract address, each forwarder deployment has a **program ID** and a **state
+account**. Your workflow config needs both values.
+
+<Aside type="note" title="Looking for supported networks?">
+  For a complete list of supported networks and version requirements, see [Supported
+  Networks](/cre/supported-networks-go).
+</Aside>
+
+<Aside type="tip" title="Tenant-scoped chain list">
+  Chain availability and mock forwarder addresses depend on your CRE tenant. Run [`cre workflow
+    supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) after `cre login` to see the chains and
+  mock forwarder addresses enabled for your organization. Use `--output json` for scripting.
+</Aside>
+
+## How to use this page
+
+Your workflow config (`config.staging.json` / `config.production.json`) includes `forwarderProgramId` and
+`forwarderState` fields. Use the simulation addresses for `cre workflow simulate` and the production addresses when
+deploying to the DON. Learn more: [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-go).
+
+
+<Aside type="caution" title="Different addresses for simulation vs production">
+  The mock forwarder addresses used during simulation are **different** from the production Keystone Forwarder addresses
+  used by deployed workflows. After testing with simulation, update `forwarderProgramId` and `forwarderState` in your
+  production config. See [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-go#simulation-vs-production-forwarder-addresses).
+</Aside>
+
+## Simulation (mock forwarder)
+
+These addresses are baked into the CLI and used automatically by `cre workflow simulate`. Use these **only** during local
+development and testing.
+
+| Network        | Mock Forwarder Program ID                    | Mock Forwarder State Account                 |
+| -------------- | -------------------------------------------- | -------------------------------------------- |
+| Solana Devnet  | 7kuEAA3mSC1Tz8gQjnvH7bKFda9xSPRRin9SZbH49cNK | 5Tipz3yhTBdVsDbaBxZkrp7Gjf3brGq5SKkxReefPMP7 |
+| Solana Mainnet | 7kuEAA3mSC1Tz8gQjnvH7bKFda9xSPRRin9SZbH49cNK | jhCjuD4Z3V7HeSUChMRpkRwpw6B9yC63mxDMv8SdLNX  |
+
+## Production (Keystone Forwarder)
+
+For production deployments, use these live Keystone Forwarder addresses:
+
+| Network        | Keystone Forwarder Program ID                | Keystone Forwarder State Account             |
+| -------------- | -------------------------------------------- | -------------------------------------------- |
+| Solana Devnet  | CXsKEJcs25TQEYU2e5jZ8QTPE3ffMLZhH6BWHrdcCCB5 | 8QoomCQyPSkJ8WopJbX9B4HyvrFzziwvJdU8hZE6DCr9 |
+| Solana Mainnet | GFrSSvQXaVGkc6Nrr8y2msie6pivJkR1s2EnDk4et294 | 9FgdPyU28bGMCuJyD34pzw9W7Ys36ziLbT9cbZtsaraV |
+
+The workflow derives `forwarderAuthority` at runtime from `[]byte("forwarder")`, forwarder state bytes, and receiver
+program bytes under the `forwarderProgramId`.
+
+---
+
 # Generating Solana Bindings
 Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/generating-bindings-go
 Last Updated: 2026-07-08
@@ -17139,11 +17195,11 @@ For each struct in your IDL's `types` section, the generator creates a `WriteRep
 
 **Example: A minimal `DataStorage` IDL**
 
-The following IDL is enough to generate a `WriteReportFromUserData()` helper. Save it as `contracts/solana/src/idl/data_storage.json`. You can run this example without deploying your own Anchor program: the program ID in the IDL is used as the write receiver, and simulation uses the Solana Devnet mock forwarder built into the CLI.
+The following IDL is enough to generate a `WriteReportFromUserData()` helper. Save it as `contracts/solana/src/idl/data_storage.json`.
 
 ```json
 {
-  "address": "ECL8142j2YQAvs9R9geSsRnkVH2wLEi7soJCRyJ74cfL",
+  "address": "64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31",
   "metadata": {
     "name": "data_storage",
     "version": "0.1.0",
@@ -17179,150 +17235,38 @@ The following IDL is enough to generate a `WriteReportFromUserData()` helper. Sa
 }
 ```
 
-1. Generate the bindings from your project root.
+After running `cre generate-bindings solana`, use the generated `data_storage` package in your workflow:
 
-   ```bash
-   cre generate-bindings solana
-   ```
+```go
+import (
+	solanago "github.com/gagliardetto/solana-go"
+	solana "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana"
 
-   This creates `contracts/solana/src/generated/data_storage/` with a `UserData` struct and `WriteReportFromUserData(runtime, input, remainingAccounts, computeConfig)`.
+	"<project-name>/contracts/solana/src/generated/data_storage"
+)
 
-2. Sync dependencies.
+// In your workflow handler...
+client := &solana.Client{ChainSelector: config.ChainSelector}
+ds, err := data_storage.NewDataStorage(client)
+if err != nil {
+	return "", err
+}
 
-   ```bash
-   go mod tidy
-   ```
+// remainingAccounts: Index 0 forwarderState, 1 forwarderAuthority, 2+ receiver accounts
+accounts := []*solana.AccountMeta{
+	{PublicKey: forwarderStatePk[:], IsWritable: false},
+	{PublicKey: forwarderAuthPk[:], IsWritable: false},
+	{PublicKey: reportStatePk[:], IsWritable: true},
+}
 
-3. Add Solana Devnet to `project.yaml` under your simulation target.
+// Pass the struct data directly — types are derived from the IDL
+result, err := ds.WriteReportFromUserData(runtime, data_storage.UserData{
+	Key:   "price",
+	Value: "500000",
+}, accounts, &solana.ComputeConfig{ComputeLimit: 200_000}).Await()
+```
 
-   ```yaml
-   staging-settings:
-     rpcs:
-       - chain-name: solana-devnet
-         url: https://api.devnet.solana.com
-   ```
-
-4. Save the following as `config.staging.json` in your workflow folder.
-
-   These addresses are the Solana Devnet **mock forwarder** values used by `cre workflow simulate`. The `forwarderAuthority` PDA is derived from `["forwarder", forwarderState, receiverProgram]` under the mock forwarder program ID for the `DataStorage` receiver above. `reportState` is a placeholder writable account for this dry-run example.
-
-   ```json
-   {
-     "schedule": "*/30 * * * * *",
-     "chainSelector": "16423721717087811551",
-     "forwarderState": "5Tipz3yhTBdVsDbaBxZkrp7Gjf3brGq5SKkxReefPMP7",
-     "forwarderAuthority": "5wxb2QHeB4iyN1mPfmsjdsaxoP4P9EmTU7zBzpp4UgVu",
-     "reportState": "11111111111111111111111111111111"
-   }
-   ```
-
-5. Save the following as `my-workflow/workflow.go`.
-
-   A Go project is split across two files: `main.go` is the WASM entry point (generated by `cre init` and unchanged), and your workflow logic lives in a separate file such as `workflow.go`. Replace `<project-name>` with your Go module name from `go.mod`.
-
-   ```go
-   // my-workflow/workflow.go
-   package main
-
-   import (
-   	"log/slog"
-
-   	solanago "github.com/gagliardetto/solana-go"
-   	solana "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana"
-   	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
-   	"github.com/smartcontractkit/cre-sdk-go/cre"
-
-   	"<project-name>/contracts/solana/src/generated/data_storage"
-   )
-
-   type Config struct {
-   	Schedule           string `json:"schedule"`
-   	ChainSelector      uint64 `json:"chainSelector,string"`
-   	ForwarderState     string `json:"forwarderState"`
-   	ForwarderAuthority string `json:"forwarderAuthority"`
-   	ReportState        string `json:"reportState"`
-   }
-
-   func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
-   	cronTrigger := cron.Trigger(&cron.Config{Schedule: config.Schedule})
-
-   	return cre.Workflow[*Config]{
-   		cre.Handler(cronTrigger, onCronTrigger),
-   	}, nil
-   }
-
-   func onCronTrigger(config *Config, runtime cre.Runtime, _ *cron.Payload) (string, error) {
-   	client := &solana.Client{ChainSelector: config.ChainSelector}
-
-   	// NewDataStorage uses the program ID baked into the IDL
-   	ds, err := data_storage.NewDataStorage(client)
-   	if err != nil {
-   		return "", err
-   	}
-
-   	forwarderStatePk := solanago.MustPublicKeyFromBase58(config.ForwarderState)
-   	forwarderAuthPk := solanago.MustPublicKeyFromBase58(config.ForwarderAuthority)
-   	reportStatePk := solanago.MustPublicKeyFromBase58(config.ReportState)
-
-   	// remainingAccounts layout required by the forwarder:
-   	//   Index 0: forwarderState (read-only)
-   	//   Index 1: forwarderAuthority PDA (read-only)
-   	//   Index 2+: receiver-specific accounts
-   	accounts := []*solana.AccountMeta{
-   		{PublicKey: forwarderStatePk[:], IsWritable: false},
-   		{PublicKey: forwarderAuthPk[:], IsWritable: false},
-   		{PublicKey: reportStatePk[:], IsWritable: true},
-   	}
-
-   	runtime.Logger().Info("Submitting UserData to Solana DataStorage program")
-
-   	// Solana simulate requires a non-nil ComputeConfig with ComputeLimit > 0
-   	computeConfig := &solana.ComputeConfig{ComputeLimit: 200_000}
-
-   	result, err := ds.WriteReportFromUserData(runtime, data_storage.UserData{
-   		Key:   "price",
-   		Value: "500000",
-   	}, accounts, computeConfig).Await()
-   	if err != nil {
-   		return "", err
-   	}
-
-   	runtime.Logger().Info("Write completed",
-   		"txStatus", result.GetTxStatus().String(),
-   		"errorMessage", result.GetErrorMessage(),
-   	)
-   	return "ok", nil
-   }
-   ```
-
-6. Set `CRE_SOLANA_PRIVATE_KEY` in your project `.env`, then run the simulation.
-
-   Solana simulation requires a 64-byte base58 keypair even for dry-run (no `--broadcast`). The transmitter account derived from that key must exist and be funded on Solana Devnet. Generate a key with `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and put the keypair in `.env`:
-
-   ```bash
-   CRE_SOLANA_PRIVATE_KEY=<your-64-byte-base58-keypair>
-   ```
-
-   Then from your project root:
-
-   ```bash
-   cre workflow simulate my-workflow --target staging-settings
-   ```
-
-   Expected output (dry-run against the mock forwarder). This example uses a placeholder receiver program ID, so the
-   write path completes through the mock forwarder and the CPI into the receiver returns `Custom:2007`. That confirms
-   bindings, encoding, and report submission worked:
-
-   ```
-   ✓ Workflow compiled
-   [SIMULATION] Simulator Initialized
-   [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-   [USER LOG] msg="Submitting UserData to Solana DataStorage program"
-   [USER LOG] msg="Write completed" txStatus=TX_STATUS_FATAL errorMessage="map[InstructionError:[0 map[Custom:2007]]]"
-
-   ✓ Workflow Simulation Result:
-   "ok"
-   ```
+For a full walkthrough including config, simulation, and production deployment, see [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-go).
 
 <Aside type="note" title="What does the WriteReport helper do?">
   The `WriteReportFromUserData` method Borsh-encodes the `UserData` struct, hashes `remainingAccounts` via
@@ -17410,7 +17354,8 @@ Your Solana program must implement an `on_report` instruction that accepts the p
 forwarder CPIs into your program after verifying the DON signatures. Your Anchor IDL's `types` section defines the
 struct(s) you will write; the generator turns each into a `WriteReportFrom<StructName>()` method.
 
-This guide uses a minimal `DataStorage` / `UserData` IDL so you can simulate without deploying your own program. Swap in
+This guide uses a minimal `DataStorage` / `UserData` IDL with a receiver program already deployed to Solana Devnet at
+`64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31`. You can simulate against it without deploying your own program. Swap in
 your IDL and call the generated helpers for your structs when you are ready.
 
 <Aside type="note" title="Forwarder strips leading accounts">
@@ -17424,7 +17369,7 @@ your IDL and call the generated helpers for your structs when you are ready.
 
    ```json
    {
-     "address": "ECL8142j2YQAvs9R9geSsRnkVH2wLEi7soJCRyJ74cfL",
+     "address": "64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31",
      "metadata": {
        "name": "data_storage",
        "version": "0.1.0",
@@ -17479,7 +17424,7 @@ your IDL and call the generated helpers for your structs when you are ready.
 
 1. Open (or create) `config.staging.json` and add the Solana Devnet simulation parameters.
 
-   For `cre workflow simulate`, use these fixed Devnet forwarder program and state accounts (baked into the CLI).
+   For `cre workflow simulate`, use these mock forwarder program and state accounts for Solana Devnet.
    `receiverProgramId` matches the IDL address above for this example; with your own program, use your Devnet program
    ID.
 
@@ -17487,27 +17432,63 @@ your IDL and call the generated helpers for your structs when you are ready.
    {
      "schedule": "*/30 * * * * *",
      "chainSelector": "16423721717087811551",
-     "receiverProgramId": "ECL8142j2YQAvs9R9geSsRnkVH2wLEi7soJCRyJ74cfL",
+     "receiverProgramId": "64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31",
      "forwarderProgramId": "7kuEAA3mSC1Tz8gQjnvH7bKFda9xSPRRin9SZbH49cNK",
      "forwarderState": "5Tipz3yhTBdVsDbaBxZkrp7Gjf3brGq5SKkxReefPMP7",
-     "reportState": "11111111111111111111111111111111",
+     "reportState": "HxzqwQZNyDM3Tvp9nR8v9tgJ5ZZ1Lm8LiJ8kxoyu539K",
      "computeLimit": 200000
    }
    ```
 
-   | Field                | Description                                                                                 |
-   | -------------------- | ------------------------------------------------------------------------------------------- |
-   | `chainSelector`      | Solana Devnet (`"16423721717087811551"`). Store as a string to avoid JSON precision loss.   |
-   | `receiverProgramId`  | Your receiver program (IDL address for this example)                                        |
-   | `forwarderProgramId` | Forwarder program ID used for local simulation (fixed Devnet value)                         |
-   | `forwarderState`     | Forwarder state account used for local simulation (fixed Devnet value)                      |
-   | `reportState`        | Writable account required by your receiver (placeholder system program ID for this dry-run) |
-   | `computeLimit`       | Solana compute units; must be greater than 0 for simulation                                 |
+   | Field                | Description                                                                               |
+   | -------------------- | ----------------------------------------------------------------------------------------- |
+   | `chainSelector`      | Solana Devnet (`"16423721717087811551"`). Store as a string to avoid JSON precision loss. |
+   | `receiverProgramId`  | Your receiver program (IDL address for this example)                                      |
+   | `forwarderProgramId` | Forwarder program ID used for local simulation (fixed Devnet value)                       |
+   | `forwarderState`     | Forwarder state account used for local simulation (fixed Devnet value)                    |
+   | `reportState`        | Writable account required by your receiver (DataAccount PDA for this example)             |
+   | `computeLimit`       | Solana compute units; must be greater than 0 for simulation                               |
 
    The workflow derives `forwarderAuthority` at runtime from
    `[]byte("forwarder")`, forwarder state bytes, and receiver program bytes under `forwarderProgramId`. When you deploy
    in [Step 5](#step-5-deploy-the-workflow), keep that derivation and point `forwarderProgramId` / `forwarderState` at
    the live forwarder addresses for your network.
+
+### Simulation vs production forwarder addresses
+
+The forwarder program and state accounts differ between local simulation and production. The config above uses the
+**mock forwarder** addresses for `cre workflow simulate`. When you deploy to the DON, you must
+replace them with the live Keystone Forwarder addresses for your network.
+
+
+<Aside type="caution" title="Important: Different addresses for simulation vs production">
+  The mock forwarder program and state accounts used during simulation are **different** from the production Keystone
+  Forwarder accounts used by deployed workflows. After testing with simulation, update `forwarderProgramId` and
+  `forwarderState` in your production config to the live forwarder addresses for your network. See
+  [Step 5](#step-5-deploy-the-workflow).
+</Aside>
+
+#### Simulation (mock forwarder)
+
+These are the mock forwarder addresses for `cre workflow simulate`. They are the values shown in
+the `config.staging.json` above:
+
+| Network        | Mock Forwarder Program ID                    | Mock Forwarder State Account                 |
+| -------------- | -------------------------------------------- | -------------------------------------------- |
+| Solana Devnet  | 7kuEAA3mSC1Tz8gQjnvH7bKFda9xSPRRin9SZbH49cNK | 5Tipz3yhTBdVsDbaBxZkrp7Gjf3brGq5SKkxReefPMP7 |
+| Solana Mainnet | 7kuEAA3mSC1Tz8gQjnvH7bKFda9xSPRRin9SZbH49cNK | jhCjuD4Z3V7HeSUChMRpkRwpw6B9yC63mxDMv8SdLNX  |
+
+#### Production (Keystone Forwarder)
+
+For production deployments, use these live Keystone Forwarder addresses:
+
+| Network        | Keystone Forwarder Program ID                | Keystone Forwarder State Account             |
+| -------------- | -------------------------------------------- | -------------------------------------------- |
+| Solana Devnet  | CXsKEJcs25TQEYU2e5jZ8QTPE3ffMLZhH6BWHrdcCCB5 | 8QoomCQyPSkJ8WopJbX9B4HyvrFzziwvJdU8hZE6DCr9 |
+| Solana Mainnet | GFrSSvQXaVGkc6Nrr8y2msie6pivJkR1s2EnDk4et294 | 9FgdPyU28bGMCuJyD34pzw9W7Ys36ziLbT9cbZtsaraV |
+
+The workflow still derives `forwarderAuthority` from `[]byte("forwarder")`, forwarder state bytes, and receiver program bytes under the
+production `forwarderProgramId`.
 
 ## Step 3: Write the workflow
 
@@ -17632,7 +17613,19 @@ use your own IDL.
 
 Use this step to confirm compile, trigger, and the bindings write path with `cre workflow simulate`.
 
-1. Add a Solana RPC endpoint to your `project.yaml` under your simulation target.
+1. Create a `workflow.yaml` in your workflow folder so the CLI can find your staging target.
+
+   ```yaml
+   staging-settings:
+     user-workflow:
+       workflow-name: "my-solana-write"
+     workflow-artifacts:
+       workflow-path: "./main.go"
+       config-path: "./config.staging.json"
+       secrets-path: ""
+   ```
+
+2. Add a Solana RPC endpoint to your `project.yaml` under your simulation target.
 
    ```yaml
    staging-settings:
@@ -17641,7 +17634,7 @@ Use this step to confirm compile, trigger, and the bindings write path with `cre
          url: https://api.devnet.solana.com
    ```
 
-2. Set `CRE_SOLANA_PRIVATE_KEY` in your project `.env`.
+3. Set `CRE_SOLANA_PRIVATE_KEY` in your project `.env`.
 
    Solana simulation requires a 64-byte base58 keypair even for dry-run. The transmitter account must exist and be
    funded on Solana Devnet. Generate a key with `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and
@@ -17651,26 +17644,30 @@ Use this step to confirm compile, trigger, and the bindings write path with `cre
    CRE_SOLANA_PRIVATE_KEY=<your-64-byte-base58-keypair>
    ```
 
-3. Run the dry-run simulation.
+4. Run the dry-run simulation.
 
    ```bash
    cre workflow simulate my-workflow --target staging-settings
    ```
 
-   Confirm the workflow compiles, the cron trigger runs, and your USER LOGs appear. This example uses a placeholder
-   receiver program ID, so the simulation write may complete with a receiver CPI error such as `Custom:2007`. That still
-   confirms bindings, encoding, and report submission worked:
+   Confirm the workflow compiles, the cron trigger runs, and your USER LOGs appear. A successful onchain write
+   requires deploying to the DON with the production Keystone Forwarder (see [Step 5](#step-5-deploy-the-workflow)).
 
    ```
    ✓ Workflow compiled
    [SIMULATION] Simulator Initialized
    [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
    [USER LOG] msg="Submitting UserData via bindings" key=price forwarderAuthority=...
-   [USER LOG] msg="Write completed" txStatus=... errorMessage=...
+   [USER LOG] msg="Write completed" txStatus=... errorMessage=... txSignature=""
 
    ✓ Workflow Simulation Result:
    ...
    ```
+
+
+   <Aside type="note" title="Simulation error: Custom:6002">
+     `Custom:6002` is a known limitation of the current simulator and will be patched in a future CLI update.
+   </Aside>
 
    When you are ready to run on the DON with **your** receiver, continue to [Step 5](#step-5-deploy-the-workflow).
 
@@ -17680,27 +17677,29 @@ A deployed workflow runs on the DON, which submits reports through the live Keys
 the [private registry](/cre/guides/operations/deploying-to-private-registry-go) for this example (CRE login session; no
 Ethereum gas for registry ops). You need [Deploy Access](/cre/account/deploy-access).
 
-Use **your** receiver program ID and accounts — not the placeholder `DataStorage` address from the dry-run IDL unless
-that program is actually deployed and ready to accept writes. Update the IDL address, regenerate bindings, and set
-`receiverProgramId` to the same value (Go bindings use the program ID baked into the generated package for the write
-receiver; config is used to derive the forwarder authority PDA).
+You can use the `DataStorage` example receiver as-is — it's deployed on Devnet and ready to accept writes. If you have
+your own receiver program, update the IDL address, regenerate bindings, and set `receiverProgramId` to your own value
+(Go bindings use the program ID baked into the generated package for the write receiver; config is used to derive the
+forwarder authority PDA).
 
-1. Create `config.production.json` with the live forwarder addresses for your network (same receiver and report state
-   your program expects).
+1. Create `config.production.json`. Copy your `receiverProgramId` and `reportState` from the staging config and
+   swap in the production Keystone Forwarder addresses:
 
    ```json
    {
      "schedule": "30 */5 * * * *",
      "chainSelector": "16423721717087811551",
-     "receiverProgramId": "<RECEIVER_PROGRAM_ID>",
-     "forwarderProgramId": "<FORWARDER_PROGRAM_ID>",
-     "forwarderState": "<FORWARDER_STATE>",
-     "reportState": "<REPORT_STATE>",
+     "receiverProgramId": "64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31",
+     "forwarderProgramId": "CXsKEJcs25TQEYU2e5jZ8QTPE3ffMLZhH6BWHrdcCCB5",
+     "forwarderState": "8QoomCQyPSkJ8WopJbX9B4HyvrFzziwvJdU8hZE6DCr9",
+     "reportState": "HxzqwQZNyDM3Tvp9nR8v9tgJ5ZZ1Lm8LiJ8kxoyu539K",
      "computeLimit": 290000
    }
    ```
 
-   Get forwarder program and state addresses from your Chainlink representative. The workflow still derives
+   These are the Solana Devnet production Keystone Forwarder addresses. For Mainnet, see the
+   [forwarder address table](#production-keystone-forwarder) above. If you are using your own receiver program,
+   replace `receiverProgramId` and `reportState` with your own values. The workflow still derives
    `forwarderAuthority` from `[]byte("forwarder")`, forwarder state bytes, and receiver program bytes under that
    `forwarderProgramId`.
 
@@ -17746,6 +17745,9 @@ receiver; config is used to derive the forwarder authority PDA).
    If WriteReport returns a Solana `txSignature`, confirm the transaction on
    [Solana Explorer](https://explorer.solana.com/?cluster=devnet) (forwarder as the top-level program, your receiver as
    a CPI).
+
+   Here is an example of a successful write from this guide's `DataStorage` receiver on Solana Devnet:
+   [view on Explorer](https://explorer.solana.com/tx/2tfcA2jKvaP3JrVaURQEPuWCLtjV8ZdzMCppCUa9a41LQoG5847MzJNJmwdepzjQHxrJak8Umr4fHebkhBMGTqFM?cluster=devnet).
 
 See [Deploying to the Private Registry](/cre/guides/operations/deploying-to-private-registry-go) for registry details, activate/pause, and CI flags.
 
@@ -21998,7 +22000,8 @@ Solana support is currently **write-only**. Read and Log Trigger capabilities ar
 
 Use `solana.SolanaMainnet` and `solana.SolanaDevnet` constants in your Go workflow code, or pass the numeric selector directly to `solana.Client`.
 
-For the Solana Keystone Forwarder program addresses, contact your Chainlink representative or run `cre workflow supported-chains` after enabling Solana for your organization.
+For Solana forwarder program and state account addresses (simulation and production), see the
+[Solana Forwarder Directory](/cre/guides/workflow/using-solana-client/forwarder-directory-go).
 
 Learn more in the [Solana Chain Interactions guide](/cre/guides/workflow/using-solana-client/overview-go).
 

@@ -571,11 +571,12 @@ export const StreamsNetworksData: NetworkData[] = [
   },
   {
     network: "Robinhood Chain",
+    networkStatus: "https://status.robinhoodchain.offchain.io/",
     logoUrl: "/assets/chains/robinhood-chain.svg",
     mainnet: {
       label: "Robinhood Chain Mainnet",
       verifierProxy: "0xcE73c8ad08CBDEaCa6078BF0627C8fe0a9a536E7",
-      explorerUrl: "https://explorer.chain.robinhood.com/address/%s",
+      explorerUrl: "https://robinhoodchain.blockscout.com/address/%s",
     },
     testnet: {
       label: "Robinhood Chain Testnet",
