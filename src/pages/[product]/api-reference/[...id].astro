@@ -3,7 +3,7 @@ import { getCollection, render } from "astro:content"
 import type { CollectionEntry } from "astro:content"
 import DocsLayout from "~/layouts/DocsLayout.astro"
 import { VERSIONS, type VMVersionConfig } from "@config/versions/index.ts"
-import type { Collection } from "~/content.config.ts"
+import { collections, type Collection } from "~/content.config.ts"
 
 interface RouteParams {
   params: { product: Collection; id: string }
@@ -107,6 +107,9 @@ export async function getStaticPaths(): Promise<RouteParams[]> {
   }
 
   for (const [product, productConfig] of Object.entries(VERSIONS)) {
+    // Skip non-collection entries (e.g. "cre-cli" is a version config, not a content collection)
+    if (!(product in collections)) continue
+
     const entries = await getCollection(product as Collection)
     const apiEntries = entries.filter((entry) => entry.id.startsWith("api-reference/"))
 
