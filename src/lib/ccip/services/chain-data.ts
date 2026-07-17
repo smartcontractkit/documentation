@@ -430,7 +430,6 @@ class CantonChainStrategy extends BaseChainStrategy {
     }
 
     const cantonRequiredFields = {
-      committeeVerifier: !chainConfig.committeeVerifier?.address,
       feeQuoterModule: !chainConfig.feeQuoterModule?.address,
     }
 
