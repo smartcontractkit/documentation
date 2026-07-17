@@ -1,0 +1,50 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "24/7 Blended Precious Metals Feeds"
+metadata:
+  title: "24/7 Blended Precious Metals Feeds | Chainlink Data Feeds"
+  description: "Learn how 24/7 blended precious metals price feeds work, including closed-market methodology and integration risks for custom feeds such as tGLD/USD."
+  keywords:
+    ["Blended Precious Metals Feeds", "tGLD", "Custom Feeds", "Precious Metals", "XAU", "Blended Gold", "Data Feeds"]
+whatsnext:
+  {
+    "Review custom feed categories": "/data-feeds/selecting-data-feeds#-custom-feeds",
+    "Find Price Feed Addresses": "/data-feeds/price-feeds/addresses",
+    "Learn about developer responsibilities": "/data-feeds/developer-responsibilities",
+  }
+---
+
+import { Aside } from "@components"
+import { FeedList } from "@features/feeds"
+
+24/7 blended precious metals price feeds are [custom feeds](/data-feeds/selecting-data-feeds#-custom-feeds) designed to publish a precious-metals-linked price both during and outside regular [precious metals market hours](/data-feeds/selecting-data-feeds#market-hours). They use a bespoke methodology rather than a continuously open physical precious metals spot market.
+
+Developers integrating these feeds should review this page alongside the [Custom Feeds](/data-feeds/selecting-data-feeds#-custom-feeds) section and implement [risk mitigation](/data-feeds/selecting-data-feeds#risk-mitigation) appropriate for their use case.
+
+## How it works
+
+During [open precious metals market hours](/data-feeds/selecting-data-feeds#market-hours), the feed reports the underlying precious metals spot price (for example, XAU/USD for gold). When the precious metals market is _closed_, the feed starts from the last observed open-market price and adjusts it with a blended signal derived from tokenized precious metals price streams.
+
+For example, the current tGLD/USD implementation uses [XAUT/USD](/data-streams/crypto-streams?search=XAUT) and [PAXG/USD](/data-streams/crypto-streams?search=PAXG) streams for the closed-market signal. For each available tokenized precious metals stream, the adapter tracks the token's open-market premium or discount to the spot price with an EMA, uses that value to derive a spot-equivalent tokenized price, averages the valid derived prices, and smooths the resulting deviation from the last spot price with another EMA. The composite price applies configurable weighting and deviation controls before the closed-market adjustment is reflected in the answer. Other blended precious metals feeds may use different tokenized streams or methodology variations.
+
+## Supported feeds
+
+The following table shows the available 24/7 blended precious metals feeds.
+
+<FeedList client:idle initialNetwork="ethereum" dataFeedType="blendedPreciousMetals" />
+
+Find these feeds on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page.
+
+## Risks
+
+<Aside type="note" title="24/7 blended precious metals feed risks">
+  These feeds use a custom methodology and are not equivalent to a continuously open physical precious metals spot
+  market. Outside regular precious metals market hours, the answer depends on tokenized precious metals markets, their
+  liquidity, their premium or discount to the underlying spot price, and the availability of the configured tokenized
+  streams. Users should monitor each feed against independent references, enforce freshness checks and value bounds
+  appropriate for their use case, and define pause or fallback behavior before using the feed to secure value, support
+  minting or redemption, trigger liquidations, or automate other protocol actions. If the tokenized inputs stop updating
+  or are unavailable, the adapter can continue from its most recent cached EMA state until valid inputs resume or the
+  precious metals market reopens. Contact chainlink_data_feeds@smartcontract.com with questions.
+</Aside>

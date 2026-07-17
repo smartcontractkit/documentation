@@ -11,6 +11,7 @@ export type DataFeedType =
   | "rates"
   | "usGovernmentMacroeconomicData"
   | "tokenizedEquity"
+  | "blendedPreciousMetals"
   | "streamsCrypto"
   | "streamsRwa"
   | "streamsNav"
