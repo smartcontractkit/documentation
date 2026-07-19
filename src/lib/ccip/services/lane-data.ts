@@ -663,7 +663,6 @@ export class LaneDataService {
         rateLimits: laneToken.rateLimits
           ? { standard: laneToken.rateLimits.standard, custom: laneToken.rateLimits.custom }
           : { standard: null, custom: null },
-        fees: null,
         tokenAddress: laneToken.tokenAddress,
         tokenDecimals: laneToken.tokenDecimals,
         sourcePoolType: laneToken.sourcePoolType,
@@ -760,7 +759,6 @@ export class LaneDataService {
           rateLimits: laneToken.rateLimits
             ? { standard: laneToken.rateLimits.standard, custom: laneToken.rateLimits.custom }
             : { standard: null, custom: null },
-          fees: null,
           tokenAddress: laneToken.tokenAddress,
           tokenDecimals: laneToken.tokenDecimals,
           sourcePoolType: laneToken.sourcePoolType,

@@ -1,7 +1,7 @@
 /**
- * Address normalization utilities for GraphQL queries against the Atlas database.
+ * Address normalization utilities for GraphQL queries against the indexer.
  *
- * Atlas stores addresses in chain-family-specific formats:
+ * The indexer stores addresses in chain-family-specific formats:
  * - EVM (Ethereum, Arbitrum, Base, etc.): 0x-prefixed, all lowercase hex
  * - Aptos: 0x-prefixed, all lowercase hex (64 chars)
  * - Solana: Base58-encoded, case-sensitive (no 0x prefix)
@@ -9,13 +9,13 @@
  *
  * Our reference data (tokens.json) may store addresses with mixed casing
  * (e.g., EIP-55 checksummed EVM addresses). Before querying GraphQL,
- * addresses must be normalized to match the Atlas format.
+ * addresses must be normalized to match the indexer's format.
  */
 
 /**
  * Normalizes a token/pool address for use in GraphQL queries.
  *
- * - 0x-prefixed addresses (EVM, Aptos, SUI): lowercased to match Atlas format
+ * - 0x-prefixed addresses (EVM, Aptos, SUI): lowercased to match the indexer format
  * - Base58 addresses (Solana): kept as-is since Base58 is case-sensitive
  *
  * @param address - Token or pool address from reference data

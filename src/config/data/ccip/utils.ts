@@ -16,6 +16,14 @@ const POOL_MECHANISM_MAP: Record<string, TokenMechanism> = {
   "burnMint:usdc": TokenMechanism.BurnAndMint,
 } as const
 
+// Some v2.0 pool types are not distinct mechanisms for the directory's purposes.
+// LombardTokenPool uses burn/mint semantics, so it is classified as burnMint here
+// (the raw pool type is still shown separately via tokenPoolRawType).
+const normalizeMechanismPoolType = (poolType: PoolType): PoolType => {
+  if (String(poolType).toLowerCase().includes("lombard")) return "burnMint" as PoolType
+  return poolType
+}
+
 export const determineTokenMechanism = (
   sourcePoolType: PoolType | undefined,
   destinationPoolType: PoolType | undefined
@@ -27,7 +35,7 @@ export const determineTokenMechanism = (
   }
 
   // Look up the mechanism based on pool type combination
-  const key = `${sourcePoolType}:${destinationPoolType}`
+  const key = `${normalizeMechanismPoolType(sourcePoolType)}:${normalizeMechanismPoolType(destinationPoolType)}`
   return POOL_MECHANISM_MAP[key] ?? TokenMechanism.Unsupported
 }
 

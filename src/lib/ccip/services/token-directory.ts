@@ -3,11 +3,11 @@ import {
   TokenDirectoryData,
   TokenDirectoryLane,
   TokenDirectoryServiceResponse,
-  CCVConfigData,
-  CCVChainConfig,
   CCVConfig,
   PoolFinalityConfig,
   LaneVerifiers,
+  VerifierSet,
+  LaneVerifierInfo,
   NamingConvention,
   OutputKeyType,
 } from "~/lib/ccip/types/index.ts"
@@ -23,9 +23,8 @@ import { getEffectivePoolVersion, shouldEnableCCVFeatures } from "~/lib/ccip/uti
 import pLimit from "p-limit"
 import {
   fetchPoolDataForToken,
-  fetchLaneRateLimits,
+  fetchLaneData,
   fetchMinBlockConfirmations,
-  stubCCVConfigData,
 } from "~/lib/ccip/graphql/services/enrichment-data-service.ts"
 
 const GRAPHQL_CONCURRENCY = 10
@@ -151,9 +150,6 @@ export class TokenDirectoryService {
         return { data: null }
       }
 
-      // Get selector name for later use
-      const selectorName = resolved.selectorName
-
       // Get chain info
       const chainInfo = this.resolveChainInfo(directoryKey, chainConfig)
       if (!chainInfo) {
@@ -164,19 +160,13 @@ export class TokenDirectoryService {
       const actualPoolVersion = poolInfo.version || ""
       const isCCVEnabled = await shouldEnableCCVFeatures(environment, tokenSymbol, directoryKey, actualPoolVersion)
 
-      // Load CCV config (only used for v2.0+ pools)
-      const ccvConfigData = this.loadCCVConfigData()
-      const ccvConfig = isCCVEnabled ? ccvConfigData[tokenSymbol]?.[directoryKey] || null : null
-
       // Get outbound lanes (from this chain to others)
       const outboundLanes = await this.getOutboundLanes(
         environment,
         directoryKey,
-        selectorName,
         tokenSymbol,
         lanesReferenceData,
         chainsReferenceData as Record<string, ChainConfig>,
-        ccvConfig,
         outputKey,
         internalIdFormat,
         chainIdService,
@@ -187,11 +177,9 @@ export class TokenDirectoryService {
       const inboundLanes = await this.getInboundLanes(
         environment,
         directoryKey,
-        selectorName,
         tokenSymbol,
         lanesReferenceData,
         chainsReferenceData as Record<string, ChainConfig>,
-        ccvConfig,
         outputKey,
         internalIdFormat,
         chainIdService,
@@ -210,13 +198,8 @@ export class TokenDirectoryService {
 
       // Build CCV config
       // - v1.x pool (isCCVEnabled=false): null (feature not supported)
-      // - v2.x pool with config entry: {thresholdAmount: value} (could be null for downstream error)
-      // - v2.x pool without config entry: {thresholdAmount: "0"} (not configured)
-      const ccv: CCVConfig | null = isCCVEnabled
-        ? ccvConfig
-          ? { thresholdAmount: ccvConfig.thresholdAmount }
-          : { thresholdAmount: "0" }
-        : null
+      // - v2.x pool: {thresholdAmount} sourced from the pool's on-chain info blob
+      const ccv: CCVConfig | null = isCCVEnabled ? { thresholdAmount: poolInfo.thresholdAmount ?? "0" } : null
 
       const data: TokenDirectoryData = {
         internalId: formattedInternalId,
@@ -303,11 +286,9 @@ export class TokenDirectoryService {
   private async getOutboundLanes(
     environment: Environment,
     sourceDirectoryKey: string,
-    sourceSelectorName: string,
     tokenSymbol: string,
     lanesReferenceData: Record<string, Record<string, LaneConfig>>,
     chainsReferenceData: Record<string, ChainConfig>,
-    ccvConfig: CCVChainConfig | null,
     outputKey: OutputKeyType,
     internalIdFormat: NamingConvention,
     chainIdService: ChainIdentifierService,
@@ -325,8 +306,6 @@ export class TokenDirectoryService {
     const lanesToProcess: Array<{
       destDirectoryKey: string
       destChainInfo: { chainId: string | number; selector: string }
-      laneKey: string
-      verifiers: LaneVerifiers | null
       outputLaneKey: string
       formattedInternalId: string
     }> = []
@@ -340,24 +319,25 @@ export class TokenDirectoryService {
       const destChainInfo = this.resolveChainInfo(destDirectoryKey, destChainConfig)
       if (!destChainInfo) continue
 
-      const destResolved = chainIdService.resolve(destDirectoryKey)
-      const destSelectorName = destResolved?.selectorName || destDirectoryKey
-      const laneKey = this.buildLaneSelectorKey(sourceSelectorName, destSelectorName)
-      const verifiers = this.getVerifiersForLane(ccvConfig, laneKey, "outbound", isCCVEnabled)
       const outputLaneKey = this.formatLaneKey(destDirectoryKey, outputKey, internalIdFormat, chainIdService)
       const formattedInternalId = chainIdService.format(destDirectoryKey, internalIdFormat)
 
-      lanesToProcess.push({ destDirectoryKey, destChainInfo, laneKey, verifiers, outputLaneKey, formattedInternalId })
+      lanesToProcess.push({ destDirectoryKey, destChainInfo, outputLaneKey, formattedInternalId })
     }
 
-    // Fetch rate limits concurrently with concurrency limit
+    // Fetch rate limits concurrently with concurrency limit.
+    // Forward fetch (source -> dest) provides rate limits + the source pool's OUTBOUND CCVs.
+    // Reverse fetch (dest -> source) provides the destination pool's INBOUND CCVs for this lane.
     const limit = pLimit(GRAPHQL_CONCURRENCY)
     const laneResults = await Promise.allSettled(
       lanesToProcess.map((lane) =>
-        limit(async () => ({
-          ...lane,
-          rateLimits: await fetchLaneRateLimits(environment, tokenSymbol, sourceDirectoryKey, lane.destDirectoryKey),
-        }))
+        limit(async () => {
+          const [forward, reverse] = await Promise.all([
+            fetchLaneData(environment, tokenSymbol, sourceDirectoryKey, lane.destDirectoryKey),
+            fetchLaneData(environment, tokenSymbol, lane.destDirectoryKey, sourceDirectoryKey),
+          ])
+          return { ...lane, laneData: forward, destVerifierInfo: reverse?.verifierInfo }
+        })
       )
     )
 
@@ -369,11 +349,10 @@ export class TokenDirectoryService {
         chainId: lane.destChainInfo.chainId,
         selector: lane.destChainInfo.selector,
         rateLimits: {
-          standard: lane.rateLimits?.standard ?? null,
-          custom: lane.rateLimits?.custom ?? null,
+          standard: lane.laneData?.rateLimits.standard ?? null,
+          custom: lane.laneData?.rateLimits.custom ?? null,
         },
-        fees: null,
-        verifiers: lane.verifiers,
+        verifiers: this.buildLaneVerifiers(lane.laneData?.verifierInfo, lane.destVerifierInfo, isCCVEnabled),
       }
     }
 
@@ -386,11 +365,9 @@ export class TokenDirectoryService {
   private async getInboundLanes(
     environment: Environment,
     destDirectoryKey: string,
-    destSelectorName: string,
     tokenSymbol: string,
     lanesReferenceData: Record<string, Record<string, LaneConfig>>,
     chainsReferenceData: Record<string, ChainConfig>,
-    ccvConfig: CCVChainConfig | null,
     outputKey: OutputKeyType,
     internalIdFormat: NamingConvention,
     chainIdService: ChainIdentifierService,
@@ -402,8 +379,6 @@ export class TokenDirectoryService {
     const lanesToProcess: Array<{
       sourceDirectoryKey: string
       sourceChainInfo: { chainId: string | number; selector: string }
-      laneKey: string
-      verifiers: LaneVerifiers | null
       outputLaneKey: string
       formattedInternalId: string
     }> = []
@@ -419,31 +394,30 @@ export class TokenDirectoryService {
       const sourceChainInfo = this.resolveChainInfo(sourceDirectoryKey, sourceChainConfig)
       if (!sourceChainInfo) continue
 
-      const sourceResolved = chainIdService.resolve(sourceDirectoryKey)
-      const sourceSelectorName = sourceResolved?.selectorName || sourceDirectoryKey
-      const laneKey = this.buildLaneSelectorKey(sourceSelectorName, destSelectorName)
-      const verifiers = this.getVerifiersForLane(ccvConfig, laneKey, "inbound", isCCVEnabled)
       const outputLaneKey = this.formatLaneKey(sourceDirectoryKey, outputKey, internalIdFormat, chainIdService)
       const formattedInternalId = chainIdService.format(sourceDirectoryKey, internalIdFormat)
 
       lanesToProcess.push({
         sourceDirectoryKey,
         sourceChainInfo,
-        laneKey,
-        verifiers,
         outputLaneKey,
         formattedInternalId,
       })
     }
 
-    // Fetch rate limits concurrently with concurrency limit
+    // Fetch rate limits concurrently with concurrency limit.
+    // Forward fetch (source -> dest=thisChain) provides rate limits + the source pool's OUTBOUND CCVs.
+    // Reverse fetch (dest=thisChain -> source) provides this chain's INBOUND CCVs for the lane.
     const limit = pLimit(GRAPHQL_CONCURRENCY)
     const laneResults = await Promise.allSettled(
       lanesToProcess.map((lane) =>
-        limit(async () => ({
-          ...lane,
-          rateLimits: await fetchLaneRateLimits(environment, tokenSymbol, lane.sourceDirectoryKey, destDirectoryKey),
-        }))
+        limit(async () => {
+          const [forward, reverse] = await Promise.all([
+            fetchLaneData(environment, tokenSymbol, lane.sourceDirectoryKey, destDirectoryKey),
+            fetchLaneData(environment, tokenSymbol, destDirectoryKey, lane.sourceDirectoryKey),
+          ])
+          return { ...lane, laneData: forward, destVerifierInfo: reverse?.verifierInfo }
+        })
       )
     )
 
@@ -455,11 +429,10 @@ export class TokenDirectoryService {
         chainId: lane.sourceChainInfo.chainId,
         selector: lane.sourceChainInfo.selector,
         rateLimits: {
-          standard: lane.rateLimits?.standard ?? null,
-          custom: lane.rateLimits?.custom ?? null,
+          standard: lane.laneData?.rateLimits.standard ?? null,
+          custom: lane.laneData?.rateLimits.custom ?? null,
         },
-        fees: null,
-        verifiers: lane.verifiers,
+        verifiers: this.buildLaneVerifiers(lane.laneData?.verifierInfo, lane.destVerifierInfo, isCCVEnabled),
       }
     }
 
@@ -467,32 +440,20 @@ export class TokenDirectoryService {
   }
 
   /**
-   * Builds a lane key using deterministic format: sourceSelector-to-destSelector.
-   * Scales to any chain without hardcoded mappings.
-   * e.g., "ethereum-mainnet-to-arbitrum-mainnet", "ethereum-mainnet-to-base-mainnet"
-   */
-  private buildLaneSelectorKey(sourceSelectorName: string, destSelectorName: string): string {
-    return `${sourceSelectorName}-to-${destSelectorName}`
-  }
-
-  /**
-   * Gets verifiers for a specific lane from CCV config.
-   * Returns pre-computed verifier sets:
-   * - belowThreshold: Verifiers used when transfer amount is below the threshold
-   * - aboveThreshold: All verifiers used when transfer amount is at or above the threshold
-   *                   (belowThreshold + additional threshold verifiers)
-   * Threshold verifiers are only included for v2.0+ pools (when isCCVEnabled is true).
+   * Builds the source and destination verifier sets for a lane.
+   * Source and destination pools configure CCVs independently, so each side is
+   * derived from its own pool node:
+   * - source:      the source pool's OUTBOUND CCVs (from the forward-direction node)
+   * - destination: the destination pool's INBOUND CCVs (from the reverse-direction node)
    *
    * Return value semantics:
    * - null: v1.x pool (feature not supported)
-   * - {belowThreshold: [], aboveThreshold: []}: v2.x pool, no verifiers configured for this lane
-   * - {belowThreshold: [...], aboveThreshold: [...]}: v2.x pool, verifiers configured
-   * - {belowThreshold: null, aboveThreshold: null}: v2.x pool, downstream API error
+   * - each side: {belowThreshold: [], aboveThreshold: []} = not configured;
+   *   {belowThreshold: [...], ...} = configured; {belowThreshold: null, ...} = downstream error.
    */
-  private getVerifiersForLane(
-    ccvConfig: CCVChainConfig | null,
-    laneKey: string,
-    direction: "outbound" | "inbound",
+  private buildLaneVerifiers(
+    sourceVerifierInfo: LaneVerifierInfo | null | undefined,
+    destVerifierInfo: LaneVerifierInfo | null | undefined,
     isCCVEnabled: boolean
   ): LaneVerifiers | null {
     // For v1.x pools (CCV not enabled), verifiers don't exist - return null
@@ -500,25 +461,23 @@ export class TokenDirectoryService {
       return null
     }
 
-    // For v2.x pools, CCV config should exist
-    if (!ccvConfig) {
-      return { belowThreshold: [], aboveThreshold: [] }
-    }
+    const source = sourceVerifierInfo
+      ? this.buildVerifiersResponse(
+          sourceVerifierInfo.outboundCCVs,
+          sourceVerifierInfo.thresholdOutboundCCVs,
+          sourceVerifierInfo.thresholdAmount ?? "0"
+        )
+      : { belowThreshold: [], aboveThreshold: [] }
 
-    const ccvs = direction === "outbound" ? ccvConfig.outboundCCVs : ccvConfig.inboundCCVs
-    if (!ccvs) {
-      return { belowThreshold: [], aboveThreshold: [] }
-    }
+    const destination = destVerifierInfo
+      ? this.buildVerifiersResponse(
+          destVerifierInfo.inboundCCVs,
+          destVerifierInfo.thresholdInboundCCVs,
+          destVerifierInfo.thresholdAmount ?? "0"
+        )
+      : { belowThreshold: [], aboveThreshold: [] }
 
-    const thresholdAmount = ccvConfig.thresholdAmount ?? "0"
-
-    // Exact lookup only (no fuzzy matching)
-    const laneVerifiers = ccvs[laneKey]
-    if (laneVerifiers) {
-      return this.buildVerifiersResponse(laneVerifiers.base, laneVerifiers.threshold, thresholdAmount)
-    }
-
-    return { belowThreshold: [], aboveThreshold: [] }
+    return { source, destination }
   }
 
   /**
@@ -531,7 +490,7 @@ export class TokenDirectoryService {
     baseVerifiers: string[] | null,
     thresholdVerifiers: string[] | null,
     thresholdAmount: string
-  ): LaneVerifiers {
+  ): VerifierSet {
     // If either base or threshold is null, it indicates a downstream API error
     if (baseVerifiers === null || thresholdVerifiers === null) {
       return { belowThreshold: null, aboveThreshold: null }
@@ -588,14 +547,6 @@ export class TokenDirectoryService {
 
     // outputKey === "internalId"
     return chainIdService.format(directoryKey, internalIdFormat)
-  }
-
-  /**
-   * Loads CCV config data (stubbed — not yet available in GraphQL)
-   */
-
-  private loadCCVConfigData(): CCVConfigData {
-    return stubCCVConfigData()
   }
 
   /**

@@ -4,9 +4,9 @@ import type {
   TokenDirectoryLane,
   CCVConfig,
   LaneVerifiers,
+  VerifierSet,
   RateLimiterConfig,
   TokenRateLimits,
-  TokenFees,
   PoolFinalityConfig,
 } from "~/lib/ccip/types/index.ts"
 
@@ -146,13 +146,18 @@ describe("Token Directory Types", () => {
             out: { capacity: "24000000000000", rate: "6660000000", isEnabled: true },
           },
         },
-        fees: {
-          standardTransferFeeBps: 10,
-          customTransferFeeBps: 25,
-        },
         verifiers: {
-          belowThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
-          aboveThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D", "0xF4c7E640EdA248ef95972845a62bdC74237805dB"],
+          source: {
+            belowThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
+            aboveThreshold: [
+              "0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D",
+              "0xF4c7E640EdA248ef95972845a62bdC74237805dB",
+            ],
+          },
+          destination: {
+            belowThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
+            aboveThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
+          },
         },
       }
 
@@ -160,13 +165,12 @@ describe("Token Directory Types", () => {
       expect(lane.chainId).toBe(42161)
       expect(lane.rateLimits.standard?.out?.isEnabled).toBe(true)
       expect(lane.rateLimits.custom?.in?.isEnabled).toBe(true)
-      expect(lane.fees?.standardTransferFeeBps).toBe(10)
-      expect(lane.fees?.customTransferFeeBps).toBe(25)
-      expect(lane.verifiers?.belowThreshold).toHaveLength(1)
-      expect(lane.verifiers?.aboveThreshold).toHaveLength(2)
+      expect(lane.verifiers?.source?.belowThreshold).toHaveLength(1)
+      expect(lane.verifiers?.source?.aboveThreshold).toHaveLength(2)
+      expect(lane.verifiers?.destination?.belowThreshold).toHaveLength(1)
     })
 
-    it("should allow null rateLimits, fees, and verifiers (v1.x pools)", () => {
+    it("should allow null rateLimits and verifiers (v1.x pools)", () => {
       const lane: TokenDirectoryLane = {
         internalId: "base-mainnet",
         chainId: 8453,
@@ -175,13 +179,11 @@ describe("Token Directory Types", () => {
           standard: null,
           custom: null,
         },
-        fees: null,
         verifiers: null,
       }
 
       expect(lane.rateLimits.standard).toBeNull()
       expect(lane.rateLimits.custom).toBeNull()
-      expect(lane.fees).toBeNull()
       expect(lane.verifiers).toBeNull()
     })
   })
@@ -216,19 +218,27 @@ describe("Token Directory Types", () => {
   })
 
   describe("LaneVerifiers structure", () => {
-    it("should have belowThreshold and aboveThreshold arrays", () => {
+    it("should have independent source and destination verifier sets", () => {
       const verifiers: LaneVerifiers = {
-        belowThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
-        aboveThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D", "0xF4c7E640EdA248ef95972845a62bdC74237805dB"],
+        source: {
+          belowThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
+          aboveThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D", "0xF4c7E640EdA248ef95972845a62bdC74237805dB"],
+        },
+        destination: {
+          belowThreshold: ["0xcBD48A8eB077381c3c4Eb36b402d7283aB2b11Bc"],
+          aboveThreshold: ["0xcBD48A8eB077381c3c4Eb36b402d7283aB2b11Bc"],
+        },
       }
 
-      expect(Array.isArray(verifiers.belowThreshold)).toBe(true)
-      expect(Array.isArray(verifiers.aboveThreshold)).toBe(true)
-      expect(verifiers.belowThreshold![0].startsWith("0x")).toBe(true)
+      expect(Array.isArray(verifiers.source?.belowThreshold)).toBe(true)
+      expect(Array.isArray(verifiers.destination?.aboveThreshold)).toBe(true)
+      expect(verifiers.source?.belowThreshold![0].startsWith("0x")).toBe(true)
+      // source and destination are configured independently and can differ
+      expect(verifiers.source?.belowThreshold![0]).not.toBe(verifiers.destination?.belowThreshold![0])
     })
 
     it("should have aboveThreshold include all belowThreshold verifiers plus additional ones", () => {
-      const verifiers: LaneVerifiers = {
+      const source: VerifierSet = {
         belowThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D", "0xF4c7E640EdA248ef95972845a62bdC74237805dB"],
         aboveThreshold: [
           "0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D",
@@ -238,32 +248,32 @@ describe("Token Directory Types", () => {
       }
 
       // All belowThreshold verifiers should be in aboveThreshold
-      verifiers.belowThreshold!.forEach((v) => {
-        expect(verifiers.aboveThreshold).toContain(v)
+      source.belowThreshold!.forEach((v) => {
+        expect(source.aboveThreshold).toContain(v)
       })
       // aboveThreshold should have more verifiers
-      expect(verifiers.aboveThreshold!.length).toBeGreaterThanOrEqual(verifiers.belowThreshold!.length)
+      expect(source.aboveThreshold!.length).toBeGreaterThanOrEqual(source.belowThreshold!.length)
     })
 
     it("should allow null arrays for downstream API error", () => {
-      const verifiers: LaneVerifiers = {
+      const set: VerifierSet = {
         belowThreshold: null,
         aboveThreshold: null,
       }
 
-      expect(verifiers.belowThreshold).toBeNull()
-      expect(verifiers.aboveThreshold).toBeNull()
+      expect(set.belowThreshold).toBeNull()
+      expect(set.aboveThreshold).toBeNull()
     })
 
     it("should have equal arrays when no threshold verifiers (v2.x pools with thresholdAmount=0)", () => {
       // Note: v1.x pools have verifiers: null, not equal arrays
       // This case applies to v2.x pools with thresholdAmount=0
-      const verifiers: LaneVerifiers = {
+      const set: VerifierSet = {
         belowThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
         aboveThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
       }
 
-      expect(verifiers.belowThreshold).toEqual(verifiers.aboveThreshold)
+      expect(set.belowThreshold).toEqual(set.aboveThreshold)
     })
   })
 
@@ -323,18 +333,6 @@ describe("Token Directory Types", () => {
       expect(rateLimits.custom).toBeNull()
     })
   })
-
-  describe("TokenFees structure", () => {
-    it("should have standardTransferFeeBps and customTransferFeeBps", () => {
-      const fees: TokenFees = {
-        standardTransferFeeBps: 10,
-        customTransferFeeBps: 25,
-      }
-
-      expect(fees.standardTransferFeeBps).toBe(10)
-      expect(fees.customTransferFeeBps).toBe(25)
-    })
-  })
 })
 
 describe("Token Directory API response validation", () => {
@@ -378,17 +376,17 @@ describe("Token Directory API response validation", () => {
   })
 
   it("should have verifiers as plain address arrays (not enriched objects)", () => {
-    const verifiers: LaneVerifiers = {
+    const set: VerifierSet = {
       belowThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
       aboveThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D", "0xF4c7E640EdA248ef95972845a62bdC74237805dB"],
     }
 
     // Verifiers should be strings (addresses), not objects
-    verifiers.belowThreshold!.forEach((v) => {
+    set.belowThreshold!.forEach((v) => {
       expect(typeof v).toBe("string")
       expect(v.startsWith("0x")).toBe(true)
     })
-    verifiers.aboveThreshold!.forEach((v) => {
+    set.aboveThreshold!.forEach((v) => {
       expect(typeof v).toBe("string")
       expect(v.startsWith("0x")).toBe(true)
     })
@@ -431,16 +429,18 @@ describe("Token Directory example responses", () => {
               out: { capacity: "24000000000000", rate: "6660000000", isEnabled: true },
             },
           },
-          fees: {
-            standardTransferFeeBps: 10,
-            customTransferFeeBps: 25,
-          },
           verifiers: {
-            belowThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
-            aboveThreshold: [
-              "0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D",
-              "0xF4c7E640EdA248ef95972845a62bdC74237805dB",
-            ],
+            source: {
+              belowThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
+              aboveThreshold: [
+                "0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D",
+                "0xF4c7E640EdA248ef95972845a62bdC74237805dB",
+              ],
+            },
+            destination: {
+              belowThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
+              aboveThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
+            },
           },
         },
       },
@@ -456,10 +456,15 @@ describe("Token Directory example responses", () => {
             },
             custom: null,
           },
-          fees: null,
           verifiers: {
-            belowThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
-            aboveThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
+            source: {
+              belowThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
+              aboveThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
+            },
+            destination: {
+              belowThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
+              aboveThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
+            },
           },
         },
       },
@@ -471,12 +476,11 @@ describe("Token Directory example responses", () => {
     expect(parseInt(lbtcData.pool.ccv?.thresholdAmount || "0")).toBeGreaterThan(0)
     const outboundLane = lbtcData.outboundLanes["arbitrum-mainnet"]
     expect(outboundLane.verifiers).not.toBeNull()
-    expect(outboundLane.verifiers!.aboveThreshold!.length).toBeGreaterThan(
-      outboundLane.verifiers!.belowThreshold!.length
+    expect(outboundLane.verifiers!.source!.aboveThreshold!.length).toBeGreaterThan(
+      outboundLane.verifiers!.source!.belowThreshold!.length
     )
     expect(outboundLane.rateLimits.standard).not.toBeNull()
     expect(outboundLane.rateLimits.custom).not.toBeNull()
-    expect(outboundLane.fees).not.toBeNull()
   })
 
   it("should represent v1.6 pool (DAI) with CCV features disabled", () => {
@@ -513,7 +517,6 @@ describe("Token Directory example responses", () => {
             },
             custom: null,
           },
-          fees: null,
           verifiers: null,
         },
       },
@@ -565,7 +568,6 @@ describe("Version-conditional API behavior", () => {
         chainId: 42161,
         selector: "4949039107694359620",
         rateLimits: { standard: null, custom: null },
-        fees: null,
         verifiers: null,
       }
 
@@ -614,17 +616,27 @@ describe("Version-conditional API behavior", () => {
             out: { capacity: "24000000000000", rate: "6660000000", isEnabled: true },
           },
         },
-        fees: { standardTransferFeeBps: 10, customTransferFeeBps: 25 },
         verifiers: {
-          belowThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
-          aboveThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D", "0xF4c7E640EdA248ef95972845a62bdC74237805dB"],
+          source: {
+            belowThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
+            aboveThreshold: [
+              "0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D",
+              "0xF4c7E640EdA248ef95972845a62bdC74237805dB",
+            ],
+          },
+          destination: {
+            belowThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
+            aboveThreshold: ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
+          },
         },
       }
 
       expect(lane.verifiers).not.toBeNull()
-      expect(lane.verifiers!.aboveThreshold!.length).toBeGreaterThan(lane.verifiers!.belowThreshold!.length)
-      lane.verifiers!.belowThreshold!.forEach((v) => {
-        expect(lane.verifiers!.aboveThreshold).toContain(v)
+      expect(lane.verifiers!.source!.aboveThreshold!.length).toBeGreaterThan(
+        lane.verifiers!.source!.belowThreshold!.length
+      )
+      lane.verifiers!.source!.belowThreshold!.forEach((v) => {
+        expect(lane.verifiers!.source!.aboveThreshold).toContain(v)
       })
     })
   })

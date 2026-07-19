@@ -21,6 +21,8 @@ export const TOKEN_POOL_LANES_WITH_POOLS_QUERY = gql(`
         tokenDecimals
         remoteNetworkName
         remoteToken
+        info
+        poolInfo
         removed
         typeAndVersion
         tokenPool

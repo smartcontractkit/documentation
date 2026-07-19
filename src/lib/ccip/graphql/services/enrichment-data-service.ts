@@ -1,8 +1,8 @@
 /**
  * CCIP Enrichment Data Service
  *
- * Fetches dynamic pool data and rate limits from the Atlas GraphQL API.
- * Replaces the static mock JSON files that were previously used for enrichment.
+ * Fetches dynamic pool data, rate limits, and verifier (CCV) data from the
+ * CCIP GraphQL API.
  *
  * All token address resolution (from tokens.json) and chain name mapping
  * (directory key → selector name) are handled by the reference-data-resolver.
@@ -32,7 +32,7 @@ import type {
   RawTokenRateLimits,
   RateLimiterConfig,
   RateLimiterDirections,
-  CCVConfigData,
+  LaneVerifierInfo,
 } from "~/lib/ccip/types/index.ts"
 import type {
   GetTokenPoolLanesWithPoolsQuery,
@@ -48,6 +48,7 @@ export interface PoolInfo {
   rawType: string
   type: string
   version: string
+  thresholdAmount: string | null
 }
 
 export type PoolData = Record<string, PoolInfo> // directoryKey → PoolInfo
@@ -97,6 +98,67 @@ function toRateLimiterDirections(
   }
 }
 
+// ---------- Verifier / threshold parsing ----------
+
+type RawLaneInfoPayload = {
+  inboundCCVs?: unknown
+  outboundCCVs?: unknown
+  thresholdInboundCCVs?: unknown
+  thresholdOutboundCCVs?: unknown
+}
+
+function normalizeThresholdAmount(value: unknown): string | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value)
+  }
+  if (typeof value === "string") {
+    return value
+  }
+  return null
+}
+
+/**
+ * Extracts the threshold amount from a pool `info`/`poolInfo` JSON blob.
+ */
+function parseThresholdAmount(poolInfo: unknown): string | null {
+  if (!poolInfo || typeof poolInfo !== "object") {
+    return null
+  }
+  return normalizeThresholdAmount((poolInfo as { thresholdAmount?: unknown }).thresholdAmount)
+}
+
+/**
+ * Parses a JSON array of verifier addresses.
+ * Returns null when the payload is missing or malformed (downstream API error),
+ * distinguishing it from an empty [] (configured with no verifiers).
+ */
+function parseAddressList(value: unknown): string[] | null {
+  if (!Array.isArray(value)) {
+    return null
+  }
+  const addresses = value.filter((entry): entry is string => typeof entry === "string")
+  return addresses.length === value.length ? addresses : null
+}
+
+/**
+ * Parses the lane `info` blob into verifier sets, pairing it with the
+ * threshold amount parsed from the lane `poolInfo` blob.
+ */
+function parseLaneInfo(laneInfo: unknown, thresholdAmount: string | null): LaneVerifierInfo | null {
+  if (!laneInfo || typeof laneInfo !== "object") {
+    return null
+  }
+
+  const payload = laneInfo as RawLaneInfoPayload
+  return {
+    inboundCCVs: parseAddressList(payload.inboundCCVs),
+    outboundCCVs: parseAddressList(payload.outboundCCVs),
+    thresholdInboundCCVs: parseAddressList(payload.thresholdInboundCCVs),
+    thresholdOutboundCCVs: parseAddressList(payload.thresholdOutboundCCVs),
+    thresholdAmount,
+  }
+}
+
 // ---------- Pool data ----------
 
 export async function fetchPoolDataForToken(
@@ -127,6 +189,7 @@ export async function fetchPoolDataForToken(
         rawType,
         type: normalizePoolType(rawType),
         version: extractVersion(node.typeAndVersion) || "",
+        thresholdAmount: parseThresholdAmount(node.info),
       }
     })
   } catch (error) {
@@ -171,6 +234,7 @@ export async function fetchPoolDataForTokenAllChains(environment: Environment, t
           rawType,
           type: normalizePoolType(rawType),
           version: extractVersion(node.typeAndVersion) || "",
+          thresholdAmount: parseThresholdAmount(node.info),
         }
       }
 
@@ -218,6 +282,7 @@ export async function fetchAllPoolData(environment: Environment): Promise<AllPoo
           rawType,
           type: normalizePoolType(rawType),
           version: extractVersion(node.typeAndVersion) || "",
+          thresholdAmount: parseThresholdAmount(node.info),
         }
       }
 
@@ -316,12 +381,22 @@ export async function fetchMinBlockConfirmations(
 
 // ---------- Lane rate limits ----------
 
-export async function fetchLaneRateLimits(
+/**
+ * Per-lane on-chain data, keeping the two distinct contract sources separate:
+ * - rateLimits: from the TokenPool contract (standard + fast/custom buckets)
+ * - verifierInfo: from the AdvancedPoolHooks contract (CCVs + threshold)
+ */
+export interface LaneData {
+  rateLimits: RawTokenRateLimits
+  verifierInfo: LaneVerifierInfo | null
+}
+
+export async function fetchLaneData(
   environment: Environment,
   tokenSymbol: string,
   sourceDirectoryKey: string,
   destDirectoryKey: string
-): Promise<RawTokenRateLimits | null> {
+): Promise<LaneData | null> {
   const srcNetwork = toSelectorName(environment, sourceDirectoryKey)
   const dstNetwork = toSelectorName(environment, destDirectoryKey)
 
@@ -346,27 +421,30 @@ export async function fetchLaneRateLimits(
       if (!node) return null
 
       return {
-        standard: toRateLimiterDirections(
-          node.inboundCapacity,
-          node.inboundRate,
-          node.inboundEnabled,
-          node.outboundCapacity,
-          node.outboundRate,
-          node.outboundEnabled
-        ),
-        custom: toRateLimiterDirections(
-          node.customInboundCapacity,
-          node.customInboundRate,
-          node.customInboundEnabled,
-          node.customOutboundCapacity,
-          node.customOutboundRate,
-          node.customOutboundEnabled
-        ),
+        rateLimits: {
+          standard: toRateLimiterDirections(
+            node.inboundCapacity,
+            node.inboundRate,
+            node.inboundEnabled,
+            node.outboundCapacity,
+            node.outboundRate,
+            node.outboundEnabled
+          ),
+          custom: toRateLimiterDirections(
+            node.customInboundCapacity,
+            node.customInboundRate,
+            node.customInboundEnabled,
+            node.customOutboundCapacity,
+            node.customOutboundRate,
+            node.customOutboundEnabled
+          ),
+        },
+        verifierInfo: parseLaneInfo(node.info, parseThresholdAmount(node.poolInfo)),
       }
     })
   } catch (error) {
     console.error(
-      `[CCIP GraphQL] fetchLaneRateLimits failed: ${tokenSymbol} ${sourceDirectoryKey}->${destDirectoryKey}`,
+      `[CCIP GraphQL] fetchLaneData failed: ${tokenSymbol} ${sourceDirectoryKey}->${destDirectoryKey}`,
       error
     )
     return null
@@ -386,7 +464,7 @@ export interface LaneTokenData {
 
 /**
  * Fetches all tokens for a lane in two parallel batch queries (outbound + inbound).
- * Replaces the previous N+1 approach of calling fetchLaneRateLimits per token.
+ * Replaces the previous N+1 approach of fetching each token's lane data separately.
  *
  * Outbound query (network=src, remoteNetworkName=dest):
  *   → source token address, decimals, source pool type, rate limits
@@ -476,11 +554,4 @@ export async function fetchAllTokensForLane(
     console.error(`[CCIP GraphQL] fetchAllTokensForLane failed: ${sourceDirectoryKey}->${destDirectoryKey}`, error)
     return []
   }
-}
-
-// ---------- Stubs ----------
-
-// TODO: CCV verifier data is not yet available in the GraphQL schema.
-export function stubCCVConfigData(): CCVConfigData {
-  return {}
 }

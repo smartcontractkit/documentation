@@ -1,21 +1,31 @@
-import { Verifier } from "~/config/data/ccip/index.ts"
 import { ChainType, ExplorerInfo } from "~/config/index.ts"
 import { getExplorerAddressUrl } from "~/features/utils/index.ts"
 import Address from "~/components/AddressReact.tsx"
 import { Typography } from "@chainlink/blocks"
+import type { LaneVerifierRow } from "./verifierRows.ts"
 
 export interface VerifiersAccordionRowProps {
-  destinationVerifiers: Verifier[]
-  explorer: ExplorerInfo
-  chainType: ChainType
+  rows: LaneVerifierRow[]
+  /** Explorer + chain type for resolving source-chain verifier address links. */
+  sourceExplorer: ExplorerInfo
+  sourceChainType: ChainType
+  /** Explorer + chain type for resolving destination-chain verifier address links. */
+  destinationExplorer: ExplorerInfo
+  destinationChainType: ChainType
 }
 
-export function VerifiersAccordionRow({ destinationVerifiers, explorer, chainType }: VerifiersAccordionRowProps) {
+export function VerifiersAccordionRow({
+  rows,
+  sourceExplorer,
+  sourceChainType,
+  destinationExplorer,
+  destinationChainType,
+}: VerifiersAccordionRowProps) {
   return (
     <tr className="ccip-table__verifier-row">
       <td colSpan={7} style={{ padding: 0 }}>
         <div className="ccip-table__verifier-content">
-          {destinationVerifiers.length === 0 ? (
+          {rows.length === 0 ? (
             <div
               style={{
                 textAlign: "center",
@@ -26,7 +36,7 @@ export function VerifiersAccordionRow({ destinationVerifiers, explorer, chainTyp
                 minHeight: "60px",
               }}
             >
-              <Typography variant="body">No verifiers found for this network.</Typography>
+              <Typography variant="body">No verifiers configured for this lane.</Typography>
             </div>
           ) : (
             <table className="ccip-table ccip-table--verifiers">
@@ -35,12 +45,12 @@ export function VerifiersAccordionRow({ destinationVerifiers, explorer, chainTyp
                   <th>Verifier</th>
                   <th>Source verifier address</th>
                   <th>Destination verifier address</th>
-                  <th>Threshold amount</th>
+                  <th>Required</th>
                 </tr>
               </thead>
               <tbody>
-                {destinationVerifiers.map((verifier) => (
-                  <tr key={verifier.address}>
+                {rows.map((verifier) => (
+                  <tr key={verifier.key}>
                     <td>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <img
@@ -53,21 +63,34 @@ export function VerifiersAccordionRow({ destinationVerifiers, explorer, chainTyp
                       </div>
                     </td>
                     <td>
-                      <Address
-                        contractUrl={getExplorerAddressUrl(explorer, chainType)(verifier.address)}
-                        address={verifier.address}
-                        endLength={4}
-                      />
+                      {verifier.sourceAddress ? (
+                        <Address
+                          contractUrl={getExplorerAddressUrl(sourceExplorer, sourceChainType)(verifier.sourceAddress)}
+                          address={verifier.sourceAddress}
+                          endLength={4}
+                        />
+                      ) : (
+                        <Typography variant="body">—</Typography>
+                      )}
                     </td>
                     <td>
-                      <Address
-                        contractUrl={getExplorerAddressUrl(explorer, chainType)(verifier.address)}
-                        address={verifier.address}
-                        endLength={4}
-                      />
+                      {verifier.destinationAddress ? (
+                        <Address
+                          contractUrl={getExplorerAddressUrl(
+                            destinationExplorer,
+                            destinationChainType
+                          )(verifier.destinationAddress)}
+                          address={verifier.destinationAddress}
+                          endLength={4}
+                        />
+                      ) : (
+                        <Typography variant="body">—</Typography>
+                      )}
                     </td>
                     <td>
-                      <Typography variant="body">150,000</Typography>
+                      <Typography variant="body">
+                        {verifier.aboveThresholdOnly ? "Above threshold" : "Always"}
+                      </Typography>
                     </td>
                   </tr>
                 ))}

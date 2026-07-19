@@ -1,7 +1,7 @@
 /**
- * Utilities for parsing the `typeAndVersion` field from Atlas GraphQL responses.
+ * Utilities for parsing the `typeAndVersion` field from GraphQL responses.
  *
- * Atlas stores pool metadata as a combined string, e.g.:
+ * The indexer stores pool metadata as a combined string, e.g.:
  * - "BurnMintTokenPool 1.5.1"
  * - "LockReleaseTokenPool 1.6.0"
  * - "USDCTokenPool 1.6.2"

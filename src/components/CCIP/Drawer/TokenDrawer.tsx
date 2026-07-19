@@ -18,10 +18,11 @@ import { useTokenDirectory } from "~/hooks/useTokenDirectory.ts"
 import { realtimeDataService } from "~/lib/ccip/services/realtime-data-instance.ts"
 import { NetworkLaneRow } from "./NetworkLaneRow.tsx"
 import { NetworkLaneRowNoVerifiers } from "./NetworkLaneRowNoVerifiers.tsx"
-import type { TokenRateLimits } from "~/lib/ccip/types/index.ts"
+import { buildLaneVerifierRows } from "./verifierRows.ts"
+import type { TokenRateLimits, LaneVerifiers } from "~/lib/ccip/types/index.ts"
 
-// Feature flag: set to `true` once the backend is ready to re-enable the Verifiers accordion.
-const SHOW_VERIFIERS_ACCORDION = false
+// Feature flag: the backend now serves live verifier (CCV) data, so the accordion is enabled.
+const SHOW_VERIFIERS_ACCORDION = true
 
 enum TokenTab {
   Outbound = "outbound",
@@ -137,10 +138,11 @@ function TokenDrawer({
   const direction = activeTab === TokenTab.Outbound ? "out" : "in"
 
   type LaneRow = {
-    networkDetails: { name: string; logo: string }
+    networkDetails: { name: string; logo: string; explorer: ExplorerInfo; chainType: ChainType }
     chainKey: string
     destinationPoolType: PoolType | undefined
     rateLimits: TokenRateLimits | null
+    verifiers: LaneVerifiers | null
     destinationDecimals: number | undefined
   }
 
@@ -161,6 +163,7 @@ function TokenDrawer({
         chainKey,
         destinationPoolType: poolTypesByChain?.[chainKey],
         rateLimits: laneEntry.rateLimits ?? null,
+        verifiers: laneEntry.verifiers ?? null,
         destinationDecimals,
       }
     })
@@ -291,14 +294,23 @@ function TokenDrawer({
                   ({ networkDetails }) =>
                     networkDetails && networkDetails.name.toLowerCase().includes(search.toLowerCase())
                 )
-                .map(({ networkDetails, chainKey, destinationPoolType, rateLimits, destinationDecimals }) => {
+                .map(({ networkDetails, chainKey, destinationPoolType, rateLimits, verifiers, destinationDecimals }) => {
                   const allLimits = realtimeDataService.getAllRateLimitsForDirection(rateLimits, direction)
                   const tokenPaused = allLimits.standard?.capacity === "0"
 
-                  const mechanism =
-                    activeTab === TokenTab.Outbound
-                      ? determineTokenMechanism(network.tokenPoolType, destinationPoolType)
-                      : determineTokenMechanism(destinationPoolType, network.tokenPoolType)
+                  const isOutbound = activeTab === TokenTab.Outbound
+                  const mechanism = isOutbound
+                    ? determineTokenMechanism(network.tokenPoolType, destinationPoolType)
+                    : determineTokenMechanism(destinationPoolType, network.tokenPoolType)
+
+                  // Resolve verifier addresses on the chain each side lives on:
+                  // outbound tab = thisChain -> chainKey; inbound tab = chainKey -> thisChain.
+                  const verifierRows = buildLaneVerifierRows(
+                    verifiers,
+                    isOutbound ? network.key : chainKey,
+                    isOutbound ? chainKey : network.key,
+                    environment
+                  )
 
                   // v1.5.1 token pools on EVM may enforce rate limits differently when token decimals
                   // differ across chains. Warn on inbound lanes where a decimal mismatch exists.
@@ -318,9 +330,11 @@ function TokenDrawer({
                       mechanism={mechanism}
                       allLimits={allLimits}
                       isLoadingRateLimits={isLoadingRateLimits}
-                      destinationVerifiers={[]}
-                      explorer={network.explorer}
-                      chainType={network.chainType}
+                      verifierRows={verifierRows}
+                      sourceExplorer={isOutbound ? network.explorer : networkDetails.explorer}
+                      sourceChainType={isOutbound ? network.chainType : networkDetails.chainType}
+                      destinationExplorer={isOutbound ? networkDetails.explorer : network.explorer}
+                      destinationChainType={isOutbound ? networkDetails.chainType : network.chainType}
                       showWarning={shouldWarn}
                       onWarningEnter={(target) => openWarningTooltip(chainKey, target)}
                       onWarningLeave={scheduleCloseWarning}

@@ -9,7 +9,6 @@ import {
   TokenDetailChainData,
   TokenDetailDataResponse,
   TokenDetailServiceResponse,
-  CCVConfigData,
   CCVConfig,
   PoolFinalityConfig,
 } from "~/lib/ccip/types/index.ts"
@@ -23,10 +22,10 @@ import { getChainId, getChainTypeAndFamily, getTitle } from "../../../features/u
 import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
 
 import {
+  fetchPoolDataForToken,
   fetchPoolDataForTokenAllChains,
   fetchAllPoolData,
   fetchMinBlockConfirmations,
-  stubCCVConfigData,
   type AllPoolData,
   type PoolData,
 } from "~/lib/ccip/graphql/services/enrichment-data-service.ts"
@@ -425,14 +424,8 @@ export class TokenDataService {
       return null
     }
 
-    // Load CCV config data for threshold amounts (stubbed — TODO)
-    const ccvConfigData = this.loadCCVConfigData()
-
     // Get raw token data with directory keys for reverse lookup
     const rawTokenData = this.getRawTokenData(environment, tokenCanonicalSymbol)
-
-    // Get token's CCV config by directory key
-    const tokenCCVConfig = ccvConfigData[tokenCanonicalSymbol]
 
     // Merge token data with custom finality and CCV config information
     const result: TokenDetailDataResponse = {}
@@ -461,12 +454,9 @@ export class TokenDataService {
           }
         }
 
-        // Look up CCV config using directory key
-        if (tokenCCVConfig && directoryKey && tokenCCVConfig[directoryKey]) {
-          ccv = { thresholdAmount: tokenCCVConfig[directoryKey].thresholdAmount }
-        } else {
-          ccv = { thresholdAmount: "0" }
-        }
+        // Source the threshold amount from the pool's on-chain info blob
+        const poolData = await fetchPoolDataForToken(environment, tokenCanonicalSymbol, directoryKey)
+        ccv = { thresholdAmount: poolData?.thresholdAmount ?? "0" }
       }
 
       const detailChainData: TokenDetailChainData = {
@@ -510,11 +500,6 @@ export class TokenDataService {
         chainCount: Object.keys(result).length,
       },
     }
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  private loadCCVConfigData(): CCVConfigData {
-    return stubCCVConfigData()
   }
 
   /**

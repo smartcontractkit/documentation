@@ -16,7 +16,7 @@ import { loadReferenceData, Version } from "@config/data/ccip/index.ts"
 import type { ChainConfig } from "@config/data/ccip/types.ts"
 import { logger } from "@lib/logging/index.js"
 
-import { fetchLaneRateLimits } from "~/lib/ccip/graphql/services/enrichment-data-service.ts"
+import { fetchLaneData } from "~/lib/ccip/graphql/services/enrichment-data-service.ts"
 
 export const prerender = false
 
@@ -98,14 +98,18 @@ export class RateLimitsDataService {
       // Fetch rate limits per token from GraphQL
       const result: Record<string, TokenLaneData> = {}
       for (const tokenSymbol of tokenFilter) {
-        const laneRateLimits = await fetchLaneRateLimits(
+        const laneData = await fetchLaneData(
           environment,
           tokenSymbol,
           resolvedFilters.sourceInternalId,
           resolvedFilters.destinationInternalId
         )
-        if (laneRateLimits) {
-          const filteredLimits = this.applyFilters(laneRateLimits, resolvedFilters.direction, resolvedFilters.rateType)
+        if (laneData) {
+          const filteredLimits = this.applyFilters(
+            laneData.rateLimits,
+            resolvedFilters.direction,
+            resolvedFilters.rateType
+          )
           if (filteredLimits) {
             result[tokenSymbol] = filteredLimits
           }
@@ -154,7 +158,6 @@ export class RateLimitsDataService {
   ): TokenLaneData | null {
     const filteredStandard = this.applyDirectionFilter(rateLimits.standard, direction)
     const filteredCustom = this.applyDirectionFilter(rateLimits.custom, direction)
-    const fees = rateLimits.fees ?? null
 
     if (rateType === "standard") {
       if (!filteredStandard) {
@@ -162,7 +165,6 @@ export class RateLimitsDataService {
       }
       return {
         rateLimits: { standard: filteredStandard, custom: null },
-        fees,
       }
     }
 
@@ -172,7 +174,6 @@ export class RateLimitsDataService {
       }
       return {
         rateLimits: { standard: null, custom: filteredCustom },
-        fees,
       }
     }
 
@@ -185,7 +186,6 @@ export class RateLimitsDataService {
         standard: filteredStandard ?? null,
         custom: filteredCustom ?? null,
       },
-      fees,
     }
   }
 

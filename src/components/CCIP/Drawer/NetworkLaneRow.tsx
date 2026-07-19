@@ -9,10 +9,10 @@
 
 import { Fragment } from "react"
 import type { RateLimiterConfig } from "~/lib/ccip/types/index.ts"
-import type { Verifier } from "~/config/data/ccip/index.ts"
 import type { ChainType, ExplorerInfo } from "~/config/index.ts"
 import { RateLimitCell } from "~/components/CCIP/RateLimitCell.tsx"
 import { VerifiersAccordionRow } from "./VerifiersAccordionRow.tsx"
+import type { LaneVerifierRow } from "./verifierRows.ts"
 
 export interface NetworkLaneRowProps {
   networkDetails: { name: string; logo: string }
@@ -22,9 +22,11 @@ export interface NetworkLaneRowProps {
   mechanism: string
   allLimits: { standard: RateLimiterConfig | null; ftf: RateLimiterConfig | null }
   isLoadingRateLimits: boolean
-  destinationVerifiers: Verifier[]
-  explorer: ExplorerInfo
-  chainType: ChainType
+  verifierRows: LaneVerifierRow[]
+  sourceExplorer: ExplorerInfo
+  sourceChainType: ChainType
+  destinationExplorer: ExplorerInfo
+  destinationChainType: ChainType
   showWarning?: boolean
   onWarningEnter?: (target: HTMLElement) => void
   onWarningLeave?: () => void
@@ -38,9 +40,11 @@ export function NetworkLaneRow({
   mechanism,
   allLimits,
   isLoadingRateLimits,
-  destinationVerifiers,
-  explorer,
-  chainType,
+  verifierRows,
+  sourceExplorer,
+  sourceChainType,
+  destinationExplorer,
+  destinationChainType,
   showWarning,
   onWarningEnter,
   onWarningLeave,
@@ -134,7 +138,13 @@ export function NetworkLaneRow({
         </td>
       </tr>
       {isExpanded && (
-        <VerifiersAccordionRow destinationVerifiers={destinationVerifiers} explorer={explorer} chainType={chainType} />
+        <VerifiersAccordionRow
+          rows={verifierRows}
+          sourceExplorer={sourceExplorer}
+          sourceChainType={sourceChainType}
+          destinationExplorer={destinationExplorer}
+          destinationChainType={destinationChainType}
+        />
       )}
     </Fragment>
   )

@@ -382,20 +382,27 @@ export interface RateLimiterDirections {
 export type RateLimiterEntry = RateLimiterDirections | null
 
 /**
- * Transfer fees for a token on a lane in basis points
+ * Raw per-lane verifier (CCV) data parsed from the GraphQL `info`/`poolInfo` blobs.
+ *
+ * Values for the address arrays:
+ * - []: No verifiers configured
+ * - [addr1, ...]: Verifiers configured
+ * - null: Downstream API error / malformed payload
  */
-export interface TokenFees {
-  standardTransferFeeBps: number
-  customTransferFeeBps: number
+export interface LaneVerifierInfo {
+  inboundCCVs: string[] | null
+  outboundCCVs: string[] | null
+  thresholdInboundCCVs: string[] | null
+  thresholdOutboundCCVs: string[] | null
+  thresholdAmount: string | null
 }
 
 /**
- * Raw rate limits from mock data (fees may not be present)
+ * Raw rate limits for a token on a lane (standard + fast/custom buckets)
  */
 export interface RawTokenRateLimits {
   standard: RateLimiterEntry
   custom: RateLimiterEntry
-  fees?: TokenFees
 }
 
 /**
@@ -408,12 +415,10 @@ export interface TokenRateLimits {
 }
 
 /**
- * Combined rate limits and fees for a token on a lane
- * Used in API responses that return both rate limits and transfer fees
+ * Rate limits for a token on a lane, used in lane/rate-limit API responses
  */
 export interface TokenLaneData {
   rateLimits: TokenRateLimits
-  fees: TokenFees | null
   tokenAddress?: string
   tokenDecimals?: number
   sourcePoolType?: string
@@ -536,7 +541,6 @@ export type RateLimitsType = "standard" | "custom"
 
 /**
  * Source chain rate limits data with minBlockConfirmation and remote destinations
- * Uses RawTokenRateLimits since fees may not be present in mock data
  */
 export interface SourceChainRateLimitsData {
   minBlockConfirmation: number | null
@@ -544,7 +548,7 @@ export interface SourceChainRateLimitsData {
 }
 
 /**
- * Rate limits data structure in the mock JSON files
+ * Rate limits data structure keyed by token and source chain
  * Token -> SourceChain -> { minBlockConfirmation?, remote: { DestChain -> { standard, custom } } }
  */
 export type RateLimitsData = Record<string, Record<string, SourceChainRateLimitsData>>
@@ -570,23 +574,36 @@ export interface RateLimitsServiceResponse {
 // Token Directory API Types (for /tokens/{symbol}/chains/{chain} endpoint)
 
 /**
- * Verifiers configuration for a lane with pre-computed sets for different transfer amounts
- * Only present for v2.0+ pools (check pool.capabilities.supportsV2Features)
- * For v1.x pools, the entire verifiers field is null
+ * A pre-computed verifier (CCV) set for one side of a lane.
  *
  * Values for belowThreshold/aboveThreshold:
- * - []: No verifiers configured for this lane
+ * - []: No verifiers configured for this side
  * - [addr1, addr2, ...]: Verifiers configured
  * - null: Downstream API error fetching verifiers
  *
  * Usage:
- * - belowThreshold: Verifiers used when transfer amount is below the threshold
- * - aboveThreshold: Verifiers used when transfer amount is at or above the threshold
- *   (includes all belowThreshold verifiers plus additional threshold verifiers)
+ * - belowThreshold: Verifiers required when the transfer amount is below the threshold
+ * - aboveThreshold: Verifiers required at or above the threshold
+ *   (includes all belowThreshold verifiers plus the additional threshold verifiers)
  */
-export interface LaneVerifiers {
+export interface VerifierSet {
   belowThreshold: string[] | null
   aboveThreshold: string[] | null
+}
+
+/**
+ * Verifiers configuration for a lane. Source and destination pools configure their
+ * CCVs independently (AdvancedPoolHooks.CCVConfig), so the two sets can differ:
+ * - source: the source pool's OUTBOUND CCVs (required to send on this lane)
+ * - destination: the destination pool's INBOUND CCVs (required to receive on this lane)
+ *
+ * Only present for v2.0+ pools (check pool.capabilities.supportsV2Features).
+ * For v1.x pools the entire verifiers field is null. Each side may independently be
+ * null (downstream API error) or {belowThreshold: [], aboveThreshold: []} (not configured).
+ */
+export interface LaneVerifiers {
+  source: VerifierSet | null
+  destination: VerifierSet | null
 }
 
 /**
@@ -594,16 +611,14 @@ export interface LaneVerifiers {
  *
  * Use pool.capabilities.supportsV2Features to interpret verifiers:
  * - supportsV2Features=false + verifiers=null → v1.x pool, feature not supported
- * - supportsV2Features=true + verifiers={belowThreshold: null, aboveThreshold: null} → downstream API error
- * - supportsV2Features=true + verifiers={belowThreshold: [], aboveThreshold: []} → not configured
- * - supportsV2Features=true + verifiers={belowThreshold: [...], aboveThreshold: [...]} → configured
+ * - supportsV2Features=true → verifiers={source, destination}, each an independently
+ *   configured VerifierSet (see LaneVerifiers)
  */
 export interface TokenDirectoryLane {
   internalId: string
   chainId: number | string
   selector: string
   rateLimits: TokenRateLimits
-  fees: TokenFees | null
   verifiers: LaneVerifiers | null
 }
 
@@ -669,28 +684,6 @@ export interface TokenDirectoryApiResponse {
 export interface TokenDirectoryServiceResponse {
   data: TokenDirectoryData | null
 }
-
-/**
- * CCV config data structure in mock JSON files
- * Token -> SourceChain (directory key) -> { thresholdAmount, outboundCCVs, inboundCCVs }
- *
- * Values for base/threshold arrays:
- * - []: No verifiers configured
- * - [addr1, ...]: Verifiers configured
- * - null: Downstream API error fetching verifiers
- */
-export interface CCVLaneConfig {
-  base: string[] | null
-  threshold: string[] | null
-}
-
-export interface CCVChainConfig {
-  thresholdAmount: string
-  outboundCCVs: Record<string, CCVLaneConfig>
-  inboundCCVs: Record<string, CCVLaneConfig>
-}
-
-export type CCVConfigData = Record<string, Record<string, CCVChainConfig>>
 
 // Faucet API Types
 export type {
