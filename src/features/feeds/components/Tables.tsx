@@ -20,7 +20,11 @@ import { REPORT_SCHEMA_DEFINITIONS, type SchemaDefinition } from "./reportSchema
 import schemaFieldsTableStyles from "../../data-streams/common/schemaFieldsTable.module.css"
 import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
 import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
-import { shouldHideAddress, shouldHideStreamFeedId } from "~/features/feeds/utils/feedVisibility.ts"
+import {
+  shouldHideAddress,
+  shouldHideStreamFeedId,
+  BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES,
+} from "~/features/feeds/utils/feedVisibility.ts"
 import { DATA_STREAMS_CONTACT_URL, TOKENIZED_EQUITY_CONTACT_EMAIL } from "~/features/feeds/constants.ts"
 import {
   getSchemaVersion,
@@ -561,6 +565,17 @@ const DefaultTr = ({
                 title="Tokenized Equity Feed"
               >
                 Tokenized Equity
+              </a>
+            </div>
+          )}
+          {BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES.has(metadata.proxyAddress?.toLowerCase()) && (
+            <div style={{ marginTop: "5px" }}>
+              <a
+                href="/data-feeds/blended-precious-metals-feeds"
+                className={tableStyles.feedVariantBadge}
+                title="24/7 Blended Precious Metals Feed"
+              >
+                24/7 Blended Precious Metals
               </a>
             </div>
           )}

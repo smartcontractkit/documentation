@@ -18,6 +18,13 @@ export const CONTACT_EMAIL_PROXY_ADDRESSES = new Set<string>([
 ])
 
 /**
+ * Proxy addresses (lowercase) for 24/7 blended gold feeds.
+ * Add new blended gold feed proxy addresses here to include them in the
+ * blended gold feed page and badge.
+ */
+export const BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES = new Set<string>(["0x369c67e8b026cc4ef98350f332d7dd52b85b7674"])
+
+/**
  * Returns true when the feed's contract address should be hidden and replaced
  * with the data-feeds contact email in the UI.
  */
@@ -84,7 +91,8 @@ export function isFeedVisible(
   // 1. Universal Exclusions
   // ===========================================================================
   const isTokenizedEquity = dataFeedType === "tokenizedEquity"
-  if (feed.docs?.hidden && !isTokenizedEquity) return false
+  const isBlendedPreciousMetals = dataFeedType === "blendedPreciousMetals"
+  if (feed.docs?.hidden && !isTokenizedEquity && !isBlendedPreciousMetals) return false
 
   const isDeprecating = ecosystem === "deprecating"
   const isStreams =
@@ -145,6 +153,8 @@ export function isFeedVisible(
       (assetClass === "Equity" || assetClass === "Equities") &&
       feed.contractType !== "verifier" &&
       feed.docs?.productTypeCode === "primaryTokenizedPrice"
+  } else if (isBlendedPreciousMetals) {
+    isVisible = BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES.has(feed.proxyAddress?.toLowerCase())
   } else {
     isVisible =
       !feed.docs?.porType &&

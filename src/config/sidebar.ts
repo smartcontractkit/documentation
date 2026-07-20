@@ -383,6 +383,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                 "cre/guides/workflow/using-solana-client/onchain-write-go",
               ],
             },
+            {
+              title: "Forwarder Directory",
+              url: "cre/guides/workflow/using-solana-client/forwarder-directory",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-solana-client/forwarder-directory-ts",
+                "cre/guides/workflow/using-solana-client/forwarder-directory-go",
+              ],
+            },
           ],
         },
         {
@@ -868,6 +876,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
             { title: "Rate and Volatility Feeds", url: "data-feeds/rates-feeds" },
             { title: "L2 Sequencer Uptime Feeds", url: "data-feeds/l2-sequencer-feeds" },
+            { title: "24/7 Blended Precious Metals Feeds", url: "data-feeds/blended-precious-metals-feeds" },
             { title: "Self-Managed Feeds", url: "data-feeds/self-managed-feeds" },
           ],
         },

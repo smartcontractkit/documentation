@@ -107,6 +107,20 @@ export type ChainsConfig = {
   [chain: string]: ChainConfig
 }
 
+export type VerifierConfig = {
+  id: string
+  name: string
+  role?: string
+  type: string
+  version: string
+}
+
+export type VerifiersConfig = {
+  [chain: string]: {
+    [address: string]: VerifierConfig
+  }
+}
+
 export type LanesConfig = {
   [sourceChain: string]: DestinationsLaneConfig
 }

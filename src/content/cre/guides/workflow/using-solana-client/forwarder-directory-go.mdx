@@ -1,0 +1,63 @@
+---
+section: cre
+title: "Solana Forwarder Directory"
+sdkLang: "go"
+pageId: "solana-forwarder-directory"
+date: Last Modified
+metadata:
+  description: "Find Solana forwarder program and state account addresses for CRE workflows on simulation and production networks."
+  datePublished: "2026-07-15"
+  lastModified: "2026-07-15"
+---
+
+import { Aside, CopyText } from "@components"
+
+This page lists forwarder program and state account addresses for CRE Solana workflows. Solana uses a different forwarder
+model than EVM: instead of a single contract address, each forwarder deployment has a **program ID** and a **state
+account**. Your workflow config needs both values.
+
+<Aside type="note" title="Looking for supported networks?">
+  For a complete list of supported networks and version requirements, see [Supported
+  Networks](/cre/supported-networks-go).
+</Aside>
+
+<Aside type="tip" title="Tenant-scoped chain list">
+  Chain availability and mock forwarder addresses depend on your CRE tenant. Run [`cre workflow
+  supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) after `cre login` to see the chains and
+  mock forwarder addresses enabled for your organization. Use `--output json` for scripting.
+</Aside>
+
+## How to use this page
+
+Your workflow config (`config.staging.json` / `config.production.json`) includes `forwarderProgramId` and
+`forwarderState` fields. Use the simulation addresses for `cre workflow simulate` and the production addresses when
+deploying to the DON. Learn more: [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-go).
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Different addresses for simulation vs production">
+  The mock forwarder addresses used during simulation are **different** from the production Keystone Forwarder addresses
+  used by deployed workflows. After testing with simulation, update `forwarderProgramId` and `forwarderState` in your
+  production config. See [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-go#simulation-vs-production-forwarder-addresses).
+</Aside>
+
+## Simulation (mock forwarder)
+
+These addresses are baked into the CLI and used automatically by `cre workflow simulate`. Use these **only** during local
+development and testing.
+
+| Network        | Mock Forwarder Program ID                                            | Mock Forwarder State Account                                         |
+| -------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Solana Devnet  | <CopyText text="7kuEAA3mSC1Tz8gQjnvH7bKFda9xSPRRin9SZbH49cNK" code/> | <CopyText text="5Tipz3yhTBdVsDbaBxZkrp7Gjf3brGq5SKkxReefPMP7" code/> |
+| Solana Mainnet | <CopyText text="7kuEAA3mSC1Tz8gQjnvH7bKFda9xSPRRin9SZbH49cNK" code/> | <CopyText text="jhCjuD4Z3V7HeSUChMRpkRwpw6B9yC63mxDMv8SdLNX" code/>  |
+
+## Production (Keystone Forwarder)
+
+For production deployments, use these live Keystone Forwarder addresses:
+
+| Network        | Keystone Forwarder Program ID                                        | Keystone Forwarder State Account                                     |
+| -------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Solana Devnet  | <CopyText text="CXsKEJcs25TQEYU2e5jZ8QTPE3ffMLZhH6BWHrdcCCB5" code/> | <CopyText text="8QoomCQyPSkJ8WopJbX9B4HyvrFzziwvJdU8hZE6DCr9" code/> |
+| Solana Mainnet | <CopyText text="GFrSSvQXaVGkc6Nrr8y2msie6pivJkR1s2EnDk4et294" code/> | <CopyText text="9FgdPyU28bGMCuJyD34pzw9W7Ys36ziLbT9cbZtsaraV" code/> |
+
+The workflow derives `forwarderAuthority` at runtime from `[]byte("forwarder")`, forwarder state bytes, and receiver
+program bytes under the `forwarderProgramId`.

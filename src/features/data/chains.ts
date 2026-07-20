@@ -3,7 +3,15 @@ import { ChainMetadata } from "./api/index.ts"
 // Cross-networks
 export const POR_MVR_FEEDS_URL = "https://reference-data-directory.vercel.app/por-data-feeds.json"
 
-type ChainTags = ("default" | "smartData" | "rates" | "streams" | "usGovernmentMacroeconomicData" | "tokenizedEquity")[]
+type ChainTags = (
+  | "default"
+  | "smartData"
+  | "rates"
+  | "streams"
+  | "usGovernmentMacroeconomicData"
+  | "tokenizedEquity"
+  | "blendedPreciousMetals"
+)[]
 export interface ChainNetwork {
   name: string
   explorerUrl: string
@@ -254,7 +262,14 @@ export const CHAINS: Chain[] = [
     title: "Data Feeds",
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.dev/",
-    tags: ["default", "smartData", "rates", "usGovernmentMacroeconomicData", "tokenizedEquity"],
+    tags: [
+      "default",
+      "smartData",
+      "rates",
+      "usGovernmentMacroeconomicData",
+      "tokenizedEquity",
+      "blendedPreciousMetals",
+    ],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -264,7 +279,7 @@ export const CHAINS: Chain[] = [
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
         rddBundleUrl: "https://reference-data-directory.vercel.app/bundle-proxies-mainnet.json",
         queryString: "ethereum-mainnet",
-        tags: ["smartData", "usGovernmentMacroeconomicData", "tokenizedEquity"],
+        tags: ["smartData", "usGovernmentMacroeconomicData", "tokenizedEquity", "blendedPreciousMetals"],
       },
       {
         name: "Sepolia Testnet",
@@ -595,7 +610,7 @@ export const CHAINS: Chain[] = [
     label: "Robinhood Chain",
     title: "Robinhood Chain Data Feeds",
     img: "/assets/chains/robinhood-chain.svg",
-    networkStatusUrl: "https://docs.robinhood.com/chain/",
+    networkStatusUrl: "https://status.robinhoodchain.offchain.io/",
     tags: ["default", "tokenizedEquity"],
     supportedFeatures: ["feeds"],
     networks: [
