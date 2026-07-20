@@ -13,6 +13,7 @@ import {
   Network,
   DecomConfig,
   DecommissionedNetwork,
+  VerifiersConfig,
 } from "./types.ts"
 import { determineTokenMechanism } from "./utils.ts"
 import { ExplorerInfo, SupportedChain, ChainType } from "@config/types.ts"
@@ -31,11 +32,13 @@ import {
 import chainsMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/chains.json" with { type: "json" }
 import lanesMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/lanes.json" with { type: "json" }
 import tokensMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/tokens.json" with { type: "json" }
+import verifiersMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/verifiers.json" with { type: "json" }
 
 // For testnet
 import chainsTestnetv120 from "@config/data/ccip/v1_2_0/testnet/chains.json" with { type: "json" }
 import lanesTestnetv120 from "@config/data/ccip/v1_2_0/testnet/lanes.json" with { type: "json" }
 import tokensTestnetv120 from "@config/data/ccip/v1_2_0/testnet/tokens.json" with { type: "json" }
+import verifiersTestnetv120 from "@config/data/ccip/v1_2_0/testnet/verifiers.json" with { type: "json" }
 
 // For decommissioned chains
 import decomMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/decom.json" with { type: "json" }
@@ -490,6 +493,36 @@ const getDecommissionedChainKeys = ({ filter }: { filter: Environment }): Set<st
   return new Set(Object.keys(decomReferenceData))
 }
 
+const getCommitteeVerifier = ({
+  chain,
+  filter,
+}: {
+  chain: string
+  filter: Environment
+}): { address: string; version: string } | undefined => {
+  const verifiersReferenceData =
+    Environment.Mainnet === filter
+      ? (verifiersMainnetv120 as unknown as VerifiersConfig)
+      : (verifiersTestnetv120 as unknown as VerifiersConfig)
+
+  const chainVerifiers = verifiersReferenceData[chain]
+  if (!chainVerifiers) return undefined
+
+  const entries = Object.entries(chainVerifiers)
+  const selectedVerifier =
+    entries.find(([, verifier]) => verifier.type === "committee" && verifier.role === "default") ||
+    entries.find(([, verifier]) => verifier.role === "default") ||
+    entries.find(([, verifier]) => verifier.type === "committee")
+
+  if (!selectedVerifier) return undefined
+
+  const [address, verifier] = selectedVerifier
+  return {
+    address,
+    version: verifier.version,
+  }
+}
+
 const buildNetworkForChain = ({ chain, filter }: { chain: string; filter: Environment }): Network | undefined => {
   const chainsReferenceData =
     Environment.Mainnet === filter
@@ -516,6 +549,7 @@ const buildNetworkForChain = ({ chain, filter }: { chain: string; filter: Enviro
   if (!nativeToken) throw Error(`Native token not found for ${supportedChain}`)
 
   const decommissionedChainKeys = getDecommissionedChainKeys({ filter })
+  const committeeVerifier = getCommitteeVerifier({ chain, filter })
 
   return {
     name: title,
@@ -543,6 +577,7 @@ const buildNetworkForChain = ({ chain, filter }: { chain: string; filter: Enviro
       name: tokenName,
       logo: getTokenIconUrl(tokenName),
     })),
+    committeeVerifier,
     armProxy: chainConfig.armProxy,
     feeQuoter: chainType === "solana" ? chainConfig.feeQuoter : undefined,
     mcms: chainType === "aptos" ? chainConfig.mcms?.address : undefined,
@@ -551,7 +586,6 @@ const buildNetworkForChain = ({ chain, filter }: { chain: string; filter: Enviro
       ? {
           ccipOwnerParty: chainConfig.ccipOwnerParty,
           ccipExplicitDisclosureServer: chainConfig.ccipExplicitDisclosureServer,
-          committeeVerifier: chainConfig.committeeVerifier,
           feeQuoterModule: chainConfig.feeQuoterModule,
           indexer: chainConfig.indexer,
         }
