@@ -5,7 +5,6 @@ import automationLogo from "../../../assets/product-logos/automation-logo.svg"
 import dataFeedsLogo from "../../../assets/product-logos/data-feeds-logo.svg"
 import dataStreamsLogo from "../../../assets/product-logos/data-streams-logo.svg"
 import creLogo from "../../../assets/product-logos/cre-logo.svg"
-import { c } from "node_modules/vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf.js"
 
 export interface ProductData {
   learnMoreLink: string
@@ -115,14 +114,29 @@ export const productChainLinks: ProductChainLinks = {
     learnMoreLink: "cre",
     logo: creLogo,
     chains: {
+      "adi-network": "/cre/supported-networks",
       arbitrum: "/cre/supported-networks",
       avalanche: "/cre/supported-networks",
       base: "/cre/supported-networks",
       "bnb-chain": "/cre/supported-networks",
+      celo: "/cre/supported-networks",
       ethereum: "/cre/supported-networks",
+      "gnosis-chain": "/cre/supported-networks",
+      hyperevm: "/cre/supported-networks",
+      ink: "/cre/supported-networks",
+      jovay: "/cre/supported-networks",
+      linea: "/cre/supported-networks",
+      mantle: "/cre/supported-networks",
+      megaeth: "/cre/supported-networks",
       optimism: "/cre/supported-networks",
+      pharos: "/cre/supported-networks",
+      plasma: "/cre/supported-networks",
       polygon: "/cre/supported-networks",
+      scroll: "/cre/supported-networks",
+      solana: "/cre/supported-networks",
+      sonic: "/cre/supported-networks",
       worldchain: "/cre/supported-networks",
+      xlayer: "/cre/supported-networks",
       zksync: "/cre/supported-networks",
     },
   },
@@ -412,7 +426,7 @@ export const chainNames: Record<string, string> = {
   treasure: "Treasure",
   lens: "Lens",
   unichain: "Unichain",
-  hyperevm: "HyperEVM",
+  hyperevm: "Hyperliquid",
   merlin: "Merlin",
   fraxtal: "Fraxtal",
   zeta: "Zeta",

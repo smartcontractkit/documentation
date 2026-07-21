@@ -475,6 +475,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Using Randomness in Workflows",
           url: "cre/guides/workflow/using-randomness",
+          highlightAsCurrent: ["cre/guides/workflow/using-randomness-ts", "cre/guides/workflow/using-randomness-go"],
         },
       ],
     },
