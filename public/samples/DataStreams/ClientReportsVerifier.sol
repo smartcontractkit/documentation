@@ -29,7 +29,7 @@ interface IVerifierProxy {
   /**
    * @notice Route a report to the correct verifier.
    * @param payload           Full report payload (header + signed report).
-   * @param parameterPayload  Empty bytes for Data Streams subscription billing.
+   * @param parameterPayload  Empty fee metadata for Data Streams subscription billing.
    */
   function verify(
     bytes calldata payload,
@@ -40,7 +40,7 @@ interface IVerifierProxy {
    * @notice Route multiple reports to the correct verifier in a single call.
    * @param payloads          Array of full report payloads. Each entry may reference
    *                          a different feed ID. Order is preserved in the output.
-   * @param parameterPayload  Empty bytes for Data Streams subscription billing.
+   * @param parameterPayload  Empty fee metadata for Data Streams subscription billing.
    * @return verifiedReports  Verified report bytes in the same order as the input.
    */
   function verifyBulk(
@@ -133,7 +133,8 @@ contract ClientReportsVerifier {
    *  1. Decode the unverified report to get `reportData`.
    *  2. Read the first two bytes → schema version (`0x0003` or `0x0008`).
    *     - Revert if the version is unsupported.
-   *  3. Call `VerifierProxy.verify()` with an empty parameter payload.
+   *  3. Call `VerifierProxy.verify()` with empty fee metadata. Data Streams
+   *     uses subscription billing, so no fee token address is required.
    *  4. Decode the verified report into the correct struct and emit the price.
    *
    *  @param unverifiedReport Full payload returned by Streams Direct.

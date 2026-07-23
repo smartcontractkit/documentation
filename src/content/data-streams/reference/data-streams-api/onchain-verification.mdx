@@ -58,14 +58,14 @@ interface IVerifierProxy {
   // Decode the return value into the appropriate report struct (v3, v8, etc.).
   function verify(
     bytes calldata payload,           // Full report payload from the Streams API
-    bytes calldata parameterPayload   // pass "" for Data Streams subscription billing
+    bytes calldata parameterPayload   // pass empty fee metadata for Data Streams subscription billing
   ) external payable returns (bytes memory verifierResponse);
 
   // Verify multiple reports in one transaction. Accepts different feed IDs in the same call.
   // Returns verified report bytes in the same order as the input array.
   function verifyBulk(
     bytes[] calldata payloads,        // Array of report payloads — may span different feed IDs
-    bytes calldata parameterPayload   // pass "" for Data Streams subscription billing
+    bytes calldata parameterPayload   // pass empty fee metadata for Data Streams subscription billing
   ) external payable returns (bytes[] memory verifiedReports);
 
   // Legacy FeeManager accessor. Data Streams verification does not require
@@ -78,10 +78,10 @@ interface IVerifierProxy {
 
 Verifies a single report payload. Pass the raw payload bytes returned by the Streams API directly as `payload` — no transformation is needed.
 
-| Parameter          | Type             | Description                                                                        |
-| ------------------ | ---------------- | ---------------------------------------------------------------------------------- |
-| `payload`          | `bytes calldata` | The full report payload returned by the Streams API (header + signed report body). |
-| `parameterPayload` | `bytes calldata` | Empty bytes `""` for Data Streams subscription billing.                            |
+| Parameter          | Type             | Description                                                                                                                               |
+| ------------------ | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `payload`          | `bytes calldata` | The full report payload returned by the Streams API (header + signed report body).                                                        |
+| `parameterPayload` | `bytes calldata` | Fee metadata parameter retained for legacy fee-manager integrations. Pass empty bytes `""` for current Data Streams subscription billing. |
 
 #### Returns
 
@@ -91,16 +91,16 @@ Verifies a single report payload. Pass the raw payload bytes returned by the Str
 
 #### Fee handling for `verify()`
 
-Data Streams uses subscription-based billing. Your contract does not need to quote or approve a per-verification fee before calling `verify()`, and no supported EVM chain requires LINK funding for this step. Pass empty bytes `""` as `parameterPayload`.
+Data Streams uses subscription-based billing. Your contract does not need to quote or approve a per-verification fee before calling `verify()`, and no supported EVM chain requires LINK funding for this step. Pass empty bytes `""` as `parameterPayload` because no fee token metadata is required.
 
 ### `verifyBulk()`
 
 Verifies multiple report payloads in a single transaction. Reports may reference different feed IDs, enabling atomic multi-feed updates. Pass the raw payload bytes from the Streams API directly — no transformation is needed.
 
-| Parameter          | Type               | Description                                                                                                                             |
-| ------------------ | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `payloads`         | `bytes[] calldata` | Array of full report payloads from the Streams API. Each entry may correspond to a different feed ID. Order is preserved in the output. |
-| `parameterPayload` | `bytes calldata`   | Empty bytes `""` for Data Streams subscription billing.                                                                                 |
+| Parameter          | Type               | Description                                                                                                                               |
+| ------------------ | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `payloads`         | `bytes[] calldata` | Array of full report payloads from the Streams API. Each entry may correspond to a different feed ID. Order is preserved in the output.   |
+| `parameterPayload` | `bytes calldata`   | Fee metadata parameter retained for legacy fee-manager integrations. Pass empty bytes `""` for current Data Streams subscription billing. |
 
 #### Returns
 
@@ -110,7 +110,7 @@ Verifies multiple report payloads in a single transaction. Reports may reference
 
 #### Fee handling for `verifyBulk()`
 
-Data Streams uses subscription-based billing. Your contract does not need to quote, sum, or approve per-report verification fees before calling `verifyBulk()`. Pass empty bytes `""` as `parameterPayload`.
+Data Streams uses subscription-based billing. Your contract does not need to quote, sum, or approve per-report verification fees before calling `verifyBulk()`. Pass empty bytes `""` as `parameterPayload` because no fee token metadata is required.
 
 ## When to use `verifyBulk()`
 

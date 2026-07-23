@@ -210,7 +210,7 @@ When you call `verifyReport()`, the contract does the following:
 
    Unsupported versions revert with `InvalidReportVersion`.
 
-2. **Verify through the proxy**: The contract calls `VerifierProxy.verify()` with an empty `parameterPayload`. Data Streams uses subscription-based billing, so the contract does not need LINK funding for per-verification fees.
+2. **Verify through the proxy**: The contract calls `VerifierProxy.verify()` with empty fee metadata in `parameterPayload`. The proxy ABI still includes this parameter for legacy fee-manager integrations, but current Data Streams billing is subscription-based, so no fee token address is required and the contract does not need LINK funding for per-verification fees.
 
 3. **Decode and store the price**: The verified bytes are decoded into the appropriate struct (`ReportV3` or `ReportV8`). The price is stored in `lastDecodedPrice` and emitted as a `DecodedPrice` event.
 
@@ -276,7 +276,7 @@ This is the ETH/USD price with 18 decimal places: **~1,926.62 USD**. Each stream
 The function follows the same four stages as `verifyReport()`, extended to handle an array of payloads:
 
 1. All payloads are decoded and their versions are validated in a loop before verification runs.
-2. All payloads are passed to `VerifierProxy.verifyBulk()` in one call with an empty `parameterPayload`.
+2. All payloads are passed to `VerifierProxy.verifyBulk()` in one call with empty fee metadata in `parameterPayload`.
 3. The verified reports are decoded and stored in `lastDecodedPrices[]`, with a `DecodedPrice` event emitted per report.
 
 Payloads in the array may reference different feed IDs — there is no requirement that they all be for the same stream.
