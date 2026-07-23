@@ -4553,7 +4553,7 @@ The `IVerifierProxy` interface exposes two verification functions:
 
 ## IVerifierProxy interface
 
-`IVerifierProxy` is the single onchain entry point for report verification. Your contract calls it directly — you never interact with the underlying Verifier contract. The proxy routes each call to the correct Verifier, handles fee collection through the `FeeManager` (when one is deployed), and returns the verified report data.
+`IVerifierProxy` is the single onchain entry point for report verification. Your contract calls it directly — you never interact with the underlying Verifier contract. The proxy routes each call to the correct Verifier and returns the verified report data.
 
 You will need the deployed `VerifierProxy` address for the network you are targeting. Find it on the [Stream Addresses](/data-streams/crypto-streams) page.
 
@@ -4563,30 +4563,30 @@ interface IVerifierProxy {
   // Decode the return value into the appropriate report struct (v3, v8, etc.).
   function verify(
     bytes calldata payload,           // Full report payload from the Streams API
-    bytes calldata parameterPayload   // abi.encode(feeTokenAddress), or "" if no FeeManager
+    bytes calldata parameterPayload   // pass "" for Data Streams subscription billing
   ) external payable returns (bytes memory verifierResponse);
 
   // Verify multiple reports in one transaction. Accepts different feed IDs in the same call.
   // Returns verified report bytes in the same order as the input array.
   function verifyBulk(
     bytes[] calldata payloads,        // Array of report payloads — may span different feed IDs
-    bytes calldata parameterPayload   // abi.encode(feeTokenAddress), or "" if no FeeManager
+    bytes calldata parameterPayload   // pass "" for Data Streams subscription billing
   ) external payable returns (bytes[] memory verifiedReports);
 
-  // Returns the FeeManager address, or the zero address if no FeeManager is deployed on this chain.
-  // Use this to determine whether fee quoting and approval steps are required before verifying.
+  // Legacy FeeManager accessor. Data Streams verification does not require
+  // per-verification fee quoting or approvals.
   function s_feeManager() external view returns (IVerifierFeeManager);
 }
 ```
 
 ### `verify()`
 
-Verifies a single report payload and optionally collects the verification fee. Pass the raw payload bytes returned by the Streams API directly as `payload` — no transformation is needed.
+Verifies a single report payload. Pass the raw payload bytes returned by the Streams API directly as `payload` — no transformation is needed.
 
-| Parameter          | Type             | Description                                                                                                         |
-| ------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `payload`          | `bytes calldata` | The full report payload returned by the Streams API (header + signed report body).                                  |
-| `parameterPayload` | `bytes calldata` | ABI-encoded fee token address (e.g. `abi.encode(linkTokenAddress)`), or empty bytes `""` when no FeeManager exists. |
+| Parameter          | Type             | Description                                                                        |
+| ------------------ | ---------------- | ---------------------------------------------------------------------------------- |
+| `payload`          | `bytes calldata` | The full report payload returned by the Streams API (header + signed report body). |
+| `parameterPayload` | `bytes calldata` | Empty bytes `""` for Data Streams subscription billing.                            |
 
 #### Returns
 
@@ -4596,21 +4596,16 @@ Verifies a single report payload and optionally collects the verification fee. P
 
 #### Fee handling for `verify()`
 
-Before calling `verify()`, check whether a `FeeManager` is deployed on the target network by calling `s_feeManager()` on the proxy.
-
-- **If `s_feeManager()` returns a non-zero address**: quote the fee using `getFeeAndReward`, approve the `RewardManager` to spend that LINK amount, then pass `abi.encode(feeTokenAddress)` as `parameterPayload`.
-- **If `s_feeManager()` returns the zero address**: no fee is required. Pass empty bytes `""` as `parameterPayload`.
-
-Networks with a `FeeManager` currently deployed include: Arbitrum, Avalanche, Base, Blast, Bob, Ink, Linea, OP, Scroll, Soneium, and ZKSync.
+Data Streams uses subscription-based billing. Your contract does not need to quote or approve a per-verification fee before calling `verify()`, and no supported EVM chain requires LINK funding for this step. Pass empty bytes `""` as `parameterPayload`.
 
 ### `verifyBulk()`
 
 Verifies multiple report payloads in a single transaction. Reports may reference different feed IDs, enabling atomic multi-feed updates. Pass the raw payload bytes from the Streams API directly — no transformation is needed.
 
-| Parameter          | Type               | Description                                                                                                                                   |
-| ------------------ | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `payloads`         | `bytes[] calldata` | Array of full report payloads from the Streams API. Each entry may correspond to a different feed ID. Order is preserved in the output.       |
-| `parameterPayload` | `bytes calldata`   | ABI-encoded fee token address shared across all reports (e.g. `abi.encode(linkTokenAddress)`), or empty bytes `""` when no FeeManager exists. |
+| Parameter          | Type               | Description                                                                                                                             |
+| ------------------ | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `payloads`         | `bytes[] calldata` | Array of full report payloads from the Streams API. Each entry may correspond to a different feed ID. Order is preserved in the output. |
+| `parameterPayload` | `bytes calldata`   | Empty bytes `""` for Data Streams subscription billing.                                                                                 |
 
 #### Returns
 
@@ -4620,14 +4615,7 @@ Verifies multiple report payloads in a single transaction. Reports may reference
 
 #### Fee handling for `verifyBulk()`
 
-The same `FeeManager` check applies. When a `FeeManager` is deployed, the total fee equals the sum of individual fees across all reports in the batch. Your contract must:
-
-1. Decode each payload and call `getFeeAndReward` once per report to quote its fee.
-2. Sum the individual fees to get the total amount required.
-3. Approve the `RewardManager` contract to spend the total LINK amount in a single `approve()` call.
-4. Pass the ABI-encoded fee token address as `parameterPayload`.
-
-When no `FeeManager` is deployed, pass empty bytes as `parameterPayload` and skip all fee logic.
+Data Streams uses subscription-based billing. Your contract does not need to quote, sum, or approve per-report verification fees before calling `verifyBulk()`. Pass empty bytes `""` as `parameterPayload`.
 
 ## When to use `verifyBulk()`
 
@@ -4645,20 +4633,18 @@ Use `verifyBulk()` when your protocol needs price data from multiple feeds in th
 
 - **What you save**: one base transaction cost (21,000 gas) per additional report beyond the first.
 - **What you do not save**: the cryptographic verification cost per report.
-- **Fee cost**: verification fees (when applicable) are the same per report regardless of whether you use `verify()` or `verifyBulk()`.
+- **Fee cost**: Data Streams does not charge a per-report onchain verification fee.
 
 ## Contract example
 
-The contract below is an **example you deploy yourself**. It demonstrates the full verification pattern for both `verifyReport()` (single report) and `verifyBulkReports()` (multiple reports), including fee handling. Use it as a reference when writing your own contract.
-
-Your contract must have sufficient LINK tokens to pay for verification fees on networks where fees are required. Learn how to [fund your contract with LINK tokens](/resources/fund-your-contract).
+The contract below is an **example you deploy yourself**. It demonstrates the full verification pattern for both `verifyReport()` (single report) and `verifyBulkReports()` (multiple reports). Use it as a reference when writing your own contract.
 
 <CodeSample src="samples/DataStreams/ClientReportsVerifier.sol" />
 
 ### `verifyReport()` — single report
 
 - **Input**: one `bytes` payload from the Streams API — pass it directly.
-- **Fee**: checks for a `FeeManager`, quotes the fee if one exists, and approves that exact amount before calling `verify()`.
+- **Fee**: passes empty bytes for `parameterPayload`; no per-verification LINK fee is required.
 - **Output**: stores the decoded price in `lastDecodedPrice` and emits `DecodedPrice(int192 price)`.
 
 See the [Verify report data onchain (EVM)](/data-streams/tutorials/evm-onchain-report-verification) tutorial for a step-by-step walkthrough using this function.
@@ -4666,7 +4652,7 @@ See the [Verify report data onchain (EVM)](/data-streams/tutorials/evm-onchain-r
 ### `verifyBulkReports()` — multiple reports
 
 - **Input**: `bytes[]` array of payloads from the Streams API — each may reference a different feed ID.
-- **Fee**: calls `getFeeAndReward` once per report, sums the results, and issues a single `approve()` for the combined total before calling `verifyBulk()`.
+- **Fee**: passes empty bytes for `parameterPayload`; no per-verification LINK fee is required.
 - **Output**: stores the decoded prices in `lastDecodedPrices` (an `int192[]` array in the same order as the inputs) and emits `DecodedPrice(int192 price)` once per report.
 
 ---
@@ -5179,6 +5165,8 @@ interface BaseFields {
 }
 ```
 
+`nativeFee` and `linkFee` are legacy onchain verification fee fields in the report schema. Data Streams uses subscription-based billing, so these fields are not used to charge per-verification fees.
+
 ### Schema-Specific Fields
 
 - **V2/V3/V4**: `price: bigint` - Standard price data
@@ -5633,8 +5621,8 @@ Chainlink Tokenized Asset Data Streams adhere to the report schema outlined belo
 | `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                                    |
 | `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                           |
 | `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                             |
-| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                   |
-| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                           |
+| `nativeFee`             | `uint192` | Legacy onchain verification fee field                                          |
+| `linkFee`               | `uint192` | Legacy onchain verification fee field; not used for subscription billing       |
 | `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                        |
 | `lastUpdateTimestamp`   | `uint64`  | Timestamp of the last valid price update (nanoseconds)                         |
 | `price`                 | `int192`  | Last traded price from the real-world equity market                            |
@@ -5674,22 +5662,22 @@ Chainlink Data Streams that use the RWA Advanced (v11) schema adhere to the stru
 
 ## Schema Fields
 
-| Field                   | Type      | Description                                                       |
-| ----------------------- | --------- | ----------------------------------------------------------------- |
-| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                       |
-| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)              |
-| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                |
-| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                      |
-| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                              |
-| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                           |
-| `mid`                   | `int192`  | DON consensus mid-price                                           |
-| `lastSeenTimestampNs`   | `uint64`  | Timestamp of the last update for the mid price only (nanoseconds) |
-| `bid`                   | `int192`  | Median bid price                                                  |
-| `bidVolume`             | `int192`  | Volume at bid price                                               |
-| `ask`                   | `int192`  | Median ask price                                                  |
-| `askVolume`             | `int192`  | Volume at ask price                                               |
-| `lastTradedPrice`       | `int192`  | Last traded price                                                 |
-| `marketStatus`          | `uint32`  | Market status. Mapping varies by feed; see schema docs.           |
+| Field                   | Type      | Description                                                              |
+| ----------------------- | --------- | ------------------------------------------------------------------------ |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                              |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                     |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                       |
+| `nativeFee`             | `uint192` | Legacy onchain verification fee field                                    |
+| `linkFee`               | `uint192` | Legacy onchain verification fee field; not used for subscription billing |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                  |
+| `mid`                   | `int192`  | DON consensus mid-price                                                  |
+| `lastSeenTimestampNs`   | `uint64`  | Timestamp of the last update for the mid price only (nanoseconds)        |
+| `bid`                   | `int192`  | Median bid price                                                         |
+| `bidVolume`             | `int192`  | Volume at bid price                                                      |
+| `ask`                   | `int192`  | Median ask price                                                         |
+| `askVolume`             | `int192`  | Volume at ask price                                                      |
+| `lastTradedPrice`       | `int192`  | Last traded price                                                        |
+| `marketStatus`          | `uint32`  | Market status. Mapping varies by feed; see schema docs.                  |
 
 ### Market Status Values
 
@@ -5767,17 +5755,17 @@ DEX State Price streams adhere to the report schema outlined below.
 
 ## Schema Fields
 
-| Field                   | Type      | Description                                          |
-| ----------------------- | --------- | ---------------------------------------------------- |
-| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed          |
-| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds) |
-| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)   |
-| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)         |
-| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                 |
-| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)              |
-| `price`                 | `int192`  | DON consensus median DEX state price                 |
-| `bid`                   | `int192`  | N/A — equals price                                   |
-| `ask`                   | `int192`  | N/A — equals price                                   |
+| Field                   | Type      | Description                                                              |
+| ----------------------- | --------- | ------------------------------------------------------------------------ |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                              |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                     |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                       |
+| `nativeFee`             | `uint192` | Legacy onchain verification fee field                                    |
+| `linkFee`               | `uint192` | Legacy onchain verification fee field; not used for subscription billing |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                  |
+| `price`                 | `int192`  | DON consensus median DEX state price                                     |
+| `bid`                   | `int192`  | N/A — equals price                                                       |
+| `ask`                   | `int192`  | N/A — equals price                                                       |
 
 **Notes**:
 
@@ -5795,17 +5783,17 @@ Cryptocurrency streams adhere to the report schema outlined below.
 
 ## Schema Fields
 
-| Field                   | Type      | Description                                          |
-| ----------------------- | --------- | ---------------------------------------------------- |
-| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed          |
-| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds) |
-| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)   |
-| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)         |
-| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                 |
-| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)              |
-| `price`                 | `int192`  | DON consensus median price                           |
-| `bid`                   | `int192`  | Simulated buy impact price at X% liquidity depth     |
-| `ask`                   | `int192`  | Simulated sell impact price at X% liquidity depth    |
+| Field                   | Type      | Description                                                              |
+| ----------------------- | --------- | ------------------------------------------------------------------------ |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                              |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                     |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                       |
+| `nativeFee`             | `uint192` | Legacy onchain verification fee field                                    |
+| `linkFee`               | `uint192` | Legacy onchain verification fee field; not used for subscription billing |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                  |
+| `price`                 | `int192`  | DON consensus median price                                               |
+| `bid`                   | `int192`  | Simulated buy impact price at X% liquidity depth                         |
+| `ask`                   | `int192`  | Simulated sell impact price at X% liquidity depth                        |
 
 **Note**: Future Cryptocurrency streams may use different report schemas.
 
@@ -5830,8 +5818,8 @@ Real World Asset (RWA) streams adhere to the report schema outlined below.
 | `feedId`                | `bytes32` | The unique identifier for the stream                                                                                         |
 | `validFromTimestamp`    | `uint32`  | The earliest timestamp during which the price is valid (seconds)                                                             |
 | `observationsTimestamp` | `uint32`  | The latest timestamp during which the price is valid (seconds)                                                               |
-| `nativeFee`             | `uint192` | The cost to verify this report onchain when paying with the blockchain's native token                                        |
-| `linkFee`               | `uint192` | The cost to verify this report onchain when paying with LINK                                                                 |
+| `nativeFee`             | `uint192` | Legacy onchain verification fee field                                                                                        |
+| `linkFee`               | `uint192` | Legacy onchain verification fee field; not used for subscription billing                                                     |
 | `expiresAt`             | `uint32`  | The expiration date of this report (seconds)                                                                                 |
 | `price`                 | `int192`  | The DON's consensus median price                                                                                             |
 | `marketStatus`          | `uint8`   | The DON's consensus on whether the market is currently open. Possible values: `0` (`Unknown`), `1` (`Closed`), `2` (`Open`). |
@@ -5852,15 +5840,15 @@ Exchange Rate streams adhere to the report schema outlined below.
 
 ## Schema Fields
 
-| Field                   | Type      | Description                                          |
-| ----------------------- | --------- | ---------------------------------------------------- |
-| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed          |
-| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds) |
-| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)   |
-| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)         |
-| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                 |
-| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)              |
-| `exchangeRate`          | `int192`  | DON's consensus median exchange rate                 |
+| Field                   | Type      | Description                                                              |
+| ----------------------- | --------- | ------------------------------------------------------------------------ |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                              |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                     |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                       |
+| `nativeFee`             | `uint192` | Legacy onchain verification fee field                                    |
+| `linkFee`               | `uint192` | Legacy onchain verification fee field; not used for subscription billing |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                  |
+| `exchangeRate`          | `int192`  | DON's consensus median exchange rate                                     |
 
 **Notes**:
 
@@ -5877,17 +5865,17 @@ RWA streams adhere to the report schema outlined below.
 
 ### Schema Fields
 
-| Field                   | Type      | Description                                            |
-| ----------------------- | --------- | ------------------------------------------------------ |
-| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed            |
-| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)   |
-| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)     |
-| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)           |
-| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                   |
-| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                |
-| `lastUpdateTimestamp`   | `uint64`  | Timestamp of the last valid price update (nanoseconds) |
-| `midPrice`              | `int192`  | DON's consensus median price                           |
-| `marketStatus`          | `uint32`  | Market status. See schema docs for value mappings.     |
+| Field                   | Type      | Description                                                              |
+| ----------------------- | --------- | ------------------------------------------------------------------------ |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                              |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                     |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                       |
+| `nativeFee`             | `uint192` | Legacy onchain verification fee field                                    |
+| `linkFee`               | `uint192` | Legacy onchain verification fee field; not used for subscription billing |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                  |
+| `lastUpdateTimestamp`   | `uint64`  | Timestamp of the last valid price update (nanoseconds)                   |
+| `midPrice`              | `int192`  | DON's consensus median price                                             |
+| `marketStatus`          | `uint32`  | Market status. See schema docs for value mappings.                       |
 
 ### Market Status Values
 
@@ -5928,8 +5916,8 @@ Chainlink SmartData streams adhere to the report schema outlined below.
 | `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                              |
 | `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                     |
 | `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                       |
-| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                             |
-| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                     |
+| `nativeFee`             | `uint192` | Legacy onchain verification fee field                                    |
+| `linkFee`               | `uint192` | Legacy onchain verification fee field; not used for subscription billing |
 | `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                  |
 | `navPerShare`           | `int192`  | DON consensus NAV Per Share value as reported by the Fund Manager        |
 | `navDate`               | `uint64`  | Timestamp for the NAV Report publication date (milliseconds)             |
@@ -6240,22 +6228,22 @@ Developers are responsible for choosing the appropriate feed and ensuring that t
 
 APAC Equities data is delivered using the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11).
 
-| Field                   | Type      | Description                                             |
-| ----------------------- | --------- | ------------------------------------------------------- |
-| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed             |
-| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)    |
-| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)      |
-| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)            |
-| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                    |
-| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                 |
-| `mid`                   | `int192`  | DON consensus mid-price                                 |
-| `lastSeenTimestampNs`   | `uint64`  | Timestamp of the last report update (nanoseconds)       |
-| `bid`                   | `int192`  | Mid-price minus half the spread (mid − spread/2)        |
-| `bidVolume`             | `int192`  | Not populated for APAC equities; reported as 0          |
-| `ask`                   | `int192`  | Mid-price plus half the spread (mid + spread/2)         |
-| `askVolume`             | `int192`  | Not populated for APAC equities; reported as 0          |
-| `lastTradedPrice`       | `int192`  | Not populated for APAC equities; reported as 0          |
-| `marketStatus`          | `uint32`  | Market status. Mapping varies by feed; see schema docs. |
+| Field                   | Type      | Description                                                              |
+| ----------------------- | --------- | ------------------------------------------------------------------------ |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                              |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                     |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                       |
+| `nativeFee`             | `uint192` | Legacy onchain verification fee field                                    |
+| `linkFee`               | `uint192` | Legacy onchain verification fee field; not used for subscription billing |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                  |
+| `mid`                   | `int192`  | DON consensus mid-price                                                  |
+| `lastSeenTimestampNs`   | `uint64`  | Timestamp of the last report update (nanoseconds)                        |
+| `bid`                   | `int192`  | Mid-price minus half the spread (mid − spread/2)                         |
+| `bidVolume`             | `int192`  | Not populated for APAC equities; reported as 0                           |
+| `ask`                   | `int192`  | Mid-price plus half the spread (mid + spread/2)                          |
+| `askVolume`             | `int192`  | Not populated for APAC equities; reported as 0                           |
+| `lastTradedPrice`       | `int192`  | Not populated for APAC equities; reported as 0                           |
+| `marketStatus`          | `uint32`  | Market status. Mapping varies by feed; see schema docs.                  |
 
 For `marketStatus` value mappings, see [Standard-hours feeds (v11)](/data-streams/reference/report-schema-v11#standard-hours-feeds). For exchange schedules, see [Market Hours (APAC Equities)](/data-streams/market-hours#apac-equities).
 
@@ -6919,61 +6907,26 @@ import {ILogAutomation, Log} from "@chainlink/contracts/src/v0.8/automation/inte
 import {
   StreamsLookupCompatibleInterface
 } from "@chainlink/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol";
-import {Common} from "@chainlink/contracts/src/v0.8/llo-feeds/libraries/Common.sol";
-
-import {IRewardManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IRewardManager.sol";
-import {IVerifierFeeManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IVerifierFeeManager.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE FOR DEMONSTRATION PURPOSES.
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-// Custom interfaces for IVerifierProxy and IFeeManager
+// Custom interface for IVerifierProxy
 interface IVerifierProxy {
   /**
    * @notice Verifies that the data encoded has been signed.
-   * correctly by routing to the correct verifier, and bills the user if applicable.
+   * correctly by routing to the correct verifier.
    * @param payload The encoded data to be verified, including the signed
    * report.
-   * @param parameterPayload Fee metadata for billing. For the current implementation this is just the abi-encoded fee
-   * token ERC-20 address.
+   * @param parameterPayload Empty bytes for Data Streams subscription billing.
    * @return verifierResponse The encoded report from the verifier.
    */
   function verify(
     bytes calldata payload,
     bytes calldata parameterPayload
   ) external payable returns (bytes memory verifierResponse);
-
-  function s_feeManager() external view returns (IVerifierFeeManager);
-}
-
-interface IFeeManager {
-  /**
-   * @notice Calculates the fee and reward associated with verifying a report, including discounts for subscribers.
-   * This function assesses the fee and reward for report verification, applying a discount for recognized subscriber
-   * addresses.
-   * @param subscriber The address attempting to verify the report. A discount is applied if this address
-   * is recognized as a subscriber.
-   * @param unverifiedReport The report data awaiting verification. The content of this report is used to
-   * determine the base fee and reward, before considering subscriber discounts.
-   * @param quoteAddress The payment token address used for quoting fees and rewards.
-   * @return fee The fee assessed for verifying the report, with subscriber discounts applied where applicable.
-   * @return reward The reward allocated to the caller for successfully verifying the report.
-   * @return totalDiscount The total discount amount deducted from the fee for subscribers
-   */
-  function getFeeAndReward(
-    address subscriber,
-    bytes memory unverifiedReport,
-    address quoteAddress
-  ) external returns (Common.Asset memory, Common.Asset memory, uint256);
-
-  function i_linkAddress() external view returns (address);
-
-  function i_nativeAddress() external view returns (address);
-
-  function i_rewardManager() external view returns (address);
 }
 
 contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
@@ -6991,9 +6944,8 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
     bytes32 feedId; // The stream ID the report has data for.
     uint32 validFromTimestamp; // Earliest timestamp for which price is applicable.
     uint32 observationsTimestamp; // Latest timestamp for which price is applicable.
-    uint192 nativeFee; // Base cost to validate a transaction using the report, denominated in the chain’s native
-    // token (e.g., WETH/ETH).
-    uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK.
+    uint192 nativeFee; // Legacy onchain verification fee field.
+    uint192 linkFee; // Legacy onchain verification fee field. Not used for subscription billing.
     uint32 expiresAt; // Latest timestamp where the report can be verified onchain.
     int192 price; // DON consensus median price (8 or 18 decimals).
     int192 bid; // Simulated price impact of a buy order up to the X% depth of liquidity utilisation (8 or 18 decimals).
@@ -7014,9 +6966,8 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
     bytes32 feedId; // The stream ID the report has data for.
     uint32 validFromTimestamp; // Earliest timestamp for which price is applicable.
     uint32 observationsTimestamp; // Latest timestamp for which price is applicable.
-    uint192 nativeFee; // Base cost to validate a transaction using the report, denominated in the chain’s native
-    // token (e.g., WETH/ETH).
-    uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK.
+    uint192 nativeFee; // Legacy onchain verification fee field.
+    uint192 linkFee; // Legacy onchain verification fee field. Not used for subscription billing.
     uint32 expiresAt; // Latest timestamp where the report can be verified onchain.
     int192 price; // DON consensus median benchmark price (8 or 18 decimals).
     uint32 marketStatus; // The DON's consensus on whether the market is currently open.
@@ -7028,7 +6979,6 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
 
   IVerifierProxy public verifier;
 
-  address public FEE_ADDRESS;
   string public constant DATASTREAMS_FEEDLABEL = "feedIDs";
   string public constant DATASTREAMS_QUERYLABEL = "timestamp";
   int192 public lastDecodedPrice;
@@ -7100,18 +7050,8 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
       revert InvalidReportVersion(uint8(reportVersion));
     }
 
-    // Report verification fees
-    IFeeManager feeManager = IFeeManager(address(verifier.s_feeManager()));
-    IRewardManager rewardManager = IRewardManager(address(feeManager.i_rewardManager()));
-
-    address feeTokenAddress = feeManager.i_linkAddress();
-    (Common.Asset memory fee,,) = feeManager.getFeeAndReward(address(this), reportData, feeTokenAddress);
-
-    // Approve rewardManager to spend this contract's balance in fees
-    IERC20(feeTokenAddress).approve(address(rewardManager), fee.amount);
-
-    // Verify the report
-    bytes memory verifiedReportData = verifier.verify(unverifiedReport, abi.encode(feeTokenAddress));
+    // Verify the report. Data Streams uses subscription billing, so no fee metadata is required.
+    bytes memory verifiedReportData = verifier.verify(unverifiedReport, bytes(""));
 
     // Decode verified report data into the appropriate Report struct based on reportVersion
     if (reportVersion == 3) {
@@ -7275,7 +7215,7 @@ Source: https://docs.chain.link/data-streams/tutorials/evm-onchain-report-verifi
 
 <DataStreams section="dsNotes" />
 
-In this tutorial, you will deploy a verifier contract to *Arbitrum Sepolia*, fund it with LINK, and use it to verify a Data Streams report onchain. You will also learn how to verify multiple reports in a single transaction using `verifyBulkReports()`.
+In this tutorial, you will deploy a verifier contract to *Arbitrum Sepolia* and use it to verify a Data Streams report onchain. You will also learn how to verify multiple reports in a single transaction using `verifyBulkReports()`.
 
 ## Before you begin
 
@@ -7291,7 +7231,7 @@ Refer to the following tutorials:
 
 ## Requirements
 
-- Testnet ETH and LINK on *Arbitrum Sepolia*. Both are available at [faucets.chain.link](https://faucets.chain.link/arbitrum-sepolia).
+- Testnet ETH on *Arbitrum Sepolia*. You can get it from [faucets.chain.link](https://faucets.chain.link/arbitrum-sepolia).
 - A wallet private key for signing transactions. If you use MetaMask, follow the [MetaMask guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/) to export your private key. Never share your private key or commit it to version control.
 - [Foundry](https://book.getfoundry.sh/) installed. If you don't have it yet, run:
 
@@ -7347,8 +7287,6 @@ Refer to the following tutorials:
    // SPDX-License-Identifier: MIT
    pragma solidity ^0.8.20;
 
-   import {Common} from "@chainlink/contracts/src/v0.8/llo-feeds/libraries/Common.sol";
-   import {IVerifierFeeManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IVerifierFeeManager.sol";
    import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
    import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -7358,35 +7296,26 @@ Refer to the following tutorials:
     * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE FOR DEMONSTRATION PURPOSES.
     * DO NOT USE THIS CODE IN PRODUCTION.
     *
-    *  This contract verifies Chainlink Data Streams reports onchain and pays
-    *  the verification fee in LINK (when required). It exposes two verification
-    *  functions:
+    *  This contract verifies Chainlink Data Streams reports onchain. It exposes
+    *  two verification functions:
     *
     *  - `verifyReport()`      – verifies a single report payload.
     *  - `verifyBulkReports()` – verifies multiple payloads (across any feed IDs)
     *                             in a single transaction using `verifyBulk()`.
     *
-    * - If `VerifierProxy.s_feeManager()` returns a non-zero address, the network
-    *   expects you to interact with that FeeManager for every verification call:
-    *   quote fees, approve the RewardManager, then call `verify()` / `verifyBulk()`.
-    *
-    * - If `s_feeManager()` returns the zero address, no FeeManager contract has
-    *   been deployed on that chain. In that case there is nothing to quote or pay
-    *   onchain, so the contract skips the fee logic entirely.
-    *
-    *  The `if (address(feeManager) != address(0))` check below chooses the
-    *  correct path automatically, making the same bytecode usable on any chain.
+    *  Data Streams uses subscription-based billing. Verification calls do not
+    *  require this contract to hold LINK or approve a FeeManager.
     */
 
    // ────────────────────────────────────────────────────────────────────────────
-   //  Interfaces
+   //  Interface
    // ────────────────────────────────────────────────────────────────────────────
 
    interface IVerifierProxy {
      /**
-      * @notice Route a report to the correct verifier and (optionally) bill fees.
+      * @notice Route a report to the correct verifier.
       * @param payload           Full report payload (header + signed report).
-      * @param parameterPayload  ABI-encoded fee metadata.
+      * @param parameterPayload  Empty bytes for Data Streams subscription billing.
       */
      function verify(
        bytes calldata payload,
@@ -7397,33 +7326,13 @@ Refer to the following tutorials:
       * @notice Route multiple reports to the correct verifier in a single call.
       * @param payloads          Array of full report payloads. Each entry may reference
       *                          a different feed ID. Order is preserved in the output.
-      * @param parameterPayload  ABI-encoded fee token address shared across all reports
-      *                          (or empty bytes if no FeeManager is deployed).
+      * @param parameterPayload  Empty bytes for Data Streams subscription billing.
       * @return verifiedReports  Verified report bytes in the same order as the input.
       */
      function verifyBulk(
        bytes[] calldata payloads,
        bytes calldata parameterPayload
      ) external payable returns (bytes[] memory verifiedReports);
-
-     function s_feeManager() external view returns (IVerifierFeeManager);
-   }
-
-   interface IFeeManager {
-     /**
-      * @return fee, reward, totalDiscount
-      */
-     function getFeeAndReward(
-       address subscriber,
-       bytes memory unverifiedReport,
-       address quoteAddress
-     ) external returns (Common.Asset memory, Common.Asset memory, uint256);
-
-     function i_linkAddress() external view returns (address);
-
-     function i_nativeAddress() external view returns (address);
-
-     function i_rewardManager() external view returns (address);
    }
 
    // ────────────────────────────────────────────────────────────────────────────
@@ -7432,7 +7341,7 @@ Refer to the following tutorials:
 
    /**
     * @dev This contract implements functionality to verify Data Streams reports from
-    * the Data Streams API, with payment in LINK tokens.
+    * the Data Streams API.
     */
    contract ClientReportsVerifier {
      // ----------------- Errors -----------------
@@ -7510,13 +7419,8 @@ Refer to the following tutorials:
       *  1. Decode the unverified report to get `reportData`.
       *  2. Read the first two bytes → schema version (`0x0003` or `0x0008`).
       *     - Revert if the version is unsupported.
-      *  3. Fee handling:
-      *     - Query `s_feeManager()` on the proxy.
-      *       – Non-zero → quote the fee, approve the RewardManager,
-      *         ABI-encode the fee token address for `verify()`.
-      *       – Zero     → no FeeManager; skip quoting/approval and pass `""`.
-      *  4. Call `VerifierProxy.verify()`.
-      *  5. Decode the verified report into the correct struct and emit the price.
+      *  3. Call `VerifierProxy.verify()` with an empty parameter payload.
+      *  4. Decode the verified report into the correct struct and emit the price.
       *
       *  @param unverifiedReport Full payload returned by Streams Direct.
       *  @custom:reverts InvalidReportVersion when schema ≠ v3/v8.
@@ -7532,27 +7436,10 @@ Refer to the following tutorials:
          revert InvalidReportVersion(reportVersion);
        }
 
-       // ─── 3. Fee handling ──
-       IFeeManager feeManager = IFeeManager(address(i_verifierProxy.s_feeManager()));
+       // ─── 3. Verify through the proxy ──
+       bytes memory verified = i_verifierProxy.verify(unverifiedReport, bytes(""));
 
-       bytes memory parameterPayload;
-       if (address(feeManager) != address(0)) {
-         // FeeManager exists — always quote & approve
-         address feeToken = feeManager.i_linkAddress();
-
-         (Common.Asset memory fee,,) = feeManager.getFeeAndReward(address(this), reportData, feeToken);
-
-         IERC20(feeToken).approve(feeManager.i_rewardManager(), fee.amount);
-         parameterPayload = abi.encode(feeToken);
-       } else {
-         // No FeeManager deployed on this chain
-         parameterPayload = bytes("");
-       }
-
-       // ─── 4. Verify through the proxy ──
-       bytes memory verified = i_verifierProxy.verify(unverifiedReport, parameterPayload);
-
-       // ─── 5. Decode & store price ──
+       // ─── 4. Decode & store price ──
        if (reportVersion == 3) {
          int192 price = abi.decode(verified, (ReportV3)).price;
          lastDecodedPrice = price;
@@ -7570,13 +7457,9 @@ Refer to the following tutorials:
       * @dev Steps:
       *  1. Decode each payload to extract `reportData` and the schema version.
       *     - Revert if any version is unsupported.
-      *  2. Fee handling (when FeeManager is deployed):
-      *     - Quote the fee for each report individually via `getFeeAndReward`.
-      *     - Accumulate the total fee across all reports.
-      *     - Approve the RewardManager once for the combined total.
-      *     - ABI-encode the fee token address for `verifyBulk()`.
-      *  3. Call `VerifierProxy.verifyBulk()` once with all payloads.
-      *  4. Decode each verified report, store prices in `lastDecodedPrices`,
+      *  2. Call `VerifierProxy.verifyBulk()` once with all payloads and an empty
+      *     parameter payload.
+      *  3. Decode each verified report, store prices in `lastDecodedPrices`,
       *     and emit a `DecodedPrice` event per report.
       *
       *  @param unverifiedReports Array of full payloads from Streams Direct.
@@ -7605,32 +7488,10 @@ Refer to the following tutorials:
          reportVersions[i] = reportVersion;
        }
 
-       // ─── 2. Fee handling ──
-       IFeeManager feeManager = IFeeManager(address(i_verifierProxy.s_feeManager()));
+       // ─── 2. Verify all reports in one proxy call ──
+       bytes[] memory verifiedReports = i_verifierProxy.verifyBulk(unverifiedReports, bytes(""));
 
-       bytes memory parameterPayload;
-       if (address(feeManager) != address(0)) {
-         address feeToken = feeManager.i_linkAddress();
-         uint256 totalFee = 0;
-
-         // Quote per-report fees and accumulate
-         for (uint256 i = 0; i < reportDataArray.length; i++) {
-           (Common.Asset memory fee,,) = feeManager.getFeeAndReward(address(this), reportDataArray[i], feeToken);
-           totalFee += fee.amount;
-         }
-
-         // Single approval covers the combined cost of all reports
-         IERC20(feeToken).approve(feeManager.i_rewardManager(), totalFee);
-         parameterPayload = abi.encode(feeToken);
-       } else {
-         // No FeeManager deployed on this chain
-         parameterPayload = bytes("");
-       }
-
-       // ─── 3. Verify all reports in one proxy call ──
-       bytes[] memory verifiedReports = i_verifierProxy.verifyBulk(unverifiedReports, parameterPayload);
-
-       // ─── 4. Decode verified reports, store prices, emit events ──
+       // ─── 3. Decode verified reports, store prices, emit events ──
        int192[] memory prices = new int192[](verifiedReports.length);
 
        for (uint256 i = 0; i < verifiedReports.length; i++) {
@@ -7704,7 +7565,7 @@ Refer to the following tutorials:
 
 ## Deploy the verifier contract
 
-Deploy `ClientReportsVerifier` to *Arbitrum Sepolia*, passing the Chainlink-deployed `VerifierProxy` address as the constructor argument. The `VerifierProxy` is a Chainlink-deployed contract that routes your verification calls to the correct Verifier contract and handles fee collection. You are not deploying the proxy yourself — you only point your contract at it. The VerifierProxy address for Arbitrum Sepolia is 0x2ff010DEbC1297f19579B4246cad07bd24F2488A. You can find addresses for other networks on the [Stream Addresses](/data-streams/crypto-streams) page.
+Deploy `ClientReportsVerifier` to *Arbitrum Sepolia*, passing the Chainlink-deployed `VerifierProxy` address as the constructor argument. The `VerifierProxy` is a Chainlink-deployed contract that routes your verification calls to the correct Verifier contract. You are not deploying the proxy yourself — you only point your contract at it. The VerifierProxy address for Arbitrum Sepolia is 0x2ff010DEbC1297f19579B4246cad07bd24F2488A. You can find addresses for other networks on the [Stream Addresses](/data-streams/crypto-streams) page.
 
 ```bash
 forge create src/ClientReportsVerifier.sol:ClientReportsVerifier \
@@ -7732,31 +7593,6 @@ Save the `Deployed to` address — you'll need it for the remaining steps. Expor
 export CONTRACT_ADDRESS=0xYourContractAddress
 ```
 
-## Fund the verifier contract
-
-This contract pays verification fees in LINK tokens on networks where a `FeeManager` is deployed. Arbitrum Sepolia requires fees, so the contract needs LINK before it can verify reports.
-
-The LINK token contract address on Arbitrum Sepolia is 0xb1D4538B4571d411F07960EF2838Ce337FE1E80E. Transfer 1 testnet LINK to your deployed contract:
-
-```bash
-cast send 0xb1D4538B4571d411F07960EF2838Ce337FE1E80E \
-  "transfer(address,uint256)" \
-  $CONTRACT_ADDRESS 1000000000000000000 \
-  --rpc-url $RPC_URL \
-  --account dataStreamsWallet
-```
-
-`1000000000000000000` is 1 LINK expressed in 18 decimal places. Confirm the transfer was successful by checking the contract's LINK balance:
-
-```bash
-cast call 0xb1D4538B4571d411F07960EF2838Ce337FE1E80E \
-  "balanceOf(address)(uint256)" \
-  $CONTRACT_ADDRESS \
-  --rpc-url $RPC_URL
-```
-
-You should see a non-zero value returned.
-
 ## Verify a single report
 
 You need a signed report payload to verify. This is the `fullReport` value from a report you fetched using the Streams API — see the [Fetch and decode reports](/data-streams/tutorials/go-sdk-fetch) tutorial for an example payload.
@@ -7776,11 +7612,9 @@ When you call `verifyReport()`, the contract does the following:
 
    Unsupported versions revert with `InvalidReportVersion`.
 
-2. **Handle fees**: The contract calls `s_feeManager()` on the proxy to check whether a `FeeManager` is deployed on the current network. On networks with a FeeManager (Arbitrum, Avalanche, Base, Blast, Bob, Ink, Linea, OP, Scroll, Soneium, ZKSync), it quotes the fee via `getFeeAndReward`, approves the `RewardManager` to spend that LINK amount, and encodes the fee token address into `parameterPayload`. On networks without a FeeManager (zero address returned), it passes empty bytes and skips fee logic entirely. This check runs automatically, so the same contract works on any supported network without changes.
+2. **Verify through the proxy**: The contract calls `VerifierProxy.verify()` with an empty `parameterPayload`. Data Streams uses subscription-based billing, so the contract does not need LINK funding for per-verification fees.
 
-3. **Verify through the proxy**: The contract calls `VerifierProxy.verify()`, which checks the DON's signatures and returns the verified report body.
-
-4. **Decode and store the price**: The verified bytes are decoded into the appropriate struct (`ReportV3` or `ReportV8`). The price is stored in `lastDecodedPrice` and emitted as a `DecodedPrice` event.
+3. **Decode and store the price**: The verified bytes are decoded into the appropriate struct (`ReportV3` or `ReportV8`). The price is stored in `lastDecodedPrice` and emitted as a `DecodedPrice` event.
 
 Store the payload in your shell:
 
@@ -7843,10 +7677,9 @@ This is the ETH/USD price with 18 decimal places: **\~1,926.62 USD**. Each strea
 
 The function follows the same four stages as `verifyReport()`, extended to handle an array of payloads:
 
-1. All payloads are decoded and their versions validated in a loop before any fee or verification logic runs.
-2. `getFeeAndReward` is called once per report, and the individual fees are summed into a single `totalFee`. A single `approve()` covers the combined cost of the entire batch.
-3. All payloads are passed to `VerifierProxy.verifyBulk()` in one call.
-4. The verified reports are decoded and stored in `lastDecodedPrices[]`, with a `DecodedPrice` event emitted per report.
+1. All payloads are decoded and their versions are validated in a loop before verification runs.
+2. All payloads are passed to `VerifierProxy.verifyBulk()` in one call with an empty `parameterPayload`.
+3. The verified reports are decoded and stored in `lastDecodedPrices[]`, with a `DecodedPrice` event emitted per report.
 
 Payloads in the array may reference different feed IDs — there is no requirement that they all be for the same stream.
 
@@ -10997,6 +10830,8 @@ Expected output:
 ```
 
 The first line shows the `verified` event emitted by the Verifier contract, confirming the report was accepted. The quoted hex string that follows is the `report_data` returned by your `consume_price_data` function — a single concatenated hex string containing all decoded feed fields.
+
+`nativeFee` and `linkFee` are legacy onchain verification fee fields in the report schema. Data Streams uses subscription-based billing, so these fields are not used to charge per-verification fees.
 
 You can view the submitted transaction on [Stellar Expert](https://stellar.expert/explorer/testnet/tx/0485114249acb1ce1c5c1926fea02c143aeaa60b3791cfee85c49df8daf7f39b) as a reference example.
 

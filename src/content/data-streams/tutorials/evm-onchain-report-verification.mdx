@@ -50,7 +50,7 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
   ]}
 />
 
-In this tutorial, you will deploy a verifier contract to _Arbitrum Sepolia_, fund it with LINK, and use it to verify a Data Streams report onchain. You will also learn how to verify multiple reports in a single transaction using `verifyBulkReports()`.
+In this tutorial, you will deploy a verifier contract to _Arbitrum Sepolia_ and use it to verify a Data Streams report onchain. You will also learn how to verify multiple reports in a single transaction using `verifyBulkReports()`.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -68,7 +68,7 @@ Refer to the following tutorials:
 
 ## Requirements
 
-- Testnet ETH and LINK on _Arbitrum Sepolia_. Both are available at [faucets.chain.link](https://faucets.chain.link/arbitrum-sepolia).
+- Testnet ETH on _Arbitrum Sepolia_. You can get it from [faucets.chain.link](https://faucets.chain.link/arbitrum-sepolia).
 - A wallet private key for signing transactions. If you use MetaMask, follow the [MetaMask guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/) to export your private key. Never share your private key or commit it to version control.
 - [Foundry](https://book.getfoundry.sh/) installed. If you don't have it yet, run:
 
@@ -163,7 +163,7 @@ Refer to the following tutorials:
 
 ## Deploy the verifier contract
 
-Deploy `ClientReportsVerifier` to _Arbitrum Sepolia_, passing the Chainlink-deployed `VerifierProxy` address as the constructor argument. The `VerifierProxy` is a Chainlink-deployed contract that routes your verification calls to the correct Verifier contract and handles fee collection. You are not deploying the proxy yourself — you only point your contract at it. The VerifierProxy address for Arbitrum Sepolia is <CopyText text="0x2ff010DEbC1297f19579B4246cad07bd24F2488A" code/>. You can find addresses for other networks on the [Stream Addresses](/data-streams/crypto-streams) page.
+Deploy `ClientReportsVerifier` to _Arbitrum Sepolia_, passing the Chainlink-deployed `VerifierProxy` address as the constructor argument. The `VerifierProxy` is a Chainlink-deployed contract that routes your verification calls to the correct Verifier contract. You are not deploying the proxy yourself — you only point your contract at it. The VerifierProxy address for Arbitrum Sepolia is <CopyText text="0x2ff010DEbC1297f19579B4246cad07bd24F2488A" code/>. You can find addresses for other networks on the [Stream Addresses](/data-streams/crypto-streams) page.
 
 ```bash
 forge create src/ClientReportsVerifier.sol:ClientReportsVerifier \
@@ -191,31 +191,6 @@ Save the `Deployed to` address — you'll need it for the remaining steps. Expor
 export CONTRACT_ADDRESS=0xYourContractAddress
 ```
 
-## Fund the verifier contract
-
-This contract pays verification fees in LINK tokens on networks where a `FeeManager` is deployed. Arbitrum Sepolia requires fees, so the contract needs LINK before it can verify reports.
-
-The LINK token contract address on Arbitrum Sepolia is <CopyText text="0xb1D4538B4571d411F07960EF2838Ce337FE1E80E" code/>. Transfer 1 testnet LINK to your deployed contract:
-
-```bash
-cast send 0xb1D4538B4571d411F07960EF2838Ce337FE1E80E \
-  "transfer(address,uint256)" \
-  $CONTRACT_ADDRESS 1000000000000000000 \
-  --rpc-url $RPC_URL \
-  --account dataStreamsWallet
-```
-
-`1000000000000000000` is 1 LINK expressed in 18 decimal places. Confirm the transfer was successful by checking the contract's LINK balance:
-
-```bash
-cast call 0xb1D4538B4571d411F07960EF2838Ce337FE1E80E \
-  "balanceOf(address)(uint256)" \
-  $CONTRACT_ADDRESS \
-  --rpc-url $RPC_URL
-```
-
-You should see a non-zero value returned.
-
 ## Verify a single report
 
 You need a signed report payload to verify. This is the `fullReport` value from a report you fetched using the Streams API — see the [Fetch and decode reports](/data-streams/tutorials/go-sdk-fetch) tutorial for an example payload.
@@ -235,11 +210,9 @@ When you call `verifyReport()`, the contract does the following:
 
    Unsupported versions revert with `InvalidReportVersion`.
 
-2. **Handle fees**: The contract calls `s_feeManager()` on the proxy to check whether a `FeeManager` is deployed on the current network. On networks with a FeeManager (Arbitrum, Avalanche, Base, Blast, Bob, Ink, Linea, OP, Scroll, Soneium, ZKSync), it quotes the fee via `getFeeAndReward`, approves the `RewardManager` to spend that LINK amount, and encodes the fee token address into `parameterPayload`. On networks without a FeeManager (zero address returned), it passes empty bytes and skips fee logic entirely. This check runs automatically, so the same contract works on any supported network without changes.
+2. **Verify through the proxy**: The contract calls `VerifierProxy.verify()` with an empty `parameterPayload`. Data Streams uses subscription-based billing, so the contract does not need LINK funding for per-verification fees.
 
-3. **Verify through the proxy**: The contract calls `VerifierProxy.verify()`, which checks the DON's signatures and returns the verified report body.
-
-4. **Decode and store the price**: The verified bytes are decoded into the appropriate struct (`ReportV3` or `ReportV8`). The price is stored in `lastDecodedPrice` and emitted as a `DecodedPrice` event.
+3. **Decode and store the price**: The verified bytes are decoded into the appropriate struct (`ReportV3` or `ReportV8`). The price is stored in `lastDecodedPrice` and emitted as a `DecodedPrice` event.
 
 Store the payload in your shell:
 
@@ -302,10 +275,9 @@ This is the ETH/USD price with 18 decimal places: **~1,926.62 USD**. Each stream
 
 The function follows the same four stages as `verifyReport()`, extended to handle an array of payloads:
 
-1. All payloads are decoded and their versions validated in a loop before any fee or verification logic runs.
-2. `getFeeAndReward` is called once per report, and the individual fees are summed into a single `totalFee`. A single `approve()` covers the combined cost of the entire batch.
-3. All payloads are passed to `VerifierProxy.verifyBulk()` in one call.
-4. The verified reports are decoded and stored in `lastDecodedPrices[]`, with a `DecodedPrice` event emitted per report.
+1. All payloads are decoded and their versions are validated in a loop before verification runs.
+2. All payloads are passed to `VerifierProxy.verifyBulk()` in one call with an empty `parameterPayload`.
+3. The verified reports are decoded and stored in `lastDecodedPrices[]`, with a `DecodedPrice` event emitted per report.
 
 Payloads in the array may reference different feed IDs — there is no requirement that they all be for the same stream.
 
