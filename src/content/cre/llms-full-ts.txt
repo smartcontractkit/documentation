@@ -23883,15 +23883,29 @@ VRF remains available and is the right choice when a contract, regulator, or cou
 
 To begin, follow the [CRE Getting Started guide](/cre/getting-started/cli-installation) to install the CLI and initialize your first project.
 
-When mapping your existing VRF integration:
+{/* TODO: switch these links from the `vrf-template` branch to `main` once the randomness template merges. */}
 
-- Use `cre workflow init` to scaffold your project.
+### Reference template
+
+The **`randomness`** starter template is a runnable, end-to-end version of this guide — the request/fulfill flow, a `ReceiverTemplate`-based consumer, generated bindings, tests, and a simulation command:
+
+- [`starter-templates/randomness/randomness-ts`](https://github.com/smartcontractkit/cre-templates/tree/vrf-template/starter-templates/randomness/randomness-ts) (TypeScript)
+- [`starter-templates/randomness/randomness-go`](https://github.com/smartcontractkit/cre-templates/tree/vrf-template/starter-templates/randomness/randomness-go) (Go)
+
+It demonstrates each piece of the migration:
+
+- An **EVM Log trigger** on a `RandomnessRequested` event — replaces the `requestRandomWords()` entry path.
+- A consensus-safe draw with **`Math.random()`** inside the runtime.
+- **`runtime.report()` + `evmClient.writeReport()`** writing a signed `(requestId, randomWord)` report to a `ReceiverTemplate`-based consumer, whose `_processReport()` records the result — replaces the `fulfillRandomWords()` callback.
+- **Request-ID tracking** — the consumer marks each request fulfilled before storing the result, closing reroll/replay windows.
+
+### Mapping your own integration
+
+- Use `cre workflow init` (or clone the template above) to scaffold your project.
 - Replace `requestRandomWords()` with an appropriate [trigger](#triggers) — usually an EVM Log trigger emitted by your consumer.
 - Generate the value with `Math.random()` in the handler; see [Using Randomness in Workflows](/cre/guides/workflow/using-randomness-ts).
-- Deploy a `ReceiverTemplate`-based consumer to receive the signed report in `_onReport`, replacing the `fulfillRandomWords()` callback.
+- Deploy a `ReceiverTemplate`-based consumer that records the signed report in `_processReport()`, replacing the `fulfillRandomWords()` callback.
 - Test locally with `cre workflow simulate` before `cre workflow deploy`.
-
-For runnable examples, see the [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates) repo.
 
 ---
 
