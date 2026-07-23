@@ -5566,10 +5566,10 @@ This code sample is essentially the same as reading from a standard Chainlink Pr
 
 Chainlink SVR supports two auction paths depending on the network:
 
-| Network                   | Auction System      | Guide                                                                                                     |
-| ------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------- |
-| Ethereum Mainnet          | Flashbots MEV-Share | [Searcher Onboarding: Ethereum Mainnet](/data-feeds/svr-feeds/searcher-onboarding-ethereum)               |
-| Base, Arbitrum, BNB Chain | Atlas               | [Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain)](/data-feeds/svr-feeds/searcher-onboarding-atlas) |
+| Network                          | Auction System      | Guide                                                                                                            |
+| -------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Ethereum Mainnet                 | Flashbots MEV-Share | [Searcher Onboarding: Ethereum Mainnet](/data-feeds/svr-feeds/searcher-onboarding-ethereum)                      |
+| Base, Arbitrum, BNB Chain, Monad | Atlas               | [Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain, Monad)](/data-feeds/svr-feeds/searcher-onboarding-atlas) |
 
 ## Economics and Revenue Split
 
@@ -5588,7 +5588,7 @@ This split provides DeFi protocols with an additional revenue stream while also 
 
 ---
 
-# SVR Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain)
+# SVR Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain, Monad)
 Source: https://docs.chain.link/data-feeds/svr-feeds/searcher-onboarding-atlas
 
 export const contracts = {
@@ -5603,6 +5603,10 @@ export const contracts = {
   bnb: {
     atlas: "0x21B7d28B882772A1Cfe633Daee6f42ebb95DeC4E",
     dappControl: "0x7D50b32444609A9B53BcF208c159C8d0d0767835",
+  },
+  monad: {
+    atlas: "0x006DD7813C90CaB67c1Dc185c21Abb2C7414b061",
+    dappControl: "0xa40d9f38621b4ffb2181508b973519e8133951c0",
   },
 }
 
@@ -5629,6 +5633,23 @@ export const arbitrumFeeds = [
   { asset: "USDT-USD", type: "SVR", aggregator: "0x41F14AfB0eB605097c5950D2458415437A3d2Bcd" },
 ]
 
+export const monadFeeds = [
+  { asset: "APRMON-MON Exchange Rate", type: "SVR", aggregator: "0x124FE2b4a19bC618d6cF0a64e2BBE85C7e3C6ED9" },
+  { asset: "AUSD-USD", type: "SVR", aggregator: "0x253c95994246DE5A83AAFE82909681522DA051Af" },
+  { asset: "BTC-USD", type: "SVR", aggregator: "0x9d8b2A6b6A8748bB5e557505d2dDC9d44b6fd2Dd" },
+  { asset: "CBBTC-USD", type: "SVR", aggregator: "0x5cB59A1E12c781793b1799D99d1F31eA4e79eCE9" },
+  { asset: "EARNAUSD-AUSD Exchange Rate", type: "SVR", aggregator: "0xb95fa18a1892045F671bC1723d452618f3FC0355" },
+  { asset: "ETH-USD", type: "SVR", aggregator: "0xeF3c6C938F82BE8ba983a52F5b0f47eE820DCeb2" },
+  { asset: "EZETH-ETH Exchange Rate", type: "SVR", aggregator: "0x521F749F78dA5d58f70f79aD44f73fDEAA5dc538" },
+  { asset: "GMON-MON Exchange Rate", type: "SVR", aggregator: "0xAF165Ea49569528ff543640834Eb6819f0d9601f" },
+  { asset: "MON-USD", type: "SVR", aggregator: "0x810d5E3dB355bFd2C80c06D89F08523111c6d0F1" },
+  { asset: "SHMON-MON Exchange Rate", type: "SVR", aggregator: "0xE3F1906C6b6EEA63dCc0C016C4ec6746c69e7476" },
+  { asset: "SMON-MON Exchange Rate", type: "SVR", aggregator: "0x0Ebdee66Cdd6ffe566d39eD9F876EE04920E25D4" },
+  { asset: "SYZUSD-YZUSD Exchange Rate", type: "SVR", aggregator: "0x18278ef950F120Cb89960C0c07e965bbAc389cfC" },
+  { asset: "USDC-USD", type: "SVR", aggregator: "0xdE1FE319F71E446143BEC6eEc02d89286E7265ed" },
+  { asset: "USDT0-USD", type: "SVR", aggregator: "0x9e921eC9C5ef689045af16a95569F3644bB41FD3" },
+]
+
 <Aside type="note" title="Searcher Onboarding">
   SVR on Atlas (every chain outside of ETH mainnet) uses a reputation system with **two groups**. Unless otherwise specified for a chain, Atlas includes up to **2 searcher bids** per transaction for on-chain settlement:
 
@@ -5642,7 +5663,7 @@ export const arbitrumFeeds = [
   Searchers can [subscribe here](https://chainlinkcommunity.typeform.com/to/s55Hu2tK) to receive timely Chainlink SVR updates.
 </Aside>
 
-[Chainlink Smart Value Recapture (SVR)](/data-feeds/svr-feeds) has expanded to Base, Arbitrum, and BNB Chain with a new auction system, **Atlas**. This guide provides existing Chainlink SVR searchers with the technical specifications and integration requirements for participating in all non-ETH mainnet SVR auctions.
+[Chainlink Smart Value Recapture (SVR)](/data-feeds/svr-feeds) has expanded to Base, Arbitrum, BNB Chain, and Monad with a new auction system, **Atlas**. This guide provides existing Chainlink SVR searchers with the technical specifications and integration requirements for participating in all non-ETH mainnet SVR auctions.
 
 ## Core Components
 
