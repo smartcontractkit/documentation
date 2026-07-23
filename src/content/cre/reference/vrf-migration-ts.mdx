@@ -1,0 +1,245 @@
+---
+section: cre
+date: Last Modified
+title: "Migrate from Chainlink VRF to Chainlink CRE"
+pageId: "vrf-migration"
+sdkLang: "ts"
+metadata:
+  description: "Migrate onchain randomness from Chainlink VRF to Chainlink CRE. How CRE randomness works and is secured, concept mapping, triggers, generating random values, onchain writes, security patterns, and deployment."
+  datePublished: "2026-07-23"
+  lastModified: "2026-07-23"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="SDK Language: TypeScript">
+  You're viewing the **TypeScript** version of this guide. If you prefer Go, use the language selector in the left
+  sidebar to switch to the Go version.
+</Aside>
+
+For new randomness use cases, use the [Chainlink Runtime Environment (CRE)](/cre). Where [Chainlink VRF](/vrf) delivers a random number and nothing else, CRE generates randomness as one step inside a workflow that can also read onchain state, call APIs, run your business logic, and write results to one or more chains — all in a single deployment.
+
+This guide maps a VRF integration to a CRE workflow: how CRE generates randomness, how that randomness is secured, and how to move the request/fulfill contract flow into a workflow.
+
+## How VRF and CRE randomness differ
+
+In **VRF**, your consumer contract inherits `VRFConsumerBaseV2Plus` and calls `requestRandomWords()` on the VRF Coordinator. A Chainlink node generates a random value off-chain together with an ECVRF proof, submits it to the Coordinator, and the Coordinator verifies the proof onchain before calling your `fulfillRandomWords()` callback with the verified random words. Randomness is the entire product; any surrounding logic lives in your contract or an offchain service.
+
+In **CRE**, the unit of execution is a [**workflow**](/cre/key-terms#workflow) — a TypeScript (or Go) project compiled to WebAssembly and run across a [Decentralized Oracle Network (DON)](/cre/key-terms#decentralized-oracle-network-don). A [**trigger**](/cre/key-terms#trigger) (cron, HTTP, or onchain log) starts the workflow, the handler calls the runtime's randomness function, and the result is written onchain as a DON-signed report to any contract implementing `IReceiver`. Randomness is one [capability](/cre/key-terms#capability) among many the handler can call.
+
+## How CRE randomness works and how it is secured
+
+CRE randomness is **consensus-derived**. Every node in the DON runs the same workflow binary and, for a given execution, derives the same per-execution seed. Calling the runtime's random function produces the **same sequence of values on every node**, so the DON can reach [consensus](/cre/concepts/consensus-computing) on a single result. See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness-ts) for the full behavior.
+
+What that gives you, and how each part is checkable:
+
+- **No single node chooses the number.** The value is fixed by the shared seed and reproduced independently by every node. A result is only produced if a Byzantine-fault-tolerant supermajority of the DON agrees on it, so no individual node operator can select or bias the outcome.
+- **The result reaches the chain as a DON-signed report.** CRE writes the result through the [Keystone Forwarder](/cre/guides/workflow/using-evm-client/forwarder-directory-ts); a consumer implementing `IReceiver` only accepts reports carrying a valid signature from the authorized DON. This produces a tamper-evident, onchain trail of every delivered value.
+- **The randomness code is open source and auditable.** The seed derivation and the generator are part of the public SDK and runtime. Anyone can read exactly how a value is produced rather than trusting a description of it.
+- **Every result is bound to an identified workflow build.** The `workflowID` — a hash of the compiled workflow binary plus its config — is registered onchain and included in every signed report. This ties each delivered value to a specific, published workflow, so a result cannot be attributed to code that was never registered.
+- **Executions are inspectable.** The [CRE dashboard](/cre/guides/operations/monitoring-workflows) shows each execution's handler logs, per-step timings, consensus outcome, and the resulting onchain transaction.
+
+<Aside type="caution" title="This is not cryptographically secure randomness, and not a per-request proof">
+  The runtime generator is a seeded pseudo-random source coordinated across the DON for consensus — it is **not**
+  cryptographically secure, and CRE does not attach a per-request cryptographic proof to the value the way VRF does. Do
+  not use it for key generation or signature nonces. Its security model is DON consensus plus the onchain signed-report
+  trail described above. For randomness-dependent outcomes with economic value, apply the [security
+  patterns](#security-patterns-that-carry-over) below.
+</Aside>
+
+## Chain support
+
+CRE runs on a broad set of networks. For the canonical, up-to-date list, see [Supported Networks](/cre/supported-networks-ts).
+
+## Terminology
+
+| Chainlink VRF                                   | Chainlink CRE                                                                                     |
+| :---------------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| `VRFConsumerBaseV2Plus` consumer contract       | `IReceiver` consumer contract (use `ReceiverTemplate`)                                            |
+| `requestRandomWords()` from a consumer          | A trigger (EVM Log, Cron, or HTTP) starts the workflow                                            |
+| VRF Coordinator                                 | Workflow DON + [Keystone Forwarder](/cre/guides/workflow/using-evm-client/forwarder-directory-ts) |
+| ECVRF proof verified onchain by the Coordinator | DON consensus + DON-signed report accepted by `IReceiver`                                         |
+| `fulfillRandomWords(requestId, randomWords)`    | `_onReport(metadata, payload)` on the receiver                                                    |
+| Off-chain proof generation by a single node     | `Math.random()` inside the CRE WASM runtime, agreed by the DON                                    |
+| `keyHash` / gas lane                            | Chain selector + forwarder address per chain                                                      |
+| LINK/native subscription or direct funding      | CRE service model — no per-request subscription to fund                                           |
+
+## Triggers
+
+VRF has one entry path: a contract calling `requestRandomWords()`. CRE makes the [trigger](/cre/guides/workflow/using-triggers/overview) first-class, which also determines how predictable the per-execution seed is.
+
+### Onchain events
+
+The direct replacement for the VRF request path. Instead of your contract calling a coordinator, the DON watches for an event your contract emits and fires the handler with the decoded event data.
+
+```ts
+const evmClient = new cre.evm.EVMClient(CHAIN_SELECTOR)
+const trigger = evmClient.logTrigger({
+  addresses: [
+    /* base64-encoded contract address */
+  ],
+  topics: [
+    /* base64-encoded event signature hash */
+  ],
+})
+```
+
+### Time-based
+
+Use a [cron trigger](/cre/guides/workflow/using-triggers/cron-trigger-ts) for scheduled draws (periodic raffles, sampling) with no onchain request needed.
+
+```ts
+const trigger = cre.capabilities.cron.trigger({ schedule: "*/5 * * * *" }) // every 5 min
+```
+
+### HTTP triggers
+
+For draws requested by an offchain application. The workflow exposes an HTTPS endpoint; callers POST a payload signed with an authorized EVM key.
+
+```ts
+const trigger = cre.capabilities.http.trigger({
+  authorizedKeys: [{ type: "EVM", key: "0xYourAuthorizedSigner" }],
+})
+```
+
+<Aside type="caution" title="Trigger choice affects seed predictability">
+  The per-execution seed derives from the trigger. With a **Cron** or **EVM Log** trigger, the seed is fixed by
+  scheduled time or onchain event data that no requester controls. With an **HTTP** trigger, the seed can be influenced
+  by caller-supplied request data — if untrusted parties can trigger draws with economic value, prefer an event or cron
+  trigger, or lock in the outcome with a commit-reveal step (see [security
+  patterns](#security-patterns-that-carry-over)).
+</Aside>
+
+## Generating the random number
+
+In VRF the number arrives in `fulfillRandomWords()`. In CRE you generate it inside the handler with `Math.random()`, which the CRE WASM runtime overrides with a consensus-safe, DON-seeded generator. See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness-ts) for the full reference.
+
+```ts
+// Math.random() returns a value in [0, 1)
+const randomFloat = Math.random()
+
+// Integer in [0, 100)
+const randomInt = Math.floor(Math.random() * 100)
+
+// bigint for a Solidity uint256 range [0, max)
+const max = 1000000000000000000n // 1 ETH in wei
+const randomBigInt = BigInt(Math.floor(Number(max) * Math.random()))
+```
+
+<Aside type="caution" title="Determinism requirement">
+  Generate randomness only through `Math.random()` inside the runtime. Node.js or browser random APIs, `Date.now()`, and
+  other per-node values produce different results on each node and break consensus. See [Avoiding
+  Non-Determinism](/cre/concepts/non-determinism-ts).
+</Aside>
+
+## Onchain writes
+
+This is the biggest structural change. In VRF the Coordinator calls your `fulfillRandomWords()` callback. In CRE the workflow ABI-encodes a payload, produces a signed report with `runtime.report()`, and submits it with `evmClient.writeReport()` to a consumer that implements `IReceiver` (typically by extending `ReceiverTemplate`), whose handler is `_onReport(bytes metadata, bytes payload)`.
+
+```ts
+import { cre } from "@chainlink/cre-sdk"
+import { encodeAbiParameters } from "viem"
+
+export async function main() {
+  const evmClient = new cre.evm.EVMClient(CHAIN_SELECTOR)
+
+  // EVM Log trigger fires on each RandomnessRequested event
+  const trigger = evmClient.logTrigger({
+    addresses: [
+      /* consumer address */
+    ],
+    topics: [
+      /* RandomnessRequested signature hash */
+    ],
+  })
+
+  cre.handler(trigger, async (runtime, event) => {
+    const { requestId } = decodeEventLog({
+      abi: consumerAbi,
+      eventName: "RandomnessRequested",
+      data: event.data,
+      topics: event.topics,
+    })
+
+    // Consensus-safe randomness (DON-seeded)
+    const randomWord = BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER))
+
+    const payload = encodeAbiParameters([{ type: "uint256" }, { type: "uint256" }], [requestId, randomWord])
+
+    const report = await runtime.report(payload).result()
+    await evmClient.writeReport({ receiver: RECEIVER_ADDRESS, report, gasLimit: "300000" }).result()
+  })
+
+  return cre.workflow()
+}
+```
+
+Receiver contract (replaces the `VRFConsumerBaseV2Plus` consumer):
+
+```solidity
+import {ReceiverTemplate} from "@chainlink/cre-contracts/ReceiverTemplate.sol";
+
+contract RandomnessConsumer is ReceiverTemplate {
+  uint256 private nextRequestId;
+  mapping(uint256 => bool) public pendingRequests;
+  mapping(uint256 => uint256) public fulfilledWords;
+
+  event RandomnessRequested(uint256 indexed requestId, address requester);
+
+  constructor(address forwarder) ReceiverTemplate(forwarder) {}
+
+  // Emit event -> CRE workflow fires
+  function requestRandomness() external returns (uint256 requestId) {
+    requestId = ++nextRequestId;
+    pendingRequests[requestId] = true;
+    emit RandomnessRequested(requestId, msg.sender);
+  }
+
+  // DON writes back via the Keystone Forwarder
+  function _onReport(bytes calldata /* metadata */, bytes calldata payload) internal override {
+    (uint256 reqId, uint256 word) = abi.decode(payload, (uint256, uint256));
+    require(pendingRequests[reqId], "unknown request");
+    delete pendingRequests[reqId]; // mark fulfilled first
+    fulfilledWords[reqId] = word;
+  }
+}
+```
+
+Chain selectors and forwarder addresses are network-specific; see the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory-ts) and [Supported Networks](/cre/supported-networks-ts). Use `MockKeystoneForwarder` for local simulation. See [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts) for how to permission your `IReceiver`.
+
+## Security patterns that carry over
+
+These are standard defenses whenever an onchain outcome depends on a value that is only known after a request is made. They apply to CRE randomness exactly as they did to VRF.
+
+**Do:**
+
+- **Commit before reveal.** Lock in every user choice (bet side, purchase, entry) in one transaction before the random result is known; reveal only after it arrives.
+- **Separate request from consumption.** The random value must come from a future state that is unknowable at request time. Never request and consume randomness in the same transaction.
+- **Track request IDs.** Map each request ID to its pending state and verify in `_onReport` that the ID is known and still pending before acting.
+- **Mark fulfilled before downstream logic.** Set the fulfilled flag atomically before invoking anything else, closing re-entrancy and replay windows.
+- **One value per independent outcome.** Deriving several outcomes from one number (`word % 6` and `word % 10`) correlates them. Generate a separate value per independent outcome.
+- **Avoid modulo bias.** Use rejection sampling or big-integer arithmetic when mapping a large number into a small range.
+
+**Avoid:**
+
+- **Block variables as entropy** (`block.timestamp`, `blockhash`, `block.prevrandao`) — influenceable by validators.
+- **Caller-controlled seeds for high-value draws** — see the trigger caution above.
+- **Revert-and-retry ("rerolling")** — if a write can revert and be replayed, the caller gets multiple attempts. Mark fulfilled atomically and guard against acting again after acceptance.
+
+## Where VRF still fits
+
+VRF remains available and is the right choice when a contract, regulator, or counterparty must verify a **per-request cryptographic proof** onchain without trusting any operator's execution — for example high-stakes onchain lotteries or casino payouts where each draw needs its own independently checkable proof. CRE secures randomness through DON consensus and the onchain signed-report trail rather than a per-draw proof, which fits the large majority of randomness use cases, especially those already embedded in a broader automated flow.
+
+## Get started
+
+To begin, follow the [CRE Getting Started guide](/cre/getting-started/cli-installation) to install the CLI and initialize your first project.
+
+When mapping your existing VRF integration:
+
+- Use `cre workflow init` to scaffold your project.
+- Replace `requestRandomWords()` with an appropriate [trigger](#triggers) — usually an EVM Log trigger emitted by your consumer.
+- Generate the value with `Math.random()` in the handler; see [Using Randomness in Workflows](/cre/guides/workflow/using-randomness-ts).
+- Deploy a `ReceiverTemplate`-based consumer to receive the signed report in `_onReport`, replacing the `fulfillRandomWords()` callback.
+- Test locally with `cre workflow simulate` before `cre workflow deploy`.
+
+For runnable examples, see the [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates) repo.
