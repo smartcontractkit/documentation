@@ -1,0 +1,133 @@
+---
+section: ccip
+date: Last Modified
+title: "Contract Version Behavior (EVM)"
+---
+
+import { Aside } from "@components"
+
+On EVM chains, Token Pool Rate Limits (TPRLs) are enforced by the `RateLimiter` library inside your deployed **TokenPool** contract. **Validation rules and runtime behavior differ between npm releases** of [`@chainlink/contracts-ccip`](https://www.npmjs.com/package/@chainlink/contracts-ccip). The guidance elsewhere in this section describes common operational patterns; **always confirm behavior against the source code and ABI for the version actually deployed on your pool(s)**.
+
+<Aside type="caution" title="Verify your deployed version">
+  Call [`typeAndVersion()`](#identify-your-version-with-typeandversion) on your TokenPool contract address. The returned
+  string (for example, `"BurnMintTokenPool 1.6.3"`) includes the contract release you should match to the version ranges
+  on this page and to
+  [`@chainlink/contracts-ccip`](https://www.npmjs.com/package/@chainlink/contracts-ccip?activeTab=versions). Do not
+  assume patterns from this section apply unchanged if your pool predates or postdates those ranges.
+</Aside>
+
+This page is the **single reference** for EVM TokenPool / RateLimiter version differences referenced from [Configuration Checklist](/ccip/concepts/rate-limit-management/configuration-checklist), [Emergency Actions](/ccip/concepts/rate-limit-management/emergency-actions), and [Common Scenarios](/ccip/concepts/rate-limit-management/common-scenarios).
+
+<Aside type="note" title="Upgrade when feasible">
+  It is recommended to deploy and operate the **latest stable** TokenPool release from
+  [`@chainlink/contracts-ccip`](https://www.npmjs.com/package/@chainlink/contracts-ccip?activeTab=versions) when
+  possible. Older pools may use stricter or undocumented rate limit validation, weaker decimal/TPRL handling, and
+  upgrade paths that are more difficult to operate safely. Starting from **v1.5.1**, pools support [zero-downtime
+  upgrades](/ccip/concepts/cross-chain-token/evm/upgradability) while in-flight messages complete. Compare your current
+  version with [`typeAndVersion()`](#identify-your-version-with-typeandversion) before planning an upgrade.
+</Aside>
+
+## Version ranges at a glance
+
+| `@chainlink/contracts-ccip` | Config validation when `isEnabled: true`                     | `capacity: 1`, `rate: 1` (soft pause) | `capacity: 0`, `rate: 0` (enabled)              |
+| --------------------------- | ------------------------------------------------------------ | ------------------------------------- | ----------------------------------------------- |
+| **0.7.x – 1.2.0**           | None — any values accepted                                   | Allowed                               | Allowed — **hard block** (all transfers revert) |
+| **1.4.0 – 1.6.0**           | Strict: `rate == 0` or `rate >= capacity` reverts            | **Rejected** at setup                 | **Rejected** at setup                           |
+| **1.6.1 – 1.6.4**           | Relaxed: only `rate > capacity` reverts                      | Allowed — soft pause                  | Allowed — **hard block**                        |
+| **2.0.0**                   | Same relaxed rule; validation inside `_setTokenBucketConfig` | Allowed — soft pause                  | Allowed — **hard block**                        |
+
+The strict → relaxed validation change landed in **1.6.1**. **1.6.0** was the last release with strict validation.
+
+## Architectural note (1.2.0 and earlier)
+
+In **1.2.0** and some earlier releases, rate limits are keyed per **OnRamp / OffRamp address** rather than per **remote chain selector** on `s_remoteChainConfigs`. Inbound limits map to OffRamp buckets; outbound limits map to OnRamp buckets. Later releases (1.4.0+) use per-lane inbound/outbound configs on the remote chain config struct. The `RateLimiter` math is the same; only the wiring differs.
+
+## Config validation
+
+### No validation (0.7.x – 1.2.0)
+
+`_setTokenBucketConfig` applies whatever values are passed. There is no `_validateTokenBucketConfig` guard in TokenPool admin paths.
+
+### Strict validation (1.4.0 – 1.6.0)
+
+Before applying a config, TokenPool calls `_validateTokenBucketConfig`. When `isEnabled` is true:
+
+```solidity
+if (config.rate >= config.capacity || config.rate == 0) {
+  revert InvalidRateLimitRate(config);
+}
+```
+
+Implications:
+
+- **`capacity: 1`, `rate: 1`** — reverts (`rate >= capacity`). Use at least **`capacity: 2`, `rate: 1`** for a minimal drip on these versions.
+- **`capacity: 0`, `rate: 0`** with `isEnabled: true` — reverts (`rate == 0`).
+- **`rate: 0`** with any capacity — reverts.
+
+### Relaxed validation (1.6.1 – 1.6.4)
+
+Validation only rejects when `rate > capacity`:
+
+```solidity
+if (config.rate > config.capacity) {
+  revert InvalidRateLimitRate(config);
+}
+```
+
+Enabled configs with **`rate: 0`**, **`capacity: 0`**, or **`capacity == rate`** (including `1/1`) are accepted.
+
+### Relaxed validation in `_setTokenBucketConfig` (2.0.0)
+
+The same `rate > capacity` rule runs inside `_setTokenBucketConfig` itself. TokenPool no longer calls a separate `_validateTokenBucketConfig`. On config update, the bucket is **reset**: `tokens = capacity` (full refill), rather than preserving partial bucket state.
+
+## Runtime behavior (consume)
+
+When `isEnabled: true`, `_consume` runs on lock/burn (outbound) or release/mint (inbound). When `isEnabled: false`, `_consume` returns immediately — **no volume limit** for that direction.
+
+### Disabled limits (`isEnabled: false`, `capacity: 0`, `rate: 0`)
+
+Required on 1.4.0+ (non-zero capacity/rate with `isEnabled: false` reverts). Transfers are **not** rate-limited.
+
+### Soft pause (`isEnabled: true`, `capacity: 1`, `rate: 1`)
+
+Only configurable on **0.7.x – 1.2.0**, **1.6.1+**, and **2.0.0**. Allows one token (in smallest units) per refill epoch, then subsequent transfers revert until capacity refills. See [Emergency Actions](/ccip/concepts/rate-limit-management/emergency-actions).
+
+### Hard block (`isEnabled: true`, `capacity: 0`, `rate: 0`)
+
+Configurable on versions without strict validation (see table above). Any transfer with amount &gt; 0 reverts with `TokenMaxCapacityExceeded` because `capacity < requestTokens`. This is a **total freeze**, not a drip pause.
+
+### Zero refill rate with non-zero capacity (`isEnabled: true`, `rate: 0`, `capacity > 0`)
+
+Allowed since **1.6.1**. The bucket grants a **one-time burst** up to `capacity`, then blocks further transfers. On **2.0.0**, an empty bucket with `rate: 0` reverts cleanly with `TokenRateLimitReached(type(uint256).max, …)`. On **1.6.1 – 1.6.4**, the same drained state can hit division-by-zero in wait-time calculation — treat `rate: 0` as permanent block after the initial burst.
+
+## How to identify your version
+
+<h3 id="identify-your-version-with-typeandversion">Identify your version with `typeAndVersion()`</h3>
+
+EVM TokenPool contracts implement [`ITypeAndVersion`](/ccip/api-reference/evm/v1.6.3/i-type-and-version). Call `typeAndVersion()` on the **token pool contract address** you manage (the same address you use for rate limit admin calls):
+
+```solidity
+function typeAndVersion() external view returns (string memory);
+```
+
+The return value is a human-readable label in the form `"<PoolType> <version>"`, for example:
+
+- `"BurnMintTokenPool 1.6.3"`
+- `"LockReleaseTokenPool 1.6.1"`
+- `"BurnMintTokenPool 2.0.0"`
+
+Use the **version suffix** (the part after the space) to locate the matching release in [`@chainlink/contracts-ccip`](https://www.npmjs.com/package/@chainlink/contracts-ccip?activeTab=versions) or the [CCIP EVM API reference](/ccip/api-reference/evm) for your pool type. That version determines which validation rules and consume behavior in the tables above apply.
+
+<h3 id="confirm-with-source">Confirm with source</h3>
+
+After reading `typeAndVersion()`:
+
+1. Open the matching [`@chainlink/contracts-ccip` release](https://www.npmjs.com/package/@chainlink/contracts-ccip?activeTab=versions) (or verified source on a block explorer for that tag).
+2. Read `contracts/libraries/RateLimiter.sol` (or `src/v0.8/ccip/libraries/RateLimiter.sol` on older releases) for validation and consume logic.
+3. Re-read [Configuration Checklist](/ccip/concepts/rate-limit-management/configuration-checklist) and [Emergency Actions](/ccip/concepts/rate-limit-management/emergency-actions) with your version in mind.
+
+If `typeAndVersion()` is unavailable on a legacy deployment, fall back to deployment records or verified implementation source on a block explorer.
+
+## Non-EVM chain families
+
+Solana, Aptos, and other CCIP chain families implement rate limits in chain-native programs with their own version histories. The npm package above applies to **EVM TokenPool** contracts only. For SVM or Aptos pools, inspect the deployed program version and source for equivalent validation and consume logic.

@@ -231,6 +231,11 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
             chainTypes: ["evm", "solana", "aptos"],
           },
           {
+            title: "Operational Security",
+            url: "ccip/concepts/cross-chain-token/operational-security",
+            chainTypes: ["evm", "solana", "aptos"],
+          },
+          {
             title: "Tokens",
             url: "ccip/concepts/cross-chain-token/evm/tokens",
             chainTypes: ["evm"],
@@ -313,6 +318,11 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
             chainTypes: ["evm", "solana", "aptos"],
           },
           {
+            title: "Contract Version Behavior (EVM)",
+            url: "ccip/concepts/rate-limit-management/contract-version-behavior",
+            chainTypes: ["evm", "solana", "aptos"],
+          },
+          {
             title: "Prerequisites and Permissions",
             url: "ccip/concepts/rate-limit-management/prerequisites-and-permissions",
             chainTypes: ["evm", "solana", "aptos"],
@@ -340,6 +350,11 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
           {
             title: "Common Scenarios",
             url: "ccip/concepts/rate-limit-management/common-scenarios",
+            chainTypes: ["evm", "solana", "aptos"],
+          },
+          {
+            title: "Configuration Checklist",
+            url: "ccip/concepts/rate-limit-management/configuration-checklist",
             chainTypes: ["evm", "solana", "aptos"],
           },
           {

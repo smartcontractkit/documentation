@@ -71,3 +71,24 @@ To facilitate cross-chain token transfers, you need to choose the appropriate to
 | Lock and Mint            | LockReleaseTokenPool         | BurnMintTokenPool                 | - The source blockchain is the issuing blockchain.<br />- LockReleaseTokenPool must be deployed on the issuing blockchain.                                                                                            |
 | Burn and Unlock          | BurnMintTokenPool            | LockReleaseTokenPool              | - The destination blockchain is the issuing blockchain.<br />- BurnMintTokenPool is used to burn tokens on the source blockchain, and LockReleaseTokenPool is used to unlock tokens on the issuing blockchain.        |
 | Lock and Unlock          | LockReleaseTokenPool         | LockReleaseTokenPool              | - Tokens are locked on the source blockchain and unlocked on the destination blockchain.<br />- Not recommended due to fragmented liquidity and requires careful management of liquidity across multiple blockchains. |
+
+## Liquidity architecture complexity
+
+Choose the simplest token handling mechanism that meets your requirements. Higher complexity increases misconfiguration and operational error risk.
+
+| Risk tier | Pattern                                | When to use                                                            |
+| --------- | -------------------------------------- | ---------------------------------------------------------------------- |
+| Low       | Burn and Mint on all chains            | Default recommendation; simplest cross-chain accounting                |
+| Medium    | Lock and Mint                          | Issuing chain holds canonical supply; monitor locked vs minted balance |
+| High      | Lock and Unlock across multiple chains | Avoid unless required; fragmented liquidity                            |
+
+For supply monitoring requirements on Lock and Mint setups, see [Supply Imbalance](/ccip/concepts/cross-chain-token/operational-security#supply-imbalance) and [Liquidity Management](/ccip/concepts/best-practices/evm#best-practices-for-liquidity-management).
+
+### Burn and mint role hygiene
+
+Grant mint and burn permissions only to:
+
+- The active token pool on each chain
+- Owner-like roles (`owner()`, `default_admin`) needed for administration
+
+Revoke mint/burn rights from any other addresses. See [Burn/Mint Rights](/ccip/concepts/cross-chain-token/operational-security#burn-mint-rights).

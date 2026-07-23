@@ -62,6 +62,21 @@ On the destination blockchain, the CCIP OffRamp contract performs three key call
 - If the combined execution requires consistently more than **90,000 gas** on the destination blockchain, you should [contact Chainlink Labs](https://chain.link/ccip-contact?v=Tokens:%20Gas%20limit%20update) to update an internal CCIP parameter to avoid execution failure.
 - It is highly recommended to design your token pool to stay within the 90,000 gas limit whenever possible to ensure you enabled your tokens in CCIP without Chainlink Labs intervention.
 
+#### destGasOverhead and transfer fees
+
+Some token transfers require more gas on the destination chain than the default allows—for example, when the receiver is a new account that must be created, or when custom pool logic exceeds the default execution budget.
+
+**Best practices:**
+
+- Test that token transfers **execute automatically** on every configured lane before going to production.
+- Ensure `destGasOverhead` (configured via the FeeQuoter) provides sufficient buffer for first-time receivers.
+- Use consistent `destGasOverhead` values across lanes pointing to the same destination unless you have a documented reason for differences.
+- Review [network-specific guides](/ccip/tools-resources/network-specific) for chains with non-default gas behavior.
+
+If transfers fail automatic execution, [contact Chainlink Labs](https://chain.link/ccip-contact?v=Tokens:%20Gas%20limit%20update) to review `destGasOverhead` configuration.
+
+See [destGasOverhead Configuration](/ccip/concepts/cross-chain-token/operational-security#destgasoverhead-configuration) for the full security context.
+
 ### Token Decimal Handling
 
 When you deploy the same token on multiple blockchains, you set decimals independently on each chain. Those settings determine how CCIP converts amounts during transfers. Use matching decimals on every chain when you can. If decimals differ between chains, read the examples and notes below and account for effects on token supply and on Token Pool Rate Limits; enforcement and scaling depend on your TokenPool contract version.
@@ -163,6 +178,8 @@ Upgrade to **v1.6.0 or higher** for correct handling of mixed-decimal tokens.
 - Test transfers between all chain pairs before production
 - Monitor lock/release pools for accumulation over time
 - Add UI warnings for transfers that may lose precision
+
+For the full decimal symmetry security requirements, see [CCT Operational Security](/ccip/concepts/cross-chain-token/operational-security#decimal-symmetry).
 
 ## Standard Token Pools
 

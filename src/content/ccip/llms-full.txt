@@ -2923,6 +2923,8 @@ This section explains the Cross-Chain Token (CCT) standard, a Chainlink CCIP fea
 
 For a high-level summary of the CCT standard and its benefits, see the [Overview](/ccip/concepts/cross-chain-token/overview) page.
 
+For consolidated operational security recommendations, see [CCT Operational Security](/ccip/concepts/cross-chain-token/operational-security). It is **highly recommended** that all token developers review this section thoroughly to understand how to configure and operate their CCT safely.
+
 ---
 
 # Cross-Chain Token Standard - Overview
@@ -2930,12 +2932,6 @@ Source: https://docs.chain.link/ccip/concepts/cross-chain-token/overview
 Last Updated: 2025-05-19
 
 <AptosCCTCallout client:only="react" />
-
-<Aside type="note" title="Launch or upgrade your cross-chain token in just a few clicks">
-  Did you know about the [Token Manager](https://tokenmanager.chain.link/). This newly released app gives you the
-  ability to launch new tokens or upgrade existing tokens into CCTs, no code required. Read more about it
-  [here](/ccip/tools-resources/token-manager).
-</Aside>
 
 The Cross-Chain Token (CCT) standard offers a streamlined and decentralized approach to enabling token transfers across blockchains using Chainlink's Cross-Chain Interoperability Protocol (CCIP). Traditionally, token developers had a friction-laden and manual process to enable their tokens for cross-chain operations. This process required manual deployment of token pools, making it time-consuming. With the introduction of CCTs, token developers now have the power to deploy, configure, and manage their own token pools in CCIP via a simple interface. This self-service model not only accelerates the deployment process but also empowers token developers with greater autonomy and control over their cross-chain token operations. This guide will explore the motivations behind Cross-Chain Token (CCT) and provide an overview of the architectural components in enabling a compatible token in CCIP.
 
@@ -2964,6 +2960,8 @@ Token developers retain complete ownership of their token contracts, token pools
 #### Defense-in-Depth Security
 
 The CCT standard leverages Chainlink's industry-standard oracle networks, which secure over $16 trillion in Total Value Enabled (TVE). This strong foundation is further enhanced by additional layers of protection, such as configurable transfer rate limits, providing comprehensive security for cross-chain operations.
+
+For operational security recommendations and guidance, see [CCT Operational Security](/ccip/concepts/cross-chain-token/operational-security).
 
 #### Programmable Token Transfers
 
@@ -3064,6 +3062,231 @@ The mechanism for handling tokens varies depending on the characteristics of eac
 
 ---
 
+# Cross-Chain Token Standard - Operational Security
+Source: https://docs.chain.link/ccip/concepts/cross-chain-token/operational-security
+Last Updated: 2025-06-09
+
+This page consolidates recommended practices and known risks / remediation for securing Cross-Chain Token (CCT) deployments on CCIP. Items are grouped by topic: Critical/Warning/Info labels are added to relevant sections to indicate relative priority—it is recommended that token developers review and apply them based on their own independent risk assessment. It is also recommended to utilize active monitoring and logging to ensure that the security of your CCT is maintained. For additional assistance with risk assessment or to discuss your specific use case, [contact Chainlink Labs](https://chain.link/ccip-contact).
+
+For chain-family-specific integration details, see the [Cross-Chain Token Standard](/ccip/concepts/cross-chain-token) section. For rate limit operations, see [Rate Limit Management](/ccip/concepts/rate-limit-management/overview).
+
+**On this page:**
+
+- [Secure signing and opsec](#secure-signing-and-opsec)
+- [Pool and lane configuration](#pool-and-lane-configuration)
+- [Token pool rate limits](#token-pool-rate-limits)
+- [Administration and permissions](#administration-and-permissions)
+- [Upgrades and execution](#upgrades-and-execution)
+- [Architecture and versioning](#architecture-and-versioning)
+
+<Aside type="note" title="Recommendations only">
+  The guidance on this page is provided for informational purposes and does not constitute legal, security, or
+  operational advice. Chainlink does not guarantee outcomes from following these recommendations. You are solely
+  responsible for the correctness, security, and reliability of your token pools, configurations, and contracts. See
+  [Token Developer Responsibilities](/ccip/service-responsibility#token-developers-responsibilities), [CCIP Service
+  Responsibility](/ccip/service-responsibility), and the [Chainlink Terms of Service](https://chain.link/terms).
+</Aside>
+
+<Aside type="caution" title="Severity labels">
+  **(Critical)** items reflect practices that are strongly recommended for securing bridge operations—for example,
+  assigning token pool and admin roles to multi-party signers with appropriate review periods before critical actions
+  take effect. **(Warning)** items highlight misconfigurations or operational risks that commonly cause incidents.
+  **(Info)** items provide structural guidance and starting points for tuning.
+</Aside>
+
+<h2 id="secure-signing-and-opsec">Secure signing and opsec</h2>
+
+Addresses controlled by a single private key or EOAs are generally not recommended to control roles in CCT-related contracts that could lead to a loss of funds or other critical issues such as: contract ownership, burn/mint rights, ccip administrator. It is **highly recommended** to use a secure solution such as a multi-signature smart account or timelock to avoid a single point of failure.
+
+Different roles may warrant **varied signing setups**. High-privilege changes (ownership transfer, pool upgrades, registry updates) typically benefit from a broad multisig and timelock. **Scoped** actions for risk management and incident response may use a separate, more responsive configuration. For example, a Token Developer may choose to assign the [`rateLimitAdmin`](/ccip/concepts/rate-limit-management/prerequisites-and-permissions) role on the token pool to an address that can pause or throttle a lane via rate limit configuration without holding full pool owner rights. See [Emergency Actions](/ccip/concepts/rate-limit-management/emergency-actions) and [Rate limit admin role](#rate-limit-admin-role) below.
+
+Review every address in a multisig regularly to confirm signers remain trusted and that departed or compromised keys are removed promptly. It is also recommended to balance security with operational needs: choose a threshold, geographic distribution, and approval workflow that supports both routine governance and timely incident response (for example: pausing a lane through the rate limit admin).
+
+**Recommendations:**
+
+- Use multi-signature smart accounts (for example, [Safe Smart Accounts](https://github.com/safe-global/safe-smart-account)) with a threshold of **at least 3-of-n** signers commensurate with risk.
+- Add a **timelock** with propose, review, and cancel steps so critical actions cannot execute immediately without oversight.
+- Remove deprecated or compromised signers promptly and audit signer access quarterly.
+- Create runbooks for routine operations and incident response workflows that support both routine governance, configuration changes, and timely incident response.
+
+**Related docs:** [CCT Administration (EVM)](/ccip/concepts/best-practices/evm#best-practices-for-cross-chain-token-cct-administration), [Multi-Signature Contracts](/ccip/concepts/best-practices/evm#multi-signature-contracts), [Token Manager](/ccip/tools-resources/token-manager), [EVM Upgradability (MCMS)](/ccip/concepts/architecture/onchain/evm/upgradability)
+
+<Aside type="note" title="SVM / Aptos / TON">
+  On SVM, assign mint authority and pool upgrade authority to governance multisigs or Squad vaults. See [SVM Best
+  Practices](/ccip/concepts/best-practices/svm#multi-signature-authorities) and [SVM Registration &
+  Administration](/ccip/concepts/cross-chain-token/svm/registration-administration).
+</Aside>
+
+## Pool and lane configuration
+
+<h3 id="incorrect-pool-mappings">Incorrect pool mappings (Critical)</h3>
+
+Cross-chain lanes require symmetric, correct configuration on **both** sides of every lane.
+
+**Validation checklist (EVM):**
+
+- Source `remotePoolAddresses` must match the destination token pool address.
+- Source `remoteTokenAddress` must match the token returned by `getToken()` on the destination pool.
+- The destination chain must have a token pool registered via `TokenAdminRegistry.setPool`.
+- Both pools must call [`applyChainUpdates`](/ccip/concepts/cross-chain-token/evm/registration-administration#applychainupdates) with matching chain selectors, addresses, and rate limits.
+
+See [Pool Configuration Checklist](/ccip/concepts/cross-chain-token/evm/registration-administration#pool-configuration-checklist).
+
+<Aside type="note" title="SVM">
+  On Solana, configure remote pool addresses and token mints via pool program instructions. See [SVM Registration &
+  Administration: Remote Chain
+  Configuration](/ccip/concepts/cross-chain-token/svm/registration-administration#remote-chain-configuration).
+</Aside>
+
+<h3 id="cross-silo-isolation">Cross-silo isolation (Critical)</h3>
+
+If your token uses **siloed** liquidity lanes (isolated hub-and-spoke topology), do not connect siloed lanes to networks outside their designated hub chain.
+
+**Risk:** Cross-silo connections cause incorrect accounting, stuck transactions, or loss of funds.
+
+**Remediation:** Remove unintended remote chains from the token pool using `applyChainUpdates` (EVM) or the equivalent remote config update on your chain family.
+
+<h3 id="decimal-symmetry">Decimal symmetry (Critical)</h3>
+
+Token decimals should match across chains when possible. When they differ, configure Token Pool Rate Limits (TPRLs) using the correct decimal model for your TokenPool version.
+
+**Related docs:** [Token Decimal Handling (EVM)](/ccip/concepts/cross-chain-token/evm/token-pools#token-decimal-handling), [Token Units and Decimals](/ccip/concepts/rate-limit-management/token-units-and-decimals), [SVM Decimal Compatibility](/ccip/concepts/cross-chain-token/svm/token-pools#decimal-compatibility-considerations)
+
+<h3 id="supply-imbalance">Supply imbalance (Critical)</h3>
+
+For **Lock and Mint** architectures, tokens locked in the LockRelease pool on the issuing chain must be **greater than or equal to** the total supply minted on remote BurnMint chains.
+
+**Risk:** A token shortfall can cause transfer failures or require manual infusion to make users whole.
+
+**Remediation:** Regularly compare `balanceOf(pool)` on the home chain against the sum of `totalSupply` on all remote mint chains. See [Liquidity Management](/ccip/concepts/best-practices/evm#best-practices-for-liquidity-management).
+
+## Token pool rate limits
+
+<h3 id="unset-token-pool-rate-limits">Unset token pool rate limits (Critical)</h3>
+
+Inbound or outbound TPRLs that are disabled reduce a defensive layer against unmitigated cross-chain flows.
+
+**Recommendation:** Enable TPRLs on **all lanes** for production CCT deployments. See [Rate Limit Management Overview](/ccip/concepts/rate-limit-management/overview).
+
+<h3 id="misconfigured-token-pool-rate-limits">Misconfigured token pool rate limits (Critical)</h3>
+
+When source **outbound** capacity exceeds destination **inbound** capacity, in-flight transactions can become stuck.
+
+**Remediation:** Configure destination inbound capacity to **meet or exceed** source outbound capacity plus a buffer (typically 5–10%, or `SourceOutbound × 1.1`). See [Configuration Checklist](/ccip/concepts/rate-limit-management/configuration-checklist).
+
+<h3 id="unbuffered-token-pool-rate-limits">Unbuffered token pool rate limits (Warning)</h3>
+
+Inbound limits that ignore refill rate and lane latency can cause stuck in-flight transactions.
+
+**Remediation:** Set `DestinationInboundCapacity ≥ SourceOutboundCapacity × 1.1`, accounting for source chain epoch size and CCIP round time. See [Configuration Checklist](/ccip/concepts/rate-limit-management/configuration-checklist).
+
+<h3 id="token-bucket-refill-rate">Token bucket refill rate (Warning)</h3>
+
+Refill rates that are too slow limit user availability; rates that are too fast fail to throttle abnormal flows.
+
+**Guideline:** Target a full-bucket refill time between **1 and 24 hours**. See [Refill Rate Guidance](/ccip/concepts/rate-limit-management/common-scenarios#refill-rate-guidance).
+
+<h3 id="paused-token-pool-rate-limits">Paused token pool rate limits (Warning)</h3>
+
+Rate limits configured with minimal capacity and refill (`capacity: 1`, `rate: 1`) effectively pause a lane on many EVM TokenPool versions. This may be intentional during incidents or accidental from misconfiguration. On **1.4.0 – 1.6.0** pools, that exact config reverts at setup — see [Contract Version Behavior (EVM)](/ccip/concepts/rate-limit-management/contract-version-behavior).
+
+**Remediation:** Distinguish intentional pauses ([Emergency Actions](/ccip/concepts/rate-limit-management/emergency-actions)) from misconfiguration using the [Configuration Checklist](/ccip/concepts/rate-limit-management/configuration-checklist).
+
+<h3 id="in-flight-transactions-and-tprls">In-flight transactions and TPRLs (Warning)</h3>
+
+Reducing inbound capacity while messages are in-flight can cause them to stall until capacity is available.
+
+**Runbook:**
+
+1. Set outbound capacities first.
+2. Check [CCIP Explorer](/ccip/tools-resources/ccip-explorer) or the CCIP API for in-flight messages whose amounts exceed the new outbound limits.
+3. Wait for those transactions to settle on destination chains.
+4. Then reduce inbound capacities.
+
+See [Reducing Inbound Capacity](/ccip/concepts/rate-limit-management/update-rate-limits#reducing-inbound-capacity).
+
+<h3 id="suggested-tprls">Suggested TPRLs (Info)</h3>
+
+Balance two goals: maximum transfer availability for end users and minimum risk exposure through throttling. Use worked examples as a **starting point**, not a one-size-fits-all default.
+
+See [Volume-Based Strategies](/ccip/concepts/rate-limit-management/common-scenarios#volume-based-strategies) and [Common Scenarios](/ccip/concepts/rate-limit-management/common-scenarios).
+
+## Administration and permissions
+
+<h3 id="pending-token-administrator">Pending token administrator (Warning)</h3>
+
+A proposed but unaccepted token administrator can be accepted by the proposed address at any time.
+
+**Remediation (EVM):** Cancel a pending transfer with `transferAdminRole(localToken, address(0))` on the TokenAdminRegistry. See [Transfer Administrator Role](/ccip/concepts/cross-chain-token/evm/registration-administration#transfer-administrator-role).
+
+**Remediation (SVM):** Use [`owner_override_pending_administrator`](/ccip/concepts/cross-chain-token/svm/registration-administration#overriding-pending-administrator) before the pending admin accepts.
+
+<h3 id="pending-owner">Pending owner (Warning)</h3>
+
+Contracts using Ownable2Step (Token, Token Pool, AdvancedPoolHooks, ERC20LockBox) may have a pending owner awaiting acceptance.
+
+**Remediation:** Cancel with `transferOwnership(address(0))` if the transfer was initiated in error.
+
+<h3 id="burn-mint-rights">Burn/mint rights (Warning)</h3>
+
+Only the active token pool and owner-like roles (`owner()`, `default_admin`) should hold mint and burn permissions.
+
+**Remediation:** Audit all minter/burner roles and revoke unnecessary grants. See [BurnMint Requirements](/ccip/concepts/cross-chain-token/evm/tokens#burnmint-requirements).
+
+## Upgrades and execution
+
+<h3 id="stale-remote-pool-addresses">Stale remote pool addresses (Warning)</h3>
+
+During zero-downtime pool upgrades, multiple remote pool addresses may be configured temporarily. After migration, remove stale addresses via [`removeRemotePool`](/ccip/concepts/cross-chain-token/evm/upgradability#6-clean-up).
+
+**Risk:** Old pools may contain faulty or unintended logic and continue accepting in-flight messages.
+
+**Before removal:** Confirm no pending or failed transactions reference the old pool in [CCIP Explorer](/ccip/tools-resources/ccip-explorer).
+
+<h3 id="invalid-lane-configuration">Invalid lane configuration (Warning)</h3>
+
+Remote pool configuration pointing to a chain selector not supported by the CCIP router causes transactions to revert.
+
+**Remediation:** Validate chain selectors against the [CCIP Directory](/ccip/directory) before calling `applyChainUpdates`. Remove unintended remote chains from the pool.
+
+<h3 id="destgasoverhead-configuration">destGasOverhead configuration (Warning)</h3>
+
+Inconsistent `destGasOverhead` values across lanes can cause token transfers to fail automatic execution or overcharge fees.
+
+**Remediation:**
+
+- Test that token transfers execute automatically on every lane.
+- Ensure gas covers first-time receivers (new wallets or accounts that have never held the token).
+- Review [network-specific guides](/ccip/tools-resources/network-specific) for chains with non-default gas behavior (for example, [Tempo](/ccip/tools-resources/network-specific/tempo-integration-guide)).
+
+See [destGasOverhead and Transfer Fees](/ccip/concepts/cross-chain-token/evm/token-pools#destgasoverhead-and-transfer-fees).
+
+<h3 id="network-specific-considerations">Network-specific considerations (Warning)</h3>
+
+Some networks have unique configuration requirements, RPC behavior, or service limits.
+
+**Remediation:** Review [Network Specific Guides](/ccip/tools-resources/network-specific) and [Service Limits](/ccip/service-limits) before deploying to any chain.
+
+## Architecture and versioning
+
+<h3 id="liquidity-architecture">Liquidity architecture (Info)</h3>
+
+| Complexity | Pattern                                | Notes                                       |
+| ---------- | -------------------------------------- | ------------------------------------------- |
+| Low        | Burn and Mint on all chains            | Simplest accounting; recommended default    |
+| Medium     | Lock and Mint                          | Requires supply monitoring on issuing chain |
+| High       | Lock and Unlock across multiple chains | Fragmented liquidity; not recommended       |
+
+See [Liquidity Architecture Complexity](/ccip/concepts/cross-chain-token/evm/tokens#liquidity-architecture-complexity).
+
+<h3 id="use-latest-tokenpool-versions">Use latest TokenPool versions (Info)</h3>
+
+Older TokenPool versions have known limitations in decimal handling, TPRL enforcement, and upgradeability. Pre-1.5 proxy pools increase management complexity.
+
+**Remediation:** Upgrade to the latest available TokenPool release when feasible. See [Contract Version Behavior (EVM)](/ccip/concepts/rate-limit-management/contract-version-behavior), [Token Pool Version Considerations](/ccip/concepts/cross-chain-token/evm/token-pools#token-pool-version-considerations), and [Upgradability (EVM)](/ccip/concepts/cross-chain-token/evm/upgradability).
+
+---
+
 # Cross-Chain Token Standard - Tokens (EVM)
 Source: https://docs.chain.link/ccip/concepts/cross-chain-token/evm/tokens
 Last Updated: 2025-05-19
@@ -3128,6 +3351,27 @@ To facilitate cross-chain token transfers, you need to choose the appropriate to
 | Burn and Unlock          | BurnMintTokenPool            | LockReleaseTokenPool              | - The destination blockchain is the issuing blockchain.<br />- BurnMintTokenPool is used to burn tokens on the source blockchain, and LockReleaseTokenPool is used to unlock tokens on the issuing blockchain.        |
 | Lock and Unlock          | LockReleaseTokenPool         | LockReleaseTokenPool              | - Tokens are locked on the source blockchain and unlocked on the destination blockchain.<br />- Not recommended due to fragmented liquidity and requires careful management of liquidity across multiple blockchains. |
 
+## Liquidity architecture complexity
+
+Choose the simplest token handling mechanism that meets your requirements. Higher complexity increases misconfiguration and operational error risk.
+
+| Risk tier | Pattern                                | When to use                                                            |
+| --------- | -------------------------------------- | ---------------------------------------------------------------------- |
+| Low       | Burn and Mint on all chains            | Default recommendation; simplest cross-chain accounting                |
+| Medium    | Lock and Mint                          | Issuing chain holds canonical supply; monitor locked vs minted balance |
+| High      | Lock and Unlock across multiple chains | Avoid unless required; fragmented liquidity                            |
+
+For supply monitoring requirements on Lock and Mint setups, see [Supply Imbalance](/ccip/concepts/cross-chain-token/operational-security#supply-imbalance) and [Liquidity Management](/ccip/concepts/best-practices/evm#best-practices-for-liquidity-management).
+
+### Burn and mint role hygiene
+
+Grant mint and burn permissions only to:
+
+- The active token pool on each chain
+- Owner-like roles (`owner()`, `default_admin`) needed for administration
+
+Revoke mint/burn rights from any other addresses. See [Burn/Mint Rights](/ccip/concepts/cross-chain-token/operational-security#burn-mint-rights).
+
 ---
 
 # Cross-Chain Token Standard - Token Pools (EVM)
@@ -3184,6 +3428,21 @@ On the destination blockchain, the CCIP OffRamp contract performs three key call
 
 - If the combined execution requires consistently more than **90,000 gas** on the destination blockchain, you should [contact Chainlink Labs](https://chain.link/ccip-contact?v=Tokens:%20Gas%20limit%20update) to update an internal CCIP parameter to avoid execution failure.
 - It is highly recommended to design your token pool to stay within the 90,000 gas limit whenever possible to ensure you enabled your tokens in CCIP without Chainlink Labs intervention.
+
+#### destGasOverhead and transfer fees
+
+Some token transfers require more gas on the destination chain than the default allows—for example, when the receiver is a new account that must be created, or when custom pool logic exceeds the default execution budget.
+
+**Best practices:**
+
+- Test that token transfers **execute automatically** on every configured lane before going to production.
+- Ensure `destGasOverhead` (configured via the FeeQuoter) provides sufficient buffer for first-time receivers.
+- Use consistent `destGasOverhead` values across lanes pointing to the same destination unless you have a documented reason for differences.
+- Review [network-specific guides](/ccip/tools-resources/network-specific) for chains with non-default gas behavior.
+
+If transfers fail automatic execution, [contact Chainlink Labs](https://chain.link/ccip-contact?v=Tokens:%20Gas%20limit%20update) to review `destGasOverhead` configuration.
+
+See [destGasOverhead Configuration](/ccip/concepts/cross-chain-token/operational-security#destgasoverhead-configuration) for the full security context.
 
 ### Token Decimal Handling
 
@@ -3286,6 +3545,8 @@ Upgrade to **v1.6.0 or higher** for correct handling of mixed-decimal tokens.
 - Test transfers between all chain pairs before production
 - Monitor lock/release pools for accumulation over time
 - Add UI warnings for transfers that may lose precision
+
+For the full decimal symmetry security requirements, see [CCT Operational Security](/ccip/concepts/cross-chain-token/operational-security#decimal-symmetry).
 
 ## Standard Token Pools
 
@@ -3490,6 +3751,40 @@ The configuration of token pools includes adding new blockchains, setting remote
   - The allowlist ensures that only specific addresses, such as trusted addresses, can transfer tokens.
 - **Usage**: The pool owner uses this function to add or remove addresses from the allowlist, controlling who can transfer the tokens through CCIP.
 
+## Pool configuration checklist
+
+Before enabling cross-chain transfers on a new lane, verify the following on **both** sides of the lane:
+
+1. **Chain selector is valid**: Confirm the remote chain selector appears on the [CCIP Directory](/ccip/directory).
+2. **Remote pool address matches**: Source `remotePoolAddresses` must point to the correct destination token pool.
+3. **Remote token address matches**: Source `remoteTokenAddress` must match the token returned by `getToken()` on the destination pool.
+4. **TokenAdminRegistry is set**: Call `setPool` on each chain so the TokenAdminRegistry maps the token to its active pool.
+5. **Rate limits are enabled**: Both inbound and outbound TPRLs must be enabled on every lane. See [Configuration Checklist](/ccip/concepts/rate-limit-management/configuration-checklist).
+6. **Symmetric configuration**: Apply matching `applyChainUpdates` on both pools with inbound/outbound values swapped appropriately.
+
+<Aside type="caution" title="Cross-silo topology">
+  If your token uses siloed liquidity lanes, do not connect siloed lanes to networks outside their designated hub chain.
+  See [Cross-Silo Isolation](/ccip/concepts/cross-chain-token/operational-security#cross-silo-isolation).
+</Aside>
+
+### Canceling a pending administrator
+
+If a token administrator role transfer was initiated in error, the current administrator can cancel it:
+
+```solidity
+tokenAdminRegistry.transferAdminRole(localToken, address(0));
+```
+
+This clears the pending administrator without changing the active administrator.
+
+### Canceling a pending owner
+
+For contracts using Ownable2Step (token, token pool, hooks, lock box), cancel an erroneous ownership transfer:
+
+```solidity
+contract.transferOwnership(address(0));
+```
+
 ---
 
 # Cross-Chain Token Standard - Upgradability (EVM)
@@ -3497,6 +3792,8 @@ Source: https://docs.chain.link/ccip/concepts/cross-chain-token/evm/upgradabilit
 Last Updated: 2025-05-19
 
 Starting from **CCIP v1.5.1**, token pools support zero-downtime upgrades, allowing seamless transitions between versions while maintaining support for in-flight messages. This section outlines the requirements and considerations for upgrading token pools.
+
+It is recommended to keep token pools on the **latest available** release from [`@chainlink/contracts-ccip`](https://www.npmjs.com/package/@chainlink/contracts-ccip?activeTab=versions) when feasible. Use [`typeAndVersion()`](/ccip/concepts/rate-limit-management/contract-version-behavior#identify-your-version-with-typeandversion) on each deployed pool to confirm what you are running today.
 
 <Aside type="caution" title="Upgrading from v1.5.0">
   If you are currently using CCIP **v1.5.0** token pools, please read the [Upgrading from v1.5.0](#upgrading-from-v150)
@@ -3580,7 +3877,7 @@ Configure both new pools to accept messages from both the old and new pools. Thi
 
 ### 3. **Throttle Existing Pools**
 
-Before upgrading, minimize new token transfers by setting near-zero rate limits on the existing pools. Use `setChainRateLimiterConfig` on both existing pools:
+Before upgrading, minimize new token transfers by setting near-zero rate limits on the existing pools. Use `setChainRateLimiterConfig` on both existing pools. On **1.6.1+** TokenPool releases, a minimal pause pattern is `capacity: 1`, `rate: 1`, `isEnabled: true`; on **1.4.0 – 1.6.0**, use at least `capacity: 2`, `rate: 1`. See [Contract Version Behavior (EVM)](/ccip/concepts/rate-limit-management/contract-version-behavior).
 
 - On Ethereum's old pool:
 
@@ -3626,22 +3923,29 @@ After verifying all transactions are processed successfully:
 
 - Use `removeRemotePool` to remove old pool addresses
 - This prevents future messages from using the old pools
-  - Only proceed with cleanup after confirming:
-    - No pending transactions in CCIP Explorer
-    - All manual executions are complete
-    - New pools are operating correctly
 
-  - On Ethereum's new pool:
+<Aside type="caution" title="Stale remote pool risk">
+  Leaving old remote pool addresses configured after migration creates a security risk—compromised or deprecated pools
+  may continue to process in-flight messages. Remove stale addresses as soon as all in-flight transactions settle. See
+  [Stale Remote Pool Addresses](/ccip/concepts/cross-chain-token/operational-security#stale-remote-pool-addresses).
+</Aside>
 
-    ```solidity
-    newPoolEth.removeRemotePool(POLYGON_SELECTOR, abi.encode(0xOldPoolPoly));
-    ```
+- Only proceed with cleanup after confirming:
+  - No pending transactions in CCIP Explorer
+  - All manual executions are complete
+  - New pools are operating correctly
 
-  - On Polygon's new pool:
+- On Ethereum's new pool:
 
-    ```solidity
-    newPoolPoly.removeRemotePool(ETH_SELECTOR, abi.encode(0xOldPoolEth));
-    ```
+  ```solidity
+  newPoolEth.removeRemotePool(POLYGON_SELECTOR, abi.encode(0xOldPoolPoly));
+  ```
+
+- On Polygon's new pool:
+
+  ```solidity
+  newPoolPoly.removeRemotePool(ETH_SELECTOR, abi.encode(0xOldPoolEth));
+  ```
 
 ---
 
@@ -4737,6 +5041,8 @@ Last Updated: 2025-05-19
 
 When token administrators want to register their SPL token for Cross‐Chain Token (CCT) operations, they interact with both the Router program and Token Pool programs. This guide covers both token registration/administration (Router side) and token pool configuration (Pool side).
 
+For consolidated operational security requirements across all chain families, see [CCT Operational Security](/ccip/concepts/cross-chain-token/operational-security).
+
 ## Token Registration & Administration (Router Side)
 
 This section covers all operations performed through the Router program to manage token administrator roles and basic token configuration.
@@ -5301,6 +5607,20 @@ This documentation is intended for **CCIP operators, token issuers, and administ
 
 Rate limit changes are applied on-chain, take effect immediately, and directly affect user-facing transfer availability.
 
+<Aside type="note" title="Contract version matters (EVM)">
+  TokenPool rate limit validation and consume behavior differ between [`@chainlink/contracts-ccip`
+  releases](https://www.npmjs.com/package/@chainlink/contracts-ccip). Call `typeAndVersion()` on your pool to read the
+  deployed release (for example, `"BurnMintTokenPool 1.6.3"`), then see [Contract Version Behavior
+  (EVM)](/ccip/concepts/rate-limit-management/contract-version-behavior). When feasible, upgrade to the latest available
+  pool release — see [Upgradability (EVM)](/ccip/concepts/cross-chain-token/evm/upgradability).
+</Aside>
+
+<Aside type="note" title="Recommendation for CCTs">
+  It is recommended to configure Token Pool Rate Limits (TPRLs) on all lanes for CCT deployments. Unset rate limits
+  reduce a defensive layer against unmitigated cross-chain flows. See [CCT Operational
+  Security](/ccip/concepts/cross-chain-token/operational-security#unset-token-pool-rate-limits).
+</Aside>
+
 <Aside type="note" title="Private/Permissioned Networks">
   It is strongly recommended to configure Token Pool Rate Limits (TPRLs) for CCTs on all lanes. Note that private /
   permissioned networks exhibit increased risks for Token Developers; please ensure you understand the implications
@@ -5358,6 +5678,7 @@ Changes are applied on-chain and take effect immediately. Always review paramete
 The pages in this section walk through:
 
 - how CCIP rate limits work
+- **EVM contract version differences** ([Contract Version Behavior](/ccip/concepts/rate-limit-management/contract-version-behavior))
 - required permissions and prerequisites
 - inspecting current inbound and outbound configurations
 - accounting for token decimals and units
@@ -5367,12 +5688,16 @@ The pages in this section walk through:
 
 This content focuses on **operational control**, not on basic CCIP integration or application development.
 
+For the consolidated CCT security reference, see [CCT Operational Security](/ccip/concepts/cross-chain-token/operational-security).
+
 ---
 
 # How Rate Limits Work
 Source: https://docs.chain.link/ccip/concepts/rate-limit-management/how-rate-limits-work
 
 This page explains how CCIP rate limits function at a conceptual level. It focuses on *what the system does* and *how the parameters interact*, without covering how to make changes on-chain.
+
+On EVM chains, the exact rules for valid configs and what happens at consume time **depend on the deployed TokenPool version**. See [Contract Version Behavior (EVM)](/ccip/concepts/rate-limit-management/contract-version-behavior) before relying on specific capacity/rate combinations.
 
 ## Rate limits as capacity buckets
 
@@ -5392,6 +5717,8 @@ Each token pool maintains **two independent rate limits per connected chain**:
 Inbound and outbound limits are configured separately and can differ in capacity and refill rate. This allows operators to tune risk asymmetrically depending on the direction of flow.
 
 In practice, outbound limits are often configured to be slightly lower than inbound limits to provide buffer room and reduce the risk of in-flight congestion.
+
+See the [Configuration Checklist](/ccip/concepts/rate-limit-management/configuration-checklist) for inbound/outbound symmetry requirements.
 
 ## Core rate limit parameters
 
@@ -5418,7 +5745,7 @@ This state determines whether a transfer can proceed and how quickly capacity be
 
 When a rate limit is **enabled**, transfers are constrained by the configured capacity and refill rate.
 
-When a rate limit is **disabled**, transfers are not subject to any volume limits for that lane.
+When a rate limit is **disabled** (`isEnabled: false`), transfers are not subject to volume limits for that direction. On EVM TokenPool releases **1.4.0+**, disabled configs must use `capacity: 0` and `rate: 0`.
 
 Disabling rate limits removes an important safety mechanism and should only be done intentionally and with a clear understanding of the associated risk.
 
@@ -5442,6 +5769,137 @@ This page does not cover:
 - emergency or incident response actions
 
 Those topics are covered in the subsequent pages of this section.
+
+---
+
+# Contract Version Behavior (EVM)
+Source: https://docs.chain.link/ccip/concepts/rate-limit-management/contract-version-behavior
+
+On EVM chains, Token Pool Rate Limits (TPRLs) are enforced by the `RateLimiter` library inside your deployed **TokenPool** contract. **Validation rules and runtime behavior differ between npm releases** of [`@chainlink/contracts-ccip`](https://www.npmjs.com/package/@chainlink/contracts-ccip). The guidance elsewhere in this section describes common operational patterns; **always confirm behavior against the source code and ABI for the version actually deployed on your pool(s)**.
+
+<Aside type="caution" title="Verify your deployed version">
+  Call [`typeAndVersion()`](#identify-your-version-with-typeandversion) on your TokenPool contract address. The returned
+  string (for example, `"BurnMintTokenPool 1.6.3"`) includes the contract release you should match to the version ranges
+  on this page and to
+  [`@chainlink/contracts-ccip`](https://www.npmjs.com/package/@chainlink/contracts-ccip?activeTab=versions). Do not
+  assume patterns from this section apply unchanged if your pool predates or postdates those ranges.
+</Aside>
+
+This page is the **single reference** for EVM TokenPool / RateLimiter version differences referenced from [Configuration Checklist](/ccip/concepts/rate-limit-management/configuration-checklist), [Emergency Actions](/ccip/concepts/rate-limit-management/emergency-actions), and [Common Scenarios](/ccip/concepts/rate-limit-management/common-scenarios).
+
+<Aside type="note" title="Upgrade when feasible">
+  It is recommended to deploy and operate the **latest stable** TokenPool release from
+  [`@chainlink/contracts-ccip`](https://www.npmjs.com/package/@chainlink/contracts-ccip?activeTab=versions) when
+  possible. Older pools may use stricter or undocumented rate limit validation, weaker decimal/TPRL handling, and
+  upgrade paths that are more difficult to operate safely. Starting from **v1.5.1**, pools support [zero-downtime
+  upgrades](/ccip/concepts/cross-chain-token/evm/upgradability) while in-flight messages complete. Compare your current
+  version with [`typeAndVersion()`](#identify-your-version-with-typeandversion) before planning an upgrade.
+</Aside>
+
+## Version ranges at a glance
+
+| `@chainlink/contracts-ccip` | Config validation when `isEnabled: true`                     | `capacity: 1`, `rate: 1` (soft pause) | `capacity: 0`, `rate: 0` (enabled)              |
+| --------------------------- | ------------------------------------------------------------ | ------------------------------------- | ----------------------------------------------- |
+| **0.7.x – 1.2.0**           | None — any values accepted                                   | Allowed                               | Allowed — **hard block** (all transfers revert) |
+| **1.4.0 – 1.6.0**           | Strict: `rate == 0` or `rate >= capacity` reverts            | **Rejected** at setup                 | **Rejected** at setup                           |
+| **1.6.1 – 1.6.4**           | Relaxed: only `rate > capacity` reverts                      | Allowed — soft pause                  | Allowed — **hard block**                        |
+| **2.0.0**                   | Same relaxed rule; validation inside `_setTokenBucketConfig` | Allowed — soft pause                  | Allowed — **hard block**                        |
+
+The strict → relaxed validation change landed in **1.6.1**. **1.6.0** was the last release with strict validation.
+
+## Architectural note (1.2.0 and earlier)
+
+In **1.2.0** and some earlier releases, rate limits are keyed per **OnRamp / OffRamp address** rather than per **remote chain selector** on `s_remoteChainConfigs`. Inbound limits map to OffRamp buckets; outbound limits map to OnRamp buckets. Later releases (1.4.0+) use per-lane inbound/outbound configs on the remote chain config struct. The `RateLimiter` math is the same; only the wiring differs.
+
+## Config validation
+
+### No validation (0.7.x – 1.2.0)
+
+`_setTokenBucketConfig` applies whatever values are passed. There is no `_validateTokenBucketConfig` guard in TokenPool admin paths.
+
+### Strict validation (1.4.0 – 1.6.0)
+
+Before applying a config, TokenPool calls `_validateTokenBucketConfig`. When `isEnabled` is true:
+
+```solidity
+if (config.rate >= config.capacity || config.rate == 0) {
+  revert InvalidRateLimitRate(config);
+}
+```
+
+Implications:
+
+- **`capacity: 1`, `rate: 1`** — reverts (`rate >= capacity`). Use at least **`capacity: 2`, `rate: 1`** for a minimal drip on these versions.
+- **`capacity: 0`, `rate: 0`** with `isEnabled: true` — reverts (`rate == 0`).
+- **`rate: 0`** with any capacity — reverts.
+
+### Relaxed validation (1.6.1 – 1.6.4)
+
+Validation only rejects when `rate > capacity`:
+
+```solidity
+if (config.rate > config.capacity) {
+  revert InvalidRateLimitRate(config);
+}
+```
+
+Enabled configs with **`rate: 0`**, **`capacity: 0`**, or **`capacity == rate`** (including `1/1`) are accepted.
+
+### Relaxed validation in `_setTokenBucketConfig` (2.0.0)
+
+The same `rate > capacity` rule runs inside `_setTokenBucketConfig` itself. TokenPool no longer calls a separate `_validateTokenBucketConfig`. On config update, the bucket is **reset**: `tokens = capacity` (full refill), rather than preserving partial bucket state.
+
+## Runtime behavior (consume)
+
+When `isEnabled: true`, `_consume` runs on lock/burn (outbound) or release/mint (inbound). When `isEnabled: false`, `_consume` returns immediately — **no volume limit** for that direction.
+
+### Disabled limits (`isEnabled: false`, `capacity: 0`, `rate: 0`)
+
+Required on 1.4.0+ (non-zero capacity/rate with `isEnabled: false` reverts). Transfers are **not** rate-limited.
+
+### Soft pause (`isEnabled: true`, `capacity: 1`, `rate: 1`)
+
+Only configurable on **0.7.x – 1.2.0**, **1.6.1+**, and **2.0.0**. Allows one token (in smallest units) per refill epoch, then subsequent transfers revert until capacity refills. See [Emergency Actions](/ccip/concepts/rate-limit-management/emergency-actions).
+
+### Hard block (`isEnabled: true`, `capacity: 0`, `rate: 0`)
+
+Configurable on versions without strict validation (see table above). Any transfer with amount > 0 reverts with `TokenMaxCapacityExceeded` because `capacity < requestTokens`. This is a **total freeze**, not a drip pause.
+
+### Zero refill rate with non-zero capacity (`isEnabled: true`, `rate: 0`, `capacity > 0`)
+
+Allowed since **1.6.1**. The bucket grants a **one-time burst** up to `capacity`, then blocks further transfers. On **2.0.0**, an empty bucket with `rate: 0` reverts cleanly with `TokenRateLimitReached(type(uint256).max, …)`. On **1.6.1 – 1.6.4**, the same drained state can hit division-by-zero in wait-time calculation — treat `rate: 0` as permanent block after the initial burst.
+
+## How to identify your version
+
+<h3 id="identify-your-version-with-typeandversion">Identify your version with `typeAndVersion()`</h3>
+
+EVM TokenPool contracts implement [`ITypeAndVersion`](/ccip/api-reference/evm/v1.6.3/i-type-and-version). Call `typeAndVersion()` on the **token pool contract address** you manage (the same address you use for rate limit admin calls):
+
+```solidity
+function typeAndVersion() external view returns (string memory);
+```
+
+The return value is a human-readable label in the form `"<PoolType> <version>"`, for example:
+
+- `"BurnMintTokenPool 1.6.3"`
+- `"LockReleaseTokenPool 1.6.1"`
+- `"BurnMintTokenPool 2.0.0"`
+
+Use the **version suffix** (the part after the space) to locate the matching release in [`@chainlink/contracts-ccip`](https://www.npmjs.com/package/@chainlink/contracts-ccip?activeTab=versions) or the [CCIP EVM API reference](/ccip/api-reference/evm) for your pool type. That version determines which validation rules and consume behavior in the tables above apply.
+
+<h3 id="confirm-with-source">Confirm with source</h3>
+
+After reading `typeAndVersion()`:
+
+1. Open the matching [`@chainlink/contracts-ccip` release](https://www.npmjs.com/package/@chainlink/contracts-ccip?activeTab=versions) (or verified source on a block explorer for that tag).
+2. Read `contracts/libraries/RateLimiter.sol` (or `src/v0.8/ccip/libraries/RateLimiter.sol` on older releases) for validation and consume logic.
+3. Re-read [Configuration Checklist](/ccip/concepts/rate-limit-management/configuration-checklist) and [Emergency Actions](/ccip/concepts/rate-limit-management/emergency-actions) with your version in mind.
+
+If `typeAndVersion()` is unavailable on a legacy deployment, fall back to deployment records or verified implementation source on a block explorer.
+
+## Non-EVM chain families
+
+Solana, Aptos, and other CCIP chain families implement rate limits in chain-native programs with their own version histories. The npm package above applies to **EVM TokenPool** contracts only. For SVM or Aptos pools, inspect the deployed program version and source for equivalent validation and consume logic.
 
 ---
 
@@ -5533,6 +5991,8 @@ Together, these values determine whether transfers are currently allowed and how
 To inspect rate limits, you first need the **token pool contract address** for the token you are managing.
 
 You can find token pool addresses using the Token Manager or by searching for the token contract address in the token manager search interface.
+
+Before changing rate limits, call **`typeAndVersion()`** on the pool contract to confirm which contract release is deployed (for example, `"BurnMintTokenPool 1.6.3"`). Rate limit validation rules vary by version — see [Contract Version Behavior (EVM)](/ccip/concepts/rate-limit-management/contract-version-behavior#identify-your-version-with-typeandversion).
 
 ## Select the remote chain
 
@@ -5702,6 +6162,8 @@ Once you understand the current configuration and have validated token units and
 
 Rate limit updates are applied on-chain and take effect immediately. Changes should be made deliberately and reviewed carefully before submission.
 
+On EVM chains, which parameter combinations are accepted depends on your deployed TokenPool version. See [Contract Version Behavior (EVM)](/ccip/concepts/rate-limit-management/contract-version-behavior).
+
 ## Function used to update rate limits
 
 Rate limits are updated by calling the `setChainRateLimiterConfig` function on the token pool contract.
@@ -5744,6 +6206,24 @@ A common operational pattern is:
 - set outbound capacity to approximately **90% of the inbound value**
 
 This provides buffer room and reduces the likelihood of in-flight congestion.
+
+## Reducing inbound capacity
+
+<Aside type="caution" title="In-flight transactions">
+  Reducing inbound capacity while messages are in-flight can cause them to stall. Follow this runbook before lowering
+  inbound limits.
+</Aside>
+
+When **reducing** a token pool's inbound capacity:
+
+1. **Set outbound capacities first** on the source chain.
+2. **Check for in-flight messages** using [CCIP Explorer](/ccip/tools-resources/ccip-explorer) or the CCIP API. Note any in-flight transactions whose amounts exceed the newly configured outbound limits.
+3. **Wait for settlement** — allow noted transactions to arrive and execute on their destination chains.
+4. **Then set inbound capacities** to the new, lower values.
+
+Ensure the new inbound capacity is still large enough to handle any remaining in-flight volume.
+
+See [In-Flight Transactions and TPRLs](/ccip/concepts/cross-chain-token/operational-security#in-flight-transactions-and-tprls).
 
 ## Example interaction (conceptual)
 
@@ -5795,6 +6275,8 @@ This page describes emergency actions that can be taken to **contain or halt cro
 
 These actions are intended for **incident response, maintenance, or risk containment** scenarios. They should not be used for routine configuration.
 
+**EVM TokenPool behavior depends on contract version.** Pause patterns that work on one release may revert on another. Call `typeAndVersion()` on your pool, then read [Contract Version Behavior (EVM)](/ccip/concepts/rate-limit-management/contract-version-behavior) before applying emergency configs.
+
 ## When to use emergency actions
 
 You may need to take emergency action if:
@@ -5807,14 +6289,18 @@ Emergency actions are scoped to a **specific token pool and lane**. They do not 
 
 ## Locking down a lane with minimal values
 
-To effectively stop bridging activity on a lane, you can configure rate limits with **very small capacity and refill values**.
+To effectively stop bridging activity on a lane, configure rate limits with **very small capacity and refill values** while keeping `isEnabled: true`.
 
-Because rate limits cannot be set to zero while enabled, the practical approach is to set:
+On **1.6.1+** and **2.0.0** (and unvalidated **≤ 1.2.0** pools), the usual pattern is:
 
 - **capacity** to the smallest transferable unit (for example, `1`)
 - **rate** to `1`
 
-This configuration allows only a negligible transfer before the bucket is depleted, causing subsequent transfers to fail.
+This allows only a negligible transfer before the bucket is depleted, causing subsequent transfers to fail.
+
+On **1.4.0 – 1.6.0**, `capacity: 1` with `rate: 1` **reverts at setup** because validation requires `rate < capacity` and `rate > 0`. Use at least **`capacity: 2`, `rate: 1`** on those versions, or choose another containment approach documented in [Contract Version Behavior](/ccip/concepts/rate-limit-management/contract-version-behavior).
+
+Setting `isEnabled: true` with `capacity: 0` and `rate: 0` on versions that accept it **hard-blocks all transfers** immediately.
 
 ## Example configuration
 
@@ -5860,6 +6346,8 @@ Source: https://docs.chain.link/ccip/concepts/rate-limit-management/common-scena
 
 This page provides worked configuration scenarios for common rate limit use cases. These examples illustrate how capacity and refill values are calculated and applied for different token types and operational goals.
 
+**EVM examples assume a 1.6.1+ or 2.0.0 TokenPool** unless noted otherwise. Validation and pause behavior differ on older releases — see [Contract Version Behavior (EVM)](/ccip/concepts/rate-limit-management/contract-version-behavior).
+
 All scenarios assume:
 
 - you have the `rateLimitAdmin` role
@@ -5867,6 +6355,41 @@ All scenarios assume:
 - you have validated token units and decimals
 
 These scenarios are examples, not defaults. Values must always be recalculated for the specific token, lane, and risk tolerance.
+
+## Refill rate guidance
+
+Token bucket refill rate controls how quickly capacity restores after use. Target a full-bucket refill time between **1 and 24 hours**:
+
+```
+refill_time (seconds) = capacity / rate
+```
+
+| Goal              | Guidance                                                                       |
+| ----------------- | ------------------------------------------------------------------------------ |
+| User availability | Refill fast enough that typical transfers are not blocked for extended periods |
+| Risk throttling   | Refill slow enough to limit blast radius during incidents or misconfiguration  |
+
+Example: A capacity of **1,000,000 tokens** with a rate of **278 tokens per second** refills in approximately 1 hour (`1,000,000 ÷ 278 ≈ 3,600` seconds).
+
+See [Token Bucket Refill Rate](/ccip/concepts/cross-chain-token/operational-security#token-bucket-refill-rate).
+
+## Volume-based strategies
+
+Token pool rate limits (TPRLs) should be set to balance:
+
+- **Token Transfer availability**: satisfying end-user demand
+- **Risk management**: throttling flows to limit exposure during incidents or misconfiguration
+
+Use these patterns as **starting points** when setting initial TPRLs. Adjust based on observed volume and risk tolerance.
+
+| Flow profile                | General strategy                                                                                                                                                                                                                                                                                                  |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Known or expected flows** | Set Token pool rate limits to facilitate **sufficient volume** for majority of active days (for example: 95%) with historical token transfers on a given lane. Capacity and refill should cover typical daily CCIP volume on all but the busiest days.                                                            |
+| **Unknown expected flows**  | Consider limiting throughput to a fixed percentage of total token supply per hour (for example: 1-2% per hour) until transfer patterns are established. Derive an percentage from total supply, then convert to token-bucket `capacity` and `rate` using the [refill rate guidance](#refill-rate-guidance) above. |
+
+Configure destination **inbound** capacity to meet or exceed source **outbound** capacity plus buffer (typically outbound × 1.1). See [Configuration Checklist](/ccip/concepts/rate-limit-management/configuration-checklist).
+
+These are not one-size-fits-all defaults. Monitor transfer success rates and adjust. See [Suggested TPRLs](/ccip/concepts/cross-chain-token/operational-security#suggested-tprls). For additional questions around sizing limits for your token or lane, [contact Chainlink Labs](https://chain.link/ccip-contact).
 
 ## Scenario: 18-decimal tokens
 
@@ -5928,15 +6451,17 @@ Use this pattern during incidents, investigations, or maintenance when transfers
 
 ### Configuration pattern
 
-To lock down a lane:
+To lock down a lane on **1.6.1+** or **2.0.0**:
 
-- enable the rate limit
+- enable the rate limit (`isEnabled: true`)
 - set capacity to `1`
 - set refill rate to `1`
 
 Apply this configuration to **both inbound and outbound** limits for the lane.
 
 This allows only a negligible transfer before capacity is exhausted, causing subsequent transfers to fail.
+
+On **1.4.0 – 1.6.0**, use **`capacity: 2`, `rate: 1`** (or higher capacity) instead — `1/1` reverts at setup. See [Contract Version Behavior](/ccip/concepts/rate-limit-management/contract-version-behavior).
 
 ## Scenario: removing rate limits
 
@@ -5961,6 +6486,87 @@ Apply this configuration to both inbound and outbound limits.
 - Scenario values must always be recalculated for the specific token and lane
 - Do not copy example values without adjusting for decimals and desired behavior
 - Changes take effect immediately once the transaction is confirmed
+
+---
+
+# Rate Limit Configuration Checklist
+Source: https://docs.chain.link/ccip/concepts/rate-limit-management/configuration-checklist
+
+Use this checklist as a **starting point** when configuring or auditing Token Pool Rate Limits (TPRLs) for a CCT deployment. For broader operational security guidance, see [CCT Operational Security](/ccip/concepts/cross-chain-token/operational-security). For guidance on sizing capacity from transfer volume or total supply, see [Volume-Based Strategies](/ccip/concepts/rate-limit-management/common-scenarios#volume-based-strategies).
+
+TPRL validation and consume behavior **vary by deployed TokenPool contract version**. Call **`typeAndVersion()`** on your pool to read the release (for example, `"BurnMintTokenPool 1.6.3"`), then read [Contract Version Behavior (EVM)](/ccip/concepts/rate-limit-management/contract-version-behavior) and confirm against the [`@chainlink/contracts-ccip`](https://www.npmjs.com/package/@chainlink/contracts-ccip) release that matches.
+
+<Aside type="note" title="Recommendations only">
+  The items on this page are **recommendations**, not guarantees. They do not constitute legal, security, or operational
+  advice, and following this checklist does not ensure that a configuration is safe or appropriate for your token,
+  lanes, or use case. You are solely responsible for evaluating risks, validating parameters, and complying with
+  applicable requirements. See [Token Developer
+  Responsibilities](/ccip/service-responsibility#token-developers-responsibilities), [CCIP Service
+  Responsibility](/ccip/service-responsibility), and the [Chainlink Terms of Service](https://chain.link/terms).
+</Aside>
+
+## Before enabling a lane
+
+- Token pools are on the **latest feasible** [`@chainlink/contracts-ccip`](https://www.npmjs.com/package/@chainlink/contracts-ccip?activeTab=versions) release (verify with [`typeAndVersion()`](/ccip/concepts/rate-limit-management/contract-version-behavior#identify-your-version-with-typeandversion); see [Upgradability (EVM)](/ccip/concepts/cross-chain-token/evm/upgradability))
+- Both **inbound** and **outbound** TPRLs are **enabled** (`isEnabled: true`)
+- Chain selector exists on the [CCIP Directory](/ccip/directory)
+- Token units are expressed in the token's **smallest unit** (see [Token Units and Decimals](/ccip/concepts/rate-limit-management/token-units-and-decimals))
+- Configuration is applied on **both sides** of the lane with swapped inbound/outbound values
+
+## Inbound vs outbound symmetry
+
+It is recommended that destination **inbound** capacity meet or exceed source **outbound** capacity plus buffer:
+
+```
+DestinationInboundCapacity ≥ SourceOutboundCapacity × 1.1
+```
+
+Alternatively, as a starting point, configure inbound limits **5–10% higher** than outbound limits to account for:
+
+- Source chain epoch size and finality
+- CCIP round time
+- Token bucket refill rate during in-flight windows
+
+<Aside type="caution" title="Recommended check: inbound/outbound symmetry">
+  If source outbound capacity exceeds destination inbound capacity, in-flight transactions may become stuck until
+  capacity refills or an operator intervenes.
+</Aside>
+
+## Rate limit sizing
+
+Before setting numeric limits, size TPRL **capacity** and **throughput** to balance transfer availability and risk management. Use [Volume-Based Strategies](/ccip/concepts/rate-limit-management/common-scenarios#volume-based-strategies) as a starting point - for example: P95 daily volume for tokens with known flows, or a supply-based hourly cap when flow history is limited.
+
+## Refill rate
+
+As a starting point, it is recommended to consider a full-bucket refill time between **1 and 24 hours**:
+
+```
+refill_time (seconds) = capacity / rate
+```
+
+Adjust capacity and rate together, balancing token transfer availability and risk management; the goal is to ensure that transfers remain available to end users while still throttling abnormal volume. The best approach is to test and continuously monitor your configuration in production.
+
+## Detecting accidental pauses
+
+On **1.6.1+** and **2.0.0** EVM TokenPool releases (and unvalidated **≤ 1.2.0** pools), a lane is effectively paused when rate limits use minimal values:
+
+- `capacity: 1`
+- `rate: 1`
+- `isEnabled: true`
+
+This pattern is appropriate for [incident response](/ccip/concepts/rate-limit-management/emergency-actions) but indicates a misconfiguration if set unintentionally.
+
+On **1.4.0 – 1.6.0**, the same `1/1` config **reverts at setup** (`rate >= capacity`). Pools on those versions cannot use this pause pattern; see [Contract Version Behavior](/ccip/concepts/rate-limit-management/contract-version-behavior#strict-validation-140--160).
+
+Also watch for **`isEnabled: true` with `capacity: 0` and `rate: 0`** on versions that allow it — that is a **hard block** (stronger than a `1/1` drip pause), not an unset limit.
+
+## Unset rate limits
+
+Rate limits are unset when `isEnabled: false`. It is always recommended to enable TPRLs on all lanes for production CCT deployments. See [Unset Token Pool Rate Limits](/ccip/concepts/cross-chain-token/operational-security#unset-token-pool-rate-limits).
+
+## When reducing inbound capacity
+
+Follow the in-flight runbook in [Reducing Inbound Capacity](/ccip/concepts/rate-limit-management/update-rate-limits#reducing-inbound-capacity) before lowering inbound limits.
 
 ---
 
@@ -6222,6 +6828,8 @@ Create your own monitoring alerts based on deviations from normal activity. This
 
 When managing your tokens and token pools, it's critical to follow best practices to ensure the security and integrity of your cross-chain operations. This includes proper handling of admin roles and safeguarding against unauthorized access.
 
+For a consolidated view of all CCT security requirements, see [CCT Operational Security](/ccip/concepts/cross-chain-token/operational-security).
+
 ### Securely Manage Admin Roles
 
 The **token admin** is responsible for configuring token pools across blockchains and enabling cross-chain operations. This role allows the token admin to set the token pool for a token on each supported CCIP blockchain. To ensure security, follow these guidelines:
@@ -6229,6 +6837,25 @@ The **token admin** is responsible for configuring token pools across blockchain
 - **Understand the Responsibilities of a Token Developer**: Review [Token Developer Responsibilities](/ccip/service-responsibility#token-developers-responsibilities).
 - **Assign Admin Roles with Caution**: Only trusted EOAs or smart accounts should be assigned the **token admin** role.
 - **Use Multi-Signature Smart Accounts**: For added security, consider assigning the token admin role to a **multi-signature smart account**. This ensures that multiple approvals are required for critical operations.
+
+<Aside type="caution" title="Strongly recommended">
+  It is strongly recommended to secure token pool and admin roles with multi-signature smart accounts (threshold of at
+  least 3 signers) and a timelock with propose, review, and cancel steps before critical actions execute. See [CCT
+  Operational Security](/ccip/concepts/cross-chain-token/operational-security#secure-signing-and-opsec).
+</Aside>
+
+**Timelock and risk grading:**
+
+- Use a timelock to delay execution and allow distributed review or veto of proposed actions.
+- Prefer Chainlink MCMS or multi-signature smart accounts (3/5+ threshold) over EOAs.
+- Never assign mint/burn rights to a single EOA.
+- Configure admin roles through the [Token Manager](/ccip/tools-resources/token-manager) where applicable.
+
+**Signer hygiene:**
+
+- Remove deprecated or compromised signers promptly.
+- Audit signer access and contract settings quarterly.
+- Distribute signers across time zones for rapid incident response when needed.
 
 ### Protect Against Unauthorized Admin Actions
 
@@ -6592,6 +7219,8 @@ Create your own monitoring alerts based on deviations from normal activity. This
 ## Multi-Signature Authorities
 
 Multi-signature authorities enhance security by requiring multiple signatures to authorize transactions.
+
+For consolidated CCT operational security requirements including mint authority and pool governance, see [CCT Operational Security](/ccip/concepts/cross-chain-token/operational-security#secure-signing-and-opsec).
 
 ### Threshold configuration
 
@@ -67631,6 +68260,7 @@ This section explores the foundational concepts of the Cross-Chain Interoperabil
 
 - **[Architecture](/ccip/concepts/architecture/overview)**: Understand the core components and structure of CCIP, including onchain and offchain systems.
 - **[Cross-Chain Token Standard](/ccip/concepts/cross-chain-token)**: Learn about the Cross-Chain Token (CCT) standard that enables secure token transfers across different blockchains.
+- **[CCT Operational Security](/ccip/concepts/cross-chain-token/operational-security)**: Consolidated recommended practices for securing CCT deployments. It is **highly recommended** that all token developers review this section thoroughly to understand how to configure and operate their CCT safely.
 - **[Best Practices](/ccip/concepts/best-practices)**: Discover recommended guidelines for using CCIP effectively and securely on both EVM and SVM blockchains.
 - **[Manual Execution](/ccip/concepts/manual-execution)**: Learn why some CCIP messages might require manual execution and how to handle these situations.
 

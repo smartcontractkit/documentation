@@ -1,0 +1,83 @@
+---
+section: ccip
+date: Last Modified
+title: "Rate Limit Configuration Checklist"
+---
+
+import { Aside } from "@components"
+
+Use this checklist as a **starting point** when configuring or auditing Token Pool Rate Limits (TPRLs) for a CCT deployment. For broader operational security guidance, see [CCT Operational Security](/ccip/concepts/cross-chain-token/operational-security). For guidance on sizing capacity from transfer volume or total supply, see [Volume-Based Strategies](/ccip/concepts/rate-limit-management/common-scenarios#volume-based-strategies).
+
+TPRL validation and consume behavior **vary by deployed TokenPool contract version**. Call **`typeAndVersion()`** on your pool to read the release (for example, `"BurnMintTokenPool 1.6.3"`), then read [Contract Version Behavior (EVM)](/ccip/concepts/rate-limit-management/contract-version-behavior) and confirm against the [`@chainlink/contracts-ccip`](https://www.npmjs.com/package/@chainlink/contracts-ccip) release that matches.
+
+<Aside type="note" title="Recommendations only">
+  The items on this page are **recommendations**, not guarantees. They do not constitute legal, security, or operational
+  advice, and following this checklist does not ensure that a configuration is safe or appropriate for your token,
+  lanes, or use case. You are solely responsible for evaluating risks, validating parameters, and complying with
+  applicable requirements. See [Token Developer
+  Responsibilities](/ccip/service-responsibility#token-developers-responsibilities), [CCIP Service
+  Responsibility](/ccip/service-responsibility), and the [Chainlink Terms of Service](https://chain.link/terms).
+</Aside>
+
+## Before enabling a lane
+
+- Token pools are on the **latest feasible** [`@chainlink/contracts-ccip`](https://www.npmjs.com/package/@chainlink/contracts-ccip?activeTab=versions) release (verify with [`typeAndVersion()`](/ccip/concepts/rate-limit-management/contract-version-behavior#identify-your-version-with-typeandversion); see [Upgradability (EVM)](/ccip/concepts/cross-chain-token/evm/upgradability))
+- Both **inbound** and **outbound** TPRLs are **enabled** (`isEnabled: true`)
+- Chain selector exists on the [CCIP Directory](/ccip/directory)
+- Token units are expressed in the token's **smallest unit** (see [Token Units and Decimals](/ccip/concepts/rate-limit-management/token-units-and-decimals))
+- Configuration is applied on **both sides** of the lane with swapped inbound/outbound values
+
+## Inbound vs outbound symmetry
+
+It is recommended that destination **inbound** capacity meet or exceed source **outbound** capacity plus buffer:
+
+```
+DestinationInboundCapacity ≥ SourceOutboundCapacity × 1.1
+```
+
+Alternatively, as a starting point, configure inbound limits **5–10% higher** than outbound limits to account for:
+
+- Source chain epoch size and finality
+- CCIP round time
+- Token bucket refill rate during in-flight windows
+
+<Aside type="caution" title="Recommended check: inbound/outbound symmetry">
+  If source outbound capacity exceeds destination inbound capacity, in-flight transactions may become stuck until
+  capacity refills or an operator intervenes.
+</Aside>
+
+## Rate limit sizing
+
+Before setting numeric limits, size TPRL **capacity** and **throughput** to balance transfer availability and risk management. Use [Volume-Based Strategies](/ccip/concepts/rate-limit-management/common-scenarios#volume-based-strategies) as a starting point - for example: P95 daily volume for tokens with known flows, or a supply-based hourly cap when flow history is limited.
+
+## Refill rate
+
+As a starting point, it is recommended to consider a full-bucket refill time between **1 and 24 hours**:
+
+```
+refill_time (seconds) = capacity / rate
+```
+
+Adjust capacity and rate together, balancing token transfer availability and risk management; the goal is to ensure that transfers remain available to end users while still throttling abnormal volume. The best approach is to test and continuously monitor your configuration in production.
+
+## Detecting accidental pauses
+
+On **1.6.1+** and **2.0.0** EVM TokenPool releases (and unvalidated **≤ 1.2.0** pools), a lane is effectively paused when rate limits use minimal values:
+
+- `capacity: 1`
+- `rate: 1`
+- `isEnabled: true`
+
+This pattern is appropriate for [incident response](/ccip/concepts/rate-limit-management/emergency-actions) but indicates a misconfiguration if set unintentionally.
+
+On **1.4.0 – 1.6.0**, the same `1/1` config **reverts at setup** (`rate >= capacity`). Pools on those versions cannot use this pause pattern; see [Contract Version Behavior](/ccip/concepts/rate-limit-management/contract-version-behavior#strict-validation-140--160).
+
+Also watch for **`isEnabled: true` with `capacity: 0` and `rate: 0`** on versions that allow it — that is a **hard block** (stronger than a `1/1` drip pause), not an unset limit.
+
+## Unset rate limits
+
+Rate limits are unset when `isEnabled: false`. It is always recommended to enable TPRLs on all lanes for production CCT deployments. See [Unset Token Pool Rate Limits](/ccip/concepts/cross-chain-token/operational-security#unset-token-pool-rate-limits).
+
+## When reducing inbound capacity
+
+Follow the in-flight runbook in [Reducing Inbound Capacity](/ccip/concepts/rate-limit-management/update-rate-limits#reducing-inbound-capacity) before lowering inbound limits.

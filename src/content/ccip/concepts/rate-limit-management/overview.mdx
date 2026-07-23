@@ -12,6 +12,20 @@ This documentation is intended for **CCIP operators, token issuers, and administ
 
 Rate limit changes are applied on-chain, take effect immediately, and directly affect user-facing transfer availability.
 
+<Aside type="note" title="Contract version matters (EVM)">
+  TokenPool rate limit validation and consume behavior differ between [`@chainlink/contracts-ccip`
+  releases](https://www.npmjs.com/package/@chainlink/contracts-ccip). Call `typeAndVersion()` on your pool to read the
+  deployed release (for example, `"BurnMintTokenPool 1.6.3"`), then see [Contract Version Behavior
+  (EVM)](/ccip/concepts/rate-limit-management/contract-version-behavior). When feasible, upgrade to the latest available
+  pool release — see [Upgradability (EVM)](/ccip/concepts/cross-chain-token/evm/upgradability).
+</Aside>
+
+<Aside type="note" title="Recommendation for CCTs">
+  It is recommended to configure Token Pool Rate Limits (TPRLs) on all lanes for CCT deployments. Unset rate limits
+  reduce a defensive layer against unmitigated cross-chain flows. See [CCT Operational
+  Security](/ccip/concepts/cross-chain-token/operational-security#unset-token-pool-rate-limits).
+</Aside>
+
 <Aside type="note" title="Private/Permissioned Networks">
   It is strongly recommended to configure Token Pool Rate Limits (TPRLs) for CCTs on all lanes. Note that private /
   permissioned networks exhibit increased risks for Token Developers; please ensure you understand the implications
@@ -69,6 +83,7 @@ Changes are applied on-chain and take effect immediately. Always review paramete
 The pages in this section walk through:
 
 - how CCIP rate limits work
+- **EVM contract version differences** ([Contract Version Behavior](/ccip/concepts/rate-limit-management/contract-version-behavior))
 - required permissions and prerequisites
 - inspecting current inbound and outbound configurations
 - accounting for token decimals and units
@@ -77,3 +92,5 @@ The pages in this section walk through:
 - common configuration scenarios
 
 This content focuses on **operational control**, not on basic CCIP integration or application development.
+
+For the consolidated CCT security reference, see [CCT Operational Security](/ccip/concepts/cross-chain-token/operational-security).

@@ -6,6 +6,8 @@ title: "How Rate Limits Work"
 
 This page explains how CCIP rate limits function at a conceptual level. It focuses on _what the system does_ and _how the parameters interact_, without covering how to make changes on-chain.
 
+On EVM chains, the exact rules for valid configs and what happens at consume time **depend on the deployed TokenPool version**. See [Contract Version Behavior (EVM)](/ccip/concepts/rate-limit-management/contract-version-behavior) before relying on specific capacity/rate combinations.
+
 ## Rate limits as capacity buckets
 
 CCIP rate limits are implemented as **capacity buckets** that refill over time. Each bucket starts with a defined maximum capacity and refills continuously at a fixed rate.
@@ -24,6 +26,8 @@ Each token pool maintains **two independent rate limits per connected chain**:
 Inbound and outbound limits are configured separately and can differ in capacity and refill rate. This allows operators to tune risk asymmetrically depending on the direction of flow.
 
 In practice, outbound limits are often configured to be slightly lower than inbound limits to provide buffer room and reduce the risk of in-flight congestion.
+
+See the [Configuration Checklist](/ccip/concepts/rate-limit-management/configuration-checklist) for inbound/outbound symmetry requirements.
 
 ## Core rate limit parameters
 
@@ -50,7 +54,7 @@ This state determines whether a transfer can proceed and how quickly capacity be
 
 When a rate limit is **enabled**, transfers are constrained by the configured capacity and refill rate.
 
-When a rate limit is **disabled**, transfers are not subject to any volume limits for that lane.
+When a rate limit is **disabled** (`isEnabled: false`), transfers are not subject to volume limits for that direction. On EVM TokenPool releases **1.4.0+**, disabled configs must use `capacity: 0` and `rate: 0`.
 
 Disabling rate limits removes an important safety mechanism and should only be done intentionally and with a clear understanding of the associated risk.
 

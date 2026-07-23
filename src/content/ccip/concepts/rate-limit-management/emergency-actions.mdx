@@ -8,6 +8,8 @@ This page describes emergency actions that can be taken to **contain or halt cro
 
 These actions are intended for **incident response, maintenance, or risk containment** scenarios. They should not be used for routine configuration.
 
+**EVM TokenPool behavior depends on contract version.** Pause patterns that work on one release may revert on another. Call `typeAndVersion()` on your pool, then read [Contract Version Behavior (EVM)](/ccip/concepts/rate-limit-management/contract-version-behavior) before applying emergency configs.
+
 ## When to use emergency actions
 
 You may need to take emergency action if:
@@ -20,14 +22,18 @@ Emergency actions are scoped to a **specific token pool and lane**. They do not 
 
 ## Locking down a lane with minimal values
 
-To effectively stop bridging activity on a lane, you can configure rate limits with **very small capacity and refill values**.
+To effectively stop bridging activity on a lane, configure rate limits with **very small capacity and refill values** while keeping `isEnabled: true`.
 
-Because rate limits cannot be set to zero while enabled, the practical approach is to set:
+On **1.6.1+** and **2.0.0** (and unvalidated **≤ 1.2.0** pools), the usual pattern is:
 
 - **capacity** to the smallest transferable unit (for example, `1`)
 - **rate** to `1`
 
-This configuration allows only a negligible transfer before the bucket is depleted, causing subsequent transfers to fail.
+This allows only a negligible transfer before the bucket is depleted, causing subsequent transfers to fail.
+
+On **1.4.0 – 1.6.0**, `capacity: 1` with `rate: 1` **reverts at setup** because validation requires `rate < capacity` and `rate > 0`. Use at least **`capacity: 2`, `rate: 1`** on those versions, or choose another containment approach documented in [Contract Version Behavior](/ccip/concepts/rate-limit-management/contract-version-behavior).
+
+Setting `isEnabled: true` with `capacity: 0` and `rate: 0` on versions that accept it **hard-blocks all transfers** immediately.
 
 ## Example configuration
 

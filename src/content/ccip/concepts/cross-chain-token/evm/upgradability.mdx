@@ -14,6 +14,8 @@ import { Aside } from "@components"
 
 Starting from **CCIP v1.5.1**, token pools support zero-downtime upgrades, allowing seamless transitions between versions while maintaining support for in-flight messages. This section outlines the requirements and considerations for upgrading token pools.
 
+It is recommended to keep token pools on the **latest available** release from [`@chainlink/contracts-ccip`](https://www.npmjs.com/package/@chainlink/contracts-ccip?activeTab=versions) when feasible. Use [`typeAndVersion()`](/ccip/concepts/rate-limit-management/contract-version-behavior#identify-your-version-with-typeandversion) on each deployed pool to confirm what you are running today.
+
 <Aside type="caution" title="Upgrading from v1.5.0">
   If you are currently using CCIP **v1.5.0** token pools, please read the [Upgrading from v1.5.0](#upgrading-from-v150)
   section carefully. **v1.5.0** pools have specific limitations regarding in-flight messages during upgrades.
@@ -96,7 +98,7 @@ Configure both new pools to accept messages from both the old and new pools. Thi
 
 ### 3. **Throttle Existing Pools**
 
-Before upgrading, minimize new token transfers by setting near-zero rate limits on the existing pools. Use `setChainRateLimiterConfig` on both existing pools:
+Before upgrading, minimize new token transfers by setting near-zero rate limits on the existing pools. Use `setChainRateLimiterConfig` on both existing pools. On **1.6.1+** TokenPool releases, a minimal pause pattern is `capacity: 1`, `rate: 1`, `isEnabled: true`; on **1.4.0 – 1.6.0**, use at least `capacity: 2`, `rate: 1`. See [Contract Version Behavior (EVM)](/ccip/concepts/rate-limit-management/contract-version-behavior).
 
 - On Ethereum's old pool:
 
@@ -142,19 +144,26 @@ After verifying all transactions are processed successfully:
 
 - Use `removeRemotePool` to remove old pool addresses
 - This prevents future messages from using the old pools
-  - Only proceed with cleanup after confirming:
-    - No pending transactions in CCIP Explorer
-    - All manual executions are complete
-    - New pools are operating correctly
 
-  - On Ethereum's new pool:
+<Aside type="caution" title="Stale remote pool risk">
+  Leaving old remote pool addresses configured after migration creates a security risk—compromised or deprecated pools
+  may continue to process in-flight messages. Remove stale addresses as soon as all in-flight transactions settle. See
+  [Stale Remote Pool Addresses](/ccip/concepts/cross-chain-token/operational-security#stale-remote-pool-addresses).
+</Aside>
 
-    ```solidity
-    newPoolEth.removeRemotePool(POLYGON_SELECTOR, abi.encode(0xOldPoolPoly));
-    ```
+- Only proceed with cleanup after confirming:
+  - No pending transactions in CCIP Explorer
+  - All manual executions are complete
+  - New pools are operating correctly
 
-  - On Polygon's new pool:
+- On Ethereum's new pool:
 
-    ```solidity
-    newPoolPoly.removeRemotePool(ETH_SELECTOR, abi.encode(0xOldPoolEth));
-    ```
+  ```solidity
+  newPoolEth.removeRemotePool(POLYGON_SELECTOR, abi.encode(0xOldPoolPoly));
+  ```
+
+- On Polygon's new pool:
+
+  ```solidity
+  newPoolPoly.removeRemotePool(ETH_SELECTOR, abi.encode(0xOldPoolEth));
+  ```

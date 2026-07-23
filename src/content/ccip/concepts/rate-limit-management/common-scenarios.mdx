@@ -6,6 +6,8 @@ title: "Common Scenarios"
 
 This page provides worked configuration scenarios for common rate limit use cases. These examples illustrate how capacity and refill values are calculated and applied for different token types and operational goals.
 
+**EVM examples assume a 1.6.1+ or 2.0.0 TokenPool** unless noted otherwise. Validation and pause behavior differ on older releases — see [Contract Version Behavior (EVM)](/ccip/concepts/rate-limit-management/contract-version-behavior).
+
 All scenarios assume:
 
 - you have the `rateLimitAdmin` role
@@ -13,6 +15,41 @@ All scenarios assume:
 - you have validated token units and decimals
 
 These scenarios are examples, not defaults. Values must always be recalculated for the specific token, lane, and risk tolerance.
+
+## Refill rate guidance
+
+Token bucket refill rate controls how quickly capacity restores after use. Target a full-bucket refill time between **1 and 24 hours**:
+
+```
+refill_time (seconds) = capacity / rate
+```
+
+| Goal              | Guidance                                                                       |
+| ----------------- | ------------------------------------------------------------------------------ |
+| User availability | Refill fast enough that typical transfers are not blocked for extended periods |
+| Risk throttling   | Refill slow enough to limit blast radius during incidents or misconfiguration  |
+
+Example: A capacity of **1,000,000 tokens** with a rate of **278 tokens per second** refills in approximately 1 hour (`1,000,000 ÷ 278 ≈ 3,600` seconds).
+
+See [Token Bucket Refill Rate](/ccip/concepts/cross-chain-token/operational-security#token-bucket-refill-rate).
+
+## Volume-based strategies
+
+Token pool rate limits (TPRLs) should be set to balance:
+
+- **Token Transfer availability**: satisfying end-user demand
+- **Risk management**: throttling flows to limit exposure during incidents or misconfiguration
+
+Use these patterns as **starting points** when setting initial TPRLs. Adjust based on observed volume and risk tolerance.
+
+| Flow profile                | General strategy                                                                                                                                                                                                                                                                                                  |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Known or expected flows** | Set Token pool rate limits to facilitate **sufficient volume** for majority of active days (for example: 95%) with historical token transfers on a given lane. Capacity and refill should cover typical daily CCIP volume on all but the busiest days.                                                            |
+| **Unknown expected flows**  | Consider limiting throughput to a fixed percentage of total token supply per hour (for example: 1-2% per hour) until transfer patterns are established. Derive an percentage from total supply, then convert to token-bucket `capacity` and `rate` using the [refill rate guidance](#refill-rate-guidance) above. |
+
+Configure destination **inbound** capacity to meet or exceed source **outbound** capacity plus buffer (typically outbound × 1.1). See [Configuration Checklist](/ccip/concepts/rate-limit-management/configuration-checklist).
+
+These are not one-size-fits-all defaults. Monitor transfer success rates and adjust. See [Suggested TPRLs](/ccip/concepts/cross-chain-token/operational-security#suggested-tprls). For additional questions around sizing limits for your token or lane, [contact Chainlink Labs](https://chain.link/ccip-contact).
 
 ## Scenario: 18-decimal tokens
 
@@ -74,15 +111,17 @@ Use this pattern during incidents, investigations, or maintenance when transfers
 
 ### Configuration pattern
 
-To lock down a lane:
+To lock down a lane on **1.6.1+** or **2.0.0**:
 
-- enable the rate limit
+- enable the rate limit (`isEnabled: true`)
 - set capacity to `1`
 - set refill rate to `1`
 
 Apply this configuration to **both inbound and outbound** limits for the lane.
 
 This allows only a negligible transfer before capacity is exhausted, causing subsequent transfers to fail.
+
+On **1.4.0 – 1.6.0**, use **`capacity: 2`, `rate: 1`** (or higher capacity) instead — `1/1` reverts at setup. See [Contract Version Behavior](/ccip/concepts/rate-limit-management/contract-version-behavior).
 
 ## Scenario: removing rate limits
 

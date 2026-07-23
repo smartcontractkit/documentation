@@ -4,9 +4,13 @@ date: Last Modified
 title: "Update Rate Limits"
 ---
 
+import { Aside } from "@components"
+
 Once you understand the current configuration and have validated token units and decimals, you can update inbound and outbound rate limits for a specific token pool and lane.
 
 Rate limit updates are applied on-chain and take effect immediately. Changes should be made deliberately and reviewed carefully before submission.
+
+On EVM chains, which parameter combinations are accepted depends on your deployed TokenPool version. See [Contract Version Behavior (EVM)](/ccip/concepts/rate-limit-management/contract-version-behavior).
 
 ## Function used to update rate limits
 
@@ -50,6 +54,24 @@ A common operational pattern is:
 - set outbound capacity to approximately **90% of the inbound value**
 
 This provides buffer room and reduces the likelihood of in-flight congestion.
+
+## Reducing inbound capacity
+
+<Aside type="caution" title="In-flight transactions">
+  Reducing inbound capacity while messages are in-flight can cause them to stall. Follow this runbook before lowering
+  inbound limits.
+</Aside>
+
+When **reducing** a token pool's inbound capacity:
+
+1. **Set outbound capacities first** on the source chain.
+2. **Check for in-flight messages** using [CCIP Explorer](/ccip/tools-resources/ccip-explorer) or the CCIP API. Note any in-flight transactions whose amounts exceed the newly configured outbound limits.
+3. **Wait for settlement** — allow noted transactions to arrive and execute on their destination chains.
+4. **Then set inbound capacities** to the new, lower values.
+
+Ensure the new inbound capacity is still large enough to handle any remaining in-flight volume.
+
+See [In-Flight Transactions and TPRLs](/ccip/concepts/cross-chain-token/operational-security#in-flight-transactions-and-tprls).
 
 ## Example interaction (conceptual)
 

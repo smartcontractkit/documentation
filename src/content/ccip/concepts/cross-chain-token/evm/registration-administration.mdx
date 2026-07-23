@@ -10,7 +10,7 @@ metadata:
   lastModified: "2025-05-19"
 ---
 
-import { ClickToZoom } from "@components"
+import { Aside, ClickToZoom } from "@components"
 
 The process of registering your token for **Cross-Chain Token (CCT)** involves a **two-step process** to ensure that the correct administrator is assigned. The token's administrator will initially be placed in a proposed state. The administrator must then explicitly accept the role to complete the registration.
 
@@ -133,3 +133,37 @@ The configuration of token pools includes adding new blockchains, setting remote
   - This function is only relevant if the token pool is access-controlled (i.e., an allowlist is enabled).
   - The allowlist ensures that only specific addresses, such as trusted addresses, can transfer tokens.
 - **Usage**: The pool owner uses this function to add or remove addresses from the allowlist, controlling who can transfer the tokens through CCIP.
+
+## Pool configuration checklist
+
+Before enabling cross-chain transfers on a new lane, verify the following on **both** sides of the lane:
+
+1. **Chain selector is valid**: Confirm the remote chain selector appears on the [CCIP Directory](/ccip/directory).
+2. **Remote pool address matches**: Source `remotePoolAddresses` must point to the correct destination token pool.
+3. **Remote token address matches**: Source `remoteTokenAddress` must match the token returned by `getToken()` on the destination pool.
+4. **TokenAdminRegistry is set**: Call `setPool` on each chain so the TokenAdminRegistry maps the token to its active pool.
+5. **Rate limits are enabled**: Both inbound and outbound TPRLs must be enabled on every lane. See [Configuration Checklist](/ccip/concepts/rate-limit-management/configuration-checklist).
+6. **Symmetric configuration**: Apply matching `applyChainUpdates` on both pools with inbound/outbound values swapped appropriately.
+
+<Aside type="caution" title="Cross-silo topology">
+  If your token uses siloed liquidity lanes, do not connect siloed lanes to networks outside their designated hub chain.
+  See [Cross-Silo Isolation](/ccip/concepts/cross-chain-token/operational-security#cross-silo-isolation).
+</Aside>
+
+### Canceling a pending administrator
+
+If a token administrator role transfer was initiated in error, the current administrator can cancel it:
+
+```solidity
+tokenAdminRegistry.transferAdminRole(localToken, address(0));
+```
+
+This clears the pending administrator without changing the active administrator.
+
+### Canceling a pending owner
+
+For contracts using Ownable2Step (token, token pool, hooks, lock box), cancel an erroneous ownership transfer:
+
+```solidity
+contract.transferOwnership(address(0));
+```

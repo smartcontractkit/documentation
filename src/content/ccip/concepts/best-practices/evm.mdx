@@ -114,6 +114,8 @@ Create your own monitoring alerts based on deviations from normal activity. This
 
 When managing your tokens and token pools, it's critical to follow best practices to ensure the security and integrity of your cross-chain operations. This includes proper handling of admin roles and safeguarding against unauthorized access.
 
+For a consolidated view of all CCT security requirements, see [CCT Operational Security](/ccip/concepts/cross-chain-token/operational-security).
+
 ### Securely Manage Admin Roles
 
 The **token admin** is responsible for configuring token pools across blockchains and enabling cross-chain operations. This role allows the token admin to set the token pool for a token on each supported CCIP blockchain. To ensure security, follow these guidelines:
@@ -121,6 +123,25 @@ The **token admin** is responsible for configuring token pools across blockchain
 - **Understand the Responsibilities of a Token Developer**: Review [Token Developer Responsibilities](/ccip/service-responsibility#token-developers-responsibilities).
 - **Assign Admin Roles with Caution**: Only trusted EOAs or smart accounts should be assigned the **token admin** role.
 - **Use Multi-Signature Smart Accounts**: For added security, consider assigning the token admin role to a **multi-signature smart account**. This ensures that multiple approvals are required for critical operations.
+
+<Aside type="caution" title="Strongly recommended">
+  It is strongly recommended to secure token pool and admin roles with multi-signature smart accounts (threshold of at
+  least 3 signers) and a timelock with propose, review, and cancel steps before critical actions execute. See [CCT
+  Operational Security](/ccip/concepts/cross-chain-token/operational-security#secure-signing-and-opsec).
+</Aside>
+
+**Timelock and risk grading:**
+
+- Use a timelock to delay execution and allow distributed review or veto of proposed actions.
+- Prefer Chainlink MCMS or multi-signature smart accounts (3/5+ threshold) over EOAs.
+- Never assign mint/burn rights to a single EOA.
+- Configure admin roles through the [Token Manager](/ccip/tools-resources/token-manager) where applicable.
+
+**Signer hygiene:**
+
+- Remove deprecated or compromised signers promptly.
+- Audit signer access and contract settings quarterly.
+- Distribute signers across time zones for rapid incident response when needed.
 
 ### Protect Against Unauthorized Admin Actions
 
