@@ -48,7 +48,7 @@ The `IVerifierProxy` interface exposes two verification functions:
 
 ## IVerifierProxy interface
 
-`IVerifierProxy` is the single onchain entry point for report verification. Your contract calls it directly — you never interact with the underlying Verifier contract. The proxy routes each call to the correct Verifier, handles fee collection through the `FeeManager` (when one is deployed), and returns the verified report data.
+`IVerifierProxy` is the single onchain entry point for report verification. Your contract calls it directly — you never interact with the underlying Verifier contract. The proxy routes each call to the correct Verifier and returns the verified report data.
 
 You will need the deployed `VerifierProxy` address for the network you are targeting. Find it on the [Stream Addresses](/data-streams/crypto-streams) page.
 
@@ -58,30 +58,30 @@ interface IVerifierProxy {
   // Decode the return value into the appropriate report struct (v3, v8, etc.).
   function verify(
     bytes calldata payload,           // Full report payload from the Streams API
-    bytes calldata parameterPayload   // abi.encode(feeTokenAddress), or "" if no FeeManager
+    bytes calldata parameterPayload   // pass empty fee metadata for Data Streams subscription billing
   ) external payable returns (bytes memory verifierResponse);
 
   // Verify multiple reports in one transaction. Accepts different feed IDs in the same call.
   // Returns verified report bytes in the same order as the input array.
   function verifyBulk(
     bytes[] calldata payloads,        // Array of report payloads — may span different feed IDs
-    bytes calldata parameterPayload   // abi.encode(feeTokenAddress), or "" if no FeeManager
+    bytes calldata parameterPayload   // pass empty fee metadata for Data Streams subscription billing
   ) external payable returns (bytes[] memory verifiedReports);
 
-  // Returns the FeeManager address, or the zero address if no FeeManager is deployed on this chain.
-  // Use this to determine whether fee quoting and approval steps are required before verifying.
+  // Legacy FeeManager accessor. Data Streams verification does not require
+  // per-verification fee quoting or approvals.
   function s_feeManager() external view returns (IVerifierFeeManager);
 }
 ```
 
 ### `verify()`
 
-Verifies a single report payload and optionally collects the verification fee. Pass the raw payload bytes returned by the Streams API directly as `payload` — no transformation is needed.
+Verifies a single report payload. Pass the raw payload bytes returned by the Streams API directly as `payload` — no transformation is needed.
 
-| Parameter          | Type             | Description                                                                                                         |
-| ------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `payload`          | `bytes calldata` | The full report payload returned by the Streams API (header + signed report body).                                  |
-| `parameterPayload` | `bytes calldata` | ABI-encoded fee token address (e.g. `abi.encode(linkTokenAddress)`), or empty bytes `""` when no FeeManager exists. |
+| Parameter          | Type             | Description                                                                                                                               |
+| ------------------ | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `payload`          | `bytes calldata` | The full report payload returned by the Streams API (header + signed report body).                                                        |
+| `parameterPayload` | `bytes calldata` | Fee metadata parameter retained for legacy fee-manager integrations. Pass empty bytes `""` for current Data Streams subscription billing. |
 
 #### Returns
 
@@ -91,21 +91,16 @@ Verifies a single report payload and optionally collects the verification fee. P
 
 #### Fee handling for `verify()`
 
-Before calling `verify()`, check whether a `FeeManager` is deployed on the target network by calling `s_feeManager()` on the proxy.
-
-- **If `s_feeManager()` returns a non-zero address**: quote the fee using `getFeeAndReward`, approve the `RewardManager` to spend that LINK amount, then pass `abi.encode(feeTokenAddress)` as `parameterPayload`.
-- **If `s_feeManager()` returns the zero address**: no fee is required. Pass empty bytes `""` as `parameterPayload`.
-
-Networks with a `FeeManager` currently deployed include: Arbitrum, Avalanche, Base, Blast, Bob, Ink, Linea, OP, Scroll, Soneium, and ZKSync.
+Data Streams uses subscription-based billing. Your contract does not need to quote or approve a per-verification fee before calling `verify()`, and no supported EVM chain requires LINK funding for this step. Pass empty bytes `""` as `parameterPayload` because no fee token metadata is required.
 
 ### `verifyBulk()`
 
 Verifies multiple report payloads in a single transaction. Reports may reference different feed IDs, enabling atomic multi-feed updates. Pass the raw payload bytes from the Streams API directly — no transformation is needed.
 
-| Parameter          | Type               | Description                                                                                                                                   |
-| ------------------ | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `payloads`         | `bytes[] calldata` | Array of full report payloads from the Streams API. Each entry may correspond to a different feed ID. Order is preserved in the output.       |
-| `parameterPayload` | `bytes calldata`   | ABI-encoded fee token address shared across all reports (e.g. `abi.encode(linkTokenAddress)`), or empty bytes `""` when no FeeManager exists. |
+| Parameter          | Type               | Description                                                                                                                               |
+| ------------------ | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `payloads`         | `bytes[] calldata` | Array of full report payloads from the Streams API. Each entry may correspond to a different feed ID. Order is preserved in the output.   |
+| `parameterPayload` | `bytes calldata`   | Fee metadata parameter retained for legacy fee-manager integrations. Pass empty bytes `""` for current Data Streams subscription billing. |
 
 #### Returns
 
@@ -115,14 +110,7 @@ Verifies multiple report payloads in a single transaction. Reports may reference
 
 #### Fee handling for `verifyBulk()`
 
-The same `FeeManager` check applies. When a `FeeManager` is deployed, the total fee equals the sum of individual fees across all reports in the batch. Your contract must:
-
-1. Decode each payload and call `getFeeAndReward` once per report to quote its fee.
-1. Sum the individual fees to get the total amount required.
-1. Approve the `RewardManager` contract to spend the total LINK amount in a single `approve()` call.
-1. Pass the ABI-encoded fee token address as `parameterPayload`.
-
-When no `FeeManager` is deployed, pass empty bytes as `parameterPayload` and skip all fee logic.
+Data Streams uses subscription-based billing. Your contract does not need to quote, sum, or approve per-report verification fees before calling `verifyBulk()`. Pass empty bytes `""` as `parameterPayload` because no fee token metadata is required.
 
 ## When to use `verifyBulk()`
 
@@ -140,13 +128,11 @@ Use `verifyBulk()` when your protocol needs price data from multiple feeds in th
 
 - **What you save**: one base transaction cost (21,000 gas) per additional report beyond the first.
 - **What you do not save**: the cryptographic verification cost per report.
-- **Fee cost**: verification fees (when applicable) are the same per report regardless of whether you use `verify()` or `verifyBulk()`.
+- **Fee cost**: Data Streams does not charge a per-report onchain verification fee.
 
 ## Contract example
 
-The contract below is an **example you deploy yourself**. It demonstrates the full verification pattern for both `verifyReport()` (single report) and `verifyBulkReports()` (multiple reports), including fee handling. Use it as a reference when writing your own contract.
-
-Your contract must have sufficient LINK tokens to pay for verification fees on networks where fees are required. Learn how to [fund your contract with LINK tokens](/resources/fund-your-contract).
+The contract below is an **example you deploy yourself**. It demonstrates the full verification pattern for both `verifyReport()` (single report) and `verifyBulkReports()` (multiple reports). Use it as a reference when writing your own contract.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -155,7 +141,7 @@ Your contract must have sufficient LINK tokens to pay for verification fees on n
 ### `verifyReport()` — single report
 
 - **Input**: one `bytes` payload from the Streams API — pass it directly.
-- **Fee**: checks for a `FeeManager`, quotes the fee if one exists, and approves that exact amount before calling `verify()`.
+- **Fee**: passes empty bytes for `parameterPayload`; no per-verification LINK fee is required.
 - **Output**: stores the decoded price in `lastDecodedPrice` and emits `DecodedPrice(int192 price)`.
 
 See the [Verify report data onchain (EVM)](/data-streams/tutorials/evm-onchain-report-verification) tutorial for a step-by-step walkthrough using this function.
@@ -163,5 +149,5 @@ See the [Verify report data onchain (EVM)](/data-streams/tutorials/evm-onchain-r
 ### `verifyBulkReports()` — multiple reports
 
 - **Input**: `bytes[]` array of payloads from the Streams API — each may reference a different feed ID.
-- **Fee**: calls `getFeeAndReward` once per report, sums the results, and issues a single `approve()` for the combined total before calling `verifyBulk()`.
+- **Fee**: passes empty bytes for `parameterPayload`; no per-verification LINK fee is required.
 - **Output**: stores the decoded prices in `lastDecodedPrices` (an `int192[]` array in the same order as the inputs) and emits `DecodedPrice(int192 price)` once per report.
