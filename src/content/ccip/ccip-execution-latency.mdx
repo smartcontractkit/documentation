@@ -169,6 +169,10 @@ This section provides an overview of the finality methods CCIP uses to determine
 | Zircuit           | Finality tag                              | 21 minutes                  |
 | ZKsync            | [Block depth](#block-depth) (1200 blocks) | 20 minutes                  |
 
+## Observed end-to-end latency
+
+The finality times listed above are the source-chain component of CCIP's total execution time. For a live measurement of the full pipeline (source transaction to destination `Execute` including DON commit, RMN verification, and executor delivery), see the [OpenChainBench Chainlink CCIP latency benchmark](https://openchainbench.com/benchmarks/chainlink-ccip-latency). The benchmark polls the public [CCIP Tools API](https://docs.chain.link/ccip/tools/api) every 60 seconds, computes per-source-chain p50/p90/p99 over a 24-hour window from `receiptTimestamp - sendTimestamp` on `status: SUCCESS` messages, and exposes both the raw distribution and the source code of the observer.
+
 This page provides details on the expected latency for a cross-chain transaction using CCIP, covering the different stages of transaction processing and the factors that influence overall execution times.
 
 For a comprehensive understanding of CCIP's architecture and how messages flow through the system, refer to the [CCIP detailed architecture](/ccip/concepts/architecture/overview) documentation.
