@@ -23,7 +23,8 @@ import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
 import {
   shouldHideAddress,
   shouldHideStreamFeedId,
-  BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES,
+  ALL_EXTENDED_HOURS_PROXY_ADDRESSES,
+  type ExtendedHoursCategory,
 } from "~/features/feeds/utils/feedVisibility.ts"
 import { DATA_STREAMS_CONTACT_URL, TOKENIZED_EQUITY_CONTACT_EMAIL } from "~/features/feeds/constants.ts"
 import {
@@ -31,8 +32,9 @@ import {
   getMarketStatusDocLink,
   getTradingHoursDocLink,
   isApacEquitiesStreamFeed,
+  getTwapWindowSeconds,
 } from "~/features/feeds/utils/feedMetadata.ts"
-import { getFeedTypeFlags } from "~/features/feeds/types.ts"
+import { getFeedTypeFlags, type SchemaFilterValue } from "~/features/feeds/types.ts"
 import { useFilteredFeedMetadata } from "~/features/feeds/hooks/useFilteredFeedMetadata.ts"
 
 const feedItems = monitoredFeeds.mainnet
@@ -88,9 +90,9 @@ const getSchemaDefinitionKey = (metadata: any): string | undefined => {
   if (schemaVersion === "v3") {
     return feedType === "Crypto-DEX" ? "v3-dex" : "v3-crypto"
   }
+  if (schemaVersion === "v2") return "v2"
 
   if (feedType === "Crypto-DEX") return "v3-dex"
-  if (feedType === "Crypto" && metadata.docs?.productTypeCode !== "ExRate") return "v3-crypto"
 
   if (feedType === "Equities" || feedType === "Forex" || feedType === "Datalink") {
     return undefined
@@ -568,14 +570,14 @@ const DefaultTr = ({
               </a>
             </div>
           )}
-          {BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES.has(metadata.proxyAddress?.toLowerCase()) && (
+          {ALL_EXTENDED_HOURS_PROXY_ADDRESSES.has(metadata.proxyAddress?.toLowerCase()) && (
             <div style={{ marginTop: "5px" }}>
               <a
-                href="/data-feeds/blended-precious-metals-feeds"
+                href="/data-feeds/24-7-extended-hours-data-feeds"
                 className={tableStyles.feedVariantBadge}
-                title="24/7 Blended Precious Metals Feed"
+                title="24/7 Extended-Hours Feed"
               >
-                24/7 Blended Precious Metals
+                24/7 Extended Hours
               </a>
             </div>
           )}
@@ -1110,7 +1112,7 @@ export const StreamsNetworkAddressesTable = ({
 
   const tableContent = (
     <>
-      {showNetworkTypeFilter && isHydrated && (
+      {(showNetworkTypeFilter || lockSearch) && isHydrated && (
         <div className={feedList.streamNetworkSelector} style={{ padding: "0.5rem 0.5rem 0" }}>
           <span className={feedList.streamNetworkSelectorLabel}>Environment</span>
           <div className={feedList.streamNetworkToggleGroup} role="group" aria-label="Select network environment">
@@ -1374,6 +1376,7 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
     metadata.docs?.productTypeCode === "ExRate" &&
     metadata.docs?.attributeType === "ExchangeRate" &&
     metadata.docs?.assetClass === "Tokenized Debt"
+  const schemaKey = getSchemaDefinitionKey(metadata)
 
   return (
     <tr>
@@ -1401,6 +1404,28 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
                 Datalink
               </a>
             )}
+            {schemaKey === "v2" && metadata.docs?.attributeType === "TWAP" && (
+              <a
+                href="/data-streams/reference/report-schema-v2#time-weighted-average-price-twap"
+                target="_blank"
+                className={tableStyles.feedVariantBadge}
+                title="Time-Weighted Average Price"
+              >
+                TWAP
+              </a>
+            )}
+            {(() => {
+              const twapWindow =
+                schemaKey === "v2" && metadata.docs?.attributeType === "TWAP"
+                  ? getTwapWindowSeconds(metadata)
+                  : undefined
+              if (!twapWindow) return null
+              return (
+                <span className={tableStyles.feedVariantBadge} title={`${twapWindow}-second TWAP window`}>
+                  {twapWindow}s
+                </span>
+              )
+            })()}
             {isCalculatedStream && (
               <a
                 href="/data-streams/concepts/calculated-streams"
@@ -1538,6 +1563,20 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
                 </dd>
               </div>
             ) : null}
+            {schemaKey === "v2" &&
+              metadata.docs?.attributeType === "TWAP" &&
+              (() => {
+                const twapWindow = getTwapWindowSeconds(metadata)
+                if (!twapWindow) return null
+                return (
+                  <div className={tableStyles.definitionGroup}>
+                    <dt>
+                      <span className="label">TWAP window:</span>
+                    </dt>
+                    <dd>{twapWindow} seconds</dd>
+                  </div>
+                )
+              })()}
             {streamsCategoryMap[metadata.feedCategory] ? (
               <div className={tableStyles.definitionGroup}>
                 <dt>
@@ -1559,7 +1598,6 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
               </div>
             ) : null}
             {(() => {
-              const schemaKey = getSchemaDefinitionKey(metadata)
               const schemaDef = schemaKey ? REPORT_SCHEMA_DEFINITIONS[schemaKey] : undefined
               if (!schemaDef || !schemaKey) return null
               return <SchemaInlineExpander schemaDef={schemaDef} schemaKey={schemaKey} metadata={metadata} />
@@ -1579,6 +1617,7 @@ export const MainnetTable = ({
   showOnlyDEXFeeds,
   showOnlyDatalinkFeeds,
   rwaSchemaFilter,
+  cryptoSchemaFilter,
   streamCategoryFilter,
   show24x5Feeds,
   showApacEquitiesFeeds,
@@ -1593,6 +1632,7 @@ export const MainnetTable = ({
   paginate,
   searchValue,
   tokenizedEquityProvider,
+  forceExtendedHoursCategory,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -1600,7 +1640,8 @@ export const MainnetTable = ({
   showOnlyMVRFeeds: boolean
   showOnlyDEXFeeds: boolean
   showOnlyDatalinkFeeds?: boolean
-  rwaSchemaFilter?: "all" | "v8" | "v11"
+  rwaSchemaFilter?: SchemaFilterValue
+  cryptoSchemaFilter?: SchemaFilterValue
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
   show24x5Feeds?: boolean
   showApacEquitiesFeeds?: boolean
@@ -1615,6 +1656,7 @@ export const MainnetTable = ({
   paginate
   searchValue: string
   tokenizedEquityProvider?: string
+  forceExtendedHoursCategory?: ExtendedHoursCategory
 }) => {
   if (!network.metadata) return null
 
@@ -1637,8 +1679,10 @@ export const MainnetTable = ({
       showOnlyDatalinkFeeds,
       streamCategoryFilter,
       rwaSchemaFilter,
+      cryptoSchemaFilter,
       showOnlyMVRFeeds,
       tokenizedEquityProvider,
+      extendedHoursCategory: forceExtendedHoursCategory,
     },
   })
 
@@ -1736,11 +1780,13 @@ export const TestnetTable = ({
   showOnlyDEXFeeds,
   showOnlyDatalinkFeeds,
   rwaSchemaFilter,
+  cryptoSchemaFilter,
   streamCategoryFilter,
   show24x5Feeds,
   showApacEquitiesFeeds,
   tradingHoursFilter,
   tokenizedEquityProvider,
+  forceExtendedHoursCategory,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -1756,12 +1802,14 @@ export const TestnetTable = ({
   showOnlyMVRFeeds?: boolean
   showOnlyDEXFeeds?: boolean
   showOnlyDatalinkFeeds?: boolean
-  rwaSchemaFilter?: "all" | "v8" | "v11"
+  rwaSchemaFilter?: SchemaFilterValue
+  cryptoSchemaFilter?: SchemaFilterValue
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
   show24x5Feeds?: boolean
   showApacEquitiesFeeds?: boolean
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
   tokenizedEquityProvider?: string
+  forceExtendedHoursCategory?: ExtendedHoursCategory
 }) => {
   if (!network.metadata) return null
 
@@ -1788,8 +1836,10 @@ export const TestnetTable = ({
       showOnlyDatalinkFeeds,
       streamCategoryFilter,
       rwaSchemaFilter,
+      cryptoSchemaFilter,
       showOnlyMVRFeeds,
       tokenizedEquityProvider,
+      extendedHoursCategory: forceExtendedHoursCategory,
     },
   })
 

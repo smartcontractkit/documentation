@@ -174,6 +174,7 @@ export const productChainLinks: ProductChainLinks = {
       soneium: "/data-feeds/price-feeds/addresses?page=1&network=soneium#networks",
       sonic: "/data-feeds/price-feeds/addresses?page=1&network=sonic#networks",
       starknet: "/data-feeds/price-feeds/addresses?page=1&network=starknet#networks",
+      tempo: "/data-feeds/price-feeds/addresses?page=1&network=tempo#networks",
       tron: "/data-feeds/price-feeds/addresses?page=1&network=tron#networks",
       unichain: "/data-feeds/price-feeds/addresses?page=1&network=unichain#networks",
       xlayer: "/data-feeds/price-feeds/addresses?page=1&network=xlayer#networks",

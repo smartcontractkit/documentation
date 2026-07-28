@@ -702,12 +702,12 @@ export const StreamsNetworksData: NetworkData[] = [
     mainnet: {
       label: "Stellar Mainnet",
       verifierProxy: "CAKA3NBYPC6OBEUEGNIYGNYG3ES2GPQK736B5SR7ASGUXRDAKXI2JCQI",
-      explorerUrl: "https://stellarchain.io/contracts/%s",
+      explorerUrl: "https://stellar.expert/explorer/mainnet/contract/%s",
     },
     testnet: {
       label: "Stellar Testnet",
       verifierProxy: "CA7GVHWH4GRHE6GI7MHEKQZAOYO4GE7KRGSU3EOS3HYJRVLX3XEA4ONQ",
-      explorerUrl: "https://stellarchain.io/contracts/%s",
+      explorerUrl: "https://stellar.expert/explorer/testnet/contract/%s",
     },
   },
   {

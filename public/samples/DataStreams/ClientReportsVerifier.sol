@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Common} from "@chainlink/contracts/src/v0.8/llo-feeds/libraries/Common.sol";
-import {IVerifierFeeManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IVerifierFeeManager.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -12,35 +10,26 @@ using SafeERC20 for IERC20;
  * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE FOR DEMONSTRATION PURPOSES.
  * DO NOT USE THIS CODE IN PRODUCTION.
  *
- *  This contract verifies Chainlink Data Streams reports onchain and pays
- *  the verification fee in LINK (when required). It exposes two verification
- *  functions:
+ *  This contract verifies Chainlink Data Streams reports onchain. It exposes
+ *  two verification functions:
  *
  *  - `verifyReport()`      – verifies a single report payload.
  *  - `verifyBulkReports()` – verifies multiple payloads (across any feed IDs)
  *                             in a single transaction using `verifyBulk()`.
  *
- * - If `VerifierProxy.s_feeManager()` returns a non-zero address, the network
- *   expects you to interact with that FeeManager for every verification call:
- *   quote fees, approve the RewardManager, then call `verify()` / `verifyBulk()`.
- *
- * - If `s_feeManager()` returns the zero address, no FeeManager contract has
- *   been deployed on that chain. In that case there is nothing to quote or pay
- *   onchain, so the contract skips the fee logic entirely.
- *
- *  The `if (address(feeManager) != address(0))` check below chooses the
- *  correct path automatically, making the same bytecode usable on any chain.
+ *  Data Streams uses subscription-based billing. Verification calls do not
+ *  require this contract to hold LINK or approve a FeeManager.
  */
 
 // ────────────────────────────────────────────────────────────────────────────
-//  Interfaces
+//  Interface
 // ────────────────────────────────────────────────────────────────────────────
 
 interface IVerifierProxy {
   /**
-   * @notice Route a report to the correct verifier and (optionally) bill fees.
+   * @notice Route a report to the correct verifier.
    * @param payload           Full report payload (header + signed report).
-   * @param parameterPayload  ABI-encoded fee metadata.
+   * @param parameterPayload  Empty fee metadata for Data Streams subscription billing.
    */
   function verify(
     bytes calldata payload,
@@ -51,33 +40,13 @@ interface IVerifierProxy {
    * @notice Route multiple reports to the correct verifier in a single call.
    * @param payloads          Array of full report payloads. Each entry may reference
    *                          a different feed ID. Order is preserved in the output.
-   * @param parameterPayload  ABI-encoded fee token address shared across all reports
-   *                          (or empty bytes if no FeeManager is deployed).
+   * @param parameterPayload  Empty fee metadata for Data Streams subscription billing.
    * @return verifiedReports  Verified report bytes in the same order as the input.
    */
   function verifyBulk(
     bytes[] calldata payloads,
     bytes calldata parameterPayload
   ) external payable returns (bytes[] memory verifiedReports);
-
-  function s_feeManager() external view returns (IVerifierFeeManager);
-}
-
-interface IFeeManager {
-  /**
-   * @return fee, reward, totalDiscount
-   */
-  function getFeeAndReward(
-    address subscriber,
-    bytes memory unverifiedReport,
-    address quoteAddress
-  ) external returns (Common.Asset memory, Common.Asset memory, uint256);
-
-  function i_linkAddress() external view returns (address);
-
-  function i_nativeAddress() external view returns (address);
-
-  function i_rewardManager() external view returns (address);
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -86,7 +55,7 @@ interface IFeeManager {
 
 /**
  * @dev This contract implements functionality to verify Data Streams reports from
- * the Data Streams API, with payment in LINK tokens.
+ * the Data Streams API.
  */
 contract ClientReportsVerifier {
   // ----------------- Errors -----------------
@@ -164,13 +133,9 @@ contract ClientReportsVerifier {
    *  1. Decode the unverified report to get `reportData`.
    *  2. Read the first two bytes → schema version (`0x0003` or `0x0008`).
    *     - Revert if the version is unsupported.
-   *  3. Fee handling:
-   *     - Query `s_feeManager()` on the proxy.
-   *       – Non-zero → quote the fee, approve the RewardManager,
-   *         ABI-encode the fee token address for `verify()`.
-   *       – Zero     → no FeeManager; skip quoting/approval and pass `""`.
-   *  4. Call `VerifierProxy.verify()`.
-   *  5. Decode the verified report into the correct struct and emit the price.
+   *  3. Call `VerifierProxy.verify()` with empty fee metadata. Data Streams
+   *     uses subscription billing, so no fee token address is required.
+   *  4. Decode the verified report into the correct struct and emit the price.
    *
    *  @param unverifiedReport Full payload returned by Streams Direct.
    *  @custom:reverts InvalidReportVersion when schema ≠ v3/v8.
@@ -186,27 +151,10 @@ contract ClientReportsVerifier {
       revert InvalidReportVersion(reportVersion);
     }
 
-    // ─── 3. Fee handling ──
-    IFeeManager feeManager = IFeeManager(address(i_verifierProxy.s_feeManager()));
+    // ─── 3. Verify through the proxy ──
+    bytes memory verified = i_verifierProxy.verify(unverifiedReport, bytes(""));
 
-    bytes memory parameterPayload;
-    if (address(feeManager) != address(0)) {
-      // FeeManager exists — always quote & approve
-      address feeToken = feeManager.i_linkAddress();
-
-      (Common.Asset memory fee,,) = feeManager.getFeeAndReward(address(this), reportData, feeToken);
-
-      IERC20(feeToken).approve(feeManager.i_rewardManager(), fee.amount);
-      parameterPayload = abi.encode(feeToken);
-    } else {
-      // No FeeManager deployed on this chain
-      parameterPayload = bytes("");
-    }
-
-    // ─── 4. Verify through the proxy ──
-    bytes memory verified = i_verifierProxy.verify(unverifiedReport, parameterPayload);
-
-    // ─── 5. Decode & store price ──
+    // ─── 4. Decode & store price ──
     if (reportVersion == 3) {
       int192 price = abi.decode(verified, (ReportV3)).price;
       lastDecodedPrice = price;
@@ -224,13 +172,9 @@ contract ClientReportsVerifier {
    * @dev Steps:
    *  1. Decode each payload to extract `reportData` and the schema version.
    *     - Revert if any version is unsupported.
-   *  2. Fee handling (when FeeManager is deployed):
-   *     - Quote the fee for each report individually via `getFeeAndReward`.
-   *     - Accumulate the total fee across all reports.
-   *     - Approve the RewardManager once for the combined total.
-   *     - ABI-encode the fee token address for `verifyBulk()`.
-   *  3. Call `VerifierProxy.verifyBulk()` once with all payloads.
-   *  4. Decode each verified report, store prices in `lastDecodedPrices`,
+   *  2. Call `VerifierProxy.verifyBulk()` once with all payloads and an empty
+   *     parameter payload.
+   *  3. Decode each verified report, store prices in `lastDecodedPrices`,
    *     and emit a `DecodedPrice` event per report.
    *
    *  @param unverifiedReports Array of full payloads from Streams Direct.
@@ -259,32 +203,10 @@ contract ClientReportsVerifier {
       reportVersions[i] = reportVersion;
     }
 
-    // ─── 2. Fee handling ──
-    IFeeManager feeManager = IFeeManager(address(i_verifierProxy.s_feeManager()));
+    // ─── 2. Verify all reports in one proxy call ──
+    bytes[] memory verifiedReports = i_verifierProxy.verifyBulk(unverifiedReports, bytes(""));
 
-    bytes memory parameterPayload;
-    if (address(feeManager) != address(0)) {
-      address feeToken = feeManager.i_linkAddress();
-      uint256 totalFee = 0;
-
-      // Quote per-report fees and accumulate
-      for (uint256 i = 0; i < reportDataArray.length; i++) {
-        (Common.Asset memory fee,,) = feeManager.getFeeAndReward(address(this), reportDataArray[i], feeToken);
-        totalFee += fee.amount;
-      }
-
-      // Single approval covers the combined cost of all reports
-      IERC20(feeToken).approve(feeManager.i_rewardManager(), totalFee);
-      parameterPayload = abi.encode(feeToken);
-    } else {
-      // No FeeManager deployed on this chain
-      parameterPayload = bytes("");
-    }
-
-    // ─── 3. Verify all reports in one proxy call ──
-    bytes[] memory verifiedReports = i_verifierProxy.verifyBulk(unverifiedReports, parameterPayload);
-
-    // ─── 4. Decode verified reports, store prices, emit events ──
+    // ─── 3. Decode verified reports, store prices, emit events ──
     int192[] memory prices = new int192[](verifiedReports.length);
 
     for (uint256 i = 0; i < verifiedReports.length; i++) {

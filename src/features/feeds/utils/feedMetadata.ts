@@ -32,6 +32,8 @@ export function getSchemaVersion(feed: FeedMetadata): string | undefined {
   const match = clicProductName.match(/-0(\d{2})$/)
   if (!match) return undefined
 
+  if (match[1] === "02") return "v2"
+  if (match[1] === "03") return "v3"
   if (match[1] === "04" || match[1] === "08") return "v8"
   if (match[1] === "09") return "v9"
   if (match[1] === "11") return "v11"
@@ -279,4 +281,27 @@ export function mergeStreamEnvironmentAvailability(feedAvailability: { mainnet: 
     mainnet: feedAvailability.mainnet || verifierAvailability.mainnet,
     testnet: feedAvailability.testnet || verifierAvailability.testnet,
   }
+}
+
+/** Extract the TWAP window length (in seconds) from stream metadata, if present. */
+export function getTwapWindowSeconds(metadata: FeedMetadata): number | undefined {
+  const clicProductName = metadata.docs?.clicProductName
+  if (typeof clicProductName === "string") {
+    const match = clicProductName.match(/-TWAP-(\d+)s-/i)
+    if (match) {
+      const seconds = Number.parseInt(match[1], 10)
+      if (!Number.isNaN(seconds)) return seconds
+    }
+  }
+
+  const name = metadata.name || metadata.docs?.clicProductName
+  if (typeof name === "string") {
+    const match = name.match(/-TWAP-(\d+)s/i)
+    if (match) {
+      const seconds = Number.parseInt(match[1], 10)
+      if (!Number.isNaN(seconds)) return seconds
+    }
+  }
+
+  return undefined
 }

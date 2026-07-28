@@ -27,12 +27,25 @@ const COMMON_FIELDS: SchemaField[] = [
     type: "uint32",
     description: "Latest timestamp when the price is valid (seconds)",
   },
-  { field: "nativeFee", type: "uint192", description: "Cost to verify report onchain (native token)" },
-  { field: "linkFee", type: "uint192", description: "Cost to verify report onchain (LINK)" },
+  { field: "nativeFee", type: "uint192", description: "Legacy onchain verification fee field" },
+  {
+    field: "linkFee",
+    type: "uint192",
+    description: "Legacy onchain verification fee field; not used for subscription billing",
+  },
   { field: "expiresAt", type: "uint32", description: "Expiration date of the report (seconds)" },
 ]
 
 export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
+  v2: {
+    label: "Report Schema v2 (Crypto Standard)",
+    shortLabel: "v2 (Crypto)",
+    url: "/data-streams/reference/report-schema-v2",
+    fields: [
+      ...COMMON_FIELDS,
+      { field: "price", type: "int192", description: "Time-weighted average price (TWAP) for the stream's window" },
+    ],
+  },
   "v3-crypto": {
     label: "Report Schema v3 (Crypto Advanced)",
     shortLabel: "v3 (Crypto)",

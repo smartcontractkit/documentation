@@ -81,6 +81,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         { title: "Architecture", url: "ace/concepts/architecture" },
         { title: "Key Terms", url: "ace/concepts/key-terms" },
+        { title: "Signing & Ownership Model", url: "ace/concepts/signing-ownership" },
         {
           title: "Policy Management",
           url: "ace/concepts/policy-management",
@@ -116,6 +117,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   title: "CredentialRegistryIdentityValidatorPolicy",
                   url: "ace/reference/policy-library/credential-registry-identity-validator-policy",
                 },
+                {
+                  title: "GroupedIdentityValidatorPolicy",
+                  url: "ace/reference/policy-library/grouped-identity-validator-policy",
+                },
                 { title: "IntervalPolicy", url: "ace/reference/policy-library/interval-policy" },
                 { title: "MaxPolicy", url: "ace/reference/policy-library/max-policy" },
                 {
@@ -143,6 +148,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "APIs",
           children: [
             { title: "Coordinator API", url: "ace/reference/api/coordinator" },
+            { title: "Evaluation API", url: "ace/reference/api/evaluation" },
             { title: "Reporting API", url: "ace/reference/api/reporting" },
           ],
         },
@@ -239,6 +245,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Workflow Guides",
       contents: [
+        {
+          title: "Overview",
+          url: "cre/guides/workflow/overview",
+        },
         {
           title: "Triggers",
           url: "cre/guides/workflow/using-triggers/overview",
@@ -446,6 +456,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Confidential Workflows",
+          url: "cre/guides/workflow/using-confidential-workflows",
+          children: [
+            {
+              title: "Making a Workflow Confidential",
+              url: "cre/guides/workflow/using-confidential-workflows/making-workflow-confidential",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-ts",
+                "cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-go",
+              ],
+            },
+          ],
+        },
+        {
           title: "Secrets",
           url: "cre/guides/workflow/secrets",
           children: [
@@ -476,6 +500,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Using Randomness in Workflows",
           url: "cre/guides/workflow/using-randomness",
           highlightAsCurrent: ["cre/guides/workflow/using-randomness-ts", "cre/guides/workflow/using-randomness-go"],
+        },
+        {
+          title: "Building a Reusable Library",
+          url: "cre/guides/workflow/building-a-library",
+          highlightAsCurrent: [
+            "cre/guides/workflow/building-a-library-ts",
+            "cre/guides/workflow/building-a-library-go",
+          ],
         },
       ],
     },
@@ -573,6 +605,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Requesting Deploy Access",
               url: "cre/account/deploy-access",
             },
+            {
+              title: "Requesting Confidential Workflows Access",
+              url: "cre/account/confidential-workflows-access",
+            },
           ],
         },
         {
@@ -599,15 +635,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Capabilities",
       contents: [
         { title: "Overview", url: "cre/capabilities" },
-        { title: "Triggers", url: "cre/capabilities/triggers" },
-        { title: "HTTP", url: "cre/capabilities/http" },
-        {
-          title: "Confidential HTTP",
-          url: "cre/capabilities/confidential-http",
-          highlightAsCurrent: ["cre/capabilities/confidential-http-ts", "cre/capabilities/confidential-http-go"],
-        },
         { title: "EVM Read & Write", url: "cre/capabilities/evm-read-write" },
+        { title: "HTTP", url: "cre/capabilities/http" },
         { title: "Solana Write", url: "cre/capabilities/solana-write" },
+        { title: "Triggers", url: "cre/capabilities/triggers" },
       ],
     },
     {
@@ -618,6 +649,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/concepts/consensus-computing",
         },
         {
+          title: "Finality & Confidence Levels",
+          url: "cre/concepts/finality",
+          highlightAsCurrent: ["cre/concepts/finality-go", "cre/concepts/finality-ts"],
+        },
+        {
           title: "Non-Determinism in Workflows",
           url: "cre/concepts/non-determinism",
           highlightAsCurrent: ["cre/concepts/non-determinism-go", "cre/concepts/non-determinism-ts"],
@@ -626,10 +662,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "TypeScript Runtime Environment",
           url: "cre/concepts/typescript-wasm-runtime",
         },
+      ],
+    },
+    {
+      section: "Privacy",
+      contents: [
+        { title: "Overview", url: "cre/privacy" },
         {
-          title: "Finality & Confidence Levels",
-          url: "cre/concepts/finality",
-          highlightAsCurrent: ["cre/concepts/finality-go", "cre/concepts/finality-ts"],
+          title: "Confidential Workflows",
+          url: "cre/concepts/confidential-workflows",
+        },
+        {
+          title: "Confidential HTTP",
+          url: "cre/capabilities/confidential-http",
+          highlightAsCurrent: ["cre/capabilities/confidential-http-ts", "cre/capabilities/confidential-http-go"],
         },
       ],
     },
@@ -748,6 +794,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               ],
             },
             {
+              title: "Confidential Workflows Client",
+              url: "cre/reference/sdk/confidential-workflows-client",
+              highlightAsCurrent: [
+                "cre/reference/sdk/confidential-workflows-client-ts",
+                "cre/reference/sdk/confidential-workflows-client-go",
+              ],
+            },
+            {
               title: "Consensus & Aggregation",
               url: "cre/reference/sdk/consensus",
               highlightAsCurrent: ["cre/reference/sdk/consensus-ts", "cre/reference/sdk/consensus-go"],
@@ -852,6 +906,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   children: [
                     { title: "Ondo Finance", url: "data-feeds/tokenized-equity-feeds/ondo" },
                     { title: "Robinhood", url: "data-feeds/tokenized-equity-feeds/robinhood" },
+                    { title: "Coinbase", url: "data-feeds/tokenized-equity-feeds/coinbase" },
                   ],
                 },
               ],
@@ -870,14 +925,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   url: "data-feeds/svr-feeds/searcher-onboarding-ethereum",
                 },
                 {
-                  title: "Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain)",
+                  title: "Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain, Monad)",
                   url: "data-feeds/svr-feeds/searcher-onboarding-atlas",
                 },
               ],
             },
             { title: "Rate and Volatility Feeds", url: "data-feeds/rates-feeds" },
             { title: "L2 Sequencer Uptime Feeds", url: "data-feeds/l2-sequencer-feeds" },
-            { title: "24/7 Blended Precious Metals Feeds", url: "data-feeds/blended-precious-metals-feeds" },
+            { title: "24/7 Extended-Hours Data Feeds", url: "data-feeds/24-7-extended-hours-data-feeds" },
             { title: "Self-Managed Feeds", url: "data-feeds/self-managed-feeds" },
           ],
         },
@@ -1151,6 +1206,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/billing",
         },
         {
+          title: "Rate Limits and Fair Use Policy",
+          url: "data-streams/rate-limits",
+        },
+        {
           title: "Data Sources",
           url: "data-streams/data-sources",
         },
@@ -1171,6 +1230,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Cryptocurrency",
           url: "data-streams/crypto-streams",
           children: [
+            {
+              title: "Report Schema v2 (Crypto Standard)",
+              url: "data-streams/reference/report-schema-v2",
+            },
             {
               title: "Report Schema v3 (Crypto Advanced)",
               url: "data-streams/reference/report-schema-v3",
@@ -1314,6 +1377,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "DEX State Price Streams",
           url: "data-streams/concepts/dex-state-price-streams",
+        },
+        {
+          title: "Crypto Top-of-Book Streams",
+          url: "data-streams/concepts/crypto-top-of-book-and-mark-price",
         },
       ],
     },
@@ -1554,6 +1621,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-automation/guides/manage-upkeeps",
         },
         {
+          title: "Cancel an Upkeep and Withdraw Funds",
+          url: "chainlink-automation/guides/cancel-upkeep",
+        },
+        {
           title: "Set a gas price threshold on your upkeep",
           url: "chainlink-automation/guides/gas-price-threshold",
         },
@@ -1718,6 +1789,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Guides",
       contents: [
+        {
+          title: "Cancel a Subscription and Withdraw Funds",
+          url: "chainlink-functions/guides/cancel-subscription",
+        },
         {
           title: "Simple Computation",
           url: "chainlink-functions/tutorials/simple-computation",

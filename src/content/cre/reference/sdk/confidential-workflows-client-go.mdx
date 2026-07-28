@@ -1,0 +1,239 @@
+---
+section: cre
+title: "SDK Reference: Confidential Workflows Client"
+date: Last Modified
+sdkLang: "go"
+pageId: "reference-sdk-confidential-workflows-client"
+metadata:
+  description: "Reference for the Go Confidential Workflows client: cre.HandlerInTee, cre.TeeRuntime, and TEE constraint types for running workflow logic inside a secure enclave."
+  datePublished: "2026-07-21"
+  lastModified: "2026-07-28"
+---
+
+import { Aside } from "@components"
+
+`cre.HandlerInTee` registers a handler whose callback runs inside a secure [enclave](/cre/key-terms#enclave)—a running instance of a [TEE](/cre/key-terms#tee-trusted-execution-environment)—receiving a `cre.TeeRuntime` instead of a `cre.Runtime`. Unlike the regular `cre.Handler`, secrets are fetched dynamically at runtime from the [Vault DON](/cre/key-terms#vault-don) with `runtime.GetSecret()` and any operation that needs Workflow DON consensus must explicitly cross over with `runtime.UsingTheDons()`.
+
+- For use cases and a conceptual overview, see [Confidential Workflows in CRE](/cre/concepts/confidential-workflows)
+- **Guide:** [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-go)
+
+<Aside type="caution" title="Beta capability">
+  This API requires enrollment in the Confidential Workflows private beta through your Chainlink account team—see
+  [Requesting Confidential Workflows Access](/cre/account/confidential-workflows-access).
+</Aside>
+
+## Quick reference
+
+| Method                                           | Description                                                                          |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| [`cre.HandlerInTee`](#crehandlerintee)           | Registers a handler whose callback runs inside a TEE.                                |
+| [`runtime.GetSecret`](#runtimegetsecret)         | Fetches a single secret dynamically, inside the enclave.                             |
+| [`runtime.GetSecrets`](#runtimegetsecrets)       | Fetches multiple secrets in a single batch call, inside the enclave.                 |
+| [`runtime.UsingTheDons`](#runtimeusingthedons)   | Returns a regular `cre.Runtime` for operations that need DON consensus.              |
+| [`runtime.ReportFromDon`](#runtimereportfromdon) | Generates a report from the DON directly, without a full `UsingTheDons()` crossover. |
+
+## Core types
+
+### `cre.TeeRuntime`
+
+The runtime passed to a callback registered with `cre.HandlerInTee`. Requests made through it execute inside the enclave; requests made through the runtime returned by `UsingTheDons()` are routed outside the enclave to the Workflow DON.
+
+```go
+type TeeRuntime interface {
+	RuntimeBase
+	SecretsProvider
+
+	// ReportFromDon generates a report from the DON.
+	// Data requested through this method is routed outside the TEE.
+	ReportFromDon(*ReportRequest) Promise[*Report]
+
+	// UsingTheDons returns the DON runtime.
+	// Requests made through this runtime are routed outside the TEE.
+	UsingTheDons() Runtime
+}
+```
+
+`RuntimeBase` provides `Logger()`, `Now()`, and `Rand()`, same as on a regular `cre.Runtime`. `SecretsProvider` provides `GetSecret()` and `GetSecrets()`.
+
+### `cre.TeeConstraint`
+
+Describes which TEEs a handler will accept. Pass one of the following to `cre.HandlerInTee`:
+
+| Type                    | JSON form               | Description                                                                |
+| ----------------------- | ----------------------- | -------------------------------------------------------------------------- |
+| `cre.AnyTee{}`          | `{}`                    | Accepts any registered TEE, in any region.                                 |
+| `cre.AnyTeeInRegions{}` | `{"regions": [...]}`    | Accepts any TEE, restricted to the listed regions.                         |
+| `cre.OneOfTees{}`       | `[{"tee": "...", ...}]` | Accepts specific TEE types, each optionally restricted to its own regions. |
+
+```go
+// Accept any TEE, any region
+cre.AnyTee{}
+
+// Accept any TEE, restricted to a region
+cre.AnyTeeInRegions{Regions: []cre.Region{cre.AwsUsWest2}}
+
+// Accept only Nitro, restricted to a region
+cre.OneOfTees{cre.Nitro{Regions: []cre.NitroRegion{cre.NitroUsWest2}}}
+```
+
+Nitro (`cre.Nitro`) is currently the only registered TEE type, and `cre.AwsUsWest2` (`us-west-2`) is currently the only supported region—check your installed SDK version if you expect otherwise, since this is an actively evolving API.
+
+## Registering a handler
+
+### `cre.HandlerInTee`
+
+Registers a handler whose callback runs inside a TEE.
+
+**Signature:**
+
+```go
+func HandlerInTee[C any, M proto.Message, T any, O any](
+	trigger Trigger[M, T],
+	callback func(config C, runtime TeeRuntime, payload T) (O, error),
+	tees TeeConstraint,
+) ExecutionHandler[C, Runtime]
+```
+
+**Parameters:**
+
+- `trigger`: Any CRE trigger, same as for `cre.Handler`.
+- `callback`: Your handler function. It receives a `cre.TeeRuntime` instead of a `cre.Runtime`.
+- `tees`: A [`cre.TeeConstraint`](#creteeconstraint) describing which TEEs are acceptable.
+
+**Example:**
+
+```go
+workflow := cre.Workflow[*Config]{
+	cre.HandlerInTee(
+		cron.Trigger(&cron.Config{Schedule: config.Schedule}),
+		onCronTrigger,
+		cre.AnyTee{},
+	),
+}
+```
+
+**Guide:** [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-go)
+
+## Fetching secrets
+
+### `runtime.GetSecret`
+
+Fetches a single secret, decrypted only inside the enclave.
+
+**Signature:**
+
+```go
+func (r TeeRuntime) GetSecret(*SecretRequest) Promise[*Secret]
+```
+
+**Example:**
+
+```go
+secret, err := runtime.GetSecret(&cre.SecretRequest{Id: "MY_API_KEY"}).Await()
+if err != nil {
+	return "", fmt.Errorf("failed to get secret: %w", err)
+}
+// secret.Value holds the decrypted value.
+```
+
+There's no upfront declaration like Confidential HTTP's `VaultDonSecrets`—the secret is requested and decrypted inside the enclave at the moment `GetSecret()` runs.
+
+### `runtime.GetSecrets`
+
+Fetches multiple secrets in a single batch call, decrypted only inside the enclave.
+
+**Signature:**
+
+```go
+func (r TeeRuntime) GetSecrets([]*SecretRequest) Promise[[]*Secret]
+```
+
+The promise resolves to a slice of `*Secret` values, in the same order as the requests. If any secret in the batch fails, the promise resolves with an error that includes the failing secret ids and their error messages.
+
+**Example:**
+
+```go
+secrets, err := runtime.GetSecrets([]*cre.SecretRequest{
+	{Id: "API_KEY"},
+	{Id: "DB_URL"},
+}).Await()
+if err != nil {
+	return "", fmt.Errorf("failed to get secrets: %w", err)
+}
+apiKey := secrets[0].Value
+dbUrl := secrets[1].Value
+```
+
+## Crossing back to the DON
+
+### `runtime.UsingTheDons`
+
+Returns a regular `cre.Runtime` for operations that need Workflow DON consensus.
+
+**Signature:**
+
+```go
+func (r TeeRuntime) UsingTheDons() Runtime
+```
+
+**Example:**
+
+```go
+donRuntime := runtime.UsingTheDons()
+_, err := donRuntime.GenerateReport(&cre.ReportRequest{
+	EncodedPayload: []byte(resp.Body),
+	EncoderName:    "evm",
+	SigningAlgo:    "ecdsa",
+	HashingAlgo:    "keccak256",
+}).Await()
+```
+
+<Aside type="caution" title="Data passed to UsingTheDons() is no longer confidential">
+  Once you pass a value into a capability call on the runtime returned by `UsingTheDons()`, that call executes on
+  Workflow DON nodes like any non-confidential capability.
+</Aside>
+
+### `runtime.ReportFromDon`
+
+A shortcut for generating a report from the DON without a full `UsingTheDons()` crossover.
+
+**Signature:**
+
+```go
+func (r TeeRuntime) ReportFromDon(*ReportRequest) Promise[*Report]
+```
+
+Data requested through this method is routed outside the TEE, same as with `UsingTheDons()`.
+
+## Making capability calls inside the enclave
+
+Capabilities that support Confidential Workflows expose a TEE-flavored method alongside their regular one. For the HTTP capability, that's `SendRequestInTee`, which takes a `cre.TeeRuntime` directly instead of `cre.Runtime`:
+
+```go
+resp, err := (&http.Client{}).SendRequestInTee(runtime, &http.Request{
+	Url:    config.URL,
+	Method: "GET",
+	MultiHeaders: map[string]*http.HeaderValues{
+		"Authorization": {Values: []string{"Bearer " + secret.Value}},
+	},
+}).Await()
+```
+
+**Guide:** [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-go)
+
+### Not every capability has a TEE-flavored method
+
+`confidentialhttp.Client` is a notable exception: it only exposes `SendRequest(runtime cre.Runtime, ...)`—there's no `SendRequestInTee`. `cre.TeeRuntime` and `cre.Runtime` are separate interfaces, so you can't pass a `TeeRuntime` into it directly; the call won't compile.
+
+```go
+// Does NOT compile: confidentialhttp.Client has no method that accepts a cre.TeeRuntime.
+confHttpClient := confidentialhttp.Client{}
+confHttpClient.SendRequest(runtime, &confidentialhttp.ConfidentialHTTPRequest{ /* ... */ }) // runtime is cre.TeeRuntime
+```
+
+<Aside type="caution" title="Use SendRequestInTee for outbound HTTP calls">
+  For outbound HTTP calls made from inside a Confidential Workflow handler, use `http.Client.SendRequestInTee(runtime,
+  req)` directly—it runs natively inside your enclave and needs no separate capability. Capabilities without a
+  TEE-flavored method, like `confidentialhttp.Client`, aren't built to be called from inside a Confidential Workflow
+  handler.
+</Aside>

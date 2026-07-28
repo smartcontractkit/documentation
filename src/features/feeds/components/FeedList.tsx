@@ -13,7 +13,12 @@ import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 import { ChainSelector } from "~/components/ChainSelector/ChainSelector.tsx"
-import { chainHasVisibleFeeds, isFeedVisible, networkHasVisibleFeeds } from "../utils/feedVisibility.ts"
+import {
+  chainHasVisibleFeeds,
+  isFeedVisible,
+  networkHasVisibleFeeds,
+  type ExtendedHoursCategory,
+} from "../utils/feedVisibility.ts"
 import { chainHasSvrFeeds } from "../utils/svrDetection.ts"
 import {
   filterChainsByFeedTypeTag,
@@ -61,6 +66,13 @@ const schemaFilterOptions: FilterOption<SchemaFilterValue>[] = [
   { label: "RWA Advanced (v11)", value: "v11" },
 ]
 
+const cryptoSchemaFilterOptions: FilterOption<SchemaFilterValue>[] = [
+  { label: "All", value: "all" },
+  { label: "Crypto Standard (v2)", value: "v2" },
+  { label: "Crypto Advanced (v3)", value: "v3" },
+  { label: "Crypto Advanced DEX (v3)", value: "v3-dex" },
+]
+
 const feedTypeFilterOptions: FilterOption<StreamsRwaFeedTypeValue>[] = [
   { label: "All", value: "all" },
   { label: "Datalink Streams", value: "datalink" },
@@ -76,7 +88,7 @@ const tradingHoursFilterOptions: FilterOption<TradingHoursFilterValue>[] = [
 ]
 
 const isSchemaFilterValue = (value: unknown): value is SchemaFilterValue =>
-  value === "all" || value === "v8" || value === "v11"
+  value === "all" || value === "v2" || value === "v3" || value === "v3-dex" || value === "v8" || value === "v11"
 const isStreamsRwaFeedTypeValue = (value: unknown): value is StreamsRwaFeedTypeValue =>
   value === "all" || value === "datalink" || value === "equities" || value === "forex"
 const isTradingHoursFilterValue = (value: unknown): value is TradingHoursFilterValue =>
@@ -145,6 +157,7 @@ export const FeedList = ({
   forceApacEquitiesOnly = false,
   forceStreamCategoryFilter,
   tokenizedEquityProvider,
+  forceExtendedHoursCategory,
 }: {
   initialNetwork: string
   dataFeedType: DataFeedType
@@ -156,6 +169,7 @@ export const FeedList = ({
   forceApacEquitiesOnly?: boolean
   forceStreamCategoryFilter?: StreamsRwaFeedTypeValue
   tokenizedEquityProvider?: string
+  forceExtendedHoursCategory?: ExtendedHoursCategory
 }) => {
   const feedTypeFlags = getFeedTypeFlags(dataFeedType)
   const { isStreams, isSmartData, isRates, isUSGovernmentMacroeconomicData } = feedTypeFlags
@@ -358,6 +372,14 @@ export const FeedList = ({
   const setRwaSchemaFilter = (next: SchemaFilterValue) => {
     setRwaSchemaFilterParam(next === "all" ? [] : next)
   }
+  const [cryptoSchemaFilterParam, setCryptoSchemaFilterParam] = useQueryString("cryptoSchema")
+  const cryptoSchemaFilter =
+    typeof cryptoSchemaFilterParam === "string" && isSchemaFilterValue(cryptoSchemaFilterParam)
+      ? cryptoSchemaFilterParam
+      : "all"
+  const setCryptoSchemaFilter = (next: SchemaFilterValue) => {
+    setCryptoSchemaFilterParam(next === "all" ? [] : next)
+  }
   const [testnetRwaSchemaFilterParam, setTestnetRwaSchemaFilterParam] = useQueryString("testnetSchema")
   const testnetRwaSchemaFilter =
     typeof testnetRwaSchemaFilterParam === "string" && isSchemaFilterValue(testnetRwaSchemaFilterParam)
@@ -365,6 +387,14 @@ export const FeedList = ({
       : "all"
   const setTestnetRwaSchemaFilter = (next: SchemaFilterValue) => {
     setTestnetRwaSchemaFilterParam(next === "all" ? [] : next)
+  }
+  const [testnetCryptoSchemaFilterParam, setTestnetCryptoSchemaFilterParam] = useQueryString("testnetCryptoSchema")
+  const testnetCryptoSchemaFilter =
+    typeof testnetCryptoSchemaFilterParam === "string" && isSchemaFilterValue(testnetCryptoSchemaFilterParam)
+      ? testnetCryptoSchemaFilterParam
+      : "all"
+  const setTestnetCryptoSchemaFilter = (next: SchemaFilterValue) => {
+    setTestnetCryptoSchemaFilterParam(next === "all" ? [] : next)
   }
   const [show24x5FeedsTestnetParam, setShow24x5FeedsTestnetParam] = useQueryString("testnetShow24x5")
   const show24x5FeedsTestnet = force24x5Only || show24x5FeedsTestnetParam === "true"
@@ -444,9 +474,18 @@ export const FeedList = ({
     return filteredChainsByTag.filter((chain) =>
       chainHasVisibleFeeds((metadataCache as Record<string, any>)[chain.page], dataFeedType, ecosystem, {
         tokenizedEquityProvider,
+        extendedHoursCategory: forceExtendedHoursCategory,
       })
     )
-  }, [filteredChainsByTag, metadataCache, isStreams, dataFeedType, ecosystem, tokenizedEquityProvider])
+  }, [
+    filteredChainsByTag,
+    metadataCache,
+    isStreams,
+    dataFeedType,
+    ecosystem,
+    tokenizedEquityProvider,
+    forceExtendedHoursCategory,
+  ])
 
   const availableChainsForSelection = selectableChains.length > 0 ? selectableChains : filteredChainsByTag
 
@@ -479,6 +518,7 @@ export const FeedList = ({
 
     return chainHasSvrFeeds(currentChainMetadata.processedData, dataFeedType, ecosystem, {
       tokenizedEquityProvider,
+      extendedHoursCategory: forceExtendedHoursCategory,
     })
   }, [
     currentChainMetadata.processedData,
@@ -488,6 +528,7 @@ export const FeedList = ({
     dataFeedType,
     ecosystem,
     tokenizedEquityProvider,
+    forceExtendedHoursCategory,
   ])
 
   useEffect(() => {
@@ -502,6 +543,7 @@ export const FeedList = ({
     const visibilityOptions = {
       tokenizedEquityProvider,
       streamCategoryFilter: isStreams ? forceStreamCategoryFilter : undefined,
+      extendedHoursCategory: forceExtendedHoursCategory,
     }
 
     const types = new Set<string>()
@@ -527,6 +569,7 @@ export const FeedList = ({
     isStreams,
     isSmartData,
     forceStreamCategoryFilter,
+    forceExtendedHoursCategory,
   ])
 
   useEffect(() => {
@@ -770,6 +813,7 @@ export const FeedList = ({
         const visibilityOptions = {
           tokenizedEquityProvider,
           streamCategoryFilter: isStreams ? forceStreamCategoryFilter : undefined,
+          extendedHoursCategory: forceExtendedHoursCategory,
         }
 
         if (isStreams && force24x5Only) {
@@ -814,6 +858,7 @@ export const FeedList = ({
     forceStreamCategoryFilter,
     force24x5Only,
     forceApacEquitiesOnly,
+    forceExtendedHoursCategory,
   ])
 
   // Auto-switch network type if current selection isn't available
@@ -1173,6 +1218,7 @@ export const FeedList = ({
       const visibilityOptions = {
         tokenizedEquityProvider,
         streamCategoryFilter: forceStreamCategoryFilter,
+        extendedHoursCategory: forceExtendedHoursCategory,
       }
 
       if (force24x5Only) {
@@ -1241,36 +1287,36 @@ export const FeedList = ({
             <div className={feedList.tableFilters}>
               <div className={feedList.filterControls}>
                 {dataFeedType === "streamsCrypto" && (
-                  <div className={feedList.checkboxContainer}>
-                    <label className={feedList.detailsLabel}>
-                      <input
-                        type="checkbox"
-                        className={feedList.feedCheckbox}
-                        checked={showOnlyDEXFeeds}
-                        onChange={() => {
-                          closeAllDropdowns()
-                          setShowOnlyDEXFeeds((old) => !old)
-                          if (showOnlyDatalinkFeeds) setShowOnlyDatalinkFeeds(false)
-                          setCurrentPage("1")
-                        }}
-                      />
-                      Show DEX State Price streams
-                    </label>
-                    <label className={feedList.detailsLabel}>
-                      <input
-                        type="checkbox"
-                        className={feedList.feedCheckbox}
-                        checked={showOnlyDatalinkFeeds}
-                        onChange={() => {
-                          closeAllDropdowns()
-                          setShowOnlyDatalinkFeeds((old) => !old)
-                          if (showOnlyDEXFeeds) setShowOnlyDEXFeeds(false)
-                          setCurrentPage("1")
-                        }}
-                      />
-                      Show Datalink streams
-                    </label>
-                  </div>
+                  <>
+                    <FilterDropdown
+                      isOpen={openDropdownId === "main-crypto-schema"}
+                      onToggle={(isOpen) => handleDropdownToggle("main-crypto-schema", isOpen)}
+                      onClose={closeAllDropdowns}
+                      label="Filter schema"
+                      options={cryptoSchemaFilterOptions}
+                      value={cryptoSchemaFilter}
+                      groupId="crypto-schema-main"
+                      onSelect={(next) => {
+                        setCryptoSchemaFilter(next)
+                        setCurrentPage("1")
+                      }}
+                    />
+                    <div className={feedList.checkboxContainer}>
+                      <label className={feedList.detailsLabel}>
+                        <input
+                          type="checkbox"
+                          className={feedList.feedCheckbox}
+                          checked={showOnlyDatalinkFeeds}
+                          onChange={() => {
+                            closeAllDropdowns()
+                            setShowOnlyDatalinkFeeds((old) => !old)
+                            setCurrentPage("1")
+                          }}
+                        />
+                        Show Datalink streams
+                      </label>
+                    </div>
+                  </>
                 )}
                 {dataFeedType === "streamsRwa" && (
                   <>
@@ -1343,6 +1389,7 @@ export const FeedList = ({
                     )}
                     {(searchValue ||
                       rwaSchemaFilter !== "all" ||
+                      cryptoSchemaFilter !== "all" ||
                       (!forceStreamCategoryFilter && streamCategoryFilter !== "all") ||
                       show24x5Feeds) && (
                       <button
@@ -1352,6 +1399,7 @@ export const FeedList = ({
                           closeAllDropdowns()
                           setSearchValue("")
                           setRwaSchemaFilter("all")
+                          setCryptoSchemaFilter("all")
                           if (!forceStreamCategoryFilter) setStreamCategoryFilter("all")
                           setShow24x5Feeds(false)
                           setTradingHoursFilter("all")
@@ -1403,6 +1451,7 @@ export const FeedList = ({
                   showOnlyDEXFeeds={showOnlyDEXFeeds}
                   showOnlyDatalinkFeeds={showOnlyDatalinkFeeds}
                   rwaSchemaFilter={rwaSchemaFilter}
+                  cryptoSchemaFilter={cryptoSchemaFilter}
                   streamCategoryFilter={streamCategoryFilter}
                   show24x5Feeds={show24x5Feeds}
                   showApacEquitiesFeeds={showApacEquitiesFeeds}
@@ -1416,6 +1465,7 @@ export const FeedList = ({
                   paginate={paginate}
                   searchValue={typeof searchValue === "string" ? searchValue : ""}
                   tokenizedEquityProvider={tokenizedEquityProvider}
+                  forceExtendedHoursCategory={forceExtendedHoursCategory}
                 />
               ))
             ) : (
@@ -1433,34 +1483,36 @@ export const FeedList = ({
             <div className={feedList.tableFilters}>
               <div className={feedList.filterControls}>
                 {dataFeedType === "streamsCrypto" && (
-                  <div className={feedList.checkboxContainer}>
-                    <label className={feedList.detailsLabel}>
-                      <input
-                        type="checkbox"
-                        className={feedList.feedCheckbox}
-                        checked={showOnlyDEXFeedsTestnet}
-                        onChange={() => {
-                          setShowOnlyDEXFeedsTestnet((old) => !old)
-                          if (showOnlyDatalinkFeedsTestnet) setShowOnlyDatalinkFeedsTestnet(false)
-                          setTestnetCurrentPage("1")
-                        }}
-                      />
-                      Show DEX State Price streams
-                    </label>
-                    <label className={feedList.detailsLabel}>
-                      <input
-                        type="checkbox"
-                        className={feedList.feedCheckbox}
-                        checked={showOnlyDatalinkFeedsTestnet}
-                        onChange={() => {
-                          setShowOnlyDatalinkFeedsTestnet((old) => !old)
-                          if (showOnlyDEXFeedsTestnet) setShowOnlyDEXFeedsTestnet(false)
-                          setTestnetCurrentPage("1")
-                        }}
-                      />
-                      Show Datalink streams
-                    </label>
-                  </div>
+                  <>
+                    <FilterDropdown
+                      isOpen={openDropdownId === "test-crypto-schema"}
+                      onToggle={(isOpen) => handleDropdownToggle("test-crypto-schema", isOpen)}
+                      onClose={closeAllDropdowns}
+                      label="Filter schema"
+                      options={cryptoSchemaFilterOptions}
+                      value={testnetCryptoSchemaFilter}
+                      groupId="crypto-schema-testnet"
+                      onSelect={(next) => {
+                        setTestnetCryptoSchemaFilter(next)
+                        setTestnetCurrentPage("1")
+                      }}
+                    />
+                    <div className={feedList.checkboxContainer}>
+                      <label className={feedList.detailsLabel}>
+                        <input
+                          type="checkbox"
+                          className={feedList.feedCheckbox}
+                          checked={showOnlyDatalinkFeedsTestnet}
+                          onChange={() => {
+                            closeAllDropdowns()
+                            setShowOnlyDatalinkFeedsTestnet((old) => !old)
+                            setTestnetCurrentPage("1")
+                          }}
+                        />
+                        Show Datalink streams
+                      </label>
+                    </div>
+                  </>
                 )}
                 {dataFeedType === "streamsRwa" && (
                   <>
@@ -1533,6 +1585,7 @@ export const FeedList = ({
                     )}
                     {(testnetSearchValue ||
                       testnetRwaSchemaFilter !== "all" ||
+                      testnetCryptoSchemaFilter !== "all" ||
                       (!forceStreamCategoryFilter && testnetStreamCategoryFilter !== "all") ||
                       show24x5FeedsTestnet) && (
                       <button
@@ -1542,6 +1595,7 @@ export const FeedList = ({
                           closeAllDropdowns()
                           setTestnetSearchValue("")
                           setTestnetRwaSchemaFilter("all")
+                          setTestnetCryptoSchemaFilter("all")
                           if (!forceStreamCategoryFilter) setTestnetStreamCategoryFilter("all")
                           setShow24x5FeedsTestnet(false)
                           setTestnetTradingHoursFilter("all")
@@ -1595,6 +1649,7 @@ export const FeedList = ({
                   showOnlyDEXFeeds={showOnlyDEXFeedsTestnet}
                   showOnlyDatalinkFeeds={showOnlyDatalinkFeedsTestnet}
                   rwaSchemaFilter={testnetRwaSchemaFilter}
+                  cryptoSchemaFilter={testnetCryptoSchemaFilter}
                   streamCategoryFilter={testnetStreamCategoryFilter}
                   show24x5Feeds={show24x5FeedsTestnet}
                   showApacEquitiesFeeds={showApacEquitiesFeedsTestnet}
@@ -1606,6 +1661,7 @@ export const FeedList = ({
                   paginate={testnetPaginate}
                   searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
                   tokenizedEquityProvider={tokenizedEquityProvider}
+                  forceExtendedHoursCategory={forceExtendedHoursCategory}
                 />
               ))
             ) : (
@@ -1884,6 +1940,7 @@ export const FeedList = ({
                         paginate={paginate}
                         searchValue={typeof searchValue === "string" ? searchValue : ""}
                         tokenizedEquityProvider={tokenizedEquityProvider}
+                        forceExtendedHoursCategory={forceExtendedHoursCategory}
                       />
                     </>
                   ) : (
@@ -2063,6 +2120,7 @@ export const FeedList = ({
                         paginate={testnetPaginate}
                         searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
                         tokenizedEquityProvider={tokenizedEquityProvider}
+                        forceExtendedHoursCategory={forceExtendedHoursCategory}
                       />
                     </>
                   )}

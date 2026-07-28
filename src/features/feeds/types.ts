@@ -11,14 +11,14 @@ export type DataFeedType =
   | "rates"
   | "usGovernmentMacroeconomicData"
   | "tokenizedEquity"
-  | "blendedPreciousMetals"
+  | "extendedHours"
   | "streamsCrypto"
   | "streamsRwa"
   | "streamsNav"
   | "streamsExRate"
   | "streamsBacked"
 
-export type SchemaFilterValue = "all" | "v8" | "v11"
+export type SchemaFilterValue = "all" | "v2" | "v3" | "v3-dex" | "v8" | "v11"
 export type StreamsRwaFeedTypeValue = "all" | "datalink" | "equities" | "forex"
 export type TradingHoursFilterValue = "all" | "regular" | "extended" | "overnight"
 
