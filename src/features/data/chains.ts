@@ -779,6 +779,24 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
+    page: "tempo",
+    label: "Tempo",
+    title: "Tempo Data Feeds",
+    img: "/assets/chains/tempo.svg",
+    networkStatusUrl: "https://explore.tempo.xyz/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Tempo Mainnet",
+        explorerUrl: "https://explore.tempo.xyz/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-tempo-mainnet.json",
+        queryString: "tempo-mainnet",
+      },
+    ],
+  },
+  {
     page: "tron",
     label: "TRON",
     title: "TRON Data Feeds",

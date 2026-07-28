@@ -1110,7 +1110,7 @@ export const StreamsNetworkAddressesTable = ({
 
   const tableContent = (
     <>
-      {showNetworkTypeFilter && isHydrated && (
+      {(showNetworkTypeFilter || lockSearch) && isHydrated && (
         <div className={feedList.streamNetworkSelector} style={{ padding: "0.5rem 0.5rem 0" }}>
           <span className={feedList.streamNetworkSelectorLabel}>Environment</span>
           <div className={feedList.streamNetworkToggleGroup} role="group" aria-label="Select network environment">
