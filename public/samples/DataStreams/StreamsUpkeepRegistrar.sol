@@ -5,13 +5,7 @@ import {ILogAutomation, Log} from "@chainlink/contracts/src/v0.8/automation/inte
 import {
   StreamsLookupCompatibleInterface
 } from "@chainlink/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol";
-import {Common} from "@chainlink/contracts/src/v0.8/llo-feeds/libraries/Common.sol";
-
-import {IRewardManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IRewardManager.sol";
-import {IVerifierFeeManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IVerifierFeeManager.sol";
-
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE FOR DEMONSTRATION PURPOSES.
@@ -58,28 +52,12 @@ interface AutomationRegistrarInterface {
   ) external returns (uint256);
 }
 
-// Custom interfaces for Data Streams: IVerifierProxy and IFeeManager
+// Custom interface for Data Streams: IVerifierProxy
 interface IVerifierProxy {
   function verify(
     bytes calldata payload,
     bytes calldata parameterPayload
   ) external payable returns (bytes memory verifierResponse);
-
-  function s_feeManager() external view returns (IVerifierFeeManager);
-}
-
-interface IFeeManager {
-  function getFeeAndReward(
-    address subscriber,
-    bytes memory unverifiedReport,
-    address quoteAddress
-  ) external returns (Common.Asset memory, Common.Asset memory, uint256);
-
-  function i_linkAddress() external view returns (address);
-
-  function i_nativeAddress() external view returns (address);
-
-  function i_rewardManager() external view returns (address);
 }
 
 contract StreamsUpkeepRegistrar is ILogAutomation, StreamsLookupCompatibleInterface {
@@ -99,9 +77,8 @@ contract StreamsUpkeepRegistrar is ILogAutomation, StreamsLookupCompatibleInterf
     bytes32 feedId; // The feed ID the report has data for.
     uint32 validFromTimestamp; // Earliest timestamp for which price is applicable.
     uint32 observationsTimestamp; // Latest timestamp for which price is applicable.
-    uint192 nativeFee; // Base cost to validate a transaction using the report, denominated in the chain’s native
-    // token (e.g., WETH/ETH).
-    uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK.
+    uint192 nativeFee; // Legacy onchain verification fee field.
+    uint192 linkFee; // Legacy onchain verification fee field. Not used for subscription billing.
     uint32 expiresAt; // Latest timestamp where the report can be verified onchain.
     int192 price; // DON consensus median price (8 or 18 decimals).
     int192 bid; // Simulated price impact of a buy order up to the X% depth of liquidity utilisation (8 or 18 decimals).
@@ -122,9 +99,8 @@ contract StreamsUpkeepRegistrar is ILogAutomation, StreamsLookupCompatibleInterf
     bytes32 feedId; // The feed ID the report has data for.
     uint32 validFromTimestamp; // Earliest timestamp for which price is applicable.
     uint32 observationsTimestamp; // Latest timestamp for which price is applicable.
-    uint192 nativeFee; // Base cost to validate a transaction using the report, denominated in the chain’s native
-    // token (e.g., WETH/ETH).
-    uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK.
+    uint192 nativeFee; // Legacy onchain verification fee field.
+    uint192 linkFee; // Legacy onchain verification fee field. Not used for subscription billing.
     uint32 expiresAt; // Latest timestamp where the report can be verified onchain.
     int192 price; // DON consensus median benchmark price (8 or 18 decimals).
     uint32 marketStatus; // The DON's consensus on whether the market is currently open.
@@ -138,7 +114,6 @@ contract StreamsUpkeepRegistrar is ILogAutomation, StreamsLookupCompatibleInterf
 
   IVerifierProxy public verifier;
 
-  address public FEE_ADDRESS;
   string public constant DATASTREAMS_FEEDLABEL = "feedIDs";
   string public constant DATASTREAMS_QUERYLABEL = "timestamp";
   int192 public lastDecodedPrice;
@@ -238,18 +213,8 @@ contract StreamsUpkeepRegistrar is ILogAutomation, StreamsLookupCompatibleInterf
       revert InvalidReportVersion(uint8(reportVersion));
     }
 
-    // Report verification fees
-    IFeeManager feeManager = IFeeManager(address(verifier.s_feeManager()));
-    IRewardManager rewardManager = IRewardManager(address(feeManager.i_rewardManager()));
-
-    address feeTokenAddress = feeManager.i_linkAddress();
-    (Common.Asset memory fee,,) = feeManager.getFeeAndReward(address(this), reportData, feeTokenAddress);
-
-    // Approve rewardManager to spend this contract's balance in fees
-    IERC20(feeTokenAddress).approve(address(rewardManager), fee.amount);
-
-    // Verify the report
-    bytes memory verifiedReportData = verifier.verify(unverifiedReport, abi.encode(feeTokenAddress));
+    // Verify the report. Data Streams uses subscription billing, so no fee metadata is required.
+    bytes memory verifiedReportData = verifier.verify(unverifiedReport, bytes(""));
 
     // Decode verified report data into the appropriate Report struct based on reportVersion
     if (reportVersion == 3) {
