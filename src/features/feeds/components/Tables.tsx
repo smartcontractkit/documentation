@@ -571,7 +571,7 @@ const DefaultTr = ({
           {BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES.has(metadata.proxyAddress?.toLowerCase()) && (
             <div style={{ marginTop: "5px" }}>
               <a
-                href="/data-feeds/blended-precious-metals-feeds"
+                href="/data-feeds/24-7-extended-hours-data-feeds#precious-metals"
                 className={tableStyles.feedVariantBadge}
                 title="24/7 Blended Precious Metals Feed"
               >
