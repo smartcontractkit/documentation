@@ -1172,6 +1172,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/crypto-streams",
           children: [
             {
+              title: "Report Schema v2 (Crypto Standard)",
+              url: "data-streams/reference/report-schema-v2",
+            },
+            {
               title: "Report Schema v3 (Crypto Advanced)",
               url: "data-streams/reference/report-schema-v3",
             },
