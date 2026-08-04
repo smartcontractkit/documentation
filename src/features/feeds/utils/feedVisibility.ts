@@ -129,7 +129,8 @@ export function isFeedVisible(
         const feedType = feed.docs?.feedType
         // Only show streams whose schema is explicitly v2 or v3 on the crypto page.
         // Avoid falling back to feedType heuristics when the schema is missing or ambiguous.
-        if (schemaVersion === "v2" && feedType === "Crypto") {
+        // v2 streams are TWAP streams: only show them when attributeType is TWAP.
+        if (schemaVersion === "v2" && feedType === "Crypto" && feed.docs?.attributeType === "TWAP") {
           isVisible = true
         } else if (schemaVersion === "v3" && (feedType === "Crypto" || feedType === "Crypto-DEX")) {
           isVisible = true
