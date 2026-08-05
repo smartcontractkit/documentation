@@ -1,0 +1,175 @@
+---
+title: "Automated Portfolio Rebalancing"
+description: "Detect allocation drift, generate LLM trade proposals, and enforce slippage, reserve, and trade-size limits inside a TEE."
+author: "Chainlink Labs"
+excerpt: "Rebalance a portfolio confidentially with policy-constrained, LLM-assisted trade execution."
+image: "thumbnail.jpg"
+tags:
+  - "confidential"
+  - "rebalancing"
+  - "defi"
+githubUrl: "https://github.com/smartcontractkit/confidential-compute-examples/tree/main/automated-portfolio-rebalancing"
+githubRepoLinks:
+  - label: "TypeScript"
+    url: "https://github.com/smartcontractkit/confidential-compute-examples/tree/main/automated-portfolio-rebalancing"
+datePublished: "2026-08-04"
+lastModified: "2026-08-04"
+---
+
+import { Aside, Accordion } from "@components"
+
+## What This Template Does
+
+This workflow runs inside a **Trusted Execution Environment (TEE)** and generates policy-constrained rebalance trades when allocation drift exceeds the configured threshold. Holdings, prices, and target allocations never leave the confidential runtime.
+
+On every cron execution the workflow:
+
+1. Fetches the exchange and model API secrets from the CRE secrets store
+2. Reads **policy**, **holdings**, **prices**, and a **volatility index**
+3. Computes per-asset **allocation drift** against the target weights
+4. Asks an LLM for **trade proposals**
+5. Enforces slippage, reserve-floor, and max-trade-size constraints
+6. Chunks oversized trades and routes each chunk to a preferred venue
+7. Executes the approved trade plan through an execution endpoint
+
+If no asset has drifted past the threshold, the workflow returns without trading.
+
+<Aside type="note" title="Confidential execution">
+  The cron handler is registered with `handlerInTee(...)` and pinned to an AWS Nitro enclave region, so portfolio
+  composition, target weights, and model interaction stay inside the enclave for the whole run. See [Confidential
+  Workflows](https://docs.chain.link/cre/concepts/confidential-workflows) for the underlying feature, and [Hello
+  Confidential Workflows](/cre-templates/hello-confidential-workflows) for the minimal version of this pattern.
+</Aside>
+
+## Policy Constraints
+
+The policy is fetched at runtime and bounds every trade the model is allowed to propose:
+
+- `target_allocations` — target weight per symbol
+- `drift_threshold_pct` — minimum drift required before rebalancing runs at all
+- `max_trade_usd` — maximum notional per trade; larger trades are split into chunks
+- `reserve_floor_usdc` — USDC reserve that must remain untouched
+- `max_slippage_bps` — slippage ceiling applied to every trade
+- `preferred_venues` — venue allowlist used when routing each chunk
+
+<Aside type="caution" title="The model proposes, the policy decides">
+  The LLM output is treated as untrusted input. Each proposed trade is re-validated against the policy, chunked to
+  respect `max_trade_usd`, and routed only to preferred venues before any execution call is made.
+</Aside>
+
+## Prerequisites
+
+- **[Bun](https://bun.com/docs/installation)** — the repository is configured as a Bun workspace
+- **[Chainlink CRE CLI](https://docs.chain.link/cre/getting-started/cli-installation)** installed and configured
+- **Git** for cloning the repository
+
+## Setup
+
+<Accordion title="Clone the repository and install dependencies" number={1}>
+
+```bash
+git clone https://github.com/smartcontractkit/confidential-compute-examples.git
+cd confidential-compute-examples
+bun install
+```
+
+`bun install` at the repository root installs dependencies for every workflow because the repo is a Bun workspace.
+
+</Accordion>
+
+<Accordion title="Prepare environment variables" number={2}>
+
+From the repository root:
+
+```bash
+cp .env.example .env
+```
+
+Set the values you want to use. The mock keys are used by both the workflow and the shared demo server:
+
+```bash
+MOCK_PORT=8787
+MOCK_EXCHANGE_API_KEY=mock-exchange-key
+MOCK_OPENAI_API_KEY=mock-openai-key
+```
+
+`secrets.yaml` at the repository root maps the logical secret IDs to these environment variables.
+
+</Accordion>
+
+<Accordion title="Review the simulation config" number={3}>
+
+Open `automated-portfolio-rebalancing/config.staging.json`:
+
+```json
+{
+  "schedule": "0 */5 * * * *",
+  "mock_base_url": "http://127.0.0.1:8787/rebalancing",
+  "openai_url": "http://127.0.0.1:8787/rebalancing/v1/responses",
+  "openai_model": "gpt-4.1-mini",
+  "secrets_ids": {
+    "exchange_api_key_id": "exchange_api_key",
+    "openai_api_key_id": "openai_api_key"
+  }
+}
+```
+
+1. Keep the default values if you are using the shared mock server on port `8787`
+2. Update `mock_base_url` and `openai_url` if you are using a different port or host
+3. Keep `secrets_ids` aligned with `secrets.yaml`
+
+</Accordion>
+
+<Accordion title="Run typecheck and tests" number={4}>
+
+```bash
+cd automated-portfolio-rebalancing
+bun run typecheck
+bun run test
+```
+
+</Accordion>
+
+<Accordion title="Start the shared mock server" number={5}>
+
+From the repository root:
+
+```bash
+bun run mock:server
+```
+
+The server listens on `http://127.0.0.1:8787` and serves this workflow's routes under the `/rebalancing/*` namespace — portfolio, prices, volatility, policy, model responses, and the execution endpoint.
+
+</Accordion>
+
+<Accordion title="Simulate the workflow" number={6}>
+
+In a new terminal, from the repository root:
+
+```bash
+cre workflow simulate ./automated-portfolio-rebalancing --target=staging-settings
+```
+
+The workflow logs each stage (`rebalance-executed`) and returns a JSON summary with the status, trade count, maximum drift percentage, and execution ID.
+
+</Accordion>
+
+## Secrets
+
+`config.staging.json` expects these secret IDs in `secrets_ids`:
+
+- `exchange_api_key`
+- `openai_api_key`
+
+## Production Checklist
+
+1. Replace `mock_base_url` with your real policy, market, and execution service URL
+2. Use a production model endpoint and model in `openai_url` and `openai_model`
+3. Confirm `config.production.json` points to the correct service base URL before deployment
+4. Register production secret values for exchange and model access
+
+## Troubleshooting
+
+- **401 responses from the APIs** usually indicate a secret mismatch between `.env`, `secrets.yaml`, and `secrets_ids` in the config file
+- **Simulation failures tied to RPC config** usually come from incorrect `project.yaml` target values
+- **Model responses that fail to parse** mean your configured endpoint is not returning the expected JSON payload shape — the workflow expects `shouldRebalance`, `reasoning`, and `trades`

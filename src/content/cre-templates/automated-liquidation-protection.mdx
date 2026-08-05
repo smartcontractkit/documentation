@@ -1,0 +1,189 @@
+---
+title: "Automated Liquidation Protection"
+description: "Defend a leveraged position inside a TEE — read risk state, generate an LLM defense plan, and enforce policy limits before executing."
+author: "Chainlink Labs"
+excerpt: "Run policy-constrained liquidation defense confidentially with CRE and TEE execution."
+image: "thumbnail.jpg"
+tags:
+  - "confidential"
+  - "liquidation"
+  - "defi"
+githubUrl: "https://github.com/smartcontractkit/confidential-compute-examples/tree/main/automated-liquidation-protection"
+githubRepoLinks:
+  - label: "TypeScript"
+    url: "https://github.com/smartcontractkit/confidential-compute-examples/tree/main/automated-liquidation-protection"
+datePublished: "2026-08-04"
+lastModified: "2026-08-04"
+---
+
+import { Aside, Accordion } from "@components"
+
+## What This Template Does
+
+This workflow runs inside a **Trusted Execution Environment (TEE)** and generates a policy-constrained defense plan for a leveraged ETH position. Risk data, policy parameters, and model prompts never leave the confidential runtime.
+
+On every cron execution the workflow:
+
+1. Fetches the exchange and model API secrets from the CRE secrets store
+2. Reads the account **policy** and the current **risk state** (leverage, liquidation proximity, collateral health, reserves)
+3. Computes a **risk score** from the risk state and policy thresholds
+4. Asks an LLM for a set of **defensive actions**
+5. Enforces reserve, slippage, and sequencing constraints on the proposed actions
+6. Executes the approved actions through an execution endpoint
+
+If the position is healthy or no action survives the policy filter, the workflow returns `SAFE` without executing anything.
+
+<Aside type="note" title="Confidential execution">
+  The cron handler is registered with `handlerInTee(...)` and pinned to an AWS Nitro enclave region, so the position
+  data, policy, and model interaction stay inside the enclave for the whole run. See [Confidential
+  Workflows](https://docs.chain.link/cre/concepts/confidential-workflows) for the underlying feature, and [Hello
+  Confidential Workflows](/cre-templates/hello-confidential-workflows) for the minimal version of this pattern.
+</Aside>
+
+## Defensive Actions
+
+The LLM may propose any of the following action types. Each one is validated against the policy before it becomes executable:
+
+| Action                      | Description                                              |
+| --------------------------- | -------------------------------------------------------- |
+| `add_collateral`            | Post additional collateral from reserves                 |
+| `bridge_and_add_collateral` | Bridge funds from another chain, then post as collateral |
+| `reallocate_collateral`     | Move collateral between positions or venues              |
+| `reduce_position`           | Partially deleverage the position                        |
+| `close_position`            | Fully exit the position                                  |
+| `hedge_short_perp`          | Open an offsetting short perpetual                       |
+
+## Policy Constraints
+
+The policy is fetched at runtime and bounds everything the model is allowed to do:
+
+- `max_reserve_deployment_usdc` — ceiling on capital deployed in a single cycle
+- `min_reserve_balance_usdc` — reserve floor that must remain untouched
+- `max_acceptable_leverage` — leverage target used in risk scoring
+- `incremental_deleveraging_limit_pct` — cap on how much of the position can be reduced per cycle
+- `liquidation_warning_action_threshold` — proximity threshold that triggers a defense
+- `allow_leverage_reduction` — whether deleveraging actions are permitted at all
+- `execution_sequence_preference` — `collateral-first`, `deleverage-first`, or `hedge-first`
+- `preferred_venues` — venue allowlist used when routing each action
+
+<Aside type="caution" title="The model proposes, the policy decides">
+  The LLM output is treated as untrusted input. Actions are re-validated against the policy, re-ordered by the
+  configured execution sequence, and routed only to preferred venues before any execution call is made.
+</Aside>
+
+## Prerequisites
+
+- **[Bun](https://bun.com/docs/installation)** — the repository is configured as a Bun workspace
+- **[Chainlink CRE CLI](https://docs.chain.link/cre/getting-started/cli-installation)** installed and configured
+- **Git** for cloning the repository
+
+## Setup
+
+<Accordion title="Clone the repository and install dependencies" number={1}>
+
+```bash
+git clone https://github.com/smartcontractkit/confidential-compute-examples.git
+cd confidential-compute-examples
+bun install
+```
+
+`bun install` at the repository root installs dependencies for every workflow because the repo is a Bun workspace.
+
+</Accordion>
+
+<Accordion title="Prepare environment variables" number={2}>
+
+From the repository root:
+
+```bash
+cp .env.example .env
+```
+
+Set the values you want to use. The mock keys are used by both the workflow and the shared demo server:
+
+```bash
+MOCK_PORT=8787
+MOCK_EXCHANGE_API_KEY=mock-exchange-key
+MOCK_OPENAI_API_KEY=mock-openai-key
+```
+
+`secrets.yaml` at the repository root maps the logical secret IDs to these environment variables.
+
+</Accordion>
+
+<Accordion title="Review the simulation config" number={3}>
+
+Open `automated-liquidation-protection/config.staging.json`:
+
+```json
+{
+  "schedule": "0 */5 * * * *",
+  "mock_base_url": "http://127.0.0.1:8787/liquidation",
+  "openai_url": "http://127.0.0.1:8787/liquidation/v1/responses",
+  "openai_model": "gpt-4.1-mini",
+  "secrets_ids": {
+    "exchange_api_key_id": "exchange_api_key",
+    "openai_api_key_id": "openai_api_key"
+  }
+}
+```
+
+1. Keep the default values if you are using the shared mock server on port `8787`
+2. Update `mock_base_url` and `openai_url` if you are using a different port or host
+3. Keep `secrets_ids` aligned with `secrets.yaml`
+
+</Accordion>
+
+<Accordion title="Run typecheck and tests" number={4}>
+
+```bash
+cd automated-liquidation-protection
+bun run typecheck
+bun run test
+```
+
+</Accordion>
+
+<Accordion title="Start the shared mock server" number={5}>
+
+From the repository root:
+
+```bash
+bun run mock:server
+```
+
+The server listens on `http://127.0.0.1:8787` and serves this workflow's routes under the `/liquidation/*` namespace — policy, risk state, model responses, and the execution endpoint.
+
+</Accordion>
+
+<Accordion title="Simulate the workflow" number={6}>
+
+In a new terminal, from the repository root:
+
+```bash
+cre workflow simulate ./automated-liquidation-protection --target=staging-settings
+```
+
+The workflow logs each stage (`liquidation-getsecret-ok`, `liquidation-defense-executed`) and returns either `SAFE` or a JSON summary with the status, action count, risk score, and execution ID.
+
+</Accordion>
+
+## Secrets
+
+`config.staging.json` expects these secret IDs in `secrets_ids`:
+
+- `exchange_api_key`
+- `openai_api_key`
+
+## Production Checklist
+
+1. Replace `mock_base_url` with your real risk, policy, and execution service URL
+2. Use a production model endpoint and model in `openai_url` and `openai_model`
+3. Confirm `config.production.json` points to the correct service base URL before deployment
+4. Register production secret values for exchange and model access
+
+## Troubleshooting
+
+- **401 responses from the APIs** usually indicate a secret mismatch between `.env`, `secrets.yaml`, and `secrets_ids` in the config file
+- **Simulation failures tied to RPC config** usually come from incorrect `project.yaml` target values
+- **Model responses that fail to parse** mean your configured endpoint is not returning the expected JSON payload shape — the workflow expects `shouldDefend`, `reasoning`, and `actions`
