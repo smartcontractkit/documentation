@@ -25,6 +25,26 @@ export const CONTACT_EMAIL_PROXY_ADDRESSES = new Set<string>([
 export const BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES = new Set<string>(["0x369c67e8b026cc4ef98350f332d7dd52b85b7674"])
 
 /**
+ * Returns true when a feed is a Coinbase (B20) tokenized equity feed on Base.
+ * These feeds are identified by their asset name, feed name, or ENS prefix.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isCoinbaseTokenizedEquityFeed(feed: any): boolean {
+  if (feed.docs?.productTypeCode !== "primaryTokenizedPrice") return false
+
+  const assetName = (feed.assetName || "").toLowerCase()
+  const feedName = (feed.name || "").toLowerCase()
+  const ens = (feed.ens || "").toLowerCase()
+
+  return (
+    feed.docs?.blockchainName === "Base" ||
+    assetName.includes("coinbase") ||
+    feedName.startsWith("coinbase ") ||
+    ens.startsWith("coinbase-")
+  )
+}
+
+/**
  * Returns true when the feed's contract address should be hidden and replaced
  * with the data-feeds contact email in the UI.
  */
@@ -32,6 +52,11 @@ export const BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES = new Set<string>(["0x369c6
 export function shouldHideAddress(feed: any, riskTier?: string | null): boolean {
   // Robinhood tokenized equity feeds display their proxy address directly.
   if (feed.docs?.blockchainName === "Robinhood" && feed.docs?.productTypeCode === "primaryTokenizedPrice") {
+    return false
+  }
+
+  // Coinbase (B20) tokenized equity feeds on Base display their proxy address directly.
+  if (isCoinbaseTokenizedEquityFeed(feed)) {
     return false
   }
 
@@ -215,6 +240,10 @@ export function isFeedVisible(
         (feed.name || "").toLowerCase().startsWith("robinhood ")
 
       if (!isRobinhoodFeed) return false
+    }
+
+    if (provider === "coinbase") {
+      if (!isCoinbaseTokenizedEquityFeed(feed)) return false
     }
   }
 
