@@ -1,0 +1,250 @@
+---
+section: cre
+title: "Making a Workflow Confidential"
+date: Last Modified
+sdkLang: "go"
+pageId: "guides-workflow-confidential-workflows-making-workflow-confidential"
+metadata:
+  description: "Run workflow logic inside a secure enclave in Go: register a TEE handler, fetch secrets dynamically, and cross back to the DON for consensus."
+  datePublished: "2026-07-21"
+  lastModified: "2026-07-28"
+---
+
+import { Aside } from "@components"
+
+Some workflows need to keep sensitive inputs and the computation over them—not just a single outbound request—confidential from node operators: risk thresholds, proprietary scoring, multi-step reasoning over sensitive data. Confidential Workflows are designed to make this possible by running your handler's callback inside a secure [enclave](/cre/key-terms#enclave), a running instance of a [Trusted Execution Environment (TEE)](/cre/key-terms#tee-trusted-execution-environment) intended to keep that computation and data confidential from the machine's own operator while it runs.
+
+Functionally, this means registering your handler with [`cre.HandlerInTee`](/cre/reference/sdk/confidential-workflows-client-go#crehandlerintee) instead of [`cre.Handler`](/cre/reference/sdk/core-go#crehandler). Your callback receives a [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-go#creteeruntime) instead of a [`cre.Runtime`](/cre/reference/sdk/core-go#runtime-and-noderuntime): secrets are fetched dynamically from the [Vault DON](/cre/key-terms#vault-don) rather than declared upfront, and you explicitly call [`runtime.UsingTheDons()`](/cre/reference/sdk/confidential-workflows-client-go#runtimeusingthedons) to reach anything that needs Workflow DON consensus.
+
+## Prerequisites
+
+This guide assumes you have:
+
+- Enrolled in the Confidential Workflows private beta with your Chainlink account team (see [Requesting Confidential Workflows Access](/cre/account/confidential-workflows-access)).
+- A basic understanding of CRE. If you are new, complete the [Getting Started tutorial](/cre/getting-started/overview) first.
+- Familiarity with [secrets management](/cre/guides/workflow/secrets) in CRE.
+
+<Aside type="note" title="Minimal example">
+  This guide walks through the core mechanics with a minimal example. For complete, production-shaped workflows
+  (TypeScript), see the [example workflows](/cre/guides/workflow/using-confidential-workflows#example-workflows).
+</Aside>
+
+## Step-by-step example
+
+This example shows a cron-triggered workflow that fetches a secret and makes an HTTP request from inside a TEE, then crosses back to the DON to generate a report.
+
+### Step 1: Register a TEE handler
+
+Use [`cre.HandlerInTee`](/cre/reference/sdk/confidential-workflows-client-go#crehandlerintee) instead of [`cre.Handler`](/cre/reference/sdk/core-go#crehandler), and specify which TEEs your workflow accepts with a [`cre.TeeConstraint`](/cre/reference/sdk/confidential-workflows-client-go#creteeconstraint):
+
+```go
+package main
+
+import (
+	"log/slog"
+
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/cre/wasm"
+)
+
+type Config struct {
+	Schedule string `json:"schedule"`
+	URL      string `json:"url"`
+}
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+	workflow := cre.Workflow[*Config]{
+		cre.HandlerInTee(
+			cron.Trigger(&cron.Config{Schedule: config.Schedule}),
+			onCronTrigger,
+			cre.AnyTee{},
+		),
+	}
+
+	return workflow, nil
+}
+
+func main() {
+	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
+}
+```
+
+`cre.AnyTee{}` accepts any registered TEE in any region. To restrict to a specific TEE type and region, use `cre.OneOfTees{cre.Nitro{Regions: []cre.NitroRegion{cre.NitroUsWest2}}}`. See the [SDK reference](/cre/reference/sdk/confidential-workflows-client-go#creteeconstraint) for all options.
+
+### Step 2: Fetch a secret inside the enclave
+
+Your callback receives a [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-go#creteeruntime). Call [`runtime.GetSecret()`](/cre/reference/sdk/confidential-workflows-client-go#runtimegetsecret) to fetch a secret at the point you need it:
+
+```go
+func onCronTrigger(config *Config, runtime cre.TeeRuntime, _ *cron.Payload) (string, error) {
+	secret, err := runtime.GetSecret(&cre.SecretRequest{Id: "MY_API_KEY"}).Await()
+	if err != nil {
+		return "", fmt.Errorf("failed to get secret: %w", err)
+	}
+
+	// ...
+}
+```
+
+<Aside type="note" title="No upfront secret declaration">
+  Unlike Confidential HTTP's
+  [`VaultDonSecrets`](/cre/reference/sdk/confidential-http-client-go#confidentialhttpconfidentialhttprequest), there's
+  nothing to declare ahead of time. The secret is requested and decrypted inside the enclave at the moment
+  [`GetSecret()`](/cre/reference/sdk/confidential-workflows-client-go#runtimegetsecret) runs.
+</Aside>
+
+### Step 3: Make a capability call from inside the enclave
+
+Capabilities that support Confidential Workflows expose a TEE-flavored method. For the HTTP capability, that's
+[`SendRequestInTee`](/cre/reference/sdk/confidential-workflows-client-go#making-capability-calls-inside-the-enclave),
+which takes your [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-go#creteeruntime) directly:
+
+```go
+	req := &http.Request{
+		Url:    config.URL,
+		Method: "GET",
+		MultiHeaders: map[string]*http.HeaderValues{
+			"Authorization": {Values: []string{"Bearer " + secret.Value}},
+		},
+	}
+
+	resp, err := (&http.Client{}).SendRequestInTee(runtime, req).Await()
+	if err != nil {
+		return "", fmt.Errorf("confidential request failed: %w", err)
+	}
+```
+
+The request executes from inside the enclave. Trust comes from enclave attestation rather than Workflow DON consensus.
+
+<Aside type="note" title="Use SendRequestInTee, not confidentialhttp.Client">
+  `confidentialhttp.Client` has no TEE-flavored method here—see the [SDK
+  reference](/cre/reference/sdk/confidential-workflows-client-go#not-every-capability-has-a-tee-flavored-method) if
+  you're tempted to reach for it instead.
+</Aside>
+
+### Step 4: Cross back to the DON for anything that needs consensus
+
+Once you have a result, call [`runtime.UsingTheDons()`](/cre/reference/sdk/confidential-workflows-client-go#runtimeusingthedons)
+to get a regular [`cre.Runtime`](/cre/reference/sdk/core-go#runtime-and-noderuntime) for operations that require
+Workflow DON execution—for example, generating a signed report:
+
+```go
+	donRuntime := runtime.UsingTheDons()
+
+	_, err = donRuntime.GenerateReport(&cre.ReportRequest{
+		EncodedPayload: []byte(resp.Body),
+		EncoderName:    "evm",
+		SigningAlgo:    "ecdsa",
+		HashingAlgo:    "keccak256",
+	}).Await()
+	if err != nil {
+		return "", fmt.Errorf("failed to generate report: %w", err)
+	}
+
+	runtime.Logger().Info("Confidential workflow complete")
+	return string(resp.Body), nil
+}
+```
+
+See [Generating Reports: Single Values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) for the full delivery flow (encoding, `WriteReport`, etc.). For a complete example that crosses to the DON runtime and delivers a report onchain with `evmClient.writeReport()`, see the [AI Smart Contract Audit Firewall example](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/ai-audit-firewall) (TypeScript; the same pattern applies in Go).
+
+<Aside type="caution" title="Data passed to UsingTheDons() is no longer confidential">
+  Once you pass a value into a capability call on the runtime returned by
+  [`UsingTheDons()`](/cre/reference/sdk/confidential-workflows-client-go#runtimeusingthedons), that call executes on
+  Workflow DON nodes like any non-confidential capability. Only cross over the data that doesn't need to remain
+  confidential.
+</Aside>
+
+### Step 5: Simulate
+
+Run the simulation:
+
+```bash
+cre workflow simulate my-workflow --target staging-settings
+```
+
+## Best practices
+
+<Aside type="caution" title="Don't log in production confidential workflows">
+  Logging within enclave execution logic should be avoided in production workflows. For debugging purposes, logging may
+  be used in simulation environments. Anything you log from inside a Confidential Workflow handler could leak data the
+  enclave is meant to protect—remove or gate log statements before deploying.
+</Aside>
+
+## Complete example
+
+```go
+package main
+
+import (
+	"fmt"
+	"log/slog"
+
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http"
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/cre/wasm"
+)
+
+type Config struct {
+	Schedule string `json:"schedule"`
+	URL      string `json:"url"`
+}
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+	workflow := cre.Workflow[*Config]{
+		cre.HandlerInTee(
+			cron.Trigger(&cron.Config{Schedule: config.Schedule}),
+			onCronTrigger,
+			cre.AnyTee{},
+		),
+	}
+
+	return workflow, nil
+}
+
+func onCronTrigger(config *Config, runtime cre.TeeRuntime, _ *cron.Payload) (string, error) {
+	// 1. Fetch a secret dynamically, inside the enclave.
+	secret, err := runtime.GetSecret(&cre.SecretRequest{Id: "MY_API_KEY"}).Await()
+	if err != nil {
+		return "", fmt.Errorf("failed to get secret: %w", err)
+	}
+
+	// 2. Make an HTTP request from inside the enclave.
+	req := &http.Request{
+		Url:    config.URL,
+		Method: "GET",
+		MultiHeaders: map[string]*http.HeaderValues{
+			"Authorization": {Values: []string{"Bearer " + secret.Value}},
+		},
+	}
+	resp, err := (&http.Client{}).SendRequestInTee(runtime, req).Await()
+	if err != nil {
+		return "", fmt.Errorf("confidential request failed: %w", err)
+	}
+
+	// 3. Cross back to the DON for anything that needs consensus.
+	donRuntime := runtime.UsingTheDons()
+	_, err = donRuntime.GenerateReport(&cre.ReportRequest{
+		EncodedPayload: []byte(resp.Body),
+		EncoderName:    "evm",
+		SigningAlgo:    "ecdsa",
+		HashingAlgo:    "keccak256",
+	}).Await()
+	if err != nil {
+		return "", fmt.Errorf("failed to generate report: %w", err)
+	}
+
+	runtime.Logger().Info("Confidential workflow complete")
+	return string(resp.Body), nil
+}
+
+func main() {
+	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
+}
+```
+
+## API reference
+
+For the full list of types and methods available on [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-go#creteeruntime) and [`cre.HandlerInTee`](/cre/reference/sdk/confidential-workflows-client-go#crehandlerintee), see the [Confidential Workflows Client SDK Reference](/cre/reference/sdk/confidential-workflows-client-go).

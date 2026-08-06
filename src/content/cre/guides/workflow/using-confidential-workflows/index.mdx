@@ -1,0 +1,41 @@
+---
+section: cre
+title: "Confidential Workflows"
+date: Last Modified
+isIndex: true
+metadata:
+  description: "Run workflow logic inside a secure enclave: learn to register a Confidential Workflow handler, fetch secrets dynamically, and cross back to the DON."
+  datePublished: "2026-07-21"
+  lastModified: "2026-07-28"
+---
+
+import { Aside } from "@components"
+
+The CRE SDK is designed to run a handler's callback inside a secure [enclave](/cre/key-terms#enclave)—a running instance of a [Trusted Execution Environment (TEE)](/cre/key-terms#tee-trusted-execution-environment)—instead of on Workflow DON nodes, so that the sensitive computation it performs, and any secrets it fetches (from the [Vault DON](/cre/key-terms#vault-don)), are intended to remain confidential from node operators during execution. A workflow that does this is called a **Confidential Workflow**: the same kind of workflow you're already building with CRE, with an explicit confidential execution path added where you need it.
+
+Confidential workflows successfully complete execution only after DON consensus verifies attestations from the enclave, proving the integrity of the workflow logic that executed within it.
+
+<Aside type="caution" title="Private beta">
+  Confidential Workflows is in private beta and requires enrollment through your Chainlink account team—see [Requesting
+  Confidential Workflows Access](/cre/account/confidential-workflows-access).
+</Aside>
+
+For **why** you might need a Confidential Workflow, see [Confidential Workflows in CRE](/cre/concepts/confidential-workflows).
+
+## Guides
+
+- **[Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential)**: Register a TEE handler, fetch secrets dynamically, and cross back to the DON for anything that needs consensus.
+
+<Aside type="note" title="Minimal example">
+  This guide covers the core mechanics with a minimal example. For complete, production-shaped workflows, see the
+  example workflows below.
+</Aside>
+
+## Example workflows
+
+Complete TypeScript reference implementations, in
+[`smartcontractkit/confidential-compute-examples`](https://github.com/smartcontractkit/confidential-compute-examples):
+
+- **[Automated Liquidation Protection](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/automated-liquidation-protection)**: Fetches exchange and model secrets, reads policy and risk state, asks an LLM for defensive actions, enforces policy constraints, and executes approved actions.
+- **[Automated Portfolio Rebalancing](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/automated-portfolio-rebalancing)**: Reads policy, holdings, prices, and volatility, asks an LLM for trade proposals, enforces slippage and reserve-floor constraints, and routes approved trades.
+- **[AI Smart Contract Audit Firewall](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/ai-audit-firewall)**: Runs two independent LLM audits on a proposed transaction, merges risk flags into an ALLOW/DENY/MANUAL_REVIEW verdict, and optionally delivers the verdict onchain with `EVMClient`.
