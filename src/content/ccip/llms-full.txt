@@ -7579,7 +7579,7 @@ Designed for fixed-supply tokens where cross-chain transfers are backed by locke
 **Recommendations:**
 
 - Use the **same party** for pool owner and instrument admin.
-- **Decentralize** the party across multiple nodes so no single node is a point of failure. See [Digital Asset decentralization docs](https://docs.digitalasset.com/overview/3.5/explanations/canton/decentralization.html#decentralized-parties) and [Canton Foundation validators](https://canton.foundation/validators/).
+- **Decentralize** the party across multiple nodes so no single node is a point of failure. See [Canton Network decentralization docs](https://docs.canton.network/overview/reference/decentralization#decentralized-parties) and [Canton Foundation validators](https://canton.foundation/validators/).
 
 ## Registering on the Token Admin Registry
 
@@ -26928,7 +26928,7 @@ Cross-chain send and receive are validated by Chainlink operations once your tok
 ## Prerequisites (all CCT guides)
 
 - [Starter kit setup](/ccip/tutorials/canton/source/prerequisites) for `cct:*` scripts (`.env`, `canton-config.json`, ledger auth)
-- The token pool DAR for your pool type on your participant — [`ccip-burn-mint-token-pool-1.0.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/legacy/ccip-burn-mint-token-pool-1.0.0.dar) or [`ccip-lock-release-token-pool-1.0.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/legacy/ccip-lock-release-token-pool-1.0.0.dar) (each bundles its CCIP dependencies — the only DAR you upload).
+- The token pool DAR for your pool type on your participant — [`ccip-burn-mint-token-pool-2.1.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/released/ccip-burn-mint-token-pool-v2-2.1.0.dar) or [`ccip-lock-release-token-pool-2.1.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/released/ccip-lock-release-token-pool-v2-2.1.0.dar) (each bundles its CCIP dependencies — the only DAR you upload).
 - CCIP contract references from Chainlink ops (owner party, TAR, RMNRemote, FeeQuoter) — EDS and indexer URLs are pre-filled in the starter kit
 - A validator user with `can_act_as` rights for your ledger parties
 - Understanding of [token pools](/ccip/concepts/canton/token-pools) and [explicit disclosure](/ccip/concepts/canton/explicit-disclosure)
@@ -26995,7 +26995,7 @@ This guide covers **issuer/registrar** steps only. Chainlink operations must hav
 
 **Recommended:** three parties under your org — Provider, Registrar, Holder — plus Chainlink's CCIP owner on the participant.
 
-Registry onboarding: [DA Registry onboarding guide](https://docs.digitalasset.com/utilities/mainnet/overview/registry-user-guide/onboarding-offboarding.html).
+Registrar onboarding: [DA Registrar onboarding guide](https://docs.digitalasset.com/registry/guides/registrar-onboarding).
 
 ## 3. Prerequisites
 
@@ -27091,7 +27091,7 @@ Hand off to Chainlink ops for lane testing after Phase E.
 
 ## 5. Phase A — Registry onboarding
 
-Request/accept workflow on-ledger. UI walkthrough: [DA issuance onboarding tutorial](https://docs.digitalasset.com/utilities/mainnet/tutorials/issuance/1-onboarding.html).
+Request/accept workflow on-ledger. UI walkthrough: [DA issuance onboarding tutorial](https://docs.digitalasset.com/registry/tutorials/issuance/1-onboarding-roles).
 
 ### Step 1 — Verify environment
 
@@ -27247,7 +27247,7 @@ npm run cct:set-token -- \
 
 Without this, cross-chain transfers fail at execution. CCIP EDS assembles Registry-specific pool context at runtime.
 
-Reference: [DA burn-mint how-to](https://docs.digitalasset.com/utilities/mainnet/how-tos/registry/burn-mint/burn-mint.html).
+Reference: [DA mint guide](https://docs.digitalasset.com/registry/guides/mint) and [DA burn guide](https://docs.digitalasset.com/registry/guides/burn).
 
 ## 9. Phase E — Verification
 
@@ -27301,15 +27301,15 @@ All commands: `--config registry-kit.toml [--state registry-kit.state.json]`
 
 ## 11. Troubleshooting
 
-| Symptom                      | Cause                             | Resolution                                                                                                                                                 |
-| :--------------------------- | :-------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Mint credential error        | Missing issuer credentials        | Issue per [DA credential docs](https://docs.digitalasset.com/utilities/mainnet/overview/credential-user-guide/introduction.html) or use empty requirements |
-| Bridge fails after SetPool   | `SetBurnMintFactory` not called   | Exercise Step 17 with AllocationFactory CID                                                                                                                |
-| Pool doesn't recognize token | Wrong `InstrumentId.admin`        | Must be registrar, not Provider or CCIP owner                                                                                                              |
-| Registry choice fails        | Missing Operator Backend context  | Call Operator Backend before submission                                                                                                                    |
-| Missing utility packages     | Participant not provisioned       | Contact operator                                                                                                                                           |
-| TAR exercise fails           | TAR not disclosed                 | Use CCIP EDS or `link-token-to-pool`                                                                                                                       |
-| 403 from Ledger API          | User lacks `can_act_as` for party | Use a validator user scoped to your parties                                                                                                                |
+| Symptom                      | Cause                             | Resolution                                                                                                                        |
+| :--------------------------- | :-------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------- |
+| Mint credential error        | Missing issuer credentials        | Issue per [DA credential docs](https://docs.digitalasset.com/registry/tutorials/issuance/2-credentials) or use empty requirements |
+| Bridge fails after SetPool   | `SetBurnMintFactory` not called   | Exercise Step 17 with AllocationFactory CID                                                                                       |
+| Pool doesn't recognize token | Wrong `InstrumentId.admin`        | Must be registrar, not Provider or CCIP owner                                                                                     |
+| Registry choice fails        | Missing Operator Backend context  | Call Operator Backend before submission                                                                                           |
+| Missing utility packages     | Participant not provisioned       | Contact operator                                                                                                                  |
+| TAR exercise fails           | TAR not disclosed                 | Use CCIP EDS or `link-token-to-pool`                                                                                              |
+| 403 from Ledger API          | User lacks `can_act_as` for party | Use a validator user scoped to your parties                                                                                       |
 
 ## 12. Glossary
 
@@ -27324,12 +27324,12 @@ All commands: `--config registry-kit.toml [--state registry-kit.state.json]`
 
 ## 13. Further reading
 
-| Topic                      | Link                                                                                                                  |
-| :------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
-| Registry introduction      | [Registry user guide](https://docs.digitalasset.com/utilities/mainnet/overview/registry-user-guide/introduction.html) |
-| Token Standard integration | [Token Standard](https://docs.digitalasset.com/utilities/mainnet/overview/registry-user-guide/token-standard.html)    |
-| Issuance tutorial          | [Issuance onboarding](https://docs.digitalasset.com/utilities/mainnet/tutorials/issuance/1-onboarding.html)           |
-| Utility DAR versions       | [DAR versions](https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html)              |
+| Topic                      | Link                                                                                                |
+| :------------------------- | :-------------------------------------------------------------------------------------------------- |
+| Registry introduction      | [Registry user guide](https://docs.digitalasset.com/registry/overview)                              |
+| Token Standard integration | [Token Standard](https://docs.digitalasset.com/registry/apis/token-standard)                        |
+| Issuance tutorial          | [Issuance onboarding](https://docs.digitalasset.com/registry/tutorials/issuance/1-onboarding-roles) |
+| Utility DAR versions       | [DAR versions](https://docs.digitalasset.com/registry/releases/daml-models)                         |
 
 <Aside type="caution" title="Educational Example Disclaimer">
   This page includes an educational example to use a Chainlink system, product, or service and is provided to
@@ -27353,7 +27353,7 @@ Last Updated: 2026-07-06
 
 Deploy a **BurnMint** token pool on Canton, register it on the Token Admin Registry (TAR), and enable a cross-chain lane. Use the [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton) for pool deployment and TAR registration, or submit Ledger API commands directly.
 
-This guide assumes you already have a token instrument live on Canton with supply minted on-ledger — for example a Registry instrument from Digital Asset's [Registry utility](https://docs.digitalasset.com/utilities/mainnet/overview/registry-user-guide/index.html), or any instrument supporting CIP-56 with the `BurnMintFactory` interface.
+This guide assumes you already have a token instrument live on Canton with supply minted on-ledger — for example a Registry instrument from Digital Asset's [Registry utility](https://docs.digitalasset.com/registry/overview), or any instrument supporting CIP-56 with the `BurnMintFactory` interface.
 
 **Scope:** On-ledger pool connection — deploy, TAR registration, and lane enablement. Does not cover [EDS setup](/ccip/concepts/canton/explicit-disclosure) or end-to-end transfer tests.
 
@@ -27365,7 +27365,7 @@ This guide assumes you already have a token instrument live on Canton with suppl
 
 - **Instrument (token managed on Canton Ledger)** with known `InstrumentId = { admin, id }`. The admin party must be the same party that will own the token pool.
 - **Burn/mint authority** — `instrumentId.admin == poolOwner` (enforced by the BurnMint template and by the starter kit).
-- **BurnMint token pool DAR** on your participant — [`ccip-burn-mint-token-pool-1.0.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/legacy/ccip-burn-mint-token-pool-1.0.0.dar) (bundles its CCIP dependencies — the only DAR you upload).
+- **BurnMint token pool DAR** on your participant — [`ccip-burn-mint-token-pool-2.1.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/released/ccip-burn-mint-token-pool-v2-2.1.0.dar) (bundles its CCIP dependencies — the only DAR you upload).
 - **CCIP contract references** from Chainlink ops: CCIP owner party, Token Admin Registry, RMNRemote, FeeQuoter.
 - **Starter kit setup** (if using `cct:*` scripts) — complete [Canton as Source prerequisites](/ccip/tutorials/canton/source/prerequisites) and the [CCT overview](/ccip/tutorials/canton/cross-chain-tokens#starter-kit-cct-scripts).
 
@@ -27501,7 +27501,7 @@ This guide assumes you have a token instrument live on Canton with supply minted
 
 - **Instrument (token managed on Canton Ledger)** with known `InstrumentId = { admin, id }` supporting `TransferFactory` and pre-approvals.
 - Token liquidity held by the pool owner party for expected release volume.
-- **LockRelease token pool DAR** on your participant — [`ccip-lock-release-token-pool-1.0.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/legacy/ccip-lock-release-token-pool-1.0.0.dar) (bundles its CCIP dependencies — the only DAR you upload).
+- **LockRelease token pool DAR** on your participant — [`ccip-lock-release-token-pool-2.1.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/released/ccip-lock-release-token-pool-v2-2.1.0.dar) (bundles its CCIP dependencies — the only DAR you upload).
 - CCIP contract references from Chainlink ops.
 - **Starter kit setup** (if using `cct:*` scripts) — complete [Canton as Source prerequisites](/ccip/tutorials/canton/source/prerequisites) and the [CCT overview](/ccip/tutorials/canton/cross-chain-tokens#starter-kit-cct-scripts).
 
