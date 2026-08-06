@@ -2,38 +2,62 @@
 title: "AI Smart Contract Audit Firewall"
 description: "Automatically analyze and screen smart contract interactions before execution to detect and block malicious transactions, while preserving the confidentiality of chain scanner and LLM reasoning API credentials."
 author: "Chainlink Labs"
-excerpt: "Gate transactions with dual-model AI audits inside a TEE and deliver the verdict onchain."
+excerpt: "Gate transactions with dual-model AI audits inside a TEE and deliver the verdict onchain in TypeScript or Go."
 image: "thumbnail.jpg"
+cliTemplateIds:
+  - label: "TypeScript"
+    id: "ai-audit-firewall-ts"
+  - label: "Go"
+    id: "ai-audit-firewall-go"
 tags:
   - "confidential"
   - "ai"
   - "security"
-githubUrl: "https://github.com/smartcontractkit/confidential-compute-examples/tree/main/ai-audit-firewall"
+githubUrl: "https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/confidential-workflows/ai-audit-firewall"
 githubRepoLinks:
   - label: "TypeScript"
-    url: "https://github.com/smartcontractkit/confidential-compute-examples/tree/main/ai-audit-firewall"
+    url: "https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/confidential-workflows/ai-audit-firewall/ai-audit-firewall-ts"
+  - label: "Go"
+    url: "https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/confidential-workflows/ai-audit-firewall/ai-audit-firewall-go"
 datePublished: "2026-08-04"
-lastModified: "2026-08-04"
+lastModified: "2026-08-06"
 ---
 
 import { Aside, Accordion } from "@components"
 
-## What This Template Does
+<Aside type="caution" title="Private beta">
+  [Confidential Workflows](https://docs.chain.link/cre/concepts/confidential-workflows) is in **private beta** and
+  requires enrollment through your Chainlink account team - see [Requesting Confidential Workflows
+  Access](https://docs.chain.link/cre/account/confidential-workflows-access).
+</Aside>
 
-This workflow runs inside a **Trusted Execution Environment (TEE)** and acts as a confidential gate for proposed token interactions. Contract source, transaction details, and model prompts never leave the confidential runtime.
+This workflow runs inside a **Trusted Execution Environment (TEE)** and acts as a confidential gate for proposed
+token interactions. Contract source, transaction details, and model prompts never leave the confidential runtime.
+The TypeScript and Go implementations are behaviorally equivalent - pick whichever language you build in.
+
+**Quick navigation:**
+
+- [TypeScript Implementation](#typescript-implementation)
+- [Go Implementation](#go-implementation)
+
+---
+
+## What This Template Does
 
 On every cron execution the workflow:
 
-1. Fetches a **proposed transaction**
-2. Fetches the **token and protocol contract artifacts** from a scanner service
+1. Fetches a **proposed transaction**, including the token and protocol contract addresses
+2. Fetches the **token and protocol contract artifacts** from a scanner service, verifying scanner credential permissions before trusting the fetched data
 3. Runs **two independent LLM audits** — the second receives the first analysis as prior context
 4. Merges the risk flags and decides **ALLOW**, **DENY**, or **MANUAL_REVIEW**
 5. Writes an audit log entry and a firewall action
 6. Optionally writes the verdict onchain with `EVMClient`
 
 <Aside type="note" title="Confidential execution">
-  The cron handler is registered with `handlerInTee(...)` and pinned to an AWS Nitro enclave region, so unverified
-  contract source and model interaction stay inside the enclave for the whole run. See [Confidential
+  The cron handler is registered with the TEE variant of the handler API (`handlerInTee` in TypeScript,
+  `cre.HandlerInTee` in Go) and pinned to an AWS Nitro enclave region, so unverified contract source and model
+  interaction stay inside the enclave for the whole run. Scanner and model credentials are released by the Vault DON
+  directly into the attested enclave and decrypted only at the moment the fetch runs. See [Confidential
   Workflows](https://docs.chain.link/cre/concepts/confidential-workflows) for the underlying feature, and [Hello
   Confidential Workflows](/cre-templates/hello-confidential-workflows) for the minimal version of this pattern.
 </Aside>
@@ -64,28 +88,29 @@ The `determineVerdict` function merges both analyses:
 
 ## Prerequisites
 
-- **[Bun](https://bun.com/docs/installation)** — the repository is configured as a Bun workspace
+- **[Bun](https://bun.com/docs/installation)** — used to install dependencies and to run the shared mock server (both languages)
+- **[Go](https://go.dev/dl/) 1.25 or later** — only if you are building the Go implementation
 - **[Chainlink CRE CLI](https://docs.chain.link/cre/getting-started/cli-installation)** installed and configured
 - **Git** for cloning the repository
 - **A funded wallet on Ethereum Sepolia** — only if you want to test the optional onchain delivery path
 
-## Setup
+`ai-audit-firewall/` is a single CRE project shared by both languages — `project.yaml`, `secrets.yaml`, `.env.example`, and `contracts/` live at the project root, with `ai-audit-firewall-ts/` and `ai-audit-firewall-go/` as sibling workflow directories underneath it.
+
+## TypeScript Implementation
+
+### Getting Started with TypeScript
 
 <Accordion title="Clone the repository and install dependencies" number={1}>
 
 ```bash
-git clone https://github.com/smartcontractkit/confidential-compute-examples.git
-cd confidential-compute-examples
+git clone https://github.com/smartcontractkit/cre-templates.git
+cd cre-templates/starter-templates/confidential-workflows/ai-audit-firewall
 bun install
 ```
-
-`bun install` at the repository root installs dependencies for every workflow because the repo is a Bun workspace.
 
 </Accordion>
 
 <Accordion title="Prepare environment variables" number={2}>
-
-From the repository root:
 
 ```bash
 cp .env.example .env
@@ -100,13 +125,13 @@ MOCK_PRIMARY_LLM_API_KEY=mock-primary-llm-key
 MOCK_SECONDARY_LLM_API_KEY=mock-secondary-llm-key
 ```
 
-`secrets.yaml` at the repository root maps the logical secret IDs to these environment variables.
+`secrets.yaml` maps the logical secret IDs to these environment variables.
 
 </Accordion>
 
 <Accordion title="Review the simulation config" number={3}>
 
-Open `ai-audit-firewall/config.staging.json`:
+Open `ai-audit-firewall-ts/config.staging.json`:
 
 ```json
 {
@@ -133,7 +158,6 @@ Open `ai-audit-firewall/config.staging.json`:
 <Accordion title="Run typecheck and tests" number={4}>
 
 ```bash
-cd ai-audit-firewall
 bun run typecheck
 bun run test
 ```
@@ -142,7 +166,7 @@ bun run test
 
 <Accordion title="Start the shared mock server" number={5}>
 
-From the repository root:
+From the project root:
 
 ```bash
 bun run mock:server
@@ -154,19 +178,92 @@ The server listens on `http://127.0.0.1:8787` and serves this workflow's routes 
 
 <Accordion title="Simulate the workflow" number={6}>
 
-In a new terminal, from the repository root:
+In a new terminal, from the project root:
 
 ```bash
-cre workflow simulate ./ai-audit-firewall --target=staging-settings
+cre workflow simulate ./ai-audit-firewall-ts --target=staging-settings
 ```
 
 The workflow logs each stage (`audit-firewall-onchain-report-start`, `audit-firewall-complete`) and returns a JSON result containing the verdict, reasoning, merged risk flags, both model analyses, the audit log ID, and the firewall action ID.
 
 </Accordion>
 
+## Go Implementation
+
+### Getting Started with Go
+
+<Accordion title="Prepare environment variables" number={1}>
+
+From the shared project root:
+
+```bash
+cp ../.env.example ../.env
+```
+
+`../secrets.yaml` maps the same logical secret IDs shown above to these environment variables.
+
+</Accordion>
+
+<Accordion title="Run vet and tests" number={2}>
+
+```bash
+cd ai-audit-firewall-go
+go vet ./...
+go test ./...
+```
+
+</Accordion>
+
+<Accordion title="Start the shared mock server" number={3}>
+
+From the `ai-audit-firewall-go` directory (requires Node or Bun):
+
+```bash
+bun mock-server.js
+```
+
+</Accordion>
+
+<Accordion title="Simulate the workflow" number={4}>
+
+In a new terminal, from the project root:
+
+```bash
+cre workflow simulate ./ai-audit-firewall-go --target=staging-settings
+```
+
+</Accordion>
+
+### Confidentiality Boundary (Go)
+
+The handler is registered with `cre.HandlerInTee`, so it receives a `cre.TeeRuntime` rather than a `cre.Runtime`. Scanner and model credentials are released by the Vault DON directly into the attested enclave and decrypted only when `GetSecret()` runs; HTTP calls go through `client.SendRequestInTee(runtime, ...)`, keeping URLs, headers, contract source, and model reasoning confidential from node operators. The only place that leaves the enclave is `writeVerdictOnChain`, which calls `runtime.UsingTheDons()` — and only the verdict code, the risk-flag bitmask, and the chain selector cross that boundary. The contract source, model reasoning, and scanner credentials never do.
+
+<Aside type="caution" title="Inherited quirk in the verdict logic">
+  `DetermineVerdict` branches on whether the two models *agree* and how confident they are, but never on *what* they
+  agreed. Two models that confidently and unanimously recommend `deny`, without raising any risk flag, therefore fall
+  through to `ALLOW`. The Go port intentionally pins this behavior to stay faithful to the TypeScript original — fix it
+  in both implementations if you change it. An unverified contract still short-circuits straight to `DENY` without
+  consulting a model at all.
+</Aside>
+
+### Restrictions (Go pre-hook)
+
+The Go implementation registers with `cre.HandlerInTeeWithPreHook`. The pre-hook runs **in the DON, before the enclave executes**, and returns a closed capability set for that execution:
+
+| Restriction                                          | Value    | Why                                                                                                                                                |
+| ---------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Capability set type                                  | `CLOSED` | Any capability call not listed below is rejected outright                                                                                          |
+| `maxTotalCalls`                                      | 10       | Overall ceiling across all capabilities                                                                                                            |
+| `http-actions@1.0.0-alpha` / `SendRequest`           | 8        | Steady state is 7 calls (proposal, credential check, 2 contract fetches, 2 model calls, audit log, firewall action); 8 leaves one call of headroom |
+| `consensus@1.0.0-alpha` / `Report`                   | 1        | One signed report per run                                                                                                                          |
+| `evm:ChainSelector:<selector>@1.0.0` / `WriteReport` | 1        | One onchain write per run, scoped to the configured chain                                                                                          |
+| `maxSecrets`                                         | 3        | Exact-match only, in the `main` namespace                                                                                                          |
+
+The EVM restriction is added only when an EVM target is configured, keeping the onchain leg opt-in. Because the set is closed, adding a capability call to the workflow means raising the matching limit here, or the run gets cut off by its own restrictions.
+
 ## Secrets
 
-`config.staging.json` expects these secret IDs in `secrets_ids`:
+Both implementations expect these secret IDs in `secrets_ids`:
 
 - `scanner_api_key`
 - `primary_llm_api_key`
@@ -210,8 +307,33 @@ Set `evms[0]` in your config file:
 </Accordion>
 
 <Aside type="note" title="Onchain delivery is optional">
-  If `evms` is absent or cleared, the workflow completes normally and simply omits `onchainTxHash` from its result.
+  If `evms` is absent or cleared, the workflow completes normally and simply omits `onchainTxHash` from its result. In
+  the Go implementation the report is ABI-encoded as `(uint8 verdictCode, uint8 riskMask, uint64 chainSelector)` —
+  decodable with `abi.decode(report, (uint8, uint8, uint64))`. Verdict codes: `ALLOW` = 1, `DENY` = 2, `MANUAL_REVIEW` =
+  3. Risk mask bits: `obfuscatedTax` = 1, `privilegeEscalation` = 2, `externalCallRisk` = 4, `logicBomb` = 8.
 </Aside>
+
+## TEE Constraints
+
+The third argument to the TEE handler API declares which enclaves the handler accepts:
+
+```ts
+{
+} // any registered TEE, any region
+{
+  regions: ["us-west-2"]
+} // any TEE, restricted to a region
+;[{ tee: "nitro", regions: ["us-west-2"] }] // specific TEE types and regions
+```
+
+```go
+cre.AnyTee{}                                                           // any registered TEE, any region
+cre.AnyTeeInRegions{Regions: []cre.Region{cre.AwsUsWest2}}             // any TEE, restricted to a region
+cre.OneOfTees{cre.Nitro{Regions: []cre.NitroRegion{cre.NitroUsWest2}}} // specific TEEs and regions
+```
+
+AWS Nitro in `us-west-2` is currently the only registered TEE type and region. In Go, each TEE binding owns its own
+region enum, so passing a region a TEE does not support is a compile-time error.
 
 ## Production Checklist
 
@@ -227,3 +349,11 @@ Set `evms[0]` in your config file:
 - **Simulation failures tied to RPC config** usually come from incorrect `project.yaml` target values
 - **Model responses that fail to parse** mean your configured endpoint is not returning the expected JSON payload shape — the workflow expects `riskFlags`, `recommendation`, `confidence`, and `reasoning`
 - **Onchain write failures** mean the consumer rejected the report; confirm the forwarder address configured on the contract matches the mode you are simulating or deploying in
+- **Go simulation cut off mid-run** usually means a capability call was added without raising the matching limit in the pre-hook's restriction set
+
+## Further Reading
+
+- [Confidential Workflows in CRE](https://docs.chain.link/cre/concepts/confidential-workflows) - concepts and use cases
+- [Making a Workflow Confidential](https://docs.chain.link/cre/guides/workflow/using-confidential-workflows) - step-by-step guide
+- [Confidential Workflows Client SDK Reference](https://docs.chain.link/cre/reference/sdk/confidential-workflows-client) - full API
+- [Hello Confidential Workflows](/cre-templates/hello-confidential-workflows) - the minimal version of this pattern

@@ -2,25 +2,47 @@
 title: "Automated Liquidation Protection"
 description: "Automatically protect DeFi lending positions by continuously monitoring liquidation risk and executing collateral management, debt repayment, position reduction, or hedging strategies while preserving the confidentiality of centralized exchange as well as LLM API keys, proprietary risk management thresholds, and execution preferences."
 author: "Chainlink Labs"
-excerpt: "Run policy-constrained liquidation defense confidentially with CRE and TEE execution."
+excerpt: "Run policy-constrained liquidation defense confidentially with CRE and TEE execution in TypeScript or Go."
 image: "thumbnail.jpg"
+cliTemplateIds:
+  - label: "TypeScript"
+    id: "automated-liquidation-protection-ts"
+  - label: "Go"
+    id: "automated-liquidation-protection-go"
 tags:
   - "confidential"
   - "liquidation"
   - "defi"
-githubUrl: "https://github.com/smartcontractkit/confidential-compute-examples/tree/main/automated-liquidation-protection"
+githubUrl: "https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/confidential-workflows/automated-liquidation-protection"
 githubRepoLinks:
   - label: "TypeScript"
-    url: "https://github.com/smartcontractkit/confidential-compute-examples/tree/main/automated-liquidation-protection"
+    url: "https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/confidential-workflows/automated-liquidation-protection/automated-liquidation-protection-ts"
+  - label: "Go"
+    url: "https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/confidential-workflows/automated-liquidation-protection/automated-liquidation-protection-go"
 datePublished: "2026-08-04"
-lastModified: "2026-08-04"
+lastModified: "2026-08-06"
 ---
 
 import { Aside, Accordion } from "@components"
 
-## What This Template Does
+<Aside type="caution" title="Private beta">
+  [Confidential Workflows](https://docs.chain.link/cre/concepts/confidential-workflows) is in **private beta** and
+  requires enrollment through your Chainlink account team - see [Requesting Confidential Workflows
+  Access](https://docs.chain.link/cre/account/confidential-workflows-access).
+</Aside>
 
-This workflow runs inside a **Trusted Execution Environment (TEE)** and generates a policy-constrained defense plan for a leveraged ETH position. Risk data, policy parameters, and model prompts never leave the confidential runtime.
+This workflow runs inside a **Trusted Execution Environment (TEE)** and generates a policy-constrained defense plan
+for a leveraged position. Risk data, policy parameters, and model prompts never leave the confidential runtime. The
+TypeScript and Go implementations are behaviorally equivalent - pick whichever language you build in.
+
+**Quick navigation:**
+
+- [TypeScript Implementation](#typescript-implementation)
+- [Go Implementation](#go-implementation)
+
+---
+
+## What This Template Does
 
 On every cron execution the workflow:
 
@@ -34,8 +56,10 @@ On every cron execution the workflow:
 If the position is healthy or no action survives the policy filter, the workflow returns `SAFE` without executing anything.
 
 <Aside type="note" title="Confidential execution">
-  The cron handler is registered with `handlerInTee(...)` and pinned to an AWS Nitro enclave region, so the position
-  data, policy, and model interaction stay inside the enclave for the whole run. See [Confidential
+  The cron handler is registered with the TEE variant of the handler API (`handlerInTee` in TypeScript,
+  `cre.HandlerInTee` in Go) and pinned to an AWS Nitro enclave region, so the position data, policy, and model
+  interaction stay inside the enclave for the whole run. Policy secrets are released by the Vault DON directly into the
+  attested enclave and decrypted only at the moment `GetSecret()` runs. See [Confidential
   Workflows](https://docs.chain.link/cre/concepts/confidential-workflows) for the underlying feature, and [Hello
   Confidential Workflows](/cre-templates/hello-confidential-workflows) for the minimal version of this pattern.
 </Aside>
@@ -67,53 +91,56 @@ The policy is fetched at runtime and bounds everything the model is allowed to d
 - `preferred_venues` — venue allowlist used when routing each action
 
 <Aside type="caution" title="The model proposes, the policy decides">
-  The LLM output is treated as untrusted input. Actions are re-validated against the policy, re-ordered by the
-  configured execution sequence, and routed only to preferred venues before any execution call is made.
+  The LLM output is treated as untrusted input. In both implementations, every proposed action amount is clamped to the
+  policy caps and the running reserve is checked against the floor before any execution call is made — a hallucinated or
+  adversarial suggestion cannot drain the reserve. A floor breach aborts the whole run rather than executing a partial
+  sequence, and unrecognized action types are dropped.
 </Aside>
 
 ## Prerequisites
 
-- **[Bun](https://bun.com/docs/installation)** — the repository is configured as a Bun workspace
+- **[Bun](https://bun.com/docs/installation)** — used to install dependencies and to run the shared mock server (both languages)
+- **[Go](https://go.dev/dl/) 1.25 or later** — only if you are building the Go implementation
 - **[Chainlink CRE CLI](https://docs.chain.link/cre/getting-started/cli-installation)** installed and configured
 - **Git** for cloning the repository
 
-## Setup
+`automated-liquidation-protection/` is a single CRE project shared by both languages — `project.yaml`, `secrets.yaml`, and `.env.example` live at the project root, with `automated-liquidation-protection-ts/` and `automated-liquidation-protection-go/` as sibling workflow directories underneath it.
+
+## TypeScript Implementation
+
+### Getting Started with TypeScript
 
 <Accordion title="Clone the repository and install dependencies" number={1}>
 
 ```bash
-git clone https://github.com/smartcontractkit/confidential-compute-examples.git
-cd confidential-compute-examples
+git clone https://github.com/smartcontractkit/cre-templates.git
+cd cre-templates/starter-templates/confidential-workflows/automated-liquidation-protection
 bun install
 ```
-
-`bun install` at the repository root installs dependencies for every workflow because the repo is a Bun workspace.
 
 </Accordion>
 
 <Accordion title="Prepare environment variables" number={2}>
 
-From the repository root:
-
 ```bash
 cp .env.example .env
 ```
 
-Set the values you want to use. The mock keys are used by both the workflow and the shared demo server:
+Provide values for the required environment variables:
 
-```bash
-MOCK_PORT=8787
-MOCK_EXCHANGE_API_KEY=mock-exchange-key
-MOCK_OPENAI_API_KEY=mock-openai-key
-```
+- `CRE_ETH_PRIVATE_KEY` (optional for local simulate)
+- `MOCK_PORT`, `MOCK_EXCHANGE_API_KEY`, `MOCK_OPENAI_API_KEY`
+- `MOCK_LIQUIDATION_WARNING_ACTION_THRESHOLD`, `MOCK_LIQUIDATION_MINIMUM_HEALTH_FACTOR`, `MOCK_LIQUIDATION_TARGET_HEALTH_FACTOR`
+- `MOCK_LIQUIDATION_MAX_STABLECOIN_RESERVE_DEPLOYMENT`, `MOCK_LIQUIDATION_MIN_STABLECOIN_RESERVE_BALANCE`, `MOCK_LIQUIDATION_MAX_COLLATERAL_ALLOCATION`
+- `MOCK_LIQUIDATION_MAX_PARTIAL_DEBT_REPAYMENT`, `MOCK_LIQUIDATION_DEFENSIVE_ACTION_SEQUENCING_PREFERENCE`, `MOCK_LIQUIDATION_PREFERRED_VENUES`
 
-`secrets.yaml` at the repository root maps the logical secret IDs to these environment variables.
+`secrets.yaml` maps the exchange and model secret IDs to their environment variables. The local mock server only exposes routes under `/liquidation/*`.
 
 </Accordion>
 
 <Accordion title="Review the simulation config" number={3}>
 
-Open `automated-liquidation-protection/config.staging.json`:
+Open `automated-liquidation-protection-ts/config.staging.json`:
 
 ```json
 {
@@ -137,7 +164,6 @@ Open `automated-liquidation-protection/config.staging.json`:
 <Accordion title="Run typecheck and tests" number={4}>
 
 ```bash
-cd automated-liquidation-protection
 bun run typecheck
 bun run test
 ```
@@ -146,7 +172,7 @@ bun run test
 
 <Accordion title="Start the shared mock server" number={5}>
 
-From the repository root:
+From the project root:
 
 ```bash
 bun run mock:server
@@ -158,19 +184,105 @@ The server listens on `http://127.0.0.1:8787` and serves this workflow's routes 
 
 <Accordion title="Simulate the workflow" number={6}>
 
-In a new terminal, from the repository root:
+In a new terminal, from the project root:
 
 ```bash
-cre workflow simulate ./automated-liquidation-protection --target=staging-settings
+cre workflow simulate ./automated-liquidation-protection-ts --target=staging-settings
 ```
 
 The workflow logs each stage (`liquidation-getsecret-ok`, `liquidation-defense-executed`) and returns either `SAFE` or a JSON summary with the status, action count, risk score, and execution ID.
 
 </Accordion>
 
+## Go Implementation
+
+### Getting Started with Go
+
+<Accordion title="Prepare environment variables" number={1}>
+
+From the shared project root:
+
+```bash
+cp ../.env.example ../.env
+```
+
+`../secrets.yaml` maps the same logical secret IDs shown above to these environment variables.
+
+</Accordion>
+
+<Accordion title="Run vet and tests" number={2}>
+
+```bash
+cd automated-liquidation-protection-go
+go vet ./...
+go test ./...
+```
+
+</Accordion>
+
+<Accordion title="Start the shared mock server" number={3}>
+
+From the `automated-liquidation-protection-go` directory (requires Node or Bun):
+
+```bash
+bun mock-server.js
+```
+
+</Accordion>
+
+<Accordion title="Simulate the workflow" number={4}>
+
+In a new terminal, from the project root:
+
+```bash
+cre workflow simulate ./automated-liquidation-protection-go --target=staging-settings
+```
+
+</Accordion>
+
+### Confidentiality Boundary (Go)
+
+The handler is registered with `cre.HandlerInTee`, so it receives a `cre.TeeRuntime` rather than a `cre.Runtime`. Policy secrets are released by the Vault DON directly into the attested enclave and decrypted only when `GetSecret()` runs; HTTP calls go through `client.SendRequestInTee(runtime, ...)`, keeping URLs, headers, and response bodies confidential from node operators. What is not confidential is the workflow binary itself — the logic is provided to the enclave by the Workflow DON and is revealed. `runtime.UsingTheDons()` is a one-way door: anything passed to a capability call there is no longer confidential.
+
+This template logs only non-sensitive markers (`liquidation-getsecret-ok`, action counts), and its tests assert that no secret reaches the logs — but remove the log lines entirely before deploying to production.
+
+## TEE Constraints
+
+The third argument to the TEE handler API declares which enclaves the handler accepts:
+
+```ts
+{
+} // any registered TEE, any region
+{
+  regions: ["us-west-2"]
+} // any TEE, restricted to a region
+;[{ tee: "nitro", regions: ["us-west-2"] }] // specific TEE types and regions
+```
+
+```go
+cre.AnyTee{}                                                           // any registered TEE, any region
+cre.AnyTeeInRegions{Regions: []cre.Region{cre.AwsUsWest2}}             // any TEE, restricted to a region
+cre.OneOfTees{cre.Nitro{Regions: []cre.NitroRegion{cre.NitroUsWest2}}} // specific TEEs and regions
+```
+
+AWS Nitro in `us-west-2` is currently the only registered TEE type and region. In Go, each TEE binding owns its own
+region enum, so passing a region a TEE does not support is a compile-time error.
+
+## Configuration
+
+`config.staging.json`:
+
+| Field           | Description                                               |
+| --------------- | --------------------------------------------------------- |
+| `schedule`      | Cron expression (6 fields, seconds first)                 |
+| `mock_base_url` | Base URL for the risk-state and execute-defense endpoints |
+| `openai_url`    | Reasoning endpoint called from inside the enclave         |
+| `openai_model`  | Model name passed to the reasoning endpoint               |
+| `secrets_ids`   | Maps each policy input to a secret ID in `secrets.yaml`   |
+
 ## Secrets
 
-`config.staging.json` expects these secret IDs in `secrets_ids`:
+Both implementations expect these secret IDs in `secrets_ids`:
 
 - `exchange_api_key`
 - `openai_api_key`
@@ -187,3 +299,10 @@ The workflow logs each stage (`liquidation-getsecret-ok`, `liquidation-defense-e
 - **401 responses from the APIs** usually indicate a secret mismatch between `.env`, `secrets.yaml`, and `secrets_ids` in the config file
 - **Simulation failures tied to RPC config** usually come from incorrect `project.yaml` target values
 - **Model responses that fail to parse** mean your configured endpoint is not returning the expected JSON payload shape — the workflow expects `shouldDefend`, `reasoning`, and `actions`
+
+## Further Reading
+
+- [Confidential Workflows in CRE](https://docs.chain.link/cre/concepts/confidential-workflows) - concepts and use cases
+- [Making a Workflow Confidential](https://docs.chain.link/cre/guides/workflow/using-confidential-workflows) - step-by-step guide
+- [Confidential Workflows Client SDK Reference](https://docs.chain.link/cre/reference/sdk/confidential-workflows-client) - full API
+- [Hello Confidential Workflows](/cre-templates/hello-confidential-workflows) - the minimal version of this pattern
