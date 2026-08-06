@@ -1,18 +1,17 @@
 ---
 section: dataStreams
-title: "Crypto Top-of-Book and Mark Price Streams"
+title: "Crypto Top-of-Book Streams"
 whatsnext:
   {
     "Find the list of available Stream IDs.": "/data-streams/crypto-streams",
     "Find the schema of data to expect from Top-of-Book reports (RWA Advanced v11).": "/data-streams/reference/report-schema-v11",
-    "Find the schema of data to expect from Mark Price reports (Crypto Advanced v3).": "/data-streams/reference/report-schema-v3",
     "Learn about developer responsibilities": "/data-streams/developer-responsibilities",
   }
 ---
 
 import { Aside } from "@components"
 
-In addition to Chainlink's standard liquidity-weighted crypto price streams, Data Streams offers two exchange-sourced stream types for perpetual futures markets: **Top-of-Book** and **Perpetual Mark Price**. Both are sourced directly from a single centralized exchange's public market data feeds, rather than aggregated across venues.
+In addition to Chainlink's standard liquidity-weighted crypto price streams, Data Streams offers **Top-of-Book** streams for perpetual futures markets. These are sourced directly from a single centralized exchange's public order book, rather than aggregated across venues.
 
 ## Top-of-Book
 
@@ -25,10 +24,10 @@ Top-of-Book streams report the best bid and best ask currently resting on a spec
 
 ### Data sources
 
-| Exchange       | Public channel                                              | Fields consumed                              |
-| -------------- | ------------------------------------------------------------ | --------------------------------------------- |
-| Binance        | `<symbol>@bookTicker` (Individual Symbol Book Ticker Stream) | `b` (best bid price), `a` (best ask price)     |
-| Hyperliquid     | `l2Book`                                                     | Best bid/ask `px` from `levels[0]`/`levels[1]` |
+| Exchange    | Public channel                                                | Fields consumed                                |
+| ----------- | --------------------------------------------------------------- | ------------------------------------------------ |
+| Binance     | `<symbol>@bookTicker` (Individual Symbol Book Ticker Stream)     | `b` (best bid price), `a` (best ask price)       |
+| Hyperliquid | `l2Book`                                                         | Best bid/ask `px` from `levels[0]`/`levels[1]`   |
 
 Additional exchanges may be added over time as new streams are onboarded.
 
@@ -36,13 +35,13 @@ Additional exchanges may be added over time as new streams are onboarded.
 
 Top-of-Book streams use the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11):
 
-| Schema field | Populated from                                          |
-| ------------ | -------------------------------------------------------- |
-| `bid`        | Exchange's best bid price                                 |
-| `bidVolume`  | Size at the best bid, when provided by the exchange       |
-| `ask`        | Exchange's best ask price                                 |
-| `askVolume`  | Size at the best ask, when provided by the exchange       |
-| `mid`        | Calculated by the Chainlink DON — **not** provided by the exchange |
+| Schema field   | Populated from                                                                                                                                                                                    |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bid`          | Exchange's best bid price                                                                                                                                                                            |
+| `bidVolume`    | Size at the best bid, when provided by the exchange                                                                                                                                                  |
+| `ask`          | Exchange's best ask price                                                                                                                                                                            |
+| `askVolume`    | Size at the best ask, when provided by the exchange                                                                                                                                                  |
+| `mid`          | Calculated by the Chainlink DON — **not** provided by the exchange                                                                                                                                   |
 | `marketStatus` | Reflects the venue's availability. Crypto perpetual markets generally trade continuously; see [Market Status Values](/data-streams/reference/report-schema-v11#market-status-values) for how this maps for a specific feed. |
 
 <Aside type="caution" title="Mid price is calculated, not sourced">
@@ -50,29 +49,14 @@ Top-of-Book streams use the [RWA Advanced (v11) schema](/data-streams/reference/
   underlying exchange.
 </Aside>
 
-## Perpetual Mark Price
-
-Perpetual Mark Price streams report the mark price (and, where available, the index price) that an exchange uses internally for a perpetual futures contract — the reference price used for funding rate calculations and liquidation triggers on that venue.
-
-### Data sources
-
-| Exchange    | Public channel                                    | Mark price field                                 |
-| ----------- | -------------------------------------------------- | -------------------------------------------------- |
-| Binance     | `<symbol>@markPrice` (Mark Price Stream)           | `p` (mark price)                                   |
-| Hyperliquid | `activeAssetCtx`                                   | `ctx.markPx`                                       |
-
-### Schema
-
-Perpetual Mark Price streams use the [Crypto Advanced (v3) schema](/data-streams/reference/report-schema-v3). The exchange's reported mark price populates the `price` field.
-
 ## Data freshness and update frequency
 
-Both stream types are **event-driven**: a new observation is only published when the underlying exchange emits a new datapoint on its public channel. There is no fixed polling interval.
+Top-of-Book streams are **event-driven**: a new observation is only published when the underlying exchange emits a new datapoint on its public channel. There is no fixed polling interval.
 
 Expected end-to-end latency from the underlying exchange to node operators is approximately 500ms. This is a typical figure, not a guaranteed performance bound, and can vary based on network conditions and exchange-side publishing behavior.
 
 ## Risk considerations
 
-- **Single-source dependency**: Each Top-of-Book or Mark Price feed is sourced from one exchange. If that exchange stops publishing updates, there is no automatic fallback to another venue for that feed.
-- **Venue-specific pricing**: Top-of-Book and Mark Price reflect one exchange's order book or internal mark price calculation, which can diverge from prices on other venues, especially during periods of low liquidity or high volatility on the source exchange.
-- **Review [Developer Responsibilities](/data-streams/developer-responsibilities)** before integrating either stream type into a production application.
+- **Single-source dependency**: Each Top-of-Book feed is sourced from one exchange. If that exchange stops publishing updates, there is no automatic fallback to another venue for that feed.
+- **Venue-specific pricing**: Top-of-Book reflects one exchange's order book, which can diverge from prices on other venues, especially during periods of low liquidity or high volatility on the source exchange.
+- **Review [Developer Responsibilities](/data-streams/developer-responsibilities)** before integrating Top-of-Book streams into a production application.

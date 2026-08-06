@@ -1356,7 +1356,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/concepts/dex-state-price-streams",
         },
         {
-          title: "Crypto Top-of-Book and Mark Price Streams",
+          title: "Crypto Top-of-Book Streams",
           url: "data-streams/concepts/crypto-top-of-book-and-mark-price",
         },
       ],
