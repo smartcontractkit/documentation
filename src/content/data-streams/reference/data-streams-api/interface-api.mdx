@@ -9,7 +9,7 @@ metadata:
 ---
 
 import DataStreams from "@features/data-streams/common/DataStreams.astro"
-import { CopyText } from "@components"
+import { Aside, CopyText } from "@components"
 
 <DataStreams section="dsNotes" />
 
@@ -166,4 +166,12 @@ GET /api/v1/reports/page?feedID=<FeedID>&startTimestamp=<StartTimestamp>&limit=<
 | 400 Bad Request                          | This error is triggered when: <ul><li>There is any missing/malformed query argument.</li><li>Required headers are missing or provided with incorrect values.</li></ul>                                                                                                                                                                               |
 | 401 Unauthorized User                    | This error is triggered when: <ul><li>Authentication fails, typically because the HMAC signature provided by the client doesn't match the one expected by the server.</li><li>A user requests access to a stream without the appropriate permission or that does not exist.</li></ul>                                                                |
 | 500 Internal Server                      | Indicates an unexpected condition encountered by the server, preventing it from fulfilling the request. This error typically points to issues on the server side.                                                                                                                                                                                    |
+| 502 Bad Gateway / 503 Service Unavailable | Indicates a transient issue at one of the active-active origins, such as during routine maintenance rotation. These are expected occasionally and are not an indication of a service outage — retry the request. See [Retry Guidance for REST Requests](/data-streams/architecture#retry-guidance-for-rest-requests).                              |
 | 206 Missing data (`/bulk` endpoint only) | Indicates that at least one stream ID data is missing from the report. E.g., you requested a report for stream IDs `<feedID1>`, `<feedID2>`, and `<feedID3>` at a given timestamp. If data for `<feedID2>` is missing from the report (not available yet at the specified timestamp), you get `[<feedID1 data>, <feedID3 data>]` and a 206 response. |
+
+<Aside type="note" title="Retryable vs. non-retryable errors">
+  `5xx` responses and network-level errors (timeouts, connection resets) are generally transient and should be
+  retried with exponential backoff. `4xx` responses (`400`, `401`) indicate a problem with the request itself and
+  will not succeed on retry without changing the request. See [Retry Guidance for REST
+  Requests](/data-streams/architecture#retry-guidance-for-rest-requests) for details.
+</Aside>
