@@ -31,17 +31,16 @@ export const BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES = new Set<string>(["0x369c6
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isCoinbaseTokenizedEquityFeed(feed: any): boolean {
   if (feed.docs?.productTypeCode !== "primaryTokenizedPrice") return false
+  // Only include feeds from the Coinbase chain/feedwatchers on Base. This
+  // excludes Robinhood feeds whose underlying stock happens to be Coinbase
+  // (e.g. "Coinbase (Robinhood Tokenized Equity)" for the COIN ticker).
+  if (feed.docs?.blockchainName !== "Base") return false
 
   const assetName = (feed.assetName || "").toLowerCase()
   const feedName = (feed.name || "").toLowerCase()
   const ens = (feed.ens || "").toLowerCase()
 
-  return (
-    feed.docs?.blockchainName === "Base" ||
-    assetName.includes("coinbase") ||
-    feedName.startsWith("coinbase ") ||
-    ens.startsWith("coinbase-")
-  )
+  return assetName.includes("coinbase") || feedName.startsWith("coinbase ") || ens.startsWith("coinbase-")
 }
 
 /**
