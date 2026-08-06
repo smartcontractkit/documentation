@@ -153,9 +153,7 @@ Automatic failover handles availability and traffic routing in the following sce
 
 ### Retry Guidance for REST Requests
 
-Origins in the active-active deployment are periodically taken out of rotation for routine maintenance, as part of normal operations. The load balancer stops routing new traffic to an origin before this happens, but a request already in flight to that origin, or one that lands in the brief window around the transition, can receive a transient error such as a `502`, `503`, or a connection timeout. This is expected behavior in an active-active system, not an indication that the service is down — the same request retried immediately typically succeeds against a healthy origin.
-
-Because of this, **your REST integration must implement retries** rather than treating a single failed request as a hard failure:
+**Your REST integration must implement retries** rather than treating a single failed request as a hard failure:
 
 - Retry on `5xx` responses and network-level errors (timeouts, connection resets). These are generally transient.
 - Do not retry on `4xx` responses (for example `400` or `401`) — these indicate a problem with the request itself, such as invalid parameters or authentication, and will not succeed on retry without a change to the request.
