@@ -136,6 +136,17 @@ Consumers must treat `marketStatus = 5` (Closed) as a valid state and define det
 
 Markets may stop updating due to exchange outages, circuit breakers, trading halts, or corporate actions. The `marketStatus` field will continue reflecting the status that it normally would. Use the `lastSeenTimestampNs` field (which reflects the timestamp of the last update for the `mid` price only) to detect staleness by comparing it against the current time. When this timestamp stops advancing, it indicates the underlying venue has stopped providing updates.
 
+##### Why `lastSeenTimestampNs` can pause, or move non-monotonically, without an outage
+
+`mid` and its timestamp `lastSeenTimestampNs` are derived from a consensus across the data providers configured for a feed, and both only update when that consensus changes. Two related behaviors follow from this, especially on feeds configured with a small number of data providers:
+
+- **Pausing:** Individual data providers do not all publish at the same rate — some sourcing venues naturally have lower update frequency during certain windows, particularly for less liquid names or during thinner trading periods. When enough providers are momentarily quiet, the consensus value — and its timestamp — can hold steady for longer than you might expect, even though the DON is healthy and continuing to produce reports.
+- **Non-monotonic movement:** Which providers are actually included in a given report can also change from one report to the next, for example if a provider times out on one report and returns on the next. Because the timestamp is derived from whichever providers are included, it is not guaranteed to strictly increase — it can occasionally shift to an earlier value than the previous report's timestamp.
+
+In the normal case, expect `lastSeenTimestampNs` to advance in line with the update cadence for a given symbol and session. Brief exceptions — a momentary pause or an occasional shift to an earlier value — are a known consequence of provider-side availability on low-DP-count feeds, not a sign that the feed or DON is down, and a single occurrence is not by itself cause for concern.
+
+A single stalled or backward-moving report is expected and not, by itself, cause for concern. Treat it as a potential issue only if the behavior recurs across multiple consecutive reports, or the pause exceeds your own configured staleness threshold (see the staleness check example in [Stream Switching Example Logic](#stream-switching-example-logic)). At that point, apply your staleness safeguards regardless of whether the eventual cause turns out to be provider behavior or something else. Do not assume `lastSeenTimestampNs` strictly increases between reports.
+
 Phase-specific feeds can introduce unique behavior due to venue-specific operational characteristics and market microstructure. The following are some examples of scenarios that may occur during session transitions or under specific market conditions:
 
 ##### Regular Hours Session: Delayed Quote Availability at Market Open

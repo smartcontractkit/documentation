@@ -32,6 +32,17 @@ RWA streams adhere to the report schema outlined below.
   indicate when data was last recorded, not whether the market is currently active.
 </Aside>
 
+<Aside type="note" title="lastUpdateTimestamp is not guaranteed to be monotonic">
+  `lastUpdateTimestamp` reflects the median timestamp across the data providers included in a given report. In the
+  normal case, expect this value to advance with each report. On feeds with a small number of configured data
+  providers, a brief exception can occur: if a provider is excluded from one report (for example, due to a timeout)
+  and included in the next, the median can shift to an earlier value than the previous report. A single occurrence
+  is not by itself cause for concern — treat it as a potential issue only if the non-monotonic behavior persists
+  across multiple consecutive reports. Do not assume `lastUpdateTimestamp` strictly increases from one report to the
+  next. If your application needs a timestamp that reliably advances, use `observationsTimestamp` instead, and use
+  `marketStatus` to determine whether a market is open.
+</Aside>
+
 v8 streams use a three-value mapping:
 
 | Value | Status      | Description                        |
