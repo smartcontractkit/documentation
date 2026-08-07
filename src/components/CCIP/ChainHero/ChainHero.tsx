@@ -523,7 +523,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
                       </div>
                     )}
 
-                    {network.tokenAdminRegistry && (
+                    {network.chain === "canton-testnet" && network.tokenAdminRegistry && (
                       <div className="ccip-chain-hero__details__item">
                         <div className="ccip-chain-hero__details__label">
                           Token admin registry
