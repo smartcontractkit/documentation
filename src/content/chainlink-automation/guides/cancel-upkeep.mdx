@@ -1,0 +1,82 @@
+---
+section: automation
+date: Last Modified
+title: "Cancel an Upkeep and Withdraw Funds"
+isMdx: true
+whatsnext:
+  {
+    "Manage your Upkeeps": "/chainlink-automation/guides/manage-upkeeps",
+    "Automation Billing and Costs": "/chainlink-automation/overview/automation-economics",
+    "Migrate from Chainlink Automation to Chainlink CRE": "/cre/reference/cla-migration",
+  }
+---
+
+import { Aside } from "@components"
+import ChainlinkAutomation from "@features/chainlink-automation/common/ChainlinkAutomation.astro"
+
+<ChainlinkAutomation callout="shutdown" />
+
+Cancelling an Upkeep and withdrawing its remaining LINK balance is a two-step onchain process: first you cancel the Upkeep, then—after a network-specific delay—you withdraw the funds. Only the Upkeep admin can perform these actions.
+
+## Prerequisites
+
+- **Your Upkeep ID.** If you don't know it, see [Find your Upkeep ID](#find-your-upkeep-id) below.
+- **The Registry address** for the network your Upkeep is on. Find it in the [Supported Networks](/chainlink-automation/overview/supported-networks) reference.
+- **A wallet you can sign transactions with** using the Upkeep admin address. The examples below use [Foundry's `cast`](https://getfoundry.sh/cast/overview) with a raw private key, but you can substitute a keystore or Ledger. See [Sending Transactions](https://www.getfoundry.sh/cast/sending-transactions) in the Foundry docs for the equivalent `--account` or `--ledger` flags.
+
+## Find your Upkeep ID
+
+If you already know your Upkeep ID, skip to [Cancel the Upkeep](#cancel-the-upkeep).
+
+- **Using the Automation App:** Go to the [Chainlink Automation App](https://automation.chain.link), connect the admin wallet, and open the Upkeep under **My Upkeeps**. The Upkeep ID is shown on the Upkeep's detail page.
+- **Using the lookup spreadsheet:** If you no longer have access to the admin wallet's session or the Upkeep isn't showing in the app, look up your Upkeep ID by owner address in the [Chainlink Automation Upkeep ID Registry](https://docs.google.com/spreadsheets/d/1jSg_KEvskbhlcFUbpKKN82-YuF3sKGSbQcaZFcCy-7c/edit?gid=599726699#gid=599726699).
+
+## Cancel the Upkeep
+
+Call `cancelUpkeep` on the Registry contract, passing your Upkeep ID:
+
+```shell
+cast send KEEPER_REGISTRY_ADDRESS \
+"cancelUpkeep(uint256)" \
+UPKEEP_ID \
+--rpc-url $CHAIN_RPC_URL \
+--private-key $PRIVATE_KEY
+```
+
+Where:
+
+- `KEEPER_REGISTRY_ADDRESS` is the address of the Registry contract for your network.
+- `UPKEEP_ID` is your numerical Upkeep ID.
+- `CHAIN_RPC_URL` is the HTTP RPC URL for your network.
+
+<Aside type="note" title="Cancellation fee">
+  If your Upkeep has not spent an aggregated total of 0.1 LINK in fees over its lifetime, a 0.1 LINK cancellation fee is
+  deducted from its balance. See [Withdrawing
+  funds](/chainlink-automation/overview/automation-economics#withdrawing-funds) for details and examples.
+</Aside>
+
+## Wait for the cancellation delay
+
+After the cancel transaction confirms, you must wait for a delay—measured in blocks and varying by network—before you can withdraw funds. Attempting to withdraw before the delay has passed will revert.
+
+## Withdraw the funds
+
+Once the delay has passed, call `withdrawFunds` on the same Registry contract to send the remaining LINK balance to an address of your choice:
+
+```shell
+cast send KEEPER_REGISTRY_ADDRESS \
+"withdrawFunds(uint256,address)" \
+UPKEEP_ID \
+TO_ADDRESS \
+--rpc-url $CHAIN_RPC_URL \
+--private-key $PRIVATE_KEY
+```
+
+Where:
+
+- `KEEPER_REGISTRY_ADDRESS` is the address of the Registry contract for your network.
+- `UPKEEP_ID` is your numerical Upkeep ID.
+- `TO_ADDRESS` is the wallet address that should receive the withdrawn LINK.
+- `CHAIN_RPC_URL` is the HTTP RPC URL for your network.
+
+Once this transaction confirms, the Upkeep's remaining LINK balance is transferred to `TO_ADDRESS` and the Upkeep is fully decommissioned.
