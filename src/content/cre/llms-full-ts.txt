@@ -4392,18 +4392,18 @@ For **why** you might need a Confidential Workflow, see [Confidential Workflows 
 - **[Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential)**: Register a TEE handler, fetch secrets dynamically, and cross back to the DON for anything that needs consensus.
 
 <Aside type="note" title="Minimal example">
-  This guide covers the core mechanics with a minimal example. For complete, production-shaped workflows, see the
-  example workflows below.
+  This guide covers the core mechanics with a minimal example. See the [Hello Confidential Workflows
+  template](/cre-templates/hello-confidential-workflows) for the complete code, or the example workflows below for
+  production-shaped workflows.
 </Aside>
 
 ## Example workflows
 
-Complete TypeScript reference implementations, in
-[`smartcontractkit/confidential-compute-examples`](https://github.com/smartcontractkit/confidential-compute-examples):
+Complete TypeScript reference implementations, available as templates:
 
-- **[Automated Liquidation Protection](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/automated-liquidation-protection)**: Fetches exchange and model secrets, reads policy and risk state, asks an LLM for defensive actions, enforces policy constraints, and executes approved actions.
-- **[Automated Portfolio Rebalancing](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/automated-portfolio-rebalancing)**: Reads policy, holdings, prices, and volatility, asks an LLM for trade proposals, enforces slippage and reserve-floor constraints, and routes approved trades.
-- **[AI Smart Contract Audit Firewall](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/ai-audit-firewall)**: Runs two independent LLM audits on a proposed transaction, merges risk flags into an ALLOW/DENY/MANUAL_REVIEW verdict, and optionally delivers the verdict onchain with `EVMClient`.
+- **[Automated Liquidation Protection](/cre-templates/automated-liquidation-protection)**: Fetches exchange and model secrets, reads policy and risk state, asks an LLM for defensive actions, enforces policy constraints, and executes approved actions.
+- **[Automated Portfolio Rebalancing](/cre-templates/automated-portfolio-rebalancing)**: Reads policy, holdings, prices, and volatility, asks an LLM for trade proposals, enforces slippage and reserve-floor constraints, and routes approved trades.
+- **[AI Smart Contract Audit Firewall](/cre-templates/ai-audit-firewall)**: Runs two independent LLM audits on a proposed transaction, merges risk flags into an ALLOW/DENY/MANUAL_REVIEW verdict, and optionally delivers the verdict onchain with `EVMClient`.
 
 ---
 
@@ -8268,30 +8268,25 @@ Confidential Workflows apply anywhere the computation behind a decision—not ju
 
 A workflow monitors a leveraged position's collateral health and closes or adjusts it before liquidation. Running the risk thresholds and defensive strategy inside the enclave is designed to prevent them from being predicted and front-run.
 
-<Aside type="tip" title="Reference example available">
-  See the complete [Automated Liquidation Protection
-  example](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/automated-liquidation-protection)
-  (TypeScript).
+<Aside type="tip" title="Reference template available">
+  See the [Automated Liquidation Protection template](/cre-templates/automated-liquidation-protection) (TypeScript).
 </Aside>
 
 ### Automated portfolio rebalancing
 
 A workflow rebalances a portfolio toward target allocations once drift crosses a threshold. Running the allocation policy and trade-sizing decisions inside the enclave is designed to prevent the rebalance from being anticipated and traded against.
 
-<Aside type="tip" title="Reference example available">
-  See the complete [Automated Portfolio Rebalancing
-  example](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/automated-portfolio-rebalancing)
-  (TypeScript).
+<Aside type="tip" title="Reference template available">
+  See the [Automated Portfolio Rebalancing template](/cre-templates/automated-portfolio-rebalancing) (TypeScript).
 </Aside>
 
 ### LLM smart contract audit firewall
 
 A workflow evaluates a proposed transaction or contract against one or more LLMs for risk signals before allowing it to proceed. The evaluation criteria and third-party API credentials stay inside the enclave.
 
-<Aside type="tip" title="Reference example available">
-  See the complete [AI Smart Contract Audit Firewall
-  example](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/ai-audit-firewall) (TypeScript,
-  with optional onchain delivery via `EVMClient`).
+<Aside type="tip" title="Reference template available">
+  See the [AI Smart Contract Audit Firewall template](/cre-templates/ai-audit-firewall) (TypeScript, with optional
+  onchain delivery via `EVMClient`).
 </Aside>
 
 ### Proprietary or confidential data computation
@@ -14036,7 +14031,7 @@ runtime.log("Confidential workflow complete")
 return text(response)
 ```
 
-See [Generating Reports: Single Values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) for the full delivery flow (encoding, `writeReport`, etc.). For a complete example that encodes a payload with the `hexToBase64` helper and delivers it onchain with `evmClient.writeReport(donRuntime, ...)`, see the [AI Smart Contract Audit Firewall example](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/ai-audit-firewall).
+See [Generating Reports: Single Values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) for the full delivery flow (encoding, `writeReport`, etc.). For a complete example that encodes a payload with the `hexToBase64` helper and delivers it onchain with `evmClient.writeReport(donRuntime, ...)`, see the [AI Smart Contract Audit Firewall template](/cre-templates/ai-audit-firewall).
 
 <Aside type="caution" title="Data passed to usingTheDons() is no longer confidential">
   Once you pass a value into a capability call on the runtime returned by
