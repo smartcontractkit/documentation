@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Create type-safe contract interfaces: learn to generate TypeScript bindings from smart contract ABIs for safer, cleaner workflow code."
   datePublished: "2026-03-05"
-  lastModified: "2026-03-17"
+  lastModified: "2026-08-07"
 ---
 
 import { Aside } from "@components"
@@ -334,12 +334,129 @@ You can import from the barrel file to keep imports clean:
 import { Storage, newStorageMock } from "../contracts/evm/ts/generated"
 ```
 
+## Using mock bindings for testing
+
+The `<ContractName>_mock.ts` files allow you to test your workflows without deploying or interacting with real contracts. Each mock provides:
+
+- **Test-friendly factory**: `new<ContractName>Mock(address, evmMock)` creates a mock instance
+- **Mockable methods**: Set custom function implementations for each contract `view`/`pure` function
+- **Type safety**: The same input/output types as the real binding
+
+Mocks are used together with the `@chainlink/cre-sdk/test` module, which provides `newTestRuntime()` (a `Runtime` you can call your handlers with directly, outside the WASM sandbox) and `EvmMock` (a fake EVM client you attach contract mocks to). Tests run with [Bun's built-in test runner](https://bun.com/docs/cli/test), using `describe`/`expect` from `bun:test` and the `test` helper from `@chainlink/cre-sdk/test`.
+
+### Complete example: Testing a workflow with mocks
+
+Let's say you have a workflow in `my-workflow/workflow.ts` that reads from a `Storage` contract. Create a test file named `workflow.test.ts` in the same directory.
+
+<Aside type="note" title="Adapt to your workflow">
+  This example demonstrates the mock setup pattern. The `Config` type and file names shown are examples — adapt them to
+  match your workflow's structure. The key concepts (creating mocks, setting behavior, calling your handler directly)
+  remain the same regardless of your specific config.
+</Aside>
+
+```typescript
+// File: my-workflow/workflow.test.ts
+import { describe, expect } from "bun:test"
+import { EvmMock, newTestRuntime, test } from "@chainlink/cre-sdk/test"
+import type { Address } from "viem"
+
+import { newStorageMock } from "../contracts/evm/ts/generated/Storage_mock"
+import { onCronTrigger } from "./workflow"
+import type { Config } from "./workflow"
+
+const CHAIN_SELECTOR = 16015286601757825753n // ethereum-testnet-sepolia
+const STORAGE_ADDRESS = "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4" as Address
+
+describe("onCronTrigger", () => {
+  test("reads the storage value and logs it", async () => {
+    // 1. Set up your config
+    const config: Config = {
+      chainSelector: CHAIN_SELECTOR.toString(),
+      storageAddress: STORAGE_ADDRESS,
+    }
+
+    // 2. Create a mock EVM client for the given chain
+    const evmMock = EvmMock.testInstance(CHAIN_SELECTOR)
+
+    // 3. Create a mock Storage contract and set up mock behavior
+    const storageMock = newStorageMock(STORAGE_ADDRESS, evmMock)
+    storageMock.get = () => 42n
+
+    // 4. Create a test runtime and attach your config to it
+    const runtime = newTestRuntime()
+    runtime.config = config
+
+    // 5. Call your handler directly — no simulator or WASM build required.
+    //    Because your workflow constructs its EVMClient from `runtime`, and the
+    //    mock is registered on that chain selector, the handler transparently
+    //    uses the mocked Get() function.
+    const result = onCronTrigger(runtime)
+
+    expect(result).toBe("42")
+    expect(runtime.getLogs()).toContain("Storage value: 42")
+  })
+})
+```
+
+### Running your tests
+
+From your workflow directory (or your project root, if you point Bun at the workflow path), run:
+
+```bash
+# Run every *.test.ts file discovered by Bun
+bun test
+
+# Run a specific test file
+bun test workflow.test.ts
+
+# Run tests matching a name pattern
+bun test --test-name-pattern "reads the storage value"
+```
+
+**Expected output:**
+
+```bash
+bun test v1.2.x
+
+workflow.test.ts:
+✓ onCronTrigger > reads the storage value and logs it [1.20ms]
+
+ 1 pass
+ 0 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [12.00ms]
+```
+
+The test passes, confirming your mock contract is set up correctly and your handler produces the expected result using the mocked contract — all without running the simulator or deploying anything.
+
+### Best practices for workflow testing
+
+1. **Name test files correctly**: Use `<name>.test.ts` (e.g., `workflow.test.ts`) and place them next to the workflow file they cover.
+1. **Call handlers directly**: Import and call your `on<Trigger>` functions directly with a `newTestRuntime()` — you don't need `initWorkflow` or the simulator to unit test handler logic.
+1. **Mock all external dependencies**: Use generated contract mocks (`new<ContractName>Mock`) for EVM calls, and assert on `runtime.getLogs()` instead of relying on console output.
+1. **Test different scenarios**: Write separate `test(...)` cases for success cases, error cases (e.g., a required config field missing), and edge cases.
+1. **Test `initWorkflow` separately**: Assert that `initWorkflow(config)` returns the handlers you expect, wired to the right triggers (e.g., checking `handlers[0].trigger.config.schedule`), independent of testing the handler logic itself.
+
+### Complete reference example
+
+For a comprehensive example showing how to test workflows with multiple triggers (cron, EVM log) and multiple mock contracts, see the Custom Data Feed demo workflow's `workflow.test.ts` file.
+
+To generate this example:
+
+1. Run `cre init` from your project directory
+1. Select **TypeScript** as your language
+1. Choose the **"Custom data feed: Updating on-chain data periodically using offchain API data"** template
+1. After initialization completes, examine the generated `workflow.test.ts` file in your workflow directory
+
+This generated test file demonstrates real-world patterns for testing complex workflows with multiple capabilities and mock contracts.
+
 ## Best practices
 
 1. **Regenerate when needed**: Re-run `cre generate-bindings evm` whenever you update your contract ABIs. Do not edit generated files by hand.
 1. **Handle errors**: The write and trigger methods will throw if encoding or network calls fail. Wrap them in try/catch blocks in your workflow handlers.
 1. **Use explicit `--language` in CI**: If your project has both `go.mod` and `package.json`, auto-detection may be ambiguous. Pass `--language typescript` explicitly in CI pipelines.
 1. **Organize ABIs**: Keep your `.abi` files clearly named in `contracts/evm/src/abi/`. The file name determines the generated class name.
+1. **Use mocks in tests**: Leverage the generated mock bindings to test your workflows in isolation without needing deployed contracts or the simulator.
 
 ## Where to go next
 
