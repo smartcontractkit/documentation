@@ -15,6 +15,7 @@ whatsnext:
 
 import SchemaFieldsTable from "@features/data-streams/common/SchemaFieldsTable.astro"
 import { FeedList } from "@features/feeds"
+import { Aside } from "@components"
 
 Asia-Pacific (APAC) Equities streams provide high-frequency, transparent price data for major Asia-Pacific indices and single-name stocks. These streams enable onchain protocols to build liquid, capital-efficient markets around globally relevant APAC assets, including sectors such as AI, semiconductors, and consumer goods.
 
@@ -27,6 +28,12 @@ Developers are responsible for choosing the appropriate feed and ensuring that t
 APAC Equities data is delivered using the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11).
 
 <SchemaFieldsTable schema="v11-apac" />
+
+<Aside type="note" title="lastTradedPrice availability varies by market">
+  `lastTradedPrice` is only populated where the underlying data provider supplies trade data. Korea and Japan are
+  quote-only markets, so `lastTradedPrice` is not meaningfully populated for those streams. China, Hong Kong, and
+  Taiwan streams source trade data in addition to quotes.
+</Aside>
 
 For `marketStatus` value mappings, see [Standard-hours feeds (v11)](/data-streams/reference/report-schema-v11#standard-hours-feeds). For exchange schedules, see [Market Hours (APAC Equities)](/data-streams/market-hours#apac-equities).
 
