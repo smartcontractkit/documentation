@@ -284,11 +284,12 @@ The value returned when the promise resolves.
 
 ### `SecretsProvider` interface
 
-The `SecretsProvider` interface is embedded in `Runtime`, which means `GetSecret` is available directly on the runtime object. It is also passed as a parameter to [`InitWorkflow`](#initworkflow), allowing you to access secrets during workflow initialization.
+The `SecretsProvider` interface is embedded in `Runtime`, which means `GetSecret` and `GetSecrets` are available directly on the runtime object. It is also passed as a parameter to [`InitWorkflow`](#initworkflow), allowing you to access secrets during workflow initialization.
 
 ```go
 type SecretsProvider interface {
     GetSecret(req *SecretRequest) Promise[*Secret]
+    GetSecrets(reqs []*SecretRequest) Promise[[]*Secret]
 }
 ```
 
@@ -312,6 +313,45 @@ func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
     logger.Info("Secret retrieved", "owner", secret.Owner)
 
     // Use secret.Value in your workflow logic
+    return "done", nil
+}
+```
+
+## `runtime.GetSecrets()`
+
+Fetches multiple secrets from the Vault DON in a single batch call. This is more efficient than calling `GetSecret()` repeatedly, and it avoids the sequential-fetch requirement of the single-secret API.
+
+**Signature:**
+
+```go
+runtime.GetSecrets(reqs []*SecretRequest) Promise[[]*Secret]
+```
+
+The promise resolves to a slice of [`Secret`](#secret) values, in the same order as the requests.
+
+**Behavior:**
+
+- **Returns an error on any failure**: If any secret in the batch cannot be retrieved, the promise resolves with an error that includes the failing secret ids and their error messages.
+- **Empty input**: Passing `nil` or an empty slice returns a promise that resolves to an empty slice.
+
+### Example
+
+```go
+import "github.com/smartcontractkit/cre-sdk-go/cre"
+
+func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
+    secrets, err := runtime.GetSecrets([]*cre.SecretRequest{
+        {Id: "API_KEY"},
+        {Id: "DB_URL"},
+    }).Await()
+    if err != nil {
+        return "", fmt.Errorf("failed to get secrets: %w", err)
+    }
+
+    apiKey := secrets[0].Value
+    dbUrl := secrets[1].Value
+
+    // Use the secrets in your workflow logic
     return "done", nil
 }
 ```

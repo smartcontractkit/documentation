@@ -68,6 +68,15 @@ const onCronTrigger = (runtime: TeeRuntime<Config>) => {
 }
 ```
 
+To fetch multiple secrets in a single call, use [`runtime.getSecrets()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimegetsecrets):
+
+```ts
+const secrets = runtime.getSecrets([{ id: "API_KEY" }, { id: "DB_URL" }]).result()
+
+const apiKey = secrets["API_KEY"].value
+const dbUrl = secrets["DB_URL"].value
+```
+
 <Aside type="note" title="No upfront secret declaration">
   Unlike Confidential HTTP's
   [`vaultDonSecrets`](/cre/reference/sdk/confidential-http-client-ts#confidentialhttprequest--confidentialhttprequestjson),

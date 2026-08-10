@@ -7,14 +7,13 @@ const SECRET_ADDRESS_NAME = "SECRET_ADDRESS"
 const API_KEY_NAME = "API_KEY"
 
 const onCronTrigger = (runtime: Runtime<Config>): string => {
-  // 1. Request the first secret
-  const secretAddress = runtime.getSecret({ id: SECRET_ADDRESS_NAME }).result()
+  // 1. Fetch both secrets in a single batch call
+  const secrets = runtime.getSecrets([{ id: SECRET_ADDRESS_NAME }, { id: API_KEY_NAME }]).result()
 
-  // 2. Request the second secret
-  const apiKey = runtime.getSecret({ id: API_KEY_NAME }).result()
-
-  // 3. Use your secrets
-  runtime.log(`Successfully fetched secrets! Address: ${secretAddress.value}, API Key: ${apiKey.value}`)
+  // 2. Use your secrets
+  runtime.log(
+    `Successfully fetched secrets! Address: ${secrets[SECRET_ADDRESS_NAME].value}, API Key: ${secrets[API_KEY_NAME].value}`
+  )
 
   return "Success"
 }

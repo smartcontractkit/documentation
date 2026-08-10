@@ -87,6 +87,20 @@ func onCronTrigger(config *Config, runtime cre.TeeRuntime, _ *cron.Payload) (str
 }
 ```
 
+To fetch multiple secrets in a single call, use [`runtime.GetSecrets()`](/cre/reference/sdk/confidential-workflows-client-go#runtimegetsecrets):
+
+```go
+secrets, err := runtime.GetSecrets([]*cre.SecretRequest{
+	{Id: "API_KEY"},
+	{Id: "DB_URL"},
+}).Await()
+if err != nil {
+	return "", fmt.Errorf("failed to get secrets: %w", err)
+}
+apiKey := secrets[0].Value
+dbUrl := secrets[1].Value
+```
+
 <Aside type="note" title="No upfront secret declaration">
   Unlike Confidential HTTP's
   [`VaultDonSecrets`](/cre/reference/sdk/confidential-http-client-go#confidentialhttpconfidentialhttprequest), there's
