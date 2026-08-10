@@ -1,0 +1,153 @@
+---
+section: dataFeeds
+date: "Last Modified"
+title: "Base Tokenized Equities (Coinbase B20)"
+metadata:
+  title: "Coinbase Tokenized Equity Feeds | Chainlink Data Feeds"
+  description: "Learn about Chainlink tokenized equity feeds for Coinbase B20 tokenized stocks on Base, including Total Return Value calculation, multiplier handling, and corporate action management."
+  keywords:
+    [
+      "Coinbase",
+      "B20",
+      "Tokenized Equities",
+      "Total Return Value",
+      "Multiplier",
+      "Corporate Actions",
+      "Oracle Pause",
+      "Base",
+    ]
+whatsnext:
+  {
+    "Smart Value Recapture (SVR) Feeds": "/data-feeds/svr-feeds",
+    "View Provider Catalog": "/data-feeds/tokenized-equity-feeds/providers",
+    "Learn about tokenized equity feeds": "/data-feeds/tokenized-equity-feeds",
+    "Find Price Feed Addresses": "/data-feeds/price-feeds/addresses",
+  }
+---
+
+import { Aside } from "@components"
+import TokenizedEquityFeeds from "@features/tokenized-equity-feeds/common/TokenizedEquityFeeds.astro"
+import { FeedList } from "@features/feeds"
+
+<TokenizedEquityFeeds section="tokenizedEquityNote" />
+
+Chainlink provides tokenized equity feeds for Coinbase tokenized stocks on Base. Each tokenized stock is a B20 token, Base's native token standard for real-world assets, an extension of ERC-20, identified by its contract address rather than its ticker. The corresponding Chainlink feed reports the Total Return Value of the token by combining the underlying equity's market price with a multiplier read from Coinbase's on-chain oracle registry.
+
+These feeds use the standard Chainlink V3 aggregator interface (`latestRoundData()`), so any consumer reads the published price through the proxy in the same way as a crypto price feed. They are push-based oracles intended for compliance reference pricing, protocol integration, and similar use cases.
+
+## Available Base tokenized equity feeds
+
+The following table shows the available Base tokenized equity feeds.
+
+<FeedList client:idle initialNetwork="base" dataFeedType="tokenizedEquity" tokenizedEquityProvider="coinbase" />
+
+## Total Return Value calculation
+
+Base tokenized equity feeds calculate the token price using the following formula:
+
+```
+Token Price = Underlying Equity Market Price × Multiplier
+```
+
+Where:
+
+- **Underlying Equity Market Price**: Sourced from Chainlink's 24/5 equity price feeds, which aggregate data across regular, pre-market, post-market, and overnight trading sessions.
+- **Multiplier**: Read from Coinbase's on-chain oracle registry on Base, which returns the multiplier and pause state for each token in a single call. The multiplier accounts for dividend conversions and corporate action adjustments (see [Corporate action handling](#corporate-action-handling-and-oracle-pause) below).
+
+The on-chain oracle registry sources the multiplier from the B20 tokens.
+
+The multiplier is WAD-scaled (a fixed-point number with 18 decimals). One B20 token does not permanently equal one share: the multiplier is the redemption ratio between the token and the underlying equity.
+
+This approach ensures the token price reflects the total return of the underlying equity, including dividend conversions and corporate action adjustments, rather than just the current market price per share.
+
+## How the multiplier works
+
+The multiplier accounts for events that change the relationship between token quantity and underlying equity value:
+
+| Event Type                   | Multiplier Behavior             | Example                 |
+| :--------------------------- | :------------------------------ | :---------------------- |
+| Dividend (converted)         | Small increase                  | Multiplier: 1.00 → 1.02 |
+| Stock split (10:1 example)   | Large increase                  | Multiplier: 1.0 → 10.0  |
+| Reverse split (1:10 example) | Large decrease                  | Multiplier: 10.0 → 1.0  |
+| Spin-offs                    | Adjustment to reflect new value | Varies by event         |
+
+Key behaviors of the B20 multiplier model:
+
+- **Cash dividends are converted to shares** of the underlying equity and reflected as a multiplier increase, rather than distributed as cash to the token holder. For example, after a dividend the multiplier may increase from 1.00 to 1.02, representing that 1 token is redeemable for 1.02 shares.
+- **Holder balances never change**. Corporate actions update the multiplier — there is no rebasing and there are no airdrops. A holder's raw token balance stays constant while its redemption value adjusts.
+- **Multiplier changes are observable on-chain**. `MultiplierUpdated` events record every change, and sensitive operations are wrapped in human-readable announcement events (`Announcement` / `EndAnnouncement`) that can be atomically bundled with the multiplier update they describe.
+
+{/* TODO: Add coinbase's staged-update mechanism. Include whether multiplier changes are staged in advance or applied atomically alongside announcement events. This section will be updated before publication. */}
+
+## Corporate action handling and oracle pause
+
+Corporate actions are coordinated by Coinbase as the asset issuer. Chainlink does not provide corporate-action calendar data or automated pause triggers; pause timing and multiplier updates are coordinated by Coinbase.
+
+Coinbase's oracle registry exposes the multiplier and a pause flag for each token, and the feed honors that pause flag:
+
+**Normal mode** (`paused == false`): The feed returns the current underlying equity market price multiplied by the current multiplier.
+
+**Paused mode** (`paused == true`): The feed stops publishing new prices and holds the last known good value. This prevents an inconsistent token price from being published while a corporate action is in progress and the underlying price and multiplier are temporarily out of sync.
+
+During a corporate action, the issuer-driven workflow keeps the token price continuous:
+
+1. Coinbase pauses the oracle through the registry, freezing the feed at the last known good value.
+1. After the corporate action takes effect and Coinbase confirms that both the underlying market price and the multiplier reflect the new values correctly, the registry is unpaused.
+1. The feed resumes publishing using the updated multiplier.
+
+For example, during a 10:1 stock split:
+
+| Stage         | Stock Price | Multiplier    | Token Price   |
+| :------------ | :---------- | :------------ | :------------ |
+| Before split  | $200        | 1.0           | $200          |
+| During pause  | Frozen      | Pending: 10.0 | $200 (frozen) |
+| After unpause | $20         | 10.0          | $200          |
+
+The token price remains continuous at $200 throughout the event, even though the underlying equity market price dropped from $200 to $20.
+
+## Example scenarios
+
+**Normal operation**
+
+```
+- Stock price: $200 → $201
+- Multiplier: 1.00 (unchanged)
+- Token price: $201
+```
+
+**Dividend conversion** (small multiplier increase)
+
+```
+- Stock price: $200
+- Multiplier: 1.00 → 1.02 (cash dividend converted to shares)
+- Token price: $204
+```
+
+**Stock split** (10:1, scheduled corporate action)
+
+```
+1. Coinbase pauses the oracle through the registry; the feed freezes at the current token price
+2. The corporate action executes, wrapped in on-chain announcement events
+3. Market reopens with the underlying stock price at $20 (post-split)
+4. Coinbase confirms alignment and unpauses the registry
+5. Multiplier becomes 10.0, token price = $20 × 10 = $200 (continuous)
+```
+
+**Split with timing mismatch** (stock price updates before the multiplier)
+
+```
+- Registry paused; multiplier not yet updated
+- Underlying stock price = $20, multiplier still 1.0
+- Result: Feed remains frozen at the pre-pause price until Coinbase unpauses the registry
+```
+
+This fail-safe behavior prevents incorrect token prices from being published when the underlying stock price and the multiplier are temporarily out of sync.
+
+## Off-hours and session behavior
+
+Base tokenized equity feeds are configured as 24/5 tokenized equity feeds (regular, pre-market, post-market, and overnight sessions), where underlying liquidity and session data quality support it. Integrators should be aware of standard tokenized equity behavior:
+
+- **Off-hours / closed sessions**: When underlying equity markets are closed (weekends, holidays, thin overnight windows), the feed holds the last close even though the contract remains callable via `latestRoundData()`. These feeds do not have heartbeats during off-hours.
+- **Staleness checks**: Integrators should read `updatedAt` and implement staleness bounds appropriate to their use case.
+
+See [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds) for the shared behavioral model across providers.

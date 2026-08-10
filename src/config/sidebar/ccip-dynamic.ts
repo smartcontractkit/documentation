@@ -776,60 +776,60 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
           },
         ],
       },
-      {
-        title: "Source",
-        url: "ccip/tutorials/canton/source",
-        chainTypes: ["canton"],
-        children: [
-          {
-            title: "Prerequisites",
-            url: "ccip/tutorials/canton/source/prerequisites",
-            chainTypes: ["canton"],
-          },
-          {
-            title: "Token Transfers",
-            url: "ccip/tutorials/canton/source/token-transfers",
-            chainTypes: ["canton"],
-          },
-          {
-            title: "Arbitrary Messaging",
-            url: "ccip/tutorials/canton/source/arbitrary-messaging",
-            chainTypes: ["canton"],
-          },
-          {
-            title: "Programmable Token Transfers",
-            url: "ccip/tutorials/canton/source/programmable-token-transfers",
-            chainTypes: ["canton"],
-          },
-        ],
-      },
-      {
-        title: "Destination",
-        url: "ccip/tutorials/canton/destination",
-        chainTypes: ["canton"],
-        children: [
-          {
-            title: "Prerequisites",
-            url: "ccip/tutorials/canton/destination/prerequisites",
-            chainTypes: ["canton"],
-          },
-          {
-            title: "Token Transfers",
-            url: "ccip/tutorials/canton/destination/token-transfers",
-            chainTypes: ["canton"],
-          },
-          {
-            title: "Arbitrary Messaging",
-            url: "ccip/tutorials/canton/destination/arbitrary-messaging",
-            chainTypes: ["canton"],
-          },
-          {
-            title: "Programmable Token Transfers",
-            url: "ccip/tutorials/canton/destination/programmable-token-transfers",
-            chainTypes: ["canton"],
-          },
-        ],
-      },
+      // {
+      //   title: "Source",
+      //   url: "ccip/tutorials/canton/source",
+      //   chainTypes: ["canton"],
+      //   children: [
+      //     {
+      //       title: "Prerequisites",
+      //       url: "ccip/tutorials/canton/source/prerequisites",
+      //       chainTypes: ["canton"],
+      //     },
+      //     {
+      //       title: "Token Transfers",
+      //       url: "ccip/tutorials/canton/source/token-transfers",
+      //       chainTypes: ["canton"],
+      //     },
+      //     {
+      //       title: "Arbitrary Messaging",
+      //       url: "ccip/tutorials/canton/source/arbitrary-messaging",
+      //       chainTypes: ["canton"],
+      //     },
+      //     {
+      //       title: "Programmable Token Transfers",
+      //       url: "ccip/tutorials/canton/source/programmable-token-transfers",
+      //       chainTypes: ["canton"],
+      //     },
+      //   ],
+      // },
+      // {
+      //   title: "Destination",
+      //   url: "ccip/tutorials/canton/destination",
+      //   chainTypes: ["canton"],
+      //   children: [
+      //     {
+      //       title: "Prerequisites",
+      //       url: "ccip/tutorials/canton/destination/prerequisites",
+      //       chainTypes: ["canton"],
+      //     },
+      //     {
+      //       title: "Token Transfers",
+      //       url: "ccip/tutorials/canton/destination/token-transfers",
+      //       chainTypes: ["canton"],
+      //     },
+      //     {
+      //       title: "Arbitrary Messaging",
+      //       url: "ccip/tutorials/canton/destination/arbitrary-messaging",
+      //       chainTypes: ["canton"],
+      //     },
+      //     {
+      //       title: "Programmable Token Transfers",
+      //       url: "ccip/tutorials/canton/destination/programmable-token-transfers",
+      //       chainTypes: ["canton"],
+      //     },
+      //   ],
+      // },
     ],
   },
   {
