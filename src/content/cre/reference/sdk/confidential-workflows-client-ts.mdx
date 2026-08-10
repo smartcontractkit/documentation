@@ -1,0 +1,211 @@
+---
+section: cre
+title: "SDK Reference: Confidential Workflows Client"
+date: Last Modified
+sdkLang: "ts"
+pageId: "reference-sdk-confidential-workflows-client"
+metadata:
+  description: "Reference for the TypeScript Confidential Workflows client: handlerInTee, TeeRuntime, and TEE constraint types for running workflow logic inside a secure enclave."
+  datePublished: "2026-07-21"
+  lastModified: "2026-07-28"
+---
+
+import { Aside } from "@components"
+
+`handlerInTee` registers a handler whose callback runs inside a secure [enclave](/cre/key-terms#enclave)—a running instance of a [TEE](/cre/key-terms#tee-trusted-execution-environment)—receiving a `TeeRuntime` instead of a `Runtime`. Unlike the regular `handler`, secrets are fetched dynamically at runtime from the [Vault DON](/cre/key-terms#vault-don) with `runtime.getSecret()` and any operation that needs Workflow DON consensus must explicitly cross over with `runtime.usingTheDons()`.
+
+- For use cases and a conceptual overview, see [Confidential Workflows in CRE](/cre/concepts/confidential-workflows)
+- **Guide:** [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-ts)
+
+<Aside type="caution" title="Beta capability">
+  This API requires enrollment in the Confidential Workflows private beta through your Chainlink account team—see
+  [Requesting Confidential Workflows Access](/cre/account/confidential-workflows-access).
+</Aside>
+
+## Quick reference
+
+| Method                                           | Description                                                                          |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| [`handlerInTee`](#handlerintee)                  | Registers a handler whose callback runs inside a TEE.                                |
+| [`runtime.getSecret`](#runtimegetsecret)         | Fetches a single secret dynamically, inside the enclave.                             |
+| [`runtime.usingTheDons`](#runtimeusingthedons)   | Returns a regular `Runtime` for operations that need DON consensus.                  |
+| [`runtime.reportFromDon`](#runtimereportfromdon) | Generates a report from the DON directly, without a full `usingTheDons()` crossover. |
+
+## Core types
+
+### `TeeRuntime<C>`
+
+The runtime passed to a callback registered with `handlerInTee`. Requests made through it execute inside the enclave; requests made through the runtime returned by `usingTheDons()` are routed outside the enclave to the Workflow DON.
+
+```ts
+interface TeeRuntime<C> extends BaseRuntime<C>, SecretsProvider {
+  reportFromDon(input: ReportRequest | ReportRequestJson): { result: () => Report }
+  usingTheDons(): Runtime<C>
+}
+```
+
+`BaseRuntime<C>` provides `config`, `now()`, `log()`, and `emitMetric()`, same as on a regular `Runtime<C>`. `SecretsProvider` provides `getSecret()`.
+
+<Aside type="note" title="No batch getSecrets in TypeScript">
+  Unlike the Go SDK (which has both `GetSecret` and a batch `GetSecrets`), the TypeScript `SecretsProvider` currently
+  exposes only `getSecret()`. Fetch secrets one at a time.
+</Aside>
+
+### `TeeConstraint`
+
+Describes which TEEs a handler will accept. Pass one of the following as the third argument to `handlerInTee`:
+
+| Shape                                | Description                                                                |
+| ------------------------------------ | -------------------------------------------------------------------------- |
+| `{}`                                 | Accepts any registered TEE, in any region.                                 |
+| `{ regions: [...] }`                 | Accepts any TEE, restricted to the listed regions.                         |
+| `[{ tee: 'nitro', regions: [...] }]` | Accepts specific TEE types, each optionally restricted to its own regions. |
+
+```ts
+// Accept any TEE, any region
+{
+}
+
+// Accept any TEE, restricted to a region
+{
+  regions: ["us-west-2"]
+}
+
+// Accept only Nitro, restricted to a region
+;[{ tee: "nitro", regions: ["us-west-2"] }]
+```
+
+Nitro (`tee: 'nitro'`) is currently the only registered TEE type, and `'us-west-2'` is currently the only supported region—check your installed SDK version if you expect otherwise, since this is an actively evolving API.
+
+## Registering a handler
+
+### `handlerInTee`
+
+Registers a handler whose callback runs inside a TEE.
+
+**Signature:**
+
+```ts
+function handlerInTee<TRawTriggerOutput, TTriggerOutput, TConfig, TResult>(
+  trigger: Trigger<TRawTriggerOutput, TTriggerOutput>,
+  fn: (runtime: TeeRuntime<TConfig>, triggerOutput: TTriggerOutput) => TResult,
+  tees: TeeConstraint,
+  hooks?: Hooks<TConfig, TTriggerOutput>
+): HandlerEntry<TConfig, TRawTriggerOutput, TTriggerOutput, TResult, TeeRuntime<TConfig>>
+```
+
+**Parameters:**
+
+- `trigger`: Any CRE trigger, same as for `handler`.
+- `fn`: Your handler function. It receives a `TeeRuntime` instead of a `Runtime`.
+- `tees`: A [`TeeConstraint`](#teeconstraint) describing which TEEs are acceptable.
+- `hooks`: Optional. Same `preHook` mechanism available on a regular `handler`.
+
+**Example:**
+
+```ts
+const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handlerInTee(cron.trigger({ schedule: config.schedule }), onCronTrigger, {})]
+}
+```
+
+**Guide:** [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-ts)
+
+## Fetching secrets
+
+### `runtime.getSecret`
+
+Fetches a single secret, decrypted only inside the enclave.
+
+**Signature:**
+
+```ts
+getSecret(request: SecretRequest | SecretRequestJson): { result: () => Secret }
+```
+
+**Example:**
+
+```ts
+const secret = runtime.getSecret({ id: "MY_API_KEY" }).result()
+// secret.value holds the decrypted value.
+```
+
+There's no upfront declaration like Confidential HTTP's `vaultDonSecrets`—the secret is requested and decrypted inside the enclave at the moment `getSecret()` runs.
+
+## Crossing back to the DON
+
+### `runtime.usingTheDons`
+
+Returns a regular `Runtime<C>` for operations that need Workflow DON consensus.
+
+**Signature:**
+
+```ts
+usingTheDons(): Runtime<C>
+```
+
+**Example:**
+
+```ts
+const donRuntime = runtime.usingTheDons()
+donRuntime
+  .report({
+    // encodedPayload is the base64-encoded form of your payload bytes, e.g.
+    // Buffer.from(payloadBytes).toString("base64")
+    encodedPayload: encodedValue,
+    encoderName: "evm",
+    signingAlgo: "ecdsa",
+    hashingAlgo: "keccak256",
+  })
+  .result()
+```
+
+<Aside type="caution" title="Data passed to usingTheDons() is no longer confidential">
+  Once you pass a value into a capability call on the runtime returned by `usingTheDons()`, that call executes on
+  Workflow DON nodes like any non-confidential capability.
+</Aside>
+
+### `runtime.reportFromDon`
+
+A shortcut for generating a report from the DON without a full `usingTheDons()` crossover.
+
+**Signature:**
+
+```ts
+reportFromDon(input: ReportRequest | ReportRequestJson): { result: () => Report }
+```
+
+Data requested through this method is routed outside the TEE, same as with `usingTheDons()`.
+
+## Making capability calls inside the enclave
+
+Capabilities that support Confidential Workflows expose a `TeeRuntime`-accepting overload of their regular method. For the HTTP capability, `HTTPClient.sendRequest()` accepts either a `Runtime`/`NodeRuntime` or a `TeeRuntime` directly:
+
+```ts
+const response = new HTTPClient()
+  .sendRequest(runtime, {
+    url: config.url,
+    method: "GET",
+    multiHeaders: { Authorization: { values: [`Bearer ${secret.value}`] } },
+  })
+  .result()
+```
+
+**Guide:** [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-ts)
+
+### Not every capability has a TeeRuntime overload
+
+`ConfidentialHTTPClient` is a notable exception: its `sendRequest()` only accepts a `Runtime`—there's no overload for `TeeRuntime`. Passing a `TeeRuntime` directly won't type-check.
+
+```ts
+// Does NOT type-check: ConfidentialHTTPClient.sendRequest has no overload accepting a TeeRuntime.
+const confHttpClient = new ConfidentialHTTPClient()
+confHttpClient.sendRequest(runtime, { request: { url, method: "POST" } }) // runtime is TeeRuntime
+```
+
+<Aside type="caution" title="Use the TeeRuntime overload for outbound HTTP calls">
+  For outbound HTTP calls made from inside a Confidential Workflow handler, use `HTTPClient.sendRequest(runtime, req)`
+  directly—it runs natively inside your enclave and needs no separate client. Capabilities without a `TeeRuntime`
+  overload, like `ConfidentialHTTPClient`, aren't built to be called from inside a Confidential Workflow handler.
+</Aside>
