@@ -62,7 +62,7 @@ This guide covers **issuer/registrar** steps only. Chainlink operations must hav
 
 **Recommended:** three parties under your org — Provider, Registrar, Holder — plus Chainlink's CCIP owner on the participant.
 
-Registry onboarding: [DA Registry onboarding guide](https://docs.digitalasset.com/utilities/mainnet/overview/registry-user-guide/onboarding-offboarding.html).
+Registrar onboarding: [DA Registrar onboarding guide](https://docs.digitalasset.com/registry/guides/registrar-onboarding).
 
 ## 3. Prerequisites
 
@@ -158,7 +158,7 @@ Hand off to Chainlink ops for lane testing after Phase E.
 
 ## 5. Phase A — Registry onboarding
 
-Request/accept workflow on-ledger. UI walkthrough: [DA issuance onboarding tutorial](https://docs.digitalasset.com/utilities/mainnet/tutorials/issuance/1-onboarding.html).
+Request/accept workflow on-ledger. UI walkthrough: [DA issuance onboarding tutorial](https://docs.digitalasset.com/registry/tutorials/issuance/1-onboarding-roles).
 
 ### Step 1 — Verify environment
 
@@ -314,7 +314,7 @@ npm run cct:set-token -- \
 
 Without this, cross-chain transfers fail at execution. CCIP EDS assembles Registry-specific pool context at runtime.
 
-Reference: [DA burn-mint how-to](https://docs.digitalasset.com/utilities/mainnet/how-tos/registry/burn-mint/burn-mint.html).
+Reference: [DA mint guide](https://docs.digitalasset.com/registry/guides/mint) and [DA burn guide](https://docs.digitalasset.com/registry/guides/burn).
 
 ## 9. Phase E — Verification
 
@@ -368,15 +368,15 @@ All commands: `--config registry-kit.toml [--state registry-kit.state.json]`
 
 ## 11. Troubleshooting
 
-| Symptom                      | Cause                             | Resolution                                                                                                                                                 |
-| :--------------------------- | :-------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Mint credential error        | Missing issuer credentials        | Issue per [DA credential docs](https://docs.digitalasset.com/utilities/mainnet/overview/credential-user-guide/introduction.html) or use empty requirements |
-| Bridge fails after SetPool   | `SetBurnMintFactory` not called   | Exercise Step 17 with AllocationFactory CID                                                                                                                |
-| Pool doesn't recognize token | Wrong `InstrumentId.admin`        | Must be registrar, not Provider or CCIP owner                                                                                                              |
-| Registry choice fails        | Missing Operator Backend context  | Call Operator Backend before submission                                                                                                                    |
-| Missing utility packages     | Participant not provisioned       | Contact operator                                                                                                                                           |
-| TAR exercise fails           | TAR not disclosed                 | Use CCIP EDS or `link-token-to-pool`                                                                                                                       |
-| 403 from Ledger API          | User lacks `can_act_as` for party | Use a validator user scoped to your parties                                                                                                                |
+| Symptom                      | Cause                             | Resolution                                                                                                                        |
+| :--------------------------- | :-------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------- |
+| Mint credential error        | Missing issuer credentials        | Issue per [DA credential docs](https://docs.digitalasset.com/registry/tutorials/issuance/2-credentials) or use empty requirements |
+| Bridge fails after SetPool   | `SetBurnMintFactory` not called   | Exercise Step 17 with AllocationFactory CID                                                                                       |
+| Pool doesn't recognize token | Wrong `InstrumentId.admin`        | Must be registrar, not Provider or CCIP owner                                                                                     |
+| Registry choice fails        | Missing Operator Backend context  | Call Operator Backend before submission                                                                                           |
+| Missing utility packages     | Participant not provisioned       | Contact operator                                                                                                                  |
+| TAR exercise fails           | TAR not disclosed                 | Use CCIP EDS or `link-token-to-pool`                                                                                              |
+| 403 from Ledger API          | User lacks `can_act_as` for party | Use a validator user scoped to your parties                                                                                       |
 
 ## 12. Glossary
 
@@ -391,11 +391,11 @@ All commands: `--config registry-kit.toml [--state registry-kit.state.json]`
 
 ## 13. Further reading
 
-| Topic                      | Link                                                                                                                  |
-| :------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
-| Registry introduction      | [Registry user guide](https://docs.digitalasset.com/utilities/mainnet/overview/registry-user-guide/introduction.html) |
-| Token Standard integration | [Token Standard](https://docs.digitalasset.com/utilities/mainnet/overview/registry-user-guide/token-standard.html)    |
-| Issuance tutorial          | [Issuance onboarding](https://docs.digitalasset.com/utilities/mainnet/tutorials/issuance/1-onboarding.html)           |
-| Utility DAR versions       | [DAR versions](https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html)              |
+| Topic                      | Link                                                                                                |
+| :------------------------- | :-------------------------------------------------------------------------------------------------- |
+| Registry introduction      | [Registry user guide](https://docs.digitalasset.com/registry/overview)                              |
+| Token Standard integration | [Token Standard](https://docs.digitalasset.com/registry/apis/token-standard)                        |
+| Issuance tutorial          | [Issuance onboarding](https://docs.digitalasset.com/registry/tutorials/issuance/1-onboarding-roles) |
+| Utility DAR versions       | [DAR versions](https://docs.digitalasset.com/registry/releases/daml-models)                         |
 
 <CcipCommon callout="educationalDisclaimer" />

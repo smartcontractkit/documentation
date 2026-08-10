@@ -27,8 +27,12 @@ const COMMON_FIELDS: SchemaField[] = [
     type: "uint32",
     description: "Latest timestamp when the price is valid (seconds)",
   },
-  { field: "nativeFee", type: "uint192", description: "Cost to verify report onchain (native token)" },
-  { field: "linkFee", type: "uint192", description: "Cost to verify report onchain (LINK)" },
+  { field: "nativeFee", type: "uint192", description: "Legacy onchain verification fee field" },
+  {
+    field: "linkFee",
+    type: "uint192",
+    description: "Legacy onchain verification fee field; not used for subscription billing",
+  },
   { field: "expiresAt", type: "uint32", description: "Expiration date of the report (seconds)" },
 ]
 

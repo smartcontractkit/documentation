@@ -6,11 +6,6 @@ import {
   StreamsLookupCompatibleInterface
 } from "@chainlink/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol";
 
-import {Common} from "@chainlink/contracts/src/v0.8/llo-feeds/libraries/Common.sol";
-import {IRewardManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IRewardManager.sol";
-import {IVerifierFeeManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IVerifierFeeManager.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
  * DO NOT USE THIS CODE IN PRODUCTION.
@@ -20,49 +15,19 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 // INTERFACES
 // =====================
 
-interface IFeeManager {
-  /**
-   * @notice Calculates the fee and reward associated with verifying a report, including discounts for subscribers.
-   * This function assesses the fee and reward for report verification, applying a discount for recognized subscriber
-   * addresses.
-   * @param subscriber The address attempting to verify the report. A discount is applied if this address
-   * is recognized as a subscriber.
-   * @param unverifiedReport The report data awaiting verification. The content of this report is used to
-   * determine the base fee and reward, before considering subscriber discounts.
-   * @param quoteAddress The payment token address used for quoting fees and rewards.
-   * @return fee The fee assessed for verifying the report, with subscriber discounts applied where applicable.
-   * @return reward The reward allocated to the caller for successfully verifying the report.
-   * @return totalDiscount The total discount amount deducted from the fee for subscribers.
-   */
-  function getFeeAndReward(
-    address subscriber,
-    bytes memory unverifiedReport,
-    address quoteAddress
-  ) external returns (Common.Asset memory, Common.Asset memory, uint256);
-
-  function i_linkAddress() external view returns (address);
-
-  function i_nativeAddress() external view returns (address);
-
-  function i_rewardManager() external view returns (address);
-}
-
 interface IVerifierProxy {
   /**
    * @notice Verifies that the data encoded has been signed.
-   * correctly by routing to the correct verifier, and bills the user if applicable.
+   * correctly by routing to the correct verifier.
    * @param payload The encoded data to be verified, including the signed
    * report.
-   * @param parameterPayload Fee metadata for billing. In the current implementation,
-   * this consists of the abi-encoded address of the ERC-20 token used for fees.
+   * @param parameterPayload Empty bytes for Data Streams subscription billing.
    * @return verifierResponse The encoded report from the verifier.
    */
   function verify(
     bytes calldata payload,
     bytes calldata parameterPayload
   ) external payable returns (bytes memory verifierResponse);
-
-  function s_feeManager() external view returns (IVerifierFeeManager);
 }
 
 // ==========================
@@ -82,9 +47,8 @@ contract StreamsUpkeepWithErrorHandler is ILogAutomation, StreamsLookupCompatibl
     bytes32 feedId; // The feed ID the report has data for.
     uint32 validFromTimestamp; // Earliest timestamp for which price is applicable.
     uint32 observationsTimestamp; // Latest timestamp for which price is applicable.
-    uint192 nativeFee; // Base cost to validate a transaction using the report, denominated in the chain’s native
-    // token (e.g., WETH/ETH).
-    uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK.
+    uint192 nativeFee; // Legacy onchain verification fee field.
+    uint192 linkFee; // Legacy onchain verification fee field. Not used for subscription billing.
     uint32 expiresAt; // Latest timestamp where the report can be verified onchain.
     int192 price; // DON consensus median price (8 or 18 decimals).
     int192 bid; // Simulated price impact of a buy order up to the X% depth of liquidity utilisation (8 or 18 decimals).
@@ -104,9 +68,8 @@ contract StreamsUpkeepWithErrorHandler is ILogAutomation, StreamsLookupCompatibl
     bytes32 feedId; // The feed ID the report has data for.
     uint32 validFromTimestamp; // Earliest timestamp for which price is applicable.
     uint32 observationsTimestamp; // Latest timestamp for which price is applicable.
-    uint192 nativeFee; // Base cost to validate a transaction using the report, denominated in the chain’s native
-    // token (e.g., WETH/ETH).
-    uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK.
+    uint192 nativeFee; // Legacy onchain verification fee field.
+    uint192 linkFee; // Legacy onchain verification fee field. Not used for subscription billing.
     uint32 expiresAt; // Latest timestamp where the report can be verified onchain.
     int192 price; // DON consensus median benchmark price (8 or 18 decimals).
     uint32 marketStatus; // The DON's consensus on whether the market is currently open.
@@ -121,7 +84,6 @@ contract StreamsUpkeepWithErrorHandler is ILogAutomation, StreamsLookupCompatibl
 
   IVerifierProxy public verifier;
 
-  address public FEE_ADDRESS;
   string public constant STRING_DATASTREAMS_FEEDLABEL = "feedIDs";
   string public constant STRING_DATASTREAMS_QUERYLABEL = "timestamp";
   uint256 public s_error;
@@ -221,18 +183,8 @@ contract StreamsUpkeepWithErrorHandler is ILogAutomation, StreamsLookupCompatibl
         revert InvalidReportVersion(uint8(reportVersion));
       }
 
-      // Report verification fees
-      IFeeManager feeManager = IFeeManager(address(verifier.s_feeManager()));
-      IRewardManager rewardManager = IRewardManager(address(feeManager.i_rewardManager()));
-
-      address feeTokenAddress = feeManager.i_linkAddress();
-      (Common.Asset memory fee,,) = feeManager.getFeeAndReward(address(this), reportData, feeTokenAddress);
-
-      // Approve rewardManager to spend this contract's balance in fees
-      IERC20(feeTokenAddress).approve(address(rewardManager), fee.amount);
-
-      // Verify the report
-      bytes memory verifiedReportData = verifier.verify(unverifiedReport, abi.encode(feeTokenAddress));
+      // Verify the report. Data Streams uses subscription billing, so no fee metadata is required.
+      bytes memory verifiedReportData = verifier.verify(unverifiedReport, bytes(""));
 
       // Decode verified report data into the appropriate Report struct based on reportVersion
       if (reportVersion == 3) {
