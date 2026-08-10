@@ -7,7 +7,7 @@ pageId: "confidential-http"
 metadata:
   description: "CRE Confidential HTTP capability: make privacy-preserving API calls with enclave execution, secret injection, and optional response encryption."
   datePublished: "2026-02-06"
-  lastModified: "2026-02-06"
+  lastModified: "2026-07-21"
 ---
 
 import { Aside } from "@components"
@@ -18,9 +18,9 @@ The **Confidential HTTP** capability is a privacy-preserving HTTP service powere
 
 Traditional consensus mechanisms require all nodes to see and agree on the same data. While this provides strong reliability and tamper resistance, it creates challenges for use cases with strict privacy requirements:
 
-- **Regulatory compliance:** Some industries require that sensitive data never be exposed to multiple parties.
+- **Regulatory compliance:** Some industries require that sensitive data not be exposed to multiple parties.
 - **Credential security:** High-risk API credentials could cause damage if compromised or exposed in node memory.
-- **Response privacy:** API responses may contain sensitive fields that should not be visible to the decentralized network.
+- **Response privacy:** API responses may contain sensitive fields that are not intended to be visible to the decentralized network.
 
 Confidential HTTP addresses these challenges by executing requests inside a **secure enclave** and offering optional **response encryption**.
 
@@ -30,22 +30,22 @@ Confidential HTTP operates differently from the [regular HTTP capability](/cre/c
 
 1. **Request consensus:** Nodes in the Confidential HTTP DON reach quorum on the request parameters (forwarded by each Workflow DON node).
 1. **Secret retrieval:** The Confidential HTTP DON fetches encrypted secrets from the [Vault DON](/cre/guides/workflow/secrets/using-secrets-deployed).
-1. **Enclave execution:** Secrets are threshold decrypted using Vault DON. Decryption shares are injected to a secure enclave such that only the secure enclave can combine them to extract plaintext secrets to use in the HTTP request execution—credentials never exist in accessible memory.
+1. **Enclave execution:** Secrets are threshold decrypted using Vault DON. Decryption shares are injected to a secure enclave such that only the secure enclave can combine them to extract plaintext secrets to use in the HTTP request execution—credentials are designed not to exist in node-accessible memory outside the enclave.
 1. **Response:** The response is returned to your workflow. If `EncryptOutput` is enabled, the response body is encrypted before leaving the enclave.
 
-This approach ensures:
+This approach is designed to provide:
 
-- **Credential isolation:** Secrets are encrypted at rest and in transit, and are decrypted only inside the enclave—never in node memory.
+- **Credential isolation:** Secrets are encrypted at rest and in transit, and are intended to be decrypted only inside the enclave, not in node memory.
 - **Response privacy:** You can optionally encrypt the full response body so that it leaves the enclave encrypted and can be decrypted only in your own backend service.
 - **Single execution:** Exactly one API call is made, not one per node.
 
 ## What's kept confidential
 
-| Component                      | How it's protected                                                                                                                                                             |
-| :----------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Secrets** (API keys, tokens) | Fully confidential. Stored in the Vault DON, decrypted only inside the enclave.                                                                                                |
-| **Request body**               | Template-based injection: secrets referenced in the request body (e.g., `{{.myApiKey}}`) are resolved inside the enclave, so sensitive values never appear in workflow memory. |
-| **Response body**              | Optionally encrypted. When `EncryptOutput` is enabled, the full response is [AES-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) encrypted before leaving the enclave. |
+| Component                      | How it's protected                                                                                                                                                                           |
+| :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Secrets** (API keys, tokens) | Designed to remain confidential. Stored in the Vault DON, decrypted only inside the enclave.                                                                                                 |
+| **Request body**               | Template-based injection: secrets referenced in the request body (e.g., `{{.myApiKey}}`) are resolved inside the enclave, so sensitive values are designed not to appear in workflow memory. |
+| **Response body**              | Optionally encrypted. When `EncryptOutput` is enabled, the full response is [AES-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) encrypted before leaving the enclave.               |
 
 <Aside type="caution" title="Do not inject sensitive values into the request as plain workflow strings">
   **Credentials:** List sensitive values in **`vaultDonSecrets`** and reference them only with **`{{.key}}` placeholders**. Secrets read via **`runtime.getSecret()`** (or any string you build in workflow code) and pasted into headers or body are handled in **Workflow DON** execution, not enclave-only. See [Making Confidential Requests (TypeScript)](/cre/guides/workflow/using-confidential-http-client/making-requests-ts#step-4-implement-the-request-and-wire-it-into-your-workflow).
@@ -58,7 +58,7 @@ This approach ensures:
 
 ### Credential isolation
 
-A SaaS service fetches user data from an e-commerce provider API. The same credential could also modify user data if misused. Confidential HTTP ensures the credential is decrypted only inside the enclave, never accessible in node memory.
+A SaaS service fetches user data from an e-commerce provider API. The same credential could also modify user data if misused. Confidential HTTP is designed so the credential is decrypted only inside the enclave and not accessible in node memory.
 
 ### Response encryption
 
@@ -66,22 +66,22 @@ A workflow calls a payment processor API to execute a transaction. The API respo
 
 ### Processing sensitive request data
 
-A workflow processes card transactions where the request contains card details and the API key provides processor access. Confidential HTTP keeps both the credentials and card details private through template-based injection, returning only the encrypted response to the workflow.
+A workflow processes card transactions where the request contains card details and the API key provides processor access. Confidential HTTP is designed to keep both the credentials and card details private through template-based injection, returning only the encrypted response to the workflow.
 
-### Guaranteed single execution
+### Single execution by design
 
 An API endpoint cannot tolerate duplicate requests (e.g., initiating a payment or creating a unique transaction).
 
 With the [regular HTTP capability](/cre/capabilities/http), each node in the DON executes the request independently to reach consensus on the response. For non-idempotent operations, [`cacheSettings` mitigates](/cre/guides/workflow/using-http-client/post-request-ts#1-understanding-single-execution-with-cachesettings) this by enabling nodes to share cached responses, reducing duplicate calls in most cases.
 
-Confidential HTTP takes a different approach: by design, only one request is ever made from the enclave after quorum is reached on the request parameters. This provides an **architectural guarantee** of single execution.
+Confidential HTTP takes a different approach: by design, only one request is made from the enclave after quorum is reached on the request parameters, intended to provide single execution.
 
 ## When to use Confidential HTTP vs. regular HTTP
 
 ### Use Confidential HTTP when:
 
-- The API response contains sensitive data that should not be visible to the network
-- API credentials must never be accessible in node memory (enclave-only access)
+- The API response contains sensitive data that is not intended to be visible to the network
+- API credentials must not be accessible in node memory (enclave-only access)
 - You need exactly one API call with zero tolerance for duplicates
 - Regulatory or compliance requirements mandate data confidentiality
 
@@ -108,12 +108,14 @@ Confidential HTTP takes a different approach: by design, only one request is eve
 
 \*For non-idempotent operations (POST, PUT, PATCH, DELETE), [`cacheSettings`](/cre/guides/workflow/using-http-client/post-request#1-understanding-single-execution-with-cachesettings) enables nodes to share cached responses, reducing multiple calls to a single execution in most cases.
 
-<Aside type="note" title="Confidential Compute">
-  Confidential HTTP currently does not support complex data transformations within the enclave. A future **Confidential
-  Compute** capability will enable processing logic inside the enclave.
+<Aside type="note" title="Need to protect more than a single request?">
+  Confidential HTTP does not support complex data transformations within the enclave. [Confidential
+  Workflows](/cre/concepts/confidential-workflows) (beta) let you run your handler's full callback logic inside a secure
+  enclave, not just a single request.
 </Aside>
 
 ## Learn more
 
 - **[Confidential API Interactions Guide](/cre/guides/workflow/using-confidential-http-client)**: Learn how to use the SDK to invoke the Confidential HTTP capability.
 - **[Confidential HTTP Client SDK Reference](/cre/reference/sdk/confidential-http-client)**: See the detailed API reference for the `confidentialhttp.Client`.
+- **[Confidential Workflows in CRE](/cre/concepts/confidential-workflows)**: Run your full handler logic inside a secure enclave (beta).
