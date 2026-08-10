@@ -892,6 +892,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   children: [
                     { title: "Ondo Finance", url: "data-feeds/tokenized-equity-feeds/ondo" },
                     { title: "Robinhood", url: "data-feeds/tokenized-equity-feeds/robinhood" },
+                    { title: "Coinbase", url: "data-feeds/tokenized-equity-feeds/coinbase" },
                   ],
                 },
               ],
@@ -1592,6 +1593,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Manage your Upkeeps",
           url: "chainlink-automation/guides/manage-upkeeps",
+        },
+        {
+          title: "Cancel an Upkeep and Withdraw Funds",
+          url: "chainlink-automation/guides/cancel-upkeep",
         },
         {
           title: "Set a gas price threshold on your upkeep",
