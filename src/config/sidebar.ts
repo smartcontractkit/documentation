@@ -892,6 +892,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   children: [
                     { title: "Ondo Finance", url: "data-feeds/tokenized-equity-feeds/ondo" },
                     { title: "Robinhood", url: "data-feeds/tokenized-equity-feeds/robinhood" },
+                    { title: "Coinbase", url: "data-feeds/tokenized-equity-feeds/coinbase" },
                   ],
                 },
               ],
