@@ -1,0 +1,62 @@
+---
+section: dataStreams
+title: "Crypto Top-of-Book Streams"
+whatsnext:
+  {
+    "Find the list of available Stream IDs.": "/data-streams/crypto-streams",
+    "Find the schema of data to expect from Top-of-Book reports (RWA Advanced v11).": "/data-streams/reference/report-schema-v11",
+    "Learn about developer responsibilities": "/data-streams/developer-responsibilities",
+  }
+---
+
+import { Aside } from "@components"
+
+In addition to Chainlink's standard liquidity-weighted crypto price streams, Data Streams offers **Top-of-Book** streams for perpetual futures markets. These are sourced directly from a single centralized exchange's public order book, rather than aggregated across venues.
+
+## Top-of-Book
+
+Top-of-Book streams report the best bid and best ask currently resting on a specific exchange's order book for a given instrument. These streams are useful for protocols that need to reflect a specific venue's live order book conditions, such as perpetual futures for tokenized equities and commodities (RWA perps) traded on Binance and Hyperliquid.
+
+<Aside type="note" title="Single-source data">
+  Top-of-Book streams are sourced from a single exchange's order book, not a liquidity-weighted composite across venues.
+  There is no redundant cross-validation between exchanges for a given Top-of-Book feed.
+</Aside>
+
+### Data sources
+
+| Exchange    | Public channel                                               | Fields consumed                                |
+| ----------- | ------------------------------------------------------------ | ---------------------------------------------- |
+| Binance     | `<symbol>@bookTicker` (Individual Symbol Book Ticker Stream) | `b` (best bid price), `a` (best ask price)     |
+| Hyperliquid | `l2Book`                                                     | Best bid/ask `px` from `levels[0]`/`levels[1]` |
+
+Additional exchanges may be added over time as new streams are onboarded.
+
+### Schema
+
+Top-of-Book streams use the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11):
+
+| Schema field   | Populated from                                                                                                                                                                                                              |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bid`          | Exchange's best bid price                                                                                                                                                                                                   |
+| `bidVolume`    | Size at the best bid, when provided by the exchange                                                                                                                                                                         |
+| `ask`          | Exchange's best ask price                                                                                                                                                                                                   |
+| `askVolume`    | Size at the best ask, when provided by the exchange                                                                                                                                                                         |
+| `mid`          | Calculated by the Chainlink DON — **not** provided by the exchange                                                                                                                                                          |
+| `marketStatus` | Reflects the venue's availability. Crypto perpetual markets generally trade continuously; see [Market Status Values](/data-streams/reference/report-schema-v11#market-status-values) for how this maps for a specific feed. |
+
+<Aside type="caution" title="Mid price is calculated, not sourced">
+  `mid` is calculated by the Chainlink DON from the reported bid and ask. It is not a field provided directly by the
+  underlying exchange.
+</Aside>
+
+## Data freshness and update frequency
+
+Top-of-Book streams are **event-driven**: a new observation is only published when the underlying exchange emits a new datapoint on its public channel. There is no fixed polling interval.
+
+End-to-end latency from the underlying exchange to node operators is sub-second under normal conditions. Actual latency can vary based on network conditions and exchange-side publishing behavior.
+
+## Risk considerations
+
+- **Single-source dependency**: Each Top-of-Book feed is sourced from one exchange. If that exchange stops publishing updates, there is no automatic fallback to another venue for that feed.
+- **Venue-specific pricing**: Top-of-Book reflects one exchange's order book, which can diverge from prices on other venues, especially during periods of low liquidity or high volatility on the source exchange.
+- **Review [Developer Responsibilities](/data-streams/developer-responsibilities)** before integrating Top-of-Book streams into a production application.
