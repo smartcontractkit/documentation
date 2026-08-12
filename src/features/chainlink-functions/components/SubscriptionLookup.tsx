@@ -2,7 +2,7 @@
 import { useMemo, useState } from "preact/hooks"
 import styles from "./SubscriptionLookup.module.css"
 import button from "@chainlink/design-system/button.module.css"
-import subscriptions from "../data/subscriptions.json"
+import subscriptions from "../data/subscriptions.json" with { type: "json" }
 
 const NETWORK_LABELS: Record<string, string> = {
   "avalanche-mainnet": "Avalanche",
