@@ -240,6 +240,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Workflow Guides",
       contents: [
         {
+          title: "Overview",
+          url: "cre/guides/workflow/overview",
+        },
+        {
           title: "Triggers",
           url: "cre/guides/workflow/using-triggers/overview",
           children: [
@@ -446,6 +450,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Confidential Workflows",
+          url: "cre/guides/workflow/using-confidential-workflows",
+          children: [
+            {
+              title: "Making a Workflow Confidential",
+              url: "cre/guides/workflow/using-confidential-workflows/making-workflow-confidential",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-ts",
+                "cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-go",
+              ],
+            },
+          ],
+        },
+        {
           title: "Secrets",
           url: "cre/guides/workflow/secrets",
           children: [
@@ -573,6 +591,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Requesting Deploy Access",
               url: "cre/account/deploy-access",
             },
+            {
+              title: "Requesting Confidential Workflows Access",
+              url: "cre/account/confidential-workflows-access",
+            },
           ],
         },
         {
@@ -599,15 +621,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Capabilities",
       contents: [
         { title: "Overview", url: "cre/capabilities" },
-        { title: "Triggers", url: "cre/capabilities/triggers" },
-        { title: "HTTP", url: "cre/capabilities/http" },
-        {
-          title: "Confidential HTTP",
-          url: "cre/capabilities/confidential-http",
-          highlightAsCurrent: ["cre/capabilities/confidential-http-ts", "cre/capabilities/confidential-http-go"],
-        },
         { title: "EVM Read & Write", url: "cre/capabilities/evm-read-write" },
+        { title: "HTTP", url: "cre/capabilities/http" },
         { title: "Solana Write", url: "cre/capabilities/solana-write" },
+        { title: "Triggers", url: "cre/capabilities/triggers" },
       ],
     },
     {
@@ -618,6 +635,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/concepts/consensus-computing",
         },
         {
+          title: "Finality & Confidence Levels",
+          url: "cre/concepts/finality",
+          highlightAsCurrent: ["cre/concepts/finality-go", "cre/concepts/finality-ts"],
+        },
+        {
           title: "Non-Determinism in Workflows",
           url: "cre/concepts/non-determinism",
           highlightAsCurrent: ["cre/concepts/non-determinism-go", "cre/concepts/non-determinism-ts"],
@@ -626,10 +648,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "TypeScript Runtime Environment",
           url: "cre/concepts/typescript-wasm-runtime",
         },
+      ],
+    },
+    {
+      section: "Privacy",
+      contents: [
+        { title: "Overview", url: "cre/privacy" },
         {
-          title: "Finality & Confidence Levels",
-          url: "cre/concepts/finality",
-          highlightAsCurrent: ["cre/concepts/finality-go", "cre/concepts/finality-ts"],
+          title: "Confidential Workflows",
+          url: "cre/concepts/confidential-workflows",
+        },
+        {
+          title: "Confidential HTTP",
+          url: "cre/capabilities/confidential-http",
+          highlightAsCurrent: ["cre/capabilities/confidential-http-ts", "cre/capabilities/confidential-http-go"],
         },
       ],
     },
@@ -748,6 +780,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               ],
             },
             {
+              title: "Confidential Workflows Client",
+              url: "cre/reference/sdk/confidential-workflows-client",
+              highlightAsCurrent: [
+                "cre/reference/sdk/confidential-workflows-client-ts",
+                "cre/reference/sdk/confidential-workflows-client-go",
+              ],
+            },
+            {
               title: "Consensus & Aggregation",
               url: "cre/reference/sdk/consensus",
               highlightAsCurrent: ["cre/reference/sdk/consensus-ts", "cre/reference/sdk/consensus-go"],
@@ -852,6 +892,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   children: [
                     { title: "Ondo Finance", url: "data-feeds/tokenized-equity-feeds/ondo" },
                     { title: "Robinhood", url: "data-feeds/tokenized-equity-feeds/robinhood" },
+                    { title: "Coinbase", url: "data-feeds/tokenized-equity-feeds/coinbase" },
                   ],
                 },
               ],
@@ -1315,6 +1356,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "DEX State Price Streams",
           url: "data-streams/concepts/dex-state-price-streams",
         },
+        {
+          title: "Crypto Top-of-Book Streams",
+          url: "data-streams/concepts/crypto-top-of-book-and-mark-price",
+        },
       ],
     },
     {
@@ -1552,6 +1597,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Manage your Upkeeps",
           url: "chainlink-automation/guides/manage-upkeeps",
+        },
+        {
+          title: "Cancel an Upkeep and Withdraw Funds",
+          url: "chainlink-automation/guides/cancel-upkeep",
         },
         {
           title: "Set a gas price threshold on your upkeep",
