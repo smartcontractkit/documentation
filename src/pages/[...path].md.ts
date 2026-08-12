@@ -80,9 +80,7 @@ async function resolveSpecialCanonicalMarkdownPath(cleanPath: string): Promise<S
 }
 
 type CreResolution =
-  | { kind: "none" }
-  | { kind: "resolved"; path: string }
-  | { kind: "selector"; goPath: string; tsPath: string }
+  { kind: "none" } | { kind: "resolved"; path: string } | { kind: "selector"; goPath: string; tsPath: string }
 
 async function resolveCreCanonicalMarkdownPath(cleanPath: string): Promise<CreResolution> {
   if (!cleanPath.startsWith("cre/")) {
