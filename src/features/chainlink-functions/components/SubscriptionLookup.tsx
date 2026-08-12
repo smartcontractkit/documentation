@@ -82,6 +82,7 @@ export default function SubscriptionLookup() {
                   <tr>
                     <th>Network</th>
                     <th>Subscription ID</th>
+                    <th>FunctionsRouter address</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -89,6 +90,9 @@ export default function SubscriptionLookup() {
                     <tr key={`${r.network}-${r.id}`}>
                       <td>{NETWORK_LABELS[r.network] ?? r.network}</td>
                       <td>{r.id}</td>
+                      <td>
+                        <code>{r.router}</code>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
