@@ -13505,53 +13505,6 @@ export async function main() {
   If any secret in a batch fails to fetch, `getSecrets()` throws a `SecretsBatchError` containing all error messages from the failed secrets.
 </Aside>
 
-### Using sequential fetch
-
-You can also call `runtime.getSecret()` once per secret. Because the WASM runtime does not support parallel calls, you must call `.result()` before requesting the next secret.
-
-
-<Aside type="caution" title="Fetch secrets sequentially">
-  The WASM host for the CRE runtime does not support parallel `runtime.getSecret()` requests. Always call `.result()` on each secret before calling `getSecret()` again.
-</Aside>
-
-Code snippet for Fetching Multiple Secrets Sequentially (TypeScript):
-
-```typescript
-import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
-
-// Config can be an empty object if you don't need any parameters from config.json
-type Config = Record<string, never>
-
-const SECRET_ADDRESS_NAME = "SECRET_ADDRESS"
-const API_KEY_NAME = "API_KEY"
-
-const onCronTrigger = (runtime: Runtime<Config>): string => {
-  // 1. Request the first secret
-  const secretAddress = runtime.getSecret({ id: SECRET_ADDRESS_NAME }).result()
-
-  // 2. Request the second secret
-  const apiKey = runtime.getSecret({ id: API_KEY_NAME }).result()
-
-  // 3. Use your secrets
-  runtime.log(`Successfully fetched secrets! Address: ${secretAddress.value}, API Key: ${apiKey.value}`)
-
-  return "Success"
-}
-
-// initWorkflow is the entry point for the workflow
-const initWorkflow = () => {
-  const cron = new CronCapability()
-
-  return [handler(cron.trigger({ schedule: "0 */10 * * * *" }), onCronTrigger)]
-}
-
-// main is the entry point for the WASM binary
-export async function main() {
-  const runner = await Runner.newRunner<Config>()
-  await runner.run(initWorkflow)
-}
-```
-
 ---
 
 # Using Time in Workflows
