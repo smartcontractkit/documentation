@@ -566,6 +566,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Custom Rust Plugins",
           url: "cre/guides/operations/custom-rust-plugins-ts",
         },
+        {
+          title: "Building a Reusable Library",
+          url: "cre/guides/operations/building-a-library",
+          highlightAsCurrent: [
+            "cre/guides/operations/building-a-library-ts",
+            "cre/guides/operations/building-a-library-go",
+          ],
+        },
       ],
     },
     {

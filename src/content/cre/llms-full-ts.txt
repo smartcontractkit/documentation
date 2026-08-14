@@ -12569,6 +12569,304 @@ You've now mastered the complete CRE development workflow!
 
 ---
 
+# Building a Reusable Library
+Source: https://docs.chain.link/cre/guides/operations/building-a-library-ts
+Last Updated: 2026-08-14
+
+This guide shows you how to package reusable integration logic (for example, a Slack notifier, a PagerDuty client, or a price-feed parser) as a standard npm package that other developers can install and import directly into their own CRE TypeScript workflows.
+
+This is not a guide to writing a workflow itself — it assumes you're already familiar with that. If you're new to CRE, start with the [getting-started guide](/cre/getting-started/overview) first.
+
+## Who this is for
+
+Any developer who wants to publish a reusable package to npm that other people's CRE workflows will depend on.
+
+## The core constraint: your library runs where the workflow runs
+
+A CRE TypeScript workflow isn't run by Node.js. It's transpiled and compiled into a single WebAssembly binary that executes inside [QuickJS](https://bellard.org/quickjs), a minimal JavaScript engine embedded via [Javy](https://github.com/bytecodealliance/javy). When a workflow author adds your package as a dependency, your code gets bundled into that same WASM binary — it runs under the exact same restrictions as the workflow's own code. See [TypeScript Runtime Environment](/cre/concepts/typescript-wasm-runtime) for the full compilation pipeline.
+
+That means:
+
+- There is no Node.js runtime underneath your library at execution time — no `fs`, no `http`, no native modules.
+- There is no network stack for your code to call into directly. All non-deterministic work (HTTP calls, secrets, blockchain reads/writes) must go through CRE SDK capability APIs, which the DON executes and brings to consensus on your library's behalf.
+
+Design your library around this from the start. Don't write it as a generic Node or browser package and hope it happens to work — write it against the CRE SDK's runtime primitives.
+
+## Pitfall 1: No Node.js built-ins
+
+QuickJS provides standard ECMAScript (`Map`, `Set`, `Promise`, most ES2020+ syntax) but not the Node.js API surface. The following are unavailable and will fail at compile or runtime if your library — or one of its transitive dependencies — imports them:
+
+```
+fs, path, crypto, process, http, https, net, stream, child_process,
+os, worker_threads, cluster, dgram, dns, tls, vm, zlib, readline,
+events (Node's EventEmitter), util (Node's promisify, etc.)
+```
+
+Practical implications:
+
+- **`Buffer` is available and is the standard way to base64-encode request bodies.** Despite `buffer` being a Node built-in in principle, every CRE HTTP example in this documentation uses `Buffer.from(bytes).toString("base64")` to encode request bodies, and it works the same in simulation and production. Use it the way the reference examples do — don't work around it with manual `btoa`/`String.fromCharCode` calls. `TextEncoder`/`TextDecoder` are also available and are the standard way to convert between strings and `Uint8Array`.
+- **No `process.env`.** Never read configuration or credentials this way — there is no process. Accept configuration through your library's function arguments, and read secrets with `runtime.getSecret()` (see below).
+- **No Node `crypto`.** If you need hashing or signing, use a pure-JS library with no native bindings.
+- **No `setTimeout`/`setInterval`.** The WASM execution model is synchronous; there is no event loop to schedule against.
+
+
+<Aside type="tip" title="Cryptography libraries">
+  If you need cryptographic functions, <a href="https://paulmillr.com/noble/" target="_blank" rel="noopener noreferrer">Noble</a> is a popular JavaScript cryptography library with minimal dependencies that works well with QuickJS. Always verify any third-party library in simulation before publishing.
+</Aside>
+
+Before depending on any third-party package inside your library, check its `package.json` and source for the built-ins above. When in doubt, check the [QuickJS Node.js compatibility reference](https://sebastianwessel.github.io/quickjs/docs/module-resolution/node-compatibility.html), and confirm with `cre workflow simulate` in a throwaway test workflow — simulation runs your code in the same WASM environment as production, so incompatibilities surface immediately.
+
+### Alternatives to common Node built-ins
+
+| Instead of...                            | Use...                                                                                     | Notes                                                                                                                                                                                                         |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `node:crypto`                            | [`@noble/hashes`, `@noble/curves`](https://paulmillr.com/noble/)                           | Pure JS, no native bindings.                                                                                                                                                                                  |
+| `ethers` (uses `node:crypto` internally) | [`viem`](https://viem.sh/)                                                                 | Verified compatible. Use for ABI encoding/decoding, address/unit utilities, and general Ethereum type handling.                                                                                               |
+| `axios`, `node-fetch`, `got`, `undici`   | `HTTPClient` from `@chainlink/cre-sdk`                                                     | Not optional — see [Pitfall 2](#pitfall-2-no-standard-http-client--use-the-cre-sdks-http-capability). There is no working substitute; every HTTP call must go through the SDK's node-mode and consensus path. |
+| `ws` (WebSockets)                        | Poll via `HTTPClient` on a cron or HTTP trigger instead                                    | Persistent socket connections aren't supported in the WASM sandbox.                                                                                                                                           |
+| `dotenv` / `process.env`                 | `runtime.getSecret()` or function parameters                                               | There is no `process` — see above.                                                                                                                                                                            |
+| `import { Buffer } from "node:buffer"`   | The global `Buffer` (already available, no import needed)                                  | See the note above.                                                                                                                                                                                           |
+| `uuid` / `crypto.randomUUID()`           | `Math.random()`-based generation inside the CRE runtime, or a uuid package's pure-JS build | Some `uuid` package builds pull in `node:crypto` for `randomUUID`. Verify with `cre workflow simulate`.                                                                                                       |
+| `lodash`, `date-fns`, `dayjs`, `zod`     | Generally fine as-is                                                                       | Pure-JS utility/validation libraries with no Node built-ins typically work unmodified. `zod` is a documented SDK dependency. Still confirm with simulation.                                                   |
+| Node's `events` (`EventEmitter`)         | Plain callbacks/arrays, or a pure-JS emitter with zero dependencies                        | Node's own `EventEmitter` isn't available; most third-party emitters that don't import `node:events` work fine.                                                                                               |
+
+
+<Aside type="note" title="Verify before shipping">
+  Only Noble, viem, and zod are dependencies used directly by the CRE SDK itself. Everything else in this table is generally known to work because it's pure JS with no Node built-ins — always confirm with `cre workflow simulate` before publishing your library.
+</Aside>
+
+## Pitfall 2: No standard HTTP client — use the CRE SDK's HTTP capability
+
+Do not depend on `axios`, `node-fetch`, `ws`, or any HTTP or socket library — they all sit on top of Node's `http`/`net`/`stream` modules and will not work. There is also no bare global `fetch` you can rely on directly from a library the way you would in a browser or in Node 18+.
+
+Instead, all outbound requests must go through [`HTTPClient`](/cre/reference/sdk/http-client-ts) from `@chainlink/cre-sdk`. This isn't just a technical requirement — it's what gives the request DON-wide consensus. An HTTP call in CRE runs independently on every node in the DON (node mode), and the SDK aggregates the individual results into one trusted value before the workflow continues. A library that shells out to `axios` would bypass this consensus mechanism entirely, even if it somehow ran.
+
+Consequence for library design: your exported functions should take a CRE `Runtime` (or, in some cases, a `NodeRuntime`) as a parameter, and use it to construct requests via `HTTPClient`, exactly as a workflow author would inline. Your library is a thin, well-tested wrapper around this pattern — not a replacement for it.
+
+```typescript
+// src/index.ts — inside your library package
+import { HTTPClient, consensusIdenticalAggregation, ok, type Runtime, type NodeRuntime } from "@chainlink/cre-sdk"
+
+export interface PagerDutyOptions {
+  routingKeySecret: string
+}
+
+export interface PagerDutyAlert {
+  summary: string
+  severity: "critical" | "error" | "warning" | "info"
+  source: string
+}
+
+export class PagerDuty {
+  constructor(private options: PagerDutyOptions) {}
+
+  trigger(runtime: Runtime<unknown>, alert: PagerDutyAlert): { statusCode: number } {
+    const sendAlert = (nodeRuntime: NodeRuntime<unknown>): { statusCode: number } => {
+      const routingKey = nodeRuntime.getSecret({ id: this.options.routingKeySecret }).result().value
+
+      const payload = {
+        routing_key: routingKey,
+        event_action: "trigger",
+        payload: alert,
+      }
+
+      const bodyBytes = new TextEncoder().encode(JSON.stringify(payload))
+      const body = Buffer.from(bodyBytes).toString("base64")
+
+      const httpClient = new HTTPClient()
+      const response = httpClient
+        .sendRequest(nodeRuntime, {
+          url: "https://events.pagerduty.com/v2/enqueue",
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body,
+          // Prevents every node from firing a duplicate alert
+          cacheSettings: { readFromCache: true, maxAgeMs: 60_000 },
+        })
+        .result()
+
+      if (!ok(response)) {
+        throw new Error(`PagerDuty request failed with status ${response.statusCode}`)
+      }
+
+      return { statusCode: response.statusCode }
+    }
+
+    return runtime.runInNodeMode(sendAlert, consensusIdenticalAggregation<{ statusCode: number }>())().result()
+  }
+}
+```
+
+Notes on this pattern:
+
+- Secrets are only ever resolved with `runtime.getSecret()` / `nodeRuntime.getSecret()` (backed by the Vault DON), never read from environment variables or hardcoded — your library should accept a secret ID/name, not a raw credential, and let the consuming workflow own the actual value in [CRE secrets](/cre/guides/workflow/secrets).
+- Non-idempotent calls (POST/PUT/PATCH/DELETE) should set `cacheSettings` so a single DON-wide action isn't repeated once per node.
+- Wrap non-deterministic work (HTTP, secrets) in `runtime.runInNodeMode(...)` with an explicit [consensus aggregation](/cre/reference/sdk/consensus-ts) (`consensusIdenticalAggregation`, `consensusMedianAggregation`, or `ConsensusAggregationByFields` for multi-field objects) so the DON agrees on one result before your function returns control to the workflow.
+- All SDK capability calls use the [`.result()` pattern](/cre/reference/sdk/core-ts#understanding-the-result-pattern) instead of `await` — see the next section.
+
+## Pitfall 3: No top-level `async`/`await` around SDK calls
+
+`Promise` and `async`/`await` exist in QuickJS, but CRE SDK capabilities (`HTTPClient`, `EVMClient`, secrets, and so on) don't use them — they use a synchronous `.result()` handshake between the WASM guest and the CRE host instead, because the guest/host boundary can't await across WASM calls. This means:
+
+- Never use `Promise.race()` / `Promise.any()` around capability calls — result order between nodes is not deterministic and will break consensus.
+- Write your library's functions as plain synchronous functions that call `.result()` inline, matching how workflow code itself is written. You can still use `async`/`await` for your own internal pure-JS logic that doesn't touch the SDK, but don't expose an `async` public API that wraps SDK calls — it will mislead consumers into thinking they should `await` your function when they shouldn't (and can't, at the top level of a handler).
+
+## Pitfall 4: determinism
+
+Every trigger callback in a CRE workflow runs independently on every DON node and must produce identical results (DON mode), except inside `runtime.runInNodeMode()` blocks, which are explicitly for non-deterministic, per-node work that then gets aggregated. If nodes diverge, they generate different request IDs for capability calls and consensus fails outright. If your library does any of its own computation — not just HTTP or secrets — keep it deterministic:
+
+- **Never call `Date.now()` or `new Date()`** inside DON-mode code — accept the current time as a parameter (the workflow author gets it from `runtime.now()`), or compute it inside a `runInNodeMode` block.
+- **`Math.random()` is safe, but only inside the CRE WASM runtime.** The CRE runtime overrides `Math.random()` with a seeded generator so every node produces the same sequence. What's unsafe is randomness computed outside that runtime — for example a pre-computed value passed in, or a dependency that ships its own PRNG or native random source — since that won't go through CRE's override and will diverge across nodes. This randomness is also **not cryptographically secure** — don't use it in your library for anything security-sensitive, such as key generation or signing nonces.
+- **Never use `Promise.race()`, `Promise.any()`, or `Promise.all()` with unpredictable or non-fixed ordering** around `.result()` calls. `Promise.race()`/`Promise.any()` let different nodes "win" with different sources; unpredictable `Promise.all()` usage has the same failure mode if the set or order of promises isn't fixed ahead of time. Instead, call `.result()` on each operation in a fixed, hardcoded order — for example always try API 1, then fall back to API 2. You can still initiate multiple requests before resolving any of them, as long as the order you resolve them in never varies.
+- **Never iterate plain `Object` keys with `for...in`** when order affects the result — object key order isn't guaranteed by spec, even though engines usually preserve insertion order. Use `Object.keys(obj).sort()` for guaranteed-deterministic order. `Map` and `Set` are safe to iterate directly since they guarantee insertion order by specification — prefer them over plain objects when your library's output depends on element order.
+
+
+<Aside type="note" title="Going deeper">
+  See [Avoiding Non-Determinism in Workflows](/cre/concepts/non-determinism-ts) for the complete guide, including object/Map iteration, LLM output handling, and more.
+</Aside>
+
+## Pitfall 5: numeric precision for onchain values
+
+If your library produces or accepts values that will end up in a smart contract call — a price, an amount, a `uint256` — use `bigint` (the `123n` suffix), never `number`. JavaScript `number` silently loses precision above `2^53`, which corrupts large integers without throwing an error. For scaling between human-readable decimals and fixed-point onchain representations, use viem's `parseUnits()`/`formatUnits()` (string-based, no floating-point math) rather than hand-rolled `* 10**18` arithmetic.
+
+## Packaging your library
+
+Structure it as an ordinary TypeScript npm package — there's no special CRE project layout for a library, only for a workflow.
+
+```
+my-cre-library/
+├── src/
+│   └── index.ts
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+**`package.json`:**
+
+```json
+{
+  "name": "my-cre-library",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc"
+  },
+  "peerDependencies": {
+    "@chainlink/cre-sdk": ">=1.0.0"
+  },
+  "devDependencies": {
+    "@chainlink/cre-sdk": "latest",
+    "typescript": "^5.9.0"
+  }
+}
+```
+
+Key points:
+
+- Declare `@chainlink/cre-sdk` as a `peerDependency`, not a regular dependency. The consuming workflow already depends on `@chainlink/cre-sdk` directly — it needs it to run at all — so a peer dependency avoids bundling two separate copies of the SDK into the same WASM binary and avoids version-mismatch surprises. Add it to `devDependencies` too so your own build and typecheck work.
+- Ship plain compiled JS and `.d.ts` declarations — `tsc` output is enough, no bundler is required, since the workflow's own build step is what ultimately compiles everything down to WASM via Bun and Javy. Keep your compiled output free of Node-specific syntax; target `ES2020`/`ESNext` module output, not CommonJS.
+- Don't ship a `postinstall` script — that's a workflow-project concern (`bunx cre-setup`), not a library concern.
+- Keep your own dependency tree small. Everything you import gets bundled into the consuming workflow's single WASM binary, which is subject to production size and memory quotas (inspect them with `cre workflow limits export`, see [Testing Production Limits](/cre/guides/operations/understanding-limits)). A heavy library can push an otherwise-fine workflow over its quota.
+
+**`tsconfig.json`** (mirrors the workflow's own compiler settings so output stays compatible):
+
+```json
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*.ts"]
+}
+```
+
+## Publishing
+
+Publish it like any other npm package:
+
+```bash
+npm run build
+npm publish --access public
+```
+
+Nothing about `npm publish` itself is CRE-specific — the workflow author's `bun install` / `cre-setup` pipeline is what turns your published JS into something that runs inside the WASM sandbox, on their side.
+
+## Using your library from a CRE workflow
+
+The workflow author adds it like any other dependency:
+
+```bash
+cd my-workflow
+bun add my-cre-library
+```
+
+Then imports and calls it from their workflow handler, passing in the `runtime` they already have:
+
+```typescript
+import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { PagerDuty } from "my-cre-library"
+
+type Config = { schedule: string }
+
+const pagerDuty = new PagerDuty({ routingKeySecret: "pager-duty-routing-key" })
+
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  pagerDuty.trigger(runtime, {
+    summary: "ETH/USD price breached threshold",
+    severity: "critical",
+    source: "cre-workflow",
+  })
+  return "alert sent"
+}
+
+const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+The workflow author still owns:
+
+- Storing the actual secret value (`pager-duty-routing-key`) in their [CRE secrets](/cre/guides/workflow/secrets) — your library only ever refers to it by name.
+- Running `cre workflow simulate` to verify your library behaves correctly compiled into their WASM binary before deploying.
+
+## Pre-publish checklist
+
+- [ ] No import of `fs`, `path`, `crypto`, `process`, `http`, `https`, `net`, `stream`, or any other Node built-in (aside from `Buffer`, which is available), directly or transitively.
+- [ ] All outbound network calls go through `HTTPClient` (or `EVMClient` for chain reads/writes), never a third-party HTTP or socket library.
+- [ ] All non-deterministic work (HTTP, secrets, time, randomness) is wrapped in `runtime.runInNodeMode()` with an explicit consensus aggregation, or delegated back to the caller's `runtime`.
+- [ ] No `Promise.race()`, `Promise.any()`, or order-unpredictable `Promise.all()` around `.result()` calls — resolution order is always fixed.
+- [ ] No plain-object `for...in` iteration where key order affects the output — sorted `Object.keys()`, or `Map`/`Set`, instead.
+- [ ] No `async` public API wrapping SDK capability calls — expose the synchronous `.result()`-based pattern.
+- [ ] Secrets are accepted as an ID/name, never as a literal value baked into your library.
+- [ ] `@chainlink/cre-sdk` is a `peerDependency`, not a bundled dependency.
+- [ ] Verified end-to-end with `cre workflow simulate` in a real (throwaway) CRE workflow that depends on your published or local package.
+
+## Learn more
+
+- [TypeScript Runtime Environment](/cre/concepts/typescript-wasm-runtime): QuickJS compatibility and the WASM compilation pipeline
+- [Avoiding Non-Determinism in Workflows](/cre/concepts/non-determinism-ts): The complete determinism guide
+- [SDK Reference: HTTP Client](/cre/reference/sdk/http-client-ts): Full `HTTPClient` API
+- [SDK Reference: Core](/cre/reference/sdk/core-ts): `Runtime`, `NodeRuntime`, and the `.result()` pattern
+- [Secrets](/cre/guides/workflow/secrets): Storing and retrieving secrets for a deployed workflow
+
+---
+
 # Deploying to the Onchain Registry
 Source: https://docs.chain.link/cre/guides/operations/deploying-to-onchain-registry-ts
 Last Updated: 2026-05-12
