@@ -25,30 +25,23 @@ const (
 func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
 	logger := runtime.Logger()
 
-	// Important: Fetch secrets sequentially, not in parallel.
-	// The WASM host for CRE runtime does not support parallel runtime.GetSecret() requests.
-	// Always call GetSecret(), then Await() before making the next GetSecret() call.
-
-	// 1. Fetch the first secret
-	addressPromise := runtime.GetSecret(&protos.SecretRequest{Id: SecretAddressName})
-	secretAddress, err := addressPromise.Await()
+	// Fetch multiple secrets in a single batch call.
+	secrets, err := runtime.GetSecrets([]*protos.SecretRequest{
+		{Id: SecretAddressName},
+		{Id: ApiKeyName},
+	}).Await()
 	if err != nil {
-		logger.Error("Failed to get SECRET_ADDRESS", "err", err)
+		logger.Error("Failed to get secrets", "err", err)
 		return nil, err
 	}
 
-	// 2. Fetch the second secret (only after the first is complete)
-	apiKeyPromise := runtime.GetSecret(&protos.SecretRequest{Id: ApiKeyName})
-	apiKey, err := apiKeyPromise.Await()
-	if err != nil {
-		logger.Error("Failed to get API_KEY", "err", err)
-		return nil, err
-	}
+	// Secrets are returned in the same order as the input requests.
+	secretAddress := secrets[0].Value
+	apiKey := secrets[1].Value
 
-	// 3. Use your secrets
 	logger.Info("Successfully fetched secrets!",
-		"address", secretAddress.Value,
-		"apiKey", apiKey.Value,
+		"address", secretAddress,
+		"apiKey", apiKey,
 	)
 
 	return &MyResult{}, nil
@@ -68,4 +61,3 @@ func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.Secre
 func main() {
 	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
 }
-

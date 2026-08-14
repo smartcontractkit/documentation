@@ -284,11 +284,12 @@ The value returned when the promise resolves.
 
 ### `SecretsProvider` interface
 
-The `SecretsProvider` interface is embedded in `Runtime`, which means `GetSecret` is available directly on the runtime object. It is also passed as a parameter to [`InitWorkflow`](#initworkflow), allowing you to access secrets during workflow initialization.
+The `SecretsProvider` interface is embedded in `Runtime`, which means both `GetSecret` and `GetSecrets` are available directly on the runtime object. It is also passed as a parameter to [`InitWorkflow`](#initworkflow), allowing you to access secrets during workflow initialization.
 
 ```go
 type SecretsProvider interface {
     GetSecret(req *SecretRequest) Promise[*Secret]
+    GetSecrets(reqs []*SecretRequest) Promise[[]*Secret]
 }
 ```
 
@@ -320,6 +321,62 @@ func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
   For a complete walkthrough on creating, storing, and using secrets, see the [Secrets
   guide](/cre/guides/workflow/secrets).
 </Aside>
+
+## `runtime.GetSecrets()`
+
+Retrieves multiple secrets in a single batch call. Use this instead of calling `GetSecret()` multiple times when you need two or more secrets.
+
+**Signature:**
+
+```go
+runtime.GetSecrets(reqs []*SecretRequest) Promise[[]*Secret]
+```
+
+**Parameters:**
+
+| Field  | Type               | Required | Description                                                                              |
+| ------ | ------------------ | -------- | ---------------------------------------------------------------------------------------- |
+| `reqs` | `[]*SecretRequest` | Yes      | Slice of secret requests to fetch. Each entry requires an `Id` and optional `Namespace`. |
+
+Each entry follows the same [`SecretRequest`](#secretrequest) shape as `GetSecret()`.
+
+**Returns:**
+
+A `Promise[[]*Secret]` that resolves to a slice of `*Secret` values in the **same order as the input requests**. Use the index to map results back to the original requests.
+
+**Error handling:**
+
+If any secret in the batch fails, `GetSecrets()` returns an error containing all error messages from the failed secrets. Either all secrets are returned successfully or an error is returned.
+
+**Example:**
+
+```go
+import (
+    "fmt"
+
+    protos "github.com/smartcontractkit/chainlink-protos/cre/go/sdk"
+    "github.com/smartcontractkit/cre-sdk-go/cre"
+)
+
+func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
+    secrets, err := runtime.GetSecrets([]*protos.SecretRequest{
+        {Id: "api-key"},
+        {Id: "webhook-url"},
+    }).Await()
+    if err != nil {
+        return "", fmt.Errorf("failed to get secrets: %w", err)
+    }
+
+    // Secrets are returned in the same order as the input requests
+    apiKey := secrets[0].Value
+    webhookUrl := secrets[1].Value
+
+    logger := runtime.Logger()
+    logger.Info("Secrets retrieved", "endpoint", webhookUrl)
+    _ = apiKey
+    return "done", nil
+}
+```
 
 ## Report verification
 
