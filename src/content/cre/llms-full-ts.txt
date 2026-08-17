@@ -13561,15 +13561,15 @@ The workflow author still owns:
 
 ## Pre-publish checklist
 
-- [ ] No import of `fs`, `path`, `crypto`, `process`, `http`, `https`, `net`, `stream`, or any other Node built-in (aside from `Buffer`, which is available), directly or transitively.
-- [ ] All outbound network calls go through `HTTPClient` (or `EVMClient` for chain reads/writes), never a third-party HTTP or socket library.
-- [ ] HTTP calls, time, and randomness are wrapped in `runtime.runInNodeMode()` with an explicit consensus aggregation, or delegated back to the caller's `runtime`. Secrets are resolved with `getSecret()`, typically from inside that same block.
-- [ ] No `Promise.race()`, `Promise.any()`, or order-unpredictable `Promise.all()` around `.result()` calls; resolution order is always fixed.
-- [ ] No plain-object `for...in` iteration relying on inherited properties; use `Object.keys()`, or `Map`/`Set`, instead.
-- [ ] No `async` public API wrapping SDK capability calls; expose the synchronous `.result()`-based pattern.
-- [ ] Secrets are accepted as an ID/name, never as a literal value baked into your library.
-- [ ] `@chainlink/cre-sdk` is a `peerDependency`, not a bundled dependency.
-- [ ] Verified end-to-end with `cre workflow simulate` in a real (throwaway) CRE workflow that depends on your published or local package.
+- No import of `fs`, `path`, `crypto`, `process`, `http`, `https`, `net`, `stream`, or any other Node built-in (aside from `Buffer`, which is available), directly or transitively.
+- All outbound network calls go through `HTTPClient` (or `EVMClient` for chain reads/writes), never a third-party HTTP or socket library.
+- HTTP calls, time, and randomness are wrapped in `runtime.runInNodeMode()` with an explicit consensus aggregation, or delegated back to the caller's `runtime`. Secrets are resolved with `getSecret()`, typically from inside that same block.
+- No `Promise.race()`, `Promise.any()`, or order-unpredictable `Promise.all()` around `.result()` calls; resolution order is always fixed.
+- No plain-object `for...in` iteration relying on inherited properties; use `Object.keys()`, or `Map`/`Set`, instead.
+- No `async` public API wrapping SDK capability calls; expose the synchronous `.result()`-based pattern.
+- Secrets are accepted as an ID/name, never as a literal value baked into your library.
+- `@chainlink/cre-sdk` is a `peerDependency`, not a bundled dependency.
+- Verified end-to-end with `cre workflow simulate` in a real (throwaway) CRE workflow that depends on your published or local package.
 
 ## Learn more
 

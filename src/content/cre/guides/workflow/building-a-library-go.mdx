@@ -262,17 +262,17 @@ The workflow author still owns:
 
 ## Pre-publish checklist
 
-- [ ] No filesystem access (`os.Open`, `os.ReadFile`, `os.WriteFile`, and similar) anywhere in your library or its dependencies.
-- [ ] No direct network access (`net.Dial`, `net/http`, database drivers, gRPC dialing); all outbound calls go through `http.Client`/`http.SendRequest` (or `evm.Client` for chain reads/writes).
-- [ ] HTTP calls, time, and randomness are wrapped in `cre.RunInNodeMode()` with an explicit consensus aggregation, or delegated back to the caller's `runtime`. Secrets are resolved with `GetSecret()`, typically from inside that same block.
-- [ ] No goroutines, channels, or `select` across multiple channels used to make a decision that affects your function's output.
-- [ ] No direct map iteration where order affects the output, use `cre.OrderedEntries`/`cre.OrderedEntriesFunc`.
-- [ ] `encoding/json` v1 (not v2) and, if applicable, `proto.MarshalOptions{Deterministic: true}` for serialization.
-- [ ] No `time.Now()`, `math/rand`, or `crypto/rand`, use `runtime.Now()` and `runtime.Rand()`.
-- [ ] `*big.Int` for onchain integer values; a decimal type (not `float64`) for prices and other precision-sensitive values.
-- [ ] Secrets are accepted as an ID/name, never as a literal value baked into your library.
-- [ ] No `//go:build wasip1` tag on library files unless truly required, keep your library testable with plain `go test`.
-- [ ] Verified end-to-end with `cre workflow simulate` in a real (throwaway) CRE workflow that depends on your published or local module.
+- No filesystem access (`os.Open`, `os.ReadFile`, `os.WriteFile`, and similar) anywhere in your library or its dependencies.
+- No direct network access (`net.Dial`, `net/http`, database drivers, gRPC dialing); all outbound calls go through `http.Client`/`http.SendRequest` (or `evm.Client` for chain reads/writes).
+- HTTP calls, time, and randomness are wrapped in `cre.RunInNodeMode()` with an explicit consensus aggregation, or delegated back to the caller's `runtime`. Secrets are resolved with `GetSecret()`, typically from inside that same block.
+- No goroutines, channels, or `select` across multiple channels used to make a decision that affects your function's output.
+- No direct map iteration where order affects the output, use `cre.OrderedEntries`/`cre.OrderedEntriesFunc`.
+- `encoding/json` v1 (not v2) and, if applicable, `proto.MarshalOptions{Deterministic: true}` for serialization.
+- No `time.Now()`, `math/rand`, or `crypto/rand`, use `runtime.Now()` and `runtime.Rand()`.
+- `*big.Int` for onchain integer values; a decimal type (not `float64`) for prices and other precision-sensitive values.
+- Secrets are accepted as an ID/name, never as a literal value baked into your library.
+- No `//go:build wasip1` tag on library files unless truly required, keep your library testable with plain `go test`.
+- Verified end-to-end with `cre workflow simulate` in a real (throwaway) CRE workflow that depends on your published or local module.
 
 ## Learn more
 
