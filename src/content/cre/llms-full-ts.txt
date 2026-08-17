@@ -13736,14 +13736,7 @@ The CLI will automatically read the `secrets-path` from your `workflow.yaml` and
 
 ## Fetching multiple secrets
 
-You can fetch multiple secrets by calling the secret retrieval method multiple times within your workflow.
-
-
-<Aside type="caution" title="Fetch secrets sequentially">
-  The WASM host for the CRE runtime does not support parallel `runtime.getSecret()` requests. Always fetch secrets **sequentially**: call `getSecret()`, get the result with `.result()`, then call `getSecret()` again for the next secret. Do not attempt to fetch multiple secrets in parallel.
-</Aside>
-
-The following example builds on the previous one. First, update your `secrets.yaml` to declare two secrets:
+First, update your `secrets.yaml` to declare both secrets:
 
 ```yaml
 secretsNames:
@@ -13760,9 +13753,11 @@ export SECRET_ADDRESS_ALL="0x1234567890abcdef1234567890abcdef12345678"
 export API_KEY_ALL="your-api-key-here"
 ```
 
-Now you can fetch both secrets in your workflow code:
+### Using batch fetch (recommended)
 
-Code snippet for Fetching Multiple Secrets (TypeScript):
+Use `runtime.getSecrets()` to retrieve multiple secrets in a single call. The result is a map keyed by secret ID.
+
+Code snippet for Fetching Multiple Secrets with Batch (TypeScript):
 
 ```typescript
 import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
@@ -13774,14 +13769,15 @@ const SECRET_ADDRESS_NAME = "SECRET_ADDRESS"
 const API_KEY_NAME = "API_KEY"
 
 const onCronTrigger = (runtime: Runtime<Config>): string => {
-  // 1. Request the first secret
-  const secretAddress = runtime.getSecret({ id: SECRET_ADDRESS_NAME }).result()
+  // Fetch multiple secrets in a single batch call
+  const secretsToFetch = [{ id: SECRET_ADDRESS_NAME }, { id: API_KEY_NAME }]
+  const secrets = runtime.getSecrets(secretsToFetch).result()
 
-  // 2. Request the second secret
-  const apiKey = runtime.getSecret({ id: API_KEY_NAME }).result()
+  // Access each secret from the result map by its ID
+  const secretAddress = secrets[SECRET_ADDRESS_NAME].value
+  const apiKey = secrets[API_KEY_NAME].value
 
-  // 3. Use your secrets
-  runtime.log(`Successfully fetched secrets! Address: ${secretAddress.value}, API Key: ${apiKey.value}`)
+  runtime.log(`Successfully fetched secrets! Address: ${secretAddress}, API Key: ${apiKey}`)
 
   return "Success"
 }
@@ -13799,6 +13795,11 @@ export async function main() {
   await runner.run(initWorkflow)
 }
 ```
+
+
+<Aside type="note" title="All-or-nothing error handling">
+  If any secret in a batch fails to fetch, `getSecrets()` throws a `SecretsBatchError` containing all error messages from the failed secrets.
+</Aside>
 
 ---
 
@@ -21980,6 +21981,52 @@ const onTrigger = (runtime: Runtime<Config>): string => {
 <Aside type="note" title="Secrets guide">
   For a complete walkthrough on creating, storing, and using secrets, see the [Secrets guide](/cre/guides/workflow/secrets).
 </Aside>
+
+## `runtime.getSecrets()`
+
+Retrieves multiple secrets in a single batch call. Use this instead of calling `getSecret()` in a loop when you need two or more secrets.
+
+**Signature:**
+
+```typescript
+runtime.getSecrets(
+  requests: Array<SecretRequest | SecretRequestJson>
+): { result: () => Record<string, Secret> }
+```
+
+**Parameters:**
+
+| Field      | Type                                        | Required | Description                                               |
+| ---------- | ------------------------------------------- | -------- | --------------------------------------------------------- |
+| `requests` | `Array<SecretRequest \| SecretRequestJson>` | Yes      | Array of secrets to fetch. Duplicate IDs are not allowed. |
+
+Each entry in `requests` follows the same [`SecretRequest`](#secretrequest--secretrequestjson) shape as `getSecret()`.
+
+**Returns:**
+
+A `Record<string, Secret>` (after calling `.result()`) where each key is the secret's `id` and the value is the corresponding [`Secret`](#secret) object.
+
+**Error handling:**
+
+If any secret in the batch fails, `getSecrets()` throws a `SecretsBatchError` containing all error messages aggregated from the failed secrets.
+
+**Example:**
+
+```typescript
+import { type Runtime } from "@chainlink/cre-sdk"
+
+const onTrigger = (runtime: Runtime<Config>): string => {
+  const secretsToFetch = [{ id: "api-key" }, { id: "webhook-url" }]
+
+  const secrets = runtime.getSecrets(secretsToFetch).result()
+
+  const apiKey = secrets["api-key"].value
+  const webhookUrl = secrets["webhook-url"].value
+
+  runtime.log(`Fetched ${Object.keys(secrets).length} secrets`)
+  return "done"
+}
+```
 
 ## Report verification
 
