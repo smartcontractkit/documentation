@@ -215,25 +215,3 @@ If you see `request failed status=4XX`, confirm the mock server is running and t
 **Secrets must be finite numbers**
 
 If you see `secret X must be a finite number`, one of the numeric policy secrets was set to a non-numeric value. Confirm that all numeric environment variables in `.env` are valid floats or integers.
-
-## Optional on-chain delivery
-
-The workflow classifies each trade as on-chain or off-chain based on its venue field and builds a separate execution plan for each route:
-
-| Venue value                              | Classification |
-| ---------------------------------------- | -------------- |
-| `onchain` (exact match)                  | On-chain       |
-| Any value containing `uniswap`           | On-chain       |
-| Any value containing `1inch`             | On-chain       |
-| Any value containing `dex`               | On-chain       |
-| All others (e.g., `binance`, `coinbase`) | Off-chain      |
-
-The execute API request includes separate `onchain_trades` and `offchain_trades` arrays alongside the full unified `trades` list, letting your backend route each trade to the appropriate execution system independently.
-
-To enable on-chain swap execution:
-
-1. Set `CRE_ETH_PRIVATE_KEY` to a funded wallet private key or a 1Password reference (`op://vault/item/field`).
-2. Add `"onchain"`, `"uniswap"`, or `"1inch"` to `MOCK_REBALANCING_PREFERRED_VENUES`.
-3. Extend the execute endpoint to route on-chain trades to the appropriate DEX router (e.g., Uniswap `SwapRouter` or 1inch `AggregationRouterV5`).
-
-The staging config does not include an on-chain write target. For production on-chain execution, update `project.yaml` to include your target chain configuration.

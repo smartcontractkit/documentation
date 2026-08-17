@@ -226,15 +226,3 @@ If you see `request failed status=4XX`, confirm the mock server is running (`bun
 **Workflow logs `liquidation-no-action`**
 
 This is expected behavior when the position is healthy. The log includes `proximity=X threshold=Y reason=Z` to confirm the position state and why no action was taken.
-
-## Optional on-chain delivery
-
-The workflow supports on-chain execution venues alongside centralized exchange execution. Actions that include `venue: "onchain"` in the LLM response are classified as on-chain trades and routed accordingly by the execute API.
-
-To enable on-chain execution:
-
-1. Set `CRE_ETH_PRIVATE_KEY` to a funded wallet private key or a 1Password reference (`op://vault/item/field`).
-2. Add `"onchain"` to the `MOCK_LIQUIDATION_PREFERRED_VENUES` list.
-3. Extend the execute endpoint integration to route on-chain actions to your lending protocol's smart contract interface.
-
-The staging config targets Ethereum Sepolia for testnet validation. Update `project.yaml` to target `ethereum-mainnet` for production on-chain execution.
