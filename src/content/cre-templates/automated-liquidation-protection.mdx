@@ -15,7 +15,7 @@ githubRepoLinks:
   - label: "Go"
     url: "https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/confidential-workflows/automated-liquidation-protection/automated-liquidation-protection-go"
 datePublished: "2026-08-04"
-lastModified: "2026-08-06"
+lastModified: "2026-08-17"
 ---
 
 import { Aside } from "@components"
@@ -27,130 +27,214 @@ import { Aside } from "@components"
   confidential workflows in minutes.
 </Aside>
 
-This standalone CRE project implements a confidential liquidation-defense workflow for DeFi lending positions.
+## What this template does
 
-## Description
+This CRE workflow implements a confidential liquidation-defense system for DeFi lending positions. It runs on a cron schedule, continuously evaluates a borrower's collateral health, and automatically executes defensive actions before a position reaches the liquidation threshold. Exchange credentials, LLM API keys, risk thresholds, and execution preferences all remain protected inside confidential execution.
 
-The workflow continuously evaluates borrower risk and takes defensive action before a position becomes unsafe.
-During periods of high volatility, it can increase collateral, reduce debt, or combine both strategies based on
-policy constraints. Sensitive operational data remains protected in confidential execution, including exchange
-credentials, model credentials, and user-defined risk thresholds.
+**Data flow:**
 
-## Target Customer
+1. Fetch current risk state: collateral and debt pricing, health factor, liquidation proximity, LTV, liquidation threshold, and market volatility.
+2. Load policy parameters from secrets: reserve deployment caps, minimum reserve balance, health factor targets, collateral and repayment limits, sequencing preference, and preferred venues.
+3. Compute a composite risk score from proximity, LTV buffer, health factor, and volatility.
+4. Send risk state and policy to an LLM reasoning model to select and sequence defensive actions.
+5. Enforce all policy constraints against the proposed action plan before execution.
+6. Execute the approved defense plan through the exchange or DeFi API.
 
-- Professional retail traders
-- Developer shops
-- Founders building trading products
+If liquidation proximity is above the warning threshold (the position has sufficient buffer), the workflow exits with `SAFE` and takes no action.
 
-## Structure
+## Defensive Actions and Policy Constraints
 
-- `project.yaml`: project-level target settings
-- `secrets.yaml`: secret ID mappings used by the workflow
-- `mock-server.js`: local deterministic API server
-- `automated-liquidation-protection-ts/`: TypeScript workflow implementation
-- `automated-liquidation-protection-go/`: Go workflow implementation
+### Defensive action types
 
-## Private Inputs
+| Action                               | Description                                                      |
+| ------------------------------------ | ---------------------------------------------------------------- |
+| `add_collateral`                     | Deposit additional collateral directly into the lending position |
+| `bridge_and_add_collateral`          | Bridge assets from another chain, then deposit as collateral     |
+| `swap_reserve_to_collateral`         | Swap stablecoin reserves to the collateral asset, then deposit   |
+| `repay_with_reserves`                | Repay outstanding debt using the stablecoin reserve balance      |
+| `swap_reserve_to_borrowed_and_repay` | Swap reserves to the borrowed asset denomination, then repay     |
+| `partial_debt_repayment`             | Repay a configured percentage of outstanding debt                |
+| `full_debt_repayment`                | Repay the entire outstanding debt balance                        |
 
-The following inputs are treated as confidential:
+### Policy constraints
 
-- Exchange API credentials used to fetch account context such as stablecoin reserves and available cash balance.
-- LLM reasoning API credentials and policy parameters used to govern defense behavior, including minimum and target health factors, reserve deployment caps, minimum reserve balance, and collateral allocation limits.
-- Execution preferences that define how defense actions should be sequenced.
+All policy values are loaded from secrets at runtime. Reserve-based constraints are enforced as hard limits before any execution call. Sequencing and venue preferences guide the LLM action plan.
 
-## Workflow Notes
+| Constraint                  | Description                                                                                                      |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Reserve deployment cap      | Maximum USDC that can be deployed in a single defensive action                                                   |
+| Reserve floor               | Minimum USDC that must remain after any action. Actions that would breach this floor are rejected with an error. |
+| Collateral allocation limit | Maximum percentage of available collateral for a single action. Passed to the LLM as a policy parameter.         |
+| Partial repayment cap       | Maximum percentage of outstanding debt that can be repaid in a single action                                     |
+| Action sequencing           | Order in which defensive moves are prioritized: `collateral-first`, `debt-first`, or `balanced`                  |
+| Preferred venues            | Comma-separated list of preferred execution venues (e.g., `binance,onchain,coinbase`)                            |
 
-1. Observe liquidation risk signals.
-   The workflow tracks collateral and debt asset pricing, health factor, liquidation proximity, LTV, liquidation threshold, and market volatility.
-2. Enforce user policy constraints.
-   Confidential reasoning evaluates how much capital can be deployed, whether debt reduction should be prioritized, which reserve assets are eligible, and what execution sequence is preferred.
-3. Select defense actions.
-   The workflow builds a response plan that may include collateral-focused moves (deposit, bridge, swap-then-deposit) and debt-focused moves (repay, swap-then-repay, partial payoff, full payoff).
-4. Execute the approved defense plan.
+### Risk signals monitored
 
-Note: Every reasoning stage can be implemented with deterministic rule-based logic instead of an LLM, if your deployment requires a fully rules-driven policy engine.
+| Signal                      | Description                                                                              |
+| --------------------------- | ---------------------------------------------------------------------------------------- |
+| `liquidation_proximity_pct` | Percentage buffer distance from the liquidation threshold (higher = more buffer = safer) |
+| `collateral_health_factor`  | Ratio of collateral value to outstanding debt                                            |
+| `loan_to_value_pct`         | Current LTV percentage                                                                   |
+| `liquidation_threshold_pct` | Protocol-defined liquidation threshold                                                   |
+| `volatility_index`          | Market volatility indicator                                                              |
 
-## Required Environment Variables
+### Risk score
 
-Copy `.env.example` to `.env` and provide values for:
+The workflow computes a composite risk score to guide action selection:
 
-- `CRE_ETH_PRIVATE_KEY` (optional for local simulate)
-- `MOCK_PORT`
-- `MOCK_EXCHANGE_API_KEY`
-- `MOCK_OPENAI_API_KEY`
-- `MOCK_LIQUIDATION_WARNING_ACTION_THRESHOLD`
-- `MOCK_LIQUIDATION_MINIMUM_HEALTH_FACTOR`
-- `MOCK_LIQUIDATION_TARGET_HEALTH_FACTOR`
-- `MOCK_LIQUIDATION_MAX_STABLECOIN_RESERVE_DEPLOYMENT`
-- `MOCK_LIQUIDATION_MIN_STABLECOIN_RESERVE_BALANCE`
-- `MOCK_LIQUIDATION_MAX_COLLATERAL_ALLOCATION`
-- `MOCK_LIQUIDATION_MAX_PARTIAL_DEBT_REPAYMENT`
-- `MOCK_LIQUIDATION_DEFENSIVE_ACTION_SEQUENCING_PREFERENCE`
-- `MOCK_LIQUIDATION_PREFERRED_VENUES`
+```
+proximityRisk  = max(0, warningThreshold − liquidationProximity) × 5
+ltvBufferRisk  = max(0, LTV − (liquidationThreshold − 5)) × 2
+healthRisk     = max(0, minHealthFactor − healthFactor) × 100
+volatilityRisk = volatilityIndex × 25
+riskScore      = proximityRisk + ltvBufferRisk + healthRisk + volatilityRisk
+```
 
-The local mock server for this project only exposes routes under `/liquidation/*`.
+## Prerequisites
 
-**Quick navigation:**
+- [Bun](https://bun.sh) runtime
+- CRE CLI (`cre`)
+- A DeFi risk monitoring or exchange API that exposes position health signals
+- An LLM API endpoint for reasoning (e.g., an OpenAI-compatible endpoint)
 
-- [TypeScript Quick Start](#typescript-quick-start)
-- [Go Quick Start](#go-quick-start)
+## Configuration
 
-## TypeScript Quick Start
+The workflow ships with two config files:
+
+- `automated-liquidation-protection-ts/config.staging.json` (TypeScript) and `automated-liquidation-protection-go/config.staging.json` (Go): targets mock server endpoints
+- `automated-liquidation-protection-ts/config.production.json` (TypeScript) and `automated-liquidation-protection-go/config.production.json` (Go): same structure with empty URLs for you to populate
+
+Key fields:
+
+| Field           | Description                                                 |
+| --------------- | ----------------------------------------------------------- |
+| `schedule`      | Cron expression. Default: `0 */5 * * * *` (every 5 minutes) |
+| `mock_base_url` | Base URL for the exchange or risk API                       |
+| `openai_url`    | LLM reasoning endpoint                                      |
+| `openai_model`  | Model identifier (e.g., `gpt-4.1-mini`)                     |
+| `secrets_ids.*` | Secret IDs for API keys and all policy parameters           |
+
+## Secrets
+
+Copy `.env.example` to `.env` and populate all values before running locally. The workflow enforces a strict limit of exactly 11 secrets per invocation.
+
+| Environment variable                                      | Secret ID                                            | Purpose                                                                |
+| --------------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------- |
+| `MOCK_EXCHANGE_API_KEY`                                   | `exchange_api_key`                                   | Authenticates exchange or risk API requests                            |
+| `MOCK_OPENAI_API_KEY`                                     | `openai_api_key`                                     | Authenticates LLM reasoning API requests                               |
+| `MOCK_LIQUIDATION_WARNING_ACTION_THRESHOLD`               | `liquidation_liquidation_warning_action_threshold`   | Proximity percentage that triggers defensive actions (e.g., `18`)      |
+| `MOCK_LIQUIDATION_MINIMUM_HEALTH_FACTOR`                  | `liquidation_minimum_health_factor`                  | Minimum acceptable health factor (e.g., `1.25`)                        |
+| `MOCK_LIQUIDATION_TARGET_HEALTH_FACTOR`                   | `liquidation_target_health_factor`                   | Target health factor after defense executes (e.g., `1.5`)              |
+| `MOCK_LIQUIDATION_MAX_STABLECOIN_RESERVE_DEPLOYMENT`      | `liquidation_maximum_stablecoin_reserve_deployment`  | Maximum USDC that can be deployed per action (e.g., `5000`)            |
+| `MOCK_LIQUIDATION_MIN_STABLECOIN_RESERVE_BALANCE`         | `liquidation_minimum_stablecoin_reserve_balance`     | Minimum USDC to keep in reserve (e.g., `2000`)                         |
+| `MOCK_LIQUIDATION_MAX_COLLATERAL_ALLOCATION`              | `liquidation_maximum_collateral_allocation`          | Maximum collateral percentage per action (e.g., `80`)                  |
+| `MOCK_LIQUIDATION_MAX_PARTIAL_DEBT_REPAYMENT`             | `liquidation_maximum_partial_debt_repayment`         | Maximum debt repayment percentage per action (e.g., `40`)              |
+| `MOCK_LIQUIDATION_DEFENSIVE_ACTION_SEQUENCING_PREFERENCE` | `liquidation_defensive_action_sequencing_preference` | `collateral-first`, `debt-first`, or `balanced`                        |
+| `MOCK_LIQUIDATION_PREFERRED_VENUES`                       | `liquidation_preferred_venues`                       | Comma-separated venue list (e.g., `binance,onchain,coinbase`)          |
+| `CRE_ETH_PRIVATE_KEY`                                     | _(framework-level)_                                  | Optional for local simulation. Required if executing on-chain actions. |
+
+## Quick start
+
+**TypeScript**
+
+Run all commands from the `automated-liquidation-protection` directory (the project root).
 
 1. Install dependencies
 
-```bash
-bun install
-```
+   ```bash
+   cd automated-liquidation-protection-ts && bun install && cd ..
+   ```
 
 2. Create environment file
 
-```bash
-cp .env.example .env
-```
+   ```bash
+   cp .env.example .env
+   ```
 
 3. Start mock server
 
-```bash
-bun run mock:server
-```
+   ```bash
+   cd automated-liquidation-protection-ts && bun run mock:server
+   ```
 
-4. In another terminal, run checks
+4. In another terminal, run checks and simulate
 
-```bash
-bun run typecheck
-bun run test
-```
+   ```bash
+   cd automated-liquidation-protection-ts
+   bun run typecheck
+   bun run test
+   cd .. && cre workflow simulate ./automated-liquidation-protection-ts --project-root ./ --target=staging-settings --env ./.env
+   ```
 
-5. Simulate workflow
+**Go**
 
-```bash
-cre workflow simulate ./automated-liquidation-protection-ts --target=staging-settings
-```
+Run all commands from the `automated-liquidation-protection` directory (the project root).
 
-## Go Quick Start
+1. Create environment file
 
-1. Create environment file (at the shared project root)
+   ```bash
+   cp .env.example .env
+   ```
 
-```bash
-cp ../.env.example ../.env
-```
+2. Start the mock server from the TypeScript directory (requires Node or Bun)
 
-2. Start the mock server (requires Node or Bun)
+   ```bash
+   cd automated-liquidation-protection-ts && bun run mock:server
+   ```
 
-```bash
-bun mock-server.js
-```
+3. In another terminal, run checks and simulate
 
-3. In another terminal, run checks
+   ```bash
+   cd automated-liquidation-protection-go
+   go vet ./...
+   go test ./...
+   cd .. && cre workflow simulate ./automated-liquidation-protection-go --project-root ./ --target=staging-settings --env ./.env
+   ```
 
-```bash
-go vet ./...
-go test ./...
-```
+## Production checklist
 
-4. Simulate workflow
+- Populate `config.production.json` with real `mock_base_url` and `openai_url`.
+- Register all 11 secrets in the CRE secrets manager and verify secret IDs match those defined in `config.production.json` under `secrets_ids`.
+- Set `MOCK_LIQUIDATION_MIN_STABLECOIN_RESERVE_BALANCE` to a value that provides a meaningful reserve buffer for your position size.
+- Set `CRE_ETH_PRIVATE_KEY` if any defensive action routes through on-chain execution.
+- Confirm the exchange API returns the expected risk state schema before deploying.
+- Run `bun run typecheck && bun run test` (TypeScript) or `go vet ./... && go test ./...` (Go) before registering.
+- Run `cre workflow simulate` against production endpoints to validate end-to-end behavior.
+- Register the workflow:
+  - TypeScript: `cre workflow register ./automated-liquidation-protection-ts --project-root ./ --target=production-settings`
+  - Go: `cre workflow register ./automated-liquidation-protection-go --project-root ./ --target=production-settings`
 
-```bash
-cd .. && cre workflow simulate ./automated-liquidation-protection-go --target=staging-settings
-```
+## Troubleshooting
+
+**Reserve floor breach error**
+
+If you see `action X breaches reserve floor: projected Y < floor Z`, the proposed action would reduce stablecoin reserves below the configured minimum. Increase `MOCK_LIQUIDATION_MIN_STABLECOIN_RESERVE_BALANCE`, reduce `MOCK_LIQUIDATION_MAX_STABLECOIN_RESERVE_DEPLOYMENT`, or reduce position size.
+
+**Secrets must be finite numbers**
+
+If you see `secret X must be a finite number`, one of the numeric policy secrets was set to a non-numeric value. Confirm that all numeric environment variables in `.env` are valid floats or integers (e.g., `1.25`, not `"n/a"`).
+
+**LLM response format mismatch**
+
+If the LLM response cannot be parsed, the model must return either an `output_text` field or a nested `output[].content[].text` structure. If neither is present, you will see the error `openai response did not contain output_text`. Check your LLM endpoint logs or mock server configuration to verify the response format.
+
+**HTTP request failures**
+
+If you see `request failed status=4XX`, confirm the mock server is running (`bun run mock:server`) and that the API keys in `.env` match the values expected by the mock server.
+
+**Workflow logs `liquidation-no-action`**
+
+This is expected behavior when the position is healthy. The log includes `proximity=X threshold=Y reason=Z` to confirm the position state and why no action was taken.
+
+## Optional on-chain delivery
+
+The workflow supports on-chain execution venues alongside centralized exchange execution. Actions that include `venue: "onchain"` in the LLM response are classified as on-chain trades and routed accordingly by the execute API.
+
+To enable on-chain execution:
+
+1. Set `CRE_ETH_PRIVATE_KEY` to a funded wallet private key or a 1Password reference (`op://vault/item/field`).
+2. Add `"onchain"` to the `MOCK_LIQUIDATION_PREFERRED_VENUES` list.
+3. Extend the execute endpoint integration to route on-chain actions to your lending protocol's smart contract interface.
+
+The staging config targets Ethereum Sepolia for testnet validation. Update `project.yaml` to target `ethereum-mainnet` for production on-chain execution.
