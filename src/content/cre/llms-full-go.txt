@@ -13266,14 +13266,7 @@ The CLI will automatically read the `secrets-path` from your `workflow.yaml` and
 
 ## Fetching multiple secrets
 
-You can fetch multiple secrets by calling the secret retrieval method multiple times within your workflow.
-
-
-<Aside type="caution" title="Fetch secrets sequentially">
-  The WASM host for the CRE runtime does not support parallel `runtime.GetSecret()` requests. Always fetch secrets **sequentially**: call `GetSecret()`, await the promise with `.Await()`, then call `GetSecret()` again for the next secret. Do not attempt to fetch multiple secrets in parallel.
-</Aside>
-
-The following example builds on the previous one. First, update your `secrets.yaml` to declare two secrets:
+First, update your `secrets.yaml` to declare both secrets:
 
 ```yaml
 secretsNames:
@@ -13290,9 +13283,11 @@ export SECRET_ADDRESS_ALL="0x1234567890abcdef1234567890abcdef12345678"
 export API_KEY_ALL="your-api-key-here"
 ```
 
-Now you can fetch both secrets in your workflow code:
+### Using batch fetch (recommended)
 
-Code snippet for Fetching Multiple Secrets (Go):
+Use `runtime.GetSecrets()` to retrieve multiple secrets in a single call. Secrets are returned in the same order as the input requests.
+
+Code snippet for Fetching Multiple Secrets with Batch (Go):
 
 ```go
 //go:build wasip1
@@ -13322,30 +13317,23 @@ const (
 func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
 	logger := runtime.Logger()
 
-	// Important: Fetch secrets sequentially, not in parallel.
-	// The WASM host for CRE runtime does not support parallel runtime.GetSecret() requests.
-	// Always call GetSecret(), then Await() before making the next GetSecret() call.
-
-	// 1. Fetch the first secret
-	addressPromise := runtime.GetSecret(&protos.SecretRequest{Id: SecretAddressName})
-	secretAddress, err := addressPromise.Await()
+	// Fetch multiple secrets in a single batch call.
+	secrets, err := runtime.GetSecrets([]*protos.SecretRequest{
+		{Id: SecretAddressName},
+		{Id: ApiKeyName},
+	}).Await()
 	if err != nil {
-		logger.Error("Failed to get SECRET_ADDRESS", "err", err)
+		logger.Error("Failed to get secrets", "err", err)
 		return nil, err
 	}
 
-	// 2. Fetch the second secret (only after the first is complete)
-	apiKeyPromise := runtime.GetSecret(&protos.SecretRequest{Id: ApiKeyName})
-	apiKey, err := apiKeyPromise.Await()
-	if err != nil {
-		logger.Error("Failed to get API_KEY", "err", err)
-		return nil, err
-	}
+	// Secrets are returned in the same order as the input requests.
+	secretAddress := secrets[0].Value
+	apiKey := secrets[1].Value
 
-	// 3. Use your secrets
 	logger.Info("Successfully fetched secrets!",
-		"address", secretAddress.Value,
-		"apiKey", apiKey.Value,
+		"address", secretAddress,
+		"apiKey", apiKey,
 	)
 
 	return &MyResult{}, nil
@@ -13366,6 +13354,11 @@ func main() {
 	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
 }
 ```
+
+
+<Aside type="note" title="All-or-nothing error handling">
+  If any secret in the batch fails to fetch, `GetSecrets()` returns an error containing all error messages from the failed secrets.
+</Aside>
 
 ---
 
@@ -21209,11 +21202,12 @@ The value returned when the promise resolves.
 
 ### `SecretsProvider` interface
 
-The `SecretsProvider` interface is embedded in `Runtime`, which means `GetSecret` is available directly on the runtime object. It is also passed as a parameter to [`InitWorkflow`](#initworkflow), allowing you to access secrets during workflow initialization.
+The `SecretsProvider` interface is embedded in `Runtime`, which means both `GetSecret` and `GetSecrets` are available directly on the runtime object. It is also passed as a parameter to [`InitWorkflow`](#initworkflow), allowing you to access secrets during workflow initialization.
 
 ```go
 type SecretsProvider interface {
     GetSecret(req *SecretRequest) Promise[*Secret]
+    GetSecrets(reqs []*SecretRequest) Promise[[]*Secret]
 }
 ```
 
@@ -21245,6 +21239,62 @@ func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
   For a complete walkthrough on creating, storing, and using secrets, see the [Secrets
   guide](/cre/guides/workflow/secrets).
 </Aside>
+
+## `runtime.GetSecrets()`
+
+Retrieves multiple secrets in a single batch call. Use this instead of calling `GetSecret()` multiple times when you need two or more secrets.
+
+**Signature:**
+
+```go
+runtime.GetSecrets(reqs []*SecretRequest) Promise[[]*Secret]
+```
+
+**Parameters:**
+
+| Field  | Type               | Required | Description                                                                              |
+| ------ | ------------------ | -------- | ---------------------------------------------------------------------------------------- |
+| `reqs` | `[]*SecretRequest` | Yes      | Slice of secret requests to fetch. Each entry requires an `Id` and optional `Namespace`. |
+
+Each entry follows the same [`SecretRequest`](#secretrequest) shape as `GetSecret()`.
+
+**Returns:**
+
+A `Promise[[]*Secret]` that resolves to a slice of `*Secret` values in the **same order as the input requests**. Use the index to map results back to the original requests.
+
+**Error handling:**
+
+If any secret in the batch fails, `GetSecrets()` returns an error containing all error messages from the failed secrets. Either all secrets are returned successfully or an error is returned.
+
+**Example:**
+
+```go
+import (
+    "fmt"
+
+    protos "github.com/smartcontractkit/chainlink-protos/cre/go/sdk"
+    "github.com/smartcontractkit/cre-sdk-go/cre"
+)
+
+func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
+    secrets, err := runtime.GetSecrets([]*protos.SecretRequest{
+        {Id: "api-key"},
+        {Id: "webhook-url"},
+    }).Await()
+    if err != nil {
+        return "", fmt.Errorf("failed to get secrets: %w", err)
+    }
+
+    // Secrets are returned in the same order as the input requests
+    apiKey := secrets[0].Value
+    webhookUrl := secrets[1].Value
+
+    logger := runtime.Logger()
+    logger.Info("Secrets retrieved", "endpoint", webhookUrl)
+    _ = apiKey
+    return "done", nil
+}
+```
 
 ## Report verification
 
