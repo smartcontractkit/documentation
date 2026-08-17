@@ -497,10 +497,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Building a Reusable Library",
-          url: "cre/guides/operations/building-a-library",
+          url: "cre/guides/workflow/building-a-library",
           highlightAsCurrent: [
-            "cre/guides/operations/building-a-library-ts",
-            "cre/guides/operations/building-a-library-go",
+            "cre/guides/workflow/building-a-library-ts",
+            "cre/guides/workflow/building-a-library-go",
           ],
         },
       ],
