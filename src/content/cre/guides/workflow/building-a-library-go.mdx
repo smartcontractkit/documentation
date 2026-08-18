@@ -14,7 +14,7 @@ import { Aside } from "@components"
 
 This guide shows you how to package reusable integration logic (for example, a Slack notifier, a PagerDuty client, or a price-feed parser) as a standard Go module that other developers can `go get` and import directly into their own CRE workflows.
 
-This is not a guide to writing a workflow itself, it assumes you're already familiar with that. If you're new to CRE, start with the [getting-started guide](/cre/getting-started/overview) first.
+This guide is not a tutorial on writing a workflow itself: if you're new to CRE, start with the [getting-started guide](/cre/getting-started/overview) first.
 
 ## Who this is for
 
@@ -30,27 +30,31 @@ Unlike the TypeScript SDK, which runs inside a stripped-down QuickJS engine, Go 
 - No arbitrary outbound network access. There's no raw socket layer to dial into, so everything non-deterministic (HTTP calls, secrets, blockchain reads/writes) must go through CRE SDK capability APIs, which the DON executes and brings to consensus on your library's behalf.
 - Single-threaded, deterministic execution. All DON nodes must execute your code identically and produce the same output.
 
-Design your library around this from the start. Don't write it as a generic Go module that happens to shell out to the filesystem or network and hope it works under WASI, write it against the CRE SDK's runtime primitives.
+Design your library around these constraints from the start. Don't write a generic Go module and assume it will run unmodified under WASI. Instead, build it directly against the CRE SDK's runtime primitives.
 
-## Pitfall 1: No filesystem or arbitrary network access
+## Pitfalls
+
+Because your library runs inside the same WASI sandbox as the workflow, the code you write can't rely on the host filesystem, network, or concurrency primitives you're used to. The sections below cover the pitfalls that trip up most library authors: no filesystem or arbitrary network access, no standard HTTP client, `Promise`/`Await` concurrency instead of goroutines, non-determinism, and numeric precision for onchain values. Read through them before you start, and keep them in mind as you design your library's API.
+
+### No filesystem or arbitrary network access
 
 Your library (or one of its transitive dependencies) must not depend on:
 
 - **Filesystem access**: `os.Open`, `os.ReadFile`, `os.WriteFile`, config-file loaders, embedded file caches written to disk, and so on. There is no writable (or meaningfully readable) filesystem in the WASI sandbox the workflow runs in.
 - **Direct network access**: `net.Dial`, `net/http`'s `http.Client`/`http.Get`, gRPC dialing, database drivers, or any other package that opens its own socket. These either fail at runtime or, worse, silently do nothing useful, because there's no outbound network stack available to your code directly, only to the CRE host, through capability calls.
 
-Anything your library needs from disk (default config, lookup tables, certificates) should be compiled in as Go constants, embedded with `//go:embed` (a compile-time read, not a runtime filesystem access, so this is safe), or passed in as arguments by the caller. Anything it needs from the network must go through [`cre-sdk-go`](#pitfall-2-no-standard-http-client)'s `http.Client`/`http.SendRequest`, never a raw dependency that dials sockets itself.
+Anything your library needs from disk (default config, lookup tables, certificates) should be compiled in as Go constants, embedded with `//go:embed` (a compile-time read, not a runtime filesystem access, so this is safe), or passed in as arguments by the caller. Anything it needs from the network must go through [`cre-sdk-go`](#no-standard-http-client)'s `http.Client`/`http.SendRequest`, never a raw dependency that dials sockets itself.
 
 {/* prettier-ignore */}
 <Aside type="tip" title="Verify with simulation">
   Because the Go standard library compiles cleanly for `wasip1` far more often than a Node package compiles for QuickJS, a dependency that shouldn't work can still build successfully and only fail (or silently no-op) at runtime. Always confirm behavior with `cre workflow simulate` in a throwaway test workflow before publishing, a clean build is not proof of compatibility.
 </Aside>
 
-## Pitfall 2: No standard HTTP client
+### No standard HTTP client
 
-Do not depend on `net/http`, a REST client wrapper built on it, or any package that dials its own connections. Instead, all outbound requests must go through [`http.Client`](/cre/reference/sdk/http-client-go) from `github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http`. This isn't just a technical requirement, it's what gives the request DON-wide consensus. An HTTP call in CRE runs independently on every node in the DON (node mode), and the SDK aggregates the individual results into one trusted value before the workflow continues. A library that dials out with `net/http` would bypass this consensus mechanism entirely, even if it somehow ran.
+Do not depend on `net/http`, a REST client wrapper built on it, or any package that dials its own connections. Instead, all outbound requests must go through [`http.Client`](/cre/reference/sdk/http-client-go) from `github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http`. This isn't just a technical requirement, it's what gives the request DON-wide consensus. An HTTP call in CRE runs independently on every node in the DON (node mode), and the SDK aggregates the individual results into one trusted value before the workflow continues. A library that dials out with `net/http` would bypass this consensus mechanism entirely, and even if it appeared to run, it would fail in production since the DON nodes would never agree on a single result.
 
-Consequence for library design: your exported functions should take a `cre.Runtime` as a parameter, and use it (via `http.SendRequest` or `cre.RunInNodeMode`) to construct requests, exactly as a workflow author would inline. Your library is a thin, well-tested wrapper around this pattern, not a replacement for it.
+Consequence for library design: your exported functions should take a `cre.Runtime` as a parameter, and use it (via `http.SendRequest` or `cre.RunInNodeMode`) to construct requests, exactly as a workflow author would inline. Keep your library a thin, well-tested wrapper around that `Runtime`-based request pattern.
 
 ```go
 // pagerduty.go, inside your library module
@@ -136,7 +140,7 @@ Notes on this pattern:
 - `Body` on `http.Request` is a plain `[]byte`; unlike the TypeScript SDK, there's no base64-encoding step to worry about.
 - All SDK capability calls return a [`Promise[T]`](/cre/reference/sdk/core-go#promise) that you resolve with `.Await()`, see the next section.
 
-## Pitfall 3: `Promise`/`Await` concurrency, not goroutines
+### `Promise`/`Await` concurrency, not goroutines
 
 The Go SDK doesn't use `async`/`await` keywords, it uses a `Promise[T]` type with `.Await()`, `cre.Then()`, and `cre.ThenPromise()` for chaining (see [Core SDK Reference](/cre/reference/sdk/core-go#promise)). This exists because the underlying operation only actually runs when you call `.Await()`, building a promise chain without awaiting it does nothing.
 
@@ -146,7 +150,7 @@ The pitfall specific to Go: don't reach for goroutines, channels, or `sync` prim
 - If you need to make several capability calls, initiate them in a fixed order and resolve them (`.Await()`) in that same fixed order. You can build up several `Promise` values before awaiting any of them, but the order you await them in must never vary.
 - `cre.Then()` / `cre.ThenPromise()` are the idiomatic way to chain dependent async steps without nested `.Await()` calls, prefer them over manually orchestrating goroutines.
 
-## Pitfall 4: determinism
+### Determinism
 
 Every trigger callback in a CRE workflow runs independently on every DON node and must produce identical results (DON mode), except inside `cre.RunInNodeMode()` blocks, which are explicitly for non-deterministic, per-node work that then gets aggregated. If nodes diverge, they generate different request IDs for capability calls and consensus fails outright.
 
@@ -154,17 +158,21 @@ Every trigger callback in a CRE workflow runs independently on every DON node an
 - **Never use `math/rand` (or `crypto/rand`) directly.** Use `runtime.Rand()` from the CRE SDK, which provides a consensus-safe generator so every node produces the same sequence.
 - **Never iterate a Go map directly** when the order affects your output. Go maps intentionally randomize iteration order. Use [`cre.OrderedEntries`](/cre/reference/sdk/core-go#creorderedentries-and-creorderedentriesfunc) (or `cre.OrderedEntriesFunc` for non-`cmp.Ordered` keys) instead of `for k, v := range someMap`.
 - **Use `encoding/json` v1, not v2.** The v2 library uses randomized hashing for field ordering, which serializes the same struct differently across nodes. If you serialize Protocol Buffers, use `proto.MarshalOptions{Deterministic: true}.Marshal()` too, since the default `proto.Marshal` doesn't guarantee field order.
-- **Never use `select` with multiple ready channels** to make a decision, see Pitfall 3 above.
+- **Never use `select` with multiple ready channels** to make a decision, see [`Promise`/`Await` concurrency, not goroutines](#promiseawait-concurrency-not-goroutines).
 
 See [Avoiding Non-Determinism in Workflows](/cre/concepts/non-determinism-go) for the complete guide, including LLM output handling.
 
-## Pitfall 5: numeric precision for onchain values
+### Numeric precision for onchain values
 
 If your library produces or accepts values that will end up in a smart contract call, such as a price, an amount, or a `uint256`, use `*big.Int`, never a plain `int`/`int64`/`float64`. For monetary or price values that aren't already onchain integers, use a fixed-point decimal type such as [`github.com/shopspring/decimal`](https://github.com/shopspring/decimal) rather than `float64`, which loses precision under repeated arithmetic. This matches the convention used throughout the CRE Go SDK's own examples.
 
 ## Packaging your library
 
 Structure it as an ordinary Go module, there's no special CRE project layout for a library, only for a workflow (which is itself a package inside the consuming project's single Go module).
+
+### Project structure
+
+A library is a minimal Go module with its source files, module definition, and a README.
 
 ```
 my-cre-library/
@@ -174,7 +182,9 @@ my-cre-library/
 └── README.md
 ```
 
-**`go.mod`:**
+### `go.mod`
+
+The module definition declares the SDK as a normal dependency; Go's module resolution handles version unification automatically.
 
 ```
 module github.com/you/my-cre-library
@@ -200,7 +210,7 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-Your module path (in `go.mod`) should match the repository's import path, for example `github.com/you/my-cre-library`. Nothing about tagging a release is CRE-specific, the workflow author's own `go build`/`cre workflow simulate` pipeline is what turns your published Go code into something that runs inside the WASM sandbox, on their side.
+Your module path (in `go.mod`) should match the repository's import path, for example `github.com/you/my-cre-library`. Nothing about tagging a release is CRE-specific. The workflow author's own `go build`/`cre workflow simulate` pipeline is what turns your published Go code into something that runs inside the WASM sandbox.
 
 ## Using your library from a CRE workflow
 
@@ -262,17 +272,19 @@ The workflow author still owns:
 
 ## Pre-publish checklist
 
-- No filesystem access (`os.Open`, `os.ReadFile`, `os.WriteFile`, and similar) anywhere in your library or its dependencies.
-- No direct network access (`net.Dial`, `net/http`, database drivers, gRPC dialing); all outbound calls go through `http.Client`/`http.SendRequest` (or `evm.Client` for chain reads/writes).
-- HTTP calls, time, and randomness are wrapped in `cre.RunInNodeMode()` with an explicit consensus aggregation, or delegated back to the caller's `runtime`. Secrets are resolved with `GetSecret()`, typically from inside that same block.
-- No goroutines, channels, or `select` across multiple channels used to make a decision that affects your function's output.
-- No direct map iteration where order affects the output, use `cre.OrderedEntries`/`cre.OrderedEntriesFunc`.
-- `encoding/json` v1 (not v2) and, if applicable, `proto.MarshalOptions{Deterministic: true}` for serialization.
-- No `time.Now()`, `math/rand`, or `crypto/rand`, use `runtime.Now()` and `runtime.Rand()`.
-- `*big.Int` for onchain integer values; a decimal type (not `float64`) for prices and other precision-sensitive values.
-- Secrets are accepted as an ID/name, never as a literal value baked into your library.
-- No `//go:build wasip1` tag on library files unless truly required, keep your library testable with plain `go test`.
-- Verified end-to-end with `cre workflow simulate` in a real (throwaway) CRE workflow that depends on your published or local module.
+Before you publish, run through this checklist to confirm your library follows every constraint covered in this guide. Each item maps to a pitfall or packaging requirement above.
+
+- No filesystem access (`os.Open`, `os.ReadFile`, `os.WriteFile`, and similar) anywhere in your library or its dependencies. See [No filesystem or arbitrary network access](#no-filesystem-or-arbitrary-network-access).
+- No direct network access (`net.Dial`, `net/http`, database drivers, gRPC dialing); all outbound calls go through `http.Client`/`http.SendRequest` (or `evm.Client` for chain reads/writes). See [No standard HTTP client](#no-standard-http-client).
+- HTTP calls, time, and randomness are wrapped in `cre.RunInNodeMode()` with an explicit consensus aggregation, or delegated back to the caller's `runtime`. Secrets are resolved with `GetSecret()`, typically from inside that same block. See [No standard HTTP client](#no-standard-http-client).
+- No goroutines, channels, or `select` across multiple channels used to make a decision that affects your function's output. See [`Promise`/`Await` concurrency, not goroutines](#promiseawait-concurrency-not-goroutines).
+- No direct map iteration where order affects the output, use `cre.OrderedEntries`/`cre.OrderedEntriesFunc`. See [Determinism](#determinism).
+- `encoding/json` v1 (not v2) and, if applicable, `proto.MarshalOptions{Deterministic: true}` for serialization. See [Determinism](#determinism).
+- No `time.Now()`, `math/rand`, or `crypto/rand`, use `runtime.Now()` and `runtime.Rand()`. See [Determinism](#determinism).
+- `*big.Int` for onchain integer values; a decimal type (not `float64`) for prices and other precision-sensitive values. See [Numeric precision for onchain values](#numeric-precision-for-onchain-values).
+- Secrets are accepted as an ID/name, never as a literal value baked into your library. See [No standard HTTP client](#no-standard-http-client).
+- No `//go:build wasip1` tag on library files unless truly required, keep your library testable with plain `go test`. See [`go.mod`](#gomod).
+- Verified end-to-end with `cre workflow simulate` in a real (throwaway) CRE workflow that depends on your published or local module. See [No filesystem or arbitrary network access](#no-filesystem-or-arbitrary-network-access).
 
 ## Learn more
 
