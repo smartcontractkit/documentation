@@ -6203,6 +6203,111 @@ This example demonstrates switching logic with tokenized asset prices as fallbac
 Please note that these code snippets are illustrative and may require adaptation to fit your specific environment, SDK versions, and error handling practices. Refer to the guide to [fetch](/data-streams/tutorials/go-sdk-fetch) and [stream](/data-streams/tutorials/go-sdk-stream) decoded reports in your chosen SDK.
 
 
+**TypeScript**
+
+```typescript
+import { createClient, decodeReport } from "@chainlink/data-streams-sdk"
+
+const client = createClient({ apiKey, userSecret, endpoint })
+
+async function getPrice() {
+  const regularReport = await client.getLatestReport(REGULAR_HOURS)
+  const decoded = decodeReport(regularReport.fullReport, regularReport.feedID)
+
+  // Check staleness (5 minute threshold)
+  const isStale = (Date.now() - decoded.lastSeenTimestampNs / 1000000) > 300000
+
+  // Determine which stream to use
+  if (isStale || decoded.marketStatus === 0 || decoded.marketStatus === 5) {
+    // Stale, Unknown, or Closed -> use tokenized asset
+    const tokenReport = await client.getLatestReport(TOKENIZED_TSLA)
+    return decodeReport(tokenReport.fullReport, tokenReport.feedID).mid
+  } else if (decoded.marketStatus === 1 || decoded.marketStatus === 3) {
+    const report = await client.getLatestReport(EXTENDED_HOURS)
+    return decodeReport(report.fullReport, report.feedID).mid
+  } else if (decoded.marketStatus === 2) {
+    return decoded.mid
+  } else if (decoded.marketStatus === 4) {
+    const report = await client.getLatestReport(OVERNIGHT_HOURS)
+    return decodeReport(report.fullReport, report.feedID).mid
+  }
+}
+```
+
+**Go**
+
+```go
+import "github.com/smartcontractkit/data-streams-sdk/go/feed"
+
+func getPrice() (*big.Int, error) {
+    report, err := client.GetLatestReport(REGULAR_HOURS)
+    if err != nil {
+        return nil, err
+    }
+
+    decoded, err := feed.Decode(report.FullReport)
+    if err != nil {
+        return nil, err
+    }
+
+    // Check staleness (5 minute threshold)
+    isStale := time.Since(decoded.LastSeenTimestamp) > 5*time.Minute
+
+    // Determine which stream to use
+    if isStale || decoded.MarketStatus == 0 || decoded.MarketStatus == 5 {
+        // Stale, Unknown, or Closed -> use tokenized asset
+        tokenReport, _ := client.GetLatestReport(TOKENIZED_TSLA)
+        tokenDecoded, _ := feed.Decode(tokenReport.FullReport)
+        return tokenDecoded.Mid, nil
+    } else if decoded.MarketStatus == 1 || decoded.MarketStatus == 3 {
+        extReport, _ := client.GetLatestReport(EXTENDED_HOURS)
+        extDecoded, _ := feed.Decode(extReport.FullReport)
+        return extDecoded.Mid, nil
+    } else if decoded.MarketStatus == 2 {
+        return decoded.Mid, nil
+    } else if decoded.MarketStatus == 4 {
+        ovnReport, _ := client.GetLatestReport(OVERNIGHT_HOURS)
+        ovnDecoded, _ := feed.Decode(ovnReport.FullReport)
+        return ovnDecoded.Mid, nil
+    }
+}
+```
+
+**Rust**
+
+```rust
+use data_streams_sdk::{client::Client, feed};
+
+async fn get_price() -> Result<i128, Box<dyn std::error::Error>> {
+    let report = client.get_latest_report(REGULAR_HOURS).await?;
+    let decoded = feed::decode(&report.full_report)?;
+
+    // Check staleness (5 minute threshold)
+    let is_stale = (SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos()
+        - decoded.last_seen_timestamp_ns as u128) > 300_000_000_000;
+
+    // Determine which stream to use
+    if is_stale || decoded.market_status == 0 || decoded.market_status == 5 {
+        // Stale, Unknown, or Closed -> use tokenized asset
+        let token_report = client.get_latest_report(TOKENIZED_TSLA).await?;
+        let token_decoded = feed::decode(&token_report.full_report)?;
+        Ok(token_decoded.mid)
+    } else if decoded.market_status == 1 || decoded.market_status == 3 {
+        let ext_report = client.get_latest_report(EXTENDED_HOURS).await?;
+        let ext_decoded = feed::decode(&ext_report.full_report)?;
+        Ok(ext_decoded.mid)
+    } else if decoded.market_status == 2 {
+        Ok(decoded.mid)
+    } else if decoded.market_status == 4 {
+        let ovn_report = client.get_latest_report(OVERNIGHT_HOURS).await?;
+        let ovn_decoded = feed::decode(&ovn_report.full_report)?;
+        Ok(ovn_decoded.mid)
+    } else {
+        Err("Unknown market status".into())
+    }
+}
+```
+
 <Aside type="caution" title="Disclaimer">
   This guide represents an example of using a Chainlink product or service and is provided to help you understand how to
   interact with Chainlink's systems and services so that you can integrate them into your own. This template is provided

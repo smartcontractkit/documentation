@@ -24,6 +24,7 @@ import {
 } from "./componentHandlers.js"
 import fs from "fs"
 import path from "path"
+import { serializeTabbedContent } from "./tabSerialization.js"
 
 /**
  * Convert Aside components to markdown blockquotes
@@ -147,6 +148,8 @@ export async function transformMarkdown(
     .use(remarkMdx)
     .use(remarkGfm)
     .use(() => (tree: Node) => {
+      serializeTabbedContent(tree)
+
       // Create context for component handlers
       const context: ComponentContext = {
         mdxAbsPath,
