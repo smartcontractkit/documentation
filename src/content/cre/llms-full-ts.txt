@@ -14016,23 +14016,23 @@ const initWorkflow = (config: Config) => {
 
 ### Step 2: Fetch a secret inside the enclave
 
-Your callback receives a [`TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-ts#teeruntimec). Call [`runtime.getSecret()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimegetsecret) to fetch a secret at the point you need it:
+Your callback receives a [`TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-ts#teeruntimec). Call [`runtime.getSecrets()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimegetsecrets) to fetch the secrets you need in a single batch call:
 
 ```ts
 const onCronTrigger = (runtime: TeeRuntime<Config>) => {
-  const secret = runtime.getSecret({ id: "MY_API_KEY" }).result()
+  const secrets = runtime.getSecrets([{ id: "API_KEY" }, { id: "DB_URL" }]).result()
+
+  const apiKey = secrets["API_KEY"].value
+  const dbUrl = secrets["DB_URL"].value
 
   // ...
 }
 ```
 
-To fetch multiple secrets in a single call, use [`runtime.getSecrets()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimegetsecrets):
+To fetch a single secret, use [`runtime.getSecret()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimegetsecret):
 
 ```ts
-const secrets = runtime.getSecrets([{ id: "API_KEY" }, { id: "DB_URL" }]).result()
-
-const apiKey = secrets["API_KEY"].value
-const dbUrl = secrets["DB_URL"].value
+const secret = runtime.getSecret({ id: "MY_API_KEY" }).result()
 ```
 
 <Aside type="note" title="No upfront secret declaration">
@@ -14053,7 +14053,7 @@ const response = new HTTPClient()
   .sendRequest(runtime, {
     url: runtime.config.url,
     method: "GET",
-    multiHeaders: { Authorization: { values: [`Bearer ${secret.value}`] } },
+    multiHeaders: { Authorization: { values: [`Bearer ${apiKey}`] } },
   })
   .result()
 
@@ -14130,15 +14130,16 @@ const configSchema = z.object({
 type Config = z.infer<typeof configSchema>
 
 const onCronTrigger = (runtime: TeeRuntime<Config>) => {
-  // 1. Fetch a secret dynamically, inside the enclave.
-  const secret = runtime.getSecret({ id: "MY_API_KEY" }).result()
+  // 1. Fetch secrets dynamically, inside the enclave.
+  const secrets = runtime.getSecrets([{ id: "API_KEY" }, { id: "DB_URL" }]).result()
+  const apiKey = secrets["API_KEY"].value
 
   // 2. Make an HTTP request from inside the enclave.
   const response = new HTTPClient()
     .sendRequest(runtime, {
       url: runtime.config.url,
       method: "GET",
-      multiHeaders: { Authorization: { values: [`Bearer ${secret.value}`] } },
+      multiHeaders: { Authorization: { values: [`Bearer ${apiKey}`] } },
     })
     .result()
 
