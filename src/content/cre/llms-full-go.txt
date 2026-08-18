@@ -534,9 +534,74 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-07-16
+Last Updated: 2026-08-18
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.29.0 - August 7, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.29.0" target="_blank">CRE CLI version 1.29.0</a> is now available.**
+
+- **Monad mainnet simulation**: Monad mainnet is now supported for local simulation via `cre workflow simulate`. See [Supported Networks](/cre/supported-networks).
+- **Confidential Workflows**: Designate parts of your workflow to run inside a secure enclave (TEE), keeping secrets, sensitive inputs, and computation confidential from node operators during execution. See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) and [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows).
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.28.0...v1.29.0)
+
+## Go SDK v1.18.0 - August 6, 2026
+
+**Go SDK version 1.18.0** adds Confidential Workflows support.
+
+- **Confidential Workflows**: Added a TEE runtime (`cre.TeeRuntime`) and `cre.HandlerInTee` for running workflow logic inside a secure enclave. See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) and [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.17.0...v1.18.0)
+
+## TS SDK v1.18.0 - August 6, 2026
+
+**TypeScript SDK version 1.18.0** adds Confidential Workflows support.
+
+- **Confidential Workflows**: Added a `TeeRuntime` and `handlerInTee` for running workflow logic inside a secure enclave. See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) and [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.17.0...v1.18.0)
+
+## Go SDK v1.16.0 - August 3, 2026
+
+**Go SDK version 1.16.0** adds batch secret fetching.
+
+- **Batch secret fetching**: Added `runtime.GetSecrets()` to fetch multiple secrets in a single call. See [Secrets in CRE](/cre/guides/workflow/secrets).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.15.0...v1.16.0)
+
+## CLI v1.28.0 - July 30, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.28.0" target="_blank">CRE CLI version 1.28.0</a> is now available.**
+
+- **Deployment registry selection in `cre init`**: [`cre init`](/cre/reference/cli/project-setup) now lets you select the deployment registry during project setup.
+- **New aggregator support in simulation**: The local simulator now supports the new aggregator capability, keeping simulation aligned with production.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.27.0...v1.28.0)
+
+## CLI v1.27.0 - July 23, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.27.0" target="_blank">CRE CLI version 1.27.0</a> is now available.**
+
+- **Solana LogTrigger simulation**: `cre workflow simulate` now supports Solana LogTrigger events, enabling local simulation of Solana workflows triggered by onchain logs.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.26.0...v1.27.0)
 
 ## CLI v1.26.0 - July 16, 2026
 
@@ -5157,14 +5222,14 @@ Your workflow environment determines how you manage secrets:
 
 ## Quick comparison
 
-| Aspect             | Local Simulation                     | Deployed Workflows                 |
-| ------------------ | ------------------------------------ | ---------------------------------- |
-| **Environment**    | Your local machine                   | Workflow DON                       |
-| **Secret storage** | `.env` file or environment variables | Vault DON                          |
-| **CLI commands**   | None (automatic via simulation)      | `cre secrets create/update/delete` |
-| **Workflow code**  | `runtime.GetSecret()`                | `runtime.GetSecret()` (same API)   |
-| **Authentication** | Not required                         | `cre login` required               |
-| **Use case**       | Development and testing              | Deployed workflows                 |
+| Aspect             | Local Simulation                               | Deployed Workflows                                        |
+| ------------------ | ---------------------------------------------- | --------------------------------------------------------- |
+| **Environment**    | Your local machine                             | Workflow DON                                              |
+| **Secret storage** | `.env` file or environment variables           | Vault DON                                                 |
+| **CLI commands**   | None (automatic via simulation)                | `cre secrets create/update/delete`                        |
+| **Workflow code**  | `runtime.GetSecret()` / `runtime.GetSecrets()` | `runtime.GetSecret()` / `runtime.GetSecrets()` (same API) |
+| **Authentication** | Not required                                   | `cre login` required                                      |
+| **Use case**       | Development and testing                        | Deployed workflows                                        |
 
 ## How secrets work in your workflow
 
@@ -13952,16 +14017,30 @@ func main() {
 
 ### Step 2: Fetch a secret inside the enclave
 
-Your callback receives a [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-go#creteeruntime). Call [`runtime.GetSecret()`](/cre/reference/sdk/confidential-workflows-client-go#runtimegetsecret) to fetch a secret at the point you need it:
+Your callback receives a [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-go#creteeruntime). Call [`runtime.GetSecrets()`](/cre/reference/sdk/confidential-workflows-client-go#runtimegetsecrets) to fetch the secrets you need in a single batch call:
 
 ```go
 func onCronTrigger(config *Config, runtime cre.TeeRuntime, _ *cron.Payload) (string, error) {
-	secret, err := runtime.GetSecret(&cre.SecretRequest{Id: "MY_API_KEY"}).Await()
+	secrets, err := runtime.GetSecrets([]*cre.SecretRequest{
+		{Id: "API_KEY"},
+		{Id: "DB_URL"},
+	}).Await()
 	if err != nil {
-		return "", fmt.Errorf("failed to get secret: %w", err)
+		return "", fmt.Errorf("failed to get secrets: %w", err)
 	}
+	apiKey := secrets[0].Value
+	dbUrl := secrets[1].Value
 
 	// ...
+}
+```
+
+To fetch a single secret, use [`runtime.GetSecret()`](/cre/reference/sdk/confidential-workflows-client-go#runtimegetsecret):
+
+```go
+secret, err := runtime.GetSecret(&cre.SecretRequest{Id: "MY_API_KEY"}).Await()
+if err != nil {
+	return "", fmt.Errorf("failed to get secret: %w", err)
 }
 ```
 
@@ -13983,7 +14062,7 @@ which takes your [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-cl
 		Url:    config.URL,
 		Method: "GET",
 		MultiHeaders: map[string]*http.HeaderValues{
-			"Authorization": {Values: []string{"Bearer " + secret.Value}},
+			"Authorization": {Values: []string{"Bearer " + apiKey}},
 		},
 	}
 
@@ -14083,18 +14162,22 @@ func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.Secre
 }
 
 func onCronTrigger(config *Config, runtime cre.TeeRuntime, _ *cron.Payload) (string, error) {
-	// 1. Fetch a secret dynamically, inside the enclave.
-	secret, err := runtime.GetSecret(&cre.SecretRequest{Id: "MY_API_KEY"}).Await()
+	// 1. Fetch secrets dynamically, inside the enclave.
+	secrets, err := runtime.GetSecrets([]*cre.SecretRequest{
+		{Id: "API_KEY"},
+		{Id: "DB_URL"},
+	}).Await()
 	if err != nil {
-		return "", fmt.Errorf("failed to get secret: %w", err)
+		return "", fmt.Errorf("failed to get secrets: %w", err)
 	}
+	apiKey := secrets[0].Value
 
 	// 2. Make an HTTP request from inside the enclave.
 	req := &http.Request{
 		Url:    config.URL,
 		Method: "GET",
 		MultiHeaders: map[string]*http.HeaderValues{
-			"Authorization": {Values: []string{"Bearer " + secret.Value}},
+			"Authorization": {Values: []string{"Bearer " + apiKey}},
 		},
 	}
 	resp, err := (&http.Client{}).SendRequestInTee(runtime, req).Await()
@@ -20712,12 +20795,28 @@ There's no upfront declaration like Confidential HTTP's `VaultDonSecrets`—the 
 
 ### `runtime.GetSecrets`
 
-Fetches multiple secrets in a single batch call.
+Fetches multiple secrets in a single batch call, decrypted only inside the enclave.
 
 **Signature:**
 
 ```go
 func (r TeeRuntime) GetSecrets([]*SecretRequest) Promise[[]*Secret]
+```
+
+The promise resolves to a slice of `*Secret` values, in the same order as the requests. If any secret in the batch fails, the promise resolves with an error that includes the failing secret ids and their error messages.
+
+**Example:**
+
+```go
+secrets, err := runtime.GetSecrets([]*cre.SecretRequest{
+	{Id: "API_KEY"},
+	{Id: "DB_URL"},
+}).Await()
+if err != nil {
+	return "", fmt.Errorf("failed to get secrets: %w", err)
+}
+apiKey := secrets[0].Value
+dbUrl := secrets[1].Value
 ```
 
 ## Crossing back to the DON
