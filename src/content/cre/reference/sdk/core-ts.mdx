@@ -581,6 +581,52 @@ const onTrigger = (runtime: Runtime<Config>): string => {
   For a complete walkthrough on creating, storing, and using secrets, see the [Secrets guide](/cre/guides/workflow/secrets).
 </Aside>
 
+## `runtime.getSecrets()`
+
+Retrieves multiple secrets in a single batch call. Use this instead of calling `getSecret()` in a loop when you need two or more secrets.
+
+**Signature:**
+
+```typescript
+runtime.getSecrets(
+  requests: Array<SecretRequest | SecretRequestJson>
+): { result: () => Record<string, Secret> }
+```
+
+**Parameters:**
+
+| Field      | Type                                        | Required | Description                                               |
+| ---------- | ------------------------------------------- | -------- | --------------------------------------------------------- |
+| `requests` | `Array<SecretRequest \| SecretRequestJson>` | Yes      | Array of secrets to fetch. Duplicate IDs are not allowed. |
+
+Each entry in `requests` follows the same [`SecretRequest`](#secretrequest--secretrequestjson) shape as `getSecret()`.
+
+**Returns:**
+
+A `Record<string, Secret>` (after calling `.result()`) where each key is the secret's `id` and the value is the corresponding [`Secret`](#secret) object.
+
+**Error handling:**
+
+If any secret in the batch fails, `getSecrets()` throws a `SecretsBatchError` containing all error messages aggregated from the failed secrets.
+
+**Example:**
+
+```typescript
+import { type Runtime } from "@chainlink/cre-sdk"
+
+const onTrigger = (runtime: Runtime<Config>): string => {
+  const secretsToFetch = [{ id: "api-key" }, { id: "webhook-url" }]
+
+  const secrets = runtime.getSecrets(secretsToFetch).result()
+
+  const apiKey = secrets["api-key"].value
+  const webhookUrl = secrets["webhook-url"].value
+
+  runtime.log(`Fetched ${Object.keys(secrets).length} secrets`)
+  return "done"
+}
+```
+
 ## Report verification
 
 Parse and verify CRE reports received over HTTP or other offchain channels. Requires **`@chainlink/cre-sdk` v1.8.0** or later.

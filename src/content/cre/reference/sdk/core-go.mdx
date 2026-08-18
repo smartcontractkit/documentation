@@ -284,7 +284,7 @@ The value returned when the promise resolves.
 
 ### `SecretsProvider` interface
 
-The `SecretsProvider` interface is embedded in `Runtime`, which means `GetSecret` and `GetSecrets` are available directly on the runtime object. It is also passed as a parameter to [`InitWorkflow`](#initworkflow), allowing you to access secrets during workflow initialization.
+The `SecretsProvider` interface is embedded in `Runtime`, which means both `GetSecret` and `GetSecrets` are available directly on the runtime object. It is also passed as a parameter to [`InitWorkflow`](#initworkflow), allowing you to access secrets during workflow initialization.
 
 ```go
 type SecretsProvider interface {
@@ -317,9 +317,14 @@ func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
 }
 ```
 
+<Aside type="note" title="Secrets guide">
+  For a complete walkthrough on creating, storing, and using secrets, see the [Secrets
+  guide](/cre/guides/workflow/secrets).
+</Aside>
+
 ## `runtime.GetSecrets()`
 
-Fetches multiple secrets from the Vault DON in a single batch call. This is more efficient than calling `GetSecret()` repeatedly, and it avoids the sequential-fetch requirement of the single-secret API.
+Retrieves multiple secrets in a single batch call. Use this instead of calling `GetSecret()` multiple times when you need two or more secrets.
 
 **Signature:**
 
@@ -327,39 +332,51 @@ Fetches multiple secrets from the Vault DON in a single batch call. This is more
 runtime.GetSecrets(reqs []*SecretRequest) Promise[[]*Secret]
 ```
 
-The promise resolves to a slice of [`Secret`](#secret) values, in the same order as the requests.
+**Parameters:**
 
-**Behavior:**
+| Field  | Type               | Required | Description                                                                              |
+| ------ | ------------------ | -------- | ---------------------------------------------------------------------------------------- |
+| `reqs` | `[]*SecretRequest` | Yes      | Slice of secret requests to fetch. Each entry requires an `Id` and optional `Namespace`. |
 
-- **Returns an error on any failure**: If any secret in the batch cannot be retrieved, the promise resolves with an error that includes the failing secret ids and their error messages.
-- **Empty input**: Passing `nil` or an empty slice returns a promise that resolves to an empty slice.
+Each entry follows the same [`SecretRequest`](#secretrequest) shape as `GetSecret()`.
 
-### Example
+**Returns:**
+
+A `Promise[[]*Secret]` that resolves to a slice of `*Secret` values in the **same order as the input requests**. Use the index to map results back to the original requests.
+
+**Error handling:**
+
+If any secret in the batch fails, `GetSecrets()` returns an error containing all error messages from the failed secrets. Either all secrets are returned successfully or an error is returned.
+
+**Example:**
 
 ```go
-import "github.com/smartcontractkit/cre-sdk-go/cre"
+import (
+    "fmt"
+
+    protos "github.com/smartcontractkit/chainlink-protos/cre/go/sdk"
+    "github.com/smartcontractkit/cre-sdk-go/cre"
+)
 
 func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
-    secrets, err := runtime.GetSecrets([]*cre.SecretRequest{
-        {Id: "API_KEY"},
-        {Id: "DB_URL"},
+    secrets, err := runtime.GetSecrets([]*protos.SecretRequest{
+        {Id: "api-key"},
+        {Id: "webhook-url"},
     }).Await()
     if err != nil {
         return "", fmt.Errorf("failed to get secrets: %w", err)
     }
 
+    // Secrets are returned in the same order as the input requests
     apiKey := secrets[0].Value
-    dbUrl := secrets[1].Value
+    webhookUrl := secrets[1].Value
 
-    // Use the secrets in your workflow logic
+    logger := runtime.Logger()
+    logger.Info("Secrets retrieved", "endpoint", webhookUrl)
+    _ = apiKey
     return "done", nil
 }
 ```
-
-<Aside type="note" title="Secrets guide">
-  For a complete walkthrough on creating, storing, and using secrets, see the [Secrets
-  guide](/cre/guides/workflow/secrets).
-</Aside>
 
 ## Report verification
 

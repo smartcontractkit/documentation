@@ -25,7 +25,7 @@ const (
 func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
 	logger := runtime.Logger()
 
-	// 1. Fetch both secrets in a single batch call
+	// Fetch multiple secrets in a single batch call.
 	secrets, err := runtime.GetSecrets([]*protos.SecretRequest{
 		{Id: SecretAddressName},
 		{Id: ApiKeyName},
@@ -35,10 +35,13 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 		return nil, err
 	}
 
-	// 2. Use your secrets
+	// Secrets are returned in the same order as the input requests.
+	secretAddress := secrets[0].Value
+	apiKey := secrets[1].Value
+
 	logger.Info("Successfully fetched secrets!",
-		"address", secrets[0].Value,
-		"apiKey", secrets[1].Value,
+		"address", secretAddress,
+		"apiKey", apiKey,
 	)
 
 	return &MyResult{}, nil
