@@ -1126,11 +1126,18 @@ APAC Equities streams use the [RWA Advanced (v11) schema](/data-streams/referenc
 
 APAC streams quote in each exchange's local currency (for example, `/JPY` for Japanese equities). All times are **local exchange time** (Mon–Fri unless noted). UTC offsets are fixed for the listed timezone.
 
-| Exchange                     | Code | Currency | Status    | Time zone   | Session   | Hours (local) | UTC equivalent  | Notes                                                                               |
-| ---------------------------- | ---- | -------- | --------- | ----------- | --------- | ------------- | --------------- | ----------------------------------------------------------------------------------- |
-| **Korean Equities + ETFs**   | KRX  | KRW      | Available | KST (UTC+9) | Regular   | 09:00–15:20   | 00:00–06:20 UTC |                                                                                     |
-| **Japanese Equities + ETFs** | TSE  | JPY      | Available | JST (UTC+9) | Morning   | 09:00–11:30   | 00:00–02:30 UTC |                                                                                     |
-|                              |      |          |           |             | Afternoon | 12:30–15:25   | 03:30–06:25 UTC | One-hour lunch break 11:30–12:30. Closing auction 15:25–15:30 (`marketStatus = 5`). |
+| Exchange                      | Code | Currency | Status    | Time zone   | Session   | Hours (local) | UTC equivalent  | Notes                                                                                |
+| ----------------------------- | ---- | -------- | --------- | ----------- | --------- | ------------- | --------------- | ------------------------------------------------------------------------------------ |
+| **Korean Equities + ETFs**    | KRX  | KRW      | Available | KST (UTC+9) | Regular   | 09:00–15:20   | 00:00–06:20 UTC |                                                                                      |
+| **Japanese Equities + ETFs**  | TSE  | JPY      | Available | JST (UTC+9) | Morning   | 09:00–11:30   | 00:00–02:30 UTC |                                                                                      |
+|                               |      |          |           |             | Afternoon | 12:30–15:25   | 03:30–06:25 UTC | One-hour lunch break 11:30–12:30. Closing auction 15:25–15:30 (`marketStatus = 5`).  |
+| **Shanghai Equities + ETFs**  | SSE  | CNY      | Available | CST (UTC+8) | Morning   | 09:30–11:30   | 01:30–03:30 UTC |                                                                                      |
+|                               |      |          |           |             | Afternoon | 13:00–14:57   | 05:00–06:57 UTC | 90-minute lunch break 11:30–13:00. Closing auction 14:57–15:00 (`marketStatus = 5`). |
+| **Shenzhen Equities + ETFs**  | SZSE | CNY      | Available | CST (UTC+8) | Morning   | 09:30–11:30   | 01:30–03:30 UTC |                                                                                      |
+|                               |      |          |           |             | Afternoon | 13:00–14:57   | 05:00–06:57 UTC | 90-minute lunch break 11:30–13:00. Closing auction 14:57–15:00 (`marketStatus = 5`). |
+| **Taiwan Equities + ETFs**    | TWSE | TWD      | Available | CST (UTC+8) | Regular   | 09:00–13:25   | 01:00–05:25 UTC | Closing auction 13:25–13:30 (`marketStatus = 5`).                                    |
+| **Hong Kong Equities + ETFs** | HKEX | HKD      | Available | HKT (UTC+8) | Morning   | 09:30–12:00   | 01:30–04:00 UTC |                                                                                      |
+|                               |      |          |           |             | Afternoon | 13:00–16:00   | 05:00–08:00 UTC | One-hour lunch break 12:00–13:00. Closing auction 16:00–16:10 (`marketStatus = 5`).  |
 
 See the [APAC Equities](/data-streams/rwa-streams/apac-equities) page for coverage and risk considerations.
 
@@ -6355,6 +6362,12 @@ APAC Equities data is delivered using the [RWA Advanced (v11) schema](/data-stre
 | `lastTradedPrice`       | `int192`  | Not populated for APAC equities; reported as 0                           |
 | `marketStatus`          | `uint32`  | Market status. Mapping varies by feed; see schema docs.                  |
 
+<Aside type="note" title="lastTradedPrice availability varies by market">
+  `lastTradedPrice` is only populated where the underlying data provider supplies trade data. Korea and Japan are
+  quote-only markets, so `lastTradedPrice` is not meaningfully populated for those streams. China, Hong Kong, and Taiwan
+  streams source trade data in addition to quotes.
+</Aside>
+
 For `marketStatus` value mappings, see [Standard-hours feeds (v11)](/data-streams/reference/report-schema-v11#standard-hours-feeds). For exchange schedules, see [Market Hours (APAC Equities)](/data-streams/market-hours#apac-equities).
 
 ## Coverage
@@ -6363,12 +6376,14 @@ APAC Equities streams cover major indices and single-name stocks across Asia-Pac
 
 ### Exchanges
 
-| Exchange             | Code | Local currency | Status    |
-| -------------------- | ---- | -------------- | --------- |
-| Korea Exchange       | KRX  | KRW            | Available |
-| Tokyo Stock Exchange | TSE  | JPY            | Available |
-
-Other APAC exchanges are coming soon.
+| Exchange                | Code | Local currency | Status    |
+| ----------------------- | ---- | -------------- | --------- |
+| Korea Exchange          | KRX  | KRW            | Available |
+| Tokyo Stock Exchange    | TSE  | JPY            | Available |
+| Shanghai Stock Exchange | SSE  | CNY            | Available |
+| Shenzhen Stock Exchange | SZSE | CNY            | Available |
+| Taiwan Stock Exchange   | TWSE | TWD            | Available |
+| Hong Kong Exchange      | HKEX | HKD            | Available |
 
 ## Trading hours
 
@@ -6390,17 +6405,19 @@ When a session is closed, prices hold at the last traded value until the next se
 
 TSE-listed equities observe a scheduled lunch break (11:30–12:30 JST / 02:30–03:30 UTC) during which `marketStatus = 5` (Closed) and no new price data is published. `lastSeenTimestampNs` will not advance for approximately 60 minutes during this window.
 
-Freshness monitoring logic that evaluates timestamp age alone should account for this break. A staleness threshold shorter than \~60 minutes will fire during the TSE lunch break, producing false-positive alerts and potentially unnecessary circuit-breaker activity.
+SSE- and SZSE-listed equities observe a similar scheduled lunch break (11:30–13:00 CST / 03:30–05:00 UTC). HKEX-listed equities observe a one-hour lunch break (12:00–13:00 HKT / 04:00–05:00 UTC).
+
+Freshness monitoring logic that evaluates timestamp age alone should account for these breaks. A staleness threshold shorter than the break duration will fire during the lunch break, producing false-positive alerts and potentially unnecessary circuit-breaker activity.
 
 Recommended approach: check `marketStatus` before evaluating freshness. If `marketStatus = 5`, staleness is expected and should not trigger restrictions; evaluate freshness thresholds only when `marketStatus = 2` (Open).
 
-KRX-listed equities have no intraday break; the session runs continuously from 09:00–15:20 KST (00:00–06:20 UTC).
+KRX-listed and TWSE-listed equities have no intraday break; KRX runs continuously from 09:00–15:20 KST (00:00–06:20 UTC), and TWSE runs continuously from 09:00–13:25 CST (01:00–05:25 UTC).
 
 ### Opening and closing auction prices
 
 At the open of each session, prices may reflect the exchange's opening auction mechanism rather than continuous traded prices. Opening auctions concentrate deferred orders from the closed period into a single price discovery event, which can produce an opening price that deviates materially from the prior session's close. This is normal exchange behavior, not a data quality issue.
 
-The same consideration applies at the start of the TSE afternoon session (12:30 JST / 03:30 UTC) following the lunch break.
+The same consideration applies at the start of the TSE afternoon session (12:30 JST / 03:30 UTC), the SSE/SZSE afternoon session (13:00 CST / 05:00 UTC), and the HKEX afternoon session (13:00 HKT / 05:00 UTC), following their respective lunch breaks.
 
 Protocols should account for session-open volatility by:
 
