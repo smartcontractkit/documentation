@@ -501,6 +501,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/guides/workflow/using-randomness",
           highlightAsCurrent: ["cre/guides/workflow/using-randomness-ts", "cre/guides/workflow/using-randomness-go"],
         },
+        {
+          title: "Building a Reusable Library",
+          url: "cre/guides/workflow/building-a-library",
+          highlightAsCurrent: [
+            "cre/guides/workflow/building-a-library-ts",
+            "cre/guides/workflow/building-a-library-go",
+          ],
+        },
       ],
     },
     {
