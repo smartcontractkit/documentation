@@ -21319,8 +21319,7 @@ Both `Runtime` and `NodeRuntime` provide:
 `Runtime` additionally provides:
 
 - **`runInNodeMode(...)`**: Execute code on individual nodes with consensus aggregation
-- **`getSecret(...)`**: Access to a single workflow secret
-- **`getSecrets(...)`**: Access to multiple workflow secrets in a single batch call
+- **`getSecret(...)`**: Access to workflow secrets
 - **`report(...)`**: Generate cryptographically signed reports. To verify received reports, use [`Report.parse()`](#report-verification).
 
 ### Logging
@@ -21747,43 +21746,6 @@ const onTrigger = (runtime: Runtime<Config>): string => {
   runtime.log(`Secret owner: ${secret.owner}`)
 
   // Use secret.value in your workflow logic
-  return "done"
-}
-```
-
-## `runtime.getSecrets()`
-
-Fetches multiple secrets from the Vault DON in a single batch call. This is more efficient than calling `getSecret()` repeatedly, and it avoids the sequential-fetch requirement of the single-secret API.
-
-**Signature:**
-
-```typescript
-runtime.getSecrets(
-  requests: Array<SecretRequest | SecretRequestJson>
-): { result: () => Record<string, Secret> }
-```
-
-The result is a record keyed by each secret's `id`. Each value is a [`Secret`](#secret).
-
-**Behavior:**
-
-- **Throws on any failure**: If any secret in the batch cannot be retrieved, `.result()` throws a `SecretsBatchError` that includes the failing secret ids and their error messages.
-- **Duplicate ids rejected**: Requesting the same `id` more than once in a single call throws a `SecretsBatchError` (`duplicate secret id requested: <id>`), because the result is keyed by id.
-- **Empty input**: Passing an empty array returns an empty record.
-
-### Example
-
-```typescript
-import { type Runtime } from "@chainlink/cre-sdk"
-
-const onTrigger = (runtime: Runtime<Config>): string => {
-  const requests = [{ id: "API_KEY" }, { id: "DB_URL" }]
-  const secrets = runtime.getSecrets(requests).result()
-
-  const apiKey = secrets["API_KEY"].value
-  const dbUrl = secrets["DB_URL"].value
-
-  // Use the secrets in your workflow logic
   return "done"
 }
 ```
