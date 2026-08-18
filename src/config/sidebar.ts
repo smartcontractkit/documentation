@@ -1192,6 +1192,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/billing",
         },
         {
+          title: "Rate Limits and Fair Use Policy",
+          url: "data-streams/rate-limits",
+        },
+        {
           title: "Data Sources",
           url: "data-streams/data-sources",
         },

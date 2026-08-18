@@ -1,0 +1,63 @@
+---
+section: dataStreams
+date: "Last Modified"
+title: "Data Streams Rate Limits and Fair Use Policy"
+metadata:
+  title: "Chainlink Data Streams Rate Limits and Fair Use Policy"
+  description: "Learn about Chainlink Data Streams rate limits for REST and WebSocket usage, what counts as fair use, and best practices for avoiding HTTP 429 responses."
+  keywords: ["Data Streams", "Rate Limits", "Fair Use", "429", "Too Many Requests", "WebSocket", "REST API"]
+whatsnext:
+  {
+    "Learn about Data Streams billing and subscription options": "/data-streams/billing",
+    "Get support for Data Streams": "/data-streams/get-support",
+    "Review Data Streams best practices": "/data-streams/concepts/best-practices",
+    "See the REST API reference": "/data-streams/reference/data-streams-api/interface-api",
+    "See the WebSocket reference": "/data-streams/reference/data-streams-api/interface-ws",
+  }
+---
+
+import { Aside } from "@components"
+
+To ensure reliable access to Chainlink Data Streams for all consumers, rate limits are enforced on API and WebSocket usage. This page describes what constitutes fair usage.
+
+## Fair usage definition
+
+Rate limits are defined by your service agreement. For users with a self-service subscription purchased through [app.chain.link](https://app.chain.link), fair usage is defined as:
+
+- 20 concurrent WebSocket connections
+- 10 requests per second per endpoint on the REST service
+
+These limits apply per user ID. For example, your account is limited to 10 requests per second on _each_ of the following endpoints (limits are not cumulative across endpoints):
+
+- `/api/v1/reports`
+- `/api/v1/reports/latest`
+- `/api/v1/reports/page`
+- `/api/v1/reports/bulk`
+
+Users with a contracted service agreement have higher limits defined by their agreement. [Contact us](/data-streams/get-support) for higher rate limits.
+
+Requests that exceed the applicable limit receive an HTTP 429 (Too Many Requests) response.
+
+## Report retrieval
+
+Reports are pushed as soon as they are available. Sending a higher volume of REST requests to retrieve the latest report will not return it any faster, and adds unnecessary load to the service. Use the WebSocket stream for timely report delivery rather than polling a REST endpoint.
+
+## Prohibited: redistribution via proxy
+
+Proxying Chainlink Data Streams with the intent to share or redistribute data to a wider audience (for example, re-serving stream data to third parties who are not party to your license or agreement) is strictly prohibited under the Terms of Service. Each consumer must connect and authenticate directly under their own credentials.
+
+## Best practices to avoid rate limiting
+
+- Rely on the WebSocket stream for report delivery rather than polling a REST endpoint in a tight loop.
+- Ensure your client properly closes WebSocket connections on disconnect and reconnect to avoid connection leaks.
+- Implement exponential backoff on reconnect logic.
+- If you require higher throughput or connection limits than the defaults, [reach out proactively](/data-streams/get-support) rather than working around the limit — we're happy to discuss options for your use case.
+
+<Aside type="note" title="Contact">
+  If you have questions about this policy, or believe you've been rate limited unexpectedly, [contact
+  support](/data-streams/get-support) with:
+
+  - Your API user ID identifier
+  - Timestamps of the affected requests or connections
+  - A brief description of your integration and expected usage pattern
+</Aside>
