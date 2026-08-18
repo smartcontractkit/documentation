@@ -150,3 +150,14 @@ Automatic failover handles availability and traffic routing in the following sce
 - **Manual Traffic Steering:** If you want to bypass the load balancer and target a specific site, you can use the origin headers to direct your requests. This manual targeting does not affect the automated failover capabilities provided by the load balancer, so a request will succeed even if the specified origin is unavailable.
 
 - **Multi-origin concurrent WebSocket subscriptions:** In order to maintain a highly available and fault tolerant report stream, you can subscribe to up to two available origins simultaneously. This compares the latest consumed timestamp for each stream and discards duplicate reports before merging the report stream locally.
+
+### Retry Guidance for REST Requests
+
+As with any networked API, **your REST integration must implement retries** as standard practice, rather than treating a single failed request as a hard failure:
+
+- Retry on `5xx` responses and network-level errors (timeouts, connection resets). These are generally transient.
+- Do not retry on `4xx` responses (for example `400` or `401`) — these indicate a problem with the request itself, such as invalid parameters or authentication, and will not succeed on retry without a change to the request.
+- Use exponential backoff with jitter, and cap the number of attempts. `GET` requests to the REST API are safe to retry.
+- If retries continue to fail beyond a reasonable number of attempts, treat this as a signal to fall back to your contingency logic — see [Implementing Contingency Logic](/data-streams/developer-responsibilities#application-code-risks).
+
+The [Data Streams SDKs](/data-streams/reference/data-streams-api/ts-sdk) implement retry logic with exponential backoff by default (for example, the [TypeScript SDK configuration interface](/data-streams/reference/data-streams-api/ts-sdk#configuration-interface)). If you are calling the REST API directly rather than through an SDK, you are responsible for implementing equivalent retry logic yourself.
