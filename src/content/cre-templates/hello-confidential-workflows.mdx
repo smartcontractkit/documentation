@@ -45,11 +45,11 @@ result back to the Workflow DON for consensus-backed operations.
 ## What This Template Does
 
 By default, a CRE workflow callback runs on Workflow DON nodes, where node operators can inspect what it is computing.
-That is acceptable for many workflows, but not for logic where the policy, model, or threshold itself is sensitive.
+That is acceptable for many workflows, but not for when sensitive or proprietary data is required for workflows.
 
-A **[Confidential Workflow](https://docs.chain.link/cre/concepts/confidential-workflows)** moves that sensitive part
-into a hardware-isolated [enclave](https://docs.chain.link/cre/key-terms#enclave). This template demonstrates the
-minimal end-to-end shape in four steps:
+A **[Confidential Workflow](https://docs.chain.link/cre/concepts/confidential-workflows)** executes the logic
+requiring confidential inputs in a hardware-isolated [enclave](https://docs.chain.link/cre/key-terms#enclave).
+This template demonstrates the minimal end-to-end shape in four steps:
 
 | Step | What it demonstrates                                 | API                                                 |
 | ---- | ---------------------------------------------------- | --------------------------------------------------- |
@@ -66,27 +66,27 @@ minimal end-to-end shape in four steps:
 └──────┬───────┘
        │  DON hands the triggered request to an enclave
        v
-╔══════════════════════════════════════════════════════════════╗
-║  ENCLAVE (TEE - hidden from node operators)                  ║
-║                                                              ║
-║   Step 2: runtime.getSecret({ id: 'API_TOKEN' })             ║
-║             ▲                                                ║
-║             └──── released by Vault DON, decrypted in-enclave║
-║                                                              ║
-║   Step 3: HTTPClient.sendRequest(runtime, { ... })           ║
-║             Authorization: Bearer <secret>                   ║
-║             ▲ trust from enclave attestation, not consensus  ║
-║                                                              ║
-║   Confidential logic: score(response) vs. scoreThreshold     ║
-║             -> verdict = APPROVE | REJECT                    ║
-╚═══════════════════════════╤══════════════════════════════════╝
-                            │  Step 4: runtime.usingTheDons()
-                            │  ONLY the verdict + score cross out
-                            v
-┌──────────────────────────────────────────────────────────────┐
-│  WORKFLOW DON - donRuntime.report({ ... })                   │
-│  BFT consensus verifies the enclave attestation, then signs  │
-└──────────────────────────────────────────────────────────────┘
+╔══════════════════════════════════════════════════════════════════════╗
+║ ENCLAVE                                                              ║
+║                                                                      ║
+║ Step 2: runtime.getSecret({ id: 'API_TOKEN' })                       ║
+║           ▲                                                          ║
+║           └── released by Vault DON, decrypted in-enclave            ║
+║                                                                      ║
+║ Step 3: HTTPClient.sendRequest(runtime, { ... })                     ║
+║           Authorization: Bearer <secret>                             ║
+║           ▲ trust from enclave attestation, not consensus            ║
+║                                                                      ║
+║ Logic with confidential data: score(response) vs. scoreThreshold     ║
+║           -> verdict = APPROVE | REJECT                              ║
+╚═══════════════════════════╤══════════════════════════════════════════╝
+                           │  Step 4: runtime.usingTheDons()
+                           │  ONLY the verdict + score cross out
+                           v
+┌──────────────────────────────────────────────────────────────────────┐
+│ WORKFLOW DON - donRuntime.report({ ... })                            │
+│ BFT consensus verifies the enclave attestation, then signs           │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ## How It Works
@@ -290,16 +290,16 @@ Understanding what is and is not protected matters more here than in a regular w
 
 Consequences worth internalizing:
 
-- **Your source and binary are readable.** If the logic itself is the secret, make sure it actually executes inside
-  the enclave - do not rely on the binary being opaque, because it is not.
+- **Your handler’s source code and compiled binary are not confidential just because part of its logic runs inside an enclave.** Confidential Workflows protect only the
+  confidential data processed during execution inside the enclave, including Vault DON secrets (such as API keys), HTTP response, and intermediate values that are not
+  explicitly shared outside the enclave. Support for confidential logic or workflow is planned as a future enhancement, not part of the current beta.
 - **`usingTheDons()` is a one-way door.** Anything you pass into a capability call on that runtime executes on
   Workflow DON nodes like any non-confidential call. Cross over only what does not need to stay hidden.
 - **Do not log from inside the enclave in production.** Logs leave the confidentiality boundary. This template logs
   only the verdict, and the comment marks it for removal before deploying.
 - **Keep enclave logic deterministic.** The enclave result is attested and verified by DON consensus.
-- **Enclaves are not tenant-isolated today.** A single enclave can run confidential workflows from multiple customers
-  concurrently, sharing execution memory. Isolation between confidential executions is planned, not part of the
-  current beta.
+- **Multiple confidential workflows may execute within the same enclave.** Workflows are isolated from one another by the wasmtime. Dedicated per workflow enclave
+  isolation is planned as a future enhancement.
 
 ## Which Secrets Belong in an Enclave?
 

@@ -140,7 +140,7 @@ export const CHAINS: Chain[] = [
     title: "Base Data Feeds",
     img: "/assets/chains/base.svg",
     networkStatusUrl: "https://basescan.statuspage.io/",
-    tags: ["default", "smartData", "usGovernmentMacroeconomicData"],
+    tags: ["default", "smartData", "usGovernmentMacroeconomicData", "tokenizedEquity"],
     supportedFeatures: ["feeds"],
     l2SequencerFeed: true,
     networks: [
@@ -150,7 +150,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-base-1.json",
         queryString: "base-mainnet",
-        tags: ["smartData", "usGovernmentMacroeconomicData"],
+        tags: ["smartData", "usGovernmentMacroeconomicData", "tokenizedEquity"],
       },
       {
         name: "Base Sepolia testnet",

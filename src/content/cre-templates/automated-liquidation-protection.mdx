@@ -4,11 +4,6 @@ description: "Automatically protect DeFi lending positions by continuously monit
 author: "Chainlink Labs"
 excerpt: "Run policy-constrained liquidation defense confidentially with CRE and TEE execution in TypeScript or Go."
 image: "thumbnail.jpg"
-cliTemplateIds:
-  - label: "TypeScript"
-    id: "automated-liquidation-protection-ts"
-  - label: "Go"
-    id: "automated-liquidation-protection-go"
 tags:
   - "confidential"
   - "liquidation"
@@ -23,7 +18,7 @@ datePublished: "2026-08-04"
 lastModified: "2026-08-06"
 ---
 
-import { Aside, Accordion } from "@components"
+import { Aside } from "@components"
 
 <Aside type="caution" title="Private beta">
   [Confidential Workflows](https://docs.chain.link/cre/concepts/confidential-workflows) is in **private beta** and
@@ -31,278 +26,130 @@ import { Aside, Accordion } from "@components"
   Access](https://docs.chain.link/cre/account/confidential-workflows-access).
 </Aside>
 
-This workflow runs inside a **Trusted Execution Environment (TEE)** and generates a policy-constrained defense plan
-for a leveraged position. Risk data, policy parameters, and model prompts never leave the confidential runtime. The
-TypeScript and Go implementations are behaviorally equivalent - pick whichever language you build in.
+This standalone CRE project implements a confidential liquidation-defense workflow for DeFi lending positions.
+
+## Description
+
+The workflow continuously evaluates borrower risk and takes defensive action before a position becomes unsafe.
+During periods of high volatility, it can increase collateral, reduce debt, or combine both strategies based on
+policy constraints. Sensitive operational data remains protected in confidential execution, including exchange
+credentials, model credentials, and user-defined risk thresholds.
+
+## Target Customer
+
+- Professional retail traders
+- Developer shops
+- Founders building trading products
+
+## Structure
+
+- `project.yaml`: project-level target settings
+- `secrets.yaml`: secret ID mappings used by the workflow
+- `mock-server.js`: local deterministic API server
+- `automated-liquidation-protection-ts/`: TypeScript workflow implementation
+- `automated-liquidation-protection-go/`: Go workflow implementation
+
+## Private Inputs
+
+The following inputs are treated as confidential:
+
+- Exchange API credentials used to fetch account context such as stablecoin reserves and available cash balance.
+- LLM reasoning API credentials and policy parameters used to govern defense behavior, including minimum and target health factors, reserve deployment caps, minimum reserve balance, and collateral allocation limits.
+- Execution preferences that define how defense actions should be sequenced.
+
+## Workflow Notes
+
+1. Observe liquidation risk signals.
+   The workflow tracks collateral and debt asset pricing, health factor, liquidation proximity, LTV, liquidation threshold, and market volatility.
+2. Enforce user policy constraints.
+   Confidential reasoning evaluates how much capital can be deployed, whether debt reduction should be prioritized, which reserve assets are eligible, and what execution sequence is preferred.
+3. Select defense actions.
+   The workflow builds a response plan that may include collateral-focused moves (deposit, bridge, swap-then-deposit) and debt-focused moves (repay, swap-then-repay, partial payoff, full payoff).
+4. Execute the approved defense plan.
+
+Note: Every reasoning stage can be implemented with deterministic rule-based logic instead of an LLM, if your deployment requires a fully rules-driven policy engine.
+
+## Required Environment Variables
+
+Copy `.env.example` to `.env` and provide values for:
+
+- `CRE_ETH_PRIVATE_KEY` (optional for local simulate)
+- `MOCK_PORT`
+- `MOCK_EXCHANGE_API_KEY`
+- `MOCK_OPENAI_API_KEY`
+- `MOCK_LIQUIDATION_WARNING_ACTION_THRESHOLD`
+- `MOCK_LIQUIDATION_MINIMUM_HEALTH_FACTOR`
+- `MOCK_LIQUIDATION_TARGET_HEALTH_FACTOR`
+- `MOCK_LIQUIDATION_MAX_STABLECOIN_RESERVE_DEPLOYMENT`
+- `MOCK_LIQUIDATION_MIN_STABLECOIN_RESERVE_BALANCE`
+- `MOCK_LIQUIDATION_MAX_COLLATERAL_ALLOCATION`
+- `MOCK_LIQUIDATION_MAX_PARTIAL_DEBT_REPAYMENT`
+- `MOCK_LIQUIDATION_DEFENSIVE_ACTION_SEQUENCING_PREFERENCE`
+- `MOCK_LIQUIDATION_PREFERRED_VENUES`
+
+The local mock server for this project only exposes routes under `/liquidation/*`.
 
 **Quick navigation:**
 
-- [TypeScript Implementation](#typescript-implementation)
-- [Go Implementation](#go-implementation)
+- [TypeScript Quick Start](#typescript-quick-start)
+- [Go Quick Start](#go-quick-start)
 
----
+## TypeScript Quick Start
 
-## What This Template Does
-
-On every cron execution the workflow:
-
-1. Fetches the exchange and model API secrets from the CRE secrets store
-2. Reads the account **policy** and the current **risk state** (leverage, liquidation proximity, collateral health, reserves)
-3. Computes a **risk score** from the risk state and policy thresholds
-4. Asks an LLM for a set of **defensive actions**
-5. Enforces reserve, slippage, and sequencing constraints on the proposed actions
-6. Executes the approved actions through an execution endpoint
-
-If the position is healthy or no action survives the policy filter, the workflow returns `SAFE` without executing anything.
-
-<Aside type="note" title="Confidential execution">
-  The cron handler is registered with the TEE variant of the handler API (`handlerInTee` in TypeScript,
-  `cre.HandlerInTee` in Go) and pinned to an AWS Nitro enclave region, so the position data, policy, and model
-  interaction stay inside the enclave for the whole run. Policy secrets are released by the Vault DON directly into the
-  attested enclave and decrypted only at the moment `GetSecret()` runs. See [Confidential
-  Workflows](https://docs.chain.link/cre/concepts/confidential-workflows) for the underlying feature, and [Hello
-  Confidential Workflows](/cre-templates/hello-confidential-workflows) for the minimal version of this pattern.
-</Aside>
-
-## Defensive Actions
-
-The LLM may propose any of the following action types. Each one is validated against the policy before it becomes executable:
-
-| Action                      | Description                                              |
-| --------------------------- | -------------------------------------------------------- |
-| `add_collateral`            | Post additional collateral from reserves                 |
-| `bridge_and_add_collateral` | Bridge funds from another chain, then post as collateral |
-| `reallocate_collateral`     | Move collateral between positions or venues              |
-| `reduce_position`           | Partially deleverage the position                        |
-| `close_position`            | Fully exit the position                                  |
-| `hedge_short_perp`          | Open an offsetting short perpetual                       |
-
-## Policy Constraints
-
-The policy is fetched at runtime and bounds everything the model is allowed to do:
-
-- `max_reserve_deployment_usdc` — ceiling on capital deployed in a single cycle
-- `min_reserve_balance_usdc` — reserve floor that must remain untouched
-- `max_acceptable_leverage` — leverage target used in risk scoring
-- `incremental_deleveraging_limit_pct` — cap on how much of the position can be reduced per cycle
-- `liquidation_warning_action_threshold` — proximity threshold that triggers a defense
-- `allow_leverage_reduction` — whether deleveraging actions are permitted at all
-- `execution_sequence_preference` — `collateral-first`, `deleverage-first`, or `hedge-first`
-- `preferred_venues` — venue allowlist used when routing each action
-
-<Aside type="caution" title="The model proposes, the policy decides">
-  The LLM output is treated as untrusted input. In both implementations, every proposed action amount is clamped to the
-  policy caps and the running reserve is checked against the floor before any execution call is made — a hallucinated or
-  adversarial suggestion cannot drain the reserve. A floor breach aborts the whole run rather than executing a partial
-  sequence, and unrecognized action types are dropped.
-</Aside>
-
-## Prerequisites
-
-- **[Bun](https://bun.com/docs/installation)** — used to install dependencies and to run the shared mock server (both languages)
-- **[Go](https://go.dev/dl/) 1.25 or later** — only if you are building the Go implementation
-- **[Chainlink CRE CLI](https://docs.chain.link/cre/getting-started/cli-installation)** installed and configured
-- **Git** for cloning the repository
-
-`automated-liquidation-protection/` is a single CRE project shared by both languages — `project.yaml`, `secrets.yaml`, and `.env.example` live at the project root, with `automated-liquidation-protection-ts/` and `automated-liquidation-protection-go/` as sibling workflow directories underneath it.
-
-## TypeScript Implementation
-
-### Getting Started with TypeScript
-
-<Accordion title="Clone the repository and install dependencies" number={1}>
+1. Install dependencies
 
 ```bash
-git clone https://github.com/smartcontractkit/cre-templates.git
-cd cre-templates/starter-templates/confidential-workflows/automated-liquidation-protection
 bun install
 ```
 
-</Accordion>
-
-<Accordion title="Prepare environment variables" number={2}>
+2. Create environment file
 
 ```bash
 cp .env.example .env
 ```
 
-Provide values for the required environment variables:
+3. Start mock server
 
-- `CRE_ETH_PRIVATE_KEY` (optional for local simulate)
-- `MOCK_PORT`, `MOCK_EXCHANGE_API_KEY`, `MOCK_OPENAI_API_KEY`
-- `MOCK_LIQUIDATION_WARNING_ACTION_THRESHOLD`, `MOCK_LIQUIDATION_MINIMUM_HEALTH_FACTOR`, `MOCK_LIQUIDATION_TARGET_HEALTH_FACTOR`
-- `MOCK_LIQUIDATION_MAX_STABLECOIN_RESERVE_DEPLOYMENT`, `MOCK_LIQUIDATION_MIN_STABLECOIN_RESERVE_BALANCE`, `MOCK_LIQUIDATION_MAX_COLLATERAL_ALLOCATION`
-- `MOCK_LIQUIDATION_MAX_PARTIAL_DEBT_REPAYMENT`, `MOCK_LIQUIDATION_DEFENSIVE_ACTION_SEQUENCING_PREFERENCE`, `MOCK_LIQUIDATION_PREFERRED_VENUES`
-
-`secrets.yaml` maps the exchange and model secret IDs to their environment variables. The local mock server only exposes routes under `/liquidation/*`.
-
-</Accordion>
-
-<Accordion title="Review the simulation config" number={3}>
-
-Open `automated-liquidation-protection-ts/config.staging.json`:
-
-```json
-{
-  "schedule": "0 */5 * * * *",
-  "mock_base_url": "http://127.0.0.1:8787/liquidation",
-  "openai_url": "http://127.0.0.1:8787/liquidation/v1/responses",
-  "openai_model": "gpt-4.1-mini",
-  "secrets_ids": {
-    "exchange_api_key_id": "exchange_api_key",
-    "openai_api_key_id": "openai_api_key"
-  }
-}
+```bash
+bun run mock:server
 ```
 
-1. Keep the default values if you are using the shared mock server on port `8787`
-2. Update `mock_base_url` and `openai_url` if you are using a different port or host
-3. Keep `secrets_ids` aligned with `secrets.yaml`
-
-</Accordion>
-
-<Accordion title="Run typecheck and tests" number={4}>
+4. In another terminal, run checks
 
 ```bash
 bun run typecheck
 bun run test
 ```
 
-</Accordion>
-
-<Accordion title="Start the shared mock server" number={5}>
-
-From the project root:
-
-```bash
-bun run mock:server
-```
-
-The server listens on `http://127.0.0.1:8787` and serves this workflow's routes under the `/liquidation/*` namespace — policy, risk state, model responses, and the execution endpoint.
-
-</Accordion>
-
-<Accordion title="Simulate the workflow" number={6}>
-
-In a new terminal, from the project root:
+5. Simulate workflow
 
 ```bash
 cre workflow simulate ./automated-liquidation-protection-ts --target=staging-settings
 ```
 
-The workflow logs each stage (`liquidation-getsecret-ok`, `liquidation-defense-executed`) and returns either `SAFE` or a JSON summary with the status, action count, risk score, and execution ID.
+## Go Quick Start
 
-</Accordion>
-
-## Go Implementation
-
-### Getting Started with Go
-
-<Accordion title="Prepare environment variables" number={1}>
-
-From the shared project root:
+1. Create environment file (at the shared project root)
 
 ```bash
 cp ../.env.example ../.env
 ```
 
-`../secrets.yaml` maps the same logical secret IDs shown above to these environment variables.
-
-</Accordion>
-
-<Accordion title="Run vet and tests" number={2}>
-
-```bash
-cd automated-liquidation-protection-go
-go vet ./...
-go test ./...
-```
-
-</Accordion>
-
-<Accordion title="Start the shared mock server" number={3}>
-
-From the `automated-liquidation-protection-go` directory (requires Node or Bun):
+2. Start the mock server (requires Node or Bun)
 
 ```bash
 bun mock-server.js
 ```
 
-</Accordion>
-
-<Accordion title="Simulate the workflow" number={4}>
-
-In a new terminal, from the project root:
+3. In another terminal, run checks
 
 ```bash
-cre workflow simulate ./automated-liquidation-protection-go --target=staging-settings
+go vet ./...
+go test ./...
 ```
 
-</Accordion>
+4. Simulate workflow
 
-### Confidentiality Boundary (Go)
-
-The handler is registered with `cre.HandlerInTee`, so it receives a `cre.TeeRuntime` rather than a `cre.Runtime`. Policy secrets are released by the Vault DON directly into the attested enclave and decrypted only when `GetSecret()` runs; HTTP calls go through `client.SendRequestInTee(runtime, ...)`, keeping URLs, headers, and response bodies confidential from node operators. What is not confidential is the workflow binary itself — the logic is provided to the enclave by the Workflow DON and is revealed. `runtime.UsingTheDons()` is a one-way door: anything passed to a capability call there is no longer confidential.
-
-This template logs only non-sensitive markers (`liquidation-getsecret-ok`, action counts), and its tests assert that no secret reaches the logs — but remove the log lines entirely before deploying to production.
-
-## TEE Constraints
-
-The third argument to the TEE handler API declares which enclaves the handler accepts:
-
-```ts
-{
-} // any registered TEE, any region
-{
-  regions: ["us-west-2"]
-} // any TEE, restricted to a region
-;[{ tee: "nitro", regions: ["us-west-2"] }] // specific TEE types and regions
+```bash
+cd .. && cre workflow simulate ./automated-liquidation-protection-go --target=staging-settings
 ```
-
-```go
-cre.AnyTee{}                                                           // any registered TEE, any region
-cre.AnyTeeInRegions{Regions: []cre.Region{cre.AwsUsWest2}}             // any TEE, restricted to a region
-cre.OneOfTees{cre.Nitro{Regions: []cre.NitroRegion{cre.NitroUsWest2}}} // specific TEEs and regions
-```
-
-AWS Nitro in `us-west-2` is currently the only registered TEE type and region. In Go, each TEE binding owns its own
-region enum, so passing a region a TEE does not support is a compile-time error.
-
-## Configuration
-
-`config.staging.json`:
-
-| Field           | Description                                               |
-| --------------- | --------------------------------------------------------- |
-| `schedule`      | Cron expression (6 fields, seconds first)                 |
-| `mock_base_url` | Base URL for the risk-state and execute-defense endpoints |
-| `openai_url`    | Reasoning endpoint called from inside the enclave         |
-| `openai_model`  | Model name passed to the reasoning endpoint               |
-| `secrets_ids`   | Maps each policy input to a secret ID in `secrets.yaml`   |
-
-## Secrets
-
-Both implementations expect these secret IDs in `secrets_ids`:
-
-- `exchange_api_key`
-- `openai_api_key`
-
-## Production Checklist
-
-1. Replace `mock_base_url` with your real risk, policy, and execution service URL
-2. Use a production model endpoint and model in `openai_url` and `openai_model`
-3. Confirm `config.production.json` points to the correct service base URL before deployment
-4. Register production secret values for exchange and model access
-
-## Troubleshooting
-
-- **401 responses from the APIs** usually indicate a secret mismatch between `.env`, `secrets.yaml`, and `secrets_ids` in the config file
-- **Simulation failures tied to RPC config** usually come from incorrect `project.yaml` target values
-- **Model responses that fail to parse** mean your configured endpoint is not returning the expected JSON payload shape — the workflow expects `shouldDefend`, `reasoning`, and `actions`
-
-## Further Reading
-
-- [Confidential Workflows in CRE](https://docs.chain.link/cre/concepts/confidential-workflows) - concepts and use cases
-- [Making a Workflow Confidential](https://docs.chain.link/cre/guides/workflow/using-confidential-workflows) - step-by-step guide
-- [Confidential Workflows Client SDK Reference](https://docs.chain.link/cre/reference/sdk/confidential-workflows-client) - full API
-- [Hello Confidential Workflows](/cre-templates/hello-confidential-workflows) - the minimal version of this pattern

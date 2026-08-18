@@ -109,6 +109,17 @@ Automatic failover handles availability and traffic routing in the following sce
 
 - **Multi-origin concurrent WebSocket subscriptions:** In order to maintain a highly available and fault tolerant report stream, you can subscribe to up to two available origins simultaneously. This compares the latest consumed timestamp for each stream and discards duplicate reports before merging the report stream locally.
 
+### Retry Guidance for REST Requests
+
+As with any networked API, **your REST integration must implement retries** as standard practice, rather than treating a single failed request as a hard failure:
+
+- Retry on `5xx` responses and network-level errors (timeouts, connection resets). These are generally transient.
+- Do not retry on `4xx` responses (for example `400` or `401`) — these indicate a problem with the request itself, such as invalid parameters or authentication, and will not succeed on retry without a change to the request.
+- Use exponential backoff with jitter, and cap the number of attempts. `GET` requests to the REST API are safe to retry.
+- If retries continue to fail beyond a reasonable number of attempts, treat this as a signal to fall back to your contingency logic — see [Implementing Contingency Logic](/data-streams/developer-responsibilities#application-code-risks).
+
+The [Data Streams SDKs](/data-streams/reference/data-streams-api/ts-sdk) implement retry logic with exponential backoff by default (for example, the [TypeScript SDK configuration interface](/data-streams/reference/data-streams-api/ts-sdk#configuration-interface)). If you are calling the REST API directly rather than through an SDK, you are responsible for implementing equivalent retry logic yourself.
+
 ---
 
 # Data Streams Billing
@@ -553,6 +564,61 @@ Temporary differences between the calculated stream and other data sources are e
 
 ---
 
+# Crypto Top-of-Book Streams
+Source: https://docs.chain.link/data-streams/concepts/crypto-top-of-book-and-mark-price
+
+In addition to Chainlink's standard liquidity-weighted crypto price streams, Data Streams offers **Top-of-Book** streams for perpetual futures markets. These are sourced directly from a single centralized exchange's public order book, rather than aggregated across venues.
+
+## Top-of-Book
+
+Top-of-Book streams report the best bid and best ask currently resting on a specific exchange's order book for a given instrument. These streams are useful for protocols that need to reflect a specific venue's live order book conditions, such as perpetual futures for tokenized equities and commodities (RWA perps) traded on Binance and Hyperliquid.
+
+<Aside type="note" title="Single-source data">
+  Top-of-Book streams are sourced from a single exchange's order book, not a liquidity-weighted composite across venues.
+  There is no redundant cross-validation between exchanges for a given Top-of-Book feed.
+</Aside>
+
+### Data sources
+
+| Exchange    | Public channel                                               | Fields consumed                                |
+| ----------- | ------------------------------------------------------------ | ---------------------------------------------- |
+| Binance     | `<symbol>@bookTicker` (Individual Symbol Book Ticker Stream) | `b` (best bid price), `a` (best ask price)     |
+| Hyperliquid | `l2Book`                                                     | Best bid/ask `px` from `levels[0]`/`levels[1]` |
+
+Additional exchanges may be added over time as new streams are onboarded.
+
+### Schema
+
+Top-of-Book streams use the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11):
+
+| Schema field   | Populated from                                                                                                                                                                                                              |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bid`          | Exchange's best bid price                                                                                                                                                                                                   |
+| `bidVolume`    | Size at the best bid, when provided by the exchange                                                                                                                                                                         |
+| `ask`          | Exchange's best ask price                                                                                                                                                                                                   |
+| `askVolume`    | Size at the best ask, when provided by the exchange                                                                                                                                                                         |
+| `mid`          | Calculated by the Chainlink DON — **not** provided by the exchange                                                                                                                                                          |
+| `marketStatus` | Reflects the venue's availability. Crypto perpetual markets generally trade continuously; see [Market Status Values](/data-streams/reference/report-schema-v11#market-status-values) for how this maps for a specific feed. |
+
+<Aside type="caution" title="Mid price is calculated, not sourced">
+  `mid` is calculated by the Chainlink DON from the reported bid and ask. It is not a field provided directly by the
+  underlying exchange.
+</Aside>
+
+## Data freshness and update frequency
+
+Top-of-Book streams are **event-driven**: a new observation is only published when the underlying exchange emits a new datapoint on its public channel. There is no fixed polling interval.
+
+End-to-end latency from the underlying exchange to node operators is sub-second under normal conditions. Actual latency can vary based on network conditions and exchange-side publishing behavior.
+
+## Risk considerations
+
+- **Single-source dependency**: Each Top-of-Book feed is sourced from one exchange. If that exchange stops publishing updates, there is no automatic fallback to another venue for that feed.
+- **Venue-specific pricing**: Top-of-Book reflects one exchange's order book, which can diverge from prices on other venues, especially during periods of low liquidity or high volatility on the source exchange.
+- **Review [Developer Responsibilities](/data-streams/developer-responsibilities)** before integrating Top-of-Book streams into a production application.
+
+---
+
 # DEX State Price Streams
 Source: https://docs.chain.link/data-streams/concepts/dex-state-price-streams
 
@@ -727,7 +793,7 @@ In these examples, Liquidity-Weighted Bid and Ask prices, along with the spread 
 # Cryptocurrency Data Streams
 Source: https://docs.chain.link/data-streams/crypto-streams
 
-<FeedPage dataFeedType="streamsCrypto" initialNetwork="arbitrum" allowNetworkTableExpansion={true} defaultNetworkTableExpanded={false} />
+Some crypto streams below are sourced from a single exchange's order book rather than a liquidity-weighted composite. See [Crypto Top-of-Book Streams](/data-streams/concepts/crypto-top-of-book-and-mark-price) for details on this stream type, its data sources, and schema.
 
 ---
 
@@ -845,9 +911,10 @@ Developers implementing Chainlink Data Streams are solely responsible for instit
 - **Code quality and reliability:** Developers must execute code using Chainlink Data Streams only if their code meets the quality and reliability requirements for their use case and application.
 - **Code and application audits:** Developers are responsible for auditing their code and applications before deploying to production. Developers must determine the quality of any audits and ensure that they meet the requirements for their application.
 - **Code dependencies and imports:** Developers are responsible for ensuring the quality, reliability, and security of any dependencies or imported packages that they use with Chainlink Data Streams, and review and audit these dependencies and packages.
-- **Implementing Contingency Logic:** In extreme circumstances, including situations beyond the control of Chainlink node operators, Chainlink Data Streams may experience periods of unavailability or performance degradation. When a WebSocket connection is dropped, user systems must manage reconnections effectively. Developers are responsible for creating contingency plans tailored to their specific application needs, such as:
+- **Implementing Contingency Logic:** In extreme circumstances, including situations beyond the control of Chainlink node operators, Chainlink Data Streams may experience periods of unavailability or performance degradation. When a WebSocket connection is dropped, user systems must manage reconnections effectively. REST requests must be retried rather than treated as a hard failure on a single attempt — see [Retry Guidance for REST Requests](/data-streams/architecture#retry-guidance-for-rest-requests). Developers are responsible for creating contingency plans tailored to their specific application needs, such as:
   - Implementing the [Data Streams Architecture](/data-streams/architecture),
   - Adopting an [active-active](/data-streams/architecture#active-active-multi-site-deployment) deployment strategy and [configuring the SDK](/data-streams/reference/data-streams-api/go-sdk#config-struct) to support multiple concurrent WebSocket connections,
+  - Implementing retry logic with exponential backoff for REST requests, per the [Retry Guidance](/data-streams/architecture#retry-guidance-for-rest-requests),
   - Retrieving any potentially missing reports via the [REST API](/data-streams/reference/data-streams-api/interface-api).
 
 ### Additional Considerations on Data Usage and Verification
@@ -4452,12 +4519,20 @@ GET /api/v1/reports/page?feedID=<FeedID>&startTimestamp=<StartTimestamp>&limit=<
 
 ## Error response codes
 
-| Status Code                              | Description                                                                                                                                                                                                                                                                                                                                          |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 400 Bad Request                          | This error is triggered when: <ul><li>There is any missing/malformed query argument.</li><li>Required headers are missing or provided with incorrect values.</li></ul>                                                                                                                                                                               |
-| 401 Unauthorized User                    | This error is triggered when: <ul><li>Authentication fails, typically because the HMAC signature provided by the client doesn't match the one expected by the server.</li><li>A user requests access to a stream without the appropriate permission or that does not exist.</li></ul>                                                                |
-| 500 Internal Server                      | Indicates an unexpected condition encountered by the server, preventing it from fulfilling the request. This error typically points to issues on the server side.                                                                                                                                                                                    |
-| 206 Missing data (`/bulk` endpoint only) | Indicates that at least one stream ID data is missing from the report. E.g., you requested a report for stream IDs `<feedID1>`, `<feedID2>`, and `<feedID3>` at a given timestamp. If data for `<feedID2>` is missing from the report (not available yet at the specified timestamp), you get `[<feedID1 data>, <feedID3 data>]` and a 206 response. |
+| Status Code                               | Description                                                                                                                                                                                                                                                                                                                                          |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400 Bad Request                           | This error is triggered when: <ul><li>There is any missing/malformed query argument.</li><li>Required headers are missing or provided with incorrect values.</li></ul>                                                                                                                                                                               |
+| 401 Unauthorized User                     | This error is triggered when: <ul><li>Authentication fails, typically because the HMAC signature provided by the client doesn't match the one expected by the server.</li><li>A user requests access to a stream without the appropriate permission or that does not exist.</li></ul>                                                                |
+| 500 Internal Server                       | Indicates an unexpected condition encountered by the server, preventing it from fulfilling the request. This error typically points to issues on the server side.                                                                                                                                                                                    |
+| 502 Bad Gateway / 503 Service Unavailable | Indicates a transient error. Retry the request — see [Retry Guidance for REST Requests](/data-streams/architecture#retry-guidance-for-rest-requests).                                                                                                                                                                                                |
+| 206 Missing data (`/bulk` endpoint only)  | Indicates that at least one stream ID data is missing from the report. E.g., you requested a report for stream IDs `<feedID1>`, `<feedID2>`, and `<feedID3>` at a given timestamp. If data for `<feedID2>` is missing from the report (not available yet at the specified timestamp), you get `[<feedID1 data>, <feedID3 data>]` and a 206 response. |
+
+<Aside type="note" title="Retryable vs. non-retryable errors">
+  `5xx` responses and network-level errors (timeouts, connection resets) are generally transient and should be retried
+  with exponential backoff. `4xx` responses (`400`, `401`) indicate a problem with the request itself and will not
+  succeed on retry without changing the request. See [Retry Guidance for REST
+  Requests](/data-streams/architecture#retry-guidance-for-rest-requests) for details.
+</Aside>
 
 ---
 

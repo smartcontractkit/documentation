@@ -529,9 +529,74 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-07-16
+Last Updated: 2026-08-18
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.29.0 - August 7, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.29.0" target="_blank">CRE CLI version 1.29.0</a> is now available.**
+
+- **Monad mainnet simulation**: Monad mainnet is now supported for local simulation via `cre workflow simulate`. See [Supported Networks](/cre/supported-networks).
+- **Confidential Workflows**: Designate parts of your workflow to run inside a secure enclave (TEE), keeping secrets, sensitive inputs, and computation confidential from node operators during execution. See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) and [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows).
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.28.0...v1.29.0)
+
+## Go SDK v1.18.0 - August 6, 2026
+
+**Go SDK version 1.18.0** adds Confidential Workflows support.
+
+- **Confidential Workflows**: Added a TEE runtime (`cre.TeeRuntime`) and `cre.HandlerInTee` for running workflow logic inside a secure enclave. See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) and [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.17.0...v1.18.0)
+
+## TS SDK v1.18.0 - August 6, 2026
+
+**TypeScript SDK version 1.18.0** adds Confidential Workflows support.
+
+- **Confidential Workflows**: Added a `TeeRuntime` and `handlerInTee` for running workflow logic inside a secure enclave. See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) and [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.17.0...v1.18.0)
+
+## Go SDK v1.16.0 - August 3, 2026
+
+**Go SDK version 1.16.0** adds batch secret fetching.
+
+- **Batch secret fetching**: Added `runtime.GetSecrets()` to fetch multiple secrets in a single call. See [Secrets in CRE](/cre/guides/workflow/secrets).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.15.0...v1.16.0)
+
+## CLI v1.28.0 - July 30, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.28.0" target="_blank">CRE CLI version 1.28.0</a> is now available.**
+
+- **Deployment registry selection in `cre init`**: [`cre init`](/cre/reference/cli/project-setup) now lets you select the deployment registry during project setup.
+- **New aggregator support in simulation**: The local simulator now supports the new aggregator capability, keeping simulation aligned with production.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.27.0...v1.28.0)
+
+## CLI v1.27.0 - July 23, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.27.0" target="_blank">CRE CLI version 1.27.0</a> is now available.**
+
+- **Solana LogTrigger simulation**: `cre workflow simulate` now supports Solana LogTrigger events, enabling local simulation of Solana workflows triggered by onchain logs.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.26.0...v1.27.0)
 
 ## CLI v1.26.0 - July 16, 2026
 
@@ -4392,18 +4457,18 @@ For **why** you might need a Confidential Workflow, see [Confidential Workflows 
 - **[Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential)**: Register a TEE handler, fetch secrets dynamically, and cross back to the DON for anything that needs consensus.
 
 <Aside type="note" title="Minimal example">
-  This guide covers the core mechanics with a minimal example. For complete, production-shaped workflows, see the
-  example workflows below.
+  This guide covers the core mechanics with a minimal example. See the [Hello Confidential Workflows
+  template](/cre-templates/hello-confidential-workflows) for the complete code, or the example workflows below for
+  production-shaped workflows.
 </Aside>
 
 ## Example workflows
 
-Complete TypeScript reference implementations, in
-[`smartcontractkit/confidential-compute-examples`](https://github.com/smartcontractkit/confidential-compute-examples):
+Complete TypeScript reference implementations, available as templates:
 
-- **[Automated Liquidation Protection](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/automated-liquidation-protection)**: Fetches exchange and model secrets, reads policy and risk state, asks an LLM for defensive actions, enforces policy constraints, and executes approved actions.
-- **[Automated Portfolio Rebalancing](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/automated-portfolio-rebalancing)**: Reads policy, holdings, prices, and volatility, asks an LLM for trade proposals, enforces slippage and reserve-floor constraints, and routes approved trades.
-- **[AI Smart Contract Audit Firewall](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/ai-audit-firewall)**: Runs two independent LLM audits on a proposed transaction, merges risk flags into an ALLOW/DENY/MANUAL_REVIEW verdict, and optionally delivers the verdict onchain with `EVMClient`.
+- **[Automated Liquidation Protection](/cre-templates/automated-liquidation-protection)**: Fetches exchange and model secrets, reads policy and risk state, asks an LLM for defensive actions, enforces policy constraints, and executes approved actions.
+- **[Automated Portfolio Rebalancing](/cre-templates/automated-portfolio-rebalancing)**: Reads policy, holdings, prices, and volatility, asks an LLM for trade proposals, enforces slippage and reserve-floor constraints, and routes approved trades.
+- **[AI Smart Contract Audit Firewall](/cre-templates/ai-audit-firewall)**: Runs two independent LLM audits on a proposed transaction, merges risk flags into an ALLOW/DENY/MANUAL_REVIEW verdict, and optionally delivers the verdict onchain with `EVMClient`.
 
 ---
 
@@ -4461,14 +4526,14 @@ Your workflow environment determines how you manage secrets:
 
 ## Quick comparison
 
-| Aspect             | Local Simulation                     | Deployed Workflows                 |
-| ------------------ | ------------------------------------ | ---------------------------------- |
-| **Environment**    | Your local machine                   | Workflow DON                       |
-| **Secret storage** | `.env` file or environment variables | Vault DON                          |
-| **CLI commands**   | None (automatic via simulation)      | `cre secrets create/update/delete` |
-| **Workflow code**  | `runtime.GetSecret()`                | `runtime.GetSecret()` (same API)   |
-| **Authentication** | Not required                         | `cre login` required               |
-| **Use case**       | Development and testing              | Deployed workflows                 |
+| Aspect             | Local Simulation                               | Deployed Workflows                                        |
+| ------------------ | ---------------------------------------------- | --------------------------------------------------------- |
+| **Environment**    | Your local machine                             | Workflow DON                                              |
+| **Secret storage** | `.env` file or environment variables           | Vault DON                                                 |
+| **CLI commands**   | None (automatic via simulation)                | `cre secrets create/update/delete`                        |
+| **Workflow code**  | `runtime.GetSecret()` / `runtime.GetSecrets()` | `runtime.GetSecret()` / `runtime.GetSecrets()` (same API) |
+| **Authentication** | Not required                                   | `cre login` required                                      |
+| **Use case**       | Development and testing                        | Deployed workflows                                        |
 
 ## How secrets work in your workflow
 
@@ -7327,14 +7392,14 @@ Key linking is the process of connecting a blockchain wallet address to your CRE
 
 **Important constraints:**
 
-- **One organization per address**: Each wallet address can only be linked to one CRE organization at a time. If you need to use the same address with a different organization, you must first [unlink it](#unlinking-a-key) from the current organization.
+- **Permanent organization bond**: Once a wallet address is linked to an organization, it is permanently bonded to that organization—even if unlinked. An unlinked address can only ever be relinked to the same organization, never to a different organization. Choose your wallet carefully before linking.
 - **Per-organization key limit**: The number of web3 keys your organization can link is subject to your plan quota. See [Service Quotas](/cre/service-quotas#registry-quotas) for the current limit. To request an increase, [contact us](/cre/support-feedback).
 
 However, an organization can have multiple wallet addresses linked to it, allowing team members to use their own addresses or enabling separation between development, staging, and production environments.
 
 
-<Aside type="note" title="Already linked to another organization?">
-  If you try to link an address that's already registered with another organization, the CLI will display an error. To use this address with your current organization, you must first unlink it from the other organization using cre account unlink-key (note: this will delete all workflows registered under that address in the other organization).
+<Aside type="caution" title="Permanent organization bond">
+  Once an address is linked to an organization, it is permanently bonded to that organization. Even if unlinked, the address can only ever be relinked to the same organization—never to a different organization. Make sure you're linking the correct wallet to the correct organization before confirming.
 </Aside>
 
 ## Prerequisites
@@ -7345,7 +7410,7 @@ Before linking a key, ensure you have:
 - **A CRE project directory**: You must run the command from a project directory that contains a `project.yaml` file
 - **Private key in `.env`**: Set `CRE_ETH_PRIVATE_KEY=<your_64_character_hex_key>` (without `0x` prefix) in your `.env` file
 - **Funded wallet**: Your wallet must have ETH on Ethereum Mainnet to pay for gas fees (the Workflow Registry contract is deployed on Ethereum Mainnet)
-- **Unlinked address**: The wallet address must not already be linked to another CRE organization. Each address can only be associated with one organization at a time.
+- **Unlinked address**: The wallet address must not be currently linked to any CRE organization. Once linked, an address is permanently bonded to that organization.
 
 
 <Aside type="caution" title="Never commit your .env file">
@@ -7353,6 +7418,11 @@ Before linking a key, ensure you have:
 </Aside>
 
 ## Linking your first key
+
+
+<Aside type="caution" title="This is a permanent decision">
+  Linking a wallet address to your organization is permanent. Once linked, this address will be permanently bonded to your organization. Even if unlinked in the future, it can only ever be relinked to this organization—never to a different organization. Choose your wallet carefully and ensure you're linking it to the correct organization before confirming.
+</Aside>
 
 The easiest way to link a key is to let the deployment process handle it automatically. When you first try to [deploy a workflow](/cre/guides/operations/deploying-workflows) with `deployment-registry: "onchain:ethereum-mainnet"`, the CLI will detect that your address isn't linked and prompt you to link it.
 
@@ -7485,7 +7555,7 @@ Linked Owners:
 
 ## Linking multiple addresses
 
-Your organization can link more than one wallet address, subject to your plan's key limit. See [Service Quotas](/cre/service-quotas#registry-quotas) for the current limit, or [contact us](/cre/support-feedback) to request an increase. Each individual address can only be linked to one organization at a time.
+Your organization can link more than one wallet address, subject to your plan's key limit. See [Service Quotas](/cre/service-quotas#registry-quotas) for the current limit, or [contact us](/cre/support-feedback) to request an increase. Remember that each address becomes permanently bonded to your organization upon linking.
 
 This is useful for:
 
@@ -7503,9 +7573,13 @@ To link another address:
 
 If you need to remove a linked address from your organization, you can use the `cre account unlink-key` command. This is useful when:
 
-- Rotating addresses for security reasons
 - Removing addresses that are no longer in use
 - Cleaning up test or development addresses
+
+
+<Aside type="note" title="Unlinking does not break the permanent bond">
+  When you unlink an address, all workflows registered under that address are deleted. However, the address remains permanently bonded to your organization. If you relink it in the future, it can only be linked to this organization, not to any other organization.
+</Aside>
 
 
 <Aside type="caution" title="Destructive operation">
@@ -8216,7 +8290,7 @@ Functionally, running a workflow confidentially means moving execution of the se
 1. **Declare a confidential handler:** Register the handler that should run inside a TEE, specifying which TEE types/regions your workflow accepts.
 2. **Trigger fires:** The Workflow DON hands the triggered request to an enclave instead of executing the callback locally.
 3. **Enclave execution:** Your callback runs inside the enclave, receiving a runtime built for confidential execution instead of the regular DON runtime.
-4. **Dynamic secret fetch:** Secrets are requested and decrypted inside the enclave at the moment your code needs them—there's no upfront declaration.
+4. **Dynamic secret fetch:** Secrets are requested and decrypted inside the enclave at the moment your code needs them.
 5. **In-enclave capability calls:** Capabilities that support it can execute directly from inside the enclave; trust comes from enclave attestation rather than DON-level consensus.
 6. **Crossing back to the DON:** For anything that needs Workflow DON consensus—like generating a signed report—you explicitly cross back out to a regular DON runtime. Once data passes through that runtime, it's handled like any non-confidential capability call.
 
@@ -8226,7 +8300,7 @@ See the [step-by-step guide](/cre/guides/workflow/using-confidential-workflows) 
 
 ## Confidentiality boundary
 
-Confidential Workflows protects specific things by default. Everything else is left to your explicit workflow design—understanding the boundary matters for reasoning about what's actually intended to remain confidential from node operators.
+Confidential Workflows protect specific things by default. Everything else is left to your explicit workflow design.
 
 | Protected by default                                                                    | Not automatically protected                                                                                              |
 | :-------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
@@ -8235,15 +8309,25 @@ Confidential Workflows protects specific things by default. Everything else is l
 | Capability calls made from inside the enclave (see [How it works](#how-it-works))       | Capability requests and responses that aren't routed through the enclave, unless that capability adds its own protection |
 | Enclave execution memory, for as long as your computation runs inside it                | Reports, transaction calldata, and any output you deliver outside the enclave boundary                                   |
 
-Your handler's source code and compiled binary are **not** confidential just because part of its logic runs inside an enclave—only the computation itself, while it's executing inside the enclave, and the secrets and sensitive inputs it processes there, are designed to remain confidential from node operators. If your workflow's logic is sensitive on its own (a scoring formula, a risk threshold), design so that logic actually runs inside the enclave; don't rely on the deployed binary being unreadable, since it isn't protected. You remain responsible for not leaking confidential information back out through logs, workflow outputs, external API requests, or blockchain transactions.
+You remain responsible for not leaking confidential information back out through logs, workflow outputs, external API requests, or blockchain transactions.
 
-"Protected" here means designed to remain confidential from Workflow DON node operators—it does not mean isolated from other confidential workloads. A single enclave can execute confidential workflows from multiple customers concurrently, sharing the same execution memory.
+<Aside type="caution" title="Workflow logic is not confidential">
+  Your handler's source code and compiled binary are not confidential just because part of its logic runs inside an
+  enclave. Confidential Workflows protect only the confidential data processed during execution inside the enclave,
+  including Vault DON secrets (such as API keys), sensitive HTTP response payloads, and intermediate values that are not
+  explicitly shared outside the enclave. Support for confidential logic or workflow is planned as a future enhancement,
+  not part of the current beta.
+</Aside>
 
-<Aside type="caution" title="Workflow execution isolation within the enclave is not currently supported">
-  A single enclave isn't dedicated to one customer or workflow: it can execute confidential workflows from different
-  customers concurrently, sharing the same execution memory. Isolating separate confidential executions from each other
-  within a shared enclave is not currently supported. This is planned as a future enhancement, not part of the current
-  beta.
+<Aside type="caution" title="Multiple confidential workflows may execute within the same enclave">
+  Workflows are isolated from one another by Wasmtime. Dedicated per-workflow enclave isolation is planned as a future
+  enhancement.
+</Aside>
+
+<Aside type="caution" title="Don't log in production Confidential Workflows">
+  Logging within enclave execution logic should be avoided in production workflows. For debugging purposes, logging may
+  be used in simulation environments. Anything you log from inside a Confidential Workflow handler could leak data the
+  enclave is meant to protect—remove or gate log statements before deploying.
 </Aside>
 
 ## Choosing Confidential Workflows
@@ -8254,42 +8338,29 @@ Use a regular capability when nothing about the request, response, or logic is s
 
 Confidential Workflows apply anywhere the computation behind a decision—not just a workflow's API calls—needs to remain confidential from node operators.
 
-<Aside type="note" title="Full logic isolation between workflows is on the roadmap">
-  The examples below describe workflows where keeping sensitive computation confidential from Workflow DON node
-  operators has real value. Isolating that same computation from *other* confidential workflows—since a single enclave
-  can run workloads from multiple parties concurrently—isn't guaranteed today; see [Confidentiality
-  boundary](#confidentiality-boundary). Full isolation between tenants is planned as a future enhancement, not part of
-  the current beta.
-</Aside>
-
 ### Automated liquidation protection
 
 A workflow monitors a leveraged position's collateral health and closes or adjusts it before liquidation. Running the risk thresholds and defensive strategy inside the enclave is designed to prevent them from being predicted and front-run.
 
-<Aside type="tip" title="Reference example available">
-  See the complete [Automated Liquidation Protection
-  example](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/automated-liquidation-protection)
-  (TypeScript).
+<Aside type="tip" title="Reference template available">
+  See the [Automated Liquidation Protection template](/cre-templates/automated-liquidation-protection) (TypeScript).
 </Aside>
 
 ### Automated portfolio rebalancing
 
 A workflow rebalances a portfolio toward target allocations once drift crosses a threshold. Running the allocation policy and trade-sizing decisions inside the enclave is designed to prevent the rebalance from being anticipated and traded against.
 
-<Aside type="tip" title="Reference example available">
-  See the complete [Automated Portfolio Rebalancing
-  example](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/automated-portfolio-rebalancing)
-  (TypeScript).
+<Aside type="tip" title="Reference template available">
+  See the [Automated Portfolio Rebalancing template](/cre-templates/automated-portfolio-rebalancing) (TypeScript).
 </Aside>
 
 ### LLM smart contract audit firewall
 
 A workflow evaluates a proposed transaction or contract against one or more LLMs for risk signals before allowing it to proceed. The evaluation criteria and third-party API credentials stay inside the enclave.
 
-<Aside type="tip" title="Reference example available">
-  See the complete [AI Smart Contract Audit Firewall
-  example](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/ai-audit-firewall) (TypeScript,
-  with optional onchain delivery via `EVMClient`).
+<Aside type="tip" title="Reference template available">
+  See the [AI Smart Contract Audit Firewall template](/cre-templates/ai-audit-firewall) (TypeScript, with optional
+  onchain delivery via `EVMClient`).
 </Aside>
 
 ### Proprietary or confidential data computation
@@ -13434,14 +13505,7 @@ The CLI will automatically read the `secrets-path` from your `workflow.yaml` and
 
 ## Fetching multiple secrets
 
-You can fetch multiple secrets by calling the secret retrieval method multiple times within your workflow.
-
-
-<Aside type="caution" title="Fetch secrets sequentially">
-  The WASM host for the CRE runtime does not support parallel `runtime.getSecret()` requests. Always fetch secrets **sequentially**: call `getSecret()`, get the result with `.result()`, then call `getSecret()` again for the next secret. Do not attempt to fetch multiple secrets in parallel.
-</Aside>
-
-The following example builds on the previous one. First, update your `secrets.yaml` to declare two secrets:
+First, update your `secrets.yaml` to declare both secrets:
 
 ```yaml
 secretsNames:
@@ -13458,9 +13522,11 @@ export SECRET_ADDRESS_ALL="0x1234567890abcdef1234567890abcdef12345678"
 export API_KEY_ALL="your-api-key-here"
 ```
 
-Now you can fetch both secrets in your workflow code:
+### Using batch fetch (recommended)
 
-Code snippet for Fetching Multiple Secrets (TypeScript):
+Use `runtime.getSecrets()` to retrieve multiple secrets in a single call. The result is a map keyed by secret ID.
+
+Code snippet for Fetching Multiple Secrets with Batch (TypeScript):
 
 ```typescript
 import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
@@ -13472,14 +13538,15 @@ const SECRET_ADDRESS_NAME = "SECRET_ADDRESS"
 const API_KEY_NAME = "API_KEY"
 
 const onCronTrigger = (runtime: Runtime<Config>): string => {
-  // 1. Request the first secret
-  const secretAddress = runtime.getSecret({ id: SECRET_ADDRESS_NAME }).result()
+  // Fetch multiple secrets in a single batch call
+  const secretsToFetch = [{ id: SECRET_ADDRESS_NAME }, { id: API_KEY_NAME }]
+  const secrets = runtime.getSecrets(secretsToFetch).result()
 
-  // 2. Request the second secret
-  const apiKey = runtime.getSecret({ id: API_KEY_NAME }).result()
+  // Access each secret from the result map by its ID
+  const secretAddress = secrets[SECRET_ADDRESS_NAME].value
+  const apiKey = secrets[API_KEY_NAME].value
 
-  // 3. Use your secrets
-  runtime.log(`Successfully fetched secrets! Address: ${secretAddress.value}, API Key: ${apiKey.value}`)
+  runtime.log(`Successfully fetched secrets! Address: ${secretAddress}, API Key: ${apiKey}`)
 
   return "Success"
 }
@@ -13497,6 +13564,11 @@ export async function main() {
   await runner.run(initWorkflow)
 }
 ```
+
+
+<Aside type="note" title="All-or-nothing error handling">
+  If any secret in a batch fails to fetch, `getSecrets()` throws a `SecretsBatchError` containing all error messages from the failed secrets.
+</Aside>
 
 ---
 
@@ -13968,14 +14040,23 @@ const initWorkflow = (config: Config) => {
 
 ### Step 2: Fetch a secret inside the enclave
 
-Your callback receives a [`TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-ts#teeruntimec). Call [`runtime.getSecret()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimegetsecret) to fetch a secret at the point you need it:
+Your callback receives a [`TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-ts#teeruntimec). Call [`runtime.getSecrets()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimegetsecrets) to fetch the secrets you need in a single batch call:
 
 ```ts
 const onCronTrigger = (runtime: TeeRuntime<Config>) => {
-  const secret = runtime.getSecret({ id: "MY_API_KEY" }).result()
+  const secrets = runtime.getSecrets([{ id: "API_KEY" }, { id: "DB_URL" }]).result()
+
+  const apiKey = secrets["API_KEY"].value
+  const dbUrl = secrets["DB_URL"].value
 
   // ...
 }
+```
+
+To fetch a single secret, use [`runtime.getSecret()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimegetsecret):
+
+```ts
+const secret = runtime.getSecret({ id: "MY_API_KEY" }).result()
 ```
 
 <Aside type="note" title="No upfront secret declaration">
@@ -13996,7 +14077,7 @@ const response = new HTTPClient()
   .sendRequest(runtime, {
     url: runtime.config.url,
     method: "GET",
-    multiHeaders: { Authorization: { values: [`Bearer ${secret.value}`] } },
+    multiHeaders: { Authorization: { values: [`Bearer ${apiKey}`] } },
   })
   .result()
 
@@ -14034,7 +14115,7 @@ runtime.log("Confidential workflow complete")
 return text(response)
 ```
 
-See [Generating Reports: Single Values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) for the full delivery flow (encoding, `writeReport`, etc.). For a complete example that encodes a payload with the `hexToBase64` helper and delivers it onchain with `evmClient.writeReport(donRuntime, ...)`, see the [AI Smart Contract Audit Firewall example](https://github.com/smartcontractkit/confidential-compute-examples/tree/main/ai-audit-firewall).
+See [Generating Reports: Single Values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) for the full delivery flow (encoding, `writeReport`, etc.). For a complete example that encodes a payload with the `hexToBase64` helper and delivers it onchain with `evmClient.writeReport(donRuntime, ...)`, see the [AI Smart Contract Audit Firewall template](/cre-templates/ai-audit-firewall).
 
 <Aside type="caution" title="Data passed to usingTheDons() is no longer confidential">
   Once you pass a value into a capability call on the runtime returned by
@@ -14073,15 +14154,16 @@ const configSchema = z.object({
 type Config = z.infer<typeof configSchema>
 
 const onCronTrigger = (runtime: TeeRuntime<Config>) => {
-  // 1. Fetch a secret dynamically, inside the enclave.
-  const secret = runtime.getSecret({ id: "MY_API_KEY" }).result()
+  // 1. Fetch secrets dynamically, inside the enclave.
+  const secrets = runtime.getSecrets([{ id: "API_KEY" }, { id: "DB_URL" }]).result()
+  const apiKey = secrets["API_KEY"].value
 
   // 2. Make an HTTP request from inside the enclave.
   const response = new HTTPClient()
     .sendRequest(runtime, {
       url: runtime.config.url,
       method: "GET",
-      multiHeaders: { Authorization: { values: [`Bearer ${secret.value}`] } },
+      multiHeaders: { Authorization: { values: [`Bearer ${apiKey}`] } },
     })
     .result()
 
@@ -14301,7 +14383,7 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 
 # Generating Contract Bindings
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/generating-bindings-ts
-Last Updated: 2026-03-17
+Last Updated: 2026-08-07
 
 To interact with a smart contract from your TypeScript workflow, you first need to create **bindings**. Bindings are type-safe TypeScript classes auto-generated from your contract's ABI. They handle all encoding and decoding—including base64 conversion for the CRE SDK wire format—so you can work directly with native TypeScript types.
 
@@ -14625,12 +14707,129 @@ You can import from the barrel file to keep imports clean:
 import { Storage, newStorageMock } from "../contracts/evm/ts/generated"
 ```
 
+## Using mock bindings for testing
+
+The `<ContractName>_mock.ts` files allow you to test your workflows without deploying or interacting with real contracts. Each mock provides:
+
+- **Test-friendly factory**: `new<ContractName>Mock(address, evmMock)` creates a mock instance
+- **Mockable methods**: Set custom function implementations for each contract `view`/`pure` function
+- **Type safety**: The same input/output types as the real binding
+
+Mocks are used together with the `@chainlink/cre-sdk/test` module, which provides `newTestRuntime()` (a `Runtime` you can call your handlers with directly, outside the WASM sandbox) and `EvmMock` (a fake EVM client you attach contract mocks to). Tests run with [Bun's built-in test runner](https://bun.com/docs/cli/test), using `describe`/`expect` from `bun:test` and the `test` helper from `@chainlink/cre-sdk/test`.
+
+### Complete example: Testing a workflow with mocks
+
+Let's say you have a workflow in `my-workflow/workflow.ts` that reads from a `Storage` contract. Create a test file named `workflow.test.ts` in the same directory.
+
+<Aside type="note" title="Adapt to your workflow">
+  This example demonstrates the mock setup pattern. The `Config` type and file names shown are examples — adapt them to
+  match your workflow's structure. The key concepts (creating mocks, setting behavior, calling your handler directly)
+  remain the same regardless of your specific config.
+</Aside>
+
+```typescript
+// File: my-workflow/workflow.test.ts
+import { describe, expect } from "bun:test"
+import { EvmMock, newTestRuntime, test } from "@chainlink/cre-sdk/test"
+import type { Address } from "viem"
+
+import { newStorageMock } from "../contracts/evm/ts/generated/Storage_mock"
+import { onCronTrigger } from "./workflow"
+import type { Config } from "./workflow"
+
+const CHAIN_SELECTOR = 16015286601757825753n // ethereum-testnet-sepolia
+const STORAGE_ADDRESS = "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4" as Address
+
+describe("onCronTrigger", () => {
+  test("reads the storage value and logs it", async () => {
+    // 1. Set up your config
+    const config: Config = {
+      chainSelector: CHAIN_SELECTOR.toString(),
+      storageAddress: STORAGE_ADDRESS,
+    }
+
+    // 2. Create a mock EVM client for the given chain
+    const evmMock = EvmMock.testInstance(CHAIN_SELECTOR)
+
+    // 3. Create a mock Storage contract and set up mock behavior
+    const storageMock = newStorageMock(STORAGE_ADDRESS, evmMock)
+    storageMock.get = () => 42n
+
+    // 4. Create a test runtime and attach your config to it
+    const runtime = newTestRuntime()
+    runtime.config = config
+
+    // 5. Call your handler directly — no simulator or WASM build required.
+    //    Because your workflow constructs its EVMClient from `runtime`, and the
+    //    mock is registered on that chain selector, the handler transparently
+    //    uses the mocked Get() function.
+    const result = onCronTrigger(runtime)
+
+    expect(result).toBe("42")
+    expect(runtime.getLogs()).toContain("Storage value: 42")
+  })
+})
+```
+
+### Running your tests
+
+From your workflow directory (or your project root, if you point Bun at the workflow path), run:
+
+```bash
+# Run every *.test.ts file discovered by Bun
+bun test
+
+# Run a specific test file
+bun test workflow.test.ts
+
+# Run tests matching a name pattern
+bun test --test-name-pattern "reads the storage value"
+```
+
+**Expected output:**
+
+```bash
+bun test v1.2.x
+
+workflow.test.ts:
+✓ onCronTrigger > reads the storage value and logs it [1.20ms]
+
+ 1 pass
+ 0 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [12.00ms]
+```
+
+The test passes, confirming your mock contract is set up correctly and your handler produces the expected result using the mocked contract — all without running the simulator or deploying anything.
+
+### Best practices for workflow testing
+
+1. **Name test files correctly**: Use `<name>.test.ts` (e.g., `workflow.test.ts`) and place them next to the workflow file they cover.
+2. **Call handlers directly**: Import and call your `on<Trigger>` functions directly with a `newTestRuntime()` — you don't need `initWorkflow` or the simulator to unit test handler logic.
+3. **Mock all external dependencies**: Use generated contract mocks (`new<ContractName>Mock`) for EVM calls, and assert on `runtime.getLogs()` instead of relying on console output.
+4. **Test different scenarios**: Write separate `test(...)` cases for success cases, error cases (e.g., a required config field missing), and edge cases.
+5. **Test `initWorkflow` separately**: Assert that `initWorkflow(config)` returns the handlers you expect, wired to the right triggers (e.g., checking `handlers[0].trigger.config.schedule`), independent of testing the handler logic itself.
+
+### Complete reference example
+
+For a comprehensive example showing how to test workflows with multiple triggers (cron, EVM log) and multiple mock contracts, see the Custom Data Feed demo workflow's `workflow.test.ts` file.
+
+To generate this example:
+
+1. Run `cre init` from your project directory
+2. Select **TypeScript** as your language
+3. Choose the **"Custom data feed: Updating on-chain data periodically using offchain API data"** template
+4. After initialization completes, examine the generated `workflow.test.ts` file in your workflow directory
+
+This generated test file demonstrates real-world patterns for testing complex workflows with multiple capabilities and mock contracts.
+
 ## Best practices
 
 1. **Regenerate when needed**: Re-run `cre generate-bindings evm` whenever you update your contract ABIs. Do not edit generated files by hand.
 2. **Handle errors**: The write and trigger methods will throw if encoding or network calls fail. Wrap them in try/catch blocks in your workflow handlers.
 3. **Use explicit `--language` in CI**: If your project has both `go.mod` and `package.json`, auto-detection may be ambiguous. Pass `--language typescript` explicitly in CI pipelines.
 4. **Organize ABIs**: Keep your `.abi` files clearly named in `contracts/evm/src/abi/`. The file name determines the generated class name.
+5. **Use mocks in tests**: Leverage the generated mock bindings to test your workflows in isolation without needing deployed contracts or the simulator.
 
 ## Where to go next
 
@@ -19423,6 +19622,10 @@ cre workflow deploy my-workflow --target=production-settings
 
 For end-to-end runnable examples, see the [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/automation-migration) repository.
 
+### 5. Decommission the old Upkeep
+
+Once your CRE workflow is live and verified, cancel the original Automation Upkeep and withdraw its remaining LINK balance so it isn't performed alongside your new workflow. See [Cancel an Upkeep and Withdraw Funds](/chainlink-automation/guides/cancel-upkeep).
+
 ## Troubleshooting
 
 ### CallNotAllowed Error
@@ -20543,6 +20746,7 @@ Last Updated: 2026-07-28
 | ------------------------------------------------ | ------------------------------------------------------------------------------------ |
 | [`handlerInTee`](#handlerintee)                  | Registers a handler whose callback runs inside a TEE.                                |
 | [`runtime.getSecret`](#runtimegetsecret)         | Fetches a single secret dynamically, inside the enclave.                             |
+| [`runtime.getSecrets`](#runtimegetsecrets)       | Fetches multiple secrets in a single batch call, inside the enclave.                 |
 | [`runtime.usingTheDons`](#runtimeusingthedons)   | Returns a regular `Runtime` for operations that need DON consensus.                  |
 | [`runtime.reportFromDon`](#runtimereportfromdon) | Generates a report from the DON directly, without a full `usingTheDons()` crossover. |
 
@@ -20559,12 +20763,7 @@ interface TeeRuntime<C> extends BaseRuntime<C>, SecretsProvider {
 }
 ```
 
-`BaseRuntime<C>` provides `config`, `now()`, `log()`, and `emitMetric()`, same as on a regular `Runtime<C>`. `SecretsProvider` provides `getSecret()`.
-
-<Aside type="note" title="No batch getSecrets in TypeScript">
-  Unlike the Go SDK (which has both `GetSecret` and a batch `GetSecrets`), the TypeScript `SecretsProvider` currently
-  exposes only `getSecret()`. Fetch secrets one at a time.
-</Aside>
+`BaseRuntime<C>` provides `config`, `now()`, `log()`, and `emitMetric()`, same as on a regular `Runtime<C>`. `SecretsProvider` provides `getSecret()` and `getSecrets()`.
 
 ### `TeeConstraint`
 
@@ -20647,6 +20846,29 @@ const secret = runtime.getSecret({ id: "MY_API_KEY" }).result()
 ```
 
 There's no upfront declaration like Confidential HTTP's `vaultDonSecrets`—the secret is requested and decrypted inside the enclave at the moment `getSecret()` runs.
+
+### `runtime.getSecrets`
+
+Fetches multiple secrets in a single batch call, decrypted only inside the enclave.
+
+**Signature:**
+
+```ts
+getSecrets(requests: Array<SecretRequest | SecretRequestJson>): {
+  result: () => Record<string, Secret>
+}
+```
+
+The result is a record keyed by each secret's `id`. If any secret in the batch fails, `.result()` throws a `SecretsBatchError` that includes the failing secret ids and their error messages. Requesting the same `id` more than once in a single call also throws a `SecretsBatchError`.
+
+**Example:**
+
+```ts
+const secrets = runtime.getSecrets([{ id: "API_KEY" }, { id: "DB_URL" }]).result()
+
+const apiKey = secrets["API_KEY"].value
+const dbUrl = secrets["DB_URL"].value
+```
 
 ## Crossing back to the DON
 
@@ -21557,6 +21779,52 @@ const onTrigger = (runtime: Runtime<Config>): string => {
 <Aside type="note" title="Secrets guide">
   For a complete walkthrough on creating, storing, and using secrets, see the [Secrets guide](/cre/guides/workflow/secrets).
 </Aside>
+
+## `runtime.getSecrets()`
+
+Retrieves multiple secrets in a single batch call. Use this instead of calling `getSecret()` in a loop when you need two or more secrets.
+
+**Signature:**
+
+```typescript
+runtime.getSecrets(
+  requests: Array<SecretRequest | SecretRequestJson>
+): { result: () => Record<string, Secret> }
+```
+
+**Parameters:**
+
+| Field      | Type                                        | Required | Description                                               |
+| ---------- | ------------------------------------------- | -------- | --------------------------------------------------------- |
+| `requests` | `Array<SecretRequest \| SecretRequestJson>` | Yes      | Array of secrets to fetch. Duplicate IDs are not allowed. |
+
+Each entry in `requests` follows the same [`SecretRequest`](#secretrequest--secretrequestjson) shape as `getSecret()`.
+
+**Returns:**
+
+A `Record<string, Secret>` (after calling `.result()`) where each key is the secret's `id` and the value is the corresponding [`Secret`](#secret) object.
+
+**Error handling:**
+
+If any secret in the batch fails, `getSecrets()` throws a `SecretsBatchError` containing all error messages aggregated from the failed secrets.
+
+**Example:**
+
+```typescript
+import { type Runtime } from "@chainlink/cre-sdk"
+
+const onTrigger = (runtime: Runtime<Config>): string => {
+  const secretsToFetch = [{ id: "api-key" }, { id: "webhook-url" }]
+
+  const secrets = runtime.getSecrets(secretsToFetch).result()
+
+  const apiKey = secrets["api-key"].value
+  const webhookUrl = secrets["webhook-url"].value
+
+  runtime.log(`Fetched ${Object.keys(secrets).length} secrets`)
+  return "done"
+}
+```
 
 ## Report verification
 
