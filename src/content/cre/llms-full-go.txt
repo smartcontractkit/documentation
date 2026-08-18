@@ -26,20 +26,20 @@ You can start building and [simulating](/cre/guides/operations/simulating-workfl
 
 Simulation compiles your workflows into [WebAssembly (WASM)](https://webassembly.org/) and runs them on your machine—but makes **real calls** to live APIs and public EVM blockchains. This gives you confidence your workflow will work as expected when deployed to a DON.
 
-### Deploy your workflows (Early Access)
+### Deploy your workflows
 
 
-<Aside type="caution" title="Early Access: Disclaimer">
-  Chainlink Runtime Environment (CRE) deployment is in the "Early Access" stage of development, which means that CRE currently has functionality which is under development and may be changed in later versions. By using CRE, you expressly acknowledge and agree to accept the Chainlink <a href="https://chain.link/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>, which provides important information and disclosures.
+<Aside type="caution" title="Disclaimer">
+  Chainlink CRE is provided on an "as is" basis without any representations, warranties, covenants, or conditions of any kind. Use at your own risk. Users remain fully responsible for deployments and that the operation and performance of workflows matches expectations. Please review the Chainlink Foundation <a href="https://chain.link/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> which provides important information and disclosures. By using CRE, you expressly acknowledge and agree to accept these terms.
 </Aside>
 
-Early Access to workflow deployment includes:
+Deploying workflows requires approval. Workflow deployment includes:
 
 - **Deploy and run workflows** on a Chainlink DON
 - **Workflow lifecycle management**: Deploy, activate, pause, update, and delete workflows through the CLI
 - **Monitoring and debugging**: Access detailed logs, events, and performance metrics in the CRE UI
 
-To request Early Access, run `cre account access` from the CLI or visit <a href="https://app.chain.link/cre/request-access" target="_blank">app.chain.link/cre/request-access</a>. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+To request deploy access, run `cre account access` from the CLI. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
 
 ## How CRE runs your workflows
 
@@ -145,6 +145,11 @@ Jump to what you need:
 - **[Workflow Guides](/cre/guides/workflow/using-triggers/overview)** - Learn how to use triggers, make API calls, and interact with blockchains
 - **[Workflow Operations](/cre/guides/operations/simulating-workflows)** - Simulate, deploy, and manage your workflows
 - **[SDK Reference](/cre/reference/sdk)** - Detailed API documentation for Go and TypeScript SDKs
+
+
+<Aside type="caution" title="Disclaimer">
+  This code represents an example of using a Chainlink product or service. It is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may omit checks or error handling. Each party intending to use this reference implementation must perform its own audits, security and code review, and testing before any production deployment and ensure the operation and performance of such code matches expectations. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for outcomes due to errors in this example or how it is deployed or operated. Use of the Chainlink Network is subject to the Chainlink Foundation <a href="https://chain.link/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>, which provides important information and disclosures. By using this code, you acknowledge and agree to these terms.
+</Aside>
 
 ---
 
@@ -529,9 +534,74 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-07-16
+Last Updated: 2026-08-18
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.29.0 - August 7, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.29.0" target="_blank">CRE CLI version 1.29.0</a> is now available.**
+
+- **Monad mainnet simulation**: Monad mainnet is now supported for local simulation via `cre workflow simulate`. See [Supported Networks](/cre/supported-networks).
+- **Confidential Workflows**: Designate parts of your workflow to run inside a secure enclave (TEE), keeping secrets, sensitive inputs, and computation confidential from node operators during execution. See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) and [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows).
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.28.0...v1.29.0)
+
+## Go SDK v1.18.0 - August 6, 2026
+
+**Go SDK version 1.18.0** adds Confidential Workflows support.
+
+- **Confidential Workflows**: Added a TEE runtime (`cre.TeeRuntime`) and `cre.HandlerInTee` for running workflow logic inside a secure enclave. See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) and [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.17.0...v1.18.0)
+
+## TS SDK v1.18.0 - August 6, 2026
+
+**TypeScript SDK version 1.18.0** adds Confidential Workflows support.
+
+- **Confidential Workflows**: Added a `TeeRuntime` and `handlerInTee` for running workflow logic inside a secure enclave. See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) and [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.17.0...v1.18.0)
+
+## Go SDK v1.16.0 - August 3, 2026
+
+**Go SDK version 1.16.0** adds batch secret fetching.
+
+- **Batch secret fetching**: Added `runtime.GetSecrets()` to fetch multiple secrets in a single call. See [Secrets in CRE](/cre/guides/workflow/secrets).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.15.0...v1.16.0)
+
+## CLI v1.28.0 - July 30, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.28.0" target="_blank">CRE CLI version 1.28.0</a> is now available.**
+
+- **Deployment registry selection in `cre init`**: [`cre init`](/cre/reference/cli/project-setup) now lets you select the deployment registry during project setup.
+- **New aggregator support in simulation**: The local simulator now supports the new aggregator capability, keeping simulation aligned with production.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.27.0...v1.28.0)
+
+## CLI v1.27.0 - July 23, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.27.0" target="_blank">CRE CLI version 1.27.0</a> is now available.**
+
+- **Solana LogTrigger simulation**: `cre workflow simulate` now supports Solana LogTrigger events, enabling local simulation of Solana workflows triggered by onchain logs.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.26.0...v1.27.0)
 
 ## CLI v1.26.0 - July 16, 2026
 
@@ -5152,14 +5222,14 @@ Your workflow environment determines how you manage secrets:
 
 ## Quick comparison
 
-| Aspect             | Local Simulation                     | Deployed Workflows                 |
-| ------------------ | ------------------------------------ | ---------------------------------- |
-| **Environment**    | Your local machine                   | Workflow DON                       |
-| **Secret storage** | `.env` file or environment variables | Vault DON                          |
-| **CLI commands**   | None (automatic via simulation)      | `cre secrets create/update/delete` |
-| **Workflow code**  | `runtime.GetSecret()`                | `runtime.GetSecret()` (same API)   |
-| **Authentication** | Not required                         | `cre login` required               |
-| **Use case**       | Development and testing              | Deployed workflows                 |
+| Aspect             | Local Simulation                               | Deployed Workflows                                        |
+| ------------------ | ---------------------------------------------- | --------------------------------------------------------- |
+| **Environment**    | Your local machine                             | Workflow DON                                              |
+| **Secret storage** | `.env` file or environment variables           | Vault DON                                                 |
+| **CLI commands**   | None (automatic via simulation)                | `cre secrets create/update/delete`                        |
+| **Workflow code**  | `runtime.GetSecret()` / `runtime.GetSecrets()` | `runtime.GetSecret()` / `runtime.GetSecrets()` (same API) |
+| **Authentication** | Not required                                   | `cre login` required                                      |
+| **Use case**       | Development and testing                        | Deployed workflows                                        |
 
 ## How secrets work in your workflow
 
@@ -6035,8 +6105,8 @@ If your workflow requires higher limits than the defaults, you can request a lim
 Source: https://docs.chain.link/cre/guides/operations/deploying-workflows
 Last Updated: 2026-05-12
 
-<Aside type="note" title="Early Access required">
-  Workflow deployment is currently in Early Access. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+<Aside type="note" title="Deploy access required">
+  Workflow deployment requires approval. Run `cre account access` to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
 
   **While you wait:** Continue building and simulating workflows using [`cre workflow simulate`](/cre/guides/operations/simulating-workflows).
 </Aside>
@@ -7045,7 +7115,7 @@ Last Updated: 2026-02-12
 
 Your CRE account is required to use the CRE CLI. You must be authenticated to run CLI commands, including simulating workflows, deploying workflows, and managing deployed workflows. You can authenticate using the browser-based `cre login` flow or an [API key](/cre/reference/cli/authentication#api-key-authentication) for CI/CD and headless environments(\*). This section covers everything you need to know about creating and managing your account.
 
-(\*) API key authentication requires your account to have <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">Early Access</a> approval.
+(\*) API key authentication requires your account to have deploy access approval. See [Requesting Deploy Access](/cre/account/deploy-access).
 
 ## What you'll need
 
@@ -7060,7 +7130,7 @@ To use CRE, you need:
 - **[Creating Your Account](/cre/account/creating-account)** - Step-by-step guide to creating a new CRE account through the CRE UI
 - **[Logging in with the CLI](/cre/account/cli-login)** - Authenticate your CLI with your CRE account to run commands
 - **[Managing Authentication](/cre/account/managing-auth)** - Check your login status, handle session expiration, and log out
-- **[Requesting Deploy Access](/cre/account/deploy-access)** - Check your deployment access status or submit a request for Early Access
+- **[Requesting Deploy Access](/cre/account/deploy-access)** - Check your deployment access status or submit a request for deploy access
 
 ## Security features
 
@@ -7295,7 +7365,7 @@ Browser login stores **`~/.cre/cre.yaml`** (credentials) and **`~/.cre/context.y
 
 
 <Aside type="note" title="Deploy access required">
-  API key authentication requires your account to have Early Access approval for deployment. To <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">request Early Access</a>, please share details about your project and use case—this helps us provide better support as you build with CRE.
+  API key authentication requires your account to have deploy access approval. Run `cre account access` to request access—this helps us provide better support as you build with CRE.
 </Aside>
 
 For CI/CD pipelines or headless environments where a browser is not available, you can authenticate using the `CRE_API_KEY` environment variable. When set, the CLI uses the API key automatically — no `cre login` required.
@@ -7357,10 +7427,7 @@ After logging out, you'll need to run `cre login` again to authenticate future C
 Source: https://docs.chain.link/cre/account/deploy-access
 Last Updated: 2026-02-26
 
-Deploying workflows to a Chainlink DON requires Early Access approval. You can request access in two ways:
-
-- **From the CLI** — Run `cre account access` to check your status or submit a request directly from your terminal
-- **From the web** — Visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to fill out the request form
+Deploying workflows to a Chainlink DON requires approval. Run `cre account access` to check your status or submit a request directly from your terminal.
 
 ## Check your access status
 
@@ -8684,7 +8751,7 @@ Initialize projects and generate contract bindings (Go only).
 
 Manage your linked public key addresses and deployment access.
 
-- **`cre account access`** — Check deployment access status or submit an Early Access request
+- **`cre account access`** — Check deployment access status or submit a deploy access request
 - **`cre account link-key`** — Link a public key address to your account
 - **`cre account list-key`** — List workflow owners linked to your organization
 - **`cre account unlink-key`** — Unlink a public key address from your account
@@ -8853,7 +8920,7 @@ cre whoami
 
 
 <Aside type="note" title="Deploy access required">
-  API key authentication requires your account to have Early Access approval for deployment. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
+  API key authentication requires your account to have deploy access approval. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
 </Aside>
 
 For CI/CD pipelines, automated scripts, or any environment where a browser is not available, you can authenticate using an API key. When the `CRE_API_KEY` environment variable is set, the CLI uses it automatically — no `cre login` required.
@@ -8923,7 +8990,7 @@ PRODUCTION:
 | `cre login`   | Local development                     | Opens a browser for interactive login with 2FA       |
 | `CRE_API_KEY` | CI/CD, scripts, headless environments | Set the environment variable — no browser needed(\*) |
 
-(\*) API key authentication requires your account to have Early Access approval. See [Requesting Deploy Access](/cre/account/deploy-access).
+(\*) API key authentication requires your account to have deploy access approval. See [Requesting Deploy Access](/cre/account/deploy-access).
 
 ## Learn more
 
@@ -8953,9 +9020,9 @@ The `cre account` commands manage linked public key addresses for public onchain
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Checks your organization's deployment access status and lets you submit a request for Early Access directly from the CLI.
+Checks your organization's deployment access status and lets you submit a request for deploy access directly from the CLI.
 
-For a full walkthrough including the interactive flow and web UI option, see [Requesting Deploy Access](/cre/account/deploy-access).
+For a full walkthrough of the interactive flow, see [Requesting Deploy Access](/cre/account/deploy-access).
 
 **Usage:**
 
@@ -9357,7 +9424,7 @@ The chain list is tenant-specific and may vary between organizations. Run the co
 
 
 <Aside type="note" title="Deployment access required">
-  Deploying workflows requires Early Access approval. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
+  Deploying workflows requires approval. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
 
   **While you wait:** Continue building and simulating workflows using [`cre workflow simulate`](/cre/guides/operations/simulating-workflows).
 </Aside>
@@ -10944,7 +11011,7 @@ Here are resources to help you go from simulation to production.
 
 
 <Aside type="note" title="Deployment access required">
-  Deploying requires Early Access approval. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access). While you wait, continue building and simulating workflows.
+  Deploying requires approval. Run `cre account access` to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access). While you wait, continue building and simulating workflows.
 </Aside>
 
 1. **[Link a Wallet Key](/cre/organization/linking-keys)** — Required for the default onchain Workflow Registry. Not needed when using `deployment-registry: "private"`.
@@ -12398,8 +12465,8 @@ Last Updated: 2026-05-12
 </Aside>
 
 
-<Aside type="note" title="Early Access required">
-  Workflow deployment is currently in Early Access. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+<Aside type="note" title="Deploy access required">
+  Workflow deployment requires approval. Run `cre account access` to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
 </Aside>
 
 The **public onchain registry** is the Workflow Registry contract on Ethereum Mainnet. Deploying to it records your workflow onchain — your linked wallet address becomes the workflow owner and every lifecycle operation (deploy, activate, pause, update, delete) submits a transaction to that contract.
@@ -12410,7 +12477,7 @@ For a lower-friction alternative that requires no wallet or gas for registry man
 
 Before deploying to the onchain registry, ensure you have:
 
-- **Early Access approval**: Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
+- **Deploy access approval**: Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
 - **[Authenticated](/cre/reference/cli/authentication)**: Logged in via `cre login` or using an [API key](/cre/reference/cli/authentication#api-key-authentication) (`CRE_API_KEY`). To verify, run `cre whoami`.
 - **[Linked your key](/cre/organization/linking-keys)**: Linked your EOA or multi-sig wallet to your CRE organization by running `cre account link-key`. See [Linking Wallet Keys](/cre/organization/linking-keys) for instructions.
 - **A funded wallet**: The account you are deploying from must hold ETH on Ethereum Mainnet to pay gas for the registration transaction.
@@ -12425,11 +12492,6 @@ The `cre workflow deploy` command handles the entire end-to-end process:
 1. **Compiles** your workflow to a WASM binary.
 2. **Uploads** the compiled binary and any associated configuration files to the CRE Storage Service.
 3. **Registers** the workflow onchain by submitting a transaction to the Workflow Registry contract on Ethereum Mainnet. Your wallet must have ETH for gas fees, and your `project.yaml` must include an RPC configuration for `ethereum-mainnet`. The transaction contains the workflow's name, owner, and artifact URLs.
-
-
-<Aside type="caution" title="Early Access: Disclaimer">
-  Chainlink Runtime Environment (CRE) deployment is in the "Early Access" stage of development, which means that CRE currently has functionality which is under development and may be changed in later versions. By using CRE, you expressly acknowledge and agree to accept the Chainlink <a href="https://chain.link/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>, which provides important information and disclosures.
-</Aside>
 
 ### Step 1: Ensure your configuration is correct
 
@@ -14243,16 +14305,30 @@ func main() {
 
 ### Step 2: Fetch a secret inside the enclave
 
-Your callback receives a [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-go#creteeruntime). Call [`runtime.GetSecret()`](/cre/reference/sdk/confidential-workflows-client-go#runtimegetsecret) to fetch a secret at the point you need it:
+Your callback receives a [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-go#creteeruntime). Call [`runtime.GetSecrets()`](/cre/reference/sdk/confidential-workflows-client-go#runtimegetsecrets) to fetch the secrets you need in a single batch call:
 
 ```go
 func onCronTrigger(config *Config, runtime cre.TeeRuntime, _ *cron.Payload) (string, error) {
-	secret, err := runtime.GetSecret(&cre.SecretRequest{Id: "MY_API_KEY"}).Await()
+	secrets, err := runtime.GetSecrets([]*cre.SecretRequest{
+		{Id: "API_KEY"},
+		{Id: "DB_URL"},
+	}).Await()
 	if err != nil {
-		return "", fmt.Errorf("failed to get secret: %w", err)
+		return "", fmt.Errorf("failed to get secrets: %w", err)
 	}
+	apiKey := secrets[0].Value
+	dbUrl := secrets[1].Value
 
 	// ...
+}
+```
+
+To fetch a single secret, use [`runtime.GetSecret()`](/cre/reference/sdk/confidential-workflows-client-go#runtimegetsecret):
+
+```go
+secret, err := runtime.GetSecret(&cre.SecretRequest{Id: "MY_API_KEY"}).Await()
+if err != nil {
+	return "", fmt.Errorf("failed to get secret: %w", err)
 }
 ```
 
@@ -14274,7 +14350,7 @@ which takes your [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-cl
 		Url:    config.URL,
 		Method: "GET",
 		MultiHeaders: map[string]*http.HeaderValues{
-			"Authorization": {Values: []string{"Bearer " + secret.Value}},
+			"Authorization": {Values: []string{"Bearer " + apiKey}},
 		},
 	}
 
@@ -14374,18 +14450,22 @@ func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.Secre
 }
 
 func onCronTrigger(config *Config, runtime cre.TeeRuntime, _ *cron.Payload) (string, error) {
-	// 1. Fetch a secret dynamically, inside the enclave.
-	secret, err := runtime.GetSecret(&cre.SecretRequest{Id: "MY_API_KEY"}).Await()
+	// 1. Fetch secrets dynamically, inside the enclave.
+	secrets, err := runtime.GetSecrets([]*cre.SecretRequest{
+		{Id: "API_KEY"},
+		{Id: "DB_URL"},
+	}).Await()
 	if err != nil {
-		return "", fmt.Errorf("failed to get secret: %w", err)
+		return "", fmt.Errorf("failed to get secrets: %w", err)
 	}
+	apiKey := secrets[0].Value
 
 	// 2. Make an HTTP request from inside the enclave.
 	req := &http.Request{
 		Url:    config.URL,
 		Method: "GET",
 		MultiHeaders: map[string]*http.HeaderValues{
-			"Authorization": {Values: []string{"Bearer " + secret.Value}},
+			"Authorization": {Values: []string{"Bearer " + apiKey}},
 		},
 	}
 	resp, err := (&http.Client{}).SendRequestInTee(runtime, req).Await()
@@ -20368,7 +20448,7 @@ See the [Monitoring & Debugging guide](/cre/guides/operations/monitoring-workflo
 
 ## Pricing
 
-CRE is currently in Early Access. For pricing details, reach out via the in-app support on the CRE platform at <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">app.chain.link/cre/discover</a>.
+For pricing details, reach out via the in-app support on the CRE platform at <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">app.chain.link/cre/discover</a>.
 
 ## Get started
 
@@ -21003,12 +21083,28 @@ There's no upfront declaration like Confidential HTTP's `VaultDonSecrets`—the 
 
 ### `runtime.GetSecrets`
 
-Fetches multiple secrets in a single batch call.
+Fetches multiple secrets in a single batch call, decrypted only inside the enclave.
 
 **Signature:**
 
 ```go
 func (r TeeRuntime) GetSecrets([]*SecretRequest) Promise[[]*Secret]
+```
+
+The promise resolves to a slice of `*Secret` values, in the same order as the requests. If any secret in the batch fails, the promise resolves with an error that includes the failing secret ids and their error messages.
+
+**Example:**
+
+```go
+secrets, err := runtime.GetSecrets([]*cre.SecretRequest{
+	{Id: "API_KEY"},
+	{Id: "DB_URL"},
+}).Await()
+if err != nil {
+	return "", fmt.Errorf("failed to get secrets: %w", err)
+}
+apiKey := secrets[0].Value
+dbUrl := secrets[1].Value
 ```
 
 ## Crossing back to the DON
