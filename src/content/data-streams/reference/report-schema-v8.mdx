@@ -24,7 +24,20 @@ RWA streams adhere to the report schema outlined below.
 
 <SchemaFieldsTable schema="v8" />
 
-### Market Status Values
+### Notes
+
+#### `lastUpdateTimestamp` is not guaranteed to be monotonic
+
+Do not assume `lastUpdateTimestamp` strictly increases from one report to the next. Use `marketStatus` to determine whether a market is open.
+
+`lastUpdateTimestamp` is not guaranteed to be monotonic (that is, it does not always increase from one report to the next); the value can vary between reports. Reasons for this include:
+
+- A provider dropping in or out between reports can shift the median.
+- The fewer providers contribute to a report, the more a single provider's inclusion or exclusion can move the result. For example, if a provider is excluded from one report (due to a timeout) and included in the next, the median can shift to an earlier value than the previous report.
+
+Under normal circumstances, expect this value to advance with each report. A single occurrence of non-monotonic movement is not by itself cause for concern: treat it as a potential issue only if the behavior persists across multiple consecutive reports.
+
+#### Market Status Values
 
 <Aside type="caution" title="Use marketStatus, not timestamps">
   Always use <code>marketStatus</code> to determine whether a market is open. Do <strong>not</strong> use
@@ -42,7 +55,7 @@ v8 streams use a three-value mapping:
 
 For trading schedules by asset class, see [Market Hours](/data-streams/market-hours). For integration guidance during market transitions, see [Handling Market Events](/data-streams/rwa-streams/handling-market-events).
 
-### Notes
+### Additional Notes
 
 - Users are responsible for handling market status changes in their applications.
 - Future RWA streams may use different report schemas.

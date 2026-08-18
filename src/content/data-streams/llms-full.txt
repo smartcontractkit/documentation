@@ -5815,6 +5815,17 @@ Implement appropriate safeguards based on market status — such as pausing trad
 - **IMPORTANT**: The `lastSeenTimestampNs` field reflects the timestamp of the last update for the `mid` price only. Do not assume this timestamp applies to `bid`, `ask`, `bidVolume`, `askVolume`, or `lastTradedPrice`. Different fields may have been updated at different times.
 - **Do not use `lastSeenTimestampNs` (or any other timestamp field) to determine which stream to select or to infer whether the market is open.** Timestamps indicate when data was last recorded, not whether the market is currently active. Use the `marketStatus` field as the authoritative signal for market availability and stream selection.
 
+#### `lastSeenTimestampNs` is not guaranteed to be monotonic
+
+Do not assume `lastSeenTimestampNs` strictly increases from one report to the next. Use `marketStatus` to determine whether a market is open.
+
+`lastSeenTimestampNs` is not guaranteed to be monotonic (that is, it does not always increase from one report to the next); the value can vary between reports. Reasons for this include:
+
+- A provider dropping in or out between reports can shift the median.
+- The fewer providers contribute to a report, the more a single provider's inclusion or exclusion can move the result. For example, if a provider is excluded from one report (due to a timeout) and included in the next, the median can shift to an earlier value than the previous report.
+
+Under normal circumstances, expect this value to advance with each report. A single occurrence of non-monotonic movement is not by itself cause for concern: treat it as a potential issue only if the behavior persists across multiple consecutive reports.
+
 #### Bid/Ask Volume
 
 For U.S. equities, there is no single consolidated order book. Instead, multiple venues each maintain their own order books. Because data providers source from different markets, the `bidVolume` and `askVolume` reported at each update come from one specific order book at a time, not an aggregate across all venues.
@@ -5959,7 +5970,20 @@ RWA streams adhere to the report schema outlined below.
 | `midPrice`              | `int192`  | DON's consensus median price                                             |
 | `marketStatus`          | `uint32`  | Market status. See schema docs for value mappings.                       |
 
-### Market Status Values
+### Notes
+
+#### `lastUpdateTimestamp` is not guaranteed to be monotonic
+
+Do not assume `lastUpdateTimestamp` strictly increases from one report to the next. Use `marketStatus` to determine whether a market is open.
+
+`lastUpdateTimestamp` is not guaranteed to be monotonic (that is, it does not always increase from one report to the next); the value can vary between reports. Reasons for this include:
+
+- A provider dropping in or out between reports can shift the median.
+- The fewer providers contribute to a report, the more a single provider's inclusion or exclusion can move the result. For example, if a provider is excluded from one report (due to a timeout) and included in the next, the median can shift to an earlier value than the previous report.
+
+Under normal circumstances, expect this value to advance with each report. A single occurrence of non-monotonic movement is not by itself cause for concern: treat it as a potential issue only if the behavior persists across multiple consecutive reports.
+
+#### Market Status Values
 
 <Aside type="caution" title="Use marketStatus, not timestamps">
   Always use <code>marketStatus</code> to determine whether a market is open. Do <strong>not</strong> use
@@ -5977,7 +6001,7 @@ v8 streams use a three-value mapping:
 
 For trading schedules by asset class, see [Market Hours](/data-streams/market-hours). For integration guidance during market transitions, see [Handling Market Events](/data-streams/rwa-streams/handling-market-events).
 
-### Notes
+### Additional Notes
 
 - Users are responsible for handling market status changes in their applications.
 - Future RWA streams may use different report schemas.
@@ -6132,6 +6156,17 @@ Consumers must treat `marketStatus = 5` (Closed) as a valid state and define det
 #### Stale Data Detection
 
 Markets may stop updating due to exchange outages, circuit breakers, trading halts, or corporate actions. The `marketStatus` field will continue reflecting the status that it normally would. Use the `lastSeenTimestampNs` field (which reflects the timestamp of the last update for the `mid` price only) to detect staleness by comparing it against the current time. When this timestamp stops advancing, it indicates the underlying venue has stopped providing updates.
+
+##### Why `lastSeenTimestampNs` can pause, or move non-monotonically, without an outage
+
+`mid` and its timestamp `lastSeenTimestampNs` are derived from a consensus across the data providers configured for a feed, and both only update when that consensus changes. Because the result depends on exactly which providers are included in a given report, any single provider dropping in or out can shift that result — and the fewer providers contribute to a report, the more a single provider's inclusion or exclusion can move the outcome. Two related behaviors follow from this:
+
+- **Pausing:** Individual data providers do not all publish at the same rate — some sourcing venues naturally have lower update frequency during certain windows, particularly for less liquid names or during thinner trading periods. When enough providers are momentarily quiet, the consensus value — and its timestamp — can hold steady for longer than you might expect, even though the DON is healthy and continuing to produce reports.
+- **Non-monotonic movement:** Which providers are actually included in a given report can also change from one report to the next, for example if a provider times out on one report and returns on the next. Because the timestamp is derived from whichever providers are included, it is not guaranteed to strictly increase — it can occasionally shift to an earlier value than the previous report's timestamp.
+
+In the normal case, expect `lastSeenTimestampNs` to advance in line with the update cadence for a given symbol and session. Neither of the above is a sign that the feed or DON is down. Do not assume `lastSeenTimestampNs` strictly increases between reports.
+
+A single stalled or backward-moving report is not, by itself, cause for concern. Treat it as a potential issue only if the behavior recurs across multiple consecutive reports, or the pause exceeds your own configured staleness threshold (see the staleness check example in [Stream Switching Example Logic](#stream-switching-example-logic)). At that point, apply your staleness safeguards regardless of whether the eventual cause turns out to be provider behavior or something else.
 
 Phase-specific feeds can introduce unique behavior due to venue-specific operational characteristics and market microstructure. The following are some examples of scenarios that may occur during session transitions or under specific market conditions:
 
