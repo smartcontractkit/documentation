@@ -4,13 +4,7 @@ import { ChainMetadata } from "./api/index.ts"
 export const POR_MVR_FEEDS_URL = "https://reference-data-directory.vercel.app/por-data-feeds.json"
 
 type ChainTags = (
-  | "default"
-  | "smartData"
-  | "rates"
-  | "streams"
-  | "usGovernmentMacroeconomicData"
-  | "tokenizedEquity"
-  | "blendedPreciousMetals"
+  "default" | "smartData" | "rates" | "streams" | "usGovernmentMacroeconomicData" | "tokenizedEquity" | "extendedHours"
 )[]
 export interface ChainNetwork {
   name: string
@@ -140,7 +134,7 @@ export const CHAINS: Chain[] = [
     title: "Base Data Feeds",
     img: "/assets/chains/base.svg",
     networkStatusUrl: "https://basescan.statuspage.io/",
-    tags: ["default", "smartData", "usGovernmentMacroeconomicData", "tokenizedEquity"],
+    tags: ["default", "smartData", "usGovernmentMacroeconomicData", "tokenizedEquity", "extendedHours"],
     supportedFeatures: ["feeds"],
     l2SequencerFeed: true,
     networks: [
@@ -150,7 +144,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-base-1.json",
         queryString: "base-mainnet",
-        tags: ["smartData", "usGovernmentMacroeconomicData", "tokenizedEquity"],
+        tags: ["smartData", "usGovernmentMacroeconomicData", "extendedHours", "tokenizedEquity"],
       },
       {
         name: "Base Sepolia testnet",
@@ -262,14 +256,7 @@ export const CHAINS: Chain[] = [
     title: "Data Feeds",
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.dev/",
-    tags: [
-      "default",
-      "smartData",
-      "rates",
-      "usGovernmentMacroeconomicData",
-      "tokenizedEquity",
-      "blendedPreciousMetals",
-    ],
+    tags: ["default", "smartData", "rates", "usGovernmentMacroeconomicData", "tokenizedEquity", "extendedHours"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -279,7 +266,7 @@ export const CHAINS: Chain[] = [
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
         rddBundleUrl: "https://reference-data-directory.vercel.app/bundle-proxies-mainnet.json",
         queryString: "ethereum-mainnet",
-        tags: ["smartData", "usGovernmentMacroeconomicData", "tokenizedEquity", "blendedPreciousMetals"],
+        tags: ["smartData", "usGovernmentMacroeconomicData", "tokenizedEquity", "extendedHours"],
       },
       {
         name: "Sepolia Testnet",
