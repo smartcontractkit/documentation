@@ -35,8 +35,10 @@ Some assets only trade during specific [market hours](/data-feeds/selecting-data
 
 These feeds are not a single, uniform product. Each asset class uses a different methodology to produce a continuous price, and each has its own risk profile. Review the section below for the asset class you are integrating, alongside the [Custom Feeds](/data-feeds/selecting-data-feeds#-custom-feeds) section and [risk mitigation](/data-feeds/selecting-data-feeds#risk-mitigation) guidance appropriate for your use case.
 
-- [Precious Metals](#precious-metals)
-- [Forex](#forex)
+| Asset class                         | Description                                                                                                                       |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| [Precious Metals](#precious-metals) | 24/7 blended feeds that report the spot price during market hours and a tokenized-stream-derived price when the market is closed. |
+| [Forex](#forex)                     | 24/7 crypto-derived rates for select currency pairs that lack a continuously observable institutional rate.                       |
 
 ## Precious Metals
 
@@ -52,7 +54,12 @@ For example, the current tGLD/USD implementation uses [XAUT/USD](/data-streams/c
 
 The following table shows the available 24/7 blended precious metals feeds.
 
-<FeedList client:idle initialNetwork="ethereum" dataFeedType="blendedPreciousMetals" />
+<FeedList
+  client:idle
+  initialNetwork="ethereum"
+  dataFeedType="extendedHours"
+  forceExtendedHoursCategory="preciousMetals"
+/>
 
 Find these feeds on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page.
 
@@ -81,7 +88,9 @@ This also means a 24/7 crypto-derived rate measures a different market than an o
 
 ### Supported feeds
 
-24/7 forex feeds are available for select currency pairs, such as [USD / ARS](https://data.chain.link/feeds/ethereum/mainnet/usd-ars). Check the specific feed's page on [data.chain.link](https://data.chain.link/) for its current data source and methodology before integrating it.
+The following table shows the available 24/7 forex feeds.
+
+<FeedList client:idle initialNetwork="base" dataFeedType="extendedHours" forceExtendedHoursCategory="forex" />
 
 ### Risks
 

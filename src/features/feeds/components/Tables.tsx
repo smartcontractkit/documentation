@@ -23,7 +23,8 @@ import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
 import {
   shouldHideAddress,
   shouldHideStreamFeedId,
-  BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES,
+  ALL_EXTENDED_HOURS_PROXY_ADDRESSES,
+  type ExtendedHoursCategory,
 } from "~/features/feeds/utils/feedVisibility.ts"
 import { DATA_STREAMS_CONTACT_URL, TOKENIZED_EQUITY_CONTACT_EMAIL } from "~/features/feeds/constants.ts"
 import {
@@ -568,14 +569,14 @@ const DefaultTr = ({
               </a>
             </div>
           )}
-          {BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES.has(metadata.proxyAddress?.toLowerCase()) && (
+          {ALL_EXTENDED_HOURS_PROXY_ADDRESSES.has(metadata.proxyAddress?.toLowerCase()) && (
             <div style={{ marginTop: "5px" }}>
               <a
-                href="/data-feeds/24-7-extended-hours-data-feeds#precious-metals"
+                href="/data-feeds/24-7-extended-hours-data-feeds"
                 className={tableStyles.feedVariantBadge}
-                title="24/7 Blended Precious Metals Feed"
+                title="24/7 Extended-Hours Feed"
               >
-                24/7 Blended Precious Metals
+                24/7 Extended Hours
               </a>
             </div>
           )}
@@ -1593,6 +1594,7 @@ export const MainnetTable = ({
   paginate,
   searchValue,
   tokenizedEquityProvider,
+  forceExtendedHoursCategory,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -1615,6 +1617,7 @@ export const MainnetTable = ({
   paginate
   searchValue: string
   tokenizedEquityProvider?: string
+  forceExtendedHoursCategory?: ExtendedHoursCategory
 }) => {
   if (!network.metadata) return null
 
@@ -1639,6 +1642,7 @@ export const MainnetTable = ({
       rwaSchemaFilter,
       showOnlyMVRFeeds,
       tokenizedEquityProvider,
+      extendedHoursCategory: forceExtendedHoursCategory,
     },
   })
 
@@ -1741,6 +1745,7 @@ export const TestnetTable = ({
   showApacEquitiesFeeds,
   tradingHoursFilter,
   tokenizedEquityProvider,
+  forceExtendedHoursCategory,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -1762,6 +1767,7 @@ export const TestnetTable = ({
   showApacEquitiesFeeds?: boolean
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
   tokenizedEquityProvider?: string
+  forceExtendedHoursCategory?: ExtendedHoursCategory
 }) => {
   if (!network.metadata) return null
 
@@ -1790,6 +1796,7 @@ export const TestnetTable = ({
       rwaSchemaFilter,
       showOnlyMVRFeeds,
       tokenizedEquityProvider,
+      extendedHoursCategory: forceExtendedHoursCategory,
     },
   })
 
