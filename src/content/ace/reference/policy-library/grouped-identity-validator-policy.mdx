@@ -1,0 +1,169 @@
+---
+section: ace
+title: "GroupedIdentityValidatorPolicy"
+date: Last Modified
+metadata:
+  description: "GroupedIdentityValidatorPolicy reference: routes each account to a credential group, then validates it against that group's requirements. Configuration, routing, runtime behavior, and use cases."
+  datePublished: "2026-07-17"
+  lastModified: "2026-08-18"
+---
+
+import { Aside } from "@components"
+
+The GroupedIdentityValidatorPolicy validates transaction participants against **different credential requirements depending on who they are**. Instead of applying one fixed rule set to every account — as the [CredentialRegistryIdentityValidatorPolicy](/ace/reference/policy-library/credential-registry-identity-validator-policy) does — it first **routes** each account to a **group**, then validates the account against that group's requirements. This lets a single policy enforce, for example, one set of rules for individuals and another for businesses, or different rules per jurisdiction.
+
+It is built on ACE's [Cross-Chain Identity](/ace/concepts/cross-chain-identity) infrastructure and, like the flat validator, resolves each account's address to a CCID and checks credentials from configured sources (IdentityRegistry + CredentialRegistry pairs).
+
+<Aside type="note" title="When to use this policy">
+  Use the
+  [CredentialRegistryIdentityValidatorPolicy](/ace/reference/policy-library/credential-registry-identity-validator-policy)
+  when every account must satisfy the **same** credential requirements. Use the GroupedIdentityValidatorPolicy when
+  requirements **differ by segment** (individual vs. business, jurisdiction, tier) and each account should be matched to
+  exactly one segment.
+</Aside>
+
+## How it works
+
+The policy evaluates each account in two phases:
+
+1. **Routing** — The policy determines which group an account belongs to. Groups are evaluated in the order they were added, and the **first group that matches wins**. An account matches a group when it satisfies that group's routing configuration.
+1. **Validation** — Once routed, the account must satisfy **all** of the matched group's credential requirements. If the account matches no group, or fails the matched group's requirements, the transaction is rejected.
+
+Because the first matching group wins, group order matters. Place more specific groups before broader ones so that an account is not routed into a broader group before its intended one is evaluated.
+
+## Configuration
+
+A group has three parts:
+
+- A **routing configuration** (how accounts are matched to the group),
+- **Credential requirements** (what a routed account must hold), and
+- One or more **credential sources** (where to look up identities and credentials).
+
+All three can be set when the policy is deployed and updated afterward by the policy owner.
+
+### Groups
+
+Each group has a unique `bytes32` group identifier (`groupId`) — typically the `keccak256` hash of a namespaced label, such as `keccak256("PERSON")` or `keccak256("BUSINESS")`. A `groupId` of zero is rejected.
+
+### Routing configuration
+
+Routing decides which accounts belong to a group. Each group has one routing configuration with:
+
+- **Credential type IDs** — The credential types used for routing (e.g., a `kyc` credential, or a `country` credential).
+- **Routing kind** — Either `Attestation` or `Data` (see below).
+- **Criteria** — For `Data` routing only: the list of accepted credential-data values. Each criterion is a `bytes32` hash of the accepted credential data (`keccak256(abi.encode(data))`). Must be empty for `Attestation` routing.
+- **Minimum validations** — How many distinct configured sources must match before the group is selected. Must be at least 1.
+
+There are two routing kinds:
+
+**Attestation routing** matches an account if it simply **holds** the routing credential — the credential data is ignored. For example, "route any account that holds a KYB credential into the business group".
+
+**Data routing** matches an account only if the **contents** of its routing credential match one of the configured criteria. For example, "route accounts whose `country` credential data is `US` into the US group". The policy fetches the stored credential data, hashes it, and compares it against the group's criteria.
+
+<Aside type="note" title="Data routing granularity">
+  Data routing matches on the stored credential payload, so its granularity is bounded by the credential schema chosen
+  by the issuer. A broad `country`-only credential cannot distinguish a sub-country region from the rest of the country.
+  For geography-sensitive use cases where future jurisdiction carve-outs may matter, issue credentials with granular
+  schemas (for example, separate region or territory identifiers) rather than a single broad field. See [Credential data
+  and privacy](/ace/concepts/cross-chain-identity#credential-data-and-privacy).
+</Aside>
+
+<Aside type="caution" title="Routing must be unambiguous">
+  A given routing target — the combination of a credential type and (for data routing) a criterion — can belong to only
+  **one** group. Attempting to configure the same routing target on two groups reverts with `RoutingOverlap`. This
+  guarantees every account routes to at most one group deterministically.
+</Aside>
+
+For data routing, a routing credential type may have **at most one source per group**. Configuring more than one source for a data-routing credential type reverts with `MultipleSourcesForDataRouting`.
+
+### Group requirements
+
+A requirement defines what a routed account must hold to pass. Each requirement has:
+
+- **Requirement ID** — A unique `bytes32` identifier within the group. Cannot be zero.
+- **Credential type IDs** — An array of `bytes32` credential types to check.
+- **Minimum validations** — How many of the listed credential types must validate successfully across the group's sources. Must be at least 1.
+- **Invert flag** — When `true`, the check passes if the credential does _not_ exist. Useful for "must not be sanctioned" checks.
+
+An account passes a requirement when it accumulates at least `minValidations` successful validations across the listed credential types and configured sources. An account passes the group only when it satisfies **every** requirement in that group. A group with no requirements passes any account that routes to it.
+
+<Aside type="note" title="Inverted requirements and missing identities">
+  For an inverted requirement, an account with **no identity** in the source's IdentityRegistry counts as a successful
+  validation — the account provably does not hold the credential. This matches the behavior of the
+  [CredentialRegistryIdentityValidatorPolicy](/ace/reference/policy-library/credential-registry-identity-validator-policy).
+</Aside>
+
+### Credential sources
+
+A source tells the policy where to resolve identities and credentials for a given credential type within a group. Each source is a tuple of:
+
+- **Credential type ID** — The `bytes32` credential type this source applies to.
+- **Identity registry address** — The IdentityRegistry that maps wallet addresses to CCIDs.
+- **Credential registry address** — The CredentialRegistry that stores credentials linked to CCIDs.
+- **Data validator address** (optional) — A contract that performs additional validation on the credential data. Set to `address(0)` for attestation-only checks, or a Data Validator address to validate credential contents. See [Credential data and privacy](/ace/concepts/cross-chain-identity#credential-data-and-privacy).
+
+Source uniqueness within a group and credential type is determined by the `(identityRegistry, credentialRegistry)` pair. Both routing and requirements draw on the same per-group sources.
+
+### Limits
+
+| Constraint                         | Maximum |
+| :--------------------------------- | :------ |
+| Groups                             | 8       |
+| Requirements per group             | 8       |
+| Sources per credential type        | 8       |
+| Credential types per requirement   | 32      |
+| Routing credential types per group | 32      |
+| Criteria per group (data routing)  | 32      |
+
+## Runtime behavior
+
+The policy expects a variable number of parameters from the extractor, each an address to route and validate. Every address is processed independently.
+
+For each address, the policy:
+
+1. Routes the account to the first group whose routing configuration matches (at least `minValidations` matching sources).
+1. Validates the account against every requirement in the matched group.
+
+- **`run()`** — Reverts with `PolicyRejected("no routing match")` if an address matches no group, or `PolicyRejected("group requirements failed")` if it fails the matched group's requirements. Returns `Continue` when every address routes and passes.
+- **`postRun()`** — No state changes. Emits an `IdentityValidated` event for each account's matched routing sources and satisfied requirements.
+
+## API reference
+
+### Setter functions
+
+**Groups:**
+
+- **`addGroup(GroupInput input)`** — Adds a group with its routing configuration. Reverts if the group already exists, the maximum number of groups (8) is reached, the routing configuration is invalid, or the routing target overlaps another group.
+- **`removeGroup(bytes32 groupId)`** — Removes a group and clears its requirements and sources. Reverts if the group is not found.
+- **`updateGroupRouting(bytes32 groupId, RoutingConfig routing)`** — Replaces a group's routing configuration. Reverts if the group is not found, the configuration is invalid, or the new routing target overlaps another group.
+
+**Group requirements:**
+
+- **`addGroupRequirement(bytes32 groupId, bytes32 requirementId, bytes32[] credentialTypeIds, uint256 minValidations, bool invert)`** — Adds a requirement to a group. Reverts if the group is not found, the requirement already exists, the configuration is invalid, or the maximum number of requirements (8) is reached.
+- **`removeGroupRequirement(bytes32 groupId, bytes32 requirementId)`** — Removes a requirement from a group. Reverts if the group or requirement is not found.
+
+**Group sources:**
+
+- **`addGroupSource(bytes32 groupId, bytes32 credentialTypeId, address identityRegistry, address credentialRegistry, address dataValidator)`** — Adds a source to a group. Reverts if the group is not found, the source already exists, the maximum number of sources (8) is reached, a registry address is zero, the credential type is zero, the data validator is a non-contract address, or a second source is added for a data-routing credential type.
+- **`removeGroupSource(bytes32 groupId, bytes32 credentialTypeId, address identityRegistry, address credentialRegistry)`** — Removes a source. Reverts if the group or source is not found.
+
+### View functions
+
+- **`getGroupIds()`** — Returns all configured group identifiers, in evaluation order.
+- **`getGroupRouting(bytes32 groupId)`** — Returns a group's routing configuration.
+- **`getGroupRequirementIds(bytes32 groupId)`** — Returns all requirement identifiers for a group.
+- **`getGroupRequirement(bytes32 groupId, bytes32 requirementId)`** — Returns a requirement's configuration.
+- **`getGroupSources(bytes32 groupId, bytes32 credentialTypeId)`** — Returns the sources configured for a group and credential type.
+- **`validate(address account, bytes context)`** — Returns `true` if the account routes to a group and satisfies its requirements.
+
+## Use cases
+
+- **Individual vs. business rules** — Route accounts holding a KYC credential to a personal group and accounts holding a KYB credential to a business group, each with its own requirements.
+- **Jurisdiction-based compliance** — Use data routing on a `country` credential to route accounts into per-jurisdiction groups, applying region-specific requirements (e.g., accreditation for one jurisdiction, additional AML checks for another).
+- **Tiered access** — Route accounts by an investor-tier credential and enforce progressively stricter requirements per tier.
+- **Higher-assurance routing** — Require multiple independent sources to agree (`minValidations > 1`) before an account is routed into a sensitive group.
+
+## Source
+
+- [GroupedIdentityValidatorPolicy.sol](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/src/GroupedIdentityValidatorPolicy.sol)
+- [GroupedCredentialRegistryIdentityValidator.sol](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/src/GroupedCredentialRegistryIdentityValidator.sol)

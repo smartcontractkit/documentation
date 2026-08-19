@@ -1,0 +1,222 @@
+---
+section: cre
+title: "Making a Workflow Confidential"
+date: Last Modified
+sdkLang: "ts"
+pageId: "guides-workflow-confidential-workflows-making-workflow-confidential"
+metadata:
+  description: "Run workflow logic inside a secure enclave in TypeScript: register a TEE handler, fetch secrets dynamically, and cross back to the DON for consensus."
+  datePublished: "2026-07-21"
+  lastModified: "2026-07-28"
+---
+
+import { Aside } from "@components"
+
+Some workflows need to keep sensitive inputs and the computation over them—not just a single outbound request—confidential from node operators: risk thresholds, proprietary scoring, multi-step reasoning over sensitive data. Confidential Workflows are designed to make this possible by running your handler's callback inside a secure [enclave](/cre/key-terms#enclave), a running instance of a [Trusted Execution Environment (TEE)](/cre/key-terms#tee-trusted-execution-environment) intended to keep that computation and data confidential from the machine's own operator while it runs.
+
+Functionally, this means registering your handler with [`handlerInTee`](/cre/reference/sdk/confidential-workflows-client-ts#handlerintee) instead of [`handler`](/cre/reference/sdk/core-ts#handler). Your callback receives a [`TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-ts#teeruntimec) instead of a `Runtime`: secrets are fetched dynamically from the [Vault DON](/cre/key-terms#vault-don) rather than declared upfront, and you explicitly call [`runtime.usingTheDons()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimeusingthedons) to reach anything that needs Workflow DON consensus.
+
+## Prerequisites
+
+This guide assumes you have:
+
+- Enrolled in the Confidential Workflows private beta with your Chainlink account team (see [Requesting Confidential Workflows Access](/cre/account/confidential-workflows-access)).
+- A basic understanding of CRE. If you are new, complete the [Getting Started tutorial](/cre/getting-started/overview) first.
+- Familiarity with [secrets management](/cre/guides/workflow/secrets) in CRE.
+
+<Aside type="note" title="Minimal example">
+  This guide walks through the core mechanics with a minimal example. For complete, production-shaped workflows, see the
+  [example workflows](/cre/guides/workflow/using-confidential-workflows#example-workflows).
+</Aside>
+
+## Step-by-step example
+
+This example shows a cron-triggered workflow that fetches a secret and makes an HTTP request from inside a TEE, then crosses back to the DON to generate a report.
+
+### Step 1: Register a TEE handler
+
+Use [`handlerInTee`](/cre/reference/sdk/confidential-workflows-client-ts#handlerintee) instead of [`handler`](/cre/reference/sdk/core-ts#handler), and specify which TEEs your workflow accepts with a [`TeeConstraint`](/cre/reference/sdk/confidential-workflows-client-ts#teeconstraint):
+
+```ts
+import { CronCapability, handlerInTee, type TeeRuntime } from "@chainlink/cre-sdk"
+import { z } from "zod"
+
+const configSchema = z.object({
+  schedule: z.string(),
+  url: z.string(),
+})
+
+type Config = z.infer<typeof configSchema>
+
+const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handlerInTee(cron.trigger({ schedule: config.schedule }), onCronTrigger, {})]
+}
+```
+
+`{}` accepts any registered TEE in any region. To restrict to a specific TEE type and region, use `[{ tee: "nitro", regions: ["us-west-2"] }]`. See the [SDK reference](/cre/reference/sdk/confidential-workflows-client-ts#teeconstraint) for all options.
+
+### Step 2: Fetch a secret inside the enclave
+
+Your callback receives a [`TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-ts#teeruntimec). Call [`runtime.getSecrets()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimegetsecrets) to fetch the secrets you need in a single batch call:
+
+```ts
+const onCronTrigger = (runtime: TeeRuntime<Config>) => {
+  const secrets = runtime.getSecrets([{ id: "API_KEY" }, { id: "DB_URL" }]).result()
+
+  const apiKey = secrets["API_KEY"].value
+  const dbUrl = secrets["DB_URL"].value
+
+  // ...
+}
+```
+
+To fetch a single secret, use [`runtime.getSecret()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimegetsecret):
+
+```ts
+const secret = runtime.getSecret({ id: "MY_API_KEY" }).result()
+```
+
+<Aside type="note" title="No upfront secret declaration">
+  Unlike Confidential HTTP's
+  [`vaultDonSecrets`](/cre/reference/sdk/confidential-http-client-ts#confidentialhttprequest--confidentialhttprequestjson),
+  there's nothing to declare ahead of time. The secret is requested and decrypted inside the enclave at the moment
+  [`getSecret()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimegetsecret) runs.
+</Aside>
+
+### Step 3: Make a capability call from inside the enclave
+
+Capabilities that support Confidential Workflows expose a `TeeRuntime`-accepting overload of their regular method.
+[`HTTPClient.sendRequest()`](/cre/reference/sdk/confidential-workflows-client-ts#making-capability-calls-inside-the-enclave)
+accepts your [`TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-ts#teeruntimec) directly:
+
+```ts
+const response = new HTTPClient()
+  .sendRequest(runtime, {
+    url: runtime.config.url,
+    method: "GET",
+    multiHeaders: { Authorization: { values: [`Bearer ${apiKey}`] } },
+  })
+  .result()
+
+if (!ok(response)) {
+  throw new Error(`confidential request failed with status: ${response.statusCode}`)
+}
+```
+
+The request executes from inside the enclave. Trust comes from enclave attestation rather than Workflow DON consensus.
+
+<Aside type="note" title="Use the TeeRuntime overload, not ConfidentialHTTPClient">
+  `ConfidentialHTTPClient` has no `TeeRuntime` overload here—see the [SDK
+  reference](/cre/reference/sdk/confidential-workflows-client-ts#not-every-capability-has-a-teeruntime-overload) if
+  you're tempted to reach for it instead.
+</Aside>
+
+### Step 4: Cross back to the DON for anything that needs consensus
+
+Once you have a result, call [`runtime.usingTheDons()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimeusingthedons)
+to get a regular `Runtime` for operations that require Workflow DON execution—for example, generating a signed report:
+
+```ts
+const donRuntime = runtime.usingTheDons()
+
+donRuntime
+  .report({
+    encodedPayload: Buffer.from(text(response)).toString("base64"),
+    encoderName: "evm",
+    signingAlgo: "ecdsa",
+    hashingAlgo: "keccak256",
+  })
+  .result()
+
+runtime.log("Confidential workflow complete")
+return text(response)
+```
+
+See [Generating Reports: Single Values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) for the full delivery flow (encoding, `writeReport`, etc.). For a complete example that encodes a payload with the `hexToBase64` helper and delivers it onchain with `evmClient.writeReport(donRuntime, ...)`, see the [AI Smart Contract Audit Firewall template](/cre-templates/ai-audit-firewall).
+
+<Aside type="caution" title="Data passed to usingTheDons() is no longer confidential">
+  Once you pass a value into a capability call on the runtime returned by
+  [`usingTheDons()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimeusingthedons), that call executes on
+  Workflow DON nodes like any non-confidential capability. Only cross over the data that doesn't need to remain
+  confidential.
+</Aside>
+
+### Step 5: Simulate
+
+Run the simulation:
+
+```bash
+cre workflow simulate
+```
+
+## Best practices
+
+<Aside type="caution" title="Don't log in production confidential workflows">
+  Logging within enclave execution logic should be avoided in production workflows. For debugging purposes, logging may
+  be used in simulation environments. Anything you log from inside a Confidential Workflow handler could leak data the
+  enclave is meant to protect—remove or gate log statements before deploying.
+</Aside>
+
+## Complete example
+
+```ts
+import { CronCapability, handlerInTee, HTTPClient, ok, Runner, text, type TeeRuntime } from "@chainlink/cre-sdk"
+import { z } from "zod"
+
+const configSchema = z.object({
+  schedule: z.string(),
+  url: z.string(),
+})
+
+type Config = z.infer<typeof configSchema>
+
+const onCronTrigger = (runtime: TeeRuntime<Config>) => {
+  // 1. Fetch secrets dynamically, inside the enclave.
+  const secrets = runtime.getSecrets([{ id: "API_KEY" }, { id: "DB_URL" }]).result()
+  const apiKey = secrets["API_KEY"].value
+
+  // 2. Make an HTTP request from inside the enclave.
+  const response = new HTTPClient()
+    .sendRequest(runtime, {
+      url: runtime.config.url,
+      method: "GET",
+      multiHeaders: { Authorization: { values: [`Bearer ${apiKey}`] } },
+    })
+    .result()
+
+  if (!ok(response)) {
+    throw new Error(`confidential request failed with status: ${response.statusCode}`)
+  }
+
+  // 3. Cross back to the DON for anything that needs consensus.
+  const donRuntime = runtime.usingTheDons()
+  donRuntime
+    .report({
+      encodedPayload: Buffer.from(text(response)).toString("base64"),
+      encoderName: "evm",
+      signingAlgo: "ecdsa",
+      hashingAlgo: "keccak256",
+    })
+    .result()
+
+  runtime.log("Confidential workflow complete")
+  return text(response)
+}
+
+const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handlerInTee(cron.trigger({ schedule: config.schedule }), onCronTrigger, {})]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>({ configSchema })
+  await runner.run(initWorkflow)
+}
+
+await main()
+```
+
+## API reference
+
+For the full list of types and methods available on [`TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-ts#teeruntimec) and [`handlerInTee`](/cre/reference/sdk/confidential-workflows-client-ts#handlerintee), see the [Confidential Workflows Client SDK Reference](/cre/reference/sdk/confidential-workflows-client-ts).

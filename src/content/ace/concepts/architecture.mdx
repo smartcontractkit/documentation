@@ -107,8 +107,10 @@ Every ACE management action — whether triggered from the UI or the Coordinator
 
 1. You trigger an action from the UI or API.
 1. The **Coordinator API** receives the request and sends it to **CRE Connect**.
-1. CRE Connect prepares and signs the blockchain transaction, then routes it through your organization's **CRE Connect Wallet** onchain.
+1. CRE Connect prepares the blockchain transaction and routes it through your organization's **CRE Connect Wallet** onchain.
 1. The CRE Connect Wallet verifies authorization and executes the operation on the target contract.
+
+How the transaction gets signed depends on your organization's signing model: with **delegated signing**, Chainlink signs the operation automatically. With **self-signing**, ACE creates an unsigned draft operation that you poll, sign with your own key, and submit using the [CRE Connect SDK](https://github.com/smartcontractkit/crec-sdk). In both cases, the CRE Connect Wallet remains the execution gateway. See [Signing & Ownership Model](/ace/concepts/signing-ownership) for details.
 
 ### How ACE observes onchain activity (read path)
 

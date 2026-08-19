@@ -26,20 +26,20 @@ You can start building and [simulating](/cre/guides/operations/simulating-workfl
 
 Simulation compiles your workflows into [WebAssembly (WASM)](https://webassembly.org/) and runs them on your machine—but makes **real calls** to live APIs and public EVM blockchains. This gives you confidence your workflow will work as expected when deployed to a DON.
 
-### Deploy your workflows (Early Access)
+### Deploy your workflows
 
 
-<Aside type="caution" title="Early Access: Disclaimer">
-  Chainlink Runtime Environment (CRE) deployment is in the "Early Access" stage of development, which means that CRE currently has functionality which is under development and may be changed in later versions. By using CRE, you expressly acknowledge and agree to accept the Chainlink <a href="https://chain.link/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>, which provides important information and disclosures.
+<Aside type="caution" title="Disclaimer">
+  Chainlink CRE is provided on an "as is" basis without any representations, warranties, covenants, or conditions of any kind. Use at your own risk. Users remain fully responsible for deployments and that the operation and performance of workflows matches expectations. Please review the Chainlink Foundation <a href="https://chain.link/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> which provides important information and disclosures. By using CRE, you expressly acknowledge and agree to accept these terms.
 </Aside>
 
-Early Access to workflow deployment includes:
+Deploying workflows requires approval. Workflow deployment includes:
 
 - **Deploy and run workflows** on a Chainlink DON
 - **Workflow lifecycle management**: Deploy, activate, pause, update, and delete workflows through the CLI
 - **Monitoring and debugging**: Access detailed logs, events, and performance metrics in the CRE UI
 
-To request Early Access, run `cre account access` from the CLI or visit <a href="https://app.chain.link/cre/request-access" target="_blank">app.chain.link/cre/request-access</a>. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+To request deploy access, run `cre account access` from the CLI. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
 
 ## How CRE runs your workflows
 
@@ -146,6 +146,11 @@ Jump to what you need:
 - **[Workflow Operations](/cre/guides/operations/simulating-workflows)** - Simulate, deploy, and manage your workflows
 - **[SDK Reference](/cre/reference/sdk)** - Detailed API documentation for Go and TypeScript SDKs
 
+
+<Aside type="caution" title="Disclaimer">
+  This code represents an example of using a Chainlink product or service. It is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may omit checks or error handling. Each party intending to use this reference implementation must perform its own audits, security and code review, and testing before any production deployment and ensure the operation and performance of such code matches expectations. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for outcomes due to errors in this example or how it is deployed or operated. Use of the Chainlink Network is subject to the Chainlink Foundation <a href="https://chain.link/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>, which provides important information and disclosures. By using this code, you acknowledge and agree to these terms.
+</Aside>
+
 ---
 
 # Key Terms and Concepts
@@ -183,9 +188,24 @@ A workflow whose lifecycle is managed through the Chainlink-hosted private regis
 
 Private does not mean confidential. A private workflow uses a private registry for management, but its execution is not confidential unless it explicitly uses a confidential execution feature or capability.
 
+### TEE (Trusted Execution Environment)
+
+A hardware-isolated secure computing environment intended to prevent code and data from being inspected by the host machine or its operator during execution. CRE's confidential features run sensitive logic inside a TEE so that it is intended not to be visible to node operators while it executes.
+
+### Enclave
+
+A single running TEE instance that executes confidential workflow logic or capability requests. "TEE" describes the technology; "enclave" refers to a specific running instance of one.
+
+### Vault DON
+
+The [DON](#decentralized-oracle-network-don) responsible for storing threshold-encrypted secrets, designed to release them only to an attested [enclave](#enclave) for confidential execution—secrets are intended not to be disclosed in plaintext to a node operator or to Workflow DON node memory.
+
 ### Confidential workflow or confidential execution
 
-Execution that uses a confidential runtime, TEE, enclave, or confidential capability to protect data during execution. This is separate from registry selection. Confidential execution does not require the private registry, and a workflow can use confidential execution while still being managed through the public onchain registry.
+Execution that uses a confidential runtime, [TEE](#tee-trusted-execution-environment), [enclave](#enclave), or confidential capability to protect data during execution. This is separate from registry selection. Confidential execution does not require the private registry, and a workflow can use confidential execution while still being managed through the public onchain registry.
+
+- **[Confidential HTTP](/cre/capabilities/confidential-http)**: Executes a single outbound HTTP request inside an enclave, with secrets injected via templates and an optional encrypted response. Available in Go and TypeScript.
+- **[Confidential Workflows](/cre/concepts/confidential-workflows)** (beta): A workflow type that runs a handler's full callback logic inside an enclave, registered with `cre.HandlerInTee`/`handlerInTee` and given a `cre.TeeRuntime`/`TeeRuntime`. Secrets are fetched dynamically inside the enclave with `runtime.GetSecret()`/`runtime.getSecret()`, and `runtime.UsingTheDons()`/`runtime.usingTheDons()` crosses back to a regular DON runtime for anything that needs Workflow DON consensus. The workflow's own source code and deployed binary are not protected by this—only the marked computation, secrets, and sensitive inputs it processes inside the enclave are.
 
 ## Workflow architecture
 
@@ -514,9 +534,74 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-07-16
+Last Updated: 2026-08-18
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.29.0 - August 7, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.29.0" target="_blank">CRE CLI version 1.29.0</a> is now available.**
+
+- **Monad mainnet simulation**: Monad mainnet is now supported for local simulation via `cre workflow simulate`. See [Supported Networks](/cre/supported-networks).
+- **Confidential Workflows**: Designate parts of your workflow to run inside a secure enclave (TEE), keeping secrets, sensitive inputs, and computation confidential from node operators during execution. See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) and [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows).
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.28.0...v1.29.0)
+
+## Go SDK v1.18.0 - August 6, 2026
+
+**Go SDK version 1.18.0** adds Confidential Workflows support.
+
+- **Confidential Workflows**: Added a TEE runtime (`cre.TeeRuntime`) and `cre.HandlerInTee` for running workflow logic inside a secure enclave. See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) and [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.17.0...v1.18.0)
+
+## TS SDK v1.18.0 - August 6, 2026
+
+**TypeScript SDK version 1.18.0** adds Confidential Workflows support.
+
+- **Confidential Workflows**: Added a `TeeRuntime` and `handlerInTee` for running workflow logic inside a secure enclave. See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) and [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.17.0...v1.18.0)
+
+## Go SDK v1.16.0 - August 3, 2026
+
+**Go SDK version 1.16.0** adds batch secret fetching.
+
+- **Batch secret fetching**: Added `runtime.GetSecrets()` to fetch multiple secrets in a single call. See [Secrets in CRE](/cre/guides/workflow/secrets).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.15.0...v1.16.0)
+
+## CLI v1.28.0 - July 30, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.28.0" target="_blank">CRE CLI version 1.28.0</a> is now available.**
+
+- **Deployment registry selection in `cre init`**: [`cre init`](/cre/reference/cli/project-setup) now lets you select the deployment registry during project setup.
+- **New aggregator support in simulation**: The local simulator now supports the new aggregator capability, keeping simulation aligned with production.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.27.0...v1.28.0)
+
+## CLI v1.27.0 - July 23, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.27.0" target="_blank">CRE CLI version 1.27.0</a> is now available.**
+
+- **Solana LogTrigger simulation**: `cre workflow simulate` now supports Solana LogTrigger events, enabling local simulation of Solana workflows triggered by onchain logs.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.26.0...v1.27.0)
 
 ## CLI v1.26.0 - July 16, 2026
 
@@ -1658,6 +1743,48 @@ Now that you have the `cre` CLI installed, you'll need to create a CRE account a
 Once you're authenticated, you're ready to build your first workflow:
 
 - **[Getting Started — Part 1: Project Setup & Simulation](/cre/getting-started/part-1-project-setup)**: Initialize a new, blank CRE project and run your first "Hello World!" simulation.
+
+---
+
+# Workflow Guides: Overview
+Source: https://docs.chain.link/cre/guides/workflow/overview
+Last Updated: 2026-07-30
+
+These guides cover the building blocks you'll combine to build a CRE workflow: how to start one with a trigger, how to read and write onchain data, how to call external APIs, and how to handle supporting concerns like secrets, time, and randomness. Guides are written for both Go and TypeScript; switch languages with the selector at the top of each page.
+
+If you haven't built a workflow yet, start with [Getting Started](/cre/getting-started/overview) first.
+
+## Building a confidential workflow?
+
+The guides below all run your workflow's logic on Workflow DON nodes, the default for CRE—visible in principle to node operators. If any part of your workflow's decision logic needs to stay hidden from node operators, you want a **Confidential Workflow** instead: a distinct workflow type that runs inside a secure enclave.
+
+<Aside type="note" title="Confidential Workflows: a different workflow type">
+  Read [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) to see whether your use case needs one,
+  then follow [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows) to build it.
+</Aside>
+
+## Triggers and API calls
+
+| Guide                                                                                | What you'll learn                                                                                        |
+| ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| [Triggers](/cre/guides/workflow/using-triggers/overview)                             | Choose and configure a Cron, EVM Log, or HTTP trigger to start your workflow.                            |
+| [API Interactions](/cre/guides/workflow/using-http-client)                           | Make GET and POST requests to external APIs, submit reports over HTTP, and verify them offchain.         |
+| [Confidential API Interactions](/cre/guides/workflow/using-confidential-http-client) | Make a single outbound API call with secrets injected and the request processed inside a secure enclave. |
+
+## Onchain interactions
+
+| Guide                                                                          | What you'll learn                                                                                   |
+| ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| [EVM Chain Interactions](/cre/guides/workflow/using-evm-client/overview)       | Generate contract bindings, read onchain state, and write consensus-verified reports to EVM chains. |
+| [Solana Chain Interactions](/cre/guides/workflow/using-solana-client/overview) | Generate Anchor bindings and write consensus-verified workflow results to Solana programs.          |
+
+## Workflow mechanics
+
+| Guide                                                                  | What you'll learn                                                                   |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| [Secrets](/cre/guides/workflow/secrets)                                | Manage API keys and credentials safely, in simulation and in deployed workflows.    |
+| [Using Time in Workflows](/cre/guides/workflow/time-in-workflows)      | Get a deterministic, consensus-safe timestamp with `runtime.now()`.                 |
+| [Using Randomness in Workflows](/cre/guides/workflow/using-randomness) | Generate random numbers that stay consistent across nodes so consensus still holds. |
 
 ---
 
@@ -5006,6 +5133,41 @@ For **why** you might need Confidential HTTP—what stays off Workflow DON nodes
 
 ---
 
+# Confidential Workflows
+Source: https://docs.chain.link/cre/guides/workflow/using-confidential-workflows
+Last Updated: 2026-07-28
+
+The CRE SDK is designed to run a handler's callback inside a secure [enclave](/cre/key-terms#enclave)—a running instance of a [Trusted Execution Environment (TEE)](/cre/key-terms#tee-trusted-execution-environment)—instead of on Workflow DON nodes, so that the sensitive computation it performs, and any secrets it fetches (from the [Vault DON](/cre/key-terms#vault-don)), are intended to remain confidential from node operators during execution. A workflow that does this is called a **Confidential Workflow**: the same kind of workflow you're already building with CRE, with an explicit confidential execution path added where you need it.
+
+Confidential workflows successfully complete execution only after DON consensus verifies attestations from the enclave, proving the integrity of the workflow logic that executed within it.
+
+<Aside type="caution" title="Private beta">
+  Confidential Workflows is in private beta and requires enrollment through your Chainlink account team—see [Requesting
+  Confidential Workflows Access](/cre/account/confidential-workflows-access).
+</Aside>
+
+For **why** you might need a Confidential Workflow, see [Confidential Workflows in CRE](/cre/concepts/confidential-workflows).
+
+## Guides
+
+- **[Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential)**: Register a TEE handler, fetch secrets dynamically, and cross back to the DON for anything that needs consensus.
+
+<Aside type="note" title="Minimal example">
+  This guide covers the core mechanics with a minimal example. See the [Hello Confidential Workflows
+  template](/cre-templates/hello-confidential-workflows) for the complete code, or the example workflows below for
+  production-shaped workflows.
+</Aside>
+
+## Example workflows
+
+Complete TypeScript reference implementations, available as templates:
+
+- **[Automated Liquidation Protection](/cre-templates/automated-liquidation-protection)**: Fetches exchange and model secrets, reads policy and risk state, asks an LLM for defensive actions, enforces policy constraints, and executes approved actions.
+- **[Automated Portfolio Rebalancing](/cre-templates/automated-portfolio-rebalancing)**: Reads policy, holdings, prices, and volatility, asks an LLM for trade proposals, enforces slippage and reserve-floor constraints, and routes approved trades.
+- **[AI Smart Contract Audit Firewall](/cre-templates/ai-audit-firewall)**: Runs two independent LLM audits on a proposed transaction, merges risk flags into an ALLOW/DENY/MANUAL_REVIEW verdict, and optionally delivers the verdict onchain with `EVMClient`.
+
+---
+
 # Managing Secrets
 Source: https://docs.chain.link/cre/guides/workflow/secrets
 Last Updated: 2026-03-26
@@ -5060,14 +5222,14 @@ Your workflow environment determines how you manage secrets:
 
 ## Quick comparison
 
-| Aspect             | Local Simulation                     | Deployed Workflows                 |
-| ------------------ | ------------------------------------ | ---------------------------------- |
-| **Environment**    | Your local machine                   | Workflow DON                       |
-| **Secret storage** | `.env` file or environment variables | Vault DON                          |
-| **CLI commands**   | None (automatic via simulation)      | `cre secrets create/update/delete` |
-| **Workflow code**  | `runtime.GetSecret()`                | `runtime.GetSecret()` (same API)   |
-| **Authentication** | Not required                         | `cre login` required               |
-| **Use case**       | Development and testing              | Deployed workflows                 |
+| Aspect             | Local Simulation                               | Deployed Workflows                                        |
+| ------------------ | ---------------------------------------------- | --------------------------------------------------------- |
+| **Environment**    | Your local machine                             | Workflow DON                                              |
+| **Secret storage** | `.env` file or environment variables           | Vault DON                                                 |
+| **CLI commands**   | None (automatic via simulation)                | `cre secrets create/update/delete`                        |
+| **Workflow code**  | `runtime.GetSecret()` / `runtime.GetSecrets()` | `runtime.GetSecret()` / `runtime.GetSecrets()` (same API) |
+| **Authentication** | Not required                                   | `cre login` required                                      |
+| **Use case**       | Development and testing                        | Deployed workflows                                        |
 
 ## How secrets work in your workflow
 
@@ -5943,8 +6105,8 @@ If your workflow requires higher limits than the defaults, you can request a lim
 Source: https://docs.chain.link/cre/guides/operations/deploying-workflows
 Last Updated: 2026-05-12
 
-<Aside type="note" title="Early Access required">
-  Workflow deployment is currently in Early Access. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+<Aside type="note" title="Deploy access required">
+  Workflow deployment requires approval. Run `cre account access` to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
 
   **While you wait:** Continue building and simulating workflows using [`cre workflow simulate`](/cre/guides/operations/simulating-workflows).
 </Aside>
@@ -6953,7 +7115,7 @@ Last Updated: 2026-02-12
 
 Your CRE account is required to use the CRE CLI. You must be authenticated to run CLI commands, including simulating workflows, deploying workflows, and managing deployed workflows. You can authenticate using the browser-based `cre login` flow or an [API key](/cre/reference/cli/authentication#api-key-authentication) for CI/CD and headless environments(\*). This section covers everything you need to know about creating and managing your account.
 
-(\*) API key authentication requires your account to have <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">Early Access</a> approval.
+(\*) API key authentication requires your account to have deploy access approval. See [Requesting Deploy Access](/cre/account/deploy-access).
 
 ## What you'll need
 
@@ -6968,7 +7130,7 @@ To use CRE, you need:
 - **[Creating Your Account](/cre/account/creating-account)** - Step-by-step guide to creating a new CRE account through the CRE UI
 - **[Logging in with the CLI](/cre/account/cli-login)** - Authenticate your CLI with your CRE account to run commands
 - **[Managing Authentication](/cre/account/managing-auth)** - Check your login status, handle session expiration, and log out
-- **[Requesting Deploy Access](/cre/account/deploy-access)** - Check your deployment access status or submit a request for Early Access
+- **[Requesting Deploy Access](/cre/account/deploy-access)** - Check your deployment access status or submit a request for deploy access
 
 ## Security features
 
@@ -7203,7 +7365,7 @@ Browser login stores **`~/.cre/cre.yaml`** (credentials) and **`~/.cre/context.y
 
 
 <Aside type="note" title="Deploy access required">
-  API key authentication requires your account to have Early Access approval for deployment. To <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">request Early Access</a>, please share details about your project and use case—this helps us provide better support as you build with CRE.
+  API key authentication requires your account to have deploy access approval. Run `cre account access` to request access—this helps us provide better support as you build with CRE.
 </Aside>
 
 For CI/CD pipelines or headless environments where a browser is not available, you can authenticate using the `CRE_API_KEY` environment variable. When set, the CLI uses the API key automatically — no `cre login` required.
@@ -7265,10 +7427,7 @@ After logging out, you'll need to run `cre login` again to authenticate future C
 Source: https://docs.chain.link/cre/account/deploy-access
 Last Updated: 2026-02-26
 
-Deploying workflows to a Chainlink DON requires Early Access approval. You can request access in two ways:
-
-- **From the CLI** — Run `cre account access` to check your status or submit a request directly from your terminal
-- **From the web** — Visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to fill out the request form
+Deploying workflows to a Chainlink DON requires approval. Run `cre account access` to check your status or submit a request directly from your terminal.
 
 ## Check your access status
 
@@ -7340,6 +7499,22 @@ You don't need to run `cre account access` proactively. The CLI will prompt you 
 
 - When you run `cre workflow deploy` without access
 - After a successful `cre workflow simulate`, as a reminder that deployment is available once access is granted
+
+---
+
+# Requesting Confidential Workflows Access
+Source: https://docs.chain.link/cre/account/confidential-workflows-access
+Last Updated: 2026-07-28
+
+[Confidential Workflows](/cre/concepts/confidential-workflows) is currently in private beta and is invite-only, separate from the [deploy access](/cre/account/deploy-access) required for regular CRE workflows.
+
+## Request access
+
+Submit the [Confidential Workflows access request form](https://docs.google.com/forms/d/e/1FAIpQLSdk8mxDZAXpEX1PHgjzCoBeKxSoQysoO9sxOb-gpBrDrjOhtA/viewform?usp=header) to request enrollment in the Confidential Workflows private beta. Let us know which use case you're building toward—this helps route your request to the right team.
+
+After submitting your request, you don't need to wait for early access. Your CRE organization can run Confidential Workflows using the local simulator. Get started with the [reference confidential workflows](https://docs.chain.link/cre/guides/workflow/using-confidential-workflows).
+
+See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) for a conceptual overview, and [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential) to get started once you're enrolled.
 
 ---
 
@@ -7457,14 +7632,14 @@ Key linking is the process of connecting a blockchain wallet address to your CRE
 
 **Important constraints:**
 
-- **One organization per address**: Each wallet address can only be linked to one CRE organization at a time. If you need to use the same address with a different organization, you must first [unlink it](#unlinking-a-key) from the current organization.
+- **Permanent organization bond**: Once a wallet address is linked to an organization, it is permanently bonded to that organization—even if unlinked. An unlinked address can only ever be relinked to the same organization, never to a different organization. Choose your wallet carefully before linking.
 - **Per-organization key limit**: The number of web3 keys your organization can link is subject to your plan quota. See [Service Quotas](/cre/service-quotas#registry-quotas) for the current limit. To request an increase, [contact us](/cre/support-feedback).
 
 However, an organization can have multiple wallet addresses linked to it, allowing team members to use their own addresses or enabling separation between development, staging, and production environments.
 
 
-<Aside type="note" title="Already linked to another organization?">
-  If you try to link an address that's already registered with another organization, the CLI will display an error. To use this address with your current organization, you must first unlink it from the other organization using cre account unlink-key (note: this will delete all workflows registered under that address in the other organization).
+<Aside type="caution" title="Permanent organization bond">
+  Once an address is linked to an organization, it is permanently bonded to that organization. Even if unlinked, the address can only ever be relinked to the same organization—never to a different organization. Make sure you're linking the correct wallet to the correct organization before confirming.
 </Aside>
 
 ## Prerequisites
@@ -7475,7 +7650,7 @@ Before linking a key, ensure you have:
 - **A CRE project directory**: You must run the command from a project directory that contains a `project.yaml` file
 - **Private key in `.env`**: Set `CRE_ETH_PRIVATE_KEY=<your_64_character_hex_key>` (without `0x` prefix) in your `.env` file
 - **Funded wallet**: Your wallet must have ETH on Ethereum Mainnet to pay for gas fees (the Workflow Registry contract is deployed on Ethereum Mainnet)
-- **Unlinked address**: The wallet address must not already be linked to another CRE organization. Each address can only be associated with one organization at a time.
+- **Unlinked address**: The wallet address must not be currently linked to any CRE organization. Once linked, an address is permanently bonded to that organization.
 
 
 <Aside type="caution" title="Never commit your .env file">
@@ -7483,6 +7658,11 @@ Before linking a key, ensure you have:
 </Aside>
 
 ## Linking your first key
+
+
+<Aside type="caution" title="This is a permanent decision">
+  Linking a wallet address to your organization is permanent. Once linked, this address will be permanently bonded to your organization. Even if unlinked in the future, it can only ever be relinked to this organization—never to a different organization. Choose your wallet carefully and ensure you're linking it to the correct organization before confirming.
+</Aside>
 
 The easiest way to link a key is to let the deployment process handle it automatically. When you first try to [deploy a workflow](/cre/guides/operations/deploying-workflows) with `deployment-registry: "onchain:ethereum-mainnet"`, the CLI will detect that your address isn't linked and prompt you to link it.
 
@@ -7615,7 +7795,7 @@ Linked Owners:
 
 ## Linking multiple addresses
 
-Your organization can link more than one wallet address, subject to your plan's key limit. See [Service Quotas](/cre/service-quotas#registry-quotas) for the current limit, or [contact us](/cre/support-feedback) to request an increase. Each individual address can only be linked to one organization at a time.
+Your organization can link more than one wallet address, subject to your plan's key limit. See [Service Quotas](/cre/service-quotas#registry-quotas) for the current limit, or [contact us](/cre/support-feedback) to request an increase. Remember that each address becomes permanently bonded to your organization upon linking.
 
 This is useful for:
 
@@ -7633,9 +7813,13 @@ To link another address:
 
 If you need to remove a linked address from your organization, you can use the `cre account unlink-key` command. This is useful when:
 
-- Rotating addresses for security reasons
 - Removing addresses that are no longer in use
 - Cleaning up test or development addresses
+
+
+<Aside type="note" title="Unlinking does not break the permanent bond">
+  When you unlink an address, all workflows registered under that address are deleted. However, the address remains permanently bonded to your organization. If you relink it in the future, it can only be linked to this organization, not to any other organization.
+</Aside>
 
 
 <Aside type="caution" title="Destructive operation">
@@ -7965,66 +8149,6 @@ All execution capabilities automatically use [built-in consensus](/cre/concepts/
 
 ---
 
-# The Trigger Capability
-Source: https://docs.chain.link/cre/capabilities/triggers
-Last Updated: 2025-11-04
-
-**Triggers** are a special type of capability that initiate the execution of your workflow. They are event-driven services that constantly watch for a specific condition to be met. When the condition occurs, the trigger fires and instructs CRE to run the callback function you have registered for that event. Learn more about the [trigger-and-callback model](/cre/#the-trigger-and-callback-model).
-
-## Trigger types
-
-CRE provides several types of triggers to start your workflows:
-
-- **Time-based:** The `Cron` trigger fires at a specific time or on a recurring schedule (e.g., "every 5 minutes").
-- **Request-based:** The `HTTP` trigger fires when an external system makes an HTTP request to your workflow's endpoint. HTTP triggers require authorization keys when deployed to ensure only authorized addresses can trigger your workflow.
-- **Onchain Events:** The `EVM Log` trigger fires when a specific event is emitted by a smart contract on a supported blockchain.
-
-<Aside type="note" title="Triggers in simulation vs. deployed workflows">
-  **In simulation** (`cre workflow simulate`), triggers are manually selected and executed immediately to test your workflow logic without waiting for real events. This allows rapid iteration during development.
-
-  **In deployed workflows**, the Workflow DON continuously monitors for trigger events and automatically executes your callback when conditions are met. Time-based triggers run on schedule, HTTP triggers respond to incoming requests, and EVM log triggers fire when smart contract events occur.
-
-  See the [Simulating Workflows guide](/cre/guides/operations/simulating-workflows) for details on testing triggers locally.
-</Aside>
-
-## Learn more
-
-- **[Using Triggers Guides](/cre/guides/workflow/using-triggers/overview)**: Learn how to use the SDK to register handlers for the different trigger types.
-- **[Triggers SDK Reference](/cre/reference/sdk/triggers/overview)**: See the detailed API reference for trigger configurations and payloads.
-
----
-
-# The HTTP Capability
-Source: https://docs.chain.link/cre/capabilities/http
-Last Updated: 2026-03-17
-
-The **HTTP** capability is a decentralized service that allows your workflow to securely interact with any external, offchain API. It can be used to both **fetch data from** and **send data to** other systems.
-
-## Why use a Capability for HTTP Requests?
-
-When your workflow needs to interact with an external API, the HTTP capability provides decentralized execution across multiple independent nodes.
-
-When you use the SDK's `http.Client` to make a request (like a `GET` or a `POST`), you are invoking this capability. CRE instructs each node in a dedicated DON to make the same API request. The nodes' individual responses are then **validated through a consensus protocol**, which ensures they agree on the result before returning it to your workflow.
-
-This provides cryptographically verified, tamper-proof execution for your offchain data operations.
-
-<Aside type="note" title="HTTP in simulation vs. deployed workflows">
-  **In local simulation** (`cre workflow simulate`), HTTP requests are made from your local machine to test your API integrations. The simulator processes responses using single-node consensus.
-
-  **In deployed workflows**, the HTTP capability DON executes your API requests across multiple nodes, and responses are validated through Byzantine Fault Tolerant (BFT) consensus before being returned to your workflow.
-</Aside>
-
-## Features
-
-- **Multiple headers per request**: Use the `MultiHeaders` field to send multiple headers in a single HTTP request. This is useful for APIs that require multiple authentication or content negotiation headers simultaneously.
-
-## Learn more
-
-- **[API Interactions Guide](/cre/guides/workflow/using-http-client)**: Learn how to use the SDK to invoke the HTTP capability.
-- **[HTTP Client SDK Reference](/cre/reference/sdk/http-client)**: See the detailed API reference for the `http.Client`.
-
----
-
 # The EVM Read & Write Capabilities
 Source: https://docs.chain.link/cre/capabilities/evm-read-write
 Last Updated: 2025-11-04
@@ -8072,6 +8196,37 @@ Learn more in the [Onchain Write guide](/cre/guides/workflow/using-evm-client/on
 
 - **[EVM Chain Interactions Guide](/cre/guides/workflow/using-evm-client/overview)**: Learn how to read from and write to smart contracts
 - **[EVM Client SDK Reference](/cre/reference/sdk/evm-client)**: Detailed API reference for the `evm.Client`
+
+---
+
+# The HTTP Capability
+Source: https://docs.chain.link/cre/capabilities/http
+Last Updated: 2026-03-17
+
+The **HTTP** capability is a decentralized service that allows your workflow to securely interact with any external, offchain API. It can be used to both **fetch data from** and **send data to** other systems.
+
+## Why use a Capability for HTTP Requests?
+
+When your workflow needs to interact with an external API, the HTTP capability provides decentralized execution across multiple independent nodes.
+
+When you use the SDK's `http.Client` to make a request (like a `GET` or a `POST`), you are invoking this capability. CRE instructs each node in a dedicated DON to make the same API request. The nodes' individual responses are then **validated through a consensus protocol**, which ensures they agree on the result before returning it to your workflow.
+
+This provides cryptographically verified, tamper-proof execution for your offchain data operations.
+
+<Aside type="note" title="HTTP in simulation vs. deployed workflows">
+  **In local simulation** (`cre workflow simulate`), HTTP requests are made from your local machine to test your API integrations. The simulator processes responses using single-node consensus.
+
+  **In deployed workflows**, the HTTP capability DON executes your API requests across multiple nodes, and responses are validated through Byzantine Fault Tolerant (BFT) consensus before being returned to your workflow.
+</Aside>
+
+## Features
+
+- **Multiple headers per request**: Use the `MultiHeaders` field to send multiple headers in a single HTTP request. This is useful for APIs that require multiple authentication or content negotiation headers simultaneously.
+
+## Learn more
+
+- **[API Interactions Guide](/cre/guides/workflow/using-http-client)**: Learn how to use the SDK to invoke the HTTP capability.
+- **[HTTP Client SDK Reference](/cre/reference/sdk/http-client)**: See the detailed API reference for the `http.Client`.
 
 ---
 
@@ -8123,6 +8278,35 @@ The public keys of all accounts in this list are concatenated and SHA-256 hashed
 - **[Solana Chain Interactions Guide](/cre/guides/workflow/using-solana-client/overview)**: Learn how to write data to Solana programs using the `SolanaClient`
 - **[Solana Client SDK Reference](/cre/reference/sdk/solana-client)**: Detailed API reference for `SolanaClient` and helper functions
 - **[Supported Networks](/cre/supported-networks)**: Chain selector values and minimum SDK versions for Solana networks
+
+---
+
+# The Trigger Capability
+Source: https://docs.chain.link/cre/capabilities/triggers
+Last Updated: 2025-11-04
+
+**Triggers** are a special type of capability that initiate the execution of your workflow. They are event-driven services that constantly watch for a specific condition to be met. When the condition occurs, the trigger fires and instructs CRE to run the callback function you have registered for that event. Learn more about the [trigger-and-callback model](/cre/#the-trigger-and-callback-model).
+
+## Trigger types
+
+CRE provides several types of triggers to start your workflows:
+
+- **Time-based:** The `Cron` trigger fires at a specific time or on a recurring schedule (e.g., "every 5 minutes").
+- **Request-based:** The `HTTP` trigger fires when an external system makes an HTTP request to your workflow's endpoint. HTTP triggers require authorization keys when deployed to ensure only authorized addresses can trigger your workflow.
+- **Onchain Events:** The `EVM Log` trigger fires when a specific event is emitted by a smart contract on a supported blockchain.
+
+<Aside type="note" title="Triggers in simulation vs. deployed workflows">
+  **In simulation** (`cre workflow simulate`), triggers are manually selected and executed immediately to test your workflow logic without waiting for real events. This allows rapid iteration during development.
+
+  **In deployed workflows**, the Workflow DON continuously monitors for trigger events and automatically executes your callback when conditions are met. Time-based triggers run on schedule, HTTP triggers respond to incoming requests, and EVM log triggers fire when smart contract events occur.
+
+  See the [Simulating Workflows guide](/cre/guides/operations/simulating-workflows) for details on testing triggers locally.
+</Aside>
+
+## Learn more
+
+- **[Using Triggers Guides](/cre/guides/workflow/using-triggers/overview)**: Learn how to use the SDK to register handlers for the different trigger types.
+- **[Triggers SDK Reference](/cre/reference/sdk/triggers/overview)**: See the detailed API reference for trigger configurations and payloads.
 
 ---
 
@@ -8227,6 +8411,182 @@ Learn more about how to use CRE capabilities with built-in consensus:
 - **[Capabilities Overview](/cre/capabilities)**: Explore all available capabilities
 - **[API Interactions](/cre/guides/workflow/using-http-client)**: Learn how to use the HTTP capability with built-in consensus
 - **[EVM Chain Interactions](/cre/guides/workflow/using-evm-client/overview)**: Learn how to use the EVM capability with built-in consensus
+
+---
+
+# Privacy
+Source: https://docs.chain.link/cre/privacy
+Last Updated: 2026-08-05
+
+CRE has two features designed to keep part of a workflow confidential from Workflow DON node operators during execution. Both run inside a secure [enclave](/cre/key-terms#enclave), a running instance of a [Trusted Execution Environment (TEE)](/cre/key-terms#tee-trusted-execution-environment), and fetch secrets from the [Vault DON](/cre/key-terms#vault-don) instead of the regular Workflow DON runtime.
+
+## Privacy features
+
+- **[Confidential Workflows](/cre/concepts/confidential-workflows)** (private beta): Runs a handler's full callback logic inside a TEE, for workflows where more than a single request is intended to remain confidential: risk thresholds, proprietary scoring, multi-step reasoning over sensitive inputs.
+- **[Confidential HTTP](/cre/capabilities/confidential-http)**: Executes a single outbound HTTP request inside a TEE, with secrets injected via templates and an optional encrypted response.
+
+## Guides
+
+- **[Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential)**: Step-by-step guide to registering a TEE handler.
+- **[Making Confidential Requests](/cre/guides/workflow/using-confidential-http-client/making-requests)**: Step-by-step guide to making a single confidential HTTP request.
+
+## Learn more
+
+- **[Requesting Confidential Workflows Access](/cre/account/confidential-workflows-access)**: How to get enrolled in the private beta.
+- **[Key Terms](/cre/key-terms#confidential-workflow-or-confidential-execution)**: Definitions for TEE, enclave, Vault DON, and confidential execution.
+
+---
+
+# Confidential Workflows in CRE
+Source: https://docs.chain.link/cre/concepts/confidential-workflows
+Last Updated: 2026-07-28
+
+A **Confidential Workflow** is a CRE [workflow](/cre/key-terms#workflow) that designates part of its logic to run inside a secure [enclave](/cre/key-terms#enclave)—a running instance of a [Trusted Execution Environment (TEE)](/cre/key-terms#tee-trusted-execution-environment), a hardware-isolated environment designed to keep the computation and data it processes confidential from the machine's own operator during execution—instead of on Workflow DON nodes.
+
+Confidential Workflows are fundamentally standard CRE workflows with an explicit confidential execution path added where you need it, composing freely with standard workflow logic in the same application. Secrets fetched inside the enclave, and any computation you mark as confidential, are intended to remain confidential from node operators during execution. You decide what stays inside the enclave and what crosses back out to the Workflow DON for consensus-verified execution, such as generating a report to submit onchain.
+
+For hands-on steps, jump straight to [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential).
+
+<Aside type="caution" title="Private beta">
+  Confidential Workflows is in private beta and requires enrollment through your Chainlink account team—see [Requesting
+  Confidential Workflows Access](/cre/account/confidential-workflows-access).
+</Aside>
+
+## Where this fits in CRE
+
+If you're new to CRE workflows, start with [Getting Started](/cre/getting-started/overview) to build a standard workflow first—one where your handler's logic runs on Workflow DON nodes like any other capability call. Confidential Workflows extends that same model: once you're comfortable with handlers, triggers, and callbacks, this page and the [guide](/cre/guides/workflow/using-confidential-workflows) show you how to carve out a confidential execution path for the parts of a workflow that need it, without changing how the rest of your workflow is built, deployed, or operated.
+
+## The problem it solves
+
+By default, your workflow's code—and any secrets or sensitive inputs it processes—runs on Workflow DON nodes, where node operators can, in principle, inspect what it's computing. That's fine for most workflows. But some computation is sensitive on its own: applying risk thresholds, a rebalancing policy, or a proprietary scoring model to live inputs can expose that policy just as much as leaking a credential would.
+
+Confidential Workflows closes that gap: that sensitive computation executes inside a secure enclave, designed so that what's actually being computed is intended to remain confidential from node operators during execution.
+
+## How it works
+
+Functionally, running a workflow confidentially means moving execution of the sensitive part into an enclave, and giving your code a runtime built for that environment:
+
+1. **Declare a confidential handler:** Register the handler that should run inside a TEE, specifying which TEE types/regions your workflow accepts.
+2. **Trigger fires:** The Workflow DON hands the triggered request to an enclave instead of executing the callback locally.
+3. **Enclave execution:** Your callback runs inside the enclave, receiving a runtime built for confidential execution instead of the regular DON runtime.
+4. **Dynamic secret fetch:** Secrets are requested and decrypted inside the enclave at the moment your code needs them.
+5. **In-enclave capability calls:** Capabilities that support it can execute directly from inside the enclave; trust comes from enclave attestation rather than DON-level consensus.
+6. **Crossing back to the DON:** For anything that needs Workflow DON consensus—like generating a signed report—you explicitly cross back out to a regular DON runtime. Once data passes through that runtime, it's handled like any non-confidential capability call.
+
+Confidential workflows successfully complete execution only after DON consensus verifies attestations from the enclave, proving the integrity of the workflow logic that executed within it.
+
+See the [step-by-step guide](/cre/guides/workflow/using-confidential-workflows) for the exact functions in Go and TypeScript.
+
+## Confidentiality boundary
+
+Confidential Workflows protect specific things by default. Everything else is left to your explicit workflow design.
+
+| Protected by default                                                                    | Not automatically protected                                                                                              |
+| :-------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
+| Secrets the [Vault DON](/cre/key-terms#vault-don) releases into the enclave             | Workflow triggers, chain reads, and chain writes—these always execute on Workflow DON nodes, never inside the enclave    |
+| Sensitive inputs and intermediate values you don't explicitly share outside the enclave | Your workflow's source code, deployed binary, and orchestration metadata                                                 |
+| Capability calls made from inside the enclave (see [How it works](#how-it-works))       | Capability requests and responses that aren't routed through the enclave, unless that capability adds its own protection |
+| Enclave execution memory, for as long as your computation runs inside it                | Reports, transaction calldata, and any output you deliver outside the enclave boundary                                   |
+
+You remain responsible for not leaking confidential information back out through logs, workflow outputs, external API requests, or blockchain transactions.
+
+<Aside type="caution" title="Workflow logic is not confidential">
+  Your handler's source code and compiled binary are not confidential just because part of its logic runs inside an
+  enclave. Confidential Workflows protect only the confidential data processed during execution inside the enclave,
+  including Vault DON secrets (such as API keys), sensitive HTTP response payloads, and intermediate values that are not
+  explicitly shared outside the enclave. Support for confidential logic or workflow is planned as a future enhancement,
+  not part of the current beta.
+</Aside>
+
+<Aside type="caution" title="Multiple confidential workflows may execute within the same enclave">
+  Workflows are isolated from one another by Wasmtime. Dedicated per-workflow enclave isolation is planned as a future
+  enhancement.
+</Aside>
+
+<Aside type="caution" title="Don't log in production Confidential Workflows">
+  Logging within enclave execution logic should be avoided in production workflows. For debugging purposes, logging may
+  be used in simulation environments. Anything you log from inside a Confidential Workflow handler could leak data the
+  enclave is meant to protect—remove or gate log statements before deploying.
+</Aside>
+
+## Choosing Confidential Workflows
+
+Use a regular capability when nothing about the request, response, or logic is sensitive. Use a Confidential Workflow when any part of it needs to remain confidential from node operators—whether that's the credentials or response data on a single outbound call, or the decision logic around that data, such as thresholds, aggregation, or multi-step reasoning.
+
+## Use cases
+
+Confidential Workflows apply anywhere the computation behind a decision—not just a workflow's API calls—needs to remain confidential from node operators.
+
+### Automated liquidation protection
+
+A workflow monitors a leveraged position's collateral health and closes or adjusts it before liquidation. Running the risk thresholds and defensive strategy inside the enclave is designed to prevent them from being predicted and front-run.
+
+<Aside type="tip" title="Reference template available">
+  See the [Automated Liquidation Protection template](/cre-templates/automated-liquidation-protection) (TypeScript).
+</Aside>
+
+### Automated portfolio rebalancing
+
+A workflow rebalances a portfolio toward target allocations once drift crosses a threshold. Running the allocation policy and trade-sizing decisions inside the enclave is designed to prevent the rebalance from being anticipated and traded against.
+
+<Aside type="tip" title="Reference template available">
+  See the [Automated Portfolio Rebalancing template](/cre-templates/automated-portfolio-rebalancing) (TypeScript).
+</Aside>
+
+### LLM smart contract audit firewall
+
+A workflow evaluates a proposed transaction or contract against one or more LLMs for risk signals before allowing it to proceed. The evaluation criteria and third-party API credentials stay inside the enclave.
+
+<Aside type="tip" title="Reference template available">
+  See the [AI Smart Contract Audit Firewall template](/cre-templates/ai-audit-firewall) (TypeScript, with optional
+  onchain delivery via `EVMClient`).
+</Aside>
+
+### Proprietary or confidential data computation
+
+A workflow computes over proprietary, licensed, or otherwise sensitive data—for example, a scoring model built on data you don't have rights to expose in the clear. Confidential Workflows are designed to keep both the data and the computation performed on it confidential from node operators.
+
+### Automated payment orchestration
+
+A workflow generates payment initiation instructions—for banks (fiat transfers), payment networks (fiat or crypto transfers), or private chains (tokenized deposits and other payment tokens). Running the routing logic and account details inside the enclave is designed to prevent them from being exposed to node operators.
+
+### Automated risk management
+
+A workflow continuously evaluates risk exposure and triggers protective actions. Running the thresholds and parameters that define when action is taken inside the enclave is designed to prevent them from being reverse-engineered or gamed.
+
+### Automated trading
+
+A workflow executes trading logic based on a private strategy. Running the strategy inside the enclave—even though the resulting transactions are onchain—is designed to prevent it from being copied or traded against.
+
+## When to use secrets with DON execution vs. enclave execution
+
+Not every secret needs enclave-level protection. Use this as a rough guide, not an exhaustive list, when deciding whether a secret should be fetched with a regular [`runtime.GetSecret()`](/cre/guides/workflow/secrets) on the DON or inside a Confidential Workflow's enclave.
+
+**Higher-value secrets—consider enclave execution:**
+
+- Wallet private keys (crypto ownership, smart contract admin)
+- Certificate authority private keys
+- API keys and credentials for exchanges (trading or withdrawal access), institutional custody, payment processors, banking or payment networks, LLM providers with spending limits, or proprietary data providers
+- OAuth client secrets, JWT signing keys, KMS keys
+- Payment data, health data, and other PII
+
+**Lower-value secrets—regular DON execution is usually fine:**
+
+- API keys for publicly available data (weather, blockchain explorers, public price/market/sports data, public RPC providers)
+- Public wallet addresses
+- Other credentials with similarly limited impact if disclosed
+
+The common thread: a secret is a candidate for enclave execution if disclosure would expose more than the workflow needs, or data that will never be made public onchain.
+
+## Requesting access
+
+Confidential Workflows is invite-only during the private beta. See [Requesting Confidential Workflows Access](/cre/account/confidential-workflows-access) for how to get enrolled.
+
+## Learn more
+
+- **[Making a Workflow Confidential Guide](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential)**: Step-by-step guide to registering a TEE handler.
+- **[Confidential Workflows Client SDK Reference](/cre/reference/sdk/confidential-workflows-client)**: Full API reference.
+- **[Key Terms](/cre/key-terms#confidential-workflow-or-confidential-execution)**: Definitions for TEE, enclave, and confidential execution.
 
 ---
 
@@ -8391,7 +8751,7 @@ Initialize projects and generate contract bindings (Go only).
 
 Manage your linked public key addresses and deployment access.
 
-- **`cre account access`** — Check deployment access status or submit an Early Access request
+- **`cre account access`** — Check deployment access status or submit a deploy access request
 - **`cre account link-key`** — Link a public key address to your account
 - **`cre account list-key`** — List workflow owners linked to your organization
 - **`cre account unlink-key`** — Unlink a public key address from your account
@@ -8560,7 +8920,7 @@ cre whoami
 
 
 <Aside type="note" title="Deploy access required">
-  API key authentication requires your account to have Early Access approval for deployment. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
+  API key authentication requires your account to have deploy access approval. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
 </Aside>
 
 For CI/CD pipelines, automated scripts, or any environment where a browser is not available, you can authenticate using an API key. When the `CRE_API_KEY` environment variable is set, the CLI uses it automatically — no `cre login` required.
@@ -8630,7 +8990,7 @@ PRODUCTION:
 | `cre login`   | Local development                     | Opens a browser for interactive login with 2FA       |
 | `CRE_API_KEY` | CI/CD, scripts, headless environments | Set the environment variable — no browser needed(\*) |
 
-(\*) API key authentication requires your account to have Early Access approval. See [Requesting Deploy Access](/cre/account/deploy-access).
+(\*) API key authentication requires your account to have deploy access approval. See [Requesting Deploy Access](/cre/account/deploy-access).
 
 ## Learn more
 
@@ -8660,9 +9020,9 @@ The `cre account` commands manage linked public key addresses for public onchain
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Checks your organization's deployment access status and lets you submit a request for Early Access directly from the CLI.
+Checks your organization's deployment access status and lets you submit a request for deploy access directly from the CLI.
 
-For a full walkthrough including the interactive flow and web UI option, see [Requesting Deploy Access](/cre/account/deploy-access).
+For a full walkthrough of the interactive flow, see [Requesting Deploy Access](/cre/account/deploy-access).
 
 **Usage:**
 
@@ -9064,7 +9424,7 @@ The chain list is tenant-specific and may vary between organizations. Run the co
 
 
 <Aside type="note" title="Deployment access required">
-  Deploying workflows requires Early Access approval. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
+  Deploying workflows requires approval. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
 
   **While you wait:** Continue building and simulating workflows using [`cre workflow simulate`](/cre/guides/operations/simulating-workflows).
 </Aside>
@@ -10247,7 +10607,7 @@ cre version
 
 # The Confidential HTTP Capability
 Source: https://docs.chain.link/cre/capabilities/confidential-http-go
-Last Updated: 2026-02-06
+Last Updated: 2026-07-21
 
 The **Confidential HTTP** capability is a privacy-preserving HTTP service powered by the Chainlink Privacy Standard. It enables your workflow to interact with external APIs while keeping sensitive data—such as API credentials, request body fields, and response data—confidential.
 
@@ -10255,9 +10615,9 @@ The **Confidential HTTP** capability is a privacy-preserving HTTP service powere
 
 Traditional consensus mechanisms require all nodes to see and agree on the same data. While this provides strong reliability and tamper resistance, it creates challenges for use cases with strict privacy requirements:
 
-- **Regulatory compliance:** Some industries require that sensitive data never be exposed to multiple parties.
+- **Regulatory compliance:** Some industries require that sensitive data not be exposed to multiple parties.
 - **Credential security:** High-risk API credentials could cause damage if compromised or exposed in node memory.
-- **Response privacy:** API responses may contain sensitive fields that should not be visible to the decentralized network.
+- **Response privacy:** API responses may contain sensitive fields that are not intended to be visible to the decentralized network.
 
 Confidential HTTP addresses these challenges by executing requests inside a **secure enclave** and offering optional **response encryption**.
 
@@ -10267,22 +10627,22 @@ Confidential HTTP operates differently from the [regular HTTP capability](/cre/c
 
 1. **Request consensus:** Nodes in the Confidential HTTP DON reach quorum on the request parameters (forwarded by each Workflow DON node).
 2. **Secret retrieval:** The Confidential HTTP DON fetches encrypted secrets from the [Vault DON](/cre/guides/workflow/secrets/using-secrets-deployed).
-3. **Enclave execution:** Secrets are threshold decrypted using Vault DON. Decryption shares are injected to a secure enclave such that only the secure enclave can combine them to extract plaintext secrets to use in the HTTP request execution—credentials never exist in accessible memory.
+3. **Enclave execution:** Secrets are threshold decrypted using Vault DON. Decryption shares are injected to a secure enclave such that only the secure enclave can combine them to extract plaintext secrets to use in the HTTP request execution—credentials are designed not to exist in node-accessible memory outside the enclave.
 4. **Response:** The response is returned to your workflow. If `EncryptOutput` is enabled, the response body is encrypted before leaving the enclave.
 
-This approach ensures:
+This approach is designed to provide:
 
-- **Credential isolation:** Secrets are encrypted at rest and in transit, and are decrypted only inside the enclave—never in node memory.
+- **Credential isolation:** Secrets are encrypted at rest and in transit, and are intended to be decrypted only inside the enclave, not in node memory.
 - **Response privacy:** You can optionally encrypt the full response body so that it leaves the enclave encrypted and can be decrypted only in your own backend service.
 - **Single execution:** Exactly one API call is made, not one per node.
 
 ## What's kept confidential
 
-| Component                      | How it's protected                                                                                                                                                             |
-| :----------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Secrets** (API keys, tokens) | Fully confidential. Stored in the Vault DON, decrypted only inside the enclave.                                                                                                |
-| **Request body**               | Template-based injection: secrets referenced in the request body (e.g., `{{.myApiKey}}`) are resolved inside the enclave, so sensitive values never appear in workflow memory. |
-| **Response body**              | Optionally encrypted. When `EncryptOutput` is enabled, the full response is [AES-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) encrypted before leaving the enclave. |
+| Component                      | How it's protected                                                                                                                                                                           |
+| :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Secrets** (API keys, tokens) | Designed to remain confidential. Stored in the Vault DON, decrypted only inside the enclave.                                                                                                 |
+| **Request body**               | Template-based injection: secrets referenced in the request body (e.g., `{{.myApiKey}}`) are resolved inside the enclave, so sensitive values are designed not to appear in workflow memory. |
+| **Response body**              | Optionally encrypted. When `EncryptOutput` is enabled, the full response is [AES-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) encrypted before leaving the enclave.               |
 
 <Aside type="caution" title="Do not inject sensitive values into the request as plain workflow strings">
   **Credentials:** List sensitive values in **`VaultDonSecrets`** and reference them only with **`{{.key}}` placeholders**. Secrets read via **`runtime.GetSecret()`** (or any string you build in workflow code) and pasted into headers or body are handled in **Workflow DON** execution, not enclave-only. See [Making Confidential Requests (Go)](/cre/guides/workflow/using-confidential-http-client/making-requests-go#step-4-implement-the-request-logic).
@@ -10294,7 +10654,7 @@ This approach ensures:
 
 ### Credential isolation
 
-A SaaS service fetches user data from an e-commerce provider API. The same credential could also modify user data if misused. Confidential HTTP ensures the credential is decrypted only inside the enclave, never accessible in node memory.
+A SaaS service fetches user data from an e-commerce provider API. The same credential could also modify user data if misused. Confidential HTTP is designed so the credential is decrypted only inside the enclave and not accessible in node memory.
 
 ### Response encryption
 
@@ -10302,22 +10662,22 @@ A workflow calls a payment processor API to execute a transaction. The API respo
 
 ### Processing sensitive request data
 
-A workflow processes card transactions where the request contains card details and the API key provides processor access. Confidential HTTP keeps both the credentials and card details private through template-based injection, returning only the encrypted response to the workflow.
+A workflow processes card transactions where the request contains card details and the API key provides processor access. Confidential HTTP is designed to keep both the credentials and card details private through template-based injection, returning only the encrypted response to the workflow.
 
-### Guaranteed single execution
+### Single execution by design
 
 An API endpoint cannot tolerate duplicate requests (e.g., initiating a payment or creating a unique transaction).
 
 With the [regular HTTP capability](/cre/capabilities/http), each node in the DON executes the request independently to reach consensus on the response. For non-idempotent operations, [`cacheSettings` mitigates](/cre/guides/workflow/using-http-client/post-request-go#1-understanding-single-execution-with-cachesettings) this by enabling nodes to share cached responses, reducing duplicate calls in most cases.
 
-Confidential HTTP takes a different approach: by design, only one request is ever made from the enclave after quorum is reached on the request parameters. This provides an **architectural guarantee** of single execution.
+Confidential HTTP takes a different approach: by design, only one request is made from the enclave after quorum is reached on the request parameters, intended to provide single execution.
 
 ## When to use Confidential HTTP vs. regular HTTP
 
 ### Use Confidential HTTP when:
 
-- The API response contains sensitive data that should not be visible to the network
-- API credentials must never be accessible in node memory (enclave-only access)
+- The API response contains sensitive data that is not intended to be visible to the network
+- API credentials must not be accessible in node memory (enclave-only access)
 - You need exactly one API call with zero tolerance for duplicates
 - Regulatory or compliance requirements mandate data confidentiality
 
@@ -10344,15 +10704,17 @@ Confidential HTTP takes a different approach: by design, only one request is eve
 
 \*For non-idempotent operations (POST, PUT, PATCH, DELETE), [`cacheSettings`](/cre/guides/workflow/using-http-client/post-request#1-understanding-single-execution-with-cachesettings) enables nodes to share cached responses, reducing multiple calls to a single execution in most cases.
 
-<Aside type="note" title="Confidential Compute">
-  Confidential HTTP currently does not support complex data transformations within the enclave. A future **Confidential
-  Compute** capability will enable processing logic inside the enclave.
+<Aside type="note" title="Need to protect more than a single request?">
+  Confidential HTTP does not support complex data transformations within the enclave. [Confidential
+  Workflows](/cre/concepts/confidential-workflows) (beta) let you run your handler's full callback logic inside a secure
+  enclave, not just a single request.
 </Aside>
 
 ## Learn more
 
 - **[Confidential API Interactions Guide](/cre/guides/workflow/using-confidential-http-client)**: Learn how to use the SDK to invoke the Confidential HTTP capability.
 - **[Confidential HTTP Client SDK Reference](/cre/reference/sdk/confidential-http-client)**: See the detailed API reference for the `confidentialhttp.Client`.
+- **[Confidential Workflows in CRE](/cre/concepts/confidential-workflows)**: Run your full handler logic inside a secure enclave (beta).
 
 ---
 
@@ -10649,7 +11011,7 @@ Here are resources to help you go from simulation to production.
 
 
 <Aside type="note" title="Deployment access required">
-  Deploying requires Early Access approval. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access). While you wait, continue building and simulating workflows.
+  Deploying requires approval. Run `cre account access` to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access). While you wait, continue building and simulating workflows.
 </Aside>
 
 1. **[Link a Wallet Key](/cre/organization/linking-keys)** — Required for the default onchain Workflow Registry. Not needed when using `deployment-registry: "private"`.
@@ -12103,8 +12465,8 @@ Last Updated: 2026-05-12
 </Aside>
 
 
-<Aside type="note" title="Early Access required">
-  Workflow deployment is currently in Early Access. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+<Aside type="note" title="Deploy access required">
+  Workflow deployment requires approval. Run `cre account access` to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
 </Aside>
 
 The **public onchain registry** is the Workflow Registry contract on Ethereum Mainnet. Deploying to it records your workflow onchain — your linked wallet address becomes the workflow owner and every lifecycle operation (deploy, activate, pause, update, delete) submits a transaction to that contract.
@@ -12115,7 +12477,7 @@ For a lower-friction alternative that requires no wallet or gas for registry man
 
 Before deploying to the onchain registry, ensure you have:
 
-- **Early Access approval**: Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
+- **Deploy access approval**: Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
 - **[Authenticated](/cre/reference/cli/authentication)**: Logged in via `cre login` or using an [API key](/cre/reference/cli/authentication#api-key-authentication) (`CRE_API_KEY`). To verify, run `cre whoami`.
 - **[Linked your key](/cre/organization/linking-keys)**: Linked your EOA or multi-sig wallet to your CRE organization by running `cre account link-key`. See [Linking Wallet Keys](/cre/organization/linking-keys) for instructions.
 - **A funded wallet**: The account you are deploying from must hold ETH on Ethereum Mainnet to pay gas for the registration transaction.
@@ -12130,11 +12492,6 @@ The `cre workflow deploy` command handles the entire end-to-end process:
 1. **Compiles** your workflow to a WASM binary.
 2. **Uploads** the compiled binary and any associated configuration files to the CRE Storage Service.
 3. **Registers** the workflow onchain by submitting a transaction to the Workflow Registry contract on Ethereum Mainnet. Your wallet must have ETH for gas fees, and your `project.yaml` must include an RPC configuration for `ethereum-mainnet`. The transaction contains the workflow's name, owner, and artifact URLs.
-
-
-<Aside type="caution" title="Early Access: Disclaimer">
-  Chainlink Runtime Environment (CRE) deployment is in the "Early Access" stage of development, which means that CRE currently has functionality which is under development and may be changed in later versions. By using CRE, you expressly acknowledge and agree to accept the Chainlink <a href="https://chain.link/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>, which provides important information and disclosures.
-</Aside>
 
 ### Step 1: Ensure your configuration is correct
 
@@ -12788,6 +13145,294 @@ Go workflows are verifiable by default and do not require a template or Docker.
 
 ---
 
+# Building a Reusable Library
+Source: https://docs.chain.link/cre/guides/workflow/building-a-library-go
+Last Updated: 2026-08-14
+
+This guide shows you how to package reusable integration logic (for example, a Slack notifier, a PagerDuty client, or a price-feed parser) as a standard Go module that other developers can `go get` and import directly into their own CRE workflows.
+
+This guide is not a tutorial on writing a workflow itself: if you're new to CRE, start with the [getting-started guide](/cre/getting-started/overview) first.
+
+## Who this is for
+
+Any developer who wants to publish a reusable Go module that other people's CRE workflows will depend on.
+
+## Your library runs where the workflow runs
+
+A CRE Go workflow isn't run as a normal Go binary. It's cross-compiled with `GOOS=wasip1 GOARCH=wasm` into a WebAssembly module that runs inside the CRE host's WASI sandbox. When a workflow author adds your module as a dependency, your code is compiled into that same binary, so it runs under the exact same restrictions as the workflow's own code.
+
+Unlike the TypeScript SDK, which runs inside a stripped-down QuickJS engine, Go workflows compile with the **full Go standard library** available at compile time. This means far more of the ecosystem "just works" without compatibility checking, but the WASI sandbox still enforces real limits at runtime:
+
+- No filesystem access. There's no real disk backing the sandbox, so file I/O fails or is meaningless even though the code compiles.
+- No arbitrary outbound network access. There's no raw socket layer to dial into, so everything non-deterministic (HTTP calls, secrets, blockchain reads/writes) must go through CRE SDK capability APIs, which the DON executes and brings to consensus on your library's behalf.
+- Single-threaded, deterministic execution. All DON nodes must execute your code identically and produce the same output.
+
+Design your library around these constraints from the start. Don't write a generic Go module and assume it will run unmodified under WASI. Instead, build it directly against the CRE SDK's runtime primitives.
+
+## Pitfalls
+
+Because your library runs inside the same WASI sandbox as the workflow, the code you write can't rely on the host filesystem, network, or concurrency primitives you're used to. The sections below cover the pitfalls that trip up most library authors: no filesystem or arbitrary network access, no standard HTTP client, `Promise`/`Await` concurrency instead of goroutines, non-determinism, and numeric precision for onchain values. Read through them before you start, and keep them in mind as you design your library's API.
+
+### No filesystem or arbitrary network access
+
+Your library (or one of its transitive dependencies) must not depend on:
+
+- **Filesystem access**: `os.Open`, `os.ReadFile`, `os.WriteFile`, config-file loaders, embedded file caches written to disk, and so on. There is no writable (or meaningfully readable) filesystem in the WASI sandbox the workflow runs in.
+- **Direct network access**: `net.Dial`, `net/http`'s `http.Client`/`http.Get`, gRPC dialing, database drivers, or any other package that opens its own socket. These either fail at runtime or, worse, silently do nothing useful, because there's no outbound network stack available to your code directly, only to the CRE host, through capability calls.
+
+Anything your library needs from disk (default config, lookup tables, certificates) should be compiled in as Go constants, embedded with `//go:embed` (a compile-time read, not a runtime filesystem access, so this is safe), or passed in as arguments by the caller. Anything it needs from the network must go through [`cre-sdk-go`](#no-standard-http-client)'s `http.Client`/`http.SendRequest`, never a raw dependency that dials sockets itself.
+
+
+<Aside type="tip" title="Verify with simulation">
+  Because the Go standard library compiles cleanly for `wasip1` far more often than a Node package compiles for QuickJS, a dependency that shouldn't work can still build successfully and only fail (or silently no-op) at runtime. Always confirm behavior with `cre workflow simulate` in a throwaway test workflow before publishing, a clean build is not proof of compatibility.
+</Aside>
+
+### No standard HTTP client
+
+Do not depend on `net/http`, a REST client wrapper built on it, or any package that dials its own connections. Instead, all outbound requests must go through [`http.Client`](/cre/reference/sdk/http-client-go) from `github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http`. This isn't just a technical requirement, it's what gives the request DON-wide consensus. An HTTP call in CRE runs independently on every node in the DON (node mode), and the SDK aggregates the individual results into one trusted value before the workflow continues. A library that dials out with `net/http` would bypass this consensus mechanism entirely, and even if it appeared to run, it would fail in production since the DON nodes would never agree on a single result.
+
+Consequence for library design: your exported functions should take a `cre.Runtime` as a parameter, and use it (via `http.SendRequest` or `cre.RunInNodeMode`) to construct requests, exactly as a workflow author would inline. Keep your library a thin, well-tested wrapper around that `Runtime`-based request pattern.
+
+```go
+// pagerduty.go, inside your library module
+package pagerduty
+
+import (
+	"encoding/json"
+	"fmt"
+
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+)
+
+type Options struct {
+	RoutingKeySecret string
+}
+
+type Alert struct {
+	Summary  string `json:"summary"`
+	Severity string `json:"severity"`
+	Source   string `json:"source"`
+}
+
+type Client struct {
+	options Options
+}
+
+func New(options Options) *Client {
+	return &Client{options: options}
+}
+
+func (c *Client) Trigger(runtime cre.Runtime, alert Alert) (int, error) {
+	sendAlert := func(config Options, nodeRuntime cre.NodeRuntime) (int, error) {
+		secret, err := nodeRuntime.GetSecret(&cre.SecretRequest{Id: config.RoutingKeySecret}).Await()
+		if err != nil {
+			return 0, fmt.Errorf("failed to get routing key: %w", err)
+		}
+
+		payload := map[string]any{
+			"routing_key":  secret.Value,
+			"event_action": "trigger",
+			"payload":      alert,
+		}
+
+		body, err := json.Marshal(payload)
+		if err != nil {
+			return 0, fmt.Errorf("failed to marshal payload: %w", err)
+		}
+
+		client := &http.Client{}
+		resp, err := client.SendRequest(nodeRuntime, &http.Request{
+			Url:    "https://events.pagerduty.com/v2/enqueue",
+			Method: "POST",
+			MultiHeaders: map[string]*http.HeaderValues{
+				"Content-Type": {Values: []string{"application/json"}},
+			},
+			Body: body,
+			// Prevents every node from firing a duplicate alert
+			CacheSettings: &http.CacheSettings{Store: true},
+		}).Await()
+		if err != nil {
+			return 0, fmt.Errorf("PagerDuty request failed: %w", err)
+		}
+
+		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+			return 0, fmt.Errorf("PagerDuty request failed with status %d", resp.StatusCode)
+		}
+
+		return int(resp.StatusCode), nil
+	}
+
+	promise := cre.RunInNodeMode(c.options, runtime, sendAlert, cre.ConsensusIdenticalAggregation[int]())
+	return promise.Await()
+}
+```
+
+Notes on this pattern:
+
+- Secrets are only ever resolved with `runtime.GetSecret()` / `nodeRuntime.GetSecret()` (backed by the Vault DON), never read from environment variables or hardcoded. Your library should accept a secret ID/name, not a raw credential, and let the consuming workflow own the actual value in [CRE secrets](/cre/guides/workflow/secrets).
+- `GetSecret()` itself doesn't require node mode, but you'll typically call it from inside a `RunInNodeMode` block anyway, since that's where you're already building the request that needs the secret value.
+- Non-idempotent calls (POST/PUT/PATCH/DELETE) should set `CacheSettings` so a single DON-wide action isn't repeated once per node.
+- Wrap HTTP calls in `cre.RunInNodeMode(...)` with an explicit [consensus aggregation](/cre/reference/sdk/consensus-go) (`cre.ConsensusIdenticalAggregation`, `cre.ConsensusMedianAggregation`, or `cre.ConsensusAggregationFromTags` for a tagged result struct) so the DON agrees on one result before your function returns control to the workflow.
+- `Body` on `http.Request` is a plain `[]byte`; unlike the TypeScript SDK, there's no base64-encoding step to worry about.
+- All SDK capability calls return a [`Promise[T]`](/cre/reference/sdk/core-go#promise) that you resolve with `.Await()`, see the next section.
+
+### `Promise`/`Await` concurrency, not goroutines
+
+The Go SDK doesn't use `async`/`await` keywords, it uses a `Promise[T]` type with `.Await()`, `cre.Then()`, and `cre.ThenPromise()` for chaining (see [Core SDK Reference](/cre/reference/sdk/core-go#promise)). This exists because the underlying operation only actually runs when you call `.Await()`, building a promise chain without awaiting it does nothing.
+
+The pitfall specific to Go: don't reach for goroutines, channels, or `sync` primitives (`WaitGroup`, `Mutex`, and so on) to run multiple SDK calls "concurrently" inside your library. CRE workflows execute in a single-threaded WASM environment, so using Go's concurrency primitives to fan out capability calls doesn't get you real parallelism, and a `select` across multiple channels picks a ready channel non-deterministically, which will cause consensus failures if the result depends on which one "won."
+
+- Never use `select` with multiple ready channels to decide which result to use or which branch to take, see [Avoiding Non-Determinism in Workflows](/cre/concepts/non-determinism-go#3-concurrency-and-channel-selection).
+- If you need to make several capability calls, initiate them in a fixed order and resolve them (`.Await()`) in that same fixed order. You can build up several `Promise` values before awaiting any of them, but the order you await them in must never vary.
+- `cre.Then()` / `cre.ThenPromise()` are the idiomatic way to chain dependent async steps without nested `.Await()` calls, prefer them over manually orchestrating goroutines.
+
+### Determinism
+
+Every trigger callback in a CRE workflow runs independently on every DON node and must produce identical results (DON mode), except inside `cre.RunInNodeMode()` blocks, which are explicitly for non-deterministic, per-node work that then gets aggregated. If nodes diverge, they generate different request IDs for capability calls and consensus fails outright.
+
+- **Never call `time.Now()` or any other `time` package clock function.** Always use `runtime.Now()` instead, so you don't need to branch on whether you're inside a `RunInNodeMode` block.
+- **Never use `math/rand` (or `crypto/rand`) directly.** Use `runtime.Rand()` from the CRE SDK, which provides a consensus-safe generator so every node produces the same sequence.
+- **Never iterate a Go map directly** when the order affects your output. Go maps intentionally randomize iteration order. Use [`cre.OrderedEntries`](/cre/reference/sdk/core-go#creorderedentries-and-creorderedentriesfunc) (or `cre.OrderedEntriesFunc` for non-`cmp.Ordered` keys) instead of `for k, v := range someMap`.
+- **Use `encoding/json` v1, not v2.** The v2 library uses randomized hashing for field ordering, which serializes the same struct differently across nodes. If you serialize Protocol Buffers, use `proto.MarshalOptions{Deterministic: true}.Marshal()` too, since the default `proto.Marshal` doesn't guarantee field order.
+- **Never use `select` with multiple ready channels** to make a decision, see [`Promise`/`Await` concurrency, not goroutines](#promiseawait-concurrency-not-goroutines).
+
+See [Avoiding Non-Determinism in Workflows](/cre/concepts/non-determinism-go) for the complete guide, including LLM output handling.
+
+### Numeric precision for onchain values
+
+If your library produces or accepts values that will end up in a smart contract call, such as a price, an amount, or a `uint256`, use `*big.Int`, never a plain `int`/`int64`/`float64`. For monetary or price values that aren't already onchain integers, use a fixed-point decimal type such as [`github.com/shopspring/decimal`](https://github.com/shopspring/decimal) rather than `float64`, which loses precision under repeated arithmetic. This matches the convention used throughout the CRE Go SDK's own examples.
+
+## Packaging your library
+
+Structure it as an ordinary Go module, there's no special CRE project layout for a library, only for a workflow (which is itself a package inside the consuming project's single Go module).
+
+### Project structure
+
+A library is a minimal Go module with its source files, module definition, and a README.
+
+```
+my-cre-library/
+├── go.mod
+├── go.sum
+├── pagerduty.go
+└── README.md
+```
+
+### `go.mod`
+
+The module definition declares the SDK as a normal dependency; Go's module resolution handles version unification automatically.
+
+```
+module github.com/you/my-cre-library
+
+go 1.25.3
+
+require github.com/smartcontractkit/cre-sdk-go v1.6.0
+```
+
+Key points:
+
+- Use a normal `require` for `github.com/smartcontractkit/cre-sdk-go`, there's no `peerDependency` concept in Go modules, and you don't need one. Go's module resolution (minimal version selection) automatically unifies the SDK version across your library and the consuming workflow's `go.mod` to a single compatible version, so there's no risk of bundling two copies the way there is with npm.
+- **Don't add a `//go:build wasip1` build tag to your library's own files** unless you have a specific reason to (for example, wrapping a WASI-only import). `cre.Runtime`, `cre.NodeRuntime`, and the capability client types are plain, portable Go, they compile under any `GOOS`. Only the workflow's own entry point (the file calling `wasm.NewRunner`) needs the `wasip1` tag. Keeping your library tag-free means your library's own `go test` suite, and any consumer's tests that exercise your library, run under the host's native `GOOS` instead of requiring a full WASM build.
+- Take advantage of the SDK's mock packages where they exist (for example, `github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm/mock` for EVM calls) to unit test logic that depends on `cre.Runtime` without running `cre workflow simulate`. There is currently no equivalent mock package for the HTTP capability, so HTTP-calling code still needs an end-to-end `cre workflow simulate` pass to verify.
+- Keep your own dependency tree small. Everything you import gets compiled into the consuming workflow's single WASM binary, which is subject to production size and memory quotas (inspect them with `cre workflow limits export`, see [Testing Production Limits](/cre/guides/operations/understanding-limits)). A heavy library, or one with a dependency that unexpectedly requires cgo, can push an otherwise-fine workflow over its quota or break its WASM build entirely (cgo is not supported under `wasip1`).
+
+## Publishing
+
+Go modules don't have a central publish step or registry like npm, you publish by pushing your code to a Git repository (typically GitHub) and tagging a semver release:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+Your module path (in `go.mod`) should match the repository's import path, for example `github.com/you/my-cre-library`. Nothing about tagging a release is CRE-specific. The workflow author's own `go build`/`cre workflow simulate` pipeline is what turns your published Go code into something that runs inside the WASM sandbox.
+
+## Using your library from a CRE workflow
+
+Recall that a Go CRE project is a single Go module, so the workflow author adds your library with `go get` from the project root (not from inside the workflow subdirectory):
+
+```bash
+go get github.com/you/my-cre-library@v1.0.0
+```
+
+Then imports and calls it from their workflow handler, passing in the `runtime` they already have:
+
+```go
+//go:build wasip1
+
+package main
+
+import (
+	"log/slog"
+
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/cre/wasm"
+	"github.com/you/my-cre-library"
+)
+
+type Config struct {
+	Schedule string `json:"schedule"`
+}
+
+var pagerDutyClient = pagerduty.New(pagerduty.Options{RoutingKeySecret: "pager-duty-routing-key"})
+
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (string, error) {
+	_, err := pagerDutyClient.Trigger(runtime, pagerduty.Alert{
+		Summary:  "ETH/USD price breached threshold",
+		Severity: "critical",
+		Source:   "cre-workflow",
+	})
+	if err != nil {
+		return "", err
+	}
+	return "alert sent", nil
+}
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+	return cre.Workflow[*Config]{
+		cre.Handler(cron.Trigger(&cron.Config{Schedule: config.Schedule}), onCronTrigger),
+	}, nil
+}
+
+func main() {
+	wasm.NewRunner(cre.ParseJSON[*Config]).Run(InitWorkflow)
+}
+```
+
+The workflow author still owns:
+
+- Storing the actual secret value (`pager-duty-routing-key`) in their [CRE secrets](/cre/guides/workflow/secrets); your library only ever refers to it by name.
+- Running `cre workflow simulate` to verify your library behaves correctly compiled into their WASM binary before deploying.
+
+## Pre-publish checklist
+
+Before you publish, run through this checklist to confirm your library follows every constraint covered in this guide. Each item maps to a pitfall or packaging requirement above.
+
+- No filesystem access (`os.Open`, `os.ReadFile`, `os.WriteFile`, and similar) anywhere in your library or its dependencies. See [No filesystem or arbitrary network access](#no-filesystem-or-arbitrary-network-access).
+- No direct network access (`net.Dial`, `net/http`, database drivers, gRPC dialing); all outbound calls go through `http.Client`/`http.SendRequest` (or `evm.Client` for chain reads/writes). See [No standard HTTP client](#no-standard-http-client).
+- HTTP calls, time, and randomness are wrapped in `cre.RunInNodeMode()` with an explicit consensus aggregation, or delegated back to the caller's `runtime`. Secrets are resolved with `GetSecret()`, typically from inside that same block. See [No standard HTTP client](#no-standard-http-client).
+- No goroutines, channels, or `select` across multiple channels used to make a decision that affects your function's output. See [`Promise`/`Await` concurrency, not goroutines](#promiseawait-concurrency-not-goroutines).
+- No direct map iteration where order affects the output, use `cre.OrderedEntries`/`cre.OrderedEntriesFunc`. See [Determinism](#determinism).
+- `encoding/json` v1 (not v2) and, if applicable, `proto.MarshalOptions{Deterministic: true}` for serialization. See [Determinism](#determinism).
+- No `time.Now()`, `math/rand`, or `crypto/rand`, use `runtime.Now()` and `runtime.Rand()`. See [Determinism](#determinism).
+- `*big.Int` for onchain integer values; a decimal type (not `float64`) for prices and other precision-sensitive values. See [Numeric precision for onchain values](#numeric-precision-for-onchain-values).
+- Secrets are accepted as an ID/name, never as a literal value baked into your library. See [No standard HTTP client](#no-standard-http-client).
+- No `//go:build wasip1` tag on library files unless truly required, keep your library testable with plain `go test`. See [`go.mod`](#gomod).
+- Verified end-to-end with `cre workflow simulate` in a real (throwaway) CRE workflow that depends on your published or local module. See [No filesystem or arbitrary network access](#no-filesystem-or-arbitrary-network-access).
+
+## Learn more
+
+- [Avoiding Non-Determinism in Workflows](/cre/concepts/non-determinism-go): The complete determinism guide
+- [SDK Reference: HTTP Client](/cre/reference/sdk/http-client-go): Full `http.Client` API
+- [SDK Reference: Core](/cre/reference/sdk/core-go): `Runtime`, `NodeRuntime`, `Promise`, and `cre.OrderedEntries`
+- [SDK Reference: Consensus & Aggregation](/cre/reference/sdk/consensus-go): Aggregation functions for `cre.RunInNodeMode`
+- [Secrets](/cre/guides/workflow/secrets): Storing and retrieving secrets for a deployed workflow
+
+---
+
 # Using Secrets in Simulation
 Source: https://docs.chain.link/cre/guides/workflow/secrets/using-secrets-simulation-go
 Last Updated: 2025-11-04
@@ -12969,14 +13614,7 @@ The CLI will automatically read the `secrets-path` from your `workflow.yaml` and
 
 ## Fetching multiple secrets
 
-You can fetch multiple secrets by calling the secret retrieval method multiple times within your workflow.
-
-
-<Aside type="caution" title="Fetch secrets sequentially">
-  The WASM host for the CRE runtime does not support parallel `runtime.GetSecret()` requests. Always fetch secrets **sequentially**: call `GetSecret()`, await the promise with `.Await()`, then call `GetSecret()` again for the next secret. Do not attempt to fetch multiple secrets in parallel.
-</Aside>
-
-The following example builds on the previous one. First, update your `secrets.yaml` to declare two secrets:
+First, update your `secrets.yaml` to declare both secrets:
 
 ```yaml
 secretsNames:
@@ -12993,9 +13631,11 @@ export SECRET_ADDRESS_ALL="0x1234567890abcdef1234567890abcdef12345678"
 export API_KEY_ALL="your-api-key-here"
 ```
 
-Now you can fetch both secrets in your workflow code:
+### Using batch fetch (recommended)
 
-Code snippet for Fetching Multiple Secrets (Go):
+Use `runtime.GetSecrets()` to retrieve multiple secrets in a single call. Secrets are returned in the same order as the input requests.
+
+Code snippet for Fetching Multiple Secrets with Batch (Go):
 
 ```go
 //go:build wasip1
@@ -13025,30 +13665,23 @@ const (
 func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
 	logger := runtime.Logger()
 
-	// Important: Fetch secrets sequentially, not in parallel.
-	// The WASM host for CRE runtime does not support parallel runtime.GetSecret() requests.
-	// Always call GetSecret(), then Await() before making the next GetSecret() call.
-
-	// 1. Fetch the first secret
-	addressPromise := runtime.GetSecret(&protos.SecretRequest{Id: SecretAddressName})
-	secretAddress, err := addressPromise.Await()
+	// Fetch multiple secrets in a single batch call.
+	secrets, err := runtime.GetSecrets([]*protos.SecretRequest{
+		{Id: SecretAddressName},
+		{Id: ApiKeyName},
+	}).Await()
 	if err != nil {
-		logger.Error("Failed to get SECRET_ADDRESS", "err", err)
+		logger.Error("Failed to get secrets", "err", err)
 		return nil, err
 	}
 
-	// 2. Fetch the second secret (only after the first is complete)
-	apiKeyPromise := runtime.GetSecret(&protos.SecretRequest{Id: ApiKeyName})
-	apiKey, err := apiKeyPromise.Await()
-	if err != nil {
-		logger.Error("Failed to get API_KEY", "err", err)
-		return nil, err
-	}
+	// Secrets are returned in the same order as the input requests.
+	secretAddress := secrets[0].Value
+	apiKey := secrets[1].Value
 
-	// 3. Use your secrets
 	logger.Info("Successfully fetched secrets!",
-		"address", secretAddress.Value,
-		"apiKey", apiKey.Value,
+		"address", secretAddress,
+		"apiKey", apiKey,
 	)
 
 	return &MyResult{}, nil
@@ -13069,6 +13702,11 @@ func main() {
 	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
 }
 ```
+
+
+<Aside type="note" title="All-or-nothing error handling">
+  If any secret in the batch fails to fetch, `GetSecrets()` returns an error containing all error messages from the failed secrets.
+</Aside>
 
 ---
 
@@ -13598,6 +14236,267 @@ func AESGCMDecrypt(blob []byte, key []byte) ([]byte, error) {
 ## API reference
 
 For the full list of types and methods available on the Confidential HTTP client, see the [Confidential HTTP Client SDK Reference](/cre/reference/sdk/confidential-http-client-go).
+
+---
+
+# Making a Workflow Confidential
+Source: https://docs.chain.link/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-go
+Last Updated: 2026-07-28
+
+Some workflows need to keep sensitive inputs and the computation over them—not just a single outbound request—confidential from node operators: risk thresholds, proprietary scoring, multi-step reasoning over sensitive data. Confidential Workflows are designed to make this possible by running your handler's callback inside a secure [enclave](/cre/key-terms#enclave), a running instance of a [Trusted Execution Environment (TEE)](/cre/key-terms#tee-trusted-execution-environment) intended to keep that computation and data confidential from the machine's own operator while it runs.
+
+Functionally, this means registering your handler with [`cre.HandlerInTee`](/cre/reference/sdk/confidential-workflows-client-go#crehandlerintee) instead of [`cre.Handler`](/cre/reference/sdk/core-go#crehandler). Your callback receives a [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-go#creteeruntime) instead of a [`cre.Runtime`](/cre/reference/sdk/core-go#runtime-and-noderuntime): secrets are fetched dynamically from the [Vault DON](/cre/key-terms#vault-don) rather than declared upfront, and you explicitly call [`runtime.UsingTheDons()`](/cre/reference/sdk/confidential-workflows-client-go#runtimeusingthedons) to reach anything that needs Workflow DON consensus.
+
+## Prerequisites
+
+This guide assumes you have:
+
+- Enrolled in the Confidential Workflows private beta with your Chainlink account team (see [Requesting Confidential Workflows Access](/cre/account/confidential-workflows-access)).
+- A basic understanding of CRE. If you are new, complete the [Getting Started tutorial](/cre/getting-started/overview) first.
+- Familiarity with [secrets management](/cre/guides/workflow/secrets) in CRE.
+
+<Aside type="note" title="Minimal example">
+  This guide walks through the core mechanics with a minimal example. For complete, production-shaped workflows
+  (TypeScript), see the [example workflows](/cre/guides/workflow/using-confidential-workflows#example-workflows).
+</Aside>
+
+## Step-by-step example
+
+This example shows a cron-triggered workflow that fetches a secret and makes an HTTP request from inside a TEE, then crosses back to the DON to generate a report.
+
+### Step 1: Register a TEE handler
+
+Use [`cre.HandlerInTee`](/cre/reference/sdk/confidential-workflows-client-go#crehandlerintee) instead of [`cre.Handler`](/cre/reference/sdk/core-go#crehandler), and specify which TEEs your workflow accepts with a [`cre.TeeConstraint`](/cre/reference/sdk/confidential-workflows-client-go#creteeconstraint):
+
+```go
+package main
+
+import (
+	"log/slog"
+
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/cre/wasm"
+)
+
+type Config struct {
+	Schedule string `json:"schedule"`
+	URL      string `json:"url"`
+}
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+	workflow := cre.Workflow[*Config]{
+		cre.HandlerInTee(
+			cron.Trigger(&cron.Config{Schedule: config.Schedule}),
+			onCronTrigger,
+			cre.AnyTee{},
+		),
+	}
+
+	return workflow, nil
+}
+
+func main() {
+	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
+}
+```
+
+`cre.AnyTee{}` accepts any registered TEE in any region. To restrict to a specific TEE type and region, use `cre.OneOfTees{cre.Nitro{Regions: []cre.NitroRegion{cre.NitroUsWest2}}}`. See the [SDK reference](/cre/reference/sdk/confidential-workflows-client-go#creteeconstraint) for all options.
+
+### Step 2: Fetch a secret inside the enclave
+
+Your callback receives a [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-go#creteeruntime). Call [`runtime.GetSecrets()`](/cre/reference/sdk/confidential-workflows-client-go#runtimegetsecrets) to fetch the secrets you need in a single batch call:
+
+```go
+func onCronTrigger(config *Config, runtime cre.TeeRuntime, _ *cron.Payload) (string, error) {
+	secrets, err := runtime.GetSecrets([]*cre.SecretRequest{
+		{Id: "API_KEY"},
+		{Id: "DB_URL"},
+	}).Await()
+	if err != nil {
+		return "", fmt.Errorf("failed to get secrets: %w", err)
+	}
+	apiKey := secrets[0].Value
+	dbUrl := secrets[1].Value
+
+	// ...
+}
+```
+
+To fetch a single secret, use [`runtime.GetSecret()`](/cre/reference/sdk/confidential-workflows-client-go#runtimegetsecret):
+
+```go
+secret, err := runtime.GetSecret(&cre.SecretRequest{Id: "MY_API_KEY"}).Await()
+if err != nil {
+	return "", fmt.Errorf("failed to get secret: %w", err)
+}
+```
+
+<Aside type="note" title="No upfront secret declaration">
+  Unlike Confidential HTTP's
+  [`VaultDonSecrets`](/cre/reference/sdk/confidential-http-client-go#confidentialhttpconfidentialhttprequest), there's
+  nothing to declare ahead of time. The secret is requested and decrypted inside the enclave at the moment
+  [`GetSecret()`](/cre/reference/sdk/confidential-workflows-client-go#runtimegetsecret) runs.
+</Aside>
+
+### Step 3: Make a capability call from inside the enclave
+
+Capabilities that support Confidential Workflows expose a TEE-flavored method. For the HTTP capability, that's
+[`SendRequestInTee`](/cre/reference/sdk/confidential-workflows-client-go#making-capability-calls-inside-the-enclave),
+which takes your [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-go#creteeruntime) directly:
+
+```go
+	req := &http.Request{
+		Url:    config.URL,
+		Method: "GET",
+		MultiHeaders: map[string]*http.HeaderValues{
+			"Authorization": {Values: []string{"Bearer " + apiKey}},
+		},
+	}
+
+	resp, err := (&http.Client{}).SendRequestInTee(runtime, req).Await()
+	if err != nil {
+		return "", fmt.Errorf("confidential request failed: %w", err)
+	}
+```
+
+The request executes from inside the enclave. Trust comes from enclave attestation rather than Workflow DON consensus.
+
+<Aside type="note" title="Use SendRequestInTee, not confidentialhttp.Client">
+  `confidentialhttp.Client` has no TEE-flavored method here—see the [SDK
+  reference](/cre/reference/sdk/confidential-workflows-client-go#not-every-capability-has-a-tee-flavored-method) if
+  you're tempted to reach for it instead.
+</Aside>
+
+### Step 4: Cross back to the DON for anything that needs consensus
+
+Once you have a result, call [`runtime.UsingTheDons()`](/cre/reference/sdk/confidential-workflows-client-go#runtimeusingthedons)
+to get a regular [`cre.Runtime`](/cre/reference/sdk/core-go#runtime-and-noderuntime) for operations that require
+Workflow DON execution—for example, generating a signed report:
+
+```go
+	donRuntime := runtime.UsingTheDons()
+
+	_, err = donRuntime.GenerateReport(&cre.ReportRequest{
+		EncodedPayload: []byte(resp.Body),
+		EncoderName:    "evm",
+		SigningAlgo:    "ecdsa",
+		HashingAlgo:    "keccak256",
+	}).Await()
+	if err != nil {
+		return "", fmt.Errorf("failed to generate report: %w", err)
+	}
+
+	runtime.Logger().Info("Confidential workflow complete")
+	return string(resp.Body), nil
+}
+```
+
+See [Generating Reports: Single Values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) for the full delivery flow (encoding, `WriteReport`, etc.). For a complete example that crosses to the DON runtime and delivers a report onchain with `evmClient.writeReport()`, see the [AI Smart Contract Audit Firewall template](/cre-templates/ai-audit-firewall) (TypeScript; the same pattern applies in Go).
+
+<Aside type="caution" title="Data passed to UsingTheDons() is no longer confidential">
+  Once you pass a value into a capability call on the runtime returned by
+  [`UsingTheDons()`](/cre/reference/sdk/confidential-workflows-client-go#runtimeusingthedons), that call executes on
+  Workflow DON nodes like any non-confidential capability. Only cross over the data that doesn't need to remain
+  confidential.
+</Aside>
+
+### Step 5: Simulate
+
+Run the simulation:
+
+```bash
+cre workflow simulate my-workflow --target staging-settings
+```
+
+## Best practices
+
+<Aside type="caution" title="Don't log in production confidential workflows">
+  Logging within enclave execution logic should be avoided in production workflows. For debugging purposes, logging may
+  be used in simulation environments. Anything you log from inside a Confidential Workflow handler could leak data the
+  enclave is meant to protect—remove or gate log statements before deploying.
+</Aside>
+
+## Complete example
+
+```go
+package main
+
+import (
+	"fmt"
+	"log/slog"
+
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http"
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/cre/wasm"
+)
+
+type Config struct {
+	Schedule string `json:"schedule"`
+	URL      string `json:"url"`
+}
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+	workflow := cre.Workflow[*Config]{
+		cre.HandlerInTee(
+			cron.Trigger(&cron.Config{Schedule: config.Schedule}),
+			onCronTrigger,
+			cre.AnyTee{},
+		),
+	}
+
+	return workflow, nil
+}
+
+func onCronTrigger(config *Config, runtime cre.TeeRuntime, _ *cron.Payload) (string, error) {
+	// 1. Fetch secrets dynamically, inside the enclave.
+	secrets, err := runtime.GetSecrets([]*cre.SecretRequest{
+		{Id: "API_KEY"},
+		{Id: "DB_URL"},
+	}).Await()
+	if err != nil {
+		return "", fmt.Errorf("failed to get secrets: %w", err)
+	}
+	apiKey := secrets[0].Value
+
+	// 2. Make an HTTP request from inside the enclave.
+	req := &http.Request{
+		Url:    config.URL,
+		Method: "GET",
+		MultiHeaders: map[string]*http.HeaderValues{
+			"Authorization": {Values: []string{"Bearer " + apiKey}},
+		},
+	}
+	resp, err := (&http.Client{}).SendRequestInTee(runtime, req).Await()
+	if err != nil {
+		return "", fmt.Errorf("confidential request failed: %w", err)
+	}
+
+	// 3. Cross back to the DON for anything that needs consensus.
+	donRuntime := runtime.UsingTheDons()
+	_, err = donRuntime.GenerateReport(&cre.ReportRequest{
+		EncodedPayload: []byte(resp.Body),
+		EncoderName:    "evm",
+		SigningAlgo:    "ecdsa",
+		HashingAlgo:    "keccak256",
+	}).Await()
+	if err != nil {
+		return "", fmt.Errorf("failed to generate report: %w", err)
+	}
+
+	runtime.Logger().Info("Confidential workflow complete")
+	return string(resp.Body), nil
+}
+
+func main() {
+	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
+}
+```
+
+## API reference
+
+For the full list of types and methods available on [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-go#creteeruntime) and [`cre.HandlerInTee`](/cre/reference/sdk/confidential-workflows-client-go#crehandlerintee), see the [Confidential Workflows Client SDK Reference](/cre/reference/sdk/confidential-workflows-client-go).
 
 ---
 
@@ -18851,6 +19750,10 @@ cre workflow deploy my-workflow --target=production-settings
 
 For end-to-end runnable examples, see the [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/automation-migration) repository.
 
+### 5. Decommission the old Upkeep
+
+Once your CRE workflow is live and verified, cancel the original Automation Upkeep and withdraw its remaining LINK balance so it isn't performed alongside your new workflow. See [Cancel an Upkeep and Withdraw Funds](/chainlink-automation/guides/cancel-upkeep).
+
 ## Troubleshooting
 
 ### CallNotAllowed Error
@@ -19545,7 +20448,7 @@ See the [Monitoring & Debugging guide](/cre/guides/operations/monitoring-workflo
 
 ## Pricing
 
-CRE is currently in Early Access. For pricing details, reach out via the in-app support on the CRE platform at <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">app.chain.link/cre/discover</a>.
+For pricing details, reach out via the in-app support on the CRE platform at <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">app.chain.link/cre/discover</a>.
 
 ## Get started
 
@@ -20048,6 +20951,238 @@ For a complete decryption example, see the [Making Confidential Requests guide](
 
 ---
 
+# SDK Reference: Confidential Workflows Client
+Source: https://docs.chain.link/cre/reference/sdk/confidential-workflows-client-go
+Last Updated: 2026-07-28
+
+`cre.HandlerInTee` registers a handler whose callback runs inside a secure [enclave](/cre/key-terms#enclave)—a running instance of a [TEE](/cre/key-terms#tee-trusted-execution-environment)—receiving a `cre.TeeRuntime` instead of a `cre.Runtime`. Unlike the regular `cre.Handler`, secrets are fetched dynamically at runtime from the [Vault DON](/cre/key-terms#vault-don) with `runtime.GetSecret()` and any operation that needs Workflow DON consensus must explicitly cross over with `runtime.UsingTheDons()`.
+
+- For use cases and a conceptual overview, see [Confidential Workflows in CRE](/cre/concepts/confidential-workflows)
+- **Guide:** [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-go)
+
+<Aside type="caution" title="Beta capability">
+  This API requires enrollment in the Confidential Workflows private beta through your Chainlink account team—see
+  [Requesting Confidential Workflows Access](/cre/account/confidential-workflows-access).
+</Aside>
+
+## Quick reference
+
+| Method                                           | Description                                                                          |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| [`cre.HandlerInTee`](#crehandlerintee)           | Registers a handler whose callback runs inside a TEE.                                |
+| [`runtime.GetSecret`](#runtimegetsecret)         | Fetches a single secret dynamically, inside the enclave.                             |
+| [`runtime.GetSecrets`](#runtimegetsecrets)       | Fetches multiple secrets in a single batch call, inside the enclave.                 |
+| [`runtime.UsingTheDons`](#runtimeusingthedons)   | Returns a regular `cre.Runtime` for operations that need DON consensus.              |
+| [`runtime.ReportFromDon`](#runtimereportfromdon) | Generates a report from the DON directly, without a full `UsingTheDons()` crossover. |
+
+## Core types
+
+### `cre.TeeRuntime`
+
+The runtime passed to a callback registered with `cre.HandlerInTee`. Requests made through it execute inside the enclave; requests made through the runtime returned by `UsingTheDons()` are routed outside the enclave to the Workflow DON.
+
+```go
+type TeeRuntime interface {
+	RuntimeBase
+	SecretsProvider
+
+	// ReportFromDon generates a report from the DON.
+	// Data requested through this method is routed outside the TEE.
+	ReportFromDon(*ReportRequest) Promise[*Report]
+
+	// UsingTheDons returns the DON runtime.
+	// Requests made through this runtime are routed outside the TEE.
+	UsingTheDons() Runtime
+}
+```
+
+`RuntimeBase` provides `Logger()`, `Now()`, and `Rand()`, same as on a regular `cre.Runtime`. `SecretsProvider` provides `GetSecret()` and `GetSecrets()`.
+
+### `cre.TeeConstraint`
+
+Describes which TEEs a handler will accept. Pass one of the following to `cre.HandlerInTee`:
+
+| Type                    | JSON form               | Description                                                                |
+| ----------------------- | ----------------------- | -------------------------------------------------------------------------- |
+| `cre.AnyTee{}`          | `{}`                    | Accepts any registered TEE, in any region.                                 |
+| `cre.AnyTeeInRegions{}` | `{"regions": [...]}`    | Accepts any TEE, restricted to the listed regions.                         |
+| `cre.OneOfTees{}`       | `[{"tee": "...", ...}]` | Accepts specific TEE types, each optionally restricted to its own regions. |
+
+```go
+// Accept any TEE, any region
+cre.AnyTee{}
+
+// Accept any TEE, restricted to a region
+cre.AnyTeeInRegions{Regions: []cre.Region{cre.AwsUsWest2}}
+
+// Accept only Nitro, restricted to a region
+cre.OneOfTees{cre.Nitro{Regions: []cre.NitroRegion{cre.NitroUsWest2}}}
+```
+
+Nitro (`cre.Nitro`) is currently the only registered TEE type, and `cre.AwsUsWest2` (`us-west-2`) is currently the only supported region—check your installed SDK version if you expect otherwise, since this is an actively evolving API.
+
+## Registering a handler
+
+### `cre.HandlerInTee`
+
+Registers a handler whose callback runs inside a TEE.
+
+**Signature:**
+
+```go
+func HandlerInTee[C any, M proto.Message, T any, O any](
+	trigger Trigger[M, T],
+	callback func(config C, runtime TeeRuntime, payload T) (O, error),
+	tees TeeConstraint,
+) ExecutionHandler[C, Runtime]
+```
+
+**Parameters:**
+
+- `trigger`: Any CRE trigger, same as for `cre.Handler`.
+- `callback`: Your handler function. It receives a `cre.TeeRuntime` instead of a `cre.Runtime`.
+- `tees`: A [`cre.TeeConstraint`](#creteeconstraint) describing which TEEs are acceptable.
+
+**Example:**
+
+```go
+workflow := cre.Workflow[*Config]{
+	cre.HandlerInTee(
+		cron.Trigger(&cron.Config{Schedule: config.Schedule}),
+		onCronTrigger,
+		cre.AnyTee{},
+	),
+}
+```
+
+**Guide:** [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-go)
+
+## Fetching secrets
+
+### `runtime.GetSecret`
+
+Fetches a single secret, decrypted only inside the enclave.
+
+**Signature:**
+
+```go
+func (r TeeRuntime) GetSecret(*SecretRequest) Promise[*Secret]
+```
+
+**Example:**
+
+```go
+secret, err := runtime.GetSecret(&cre.SecretRequest{Id: "MY_API_KEY"}).Await()
+if err != nil {
+	return "", fmt.Errorf("failed to get secret: %w", err)
+}
+// secret.Value holds the decrypted value.
+```
+
+There's no upfront declaration like Confidential HTTP's `VaultDonSecrets`—the secret is requested and decrypted inside the enclave at the moment `GetSecret()` runs.
+
+### `runtime.GetSecrets`
+
+Fetches multiple secrets in a single batch call, decrypted only inside the enclave.
+
+**Signature:**
+
+```go
+func (r TeeRuntime) GetSecrets([]*SecretRequest) Promise[[]*Secret]
+```
+
+The promise resolves to a slice of `*Secret` values, in the same order as the requests. If any secret in the batch fails, the promise resolves with an error that includes the failing secret ids and their error messages.
+
+**Example:**
+
+```go
+secrets, err := runtime.GetSecrets([]*cre.SecretRequest{
+	{Id: "API_KEY"},
+	{Id: "DB_URL"},
+}).Await()
+if err != nil {
+	return "", fmt.Errorf("failed to get secrets: %w", err)
+}
+apiKey := secrets[0].Value
+dbUrl := secrets[1].Value
+```
+
+## Crossing back to the DON
+
+### `runtime.UsingTheDons`
+
+Returns a regular `cre.Runtime` for operations that need Workflow DON consensus.
+
+**Signature:**
+
+```go
+func (r TeeRuntime) UsingTheDons() Runtime
+```
+
+**Example:**
+
+```go
+donRuntime := runtime.UsingTheDons()
+_, err := donRuntime.GenerateReport(&cre.ReportRequest{
+	EncodedPayload: []byte(resp.Body),
+	EncoderName:    "evm",
+	SigningAlgo:    "ecdsa",
+	HashingAlgo:    "keccak256",
+}).Await()
+```
+
+<Aside type="caution" title="Data passed to UsingTheDons() is no longer confidential">
+  Once you pass a value into a capability call on the runtime returned by `UsingTheDons()`, that call executes on
+  Workflow DON nodes like any non-confidential capability.
+</Aside>
+
+### `runtime.ReportFromDon`
+
+A shortcut for generating a report from the DON without a full `UsingTheDons()` crossover.
+
+**Signature:**
+
+```go
+func (r TeeRuntime) ReportFromDon(*ReportRequest) Promise[*Report]
+```
+
+Data requested through this method is routed outside the TEE, same as with `UsingTheDons()`.
+
+## Making capability calls inside the enclave
+
+Capabilities that support Confidential Workflows expose a TEE-flavored method alongside their regular one. For the HTTP capability, that's `SendRequestInTee`, which takes a `cre.TeeRuntime` directly instead of `cre.Runtime`:
+
+```go
+resp, err := (&http.Client{}).SendRequestInTee(runtime, &http.Request{
+	Url:    config.URL,
+	Method: "GET",
+	MultiHeaders: map[string]*http.HeaderValues{
+		"Authorization": {Values: []string{"Bearer " + secret.Value}},
+	},
+}).Await()
+```
+
+**Guide:** [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-go)
+
+### Not every capability has a TEE-flavored method
+
+`confidentialhttp.Client` is a notable exception: it only exposes `SendRequest(runtime cre.Runtime, ...)`—there's no `SendRequestInTee`. `cre.TeeRuntime` and `cre.Runtime` are separate interfaces, so you can't pass a `TeeRuntime` into it directly; the call won't compile.
+
+```go
+// Does NOT compile: confidentialhttp.Client has no method that accepts a cre.TeeRuntime.
+confHttpClient := confidentialhttp.Client{}
+confHttpClient.SendRequest(runtime, &confidentialhttp.ConfidentialHTTPRequest{ /* ... */ }) // runtime is cre.TeeRuntime
+```
+
+<Aside type="caution" title="Use SendRequestInTee for outbound HTTP calls">
+  For outbound HTTP calls made from inside a Confidential Workflow handler, use `http.Client.SendRequestInTee(runtime,
+    req)` directly—it runs natively inside your enclave and needs no separate capability. Capabilities without a
+  TEE-flavored method, like `confidentialhttp.Client`, aren't built to be called from inside a Confidential Workflow
+  handler.
+</Aside>
+
+---
+
 # SDK Reference: Consensus & Aggregation
 Source: https://docs.chain.link/cre/reference/sdk/consensus-go
 Last Updated: 2025-11-04
@@ -20449,11 +21584,12 @@ The value returned when the promise resolves.
 
 ### `SecretsProvider` interface
 
-The `SecretsProvider` interface is embedded in `Runtime`, which means `GetSecret` is available directly on the runtime object. It is also passed as a parameter to [`InitWorkflow`](#initworkflow), allowing you to access secrets during workflow initialization.
+The `SecretsProvider` interface is embedded in `Runtime`, which means both `GetSecret` and `GetSecrets` are available directly on the runtime object. It is also passed as a parameter to [`InitWorkflow`](#initworkflow), allowing you to access secrets during workflow initialization.
 
 ```go
 type SecretsProvider interface {
     GetSecret(req *SecretRequest) Promise[*Secret]
+    GetSecrets(reqs []*SecretRequest) Promise[[]*Secret]
 }
 ```
 
@@ -20485,6 +21621,62 @@ func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
   For a complete walkthrough on creating, storing, and using secrets, see the [Secrets
   guide](/cre/guides/workflow/secrets).
 </Aside>
+
+## `runtime.GetSecrets()`
+
+Retrieves multiple secrets in a single batch call. Use this instead of calling `GetSecret()` multiple times when you need two or more secrets.
+
+**Signature:**
+
+```go
+runtime.GetSecrets(reqs []*SecretRequest) Promise[[]*Secret]
+```
+
+**Parameters:**
+
+| Field  | Type               | Required | Description                                                                              |
+| ------ | ------------------ | -------- | ---------------------------------------------------------------------------------------- |
+| `reqs` | `[]*SecretRequest` | Yes      | Slice of secret requests to fetch. Each entry requires an `Id` and optional `Namespace`. |
+
+Each entry follows the same [`SecretRequest`](#secretrequest) shape as `GetSecret()`.
+
+**Returns:**
+
+A `Promise[[]*Secret]` that resolves to a slice of `*Secret` values in the **same order as the input requests**. Use the index to map results back to the original requests.
+
+**Error handling:**
+
+If any secret in the batch fails, `GetSecrets()` returns an error containing all error messages from the failed secrets. Either all secrets are returned successfully or an error is returned.
+
+**Example:**
+
+```go
+import (
+    "fmt"
+
+    protos "github.com/smartcontractkit/chainlink-protos/cre/go/sdk"
+    "github.com/smartcontractkit/cre-sdk-go/cre"
+)
+
+func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
+    secrets, err := runtime.GetSecrets([]*protos.SecretRequest{
+        {Id: "api-key"},
+        {Id: "webhook-url"},
+    }).Await()
+    if err != nil {
+        return "", fmt.Errorf("failed to get secrets: %w", err)
+    }
+
+    // Secrets are returned in the same order as the input requests
+    apiKey := secrets[0].Value
+    webhookUrl := secrets[1].Value
+
+    logger := runtime.Logger()
+    logger.Info("Secrets retrieved", "endpoint", webhookUrl)
+    _ = apiKey
+    return "done", nil
+}
+```
 
 ## Report verification
 
