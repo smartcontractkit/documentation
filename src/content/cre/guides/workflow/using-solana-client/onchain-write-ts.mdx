@@ -399,6 +399,20 @@ RPCs. You will add to both files in this step.
    CRE_SOLANA_PRIVATE_KEY=<your-64-byte-base58-keypair>
    ```
 
+   {/* prettier-ignore */}
+   <Aside type="caution" title="CRE_ETH_PRIVATE_KEY is also required">
+     The CRE CLI requires `CRE_ETH_PRIVATE_KEY` to be set even for Solana-only workflows — it is used for workflow
+     owner derivation, not for the Solana transaction itself. Set any valid EVM private key in your `.env`:
+
+   ```bash
+   CRE_ETH_PRIVATE_KEY=0x<your-evm-private-key>
+   ```
+
+   Without it, `cre workflow simulate` and `cre workflow deploy` will fail with
+   `CRE_ETH_PRIVATE_KEY is not set`.
+
+   </Aside>
+
 1. Run the dry-run simulation.
 
    ```bash
@@ -604,7 +618,3 @@ The transaction on Solana Explorer will show the forwarder program as the initia
 - **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-ts)**: IDL layout, generator output, and what `writeReportFrom...` does
 - **[Solana Client SDK Reference](/cre/reference/sdk/solana-client-ts)**: Full API reference for `SolanaClient` and helpers
 - **[Solana Write Capability](/cre/capabilities/solana-write)**: Architecture and account layout reference
-
-```
-
-```

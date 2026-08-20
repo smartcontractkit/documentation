@@ -5792,6 +5792,14 @@ cre workflow simulate my-workflow --broadcast --target staging-settings
   <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get your testnet tokens.
 </Aside>
 
+
+<Aside type="caution" title="Solana simulation always requires CRE_ETH_PRIVATE_KEY">
+  For Solana workflows, `CRE_ETH_PRIVATE_KEY` is required even for dry-run simulation (without `--broadcast`). The CLI
+  uses it for workflow owner derivation regardless of chain family. Set any valid EVM private key in your `.env` — it
+  is not used for the Solana transaction itself. You also need `CRE_SOLANA_PRIVATE_KEY` for the transmitter account; see
+  [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-ts) for setup details.
+</Aside>
+
 **Use case:** Use `--broadcast` when you want to test the complete end-to-end flow, including actual onchain state changes, on a testnet.
 
 ## Trigger-specific configuration
@@ -17765,6 +17773,19 @@ Use this step to confirm compile, trigger, and the bindings write path with `cre
    ```bash
    CRE_SOLANA_PRIVATE_KEY=<your-64-byte-base58-keypair>
    ```
+
+
+   <Aside type="caution" title="CRE_ETH_PRIVATE_KEY is also required">
+     The CRE CLI requires `CRE_ETH_PRIVATE_KEY` to be set even for Solana-only workflows — it is used for workflow
+     owner derivation, not for the Solana transaction itself. Set any valid EVM private key in your `.env`:
+
+     ```bash
+     CRE_ETH_PRIVATE_KEY=0x<your-evm-private-key>
+     ```
+
+     Without it, `cre workflow simulate` and `cre workflow deploy` will fail with
+     `CRE_ETH_PRIVATE_KEY is not set`.
+   </Aside>
 
 4. Run the dry-run simulation.
 
