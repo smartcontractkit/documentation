@@ -28,6 +28,7 @@ import { Aside } from "@components"
 | ------------------------------------------------ | ------------------------------------------------------------------------------------ |
 | [`handlerInTee`](#handlerintee)                  | Registers a handler whose callback runs inside a TEE.                                |
 | [`runtime.getSecret`](#runtimegetsecret)         | Fetches a single secret dynamically, inside the enclave.                             |
+| [`runtime.getSecrets`](#runtimegetsecrets)       | Fetches multiple secrets in a single batch call, inside the enclave.                 |
 | [`runtime.usingTheDons`](#runtimeusingthedons)   | Returns a regular `Runtime` for operations that need DON consensus.                  |
 | [`runtime.reportFromDon`](#runtimereportfromdon) | Generates a report from the DON directly, without a full `usingTheDons()` crossover. |
 
@@ -44,12 +45,7 @@ interface TeeRuntime<C> extends BaseRuntime<C>, SecretsProvider {
 }
 ```
 
-`BaseRuntime<C>` provides `config`, `now()`, `log()`, and `emitMetric()`, same as on a regular `Runtime<C>`. `SecretsProvider` provides `getSecret()`.
-
-<Aside type="note" title="No batch getSecrets in TypeScript">
-  Unlike the Go SDK (which has both `GetSecret` and a batch `GetSecrets`), the TypeScript `SecretsProvider` currently
-  exposes only `getSecret()`. Fetch secrets one at a time.
-</Aside>
+`BaseRuntime<C>` provides `config`, `now()`, `log()`, and `emitMetric()`, same as on a regular `Runtime<C>`. `SecretsProvider` provides `getSecret()` and `getSecrets()`.
 
 ### `TeeConstraint`
 
@@ -132,6 +128,29 @@ const secret = runtime.getSecret({ id: "MY_API_KEY" }).result()
 ```
 
 There's no upfront declaration like Confidential HTTP's `vaultDonSecrets`—the secret is requested and decrypted inside the enclave at the moment `getSecret()` runs.
+
+### `runtime.getSecrets`
+
+Fetches multiple secrets in a single batch call, decrypted only inside the enclave.
+
+**Signature:**
+
+```ts
+getSecrets(requests: Array<SecretRequest | SecretRequestJson>): {
+  result: () => Record<string, Secret>
+}
+```
+
+The result is a record keyed by each secret's `id`. If any secret in the batch fails, `.result()` throws a `SecretsBatchError` that includes the failing secret ids and their error messages. Requesting the same `id` more than once in a single call also throws a `SecretsBatchError`.
+
+**Example:**
+
+```ts
+const secrets = runtime.getSecrets([{ id: "API_KEY" }, { id: "DB_URL" }]).result()
+
+const apiKey = secrets["API_KEY"].value
+const dbUrl = secrets["DB_URL"].value
+```
 
 ## Crossing back to the DON
 

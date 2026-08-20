@@ -81,6 +81,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         { title: "Architecture", url: "ace/concepts/architecture" },
         { title: "Key Terms", url: "ace/concepts/key-terms" },
+        { title: "Signing & Ownership Model", url: "ace/concepts/signing-ownership" },
         {
           title: "Policy Management",
           url: "ace/concepts/policy-management",
@@ -116,6 +117,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   title: "CredentialRegistryIdentityValidatorPolicy",
                   url: "ace/reference/policy-library/credential-registry-identity-validator-policy",
                 },
+                {
+                  title: "GroupedIdentityValidatorPolicy",
+                  url: "ace/reference/policy-library/grouped-identity-validator-policy",
+                },
                 { title: "IntervalPolicy", url: "ace/reference/policy-library/interval-policy" },
                 { title: "MaxPolicy", url: "ace/reference/policy-library/max-policy" },
                 {
@@ -143,6 +148,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "APIs",
           children: [
             { title: "Coordinator API", url: "ace/reference/api/coordinator" },
+            { title: "Evaluation API", url: "ace/reference/api/evaluation" },
             { title: "Reporting API", url: "ace/reference/api/reporting" },
           ],
         },
@@ -494,6 +500,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Using Randomness in Workflows",
           url: "cre/guides/workflow/using-randomness",
           highlightAsCurrent: ["cre/guides/workflow/using-randomness-ts", "cre/guides/workflow/using-randomness-go"],
+        },
+        {
+          title: "Building a Reusable Library",
+          url: "cre/guides/workflow/building-a-library",
+          highlightAsCurrent: [
+            "cre/guides/workflow/building-a-library-ts",
+            "cre/guides/workflow/building-a-library-go",
+          ],
         },
       ],
     },
@@ -918,7 +932,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
             { title: "Rate and Volatility Feeds", url: "data-feeds/rates-feeds" },
             { title: "L2 Sequencer Uptime Feeds", url: "data-feeds/l2-sequencer-feeds" },
-            { title: "24/7 Blended Precious Metals Feeds", url: "data-feeds/blended-precious-metals-feeds" },
+            { title: "24/7 Extended-Hours Data Feeds", url: "data-feeds/24-7-extended-hours-data-feeds" },
             { title: "Self-Managed Feeds", url: "data-feeds/self-managed-feeds" },
           ],
         },
