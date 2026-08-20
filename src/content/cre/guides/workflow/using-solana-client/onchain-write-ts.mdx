@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Write verified CRE workflow results to Solana programs using TypeScript: step-by-step guide with generated Anchor bindings."
   datePublished: "2026-07-06"
-  lastModified: "2026-07-20"
+  lastModified: "2026-08-20"
 ---
 
 import { Aside, CopyText } from "@components"
@@ -29,7 +29,7 @@ For IDL layout, generator output, and what each `writeReportFrom...` method does
 ## Prerequisites
 
 - A CRE project initialized with `cre init`. See [Part 1: Project Setup](/cre/getting-started/part-1-project-setup-ts) if you are starting from scratch.
-- CRE CLI **vTBD or later** (`cre version` / `cre update`) with TypeScript Solana binding generation and the Solana simulate account-trim fix.
+- The latest version of the CRE CLI (`cre version` / `cre update`); **v1.29.0 or later** is required for TypeScript Solana binding generation.
 - A funded Solana Devnet keypair for `CRE_SOLANA_PRIVATE_KEY` (required even for dry-run). Generate one with `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and put the 64-byte base58 keypair in your project `.env`. See [Step 4](#step-4-run-the-simulation).
 
 ## What you need: a receiver program
@@ -69,8 +69,8 @@ pub struct OnReport<'info> {
   consumes indices 0 and 1 (`forwarderState`, `forwarderAuthority`) — it builds those into the forwarder instruction
   itself — and forwards only indices 2+ (your receiver-specific accounts) to your program's `on_report` CPI. So indices
   0 and 1 must be present in the list you build (so the hash matches), even though the capability supplies them to the
-  instruction directly. `cre_docs_receiver` has no receiver-specific accounts, so its list is just
-  `[forwarderState, forwarderAuthority]`.
+  instruction directly. `cre_docs_receiver` has no receiver-specific accounts, so its list is just `[forwarderState,
+  forwarderAuthority]`.
 </Aside>
 
 ## Step 1: Add your IDL and generate bindings
@@ -172,10 +172,10 @@ pub struct OnReport<'info> {
    class includes `writeReportFromUserData(runtime, input, remainingAccounts, computeConfig?)` and exports the program
    ID as `CRE_DOCS_RECEIVER_PROGRAM_ID`.
 
-   The generated bindings import from `@solana/codecs`. This workflow also imports `@solana/web3.js` (for the
-   `forwarder_authority` PDA derivation) and `@solana/codecs-strings` (to base58-encode the returned transaction
-   signature). If you run `tsc --noEmit` outside of `cre workflow simulate`, install them in your workflow folder:
-   `npm install @solana/codecs @solana/web3.js @solana/codecs-strings`.
+   The generated bindings import from `@solana/codecs` and `@solana/addresses`. This workflow also imports
+   `@solana/web3.js` (for the `forwarder_authority` PDA derivation) and `@solana/codecs-strings` (to base58-encode the
+   returned transaction signature). If you run `tsc --noEmit` outside of `cre workflow simulate`, install them in your
+   workflow folder: `npm install @solana/codecs @solana/addresses @solana/web3.js @solana/codecs-strings`.
 
 ## Step 2: Configure the workflow
 
@@ -198,9 +198,9 @@ pub struct OnReport<'info> {
    | Field                | Description                                                                               |
    | -------------------- | ----------------------------------------------------------------------------------------- |
    | `chainSelector`      | Solana Devnet (`"16423721717087811551"`). Store as a string to avoid JSON precision loss. |
-   | `receiverProgramId`  | Your receiver program (IDL address for this example)                                       |
-   | `forwarderProgramId` | Forwarder program ID used for local simulation (fixed Devnet value)                        |
-   | `forwarderState`     | Forwarder state account used for local simulation (fixed Devnet value)                     |
+   | `receiverProgramId`  | Your receiver program (IDL address for this example)                                      |
+   | `forwarderProgramId` | Forwarder program ID used for local simulation (fixed Devnet value)                       |
+   | `forwarderState`     | Forwarder state account used for local simulation (fixed Devnet value)                    |
 
    The workflow derives `forwarderAuthority` at runtime from `["forwarder", forwarderState, receiverProgram]` under
    `forwarderProgramId`. When you deploy in [Step 5](#step-5-deploy-the-workflow), keep that derivation and point
@@ -291,7 +291,7 @@ your own IDL.
      const receiverProgram = new PublicKey(config.receiverProgramId)
      const [forwarderAuthority] = PublicKey.findProgramAddressSync(
        [FORWARDER_SEED, forwarderState.toBytes(), receiverProgram.toBytes()],
-       forwarderProgram,
+       forwarderProgram
      )
 
      // remainingAccounts layout:
@@ -354,6 +354,19 @@ your own IDL.
 
 Use this step to confirm compile, trigger, and the bindings write path with `cre workflow simulate`.
 
+<Aside type="note" title="Two separate YAML files">
+  CRE uses two configuration files that live in different directories:
+
+- **`workflow.yaml`** lives inside your workflow folder (`my-workflow/workflow.yaml`). It defines workflow metadata
+  (name, registry) and points to your `main.ts` and config JSON.
+- **`project.yaml`** lives at your **project root** (the directory you ran `cre init` in, one level above
+  `my-workflow/`). It defines RPC endpoints and other project-level settings per target.
+
+Both files use the same target names (e.g. `staging-settings`, `production-settings`) to link a workflow to its
+RPCs. You will add to both files in this step.
+
+</Aside>
+
 1. Create a `workflow.yaml` in your workflow folder so the CLI can find your staging target.
 
    ```yaml
@@ -366,7 +379,8 @@ Use this step to confirm compile, trigger, and the bindings write path with `cre
        secrets-path: ""
    ```
 
-1. Add a Solana RPC endpoint to your `project.yaml` under your simulation target.
+1. Add a Solana RPC endpoint to your `project.yaml` (at your project root, **not** inside `my-workflow/`) under your
+   simulation target.
 
    ```yaml
    staging-settings:
@@ -489,7 +503,8 @@ with your own values.
    `receiverProgramId` with your own value. The workflow still derives `forwarderAuthority` from
    `["forwarder", forwarderState, receiverProgram]` under that `forwarderProgramId`.
 
-1. Point a deploy target at that config and the private registry in `my-workflow/workflow.yaml`.
+1. Add a `production-settings` target to your existing `my-workflow/workflow.yaml` (append it below the
+   `staging-settings` block you created in Step 4 — do not replace the staging block).
 
    ```yaml
    production-settings:
@@ -502,7 +517,8 @@ with your own values.
        secrets-path: ""
    ```
 
-1. Add the Solana Devnet RPC under `production-settings` in `project.yaml` (same URL as staging is fine).
+1. Add the Solana Devnet RPC under a `production-settings` block in your `project.yaml` (at your project root —
+   append it below the existing `staging-settings` block). The URL can be the same as staging.
 
 1. Deploy from your project root.
 
@@ -521,17 +537,53 @@ with your own values.
         Status:           Active
    ```
 
-1. After the cron fires, open the workflow in the [CRE platform](https://app.chain.link/cre/workflows) (or run
-   `cre execution list my-solana-write`) and confirm node logs reach the write path:
+1. After the cron fires, check that the workflow executed successfully. You can view executions and logs in the
+   [CRE platform](https://app.chain.link/cre/workflows), or use the CLI. List recent executions:
+
+   ```bash
+   cre execution list my-solana-write
+   ```
 
    ```
-   Submitting UserData to Solana cre_docs_receiver program
+   Executions
+
+   1. 47517057f8ecb7455ddf9eb58d4a635e96bd968158146ed1973f9591cfdc1421
+        Workflow:  my-solana-write
+        Status:    SUCCESS
+        Started:   2026-08-20 19:50:31 UTC
+        Finished:  2026-08-20 19:50:43 UTC (12s)
    ```
 
-   When run on the DON the write is broadcast, so `WriteReport` returns a real Solana `txSignature` and the workflow
-   logs a `txHash` / explorer link. Confirm the transaction on
-   [Solana Explorer](https://explorer.solana.com/?cluster=devnet) (forwarder as the top-level program, your receiver as
-   a CPI).
+1. View the execution logs to confirm the write reached Solana:
+
+   ```bash
+   cre execution logs <execution-id>
+   ```
+
+   Each DON node executes the workflow and logs the write result. A successful execution shows all nodes reaching
+   `txStatus: SUCCESS` with a real on-chain transaction hash:
+
+   ```
+   [2026-08-20 19:50:31 UTC] [Node 1] Submitting UserData to Solana cre_docs_receiver program
+   [2026-08-20 19:50:31 UTC] [Node 6] Submitting UserData to Solana cre_docs_receiver program
+   ...
+   [2026-08-20 19:50:43 UTC] [Node 1] Solana write result:
+   [2026-08-20 19:50:43 UTC] [Node 1]   txStatus:       SUCCESS (2)
+   [2026-08-20 19:50:43 UTC] [Node 1]   receiverStatus: (n/a)
+   [2026-08-20 19:50:43 UTC] [Node 1]   transactionFee: 0 lamports
+   [2026-08-20 19:50:43 UTC] [Node 1]   txHash:         2dJiCNgbGGhoMd7LSQH9FoUCWwUSzFyP8JHDzNrfcsGZcroSt1rsVPNzgq6LbMG8vjTzJPgeoGaViSABdeqa2v62
+   [2026-08-20 19:50:43 UTC] [Node 1]   explorer:       https://explorer.solana.com/tx/2dJiCNgbGGhoMd7LSQH9FoUCWwUSzFyP8JHDzNrfcsGZcroSt1rsVPNzgq6LbMG8vjTzJPgeoGaViSABdeqa2v62?cluster=devnet
+   ```
+
+   Open the explorer link to confirm the transaction onchain: the Keystone Forwarder is the top-level program and
+   `cre_docs_receiver` appears as a CPI target. All nodes share the same `txHash` because the DON reaches consensus on
+   a single transaction.
+
+   When you are done testing, pause the workflow to stop it from running:
+
+   ```bash
+   cre workflow pause my-workflow
+   ```
 
 See [Deploying to the Private Registry](/cre/guides/operations/deploying-to-private-registry-ts) for registry details, activate/pause, and CI flags.
 
@@ -552,4 +604,7 @@ The transaction on Solana Explorer will show the forwarder program as the initia
 - **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-ts)**: IDL layout, generator output, and what `writeReportFrom...` does
 - **[Solana Client SDK Reference](/cre/reference/sdk/solana-client-ts)**: Full API reference for `SolanaClient` and helpers
 - **[Solana Write Capability](/cre/capabilities/solana-write)**: Architecture and account layout reference
+
+```
+
 ```
