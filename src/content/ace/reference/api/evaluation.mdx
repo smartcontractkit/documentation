@@ -1,0 +1,36 @@
+---
+section: ace
+title: "Evaluation API"
+metadata:
+  description: "Overview of the Chainlink ACE Evaluation API — the runtime interface for requesting managed offchain policy evaluations and permits."
+  datePublished: "2026-07-17"
+---
+
+import { Aside } from "@components"
+
+The Evaluation API is the runtime interface for [managed offchain risk policies](/ace/concepts/off-chain-policies). An application uses it to request a wallet risk evaluation and receive an onchain permit that authorizes a protected transaction.
+
+Access to the Evaluation API is available after account provisioning. To get started, [request access](/ace/getting-started).
+
+## How it works
+
+The Evaluation API follows a request-and-poll pattern:
+
+1. **Request an evaluation**: Your application submits a transaction intent: the caller address, target contract, function selector, chain, and the permit parameters that will be extracted from the eventual onchain transaction.
+1. **Receive a permit ID**: The API returns a deterministic permit ID for the evaluation. This ID is stable — submitting the same request again returns the same ID (idempotent).
+1. **Poll the evaluation status**: The evaluation moves through statuses: `evaluating`, `approving`, and a terminal status (`ready`, `rejected`, or `failed`).
+1. **Submit the protected transaction** — When the status becomes `ready`, the permit has been stored onchain by the [CertifiedActionDONValidatorPolicy](/ace/reference/policy-library/certified-action-don-validator-policy). Your application can now submit the protected transaction, which consumes the permit.
+
+If the evaluation is `rejected` (for example, a screened address exceeded the configured risk threshold) or `failed` (for example, an internal error), no permit is created and the protected transaction will revert.
+
+## What you need
+
+- A [managed offchain risk policy](/ace/concepts/off-chain-policies) configured and attached to your target contract.
+- The permit parameters must correspond to supported extractor outputs and exactly match the values that will be extracted from the eventual onchain transaction.
+- CRE Service Quotas apply to evaluations, including the HTTP trigger rate limit.
+
+## Related pages
+
+- [Off-Chain Policy Execution](/ace/concepts/off-chain-policies) — conceptual overview of managed and custom offchain policies
+- [CertifiedActionDONValidatorPolicy](/ace/reference/policy-library/certified-action-don-validator-policy) — the onchain contract that stores and validates permits
+- [Reporting API](/ace/reference/api/reporting) — query permit delivery and evaluation outcomes
