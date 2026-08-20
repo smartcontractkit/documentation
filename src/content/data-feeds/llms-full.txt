@@ -1,3 +1,74 @@
+# 24/7 Extended-Hours Data Feeds
+Source: https://docs.chain.link/data-feeds/24-7-extended-hours-data-feeds
+
+Some assets only trade during specific [market hours](/data-feeds/selecting-data-feeds#market-hours): precious metals and forex markets close on weekends and holidays, and some currencies trade mainly during local hours or are subject to capital controls. To support applications that need continuous price data anyway, Chainlink offers [custom feeds](/data-feeds/selecting-data-feeds#-custom-feeds) that publish 24/7 for certain assets in these categories.
+
+These feeds are not a single, uniform product. Each asset class uses a different methodology to produce a continuous price, and each has its own risk profile. Review the section below for the asset class you are integrating, alongside the [Custom Feeds](/data-feeds/selecting-data-feeds#-custom-feeds) section and [risk mitigation](/data-feeds/selecting-data-feeds#risk-mitigation) guidance appropriate for your use case.
+
+| Asset class                         | Description                                                                                                                       |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| [Precious Metals](#precious-metals) | 24/7 blended feeds that report the spot price during market hours and a tokenized-stream-derived price when the market is closed. |
+| [Forex](#forex)                     | 24/7 crypto-derived rates for select currency pairs that lack a continuously observable institutional rate.                       |
+
+## Precious Metals
+
+24/7 blended precious metals price feeds publish a precious-metals-linked price both during and outside regular [precious metals market hours](/data-feeds/selecting-data-feeds#market-hours). They use a bespoke methodology rather than a continuously open physical precious metals spot market.
+
+### How it works
+
+During [open precious metals market hours](/data-feeds/selecting-data-feeds#market-hours), the feed reports the underlying precious metals spot price (for example, XAU/USD for gold). When the precious metals market is *closed*, the feed starts from the last observed open-market price and adjusts it with a blended signal derived from tokenized precious metals price streams.
+
+For example, the current tGLD/USD implementation uses [XAUT/USD](/data-streams/crypto-streams?search=XAUT) and [PAXG/USD](/data-streams/crypto-streams?search=PAXG) streams for the closed-market signal. For each available tokenized precious metals stream, the adapter tracks the token's open-market premium or discount to the spot price with an EMA, uses that value to derive a spot-equivalent tokenized price, averages the valid derived prices, and smooths the resulting deviation from the last spot price with another EMA. The composite price applies configurable weighting and deviation controls before the closed-market adjustment is reflected in the answer. Other blended precious metals feeds may use different tokenized streams or methodology variations.
+
+### Supported feeds
+
+The following table shows the available 24/7 blended precious metals feeds.
+
+Find these feeds on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page.
+
+### Risks
+
+<Aside type="note" title="24/7 blended precious metals feed risks">
+  These feeds use a custom methodology and are not equivalent to a continuously open physical precious metals spot
+  market. Outside regular precious metals market hours, the answer depends on tokenized precious metals markets, their
+  liquidity, their premium or discount to the underlying spot price, and the availability of the configured tokenized
+  streams. Users should monitor each feed against independent references, enforce freshness checks and value bounds
+  appropriate for their use case, and define pause or fallback behavior before using the feed to secure value, support
+  minting or redemption, trigger liquidations, or automate other protocol actions. If the tokenized inputs stop updating
+  or are unavailable, the adapter can continue from its most recent cached EMA state until valid inputs resume or the
+  precious metals market reopens. Contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) with questions.
+</Aside>
+
+## Forex
+
+Standard [Forex feeds](/data-feeds/selecting-data-feeds#market-hours) follow the global Forex market schedule (18:00 ET Sunday to 17:00 ET Friday). Some currencies, however, are thinly traded outside their local market hours, subject to capital controls, or otherwise lack a single institutional or interbank rate that is observable at all times. For a subset of these currency pairs, Chainlink offers 24/7 forex feeds that source a crypto-derived exchange rate instead of a traditional interbank or institutional rate.
+
+### How it works
+
+A 24/7 crypto-derived forex rate is constructed by observing FX-to-stablecoin-to-FX arbitrage pathways: the implied exchange rate between two currencies, derived from the prices at which each currency trades against stablecoins and other crypto assets across global exchanges, 24 hours a day, 7 days a week. Because this rate is observed through crypto trading venues rather than through a country's official fixing mechanism or regulated banking channels, it is not constrained by capital controls and can be published continuously, including on weekends and local holidays.
+
+This also means a 24/7 crypto-derived rate measures a different market than an official, interbank, or institutional reference rate for the same currency pair, and the two can diverge, sometimes significantly. For example, [NCFX's analysis of its 24x7 USDARS rate](https://www.newchangefx.com/post/argentina-s-fifth-dollar-what-ncfx-s-24x7-usdars-rate-reveals) found the crypto-derived rate traded at a persistent premium of roughly 2.6% to 7.9% (averaging near 5%) above the institutional reference rate over a five-month period, with the premium widening or compressing in response to events such as central bank or IMF policy news. A 24/7 forex feed reflects the venue and methodology it is built on, not necessarily the rate you would get through a bank, a regulated exchange, or an official government fixing.
+
+### Supported feeds
+
+The following table shows the available 24/7 forex feeds.
+
+### Risks
+
+<Aside type="caution" title="24/7 forex feed risks: single data provider">
+  24/7 forex feeds currently rely on a single underlying data provider for their crypto-derived rate. Review the [Single
+  Source Data Providers](/data-feeds/selecting-data-feeds#single-source-data-providers) section before using one of
+  these feeds. In addition to the general single-source risks described there, be aware that a crypto-derived rate can
+  persistently and materially diverge from official, interbank, or institutional reference rates for the same currency
+  pair, and that this divergence is not static: it can widen or compress quickly around local political, regulatory, or
+  central bank events. Confirm that this rate construction matches your use case's definition of the currency pair, and
+  implement value bounds, freshness checks, monitoring against independent references, and pause or fallback behavior
+  before using one of these feeds to secure value, support minting or redemption, trigger liquidations, or automate
+  other protocol actions. Contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) with questions.
+</Aside>
+
+---
+
 # Data Feeds API Reference
 Source: https://docs.chain.link/data-feeds/api-reference
 
@@ -774,40 +845,6 @@ In this step, you will interact with your deployed contract to fetch the BTC/USD
 
 ---
 
-# 24/7 Blended Precious Metals Feeds
-Source: https://docs.chain.link/data-feeds/blended-precious-metals-feeds
-
-24/7 blended precious metals price feeds are [custom feeds](/data-feeds/selecting-data-feeds#-custom-feeds) designed to publish a precious-metals-linked price both during and outside regular [precious metals market hours](/data-feeds/selecting-data-feeds#market-hours). They use a bespoke methodology rather than a continuously open physical precious metals spot market.
-
-Developers integrating these feeds should review this page alongside the [Custom Feeds](/data-feeds/selecting-data-feeds#-custom-feeds) section and implement [risk mitigation](/data-feeds/selecting-data-feeds#risk-mitigation) appropriate for their use case.
-
-## How it works
-
-During [open precious metals market hours](/data-feeds/selecting-data-feeds#market-hours), the feed reports the underlying precious metals spot price (for example, XAU/USD for gold). When the precious metals market is *closed*, the feed starts from the last observed open-market price and adjusts it with a blended signal derived from tokenized precious metals price streams.
-
-For example, the current tGLD/USD implementation uses [XAUT/USD](/data-streams/crypto-streams?search=XAUT) and [PAXG/USD](/data-streams/crypto-streams?search=PAXG) streams for the closed-market signal. For each available tokenized precious metals stream, the adapter tracks the token's open-market premium or discount to the spot price with an EMA, uses that value to derive a spot-equivalent tokenized price, averages the valid derived prices, and smooths the resulting deviation from the last spot price with another EMA. The composite price applies configurable weighting and deviation controls before the closed-market adjustment is reflected in the answer. Other blended precious metals feeds may use different tokenized streams or methodology variations.
-
-## Supported feeds
-
-The following table shows the available 24/7 blended precious metals feeds.
-
-Find these feeds on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page.
-
-## Risks
-
-<Aside type="note" title="24/7 blended precious metals feed risks">
-  These feeds use a custom methodology and are not equivalent to a continuously open physical precious metals spot
-  market. Outside regular precious metals market hours, the answer depends on tokenized precious metals markets, their
-  liquidity, their premium or discount to the underlying spot price, and the availability of the configured tokenized
-  streams. Users should monitor each feed against independent references, enforce freshness checks and value bounds
-  appropriate for their use case, and define pause or fallback behavior before using the feed to secure value, support
-  minting or redemption, trigger liquidations, or automate other protocol actions. If the tokenized inputs stop updating
-  or are unavailable, the adapter can continue from its most recent cached EMA state until valid inputs resume or the
-  precious metals market reopens. Contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) with questions.
-</Aside>
-
----
-
 # Flags Contract Registry
 Source: https://docs.chain.link/data-feeds/contract-registry
 
@@ -845,29 +882,37 @@ contract Example {
 
 ## Flags Contract Addresses
 
+<Aside type="note" title="This list isn't exhaustive">
+  Not every chain where Chainlink Data Feeds are live has a Flags contract. If your chain is missing from the table
+  below, reach out to [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to confirm
+  feed status.
+</Aside>
+
 Below is a list of all available Flags contracts on the supported networks:
 
-|                                                                                                          | Chain               | ChainFlag Contract Address                                                                                                                        |
-| -------------------------------------------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <img src="/assets/chains/arbitrum.svg" style="height: 24px; width: auto; vertical-align: middle;" />     | Arbitrum            | <Address contractUrl="https://arbiscan.io/address/0x20551B03c092D998b1410c47BD54004D7C3106D0" eventName="docs_product_interaction" />             |
-| <img src="/assets/chains/avalanche.svg" style="height: 24px; width: auto; vertical-align: middle;" />    | Avalanche           | <Address contractUrl="https://snowtrace.io/address/0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd" eventName="docs_product_interaction" />            |
-| <img src="/assets/chains/base.svg" style="height: 24px; width: auto; vertical-align: middle;" />         | Base                | <Address contractUrl="https://basescan.org/address/0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd" eventName="docs_product_interaction" />            |
-| <img src="/assets/chains/bob.svg" style="height: 24px; width: auto; vertical-align: middle;" />          | Bob                 | <Address contractUrl="https://explorer.gobob.xyz/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />      |
-| <img src="/assets/chains/bnb-chain.svg" style="height: 24px; width: auto; vertical-align: middle;" />    | BNB Chain (BSC)     | <Address contractUrl="https://bscscan.com/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0" eventName="docs_product_interaction" />             |
-| <img src="/assets/chains/celo.svg" style="height: 24px; width: auto; vertical-align: middle;" />         | Celo                | <Address contractUrl="https://celo.blockscout.com/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />     |
-| <img src="/assets/chains/ethereum.svg" style="height: 24px; width: auto; vertical-align: middle;" />     | Ethereum            | <Address contractUrl="https://etherscan.io/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />            |
-| <img src="/assets/chains/gnosis-chain.svg" style="height: 24px; width: auto; vertical-align: middle;" /> | Gnosis Chain (xDai) | <Address contractUrl="https://gnosisscan.io/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />           |
-| <img src="/assets/chains/ink.svg" style="height: 24px; width: auto; vertical-align: middle;" />          | Ink                 | <Address contractUrl="https://explorer.inkonchain.com/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" /> |
-| <img src="/assets/chains/linea.svg" style="height: 24px; width: auto; vertical-align: middle;" />        | Linea               | <Address contractUrl="https://lineascan.build/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />         |
-| <img src="/assets/chains/mantle.svg" style="height: 24px; width: auto; vertical-align: middle;" />       | Mantle              | <Address contractUrl="https://mantlescan.xyz/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0" eventName="docs_product_interaction" />          |
-| <img src="/assets/chains/monad.svg" style="height: 24px; width: auto; vertical-align: middle;" />        | Monad               | <Address contractUrl="https://monadvision.com/address/0x2C4936af7C8867e62DAF9874519239dBE6b6DfFD" eventName="docs_product_interaction" />         |
-| <img src="/assets/chains/optimism.svg" style="height: 24px; width: auto; vertical-align: middle;" />     | Optimism            | <Address contractUrl="https://optimistic.etherscan.io/address/0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd" eventName="docs_product_interaction" /> |
-| <img src="/assets/chains/polygon.svg" style="height: 24px; width: auto; vertical-align: middle;" />      | Polygon             | <Address contractUrl="https://polygonscan.com/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />         |
-| <img src="/assets/chains/scroll.svg" style="height: 24px; width: auto; vertical-align: middle;" />       | Scroll              | <Address contractUrl="https://scrollscan.com/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0" eventName="docs_product_interaction" />          |
-| <img src="/assets/chains/soneium.svg" style="height: 24px; width: auto; vertical-align: middle;" />      | Soneium             | <Address contractUrl="https://soneium.blockscout.com/address/0x3DE960FE090BFec72F585347fa0a27CF96a83b36" eventName="docs_product_interaction" />  |
-| <img src="/assets/chains/sonic.svg" style="height: 24px; width: auto; vertical-align: middle;" />        | Sonic               | <Address contractUrl="https://sonicscan.org/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0" eventName="docs_product_interaction" />           |
-| <img src="/assets/chains/unichain.svg" style="height: 24px; width: auto; vertical-align: middle;" />     | UniChain            | <Address contractUrl="https://uniscan.xyz/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />             |
-| <img src="/assets/chains/zksync.svg" style="height: 24px; width: auto; vertical-align: middle;" />       | zkSync              | <Address contractUrl="https://explorer.zksync.io/address/0xC370405879C1ab0470604679E3275a02bCb89C91" eventName="docs_product_interaction" />      |
+|                                                                                                          | Chain               | ChainFlag Contract Address                                                                                                                              |
+| -------------------------------------------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <img src="/assets/chains/arbitrum.svg" style="height: 24px; width: auto; vertical-align: middle;" />     | Arbitrum            | <Address contractUrl="https://arbiscan.io/address/0x20551B03c092D998b1410c47BD54004D7C3106D0" eventName="docs_product_interaction" />                   |
+| <img src="/assets/chains/avalanche.svg" style="height: 24px; width: auto; vertical-align: middle;" />    | Avalanche           | <Address contractUrl="https://snowtrace.io/address/0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd" eventName="docs_product_interaction" />                  |
+| <img src="/assets/chains/base.svg" style="height: 24px; width: auto; vertical-align: middle;" />         | Base                | <Address contractUrl="https://basescan.org/address/0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd" eventName="docs_product_interaction" />                  |
+| <img src="/assets/chains/bob.svg" style="height: 24px; width: auto; vertical-align: middle;" />          | Bob                 | <Address contractUrl="https://explorer.gobob.xyz/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />            |
+| <img src="/assets/chains/bnb-chain.svg" style="height: 24px; width: auto; vertical-align: middle;" />    | BNB Chain (BSC)     | <Address contractUrl="https://bscscan.com/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0" eventName="docs_product_interaction" />                   |
+| <img src="/assets/chains/celo.svg" style="height: 24px; width: auto; vertical-align: middle;" />         | Celo                | <Address contractUrl="https://celo.blockscout.com/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />           |
+| <img src="/assets/chains/ethereum.svg" style="height: 24px; width: auto; vertical-align: middle;" />     | Ethereum            | <Address contractUrl="https://etherscan.io/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />                  |
+| <img src="/assets/chains/gnosis-chain.svg" style="height: 24px; width: auto; vertical-align: middle;" /> | Gnosis Chain (xDai) | <Address contractUrl="https://gnosisscan.io/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />                 |
+| <img src="/assets/chains/ink.svg" style="height: 24px; width: auto; vertical-align: middle;" />          | Ink                 | <Address contractUrl="https://explorer.inkonchain.com/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />       |
+| <img src="/assets/chains/linea.svg" style="height: 24px; width: auto; vertical-align: middle;" />        | Linea               | <Address contractUrl="https://lineascan.build/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />               |
+| <img src="/assets/chains/mantle.svg" style="height: 24px; width: auto; vertical-align: middle;" />       | Mantle              | <Address contractUrl="https://mantlescan.xyz/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0" eventName="docs_product_interaction" />                |
+| <img src="/assets/chains/monad.svg" style="height: 24px; width: auto; vertical-align: middle;" />        | Monad               | <Address contractUrl="https://monadvision.com/address/0x2C4936af7C8867e62DAF9874519239dBE6b6DfFD" eventName="docs_product_interaction" />               |
+| <img src="/assets/chains/optimism.svg" style="height: 24px; width: auto; vertical-align: middle;" />     | Optimism            | <Address contractUrl="https://optimistic.etherscan.io/address/0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd" eventName="docs_product_interaction" />       |
+| <img src="/assets/chains/polygon.svg" style="height: 24px; width: auto; vertical-align: middle;" />      | Polygon             | <Address contractUrl="https://polygonscan.com/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />               |
+| <img src="/assets/chains/robinhood.svg" style="height: 24px; width: auto; vertical-align: middle;" />    | Robinhood           | <Address contractUrl="https://robinhoodchain.blockscout.com/address/0xbb601D8e5e568e6464D6D34feE489AA61b8d035A" eventName="docs_product_interaction" /> |
+| <img src="/assets/chains/scroll.svg" style="height: 24px; width: auto; vertical-align: middle;" />       | Scroll              | <Address contractUrl="https://scrollscan.com/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0" eventName="docs_product_interaction" />                |
+| <img src="/assets/chains/soneium.svg" style="height: 24px; width: auto; vertical-align: middle;" />      | Soneium             | <Address contractUrl="https://soneium.blockscout.com/address/0x3DE960FE090BFec72F585347fa0a27CF96a83b36" eventName="docs_product_interaction" />        |
+| <img src="/assets/chains/sonic.svg" style="height: 24px; width: auto; vertical-align: middle;" />        | Sonic               | <Address contractUrl="https://sonicscan.org/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0" eventName="docs_product_interaction" />                 |
+| <img src="/assets/chains/tempo.svg" style="height: 24px; width: auto; vertical-align: middle;" />        | Tempo               | <Address contractUrl="https://explore.tempo.xyz/address/0xae22AF6B02A4E7CCc535D1670442B29a3ef69a88" eventName="docs_product_interaction" />             |
+| <img src="/assets/chains/unichain.svg" style="height: 24px; width: auto; vertical-align: middle;" />     | UniChain            | <Address contractUrl="https://uniscan.xyz/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />                   |
+| <img src="/assets/chains/zksync.svg" style="height: 24px; width: auto; vertical-align: middle;" />       | zkSync              | <Address contractUrl="https://explorer.zksync.io/address/0xC370405879C1ab0470604679E3275a02bCb89C91" eventName="docs_product_interaction" />            |
 
 ---
 
@@ -903,7 +948,7 @@ For more information about evaluating data quality, assessing liquidity and dist
 
 <Aside type="note" title="Need more details?">
   For additional information about data sourcing, please{" "}
-  <a href="https://chain.link/contact?ref_id=DataFeed">contact us</a>.
+  <a href="https://chain.link/contact?ref_id=pricefeeds">contact us</a>.
 </Aside>
 
 ---
@@ -1486,7 +1531,7 @@ print(historicalData)
 Source: https://docs.chain.link/data-feeds
 
 <Aside type="note" title="Talk to an expert">
-  <a href="https://chain.link/contact?ref_id=DataFeed">Contact us</a> to talk to an expert about integrating Chainlink
+  <a href="https://chain.link/contact?ref_id=pricefeeds">Contact us</a> to talk to an expert about integrating Chainlink
   Data Feeds with your applications.
 </Aside>
 
@@ -3728,7 +3773,7 @@ When a token is newly launched, the historical data required to implement a rigo
 
 ### 🔵 Custom Feeds
 
-Custom Feeds are built to serve a specific use case and can differ materially from standard market price feeds in sourcing, methodology, update behavior, and risk profile. Users must evaluate the properties of a custom feed to make sure it aligns with their intended use case and closely assess the risk of [single source feeds](#single-source-data-providers). [Contact the Chainlink Labs team](https://chain.link/contact?ref_id=DataFeed) if you want more detail on any specific feeds in this category.
+Custom Feeds are built to serve a specific use case and can differ materially from standard market price feeds in sourcing, methodology, update behavior, and risk profile. Users must evaluate the properties of a custom feed to make sure it aligns with their intended use case and closely assess the risk of [single source feeds](#single-source-data-providers). [Contact the Chainlink Labs team](https://chain.link/contact?ref_id=pricefeeds) if you want more detail on any specific feeds in this category.
 
 Custom Feeds have the following categories and compositions:
 
@@ -3738,13 +3783,13 @@ Custom Feeds have the following categories and compositions:
 - [🟡](#-medium-market-pricing-risk-feeds) **Technical Feeds:** Feeds within this category measure a particular technical metric from a specified blockchain. For example, Fast Gas or Block Difficulty.
 - [🟡](#-medium-market-pricing-risk-feeds) **Total Value Locked Feeds:** These feeds measure the total value locked in a particular protocol.
 - [🟠](#-high-market-pricing-risk-feeds) **Custom Index Feeds:** An index calculates a function of the values for multiple underlying assets. The function is specific to that index and is typically calculated by node operators following an agreed formula.
-- [🟠](#-high-market-pricing-risk-feeds) **24/7 Blended Price Feeds:** Custom feeds that publish outside standard market hours by blending a reference price with other inputs such as tokenized asset streams. See [24/7 blended precious metals feeds](/data-feeds/blended-precious-metals-feeds) for methodology and risk considerations.
+- [🟠](#-high-market-pricing-risk-feeds) **24/7 Extended-Hours Feeds:** Custom feeds that publish outside an asset's standard market hours, using a methodology specific to the asset class, such as blending a reference price with tokenized asset streams for precious metals, or sourcing a crypto-derived rate for select forex pairs. See [24/7 Extended-Hours Data Feeds](/data-feeds/24-7-extended-hours-data-feeds) for methodology and risk considerations.
 - [🟠](#-high-market-pricing-risk-feeds) **Offchain Single Source Feeds:** Some data providers use a single data source, which might be necessary if only one source exists offchain for a specific type of data.
 - [🟠](#-high-market-pricing-risk-feeds) **Offchain Proof of Reserve Feeds:** Chainlink Proof of Reserve uses a large decentralized collection of security-reviewed and Sybil-resistant node operators to acquire and verify reserve data. In this use case, reserves reside offchain.
 - [🟠](#-high-market-pricing-risk-feeds) **LP Token Feeds:** These feeds use a decentralized feed for the underlying asset as well as calculations to value the liquidity pool (LP) tokens.
 - [🔴](#-very-high-market-pricing-risk-feeds) **Wrapped Calculated Feeds:** These feeds are typically pegged 1:1 to the underlying token or asset. Under normal market conditions, these feeds track their underlying value accurately. However, given that the price is a derivative formed from a calculated method, the derivative asset may not always precisely track the value of the underlying token or asset.
 
-If you plan on using one of these feeds and would like to get a more detailed understanding, [contact the Chainlink Labs team](https://chain.link/contact?ref_id=DataFeed). Using feeds that were not specifically designed for your use case involves risk. Their use might pose risks that could result in harm to your project. Users are responsible for thoroughly vetting and validating such deployments and determining their suitability. You bear responsibility for any manner in which you use the Chainlink Network, its software, and documentation.
+If you plan on using one of these feeds and would like to get a more detailed understanding, [contact the Chainlink Labs team](https://chain.link/contact?ref_id=pricefeeds). Using feeds that were not specifically designed for your use case involves risk. Their use might pose risks that could result in harm to your project. Users are responsible for thoroughly vetting and validating such deployments and determining their suitability. You bear responsibility for any manner in which you use the Chainlink Network, its software, and documentation.
 
 ### ⭕ Deprecating
 
@@ -3768,19 +3813,19 @@ Known users of these feeds will be contacted directly about the feeds' deprecati
 
 In addition to categories, be aware that markets for several assets are actively traded only during certain hours. Listed data feeds include an attribute describing their market hours. Chainlink Labs recommends using these feeds only during their specified hours:
 
-| Feed                            | Hours                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Crypto**                      | 24/7/365 - No market close.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| **US_Equities**                | Standard US equity market hours: 09:30 - 16:00 ET M-F excluding US equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| **US_Equities_24/5**          | 24 hours a day, 5 days a week: 18:00 ET Sunday to 17:00 ET Friday. These feeds aggregate data across regular, pre-market, post-market, and overnight equity trading sessions. Used by [tokenized equity feeds](/data-feeds/tokenized-equity-feeds) that require continuous equity pricing outside of standard market hours. Feeds are not updated on weekends or US equity market holidays.                                                                                                                                                                                                                              |
-| **UK_ETF**                     | Standard UK equity market hours: 08:00 - 16:30 UK time M-F excluding UK equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| **Forex**                       | 18:00 ET Sunday to 17:00 ET Friday. <br /> The feeds also follow the global Forex market Christmas and New Year's Day holiday schedule. Many non-G12 currencies primarily trade during local market hours. It is recommended to use those feeds only during local trading hours. We generally observe normal trading within these hours. Prices outside of these hours may be subject to volatility and users are advised to implement additional controls. In addition, local holidays, natural disasters, political unrest or other exogenous shocks are liable to interrupt normal trading in less-liquid currencies. |
-| **Precious_Metals**            | 18:00 ET Sunday to 17:00 ET Friday with a one-hour break Monday through Thursday from 17:00 to 18:00. <br /> The feeds also follow the global Forex market holiday schedule for Christmas and New Year's Day. Some [24/7 blended precious metals feeds](/data-feeds/blended-precious-metals-feeds) publish outside these hours using a custom methodology.                                                                                                                                                                                                                                                               |
-| **NYMEX** (US OIL)              | 18:00 ET Sunday to 17:00 ET Friday, with a one-hour break Monday through Thursday from 17:00 to 18:00. <br /> The feed also follows the NYMEX market holiday schedule.                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| **COMEX** (Non precious metals) | 18:00 ET Sunday to 17:00 ET Friday with a one-hour break Monday through Thursday from 17:00 to 18:00. <br /> The feed also follows the COMEX market holiday schedule.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| **CBOT** (Agricultural)         | Monday - Thursday 00:00-08:45, 09:30-00:00 and Friday 00:00-08:45, 09:30-14:00 ET, excluding CBOT market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| **MI_ETF**                     | Standard Milan equity market hours. 09:00-17:30 CET time M-F, excluding Milan equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| **XETRA_ETF**                  | Deutsche Börse Xetra equity market hours. 09:00-17:30 CET time M-F, excluding Xetra equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Feed                            | Hours                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Crypto**                      | 24/7/365 - No market close.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| **US_Equities**                | Standard US equity market hours: 09:30 - 16:00 ET M-F excluding US equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| **US_Equities_24/5**          | 24 hours a day, 5 days a week: 18:00 ET Sunday to 17:00 ET Friday. These feeds aggregate data across regular, pre-market, post-market, and overnight equity trading sessions. Used by [tokenized equity feeds](/data-feeds/tokenized-equity-feeds) that require continuous equity pricing outside of standard market hours. Feeds are not updated on weekends or US equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| **UK_ETF**                     | Standard UK equity market hours: 08:00 - 16:30 UK time M-F excluding UK equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| **Forex**                       | 18:00 ET Sunday to 17:00 ET Friday. <br /> The feeds also follow the global Forex market Christmas and New Year's Day holiday schedule. Many non-G12 currencies primarily trade during local market hours. It is recommended to use those feeds only during local trading hours. We generally observe normal trading within these hours. Prices outside of these hours may be subject to volatility and users are advised to implement additional controls. In addition, local holidays, natural disasters, political unrest or other exogenous shocks are liable to interrupt normal trading in less-liquid currencies. Some currency pairs are instead offered as [24/7 forex feeds](/data-feeds/24-7-extended-hours-data-feeds#forex), which source a crypto-derived rate and publish continuously; review that page's risk considerations before using one. |
+| **Precious_Metals**            | 18:00 ET Sunday to 17:00 ET Friday with a one-hour break Monday through Thursday from 17:00 to 18:00. <br /> The feeds also follow the global Forex market holiday schedule for Christmas and New Year's Day. Some [24/7 blended precious metals feeds](/data-feeds/24-7-extended-hours-data-feeds#precious-metals) publish outside these hours using a custom methodology.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| **NYMEX** (US OIL)              | 18:00 ET Sunday to 17:00 ET Friday, with a one-hour break Monday through Thursday from 17:00 to 18:00. <br /> The feed also follows the NYMEX market holiday schedule.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| **COMEX** (Non precious metals) | 18:00 ET Sunday to 17:00 ET Friday with a one-hour break Monday through Thursday from 17:00 to 18:00. <br /> The feed also follows the COMEX market holiday schedule.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **CBOT** (Agricultural)         | Monday - Thursday 00:00-08:45, 09:30-00:00 and Friday 00:00-08:45, 09:30-14:00 ET, excluding CBOT market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **MI_ETF**                     | Standard Milan equity market hours. 09:00-17:30 CET time M-F, excluding Milan equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **XETRA_ETF**                  | Deutsche Börse Xetra equity market hours. 09:00-17:30 CET time M-F, excluding Xetra equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
 ## Risk Mitigation
 
@@ -3801,7 +3846,7 @@ For important updates regarding the use of Chainlink Price Feeds, users should j
 
 ### Stablecoin-specific considerations
 
-To protect against extreme stablecoin price events, protocols should assess upside risk and evaluate setting an explicit valuation ceiling for each stablecoin, along with mechanisms that provide proactive peg protection. One example of this approach is the Correlated-assets Price Oracle ([CAPO](https://app.aave.com/governance/v3/proposal/?proposalId=51)), which was implemented by Aave Labs with support from Chainlink Labs and adds upside protection when valuing fiat-pegged stablecoins while preserving full downside responsiveness. Other risk mitigation measures may be appropriate depending on a protocol's intended use case. Teams interested in developing similar risk mitigation measures for stablecoins can [contact the Chainlink Labs team](https://chain.link/contact?ref_id=DataFeed). Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and that the operation and performance of stablecoin data feeds matches expectations.
+To protect against extreme stablecoin price events, protocols should assess upside risk and evaluate setting an explicit valuation ceiling for each stablecoin, along with mechanisms that provide proactive peg protection. One example of this approach is the Correlated-assets Price Oracle ([CAPO](https://app.aave.com/governance/v3/proposal/?proposalId=51)), which was implemented by Aave Labs with support from Chainlink Labs and adds upside protection when valuing fiat-pegged stablecoins while preserving full downside responsiveness. Other risk mitigation measures may be appropriate depending on a protocol's intended use case. Teams interested in developing similar risk mitigation measures for stablecoins can [contact the Chainlink Labs team](https://chain.link/contact?ref_id=pricefeeds). Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and that the operation and performance of stablecoin data feeds matches expectations.
 
 ## Chainlink Community Deployments
 
@@ -3811,7 +3856,7 @@ It is always recommended that you conduct a thorough analysis of your requiremen
 
 The Chainlink Labs team does not monitor community deployments and users should use best practices in observability, monitoring, and risk mitigation as appropriate for your application's stage of development and use case.
 
-As your usage of data feeds evolves and requirements for higher availability and greater security increases, such as securing substantive value, the reliability properties of your data feed will become crucial. [Contact Chainlink Labs team](https://chain.link/contact?ref_id=DataFeed) for services to ensure deployments meet the highest levels of availability and security.
+As your usage of data feeds evolves and requirements for higher availability and greater security increases, such as securing substantive value, the reliability properties of your data feed will become crucial. [Contact Chainlink Labs team](https://chain.link/contact?ref_id=pricefeeds) for services to ensure deployments meet the highest levels of availability and security.
 
 **High Risk: Forked, modified, or custom software:**
 
@@ -3851,6 +3896,8 @@ Before using a single-source feed, determine whether it is suitable for your use
 
 Users of single-source feeds MUST implement additional safeguards such as value bounds, caps, circuit breakers, freshness checks, fallback behavior, monitoring against independent references where available, and manual pause or kill-switch controls. Single-source feeds can be classified as High or Very High Market Pricing Risk depending on the asset, methodology, provider dependency, and intended use case.
 
+For example, the [USD / ARS feed](https://data.chain.link/feeds/ethereum/mainnet/usd-ars) is a [24/7 forex feed](/data-feeds/24-7-extended-hours-data-feeds#forex) that sources a single data provider's crypto-derived rate, which is constructed differently from, and can diverge materially from, Argentina's official, MEP, or CCL exchange rates. Confirm this rate construction matches your use case's definition of the currency pair before relying on it, particularly for anything securing value or triggering liquidations.
+
 If you are using or considering a single-source feed in production, [contact the Chainlink Labs team](mailto:chainlink_data_feeds@smartcontract.com) to discuss the feed's methodology, provider dependency, and appropriate application-level mitigations.
 
 ### Crypto and Blockchain Actions
@@ -3873,9 +3920,9 @@ Data Feed performance relies on the chains they are deployed on. Periods of high
 
 Routine maintenance is carried out on Chainlink Data Feeds, including decommissioning, on an ad-hoc basis. These maintenance periods might require users to take action in order to maintain business continuity.
 
-Notifications are sent to inform known users regarding such occurrences, and it is strongly encouraged for all users, including those users utilizing data feeds for offchain purposes, [to provide their contact information](https://chain.link/contact?ref_id=DataFeed) before utilizing data feeds. Without providing contact information, users will be unable to receive notifications regarding important Data Feed updates.
+Notifications are sent to inform known users regarding such occurrences, and it is strongly encouraged for all users, including those users utilizing data feeds for offchain purposes, [to provide their contact information](https://chain.link/contact?ref_id=pricefeeds) before utilizing data feeds. Without providing contact information, users will be unable to receive notifications regarding important Data Feed updates.
 
-If you are using Data Feeds but have not provided your contact information, you can do so [here](https://chain.link/contact?ref_id=DataFeed). Users that fail to provide notification information do so at their own risk.
+If you are using Data Feeds but have not provided your contact information, you can do so [here](https://chain.link/contact?ref_id=pricefeeds). Users that fail to provide notification information do so at their own risk.
 
 ### DEX Volumes
 
@@ -5463,7 +5510,7 @@ return []
 [Chainlink Smart Value Recapture](https://blog.chain.link/chainlink-smart-value-recapture-svr/) (SVR) Feeds introduce a novel and secure way to recapture Oracle Extractable Value (OEV)—a subset of non-toxic Maximal Extractable Value (MEV) associated with oracle updates that is most commonly observed during the liquidation process of lending protocols. The value recaptured by SVR provides DeFi protocols with an additional revenue stream while also supporting the economic sustainability of Chainlink oracle. SVR Feeds are read in the same manner as standard Chainlink Data Feeds (see [Using Data Feeds](/data-feeds/using-data-feeds)), and simply require that users specify an SVR-enabled feed address.
 
 <Aside type="note" title="Talk to an expert">
-  [Contact us](https://chain.link/contact?ref_id=DataFeed) to talk to an expert about integrating Chainlink SVR with
+  [Contact us](https://chain.link/contact?ref_id=pricefeeds) to talk to an expert about integrating Chainlink SVR with
   your applications.
 </Aside>
 
@@ -5566,10 +5613,10 @@ This code sample is essentially the same as reading from a standard Chainlink Pr
 
 Chainlink SVR supports two auction paths depending on the network:
 
-| Network                   | Auction System      | Guide                                                                                                     |
-| ------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------- |
-| Ethereum Mainnet          | Flashbots MEV-Share | [Searcher Onboarding: Ethereum Mainnet](/data-feeds/svr-feeds/searcher-onboarding-ethereum)               |
-| Base, Arbitrum, BNB Chain | Atlas               | [Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain)](/data-feeds/svr-feeds/searcher-onboarding-atlas) |
+| Network                          | Auction System      | Guide                                                                                                            |
+| -------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Ethereum Mainnet                 | Flashbots MEV-Share | [Searcher Onboarding: Ethereum Mainnet](/data-feeds/svr-feeds/searcher-onboarding-ethereum)                      |
+| Base, Arbitrum, BNB Chain, Monad | Atlas               | [Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain, Monad)](/data-feeds/svr-feeds/searcher-onboarding-atlas) |
 
 ## Economics and Revenue Split
 
@@ -5588,7 +5635,7 @@ This split provides DeFi protocols with an additional revenue stream while also 
 
 ---
 
-# SVR Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain)
+# SVR Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain, Monad)
 Source: https://docs.chain.link/data-feeds/svr-feeds/searcher-onboarding-atlas
 
 export const contracts = {
@@ -5603,6 +5650,10 @@ export const contracts = {
   bnb: {
     atlas: "0x21B7d28B882772A1Cfe633Daee6f42ebb95DeC4E",
     dappControl: "0x7D50b32444609A9B53BcF208c159C8d0d0767835",
+  },
+  monad: {
+    atlas: "0x006DD7813C90CaB67c1Dc185c21Abb2C7414b061",
+    dappControl: "0xa40d9f38621b4ffb2181508b973519e8133951c0",
   },
 }
 
@@ -5629,6 +5680,23 @@ export const arbitrumFeeds = [
   { asset: "USDT-USD", type: "SVR", aggregator: "0x41F14AfB0eB605097c5950D2458415437A3d2Bcd" },
 ]
 
+export const monadFeeds = [
+  { asset: "APRMON-MON Exchange Rate", type: "SVR", aggregator: "0x124FE2b4a19bC618d6cF0a64e2BBE85C7e3C6ED9" },
+  { asset: "AUSD-USD", type: "SVR", aggregator: "0x253c95994246DE5A83AAFE82909681522DA051Af" },
+  { asset: "BTC-USD", type: "SVR", aggregator: "0x9d8b2A6b6A8748bB5e557505d2dDC9d44b6fd2Dd" },
+  { asset: "CBBTC-USD", type: "SVR", aggregator: "0x5cB59A1E12c781793b1799D99d1F31eA4e79eCE9" },
+  { asset: "EARNAUSD-AUSD Exchange Rate", type: "SVR", aggregator: "0xb95fa18a1892045F671bC1723d452618f3FC0355" },
+  { asset: "ETH-USD", type: "SVR", aggregator: "0xeF3c6C938F82BE8ba983a52F5b0f47eE820DCeb2" },
+  { asset: "EZETH-ETH Exchange Rate", type: "SVR", aggregator: "0x521F749F78dA5d58f70f79aD44f73fDEAA5dc538" },
+  { asset: "GMON-MON Exchange Rate", type: "SVR", aggregator: "0xAF165Ea49569528ff543640834Eb6819f0d9601f" },
+  { asset: "MON-USD", type: "SVR", aggregator: "0x810d5E3dB355bFd2C80c06D89F08523111c6d0F1" },
+  { asset: "SHMON-MON Exchange Rate", type: "SVR", aggregator: "0xE3F1906C6b6EEA63dCc0C016C4ec6746c69e7476" },
+  { asset: "SMON-MON Exchange Rate", type: "SVR", aggregator: "0x0Ebdee66Cdd6ffe566d39eD9F876EE04920E25D4" },
+  { asset: "SYZUSD-YZUSD Exchange Rate", type: "SVR", aggregator: "0x18278ef950F120Cb89960C0c07e965bbAc389cfC" },
+  { asset: "USDC-USD", type: "SVR", aggregator: "0xdE1FE319F71E446143BEC6eEc02d89286E7265ed" },
+  { asset: "USDT0-USD", type: "SVR", aggregator: "0x9e921eC9C5ef689045af16a95569F3644bB41FD3" },
+]
+
 <Aside type="note" title="Searcher Onboarding">
   SVR on Atlas (every chain outside of ETH mainnet) uses a reputation system with **two groups**. Unless otherwise specified for a chain, Atlas includes up to **2 searcher bids** per transaction for on-chain settlement:
 
@@ -5642,7 +5710,7 @@ export const arbitrumFeeds = [
   Searchers can [subscribe here](https://chainlinkcommunity.typeform.com/to/s55Hu2tK) to receive timely Chainlink SVR updates.
 </Aside>
 
-[Chainlink Smart Value Recapture (SVR)](/data-feeds/svr-feeds) has expanded to Base, Arbitrum, and BNB Chain with a new auction system, **Atlas**. This guide provides existing Chainlink SVR searchers with the technical specifications and integration requirements for participating in all non-ETH mainnet SVR auctions.
+[Chainlink Smart Value Recapture (SVR)](/data-feeds/svr-feeds) has expanded to Base, Arbitrum, BNB Chain, and Monad with a new auction system, **Atlas**. This guide provides existing Chainlink SVR searchers with the technical specifications and integration requirements for participating in all non-ETH mainnet SVR auctions.
 
 ## Core Components
 
@@ -6703,6 +6771,132 @@ Bidding for bundle events is very similar to single transaction events. As a sea
 
 ---
 
+# Base Tokenized Equities (Coinbase B20)
+Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/coinbase
+
+<TokenizedEquityFeeds section="tokenizedEquityNote" />
+
+Chainlink provides tokenized equity feeds for Coinbase tokenized stocks on Base. Each tokenized stock is a B20 token, Base's native token standard for real-world assets, an extension of ERC-20, identified by its contract address rather than its ticker. The corresponding Chainlink feed reports the Total Return Value of the token by combining the underlying equity's market price with a multiplier read from Coinbase's on-chain oracle registry.
+
+These feeds use the standard Chainlink V3 aggregator interface (`latestRoundData()`), so any consumer reads the published price through the proxy in the same way as a crypto price feed. They are push-based oracles intended for compliance reference pricing, protocol integration, and similar use cases.
+
+## Available Base tokenized equity feeds
+
+The following table shows the available Base tokenized equity feeds.
+
+## Total Return Value calculation
+
+Base tokenized equity feeds calculate the token price using the following formula:
+
+```
+Token Price = Underlying Equity Market Price × Multiplier
+```
+
+Where:
+
+- **Underlying Equity Market Price**: Sourced from Chainlink's 24/5 equity price feeds, which aggregate data across regular, pre-market, post-market, and overnight trading sessions.
+- **Multiplier**: Read from Coinbase's on-chain oracle registry on Base, which returns the multiplier and pause state for each token in a single call. The multiplier accounts for dividend conversions and corporate action adjustments (see [Corporate action handling](#corporate-action-handling-and-oracle-pause) below).
+
+The on-chain oracle registry sources the multiplier from the B20 tokens.
+
+The multiplier is WAD-scaled (a fixed-point number with 18 decimals). One B20 token does not permanently equal one share: the multiplier is the redemption ratio between the token and the underlying equity.
+
+This approach ensures the token price reflects the total return of the underlying equity, including dividend conversions and corporate action adjustments, rather than just the current market price per share.
+
+## How the multiplier works
+
+The multiplier accounts for events that change the relationship between token quantity and underlying equity value:
+
+| Event Type                   | Multiplier Behavior             | Example                 |
+| :--------------------------- | :------------------------------ | :---------------------- |
+| Dividend (converted)         | Small increase                  | Multiplier: 1.00 → 1.02 |
+| Stock split (10:1 example)   | Large increase                  | Multiplier: 1.0 → 10.0  |
+| Reverse split (1:10 example) | Large decrease                  | Multiplier: 10.0 → 1.0  |
+| Spin-offs                    | Adjustment to reflect new value | Varies by event         |
+
+Key behaviors of the B20 multiplier model:
+
+- **Cash dividends are converted to shares** of the underlying equity and reflected as a multiplier increase, rather than distributed as cash to the token holder. For example, after a dividend the multiplier may increase from 1.00 to 1.02, representing that 1 token is redeemable for 1.02 shares.
+- **Holder balances never change**. Corporate actions update the multiplier — there is no rebasing and there are no airdrops. A holder's raw token balance stays constant while its redemption value adjusts.
+- **Multiplier changes are observable on-chain**. `MultiplierUpdated` events record every change, and sensitive operations are wrapped in human-readable announcement events (`Announcement` / `EndAnnouncement`) that can be atomically bundled with the multiplier update they describe.
+
+{/* TODO: Add coinbase's staged-update mechanism. Include whether multiplier changes are staged in advance or applied atomically alongside announcement events. This section will be updated before publication. */}
+
+## Corporate action handling and oracle pause
+
+Corporate actions are coordinated by Coinbase as the asset issuer. Chainlink does not provide corporate-action calendar data or automated pause triggers; pause timing and multiplier updates are coordinated by Coinbase.
+
+Coinbase's oracle registry exposes the multiplier and a pause flag for each token, and the feed honors that pause flag:
+
+**Normal mode** (`paused == false`): The feed returns the current underlying equity market price multiplied by the current multiplier.
+
+**Paused mode** (`paused == true`): The feed stops publishing new prices and holds the last known good value. This prevents an inconsistent token price from being published while a corporate action is in progress and the underlying price and multiplier are temporarily out of sync.
+
+During a corporate action, the issuer-driven workflow keeps the token price continuous:
+
+1. Coinbase pauses the oracle through the registry, freezing the feed at the last known good value.
+2. After the corporate action takes effect and Coinbase confirms that both the underlying market price and the multiplier reflect the new values correctly, the registry is unpaused.
+3. The feed resumes publishing using the updated multiplier.
+
+For example, during a 10:1 stock split:
+
+| Stage         | Stock Price | Multiplier    | Token Price   |
+| :------------ | :---------- | :------------ | :------------ |
+| Before split  | $200        | 1.0           | $200          |
+| During pause  | Frozen      | Pending: 10.0 | $200 (frozen) |
+| After unpause | $20         | 10.0          | $200          |
+
+The token price remains continuous at $200 throughout the event, even though the underlying equity market price dropped from $200 to $20.
+
+## Example scenarios
+
+**Normal operation**
+
+```
+- Stock price: $200 → $201
+- Multiplier: 1.00 (unchanged)
+- Token price: $201
+```
+
+**Dividend conversion** (small multiplier increase)
+
+```
+- Stock price: $200
+- Multiplier: 1.00 → 1.02 (cash dividend converted to shares)
+- Token price: $204
+```
+
+**Stock split** (10:1, scheduled corporate action)
+
+```
+1. Coinbase pauses the oracle through the registry; the feed freezes at the current token price
+2. The corporate action executes, wrapped in on-chain announcement events
+3. Market reopens with the underlying stock price at $20 (post-split)
+4. Coinbase confirms alignment and unpauses the registry
+5. Multiplier becomes 10.0, token price = $20 × 10 = $200 (continuous)
+```
+
+**Split with timing mismatch** (stock price updates before the multiplier)
+
+```
+- Registry paused; multiplier not yet updated
+- Underlying stock price = $20, multiplier still 1.0
+- Result: Feed remains frozen at the pre-pause price until Coinbase unpauses the registry
+```
+
+This fail-safe behavior prevents incorrect token prices from being published when the underlying stock price and the multiplier are temporarily out of sync.
+
+## Off-hours and session behavior
+
+Base tokenized equity feeds are configured as 24/5 tokenized equity feeds (regular, pre-market, post-market, and overnight sessions), where underlying liquidity and session data quality support it. Integrators should be aware of standard tokenized equity behavior:
+
+- **Off-hours / closed sessions**: When underlying equity markets are closed (weekends, holidays, thin overnight windows), the feed holds the last close even though the contract remains callable via `latestRoundData()`. These feeds do not have heartbeats during off-hours.
+- **Staleness checks**: Integrators should read `updatedAt` and implement staleness bounds appropriate to their use case.
+
+See [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds) for the shared behavioral model across providers.
+
+---
+
 # Tokenized Equity Feeds
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds
 
@@ -7126,10 +7320,11 @@ Tokenized equity feeds have issuer-specific implementations that affect pricing 
 
 ## Available providers
 
-| Provider     | Feed Type          | Price Calculation                                      | Corporate Action Handling            | Documentation                                                | Issuer Contact                         |
-| :----------- | :----------------- | :----------------------------------------------------- | :----------------------------------- | :----------------------------------------------------------- | :------------------------------------- |
-| Ondo Finance | Total Return Value | Underlying Equity Market Price × Multiplier (`sValue`) | Pause-based with manual confirmation | [View details](/data-feeds/tokenized-equity-feeds/ondo)      | [Contact page](https://ondo.finance/)  |
-| Robinhood    | Multiplier-scaled  | Underlying Equity Market Price × `uiMultiplier`        | Oracle pause on token contract       | [View details](/data-feeds/tokenized-equity-feeds/robinhood) | [Contact page](https://robinhood.com/) |
+| Provider     | Feed Type          | Price Calculation                                      | Corporate Action Handling            | Documentation                                                | Issuer Contact                            |
+| :----------- | :----------------- | :----------------------------------------------------- | :----------------------------------- | :----------------------------------------------------------- | :---------------------------------------- |
+| Ondo Finance | Total Return Value | Underlying Equity Market Price × Multiplier (`sValue`) | Pause-based with manual confirmation | [View details](/data-feeds/tokenized-equity-feeds/ondo)      | [Contact page](https://ondo.finance/)     |
+| Robinhood    | Multiplier-scaled  | Underlying Equity Market Price × `uiMultiplier`        | Oracle pause on token contract       | [View details](/data-feeds/tokenized-equity-feeds/robinhood) | [Contact page](https://robinhood.com/)    |
+| Coinbase     | Multiplier-scaled  | Underlying Equity Market Price × Multiplier            | Oracle pause on oracle registry      | [View details](/data-feeds/tokenized-equity-feeds/coinbase)  | [Contact page](https://www.coinbase.com/) |
 
 ## Provider-specific considerations
 

@@ -206,7 +206,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
               <>
                 <div className="ccip-chain-hero__details__item">
                   <div className="ccip-chain-hero__details__label">
-                    {isCanton ? "Per party factory router" : "Router"}
+                    {isCanton ? "Per party router factroy" : "Router"}
                   </div>
                   <div className="ccip-chain-hero__details__value" data-clipboard-type="router">
                     <Address

@@ -18,11 +18,40 @@ export const CONTACT_EMAIL_PROXY_ADDRESSES = new Set<string>([
 ])
 
 /**
- * Proxy addresses (lowercase) for 24/7 blended gold feeds.
- * Add new blended gold feed proxy addresses here to include them in the
- * blended gold feed page and badge.
+ * Proxy addresses (lowercase) for 24/7 extended-hours feeds, grouped by asset
+ * class. Add new feeds to the relevant category to include them on the
+ * 24/7 Extended-Hours page and in the badge.
  */
-export const BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES = new Set<string>(["0x369c67e8b026cc4ef98350f332d7dd52b85b7674"])
+export type ExtendedHoursCategory = "preciousMetals" | "forex"
+
+export const EXTENDED_HOURS_FEED_CATEGORIES: Record<ExtendedHoursCategory, Set<string>> = {
+  preciousMetals: new Set(["0x369c67e8b026cc4ef98350f332d7dd52b85b7674"]),
+  forex: new Set(["0x9eb8a54d0590798880c665c7a6d51b95f4078ad7"]),
+}
+
+/** Union of all extended-hours proxy addresses, used for the badge and unfiltered visibility. */
+export const ALL_EXTENDED_HOURS_PROXY_ADDRESSES = new Set<string>(
+  Object.values(EXTENDED_HOURS_FEED_CATEGORIES).flatMap((addresses) => [...addresses])
+)
+
+/**
+ * Returns true when a feed is a Coinbase (B20) tokenized equity feed on Base.
+ * These feeds are identified by their asset name, feed name, or ENS prefix.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isCoinbaseTokenizedEquityFeed(feed: any): boolean {
+  if (feed.docs?.productTypeCode !== "primaryTokenizedPrice") return false
+  // Only include feeds from the Coinbase chain/feedwatchers on Base. This
+  // excludes Robinhood feeds whose underlying stock happens to be Coinbase
+  // (e.g. "Coinbase (Robinhood Tokenized Equity)" for the COIN ticker).
+  if (feed.docs?.blockchainName !== "Base") return false
+
+  const assetName = (feed.assetName || "").toLowerCase()
+  const feedName = (feed.name || "").toLowerCase()
+  const ens = (feed.ens || "").toLowerCase()
+
+  return assetName.includes("coinbase") || feedName.startsWith("coinbase ") || ens.startsWith("coinbase-")
+}
 
 /**
  * Returns true when the feed's contract address should be hidden and replaced
@@ -32,6 +61,11 @@ export const BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES = new Set<string>(["0x369c6
 export function shouldHideAddress(feed: any, riskTier?: string | null): boolean {
   // Robinhood tokenized equity feeds display their proxy address directly.
   if (feed.docs?.blockchainName === "Robinhood" && feed.docs?.productTypeCode === "primaryTokenizedPrice") {
+    return false
+  }
+
+  // Coinbase (B20) tokenized equity feeds on Base display their proxy address directly.
+  if (isCoinbaseTokenizedEquityFeed(feed)) {
     return false
   }
 
@@ -72,6 +106,8 @@ export interface FeedVisibilityOptions {
   rwaSchemaFilter?: string
   showOnlyMVRFeeds?: boolean
   tokenizedEquityProvider?: string
+  /** When set, only show extended-hours feeds in this category (e.g. "preciousMetals"). */
+  extendedHoursCategory?: ExtendedHoursCategory
 }
 
 /**
@@ -91,8 +127,8 @@ export function isFeedVisible(
   // 1. Universal Exclusions
   // ===========================================================================
   const isTokenizedEquity = dataFeedType === "tokenizedEquity"
-  const isBlendedPreciousMetals = dataFeedType === "blendedPreciousMetals"
-  if (feed.docs?.hidden && !isTokenizedEquity && !isBlendedPreciousMetals) return false
+  const isExtendedHours = dataFeedType === "extendedHours"
+  if (feed.docs?.hidden && !isTokenizedEquity && !isExtendedHours) return false
 
   const isDeprecating = ecosystem === "deprecating"
   const isStreams =
@@ -153,8 +189,12 @@ export function isFeedVisible(
       (assetClass === "Equity" || assetClass === "Equities") &&
       feed.contractType !== "verifier" &&
       feed.docs?.productTypeCode === "primaryTokenizedPrice"
-  } else if (isBlendedPreciousMetals) {
-    isVisible = BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES.has(feed.proxyAddress?.toLowerCase())
+  } else if (isExtendedHours) {
+    const proxy = feed.proxyAddress?.toLowerCase()
+    isVisible = ALL_EXTENDED_HOURS_PROXY_ADDRESSES.has(proxy)
+    if (isVisible && options.extendedHoursCategory) {
+      isVisible = EXTENDED_HOURS_FEED_CATEGORIES[options.extendedHoursCategory].has(proxy)
+    }
   } else {
     isVisible =
       !feed.docs?.porType &&
@@ -215,6 +255,10 @@ export function isFeedVisible(
         (feed.name || "").toLowerCase().startsWith("robinhood ")
 
       if (!isRobinhoodFeed) return false
+    }
+
+    if (provider === "coinbase") {
+      if (!isCoinbaseTokenizedEquityFeed(feed)) return false
     }
   }
 
