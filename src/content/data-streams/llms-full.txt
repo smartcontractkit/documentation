@@ -1134,11 +1134,18 @@ APAC Equities streams use the [RWA Advanced (v11) schema](/data-streams/referenc
 
 APAC streams quote in each exchange's local currency (for example, `/JPY` for Japanese equities). All times are **local exchange time** (Mon–Fri unless noted). UTC offsets are fixed for the listed timezone.
 
-| Exchange                     | Code | Currency | Status    | Time zone   | Session   | Hours (local) | UTC equivalent  | Notes                                                                               |
-| ---------------------------- | ---- | -------- | --------- | ----------- | --------- | ------------- | --------------- | ----------------------------------------------------------------------------------- |
-| **Korean Equities + ETFs**   | KRX  | KRW      | Available | KST (UTC+9) | Regular   | 09:00–15:20   | 00:00–06:20 UTC |                                                                                     |
-| **Japanese Equities + ETFs** | TSE  | JPY      | Available | JST (UTC+9) | Morning   | 09:00–11:30   | 00:00–02:30 UTC |                                                                                     |
-|                              |      |          |           |             | Afternoon | 12:30–15:25   | 03:30–06:25 UTC | One-hour lunch break 11:30–12:30. Closing auction 15:25–15:30 (`marketStatus = 5`). |
+| Exchange                      | Code | Currency | Status    | Time zone   | Session   | Hours (local) | UTC equivalent  | Notes                                                                                |
+| ----------------------------- | ---- | -------- | --------- | ----------- | --------- | ------------- | --------------- | ------------------------------------------------------------------------------------ |
+| **Korean Equities + ETFs**    | KRX  | KRW      | Available | KST (UTC+9) | Regular   | 09:00–15:20   | 00:00–06:20 UTC |                                                                                      |
+| **Japanese Equities + ETFs**  | TSE  | JPY      | Available | JST (UTC+9) | Morning   | 09:00–11:30   | 00:00–02:30 UTC |                                                                                      |
+|                               |      |          |           |             | Afternoon | 12:30–15:25   | 03:30–06:25 UTC | One-hour lunch break 11:30–12:30. Closing auction 15:25–15:30 (`marketStatus = 5`).  |
+| **Shanghai Equities + ETFs**  | SSE  | CNY      | Available | CST (UTC+8) | Morning   | 09:30–11:30   | 01:30–03:30 UTC |                                                                                      |
+|                               |      |          |           |             | Afternoon | 13:00–14:57   | 05:00–06:57 UTC | 90-minute lunch break 11:30–13:00. Closing auction 14:57–15:00 (`marketStatus = 5`). |
+| **Shenzhen Equities + ETFs**  | SZSE | CNY      | Available | CST (UTC+8) | Morning   | 09:30–11:30   | 01:30–03:30 UTC |                                                                                      |
+|                               |      |          |           |             | Afternoon | 13:00–14:57   | 05:00–06:57 UTC | 90-minute lunch break 11:30–13:00. Closing auction 14:57–15:00 (`marketStatus = 5`). |
+| **Taiwan Equities + ETFs**    | TWSE | TWD      | Available | CST (UTC+8) | Regular   | 09:00–13:25   | 01:00–05:25 UTC | Closing auction 13:25–13:30 (`marketStatus = 5`).                                    |
+| **Hong Kong Equities + ETFs** | HKEX | HKD      | Available | HKT (UTC+8) | Morning   | 09:30–12:00   | 01:30–04:00 UTC |                                                                                      |
+|                               |      |          |           |             | Afternoon | 13:00–16:00   | 05:00–08:00 UTC | One-hour lunch break 12:00–13:00. Closing auction 16:00–16:10 (`marketStatus = 5`).  |
 
 See the [APAC Equities](/data-streams/rwa-streams/apac-equities) page for coverage and risk considerations.
 
@@ -5867,6 +5874,17 @@ Implement appropriate safeguards based on market status — such as pausing trad
 - **IMPORTANT**: The `lastSeenTimestampNs` field reflects the timestamp of the last update for the `mid` price only. Do not assume this timestamp applies to `bid`, `ask`, `bidVolume`, `askVolume`, or `lastTradedPrice`. Different fields may have been updated at different times.
 - **Do not use `lastSeenTimestampNs` (or any other timestamp field) to determine which stream to select or to infer whether the market is open.** Timestamps indicate when data was last recorded, not whether the market is currently active. Use the `marketStatus` field as the authoritative signal for market availability and stream selection.
 
+#### `lastSeenTimestampNs` is not guaranteed to be monotonic
+
+Do not assume `lastSeenTimestampNs` strictly increases from one report to the next. Use `marketStatus` to determine whether a market is open.
+
+`lastSeenTimestampNs` is not guaranteed to be monotonic (that is, it does not always increase from one report to the next); the value can vary between reports. Reasons for this include:
+
+- A provider dropping in or out between reports can shift the median.
+- The fewer providers contribute to a report, the more a single provider's inclusion or exclusion can move the result. For example, if a provider is excluded from one report (due to a timeout) and included in the next, the median can shift to an earlier value than the previous report.
+
+Under normal circumstances, expect this value to advance with each report. A single occurrence of non-monotonic movement is not by itself cause for concern: treat it as a potential issue only if the behavior persists across multiple consecutive reports.
+
 #### Bid/Ask Volume
 
 For U.S. equities, there is no single consolidated order book. Instead, multiple venues each maintain their own order books. Because data providers source from different markets, the `bidVolume` and `askVolume` reported at each update come from one specific order book at a time, not an aggregate across all venues.
@@ -6011,7 +6029,20 @@ RWA streams adhere to the report schema outlined below.
 | `midPrice`              | `int192`  | DON's consensus median price                                             |
 | `marketStatus`          | `uint32`  | Market status. See schema docs for value mappings.                       |
 
-### Market Status Values
+### Notes
+
+#### `lastUpdateTimestamp` is not guaranteed to be monotonic
+
+Do not assume `lastUpdateTimestamp` strictly increases from one report to the next. Use `marketStatus` to determine whether a market is open.
+
+`lastUpdateTimestamp` is not guaranteed to be monotonic (that is, it does not always increase from one report to the next); the value can vary between reports. Reasons for this include:
+
+- A provider dropping in or out between reports can shift the median.
+- The fewer providers contribute to a report, the more a single provider's inclusion or exclusion can move the result. For example, if a provider is excluded from one report (due to a timeout) and included in the next, the median can shift to an earlier value than the previous report.
+
+Under normal circumstances, expect this value to advance with each report. A single occurrence of non-monotonic movement is not by itself cause for concern: treat it as a potential issue only if the behavior persists across multiple consecutive reports.
+
+#### Market Status Values
 
 <Aside type="caution" title="Use marketStatus, not timestamps">
   Always use <code>marketStatus</code> to determine whether a market is open. Do <strong>not</strong> use
@@ -6029,7 +6060,7 @@ v8 streams use a three-value mapping:
 
 For trading schedules by asset class, see [Market Hours](/data-streams/market-hours). For integration guidance during market transitions, see [Handling Market Events](/data-streams/rwa-streams/handling-market-events).
 
-### Notes
+### Additional Notes
 
 - Users are responsible for handling market status changes in their applications.
 - Future RWA streams may use different report schemas.
@@ -6184,6 +6215,17 @@ Consumers must treat `marketStatus = 5` (Closed) as a valid state and define det
 #### Stale Data Detection
 
 Markets may stop updating due to exchange outages, circuit breakers, trading halts, or corporate actions. The `marketStatus` field will continue reflecting the status that it normally would. Use the `lastSeenTimestampNs` field (which reflects the timestamp of the last update for the `mid` price only) to detect staleness by comparing it against the current time. When this timestamp stops advancing, it indicates the underlying venue has stopped providing updates.
+
+##### Why `lastSeenTimestampNs` can pause, or move non-monotonically, without an outage
+
+`mid` and its timestamp `lastSeenTimestampNs` are derived from a consensus across the data providers configured for a feed, and both only update when that consensus changes. Because the result depends on exactly which providers are included in a given report, any single provider dropping in or out can shift that result — and the fewer providers contribute to a report, the more a single provider's inclusion or exclusion can move the outcome. Two related behaviors follow from this:
+
+- **Pausing:** Individual data providers do not all publish at the same rate — some sourcing venues naturally have lower update frequency during certain windows, particularly for less liquid names or during thinner trading periods. When enough providers are momentarily quiet, the consensus value — and its timestamp — can hold steady for longer than you might expect, even though the DON is healthy and continuing to produce reports.
+- **Non-monotonic movement:** Which providers are actually included in a given report can also change from one report to the next, for example if a provider times out on one report and returns on the next. Because the timestamp is derived from whichever providers are included, it is not guaranteed to strictly increase — it can occasionally shift to an earlier value than the previous report's timestamp.
+
+In the normal case, expect `lastSeenTimestampNs` to advance in line with the update cadence for a given symbol and session. Neither of the above is a sign that the feed or DON is down. Do not assume `lastSeenTimestampNs` strictly increases between reports.
+
+A single stalled or backward-moving report is not, by itself, cause for concern. Treat it as a potential issue only if the behavior recurs across multiple consecutive reports, or the pause exceeds your own configured staleness threshold (see the staleness check example in [Stream Switching Example Logic](#stream-switching-example-logic)). At that point, apply your staleness safeguards regardless of whether the eventual cause turns out to be provider behavior or something else.
 
 Phase-specific feeds can introduce unique behavior due to venue-specific operational characteristics and market microstructure. The following are some examples of scenarios that may occur during session transitions or under specific market conditions:
 
@@ -6379,6 +6421,12 @@ APAC Equities data is delivered using the [RWA Advanced (v11) schema](/data-stre
 | `lastTradedPrice`       | `int192`  | Not populated for APAC equities; reported as 0                           |
 | `marketStatus`          | `uint32`  | Market status. Mapping varies by feed; see schema docs.                  |
 
+<Aside type="note" title="lastTradedPrice availability varies by market">
+  `lastTradedPrice` is only populated where the underlying data provider supplies trade data. Korea and Japan are
+  quote-only markets, so `lastTradedPrice` is not meaningfully populated for those streams. China, Hong Kong, and Taiwan
+  streams source trade data in addition to quotes.
+</Aside>
+
 For `marketStatus` value mappings, see [Standard-hours feeds (v11)](/data-streams/reference/report-schema-v11#standard-hours-feeds). For exchange schedules, see [Market Hours (APAC Equities)](/data-streams/market-hours#apac-equities).
 
 ## Coverage
@@ -6387,12 +6435,14 @@ APAC Equities streams cover major indices and single-name stocks across Asia-Pac
 
 ### Exchanges
 
-| Exchange             | Code | Local currency | Status    |
-| -------------------- | ---- | -------------- | --------- |
-| Korea Exchange       | KRX  | KRW            | Available |
-| Tokyo Stock Exchange | TSE  | JPY            | Available |
-
-Other APAC exchanges are coming soon.
+| Exchange                | Code | Local currency | Status    |
+| ----------------------- | ---- | -------------- | --------- |
+| Korea Exchange          | KRX  | KRW            | Available |
+| Tokyo Stock Exchange    | TSE  | JPY            | Available |
+| Shanghai Stock Exchange | SSE  | CNY            | Available |
+| Shenzhen Stock Exchange | SZSE | CNY            | Available |
+| Taiwan Stock Exchange   | TWSE | TWD            | Available |
+| Hong Kong Exchange      | HKEX | HKD            | Available |
 
 ## Trading hours
 
@@ -6414,17 +6464,19 @@ When a session is closed, prices hold at the last traded value until the next se
 
 TSE-listed equities observe a scheduled lunch break (11:30–12:30 JST / 02:30–03:30 UTC) during which `marketStatus = 5` (Closed) and no new price data is published. `lastSeenTimestampNs` will not advance for approximately 60 minutes during this window.
 
-Freshness monitoring logic that evaluates timestamp age alone should account for this break. A staleness threshold shorter than \~60 minutes will fire during the TSE lunch break, producing false-positive alerts and potentially unnecessary circuit-breaker activity.
+SSE- and SZSE-listed equities observe a similar scheduled lunch break (11:30–13:00 CST / 03:30–05:00 UTC). HKEX-listed equities observe a one-hour lunch break (12:00–13:00 HKT / 04:00–05:00 UTC).
+
+Freshness monitoring logic that evaluates timestamp age alone should account for these breaks. A staleness threshold shorter than the break duration will fire during the lunch break, producing false-positive alerts and potentially unnecessary circuit-breaker activity.
 
 Recommended approach: check `marketStatus` before evaluating freshness. If `marketStatus = 5`, staleness is expected and should not trigger restrictions; evaluate freshness thresholds only when `marketStatus = 2` (Open).
 
-KRX-listed equities have no intraday break; the session runs continuously from 09:00–15:20 KST (00:00–06:20 UTC).
+KRX-listed and TWSE-listed equities have no intraday break; KRX runs continuously from 09:00–15:20 KST (00:00–06:20 UTC), and TWSE runs continuously from 09:00–13:25 CST (01:00–05:25 UTC).
 
 ### Opening and closing auction prices
 
 At the open of each session, prices may reflect the exchange's opening auction mechanism rather than continuous traded prices. Opening auctions concentrate deferred orders from the closed period into a single price discovery event, which can produce an opening price that deviates materially from the prior session's close. This is normal exchange behavior, not a data quality issue.
 
-The same consideration applies at the start of the TSE afternoon session (12:30 JST / 03:30 UTC) following the lunch break.
+The same consideration applies at the start of the TSE afternoon session (12:30 JST / 03:30 UTC), the SSE/SZSE afternoon session (13:00 CST / 05:00 UTC), and the HKEX afternoon session (13:00 HKT / 05:00 UTC), following their respective lunch breaks.
 
 Protocols should account for session-open volatility by:
 
