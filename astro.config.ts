@@ -12,12 +12,70 @@ import { RehypePlugins } from "@astrojs/markdown-remark"
 import yaml from "@rollup/plugin-yaml"
 import { ccipRedirects } from "./src/config/redirects/ccip"
 import trailingSlashMiddleware from "./src/integrations/trailing-slash-middleware"
+import jsxRendererTag from "./src/integrations/jsx-renderer-tag"
 import redirectsJson from "./src/features/redirects/redirects.json"
 import { extractCanonicalUrlsWithLanguageVariants } from "./src/utils/sidebar"
 import remarkCodeFenceFilename from "./src/lib/markdown/remarkCodeFenceFilename"
 import rehypeCodeSampleFences from "./src/lib/markdown/rehypeCodeSampleFences"
 
 config() // Load .env file
+
+// Files that opt into Preact via a `/** @jsxImportSource preact */` pragma.
+// @astrojs/preact's Vite JSX transform claims every .tsx/.jsx file by default
+// (regardless of its own pragma) unless scoped with `include`, and it wins the
+// transform race over @astrojs/react's for a given file regardless of
+// integration registration order — so every Preact file must be listed here
+// and excluded from react() below, or files without the pragma silently get
+// compiled with Preact's JSX runtime instead of React's.
+//
+// This is a file-path (resolved module id) list, NOT an import-specifier list
+// — Vite's transform hook always receives the resolved absolute path, so this
+// is unaffected by how a component is imported elsewhere (relative, `~/`,
+// `@components/*` aliases, or a barrel file) — unlike SSR renderer selection
+// at runtime (handled separately by the jsx-renderer-tag integration, which
+// tags each component directly and doesn't need this list).
+const preactFiles = [
+  "**/components/Address.tsx",
+  "**/ChainSelector/ChainSelector.tsx",
+  "**/ChainSelector/ChainSelector.example.tsx",
+  "**/components/CopyText.tsx",
+  "**/components/DownloadButton.tsx",
+  "**/Footer/NewsletterCTA.tsx",
+  "**/Footer/NewsletterSignupForm.tsx",
+  "**/Hexagon/Cube.tsx",
+  "**/Hexagon/Hexagon.tsx",
+  "**/Assets/ThumbDownIcon.tsx",
+  "**/Assets/ThumbUpIcon.tsx",
+  "**/PageContent/Feedback.tsx",
+  "**/Quickstart/TableOfContents/TableOfContents.tsx",
+  "**/SectionWrapper/SectionWrapper.tsx",
+  "**/StickyHeader/StickyHeader.tsx",
+  "**/components/TableOfContents/TableOfContents.tsx",
+  "**/components/Tabs/Tabs.tsx",
+  "**/components/Tabs/TabsContent.tsx",
+  "**/billing/TokenCalculator.tsx",
+  "**/billing/TokenCalculatorDropdown.tsx",
+  "**/chainlink-automation/components/AutomationConfig.tsx",
+  "**/chainlink-automation/components/NetworkIcons.tsx",
+  "**/chainlink-functions/components/NetworkIcons.tsx",
+  "**/Tooltip/SimplePreactTooltip.tsx",
+  "**/ens/components/EnsLookupForm.tsx",
+  "**/ens/components/EnsManualLookupForm.tsx",
+  "**/feeds/components/ExpandableTableWrapper.tsx",
+  "**/feeds/components/FeedList.tsx",
+  "**/get-price/HistoricalPrice.tsx",
+  "**/get-price/LatestPrice.tsx",
+  "**/get-price/PriceButton.tsx",
+  "**/pause-notice/CheckHeartbeat.tsx",
+  "**/pause-notice/PauseNotice.tsx",
+  "**/feeds/components/Tables.tsx",
+  "**/landing/assets/VideoPlayerIcon.tsx",
+  "**/landing/components/ProductCard.tsx",
+  "**/landing/components/Tabs.tsx",
+  "**/vrf/v2/components/CostTable.tsx",
+  "**/vrf/v2/components/Dropdown.tsx",
+  "**/vrf/v2/components/MethodCheckbox.tsx",
+]
 
 // Prepare set of redirect source URLs to exclude from sitemap
 // This prevents duplicate entries and ensures only canonical URLs are indexed
@@ -49,11 +107,12 @@ export default defineConfig({
   },
   integrations: [
     trailingSlashMiddleware(),
+    jsxRendererTag(),
     preact({
-      include: ["**/preact/*"],
+      include: preactFiles,
     }),
     react({
-      include: ["**/react/*"],
+      exclude: preactFiles,
     }),
     sitemap({
       changefreq: "daily",
@@ -157,8 +216,5 @@ export default defineConfig({
     css: {
       devSourcemap: false,
     },
-  },
-  legacy: {
-    collections: false,
   },
 })

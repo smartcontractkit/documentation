@@ -11,7 +11,6 @@ import {
 import { CCIP_TOKEN_ICON_MAPPINGS } from "@config/data/ccip/tokenIconMappings.ts"
 import { toQuantity } from "ethers"
 import referenceChains from "~/scripts/reference/chains.json" with { type: "json" }
-import { c } from "node_modules/vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf.js"
 
 interface AddEthereumChainParameter {
   chainId: string
