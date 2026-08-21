@@ -633,6 +633,18 @@ To make this work you will need to:
 After you register an upkeep, its forwarder address is available in the Chainlink Automation App. Alternatively, you can fetch it programmatically using `registry.getForwarder(upkeepID)` from the Registry interface.
 
 
+**Time-based upkeeps**
+
+For time-based upkeeps, do **not** use the listed forwarder address. Instead, use the **Upkeep address** shown in the Chainlink Automation App:
+
+The **Upkeep address** is shown in the middle card of the **Details** section for your upkeep.
+
+**Custom or log trigger upkeeps**
+
+For custom upkeeps or log trigger upkeeps, use the **Forwarder address** listed in the Chainlink Automation App:
+
+The **Forwarder address** is shown in the left card of the **Details** section for your upkeep.
+
 ## Code example
 
 The code sample below uses the Forwarder:
@@ -789,6 +801,40 @@ Currently, the only parameter that you can set in your upkeep's offchain config 
    Use quotation marks only around the key, `"maxGasPrice"`. Do not use quotation marks around the value of the maximum gas price you are setting.
 
 2. Encode the JSON object using CBOR encoding:
+
+
+   **Solidity**
+
+   ```solidity
+   // SPDX-License-Identifier: MIT
+   pragma solidity 0.8.19;
+
+   import { CBOR } from "@chainlink/contracts/src/v0.8/vendor/solidity-cborutils/v2.0.0/CBOR.sol"
+
+   contract CBOREncoder {
+   using CBOR for CBOR.CBORBuffer;
+
+   // @notice encodes a max gas price to CBOR encoded bytes
+   // @param maxGasPrice The max gas price
+   // @return CBOR encoded bytes and the struct depth
+   function encode(uint256 maxGasPrice, uint256 capacity) external pure returns (bytes memory, uint256) {
+   CBOR.CBORBuffer memory buffer = CBOR.create(capacity);
+   buffer.writeString("maxGasPrice");
+   buffer.writeUInt256(maxGasPrice);
+   return (buffer.buf.buf, buffer.depth);
+   }
+   }
+   ```
+
+   **Go**
+
+   For Go, create a simple struct like this and encode it with the [cbor package](https://github.com/fxamacker/cbor).
+
+   ```go
+   type UpkeepOffchainConfig struct {
+       MaxGasPrice *big.Int `json:"maxGasPrice" cbor:"maxGasPrice"`
+   }
+   ```
 
 ---
 
@@ -1635,6 +1681,18 @@ The fee calculation for upkeeps that are configured for LINK payments (or other 
 This conversion is not performed in the fee calculation for upkeeps that are configured for native token payments. Otherwise, the fee formula is the same for both payment types:
 
 
+**LINK**
+
+**Formula for Registry v2.3**
+
+Fee<sub>LINK</sub> = [tx.gasPrice<sub>Native WEI</sub> \* gasUsed \* (1 + premium%) + (gasOverhead \* tx.gasPrice<sub>Native WEI</sub>)]/[LINK/Native<sub>Rate in WEI</sub>]
+
+**Native tokens**
+
+**Formula for Registry v2.3**
+
+Fee<sub>Native</sub> = tx.gasPrice<sub>Native WEI</sub> \* gasUsed \* (1 + premium%) + (gasOverhead \* tx.gasPrice<sub>Native WEI</sub>)
+
 There is no registration fee or other fees for any offchain computation.
 
 <Aside type="note" title="Additional fees for specific cases">
@@ -1713,6 +1771,80 @@ Chainlink Automation will reliably execute smart contract functions using a vari
 ## Try out Chainlink Automation
 
 Click the tabs below to use Chainlink Automation with each type of trigger:
+
+**Time-based**
+
+**Increment a counter every 5 minutes using our example contract.**
+
+1. Navigate to the [Chainlink Automation app](https://automation.chain.link/) and connect to **Arbitrum Sepolia** in the top dropdown menu.
+
+2. Connect your cryptocurrency wallet to the app if you haven't done so already. You may also need to fetch Arbitrum Sepolia testnet LINK [here](https://faucets.chain.link/arbitrum-sepolia).
+
+3. Click **Register new Upkeep** and select **Time-based** trigger.
+
+4. Under *Target contract address*, enter <Address contractUrl="https://sepolia.arbiscan.io/address/0x083935210524c0A8922ec610d1063Aa0A54d9d70" />. This is a simple counter contract that increments with each call. View the source code [here](https://sepolia.arbiscan.io/address/0x083935210524c0A8922ec610d1063Aa0A54d9d70#code).
+
+5. In the *Contract call* section, enter `addInteger` under *Target function*. In the *Function inputs* section, enter a number to increment by under *intToAdd*. Then click **Next**.
+
+6. Specify the time schedule, for example every 5 minutes. Paste the cron expression \*/5 \* \* \* \* under *Cron expression* or select one of the example timers. Then click **Next**.
+
+7. To learn more about CRON expressions, click [here](/chainlink-automation/guides/job-scheduler#specifying-the-time-schedule).
+
+8. Enter an *Upkeep name*, your public key address under *Admin Address*, 500000 under *Gas limit*, and 0.1 under *Starting balance (LINK)*.
+
+9. Click **Register Upkeep**.
+
+10. After the transaction has completed, you can view the performs for your upkeep in the upkeep details.
+
+You have successfully automated your first time-based upkeep. To learn more about creating time-based upkeeps, read [here](/chainlink-automation/guides/job-scheduler).
+
+**Custom Logic**
+
+**Increment a counter using custom logic stored onchain.**
+
+1. Navigate to the [Chainlink Automation app](https://automation.chain.link/) and connect to **Arbitrum Sepolia** in the top dropdown menu.
+
+2. Connect your cryptocurrency wallet to the app if you haven't done so already. You might also need to fetch LINK for the Arbitrum Sepolia testnet from [faucets.chain.link](https://faucets.chain.link/arbitrum-sepolia).
+
+3. Click **Register new Upkeep** and select **Custom logic** trigger.
+
+4. Under *Target contract address*, enter <Address contractUrl="https://sepolia.arbiscan.io/address/0x6C0AAAeBcDb6F5D03759B8BF14b47BE491755530" />. This contract is an Automation-compatible contract that uses logic stored onchain and onchain state to determine when to increment a counter. View the source code [here](https://sepolia.arbiscan.io/address/0x6C0AAAeBcDb6F5D03759B8BF14b47BE491755530#readContract). Click **Next**.
+
+5. Enter an *Upkeep name*, your public key address under *Admin Address*, 500000 under *Gas limit*, and 0.1 under *Starting balance (LINK)*.
+
+6. Finally, enter your public key address under *Check data (Hexadecimal)*. `checkData` is optional static data that you can pass into your upkeep to ensure your counter increments.
+
+7. Click **Register Upkeep**.
+
+8. After the transaction is complete, you can view the performs for your upkeep in the upkeep details. Your upkeep should perform once every minute and stop after 4 performs.
+
+You have successfully automated your first custom logic upkeep. To learn more about creating custom logic upkeeps, read [here](/chainlink-automation/guides/register-upkeep).
+
+**Log Trigger**
+
+**Increment an onchain counter using a log as trigger.**
+
+1. Navigate to the [Chainlink Automation app](https://automation.chain.link/) and connect to **Arbitrum Sepolia** in the top dropdown menu.
+
+2. Connect your cryptocurrency wallet to the app if you haven't done so already. You might also need to fetch LINK for the Arbitrum Sepolia testnet from [faucets.chain.link](https://faucets.chain.link/arbitrum-sepolia).
+
+3. Click **Register new Upkeep** and select **Log trigger**.
+
+4. Under *Contract to automate*, enter <Address contractUrl="https://sepolia.arbiscan.io/address/0xe817e4A71C69C72C01B31906F9F8591FbaB6b448" />. This is a simple `iLogAutomation`-compatible example contract that increments a counter when a log is detected. View the source code [here](https://sepolia.arbiscan.io/address/0xe817e4A71C69C72C01B31906F9F8591FbaB6b448#code). Click **Next**.
+
+5. Under *Contract emitting logs*, enter <Address contractUrl="https://sepolia.arbiscan.io/address/0x1260206b960bB07F12d48C19fad505CeFc071bDd" />. This is the contract Automation will listen to for emitted logs. View the source code [here](https://sepolia.arbiscan.io/address/0x1260206b960bB07F12d48C19fad505CeFc071bDd#code). Click **Next**.
+
+6. Under *Emitted log* select **Bump** from the dropdown menu. This is the log signature Automation will look for.
+
+7. *Log index topic filters* are optional filters to narrow the logs you want to trigger your upkeep. For this example, enter your public key address under *addr* and leave the *num* field empty. Later when you call the *bump* function to emit the log, your `msg.Sender` address will be emitted in the log, triggering your upkeep. Click **Next**.
+
+8. Enter an *Upkeep name*, your public key address under *Admin Address*, 500000 under *Gas limit*, and 0.1 under *Starting balance (LINK)*.
+
+9. Click **Register Upkeep** and wait for the transaction to complete.
+
+10. To trigger your upkeep call *bump* on the trigger contract by navigating to the Arbitrum Sepolia [scanner](https://sepolia.arbiscan.io/address/0x1260206b960bB07F12d48C19fad505CeFc071bDd#writeContract), connecting your wallet and executing the bump function. You can observe your upkeep's perform in the Automation dashboard.
+
+You have successfully automated your first log trigger upkeep. To learn more about creating log trigger upkeeps, read [here](/chainlink-automation/guides/log-trigger).
 
 ## Supported networks and costs
 
