@@ -1786,6 +1786,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Guides",
       contents: [
         {
+          title: "Cancel a Subscription and Withdraw Funds",
+          url: "chainlink-functions/guides/cancel-subscription",
+        },
+        {
           title: "Simple Computation",
           url: "chainlink-functions/tutorials/simple-computation",
         },
