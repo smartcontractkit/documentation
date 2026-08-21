@@ -210,7 +210,10 @@ export default defineConfig({
       //   }
       // },
     },
-    esbuild: {
+    // Vite 8 uses Rolldown/Oxc instead of Rollup/esbuild; `esbuild` options are
+    // ignored in favor of `oxc` ones (a runtime warning otherwise), so mirror
+    // the build target there too.
+    oxc: {
       target: "esnext", // Match build target for consistency
     },
     css: {
