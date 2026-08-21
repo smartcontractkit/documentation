@@ -402,6 +402,10 @@ For best practices regarding RWA streams:
 
 For best practices regarding stock splits and reverse splits for tokenized assets, please see the [Handling Stock Splits](/data-streams/tokenized-asset-streams/handling-stock-splits) guide.
 
+## Rate Limits
+
+Rely on the WebSocket stream for report delivery rather than polling a REST endpoint in a tight loop, and implement exponential backoff on reconnect logic. See the [Rate Limits and Fair Use Policy](/data-streams/rate-limits) page for applicable limits and how to avoid HTTP 429 responses.
+
 ---
 
 # Calculated Streams
@@ -951,6 +955,10 @@ The portal automatically includes your Data Streams user ID with the ticket.
 
 If you are using Data Streams credentials that were issued outside the self-service portal, your streams user ID will not be attached automatically. Include your streams user ID — represented as a UUID — in your support request.
 
+## Rate limiting
+
+If you believe you've been rate limited unexpectedly, see the [Rate Limits and Fair Use Policy](/data-streams/rate-limits) page for details on fair usage limits and what to include in your support request.
+
 ---
 
 # Chainlink Data Streams
@@ -1214,6 +1222,55 @@ Used by 24/5 US Equities streams with extended and overnight sessions.
 ## Best practices
 
 For comprehensive guidance on managing risks related to market hours, market gaps, volatility, and corporate actions, see the [Best Practices](/data-streams/concepts/best-practices#market-hours) page.
+
+---
+
+# Data Streams Rate Limits and Fair Use Policy
+Source: https://docs.chain.link/data-streams/rate-limits
+
+To ensure reliable access to Chainlink Data Streams for all consumers, rate limits are enforced on API and WebSocket usage. This page describes what constitutes fair usage.
+
+## Fair usage definition
+
+Rate limits are defined by your service agreement. For users with a self-service subscription purchased through [app.chain.link](https://app.chain.link), fair usage is defined as:
+
+- 20 concurrent WebSocket connections
+- 10 requests per second per endpoint on the REST service
+
+These limits apply per user ID. For example, your account is limited to 10 requests per second on *each* of the following endpoints (limits are not cumulative across endpoints):
+
+- `/api/v1/reports`
+- `/api/v1/reports/latest`
+- `/api/v1/reports/page`
+- `/api/v1/reports/bulk`
+
+Users with a contracted service agreement have higher limits defined by their agreement. [Contact us](/data-streams/get-support) for higher rate limits.
+
+Requests that exceed the applicable limit receive an HTTP 429 (Too Many Requests) response.
+
+## Report retrieval
+
+Reports are pushed as soon as they are available. Sending a higher volume of REST requests to retrieve the latest report will not return it any faster, and adds unnecessary load to the service. Use the WebSocket stream for timely report delivery rather than polling a REST endpoint.
+
+## Prohibited: redistribution via proxy
+
+Proxying Chainlink Data Streams with the intent to share or redistribute data to a wider audience (for example, re-serving stream data to third parties who are not party to your license or agreement) is strictly prohibited under the [Terms of Service](https://chain.link/terms). Each consumer must connect and authenticate directly under their own credentials.
+
+## Best practices to avoid rate limiting
+
+- Rely on the WebSocket stream for report delivery rather than polling a REST endpoint in a tight loop.
+- Ensure your client properly closes WebSocket connections on disconnect and reconnect to avoid connection leaks.
+- Implement exponential backoff on reconnect logic.
+- If you require higher throughput or connection limits than the defaults, [reach out proactively](/data-streams/get-support) rather than working around the limit — we're happy to discuss options for your use case.
+
+<Aside type="note" title="Contact">
+  If you have questions about this policy, or believe you've been rate limited unexpectedly, [contact
+  support](/data-streams/get-support) with:
+
+  - Your API user ID identifier
+  - Timestamps of the affected requests or connections
+  - A brief description of your integration and expected usage pattern
+</Aside>
 
 ---
 
@@ -4530,6 +4587,7 @@ GET /api/v1/reports/page?feedID=<FeedID>&startTimestamp=<StartTimestamp>&limit=<
 | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 400 Bad Request                           | This error is triggered when: <ul><li>There is any missing/malformed query argument.</li><li>Required headers are missing or provided with incorrect values.</li></ul>                                                                                                                                                                               |
 | 401 Unauthorized User                     | This error is triggered when: <ul><li>Authentication fails, typically because the HMAC signature provided by the client doesn't match the one expected by the server.</li><li>A user requests access to a stream without the appropriate permission or that does not exist.</li></ul>                                                                |
+| 429 Too Many Requests                     | Indicates the request exceeded your account's rate limit. See the [Rate Limits and Fair Use Policy](/data-streams/rate-limits) page for applicable limits and how to request higher limits.                                                                                                                                                          |
 | 500 Internal Server                       | Indicates an unexpected condition encountered by the server, preventing it from fulfilling the request. This error typically points to issues on the server side.                                                                                                                                                                                    |
 | 502 Bad Gateway / 503 Service Unavailable | Indicates a transient error. Retry the request — see [Retry Guidance for REST Requests](/data-streams/architecture#retry-guidance-for-rest-requests).                                                                                                                                                                                                |
 | 206 Missing data (`/bulk` endpoint only)  | Indicates that at least one stream ID data is missing from the report. E.g., you requested a report for stream IDs `<feedID1>`, `<feedID2>`, and `<feedID3>` at a given timestamp. If data for `<feedID2>` is missing from the report (not available yet at the specified timestamp), you get `[<feedID1 data>, <feedID3 data>]` and a 206 response. |
@@ -4605,6 +4663,7 @@ GET /api/v1/ws?feedIDs=<feedID1>,<feedID2>,...
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 400 Bad Request       | This error is triggered when: <ul><li>There is any missing/malformed query argument.</li><li>Required headers are missing or provided with incorrect values.</li></ul>                                                                                                                |
 | 401 Unauthorized User | This error is triggered when: <ul><li>Authentication fails, typically because the HMAC signature provided by the client doesn't match the one expected by the server.</li><li>A user requests access to a stream without the appropriate permission or that does not exist.</li></ul> |
+| 429 Too Many Requests | Indicates the request exceeded your account's rate limit. See the [Rate Limits and Fair Use Policy](/data-streams/rate-limits) page for applicable limits and how to request higher limits.                                                                                           |
 | 500 Internal Server   | Indicates an unexpected condition encountered by the server, preventing it from fulfilling the request. This error typically points to issues on the server side.                                                                                                                     |
 
 ---
