@@ -104,6 +104,7 @@ export interface FeedVisibilityOptions {
   showOnlyDatalinkFeeds?: boolean
   streamCategoryFilter?: string
   rwaSchemaFilter?: string
+  cryptoSchemaFilter?: string
   showOnlyMVRFeeds?: boolean
   tokenizedEquityProvider?: string
   /** When set, only show extended-hours feeds in this category (e.g. "preciousMetals"). */
@@ -160,7 +161,18 @@ export function isFeedVisible(
       isVisible = dataFeedType === "streamsRwa" || (DATALINK_STREAM_MATCH[dataFeedType]?.(feed) ?? false)
     } else {
       if (dataFeedType === "streamsCrypto") {
-        isVisible = ["Crypto", "Crypto-DEX"].includes(feed.docs?.feedType)
+        const schemaVersion = getSchemaVersion(feed)
+        const feedType = feed.docs?.feedType
+        // Only show streams whose schema is explicitly v2 or v3 on the crypto page.
+        // Avoid falling back to feedType heuristics when the schema is missing or ambiguous.
+        // v2 streams are TWAP streams: only show them when attributeType is TWAP.
+        if (schemaVersion === "v2" && feedType === "Crypto" && feed.docs?.attributeType === "TWAP") {
+          isVisible = true
+        } else if (schemaVersion === "v3" && (feedType === "Crypto" || feedType === "Crypto-DEX")) {
+          isVisible = true
+        } else {
+          isVisible = false
+        }
       } else if (dataFeedType === "streamsRwa") {
         isVisible = ["Equities", "Forex"].includes(feed.docs?.feedType)
       } else if (dataFeedType === "streamsNav") {
@@ -168,7 +180,14 @@ export function isFeedVisible(
       } else if (dataFeedType === "streamsExRate") {
         isVisible = feed.docs?.productTypeCode === "ExRate"
       } else if (dataFeedType === "streamsBacked") {
-        isVisible = feed.docs?.feedType === "Tokenized Equities"
+        const schemaVersion = getSchemaVersion(feed)
+        const feedType = feed.docs?.feedType
+        // Only show streams whose schema is explicitly v10 on the tokenized asset page.
+        if (schemaVersion === "v10" && feedType === "Tokenized Equities") {
+          isVisible = true
+        } else {
+          isVisible = false
+        }
       }
     }
   } else if (isSmartData) {
@@ -228,6 +247,14 @@ export function isFeedVisible(
     const schemaVersion = getSchemaVersion(feed)
     if (options.rwaSchemaFilter === "v8" && schemaVersion !== "v8") return false
     if (options.rwaSchemaFilter === "v11" && schemaVersion !== "v11") return false
+  }
+
+  if (dataFeedType === "streamsCrypto" && options.cryptoSchemaFilter && options.cryptoSchemaFilter !== "all") {
+    const schemaVersion = getSchemaVersion(feed)
+    const feedType = feed.docs?.feedType
+    if (options.cryptoSchemaFilter === "v2" && (schemaVersion !== "v2" || feedType !== "Crypto")) return false
+    if (options.cryptoSchemaFilter === "v3" && (schemaVersion !== "v3" || feedType !== "Crypto")) return false
+    if (options.cryptoSchemaFilter === "v3-dex" && (schemaVersion !== "v3" || feedType !== "Crypto-DEX")) return false
   }
 
   if (isSmartData && options.showOnlyMVRFeeds) {
