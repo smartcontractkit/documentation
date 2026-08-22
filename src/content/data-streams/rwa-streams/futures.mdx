@@ -112,6 +112,16 @@ When the August contract expires, the front-month feed jumps directly to October
 
 Futures trade during standard trading hours for each instrument, with a scheduled break each trading day. Consult the exchange where the underlying contract is listed for holiday and early-close schedules.
 
+## Risk considerations
+
+Integrating protocols are responsible for implementing appropriate monitoring and risk mitigation mechanisms to ensure safe market operation.
+
+### Single-source data
+
+Each Futures instrument is sourced from a single institutional-grade data provider per feed. While this enables high-frequency, low-latency delivery, it introduces dependency on that provider's data quality and availability. There is no redundant cross-validation between providers for a given feed.
+
+If the underlying provider fails to deliver data, there is no fallback source, and a gap in data may not be immediately obvious from price alone. Protocols should continuously monitor feed freshness and implement safeguards — such as pausing trading or restricting liquidations — if updates stop arriving or a feed appears stale. Review the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance before integration.
+
 ## Support
 
 For inquiries related to a data outage, contact Chainlink Labs at [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
