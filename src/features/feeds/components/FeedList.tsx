@@ -13,7 +13,12 @@ import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 import { ChainSelector } from "~/components/ChainSelector/ChainSelector.tsx"
-import { chainHasVisibleFeeds, isFeedVisible, networkHasVisibleFeeds } from "../utils/feedVisibility.ts"
+import {
+  chainHasVisibleFeeds,
+  isFeedVisible,
+  networkHasVisibleFeeds,
+  type ExtendedHoursCategory,
+} from "../utils/feedVisibility.ts"
 import { chainHasSvrFeeds } from "../utils/svrDetection.ts"
 import {
   filterChainsByFeedTypeTag,
@@ -152,6 +157,7 @@ export const FeedList = ({
   forceApacEquitiesOnly = false,
   forceStreamCategoryFilter,
   tokenizedEquityProvider,
+  forceExtendedHoursCategory,
 }: {
   initialNetwork: string
   dataFeedType: DataFeedType
@@ -163,6 +169,7 @@ export const FeedList = ({
   forceApacEquitiesOnly?: boolean
   forceStreamCategoryFilter?: StreamsRwaFeedTypeValue
   tokenizedEquityProvider?: string
+  forceExtendedHoursCategory?: ExtendedHoursCategory
 }) => {
   const feedTypeFlags = getFeedTypeFlags(dataFeedType)
   const { isStreams, isSmartData, isRates, isUSGovernmentMacroeconomicData } = feedTypeFlags
@@ -467,9 +474,18 @@ export const FeedList = ({
     return filteredChainsByTag.filter((chain) =>
       chainHasVisibleFeeds((metadataCache as Record<string, any>)[chain.page], dataFeedType, ecosystem, {
         tokenizedEquityProvider,
+        extendedHoursCategory: forceExtendedHoursCategory,
       })
     )
-  }, [filteredChainsByTag, metadataCache, isStreams, dataFeedType, ecosystem, tokenizedEquityProvider])
+  }, [
+    filteredChainsByTag,
+    metadataCache,
+    isStreams,
+    dataFeedType,
+    ecosystem,
+    tokenizedEquityProvider,
+    forceExtendedHoursCategory,
+  ])
 
   const availableChainsForSelection = selectableChains.length > 0 ? selectableChains : filteredChainsByTag
 
@@ -502,6 +518,7 @@ export const FeedList = ({
 
     return chainHasSvrFeeds(currentChainMetadata.processedData, dataFeedType, ecosystem, {
       tokenizedEquityProvider,
+      extendedHoursCategory: forceExtendedHoursCategory,
     })
   }, [
     currentChainMetadata.processedData,
@@ -511,6 +528,7 @@ export const FeedList = ({
     dataFeedType,
     ecosystem,
     tokenizedEquityProvider,
+    forceExtendedHoursCategory,
   ])
 
   useEffect(() => {
@@ -525,6 +543,7 @@ export const FeedList = ({
     const visibilityOptions = {
       tokenizedEquityProvider,
       streamCategoryFilter: isStreams ? forceStreamCategoryFilter : undefined,
+      extendedHoursCategory: forceExtendedHoursCategory,
     }
 
     const types = new Set<string>()
@@ -550,6 +569,7 @@ export const FeedList = ({
     isStreams,
     isSmartData,
     forceStreamCategoryFilter,
+    forceExtendedHoursCategory,
   ])
 
   useEffect(() => {
@@ -793,6 +813,7 @@ export const FeedList = ({
         const visibilityOptions = {
           tokenizedEquityProvider,
           streamCategoryFilter: isStreams ? forceStreamCategoryFilter : undefined,
+          extendedHoursCategory: forceExtendedHoursCategory,
         }
 
         if (isStreams && force24x5Only) {
@@ -837,6 +858,7 @@ export const FeedList = ({
     forceStreamCategoryFilter,
     force24x5Only,
     forceApacEquitiesOnly,
+    forceExtendedHoursCategory,
   ])
 
   // Auto-switch network type if current selection isn't available
@@ -1196,6 +1218,7 @@ export const FeedList = ({
       const visibilityOptions = {
         tokenizedEquityProvider,
         streamCategoryFilter: forceStreamCategoryFilter,
+        extendedHoursCategory: forceExtendedHoursCategory,
       }
 
       if (force24x5Only) {
@@ -1442,6 +1465,7 @@ export const FeedList = ({
                   paginate={paginate}
                   searchValue={typeof searchValue === "string" ? searchValue : ""}
                   tokenizedEquityProvider={tokenizedEquityProvider}
+                  forceExtendedHoursCategory={forceExtendedHoursCategory}
                 />
               ))
             ) : (
@@ -1637,6 +1661,7 @@ export const FeedList = ({
                   paginate={testnetPaginate}
                   searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
                   tokenizedEquityProvider={tokenizedEquityProvider}
+                  forceExtendedHoursCategory={forceExtendedHoursCategory}
                 />
               ))
             ) : (
@@ -1915,6 +1940,7 @@ export const FeedList = ({
                         paginate={paginate}
                         searchValue={typeof searchValue === "string" ? searchValue : ""}
                         tokenizedEquityProvider={tokenizedEquityProvider}
+                        forceExtendedHoursCategory={forceExtendedHoursCategory}
                       />
                     </>
                   ) : (
@@ -2094,6 +2120,7 @@ export const FeedList = ({
                         paginate={testnetPaginate}
                         searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
                         tokenizedEquityProvider={tokenizedEquityProvider}
+                        forceExtendedHoursCategory={forceExtendedHoursCategory}
                       />
                     </>
                   )}

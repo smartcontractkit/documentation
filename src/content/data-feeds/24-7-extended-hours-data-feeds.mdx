@@ -1,0 +1,107 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "24/7 Extended-Hours Data Feeds"
+metadata:
+  title: "24/7 Extended-Hours Data Feeds | Chainlink Data Feeds"
+  description: "Learn how 24/7 extended-hours data feeds work for assets whose underlying markets normally close, including closed-market precious metals methodology and crypto-derived 24/7 forex rates such as USD/ARS."
+  keywords:
+    [
+      "24/7 Data Feeds",
+      "Extended Hours",
+      "Blended Precious Metals Feeds",
+      "tGLD",
+      "Custom Feeds",
+      "Precious Metals",
+      "XAU",
+      "Forex",
+      "ARS",
+      "USDARS",
+      "Data Feeds",
+    ]
+whatsnext:
+  {
+    "Review custom feed categories": "/data-feeds/selecting-data-feeds#-custom-feeds",
+    "Learn about single source data providers": "/data-feeds/selecting-data-feeds#single-source-data-providers",
+    "Find Price Feed Addresses": "/data-feeds/price-feeds/addresses",
+    "Learn about developer responsibilities": "/data-feeds/developer-responsibilities",
+  }
+---
+
+import { Aside } from "@components"
+import { FeedList } from "@features/feeds"
+
+Some assets only trade during specific [market hours](/data-feeds/selecting-data-feeds#market-hours): precious metals and forex markets close on weekends and holidays, and some currencies trade mainly during local hours or are subject to capital controls. To support applications that need continuous price data anyway, Chainlink offers [custom feeds](/data-feeds/selecting-data-feeds#-custom-feeds) that publish 24/7 for certain assets in these categories.
+
+These feeds are not a single, uniform product. Each asset class uses a different methodology to produce a continuous price, and each has its own risk profile. Review the section below for the asset class you are integrating, alongside the [Custom Feeds](/data-feeds/selecting-data-feeds#-custom-feeds) section and [risk mitigation](/data-feeds/selecting-data-feeds#risk-mitigation) guidance appropriate for your use case.
+
+| Asset class                         | Description                                                                                                                       |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| [Precious Metals](#precious-metals) | 24/7 blended feeds that report the spot price during market hours and a tokenized-stream-derived price when the market is closed. |
+| [Forex](#forex)                     | 24/7 crypto-derived rates for select currency pairs that lack a continuously observable institutional rate.                       |
+
+## Precious Metals
+
+24/7 blended precious metals price feeds publish a precious-metals-linked price both during and outside regular [precious metals market hours](/data-feeds/selecting-data-feeds#market-hours). They use a bespoke methodology rather than a continuously open physical precious metals spot market.
+
+### How it works
+
+During [open precious metals market hours](/data-feeds/selecting-data-feeds#market-hours), the feed reports the underlying precious metals spot price (for example, XAU/USD for gold). When the precious metals market is _closed_, the feed starts from the last observed open-market price and adjusts it with a blended signal derived from tokenized precious metals price streams.
+
+For example, the current tGLD/USD implementation uses [XAUT/USD](/data-streams/crypto-streams?search=XAUT) and [PAXG/USD](/data-streams/crypto-streams?search=PAXG) streams for the closed-market signal. For each available tokenized precious metals stream, the adapter tracks the token's open-market premium or discount to the spot price with an EMA, uses that value to derive a spot-equivalent tokenized price, averages the valid derived prices, and smooths the resulting deviation from the last spot price with another EMA. The composite price applies configurable weighting and deviation controls before the closed-market adjustment is reflected in the answer. Other blended precious metals feeds may use different tokenized streams or methodology variations.
+
+### Supported feeds
+
+The following table shows the available 24/7 blended precious metals feeds.
+
+<FeedList
+  client:idle
+  initialNetwork="ethereum"
+  dataFeedType="extendedHours"
+  forceExtendedHoursCategory="preciousMetals"
+/>
+
+Find these feeds on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page.
+
+### Risks
+
+<Aside type="note" title="24/7 blended precious metals feed risks">
+  These feeds use a custom methodology and are not equivalent to a continuously open physical precious metals spot
+  market. Outside regular precious metals market hours, the answer depends on tokenized precious metals markets, their
+  liquidity, their premium or discount to the underlying spot price, and the availability of the configured tokenized
+  streams. Users should monitor each feed against independent references, enforce freshness checks and value bounds
+  appropriate for their use case, and define pause or fallback behavior before using the feed to secure value, support
+  minting or redemption, trigger liquidations, or automate other protocol actions. If the tokenized inputs stop updating
+  or are unavailable, the adapter can continue from its most recent cached EMA state until valid inputs resume or the
+  precious metals market reopens. Contact chainlink_data_feeds@smartcontract.com with questions.
+</Aside>
+
+## Forex
+
+Standard [Forex feeds](/data-feeds/selecting-data-feeds#market-hours) follow the global Forex market schedule (18:00 ET Sunday to 17:00 ET Friday). Some currencies, however, are thinly traded outside their local market hours, subject to capital controls, or otherwise lack a single institutional or interbank rate that is observable at all times. For a subset of these currency pairs, Chainlink offers 24/7 forex feeds that source a crypto-derived exchange rate instead of a traditional interbank or institutional rate.
+
+### How it works
+
+A 24/7 crypto-derived forex rate is constructed by observing FX-to-stablecoin-to-FX arbitrage pathways: the implied exchange rate between two currencies, derived from the prices at which each currency trades against stablecoins and other crypto assets across global exchanges, 24 hours a day, 7 days a week. Because this rate is observed through crypto trading venues rather than through a country's official fixing mechanism or regulated banking channels, it is not constrained by capital controls and can be published continuously, including on weekends and local holidays.
+
+This also means a 24/7 crypto-derived rate measures a different market than an official, interbank, or institutional reference rate for the same currency pair, and the two can diverge, sometimes significantly. For example, [NCFX's analysis of its 24x7 USDARS rate](https://www.newchangefx.com/post/argentina-s-fifth-dollar-what-ncfx-s-24x7-usdars-rate-reveals) found the crypto-derived rate traded at a persistent premium of roughly 2.6% to 7.9% (averaging near 5%) above the institutional reference rate over a five-month period, with the premium widening or compressing in response to events such as central bank or IMF policy news. A 24/7 forex feed reflects the venue and methodology it is built on, not necessarily the rate you would get through a bank, a regulated exchange, or an official government fixing.
+
+### Supported feeds
+
+The following table shows the available 24/7 forex feeds.
+
+<FeedList client:idle initialNetwork="base" dataFeedType="extendedHours" forceExtendedHoursCategory="forex" />
+
+### Risks
+
+<Aside type="caution" title="24/7 forex feed risks: single data provider">
+  24/7 forex feeds currently rely on a single underlying data provider for their crypto-derived rate. Review the [Single
+  Source Data Providers](/data-feeds/selecting-data-feeds#single-source-data-providers) section before using one of
+  these feeds. In addition to the general single-source risks described there, be aware that a crypto-derived rate can
+  persistently and materially diverge from official, interbank, or institutional reference rates for the same currency
+  pair, and that this divergence is not static: it can widen or compress quickly around local political, regulatory, or
+  central bank events. Confirm that this rate construction matches your use case's definition of the currency pair, and
+  implement value bounds, freshness checks, monitoring against independent references, and pause or fallback behavior
+  before using one of these feeds to secure value, support minting or redemption, trigger liquidations, or automate
+  other protocol actions. Contact chainlink_data_feeds@smartcontract.com with questions.
+</Aside>

@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Learn about ACE Cross-Chain Identity: how the CCID system links wallet addresses across all EVM chains to a single identity, enabling universal credential verification."
   datePublished: "2026-04-20"
-  lastModified: "2026-04-20"
+  lastModified: "2026-08-18"
 ---
 
 import { Aside, ClickToZoom } from "@components"
@@ -63,6 +63,10 @@ The Credential Issuer registers credentials after verifying the user offchain. C
 ### Registry governance
 
 Both registries are themselves protected by a PolicyEngine. This means write access (registering identities, issuing credentials, revoking them) is governed by policies — only authorized Credential Issuers can modify the data. The [Identity Manager](/ace/concepts/key-terms#identity-manager) handles this through the ACE Platform.
+
+### Sharing registries across organizations
+
+A registry owner can grant another organization **read access** to a registry, so that organization can reference the same identities and credentials in its own policies without re-issuing them. Access is read-only for the recipient and revocable at any time. This is how a protocol reuses a provider's registry directly. See [External registry](/ace/concepts/key-terms#external-registry) in the glossary.
 
 ## Credential type identifiers
 
@@ -134,7 +138,7 @@ The system supports two levels of credential verification:
 
 **Attestation-only** is the default mode. The policy asks a single binary question: _does this credential exist for this identity?_ The answer is yes or no. The `credentialData` field is ignored entirely. This is sufficient for many compliance scenarios — for example, verifying that a user holds a `common.kyc` credential before allowing a transfer.
 
-**Credential Data Validator** adds a second layer. When a `ICredentialDataValidator` contract is configured on a Credential Source, the policy first checks that the credential exists, then passes the `credentialData` bytes to the validator contract for an additional custom check. The validator reads the non-PII data and returns `true` or `false`.
+**Credential Data Validator** adds a second layer. When a `ICredentialDataValidator` contract is configured on a Credential Source, the policy first checks that the credential exists, then passes the `credentialData` bytes to the validator contract for an additional custom check. The validator reads the non-PII data and returns `true` or `false`. ACE provides a pre-built **AllowDenyList Data Validator** whose first use case is jurisdiction control using [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes.
 
 This enables decisions based on _what's inside_ the credential, not just whether it exists. For example:
 
@@ -148,12 +152,12 @@ This enables decisions based on _what's inside_ the credential, not just whether
 | **`credentialData` usage** | Ignored                      | Read and validated by a custom contract                          |
 | **Use cases**              | KYC yes/no, sanctions yes/no | Investor tiers, jurisdiction codes, risk scores                  |
 
-<Aside type="note" title="Beta limitation">
-  Credential Data Validator contracts are not configurable through the ACE Platform (UI and Coordinator API) during
-  Beta. All credential checks operate in attestation-only mode. For Beta, model compliance checks as attestations — for
-  example, have the Credential Issuer issue a `not_ofac_sanctioned` credential that attests the user has passed the
-  sanctions check, rather than storing country data for onchain evaluation. See [Beta
-  Scope](/ace/beta-scope#credential-checks-are-attestation-only).
+<Aside type="note" title="Configuring data validation">
+  Credential Data Validators are configurable through the ACE Platform. To issue credentials that carry data, link a
+  data schema to your credential type; to enforce rules on that data at transaction time, attach a Data Validator to
+  your policy's credential source. Attestation-only remains the default when no data validator is configured. Data
+  Validators are a curated catalog maintained by Chainlink — see [Beta
+  Scope](/ace/beta-scope#credential-data-validation-is-a-curated-catalog) for details.
 </Aside>
 
 ## Credential lifecycle

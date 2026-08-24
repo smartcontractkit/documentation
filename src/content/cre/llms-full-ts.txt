@@ -26,20 +26,20 @@ You can start building and [simulating](/cre/guides/operations/simulating-workfl
 
 Simulation compiles your workflows into [WebAssembly (WASM)](https://webassembly.org/) and runs them on your machine—but makes **real calls** to live APIs and public EVM blockchains. This gives you confidence your workflow will work as expected when deployed to a DON.
 
-### Deploy your workflows (Early Access)
+### Deploy your workflows
 
 
-<Aside type="caution" title="Early Access: Disclaimer">
-  Chainlink Runtime Environment (CRE) deployment is in the "Early Access" stage of development, which means that CRE currently has functionality which is under development and may be changed in later versions. By using CRE, you expressly acknowledge and agree to accept the Chainlink <a href="https://chain.link/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>, which provides important information and disclosures.
+<Aside type="caution" title="Disclaimer">
+  Chainlink CRE is provided on an "as is" basis without any representations, warranties, covenants, or conditions of any kind. Use at your own risk. Users remain fully responsible for deployments and that the operation and performance of workflows matches expectations. Please review the Chainlink Foundation <a href="https://chain.link/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> which provides important information and disclosures. By using CRE, you expressly acknowledge and agree to accept these terms.
 </Aside>
 
-Early Access to workflow deployment includes:
+Deploying workflows requires approval. Workflow deployment includes:
 
 - **Deploy and run workflows** on a Chainlink DON
 - **Workflow lifecycle management**: Deploy, activate, pause, update, and delete workflows through the CLI
 - **Monitoring and debugging**: Access detailed logs, events, and performance metrics in the CRE UI
 
-To request Early Access, run `cre account access` from the CLI or visit <a href="https://app.chain.link/cre/request-access" target="_blank">app.chain.link/cre/request-access</a>. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+To request deploy access, run `cre account access` from the CLI. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
 
 ## How CRE runs your workflows
 
@@ -145,6 +145,11 @@ Jump to what you need:
 - **[Workflow Guides](/cre/guides/workflow/using-triggers/overview)** - Learn how to use triggers, make API calls, and interact with blockchains
 - **[Workflow Operations](/cre/guides/operations/simulating-workflows)** - Simulate, deploy, and manage your workflows
 - **[SDK Reference](/cre/reference/sdk)** - Detailed API documentation for Go and TypeScript SDKs
+
+
+<Aside type="caution" title="Disclaimer">
+  This code represents an example of using a Chainlink product or service. It is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may omit checks or error handling. Each party intending to use this reference implementation must perform its own audits, security and code review, and testing before any production deployment and ensure the operation and performance of such code matches expectations. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for outcomes due to errors in this example or how it is deployed or operated. Use of the Chainlink Network is subject to the Chainlink Foundation <a href="https://chain.link/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>, which provides important information and disclosures. By using this code, you acknowledge and agree to these terms.
+</Aside>
 
 ---
 
@@ -529,9 +534,103 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-07-16
+Last Updated: 2026-08-21
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.30.0 - August 13, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.30.0" target="_blank">CRE CLI version 1.30.0</a> is now available.**
+
+- **New testnet support for simulation**: `cre workflow simulate` now supports Monad, T-REX, Robinhood, Stable, and Tempo testnets for local simulation. See [Supported Networks](/cre/supported-networks).
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.29.0...v1.30.0)
+
+## Go SDK v1.19.0 - August 13, 2026
+
+**Go SDK version 1.19.0** adds chain constants for the newly supported testnets.
+
+- **New testnet chain constants**: Added `evm.MonadTestnet`, `evm.TRexTestnet`, `evm.RobinhoodTestnet`, and `evm.StableTestnet` constants for use in your workflow code. See [Supported Networks](/cre/supported-networks).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.18.0...v1.19.0)
+
+## TS SDK v1.19.0 - August 13, 2026
+
+**TypeScript SDK version 1.19.0** adds chain constants for the newly supported testnets.
+
+- **New testnet chain constants**: Added `MonadTestnet`, `TRexTestnet`, `RobinhoodTestnet`, and `StableTestnet` constants for use in your workflow code. See [Supported Networks](/cre/supported-networks).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.18.0...v1.19.0)
+
+## CLI v1.29.0 - August 7, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.29.0" target="_blank">CRE CLI version 1.29.0</a> is now available.**
+
+- **Monad mainnet simulation**: Monad mainnet is now supported for local simulation via `cre workflow simulate`. See [Supported Networks](/cre/supported-networks).
+- **Confidential Workflows**: Designate parts of your workflow to run inside a secure enclave (TEE), keeping secrets, sensitive inputs, and computation confidential from node operators during execution. See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) and [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows).
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.28.0...v1.29.0)
+
+## Go SDK v1.18.0 - August 6, 2026
+
+**Go SDK version 1.18.0** adds Confidential Workflows support.
+
+- **Confidential Workflows**: Added a TEE runtime (`cre.TeeRuntime`) and `cre.HandlerInTee` for running workflow logic inside a secure enclave. See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) and [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.17.0...v1.18.0)
+
+## TS SDK v1.18.0 - August 6, 2026
+
+**TypeScript SDK version 1.18.0** adds Confidential Workflows support.
+
+- **Confidential Workflows**: Added a `TeeRuntime` and `handlerInTee` for running workflow logic inside a secure enclave. See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) and [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.17.0...v1.18.0)
+
+## Go SDK v1.16.0 - August 3, 2026
+
+**Go SDK version 1.16.0** adds batch secret fetching.
+
+- **Batch secret fetching**: Added `runtime.GetSecrets()` to fetch multiple secrets in a single call. See [Secrets in CRE](/cre/guides/workflow/secrets).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.15.0...v1.16.0)
+
+## CLI v1.28.0 - July 30, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.28.0" target="_blank">CRE CLI version 1.28.0</a> is now available.**
+
+- **Deployment registry selection in `cre init`**: [`cre init`](/cre/reference/cli/project-setup) now lets you select the deployment registry during project setup.
+- **New aggregator support in simulation**: The local simulator now supports the new aggregator capability, keeping simulation aligned with production.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.27.0...v1.28.0)
+
+## CLI v1.27.0 - July 23, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.27.0" target="_blank">CRE CLI version 1.27.0</a> is now available.**
+
+- **Solana LogTrigger simulation**: `cre workflow simulate` now supports Solana LogTrigger events, enabling local simulation of Solana workflows triggered by onchain logs.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.26.0...v1.27.0)
 
 ## CLI v1.26.0 - July 16, 2026
 
@@ -4461,14 +4560,14 @@ Your workflow environment determines how you manage secrets:
 
 ## Quick comparison
 
-| Aspect             | Local Simulation                     | Deployed Workflows                 |
-| ------------------ | ------------------------------------ | ---------------------------------- |
-| **Environment**    | Your local machine                   | Workflow DON                       |
-| **Secret storage** | `.env` file or environment variables | Vault DON                          |
-| **CLI commands**   | None (automatic via simulation)      | `cre secrets create/update/delete` |
-| **Workflow code**  | `runtime.GetSecret()`                | `runtime.GetSecret()` (same API)   |
-| **Authentication** | Not required                         | `cre login` required               |
-| **Use case**       | Development and testing              | Deployed workflows                 |
+| Aspect             | Local Simulation                               | Deployed Workflows                                        |
+| ------------------ | ---------------------------------------------- | --------------------------------------------------------- |
+| **Environment**    | Your local machine                             | Workflow DON                                              |
+| **Secret storage** | `.env` file or environment variables           | Vault DON                                                 |
+| **CLI commands**   | None (automatic via simulation)                | `cre secrets create/update/delete`                        |
+| **Workflow code**  | `runtime.GetSecret()` / `runtime.GetSecrets()` | `runtime.GetSecret()` / `runtime.GetSecrets()` (same API) |
+| **Authentication** | Not required                                   | `cre login` required                                      |
+| **Use case**       | Development and testing                        | Deployed workflows                                        |
 
 ## How secrets work in your workflow
 
@@ -5001,6 +5100,14 @@ cre workflow simulate my-workflow --broadcast --target staging-settings
   <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get your testnet tokens.
 </Aside>
 
+
+<Aside type="caution" title="Solana simulation always requires CRE_ETH_PRIVATE_KEY">
+  For Solana workflows, `CRE_ETH_PRIVATE_KEY` is required even for dry-run simulation (without `--broadcast`). The CLI
+  uses it for workflow owner derivation regardless of chain family. Set any valid EVM private key in your `.env` — it
+  is not used for the Solana transaction itself. You also need `CRE_SOLANA_PRIVATE_KEY` for the transmitter account; see
+  [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-ts) for setup details.
+</Aside>
+
 **Use case:** Use `--broadcast` when you want to test the complete end-to-end flow, including actual onchain state changes, on a testnet.
 
 ## Trigger-specific configuration
@@ -5344,8 +5451,8 @@ If your workflow requires higher limits than the defaults, you can request a lim
 Source: https://docs.chain.link/cre/guides/operations/deploying-workflows
 Last Updated: 2026-05-12
 
-<Aside type="note" title="Early Access required">
-  Workflow deployment is currently in Early Access. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+<Aside type="note" title="Deploy access required">
+  Workflow deployment requires approval. Run `cre account access` to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
 
   **While you wait:** Continue building and simulating workflows using [`cre workflow simulate`](/cre/guides/operations/simulating-workflows).
 </Aside>
@@ -6807,7 +6914,7 @@ Last Updated: 2026-02-12
 
 Your CRE account is required to use the CRE CLI. You must be authenticated to run CLI commands, including simulating workflows, deploying workflows, and managing deployed workflows. You can authenticate using the browser-based `cre login` flow or an [API key](/cre/reference/cli/authentication#api-key-authentication) for CI/CD and headless environments(\*). This section covers everything you need to know about creating and managing your account.
 
-(\*) API key authentication requires your account to have <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">Early Access</a> approval.
+(\*) API key authentication requires your account to have deploy access approval. See [Requesting Deploy Access](/cre/account/deploy-access).
 
 ## What you'll need
 
@@ -6822,7 +6929,7 @@ To use CRE, you need:
 - **[Creating Your Account](/cre/account/creating-account)** - Step-by-step guide to creating a new CRE account through the CRE UI
 - **[Logging in with the CLI](/cre/account/cli-login)** - Authenticate your CLI with your CRE account to run commands
 - **[Managing Authentication](/cre/account/managing-auth)** - Check your login status, handle session expiration, and log out
-- **[Requesting Deploy Access](/cre/account/deploy-access)** - Check your deployment access status or submit a request for Early Access
+- **[Requesting Deploy Access](/cre/account/deploy-access)** - Check your deployment access status or submit a request for deploy access
 
 ## Security features
 
@@ -7057,7 +7164,7 @@ Browser login stores **`~/.cre/cre.yaml`** (credentials) and **`~/.cre/context.y
 
 
 <Aside type="note" title="Deploy access required">
-  API key authentication requires your account to have Early Access approval for deployment. To <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">request Early Access</a>, please share details about your project and use case—this helps us provide better support as you build with CRE.
+  API key authentication requires your account to have deploy access approval. Run `cre account access` to request access—this helps us provide better support as you build with CRE.
 </Aside>
 
 For CI/CD pipelines or headless environments where a browser is not available, you can authenticate using the `CRE_API_KEY` environment variable. When set, the CLI uses the API key automatically — no `cre login` required.
@@ -7119,10 +7226,7 @@ After logging out, you'll need to run `cre login` again to authenticate future C
 Source: https://docs.chain.link/cre/account/deploy-access
 Last Updated: 2026-02-26
 
-Deploying workflows to a Chainlink DON requires Early Access approval. You can request access in two ways:
-
-- **From the CLI** — Run `cre account access` to check your status or submit a request directly from your terminal
-- **From the web** — Visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to fill out the request form
+Deploying workflows to a Chainlink DON requires approval. Run `cre account access` to check your status or submit a request directly from your terminal.
 
 ## Check your access status
 
@@ -7327,14 +7431,14 @@ Key linking is the process of connecting a blockchain wallet address to your CRE
 
 **Important constraints:**
 
-- **One organization per address**: Each wallet address can only be linked to one CRE organization at a time. If you need to use the same address with a different organization, you must first [unlink it](#unlinking-a-key) from the current organization.
+- **Permanent organization bond**: Once a wallet address is linked to an organization, it is permanently bonded to that organization—even if unlinked. An unlinked address can only ever be relinked to the same organization, never to a different organization. Choose your wallet carefully before linking.
 - **Per-organization key limit**: The number of web3 keys your organization can link is subject to your plan quota. See [Service Quotas](/cre/service-quotas#registry-quotas) for the current limit. To request an increase, [contact us](/cre/support-feedback).
 
 However, an organization can have multiple wallet addresses linked to it, allowing team members to use their own addresses or enabling separation between development, staging, and production environments.
 
 
-<Aside type="note" title="Already linked to another organization?">
-  If you try to link an address that's already registered with another organization, the CLI will display an error. To use this address with your current organization, you must first unlink it from the other organization using cre account unlink-key (note: this will delete all workflows registered under that address in the other organization).
+<Aside type="caution" title="Permanent organization bond">
+  Once an address is linked to an organization, it is permanently bonded to that organization. Even if unlinked, the address can only ever be relinked to the same organization—never to a different organization. Make sure you're linking the correct wallet to the correct organization before confirming.
 </Aside>
 
 ## Prerequisites
@@ -7345,7 +7449,7 @@ Before linking a key, ensure you have:
 - **A CRE project directory**: You must run the command from a project directory that contains a `project.yaml` file
 - **Private key in `.env`**: Set `CRE_ETH_PRIVATE_KEY=<your_64_character_hex_key>` (without `0x` prefix) in your `.env` file
 - **Funded wallet**: Your wallet must have ETH on Ethereum Mainnet to pay for gas fees (the Workflow Registry contract is deployed on Ethereum Mainnet)
-- **Unlinked address**: The wallet address must not already be linked to another CRE organization. Each address can only be associated with one organization at a time.
+- **Unlinked address**: The wallet address must not be currently linked to any CRE organization. Once linked, an address is permanently bonded to that organization.
 
 
 <Aside type="caution" title="Never commit your .env file">
@@ -7353,6 +7457,11 @@ Before linking a key, ensure you have:
 </Aside>
 
 ## Linking your first key
+
+
+<Aside type="caution" title="This is a permanent decision">
+  Linking a wallet address to your organization is permanent. Once linked, this address will be permanently bonded to your organization. Even if unlinked in the future, it can only ever be relinked to this organization—never to a different organization. Choose your wallet carefully and ensure you're linking it to the correct organization before confirming.
+</Aside>
 
 The easiest way to link a key is to let the deployment process handle it automatically. When you first try to [deploy a workflow](/cre/guides/operations/deploying-workflows) with `deployment-registry: "onchain:ethereum-mainnet"`, the CLI will detect that your address isn't linked and prompt you to link it.
 
@@ -7485,7 +7594,7 @@ Linked Owners:
 
 ## Linking multiple addresses
 
-Your organization can link more than one wallet address, subject to your plan's key limit. See [Service Quotas](/cre/service-quotas#registry-quotas) for the current limit, or [contact us](/cre/support-feedback) to request an increase. Each individual address can only be linked to one organization at a time.
+Your organization can link more than one wallet address, subject to your plan's key limit. See [Service Quotas](/cre/service-quotas#registry-quotas) for the current limit, or [contact us](/cre/support-feedback) to request an increase. Remember that each address becomes permanently bonded to your organization upon linking.
 
 This is useful for:
 
@@ -7503,9 +7612,13 @@ To link another address:
 
 If you need to remove a linked address from your organization, you can use the `cre account unlink-key` command. This is useful when:
 
-- Rotating addresses for security reasons
 - Removing addresses that are no longer in use
 - Cleaning up test or development addresses
+
+
+<Aside type="note" title="Unlinking does not break the permanent bond">
+  When you unlink an address, all workflows registered under that address are deleted. However, the address remains permanently bonded to your organization. If you relink it in the future, it can only be linked to this organization, not to any other organization.
+</Aside>
 
 
 <Aside type="caution" title="Destructive operation">
@@ -8498,7 +8611,7 @@ Initialize projects and generate contract bindings (Go only).
 
 Manage your linked public key addresses and deployment access.
 
-- **`cre account access`** — Check deployment access status or submit an Early Access request
+- **`cre account access`** — Check deployment access status or submit a deploy access request
 - **`cre account link-key`** — Link a public key address to your account
 - **`cre account list-key`** — List workflow owners linked to your organization
 - **`cre account unlink-key`** — Unlink a public key address from your account
@@ -8667,7 +8780,7 @@ cre whoami
 
 
 <Aside type="note" title="Deploy access required">
-  API key authentication requires your account to have Early Access approval for deployment. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
+  API key authentication requires your account to have deploy access approval. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
 </Aside>
 
 For CI/CD pipelines, automated scripts, or any environment where a browser is not available, you can authenticate using an API key. When the `CRE_API_KEY` environment variable is set, the CLI uses it automatically — no `cre login` required.
@@ -8737,7 +8850,7 @@ PRODUCTION:
 | `cre login`   | Local development                     | Opens a browser for interactive login with 2FA       |
 | `CRE_API_KEY` | CI/CD, scripts, headless environments | Set the environment variable — no browser needed(\*) |
 
-(\*) API key authentication requires your account to have Early Access approval. See [Requesting Deploy Access](/cre/account/deploy-access).
+(\*) API key authentication requires your account to have deploy access approval. See [Requesting Deploy Access](/cre/account/deploy-access).
 
 ## Learn more
 
@@ -8767,9 +8880,9 @@ The `cre account` commands manage linked public key addresses for public onchain
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Checks your organization's deployment access status and lets you submit a request for Early Access directly from the CLI.
+Checks your organization's deployment access status and lets you submit a request for deploy access directly from the CLI.
 
-For a full walkthrough including the interactive flow and web UI option, see [Requesting Deploy Access](/cre/account/deploy-access).
+For a full walkthrough of the interactive flow, see [Requesting Deploy Access](/cre/account/deploy-access).
 
 **Usage:**
 
@@ -9095,7 +9208,7 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
 
 <Aside type="tip" title="Which chains can I simulate?">
-  Run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) to list the chains and mock forwarder addresses enabled for your tenant. Authentication is required — run `cre login` first.
+  Run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) to list the chains and forwarder addresses enabled for your tenant. Authentication is required — run `cre login` first.
 </Aside>
 
 ## `cre workflow supported-chains`
@@ -9107,9 +9220,9 @@ cre workflow simulate <workflow-name-or-path> [flags]
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Lists the chains enabled for your tenant and their mock Keystone forwarder addresses. Chains are returned from the platform based on your login session (`cre login` or `CRE_API_KEY`). Non-EVM chains configured for your tenant also appear in the output.
+Lists the chains enabled for your tenant and their forwarder addresses. Chains are returned from the platform based on your login session (`cre login` or `CRE_API_KEY`). Non-EVM chains configured for your tenant also appear in the output.
 
-Use this command before setting up a simulation target to confirm chain availability and copy the forwarder address for use in consumer contracts. If no authenticated context is found, the CLI will prompt you to run `cre login`.
+Use this command to confirm chain availability and copy the forwarder address for use in consumer contracts. If no authenticated context is found, the CLI will prompt you to run `cre login`.
 
 **Usage:**
 
@@ -9133,9 +9246,9 @@ cre workflow supported-chains --output json
 **Example (default output, excerpt):**
 
 ```text
-Chains and mock forwarders (tenant-scoped):
+Chains and forwarders (tenant-scoped):
 
-CHAIN                              SELECTOR              MOCK FORWARDER
+CHAIN                              SELECTOR              FORWARDER
 ethereum-mainnet-arbitrum-1        4949039107694359620   0xF8344CFd5c43616a4366C34E3EEE75af79a74482
 ethereum-mainnet                   5009297550715157269   0x0b93082D9b3C7C97fAcd250082899BAcf3af3885
 ethereum-testnet-sepolia           16015286601757825753  0xF8344CFd5c43616a4366C34E3EEE75af79a74482
@@ -9165,13 +9278,13 @@ polygon-mainnet                    4051577828743386545   0x76c9cf548b4179F8901cd
 ]
 ```
 
-The chain list is tenant-specific and may vary between organizations. Run the command locally for the full set of chains and forwarder addresses enabled for your account. For a full reference of mock and production forwarder addresses by network, see the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory).
+The chain list is tenant-specific and may vary between organizations. Run the command locally for the full set of chains and forwarder addresses enabled for your account. For a full reference of forwarder addresses by network, see the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory).
 
 ## `cre workflow deploy`
 
 
 <Aside type="note" title="Deployment access required">
-  Deploying workflows requires Early Access approval. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
+  Deploying workflows requires approval. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
 
   **While you wait:** Continue building and simulating workflows using [`cre workflow simulate`](/cre/guides/operations/simulating-workflows).
 </Aside>
@@ -11059,7 +11172,7 @@ Here are resources to help you go from simulation to production.
 
 
 <Aside type="note" title="Deployment access required">
-  Deploying requires Early Access approval. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access). While you wait, continue building and simulating workflows.
+  Deploying requires approval. Run `cre account access` to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access). While you wait, continue building and simulating workflows.
 </Aside>
 
 1. **[Link a Wallet Key](/cre/organization/linking-keys)** — Required for the default onchain Workflow Registry. Not needed when using `deployment-registry: "private"`.
@@ -12569,8 +12682,8 @@ Last Updated: 2026-05-12
 </Aside>
 
 
-<Aside type="note" title="Early Access required">
-  Workflow deployment is currently in Early Access. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+<Aside type="note" title="Deploy access required">
+  Workflow deployment requires approval. Run `cre account access` to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
 </Aside>
 
 The **public onchain registry** is the Workflow Registry contract on Ethereum Mainnet. Deploying to it records your workflow onchain — your linked wallet address becomes the workflow owner and every lifecycle operation (deploy, activate, pause, update, delete) submits a transaction to that contract.
@@ -12581,7 +12694,7 @@ For a lower-friction alternative that requires no wallet or gas for registry man
 
 Before deploying to the onchain registry, ensure you have:
 
-- **Early Access approval**: Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
+- **Deploy access approval**: Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
 - **[Authenticated](/cre/reference/cli/authentication)**: Logged in via `cre login` or using an [API key](/cre/reference/cli/authentication#api-key-authentication) (`CRE_API_KEY`). To verify, run `cre whoami`.
 - **[Linked your key](/cre/organization/linking-keys)**: Linked your EOA or multi-sig wallet to your CRE organization by running `cre account link-key`. See [Linking Wallet Keys](/cre/organization/linking-keys) for instructions.
 - **A funded wallet**: The account you are deploying from must hold ETH on Ethereum Mainnet to pay gas for the registration transaction.
@@ -12596,11 +12709,6 @@ The `cre workflow deploy` command handles the entire end-to-end process:
 1. **Compiles** your workflow to a WASM binary.
 2. **Uploads** the compiled binary and any associated configuration files to the CRE Storage Service.
 3. **Registers** the workflow onchain by submitting a transaction to the Workflow Registry contract on Ethereum Mainnet. Your wallet must have ETH for gas fees, and your `project.yaml` must include an RPC configuration for `ethereum-mainnet`. The transaction contains the workflow's name, owner, and artifact URLs.
-
-
-<Aside type="caution" title="Early Access: Disclaimer">
-  Chainlink Runtime Environment (CRE) deployment is in the "Early Access" stage of development, which means that CRE currently has functionality which is under development and may be changed in later versions. By using CRE, you expressly acknowledge and agree to accept the Chainlink <a href="https://chain.link/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>, which provides important information and disclosures.
-</Aside>
 
 ### Step 1: Ensure your configuration is correct
 
@@ -13276,6 +13384,338 @@ Because the build runs inside a pinned Docker image with a locked dependency tre
 
 ---
 
+# Building a Reusable Library
+Source: https://docs.chain.link/cre/guides/workflow/building-a-library-ts
+Last Updated: 2026-08-14
+
+This guide shows you how to package reusable integration logic (for example, a Slack notifier, a PagerDuty client, or a price-feed parser) as a standard npm package that other developers can install and import directly into their own CRE TypeScript workflows.
+
+This guide is not a tutorial on writing a workflow itself: if you're new to CRE, start with the [getting-started guide](/cre/getting-started/overview) first.
+
+## Who this is for
+
+Any developer who wants to publish a reusable package to npm that other people's CRE workflows will depend on.
+
+## Your library runs where the workflow runs
+
+A CRE TypeScript workflow is not run by Node.js. The workflow is transpiled and compiled into a single WebAssembly binary that executes inside [QuickJS](https://bellard.org/quickjs), a minimal JavaScript engine embedded via [Javy](https://github.com/bytecodealliance/javy). When a workflow author adds your package as a dependency, your code gets bundled into that same WASM binary, so it runs under the exact same restrictions as the workflow's own code. See [TypeScript Runtime Environment](/cre/concepts/typescript-wasm-runtime) for the full compilation pipeline.
+
+Running inside that WASM sandbox has two direct consequences for your library:
+
+- There is no Node.js runtime underneath your library at execution time: no `fs`, no `http`, no native modules.
+- There is no network stack for your code to call into directly. All non-deterministic work (HTTP calls, secrets, blockchain reads/writes) must go through CRE SDK capability APIs, which the DON executes and brings to consensus on your library's behalf.
+
+Design your library around these constraints from the start. Don't write a generic Node or browser package and assume it will run unmodified. Instead, build it directly against the CRE SDK's runtime primitives.
+
+## Pitfalls
+
+Because your library runs inside the same WASM sandbox as the workflow, the code you write can't rely on the Node.js or browser runtimes you're used to. The sections below cover the pitfalls that trip up most library authors: missing Node.js built-ins, no standard HTTP client, no top-level `async`/`await` around SDK calls, non-determinism, and numeric precision for onchain values. Read through them before you start, and keep them in mind as you design your library's API.
+
+### No Node.js built-ins
+
+QuickJS provides standard ECMAScript (`Map`, `Set`, `Promise`, most ES2020+ syntax) but not the Node.js API surface. **The following Node.js built-in modules are unavailable and will fail at compile or runtime** if your library, or one of its transitive dependencies, imports them:
+
+| Node.js built-in | What it's typically used for   |
+| ---------------- | ------------------------------ |
+| `fs`             | File system access             |
+| `path`           | Path manipulation              |
+| `crypto`         | Hashing, signing, random bytes |
+| `process`        | Process info, `process.env`    |
+| `http`, `https`  | HTTP servers and clients       |
+| `net`            | TCP sockets                    |
+| `stream`         | Streaming data                 |
+| `child_process`  | Spawning subprocesses          |
+| `os`             | Operating system info          |
+| `worker_threads` | Worker threads                 |
+| `cluster`        | Multi-process clustering       |
+| `dgram`          | UDP sockets                    |
+| `dns`            | DNS resolution                 |
+| `tls`            | TLS/SSL                        |
+| `vm`             | Running code in a VM           |
+| `zlib`           | Compression                    |
+| `readline`       | Reading input line by line     |
+| `events`         | Node's `EventEmitter`          |
+| `util`           | Node's `promisify`, etc.       |
+
+These restrictions have several practical implications for the code you write in your library:
+
+- **`Buffer` is available and is the standard way to base64-encode request bodies.**
+
+  Despite `buffer` being a Node built-in in principle, every CRE HTTP example in this guide uses `Buffer.from(bytes).toString("base64")` to encode request bodies, and it works the same in simulation and production. Use it the way the reference examples do instead of working around it with manual `btoa`/`String.fromCharCode` calls. `TextEncoder`/`TextDecoder` are also available and are the standard way to convert between strings and `Uint8Array`.
+
+- **No `process.env`.**
+
+  The `process` global doesn't exist in the WASM sandbox, so `process.env` is unavailable. Accept configuration through your library's function arguments, and read secrets with `runtime.getSecret()` (see [Secrets](/cre/guides/workflow/secrets)).
+
+- **No Node `crypto`.**
+
+  If you need hashing or signing, use a pure-JS library with no native bindings. [Noble](https://paulmillr.com/noble/) is a popular JavaScript cryptography library with minimal dependencies that works well with QuickJS. Always verify any third-party library in simulation before publishing.
+
+- **No `setTimeout`/`setInterval`.**
+
+  The WASM execution model is synchronous; there is no event loop to schedule against.
+
+Before depending on any third-party package inside your library, check its `package.json` and source for the built-ins above. When in doubt, check the [QuickJS Node.js compatibility reference](https://sebastianwessel.github.io/quickjs/docs/module-resolution/node-compatibility.html), and confirm with `cre workflow simulate` in a throwaway test workflow, since simulation runs your code in the same WASM environment as production, so incompatibilities surface immediately.
+
+### Alternatives to common Node built-ins
+
+| Instead of...                            | Use...                                                                                     | Notes                                                                                                                                                       |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `node:crypto`                            | [`@noble/hashes`, `@noble/curves`](https://paulmillr.com/noble/)                           | Pure JS, no native bindings.                                                                                                                                |
+| `ethers` (uses `node:crypto` internally) | [`viem`](https://viem.sh/)                                                                 | Verified compatible. Use for ABI encoding/decoding, address/unit utilities, and general Ethereum type handling.                                             |
+| `axios`, `node-fetch`, `got`, `undici`   | `HTTPClient` from `@chainlink/cre-sdk`                                                     | **Not optional** since there is no working substitute; every HTTP call must go through the SDK's node-mode and consensus path.                              |
+| `ws` (WebSockets)                        | Poll via `HTTPClient` on a cron or HTTP trigger instead                                    | Persistent socket connections are not supported in the WASM sandbox.                                                                                        |
+| `dotenv` / `process.env`                 | `runtime.getSecret()` or function parameters                                               | There is no `process`, see above.                                                                                                                           |
+| `import { Buffer } from "node:buffer"`   | The global `Buffer` (already available, no import needed)                                  | `Buffer` is available as a global, so importing it from `node:buffer` is unnecessary.                                                                       |
+| `uuid` / `crypto.randomUUID()`           | `Math.random()`-based generation inside the CRE runtime, or a uuid package's pure-JS build | Some `uuid` package builds pull in `node:crypto` for `randomUUID`. Verify with `cre workflow simulate`.                                                     |
+| `lodash`, `date-fns`, `dayjs`, `zod`     | Generally fine as-is                                                                       | Pure-JS utility/validation libraries with no Node built-ins typically work unmodified. `zod` is a documented SDK dependency. Still confirm with simulation. |
+| Node's `events` (`EventEmitter`)         | Plain callbacks/arrays, or a pure-JS emitter with zero dependencies                        | Node's own `EventEmitter` isn't available; most third-party emitters that don't import `node:events` work fine.                                             |
+
+
+<Aside type="note" title="Verify before shipping">
+  Only Noble, viem, and zod are dependencies used directly by the CRE SDK itself. The alternatives above are known to work because they are pure JS with no Node built-ins, but always confirm with `cre workflow simulate` before publishing your library.
+</Aside>
+
+### No standard HTTP client
+
+Do not depend on `axios`, `node-fetch`, `ws`, or any HTTP or socket library, since they all sit on top of Node's `http`/`net`/`stream` modules and will not work. Additionally, there is no bare global `fetch` you can rely on directly from a library the way you would in a browser or in Node 18+.
+
+Instead, all outbound requests must go through [`HTTPClient`](/cre/reference/sdk/http-client-ts) from `@chainlink/cre-sdk`. Beyond being a technical requirement, this is what gives the request DON-wide consensus. An HTTP call in CRE runs independently on every node in the DON (node mode), and the SDK aggregates the individual results into one trusted value before the workflow continues. A library that shells out to `axios` would bypass this consensus mechanism entirely, and even if it appeared to run, it would fail in production since the DON nodes would never agree on a single result.
+
+Consequence for library design: your exported functions should take a CRE `Runtime` (or, in some cases, a `NodeRuntime`) as a parameter, and use it to construct requests via `HTTPClient`, exactly as a workflow author would inline. Keep your library a thin, well-tested wrapper around that `Runtime`-based request pattern.
+
+```typescript
+// src/index.ts, inside your library package
+import { HTTPClient, consensusIdenticalAggregation, ok, type Runtime, type NodeRuntime } from "@chainlink/cre-sdk"
+
+export interface PagerDutyOptions {
+  routingKeySecret: string
+}
+
+export interface PagerDutyAlert {
+  summary: string
+  severity: "critical" | "error" | "warning" | "info"
+  source: string
+}
+
+export class PagerDuty {
+  constructor(private options: PagerDutyOptions) {}
+
+  trigger(runtime: Runtime<unknown>, alert: PagerDutyAlert): { statusCode: number } {
+    const sendAlert = (nodeRuntime: NodeRuntime<unknown>): { statusCode: number } => {
+      const routingKey = nodeRuntime.getSecret({ id: this.options.routingKeySecret }).result().value
+
+      const payload = {
+        routing_key: routingKey,
+        event_action: "trigger",
+        payload: alert,
+      }
+
+      const bodyBytes = new TextEncoder().encode(JSON.stringify(payload))
+      const body = Buffer.from(bodyBytes).toString("base64")
+
+      const httpClient = new HTTPClient()
+      const response = httpClient
+        .sendRequest(nodeRuntime, {
+          url: "https://events.pagerduty.com/v2/enqueue",
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body,
+          // Prevents every node from firing a duplicate alert
+          cacheSettings: { readFromCache: true, maxAgeMs: 60_000 },
+        })
+        .result()
+
+      if (!ok(response)) {
+        throw new Error(`PagerDuty request failed with status ${response.statusCode}`)
+      }
+
+      return { statusCode: response.statusCode }
+    }
+
+    return runtime.runInNodeMode(sendAlert, consensusIdenticalAggregation<{ statusCode: number }>())().result()
+  }
+}
+```
+
+Notes on this pattern:
+
+- Secrets are only ever resolved with `runtime.getSecret()` / `nodeRuntime.getSecret()` (backed by the Vault DON), never read from environment variables or hardcoded. Your library should accept a secret ID/name, not a raw credential, and let the consuming workflow own the actual value in [CRE secrets](/cre/guides/workflow/secrets).
+- `getSecret()` itself doesn't require node mode, but you'll typically call it from inside a `runInNodeMode` block anyway, since that's where you're already building the request that needs the secret value.
+- Non-idempotent calls (POST/PUT/PATCH/DELETE) should set `cacheSettings` so a single DON-wide action isn't repeated once per node.
+- Wrap HTTP calls in `runtime.runInNodeMode(...)` with an explicit [consensus aggregation](/cre/reference/sdk/consensus-ts) (`consensusIdenticalAggregation`, `consensusMedianAggregation`, or `ConsensusAggregationByFields` for multi-field objects) so the DON agrees on one result before your function returns control to the workflow.
+- All SDK capability calls use the [`.result()` pattern](/cre/reference/sdk/core-ts#understanding-the-result-pattern) instead of `await`, see the next section.
+
+### No top-level `async`/`await` around SDK calls
+
+`Promise` and `async`/`await` exist in QuickJS, but CRE SDK capabilities (`HTTPClient`, `EVMClient`, secrets, and so on) do not use them, they use a synchronous `.result()` handshake between the WASM guest and the CRE host instead, because the guest/host boundary can't await across WASM calls. This means:
+
+- Never use `Promise.race()` / `Promise.any()` around capability calls: result order between nodes is not deterministic and will break consensus.
+- Write your library's functions as plain synchronous functions that call `.result()` inline, matching how workflow code itself is written. You can still use `async`/`await` for your own internal pure-JS logic that doesn't touch the SDK, but don't expose an `async` public API that wraps SDK calls, since it will mislead consumers into thinking they should `await` your function when they shouldn't (and can't, at the top level of a handler).
+
+### Determinism
+
+Every trigger callback in a CRE workflow runs independently on every DON node and must produce identical results (DON mode), except inside `runtime.runInNodeMode()` blocks, which are explicitly for non-deterministic, per-node work that then gets aggregated. If nodes diverge, they generate different request IDs for capability calls and consensus fails outright.
+
+- **Never call `Date.now()` or `new Date()`.** Always use `runtime.now()` instead, it's available on both `Runtime` and `NodeRuntime`, so you don't need to branch on whether you're inside a `runInNodeMode` block.
+- **`Math.random()` is safe, but only inside the CRE WASM runtime.** The CRE runtime overrides `Math.random()` with a seeded generator so every node produces the same sequence, and it isn't cryptographically secure, so don't use it for anything security-sensitive such as key generation or signing nonces. Randomness computed outside that runtime, such as a pre-computed value passed in or a dependency with its own PRNG, won't go through CRE's override and will diverge across nodes.
+- **Never use `Promise.race()`, `Promise.any()`, or unpredictably-ordered `Promise.all()`** around `.result()` calls. Call `.result()` on each operation in a fixed order instead, for example always try API 1 then fall back to API 2. You can still initiate multiple requests before resolving any of them, as long as the resolution order never varies.
+- **Prefer `Map`/`Set` over plain objects when output order matters, and avoid `for...in`.** Since ES2015, plain-object key enumeration order is defined by spec (integer-like keys ascending, then string keys in insertion order) and is consistent across DON nodes running the same engine, so it isn't a source of non-determinism on its own. The real risk is `for...in` also walking inherited enumerable properties. Use `Object.keys(obj)`, or `Map`/`Set`, which guarantee insertion order without that gotcha.
+
+See [Avoiding Non-Determinism in Workflows](/cre/concepts/non-determinism-ts) for the complete guide, including LLM output handling.
+
+### Numeric precision for onchain values
+
+If your library produces or accepts values that will end up in a smart contract call, such as a price, an amount, or a `uint256`, use `bigint` (the `123n` suffix), never `number`. JavaScript `number` silently loses precision above `2^53`, which corrupts large integers without throwing an error. For scaling between human-readable decimals and fixed-point onchain representations, use viem's `parseUnits()`/`formatUnits()` (string-based, no floating-point math) rather than hand-rolled `* 10**18` arithmetic.
+
+## Packaging your library
+
+Structure it as an ordinary TypeScript npm package, there's no special CRE project layout for a library, only for a workflow.
+
+### Project structure
+
+A library is a minimal npm package with a single source file, its build config, and a README.
+
+```
+my-cre-library/
+├── src/
+│   └── index.ts
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+### `package.json`
+
+The manifest declares the SDK as a peer dependency and points consumers at your compiled output.
+
+```json
+{
+  "name": "my-cre-library",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc"
+  },
+  "peerDependencies": {
+    "@chainlink/cre-sdk": ">=1.0.0"
+  },
+  "devDependencies": {
+    "@chainlink/cre-sdk": "latest",
+    "typescript": "^5.9.0"
+  }
+}
+```
+
+Key points:
+
+- Declare `@chainlink/cre-sdk` as a `peerDependency`, not a regular dependency. The consuming workflow already depends on `@chainlink/cre-sdk` directly, so a peer dependency avoids bundling two separate copies of the SDK into the same WASM binary and avoids version-mismatch surprises. Add it to `devDependencies` too so your own build and typecheck work.
+- Ship plain compiled JS and `.d.ts` declarations. `tsc` output is enough, no bundler is required, since the workflow's own build step is what ultimately compiles everything down to WASM via Bun and Javy. Keep your compiled output free of Node-specific syntax; target `ES2020`/`ESNext` module output, not CommonJS.
+- Don't ship a `postinstall` script, that's a workflow-project concern (`bunx cre-setup`), not a library concern.
+- Keep your own dependency tree small. Everything you import gets bundled into the consuming workflow's single WASM binary, which is subject to production size and memory quotas (inspect them with `cre workflow limits export`, see [Testing Production Limits](/cre/guides/operations/understanding-limits)). A heavy library can push an otherwise-fine workflow over its quota.
+
+### `tsconfig.json`
+
+The compiler settings mirror the workflow's own so your output stays compatible with the WASM build.
+
+```json
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*.ts"]
+}
+```
+
+## Publishing
+
+Publish it like any other npm package:
+
+```bash
+npm run build
+npm publish --access public
+```
+
+Nothing about `npm publish` itself is CRE-specific. The workflow author's `bun install` / `cre-setup` pipeline is what turns your published JS into something that runs inside the WASM sandbox.
+
+## Using your library from a CRE workflow
+
+The workflow author adds it like any other dependency:
+
+```bash
+cd my-workflow
+bun add my-cre-library
+```
+
+Then imports and calls it from their workflow handler, passing in the `runtime` they already have:
+
+```typescript
+import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { PagerDuty } from "my-cre-library"
+
+type Config = { schedule: string }
+
+const pagerDuty = new PagerDuty({ routingKeySecret: "pager-duty-routing-key" })
+
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  pagerDuty.trigger(runtime, {
+    summary: "ETH/USD price breached threshold",
+    severity: "critical",
+    source: "cre-workflow",
+  })
+  return "alert sent"
+}
+
+const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+The workflow author still owns:
+
+- Storing the actual secret value (`pager-duty-routing-key`) in their [CRE secrets](/cre/guides/workflow/secrets); your library only ever refers to it by name.
+- Running `cre workflow simulate` to verify your library behaves correctly compiled into their WASM binary before deploying.
+
+## Pre-publish checklist
+
+Before you publish, run through this checklist to confirm your library follows every constraint covered in this guide. Each item maps to a pitfall or packaging requirement above.
+
+- No import of `fs`, `path`, `crypto`, `process`, `http`, `https`, `net`, `stream`, or any other Node built-in (aside from `Buffer`, which is available), directly or transitively. See [No Node.js built-ins](#no-nodejs-built-ins).
+- All outbound network calls go through `HTTPClient` (or `EVMClient` for chain reads/writes), never a third-party HTTP or socket library. See [No standard HTTP client](#no-standard-http-client).
+- HTTP calls, time, and randomness are wrapped in `runtime.runInNodeMode()` with an explicit consensus aggregation, or delegated back to the caller's `runtime`. Secrets are resolved with `getSecret()`, typically from inside that same block. See [No standard HTTP client](#no-standard-http-client).
+- No `Promise.race()`, `Promise.any()`, or order-unpredictable `Promise.all()` around `.result()` calls; resolution order is always fixed. See [No top-level `async`/`await` around SDK calls](#no-top-level-asyncawait-around-sdk-calls) and [Determinism](#determinism).
+- No plain-object `for...in` iteration relying on inherited properties; use `Object.keys()`, or `Map`/`Set`, instead. See [Determinism](#determinism).
+- No `async` public API wrapping SDK capability calls; expose the synchronous `.result()`-based pattern. See [No top-level `async`/`await` around SDK calls](#no-top-level-asyncawait-around-sdk-calls).
+- Secrets are accepted as an ID/name, never as a literal value baked into your library. See [No standard HTTP client](#no-standard-http-client).
+- `@chainlink/cre-sdk` is a `peerDependency`, not a bundled dependency. See [`package.json`](#packagejson).
+- Verified end-to-end with `cre workflow simulate` in a real (throwaway) CRE workflow that depends on your published or local package. See [No Node.js built-ins](#no-nodejs-built-ins).
+
+## Learn more
+
+- [TypeScript Runtime Environment](/cre/concepts/typescript-wasm-runtime): QuickJS compatibility and the WASM compilation pipeline
+- [Avoiding Non-Determinism in Workflows](/cre/concepts/non-determinism-ts): The complete determinism guide
+- [SDK Reference: HTTP Client](/cre/reference/sdk/http-client-ts): Full `HTTPClient` API
+- [SDK Reference: Core](/cre/reference/sdk/core-ts): `Runtime`, `NodeRuntime`, and the `.result()` pattern
+- [Secrets](/cre/guides/workflow/secrets): Storing and retrieving secrets for a deployed workflow
+
+---
+
 # Using Secrets in Simulation
 Source: https://docs.chain.link/cre/guides/workflow/secrets/using-secrets-simulation-ts
 Last Updated: 2025-11-04
@@ -13431,14 +13871,7 @@ The CLI will automatically read the `secrets-path` from your `workflow.yaml` and
 
 ## Fetching multiple secrets
 
-You can fetch multiple secrets by calling the secret retrieval method multiple times within your workflow.
-
-
-<Aside type="caution" title="Fetch secrets sequentially">
-  The WASM host for the CRE runtime does not support parallel `runtime.getSecret()` requests. Always fetch secrets **sequentially**: call `getSecret()`, get the result with `.result()`, then call `getSecret()` again for the next secret. Do not attempt to fetch multiple secrets in parallel.
-</Aside>
-
-The following example builds on the previous one. First, update your `secrets.yaml` to declare two secrets:
+First, update your `secrets.yaml` to declare both secrets:
 
 ```yaml
 secretsNames:
@@ -13455,9 +13888,11 @@ export SECRET_ADDRESS_ALL="0x1234567890abcdef1234567890abcdef12345678"
 export API_KEY_ALL="your-api-key-here"
 ```
 
-Now you can fetch both secrets in your workflow code:
+### Using batch fetch (recommended)
 
-Code snippet for Fetching Multiple Secrets (TypeScript):
+Use `runtime.getSecrets()` to retrieve multiple secrets in a single call. The result is a map keyed by secret ID.
+
+Code snippet for Fetching Multiple Secrets with Batch (TypeScript):
 
 ```typescript
 import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
@@ -13469,14 +13904,15 @@ const SECRET_ADDRESS_NAME = "SECRET_ADDRESS"
 const API_KEY_NAME = "API_KEY"
 
 const onCronTrigger = (runtime: Runtime<Config>): string => {
-  // 1. Request the first secret
-  const secretAddress = runtime.getSecret({ id: SECRET_ADDRESS_NAME }).result()
+  // Fetch multiple secrets in a single batch call
+  const secretsToFetch = [{ id: SECRET_ADDRESS_NAME }, { id: API_KEY_NAME }]
+  const secrets = runtime.getSecrets(secretsToFetch).result()
 
-  // 2. Request the second secret
-  const apiKey = runtime.getSecret({ id: API_KEY_NAME }).result()
+  // Access each secret from the result map by its ID
+  const secretAddress = secrets[SECRET_ADDRESS_NAME].value
+  const apiKey = secrets[API_KEY_NAME].value
 
-  // 3. Use your secrets
-  runtime.log(`Successfully fetched secrets! Address: ${secretAddress.value}, API Key: ${apiKey.value}`)
+  runtime.log(`Successfully fetched secrets! Address: ${secretAddress}, API Key: ${apiKey}`)
 
   return "Success"
 }
@@ -13494,6 +13930,11 @@ export async function main() {
   await runner.run(initWorkflow)
 }
 ```
+
+
+<Aside type="note" title="All-or-nothing error handling">
+  If any secret in a batch fails to fetch, `getSecrets()` throws a `SecretsBatchError` containing all error messages from the failed secrets.
+</Aside>
 
 ---
 
@@ -13965,14 +14406,23 @@ const initWorkflow = (config: Config) => {
 
 ### Step 2: Fetch a secret inside the enclave
 
-Your callback receives a [`TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-ts#teeruntimec). Call [`runtime.getSecret()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimegetsecret) to fetch a secret at the point you need it:
+Your callback receives a [`TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-ts#teeruntimec). Call [`runtime.getSecrets()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimegetsecrets) to fetch the secrets you need in a single batch call:
 
 ```ts
 const onCronTrigger = (runtime: TeeRuntime<Config>) => {
-  const secret = runtime.getSecret({ id: "MY_API_KEY" }).result()
+  const secrets = runtime.getSecrets([{ id: "API_KEY" }, { id: "DB_URL" }]).result()
+
+  const apiKey = secrets["API_KEY"].value
+  const dbUrl = secrets["DB_URL"].value
 
   // ...
 }
+```
+
+To fetch a single secret, use [`runtime.getSecret()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimegetsecret):
+
+```ts
+const secret = runtime.getSecret({ id: "MY_API_KEY" }).result()
 ```
 
 <Aside type="note" title="No upfront secret declaration">
@@ -13993,7 +14443,7 @@ const response = new HTTPClient()
   .sendRequest(runtime, {
     url: runtime.config.url,
     method: "GET",
-    multiHeaders: { Authorization: { values: [`Bearer ${secret.value}`] } },
+    multiHeaders: { Authorization: { values: [`Bearer ${apiKey}`] } },
   })
   .result()
 
@@ -14070,15 +14520,16 @@ const configSchema = z.object({
 type Config = z.infer<typeof configSchema>
 
 const onCronTrigger = (runtime: TeeRuntime<Config>) => {
-  // 1. Fetch a secret dynamically, inside the enclave.
-  const secret = runtime.getSecret({ id: "MY_API_KEY" }).result()
+  // 1. Fetch secrets dynamically, inside the enclave.
+  const secrets = runtime.getSecrets([{ id: "API_KEY" }, { id: "DB_URL" }]).result()
+  const apiKey = secrets["API_KEY"].value
 
   // 2. Make an HTTP request from inside the enclave.
   const response = new HTTPClient()
     .sendRequest(runtime, {
       url: runtime.config.url,
       method: "GET",
-      multiHeaders: { Authorization: { values: [`Bearer ${secret.value}`] } },
+      multiHeaders: { Authorization: { values: [`Bearer ${apiKey}`] } },
     })
     .result()
 
@@ -14122,16 +14573,16 @@ For the full list of types and methods available on [`TeeRuntime`](/cre/referenc
 
 # Forwarder Directory
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-ts
-Last Updated: 2026-06-24
+Last Updated: 2026-08-21
 
 <Aside type="note" title="Looking for supported networks?">
   For a complete list of supported networks and version requirements, see [Supported Networks](/cre/supported-networks).
 </Aside>
 
 <Aside type="tip" title="Tenant-scoped chain list">
-  Chain availability and mock forwarder addresses depend on your CRE tenant. Run [`cre workflow
+  Chain availability and forwarder addresses depend on your CRE tenant. Run [`cre workflow
     supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) after `cre login` to see the chains and
-  mock forwarder addresses enabled for your organization. Use `--output json` for scripting.
+  forwarder addresses enabled for your organization. Use `--output json` for scripting.
 </Aside>
 
 This page lists forwarder contract addresses for CRE workflows, organized by network.
@@ -14167,67 +14618,71 @@ If you configure forwarder validation in your consumer contract, **remember to u
 
 These `MockKeystoneForwarder` addresses are used when running `cre workflow simulate` with the `--broadcast` flag. Use these addresses **only** during local development and testing.
 
-The tables below reflect chains commonly enabled for simulation. Your tenant may have a different set — run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) for the authoritative list and mock forwarder addresses for your organization.
+The tables below reflect chains commonly enabled for simulation. Your tenant may have a different set — run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) for the authoritative list and forwarder addresses for your organization.
 
 ### Simulation Mainnets
 
 | Network             | Chain Name                    | Mock Forwarder Address                     |
 | ------------------- | ----------------------------- | ------------------------------------------ |
-| Arbitrum One        | ethereum-mainnet-arbitrum-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| Avalanche           | avalanche-mainnet             | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Base                | ethereum-mainnet-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| BNB Smart Chain     | binance_smart_chain-mainnet | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Celo                | celo-mainnet                  | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
-| Ethereum Mainnet    | ethereum-mainnet              | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
-| Gnosis Chain        | gnosis_chain-mainnet         | 0x9eF6468C5f37b976E57d52054c693269479A784d |
-| Hyperliquid Mainnet | hyperliquid-mainnet           | 0x9eF6468C5f37b976E57d52054c693269479A784d |
-| Ink                 | ethereum-mainnet-ink-1        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
-| Jovay Mainnet       | jovay-mainnet                 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Linea               | ethereum-mainnet-linea-1      | 0x9eF6468C5f37b976E57d52054c693269479A784d |
-| Mantle              | ethereum-mainnet-mantle-1     | 0xB9F79d863261869B234c481D1f9A7af84AeAd192 |
-| MegaETH             | megaeth-mainnet               | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
-| OP Mainnet          | ethereum-mainnet-optimism-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| Pharos Mainnet      | pharos-mainnet                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Plasma              | plasma-mainnet                | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
-| Polygon             | polygon-mainnet               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Scroll              | ethereum-mainnet-scroll-1     | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
-| Sonic               | sonic-mainnet                 | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
-| World Chain         | ethereum-mainnet-worldchain-1 | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
-| XLayer Mainnet      | ethereum-mainnet-xlayer-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| ZKSync Era          | ethereum-mainnet-zksync-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Arbitrum One        | ethereum-mainnet-arbitrum-1   | 0xd770499057619c9a76205fd4168161cf94abc532 |
+| Avalanche           | avalanche-mainnet             | 0xdc21e279934ff6721cadfdd112dafb3261f09a2c |
+| Base                | ethereum-mainnet-base-1       | 0x5e342a8438b4f5d39e72875fcee6f76b39cce548 |
+| BNB Smart Chain     | binance_smart_chain-mainnet | 0x6f3239bbb26e98961e1115aba83f8a282e5508c8 |
+| Celo                | celo-mainnet                  | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Ethereum Mainnet    | ethereum-mainnet              | 0xa3d1ad4ac559a6575a114998affb2fb2ec97a7d9 |
+| Gnosis Chain        | gnosis_chain-mainnet         | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Hyperliquid Mainnet | hyperliquid-mainnet           | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Ink                 | ethereum-mainnet-ink-1        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Jovay Mainnet       | jovay-mainnet                 | 0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4 |
+| Linea               | ethereum-mainnet-linea-1      | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Mantle              | ethereum-mainnet-mantle-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| MegaETH             | megaeth-mainnet               | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| OP Mainnet          | ethereum-mainnet-optimism-1   | 0x9119a1501550ed94a3f2794038ed9258337afa18 |
+| Pharos Mainnet      | pharos-mainnet                | 0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4 |
+| Plasma              | plasma-mainnet                | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Polygon             | polygon-mainnet               | 0xf458d621885e29a5003ea9bbba5280d54e19b1ce |
+| Scroll              | ethereum-mainnet-scroll-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Sonic               | sonic-mainnet                 | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| World Chain         | ethereum-mainnet-worldchain-1 | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| XLayer Mainnet      | ethereum-mainnet-xlayer-1     | 0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4 |
+| ZKSync Era          | ethereum-mainnet-zksync-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 
 ### Simulation Testnets
 
 | Network                     | Chain Name                            | Mock Forwarder Address                     |
 | --------------------------- | ------------------------------------- | ------------------------------------------ |
-| ADI Testnet                 | adi-testnet                           | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Apechain Curtis             | apechain-testnet-curtis               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Arc Testnet                 | arc-testnet                           | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Arbitrum Sepolia            | ethereum-testnet-sepolia-arbitrum-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Avalanche Fuji              | avalanche-testnet-fuji                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Base Sepolia                | ethereum-testnet-sepolia-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| BSC Testnet                 | binance_smart_chain-testnet         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Celo Sepolia                | celo-sepolia                          | 0x9eF6468C5f37b976E57d52054c693269479A784d |
-| Cronos Testnet              | cronos-testnet                        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
-| Ethereum Sepolia            | ethereum-testnet-sepolia              | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| Gnosis Chiado               | gnosis_chain-testnet-chiado          | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
-| Hyperliquid Testnet         | hyperliquid-testnet                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Ink Sepolia                 | ink-testnet-sepolia                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Jovay Testnet               | jovay-testnet                         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Linea Sepolia               | ethereum-testnet-sepolia-linea-1      | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Mantle Sepolia              | ethereum-testnet-sepolia-mantle-1     | 0xB9F79d863261869B234c481D1f9A7af84AeAd192 |
-| MegaETH Testnet 2           | megaeth-testnet-2                     | 0x9eF6468C5f37b976E57d52054c693269479A784d |
-| OP Sepolia                  | ethereum-testnet-sepolia-optimism-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Pharos Atlantic Testnet     | pharos-atlantic-testnet               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Plasma Testnet              | plasma-testnet                        | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Polygon Amoy                | polygon-testnet-amoy                  | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Scroll Sepolia (deprecated) | ethereum-testnet-sepolia-scroll-1     | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
-| Sonic Testnet               | sonic-testnet                         | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
-| TAC Testnet                 | tac-testnet                           | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
-| Unichain Sepolia            | ethereum-testnet-sepolia-unichain-1   | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
-| World Chain Sepolia         | ethereum-testnet-sepolia-worldchain-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| XLayer Testnet              | xlayer-testnet                        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
-| ZKSync Era Sepolia          | ethereum-testnet-sepolia-zksync-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| ADI Testnet                 | adi-testnet                           | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| Apechain Curtis             | apechain-testnet-curtis               | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Arc Testnet                 | arc-testnet                           | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Arbitrum Sepolia            | ethereum-testnet-sepolia-arbitrum-1   | 0xd41263567ddfead91504199b8c6c87371e83ca5d |
+| Avalanche Fuji              | avalanche-testnet-fuji                | 0x2e7371a5d032489e4f60216d8d898a4c10805963 |
+| Base Sepolia                | ethereum-testnet-sepolia-base-1       | 0x82300bd7c3958625581cc2f77bc6464dcecdf3e5 |
+| BSC Testnet                 | binance_smart_chain-testnet         | 0xa238e42cb8782808dbb2f37e19859244ec4779b0 |
+| Celo Sepolia                | celo-sepolia                          | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Cronos Testnet              | cronos-testnet                        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Ethereum Sepolia            | ethereum-testnet-sepolia              | 0x15fC6ae953E024d975e77382eEeC56A9101f9F88 |
+| Gnosis Chiado               | gnosis_chain-testnet-chiado          | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Hyperliquid Testnet         | hyperliquid-testnet                   | 0xB27fA1c28288c50542527F64BCda22C9FbAc24CB |
+| Ink Sepolia                 | ink-testnet-sepolia                   | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Jovay Testnet               | jovay-testnet                         | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Linea Sepolia               | ethereum-testnet-sepolia-linea-1      | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Mantle Sepolia              | ethereum-testnet-sepolia-mantle-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| MegaETH Testnet 2           | megaeth-testnet-2                     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Monad Testnet               | monad-testnet                         | 0xB9F79d863261869B234c481D1f9A7af84AeAd192 |
+| OP Sepolia                  | ethereum-testnet-sepolia-optimism-1   | 0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3 |
+| Pharos Atlantic Testnet     | pharos-atlantic-testnet               | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Plasma Testnet              | plasma-testnet                        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Polygon Amoy                | polygon-testnet-amoy                  | 0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74 |
+| Robinhood Testnet           | robinhood-testnet                     | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
+| Scroll Sepolia (deprecated) | ethereum-testnet-sepolia-scroll-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Sonic Testnet               | sonic-testnet                         | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Stable Testnet              | stable-testnet                        | 0x9081624a30231767C3093A5F2Ae1C57A4457C88F |
+| TAC Testnet                 | tac-testnet                           | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| T-REX Testnet               | t-rex-testnet                         | 0x53bC8B33F9Fd9cf5323b260CC078967cC3f30297 |
+| Unichain Sepolia            | ethereum-testnet-sepolia-unichain-1   | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| World Chain Sepolia         | ethereum-testnet-sepolia-worldchain-1 | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| XLayer Testnet              | xlayer-testnet                        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| ZKSync Era Sepolia          | ethereum-testnet-sepolia-zksync-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 
 ## Production Forwarders
 
@@ -14263,42 +14718,46 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 
 ### Testnets
 
-| Network                                                                                                                                                            | Chain Name                            | Forwarder Address                          |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- | ------------------------------------------ |
-| <a href="https://explorer.testnet.adifoundation.ai/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ADI Testnet</a>   | adi-testnet                           | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://explorer.curtis.apechain.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Apechain Curtis</a>    | apechain-testnet-curtis               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://testnet.arcscan.app/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Arc Testnet</a>                 | arc-testnet                           | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia.arbiscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>            | ethereum-testnet-sepolia-arbitrum-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://testnet.snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>             | avalanche-testnet-fuji                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia.basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base Sepolia</a>               | ethereum-testnet-sepolia-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| <a href="https://testnet.bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">BSC Testnet</a>                 | binance_smart_chain-testnet         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://celo-sepolia.blockscout.com/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Celo Sepolia</a>        | celo-sepolia                          | 0x9eF6468C5f37b976E57d52054c693269479A784d |
-| <a href="https://explorer.cronos.org/testnet/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Cronos Testnet</a>      | cronos-testnet                        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
-| <a href="https://sepolia.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>           | ethereum-testnet-sepolia              | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| <a href="https://gnosis-chiado.blockscout.com/address/0x0b93082D9b3C7C97fAcd250082899BAcf3af3885" target="_blank" rel="noopener noreferrer">Gnosis Chiado</a>      | gnosis_chain-testnet-chiado          | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
-| <a href="https://explore-testnet.hyperpc.app/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Hyperliquid Testnet</a> | hyperliquid-testnet                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://explorer-sepolia.inkonchain.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Ink Sepolia</a>     | ink-testnet-sepolia                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia-explorer.jovay.io/l2/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Jovay Testnet</a>      | jovay-testnet                         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia.lineascan.build/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Linea Sepolia</a>           | ethereum-testnet-sepolia-linea-1      | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia.mantlescan.xyz/address/0xB9F79d863261869B234c481D1f9A7af84AeAd192" target="_blank" rel="noopener noreferrer">Mantle Sepolia</a>           | ethereum-testnet-sepolia-mantle-1     | 0xB9F79d863261869B234c481D1f9A7af84AeAd192 |
-| <a href="https://megaexplorer.xyz/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">MegaETH Testnet 2</a>              | megaeth-testnet-2                     | 0x9eF6468C5f37b976E57d52054c693269479A784d |
-| <a href="https://sepolia-optimism.etherscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">OP Sepolia</a>        | ethereum-testnet-sepolia-optimism-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://atlantic.pharosscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Pharos Atlantic Testnet</a> | pharos-atlantic-testnet               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://testnet.plasmascan.to/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Plasma Testnet</a>            | plasma-testnet                        | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://amoy.polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>               | polygon-testnet-amoy                  | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| Scroll Sepolia (deprecated)                                                                                                                                        | ethereum-testnet-sepolia-scroll-1     | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
-| <a href="https://explorer.testnet.soniclabs.com/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Sonic Testnet</a>    | sonic-testnet                         | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
-| <a href="https://spb.explorer.tac.build/address/0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c" target="_blank" rel="noopener noreferrer">TAC Testnet</a>              | tac-testnet                           | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
-| <a href="https://sepolia.uniscan.xyz/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Unichain Sepolia</a>            | ethereum-testnet-sepolia-unichain-1   | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
-| <a href="https://sepolia.worldscan.org/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">World Chain Sepolia</a>       | ethereum-testnet-sepolia-worldchain-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://www.oklink.com/xlayer-test/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">XLayer Testnet</a>       | xlayer-testnet                        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
-| <a href="https://sepolia.explorer.zksync.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ZKSync Era Sepolia</a>   | ethereum-testnet-sepolia-zksync-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Network                                                                                                                                                                   | Chain Name                            | Forwarder Address                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------------ |
+| <a href="https://explorer.testnet.adifoundation.ai/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ADI Testnet</a>          | adi-testnet                           | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://explorer.curtis.apechain.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Apechain Curtis</a>           | apechain-testnet-curtis               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://testnet.arcscan.app/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Arc Testnet</a>                        | arc-testnet                           | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia.arbiscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>                   | ethereum-testnet-sepolia-arbitrum-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://testnet.snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>                    | avalanche-testnet-fuji                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia.basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base Sepolia</a>                      | ethereum-testnet-sepolia-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| <a href="https://testnet.bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">BSC Testnet</a>                        | binance_smart_chain-testnet         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://celo-sepolia.blockscout.com/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Celo Sepolia</a>               | celo-sepolia                          | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| <a href="https://explorer.cronos.org/testnet/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Cronos Testnet</a>             | cronos-testnet                        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| <a href="https://sepolia.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>                  | ethereum-testnet-sepolia              | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| <a href="https://gnosis-chiado.blockscout.com/address/0x0b93082D9b3C7C97fAcd250082899BAcf3af3885" target="_blank" rel="noopener noreferrer">Gnosis Chiado</a>             | gnosis_chain-testnet-chiado          | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
+| <a href="https://explore-testnet.hyperpc.app/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Hyperliquid Testnet</a>        | hyperliquid-testnet                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://explorer-sepolia.inkonchain.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Ink Sepolia</a>            | ink-testnet-sepolia                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia-explorer.jovay.io/l2/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Jovay Testnet</a>             | jovay-testnet                         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia.lineascan.build/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Linea Sepolia</a>                  | ethereum-testnet-sepolia-linea-1      | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia.mantlescan.xyz/address/0xB9F79d863261869B234c481D1f9A7af84AeAd192" target="_blank" rel="noopener noreferrer">Mantle Sepolia</a>                  | ethereum-testnet-sepolia-mantle-1     | 0xB9F79d863261869B234c481D1f9A7af84AeAd192 |
+| <a href="https://megaexplorer.xyz/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">MegaETH Testnet 2</a>                     | megaeth-testnet-2                     | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| <a href="https://testnet.monadscan.com/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Monad Testnet</a>                    | monad-testnet                         | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| <a href="https://sepolia-optimism.etherscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">OP Sepolia</a>               | ethereum-testnet-sepolia-optimism-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://atlantic.pharosscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Pharos Atlantic Testnet</a>        | pharos-atlantic-testnet               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://testnet.plasmascan.to/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Plasma Testnet</a>                   | plasma-testnet                        | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://amoy.polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>                      | polygon-testnet-amoy                  | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://explorer.testnet.chain.robinhood.com/address/0x8E6E6A1f2B2D4dF503bfd67951CF28F27BF3AF19" target="_blank" rel="noopener noreferrer">Robinhood Testnet</a> | robinhood-testnet                     | 0x8E6E6A1f2B2D4dF503bfd67951CF28F27BF3AF19 |
+| Scroll Sepolia (deprecated)                                                                                                                                               | ethereum-testnet-sepolia-scroll-1     | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| <a href="https://explorer.testnet.soniclabs.com/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Sonic Testnet</a>           | sonic-testnet                         | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| <a href="https://testnet.stablescan.xyz/address/0x701d026D1c85BA1DCbc3EEbe3636D646D88a0Aae" target="_blank" rel="noopener noreferrer">Stable Testnet</a>                  | stable-testnet                        | 0x701d026D1c85BA1DCbc3EEbe3636D646D88a0Aae |
+| <a href="https://spb.explorer.tac.build/address/0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c" target="_blank" rel="noopener noreferrer">TAC Testnet</a>                     | tac-testnet                           | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
+| <a href="https://explorer.ingen.t-rex.network/address/0x8E6E6A1f2B2D4dF503bfd67951CF28F27BF3AF19" target="_blank" rel="noopener noreferrer">T-REX Testnet</a>             | t-rex-testnet                         | 0x8E6E6A1f2B2D4dF503bfd67951CF28F27BF3AF19 |
+| <a href="https://sepolia.uniscan.xyz/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Unichain Sepolia</a>                   | ethereum-testnet-sepolia-unichain-1   | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| <a href="https://sepolia.worldscan.org/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">World Chain Sepolia</a>              | ethereum-testnet-sepolia-worldchain-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://www.oklink.com/xlayer-test/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">XLayer Testnet</a>              | xlayer-testnet                        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| <a href="https://sepolia.explorer.zksync.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ZKSync Era Sepolia</a>          | ethereum-testnet-sepolia-zksync-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 
 ---
 
 # Generating Contract Bindings
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/generating-bindings-ts
-Last Updated: 2026-03-17
+Last Updated: 2026-08-07
 
 To interact with a smart contract from your TypeScript workflow, you first need to create **bindings**. Bindings are type-safe TypeScript classes auto-generated from your contract's ABI. They handle all encoding and decoding—including base64 conversion for the CRE SDK wire format—so you can work directly with native TypeScript types.
 
@@ -14622,12 +15081,129 @@ You can import from the barrel file to keep imports clean:
 import { Storage, newStorageMock } from "../contracts/evm/ts/generated"
 ```
 
+## Using mock bindings for testing
+
+The `<ContractName>_mock.ts` files allow you to test your workflows without deploying or interacting with real contracts. Each mock provides:
+
+- **Test-friendly factory**: `new<ContractName>Mock(address, evmMock)` creates a mock instance
+- **Mockable methods**: Set custom function implementations for each contract `view`/`pure` function
+- **Type safety**: The same input/output types as the real binding
+
+Mocks are used together with the `@chainlink/cre-sdk/test` module, which provides `newTestRuntime()` (a `Runtime` you can call your handlers with directly, outside the WASM sandbox) and `EvmMock` (a fake EVM client you attach contract mocks to). Tests run with [Bun's built-in test runner](https://bun.com/docs/cli/test), using `describe`/`expect` from `bun:test` and the `test` helper from `@chainlink/cre-sdk/test`.
+
+### Complete example: Testing a workflow with mocks
+
+Let's say you have a workflow in `my-workflow/workflow.ts` that reads from a `Storage` contract. Create a test file named `workflow.test.ts` in the same directory.
+
+<Aside type="note" title="Adapt to your workflow">
+  This example demonstrates the mock setup pattern. The `Config` type and file names shown are examples — adapt them to
+  match your workflow's structure. The key concepts (creating mocks, setting behavior, calling your handler directly)
+  remain the same regardless of your specific config.
+</Aside>
+
+```typescript
+// File: my-workflow/workflow.test.ts
+import { describe, expect } from "bun:test"
+import { EvmMock, newTestRuntime, test } from "@chainlink/cre-sdk/test"
+import type { Address } from "viem"
+
+import { newStorageMock } from "../contracts/evm/ts/generated/Storage_mock"
+import { onCronTrigger } from "./workflow"
+import type { Config } from "./workflow"
+
+const CHAIN_SELECTOR = 16015286601757825753n // ethereum-testnet-sepolia
+const STORAGE_ADDRESS = "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4" as Address
+
+describe("onCronTrigger", () => {
+  test("reads the storage value and logs it", async () => {
+    // 1. Set up your config
+    const config: Config = {
+      chainSelector: CHAIN_SELECTOR.toString(),
+      storageAddress: STORAGE_ADDRESS,
+    }
+
+    // 2. Create a mock EVM client for the given chain
+    const evmMock = EvmMock.testInstance(CHAIN_SELECTOR)
+
+    // 3. Create a mock Storage contract and set up mock behavior
+    const storageMock = newStorageMock(STORAGE_ADDRESS, evmMock)
+    storageMock.get = () => 42n
+
+    // 4. Create a test runtime and attach your config to it
+    const runtime = newTestRuntime()
+    runtime.config = config
+
+    // 5. Call your handler directly — no simulator or WASM build required.
+    //    Because your workflow constructs its EVMClient from `runtime`, and the
+    //    mock is registered on that chain selector, the handler transparently
+    //    uses the mocked Get() function.
+    const result = onCronTrigger(runtime)
+
+    expect(result).toBe("42")
+    expect(runtime.getLogs()).toContain("Storage value: 42")
+  })
+})
+```
+
+### Running your tests
+
+From your workflow directory (or your project root, if you point Bun at the workflow path), run:
+
+```bash
+# Run every *.test.ts file discovered by Bun
+bun test
+
+# Run a specific test file
+bun test workflow.test.ts
+
+# Run tests matching a name pattern
+bun test --test-name-pattern "reads the storage value"
+```
+
+**Expected output:**
+
+```bash
+bun test v1.2.x
+
+workflow.test.ts:
+✓ onCronTrigger > reads the storage value and logs it [1.20ms]
+
+ 1 pass
+ 0 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [12.00ms]
+```
+
+The test passes, confirming your mock contract is set up correctly and your handler produces the expected result using the mocked contract — all without running the simulator or deploying anything.
+
+### Best practices for workflow testing
+
+1. **Name test files correctly**: Use `<name>.test.ts` (e.g., `workflow.test.ts`) and place them next to the workflow file they cover.
+2. **Call handlers directly**: Import and call your `on<Trigger>` functions directly with a `newTestRuntime()` — you don't need `initWorkflow` or the simulator to unit test handler logic.
+3. **Mock all external dependencies**: Use generated contract mocks (`new<ContractName>Mock`) for EVM calls, and assert on `runtime.getLogs()` instead of relying on console output.
+4. **Test different scenarios**: Write separate `test(...)` cases for success cases, error cases (e.g., a required config field missing), and edge cases.
+5. **Test `initWorkflow` separately**: Assert that `initWorkflow(config)` returns the handlers you expect, wired to the right triggers (e.g., checking `handlers[0].trigger.config.schedule`), independent of testing the handler logic itself.
+
+### Complete reference example
+
+For a comprehensive example showing how to test workflows with multiple triggers (cron, EVM log) and multiple mock contracts, see the Custom Data Feed demo workflow's `workflow.test.ts` file.
+
+To generate this example:
+
+1. Run `cre init` from your project directory
+2. Select **TypeScript** as your language
+3. Choose the **"Custom data feed: Updating on-chain data periodically using offchain API data"** template
+4. After initialization completes, examine the generated `workflow.test.ts` file in your workflow directory
+
+This generated test file demonstrates real-world patterns for testing complex workflows with multiple capabilities and mock contracts.
+
 ## Best practices
 
 1. **Regenerate when needed**: Re-run `cre generate-bindings evm` whenever you update your contract ABIs. Do not edit generated files by hand.
 2. **Handle errors**: The write and trigger methods will throw if encoding or network calls fail. Wrap them in try/catch blocks in your workflow handlers.
 3. **Use explicit `--language` in CI**: If your project has both `go.mod` and `package.json`, auto-detection may be ambiguous. Pass `--language typescript` explicitly in CI pipelines.
 4. **Organize ABIs**: Keep your `.abi` files clearly named in `contracts/evm/src/abi/`. The file name determines the generated class name.
+5. **Use mocks in tests**: Leverage the generated mock bindings to test your workflows in isolation without needing deployed contracts or the simulator.
 
 ## Where to go next
 
@@ -17512,9 +18088,9 @@ account**. Your workflow config needs both values.
 </Aside>
 
 <Aside type="tip" title="Tenant-scoped chain list">
-  Chain availability and mock forwarder addresses depend on your CRE tenant. Run [`cre workflow
+  Chain availability and forwarder addresses depend on your CRE tenant. Run [`cre workflow
     supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) after `cre login` to see the chains and
-  mock forwarder addresses enabled for your organization. Use `--output json` for scripting.
+  forwarder addresses enabled for your organization. Use `--output json` for scripting.
 </Aside>
 
 ## How to use this page
@@ -17556,7 +18132,7 @@ The workflow derives `forwarderAuthority` at runtime from `["forwarder", forward
 
 # Generating Solana Bindings
 Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/generating-bindings-ts
-Last Updated: 2026-07-08
+Last Updated: 2026-08-20
 
 To interact with a Solana program from your TypeScript workflow, you generate **bindings** from the program's [Anchor IDL](https://www.anchor-lang.com/docs/references/idl). Bindings are typed TypeScript classes that handle Borsh encoding, account hashing, and report submission automatically.
 
@@ -17614,34 +18190,70 @@ This reads all `.json` IDL files in `contracts/solana/src/idl/` and generates Ty
 
 For each struct in your IDL's `types` section, the generator creates a `writeReportFrom<StructName>()` method that Borsh-encodes your data, builds the forwarder report, and submits it in one step.
 
-**Example: A minimal `DataStorage` IDL**
+**Example: A minimal `cre_docs_receiver` IDL**
 
-The following IDL is enough to generate a `writeReportFromUserData()` helper. Save it as `my-workflow/contracts/solana/src/idl/data_storage.json`.
+The following IDL is enough to generate a `writeReportFromUserData()` helper. Save it as `my-workflow/contracts/solana/src/idl/cre_docs_receiver.json`.
 
 ```json
 {
-  "address": "64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31",
+  "address": "7k8NypziCPqVY8GYyCw7aqaR5aamFAMdH5ZaHVrZCS94",
   "metadata": {
-    "name": "data_storage",
+    "name": "cre_docs_receiver",
     "version": "0.1.0",
     "spec": "0.1.0",
-    "description": "Minimal CRE Solana write example IDL"
+    "description": "Receiver for cre-cli Solana forwarder simulation that logs a decoded UserData payload"
   },
   "instructions": [
     {
       "name": "on_report",
       "discriminator": [214, 173, 18, 221, 173, 148, 151, 208],
-      "accounts": [],
+      "accounts": [
+        { "name": "state" },
+        {
+          "name": "forwarder_authority",
+          "docs": ["PDA signer supplied by the forwarder CPI."],
+          "signer": true
+        }
+      ],
       "args": [
-        { "name": "_metadata", "type": "bytes" },
-        { "name": "payload", "type": "bytes" }
+        { "name": "metadata", "type": "bytes" },
+        { "name": "report", "type": "bytes" }
       ]
     }
   ],
-  "accounts": [],
-  "events": [],
-  "errors": [],
+  "events": [
+    {
+      "name": "ReceivedUserData",
+      "discriminator": [154, 5, 186, 144, 208, 168, 118, 242]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidForwarderAuthority",
+      "msg": "forwarder_authority is not the PDA for this state, receiver, and forwarder program"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidUserData",
+      "msg": "report payload could not be decoded as UserData"
+    }
+  ],
   "types": [
+    {
+      "name": "ReceivedUserData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "forwarder", "type": "pubkey" },
+          { "name": "forwarder_state", "type": "pubkey" },
+          { "name": "forwarder_authority", "type": "pubkey" },
+          { "name": "metadata_len", "type": "u32" },
+          { "name": "report_len", "type": "u32" },
+          { "name": "user", "type": { "defined": { "name": "UserData" } } }
+        ]
+      }
+    },
     {
       "name": "UserData",
       "type": {
@@ -17656,21 +18268,21 @@ The following IDL is enough to generate a `writeReportFromUserData()` helper. Sa
 }
 ```
 
-After running `cre generate-bindings solana`, use the generated `DataStorage` class in your workflow:
+After running `cre generate-bindings solana`, use the generated `CreDocsReceiver` class in your workflow:
 
 ```typescript
 import { SolanaClient, solanaAccountMeta, type Runtime } from "@chainlink/cre-sdk"
-import { DataStorage } from "./contracts/solana/ts/generated/DataStorage"
+import { CreDocsReceiver } from "./contracts/solana/ts/generated/CreDocsReceiver"
 
 // In your workflow handler...
 const client = new SolanaClient(BigInt(config.chainSelector))
-const ds = new DataStorage(client)
+const ds = new CreDocsReceiver(client, config.receiverProgramId)
 
-// remainingAccounts: Index 0 forwarderState, 1 forwarderAuthority, 2+ receiver accounts
+// remainingAccounts: Index 0 forwarderState, 1 forwarderAuthority, 2+ receiver accounts.
+// cre_docs_receiver needs no receiver-specific accounts, so we pass just [state, authority].
 const remainingAccounts = [
   solanaAccountMeta(config.forwarderState, false),
   solanaAccountMeta(config.forwarderAuthority, false),
-  solanaAccountMeta(config.reportState, true),
 ]
 
 // Pass the struct data directly — types are derived from the IDL
@@ -17682,9 +18294,10 @@ const result = ds.writeReportFromUserData(runtime, { key: "price", value: "50000
 For a full walkthrough including config, simulation, and production deployment, see [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-ts).
 
 <Aside type="note" title="What does writeReportFrom do?">
-  The generated method Borsh-encodes the struct with `@solana/codecs`, hashes `remainingAccounts` via
-  `calculateAccountsHash`, encodes a forwarder report and calls `runtime.report()` with `prepareSolanaReportRequest`,
-  calls `SolanaClient.writeReport()` to submit it, and returns the transaction result synchronously (after consensus).
+  The generated method Borsh-encodes the struct with `@solana/codecs` and `@solana/addresses`, hashes
+  `remainingAccounts` via `calculateAccountsHash`, encodes a forwarder report and calls `runtime.report()` with
+  `prepareSolanaReportRequest`, calls `SolanaClient.writeReport()` to submit it, and returns the transaction result
+  synchronously (after consensus).
 </Aside>
 
 ## What the CLI generates
@@ -17707,7 +18320,7 @@ What's inside depends on your IDL:
 You can import from the barrel file to keep imports clean:
 
 ```typescript
-import { DataStorage } from "./contracts/solana/ts/generated"
+import { CreDocsReceiver } from "./contracts/solana/ts/generated"
 ```
 
 ## `remainingAccounts` layout
@@ -17754,7 +18367,7 @@ const [forwarderAuthority] = await getProgramDerivedAddress({
 
 # Writing to Solana
 Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/onchain-write-ts
-Last Updated: 2026-07-13
+Last Updated: 2026-08-20
 
 This guide walks through your first Solana write from a CRE workflow using the TypeScript SDK. The preferred path is
 **generated bindings**: you place your Anchor IDL in the project, run `cre generate-bindings solana`, and call a typed
@@ -17773,7 +18386,7 @@ For IDL layout, generator output, and what each `writeReportFrom...` method does
 ## Prerequisites
 
 - A CRE project initialized with `cre init`. See [Part 1: Project Setup](/cre/getting-started/part-1-project-setup-ts) if you are starting from scratch.
-- CRE CLI **v1.24.0 or later** (`cre version` / `cre update`) with TypeScript Solana binding generation.
+- The latest version of the CRE CLI (`cre version` / `cre update`); **v1.29.0 or later** is required for TypeScript Solana binding generation.
 - A funded Solana Devnet keypair for `CRE_SOLANA_PRIVATE_KEY` (required even for dry-run). Generate one with `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and put the 64-byte base58 keypair in your project `.env`. See [Step 4](#step-4-run-the-simulation).
 
 ## What you need: a receiver program
@@ -17782,43 +18395,106 @@ Your Solana program must implement an `on_report` instruction that accepts the p
 forwarder CPIs into your program after verifying the DON signatures. Your Anchor IDL's `types` section defines the
 struct(s) you will write; the generator turns each into a `writeReportFrom<StructName>()` method.
 
-This guide uses a minimal `DataStorage` / `UserData` IDL with a receiver program already deployed to Solana Devnet at
-`64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31`. You can simulate against it without deploying your own program. Swap in
-your IDL and call the generated helpers for your structs when you are ready.
+This guide uses a minimal `cre_docs_receiver` program deployed to Solana Devnet at
+`7k8NypziCPqVY8GYyCw7aqaR5aamFAMdH5ZaHVrZCS94`. Its `on_report` re-derives and verifies the `forwarder_authority` PDA,
+then Borsh-decodes the report payload into a `UserData { key, value }` struct and logs it. It requires **no
+receiver-specific accounts** beyond the two the forwarder always supplies (`state` and `forwarder_authority`). You can
+simulate against it without deploying your own program. Swap in your IDL and call the generated helpers for your structs
+when you are ready.
 
-<Aside type="note" title="Forwarder strips leading accounts">
-  The forwarder passes only indices 2+ of your `remainingAccounts` list to your program's CPI call. Indices 0
-  (`forwarderState`) and 1 (`forwarderAuthority`) are consumed by the forwarder itself.
+```rust
+// cre_docs_receiver on_report (abridged)
+pub fn on_report(ctx: Context<OnReport>, metadata: Vec<u8>, report: Vec<u8>) -> Result<()> {
+    // ... re-derive + verify forwarder_authority PDA ...
+    let user = UserData::deserialize(&mut &report[..])?; // Borsh { key, value }
+    msg!("user.key={} user.value={}", user.key, user.value);
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct OnReport<'info> {
+    /// CHECK: forwarder state; its owner is the forwarder program.
+    pub state: UncheckedAccount<'info>,
+    /// PDA signer supplied by the forwarder CPI.
+    pub forwarder_authority: Signer<'info>,
+}
+```
+
+<Aside type="note" title="How remainingAccounts maps to the forwarder">
+  You provide `remainingAccounts` as `[forwarderState, forwarderAuthority, ...receiverAccounts]`. The **whole** list is
+  hashed into the report (an integrity check the forwarder re-computes onchain). The Solana write capability then
+  consumes indices 0 and 1 (`forwarderState`, `forwarderAuthority`) — it builds those into the forwarder instruction
+  itself — and forwards only indices 2+ (your receiver-specific accounts) to your program's `on_report` CPI. So indices
+  0 and 1 must be present in the list you build (so the hash matches), even though the capability supplies them to the
+  instruction directly. `cre_docs_receiver` has no receiver-specific accounts, so its list is just `[forwarderState,
+    forwarderAuthority]`.
 </Aside>
 
 ## Step 1: Add your IDL and generate bindings
 
-1. Save the following as `my-workflow/contracts/solana/src/idl/data_storage.json` (or copy your own Anchor IDL into that folder).
+1. Save the following as `contracts/solana/src/idl/cre_docs_receiver.json` (or copy your own Anchor IDL into that
+   folder). This is the deployed `cre_docs_receiver` program's IDL.
 
    ```json
    {
-     "address": "64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31",
+     "address": "7k8NypziCPqVY8GYyCw7aqaR5aamFAMdH5ZaHVrZCS94",
      "metadata": {
-       "name": "data_storage",
+       "name": "cre_docs_receiver",
        "version": "0.1.0",
        "spec": "0.1.0",
-       "description": "Minimal CRE Solana write example IDL"
+       "description": "Receiver for cre-cli Solana forwarder simulation that logs a decoded UserData payload"
      },
      "instructions": [
        {
          "name": "on_report",
          "discriminator": [214, 173, 18, 221, 173, 148, 151, 208],
-         "accounts": [],
+         "accounts": [
+           { "name": "state" },
+           {
+             "name": "forwarder_authority",
+             "docs": ["PDA signer supplied by the forwarder CPI."],
+             "signer": true
+           }
+         ],
          "args": [
-           { "name": "_metadata", "type": "bytes" },
-           { "name": "payload", "type": "bytes" }
+           { "name": "metadata", "type": "bytes" },
+           { "name": "report", "type": "bytes" }
          ]
        }
      ],
-     "accounts": [],
-     "events": [],
-     "errors": [],
+     "events": [
+       {
+         "name": "ReceivedUserData",
+         "discriminator": [154, 5, 186, 144, 208, 168, 118, 242]
+       }
+     ],
+     "errors": [
+       {
+         "code": 6000,
+         "name": "InvalidForwarderAuthority",
+         "msg": "forwarder_authority is not the PDA for this state, receiver, and forwarder program"
+       },
+       {
+         "code": 6001,
+         "name": "InvalidUserData",
+         "msg": "report payload could not be decoded as UserData"
+       }
+     ],
      "types": [
+       {
+         "name": "ReceivedUserData",
+         "type": {
+           "kind": "struct",
+           "fields": [
+             { "name": "forwarder", "type": "pubkey" },
+             { "name": "forwarder_state", "type": "pubkey" },
+             { "name": "forwarder_authority", "type": "pubkey" },
+             { "name": "metadata_len", "type": "u32" },
+             { "name": "report_len", "type": "u32" },
+             { "name": "user", "type": { "defined": { "name": "UserData" } } }
+           ]
+         }
+       },
        {
          "name": "UserData",
          "type": {
@@ -17833,6 +18509,15 @@ your IDL and call the generated helpers for your structs when you are ready.
    }
    ```
 
+
+   <Aside type="note" title="Why UserData is referenced by the event">
+     Anchor only emits a type into the IDL if it is referenced by an instruction argument, account, or event. Because
+     `on_report` takes the payload as raw `bytes`, `UserData` would be dropped from the IDL — and the generator would not
+     produce `writeReportFromUserData`. `cre_docs_receiver` references `UserData` in its `ReceivedUserData` event to keep
+     it in the IDL. If your own program already takes a typed struct or exposes it via an account/event, no extra step is
+     needed.
+   </Aside>
+
 2. From your workflow directory, generate the bindings:
 
    ```bash
@@ -17840,11 +18525,14 @@ your IDL and call the generated helpers for your structs when you are ready.
    cre generate-bindings solana
    ```
 
-   This creates `contracts/solana/ts/generated/DataStorage.ts` (plus a mock and `index.ts`) inside your workflow
-   folder. The `DataStorage` class includes `writeReportFromUserData(runtime, input, remainingAccounts, computeConfig?)`.
+   This creates `contracts/solana/ts/generated/CreDocsReceiver.ts` (plus a mock and `index.ts`). The `CreDocsReceiver`
+   class includes `writeReportFromUserData(runtime, input, remainingAccounts, computeConfig?)` and exports the program
+   ID as `CRE_DOCS_RECEIVER_PROGRAM_ID`.
 
-   The generated bindings import from `@solana/codecs`. If you run `tsc --noEmit` outside of `cre workflow simulate`,
-   install it in your workflow folder: `npm install @solana/codecs`.
+   The generated bindings import from `@solana/codecs` and `@solana/addresses`. This workflow also imports
+   `@solana/web3.js` (for the `forwarder_authority` PDA derivation) and `@solana/codecs-strings` (to base58-encode the
+   returned transaction signature). If you run `tsc --noEmit` outside of `cre workflow simulate`, install them in your
+   workflow folder: `npm install @solana/codecs @solana/addresses @solana/web3.js @solana/codecs-strings`.
 
 ## Step 2: Configure the workflow
 
@@ -17858,11 +18546,9 @@ your IDL and call the generated helpers for your structs when you are ready.
    {
      "schedule": "*/30 * * * * *",
      "chainSelector": "16423721717087811551",
-     "receiverProgramId": "64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31",
+     "receiverProgramId": "7k8NypziCPqVY8GYyCw7aqaR5aamFAMdH5ZaHVrZCS94",
      "forwarderProgramId": "7kuEAA3mSC1Tz8gQjnvH7bKFda9xSPRRin9SZbH49cNK",
-     "forwarderState": "5Tipz3yhTBdVsDbaBxZkrp7Gjf3brGq5SKkxReefPMP7",
-     "reportState": "HxzqwQZNyDM3Tvp9nR8v9tgJ5ZZ1Lm8LiJ8kxoyu539K",
-     "computeLimit": 200000
+     "forwarderState": "5Tipz3yhTBdVsDbaBxZkrp7Gjf3brGq5SKkxReefPMP7"
    }
    ```
 
@@ -17872,13 +18558,10 @@ your IDL and call the generated helpers for your structs when you are ready.
    | `receiverProgramId`  | Your receiver program (IDL address for this example)                                      |
    | `forwarderProgramId` | Forwarder program ID used for local simulation (fixed Devnet value)                       |
    | `forwarderState`     | Forwarder state account used for local simulation (fixed Devnet value)                    |
-   | `reportState`        | Writable account required by your receiver (DataAccount PDA for this example)             |
-   | `computeLimit`       | Solana compute units; must be greater than 0 for simulation                               |
 
-   The workflow derives `forwarderAuthority` at runtime from
-   `["forwarder", forwarderState, receiverProgram]` under `forwarderProgramId`. When you deploy in [Step 5](#step-5-deploy-the-workflow),
-   keep that derivation and point `forwarderProgramId` / `forwarderState` at the live forwarder addresses for your
-   network.
+   The workflow derives `forwarderAuthority` at runtime from `["forwarder", forwarderState, receiverProgram]` under
+   `forwarderProgramId`. When you deploy in [Step 5](#step-5-deploy-the-workflow), keep that derivation and point
+   `forwarderProgramId` / `forwarderState` at the live forwarder addresses for your network.
 
 ### Simulation vs production forwarder addresses
 
@@ -17919,86 +18602,98 @@ The workflow still derives `forwarderAuthority` from `["forwarder", forwarderSta
 ## Step 3: Write the workflow
 
 This step is a complete, pasteable workflow that performs one Solana write on a cron trigger using **generated
-bindings**. It reads config, derives the forwarder authority PDA, builds the `remainingAccounts` list the forwarder
-expects, and calls `writeReportFromUserData()`. Replace `DataStorage` / `UserData` with your generated class and struct
-when you use your own IDL.
+bindings**. It reads config, derives the forwarder authority PDA, builds the `remainingAccounts` list, and calls
+`writeReportFromUserData()`. Replace `CreDocsReceiver` / `UserData` with your generated class and struct when you use
+your own IDL.
 
 1. Save the following as `my-workflow/main.ts`.
 
    ```typescript
    // my-workflow/main.ts
-   import {
-     CronCapability,
-     type CronPayload,
-     handler,
-     Runner,
-     type Runtime,
-     SolanaClient,
-     solanaAccountMeta,
-   } from "@chainlink/cre-sdk"
+   import { CronCapability, handler, Runner, SolanaClient, solanaAccountMeta, type Runtime } from "@chainlink/cre-sdk"
+   import { getBase58Decoder } from "@solana/codecs-strings"
    import { PublicKey } from "@solana/web3.js"
-   import { DataStorage, type UserData } from "./contracts/solana/ts/generated/DataStorage"
+   import { CreDocsReceiver } from "./contracts/solana/ts/generated/CreDocsReceiver"
 
    type Config = {
      schedule: string
      chainSelector: string
      receiverProgramId: string
-     forwarderProgramId: string
      forwarderState: string
-     reportState: string
-     computeLimit?: number
+     forwarderProgramId: string
    }
 
-   const DEFAULT_COMPUTE_LIMIT = 200_000
-   const FORWARDER_SEED = Uint8Array.from("forwarder", (c) => c.charCodeAt(0))
+   // PDA seed literal used by the forwarder to derive the forwarder_authority.
+   const FORWARDER_SEED = Uint8Array.from("forwarder", (_, i) => "forwarder".charCodeAt(i))
 
-   function deriveForwarderAuthority(
-     forwarderState: PublicKey,
-     receiverProgram: PublicKey,
-     forwarderProgram: PublicKey
-   ): PublicKey {
-     const [authority] = PublicKey.findProgramAddressSync(
+   // TxStatus / ReceiverContractExecutionStatus enum → readable labels.
+   const TX_STATUS_LABELS: Record<number, string> = { 0: "FATAL", 1: "ABORTED", 2: "SUCCESS" }
+   const RECEIVER_EXEC_LABELS: Record<number, string> = { 0: "SUCCESS", 1: "REVERTED" }
+
+   const onCronTrigger = (runtime: Runtime<Config>) => {
+     const config = runtime.config
+
+     const client = new SolanaClient(BigInt(config.chainSelector))
+
+     // Receiver program id comes from config here. The binding also exports the
+     // program id baked in from the IDL `address` (CRE_DOCS_RECEIVER_PROGRAM_ID),
+     // so you can use that instead of threading it through config if you prefer.
+     const ds = new CreDocsReceiver(client, config.receiverProgramId)
+
+     // Derive the forwarder_authority PDA the same way the on-chain forwarder /
+     // receiver do: seeds = ["forwarder", forwarderState, receiverProgram],
+     // program = forwarderProgram.
+     const forwarderState = new PublicKey(config.forwarderState)
+     const forwarderProgram = new PublicKey(config.forwarderProgramId)
+     const receiverProgram = new PublicKey(config.receiverProgramId)
+     const [forwarderAuthority] = PublicKey.findProgramAddressSync(
        [FORWARDER_SEED, forwarderState.toBytes(), receiverProgram.toBytes()],
        forwarderProgram
      )
-     return authority
-   }
 
-   const onCronTrigger = (runtime: Runtime<Config>, _trigger: CronPayload): string => {
-     const cfg = runtime.config
-     const client = new SolanaClient(BigInt(cfg.chainSelector))
-     // Program ID defaults to the address baked into the IDL; pass cfg.receiverProgramId to override.
-     const receiver = new DataStorage(client, cfg.receiverProgramId)
-
-     const forwarderState = new PublicKey(cfg.forwarderState)
-     const receiverProgram = new PublicKey(cfg.receiverProgramId)
-     const forwarderProgram = new PublicKey(cfg.forwarderProgramId)
-     const reportState = new PublicKey(cfg.reportState)
-     const forwarderAuthority = deriveForwarderAuthority(forwarderState, receiverProgram, forwarderProgram)
-
-     // Index 0 forwarderState, 1 forwarderAuthority (derived), 2+ reportState.
+     // remainingAccounts layout:
+     //   index 0: forwarderState, index 1: forwarderAuthority, index 2+: receiver accounts.
+     // The full list is hashed into the report; the Solana write capability consumes
+     // indices 0/1 and forwards index 2+ to your program's on_report CPI.
+     // cre_docs_receiver needs no receiver-specific accounts, so we pass just [state, authority].
      const remainingAccounts = [
        solanaAccountMeta(forwarderState.toBase58(), false),
        solanaAccountMeta(forwarderAuthority.toBase58(), false),
-       solanaAccountMeta(reportState.toBase58(), true),
+       // Append any receiver-specific accounts your program requires at index 2+, e.g.:
+       // solanaAccountMeta(myWritableStatePda.toBase58(), true),
      ]
 
-     const payload: UserData = { key: "price", value: "500000" }
+     runtime.log("Submitting UserData to Solana cre_docs_receiver program")
 
-     runtime.log(
-       `Submitting UserData via bindings key=${payload.key} forwarderAuthority=${forwarderAuthority.toBase58()}`
-     )
+     // Solana simulate requires a non-nil computeConfig with computeLimit > 0
+     const result = ds.writeReportFromUserData(runtime, { key: "price", value: "500000" }, remainingAccounts, {
+       computeLimit: 200_000,
+     })
 
-     const computeLimit = cfg.computeLimit ?? DEFAULT_COMPUTE_LIMIT
-     const out = receiver.writeReportFromUserData(runtime, payload, remainingAccounts, { computeLimit })
+     const hasSignature = !!result.txSignature && result.txSignature.length > 0
+     const txStatusLabel = TX_STATUS_LABELS[result.txStatus] ?? `UNKNOWN(${result.txStatus})`
+     const execStatusLabel =
+       result.receiverContractExecutionStatus === undefined
+         ? "(n/a)"
+         : (RECEIVER_EXEC_LABELS[result.receiverContractExecutionStatus] ??
+           `UNKNOWN(${result.receiverContractExecutionStatus})`)
 
-     runtime.log(
-       `Write completed txStatus=${out.txStatus} errorMessage=${out.errorMessage ?? ""} txSignature=${out.txSignature ?? ""}`
-     )
-     if (out.errorMessage && out.errorMessage.length > 0) {
-       return out.errorMessage
+     runtime.log("Solana write result:")
+     runtime.log(`  txStatus:       ${txStatusLabel} (${result.txStatus})`)
+     runtime.log(`  receiverStatus: ${execStatusLabel}`)
+     runtime.log(`  transactionFee: ${result.transactionFee ?? 0n} lamports`)
+     if (hasSignature) {
+       const txHash = getBase58Decoder().decode(result.txSignature!)
+       runtime.log(`  txHash:         ${txHash}`)
+       runtime.log(`  explorer:       https://explorer.solana.com/tx/${txHash}?cluster=devnet`)
+     } else {
+       runtime.log("  txHash:         (not broadcast — simulation does not submit the transaction)")
      }
-     return "Success"
+     if (result.errorMessage) {
+       runtime.log(`  errorMessage:   ${result.errorMessage}`)
+     }
+
+     return result
    }
 
    export const initWorkflow = (config: Config) => {
@@ -18016,6 +18711,18 @@ when you use your own IDL.
 
 Use this step to confirm compile, trigger, and the bindings write path with `cre workflow simulate`.
 
+<Aside type="note" title="Two separate YAML files">
+  CRE uses two configuration files that live in different directories:
+
+  - **`workflow.yaml`** lives inside your workflow folder (`my-workflow/workflow.yaml`). It defines workflow metadata
+    (name, registry) and points to your `main.ts` and config JSON.
+  - **`project.yaml`** lives at your **project root** (the directory you ran `cre init` in, one level above
+    `my-workflow/`). It defines RPC endpoints and other project-level settings per target.
+
+  Both files use the same target names (e.g. `staging-settings`, `production-settings`) to link a workflow to its
+  RPCs. You will add to both files in this step.
+</Aside>
+
 1. Create a `workflow.yaml` in your workflow folder so the CLI can find your staging target.
 
    ```yaml
@@ -18028,7 +18735,8 @@ Use this step to confirm compile, trigger, and the bindings write path with `cre
        secrets-path: ""
    ```
 
-2. Add a Solana RPC endpoint to your `project.yaml` under your simulation target.
+2. Add a Solana RPC endpoint to your `project.yaml` (at your project root, **not** inside `my-workflow/`) under your
+   simulation target.
 
    ```yaml
    staging-settings:
@@ -18047,30 +18755,92 @@ Use this step to confirm compile, trigger, and the bindings write path with `cre
    CRE_SOLANA_PRIVATE_KEY=<your-64-byte-base58-keypair>
    ```
 
+
+   <Aside type="caution" title="CRE_ETH_PRIVATE_KEY is also required">
+     The CRE CLI requires `CRE_ETH_PRIVATE_KEY` to be set even for Solana-only workflows — it is used for workflow
+     owner derivation, not for the Solana transaction itself. Set any valid EVM private key in your `.env`:
+
+     ```bash
+     CRE_ETH_PRIVATE_KEY=0x<your-evm-private-key>
+     ```
+
+     Without it, `cre workflow simulate` and `cre workflow deploy` will fail with
+     `CRE_ETH_PRIVATE_KEY is not set`.
+   </Aside>
+
 4. Run the dry-run simulation.
 
    ```bash
    cre workflow simulate my-workflow --target staging-settings
    ```
 
-   Confirm the workflow compiles, the cron trigger runs, and your USER LOGs appear. A successful onchain write
-   requires deploying to the DON with the production Keystone Forwarder (see [Step 5](#step-5-deploy-the-workflow)).
+   Because `cre_docs_receiver` is deployed and the account list matches what the forwarder expects, the write completes
+   successfully (`txStatus: SUCCESS`, `receiverStatus: SUCCESS`). Simulation does not broadcast the transaction here, so there
+   is no `txSignature` / explorer link in the dry-run.
 
    ```
    ✓ Workflow compiled
    [SIMULATION] Simulator Initialized
    [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-   [USER LOG] Submitting UserData via bindings key=price forwarderAuthority=...
-   [USER LOG] Write completed txStatus=0 errorMessage=... txSignature=
+   [USER LOG] Submitting UserData to Solana cre_docs_receiver program
+   [USER LOG] Solana write result:
+   [USER LOG]   txStatus:       SUCCESS (2)
+   [USER LOG]   receiverStatus: SUCCESS
+   [USER LOG]   transactionFee: 15667 lamports
+   [USER LOG]   txHash:         (not broadcast — simulation does not submit the transaction)
 
    ✓ Workflow Simulation Result:
-   ...
+   {
+     "$typeName": "capabilities.blockchain.solana.v1alpha.WriteReportReply",
+     "receiverContractExecutionStatus": 0,
+     "transactionFee": 15667,
+     "txStatus": 2
+   }
    ```
 
 
-   <Aside type="note" title="Simulation error: Custom:6002">
-     `Custom:6002` is a known limitation of the current simulator and will be patched in a future CLI update.
+   <Aside type="note" title="Troubleshooting write failures">
+     `Custom:6002` (`InvalidAccountHash`) means the report's account hash did not match what the forwarder computed —
+     usually because `forwarderProgramId` / `forwarderState` do not match the forwarder you are targeting, or the account
+     list you built is wrong. `Custom:6000` (`InvalidForwarderAuthority`) means the derived `forwarder_authority` PDA is
+     wrong for that state/receiver/forwarder combination. `Custom:6001` (`InvalidUserData`) means the receiver could not
+     Borsh-decode the payload into `UserData`.
    </Aside>
+
+5. (Optional) Broadcast the transaction to Solana Devnet.
+
+   By default, simulation dry-runs the write and returns no signature. Add `--broadcast` to actually submit the
+   transaction through the mock forwarder. Your `CRE_SOLANA_PRIVATE_KEY` (transmitter) pays the fee, so it must be funded
+   on Devnet.
+
+   ```bash
+   cre workflow simulate my-workflow --target staging-settings --broadcast
+   ```
+
+   This time `WriteReport` returns a real `txSignature`, and the workflow logs a base58 `txHash` plus an explorer link:
+
+   ```
+   [USER LOG] Submitting UserData to Solana cre_docs_receiver program
+   [USER LOG] Solana write result:
+   [USER LOG]   txStatus:       SUCCESS (2)
+   [USER LOG]   receiverStatus: SUCCESS
+   [USER LOG]   transactionFee: 5000 lamports
+   [USER LOG]   txHash:         c8ifuihaPd2erDuQvees1s2o8ikFmZuNF7WQE63PPGG2SXHZk5vXrHfe7nm4cj4fo7cE3Aq48ksMjP6ugPxAhqn
+   [USER LOG]   explorer:       https://explorer.solana.com/tx/c8ifuihaPd2erDuQvees1s2o8ikFmZuNF7WQE63PPGG2SXHZk5vXrHfe7nm4cj4fo7cE3Aq48ksMjP6ugPxAhqn?cluster=devnet
+
+   ✓ Workflow Simulation Result:
+   {
+     "$typeName": "capabilities.blockchain.solana.v1alpha.WriteReportReply",
+     "receiverContractExecutionStatus": 0,
+     "transactionFee": 5000,
+     "txSignature": "Hkwkf/rL44luYyMfBIOJ9JgyLUUFUcMChfbqDTGcCND3zN9RziakjeWeywBkcjgXpYBRc23eVFM0BYeLcuMNBQ==",
+     "txStatus": 2
+   }
+   ```
+
+   Open the explorer link to confirm the transaction onchain: the mock forwarder is the top-level program and
+   `cre_docs_receiver` appears as a CPI target. Note `txSignature` in the JSON result is base64-encoded; the workflow
+   base58-decodes it into the `txHash` shown in the logs (the form Solana explorers expect).
 
    When you are ready to run on the DON with **your** receiver, continue to [Step 5](#step-5-deploy-the-workflow).
 
@@ -18080,30 +18850,30 @@ A deployed workflow runs on the DON, which submits reports through the live Keys
 the [private registry](/cre/guides/operations/deploying-to-private-registry-ts) for this example (CRE login session; no
 Ethereum gas for registry ops). You need [Deploy Access](/cre/account/deploy-access).
 
-You can use the `DataStorage` example receiver as-is — it's deployed on Devnet and ready to accept writes. If you have
-your own receiver program, replace `receiverProgramId` and `reportState` with your own values.
+You can use the `cre_docs_receiver` example receiver as-is — it's deployed on Devnet and ready to accept writes. If you
+have your own receiver program, replace `receiverProgramId` (and append any receiver-specific accounts in the workflow)
+with your own values.
 
-1. Create `config.production.json`. Copy your `receiverProgramId` and `reportState` from the staging config and
-   swap in the production Keystone Forwarder addresses:
+1. Create `config.production.json`. Keep your `receiverProgramId` and swap in the production Keystone Forwarder
+   addresses:
 
    ```json
    {
      "schedule": "30 */5 * * * *",
      "chainSelector": "16423721717087811551",
-     "receiverProgramId": "64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31",
+     "receiverProgramId": "7k8NypziCPqVY8GYyCw7aqaR5aamFAMdH5ZaHVrZCS94",
      "forwarderProgramId": "CXsKEJcs25TQEYU2e5jZ8QTPE3ffMLZhH6BWHrdcCCB5",
-     "forwarderState": "8QoomCQyPSkJ8WopJbX9B4HyvrFzziwvJdU8hZE6DCr9",
-     "reportState": "HxzqwQZNyDM3Tvp9nR8v9tgJ5ZZ1Lm8LiJ8kxoyu539K",
-     "computeLimit": 290000
+     "forwarderState": "8QoomCQyPSkJ8WopJbX9B4HyvrFzziwvJdU8hZE6DCr9"
    }
    ```
 
    These are the Solana Devnet production Keystone Forwarder addresses. For Mainnet, see the
-   [forwarder address table](#production-keystone-forwarder) above. If you are using your own receiver program,
-   replace `receiverProgramId` and `reportState` with your own values. The workflow still derives
-   `forwarderAuthority` from `["forwarder", forwarderState, receiverProgram]` under that `forwarderProgramId`.
+   [forwarder address table](#production-keystone-forwarder) above. If you are using your own receiver program, replace
+   `receiverProgramId` with your own value. The workflow still derives `forwarderAuthority` from
+   `["forwarder", forwarderState, receiverProgram]` under that `forwarderProgramId`.
 
-2. Point a deploy target at that config and the private registry in `my-workflow/workflow.yaml`.
+2. Add a `production-settings` target to your existing `my-workflow/workflow.yaml` (append it below the
+   `staging-settings` block you created in Step 4 — do not replace the staging block).
 
    ```yaml
    production-settings:
@@ -18116,7 +18886,8 @@ your own receiver program, replace `receiverProgramId` and `reportState` with yo
        secrets-path: ""
    ```
 
-3. Add the Solana Devnet RPC under `production-settings` in `project.yaml` (same URL as staging is fine).
+3. Add the Solana Devnet RPC under a `production-settings` block in your `project.yaml` (at your project root —
+   append it below the existing `staging-settings` block). The URL can be the same as staging.
 
 4. Deploy from your project root.
 
@@ -18135,19 +18906,53 @@ your own receiver program, replace `receiverProgramId` and `reportState` with yo
         Status:           Active
    ```
 
-5. After the cron fires, open the workflow in the [CRE platform](https://app.chain.link/cre/workflows) (or run
-   `cre execution list my-solana-write`) and confirm node logs reach the write path:
+5. After the cron fires, check that the workflow executed successfully. You can view executions and logs in the
+   [CRE platform](https://app.chain.link/cre/workflows), or use the CLI. List recent executions:
+
+   ```bash
+   cre execution list my-solana-write
+   ```
 
    ```
-   Submitting UserData via bindings key=...
+   Executions
+
+   1. 47517057f8ecb7455ddf9eb58d4a635e96bd968158146ed1973f9591cfdc1421
+        Workflow:  my-solana-write
+        Status:    SUCCESS
+        Started:   2026-08-20 19:50:31 UTC
+        Finished:  2026-08-20 19:50:43 UTC (12s)
    ```
 
-   If WriteReport returns a Solana `txSignature`, confirm the transaction on
-   [Solana Explorer](https://explorer.solana.com/?cluster=devnet) (forwarder as the top-level program, your receiver as
-   a CPI).
+6. View the execution logs to confirm the write reached Solana:
 
-   Here is an example of a successful write from this guide's `DataStorage` receiver on Solana Devnet:
-   [view on Explorer](https://explorer.solana.com/tx/2tfcA2jKvaP3JrVaURQEPuWCLtjV8ZdzMCppCUa9a41LQoG5847MzJNJmwdepzjQHxrJak8Umr4fHebkhBMGTqFM?cluster=devnet).
+   ```bash
+   cre execution logs <execution-id>
+   ```
+
+   Each DON node executes the workflow and logs the write result. A successful execution shows all nodes reaching
+   `txStatus: SUCCESS` with a real on-chain transaction hash:
+
+   ```
+   [2026-08-20 19:50:31 UTC] [Node 1] Submitting UserData to Solana cre_docs_receiver program
+   [2026-08-20 19:50:31 UTC] [Node 6] Submitting UserData to Solana cre_docs_receiver program
+   ...
+   [2026-08-20 19:50:43 UTC] [Node 1] Solana write result:
+   [2026-08-20 19:50:43 UTC] [Node 1]   txStatus:       SUCCESS (2)
+   [2026-08-20 19:50:43 UTC] [Node 1]   receiverStatus: (n/a)
+   [2026-08-20 19:50:43 UTC] [Node 1]   transactionFee: 0 lamports
+   [2026-08-20 19:50:43 UTC] [Node 1]   txHash:         2dJiCNgbGGhoMd7LSQH9FoUCWwUSzFyP8JHDzNrfcsGZcroSt1rsVPNzgq6LbMG8vjTzJPgeoGaViSABdeqa2v62
+   [2026-08-20 19:50:43 UTC] [Node 1]   explorer:       https://explorer.solana.com/tx/2dJiCNgbGGhoMd7LSQH9FoUCWwUSzFyP8JHDzNrfcsGZcroSt1rsVPNzgq6LbMG8vjTzJPgeoGaViSABdeqa2v62?cluster=devnet
+   ```
+
+   Open the explorer link to confirm the transaction onchain: the Keystone Forwarder is the top-level program and
+   `cre_docs_receiver` appears as a CPI target. All nodes share the same `txHash` because the DON reaches consensus on
+   a single transaction.
+
+   When you are done testing, pause the workflow to stop it from running:
+
+   ```bash
+   cre workflow pause my-workflow
+   ```
 
 See [Deploying to the Private Registry](/cre/guides/operations/deploying-to-private-registry-ts) for registry details, activate/pause, and CI flags.
 
@@ -18157,8 +18962,9 @@ When the deployed workflow runs on the DON:
 
 1. The DON nodes each execute your workflow and reach consensus on the encoded payload.
 2. A DON node calls the Keystone Forwarder program with the signed report and account list.
-3. The forwarder verifies all DON signatures.
-4. The forwarder CPIs into your program's `on_report` instruction with the decoded payload and receiver accounts.
+3. The forwarder verifies all DON signatures and re-computes the account hash over the full account list.
+4. The forwarder supplies `forwarderState` + `forwarderAuthority` and CPIs into your program's `on_report` instruction
+   with the decoded payload and your receiver-specific accounts (indices 2+).
 
 The transaction on Solana Explorer will show the forwarder program as the initial callee, with your program appearing as a CPI target.
 
@@ -19420,6 +20226,10 @@ cre workflow deploy my-workflow --target=production-settings
 
 For end-to-end runnable examples, see the [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/automation-migration) repository.
 
+### 5. Decommission the old Upkeep
+
+Once your CRE workflow is live and verified, cancel the original Automation Upkeep and withdraw its remaining LINK balance so it isn't performed alongside your new workflow. See [Cancel an Upkeep and Withdraw Funds](/chainlink-automation/guides/cancel-upkeep).
+
 ## Troubleshooting
 
 ### CallNotAllowed Error
@@ -20006,7 +20816,7 @@ See the [Monitoring & Debugging guide](/cre/guides/operations/monitoring-workflo
 
 ## Pricing
 
-CRE is currently in Early Access. For pricing details, reach out via the in-app support on the CRE platform at <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">app.chain.link/cre/discover</a>.
+For pricing details, reach out via the in-app support on the CRE platform at <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">app.chain.link/cre/discover</a>.
 
 ## Get started
 
@@ -20540,6 +21350,7 @@ Last Updated: 2026-07-28
 | ------------------------------------------------ | ------------------------------------------------------------------------------------ |
 | [`handlerInTee`](#handlerintee)                  | Registers a handler whose callback runs inside a TEE.                                |
 | [`runtime.getSecret`](#runtimegetsecret)         | Fetches a single secret dynamically, inside the enclave.                             |
+| [`runtime.getSecrets`](#runtimegetsecrets)       | Fetches multiple secrets in a single batch call, inside the enclave.                 |
 | [`runtime.usingTheDons`](#runtimeusingthedons)   | Returns a regular `Runtime` for operations that need DON consensus.                  |
 | [`runtime.reportFromDon`](#runtimereportfromdon) | Generates a report from the DON directly, without a full `usingTheDons()` crossover. |
 
@@ -20556,12 +21367,7 @@ interface TeeRuntime<C> extends BaseRuntime<C>, SecretsProvider {
 }
 ```
 
-`BaseRuntime<C>` provides `config`, `now()`, `log()`, and `emitMetric()`, same as on a regular `Runtime<C>`. `SecretsProvider` provides `getSecret()`.
-
-<Aside type="note" title="No batch getSecrets in TypeScript">
-  Unlike the Go SDK (which has both `GetSecret` and a batch `GetSecrets`), the TypeScript `SecretsProvider` currently
-  exposes only `getSecret()`. Fetch secrets one at a time.
-</Aside>
+`BaseRuntime<C>` provides `config`, `now()`, `log()`, and `emitMetric()`, same as on a regular `Runtime<C>`. `SecretsProvider` provides `getSecret()` and `getSecrets()`.
 
 ### `TeeConstraint`
 
@@ -20644,6 +21450,29 @@ const secret = runtime.getSecret({ id: "MY_API_KEY" }).result()
 ```
 
 There's no upfront declaration like Confidential HTTP's `vaultDonSecrets`—the secret is requested and decrypted inside the enclave at the moment `getSecret()` runs.
+
+### `runtime.getSecrets`
+
+Fetches multiple secrets in a single batch call, decrypted only inside the enclave.
+
+**Signature:**
+
+```ts
+getSecrets(requests: Array<SecretRequest | SecretRequestJson>): {
+  result: () => Record<string, Secret>
+}
+```
+
+The result is a record keyed by each secret's `id`. If any secret in the batch fails, `.result()` throws a `SecretsBatchError` that includes the failing secret ids and their error messages. Requesting the same `id` more than once in a single call also throws a `SecretsBatchError`.
+
+**Example:**
+
+```ts
+const secrets = runtime.getSecrets([{ id: "API_KEY" }, { id: "DB_URL" }]).result()
+
+const apiKey = secrets["API_KEY"].value
+const dbUrl = secrets["DB_URL"].value
+```
 
 ## Crossing back to the DON
 
@@ -21554,6 +22383,52 @@ const onTrigger = (runtime: Runtime<Config>): string => {
 <Aside type="note" title="Secrets guide">
   For a complete walkthrough on creating, storing, and using secrets, see the [Secrets guide](/cre/guides/workflow/secrets).
 </Aside>
+
+## `runtime.getSecrets()`
+
+Retrieves multiple secrets in a single batch call. Use this instead of calling `getSecret()` in a loop when you need two or more secrets.
+
+**Signature:**
+
+```typescript
+runtime.getSecrets(
+  requests: Array<SecretRequest | SecretRequestJson>
+): { result: () => Record<string, Secret> }
+```
+
+**Parameters:**
+
+| Field      | Type                                        | Required | Description                                               |
+| ---------- | ------------------------------------------- | -------- | --------------------------------------------------------- |
+| `requests` | `Array<SecretRequest \| SecretRequestJson>` | Yes      | Array of secrets to fetch. Duplicate IDs are not allowed. |
+
+Each entry in `requests` follows the same [`SecretRequest`](#secretrequest--secretrequestjson) shape as `getSecret()`.
+
+**Returns:**
+
+A `Record<string, Secret>` (after calling `.result()`) where each key is the secret's `id` and the value is the corresponding [`Secret`](#secret) object.
+
+**Error handling:**
+
+If any secret in the batch fails, `getSecrets()` throws a `SecretsBatchError` containing all error messages aggregated from the failed secrets.
+
+**Example:**
+
+```typescript
+import { type Runtime } from "@chainlink/cre-sdk"
+
+const onTrigger = (runtime: Runtime<Config>): string => {
+  const secretsToFetch = [{ id: "api-key" }, { id: "webhook-url" }]
+
+  const secrets = runtime.getSecrets(secretsToFetch).result()
+
+  const apiKey = secrets["api-key"].value
+  const webhookUrl = secrets["webhook-url"].value
+
+  runtime.log(`Fetched ${Object.keys(secrets).length} secrets`)
+  return "done"
+}
+```
 
 ## Report verification
 
@@ -24355,13 +25230,13 @@ This section provides a reference for the built-in trigger capabilities of the C
 
 # Supported Networks
 Source: https://docs.chain.link/cre/supported-networks-ts
-Last Updated: 2026-07-13
+Last Updated: 2026-08-21
 
 This page lists networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network. CRE supports two [chain families](/cre/capabilities#chain-families): EVM-compatible chains and Solana.
 
 <Aside type="tip" title="Check chains enabled for your tenant">
-  The tables below show minimum version requirements for each network. To see which chains and mock forwarder addresses
-  are enabled for **your** organization, run [`cre workflow
+  The tables below show minimum version requirements for each network. To see which chains and forwarder addresses are
+  enabled for **your** organization, run [`cre workflow
     supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) after `cre login` (or with `CRE_API_KEY`
   set). Use `--output json` for machine-readable output.
 </Aside>
@@ -24403,42 +25278,46 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 
 ## Testnets
 
-| Network                     | CLI      | Go SDK  | TS SDK  |
-| --------------------------- | -------- | ------- | ------- |
-| ADI Testnet                 | v1.15.0+ | v1.9.0+ | v1.7.0+ |
-| Apechain Curtis             | v1.0.7+  | v1.1.4+ | v1.0.7+ |
-| Arc Testnet                 | v1.0.7+  | v1.1.4+ | v1.3.1+ |
-| Arbitrum Sepolia            | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Avalanche Fuji              | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Base Sepolia                | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| BNB Chain Testnet           | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Celo Sepolia                | v1.15.0+ | v1.9.0+ | v1.7.0+ |
-| Cronos Testnet              | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| Ethereum Sepolia            | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Gnosis Chiado               | v1.7.0+  | v1.7.0+ | v1.4.0+ |
-| Hyperliquid Testnet         | v1.0.7+  | v1.1.4+ | v1.0.7+ |
-| Ink Sepolia                 | v1.0.7+  | v1.1.4+ | v1.0.7+ |
-| Jovay Testnet               | v1.0.7+  | v1.1.4+ | v1.0.7+ |
-| Linea Sepolia               | v1.0.7+  | v1.1.4+ | v1.0.7+ |
-| Mantle Sepolia              | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| MegaETH Testnet 2           | v1.5.0+  | v1.6.0+ | v1.3.1+ |
-| OP Sepolia                  | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Pharos Atlantic Testnet     | v1.3.0+  | v1.5.0+ | v1.3.1+ |
-| Plasma Testnet              | v1.0.7+  | v1.1.4+ | v1.0.7+ |
-| Polygon Amoy                | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Scroll Sepolia (deprecated) | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| Sonic Testnet               | v1.5.0+  | v1.6.0+ | v1.3.1+ |
-| TAC Testnet                 | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| Unichain Sepolia            | v1.5.0+  | v1.6.0+ | v1.3.0+ |
-| World Chain Sepolia         | v1.0.7+  | v1.1.4+ | v1.0.7+ |
-| XLayer Testnet              | v1.5.0+  | v1.6.0+ | v1.3.1+ |
-| ZKSync Era Sepolia          | v1.0.6+  | v1.1.2+ | v1.0.7+ |
+| Network                     | CLI      | Go SDK   | TS SDK   |
+| --------------------------- | -------- | -------- | -------- |
+| ADI Testnet                 | v1.15.0+ | v1.9.0+  | v1.7.0+  |
+| Apechain Curtis             | v1.0.7+  | v1.1.4+  | v1.0.7+  |
+| Arc Testnet                 | v1.0.7+  | v1.1.4+  | v1.3.1+  |
+| Arbitrum Sepolia            | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Avalanche Fuji              | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Base Sepolia                | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| BNB Chain Testnet           | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Celo Sepolia                | v1.15.0+ | v1.9.0+  | v1.7.0+  |
+| Cronos Testnet              | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Ethereum Sepolia            | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Gnosis Chiado               | v1.7.0+  | v1.7.0+  | v1.4.0+  |
+| Hyperliquid Testnet         | v1.0.7+  | v1.1.4+  | v1.0.7+  |
+| Ink Sepolia                 | v1.0.7+  | v1.1.4+  | v1.0.7+  |
+| Jovay Testnet               | v1.0.7+  | v1.1.4+  | v1.0.7+  |
+| Linea Sepolia               | v1.0.7+  | v1.1.4+  | v1.0.7+  |
+| Mantle Sepolia              | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| MegaETH Testnet 2           | v1.5.0+  | v1.6.0+  | v1.3.1+  |
+| Monad Testnet               | v1.30.0+ | v1.19.0+ | v1.19.0+ |
+| OP Sepolia                  | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Pharos Atlantic Testnet     | v1.3.0+  | v1.5.0+  | v1.3.1+  |
+| Plasma Testnet              | v1.0.7+  | v1.1.4+  | v1.0.7+  |
+| Polygon Amoy                | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Robinhood Testnet           | v1.30.0+ | v1.19.0+ | v1.19.0+ |
+| Scroll Sepolia (deprecated) | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Sonic Testnet               | v1.5.0+  | v1.6.0+  | v1.3.1+  |
+| Stable Testnet              | v1.30.0+ | v1.19.0+ | v1.19.0+ |
+| TAC Testnet                 | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| T-REX Testnet               | v1.30.0+ | v1.19.0+ | v1.19.0+ |
+| Unichain Sepolia            | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| World Chain Sepolia         | v1.0.7+  | v1.1.4+  | v1.0.7+  |
+| XLayer Testnet              | v1.5.0+  | v1.6.0+  | v1.3.1+  |
+| ZKSync Era Sepolia          | v1.0.6+  | v1.1.2+  | v1.0.7+  |
 
 ## Forwarder Addresses
 
 For EVM forwarder contract addresses and chain names, see the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory). Forwarder addresses are used when building consumer contracts that receive workflow reports onchain. Learn more about [EVM Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write/overview-ts).
 
-Run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) anytime to list the chains and mock forwarder addresses currently enabled for your tenant.
+Run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-supported-chains) anytime to list the chains and forwarder addresses currently enabled for your tenant.
 
 ***
 

@@ -9,7 +9,7 @@ const FEED_TYPE_TAG: Partial<Record<DataFeedType, string>> = {
   rates: "rates",
   usGovernmentMacroeconomicData: "usGovernmentMacroeconomicData",
   tokenizedEquity: "tokenizedEquity",
-  blendedPreciousMetals: "blendedPreciousMetals",
+  extendedHours: "extendedHours",
 }
 
 export function chainMatchesFeedTypeTag(chain: Taggable, dataFeedType: DataFeedType): boolean {
@@ -51,8 +51,8 @@ export function shouldRenderNetworkSection(
   if (dataFeedType === "usGovernmentMacroeconomicData") {
     return network.tags?.includes("usGovernmentMacroeconomicData") ?? false
   }
-  if (dataFeedType === "blendedPreciousMetals") {
-    return network.tags?.includes("blendedPreciousMetals") ?? false
+  if (dataFeedType === "extendedHours") {
+    return network.tags?.includes("extendedHours") ?? false
   }
 
   return true
@@ -65,6 +65,6 @@ export function shouldFilterSelectableChainsByVisibleFeeds(dataFeedType: DataFee
     dataFeedType === "rates" ||
     dataFeedType === "usGovernmentMacroeconomicData" ||
     dataFeedType === "tokenizedEquity" ||
-    dataFeedType === "blendedPreciousMetals"
+    dataFeedType === "extendedHours"
   )
 }

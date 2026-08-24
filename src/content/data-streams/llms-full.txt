@@ -109,6 +109,17 @@ Automatic failover handles availability and traffic routing in the following sce
 
 - **Multi-origin concurrent WebSocket subscriptions:** In order to maintain a highly available and fault tolerant report stream, you can subscribe to up to two available origins simultaneously. This compares the latest consumed timestamp for each stream and discards duplicate reports before merging the report stream locally.
 
+### Retry Guidance for REST Requests
+
+As with any networked API, **your REST integration must implement retries** as standard practice, rather than treating a single failed request as a hard failure:
+
+- Retry on `5xx` responses and network-level errors (timeouts, connection resets). These are generally transient.
+- Do not retry on `4xx` responses (for example `400` or `401`) — these indicate a problem with the request itself, such as invalid parameters or authentication, and will not succeed on retry without a change to the request.
+- Use exponential backoff with jitter, and cap the number of attempts. `GET` requests to the REST API are safe to retry.
+- If retries continue to fail beyond a reasonable number of attempts, treat this as a signal to fall back to your contingency logic — see [Implementing Contingency Logic](/data-streams/developer-responsibilities#application-code-risks).
+
+The [Data Streams SDKs](/data-streams/reference/data-streams-api/ts-sdk) implement retry logic with exponential backoff by default (for example, the [TypeScript SDK configuration interface](/data-streams/reference/data-streams-api/ts-sdk#configuration-interface)). If you are calling the REST API directly rather than through an SDK, you are responsible for implementing equivalent retry logic yourself.
+
 ---
 
 # Data Streams Billing
@@ -391,6 +402,10 @@ For best practices regarding RWA streams:
 
 For best practices regarding stock splits and reverse splits for tokenized assets, please see the [Handling Stock Splits](/data-streams/tokenized-asset-streams/handling-stock-splits) guide.
 
+## Rate Limits
+
+Rely on the WebSocket stream for report delivery rather than polling a REST endpoint in a tight loop, and implement exponential backoff on reconnect logic. See the [Rate Limits and Fair Use Policy](/data-streams/rate-limits) page for applicable limits and how to avoid HTTP 429 responses.
+
 ---
 
 # Calculated Streams
@@ -550,6 +565,61 @@ Temporary differences between the calculated stream and other data sources are e
 - Track the calculated stream value over time to establish normal behavior patterns
 - Monitor key inputs independently when feasible (vault balances, token supplies, API availability) to identify which input may be causing issues
 - Alert on movements outside your expected range
+
+---
+
+# Crypto Top-of-Book Streams
+Source: https://docs.chain.link/data-streams/concepts/crypto-top-of-book-and-mark-price
+
+In addition to Chainlink's standard liquidity-weighted crypto price streams, Data Streams offers **Top-of-Book** streams for perpetual futures markets. These are sourced directly from a single centralized exchange's public order book, rather than aggregated across venues.
+
+## Top-of-Book
+
+Top-of-Book streams report the best bid and best ask currently resting on a specific exchange's order book for a given instrument. These streams are useful for protocols that need to reflect a specific venue's live order book conditions, such as perpetual futures for tokenized equities and commodities (RWA perps) traded on Binance and Hyperliquid.
+
+<Aside type="note" title="Single-source data">
+  Top-of-Book streams are sourced from a single exchange's order book, not a liquidity-weighted composite across venues.
+  There is no redundant cross-validation between exchanges for a given Top-of-Book feed.
+</Aside>
+
+### Data sources
+
+| Exchange    | Public channel                                               | Fields consumed                                |
+| ----------- | ------------------------------------------------------------ | ---------------------------------------------- |
+| Binance     | `<symbol>@bookTicker` (Individual Symbol Book Ticker Stream) | `b` (best bid price), `a` (best ask price)     |
+| Hyperliquid | `l2Book`                                                     | Best bid/ask `px` from `levels[0]`/`levels[1]` |
+
+Additional exchanges may be added over time as new streams are onboarded.
+
+### Schema
+
+Top-of-Book streams use the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11):
+
+| Schema field   | Populated from                                                                                                                                                                                                              |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bid`          | Exchange's best bid price                                                                                                                                                                                                   |
+| `bidVolume`    | Size at the best bid, when provided by the exchange                                                                                                                                                                         |
+| `ask`          | Exchange's best ask price                                                                                                                                                                                                   |
+| `askVolume`    | Size at the best ask, when provided by the exchange                                                                                                                                                                         |
+| `mid`          | Calculated by the Chainlink DON — **not** provided by the exchange                                                                                                                                                          |
+| `marketStatus` | Reflects the venue's availability. Crypto perpetual markets generally trade continuously; see [Market Status Values](/data-streams/reference/report-schema-v11#market-status-values) for how this maps for a specific feed. |
+
+<Aside type="caution" title="Mid price is calculated, not sourced">
+  `mid` is calculated by the Chainlink DON from the reported bid and ask. It is not a field provided directly by the
+  underlying exchange.
+</Aside>
+
+## Data freshness and update frequency
+
+Top-of-Book streams are **event-driven**: a new observation is only published when the underlying exchange emits a new datapoint on its public channel. There is no fixed polling interval.
+
+End-to-end latency from the underlying exchange to node operators is sub-second under normal conditions. Actual latency can vary based on network conditions and exchange-side publishing behavior.
+
+## Risk considerations
+
+- **Single-source dependency**: Each Top-of-Book feed is sourced from one exchange. If that exchange stops publishing updates, there is no automatic fallback to another venue for that feed.
+- **Venue-specific pricing**: Top-of-Book reflects one exchange's order book, which can diverge from prices on other venues, especially during periods of low liquidity or high volatility on the source exchange.
+- **Review [Developer Responsibilities](/data-streams/developer-responsibilities)** before integrating Top-of-Book streams into a production application.
 
 ---
 
@@ -727,7 +797,7 @@ In these examples, Liquidity-Weighted Bid and Ask prices, along with the spread 
 # Cryptocurrency Data Streams
 Source: https://docs.chain.link/data-streams/crypto-streams
 
-<FeedPage dataFeedType="streamsCrypto" initialNetwork="arbitrum" allowNetworkTableExpansion={true} defaultNetworkTableExpanded={false} />
+Some crypto streams below are sourced from a single exchange's order book rather than a liquidity-weighted composite. See [Crypto Top-of-Book Streams](/data-streams/concepts/crypto-top-of-book-and-mark-price) for details on this stream type, its data sources, and schema.
 
 ---
 
@@ -845,9 +915,10 @@ Developers implementing Chainlink Data Streams are solely responsible for instit
 - **Code quality and reliability:** Developers must execute code using Chainlink Data Streams only if their code meets the quality and reliability requirements for their use case and application.
 - **Code and application audits:** Developers are responsible for auditing their code and applications before deploying to production. Developers must determine the quality of any audits and ensure that they meet the requirements for their application.
 - **Code dependencies and imports:** Developers are responsible for ensuring the quality, reliability, and security of any dependencies or imported packages that they use with Chainlink Data Streams, and review and audit these dependencies and packages.
-- **Implementing Contingency Logic:** In extreme circumstances, including situations beyond the control of Chainlink node operators, Chainlink Data Streams may experience periods of unavailability or performance degradation. When a WebSocket connection is dropped, user systems must manage reconnections effectively. Developers are responsible for creating contingency plans tailored to their specific application needs, such as:
+- **Implementing Contingency Logic:** In extreme circumstances, including situations beyond the control of Chainlink node operators, Chainlink Data Streams may experience periods of unavailability or performance degradation. When a WebSocket connection is dropped, user systems must manage reconnections effectively. REST requests must be retried rather than treated as a hard failure on a single attempt — see [Retry Guidance for REST Requests](/data-streams/architecture#retry-guidance-for-rest-requests). Developers are responsible for creating contingency plans tailored to their specific application needs, such as:
   - Implementing the [Data Streams Architecture](/data-streams/architecture),
   - Adopting an [active-active](/data-streams/architecture#active-active-multi-site-deployment) deployment strategy and [configuring the SDK](/data-streams/reference/data-streams-api/go-sdk#config-struct) to support multiple concurrent WebSocket connections,
+  - Implementing retry logic with exponential backoff for REST requests, per the [Retry Guidance](/data-streams/architecture#retry-guidance-for-rest-requests),
   - Retrieving any potentially missing reports via the [REST API](/data-streams/reference/data-streams-api/interface-api).
 
 ### Additional Considerations on Data Usage and Verification
@@ -883,6 +954,10 @@ The portal automatically includes your Data Streams user ID with the ticket.
 ## If your credentials were issued outside the portal
 
 If you are using Data Streams credentials that were issued outside the self-service portal, your streams user ID will not be attached automatically. Include your streams user ID — represented as a UUID — in your support request.
+
+## Rate limiting
+
+If you believe you've been rate limited unexpectedly, see the [Rate Limits and Fair Use Policy](/data-streams/rate-limits) page for details on fair usage limits and what to include in your support request.
 
 ---
 
@@ -1059,11 +1134,18 @@ APAC Equities streams use the [RWA Advanced (v11) schema](/data-streams/referenc
 
 APAC streams quote in each exchange's local currency (for example, `/JPY` for Japanese equities). All times are **local exchange time** (Mon–Fri unless noted). UTC offsets are fixed for the listed timezone.
 
-| Exchange                     | Code | Currency | Status    | Time zone   | Session   | Hours (local) | UTC equivalent  | Notes                                                                               |
-| ---------------------------- | ---- | -------- | --------- | ----------- | --------- | ------------- | --------------- | ----------------------------------------------------------------------------------- |
-| **Korean Equities + ETFs**   | KRX  | KRW      | Available | KST (UTC+9) | Regular   | 09:00–15:20   | 00:00–06:20 UTC |                                                                                     |
-| **Japanese Equities + ETFs** | TSE  | JPY      | Available | JST (UTC+9) | Morning   | 09:00–11:30   | 00:00–02:30 UTC |                                                                                     |
-|                              |      |          |           |             | Afternoon | 12:30–15:25   | 03:30–06:25 UTC | One-hour lunch break 11:30–12:30. Closing auction 15:25–15:30 (`marketStatus = 5`). |
+| Exchange                      | Code | Currency | Status    | Time zone   | Session   | Hours (local) | UTC equivalent  | Notes                                                                                |
+| ----------------------------- | ---- | -------- | --------- | ----------- | --------- | ------------- | --------------- | ------------------------------------------------------------------------------------ |
+| **Korean Equities + ETFs**    | KRX  | KRW      | Available | KST (UTC+9) | Regular   | 09:00–15:20   | 00:00–06:20 UTC |                                                                                      |
+| **Japanese Equities + ETFs**  | TSE  | JPY      | Available | JST (UTC+9) | Morning   | 09:00–11:30   | 00:00–02:30 UTC |                                                                                      |
+|                               |      |          |           |             | Afternoon | 12:30–15:25   | 03:30–06:25 UTC | One-hour lunch break 11:30–12:30. Closing auction 15:25–15:30 (`marketStatus = 5`).  |
+| **Shanghai Equities + ETFs**  | SSE  | CNY      | Available | CST (UTC+8) | Morning   | 09:30–11:30   | 01:30–03:30 UTC |                                                                                      |
+|                               |      |          |           |             | Afternoon | 13:00–14:57   | 05:00–06:57 UTC | 90-minute lunch break 11:30–13:00. Closing auction 14:57–15:00 (`marketStatus = 5`). |
+| **Shenzhen Equities + ETFs**  | SZSE | CNY      | Available | CST (UTC+8) | Morning   | 09:30–11:30   | 01:30–03:30 UTC |                                                                                      |
+|                               |      |          |           |             | Afternoon | 13:00–14:57   | 05:00–06:57 UTC | 90-minute lunch break 11:30–13:00. Closing auction 14:57–15:00 (`marketStatus = 5`). |
+| **Taiwan Equities + ETFs**    | TWSE | TWD      | Available | CST (UTC+8) | Regular   | 09:00–13:25   | 01:00–05:25 UTC | Closing auction 13:25–13:30 (`marketStatus = 5`).                                    |
+| **Hong Kong Equities + ETFs** | HKEX | HKD      | Available | HKT (UTC+8) | Morning   | 09:30–12:00   | 01:30–04:00 UTC |                                                                                      |
+|                               |      |          |           |             | Afternoon | 13:00–16:00   | 05:00–08:00 UTC | One-hour lunch break 12:00–13:00. Closing auction 16:00–16:10 (`marketStatus = 5`).  |
 
 See the [APAC Equities](/data-streams/rwa-streams/apac-equities) page for coverage and risk considerations.
 
@@ -1140,6 +1222,55 @@ Used by 24/5 US Equities streams with extended and overnight sessions.
 ## Best practices
 
 For comprehensive guidance on managing risks related to market hours, market gaps, volatility, and corporate actions, see the [Best Practices](/data-streams/concepts/best-practices#market-hours) page.
+
+---
+
+# Data Streams Rate Limits and Fair Use Policy
+Source: https://docs.chain.link/data-streams/rate-limits
+
+To ensure reliable access to Chainlink Data Streams for all consumers, rate limits are enforced on API and WebSocket usage. This page describes what constitutes fair usage.
+
+## Fair usage definition
+
+Rate limits are defined by your service agreement. For users with a self-service subscription purchased through [app.chain.link](https://app.chain.link), fair usage is defined as:
+
+- 20 concurrent WebSocket connections
+- 10 requests per second per endpoint on the REST service
+
+These limits apply per user ID. For example, your account is limited to 10 requests per second on *each* of the following endpoints (limits are not cumulative across endpoints):
+
+- `/api/v1/reports`
+- `/api/v1/reports/latest`
+- `/api/v1/reports/page`
+- `/api/v1/reports/bulk`
+
+Users with a contracted service agreement have higher limits defined by their agreement. [Contact us](/data-streams/get-support) for higher rate limits.
+
+Requests that exceed the applicable limit receive an HTTP 429 (Too Many Requests) response.
+
+## Report retrieval
+
+Reports are pushed as soon as they are available. Sending a higher volume of REST requests to retrieve the latest report will not return it any faster, and adds unnecessary load to the service. Use the WebSocket stream for timely report delivery rather than polling a REST endpoint.
+
+## Prohibited: redistribution via proxy
+
+Proxying Chainlink Data Streams with the intent to share or redistribute data to a wider audience (for example, re-serving stream data to third parties who are not party to your license or agreement) is strictly prohibited under the [Terms of Service](https://chain.link/terms). Each consumer must connect and authenticate directly under their own credentials.
+
+## Best practices to avoid rate limiting
+
+- Rely on the WebSocket stream for report delivery rather than polling a REST endpoint in a tight loop.
+- Ensure your client properly closes WebSocket connections on disconnect and reconnect to avoid connection leaks.
+- Implement exponential backoff on reconnect logic.
+- If you require higher throughput or connection limits than the defaults, [reach out proactively](/data-streams/get-support) rather than working around the limit — we're happy to discuss options for your use case.
+
+<Aside type="note" title="Contact">
+  If you have questions about this policy, or believe you've been rate limited unexpectedly, [contact
+  support](/data-streams/get-support) with:
+
+  - Your API user ID identifier
+  - Timestamps of the affected requests or connections
+  - A brief description of your integration and expected usage pattern
+</Aside>
 
 ---
 
@@ -4452,12 +4583,21 @@ GET /api/v1/reports/page?feedID=<FeedID>&startTimestamp=<StartTimestamp>&limit=<
 
 ## Error response codes
 
-| Status Code                              | Description                                                                                                                                                                                                                                                                                                                                          |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 400 Bad Request                          | This error is triggered when: <ul><li>There is any missing/malformed query argument.</li><li>Required headers are missing or provided with incorrect values.</li></ul>                                                                                                                                                                               |
-| 401 Unauthorized User                    | This error is triggered when: <ul><li>Authentication fails, typically because the HMAC signature provided by the client doesn't match the one expected by the server.</li><li>A user requests access to a stream without the appropriate permission or that does not exist.</li></ul>                                                                |
-| 500 Internal Server                      | Indicates an unexpected condition encountered by the server, preventing it from fulfilling the request. This error typically points to issues on the server side.                                                                                                                                                                                    |
-| 206 Missing data (`/bulk` endpoint only) | Indicates that at least one stream ID data is missing from the report. E.g., you requested a report for stream IDs `<feedID1>`, `<feedID2>`, and `<feedID3>` at a given timestamp. If data for `<feedID2>` is missing from the report (not available yet at the specified timestamp), you get `[<feedID1 data>, <feedID3 data>]` and a 206 response. |
+| Status Code                               | Description                                                                                                                                                                                                                                                                                                                                          |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400 Bad Request                           | This error is triggered when: <ul><li>There is any missing/malformed query argument.</li><li>Required headers are missing or provided with incorrect values.</li></ul>                                                                                                                                                                               |
+| 401 Unauthorized User                     | This error is triggered when: <ul><li>Authentication fails, typically because the HMAC signature provided by the client doesn't match the one expected by the server.</li><li>A user requests access to a stream without the appropriate permission or that does not exist.</li></ul>                                                                |
+| 429 Too Many Requests                     | Indicates the request exceeded your account's rate limit. See the [Rate Limits and Fair Use Policy](/data-streams/rate-limits) page for applicable limits and how to request higher limits.                                                                                                                                                          |
+| 500 Internal Server                       | Indicates an unexpected condition encountered by the server, preventing it from fulfilling the request. This error typically points to issues on the server side.                                                                                                                                                                                    |
+| 502 Bad Gateway / 503 Service Unavailable | Indicates a transient error. Retry the request — see [Retry Guidance for REST Requests](/data-streams/architecture#retry-guidance-for-rest-requests).                                                                                                                                                                                                |
+| 206 Missing data (`/bulk` endpoint only)  | Indicates that at least one stream ID data is missing from the report. E.g., you requested a report for stream IDs `<feedID1>`, `<feedID2>`, and `<feedID3>` at a given timestamp. If data for `<feedID2>` is missing from the report (not available yet at the specified timestamp), you get `[<feedID1 data>, <feedID3 data>]` and a 206 response. |
+
+<Aside type="note" title="Retryable vs. non-retryable errors">
+  `5xx` responses and network-level errors (timeouts, connection resets) are generally transient and should be retried
+  with exponential backoff. `4xx` responses (`400`, `401`) indicate a problem with the request itself and will not
+  succeed on retry without changing the request. See [Retry Guidance for REST
+  Requests](/data-streams/architecture#retry-guidance-for-rest-requests) for details.
+</Aside>
 
 ---
 
@@ -4523,6 +4663,7 @@ GET /api/v1/ws?feedIDs=<feedID1>,<feedID2>,...
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 400 Bad Request       | This error is triggered when: <ul><li>There is any missing/malformed query argument.</li><li>Required headers are missing or provided with incorrect values.</li></ul>                                                                                                                |
 | 401 Unauthorized User | This error is triggered when: <ul><li>Authentication fails, typically because the HMAC signature provided by the client doesn't match the one expected by the server.</li><li>A user requests access to a stream without the appropriate permission or that does not exist.</li></ul> |
+| 429 Too Many Requests | Indicates the request exceeded your account's rate limit. See the [Rate Limits and Fair Use Policy](/data-streams/rate-limits) page for applicable limits and how to request higher limits.                                                                                           |
 | 500 Internal Server   | Indicates an unexpected condition encountered by the server, preventing it from fulfilling the request. This error typically points to issues on the server side.                                                                                                                     |
 
 ---
@@ -5738,6 +5879,17 @@ Implement appropriate safeguards based on market status — such as pausing trad
 - **IMPORTANT**: The `lastSeenTimestampNs` field reflects the timestamp of the last update for the `mid` price only. Do not assume this timestamp applies to `bid`, `ask`, `bidVolume`, `askVolume`, or `lastTradedPrice`. Different fields may have been updated at different times.
 - **Do not use `lastSeenTimestampNs` (or any other timestamp field) to determine which stream to select or to infer whether the market is open.** Timestamps indicate when data was last recorded, not whether the market is currently active. Use the `marketStatus` field as the authoritative signal for market availability and stream selection.
 
+#### `lastSeenTimestampNs` is not guaranteed to be monotonic
+
+Do not assume `lastSeenTimestampNs` strictly increases from one report to the next. Use `marketStatus` to determine whether a market is open.
+
+`lastSeenTimestampNs` is not guaranteed to be monotonic (that is, it does not always increase from one report to the next); the value can vary between reports. Reasons for this include:
+
+- A provider dropping in or out between reports can shift the median.
+- The fewer providers contribute to a report, the more a single provider's inclusion or exclusion can move the result. For example, if a provider is excluded from one report (due to a timeout) and included in the next, the median can shift to an earlier value than the previous report.
+
+Under normal circumstances, expect this value to advance with each report. A single occurrence of non-monotonic movement is not by itself cause for concern: treat it as a potential issue only if the behavior persists across multiple consecutive reports.
+
 #### Bid/Ask Volume
 
 For U.S. equities, there is no single consolidated order book. Instead, multiple venues each maintain their own order books. Because data providers source from different markets, the `bidVolume` and `askVolume` reported at each update come from one specific order book at a time, not an aggregate across all venues.
@@ -5909,7 +6061,20 @@ RWA streams adhere to the report schema outlined below.
 | `midPrice`              | `int192`  | DON's consensus median price                                             |
 | `marketStatus`          | `uint32`  | Market status. See schema docs for value mappings.                       |
 
-### Market Status Values
+### Notes
+
+#### `lastUpdateTimestamp` is not guaranteed to be monotonic
+
+Do not assume `lastUpdateTimestamp` strictly increases from one report to the next. Use `marketStatus` to determine whether a market is open.
+
+`lastUpdateTimestamp` is not guaranteed to be monotonic (that is, it does not always increase from one report to the next); the value can vary between reports. Reasons for this include:
+
+- A provider dropping in or out between reports can shift the median.
+- The fewer providers contribute to a report, the more a single provider's inclusion or exclusion can move the result. For example, if a provider is excluded from one report (due to a timeout) and included in the next, the median can shift to an earlier value than the previous report.
+
+Under normal circumstances, expect this value to advance with each report. A single occurrence of non-monotonic movement is not by itself cause for concern: treat it as a potential issue only if the behavior persists across multiple consecutive reports.
+
+#### Market Status Values
 
 <Aside type="caution" title="Use marketStatus, not timestamps">
   Always use <code>marketStatus</code> to determine whether a market is open. Do <strong>not</strong> use
@@ -5927,7 +6092,7 @@ v8 streams use a three-value mapping:
 
 For trading schedules by asset class, see [Market Hours](/data-streams/market-hours). For integration guidance during market transitions, see [Handling Market Events](/data-streams/rwa-streams/handling-market-events).
 
-### Notes
+### Additional Notes
 
 - Users are responsible for handling market status changes in their applications.
 - Future RWA streams may use different report schemas.
@@ -6082,6 +6247,17 @@ Consumers must treat `marketStatus = 5` (Closed) as a valid state and define det
 #### Stale Data Detection
 
 Markets may stop updating due to exchange outages, circuit breakers, trading halts, or corporate actions. The `marketStatus` field will continue reflecting the status that it normally would. Use the `lastSeenTimestampNs` field (which reflects the timestamp of the last update for the `mid` price only) to detect staleness by comparing it against the current time. When this timestamp stops advancing, it indicates the underlying venue has stopped providing updates.
+
+##### Why `lastSeenTimestampNs` can pause, or move non-monotonically, without an outage
+
+`mid` and its timestamp `lastSeenTimestampNs` are derived from a consensus across the data providers configured for a feed, and both only update when that consensus changes. Because the result depends on exactly which providers are included in a given report, any single provider dropping in or out can shift that result — and the fewer providers contribute to a report, the more a single provider's inclusion or exclusion can move the outcome. Two related behaviors follow from this:
+
+- **Pausing:** Individual data providers do not all publish at the same rate — some sourcing venues naturally have lower update frequency during certain windows, particularly for less liquid names or during thinner trading periods. When enough providers are momentarily quiet, the consensus value — and its timestamp — can hold steady for longer than you might expect, even though the DON is healthy and continuing to produce reports.
+- **Non-monotonic movement:** Which providers are actually included in a given report can also change from one report to the next, for example if a provider times out on one report and returns on the next. Because the timestamp is derived from whichever providers are included, it is not guaranteed to strictly increase — it can occasionally shift to an earlier value than the previous report's timestamp.
+
+In the normal case, expect `lastSeenTimestampNs` to advance in line with the update cadence for a given symbol and session. Neither of the above is a sign that the feed or DON is down. Do not assume `lastSeenTimestampNs` strictly increases between reports.
+
+A single stalled or backward-moving report is not, by itself, cause for concern. Treat it as a potential issue only if the behavior recurs across multiple consecutive reports, or the pause exceeds your own configured staleness threshold (see the staleness check example in [Stream Switching Example Logic](#stream-switching-example-logic)). At that point, apply your staleness safeguards regardless of whether the eventual cause turns out to be provider behavior or something else.
 
 Phase-specific feeds can introduce unique behavior due to venue-specific operational characteristics and market microstructure. The following are some examples of scenarios that may occur during session transitions or under specific market conditions:
 
@@ -6277,6 +6453,12 @@ APAC Equities data is delivered using the [RWA Advanced (v11) schema](/data-stre
 | `lastTradedPrice`       | `int192`  | Not populated for APAC equities; reported as 0                           |
 | `marketStatus`          | `uint32`  | Market status. Mapping varies by feed; see schema docs.                  |
 
+<Aside type="note" title="lastTradedPrice availability varies by market">
+  `lastTradedPrice` is only populated where the underlying data provider supplies trade data. Korea and Japan are
+  quote-only markets, so `lastTradedPrice` is not meaningfully populated for those streams. China, Hong Kong, and Taiwan
+  streams source trade data in addition to quotes.
+</Aside>
+
 For `marketStatus` value mappings, see [Standard-hours feeds (v11)](/data-streams/reference/report-schema-v11#standard-hours-feeds). For exchange schedules, see [Market Hours (APAC Equities)](/data-streams/market-hours#apac-equities).
 
 ## Coverage
@@ -6285,12 +6467,14 @@ APAC Equities streams cover major indices and single-name stocks across Asia-Pac
 
 ### Exchanges
 
-| Exchange             | Code | Local currency | Status    |
-| -------------------- | ---- | -------------- | --------- |
-| Korea Exchange       | KRX  | KRW            | Available |
-| Tokyo Stock Exchange | TSE  | JPY            | Available |
-
-Other APAC exchanges are coming soon.
+| Exchange                | Code | Local currency | Status    |
+| ----------------------- | ---- | -------------- | --------- |
+| Korea Exchange          | KRX  | KRW            | Available |
+| Tokyo Stock Exchange    | TSE  | JPY            | Available |
+| Shanghai Stock Exchange | SSE  | CNY            | Available |
+| Shenzhen Stock Exchange | SZSE | CNY            | Available |
+| Taiwan Stock Exchange   | TWSE | TWD            | Available |
+| Hong Kong Exchange      | HKEX | HKD            | Available |
 
 ## Trading hours
 
@@ -6312,17 +6496,19 @@ When a session is closed, prices hold at the last traded value until the next se
 
 TSE-listed equities observe a scheduled lunch break (11:30–12:30 JST / 02:30–03:30 UTC) during which `marketStatus = 5` (Closed) and no new price data is published. `lastSeenTimestampNs` will not advance for approximately 60 minutes during this window.
 
-Freshness monitoring logic that evaluates timestamp age alone should account for this break. A staleness threshold shorter than \~60 minutes will fire during the TSE lunch break, producing false-positive alerts and potentially unnecessary circuit-breaker activity.
+SSE- and SZSE-listed equities observe a similar scheduled lunch break (11:30–13:00 CST / 03:30–05:00 UTC). HKEX-listed equities observe a one-hour lunch break (12:00–13:00 HKT / 04:00–05:00 UTC).
+
+Freshness monitoring logic that evaluates timestamp age alone should account for these breaks. A staleness threshold shorter than the break duration will fire during the lunch break, producing false-positive alerts and potentially unnecessary circuit-breaker activity.
 
 Recommended approach: check `marketStatus` before evaluating freshness. If `marketStatus = 5`, staleness is expected and should not trigger restrictions; evaluate freshness thresholds only when `marketStatus = 2` (Open).
 
-KRX-listed equities have no intraday break; the session runs continuously from 09:00–15:20 KST (00:00–06:20 UTC).
+KRX-listed and TWSE-listed equities have no intraday break; KRX runs continuously from 09:00–15:20 KST (00:00–06:20 UTC), and TWSE runs continuously from 09:00–13:25 CST (01:00–05:25 UTC).
 
 ### Opening and closing auction prices
 
 At the open of each session, prices may reflect the exchange's opening auction mechanism rather than continuous traded prices. Opening auctions concentrate deferred orders from the closed period into a single price discovery event, which can produce an opening price that deviates materially from the prior session's close. This is normal exchange behavior, not a data quality issue.
 
-The same consideration applies at the start of the TSE afternoon session (12:30 JST / 03:30 UTC) following the lunch break.
+The same consideration applies at the start of the TSE afternoon session (12:30 JST / 03:30 UTC), the SSE/SZSE afternoon session (13:00 CST / 05:00 UTC), and the HKEX afternoon session (13:00 HKT / 05:00 UTC), following their respective lunch breaks.
 
 Protocols should account for session-open volatility by:
 
