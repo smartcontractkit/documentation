@@ -45,16 +45,16 @@ Futures streams use the v14 schema.
 
 Futures streams are currently available for the following commodities. Additional commodities and asset classes may be added based on demand.
 
-| Commodity   | Generic feeds                                    |
-| ----------- | ------------------------------------------------ |
-| Gold        | Front-month, second-month, and third-month feeds |
-| Silver      | Front-month, second-month, and third-month feeds |
-| Oil (WTI)   | Front-month, second-month, and third-month feeds |
-| Natural Gas | Front-month, second-month, and third-month feeds |
+| Commodity   | Generic feeds                  |
+| ----------- | ------------------------------ |
+| Gold        | Front, second, and third feeds |
+| Silver      | Front, second, and third feeds |
+| US Oil      | Front, second, and third feeds |
+| Natural Gas | Front, second, and third feeds |
 
 ## Naming and price representation
 
-Feed names use the plain instrument name only (for example, "WTI," "Gold," "Natural Gas").
+Feed names use the plain instrument name only (for example, "US Oil," "Gold," "Natural Gas").
 
 Contract specifications — contract size, tick size, quotation units, and similar terms — can vary between exchanges for the same underlying instrument. Chainlink does not publish these specifications, since they belong to the exchange where a given contract is listed. If your application needs exact contract specifications, consult that exchange's own public product documentation directly.
 
@@ -64,11 +64,11 @@ Unlike spot instruments, futures contracts have a finite life. For example, a gi
 
 To avoid this, each instrument is represented by three static, non-expiring **generic feeds** that always represent the near-term forward curve of eligible contracts:
 
-| Generic feed          | Meaning                                                          |
-| --------------------- | ---------------------------------------------------------------- |
-| **Front-month feed**  | Tracks the nearest unexpired eligible contract                   |
-| **Second-month feed** | Tracks the next eligible contract after the front-month contract |
-| **Third-month feed**  | Tracks the eligible contract after that                          |
+| Generic feed    | Meaning                                                    |
+| --------------- | ---------------------------------------------------------- |
+| **Front feed**  | Tracks the nearest unexpired eligible contract             |
+| **Second feed** | Tracks the next eligible contract after the front contract |
+| **Third feed**  | Tracks the eligible contract after that                    |
 
 This design means:
 
@@ -77,23 +77,23 @@ This design means:
 
 ### How the roll works
 
-When the front-month contract reaches its expiration, the generic feeds cascade forward at 00:00:00 (midnight) Eastern Time on the expiration date:
+When the front contract reaches its expiration, the generic feeds cascade forward:
 
-- The **front-month feed** takes over the contract previously tracked by the second-month feed
-- The **second-month feed** takes over the contract previously tracked by the third-month feed
-- The **third-month feed** begins tracking the next eligible contract in that instrument's cycle
+- The **front feed** takes over the contract previously tracked by the second feed
+- The **second feed** takes over the contract previously tracked by the third feed
+- The **third feed** begins tracking the next eligible contract in that instrument's cycle
 
 A few properties of the roll are worth calling out explicitly:
 
-- **The roll is triggered by the front-month contract's expiration**, as defined by the listed expiration calendar for that specific instrument. Expiration conventions differ by instrument, so rolls for different instruments happen on different dates — there is no single "roll day" across all instruments.
-- **The roll is a re-mapping, not a price adjustment.** At the moment of the roll, the front-month feed switches from quoting the expiring contract to quoting what was previously the second-month contract. Because different contract months can trade at different prices, **expect a price discontinuity on the generic feed at each roll**. Feeds are not back-adjusted into a smooth continuous series — if your application needs a continuous series, construct it from the raw generic feeds on your end.
-- **Until expiration, the front-month feed continues to track the expiring contract**, even in its final days when liquidity has typically already migrated to the next contract. This is precisely why the second-month feed is exposed — so you can implement your own liquidity-based rolls ahead of expiry instead of holding the front-month contract to the end.
+- **The roll is triggered by the front contract's expiration**, as defined by the listed expiration calendar for that specific instrument. Expiration conventions differ by instrument, so rolls for different instruments happen on different dates — there is no single "roll day" across all instruments.
+- **The roll is a re-mapping, not a price adjustment.** At the moment of the roll, the front feed switches from quoting the expiring contract to quoting what was previously the second contract. Because different contract months can trade at different prices, **expect a price discontinuity on the generic feed at each roll**. Feeds are not back-adjusted into a smooth continuous series — if your application needs a continuous series, construct it from the raw generic feeds on your end.
+- **Until expiration, the front feed continues to track the expiring contract**, even in its final days when liquidity has typically already migrated to the next contract. This is precisely why the second feed is exposed — so you can implement your own liquidity-based rolls ahead of expiry instead of holding the front contract to the end.
 
 ### Contract eligibility varies by instrument
 
-"Front-month" does not always mean "nearest calendar month." Each instrument has its own set of listed contract months, and for several instruments, the actively traded contracts are only a subset of what is listed:
+The front feed does not necessarily track the nearest calendar month — it tracks the nearest unexpired eligible contract, whatever month that happens to be. Each instrument has its own set of listed contract months, and for several instruments, the actively traded contracts are only a subset of what is listed:
 
-- **Energy** (Oil, Natural Gas): every calendar month is listed, though liquidity is generally concentrated in nearer maturities. The generic feeds walk the full monthly strip regardless, so the front-, second-, and third-month feeds track three **consecutive** calendar months.
+- **Energy** (US Oil, Natural Gas): every calendar month is listed, though liquidity is generally concentrated in nearer maturities. The generic feeds walk the full monthly strip regardless, so the front, second, and third feeds track three **consecutive** calendar months.
 - **Precious metals** (Gold, Silver): many calendar months are listed, but liquidity concentrates in a benchmark cycle. The generic feeds follow the benchmark cycle only and skip non-benchmark months, even though those contracts exist and trade.
 
 | Commodity | Benchmark months             |
@@ -101,30 +101,32 @@ A few properties of the roll are worth calling out explicitly:
 | Gold      | Feb, Apr, Jun, Aug, Oct, Dec |
 | Silver    | Mar, May, Jul, Sep, Dec      |
 
-The practical consequence: **the gap between the front-, second-, and third-month feeds is not always one month.** For Gold or Silver, consecutive generic feeds can be one to three months apart. Do not assume monthly spacing in your integration.
+The practical consequence: **the gap between the front, second, and third feeds is not always one month.** For Gold or Silver, consecutive generic feeds can be one to three months apart. Do not assume monthly spacing in your integration.
 
 ### Worked example
 
 Gold follows its benchmark cycle (Feb/Apr/Jun/Aug/Oct/Dec). In August 2026, before the August contract expires:
 
-| Feed              | Contract tracked |
-| ----------------- | ---------------- |
-| Front-month feed  | August 2026      |
-| Second-month feed | October 2026     |
-| Third-month feed  | December 2026    |
+| Feed        | Contract tracked |
+| ----------- | ---------------- |
+| Front feed  | August 2026      |
+| Second feed | October 2026     |
+| Third feed  | December 2026    |
 
-When the August contract expires, the front-month feed jumps directly to October, the second-month feed jumps to December, and the third-month feed begins tracking February 2027 — skipping the non-benchmark September and November contracts entirely, since they never appear on the generic feeds.
+When the August contract expires, the front feed jumps directly to October, the second feed jumps to December, and the third feed begins tracking February 2027 — skipping the non-benchmark September and November contracts entirely, since they never appear on the generic feeds.
 
 ## Integration guidance
 
-- **Do not hardcode contract-month assumptions.** The spacing between the front-, second-, and third-month feeds varies by instrument — one month for energy, up to a few months for precious metals.
-- **Expect price steps at rolls.** A protocol using the front-month feed directly for margining or liquidation should either accept the step as economically correct (the front contract genuinely changed), implement its own early roll using the second-month feed, or build an adjusted continuous series off-chain from the raw generic feeds.
-- **Roll early if you depend on liquidity.** In the final days of a contract's life, trading volume typically migrates to the next contract while the front-month feed still tracks the expiring one. If your application is sensitive to thin markets, consider rolling ahead of expiry using the second-month feed.
+- **Do not hardcode contract-month assumptions.** The spacing between the front, second, and third feeds varies by instrument — one month for energy, up to a few months for precious metals.
+- **Expect price steps at rolls.** A protocol using the front feed directly for margining or liquidation should either accept the step as economically correct (the front contract genuinely changed), implement its own early roll using the second feed, or build an adjusted continuous series off-chain from the raw generic feeds.
+- **Roll early to avoid volatility near expiry.** In the final days of a contract's life, trading volume typically migrates to the next contract while the front feed still tracks the expiring one. Thin liquidity in the expiring contract can increase price volatility, which may unexpectedly trigger perpetual trades, liquidations, or other price-sensitive logic. If your application is sensitive to this, consider rolling ahead of expiry using the second feed.
 - **Follow the listed expiration calendar.** Expiration dates follow the official listed calendar of the exchange where the underlying contract trades, including holiday adjustments. Consult that exchange for the operative source of truth.
 
 ## Trading hours
 
 Futures trade during standard trading hours for each instrument, with a scheduled break each trading day. Consult the exchange where the underlying contract is listed for holiday and early-close schedules.
+
+Each feed's `marketStatus` field reflects the current market status of the primary exchange venue for that instrument.
 
 ## Risk considerations
 
