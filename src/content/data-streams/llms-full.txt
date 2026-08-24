@@ -6532,6 +6532,10 @@ Because futures contracts expire, Data Streams does not publish one feed per con
 
 Developers are responsible for choosing the appropriate feed and ensuring that the operation and performance of their choice matches expectations. For more information, see the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance.
 
+## Schema
+
+Futures feeds publish bid, ask, and mid prices for each generic contract.
+
 ## Coverage
 
 Futures streams are currently available for the following commodities. Additional commodities and asset classes may be added based on demand.
@@ -6568,7 +6572,7 @@ This design means:
 
 ### How the roll works
 
-When the front-month contract reaches its expiration, the generic feeds cascade forward:
+When the front-month contract reaches its expiration, the generic feeds cascade forward at 00:00:00 (midnight) Eastern Time on the expiration date:
 
 - The **front-month feed** takes over the contract previously tracked by the second-month feed
 - The **second-month feed** takes over the contract previously tracked by the third-month feed
@@ -6584,7 +6588,7 @@ A few properties of the roll are worth calling out explicitly:
 
 "Front-month" does not always mean "nearest calendar month." Each instrument has its own set of listed contract months, and for several instruments, the actively traded contracts are only a subset of what is listed:
 
-- **Energy** (Oil, Natural Gas): every calendar month is listed and liquid. The generic feeds walk the full monthly strip, so the front-, second-, and third-month feeds track three **consecutive** calendar months.
+- **Energy** (Oil, Natural Gas): every calendar month is listed, though liquidity is generally concentrated in nearer maturities. The generic feeds walk the full monthly strip regardless, so the front-, second-, and third-month feeds track three **consecutive** calendar months.
 - **Precious metals** (Gold, Silver): many calendar months are listed, but liquidity concentrates in a benchmark cycle. The generic feeds follow the benchmark cycle only and skip non-benchmark months, even though those contracts exist and trade.
 
 | Commodity | Benchmark months             |
