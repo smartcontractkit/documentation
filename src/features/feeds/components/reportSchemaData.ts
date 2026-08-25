@@ -37,6 +37,15 @@ const COMMON_FIELDS: SchemaField[] = [
 ]
 
 export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
+  v2: {
+    label: "Report Schema v2 (Crypto Standard)",
+    shortLabel: "v2 (Crypto)",
+    url: "/data-streams/reference/report-schema-v2",
+    fields: [
+      ...COMMON_FIELDS,
+      { field: "price", type: "int192", description: "Time-weighted average price (TWAP) for the stream's window" },
+    ],
+  },
   "v3-crypto": {
     label: "Report Schema v3 (Crypto Advanced)",
     shortLabel: "v3 (Crypto)",

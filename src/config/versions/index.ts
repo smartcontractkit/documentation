@@ -77,8 +77,9 @@ export const VERSIONS = {
   },
   // CRE CLI Versions — update LATEST here for each new release
   "cre-cli": {
-    LATEST: "v1.29.0",
+    LATEST: "v1.30.0",
     ALL: [
+      "v1.30.0",
       "v1.29.0",
       "v1.28.0",
       "v1.27.0",
@@ -103,6 +104,7 @@ export const VERSIONS = {
       "v1.8.0",
     ] as const,
     RELEASE_DATES: {
+      "v1.30.0": "2026-08-13T00:00:00Z",
       "v1.29.0": "2026-08-07T00:00:00Z",
       "v1.28.0": "2026-07-30T00:00:00Z",
       "v1.27.0": "2026-07-23T00:00:00Z",

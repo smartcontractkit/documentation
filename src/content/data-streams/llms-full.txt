@@ -5688,8 +5688,13 @@ Each stream category uses one or more report schemas to deliver data. Several ca
 
 Cryptocurrency streams deliver high-frequency market data for digital assets.
 
+- [**Crypto Standard (v2)**](#crypto-standard-v2) provides a single consensus price point for crypto assets.
 - [**Crypto Advanced (v3)**](#crypto-advanced-v3) aggregate order-book liquidity across top venues to provide a consensus mid price alongside simulated bid and ask levels.
 - [**Crypto Advanced (v3) - DEX State Price**](#crypto-advanced-v3---dex-state-price) derive pricing from onchain liquidity pools to reflect decentralized market conditions.
+
+### Crypto Standard (v2)
+
+[Chainlink Cryptocurrency Reports](/data-streams/reference/report-schema-v2) provide market data for digital assets using a streamlined schema. Each report includes a single time-weighted average price (`price`), making it suitable for use cases that require a TWAP price point.
 
 ### Crypto Advanced (v3)
 
@@ -5895,6 +5900,33 @@ As a result, these volume fields should not be treated as a proxy for total mark
 
 - Future streams using this format may adopt different report schemas as needed.
 - Data availability and sourcing vary by session. Liquidity is typically highest during regular hours and lower during extended and overnight sessions.
+
+---
+
+# Report Schema: Crypto Standard (v2)
+Source: https://docs.chain.link/data-streams/reference/report-schema-v2
+
+<DataStreams section="dsNotes" />
+
+Cryptocurrency streams adhere to the report schema outlined below.
+
+## Time-Weighted Average Price (TWAP)
+
+The v2 schema is used by TWAP streams. The `price` field carries the time-weighted average price for the stream's configured window, not a spot or median price. Each TWAP stream is scoped to one asset and one window length (for example, 30 seconds or 60 seconds). The window length is part of the stream's name and metadata.
+
+## Schema Fields
+
+| Field                   | Type      | Description                                                              |
+| ----------------------- | --------- | ------------------------------------------------------------------------ |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                              |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                     |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                       |
+| `nativeFee`             | `uint192` | Legacy onchain verification fee field                                    |
+| `linkFee`               | `uint192` | Legacy onchain verification fee field; not used for subscription billing |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                  |
+| `price`                 | `int192`  | Time-weighted average price (TWAP) for the stream's window               |
+
+**Note**: Future Cryptocurrency streams may use different report schemas.
 
 ---
 
