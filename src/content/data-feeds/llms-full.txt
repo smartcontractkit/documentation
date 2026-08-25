@@ -1145,18 +1145,17 @@ Source: https://docs.chain.link/data-feeds/getting-started-foundry
 
 Chainlink Data Feeds are the fastest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health. Each feed is aggregated by many independent Chainlink node operators and published onchain through a decentralized oracle network, giving your contracts a reliable, manipulation-resistant source of data.
 
-Each price feed has an onchain address and functions that enable contracts to read pricing data from that address, for example the [ETH / USD feed](https://data.chain.link/feeds/ethereum/mainnet/eth-usd).
+Each price feed has an onchain address and functions that enable contracts to read pricing data from that address.
 
-This guide walks you through reading a Data Feed end-to-end using the [Foundry](https://book.getfoundry.sh/) CLI. You'll deploy a consumer contract on the Sepolia testnet with `forge`, read the BTC / USD price feed onchain, and read the same feed offchain with `cast call`.
+In this guide you will fetch the pricing data from a price feed, for example the [BTC / USD feed](https://data.chain.link/feeds/ethereum/mainnet/btc-usd).
 
 ## What you'll do
 
-- Deploy a Solidity consumer contract that reads the BTC / USD price feed on Sepolia using `forge script`.
-- Retrieve the latest price onchain by calling the consumer contract with `cast call`.
-- Read the same feed offchain directly from the feed proxy with `cast call` — no consumer contract required.
+- Retrieve latest pricing data from the BTC / USD price feed offchain directly from the feed proxy. *(Offchain methods are useful for backends, bots, dashboards, and pre-trade checks)*
+- Deploy and retrieve the latest price onchain using a Solidity consumer contract that reads the BTC / USD price feed on Sepolia. *(Onchain methods are useful for when you need to apply smart contract logic in your application based on the pricing data.)*
 - Learn the key safety checks to apply before moving to production.
 
-The code for reading Data Feeds on Ethereum and other EVM-compatible blockchains is the same for every chain and every feed type. You choose different feeds for different use cases, but the request and response format is always the same. The answer's decimal length and expected value range may differ depending on the feed.
+**Note:** The code for reading Data Feeds on Ethereum and other EVM-compatible blockchains is the same for every chain and every feed type. You choose different feeds for different use cases, but the request and response format is always the same. The answer's decimal length and expected value range may differ depending on the feed.
 
 
 <Aside type="caution" title="Using Data Feeds on L2 networks">
@@ -1173,9 +1172,8 @@ If you are new to smart contract development, complete the [Deploy Your First Sm
 You will need:
 
 - [Foundry](https://book.getfoundry.sh/getting-started/installation) installed (`forge`, `cast`).
-- A funded wallet on the **Sepolia** testnet. Get testnet ETH from a [Sepolia faucet](/resources/link-token-contracts/#sepolia-testnet).
+- A funded wallet with its private key on the **Sepolia** testnet that will be used as your deployer. Get testnet ETH from a [Sepolia faucet](/resources/link-token-contracts/#sepolia-testnet).
 - A Sepolia RPC URL (e.g. from a [node provider](https://ethereum.org/en/developers/docs/nodes-and-clients/nodes-as-a-service/)).
-- A funded deployer private key for Sepolia.
 
 
 <Aside type="note" title="Why a proxy?">
@@ -1185,234 +1183,236 @@ You will need:
   [Price Feed Addresses](/data-feeds/price-feeds/addresses) page, not from the underlying aggregator.
 </Aside>
 
-## Step 1: Examine the sample contract
+## Getting the feed address
 
-The example contract below reads the latest answer from the [BTC / USD feed](/data-feeds/price-feeds/addresses) on Sepolia. You can modify it to read any of the [Types of Data Feeds](/data-feeds#types-of-data-feeds).
+Before we even begin, we need to know the address of the feed we want to read. The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the feeds available on each network. For this guide, we will use the BTC / USD feed on Sepolia, with the proxy address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
 
-```sol
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+## Retrieving the price data from the feed
 
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+<Accordion title="Fetching price data onchain using a consumer contract" number={2}>
+  <Accordion title="Examine the sample contract" number={2.1} contentReference="examine-the-sample-contract">
+    The example contract below reads the latest answer from the [BTC / USD feed](/data-feeds/price-feeds/addresses) on Sepolia. You can modify it to read any of the [Types of Data Feeds](/data-feeds#types-of-data-feeds).
 
-/**
- * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED
- * VALUES FOR CLARITY.
- * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
- * DO NOT USE THIS CODE IN PRODUCTION.
- */
+    {/* <CodeSample src="samples/DataFeeds/DataConsumerV3.sol"/> */}
 
-/**
- * If you are reading data feeds on L2 networks, you must
- * check the latest answer from the L2 Sequencer Uptime
- * Feed to ensure that the data is accurate in the event
- * of an L2 sequencer outage. See the
- * https://docs.chain.link/data-feeds/l2-sequencer-feeds
- * page for details.
- */
-contract DataConsumerV3 {
-  AggregatorV3Interface internal dataFeed;
+    ```solidity filename='src/DataFeeds/DataConsumerV3.sol'
+    // SPDX-License-Identifier: MIT
+    pragma solidity ^0.8.7;
 
-  /**
-   * Network: Sepolia
-   * Aggregator: BTC/USD
-   * Address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
-   */
-  constructor() {
-    dataFeed = AggregatorV3Interface(0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43);
-  }
+    import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
-  /**
-   * Returns the latest answer.
-   */
-  function getChainlinkDataFeedLatestAnswer() public view returns (int256) {
-    // prettier-ignore
-    (
-      /* uint80 roundId */
-      ,
-      int256 answer,
-      /*uint256 startedAt*/
-      ,
-      /*uint256 updatedAt*/
-      ,
-      /*uint80 answeredInRound*/
-    ) = dataFeed.latestRoundData();
-    return answer;
-  }
-}
-```
+    /**
+     * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED
+     * VALUES FOR CLARITY.
+     * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+     * DO NOT USE THIS CODE IN PRODUCTION.
+     */
 
-The contract has the following components:
+    /**
+     * If you are reading data feeds on L2 networks, you must
+     * check the latest answer from the L2 Sequencer Uptime
+     * Feed to ensure that the data is accurate in the event
+     * of an L2 sequencer outage. See the
+     * https://docs.chain.link/data-feeds/l2-sequencer-feeds
+     * page for details.
+     */
+    contract DataConsumerV3 {
+      AggregatorV3Interface internal dataFeed;
 
-- The `import` line brings in [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink-evm/blob/contracts-v1.5.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol) — the Solidity interface that every Chainlink v3 price feed proxy implements. It exposes `latestRoundData()`, `getRoundData()`, `decimals()`, and `version()`. The sample uses `latestRoundData` to fetch the current price.
-- The `constructor()` initializes a `dataFeed` object that uses `AggregatorV3Interface` pointing at the proxy aggregator deployed at 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43. This is the proxy address for the Sepolia `BTC / USD` feed. The proxy lets the aggregator be upgraded without breaking consumer contracts.
-- The `getChainlinkDataFeedLatestAnswer()` function calls your `dataFeed` object and runs the `latestRoundData()` function and returns the `answer` variable. When you deploy the contract, it initializes the `dataFeed` object to point to the aggregator at 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43, which is the proxy address for the Sepolia `BTC / USD` data feed. Your contract connects to that address and executes the function. The aggregator connects with several oracle nodes and aggregates the pricing data from those nodes. The response from the aggregator includes several variables, but `getChainlinkDataFeedLatestAnswer()` returns only the `answer` variable. The full response includes `roundId`, `startedAt`, `updatedAt`, and `answeredInRound` — see the [API Reference](/data-feeds/api-reference) for details.
+      /**
+       * Network: Sepolia
+       * Aggregator: BTC/USD
+       * Address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
+       */
+      constructor() {
+        dataFeed = AggregatorV3Interface(0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43);
+      }
 
-## Step 2: Set up a Foundry project
+      /**
+       * Returns the latest answer.
+       */
+      function getChainlinkDataFeedLatestAnswer() public view returns (int256) {
+        // prettier-ignore
+        (
+          /* uint80 roundId */
+          ,
+          int256 answer,
+          /*uint256 startedAt*/
+          ,
+          /*uint256 updatedAt*/
+          ,
+          /*uint80 answeredInRound*/
+        ) = dataFeed.latestRoundData();
+        return answer;
+      }
+    }
+    ```
 
-1. Create a new Foundry project and add the Chainlink contracts dependency:
+    The contract has the following components:
 
-   ```bash
-   forge init data-feeds-quickstart
-   cd data-feeds-quickstart
-   forge install smartcontractkit/chainlink-evm@contracts-v1.5.0
-   ```
+    - The `import` line brings in [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink-evm/blob/contracts-v1.5.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol)
+      - It exposes `latestRoundData()`, `getRoundData()`, `decimals()`, and `version()`. The sample uses `latestRoundData` to fetch the current price.
+    - The `constructor()`
+      - Initializes a `dataFeed` object that uses `AggregatorV3Interface` pointing at the proxy aggregator deployed at <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code />.
+      - This is the proxy address for the Sepolia `BTC / USD` feed. The proxy lets the aggregator be upgraded without breaking consumer contracts.
+    - The `getChainlinkDataFeedLatestAnswer()` function
+      - Calls your `dataFeed` object and runs the `latestRoundData()` function and returns the `answer` variable.
+      - When you deploy the contract, it initializes the `dataFeed` object to point to the aggregator at <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code />, which is the proxy address for the Sepolia `BTC / USD` data feed. Your contract connects to that address and executes the function.
+      - The aggregator connects with several oracle nodes and aggregates the pricing data from those nodes. The response from the aggregator includes several variables, but `getChainlinkDataFeedLatestAnswer()` returns only the `answer` variable. The full response includes `roundId`, `startedAt`, `updatedAt`, and `answeredInRound` — see the [API Reference](/data-feeds/api-reference) for details.
+  </Accordion>
 
-2. Add this remapping to `remappings.txt` so Solidity can resolve `@chainlink/contracts`:
+  <Accordion title="Set up a Foundry project" number={2.2}>
+    1. Create a new Foundry project and add the Chainlink contracts dependency:
 
-   ```text
-   @chainlink/contracts/=lib/chainlink-evm/contracts/
-   ```
+       ```bash
+       forge init data-feeds-quickstart
+       cd data-feeds-quickstart
+       forge install smartcontractkit/chainlink-evm@contracts-v1.5.0
+       ```
 
-   You can write it with a single command:
+    2. Add this remapping to `remappings.txt` so Solidity can resolve `@chainlink/contracts`:
 
-   ```bash
-   echo '@chainlink/contracts/=lib/chainlink-evm/contracts/' > remappings.txt
-   ```
+       ```text
+       @chainlink/contracts/=lib/chainlink-evm/contracts/
+       ```
 
-3. Create the directories for the sample consumer contract and deploy script:
+       You can write it with a single command:
 
-   ```bash
-   mkdir -p src/DataFeeds script/DataFeeds
-   ```
+       ```bash
+       echo '@chainlink/contracts/=lib/chainlink-evm/contracts/' > remappings.txt
+       ```
 
-4. Create the following files and paste in the code from the rendered code blocks on this page:
+    3. Create the directories for the sample consumer contract and deploy script:
 
-   - Create `src/DataFeeds/DataConsumerV3.sol` and paste in the contract from [Step 1: Examine the sample contract](#step-1-examine-the-sample-contract).
-   - Create `script/DataFeeds/DeployAndReadDataConsumerV3.s.sol` and paste in the script from [Step 3: Deploy the contract with a Forge script](#step-3-deploy-the-contract-with-a-forge-script).
+       ```bash
+       mkdir -p src/DataFeeds script/DataFeeds
+       ```
 
-   Make sure the filenames match exactly — Foundry looks for the contract in `src/` and the script in `script/`.
+    4. Create the following files and paste in the code from the rendered code blocks on this page:
 
-5. Verify the project compiles:
+       - Create `src/DataFeeds/DataConsumerV3.sol` and paste in the contract from [Step 2.1: Examine the sample contract](#examine-the-sample-contract).
+       - Create `script/DataFeeds/DeployAndReadDataConsumerV3.s.sol` and paste in the script from [Step 2.3: Deploy the contract with a Forge script](#deploy-with-forge-script).
 
-   ```bash
-   forge build
-   ```
+       Make sure the filenames match exactly — Foundry looks for the contract in `src/` and the script in `script/`.
 
-   You should see `Compiler run successful`. If you see an import error, double-check the `remappings.txt` line from step 2.
+    5. Verify the project compiles:
 
-## Step 3: Deploy the contract with a Forge script
+       ```bash
+       forge build
+       ```
 
-The deploy script (`script/DataFeeds/DeployAndReadDataConsumerV3.s.sol`) deploys `DataConsumerV3` and immediately reads the latest price through it. For reference, here is the script:
+       You should see `Compiler run successful`. If you see an import error, double-check the `remappings.txt` line from step 2.
+  </Accordion>
 
-```sol
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+  <Accordion title="Deploy the contract with a Forge script" number={2.3} contentReference="deploy-with-forge-script">
+    The deploy script (`script/DataFeeds/DeployAndReadDataConsumerV3.s.sol`) deploys `DataConsumerV3` and immediately reads the latest price through it. For reference, here is the script:
 
-/* solhint-disable no-console */
+    {/* <CodeSample src="samples/DataFeeds/Foundry/DeployAndReadDataConsumerV3.s.sol" /> */}
 
-import {DataConsumerV3} from "../../src/DataFeeds/DataConsumerV3.sol";
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
-import {Script} from "forge-std/Script.sol";
-import {console2} from "forge-std/console2.sol";
+    ```solidity filename='script/DataFeeds/DeployAndReadDataConsumerV3.s.sol'
+    // SPDX-License-Identifier: MIT
+    pragma solidity ^0.8.7;
 
-/**
- * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
- * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
- * DO NOT USE THIS CODE IN PRODUCTION.
- *
- * Deploy DataConsumerV3 and read the latest BTC/USD price on Sepolia.
- *
- * Usage:
- *   forge script script/DataFeeds/DeployAndReadDataConsumerV3.s.sol \
- *     --rpc-url $SEPOLIA_RPC_URL \
- *     --broadcast \
- *     --private-key $PRIVATE_KEY
- */
-contract DeployAndReadDataConsumerV3 is Script {
-  // Sepolia BTC / USD price feed proxy address
-  address public constant SEPOLIA_BTC_USD = 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43;
+    /* solhint-disable no-console */
 
-  function run() public {
-    vm.startBroadcast();
+    import {DataConsumerV3} from "../../src/DataFeeds/DataConsumerV3.sol";
+    import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+    import {Script} from "forge-std/Script.sol";
+    import {console2} from "forge-std/console2.sol";
 
-    // 1. Deploy the consumer contract
-    DataConsumerV3 consumer = new DataConsumerV3();
-    console2.log("DataConsumerV3 deployed at:", address(consumer));
+    /**
+     * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+     * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+     * DO NOT USE THIS CODE IN PRODUCTION.
+     *
+     * Deploy DataConsumerV3 and read the latest BTC/USD price on Sepolia.
+     *
+     * Usage:
+     *   forge script script/DataFeeds/DeployAndReadDataConsumerV3.s.sol \
+     *     --rpc-url $SEPOLIA_RPC_URL \
+     *     --broadcast \
+     *     --private-key $PRIVATE_KEY
+     */
+    contract DeployAndReadDataConsumerV3 is Script {
+      // Sepolia BTC / USD price feed proxy address
+      address public constant SEPOLIA_BTC_USD = 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43;
 
-    vm.stopBroadcast();
+      function run() public {
+        vm.startBroadcast();
 
-    // 2. Read the latest price through the consumer
-    int256 answer = consumer.getChainlinkDataFeedLatestAnswer();
-    console2.log("Latest answer (raw):", uint256(answer));
+        // 1. Deploy the consumer contract
+        DataConsumerV3 consumer = new DataConsumerV3();
+        console2.log("DataConsumerV3 deployed at:", address(consumer));
 
-    // 3. Read decimals directly from the feed to scale the answer
-    uint8 decimals = AggregatorV3Interface(SEPOLIA_BTC_USD).decimals();
-    console2.log("Decimals:", decimals);
-    console2.log("Latest price (scaled): %s", _scale(answer, decimals));
-  }
+        vm.stopBroadcast();
 
-  function _scale(
-    int256 answer,
-    uint8 decimals
-  ) internal pure returns (string memory) {
-    // Convert the integer answer to a human-readable price string.
-    // For 8 decimals, 3030914000000 -> "30309.14000000"
-    uint256 magnitude = uint256(answer);
-    uint256 base = 10 ** decimals;
-    uint256 whole = magnitude / base;
-    uint256 fraction = magnitude % base;
-    return string.concat(vm.toString(whole), ".", vm.toString(fraction));
-  }
-}
-```
+        // 2. Read the latest price through the consumer
+        int256 answer = consumer.getChainlinkDataFeedLatestAnswer();
+        console2.log("Latest answer (raw):", uint256(answer));
 
-Run it against Sepolia. Replace `$SEPOLIA_RPC_URL` and `$PRIVATE_KEY` with your own values:
+        // 3. Read decimals directly from the feed to scale the answer
+        uint8 decimals = AggregatorV3Interface(SEPOLIA_BTC_USD).decimals();
+        console2.log("Decimals:", decimals);
+        console2.log("Latest price (scaled): %s", _scale(answer, decimals));
+      }
 
-```bash
-forge script script/DataFeeds/DeployAndReadDataConsumerV3.s.sol \
-  --rpc-url $SEPOLIA_RPC_URL \
-  --broadcast \
-  --private-key $PRIVATE_KEY
-```
+      function _scale(
+        int256 answer,
+        uint8 decimals
+      ) internal pure returns (string memory) {
+        // Convert the integer answer to a human-readable price string.
+        // For 8 decimals, 3030914000000 -> "30309.14000000"
+        uint256 magnitude = uint256(answer);
+        uint256 base = 10 ** decimals;
+        uint256 whole = magnitude / base;
+        uint256 fraction = magnitude % base;
+        return string.concat(vm.toString(whole), ".", vm.toString(fraction));
+      }
+    }
+    ```
 
-The script logs the deployed contract address, the raw integer answer, the feed's decimals, and the human-readable price. Save the deployed contract address for the next step.
+    Run it against Sepolia. Replace `$SEPOLIA_RPC_URL` and `$PRIVATE_KEY` with your own values:
 
+    ```bash
+    forge script script/DataFeeds/DeployAndReadDataConsumerV3.s.sol \
+      --rpc-url $SEPOLIA_RPC_URL \
+      --broadcast \
+      --private-key $PRIVATE_KEY
+    ```
 
-<Aside type="note" title="Prefer not to broadcast?">
-  Drop `--broadcast` and `--private-key` to run the script in simulation mode. Useful for verifying your setup before
-  spending testnet ETH.
-</Aside>
+    The script logs the deployed contract address, the raw integer answer, the feed's decimals, and the human-readable price.
 
-## Step 4: Read the latest price onchain
-
-Use `cast call` to read the latest answer through your deployed consumer. Replace `$CONSUMER_ADDRESS` with the address logged by the deploy script:
-
-```bash
-cast call $CONSUMER_ADDRESS "getChainlinkDataFeedLatestAnswer()(int256)" --rpc-url $SEPOLIA_RPC_URL
-```
-
-Read the feed's decimals directly to scale the answer yourself:
-
-```bash
-cast call 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43 "decimals()(uint8)" --rpc-url $SEPOLIA_RPC_URL
-```
-
-The BTC / USD feed returns `8` for decimals. To convert the raw integer answer to a human-readable price, divide by `10 ** decimals`. For example, an answer of `3030914000000` with 8 decimals is `30309.14` USD.
+    Save the deployed contract address for the next step.
 
 
-<Aside type="tip" title="Always scale by `decimals()`">
-  Never hardcode the decimal count. Call `decimals()` on the feed and scale the answer programmatically. This keeps
-  your contract correct if you later point it at a feed with a different precision (e.g., some feeds use 18 decimals).
-</Aside>
+    <Aside type="note" title="Prefer not to broadcast?">
+      Drop `--broadcast` and `--private-key` to run the script in simulation mode. Useful for verifying your setup before
+      spending testnet ETH.
+    </Aside>
+  </Accordion>
 
-## Step 5: Read the same feed offchain (no consumer contract required)
+  <Accordion title="Read the latest price onchain" number={2.4}>
+    Use `cast call` to read the latest answer through your deployed consumer. Replace `$CONSUMER_ADDRESS` with the address logged by the deploy script:
 
-You can also read Data Feeds directly from the feed proxy without deploying a consumer contract. This is useful for backends, bots, dashboards, and pre-trade checks.
+    ```bash
+    cast call $CONSUMER_ADDRESS "getChainlinkDataFeedLatestAnswer()(int256)" --rpc-url $SEPOLIA_RPC_URL
+    ```
 
-Read the latest answer with a single `cast call` against the feed proxy at 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43:
+    Read the feed's decimals directly to scale the answer yourself:
 
-```bash
-cast call 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43 "latestRoundData()(uint80,int256,uint256,uint256,uint80)" --rpc-url $SEPOLIA_RPC_URL
-```
+    ```bash
+    cast call 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43 "decimals()(uint8)" --rpc-url $SEPOLIA_RPC_URL
+    ```
 
-Read the decimals so you can scale the answer:
+    The BTC / USD feed returns `8` for decimals. To convert the raw integer answer to a human-readable price, divide by `10 ** decimals`. For example, an answer of `3030914000000` with 8 decimals is `30309.14` USD.
 
-```bash
-cast call 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43 "decimals()(uint8)" --rpc-url $SEPOLIA_RPC_URL
-```
 
-The BTC / USD feed returns `8` for decimals. Divide the raw integer answer by `10 ** decimals` to get the human-readable price. For example, an answer of `3030914000000` with 8 decimals is `30309.14` USD.
+    <Aside type="tip" title="Always scale by `decimals()`">
+      Never hardcode the decimal count. Call `decimals()` on the feed and scale the answer programmatically. This keeps
+      your contract correct if you later point it at a feed with a different precision (e.g., some feeds use 18 decimals).
+    </Aside>
+  </Accordion>
+</Accordion>
 
 ## Before you go to production
 
@@ -1526,7 +1526,7 @@ The sample code is unaudited and hardcodes values for clarity. Before production
 
 **Only if another smart contract needs the price onchain.** A consumer contract exists to wrap a feed read in your own contract's logic so that *your other contracts* can use the price onchain — for collateral checks, settlements, circuit breakers, and so on. The read is atomic with your onchain action and verifiable on the blockchain.
 
-If you only need the price in an offchain system (a backend, bot, dashboard, or pre-trade check), you do **not** need a consumer contract. The feed proxy is a public contract and `latestRoundData()` is a `view` function — anyone can call it directly from a script using `cast` or ethers.js. See [Step 5: Read the same feed offchain](#step-5-read-the-same-feed-offchain-no-consumer-contract-required) on this page, or the [Hardhat](/data-feeds/getting-started-hardhat) guide.
+If you only need the price in an offchain system (a backend, bot, dashboard, or pre-trade check), you do **not** need a consumer contract. The feed proxy is a public contract and `latestRoundData()` is a `view` function — anyone can call it directly from a script using `cast` or ethers.js. See [Step 2.5: Read the same feed offchain](#read-offchain) on this page, or the [Hardhat](/data-feeds/getting-started-hardhat) guide.
 
 |                                 | Consumer contract (onchain)           | Direct read (offchain)               |
 | ------------------------------- | ------------------------------------- | ------------------------------------ |
@@ -1542,18 +1542,17 @@ Source: https://docs.chain.link/data-feeds/getting-started-hardhat
 
 Chainlink Data Feeds are the fastest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health. Each feed is aggregated by many independent Chainlink node operators and published onchain through a decentralized oracle network, giving your contracts a reliable, manipulation-resistant source of data.
 
-Each price feed has an onchain address and functions that enable contracts to read pricing data from that address, for example the [ETH / USD feed](https://data.chain.link/feeds/ethereum/mainnet/eth-usd).
+Each price feed has an onchain address and functions that enable contracts to read pricing data from that address.
 
-This guide walks you through reading a Data Feed end-to-end using [Hardhat 3](https://hardhat.org/) and [ethers.js](https://docs.ethers.org/). You'll deploy a consumer contract on the Sepolia testnet, read the BTC / USD price feed onchain, and read the same feed offchain from a script.
+In this guide you will fetch the pricing data from a price feed, for example the [BTC / USD feed](https://data.chain.link/feeds/ethereum/mainnet/btc-usd).
 
 ## What you'll do
 
-- Deploy a Solidity consumer contract that reads the BTC / USD price feed on Sepolia using a Hardhat script.
-- Retrieve the latest price onchain by calling the consumer contract.
-- Read the same feed offchain directly from the feed proxy with ethers.js — no consumer contract required.
+- Retrieve latest pricing data from the BTC / USD price feed offchain directly from the feed proxy. *(Offchain methods are useful for backends, bots, dashboards, and pre-trade checks)*
+- Deploy and retrieve the latest price onchain using a Solidity consumer contract that reads the BTC / USD price feed on Sepolia. *(Onchain methods are useful for when you need to apply smart contract logic in your application based on the pricing data.)*
 - Learn the key safety checks to apply before moving to production.
 
-The code for reading Data Feeds on Ethereum and other EVM-compatible blockchains is the same for every chain and every feed type. You choose different feeds for different use cases, but the request and response format is always the same. The answer's decimal length and expected value range may differ depending on the feed.
+**Note:** The code for reading Data Feeds on Ethereum and other EVM-compatible blockchains is the same for every chain and every feed type. You choose different feeds for different use cases, but the request and response format is always the same. The answer's decimal length and expected value range may differ depending on the feed.
 
 
 <Aside type="caution" title="Using Data Feeds on L2 networks">
@@ -1590,280 +1589,274 @@ You will need:
   [Price Feed Addresses](/data-feeds/price-feeds/addresses) page, not from the underlying aggregator.
 </Aside>
 
-## Step 1: Examine the sample contract
+## Getting the feed address
 
-The example contract below reads the latest answer from the [BTC / USD feed](/data-feeds/price-feeds/addresses) on Sepolia. You can modify it to read any of the [Types of Data Feeds](/data-feeds#types-of-data-feeds).
+Before we even begin, we need to know the address of the feed we want to read. The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the feeds available on each network. For this guide, we will use the BTC / USD feed on Sepolia, with the proxy address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
 
-```sol
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+## Retrieving the price data from the feed
 
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+<Accordion title="Fetching price data onchain using a consumer contract" number={2}>
+  <Accordion title="Examine the sample contract" number={2.1} contentReference="examine-the-sample-contract">
+    The example contract below reads the latest answer from the [BTC / USD feed](/data-feeds/price-feeds/addresses) on Sepolia. You can modify it to read any of the [Types of Data Feeds](/data-feeds#types-of-data-feeds).
 
-/**
- * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED
- * VALUES FOR CLARITY.
- * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
- * DO NOT USE THIS CODE IN PRODUCTION.
- */
+    {/* <CodeSample src="samples/DataFeeds/DataConsumerV3.sol"/> */}
 
-/**
- * If you are reading data feeds on L2 networks, you must
- * check the latest answer from the L2 Sequencer Uptime
- * Feed to ensure that the data is accurate in the event
- * of an L2 sequencer outage. See the
- * https://docs.chain.link/data-feeds/l2-sequencer-feeds
- * page for details.
- */
-contract DataConsumerV3 {
-  AggregatorV3Interface internal dataFeed;
+    ```solidity filename='contracts/DataFeeds/DataConsumerV3.sol'
+    // SPDX-License-Identifier: MIT
+    pragma solidity ^0.8.7;
 
-  /**
-   * Network: Sepolia
-   * Aggregator: BTC/USD
-   * Address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
-   */
-  constructor() {
-    dataFeed = AggregatorV3Interface(0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43);
-  }
+    import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
-  /**
-   * Returns the latest answer.
-   */
-  function getChainlinkDataFeedLatestAnswer() public view returns (int256) {
-    // prettier-ignore
-    (
-      /* uint80 roundId */
-      ,
-      int256 answer,
-      /*uint256 startedAt*/
-      ,
-      /*uint256 updatedAt*/
-      ,
-      /*uint80 answeredInRound*/
-    ) = dataFeed.latestRoundData();
-    return answer;
-  }
-}
-```
+    /**
+     * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED
+     * VALUES FOR CLARITY.
+     * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+     * DO NOT USE THIS CODE IN PRODUCTION.
+     */
 
-The contract has the following components:
+    /**
+     * If you are reading data feeds on L2 networks, you must
+     * check the latest answer from the L2 Sequencer Uptime
+     * Feed to ensure that the data is accurate in the event
+     * of an L2 sequencer outage. See the
+     * https://docs.chain.link/data-feeds/l2-sequencer-feeds
+     * page for details.
+     */
+    contract DataConsumerV3 {
+      AggregatorV3Interface internal dataFeed;
 
-- The `import` line brings in [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink-evm/blob/contracts-v1.5.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol) — the Solidity interface that every Chainlink v3 price feed proxy implements. It exposes `latestRoundData()`, `getRoundData()`, `decimals()`, and `version()`. The sample uses `latestRoundData` to fetch the current price.
-- The `constructor()` initializes a `dataFeed` object that uses `AggregatorV3Interface` pointing at the proxy aggregator deployed at 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43. This is the proxy address for the Sepolia `BTC / USD` feed. The proxy lets the aggregator be upgraded without breaking consumer contracts.
-- The `getChainlinkDataFeedLatestAnswer()` function calls your `dataFeed` object and runs the `latestRoundData()` function and returns the `answer` variable. When you deploy the contract, it initializes the `dataFeed` object to point to the aggregator at 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43, which is the proxy address for the Sepolia `BTC / USD` data feed. Your contract connects to that address and executes the function. The aggregator connects with several oracle nodes and aggregates the pricing data from those nodes. The response from the aggregator includes several variables, but `getChainlinkDataFeedLatestAnswer()` returns only the `answer` variable. The full response includes `roundId`, `startedAt`, `updatedAt`, and `answeredInRound` — see the [API Reference](/data-feeds/api-reference) for details.
+      /**
+       * Network: Sepolia
+       * Aggregator: BTC/USD
+       * Address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
+       */
+      constructor() {
+        dataFeed = AggregatorV3Interface(0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43);
+      }
 
-## Step 2: Set up a Hardhat project
+      /**
+       * Returns the latest answer.
+       */
+      function getChainlinkDataFeedLatestAnswer() public view returns (int256) {
+        // prettier-ignore
+        (
+          /* uint80 roundId */
+          ,
+          int256 answer,
+          /*uint256 startedAt*/
+          ,
+          /*uint256 updatedAt*/
+          ,
+          /*uint80 answeredInRound*/
+        ) = dataFeed.latestRoundData();
+        return answer;
+      }
+    }
+    ```
 
-This guide uses [Hardhat 3](https://hardhat.org/) with the Mocha + Ethers.js toolbox. Hardhat 3 is ESM-first and uses a declarative config with [configuration variables](https://hardhat.org/docs/guides/configuration-variables) for secrets.
+    The contract has the following components:
 
-1. Create a new Hardhat 3 project and initialize it with the Mocha + Ethers.js template:
+    - The `import` line brings in [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink-evm/blob/contracts-v1.5.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol)
+      - It exposes `latestRoundData()`, `getRoundData()`, `decimals()`, and `version()`. The sample uses `latestRoundData` to fetch the current price.
+    - The `constructor()`
+      - Initializes a `dataFeed` object that uses `AggregatorV3Interface` pointing at the proxy aggregator deployed at <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code />.
+      - This is the proxy address for the Sepolia `BTC / USD` feed. The proxy lets the aggregator be upgraded without breaking consumer contracts.
+    - The `getChainlinkDataFeedLatestAnswer()` function
+      - Calls your `dataFeed` object and runs the `latestRoundData()` function and returns the `answer` variable.
+      - When you deploy the contract, it initializes the `dataFeed` object to point to the aggregator at <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code />, which is the proxy address for the Sepolia `BTC / USD` data feed. Your contract connects to that address and executes the function.
+      - The aggregator connects with several oracle nodes and aggregates the pricing data from those nodes. The response from the aggregator includes several variables, but `getChainlinkDataFeedLatestAnswer()` returns only the `answer` variable. The full response includes `roundId`, `startedAt`, `updatedAt`, and `answeredInRound` — see the [API Reference](/data-feeds/api-reference) for details.
+  </Accordion>
 
-   ```bash
-   mkdir data-feeds-quickstart
-   cd data-feeds-quickstart
-   npm init -y
-   npm install --save-dev hardhat
-   npx hardhat --init --template mocha-ethers
-   ```
+  <Accordion title="Set up a Hardhat project" number={2.2}>
+    1. Create a new Hardhat 3 project and initialize it with the Mocha + Ethers.js template:
 
-2. Install the Chainlink contracts npm package:
+       ```bash
+       mkdir data-feeds-quickstart
+       cd data-feeds-quickstart
+       npm init -y
+       npm install --save-dev hardhat
+       npx hardhat --init --template mocha-ethers
+       ```
 
-   ```bash
-   npm install @chainlink/contracts
-   ```
+    2. Install the Chainlink contracts npm package:
 
-   Hardhat resolves `@chainlink/contracts` from `node_modules` automatically — no remapping file is needed (unlike Foundry).
+       ```bash
+       npm install @chainlink/contracts
+       ```
 
-3. Create the directories for the sample consumer contract and deployment script:
+       Hardhat resolves `@chainlink/contracts` from `node_modules` automatically — no remapping file needed (unlike Foundry).
 
-   ```bash
-   mkdir -p contracts/DataFeeds scripts/DataFeeds
-   ```
+    3. Create the directories for the sample consumer contract and deploy script:
 
-4. Create the following files and paste in the code from the rendered code blocks on this page:
+       ```bash
+       mkdir -p contracts/DataFeeds scripts/DataFeeds
+       ```
 
-   - Create `contracts/DataFeeds/DataConsumerV3.sol` and paste in the contract from [Step 1: Examine the sample contract](#step-1-examine-the-sample-contract).
-   - Create `scripts/DataFeeds/DeployAndReadDataConsumerV3.js` and paste in the script from [Step 3: Deploy the contract with a Hardhat script](#step-3-deploy-the-contract-with-a-hardhat-script).
+    4. Create the following files and paste in the code from the rendered code blocks on this page:
 
-   Make sure the filenames match exactly — Hardhat looks for the contract in `contracts/` and the script in `scripts/`. The template's sample `Counter.sol`, `Counter.t.sol`, and `send-op-tx.ts` files can stay — the compiler version in the next step is compatible with them.
+       - Create `contracts/DataFeeds/DataConsumerV3.sol` and paste in the contract from [Step 2.1: Examine the sample contract](#examine-the-sample-contract).
+       - Create `scripts/DataFeeds/DeployAndReadDataConsumerV3.js` and paste in the script from [Step 2.3: Deploy the contract with a Hardhat script](#deploy-with-hardhat-script).
 
-5. Configure your `hardhat.config.ts` to compile the Chainlink contracts and use Sepolia. Replace its contents with:
+       Make sure the filenames match exactly — Hardhat looks for the contract in `contracts/` and the script in `scripts/`.
 
-   ```typescript
-   import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers"
-   import { configVariable, defineConfig } from "hardhat/config"
+    5. Configure your `hardhat.config.ts` to compile the Chainlink contracts and use Sepolia. Replace its contents with:
 
-   export default defineConfig({
-     plugins: [hardhatToolboxMochaEthersPlugin],
-     solidity: {
-       profiles: {
-         default: {
-           version: "0.8.28",
-         },
-         production: {
-           version: "0.8.28",
-           settings: {
-             optimizer: { enabled: true, runs: 200 },
+       ```typescript filename='hardhat.config.ts'
+       import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers"
+       import { configVariable, defineConfig } from "hardhat/config"
+
+       export default defineConfig({
+         plugins: [hardhatToolboxMochaEthersPlugin],
+         solidity: {
+           profiles: {
+             default: {
+               version: "0.8.28",
+             },
+             production: {
+               version: "0.8.28",
+               settings: {
+                 optimizer: { enabled: true, runs: 200 },
+               },
+             },
            },
          },
-       },
-     },
-     networks: {
-       hardhatMainnet: {
-         type: "edr-simulated",
-         chainType: "l1",
-       },
-       hardhatOp: {
-         type: "edr-simulated",
-         chainType: "op",
-       },
-       sepolia: {
-         type: "http",
-         chainType: "l1",
-         url: configVariable("SEPOLIA_RPC_URL"),
-         accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
-       },
-     },
-   })
-   ```
+         networks: {
+           hardhatMainnet: {
+             type: "edr-simulated",
+             chainType: "l1",
+           },
+           hardhatOp: {
+             type: "edr-simulated",
+             chainType: "op",
+           },
+           sepolia: {
+             type: "http",
+             chainType: "l1",
+             url: configVariable("SEPOLIA_RPC_URL"),
+             accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
+           },
+         },
+       })
+       ```
 
-6. Set your Sepolia RPC URL and deployer private key as environment variables (or store them in the Hardhat keystore as noted above):
+    6. Set your Sepolia RPC URL and deployer private key as environment variables (or store them in the Hardhat keystore as noted above):
 
-   ```bash
-   export SEPOLIA_RPC_URL=your_sepolia_rpc_url
-   export SEPOLIA_PRIVATE_KEY=your_deployer_private_key
-   ```
+       ```bash
+       export SEPOLIA_RPC_URL=your_sepolia_rpc_url
+       export SEPOLIA_PRIVATE_KEY=your_deployer_private_key
+       ```
 
-7. Verify the project compiles:
+    7. Verify the project compiles:
 
-   ```bash
-   npx hardhat compile
-   ```
+       ```bash
+       npx hardhat compile
+       ```
 
-   You should see `Compiled 2 Solidity files with solc 0.8.28`. If you see an import error, check that `@chainlink/contracts` is installed (step 2) and that the contract is under `contracts/`.
+       You should see `Compiled 2 Solidity files with solc 0.8.28`. If you see an import error, check that `@chainlink/contracts` is installed (step 2) and that the contract is under `contracts/`.
+  </Accordion>
 
-## Step 3: Deploy the contract with a Hardhat script
+  <Accordion title="Deploy the contract with a Hardhat script" number={2.3} contentReference="deploy-with-hardhat-script">
+    The deploy script (`scripts/DataFeeds/DeployAndReadDataConsumerV3.js`) deploys `DataConsumerV3` and immediately reads the latest price through it. For reference, here is the script:
 
-The deploy script (`scripts/DataFeeds/DeployAndReadDataConsumerV3.js`) deploys `DataConsumerV3` and immediately reads the latest price through it. For reference, here is the script:
+    {/* <CodeSample src="samples/DataFeeds/Hardhat/DeployAndReadDataConsumerV3.js" /> */}
 
-```js
-import { network } from "hardhat"
+    ```javascript filename='scripts/DataFeeds/DeployAndReadDataConsumerV3.js'
+    import { network } from "hardhat"
 
-/**
- * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
- * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
- * DO NOT USE THIS CODE IN PRODUCTION.
- */
+    /**
+     * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+     * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+     * DO NOT USE THIS CODE IN PRODUCTION.
+     */
 
-const { ethers } = await network.create()
+    const { ethers } = await network.create()
 
-async function main() {
-  // 1. Deploy the DataConsumerV3 contract
-  const consumer = await ethers.deployContract("DataConsumerV3")
-  await consumer.waitForDeployment()
+    async function main() {
+      // 1. Deploy the DataConsumerV3 contract
+      const consumer = await ethers.deployContract("DataConsumerV3")
+      await consumer.waitForDeployment()
 
-  const consumerAddress = await consumer.getAddress()
-  console.log("DataConsumerV3 deployed at:", consumerAddress)
+      const consumerAddress = await consumer.getAddress()
+      console.log("DataConsumerV3 deployed at:", consumerAddress)
 
-  // 2. Read the latest price through the consumer contract
-  const answer = await consumer.getChainlinkDataFeedLatestAnswer()
-  console.log("Latest answer (raw):", answer.toString())
+      // 2. Read the latest price through the consumer contract
+      const answer = await consumer.getChainlinkDataFeedLatestAnswer()
+      console.log("Latest answer (raw):", answer.toString())
 
-  // 3. Read decimals directly from the feed to scale the answer
-  // Sepolia BTC / USD price feed proxy address
-  const feedAddress = "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43"
-  const AggregatorV3Interface = [
-    {
-      inputs: [],
-      name: "decimals",
-      outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
-      stateMutability: "view",
-      type: "function",
-    },
-  ]
-  const feed = await ethers.getContractAt(AggregatorV3Interface, feedAddress)
-  const decimals = await feed.decimals()
-  console.log("Decimals:", decimals)
+      // 3. Read decimals directly from the feed to scale the answer
+      // Sepolia BTC / USD price feed proxy address
+      const feedAddress = "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43"
+      const AggregatorV3Interface = [
+        {
+          inputs: [],
+          name: "decimals",
+          outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+          stateMutability: "view",
+          type: "function",
+        },
+      ]
+      const feed = await ethers.getContractAt(AggregatorV3Interface, feedAddress)
+      const decimals = await feed.decimals()
+      console.log("Decimals:", decimals)
 
-  // 4. Scale and print the human-readable price
-  const scaled = Number(answer) / 10 ** Number(decimals)
-  console.log("Latest price (USD):", scaled)
-}
+      // 4. Scale and print the human-readable price
+      const scaled = Number(answer) / 10 ** Number(decimals)
+      console.log("Latest price (USD):", scaled)
+    }
 
-main().catch((error) => {
-  console.error(error)
-  process.exit(1)
-})
-```
+    main().catch((error) => {
+      console.error(error)
+      process.exit(1)
+    })
+    ```
 
-Run it against Sepolia:
+    Run it against Sepolia:
 
-```bash
-npx hardhat run scripts/DataFeeds/DeployAndReadDataConsumerV3.js --network sepolia
-```
+    ```bash
+    npx hardhat run scripts/DataFeeds/DeployAndReadDataConsumerV3.js --network sepolia
+    ```
 
-The script logs the deployed contract address, the raw integer answer, the feed's decimals, and the human-readable price.
+    The script logs the deployed contract address, the raw integer answer, the feed's decimals, and the human-readable price.
 
-***Save the deployed contract address for the next step.***
+    Save the deployed contract address for the next step.
+  </Accordion>
 
-## Step 4: Read the latest price onchain
+  <Accordion title="Read the latest price onchain" number={2.4}>
+    Open a Hardhat console against Sepolia:
 
-You can read the latest price through your deployed consumer contract using a one-off Hardhat console, or from any ethers.js script. Using the Hardhat console:
+    ```bash
+    npx hardhat console --network sepolia
+    ```
 
-```bash
-npx hardhat console --network sepolia
-```
+    In Hardhat 3, obtain `ethers` from `network.create()` at the prompt, then read through your consumer. Replace `0xYOUR_CONSUMER_ADDRESS` with the address the deploy script logged in the previous step:
 
-In Hardhat 3, obtain `ethers` from `network.create()` at the prompt, then read through your consumer. Replace `0xYOUR_CONSUMER_ADDRESS` with the address the deploy script logged in Step 3:
+    ```javascript
+    const { ethers } = await network.create()
+    const consumer = await ethers.getContractAt("DataConsumerV3", "0xYOUR_CONSUMER_ADDRESS")
+    const answer = await consumer.getChainlinkDataFeedLatestAnswer()
+    console.log("Latest answer (raw):", answer.toString())
+    ```
 
-```javascript
-const { ethers } = await network.create()
-const consumer = await ethers.getContractAt("DataConsumerV3", "0xYOUR_CONSUMER_ADDRESS")
-const answer = await consumer.getChainlinkDataFeedLatestAnswer()
-console.log("Latest answer (raw):", answer.toString())
-```
+    Read the feed's decimals directly to scale the answer yourself:
 
-Read the feed's decimals directly to scale the answer yourself:
+    ```javascript
+    const feed = await ethers.getContractAt(
+      ["function decimals() view returns (uint8)"],
+      "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43"
+    )
+    const decimals = await feed.decimals()
+    console.log("Decimals:", decimals)
+    ```
 
-```javascript
-const feed = await ethers.getContractAt(
-  ["function decimals() view returns (uint8)"],
-  "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43"
-)
-const decimals = await feed.decimals()
-console.log("Decimals:", decimals)
-```
-
-The BTC / USD feed returns `8` for decimals. To convert the raw integer answer to a human-readable price, divide by `10 ** decimals`. For example, an answer of `3030914000000` with 8 decimals is `30309.14` USD.
+    The BTC / USD feed returns `8` for decimals. To convert the raw integer answer to a human-readable price, divide by `10 ** decimals`. For example, an answer of `3030914000000` with 8 decimals is `30309.14` USD.
 
 
-<Aside type="tip" title="Always scale by `decimals()`">
-  Never hardcode the decimal count. Call `decimals()` on the feed and scale the answer programmatically. This keeps
-  your contract correct if you later point it at a feed with a different precision (e.g., some feeds use 18 decimals).
-</Aside>
-
-## Step 5: Read the same feed offchain (no consumer contract required)
-
-You can also read Data Feeds directly from the feed proxy without deploying a consumer contract. This is useful for backends, bots, dashboards, and pre-trade checks. No consumer contract is required — the feed proxy is a public contract and `latestRoundData()` is a `view` function, so anyone can call it directly.
-
-Use the same Hardhat console from Step 4 (or open a new one with `npx hardhat console --network sepolia` and run `const { ethers } = await network.create()` first). This time, point `ethers.getContractAt` at the **feed proxy** instead of your deployed consumer:
-
-```javascript
-const feed = await ethers.getContractAt(
-  [
-    "function latestRoundData() view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)",
-    "function decimals() view returns (uint8)",
-  ],
-  "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43"
-)
-const { answer } = await feed.latestRoundData()
-const decimals = await feed.decimals()
-console.log("Latest answer (raw):", answer.toString())
-console.log("Price (USD):", Number(answer) / 10 ** Number(decimals))
-```
-
-The BTC / USD feed returns `8` for decimals. Divide the raw integer answer by `10 ** decimals` to get the human-readable price. For example, an answer of `3030914000000` with 8 decimals is `30309.14` USD.
+    <Aside type="tip" title="Always scale by `decimals()`">
+      Never hardcode the decimal count. Call `decimals()` on the feed and scale the answer programmatically. This keeps
+      your contract correct if you later point it at a feed with a different precision (e.g., some feeds use 18 decimals).
+    </Aside>
+  </Accordion>
+</Accordion>
 
 ## Before you go to production
 
@@ -1977,7 +1970,7 @@ The sample code is unaudited and hardcodes values for clarity. Before production
 
 **Only if another smart contract needs the price onchain.** A consumer contract exists to wrap a feed read in your own contract's logic so that *your other contracts* can use the price onchain — for collateral checks, settlements, circuit breakers, and so on. The read is atomic with your onchain action and verifiable on the blockchain.
 
-If you only need the price in an offchain system (a backend, bot, dashboard, or pre-trade check), you do **not** need a consumer contract. The feed proxy is a public contract and `latestRoundData()` is a `view` function — anyone can call it directly from a script using ethers.js, viem, or `cast`. See [Step 5: Read the same feed offchain](#step-5-read-the-same-feed-offchain-no-consumer-contract-required) on this page.
+If you only need the price in an offchain system (a backend, bot, dashboard, or pre-trade check), you do **not** need a consumer contract. The feed proxy is a public contract and `latestRoundData()` is a `view` function — anyone can call it directly from a script using ethers.js, viem, or `cast`. See [Step 1: Fetching price data offchain](#read-offchain) on this page.
 
 |                                 | Consumer contract (onchain)           | Direct read (offchain)               |
 | ------------------------------- | ------------------------------------- | ------------------------------------ |
@@ -2539,6 +2532,8 @@ Source: https://docs.chain.link/data-feeds
 Chainlink Data Feeds are the quickest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health.
 
 If you already started a project and need to integrate Chainlink, you can [add Chainlink to your existing project](/resources/create-a-chainlinked-project?parent=dataFeeds#installing-into-existing-projects) with the [`@chainlink/contracts` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
+
+Or you can get started and familiarize yourself with Data Feeds before integrating them into your project by following the [Data Feeds Getting Started guide](/data-feeds/getting-started).
 
 ## Types of data feeds
 
