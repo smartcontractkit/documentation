@@ -8301,7 +8301,7 @@ CRE has two features designed to keep part of a workflow confidential from Workf
 Source: https://docs.chain.link/cre/concepts/confidential-workflows
 Last Updated: 2026-07-28
 
-A **Confidential Workflow** is a CRE [workflow](/cre/key-terms#workflow) that designates part of its logic to run inside a secure [enclave](/cre/key-terms#enclave)—a running instance of a [Trusted Execution Environment (TEE)](/cre/key-terms#tee-trusted-execution-environment), a hardware-isolated environment designed to keep the computation and data it processes confidential from the machine's own operator during execution—instead of on Workflow DON nodes.
+A **Confidential Workflow** is a CRE [workflow](/cre/key-terms#workflow) that designates part of its logic to run inside a secure [enclave](/cre/key-terms#enclave)—a running instance of a [Trusted Execution Environment (TEE)](/cre/key-terms#tee-trusted-execution-environment), a hardware-isolated environment designed to keep the computation and data it processes confidential from the machine's own operator during execution—instead of on Workflow DON nodes. Confidential Workflows serve as the confidential compute foundation to unlock Private Smart Contracts, where encrypted transactions are processed through confidential offchain computation and resulting state is committed onchain or other DA layers.
 
 Confidential Workflows are fundamentally standard CRE workflows with an explicit confidential execution path added where you need it, composing freely with standard workflow logic in the same application. Secrets fetched inside the enclave, and any computation you mark as confidential, are intended to remain confidential from node operators during execution. You decide what stays inside the enclave and what crosses back out to the Workflow DON for consensus-verified execution, such as generating a report to submit onchain.
 
@@ -8309,7 +8309,8 @@ For hands-on steps, jump straight to [Making a Workflow Confidential](/cre/guide
 
 <Aside type="caution" title="Private beta">
   Confidential Workflows is in private beta and requires enrollment through your Chainlink account team—see [Requesting
-  Confidential Workflows Access](/cre/account/confidential-workflows-access).
+  Confidential Workflows Access](/cre/account/confidential-workflows-access). Do not wait for early access. Simulate
+  confidential workflows in minutes.
 </Aside>
 
 ## Where this fits in CRE
@@ -8360,7 +8361,8 @@ You remain responsible for not leaking confidential information back out through
 
 <Aside type="caution" title="Multiple confidential workflows may execute within the same enclave">
   Workflows are isolated from one another by Wasmtime. Dedicated per-workflow enclave isolation is planned as a future
-  enhancement.
+  enhancement. Certain advanced vulnerabilities including side channel and speculative execution attacks, may leak
+  information. Follow security best practices and keep dependencies current.
 </Aside>
 
 <Aside type="caution" title="Don't log in production Confidential Workflows">
@@ -8371,7 +8373,7 @@ You remain responsible for not leaking confidential information back out through
 
 ## Choosing Confidential Workflows
 
-Use a regular capability when nothing about the request, response, or logic is sensitive. Use a Confidential Workflow when any part of it needs to remain confidential from node operators—whether that's the credentials or response data on a single outbound call, or the decision logic around that data, such as thresholds, aggregation, or multi-step reasoning.
+Use a regular capability when nothing about the request, response, or data is sensitive. Use a Confidential Workflow when any part of it needs to remain confidential from node operators—whether that's the credentials or response data on a single outbound call, or the sensitive data from that call, such as thresholds, aggregation inputs, or multi-step reasoning outputs.
 
 ## Use cases
 
@@ -8416,7 +8418,7 @@ A workflow continuously evaluates risk exposure and triggers protective actions.
 
 ### Automated trading
 
-A workflow executes trading logic based on a private strategy. Running the strategy inside the enclave—even though the resulting transactions are onchain—is designed to prevent it from being copied or traded against.
+A workflow executes trades based on private strategy data. Running the strategy data inside the enclave—even though the resulting transactions are onchain—is designed to prevent it from being copied or traded against.
 
 ## When to use secrets with DON execution vs. enclave execution
 
@@ -8424,7 +8426,7 @@ Not every secret needs enclave-level protection. Use this as a rough guide, not 
 
 **Higher-value secrets—consider enclave execution:**
 
-- Wallet private keys (crypto ownership, smart contract admin)
+- Wallet private keys (non high value operational or automation keys)
 - Certificate authority private keys
 - API keys and credentials for exchanges (trading or withdrawal access), institutional custody, payment processors, banking or payment networks, LLM providers with spending limits, or proprietary data providers
 - OAuth client secrets, JWT signing keys, KMS keys
