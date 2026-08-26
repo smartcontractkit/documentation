@@ -534,7 +534,7 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-08-21
+Last Updated: 2026-08-26
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
 
@@ -571,7 +571,7 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.29.0" target="_blank">CRE CLI version 1.29.0</a> is now available.**
 
-- **Monad mainnet simulation**: Monad mainnet is now supported for local simulation via `cre workflow simulate`. See [Supported Networks](/cre/supported-networks).
+- **Monad mainnet support**: Monad mainnet is now supported for local simulation via `cre workflow simulate` and for production onchain writes. See [Supported Networks](/cre/supported-networks).
 - **Confidential Workflows**: Designate parts of your workflow to run inside a secure enclave (TEE), keeping secrets, sensitive inputs, and computation confidential from node operators during execution. See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) and [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows).
 
 **How to update:**
@@ -14575,7 +14575,7 @@ For the full list of types and methods available on [`TeeRuntime`](/cre/referenc
 
 # Forwarder Directory
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-ts
-Last Updated: 2026-08-21
+Last Updated: 2026-08-26
 
 <Aside type="note" title="Looking for supported networks?">
   For a complete list of supported networks and version requirements, see [Supported Networks](/cre/supported-networks).
@@ -14639,6 +14639,7 @@ The tables below reflect chains commonly enabled for simulation. Your tenant may
 | Linea               | ethereum-mainnet-linea-1      | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | Mantle              | ethereum-mainnet-mantle-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | MegaETH             | megaeth-mainnet               | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Monad               | monad-mainnet                 | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | OP Mainnet          | ethereum-mainnet-optimism-1   | 0x9119a1501550ed94a3f2794038ed9258337afa18 |
 | Pharos Mainnet      | pharos-mainnet                | 0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4 |
 | Plasma              | plasma-mainnet                | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
@@ -14708,6 +14709,7 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 | <a href="https://lineascan.build/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Linea</a>                            | ethereum-mainnet-linea-1      | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | <a href="https://mantlescan.xyz/address/0xB9F79d863261869B234c481D1f9A7af84AeAd192" target="_blank" rel="noopener noreferrer">Mantle</a>                            | ethereum-mainnet-mantle-1     | 0xB9F79d863261869B234c481D1f9A7af84AeAd192 |
 | <a href="https://mega.etherscan.io/address/0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c" target="_blank" rel="noopener noreferrer">MegaETH</a>                        | megaeth-mainnet               | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
+| <a href="https://monadvision.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Monad</a>                            | monad-mainnet                 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://optimistic.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">OP Mainnet</a>               | ethereum-mainnet-optimism-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
 | <a href="https://pharosscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Pharos Mainnet</a>                    | pharos-mainnet                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://plasmascan.to/address/0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c" target="_blank" rel="noopener noreferrer">Plasma</a>                             | plasma-mainnet                | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
@@ -25222,7 +25224,7 @@ This section provides a reference for the built-in trigger capabilities of the C
 
 # Supported Networks
 Source: https://docs.chain.link/cre/supported-networks-ts
-Last Updated: 2026-08-21
+Last Updated: 2026-08-26
 
 This page lists networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network. CRE supports two [chain families](/cre/capabilities#chain-families): EVM-compatible chains and Solana.
 
@@ -25242,31 +25244,32 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 
 ## Mainnets
 
-| Network             | CLI      | Go SDK   | TS SDK  |
-| ------------------- | -------- | -------- | ------- |
-| ADI Mainnet         | v1.16.0+ | v1.10.0+ | v1.8.0+ |
-| Arbitrum One        | v1.0.0+  | v1.0.0+  | v1.0.1+ |
-| Avalanche           | v1.0.0+  | v1.0.0+  | v1.0.1+ |
-| Base                | v1.0.0+  | v1.0.0+  | v1.0.1+ |
-| BNB Chain           | v1.0.0+  | v1.0.0+  | v1.0.1+ |
-| Celo                | v1.5.0+  | v1.6.0+  | v1.3.0+ |
-| Ethereum            | v1.0.0+  | v1.0.0+  | v1.0.1+ |
-| Gnosis Chain        | v1.5.0+  | v1.6.0+  | v1.3.0+ |
-| Hyperliquid Mainnet | v1.7.0+  | v1.7.0+  | v1.4.0+ |
-| Ink                 | v1.5.0+  | v1.6.0+  | v1.3.0+ |
-| Jovay               | v1.3.0+  | v1.4.0+  | v1.3.1+ |
-| Linea               | v1.5.0+  | v1.6.0+  | v1.3.0+ |
-| Mantle              | v1.5.0+  | v1.6.0+  | v1.3.0+ |
-| MegaETH             | v1.5.0+  | v1.6.0+  | v1.3.1+ |
-| OP Mainnet          | v1.0.0+  | v1.0.0+  | v1.0.1+ |
-| Pharos              | v1.3.0+  | v1.4.0+  | v1.3.1+ |
-| Plasma              | v1.5.0+  | v1.6.0+  | v1.3.0+ |
-| Polygon             | v1.0.0+  | v1.0.0+  | v1.0.1+ |
-| Scroll              | v1.5.0+  | v1.6.0+  | v1.3.0+ |
-| Sonic               | v1.5.0+  | v1.6.0+  | v1.3.0+ |
-| World Chain         | v1.0.11+ | v1.2.0+  | v1.0.9+ |
-| XLayer              | v1.3.0+  | v1.4.0+  | v1.1.3+ |
-| ZKSync Era          | v1.0.6+  | v1.1.3+  | v1.0.7+ |
+| Network             | CLI      | Go SDK   | TS SDK   |
+| ------------------- | -------- | -------- | -------- |
+| ADI Mainnet         | v1.16.0+ | v1.10.0+ | v1.8.0+  |
+| Arbitrum One        | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Avalanche           | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Base                | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| BNB Chain           | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Celo                | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Ethereum            | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Gnosis Chain        | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Hyperliquid Mainnet | v1.7.0+  | v1.7.0+  | v1.4.0+  |
+| Ink                 | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Jovay               | v1.3.0+  | v1.4.0+  | v1.3.1+  |
+| Linea               | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Mantle              | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| MegaETH             | v1.5.0+  | v1.6.0+  | v1.3.1+  |
+| Monad               | v1.29.0+ | v1.17.0+ | v1.18.0+ |
+| OP Mainnet          | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Pharos              | v1.3.0+  | v1.4.0+  | v1.3.1+  |
+| Plasma              | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Polygon             | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Scroll              | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Sonic               | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| World Chain         | v1.0.11+ | v1.2.0+  | v1.0.9+  |
+| XLayer              | v1.3.0+  | v1.4.0+  | v1.1.3+  |
+| ZKSync Era          | v1.0.6+  | v1.1.3+  | v1.0.7+  |
 
 ## Testnets
 
