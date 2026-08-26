@@ -1,0 +1,73 @@
+---
+section: ccip
+date: Last Modified
+title: "Cross-Chain Token Standard - Token Mint Authority"
+metadata:
+  description: "Complete guide to CCIP Token Pools for SVM chains like Solana. Covers deployment approaches (self-serve, self-deployed, custom), decimal compatibility decisions, standard pool implementation (BurnMint, LockRelease), and custom pool development requirements."
+  excerpt: "Token pools, SVM, Solana, deployment approaches, self-serve mode, BurnMint, LockRelease, decimal compatibility, decimal precision, mint authority, liquidity management, PDAs, custom pools, Token-2022, SPL tokens, cross-chain transfers, CCIP Router, rate limiting, instructions"
+  datePublished: "2025-05-19"
+  lastModified: "2025-05-19"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+This applies only for Burn And Mint Token Pools onboarded in CCIP
+
+## Mint Authority on Solana
+
+For CCIP to work, the token pool program onboarded must be able to mint tokens. Because of that, the pool signer PDA of the token pool program must be the mint authority.
+A PDA has no private key. Therefore, no individual, wallet, or external system can directly sign as this mint authority. Only the program from which the PDA was derived can authorize it to sign, and only while executing an instruction on Solana.
+
+### How minting works
+
+1. CCIP verifies and executes the incoming cross-chain message.
+1. The token pool program validates that the transfer is authorized and satisfies its configured controls.
+1. The token pool program invokes the Solana Token Program to mint the token.
+1. During this invocation, the Solana runtime allows the token pool program to sign on behalf of its mint-authority PDA.
+1. The Token Program verifies that this PDA matches the mint authority configured on the token mint before issuing any tokens.
+1. The mint authority cannot sign arbitrary transactions independently. It can only participate as a signer through the token pool program’s defined execution paths.
+
+### Why the address appears as “off-curve”
+PDAs are intentionally generated outside the Ed25519 cryptographic curve. This guarantees that no corresponding private key can exist.
+
+Solana derives a PDA deterministically from:
+
+- A program address
+- A defined set of seeds
+- A bump value
+
+*Only the program used in this derivation* can cause the PDA to be recognized as a signer by the Solana runtime. This is part of Solana’s native security model, documented in [Solana’s PDA documentation](https://solana.com/docs/core/pda).
+
+Therefore, the mint authority appearing as `“off-curve”` is expected and does not indicate an unknown or inaccessible private key.
+
+### Why the PDA may not appear as an initialized account
+
+A PDA does not need to hold data or be initialized as an on-chain account to act as a program signer.
+
+Creating an account at the PDA address would allocate storage and assign an account owner, but it would not change:
+
+- Which program derived the PDA
+- Which program can sign for it
+- The program logic governing minting
+- The security of the mint authority
+
+Initializing it only to improve explorer visibility would therefore add operational state without providing an additional security guarantee. Some explorers also cannot infer a PDA’s originating program or derivation seeds from the address alone.
+
+## Token Multisig as Mint Authority
+
+It can happen that the token needs to have another address able to mint, so when that's the case a Token Multisig Mint Authority needs to be used.
+
+The mint authority is an [SPL Token Multisig account](https://www.solana-program.com/docs/token#multisig-usage). It defines a set of authorized signers and the number of signatures required to approve minting.
+
+### How CCIP Minting Works
+
+When a token is transferred to Solana through CCIP:
+1. CCIP verifies and executes the incoming cross-chain message.
+1. The token pool program validates the transfer and its configuration.
+1. The token pool invokes the SPL Token Program to mint the token.
+1. The token pool program signs for its token pool signer PDA.
+1. The SPL Token Program verifies that the PDA is an authorized signer of the mint-authority multisig.
+1. The multisig’s configured signing requirements are applied before minting is authorized.
+
+_The CCIP token pool can therefore participate in token minting without storing or managing a private key._
