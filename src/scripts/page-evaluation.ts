@@ -118,6 +118,19 @@ function isWithin(root: string, candidate: string): boolean {
   return relative === "" || (!relative.startsWith(`..${path.sep}`) && relative !== ".." && !path.isAbsolute(relative))
 }
 
+async function readContainedRegularTextFile(rootReal: string, candidate: string): Promise<string> {
+  const realPath = await fs.realpath(candidate)
+  if (!isWithin(rootReal, realPath)) throw new Error("real path escapes the repository")
+
+  const file = await fs.open(realPath, fsConstants.O_RDONLY | fsConstants.O_NOFOLLOW | fsConstants.O_NONBLOCK)
+  try {
+    if (!(await file.stat()).isFile()) throw new Error("not a file")
+    return await file.readFile("utf8")
+  } finally {
+    await file.close()
+  }
+}
+
 function errorCode(error: unknown): unknown {
   return typeof error === "object" && error !== null ? Reflect.get(error, "code") : undefined
 }
@@ -259,13 +272,9 @@ async function readPage(rootReal: string, relativePath: string): Promise<{ page?
   const absolutePath = path.resolve(rootReal, safePath)
   if (!isWithin(rootReal, absolutePath)) return { errors: [`${safePath}: path escapes the repository`] }
 
-  let realPath: string
   let source: string
   try {
-    realPath = await fs.realpath(absolutePath)
-    if (!isWithin(rootReal, realPath)) return { errors: [`${safePath}: real path escapes the repository`] }
-    if (!(await fs.stat(realPath)).isFile()) return { errors: [`${safePath}: not a file`] }
-    source = await fs.readFile(realPath, "utf8")
+    source = await readContainedRegularTextFile(rootReal, absolutePath)
   } catch (error) {
     return { errors: [`${safePath}: ${message(error)}`] }
   }
@@ -455,11 +464,7 @@ async function loadSkillRoots(
 
     const rootSkill = path.join(skillReal, "SKILL.md")
     try {
-      const rootSkillReal = await fs.realpath(rootSkill)
-      if (!isWithin(skillReal, rootSkillReal) || !(await fs.stat(rootSkillReal)).isFile()) {
-        throw new Error("not a contained file")
-      }
-      contents.push(await fs.readFile(rootSkillReal, "utf8"))
+      contents.push(await readContainedRegularTextFile(skillReal, rootSkill))
     } catch {
       errors.push(`${field}: root SKILL.md is missing or escapes the registered skill directory`)
     }

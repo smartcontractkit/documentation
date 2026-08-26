@@ -271,6 +271,68 @@ describe("skill registry preflight", () => {
   })
 })
 
+describe("contained page and skill files", () => {
+  test("rejects a page whose final path is a symlink escaping the repository", async () => {
+    const sandbox = await makeSandbox()
+    const outside = await fs.mkdtemp(path.join(os.tmpdir(), "page-evaluation-outside-"))
+    temporaryRoots.push(outside)
+    const outsidePage = path.join(outside, "outside.mdx")
+    await fs.writeFile(outsidePage, evaluatedPage(), "utf8")
+    await fs.rm(path.join(sandbox.root, pagePath))
+    await fs.symlink(outsidePage, path.join(sandbox.root, pagePath))
+
+    await expect(sandbox.run(["changed", "--path", pagePath])).resolves.toBe(1)
+
+    expect(sandbox.stdout).toEqual([])
+    expect(sandbox.stderr).toEqual([`ERROR ${pagePath}: real path escapes the repository`])
+  })
+
+  test("rejects a directory where a regular page file is required", async () => {
+    const sandbox = await makeSandbox()
+    await fs.rm(path.join(sandbox.root, pagePath))
+    await fs.mkdir(path.join(sandbox.root, pagePath))
+
+    await expect(sandbox.run(["changed", "--path", pagePath])).resolves.toBe(1)
+
+    expect(sandbox.stdout).toEqual([])
+    expect(sandbox.stderr).toEqual([`ERROR ${pagePath}: not a file`])
+  })
+
+  test("rejects a root SKILL.md symlink escaping the registered skill directory", async () => {
+    const sandbox = await makeSandbox()
+    const rootSkill = path.join(sandbox.skillsRepo, skillId, "SKILL.md")
+    const outsideSkill = path.join(sandbox.skillsRepo, "outside-SKILL.md")
+    await fs.writeFile(outsideSkill, "# Outside skill\n", "utf8")
+    await fs.rm(rootSkill)
+    await fs.symlink(outsideSkill, rootSkill)
+
+    await expect(
+      sandbox.run(["run", "--eval", evalId, "--skills-repo", sandbox.skillsRepo, "--fixture", "known-bad"])
+    ).resolves.toBe(1)
+
+    expect(sandbox.stdout).toEqual([])
+    expect(sandbox.stderr).toEqual([
+      `ERROR ${pagePath} evaluation.skills[0]: root SKILL.md is missing or escapes the registered skill directory`,
+    ])
+  })
+
+  test("rejects a directory where a regular root SKILL.md file is required", async () => {
+    const sandbox = await makeSandbox()
+    const rootSkill = path.join(sandbox.skillsRepo, skillId, "SKILL.md")
+    await fs.rm(rootSkill)
+    await fs.mkdir(rootSkill)
+
+    await expect(
+      sandbox.run(["run", "--eval", evalId, "--skills-repo", sandbox.skillsRepo, "--fixture", "known-bad"])
+    ).resolves.toBe(1)
+
+    expect(sandbox.stdout).toEqual([])
+    expect(sandbox.stderr).toEqual([
+      `ERROR ${pagePath} evaluation.skills[0]: root SKILL.md is missing or escapes the registered skill directory`,
+    ])
+  })
+})
+
 describe("real-run provider and config preflight", () => {
   test("rejects missing or identical environment provider IDs before loading providers", async () => {
     const sandbox = await makeSandbox()
@@ -447,8 +509,8 @@ test("real run uses each native provider once, replaces the exported response to
   expect(loadProvider).toHaveBeenCalledTimes(2)
   expect(generatorCall).toHaveBeenCalledTimes(1)
   expect(graderCall).toHaveBeenCalledTimes(1)
-  expect(generatorCall.mock.calls[0][0]).toContain("Complete MDX body.")
-  expect(generatorCall.mock.calls[0][0]).toContain("# Test skill")
+  expect(generatorCall.mock.calls[0][0]).toContain(evaluatedPage())
+  expect(generatorCall.mock.calls[0][0]).toContain("# Test skill\n")
   expect(generatorCall.mock.calls[0][0]).not.toContain("MUST NOT LOAD")
   expect(graderCall.mock.calls[0][0]).toContain(response)
   expect(graderCall.mock.calls[0][0]).not.toContain("__GENERATED_RESPONSE__")
