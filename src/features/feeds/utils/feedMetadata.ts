@@ -148,7 +148,7 @@ export function matches24x5StreamFilter(
 }
 
 /** APAC exchange market-hours tags as they appear in the RDD `docs.marketHours` field. */
-const APAC_MARKET_HOURS_TAGS = new Set(["Tokyo", "Seoul", "Taiwan", "Taipei", "Shanghai", "Shenzhen"])
+const APAC_MARKET_HOURS_TAGS = new Set(["Tokyo", "Seoul", "Taiwan", "Taipei", "Shanghai", "Shenzhen", "Hong Kong"])
 
 export function isApacEquitiesStreamFeed(metadata: FeedMetadata): boolean {
   const feedType = metadata.feedType || metadata.docs?.feedType
