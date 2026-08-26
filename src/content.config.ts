@@ -1,6 +1,7 @@
 import { z, defineCollection } from "astro:content"
 import { glob } from "astro/loaders"
 import { sectionValues } from "./config/sidebarSections.js"
+import { evaluationSchema } from "./config/evaluation.js"
 
 enum Products {
   ACE = "ace",
@@ -65,6 +66,7 @@ const baseFrontmatter = z
     isMdx: z.boolean().optional(),
     isIndex: z.boolean().optional(),
     metadata,
+    evaluation: evaluationSchema.optional(),
     datafeedtype: z.string().optional(),
     fileExtension: z.string().optional(),
     sdkLang: z.enum(["go", "ts"]).optional(),
@@ -87,6 +89,7 @@ const quickstartsFrontmatter = z
     datePublished: z.string().optional(), // ISO date string
     lastModified: z.string().optional(), // ISO date string
     difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional(),
+    evaluation: evaluationSchema.optional(),
   })
   .strict()
 
@@ -117,6 +120,7 @@ const creTemplatesFrontmatter = z
       .optional(),
     datePublished: z.string().optional(), // ISO date string
     lastModified: z.string().optional(), // ISO date string
+    evaluation: evaluationSchema.optional(),
   })
   .strict()
 
