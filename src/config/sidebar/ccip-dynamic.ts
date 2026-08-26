@@ -277,6 +277,11 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
             chainTypes: ["solana"],
           },
           {
+            title: "Token Mint Authority",
+            url: "ccip/concepts/cross-chain-token/svm/token-mint-authority",
+            chainTypes: ["solana"],
+          },
+          {
             title: "Integration Guide",
             url: "ccip/concepts/cross-chain-token/svm/integration-guide",
             chainTypes: ["solana"],
