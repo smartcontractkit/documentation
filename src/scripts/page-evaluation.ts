@@ -505,6 +505,24 @@ function significantWords(text: string): Set<string> {
   return new Set((text.toLowerCase().match(/[a-z0-9-]{5,}/g) ?? []).filter((word) => !ignored[word]))
 }
 
+function exactEvidenceCandidates(response: string): string[] {
+  const candidates = [
+    ...Array.from(new Intl.Segmenter("en", { granularity: "sentence" }).segment(response), ({ segment }) =>
+      segment.trim()
+    ),
+    ...response.split(/\r\n?|\n/).map((line) => line.trim()),
+    response,
+  ]
+  const seen = new Set<string>()
+  const unique: string[] = []
+  for (const candidate of candidates) {
+    if (!candidate.trim() || !response.includes(candidate) || seen.has(candidate)) continue
+    seen.add(candidate)
+    unique.push(candidate)
+  }
+  return unique
+}
+
 export function validateGrade(value: unknown, response: string, outcomes: readonly string[]): OutcomeResult[] {
   let grade: unknown = value
   if (typeof value === "string") {
@@ -772,7 +790,8 @@ async function executeRun(
 
     let graded
     try {
-      const prompt = graderPrompt.replaceAll(GENERATED_RESPONSE_TOKEN, response)
+      const exactEvidence = `${response}\n\nEXACT_EVIDENCE_CANDIDATES:\n${JSON.stringify(exactEvidenceCandidates(response))}`
+      const prompt = graderPrompt.replaceAll(GENERATED_RESPONSE_TOKEN, exactEvidence)
       graded = await grader.callApi(prompt)
     } catch {
       options.stderr("ERROR grader provider call failed")

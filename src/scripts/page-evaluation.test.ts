@@ -480,15 +480,17 @@ describe("real-run provider and config preflight", () => {
   })
 })
 
-test("real run uses each native provider once, replaces the exported response token, and writes stable model JSON", async () => {
+test("real run supplies exact evidence candidates, calls each native provider once, and writes exact evidence", async () => {
   const sandbox = await makeSandbox()
   await writeFile(sandbox.skillsRepo, `${skillId}/references/secret.md`, "MUST NOT LOAD")
-  const response = "Alpha answer. Beta answer. Gamma answer."
+  const response = "Alpha answer has detail.\n  Beta answer spans one line. Gamma answer is separate.  "
+  const evidence = ["Alpha answer has detail.", "Beta answer spans one line.", "Gamma answer is separate."]
+  const exactEvidenceCandidates = [...evidence, "Beta answer spans one line. Gamma answer is separate.", response]
   const grade = {
     outcomes: outcomes.map((outcome, index) => ({
       outcome,
       pass: true,
-      evidence: `${index === 0 ? "Alpha" : index === 1 ? "Beta" : "Gamma"} answer.`,
+      evidence: evidence[index],
       reason: "The response satisfies this requirement.",
     })),
   }
@@ -512,16 +514,63 @@ test("real run uses each native provider once, replaces the exported response to
   expect(generatorCall.mock.calls[0][0]).toContain(evaluatedPage())
   expect(generatorCall.mock.calls[0][0]).toContain("# Test skill\n")
   expect(generatorCall.mock.calls[0][0]).not.toContain("MUST NOT LOAD")
-  expect(graderCall.mock.calls[0][0]).toContain(response)
-  expect(graderCall.mock.calls[0][0]).not.toContain("__GENERATED_RESPONSE__")
+  const graderPrompt = graderCall.mock.calls[0][0]
+  expect(graderPrompt).toContain(
+    `${response}\n\nEXACT_EVIDENCE_CANDIDATES:\n${JSON.stringify(exactEvidenceCandidates)}`
+  )
+  expect(graderPrompt).not.toContain("__GENERATED_RESPONSE__")
+  const printed = [...sandbox.stdout, ...sandbox.stderr].join("\n")
+  expect(printed).not.toContain(response)
+  expect(printed).not.toContain("Grade RESPONSE")
+  expect(printed).not.toContain("EXACT_EVIDENCE_CANDIDATES")
   const [runFile] = await fs.readdir(path.join(sandbox.root, "evals/runs"))
   expect(runFile).toMatch(new RegExp(`^20260826T120000Z-${evalId}-[0-9a-f-]{36}\\.json$`))
   const record = JSON.parse(await fs.readFile(path.join(sandbox.root, "evals/runs", runFile), "utf8"))
   expect(record.runId).toBe(runFile.slice(0, -5))
   expect(record.kind).toBe("model")
   expect(record.providers).toEqual({ generator: "resolved-generator", grader: "resolved-grader" })
+  expect(record.response).toBe(response)
+  expect(record.outcomeResults).toEqual(grade.outcomes)
   expect(record.providerCalls).toBe(2)
   expect(record.overallPass).toBe(true)
+})
+
+test("real run rejects paraphrased evidence after two provider calls without writing a run", async () => {
+  const sandbox = await makeSandbox()
+  const response =
+    "Alpha answer is supported exactly. Beta answer is supported exactly. Gamma answer is supported exactly."
+  const grade = {
+    outcomes: outcomes.map((outcome, index) => ({
+      outcome,
+      pass: true,
+      evidence:
+        index === 0 ? "Alpha answer is supported." : `${index === 1 ? "Beta" : "Gamma"} answer is supported exactly.`,
+      reason: "The response satisfies this requirement.",
+    })),
+  }
+  const generatorCall = jest.fn<ApiProvider["callApi"]>(async () => ({ output: response }))
+  const graderCall = jest.fn<ApiProvider["callApi"]>(async () => ({ output: JSON.stringify(grade) }))
+  const generator: ApiProvider = { id: () => "resolved-generator", callApi: generatorCall }
+  const grader: ApiProvider = { id: () => "resolved-grader", callApi: graderCall }
+  const loadProvider = jest.fn(async (id: string) => (id === generatorProviderId ? generator : grader))
+
+  await expect(
+    sandbox.run(["run", "--eval", evalId, "--skills-repo", sandbox.skillsRepo], {
+      env: providerEnv,
+      loadProvider,
+    })
+  ).resolves.toBe(1)
+
+  expect(loadProvider).toHaveBeenCalledTimes(2)
+  expect(generatorCall).toHaveBeenCalledTimes(1)
+  expect(graderCall).toHaveBeenCalledTimes(1)
+  expect(sandbox.stdout).toEqual([])
+  expect(sandbox.stderr.join("\n")).toContain("evidence: must be an exact response quote")
+  const printed = [...sandbox.stdout, ...sandbox.stderr].join("\n")
+  expect(printed).not.toContain(response)
+  expect(printed).not.toContain("Grade RESPONSE")
+  expect(printed).not.toContain("EXACT_EVIDENCE_CANDIDATES")
+  expect(await fs.readdir(path.join(sandbox.root, "evals/runs"))).toEqual([])
 })
 
 test("provider errors and non-string output are rejected without a run file", async () => {
