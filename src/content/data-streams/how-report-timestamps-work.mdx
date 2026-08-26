@@ -1,0 +1,88 @@
+---
+section: dataStreams
+date: "Last Modified"
+title: "How Report Timestamps Work"
+metadata:
+  title: "How Chainlink Data Streams Report Timestamps Work | validFromTimestamp and observationsTimestamp"
+  description: "Learn how Chainlink Data Streams report timestamps define a span of time rather than an instant, how gaps between reports are absorbed, and how timestamps apply to TWAP streams."
+  keywords:
+    [
+      "Data Streams",
+      "Timestamps",
+      "validFromTimestamp",
+      "observationsTimestamp",
+      "TWAP",
+      "Time Weighted Average Price",
+      "Reports",
+    ]
+whatsnext:
+  {
+    "See the REST API reference": "/data-streams/reference/data-streams-api/interface-api",
+    "See the WebSocket reference": "/data-streams/reference/data-streams-api/interface-ws",
+    "Learn about Data Streams architecture": "/data-streams/architecture",
+    "Review Data Streams best practices": "/data-streams/concepts/best-practices",
+  }
+---
+
+import { Aside } from "@components"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<DataStreams section="dsNotes" />
+
+Every Data Streams report carries two timestamps: `validFromTimestamp` and `observationsTimestamp`. Together they describe a span of time rather than a single instant. This page explains how that span is constructed, what to expect when no report exists for a given second, and how timestamps apply to Time Weighted Average Price (TWAP) streams.
+
+## Reports are spans, not ticks
+
+A report doesn't represent a price at an instant. It represents a price over a span of time:
+
+> From `validFromTimestamp` through `observationsTimestamp`, the price is X.
+
+- **`validFromTimestamp`** — the floor of the span
+- **`observationsTimestamp`** — the ceiling of the span
+
+Both fields are Unix timestamps in seconds.
+
+This span can be 1 second wide or several seconds wide, depending on how frequently the Decentralized Oracle Network (DON) can observe the data and generate reports. Spans are contiguous by construction: each one starts the second after the previous one ended. No gaps, no overlaps — every second in time belongs to exactly one report.
+
+## Understanding real-time transmission
+
+Say wall-clock time is `12:05:00`. What price is "current" at that instant depends on whether a report exists for it yet.
+
+**Normal case**
+
+A report exists with `observationsTimestamp = 12:05:00`. Its window is 1 second wide. You'll receive it slightly after `12:05:00` — typically up to 1-2 seconds later — due to DON consensus and transmission to you.
+
+**Edge case: no report at that exact second**
+
+Sometimes there's no report observed with `observationsTimestamp = 12:05:00`. For example:
+
+- Last report: `observationsTimestamp = 12:04:59`
+- Next report: `observationsTimestamp = 12:05:01`
+
+The next report's window absorbs the gap: its `validFromTimestamp` is `12:05:00`, making its window 2 seconds wide (`12:05:00` → `12:05:01`).
+
+In this example, the price for `12:05:00` is observed one second later at `12:05:01`.
+
+<Aside type="note" title="Design for variable-width windows">
+  Don't assume every report covers exactly one second. Read `validFromTimestamp` and `observationsTimestamp` from each
+  report rather than deriving the window from the previous report's timestamp or from your own clock.
+</Aside>
+
+## How timestamps relate to TWAP streams
+
+TWAP streams function differently than traditional data reports. A TWAP report is an **aggregated calculation** derived from the underlying reports.
+
+A TWAP span is anchored to `observationsTimestamp`, not to Unix time. It doesn't pad or extend to hit a round boundary — it slides.
+
+For example, a 60-second TWAP requested "at `12:05:01`" covers `12:04:01` → `12:05:01`, not `12:04:00` → `12:05:00` or anything else artificially aligned to the clock.
+
+**Formula:**
+
+```
+TWAP = (sum of price × duration for each report in the window) / window length in seconds
+```
+
+- 30-second TWAP → divide by 30
+- 60-second TWAP → divide by 60
+
+If a report's window is wider than 1 second (that is, it spans a gap where no intermediate report existed), that report's price is interpolated across the seconds it covers rather than treated as a single point.

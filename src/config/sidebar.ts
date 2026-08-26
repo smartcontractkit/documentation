@@ -1341,6 +1341,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/architecture",
         },
         {
+          title: "How Report Timestamps Work",
+          url: "data-streams/how-report-timestamps-work",
+        },
+        {
           title: "Best Practices",
           url: "data-streams/concepts/best-practices",
         },
