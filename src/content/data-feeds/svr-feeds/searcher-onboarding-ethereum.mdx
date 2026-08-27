@@ -12,59 +12,7 @@ whatsnext:
 
 import { Aside, ClickToZoom, CodeSample, CopyText } from "@components"
 import { Tabs } from "@components/Tabs"
-import { CHAINS } from "@features/data/chains"
-import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
-
-export async function getFeeds() {
-  const ethereumMainnet = CHAINS.find((chain) => chain.page === "ethereum")?.networks.find(
-    (network) => network.networkType === "mainnet"
-  )
-
-const rddUrl = ethereumMainnet?.rddUrl
-
-if (!rddUrl) {
-return []
-}
-
-try {
-const response = await fetch(rddUrl)
-const data = await response.json()
-
-    const svrFeeds = data.filter(
-      (feed) => feed.secondaryProxyAddress && !feed.docs?.hidden && (isAaveSVR(feed) || isSharedSVR(feed))
-    )
-
-    const feedGroups = {}
-
-    svrFeeds.forEach(feed => {
-      const baseName = feed.name.replace(" / ", "/")
-
-      if (!feedGroups[baseName]) {
-        feedGroups[baseName] = {
-          name: baseName,
-          aaveAddress: null,
-          svrAddress: null
-        }
-      }
-
-      if (isAaveSVR(feed)) {
-        feedGroups[baseName].aaveAddress = feed.contractAddress
-      } else if (isSharedSVR(feed)) {
-        feedGroups[baseName].svrAddress = feed.contractAddress
-      }
-    })
-
-    const combinedFeeds = Object.values(feedGroups)
-      .sort((a, b) => a.name.localeCompare(b.name))
-
-    return combinedFeeds
-
-} catch (error) {
-return []
-}
-}
-
-export const feeds = await getFeeds()
+import { FeedList } from "~/features/feeds/components/FeedList.tsx"
 
 <Aside type="note" title="Searcher Onboarding">
   To onboard as a searcher to SVR, reach out to [devrel@smartcontract.com](mailto:devrel@smartcontract.com). Searchers
@@ -91,9 +39,23 @@ For more background on how Aave liquidations work, see [Aave Documentation](http
 
 <ClickToZoom src="/images/data-feed/svr/svr-price-update-auction-liquidation-flow.webp" />
 
-### How to Participate as a Searcher
+## Feed Aggregator Addresses
 
-#### 1. High-Level Steps for Searchers
+<Aside type="note">
+  <p>
+    Searchers need to listen to the **Aggregator address** for price reports, not the proxy address. You can find the
+    aggregator address by reading `aggregator` in the proxy contract. For convenience, we've included the aggregator
+    address in the table below. Use **Aave-SVR** type feeds for Aave, **SVR** type feeds for other protocols, and
+    **SVR-Backup** for the legacy shared feeds. For the full list of SVR feeds, see the [SVR Feeds
+    page](/data-feeds/svr-feeds).
+  </p>
+</Aside>
+
+<FeedList client:idle initialNetwork="ethereum-mainnet" dataFeedType="svr" />
+
+## How to Participate as a Searcher
+
+### 1. High-Level Steps for Searchers
 
 1. **Monitor and Identify SVR Price Updates**: Chainlink SVR sends oracle reports through Flashbots Protect (MEV-Share). Your searcher node must watch private transactions, not just the public mempool. It must also filter by these SVR data feed update events, and determine which feed address the update is for.
 
@@ -103,7 +65,7 @@ For more background on how Aave liquidations work, see [Aave Documentation](http
 
 1. **Execute Liquidation**: If your bundle is selected, your liquidation happens **immediately after** the fresh price arrives onchain, capturing the liquidation bonus. Based on the results of the auction, a portion of the MEV is recaptured and split between Aave and the Chainlink Network, while the rest goes to you.
 
-#### 2. Listen for Events on MEV Share
+### 2. Listen for Events on MEV Share
 
 Chainlink SVR uses forwarder contracts to route feed updates. You typically see **one transaction per event**, which calls the function `forward(address to, bytes callData)` with the function selector `6fadcf72`. This method, in turn, calls the SVR aggregator's `transmitSecondary()` function with the new price data.
 
@@ -134,7 +96,7 @@ The event stream is also expected to occasionally transmit transaction bundles. 
 
 <CodeSample src="samples/DataFeeds/SVR/bundle-transaction-event.json" />
 
-#### 3. Decode `callData` for `forward` and `transmitSecondary`
+### 3. Decode `callData` for `forward` and `transmitSecondary`
 
 Once you've identified a potential SVR feed update transaction, you'll need to decode its payload. This step allows you to extract:
 
@@ -194,50 +156,11 @@ The following code samples demonstrate the complete decoding process, including 
   </Fragment>
 </Tabs>
 
-#### 4. Detect SVR-enabled Feeds
+### 4. Detect SVR-enabled Feeds
 
-When processing forward calls, verify that the `to` address from the code sample above (the destination of the forward call) matches one of these feed addresses. This tells you which SVR data feed the price update is for:
+When processing forward calls, verify that the `to` address from the code sample above (the destination of the forward call) matches one of the SVR feed aggregator addresses listed in the [Feed Aggregator Addresses](#feed-aggregator-addresses) section above.
 
-<table>
-  <thead>
-    <tr>
-      <th>Feed</th>
-      <th>SVR Feed</th>
-      <th>Aave Dedicated SVR Feed</th>
-    </tr>
-  </thead>
-  <tbody>
-    {feeds &&
-      feeds.map((feed) => (
-        <tr key={feed.name}>
-          <td>
-            <strong>{feed.name}</strong>
-          </td>
-          <td>
-            {feed.svrAddress ? (
-              <CopyText text={feed.svrAddress} code />
-            ) : (
-              <span style={{ color: "#888" }}>Not available</span>
-            )}
-          </td>
-          <td>
-            {feed.aaveAddress ? (
-              <CopyText text={feed.aaveAddress} code />
-            ) : (
-              <span style={{ color: "#888" }}>Not available</span>
-            )}
-          </td>
-        </tr>
-      ))}
-    {(!feeds || feeds.length === 0) && (
-      <tr>
-        <td colSpan="3">No SVR feeds found.</td>
-      </tr>
-    )}
-  </tbody>
-</table>
-
-#### 5. Calculate Updated Price
+### 5. Calculate Updated Price
 
 After successfully decoding the transaction data, you need to extract the median price from the `observations` array inside the decoded `report`:
 
@@ -249,7 +172,7 @@ This formula retrieves the median value from the sorted array of price observati
 
 To use this price effectively, convert it to the appropriate decimal representation for the asset pair.
 
-#### 6. Bidding With Flashbots MEV-Share
+### 6. Bidding With Flashbots MEV-Share
 
 Once you've detected an SVR update and identified a profitable liquidation opportunity, you need to construct and submit a bundle to Flashbots. Consider these key aspects when preparing your submission:
 
@@ -297,14 +220,14 @@ Bidding for bundle events is very similar to single transaction events. As a sea
 
 <CodeSample src="samples/DataFeeds/SVR/bundle-bid.json" />
 
-#### 7. Considerations
+### 7. Considerations
 
 - **Competition**: Multiple searchers might detect the same liquidation. The best bid typically wins.
 - **Profit-Sharing**: A portion of liquidation MEV is recaptured and redirected to the integrating DeFi protocol and the Chainlink Network.
 - **Gas Efficiency**: Bundles that are too costly might erode the profitability of the proposed transaction. Optimize carefully.
 - **Non-SVR `forward` calls**: There are other events on the MEV-Share event stream that have the same `forward` function signature. Be sure to filter for the ones that call `transmitSecondary` on the listed SVR feeds.
 
-#### 8. Next Steps for Searchers
+### 8. Next Steps for Searchers
 
 1. **Set Up Your Searcher Node**
    - Integrate with [Flashbots MEV-Share](/data-feeds/svr-feeds/searcher-onboarding-ethereum) to read private transactions.

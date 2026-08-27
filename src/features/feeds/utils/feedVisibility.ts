@@ -129,7 +129,8 @@ export function isFeedVisible(
   // ===========================================================================
   const isTokenizedEquity = dataFeedType === "tokenizedEquity"
   const isExtendedHours = dataFeedType === "extendedHours"
-  if (feed.docs?.hidden && !isTokenizedEquity && !isExtendedHours) return false
+  const isSvr = dataFeedType === "svr" || dataFeedType === "svrAtlas"
+  if (feed.docs?.hidden && !isTokenizedEquity && !isExtendedHours && !isSvr) return false
 
   const isDeprecating = ecosystem === "deprecating"
   const isStreams =
@@ -214,6 +215,9 @@ export function isFeedVisible(
     if (isVisible && options.extendedHoursCategory) {
       isVisible = EXTENDED_HOURS_FEED_CATEGORIES[options.extendedHoursCategory].has(proxy)
     }
+  } else if (isSvr) {
+    // SVR feeds are identified by having a secondaryProxyAddress
+    isVisible = !!feed.secondaryProxyAddress
   } else {
     isVisible =
       !feed.docs?.porType &&

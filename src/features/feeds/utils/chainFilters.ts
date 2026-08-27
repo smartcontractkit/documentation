@@ -10,6 +10,8 @@ const FEED_TYPE_TAG: Partial<Record<DataFeedType, string>> = {
   usGovernmentMacroeconomicData: "usGovernmentMacroeconomicData",
   tokenizedEquity: "tokenizedEquity",
   extendedHours: "extendedHours",
+  svr: "svr",
+  svrAtlas: "svrAtlas",
 }
 
 export function chainMatchesFeedTypeTag(chain: Taggable, dataFeedType: DataFeedType): boolean {
@@ -65,6 +67,8 @@ export function shouldFilterSelectableChainsByVisibleFeeds(dataFeedType: DataFee
     dataFeedType === "rates" ||
     dataFeedType === "usGovernmentMacroeconomicData" ||
     dataFeedType === "tokenizedEquity" ||
-    dataFeedType === "extendedHours"
+    dataFeedType === "extendedHours" ||
+    dataFeedType === "svr" ||
+    dataFeedType === "svrAtlas"
   )
 }
