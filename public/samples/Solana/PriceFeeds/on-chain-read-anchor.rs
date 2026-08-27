@@ -43,7 +43,7 @@ pub mod chainlink_solana_demo {
     use super::*;
     pub fn execute(ctx: Context<Execute>) -> Result<()> {
         let feed = &ctx.accounts.chainlink_feed;
-        
+
         // Read the feed data directly from the account (v2 SDK)
         let result = read_feed_v2(
             feed.try_borrow_data()?,

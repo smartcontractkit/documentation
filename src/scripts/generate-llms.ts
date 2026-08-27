@@ -13,6 +13,7 @@ import { SIDEBAR } from "../config/sidebar.js"
 import type { SectionEntry, SectionContent } from "../config/sidebar.js"
 import fsSync from "fs"
 import { stripHighlightComments, unescapeMarkdown } from "../lib/markdown/index.js"
+import { serializeTabbedContent } from "../lib/markdown/tabSerialization.js"
 import { REPORT_SCHEMA_DEFINITIONS } from "../features/feeds/components/reportSchemaData.js"
 
 interface MdxJsxAttribute {
@@ -413,6 +414,8 @@ async function transformMarkdown(markdown: string, mdxAbsPath: string, targetLan
     .use(remarkMdx)
     .use(remarkGfm)
     .use(() => (tree: Node) => {
+      serializeTabbedContent(tree)
+
       visit(tree, (node: Node, index: number | undefined, parent: Parent | undefined) => {
         if (
           parent &&
