@@ -29,6 +29,7 @@ A PDA has no private key. Therefore, no individual, wallet, or external system c
 1. The mint authority cannot sign arbitrary transactions independently. It can only participate as a signer through the token pool program’s defined execution paths.
 
 ### Why the address appears as “off-curve”
+
 PDAs are intentionally generated outside the Ed25519 cryptographic curve. This guarantees that no corresponding private key can exist.
 
 Solana derives a PDA deterministically from:
@@ -37,7 +38,7 @@ Solana derives a PDA deterministically from:
 - A defined set of seeds
 - A bump value
 
-*Only the program used in this derivation* can cause the PDA to be recognized as a signer by the Solana runtime. This is part of Solana’s native security model, documented in [Solana’s PDA documentation](https://solana.com/docs/core/pda).
+_Only the program used in this derivation_ can cause the PDA to be recognized as a signer by the Solana runtime. This is part of Solana’s native security model, documented in [Solana’s PDA documentation](https://solana.com/docs/core/pda).
 
 Therefore, the mint authority appearing as `“off-curve”` is expected and does not indicate an unknown or inaccessible private key.
 
@@ -63,6 +64,7 @@ The mint authority is an [SPL Token Multisig account](https://www.solana-program
 ### How CCIP Minting Works
 
 When a token is transferred to Solana through CCIP:
+
 1. CCIP verifies and executes the incoming cross-chain message.
 1. The token pool program validates the transfer and its configuration.
 1. The token pool invokes the SPL Token Program to mint the token.
