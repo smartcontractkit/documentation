@@ -80,11 +80,11 @@ Recommended approach: check `marketStatus` before evaluating freshness. If `mark
 
 KRX-listed and TWSE-listed equities have no intraday break; KRX runs continuously from 09:00–15:20 KST (00:00–06:20 UTC), and TWSE runs continuously from 09:00–13:25 CST (01:00–05:25 UTC).
 
-### TWSE price granularity (tick size)
+### Minimum tick size (TWSE)
 
-TWSE applies an exchange-mandated, price-tiered minimum tick size to listed equities: the minimum price increment widens in steps as the share price rises, reaching NT$0.5 or more for mid- and higher-priced instruments. As a result, TWD-denominated streams can appear to move in discrete increments rather than continuously, particularly for higher-priced names where the applicable tick is larger relative to the share price.
+TWSE, like certain other exchanges in the region, applies a minimum tick size that increases with an instrument's price. Higher-priced instruments can therefore exhibit more staggered, or seemingly exaggerated, tick-by-tick price movement in the base currency than lower-priced ones.
 
-This quantization is a property of the underlying exchange's price formation and is expected behavior, not an indication of reduced feed precision or a data quality issue. Protocols that derive metrics such as percentage price changes or volatility bands from TWSE streams should account for this tick-size granularity when calibrating deviation thresholds, to avoid false positives triggered by normal tick-to-tick movement.
+Aggregated data from underlying providers may or may not respect the instrument's tick size at the mid-price or bid-ask spread level. Protocols should use caution when setting risk parameters such as deviation thresholds, accounting for the rounding this can introduce on feeds with a non-trivial minimum tick size.
 
 ### Opening and closing auction prices
 
