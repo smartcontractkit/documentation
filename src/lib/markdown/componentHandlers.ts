@@ -7,6 +7,12 @@ import path from "path"
 import type { Parent, Literal, Node } from "unist"
 import type { MdxJsxNode, ComponentContext } from "./types.js"
 import {
+  readStaticDefaultImports,
+  readStaticJsxSelectorConditions,
+  removeLeadingMdxFrontmatter,
+  stripHighlighterComments,
+} from "./sourceScanners.js"
+import {
   calculateNetworkFeesForTokenMechanismDirect,
   calculateMessagingNetworkFeesDirect,
 } from "../../config/data/ccip/utils.js"
@@ -158,13 +164,6 @@ function resolveExistingWithin(root: string, candidate: string): string | undefi
   }
 }
 
-function stripHighlighterComments(code: string): string {
-  return code
-    .split("\n")
-    .map((line) => line.replace(/\s*\/\/\s*highlight-(line|start|end)/, ""))
-    .join("\n")
-}
-
 /**
  * Load CcipCommon callout mapping dynamically from CcipCommon.astro
  * @returns Mapping of callout names to file paths
@@ -175,24 +174,16 @@ export function loadCcipCommonMapping(): Record<string, string> {
     const astroContent = fs.readFileSync(astroFilePath, "utf-8")
 
     // First, build a map of Component names to file paths from imports
-    const importRegex = /import\s+(\w+)\s+from\s+["'](.+?)["']/g
-    const componentToFile: Record<string, string> = {}
-
-    for (const match of astroContent.matchAll(importRegex)) {
-      const [, componentName, filePath] = match
-      const cleanPath = filePath.replace(/^\.\//, "")
-      componentToFile[componentName] = cleanPath
-    }
+    const componentToFile = readStaticDefaultImports(astroContent)
 
     // Then, parse the conditional statements to map callout names to component names
-    const conditionalRegex = /callout\s+===\s+["'](\w+)["']\s+&&\s+<(\w+)/g
+    const conditions = readStaticJsxSelectorConditions(astroContent, "callout")
     const mapping: Record<string, string> = {}
 
-    for (const match of astroContent.matchAll(conditionalRegex)) {
-      const [, calloutName, componentName] = match
-      const filePath = componentToFile[componentName]
+    for (const [calloutName, componentName] of conditions) {
+      const filePath = componentToFile.get(componentName)
       if (filePath) {
-        mapping[calloutName] = filePath
+        mapping[calloutName] = filePath.startsWith("./") ? filePath.slice(2) : filePath
       }
     }
 
@@ -233,9 +224,7 @@ export function handleCcipCommon(
           let calloutContent = fs.readFileSync(calloutPath, "utf-8")
 
           // Strip frontmatter if present
-          if (calloutContent.trim().startsWith("---")) {
-            calloutContent = calloutContent.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, "")
-          }
+          calloutContent = removeLeadingMdxFrontmatter(calloutContent)
 
           // Strip import statements
           calloutContent = calloutContent.replace(/^import\s+.+$/gm, "").trim()
@@ -276,11 +265,9 @@ export function handleCodeHighlightBlock(
       ?.data?.estree?.body?.[0]?.expression?.name
 
     if (codeVarName) {
-      const importRegex = new RegExp(`import\\s+${codeVarName}\\s+from\\s+['"](.+?)['"]`)
-      const match = context.markdown.match(importRegex)
+      const importPath = readStaticDefaultImports(context.markdown).get(codeVarName)?.split("?")[0]
 
-      if (match) {
-        const importPath = match[1].split("?")[0] // Strip "?raw" and other query params
+      if (importPath) {
         const codeAbsPath = resolveExistingWithin(
           process.cwd(),
           path.resolve(path.dirname(context.mdxAbsPath), importPath)
@@ -288,13 +275,7 @@ export function handleCodeHighlightBlock(
         if (!codeAbsPath) {
           return dropNode(parent, index)
         }
-        let codeContent = fs.readFileSync(codeAbsPath, "utf-8")
-
-        // Strip highlighter comments
-        codeContent = codeContent
-          .split("\n")
-          .map((line) => line.replace(/\s*\/\/\s*highlight-(line|start|end)/, ""))
-          .join("\n")
+        const codeContent = stripHighlighterComments(fs.readFileSync(codeAbsPath, "utf-8"))
 
         const langAttr = node.attributes?.find((a) => a.name === "lang")
         const titleAttr = node.attributes?.find((a) => a.name === "title")
@@ -349,6 +330,7 @@ export function handleCodeHighlightBlockMulti(
     }
 
     const codeNodes: Node[] = []
+    const imports = readStaticDefaultImports(context.markdown)
     for (const languageProperty of expression.properties || []) {
       if (languageProperty.type !== "Property" || languageProperty.computed) continue
       const language =
@@ -373,8 +355,7 @@ export function handleCodeHighlightBlockMulti(
       let codeLanguage = language
 
       if (codeExpression?.type === "Identifier" && codeExpression.name) {
-        const importRegex = new RegExp(`import\\s+${codeExpression.name}\\s+from\\s+['"](.+?)['"]`)
-        const importPath = context.markdown.match(importRegex)?.[1]?.split("?")[0]
+        const importPath = imports.get(codeExpression.name)?.split("?")[0]
         if (importPath) {
           const codePath = resolveExistingWithin(
             process.cwd(),
@@ -897,20 +878,15 @@ function handleAstroSelector(
     }
     const astroDirectory = path.dirname(astroPath)
     const source = fs.readFileSync(astroPath, "utf-8")
-    const imports = new Map<string, string>()
-    for (const match of source.matchAll(/import\s+(\w+)\s+from\s+["'](.+?\.mdx)["']/g)) {
-      imports.set(match[1], match[2])
-    }
-    const conditions = new Map<string, string>()
-    const conditionRegex = new RegExp(`${config.attribute}\\s*===\\s*["']([^"']+)["']\\s*&&\\s*<(\\w+)`, "g")
-    for (const match of source.matchAll(conditionRegex)) conditions.set(match[1], match[2])
+    const imports = readStaticDefaultImports(source)
+    const conditions = readStaticJsxSelectorConditions(source, config.attribute)
 
     const importPath = imports.get(conditions.get(selector) || "")
     const markdownPath = importPath && resolveExistingWithin(astroDirectory, importPath)
     if (!markdownPath || path.extname(markdownPath) !== ".mdx") {
       return dropNode(parent, index)
     }
-    const markdown = fs.readFileSync(markdownPath, "utf-8").replace(/^---\s*\n[\s\S]*?\n---\s*\n/, "")
+    const markdown = removeLeadingMdxFrontmatter(fs.readFileSync(markdownPath, "utf-8"))
     const tree = context.processor.parse(markdown) as Parent
     parent.children.splice(index, 1, ...(tree.children || []))
     return index

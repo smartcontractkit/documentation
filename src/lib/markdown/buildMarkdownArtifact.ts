@@ -259,9 +259,38 @@ async function findContentFile(cleanPath: string): Promise<string | null> {
 }
 
 function buildFallbackMarkdownBody(body: string): string {
-  return stripRuntimeMdxSyntax(body)
-    .replace(/<\/?[A-Z][^>]*>/g, "")
-    .trim()
+  return stripFallbackComponentTags(stripRuntimeMdxSyntax(body)).trim()
+}
+
+function stripFallbackComponentTags(body: string): string {
+  const chunks: string[] = []
+  let copiedThrough = 0
+  let searchFrom = 0
+
+  while (searchFrom < body.length) {
+    const tagStart = body.indexOf("<", searchFrom)
+    if (tagStart === -1) break
+
+    const nameStart = body.charCodeAt(tagStart + 1) === 47 ? tagStart + 2 : tagStart + 1
+    const firstNameChar = body.charCodeAt(nameStart)
+    if (firstNameChar < 65 || firstNameChar > 90) {
+      searchFrom = tagStart + 1
+      continue
+    }
+
+    const tagEnd = body.indexOf(">", nameStart + 1)
+    if (tagEnd === -1) {
+      chunks.push(body.slice(copiedThrough))
+      return chunks.join("")
+    }
+
+    chunks.push(body.slice(copiedThrough, tagStart))
+    copiedThrough = tagEnd + 1
+    searchFrom = copiedThrough
+  }
+
+  chunks.push(body.slice(copiedThrough))
+  return chunks.join("")
 }
 
 function stripRuntimeMdxSyntax(body: string): string {

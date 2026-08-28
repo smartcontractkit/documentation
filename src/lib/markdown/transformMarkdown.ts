@@ -36,6 +36,7 @@ import {
 } from "./componentHandlers.js"
 import fs from "fs"
 import path from "path"
+import { removeLeadingMdxFrontmatter } from "./sourceScanners.js"
 
 /**
  * Preprocess CcipCommon components by inlining their content
@@ -65,9 +66,7 @@ function preprocessCcipCommon(markdown: string): string {
         let calloutContent = fs.readFileSync(calloutPath, "utf-8")
 
         // Strip frontmatter if present
-        if (calloutContent.trim().startsWith("---")) {
-          calloutContent = calloutContent.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, "")
-        }
+        calloutContent = removeLeadingMdxFrontmatter(calloutContent)
 
         // Strip import statements
         calloutContent = calloutContent.replace(/^import\s+.+$/gm, "").trim()

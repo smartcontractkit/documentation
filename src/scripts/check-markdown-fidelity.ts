@@ -9,6 +9,11 @@ import remarkParse from "remark-parse"
 import { SKIP, visit } from "unist-util-visit"
 import type { Node, Parent } from "unist"
 import { buildMarkdownArtifact, normalizeMarkdownPath } from "@lib/markdown/buildMarkdownArtifact.js"
+import {
+  readStaticDefaultImports,
+  readStaticJsxSelectorConditions,
+  stripHighlighterComments,
+} from "@lib/markdown/sourceScanners.js"
 import type { MarkdownArtifact } from "@lib/markdown/types.js"
 import { markdownFidelityExceptions } from "./markdown-fidelity-exceptions.js"
 
@@ -240,12 +245,6 @@ function expressionAttribute(node: Node, name: string): AstRecord | null {
   return expressionFrom(attributes.find((candidate) => candidate.name === name)?.value)
 }
 
-function stripHighlighterComments(code: string): string {
-  return code
-    .split("\n")
-    .map((line) => line.replace(/\s*\/\/\s*highlight-(line|start|end)/, ""))
-    .join("\n")
-}
 function resolveSelectorTarget(
   component: keyof typeof selectorComponents,
   selector: string
@@ -254,15 +253,10 @@ function resolveSelectorTarget(
   const astro = resolveProjectFile(config.astro)
   if (!astro) return { reason: `Selector definition ${config.astro} is missing or escapes the project` }
   const source = fsSync.readFileSync(astro.absolute, "utf8")
-  const imports = new Map<string, string>()
-  for (const match of source.matchAll(/import\s+(\w+)\s+from\s+["']([^"']+\.mdx)["']/g)) {
-    imports.set(match[1], match[2])
-  }
-  const componentBySelector = new Map<string, string>()
-  const condition = new RegExp(`${config.attribute}\\s*===\\s*["']([^"']+)["']\\s*&&\\s*<(\\w+)`, "g")
-  for (const match of source.matchAll(condition)) componentBySelector.set(match[1], match[2])
+  const imports = readStaticDefaultImports(source)
+  const componentBySelector = readStaticJsxSelectorConditions(source, config.attribute)
   const importedPath = imports.get(componentBySelector.get(selector) ?? "")
-  if (!importedPath)
+  if (!importedPath?.endsWith(".mdx"))
     return { reason: `${component} selector "${selector}" has no static MDX target in ${astro.relative}` }
   const target = resolveProjectFile(path.resolve(path.dirname(astro.absolute), importedPath))
   return target
