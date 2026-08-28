@@ -153,6 +153,31 @@ Truncated: <Address address="0x1234567890abcdef" endLength={4} contractUrl="http
     expect(result).toContain("[0x1234...cdef](https://example.test/exact)")
   })
 
+  it("projects a block ClickToZoom as an exact Markdown image", async () => {
+    const result = await transformMarkdown(
+      `<ClickToZoom alt="Architecture diagram" src="/images/architecture.png" />`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe("![Architecture diagram](/images/architecture.png)\n")
+  })
+
+  it("projects an inline ClickToZoom with default alt text", async () => {
+    const result = await transformMarkdown(`Before <ClickToZoom src="/images/detail.png" /> after.`, "/fake/page.mdx")
+
+    expect(result).toBe("Before ![Image](/images/detail.png) after.\n")
+  })
+
+  it("projects ClickToZoom through the AST with a long repeated attribute value", async () => {
+    const repeated = " =".repeat(50_000)
+    const result = await transformMarkdown(
+      `<ClickToZoom data-value="${repeated}" src="/images/detail.png" alt="Detail" />`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe("![Detail](/images/detail.png)\n")
+  })
+
   it("projects Aside as a Markdown blockquote", async () => {
     const result = await transformMarkdown(
       `<Aside type="warning" title="Important">

@@ -260,9 +260,7 @@ async function findContentFile(cleanPath: string): Promise<string | null> {
 
 function buildFallbackMarkdownBody(body: string): string {
   return stripRuntimeMdxSyntax(body)
-    .replace(/<([A-Z][A-Za-z0-9]*)\b[^>]*\/>/g, "")
-    .replace(/<([A-Z][A-Za-z0-9]*)\b[^>]*>/g, "")
-    .replace(/<\/[A-Z][A-Za-z0-9]*>/g, "")
+    .replace(/<\/?[A-Z][^>]*>/g, "")
     .trim()
 }
 
