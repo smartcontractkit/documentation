@@ -153,6 +153,29 @@ Truncated: <Address address="0x1234567890abcdef" endLength={4} contractUrl="http
     expect(result).toContain("[0x1234...cdef](https://example.test/exact)")
   })
 
+  it("projects Aside as a Markdown blockquote", async () => {
+    const result = await transformMarkdown(
+      `<Aside type="warning" title="Important">
+Read the warning.
+</Aside>`,
+      "/fake/page.mdx"
+    )
+    expect(result).toContain("> **WARNING: Important**")
+    expect(result).toContain("> Read the warning.")
+  })
+
+  it("projects an Aside with a long repeated attribute value", async () => {
+    const repeated = "a".repeat(100_000)
+    const result = await transformMarkdown(
+      `<Aside type="note" title="${repeated}">
+Body.
+</Aside>`,
+      "/fake/page.mdx"
+    )
+    expect(result).toContain(`> **NOTE: ${repeated}**`)
+    expect(result).toContain("> Body.")
+  })
+
   it("projects Callout like Aside", async () => {
     const result = await transformMarkdown(
       `<Callout type="caution" title="Check this">

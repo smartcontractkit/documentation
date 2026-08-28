@@ -38,38 +38,6 @@ import fs from "fs"
 import path from "path"
 
 /**
- * Convert Aside components to markdown blockquotes
- * Handles multi-line Aside tags by converting them to blockquote format
- * Preserves Asides with nested JSX components (they'll be handled by AST or remain as-is)
- * @param content - Markdown content that may contain Aside components
- * @returns Content with simple Aside tags converted to blockquotes
- */
-function convertAsidesToBlockquotes(content: string): string {
-  // Match multi-line Aside components
-  const asideRegex = /<Aside\s+type="(\w+)"(?:\s+title="([^"]*)")?\s*>([\s\S]*?)<\/Aside>/g
-
-  return content.replace(asideRegex, (fullMatch, type, title, children) => {
-    // Check if the Aside contains other JSX components (like Tabs, CopyText, etc.)
-    const hasJSXComponents = /<[A-Z]\w+/.test(children)
-
-    if (hasJSXComponents) {
-      // Keep as-is - these complex nested structures need manual handling
-      // or will be dropped by the AST handlers
-      return fullMatch
-    }
-
-    // Create a blockquote directly in markdown format
-    // This avoids JSX parsing issues entirely
-    const cleanChildren = children.trim()
-    const asideType = type.toUpperCase()
-    const header = title ? `**${asideType}: ${title}**` : `**${asideType}**`
-
-    // Return as markdown blockquote
-    return `\n\n> ${header}\n>\n> ${cleanChildren}\n\n`
-  })
-}
-
-/**
  * Convert ClickToZoom components to markdown images
  * Handles self-closing ClickToZoom tags by converting to standard markdown image syntax
  * @param content - Markdown content that may contain ClickToZoom components
@@ -88,7 +56,7 @@ function convertClickToZoomToImages(content: string): string {
 
 /**
  * Preprocess CcipCommon components by inlining their content
- * This is essential because remarkMdx doesn't always parse self-closing JSX tags properly
+ * Inlined MDX components continue through the normal remark AST visitor
  * @param markdown - Raw markdown content
  * @returns Markdown with CcipCommon components replaced by their content
  */
@@ -121,10 +89,7 @@ function preprocessCcipCommon(markdown: string): string {
         // Strip import statements
         calloutContent = calloutContent.replace(/^import\s+.+$/gm, "").trim()
 
-        // Convert Aside components to blockquotes
-        calloutContent = convertAsidesToBlockquotes(calloutContent)
-
-        // Replace the CcipCommon tag with the processed content
+        // Replace the CcipCommon tag with the inlined content
         preprocessedMarkdown = preprocessedMarkdown.replace(fullMatch, "\n\n" + calloutContent + "\n\n")
       }
     }
@@ -147,17 +112,10 @@ export async function transformMarkdown(
 ): Promise<string> {
   const { targetLanguage } = config
 
-  // Preprocessing pipeline - apply transformations before AST parsing
-  // This handles components that remarkMdx struggles to parse (multi-line JSX)
-
-  // Step 1: Preprocess CcipCommon components (inline callout content)
+  // Inline CcipCommon content before AST parsing so embedded components reach the normal AST handlers.
   let preprocessedMarkdown = preprocessCcipCommon(markdown)
 
-  // Step 2: Convert Aside components to markdown blockquotes
-  // Applies to both main content and inlined CcipCommon content
-  preprocessedMarkdown = convertAsidesToBlockquotes(preprocessedMarkdown)
-
-  // Step 3: Convert ClickToZoom to markdown images
+  // Convert ClickToZoom to markdown images
   preprocessedMarkdown = convertClickToZoomToImages(preprocessedMarkdown)
 
   // Create unified processor with remark plugins
