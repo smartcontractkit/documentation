@@ -39,7 +39,11 @@ type CreResolution =
 export function normalizeMarkdownPath(pathParam: string | undefined): string | null {
   if (!pathParam) return null
 
-  const cleanPath = pathParam.replace(/^\/+/, "").replace(/\/+$/, "")
+  let start = 0
+  let end = pathParam.length
+  while (start < end && pathParam[start] === "/") start++
+  while (end > start && pathParam[end - 1] === "/") end--
+  const cleanPath = pathParam.slice(start, end)
 
   if (!cleanPath || /\.(?:md|mdx)$/i.test(cleanPath)) return null
 
