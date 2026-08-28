@@ -38,23 +38,6 @@ import fs from "fs"
 import path from "path"
 
 /**
- * Convert ClickToZoom components to markdown images
- * Handles self-closing ClickToZoom tags by converting to standard markdown image syntax
- * @param content - Markdown content that may contain ClickToZoom components
- * @returns Content with ClickToZoom tags converted to markdown images
- */
-function convertClickToZoomToImages(content: string): string {
-  // Match self-closing ClickToZoom tags with any attributes
-  // Captures src and alt, ignores other attributes like style
-  const clickToZoomRegex = /<ClickToZoom\s+[^>]*src="([^"]+)"[^>]*(?:alt="([^"]*)")?[^>]*\/>/g
-
-  return content.replace(clickToZoomRegex, (_, src, alt) => {
-    const altText = alt || "Image"
-    return `![${altText}](${src})`
-  })
-}
-
-/**
  * Preprocess CcipCommon components by inlining their content
  * Inlined MDX components continue through the normal remark AST visitor
  * @param markdown - Raw markdown content
@@ -113,10 +96,7 @@ export async function transformMarkdown(
   const { targetLanguage } = config
 
   // Inline CcipCommon content before AST parsing so embedded components reach the normal AST handlers.
-  let preprocessedMarkdown = preprocessCcipCommon(markdown)
-
-  // Convert ClickToZoom to markdown images
-  preprocessedMarkdown = convertClickToZoomToImages(preprocessedMarkdown)
+  const preprocessedMarkdown = preprocessCcipCommon(markdown)
 
   // Create unified processor with remark plugins
   const processor = unified()
@@ -156,7 +136,10 @@ export async function transformMarkdown(
         }
 
         // Handle ClickToZoom
-        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "ClickToZoom") {
+        if (
+          (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
+          (node as MdxJsxNode).name === "ClickToZoom"
+        ) {
           return handleClickToZoom(node as MdxJsxNode, parent, index, context)
         }
 

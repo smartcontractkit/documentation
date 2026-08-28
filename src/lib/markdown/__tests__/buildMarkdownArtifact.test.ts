@@ -91,6 +91,20 @@ describe("transformPageBodyToMarkdown", () => {
     })
   })
 
+  it("strips component tags in the fallback branch", async () => {
+    const result = await transformPageBodyToMarkdown(
+      `<Wrapper data-label="a = b">Visible</Wrapper>
+{`,
+      "/virtual/fallback-components.mdx"
+    )
+
+    expect(result).toEqual({
+      transformMode: "fallback",
+      markdown: `Visible
+{`,
+    })
+  })
+
   it("reports the deprecating feeds replacement branch", async () => {
     const result = await transformPageBodyToMarkdown("ignored", "/virtual/data-feeds/deprecating-feeds.mdx")
 
