@@ -20,6 +20,18 @@ import {
   handleClickToZoom,
   handleCodeSample,
   handleBilling,
+  handlePageTabs,
+  handleTabs,
+  handlePackageManagerTabs,
+  handleFragment,
+  handleAccordion,
+  handleAddress,
+  handleCallout,
+  handleAnyApiCallout,
+  handleFeedsCommonCallout,
+  handleResourcesCallout,
+  handleDataStreams,
+  handleSchemaFieldsTable,
   loadCcipCommonMapping,
 } from "./componentHandlers.js"
 import fs from "fs"
@@ -90,8 +102,15 @@ function preprocessCcipCommon(markdown: string): string {
     const fileName = calloutFileMap[calloutName]
 
     if (fileName) {
-      const calloutPath = path.resolve("src/features/ccip", fileName)
-      if (fs.existsSync(calloutPath)) {
+      let calloutPath: string | undefined
+      try {
+        const ccipRoot = fs.realpathSync(path.resolve("src/features/ccip"))
+        const candidate = fs.realpathSync(path.resolve(ccipRoot, fileName))
+        if (candidate === ccipRoot || candidate.startsWith(ccipRoot + path.sep)) calloutPath = candidate
+      } catch {
+        // Missing or escaping selector targets remain unexpanded and are dropped by the AST visitor.
+      }
+      if (calloutPath) {
         let calloutContent = fs.readFileSync(calloutPath, "utf-8")
 
         // Strip frontmatter if present
@@ -190,7 +209,64 @@ export async function transformMarkdown(
 
         // Handle Billing
         if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "Billing") {
-          return handleBilling(node as MdxJsxNode, parent, index, context)
+          return handleBilling(parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "PageTabs") {
+          return handlePageTabs(node as MdxJsxNode, parent, index)
+        }
+
+        if (
+          node.type === "mdxJsxFlowElement" &&
+          ((node as MdxJsxNode).name === "Tabs" || (node as MdxJsxNode).name === "TabsContent")
+        ) {
+          return handleTabs(node as MdxJsxNode, parent, index)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "PackageManagerTabs") {
+          return handlePackageManagerTabs(node as MdxJsxNode, parent, index)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "Accordion") {
+          return handleAccordion(node as MdxJsxNode, parent, index)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "Callout") {
+          return handleCallout(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "AnyApiCallout") {
+          return handleAnyApiCallout(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "FeedsCommonCallout") {
+          return handleFeedsCommonCallout(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "ResourcesCallout") {
+          return handleResourcesCallout(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "DataStreams") {
+          return handleDataStreams(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "SchemaFieldsTable") {
+          return handleSchemaFieldsTable(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (
+          (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
+          (node as MdxJsxNode).name === "Address"
+        ) {
+          return handleAddress(node as MdxJsxNode, parent, index)
+        }
+
+        if (
+          (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
+          (node as MdxJsxNode).name === "Fragment"
+        ) {
+          return handleFragment(node as MdxJsxNode, parent, index)
         }
 
         // Handle MDX JSX text elements
@@ -208,36 +284,36 @@ export async function transformMarkdown(
           }
         }
 
-        // Drop MDX/import/export nodes (except handled components)
+        // Drop MDX/import/export nodes except the explicitly projected component names above.
         if (
-          (node.type === "mdxJsxFlowElement" &&
+          ((node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
             (node as MdxJsxNode).name !== "Aside" &&
             (node as MdxJsxNode).name !== "CcipCommon" &&
             (node as MdxJsxNode).name !== "ClickToZoom" &&
             (node as MdxJsxNode).name !== "CodeSample" &&
-            (node as MdxJsxNode).name !== "Billing") ||
+            (node as MdxJsxNode).name !== "Billing" &&
+            (node as MdxJsxNode).name !== "PageTabs" &&
+            (node as MdxJsxNode).name !== "Tabs" &&
+            (node as MdxJsxNode).name !== "TabsContent" &&
+            (node as MdxJsxNode).name !== "PackageManagerTabs" &&
+            (node as MdxJsxNode).name !== "Fragment" &&
+            (node as MdxJsxNode).name !== "Accordion" &&
+            (node as MdxJsxNode).name !== "Address" &&
+            (node as MdxJsxNode).name !== "Callout" &&
+            (node as MdxJsxNode).name !== "AnyApiCallout" &&
+            (node as MdxJsxNode).name !== "FeedsCommonCallout" &&
+            (node as MdxJsxNode).name !== "ResourcesCallout" &&
+            (node as MdxJsxNode).name !== "DataStreams" &&
+            (node as MdxJsxNode).name !== "SchemaFieldsTable") ||
           node.type === "mdxjsEsm" ||
           node.type === "import" ||
-          node.type === "export"
+          node.type === "export" ||
+          node.type === "mdxFlowExpression" ||
+          node.type === "mdxTextExpression" ||
+          node.type === "html"
         ) {
           parent.children.splice(index, 1)
-          return
-        }
-
-        // Handle HTML nodes - drop them
-        if (node.type === "html") {
-          parent.children.splice(index, 1)
-          return
-        }
-
-        // Handle JSX comments - drop them
-        if (
-          (node.type === "mdxFlowExpression" || node.type === "mdxTextExpression") &&
-          typeof (node as { value?: string }).value === "string" &&
-          (node as { value?: string }).value?.trim().match(/^\/\*[\s\S]*?\*\/$/)
-        ) {
-          parent.children.splice(index, 1)
-          return
+          return index
         }
 
         // Replace images with their alt text

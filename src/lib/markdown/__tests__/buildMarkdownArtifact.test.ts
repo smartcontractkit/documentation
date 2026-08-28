@@ -1,0 +1,94 @@
+import { describe, expect, it } from "@jest/globals"
+import {
+  buildMarkdownArtifact,
+  normalizeMarkdownPath,
+  transformPageBodyToMarkdown,
+} from "@lib/markdown/buildMarkdownArtifact.js"
+
+describe("buildMarkdownArtifact", () => {
+  it.each([
+    ["cre/getting-started/cli-installation", "normal"],
+    ["cre-templates", "special"],
+    ["cre/reference/sdk/evm-client", "selector"],
+    ["data-streams/getting-started", "redirect"],
+  ])("classifies %s as %s", async (requestPath, routeKind) => {
+    const artifact = await buildMarkdownArtifact(requestPath)
+
+    expect(artifact).not.toBeNull()
+    expect(artifact?.requestPath).toBe(normalizeMarkdownPath(requestPath))
+    expect(artifact?.routeKind).toBe(routeKind)
+  })
+
+  it("rejects path escapes", async () => {
+    expect(normalizeMarkdownPath("../outside")).toBeNull()
+    await expect(buildMarkdownArtifact("../outside")).resolves.toBeNull()
+  })
+
+  it("accepts an existing extensionless production request path", async () => {
+    await expect(buildMarkdownArtifact("cre/getting-started/cli-installation")).resolves.toMatchObject({
+      requestPath: "cre/getting-started/cli-installation",
+      routeKind: "normal",
+    })
+  })
+
+  it.each([".md", ".md.md", ".mdx"])("rejects a leftover %s extension", async (extension) => {
+    await expect(buildMarkdownArtifact(`cre/getting-started/cli-installation${extension}`)).resolves.toBeNull()
+  })
+
+  it.each([
+    "cre/getting-started/cli-installation",
+    "cre/getting-started/cli-installation/macos-linux",
+    "cre/getting-started/cli-installation/windows",
+  ])("projects the ordered operating system selector for %s", async (requestPath) => {
+    const artifact = await buildMarkdownArtifact(requestPath)
+    const markdown = artifact?.markdown ?? ""
+    const macosLinux = "[macOS / Linux](/cre/getting-started/cli-installation/macos-linux)"
+    const windows = "[Windows](/cre/getting-started/cli-installation/windows)"
+
+    expect(markdown).toContain("## Select your operating system")
+    expect(markdown).toContain(macosLinux)
+    expect(markdown).toContain(windows)
+    expect(markdown.indexOf(macosLinux)).toBeLessThan(markdown.indexOf(windows))
+  })
+})
+
+describe("transformPageBodyToMarkdown", () => {
+  it("reports the normal transform branch", async () => {
+    const result = await transformPageBodyToMarkdown("# Kept", "/virtual/normal.mdx")
+
+    expect(result.transformMode).toBe("normal")
+    expect(result.markdown).toContain("# Kept")
+  })
+
+  it("reports the sanitized retry branch", async () => {
+    const body = `export async function load() {
+  return @
+}
+
+# Kept`
+    const result = await transformPageBodyToMarkdown(body, "/virtual/sanitized.mdx")
+
+    expect(result.transformMode).toBe("sanitized")
+    expect(result.markdown).toContain("# Kept")
+    expect(result.markdown).not.toContain("return @")
+  })
+
+  it("reports the fallback branch", async () => {
+    const body = `# Kept
+
+{`
+    const result = await transformPageBodyToMarkdown(body, "/virtual/fallback.mdx")
+
+    expect(result).toEqual({
+      transformMode: "fallback",
+      markdown: body,
+    })
+  })
+
+  it("reports the deprecating feeds replacement branch", async () => {
+    const result = await transformPageBodyToMarkdown("ignored", "/virtual/data-feeds/deprecating-feeds.mdx")
+
+    expect(result.transformMode).toBe("replacement")
+    expect(result.markdown).toContain("## Deprecated Feeds")
+  })
+})
