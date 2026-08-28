@@ -6607,7 +6607,7 @@ When the front contract reaches its expiration, the generic feeds cascade forwar
 A few properties of the roll are worth calling out explicitly:
 
 - **The roll is triggered by the front contract's expiration**, as defined by the listed expiration calendar for that specific instrument. Expiration conventions differ by instrument, so rolls for different instruments happen on different dates — there is no single "roll day" across all instruments.
-- **The switch happens right after the primary exchange's trading session closes** on the expiration date, not at a fixed clock time across all instruments. For example, CME-listed instruments typically close around 17:00 ET.
+- **The switch happens right after the primary exchange's trading session closes** on the expiration date, not at a fixed clock time across all instruments. For these commodities, that session close is typically around 17:00 ET.
 - **The roll is a re-mapping, not a price adjustment.** At the moment of the roll, the front feed switches from quoting the expiring contract to quoting what was previously the second contract. Because different contract months can trade at different prices, **expect a price discontinuity on the generic feed at each roll**. Feeds are not back-adjusted into a smooth continuous series — if your application needs a continuous series, construct it from the raw generic feeds on your end.
 - **Until expiration, the front feed continues to track the expiring contract**, even in its final days when liquidity has typically already migrated to the next contract. This is precisely why the second feed is exposed — so you can implement your own liquidity-based rolls ahead of expiry instead of holding the front contract to the end.
 
