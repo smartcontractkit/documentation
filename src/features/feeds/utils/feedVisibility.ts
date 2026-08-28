@@ -72,6 +72,11 @@ export function shouldHideAddress(feed: any, riskTier?: string | null): boolean 
   if (feed.docs?.productSubType === "calculatedPrice") return true
   const proxy: string | null | undefined = feed.proxyAddress
   if (proxy != null && CONTACT_EMAIL_PROXY_ADDRESSES.has(proxy.toLowerCase())) return true
+  // Feeds that have hit the shutdown deviation threshold hide their address and
+  // show the contact email instead, preventing new usage onboarding during the
+  // shutdown process.
+  const threshold = feed.threshold ?? feed.deviationThreshold
+  if (threshold != null && Number(threshold) <= 0.0001) return true
   return normalizeCategoryKey(riskTier) === "veryhigh"
 }
 

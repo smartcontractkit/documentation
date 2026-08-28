@@ -1,0 +1,158 @@
+---
+section: dataFeeds
+title: "Key Terms and Concepts"
+date: Last Modified
+metadata:
+  title: "Chainlink Data Feeds: Key Terms and Concepts"
+  description: "Understand the columns and fields shown in the Chainlink Data Feeds address tables, including Risk, Pair, Deviation, Heartbeat, Dec, Address, Asset name, Asset type, and Market hours."
+  keywords:
+    [
+      "Chainlink",
+      "Data Feeds",
+      "Key Terms",
+      "Glossary",
+      "Risk",
+      "Pair",
+      "Deviation",
+      "Heartbeat",
+      "Decimals",
+      "Decimal Precision",
+      "Address",
+      "Asset name",
+      "Asset type",
+      "Market hours",
+    ]
+---
+
+This page explains the columns and fields shown in the [Data Feeds address tables](/data-feeds/price-feeds/addresses). Use it as a reference when reading the tables or integrating a feed.
+
+## Table columns
+
+Each row in a Data Feeds address table represents a single feed. The columns describe how the feed reports data and how to read it.
+
+### Risk
+
+The market pricing risk category assigned to the feed. Feeds are categorized as 🟢 Low, 🟡 Medium, 🟠 High, or 🔴 Very High market pricing risk based on how reliably the asset can be priced. The risk category helps you evaluate whether a feed is appropriate for your use case.
+
+To learn how each risk category is defined and how to mitigate risk, see [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds#data-feed-categories).
+
+### Pair
+
+The asset pair that the feed reports, such as `BTC / USD`. The pair identifies the base asset and the quote asset used to express the price.
+
+### Deviation
+
+The deviation threshold that triggers a new onchain update. When the reported price moves by at least this percentage from the last reported value, the oracle network publishes a new answer. For example, a deviation of `0.5%` means the feed updates when the price changes by 0.5% or more.
+
+### Heartbeat
+
+The maximum time between onchain updates, expressed in seconds. The oracle network publishes a new answer at least this often, even if the price has not moved enough to trigger the [deviation](#deviation) threshold. For example, a heartbeat of `3600s` means the feed updates at least once per hour.
+
+### Dec
+
+The number of decimal places used to represent the feed's answer. Because answers are stored as integers, you must know the feed's decimal precision to interpret its value. See [Decimal precision](#decimal-precision) below.
+
+### Address and info
+
+The onchain address of the feed's [proxy contract](#proxy-contract), which points to the underlying [aggregator contract](#aggregator-contract). Click the address to view it in a blockchain explorer, or use the copy button to copy it. This column also expands to show additional details about the feed, described in [More info fields](#more-info-fields) below.
+
+## More info fields
+
+Expanding a row in the address table reveals additional details about the feed.
+
+### Asset name
+
+The name of the underlying asset that the feed reports, such as `1inch`. This is the base asset in the [pair](#pair).
+
+### Asset type
+
+The category of the underlying asset, such as `Crypto`, `FX`, or `Precious Metals`. The asset type helps you understand the market the feed tracks and which [decimal precision](#decimal-precision) standard applies.
+
+### Market hours
+
+The hours during which the underlying market is open and trading. Some markets, such as precious metals and forex, close on weekends and holidays. To learn how market hours affect feed behavior, see [Market hours](/data-feeds/selecting-data-feeds#market-hours).
+
+### Asset class
+
+A broader classification of the asset, such as `Crypto`, `Equities`, or `Macroeconomics`. This is similar to [asset type](#asset-type) but can include additional sub-classifications.
+
+### Full name
+
+The full product name of the feed, when available. This is a more descriptive label than the [pair](#pair).
+
+### Trading hours
+
+The specific trading session hours for equity feeds, such as `Regular Hours` (9:30am–4:00pm Mon–Fri ET). This is more granular than [market hours](#market-hours) and applies mainly to tokenized equity feeds.
+
+### Decimals
+
+The number of decimal places used to represent the feed's answer. This is the same value shown in the [Dec](#dec) column.
+
+### Bounded (Upper)
+
+A note shown when a feed has a maximum reportable price. This applies to certain stablecoin feeds that are capped at an upper price bound. To learn more, see [Bounded Market Price Feeds](/data-feeds/selecting-data-feeds#bounded-market-price-feeds).
+
+### Deprecating
+
+A note shown when a feed is scheduled for deprecation, including its shutdown date. To learn more, see [Deprecating Feeds](/data-feeds/deprecating-feeds).
+
+## Decimal precision
+
+Chainlink Data Feeds use the following decimal precision standards:
+
+| Asset                  | Decimal Standard |
+| ---------------------- | ---------------- |
+| Crypto - USD (Non-Eth) | 8                |
+| Crypto - ETH           | 18               |
+| FX                     | 8                |
+| Precious Metals        | 8                |
+| Commodities/Energy     | 8                |
+| All others             | Feed specific    |
+
+Decimal precision standards are subject to reevaluation. Decimal precision is not changed on live feeds; if an asset pricing falls below a certain acceptable decimal precision, protocols can talk to their Chainlink representatives about spinning up a new feed to accommodate.
+
+To get the decimal precision of a given feed, use the `decimals` function as described in the [Getting Started Guide](/data-feeds/getting-started#compile-deploy-and-run-the-contract) and verify with the contract onchain or via [the Address pages](/data-feeds/price-feeds/addresses?showDetails=true#overview).
+
+For example, when you call `getChainlinkDataFeedLatestAnswer` to retrieve the latest answer from the aggregator contract, the returned value is an integer without a decimal point. You can find the correct number of decimal places for this answer on the [Price Feed addresses](/data-feeds/price-feeds/addresses) page by clicking the **Show more details** checkbox. The answer on the BTC / USD feed uses 8 decimal places, so an answer of `3030914000000` indicates a BTC / USD price of `30309.14`. Each feed uses a different number of decimal places for answers.
+
+## Related concepts
+
+### Answer
+
+The numeric value that a data feed publishes onchain, such as an asset price. Answers are stored as integers in fixed-point format, so they do not include a decimal point. To interpret an answer correctly, you need to know the feed's [decimal precision](#decimal-precision).
+
+### Aggregator contract
+
+An onchain contract that receives periodic data updates from the oracle network and stores the aggregated data so that consumers can retrieve it and act on it within the same transaction. Aggregators are the underlying contracts that [proxy contracts](#proxy-contract) point to. For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/data-feeds/api-reference/#accesscontrolledoffchainaggregator).
+
+### Consumer
+
+An onchain or offchain application that uses Data Feeds. Consumer contracts use the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol) to call functions on the [proxy contract](#proxy-contract) and retrieve information from the [aggregator contract](#aggregator-contract). For a complete list of functions available in the `AggregatorV3Interface`, see the [Data Feeds API Reference](/data-feeds/api-reference/#aggregatorv3interface).
+
+### Data Feed
+
+A decentralized oracle network that aggregates data from many independent sources and publishes it onchain so that smart contracts can access real-world data such as asset prices, reserve balances, and L2 sequencer health. See the [Data Feeds Overview](/data-feeds) to learn more.
+
+### Decentralized Oracle Network (DON)
+
+A decentralized, peer-to-peer network of independent node operators that work together to fetch, validate, and deliver data to a data feed. Data Feeds aggregate many data sources and publish them onchain using a combination of the [Decentralized Data Model](/architecture-overview/architecture-decentralized-model?parent=dataFeeds) and [Offchain Reporting](/architecture-overview/off-chain-reporting?parent=dataFeeds).
+
+### Feed type
+
+The category of data that a feed provides. Chainlink Data Feeds include [Price Feeds](/data-feeds/price-feeds), [SmartData Feeds](/data-feeds/smartdata), [Smart Value Recapture (SVR) Feeds](/data-feeds/svr-feeds), [Rate and Volatility Feeds](/data-feeds/rates-feeds), [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds), and [Self-Managed Feeds](/data-feeds/self-managed-feeds). See [Feed Types](/data-feeds/feed-types) for an overview.
+
+### Latest round data
+
+The most recent data published by a feed, retrieved using the `latestRoundData` function. This function returns five values representing information about the latest price data, including the answer, the round ID, and timestamps. See the [Data Feeds API Reference](/data-feeds/api-reference) for more details.
+
+### Price Feed
+
+A type of data feed that provides aggregated, decentralized asset prices with cryptographic integrity, commonly used for collateral, lending, and derivatives. See [Price Feeds](/data-feeds/price-feeds) to learn more.
+
+### Proxy contract
+
+An onchain proxy that points to the [aggregator contract](#aggregator-contract) for a particular data feed. Using proxies enables the underlying aggregator to be upgraded without any service interruption to consuming contracts. Proxy contracts can vary from one data feed to another, but the [`EACAggregatorProxy.sol` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.6/EACAggregatorProxy.sol) on GitHub is a common example.
+
+### Round
+
+A single update cycle in which the oracle network publishes a new answer to a feed. Each round has a unique round ID, and historical answers can be retrieved by round ID. See [Historical Price Data](/data-feeds/historical-data) to learn more.

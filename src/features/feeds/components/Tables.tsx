@@ -268,7 +268,70 @@ const getRiskTooltipPosition = (anchor: HTMLElement) => {
   }
 }
 
-const RiskTHeadCell = () => <th className={clsx(tableStyles.heading, tableStyles.riskCol)}>Risk</th>
+const RiskTHeadCell = () => (
+  <th className={clsx(tableStyles.heading, tableStyles.riskCol)}>
+    <HeaderHelpLink
+      anchor="risk"
+      label="Risk"
+      hint="The market pricing risk category assigned to the feed."
+    />
+  </th>
+)
+
+const KEY_TERMS_URL = "/data-feeds/key-terms"
+
+const HeaderHelpLink = ({ anchor, label, hint }: { anchor: string; label: string; hint?: string }) => {
+  const [tooltipPos, setTooltipPos] = useState<ReturnType<typeof getRiskTooltipPosition> | null>(null)
+
+  useEffect(() => {
+    if (!tooltipPos || typeof document === "undefined") return
+
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+
+    render(
+      <div
+        className={tableStyles.riskTooltipBubble}
+        style={{
+          top: tooltipPos.showAbove ? undefined : `${tooltipPos.top}px`,
+          bottom: tooltipPos.showAbove ? `${window.innerHeight - tooltipPos.anchorTop + 6}px` : undefined,
+          left: `${tooltipPos.left}px`,
+          maxWidth: `${tooltipPos.maxWidth}px`,
+        }}
+        role="tooltip"
+      >
+        <p className={tableStyles.riskTooltipText}>{hint ?? label}</p>
+        <p className={tableStyles.riskTooltipHint}>Click to learn more on the Key Terms page.</p>
+      </div>,
+      container
+    )
+
+    return () => {
+      render(null, container)
+      container.remove()
+    }
+  }, [tooltipPos, hint, label])
+
+  const showTooltip = (event: Event) => {
+    setTooltipPos(getRiskTooltipPosition(event.currentTarget as HTMLElement))
+  }
+
+  const hideTooltip = () => setTooltipPos(null)
+
+  return (
+    <a
+      href={`${KEY_TERMS_URL}#${anchor}`}
+      className={tableStyles.headerHelpLink}
+      aria-label={label}
+      onMouseEnter={showTooltip}
+      onMouseLeave={hideTooltip}
+      onFocus={showTooltip}
+      onBlur={hideTooltip}
+    >
+      {label}
+    </a>
+  )
+}
 
 const getFeedTableColSpan = (isStreams: boolean, showRiskColumn: boolean) =>
   (isStreams ? 2 : 5) + (showRiskColumn ? 1 : 0)
@@ -477,11 +540,37 @@ const DefaultTHead = ({
     <thead>
       <tr>
         {showRiskColumn && <RiskTHeadCell />}
-        <th className={tableStyles.heading}>{isUSGovernmentMacroeconomicData ? "Feed" : "Pair"}</th>
-        <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Deviation</th>
-        <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Heartbeat</th>
-        <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Dec</th>
-        <th>{isSvr ? "Aggregator and info" : isAptosNetwork ? "Feed ID and info" : "Address and info"}</th>
+        <th className={tableStyles.heading}>
+          {isUSGovernmentMacroeconomicData ? (
+            <HeaderHelpLink anchor="pair" label="Feed" hint="The asset pair that the feed reports." />
+          ) : (
+            <HeaderHelpLink anchor="pair" label="Pair" hint="The asset pair that the feed reports." />
+          )}
+        </th>
+        <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+          <HeaderHelpLink
+            anchor="deviation"
+            label="Deviation"
+            hint="The deviation threshold that triggers a new onchain update."
+          />
+        </th>
+        <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+          <HeaderHelpLink
+            anchor="heartbeat"
+            label="Heartbeat"
+            hint="The maximum time between onchain updates."
+          />
+        </th>
+        <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+          <HeaderHelpLink anchor="dec" label="Dec" hint="The number of decimal places used to represent the answer." />
+        </th>
+        <th>
+          <HeaderHelpLink
+            anchor="address-and-info"
+            label={isSvr ? "Aggregator and info" : isAptosNetwork ? "Feed ID and info" : "Address and info"}
+            hint="The onchain address of the feed's proxy contract."
+          />
+        </th>
       </tr>
     </thead>
   )
@@ -780,11 +869,33 @@ const SmartDataTHead = ({
   <thead>
     <tr>
       {showRiskColumn && <RiskTHeadCell />}
-      <th className={tableStyles.heading}>SmartData Feed</th>
-      <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Deviation</th>
-      <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Heartbeat</th>
-      <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Dec</th>
-      <th>Address and Info</th>
+      <th className={tableStyles.heading}>
+        <HeaderHelpLink anchor="pair" label="SmartData Feed" hint="The asset pair that the feed reports." />
+      </th>
+      <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+        <HeaderHelpLink
+          anchor="deviation"
+          label="Deviation"
+          hint="The deviation threshold that triggers a new onchain update."
+        />
+      </th>
+      <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+        <HeaderHelpLink
+          anchor="heartbeat"
+          label="Heartbeat"
+          hint="The maximum time between onchain updates."
+        />
+      </th>
+      <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+        <HeaderHelpLink anchor="dec" label="Dec" hint="The number of decimal places used to represent the answer." />
+      </th>
+      <th>
+        <HeaderHelpLink
+          anchor="address-and-info"
+          label="Address and Info"
+          hint="The onchain address of the feed's proxy contract."
+        />
+      </th>
     </tr>
   </thead>
 )
