@@ -6546,6 +6546,20 @@ Futures streams use the v14 schema.
 | `lastSeenTimestampNs` | Timestamp of the last update received from the data provider                                                     |
 | `marketStatus`        | Market status indicator                                                                                          |
 | `contract_month`      | Standard futures month code (F=Jan, G=Feb, H=Mar, J=Apr, K=May, M=Jun, N=Jul, Q=Aug, U=Sep, V=Oct, X=Nov, Z=Dec) |
+| `last_trading_day`    | The final day the current contract trades                                                                        |
+
+### Continuous roll price fields
+
+In addition to the raw generic feed prices above — which switch entirely to the next contract at the first notice date — Chainlink also publishes continuous price series built using alternative rolling methodologies, for integrators who want a smoothed price instead of a hard cutover:
+
+| Field                   | Description                                                                                                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `price_notice_roll`     | Equivalent to the generic front feed price: switches entirely to the next contract at the first notice date                                                         |
+| `price_goldman_roll`    | Uses the Goldman Roll (GSCI methodology): shifts 20% of the position to the next contract each business day, over business days 5–9 of the month preceding delivery |
+| `price_continuous_roll` | Smooths the transition evenly (1/N per business day) across the entire contract cycle, rather than a fixed window                                                   |
+| `first_notice_date`     | Date on which `price_notice_roll` switches to the next contract                                                                                                     |
+
+Chainlink also plans to publish the current business day count within the active roll window, so integrators can implement the Goldman Roll or Continuous Roll methodology themselves. Behavior on non-trading days (holding the last value versus resetting to zero) is still being finalized.
 
 ## Coverage
 
@@ -6556,6 +6570,7 @@ Futures streams are currently available for the following commodities. Additiona
 | Gold        | Front, second, and third feeds |
 | Silver      | Front, second, and third feeds |
 | US Oil      | Front, second, and third feeds |
+| Brent       | Front, second, and third feeds |
 | Natural Gas | Front, second, and third feeds |
 
 ## Naming and price representation
@@ -6592,6 +6607,7 @@ When the front contract reaches its expiration, the generic feeds cascade forwar
 A few properties of the roll are worth calling out explicitly:
 
 - **The roll is triggered by the front contract's expiration**, as defined by the listed expiration calendar for that specific instrument. Expiration conventions differ by instrument, so rolls for different instruments happen on different dates — there is no single "roll day" across all instruments.
+- **The switch happens right after the primary exchange's trading session closes** on the expiration date, not at a fixed clock time across all instruments. For example, CME-listed instruments typically close around 17:00 ET.
 - **The roll is a re-mapping, not a price adjustment.** At the moment of the roll, the front feed switches from quoting the expiring contract to quoting what was previously the second contract. Because different contract months can trade at different prices, **expect a price discontinuity on the generic feed at each roll**. Feeds are not back-adjusted into a smooth continuous series — if your application needs a continuous series, construct it from the raw generic feeds on your end.
 - **Until expiration, the front feed continues to track the expiring contract**, even in its final days when liquidity has typically already migrated to the next contract. This is precisely why the second feed is exposed — so you can implement your own liquidity-based rolls ahead of expiry instead of holding the front contract to the end.
 
@@ -6599,7 +6615,7 @@ A few properties of the roll are worth calling out explicitly:
 
 The front feed does not necessarily track the nearest calendar month — it tracks the nearest unexpired eligible contract, whatever month that happens to be. Each instrument has its own set of listed contract months, and for several instruments, the actively traded contracts are only a subset of what is listed:
 
-- **Energy** (US Oil, Natural Gas): every calendar month is listed, though liquidity is generally concentrated in nearer maturities. The generic feeds walk the full monthly strip regardless, so the front, second, and third feeds track three **consecutive** calendar months.
+- **Energy** (US Oil, Brent, Natural Gas): every calendar month is listed, though liquidity is generally concentrated in nearer maturities. The generic feeds walk the full monthly strip regardless, so the front, second, and third feeds track three **consecutive** calendar months.
 - **Precious metals** (Gold, Silver): many calendar months are listed, but liquidity concentrates in a benchmark cycle. The generic feeds follow the benchmark cycle only and skip non-benchmark months, even though those contracts exist and trade.
 
 | Commodity | Benchmark months             |
