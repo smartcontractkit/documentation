@@ -93,7 +93,7 @@ describe("transformPageBodyToMarkdown", () => {
 
   it("strips component tags in the fallback branch", async () => {
     const result = await transformPageBodyToMarkdown(
-      `<Wrapper data-label="a = b">Visible</Wrapper>
+      `<Wrapper data-label="a = b"><Callout />Visible</Wrapper>
 {`,
       "/virtual/fallback-components.mdx"
     )
@@ -102,6 +102,17 @@ describe("transformPageBodyToMarkdown", () => {
       transformMode: "fallback",
       markdown: `Visible
 {`,
+    })
+  })
+
+  it("preserves a long unterminated repeated component prefix in the fallback branch", async () => {
+    const body = `${"<A".repeat(10_000)}
+{`
+    const result = await transformPageBodyToMarkdown(body, "/virtual/fallback-malformed-components.mdx")
+
+    expect(result).toEqual({
+      transformMode: "fallback",
+      markdown: body,
     })
   })
 
