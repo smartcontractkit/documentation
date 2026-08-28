@@ -13,66 +13,7 @@ whatsnext:
   }
 ---
 
-import { Aside, ClickToZoom, CopyText } from "@components"
-import { CHAINS } from "@features/data/chains"
-import { isSharedSVR, isAaveSVR, isNewSharedSVR } from "~/features/feeds/utils/svrDetection.ts"
-
-export async function getFeeds() {
-  const ethereumMainnet = CHAINS.find((chain) => chain.page === "ethereum")?.networks.find(
-    (network) => network.networkType === "mainnet"
-  )
-
-const rddUrl = ethereumMainnet?.rddUrl
-
-if (!rddUrl) {
-return []
-}
-
-try {
-const response = await fetch(rddUrl)
-const data = await response.json()
-
-    // Find all feeds that have SVR variants and are not hidden
-    const svrFeeds = data.filter(
-      (feed) => feed.secondaryProxyAddress && !feed.docs?.hidden
-    )
-
-    // Group feeds by their base name (e.g., "BTC/USD", "ETH/USD")
-    const feedGroups = {}
-
-    svrFeeds.forEach(feed => {
-      const baseName = feed.name.replace(" / ", "/")
-
-      if (!feedGroups[baseName]) {
-        feedGroups[baseName] = {
-          name: baseName,
-          aaveAddress: null,
-          svrAddress: null,
-          svrBackupAddress: null,
-        }
-      }
-
-      if (isAaveSVR(feed)) {
-        feedGroups[baseName].aaveAddress = feed.contractAddress
-      } else if (isNewSharedSVR(feed)) {
-        feedGroups[baseName].svrAddress = feed.contractAddress
-      } else if (isSharedSVR(feed)) {
-        feedGroups[baseName].svrBackupAddress = feed.contractAddress
-      }
-    })
-
-    // Convert to array and sort
-    const combinedFeeds = Object.values(feedGroups)
-      .sort((a, b) => a.name.localeCompare(b.name))
-
-    return combinedFeeds
-
-} catch (error) {
-return []
-}
-}
-
-export const feeds = await getFeeds()
+import { Aside, ClickToZoom } from "@components"
 
 <Aside type="note" title="SVR integrated with Titan OFA">
   <p>
@@ -187,7 +128,7 @@ Chainlink SVR is activated by default for certain Chainlink Data Feeds on certai
 
 Integrators should expect zero service disruption during activation, and no action is needed on their part.
 
-On these networks, SVR feeds are listed as **SVR Proxy 2** on the [Feed Addresses](/data-feeds/price-feeds/addresses) page and on [data.chain.link](https://data.chain.link/). SVR Proxy and SVR Proxy 2 are functionally identical.
+On these networks, SVR feeds have an **SVR** label on the [Feed Addresses](/data-feeds/price-feeds/addresses?network=base&showSvr=true) page and on [data.chain.link](https://data.chain.link/). Previously deployed SVR feeds remain available and function as expected, and can be identified with the **SVR-Backup** label.
 
 For any questions, contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com). Protocols can also opt out at any time by reading from the "Standard" proxy that complements every SVR proxy for the relevant feed.
 
