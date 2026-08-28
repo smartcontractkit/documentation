@@ -52,6 +52,170 @@ contract Test {
     expect(result).toContain("Col1")
     expect(result).toContain("Col2")
   })
+
+  it("projects PageTabs in source order with grouped labels and first URLs", async () => {
+    const result = await transformMarkdown(
+      `<PageTabs
+  headerTitle="Select your operating system"
+  pages={[
+    [
+      { name: "macOS", url: "/install/macos" },
+      { name: "Linux", url: "/install/linux" },
+    ],
+    { name: "Windows", url: "/install/windows" },
+  ]}
+/>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toContain("## Select your operating system")
+    expect(result).toContain("[macOS / Linux](/install/macos)")
+    expect(result).not.toContain("/install/linux")
+    expect(result.indexOf("[macOS / Linux]")).toBeLessThan(result.indexOf("[Windows]"))
+
+    const withoutHeader = await transformMarkdown(
+      `<PageTabs showHeader={false} pages={[{ name: "Only", url: "/only" }]} />`,
+      "/fake/page.mdx"
+    )
+    expect(withoutHeader).not.toContain("## Guide Versions")
+    expect(withoutHeader).toContain("[Only](/only)")
+  })
+
+  it("pairs Tabs and TabsContent labels with matching panels", async () => {
+    for (const component of ["Tabs", "TabsContent"]) {
+      const result = await transformMarkdown(
+        `<${component}>
+  <Fragment slot="tab.first">First</Fragment>
+  <Fragment slot="tab.second">Second</Fragment>
+  <Fragment slot="panel.second">Second panel</Fragment>
+  <Fragment slot="panel.first">First panel</Fragment>
+</${component}>`,
+        "/fake/page.mdx"
+      )
+
+      expect(result.indexOf("### First")).toBeLessThan(result.indexOf("First panel"))
+      expect(result.indexOf("First panel")).toBeLessThan(result.indexOf("### Second"))
+      expect(result.indexOf("### Second")).toBeLessThan(result.indexOf("Second panel"))
+    }
+  })
+
+  it("projects PackageManagerTabs as npm then yarn even when yarn is first", async () => {
+    const result = await transformMarkdown(
+      `<PackageManagerTabs>
+  <Fragment slot="yarn">yarn add example</Fragment>
+  <Fragment slot="npm">npm install example</Fragment>
+</PackageManagerTabs>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result.indexOf("### npm")).toBeLessThan(result.indexOf("npm install example"))
+    expect(result.indexOf("npm install example")).toBeLessThan(result.indexOf("### yarn"))
+    expect(result.indexOf("### yarn")).toBeLessThan(result.indexOf("yarn add example"))
+  })
+
+  it("unwraps Fragment content", async () => {
+    const result = await transformMarkdown(`<Fragment>Visible **content**</Fragment>`, "/fake/page.mdx")
+    expect(result).toContain("Visible **content**")
+    expect(result).not.toContain("Fragment")
+  })
+
+  it("projects Accordion number, title, and body", async () => {
+    const result = await transformMarkdown(
+      `<Accordion title="Deploy the contract" number={2}>
+Body instructions.
+</Accordion>`,
+      "/fake/page.mdx"
+    )
+    expect(result).toContain("### 2. Deploy the contract")
+    expect(result).toContain("Body instructions.")
+  })
+
+  it("uses an Accordion title slot instead of the title prop", async () => {
+    const withTitleSlot = await transformMarkdown(
+      `<Accordion title="Ignored prop title" number={3}>
+  <Fragment slot="title">Review the deployment</Fragment>
+Body remains visible.
+</Accordion>`,
+      "/fake/page.mdx"
+    )
+    expect(withTitleSlot).toContain("### 3. Review the deployment")
+    expect(withTitleSlot).not.toContain("Ignored prop title")
+    expect(withTitleSlot).toContain("Body remains visible.")
+  })
+
+  it("projects Address with exact URLs and static truncation", async () => {
+    const result = await transformMarkdown(
+      `Exact: <Address address="0x1234567890abcdef" contractUrl="https://example.test/address/0x1234567890abcdef?view=code" />
+Truncated: <Address address="0x1234567890abcdef" endLength={4} contractUrl="https://example.test/exact" />`,
+      "/fake/page.mdx"
+    )
+    expect(result).toContain("[0x1234567890abcdef](https://example.test/address/0x1234567890abcdef?view=code)")
+    expect(result).toContain("[0x1234...cdef](https://example.test/exact)")
+  })
+
+  it("projects Callout like Aside", async () => {
+    const result = await transformMarkdown(
+      `<Callout type="caution" title="Check this">
+Read the warning.
+</Callout>`,
+      "/fake/page.mdx"
+    )
+    expect(result).toContain("> **CAUTION: Check this**")
+    expect(result).toContain("> Read the warning.")
+  })
+
+  it("projects SchemaFieldsTable from report schema definitions", async () => {
+    const result = await transformMarkdown(`<SchemaFieldsTable schema="v2" />`, "/fake/page.mdx")
+    expect(result).toContain("| Field")
+    expect(result).toContain("`feedId`")
+    expect(result).toContain("`price`")
+    expect(result).toContain("Time-weighted average price")
+  })
+
+  it("projects every static CodeHighlightBlockMulti language when no target is set", async () => {
+    const result = await transformMarkdown(
+      `<CodeHighlightBlockMulti
+  languages={{
+    ts: { code: "const answer = 42" },
+    go: { code: "package main" },
+  }}
+/>`,
+      "/fake/page.mdx"
+    )
+    expect(result).toContain("```ts")
+    expect(result).toContain("const answer = 42")
+    expect(result).toContain("```go")
+    expect(result).toContain("package main")
+    expect(result.indexOf("```ts")).toBeLessThan(result.indexOf("```go"))
+
+    const selected = await transformMarkdown(
+      `<CodeHighlightBlockMulti languages={{ ts: { code: "ts only" }, go: { code: "go only" } }} />`,
+      "/fake/page.mdx",
+      { targetLanguage: "go" }
+    )
+    expect(selected).not.toContain("```ts")
+    expect(selected).not.toContain("ts only")
+    expect(selected).toContain("```go")
+    expect(selected).toContain("go only")
+  })
+
+  it("removes residual MDX, HTML, ESM, and nonliteral projections", async () => {
+    const result = await transformMarkdown(
+      `import Unknown from "./Unknown"
+
+Before <Unknown>hidden JSX</Unknown> after.
+<span>hidden HTML</span>
+{dynamicValue}
+<PageTabs pages={dynamicPages} />`,
+      "/fake/page.mdx"
+    )
+    expect(result).toContain("Before")
+    expect(result).toContain("after.")
+    expect(result).not.toMatch(/<[/A-Za-z]/)
+    expect(result).not.toContain("import Unknown")
+    expect(result).not.toContain("{dynamicValue}")
+    expect(result).not.toContain("dynamicPages")
+  })
 })
 
 describe("extractFrontmatter", () => {
