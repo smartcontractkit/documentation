@@ -24,6 +24,12 @@ describe("buildMarkdownArtifact", () => {
     await expect(buildMarkdownArtifact("../outside")).resolves.toBeNull()
   })
 
+  it("trims long leading and trailing slash runs", () => {
+    const slashes = "/".repeat(100_000)
+
+    expect(normalizeMarkdownPath(`${slashes}cre/getting-started${slashes}`)).toBe("cre/getting-started")
+  })
+
   it("accepts an existing extensionless production request path", async () => {
     await expect(buildMarkdownArtifact("cre/getting-started/cli-installation")).resolves.toMatchObject({
       requestPath: "cre/getting-started/cli-installation",
