@@ -4,6 +4,8 @@ date: Last Modified
 title: "Common Scenarios"
 ---
 
+import { Aside } from "@components"
+
 This page provides worked configuration scenarios for common rate limit use cases. These examples illustrate how capacity and refill values are calculated and applied for different token types and operational goals.
 
 All scenarios assume:
@@ -74,15 +76,39 @@ Use this pattern during incidents, investigations, or maintenance when transfers
 
 ### Configuration pattern
 
-To lock down a lane:
+The correct values depend on the deployed token pool version. Call `typeAndVersion()` on each pool before applying
+either pattern.
 
-- enable the rate limit
-- set capacity to `1`
-- set refill rate to `1`
+On pools reporting `1.6.1` or later (including development stamps such as `1.6.x-dev`), pause the lane by keeping the
+rate limit enabled and setting both values to zero:
 
-Apply this configuration to **both inbound and outbound** limits for the lane.
+- set `isEnabled` to `true`
+- set `capacity` to `0`
+- set `rate` to `0`
 
-This allows only a negligible transfer before capacity is exhausted, causing subsequent transfers to fail.
+This blocks all transfers in that direction until you restore normal values.
+
+On pools reporting versions before `1.6.1` (version strings `1.5.1` or lower — a pool built from the 1.6.0 contracts
+release reports `1.5.1`), an enabled bucket is rejected when `rate >= capacity` or when `rate == 0`, so a full stop is
+not possible. Use the smallest accepted configuration:
+
+- set `isEnabled` to `true`
+- set `capacity` to `2`
+- set `rate` to `1`
+
+This allows only a negligible trickle before capacity is exhausted, causing subsequent transfers to fail. The trickle
+that remains possible can be material for tokens with few decimals.
+
+Apply the configuration to **both inbound and outbound** limits for the lane.
+
+<Aside type="caution">
+
+- Keep `isEnabled: true` when pausing. The same zeros with `isEnabled: false` turn rate limiting off entirely — the
+  flag decides what the zeros mean (see the removing rate limits scenario below).
+- On pools reporting `1.6.1` or later, do not set `rate: 0` with a non-zero capacity: validation accepts it, but once
+  the bucket depletes, transfers fail with an arithmetic panic instead of a clean rate-limit error.
+
+</Aside>
 
 ## Scenario: removing rate limits
 
@@ -101,6 +127,9 @@ To remove rate limits:
 - set `rate` to `0`
 
 Apply this configuration to both inbound and outbound limits.
+
+On pools reporting `1.6.1` or later, the same zeros with `isEnabled: true` pause the lane instead — the flag decides
+what the zeros mean.
 
 ## Important notes
 

@@ -4,6 +4,8 @@ date: Last Modified
 title: "Emergency Actions (Incident Response Only)"
 ---
 
+import { Aside } from "@components"
+
 This page describes emergency actions that can be taken to **contain or halt cross-chain transfers on a specific CCIP lane** using rate limit configuration.
 
 These actions are intended for **incident response, maintenance, or risk containment** scenarios. They should not be used for routine configuration.
@@ -20,32 +22,67 @@ Emergency actions are scoped to a **specific token pool and lane**. They do not 
 
 ## Locking down a lane with minimal values
 
-To effectively stop bridging activity on a lane, you can configure rate limits with **very small capacity and refill values**.
+To stop bridging activity on a lane, configure rate limits with the smallest values your deployed pool version accepts.
 
-Because rate limits cannot be set to zero while enabled, the practical approach is to set:
+<Aside type="caution" title="Confirm your deployed TokenPool version">
 
-- **capacity** to the smallest transferable unit (for example, `1`)
-- **rate** to `1`
+Rate limit validation changed between TokenPool releases. Call `typeAndVersion()` on each deployed pool before you apply
+any configuration described on this page.
 
-This configuration allows only a negligible transfer before the bucket is depleted, causing subsequent transfers to fail.
+- **Pools reporting 1.6.1 or later** (including development stamps such as `1.6.x-dev`) — an enabled bucket is rejected
+  only when `rate > capacity`, so an enabled `capacity: 0`, `rate: 0` is accepted and pauses the lane.
+- **Pools reporting versions before 1.6.1** — an enabled bucket is rejected when `rate >= capacity` or when `rate == 0`.
+  A configuration of `capacity: 1`, `rate: 1` reverts. Use at least `capacity: 2`, `rate: 1` on these releases. (Version
+  strings here are `1.5.1` or lower — a pool built from the 1.6.0 contracts release reports `1.5.1`.)
+- **All releases from 1.4.0 onward** — a disabled bucket must have `capacity: 0` and `rate: 0`, otherwise the call
+  reverts.
 
-## Example configuration
+</Aside>
 
-Conceptually, a lane can be locked down by calling `setChainRateLimiterConfig` with the following values:
+### Pools reporting 1.6.1 or later: pause the lane
+
+Pause the lane by keeping the rate limit **enabled** and setting both values to zero on the affected direction via
+`setChainRateLimiterConfig` (or `setChainRateLimiterConfigs` for several lanes at once):
 
 ```solidity
-outboundConfig = [true, 1, 1];
-inboundConfig  = [true, 1, 1];
+outboundConfig = [true, 0, 0];
+inboundConfig  = [true, 0, 0];
 ```
 
-Both inbound and outbound limits should be set to ensure transfers are blocked in both directions.
+This blocks all transfers in that direction — an inbound pause intentionally holds in-flight transfers — until you
+restore normal values.
+
+<Aside type="caution">
+
+- Keep `isEnabled: true` when pausing. A disabled bucket (which requires `capacity: 0`, `rate: 0`) turns rate limiting
+  off entirely — the opposite of a pause. The flag decides what the zeros mean.
+- Do not set `rate: 0` with a non-zero capacity: validation accepts it, but once the bucket depletes, transfers fail
+  with an arithmetic panic instead of a clean rate-limit error.
+
+</Aside>
+
+### Pools reporting versions before 1.6.1: use minimal values
+
+A full stop through rate limits is not possible on these pools: an enabled bucket is rejected when `rate >= capacity`
+or when `rate == 0`. Use the smallest accepted configuration, `capacity: 2`, `rate: 1`:
+
+```solidity
+outboundConfig = [true, 2, 1];
+inboundConfig  = [true, 2, 1];
+```
+
+This allows only a negligible trickle before the bucket is depleted, causing subsequent transfers to fail. The trickle
+that remains possible can be material for tokens with few decimals.
+
+In both cases, apply the configuration to **both inbound and outbound** limits so transfers are blocked in both
+directions.
 
 ## Important considerations
 
 When locking down a lane:
 
-- transfers may still succeed for a minimal amount before capacity is exhausted
-- behavior depends on the token's smallest unit
+- on pools reporting versions before 1.6.1, transfers may still succeed for a minimal amount, and behavior depends on
+  the token's smallest unit
 - the change takes effect immediately after the transaction is confirmed
 
 This approach is intended to **contain activity**, not to permanently disable rate limits.
