@@ -17,8 +17,8 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 <CcipCommon callout="talkToExpert" />
 
 This page covers the best practices the Chainlink team recommends for Cross-Chain Token (CCT) deployments on EVM chains. It is written for
-token developers who are enabling a token for CCIP or already operating one in production.
-We strongly recommend following these practices for a CCT token in production to minimize the risk of loss, and maximize security.
+token developers who are enabling a token for CCIP or already operating one in production. Follow these practices for any
+CCT in production.
 
 Guidance here assumes CCIP v1.6.1 token pools. You are responsible for assessing which items apply to your own
 deployment and risk profile.
@@ -32,8 +32,7 @@ Items are grouped into two levels:
 - **Critical:** apply these before you enable any production lane. Omitting them can lead to loss of funds,
   permanently stuck transfers, or unauthorized control of your token.
 - **Strongly recommended:** apply these as part of normal operation. Omitting them commonly causes incidents,
-  outages, or degraded transfers. While not critical, these practices are still highly recommended, and should not be
-  an afterthought.
+  outages, or degraded transfers.
 
 </Aside>
 
@@ -42,12 +41,12 @@ Items are grouped into two levels:
 Rate limit validation changed between TokenPool releases a while back. Call `typeAndVersion()` on each deployed pool before you apply
 any configuration described on this page.
 
-- **Pools reporting 1.6.1 or later** (including development stamps such as `1.6.x-dev`) — an enabled bucket is rejected
+- **Pools reporting 1.6.1 or later** (including development stamps such as `1.6.x-dev`): an enabled bucket is rejected
   only when `rate > capacity`, so `capacity: 1`, `rate: 1` and an enabled `capacity: 0`, `rate: 0` are both accepted.
   For pausing a lane, see
   [Distinguish an intentional pause from a misconfiguration](#distinguish-an-intentional-pause-from-a-misconfiguration).
-  - This basically means that a hard pause of the lane, with absolutely `0` tokens being transferable, is allowed.
-- **Pools reporting versions before 1.6.1** — an enabled bucket is rejected when `rate >= capacity` or when `rate == 0`.
+  - A hard pause of the lane is allowed, with `0` tokens transferable.
+- **Pools reporting versions before 1.6.1**: an enabled bucket is rejected when `rate >= capacity` or when `rate == 0`.
   A configuration of `capacity: 1`, `rate: 1` reverts. Use at least `capacity: 2`, `rate: 1` on these releases. (Version
   strings here are `1.5.1` or lower: a pool built from the 1.6.0 contracts release reports `1.5.1`.)
 
@@ -276,7 +275,7 @@ usually indicate a configuration error.
 **What to do:**
 
 - Test that token transfers execute automatically on every configured lane before going to production.
-- Include first-time receivers in that test — an account that has never held your token can cost more gas.
+- Include first-time receivers in that test. An account that has never held your token can cost more gas.
 - Use consistent values across lanes pointing at the same destination unless you have a documented reason not to.
 - See [Token Pools](/ccip/concepts/cross-chain-token/evm/token-pools) and
   [Network Specific](/ccip/tools-resources/network-specific).
@@ -318,7 +317,7 @@ transfers or removes rate limiting entirely.
 
 - On pools reporting `1.6.1` or later, pause a lane by setting `isEnabled: true`, `capacity: 0`, `rate: 0` on the
   affected direction via `setChainRateLimiterConfig` (or `setChainRateLimiterConfigs` for several lanes at once). This
-  blocks all transfers in that direction — an inbound pause intentionally holds in-flight transfers — until you restore
+  blocks all transfers in that direction (an inbound pause intentionally holds in-flight transfers) until you restore
   normal values.
 - On these same pools, do not set `rate: 0` with a non-zero capacity: validation accepts it, but once the bucket
   depletes, transfers fail with an arithmetic panic instead of a clean rate-limit error.
