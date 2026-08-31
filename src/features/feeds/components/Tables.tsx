@@ -270,11 +270,7 @@ const getRiskTooltipPosition = (anchor: HTMLElement) => {
 
 const RiskTHeadCell = () => (
   <th className={clsx(tableStyles.heading, tableStyles.riskCol)}>
-    <HeaderHelpLink
-      anchor="risk"
-      label="Risk"
-      hint="The market pricing risk category assigned to the feed."
-    />
+    <HeaderHelpLink anchor="risk" label="Risk" hint="The market pricing risk category assigned to the feed." />
   </th>
 )
 
@@ -555,11 +551,7 @@ const DefaultTHead = ({
           />
         </th>
         <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>
-          <HeaderHelpLink
-            anchor="heartbeat"
-            label="Heartbeat"
-            hint="The maximum time between onchain updates."
-          />
+          <HeaderHelpLink anchor="heartbeat" label="Heartbeat" hint="The maximum time between onchain updates." />
         </th>
         <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>
           <HeaderHelpLink anchor="dec" label="Dec" hint="The number of decimal places used to represent the answer." />
@@ -880,11 +872,7 @@ const SmartDataTHead = ({
         />
       </th>
       <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>
-        <HeaderHelpLink
-          anchor="heartbeat"
-          label="Heartbeat"
-          hint="The maximum time between onchain updates."
-        />
+        <HeaderHelpLink anchor="heartbeat" label="Heartbeat" hint="The maximum time between onchain updates." />
       </th>
       <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>
         <HeaderHelpLink anchor="dec" label="Dec" hint="The number of decimal places used to represent the answer." />
