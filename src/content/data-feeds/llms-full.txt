@@ -5444,58 +5444,6 @@ make ma-set-latest-round NETWORK=devnet && make ac-set-answer NETWORK=devnet && 
 # Smart Value Recapture (SVR) Feeds
 Source: https://docs.chain.link/data-feeds/svr-feeds
 
-export async function getFeeds() {
-  const ethereumMainnet = CHAINS.find((chain) => chain.page === "ethereum")?.networks.find(
-    (network) => network.networkType === "mainnet"
-  )
-
-const rddUrl = ethereumMainnet?.rddUrl
-
-if (!rddUrl) {
-return []
-}
-
-try {
-const response = await fetch(rddUrl)
-const data = await response.json()
-
-    // Find all feeds that have SVR variants (either Aave or Shared SVR) and are not hidden
-    const svrFeeds = data.filter(
-      (feed) => feed.secondaryProxyAddress && !feed.docs?.hidden && (isAaveSVR(feed) || isSharedSVR(feed))
-    )
-
-    // Group feeds by their base name (e.g., "BTC/USD", "ETH/USD")
-    const feedGroups = {}
-
-    svrFeeds.forEach(feed => {
-      const baseName = feed.name.replace(" / ", "/")
-
-      if (!feedGroups[baseName]) {
-        feedGroups[baseName] = {
-          name: baseName,
-          aaveAddress: null,
-          svrAddress: null
-        }
-      }
-
-      if (isAaveSVR(feed)) {
-        feedGroups[baseName].aaveAddress = feed.contractAddress
-      } else if (isSharedSVR(feed)) {
-        feedGroups[baseName].svrAddress = feed.contractAddress
-      }
-    })
-
-    // Convert to array and sort
-    const combinedFeeds = Object.values(feedGroups)
-      .sort((a, b) => a.name.localeCompare(b.name))
-
-    return combinedFeeds
-
-} catch (error) {
-return []
-}
-}
-
 <Aside type="note" title="SVR integrated with Titan OFA">
   <p>
     SVR now supports multiple orderflow auctions in parallel on Ethereum mainnet, including Flashbots and Titan.
@@ -5573,19 +5521,29 @@ If the **private route** fails or times out, the SVR feed automatically **revert
 
 ## SVR Feed Variants
 
-Chainlink SVR Feeds are available as standard feeds for general use and specialized [Aave SVR Feeds](#aave-svr-feeds) for the Aave protocol. More specialized SVR feeds may be developed in the future for other protocols.
+Chainlink SVR Feeds are available in three variants:
+
+### SVR (Shared)
+
+Canonical shared SVR feeds for use by any protocol. These are the recommended feeds for new integrations.
 
 ### Aave SVR Feeds
 
-Aave SVR feeds are specifically tailored for the Aave protocol and are only intended for use by Aave.
+Dedicated SVR feeds exclusively for the Aave protocol.
+
+### SVR-Backup (Legacy)
+
+Legacy shared SVR feeds that are still actively used by existing applications. Searchers should continue to monitor these feeds. New integrations should use the [SVR (Shared)](#svr-shared) feeds instead.
 
 ## Default SVR Activation
 
-In coordination with blockchain ecosystem partners, Chainlink SVR may be activated by default for BTC, ETH, XRP, SOL, DOGE, LTC, and ADA Data Feeds on Base. Where SVR is active by default, new and existing lending market deployments will recapture oracle-related MEV (OEV) through the SVR flow from day one without additional integration work.
+Chainlink SVR is activated by default for certain Chainlink Data Feeds on certain blockchain networks, currently Base and Ink. When SVR is enabled by default, new and existing lending market deployments recapture OEV without any additional integration work.
 
-Teams deploying applications that use these feeds on networks where SVR is active by default should contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com), as recaptured OEV is shared with integrating DeFi protocols as described in [Economics and Revenue Split](#economics-and-revenue-split).
+Integrators should expect zero service disruption during activation, and no action is needed on their part.
 
-Protocols that prefer not to use SVR can opt out at any time by reading from the "Standard" proxy that complements every SVR proxy for the relevant feed.
+On these networks, SVR feeds have an **SVR** label on the [Feed Addresses](/data-feeds/price-feeds/addresses?network=base\&showSvr=true) page and on [data.chain.link](https://data.chain.link/). Previously deployed SVR feeds remain available and function as expected, and can be identified with the **SVR-Backup** label.
+
+For any questions, contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com). Protocols can also opt out at any time by reading from the "Standard" proxy that complements every SVR proxy for the relevant feed.
 
 ## How Protocols Can Utilize SVR Feeds
 
@@ -5648,7 +5606,7 @@ This split provides DeFi protocols with an additional revenue stream while also 
 
 ---
 
-# SVR Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain, Monad)
+# SVR Searcher Onboarding: Atlas
 Source: https://docs.chain.link/data-feeds/svr-feeds/searcher-onboarding-atlas
 
 export const contracts = {
@@ -5669,46 +5627,6 @@ export const contracts = {
     dappControl: "0xa40d9f38621b4ffb2181508b973519e8133951c0",
   },
 }
-
-export const arbitrumFeeds = [
-  { asset: "AAVE-USD", type: "Aave-SVR", aggregator: "0xc1720A8240Dbd992d95D6c865A15e490901879B1" },
-  { asset: "ARB-USD", type: "Aave-SVR", aggregator: "0xB72359B2dc04Ff363e094648DF78247c98297c20" },
-  { asset: "ARB-USD", type: "SVR", aggregator: "0x62619470FcBA2Ae5c2dc22c18CF5251C09c1E618" },
-  { asset: "BTC-USD", type: "Aave-SVR", aggregator: "0xE7c522c60bA7f1b5E398D2312593713e2B19aeb0" },
-  { asset: "BTC-USD", type: "SVR", aggregator: "0xA686Fa6122d30EBc51843847fEf4a0ae759fBac1" },
-  { asset: "DAI-USD", type: "Aave-SVR", aggregator: "0xFBe1C9F4297d509b4D0ECcbc098df7Db29DA2918" },
-  { asset: "DAI-USD", type: "SVR", aggregator: "0xa1c0bD64AFFAF53E7674E2A6C5df6b80A4FB80d3" },
-  { asset: "ETH-USD", type: "Aave-SVR", aggregator: "0xa5E1a36938769cbd5a26f5e19D8FCB379f597c83" },
-  { asset: "ETH-USD", type: "SVR", aggregator: "0x0b6eaC11aAD4211AD686d1Ece56C071E306Bd29B" },
-  { asset: "EURC-USD", type: "Aave-SVR", aggregator: "0x333399F03B84678Ec22842Cd467c8Fe089E3Ef27" },
-  { asset: "EURC-USD", type: "SVR", aggregator: "0xa0e9a602B8060E1828Be7eE4626e086bDdbD2F99" },
-  { asset: "FRAX-USD", type: "Aave-SVR", aggregator: "0x674a6D60637891C63116218c38a9a49BE07D21bc" },
-  { asset: "FRAX-USD", type: "SVR", aggregator: "0x7399107Df5344E0b928e75f3ACfa90569eC20848" },
-  { asset: "GHO-USD", type: "Aave-SVR", aggregator: "0x0309C05449070AC1aB244B99955EA5fEdEB79E6A" },
-  { asset: "LINK-USD", type: "Aave-SVR", aggregator: "0x4c76F02E484e8ce9B6C2358CF9624BabC5531E9e" },
-  { asset: "LINK-USD", type: "SVR", aggregator: "0x355E12F02C59B31AfF1ae2775352dC2Ac1f5C829" },
-  { asset: "USDC-USD", type: "Aave-SVR", aggregator: "0x16c0e73906CDa7AC1F137B0F513a00b84c8f7A4E" },
-  { asset: "USDC-USD", type: "SVR", aggregator: "0x01065f4726bBbCE2ef1a4Bebc04Af3209357c71e" },
-  { asset: "USDT-USD", type: "Aave-SVR", aggregator: "0x12b8916e7B6297f31C99e3A8e2BDa661f27c676A" },
-  { asset: "USDT-USD", type: "SVR", aggregator: "0x41F14AfB0eB605097c5950D2458415437A3d2Bcd" },
-]
-
-export const monadFeeds = [
-  { asset: "APRMON-MON Exchange Rate", type: "SVR", aggregator: "0x124FE2b4a19bC618d6cF0a64e2BBE85C7e3C6ED9" },
-  { asset: "AUSD-USD", type: "SVR", aggregator: "0x253c95994246DE5A83AAFE82909681522DA051Af" },
-  { asset: "BTC-USD", type: "SVR", aggregator: "0x9d8b2A6b6A8748bB5e557505d2dDC9d44b6fd2Dd" },
-  { asset: "CBBTC-USD", type: "SVR", aggregator: "0x5cB59A1E12c781793b1799D99d1F31eA4e79eCE9" },
-  { asset: "EARNAUSD-AUSD Exchange Rate", type: "SVR", aggregator: "0xb95fa18a1892045F671bC1723d452618f3FC0355" },
-  { asset: "ETH-USD", type: "SVR", aggregator: "0xeF3c6C938F82BE8ba983a52F5b0f47eE820DCeb2" },
-  { asset: "EZETH-ETH Exchange Rate", type: "SVR", aggregator: "0x521F749F78dA5d58f70f79aD44f73fDEAA5dc538" },
-  { asset: "GMON-MON Exchange Rate", type: "SVR", aggregator: "0xAF165Ea49569528ff543640834Eb6819f0d9601f" },
-  { asset: "MON-USD", type: "SVR", aggregator: "0x810d5E3dB355bFd2C80c06D89F08523111c6d0F1" },
-  { asset: "SHMON-MON Exchange Rate", type: "SVR", aggregator: "0xE3F1906C6b6EEA63dCc0C016C4ec6746c69e7476" },
-  { asset: "SMON-MON Exchange Rate", type: "SVR", aggregator: "0x0Ebdee66Cdd6ffe566d39eD9F876EE04920E25D4" },
-  { asset: "SYZUSD-YZUSD Exchange Rate", type: "SVR", aggregator: "0x18278ef950F120Cb89960C0c07e965bbAc389cfC" },
-  { asset: "USDC-USD", type: "SVR", aggregator: "0xdE1FE319F71E446143BEC6eEc02d89286E7265ed" },
-  { asset: "USDT0-USD", type: "SVR", aggregator: "0x9e921eC9C5ef689045af16a95569F3644bB41FD3" },
-]
 
 <Aside type="note" title="Searcher Onboarding">
   SVR on Atlas (every chain outside of ETH mainnet) uses a reputation system with **two groups**. Unless otherwise specified for a chain, Atlas includes up to **2 searcher bids** per transaction for on-chain settlement:
@@ -6478,55 +6396,6 @@ If the solver operation reverts for any reason, the query API will communicate e
 # SVR Searcher Onboarding: Ethereum Mainnet
 Source: https://docs.chain.link/data-feeds/svr-feeds/searcher-onboarding-ethereum
 
-export async function getFeeds() {
-  const ethereumMainnet = CHAINS.find((chain) => chain.page === "ethereum")?.networks.find(
-    (network) => network.networkType === "mainnet"
-  )
-
-const rddUrl = ethereumMainnet?.rddUrl
-
-if (!rddUrl) {
-return []
-}
-
-try {
-const response = await fetch(rddUrl)
-const data = await response.json()
-
-    const svrFeeds = data.filter(
-      (feed) => feed.secondaryProxyAddress && !feed.docs?.hidden && (isAaveSVR(feed) || isSharedSVR(feed))
-    )
-
-    const feedGroups = {}
-
-    svrFeeds.forEach(feed => {
-      const baseName = feed.name.replace(" / ", "/")
-
-      if (!feedGroups[baseName]) {
-        feedGroups[baseName] = {
-          name: baseName,
-          aaveAddress: null,
-          svrAddress: null
-        }
-      }
-
-      if (isAaveSVR(feed)) {
-        feedGroups[baseName].aaveAddress = feed.contractAddress
-      } else if (isSharedSVR(feed)) {
-        feedGroups[baseName].svrAddress = feed.contractAddress
-      }
-    })
-
-    const combinedFeeds = Object.values(feedGroups)
-      .sort((a, b) => a.name.localeCompare(b.name))
-
-    return combinedFeeds
-
-} catch (error) {
-return []
-}
-}
-
 <Aside type="note" title="Searcher Onboarding">
   To onboard as a searcher to SVR, reach out to [devrel@smartcontract.com](mailto:devrel@smartcontract.com). Searchers
   can [subscribe here](https://chainlinkcommunity.typeform.com/to/s55Hu2tK) to receive timely Chainlink SVR updates.
@@ -6550,9 +6419,13 @@ For more background on how Aave liquidations work, see [Aave Documentation](http
 
 ### Price Update, Auction, and Liquidation Execution Flow
 
-### How to Participate as a Searcher
+## Feed Aggregator Addresses
 
-#### 1. High-Level Steps for Searchers
+<Aside type="note" />
+
+## How to Participate as a Searcher
+
+### 1. High-Level Steps for Searchers
 
 1. **Monitor and Identify SVR Price Updates**: Chainlink SVR sends oracle reports through Flashbots Protect (MEV-Share). Your searcher node must watch private transactions, not just the public mempool. It must also filter by these SVR data feed update events, and determine which feed address the update is for.
 
@@ -6562,7 +6435,7 @@ For more background on how Aave liquidations work, see [Aave Documentation](http
 
 3. **Execute Liquidation**: If your bundle is selected, your liquidation happens **immediately after** the fresh price arrives onchain, capturing the liquidation bonus. Based on the results of the auction, a portion of the MEV is recaptured and split between Aave and the Chainlink Network, while the rest goes to you.
 
-#### 2. Listen for Events on MEV Share
+### 2. Listen for Events on MEV Share
 
 Chainlink SVR uses forwarder contracts to route feed updates. You typically see **one transaction per event**, which calls the function `forward(address to, bytes callData)` with the function selector `6fadcf72`. This method, in turn, calls the SVR aggregator's `transmitSecondary()` function with the new price data.
 
@@ -6609,7 +6482,7 @@ The event stream is also expected to occasionally transmit transaction bundles. 
 }
 ```
 
-#### 3. Decode `callData` for `forward` and `transmitSecondary`
+### 3. Decode `callData` for `forward` and `transmitSecondary`
 
 Once you've identified a potential SVR feed update transaction, you'll need to decode its payload. This step allows you to extract:
 
@@ -6684,11 +6557,11 @@ The following code samples demonstrate the complete decoding process, including 
 3. Parse the report bytes using the `Report` struct
 4. Access the median observation (the updated price)
 
-#### 4. Detect SVR-enabled Feeds
+### 4. Detect SVR-enabled Feeds
 
-When processing forward calls, verify that the `to` address from the code sample above (the destination of the forward call) matches one of these feed addresses. This tells you which SVR data feed the price update is for:
+When processing forward calls, verify that the `to` address from the code sample above (the destination of the forward call) matches one of the SVR feed aggregator addresses listed in the [Feed Aggregator Addresses](#feed-aggregator-addresses) section above.
 
-#### 5. Calculate Updated Price
+### 5. Calculate Updated Price
 
 After successfully decoding the transaction data, you need to extract the median price from the `observations` array inside the decoded `report`:
 
@@ -6700,7 +6573,7 @@ This formula retrieves the median value from the sorted array of price observati
 
 To use this price effectively, convert it to the appropriate decimal representation for the asset pair.
 
-#### 6. Bidding With Flashbots MEV-Share
+### 6. Bidding With Flashbots MEV-Share
 
 Once you've detected an SVR update and identified a profitable liquidation opportunity, you need to construct and submit a bundle to Flashbots. Consider these key aspects when preparing your submission:
 
@@ -6761,14 +6634,14 @@ Bidding for bundle events is very similar to single transaction events. As a sea
 }
 ```
 
-#### 7. Considerations
+### 7. Considerations
 
 - **Competition**: Multiple searchers might detect the same liquidation. The best bid typically wins.
 - **Profit-Sharing**: A portion of liquidation MEV is recaptured and redirected to the integrating DeFi protocol and the Chainlink Network.
 - **Gas Efficiency**: Bundles that are too costly might erode the profitability of the proposed transaction. Optimize carefully.
 - **Non-SVR `forward` calls**: There are other events on the MEV-Share event stream that have the same `forward` function signature. Be sure to filter for the ones that call `transmitSecondary` on the listed SVR feeds.
 
-#### 8. Next Steps for Searchers
+### 8. Next Steps for Searchers
 
 1. **Set Up Your Searcher Node**
    - Integrate with [Flashbots MEV-Share](/data-feeds/svr-feeds/searcher-onboarding-ethereum) to read private transactions.
