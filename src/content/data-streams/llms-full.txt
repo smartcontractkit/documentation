@@ -6504,6 +6504,12 @@ Recommended approach: check `marketStatus` before evaluating freshness. If `mark
 
 KRX-listed and TWSE-listed equities have no intraday break; KRX runs continuously from 09:00–15:20 KST (00:00–06:20 UTC), and TWSE runs continuously from 09:00–13:25 CST (01:00–05:25 UTC).
 
+### Minimum tick size (Asian exchanges)
+
+Certain Asian exchanges apply a minimum tick size that increases with an instrument's price. For TWD-denominated streams in particular, higher-priced instruments can exhibit more staggered, or seemingly exaggerated, tick-by-tick price movement in the base currency than lower-priced ones.
+
+Aggregated data from underlying providers may or may not respect the instrument's tick size at the mid-price or bid-ask spread level. Protocols should use caution when setting risk parameters such as deviation thresholds, accounting for the rounding this can introduce on feeds with a non-trivial minimum tick size.
+
 ### Opening and closing auction prices
 
 At the open of each session, prices may reflect the exchange's opening auction mechanism rather than continuous traded prices. Opening auctions concentrate deferred orders from the closed period into a single price discovery event, which can produce an opening price that deviates materially from the prior session's close. This is normal exchange behavior, not a data quality issue.
@@ -6515,6 +6521,12 @@ Protocols should account for session-open volatility by:
 - Treating the `marketStatus` transition from `5` (Closed) to `2` (Open) as a signal to re-evaluate risk parameters before acting on the opening price
 - Widening deviation thresholds or reducing position exposure during the first minutes of each session
 - Avoiding liquidation triggers driven purely by price movement relative to the prior session's close
+
+### Pre-open prints on new listings
+
+On the morning a new instrument first lists, the stream may carry one or more prints at the issue price shortly before the exchange's opening call auction begins. These are pre-open reference prints disseminated by the exchange to establish a reference level ahead of price discovery — they are not executions, and `marketStatus` remains `5` (Closed) while they are published.
+
+Do not treat these reference prints as tradable prices. Real price discovery begins with the opening call auction; wait for `marketStatus` to transition to `2` (Open) before acting on the resulting price.
 
 ### Exchange halts
 
