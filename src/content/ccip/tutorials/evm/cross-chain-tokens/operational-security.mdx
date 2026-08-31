@@ -25,30 +25,22 @@ deployment and risk profile.
 
 <CcipCommon callout="tokenPoolOwnership" />
 
-<Aside type="note" title="How to read this page">
-
-Items are grouped into two levels:
-
-- **Critical:** apply these before you enable any production lane. Omitting them can lead to loss of funds,
-  permanently stuck transfers, or unauthorized control of your token.
-- **Strongly recommended:** apply these as part of normal operation. Omitting them commonly causes incidents,
-  outages, or degraded transfers.
-
-</Aside>
-
 <Aside type="caution" title="Confirm your deployed TokenPool version">
 
-Rate limit validation changed between TokenPool releases a while back. Call `typeAndVersion()` on each deployed pool before you apply
-any configuration described on this page.
+Rate limit validation changed between TokenPool releases a while back.
+Users can call `typeAndVersion()` on each deployed pool before they apply any configuration described on this page.
 
-- **Pools reporting 1.6.1 or later** (including development stamps such as `1.6.x-dev`): an enabled bucket is rejected
+- **Pools reporting versions before 1.6.1**: an enabled bucket is rejected when `rate >= capacity` or when `rate == 0`.
+  A configuration of `capacity: 1`, `rate: 1` will also revert.
+  Use at least `capacity: 2`, `rate: 1` on these releases. (Version strings here are `1.5.1` or lower: a pool built from the 1.6.0 contracts release reports `1.5.1`.)
+
+- **Pools `1.6.1` or later**: an enabled bucket is rejected
   only when `rate > capacity`, so `capacity: 1`, `rate: 1` and an enabled `capacity: 0`, `rate: 0` are both accepted.
   For pausing a lane, see
   [Distinguish an intentional pause from a misconfiguration](#distinguish-an-intentional-pause-from-a-misconfiguration).
-  - A hard pause of the lane is allowed, with `0` tokens transferable.
-- **Pools reporting versions before 1.6.1**: an enabled bucket is rejected when `rate >= capacity` or when `rate == 0`.
-  A configuration of `capacity: 1`, `rate: 1` reverts. Use at least `capacity: 2`, `rate: 1` on these releases. (Version
-  strings here are `1.5.1` or lower: a pool built from the 1.6.0 contracts release reports `1.5.1`.)
+  - Basically, on versions `1.6.1` or later, a hard pause of the lane is allowed, with `0` tokens transferable. This is different from
+    earlier versions, where the minimum value of `rate` had to be at least `1`, thus preventing a hard pause, even if the amount allowed
+    was miniscule.
 
 </Aside>
 
@@ -57,21 +49,24 @@ any configuration described on this page.
 ### Secure the roles that control your token and pools
 
 The token administrator, the token pool owner, and any address holding mint or burn rights can change how your token
-moves across chains. Each of these roles is held by whatever address you assign to it: an externally owned account
-(EOA), a multi-signature smart account, or another contract.
+moves across chains. Each of these roles is held by whatever address you assign to it:
+
+- an externally owned account (EOA),
+- a multi-signature smart account,
+- or another contract.
 
 **Risk:** A single compromised private key is enough to redirect transfers, mint unbacked supply, or take control of
-your pools, with no second party able to review or veto the action before it executes.
+your pools.
 
-**What to do:**
+**What should you do:**
 
 - Assign contract ownership, the CCIP administrator role, and mint and burn rights to a multi-signature smart account
   such as a [Safe Smart Account](https://github.com/safe-global/safe-smart-account), using a threshold of at least
-  3-of-n, commensurate with the value at risk.
-- Add a timelock so that critical actions must be proposed, reviewed, and can be cancelled before they execute.
-- Put this structure in place at deployment: the multi-signature account and timelock should own the token, the pools,
+  3-of-n, commensurate with the value at risk. We recommend a minimum of 5 signers to ensure sufficient decentralization and security.
+- Add a timelock so that critical actions may be reviewed and cancelled with a sufficient time buffer.
+- The multi-signature account and timelock should own the token, the pools,
   and any related contracts from day one, rather than being retrofitted after launch.
-- Remove departed or compromised signers promptly, and confirm at least quarterly that every remaining signer still
+- Remove departed or compromised signers promptly, and confirm routinely that every remaining signer still
   controls their key.
 - Distribute signers so a quorum is reachable quickly during an incident, rather than concentrating them in one team,
   location, or time zone.
@@ -98,26 +93,24 @@ chains. The locked balance is the only backing for that remote supply.
 **Risk:** If locked supply falls below the total minted across remote chains, transfers back to the issuing chain fail
 and users cannot withdraw until the shortfall is covered.
 
-**What to do:**
+**What should you do:**
 
 - Continuously compare the locked balance held by the pool on the issuing chain against the sum of total supply across
   every remote burn and mint chain.
 - Alert on the ratio between them, not only on the absolute balance, and set thresholds that trigger action well before
   the pool is exhausted.
-- Prefer Burn and Mint on all chains where your token design allows it. It is the simplest accounting model and removes
-  this class of risk entirely. Lock and Unlock across multiple chains is the most complex and fragments liquidity.
 - See [Tokens](/ccip/concepts/cross-chain-token/evm/tokens) and the
   [LockReleaseTokenPool API reference](/ccip/api-reference/evm/v1.6.1/lock-release-token-pool).
 
 ### Configure both sides of every lane symmetrically
 
-A lane works only when both pools agree about each other. Configuration is applied independently on each chain, so the
+A lane works only when both pools work in tandem with each other. The configuration for the remote pool on the other end is applied independently on each chain, so the
 two sides can drift apart without any error being raised at the time of the change.
 
 **Risk:** Mismatched configuration causes transfers to revert, or to become stuck in flight until the configuration is
 corrected.
 
-**What to do:**
+**What should you do:**
 
 - On the source pool, confirm the configured remote pool addresses (`getRemotePools`) resolve to the actual destination
   pool address.
@@ -138,9 +131,10 @@ any network other than its hub breaks that isolation.
 
 **Risk:** Cross-silo connections corrupt accounting and can result in stuck transfers or loss of funds.
 
-**What to do:** Review every remote chain configured on a siloed pool and remove any chain that is not the designated
-hub, using `applyChainUpdates` with the chain selector in the removal list. See the
-[TokenPool API reference](/ccip/api-reference/evm/v1.6.1/token-pool).
+**What should you do:**
+
+- Review every remote chain configured on a siloed pool and remove any chain that is not the designated
+  hub, using `applyChainUpdates` with the chain selector in the removal list.
 
 ### Account for decimal differences between chains
 
@@ -150,10 +144,10 @@ and rate limit values are denominated in the token's smallest unit on the chain 
 **Risk:** Mismatched decimals can cause transfers to fail, or cause a rate limit to throttle at a value orders of
 magnitude away from the one you intended to set.
 
-**What to do:**
+**What should you do:**
 
 - Use matching decimals on every chain where your token is deployed whenever you can.
-- Where decimals differ, size every rate limit in the smallest unit of the chain that bucket applies to, and verify the
+- Where decimals differ, configure every rate limit in the smallest unit of the chain that bucket applies to, and verify the
   resulting value against the amount you intended.
 - See [Token Units and Decimals](/ccip/concepts/rate-limit-management/token-units-and-decimals) and
   [Token Pools](/ccip/concepts/cross-chain-token/evm/token-pools).
@@ -166,10 +160,13 @@ destination chain when tokens are released or minted. They are separate buckets 
 **Risk:** A transfer that passes the source outbound limit but exceeds the destination inbound limit is stuck in flight
 until inbound capacity becomes available.
 
-**What to do:** Size destination inbound capacity to absorb the full outbound capacity of every source lane pointing at
-it, and re-verify the relationship after every change to either side. See
-[How Rate Limits Work](/ccip/concepts/rate-limit-management/how-rate-limits-work) and
-[Update Rate Limits](/ccip/concepts/rate-limit-management/update-rate-limits).
+**What should you do:**
+
+- Size destination inbound capacity to absorb the full outbound capacity of every source lane pointing at
+  it, and re-verify the relationship after every change to either side.
+
+- See [How Rate Limits Work](/ccip/concepts/rate-limit-management/how-rate-limits-work) and
+  [Update Rate Limits](/ccip/concepts/rate-limit-management/update-rate-limits).
 
 ### Enable rate limits on every production lane
 
@@ -179,9 +176,12 @@ A disabled bucket applies no volume ceiling in that direction.
 **Risk:** Without rate limits, a compromise elsewhere in your system can move the full transferable supply through CCIP
 before you are able to intervene.
 
-**What to do:** Enable both inbound and outbound rate limits on every production lane, and confirm the deployed values
-match what you intended. See [Rate Limit Management](/ccip/concepts/rate-limit-management/overview) and
-[Inspect Current Rate Limits](/ccip/concepts/rate-limit-management/inspect-current-rate-limits).
+**What should you do:**
+
+- Enable both inbound and outbound rate limits on every production lane, and confirm the deployed values
+  match what you intended.
+- See [Rate Limit Management](/ccip/concepts/rate-limit-management/overview) and
+  [Inspect Current Rate Limits](/ccip/concepts/rate-limit-management/inspect-current-rate-limits).
 
 ### Prepare an emergency pause path before you need it
 
@@ -191,12 +191,12 @@ The owner path behind a multi-signature account and timelock is slow by design.
 **Risk:** Without a prepared fast path, pausing a lane takes as long as your slowest governance process while an
 incident drains value in minutes.
 
-**What to do:**
+**What should you do:**
 
 - Give the rate limit admin role to signers who can execute within minutes. See
   [Delegate rate limit changes to the rate limit admin role](#delegate-rate-limit-changes-to-the-rate-limit-admin-role).
 - The role can raise limits as well as lower them, so scope what your fast path can do.
-- Write the pause runbook in advance: which lanes, which values for your deployed pool version (see
+- Prepare the logistics in advance: which lanes, which values for your deployed pool version (see
   [Distinguish an intentional pause from a misconfiguration](#distinguish-an-intentional-pause-from-a-misconfiguration)),
   who executes, and how the decision to lift it is made.
 - Rehearse the runbook on a testnet lane regularly.
@@ -211,45 +211,44 @@ messages from the previous pool can still be processed.
 **Risk:** A deprecated pool left configured continues to be accepted as a message source, and may contain faulty or
 unintended logic.
 
-**What to do:** Once all in-flight messages from the old pool have settled, remove the stale remote pool address with
-`removeRemotePool`. Confirm there are no pending or failed transactions referencing the old pool in the
-[CCIP Explorer](/ccip/tools-resources/ccip-explorer) before removing it. See
-[Upgradability](/ccip/concepts/cross-chain-token/evm/upgradability) and the
-[TokenPool API reference](/ccip/api-reference/evm/v1.6.1/token-pool).
+**What should you do:**
 
-### Clear an unintended pending token administrator
+- Once all in-flight messages from the old pool have settled, remove the stale remote pool address with
+  `removeRemotePool`.
+- Confirm there are no pending or failed transactions referencing the old pool in the
+  [CCIP Explorer](/ccip/tools-resources/ccip-explorer) before removing it.
+- Seen [Upgradability](/ccip/concepts/cross-chain-token/evm/upgradability) and the
+  [TokenPool API reference](/ccip/api-reference/evm/v1.6.1/token-pool).
 
-Transferring the token administrator role is a two-step process. Until the proposed address accepts, the transfer sits
+### Clear an unintended pending token administrator or owner
+
+Transferring the token administrator or owner role is a two-step process. Until the proposed address accepts, the transfer sits
 pending and can be accepted at any time.
 
-**Risk:** An address proposed in error, or one that is no longer trusted, can take the administrator role whenever it
+**Risk:** An address proposed in error, or one that is no longer trusted, can take the administrator or owner role whenever it
 chooses.
 
-**What to do:** Cancel an unintended transfer by calling `transferAdminRole(localToken, address(0))` on the
-TokenAdminRegistry. This clears the pending administrator without changing the active one. See the
-[TokenAdminRegistry API reference](/ccip/api-reference/evm/v1.6.1/token-admin-registry).
+**What should you do:**
 
-### Clear an unintended pending owner
-
-Token, token pool, and related contracts that use a two-step ownership transfer keep a proposed owner able to accept
-until the transfer is cleared.
-
-**Risk:** An address proposed in error can take ownership of the contract at any time.
-
-**What to do:** Cancel an unintended ownership transfer by re-initiating the transfer to the zero address. Audit every
-CCT-related contract you own for pending transfers, not only the pools.
+- Cancel an unintended transfer by calling `transferAdminRole(localToken, address(0))` on the
+  TokenAdminRegistry. This clears the pending administrator without changing the active one. See the
+  [TokenAdminRegistry API reference](/ccip/api-reference/evm/v1.6.1/token-admin-registry).
+- Cancel an unintended transfer of the owner role by calling `transferOwnership(address(0))` on the relevant contract.
+  This clears the pending owner without changing the active one. See the [Ownable API reference](https://docs.openzeppelin.com/contracts/4.x/api/access#Ownable).
 
 ### Restrict burn and mint rights to the active pool
 
-Mint and burn permissions on your token determine who can change supply. In a CCIP deployment, only the active token
+Mint and burn permissions on your token determine who can change the supply. In a CCIP deployment, only the active token
 pool needs them for cross-chain operation.
 
 **Risk:** Any additional address holding mint rights can create unbacked supply; any address holding burn rights can
 destroy user balances.
 
-**What to do:** Enumerate every address holding mint or burn permissions and revoke each one that is not the active
-token pool or an owner-like administrative role you have deliberately retained. Re-run this audit after every pool
-migration. See [Tokens](/ccip/concepts/cross-chain-token/evm/tokens).
+**What should you do:**
+
+- Enumerate every address holding mint or burn permissions and revoke each one that is not the active
+  token pool or an owner-like administrative role you have deliberately retained. Re-run this audit after every pool
+  migration. See [Tokens](/ccip/concepts/cross-chain-token/evm/tokens).
 
 ### Remove lanes pointing at chains the router does not support
 
@@ -258,13 +257,15 @@ A pool can be configured with a remote chain selector that the CCIP router does 
 **Risk:** The lane may appear configured while transfers revert. If that chain is later added to the router, the lane
 becomes live without a deliberate decision to enable it.
 
-**What to do:** Validate every configured chain selector against the [CCIP Directory](/ccip/directory), and remove any
-remote chain that was not intentionally configured.
+**What should you do:**
+
+- Validate every configured chain selector against the [CCIP Directory](/ccip/directory), and remove any
+  remote chain that was not intentionally configured.
 
 ### Keep `destGasOverhead` consistent across lanes
 
 `destGasOverhead` covers the gas your token pool consumes on the destination chain. It is part of the token transfer
-fee configuration that CCIP maintains for your token; for current pool versions, non-default values are applied by
+fee configuration that CCIP maintains for your token; for current pool versions (`<2.0`), non-default values are applied by
 Chainlink Labs on your behalf. Using a non-default value is justified only when your pool or token costs more to
 execute.
 
@@ -272,7 +273,7 @@ execute.
 unnecessarily high value causes users to overpay. Inconsistent values across lanes pointing at the same destination
 usually indicate a configuration error.
 
-**What to do:**
+**What should you do:**
 
 - Test that token transfers execute automatically on every configured lane before going to production.
 - Include first-time receivers in that test. An account that has never held your token can cost more gas.
@@ -288,9 +289,11 @@ flight, the destination bucket is also being consumed by other traffic and refil
 **Risk:** Transfers that arrive without enough inbound capacity require manual execution, or wait for the bucket to
 refill before they can be executed.
 
-**What to do:** Set destination inbound capacity above the corresponding source outbound capacity, sized against the
-destination refill rate and the latency of the lane. See
-[Common Scenarios](/ccip/concepts/rate-limit-management/common-scenarios).
+**What should you do:**
+
+- Set destination inbound capacity above the corresponding source outbound capacity, sized against the
+  destination refill rate and the latency of the lane. See
+  [Common Scenarios](/ccip/concepts/rate-limit-management/common-scenarios).
 
 ### Tune the refill rate for both availability and throttling
 
@@ -299,21 +302,21 @@ The refill rate determines how quickly a bucket returns to full capacity after b
 **Risk:** A refill rate that is too slow blocks legitimate transfers for extended periods. One that is too fast fails to
 throttle abnormal flows.
 
-**What to do:** Choose a refill rate that restores capacity fast enough for normal user activity but slow enough to
-constrain a sustained abnormal flow. Treat any starting point as an initial value to be revised: monitor transfer
-success rates and observed volume, and adjust as your traffic patterns become established. See
-[Common Scenarios](/ccip/concepts/rate-limit-management/common-scenarios) and
-[How Rate Limits Work](/ccip/concepts/rate-limit-management/how-rate-limits-work).
+**What should you do:**
+
+- Choose a refill rate that restores capacity fast enough for normal user activity but slow enough to
+  constrain a sustained abnormal flow.
+- See [Common Scenarios](/ccip/concepts/rate-limit-management/common-scenarios) and [How Rate Limits Work](/ccip/concepts/rate-limit-management/how-rate-limits-work).
+- The exact numbers will vary upon network choices and traffic patterns for your specific protocol. It is the responsibility of the protocol to designate sensible numbers.
 
 ### Distinguish an intentional pause from a misconfiguration
 
-A lane is paused through its rate limits, and a paused lane is also what an accidental misconfiguration looks like.
-Pause deliberately and record it.
+Understand how rate limit configurations differ across versions
 
 **Risk:** An accidental pause blocks users indefinitely, and a pause applied with the wrong values either fails to stop
 transfers or removes rate limiting entirely.
 
-**What to do:**
+**What should you do:**
 
 - On pools reporting `1.6.1` or later, pause a lane by setting `isEnabled: true`, `capacity: 0`, `rate: 0` on the
   affected direction via `setChainRateLimiterConfig` (or `setChainRateLimiterConfigs` for several lanes at once). This
@@ -338,8 +341,10 @@ the defaults.
 
 **Risk:** A configuration that is correct on one chain can cause failed execution or an outage on another.
 
-**What to do:** Read the guidance for each network before you enable a lane to it. See
-[Network Specific](/ccip/tools-resources/network-specific) and [Service Limits](/ccip/service-limits/evm).
+**What should you do:**
+
+- Read the guidance for each network before you enable a lane to it. See
+  [Network Specific](/ccip/tools-resources/network-specific) and [Service Limits](/ccip/service-limits/evm).
 
 ### Settle in-flight transfers before reducing inbound capacity
 
@@ -349,28 +354,30 @@ ones.
 **Risk:** In-flight transfers whose amounts exceed the new inbound capacity stall until an administrator intervenes or
 capacity refills.
 
-**What to do:**
+**What should you do:**
 
-1. Set the new outbound capacities on the source chains first.
-2. Check the [CCIP Explorer](/ccip/tools-resources/ccip-explorer) for in-flight messages whose amounts exceed the
-   inbound capacities you intend to set.
-3. Wait for those transfers to settle on their destination chains.
-4. Then reduce the inbound capacities.
+- Set the new outbound capacities on the source chains first.
+- Check the [CCIP Explorer](/ccip/tools-resources/ccip-explorer) for in-flight messages whose amounts exceed the
+  inbound capacities you intend to set.
+- Wait for those transfers to settle on their destination chains.
+- Then reduce the inbound capacities.
 
 See [Update Rate Limits](/ccip/concepts/rate-limit-management/update-rate-limits).
 
 ### Run the latest available TokenPool release
 
-Older TokenPool releases have limitations in decimal handling, rate limit enforcement, and upgradeability. Pools
-predating v1.5 add further complexity to configuration and management.
+We recommend using our latest pool versions for improved security, reliability, and access to the latest features.
 
-**Risk:** Operating on an older release exposes you to resolved issues and makes some remediation steps unavailable.
+**Risk:** Operating on an older release exposes you to issues that may have been resolved on newer versions.
 
-**What to do:** Confirm what you are running with `typeAndVersion()` on each pool, compare against the published
-releases of [`@chainlink/contracts-ccip`](https://www.npmjs.com/package/@chainlink/contracts-ccip?activeTab=versions),
-and upgrade when feasible. The on-chain version string does not always match the package release: a pool built from
-the `1.6.0` release reports `1.5.1`, and some releases report development stamps such as `1.6.x-dev`. See
-[Upgradability](/ccip/concepts/cross-chain-token/evm/upgradability).
+**What should you do:**
+
+- Confirm what you are running with `typeAndVersion()` on each pool, compare against the published
+  releases of [`@chainlink/contracts-ccip`](https://www.npmjs.com/package/@chainlink/contracts-ccip?activeTab=versions),
+  and upgrade when feasible.
+- The on-chain version string does not always match the package release: a pool built from
+  the `1.6.0` release reports `1.5.1`, and some releases report development stamps such as `1.6.x-dev`. See
+  [Upgradability](/ccip/concepts/cross-chain-token/evm/upgradability).
 
 ### Shut down lanes that carry little or no traffic
 
@@ -379,9 +386,11 @@ Every enabled lane is an active path into and out of your token.
 **Risk:** An unused lane contributes no benefit while remaining available during an incident on either of the chains it
 connects.
 
-**What to do:** Review traffic per lane periodically and remove remote chains serving lanes that do not justify the
-exposure. Where possible, consolidate toward a hub-and-spoke topology rather than connecting every chain to every
-other chain.
+**What should you do:**
+
+- Review traffic per lane periodically and remove remote chains serving lanes that do not justify the
+  exposure. Where possible, consolidate toward a hub-and-spoke topology rather than connecting every chain to every
+  other chain.
 
 ### Delegate rate limit changes to the rate limit admin role
 
@@ -391,7 +400,7 @@ limits but nothing else about the pool configuration.
 **Risk:** Rate limit changes are made relatively often, including under time pressure during an incident. Performing
 them with the pool owner key exposes your highest-privilege credential to routine use.
 
-**What to do:** Assign the rate limit admin role to a dedicated multi-party signer, or to a contract if you want to
+**What should you do:** Assign the rate limit admin role to a dedicated multi-party signer, or to a contract if you want to
 constrain it further to specific pre-defined adjustments. Keep the pool owner key reserved for changes that require
 it. See the [TokenPool API reference](/ccip/api-reference/evm/v1.6.1/token-pool) and
 [Prerequisites and Permissions](/ccip/concepts/rate-limit-management/prerequisites-and-permissions).
