@@ -115,4 +115,5 @@ export const prepareSections = () => {
     start = prepareSection(start)
   }
   restoreScrollToHash()
+  document.documentElement.classList.add("smooth-scroll")
 }
