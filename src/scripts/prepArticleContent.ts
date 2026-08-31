@@ -88,6 +88,20 @@ const prepareSection = (e: Element) => {
   return wrapSection(e)
 }
 
+// The browser resolves the URL fragment scroll before this script wraps headers in
+// <section> elements, so the page reflows (sticky headers, section padding) after the
+// initial scroll already landed. Re-align once the DOM has settled.
+const restoreScrollToHash = () => {
+  if (!window.location.hash) return
+  let target: Element | null = null
+  try {
+    target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)))
+  } catch {
+    return
+  }
+  target?.scrollIntoView({ behavior: "instant" as ScrollBehavior, block: "start" })
+}
+
 /**
  * Performs all transformations on top-level article headers
  *
@@ -100,4 +114,5 @@ export const prepareSections = () => {
   while (start) {
     start = prepareSection(start)
   }
+  restoreScrollToHash()
 }
