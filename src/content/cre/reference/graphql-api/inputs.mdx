@@ -1,0 +1,147 @@
+---
+section: cre
+title: "Input Reference"
+date: Last Modified
+metadata:
+  description: "Reference for CRE GraphQL input types used to filter, sort, and paginate workflow and execution queries."
+  datePublished: "2026-08-31"
+  lastModified: "2026-08-31"
+---
+
+This page documents the input types used as arguments to the queries in the [Query Reference](/cre/reference/graphql-api/queries).
+
+## `Page`
+
+Used by [`workflows`](/cre/reference/graphql-api/queries#workflows), [`workflowDeployments`](/cre/reference/graphql-api/queries#workflowdeployments), and [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions) to paginate list results. See [Pagination](/cre/reference/graphql-api/pagination) for the full algorithm.
+
+| Field    | Type  | Required | Description                                                |
+| -------- | ----- | -------- | ---------------------------------------------------------- |
+| `number` | `Int` | No       | Zero-indexed page number. Defaults to `0`.                 |
+| `size`   | `Int` | No       | Number of items per page. Defaults to `10`. Maximum `100`. |
+
+## `WorkflowInput`
+
+Used by [`workflow`](/cre/reference/graphql-api/queries#workflow).
+
+| Field  | Type      | Required | Description                                                               |
+| ------ | --------- | -------- | ------------------------------------------------------------------------- |
+| `uuid` | `String!` | Yes      | The workflow's unique identifier.                                         |
+| `from` | `Time!`   | Yes      | Start of the time window used to compute the workflow's aggregate fields. |
+
+## `WorkflowsInput`
+
+Used by [`workflows`](/cre/reference/graphql-api/queries#workflows).
+
+| Field                  | Type                          | Required | Description                                                                |
+| ---------------------- | ----------------------------- | -------- | -------------------------------------------------------------------------- |
+| `workflowOwnerAddress` | `[OnchainAddress!]`           | No       | Restrict to workflows owned by one or more addresses. Maximum 100 entries. |
+| `status`               | `[WorkflowDeploymentStatus!]` | No       | Restrict to one or more deployment statuses. Maximum 10 entries.           |
+| `search`               | `String`                      | No       | Case-insensitive text search on workflow name.                             |
+| `orderBy`              | `WorkflowOrderBy`             | No       | Sort order.                                                                |
+| `page`                 | `Page`                        | No       | Pagination.                                                                |
+
+## `WorkflowOrderBy`
+
+| Field   | Type                    | Required | Description                                                                                            |
+| ------- | ----------------------- | -------- | ------------------------------------------------------------------------------------------------------ |
+| `field` | `WorkflowOrderByField!` | Yes      | Field to sort by. See [`WorkflowOrderByField`](/cre/reference/graphql-api/enums#workfloworderbyfield). |
+| `order` | `SortingOrder!`         | Yes      | Sort direction. See [`SortingOrder`](/cre/reference/graphql-api/enums#sortingorder).                   |
+
+## `WorkflowActivityInput`
+
+Used by [`workflowActivity`](/cre/reference/graphql-api/queries#workflowactivity).
+
+| Field          | Type     | Required | Description                                                                |
+| -------------- | -------- | -------- | -------------------------------------------------------------------------- |
+| `workflowUUID` | `String` | No       | Restrict to a single workflow. Omit to aggregate across your organization. |
+| `from`         | `Time`   | No       | Start of the time range.                                                   |
+| `to`           | `Time`   | No       | End of the time range.                                                     |
+
+## `WorkflowDeploymentInput`
+
+Used by [`workflowDeployment`](/cre/reference/graphql-api/queries#workflowdeployment).
+
+| Field  | Type      | Required | Description                         |
+| ------ | --------- | -------- | ----------------------------------- |
+| `uuid` | `String!` | Yes      | The deployment's unique identifier. |
+
+## `WorkflowDeploymentsInput`
+
+Used by [`workflowDeployments`](/cre/reference/graphql-api/queries#workflowdeployments).
+
+| Field          | Type                          | Required | Description                                                      |
+| -------------- | ----------------------------- | -------- | ---------------------------------------------------------------- |
+| `workflowUUID` | `String!`                     | Yes      | The workflow whose deployments should be returned.               |
+| `status`       | `[WorkflowDeploymentStatus!]` | No       | Restrict to one or more deployment statuses. Maximum 10 entries. |
+| `from`         | `Time`                        | No       | Only include deployments created on or after this time.          |
+| `to`           | `Time`                        | No       | Only include deployments created on or before this time.         |
+| `search`       | `String`                      | No       | Text search filter.                                              |
+| `orderBy`      | `WorkflowDeploymentOrderBy`   | No       | Sort order.                                                      |
+| `page`         | `Page`                        | No       | Pagination.                                                      |
+
+## `WorkflowDeploymentOrderBy`
+
+| Field   | Type                              | Required | Description                                                                                                                |
+| ------- | --------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `field` | `WorkflowDeploymentOrderByField!` | Yes      | Field to sort by. See [`WorkflowDeploymentOrderByField`](/cre/reference/graphql-api/enums#workflowdeploymentorderbyfield). |
+| `order` | `SortingOrder!`                   | Yes      | Sort direction.                                                                                                            |
+
+## `WorkflowExecutionInput`
+
+Used by [`workflowExecution`](/cre/reference/graphql-api/queries#workflowexecution).
+
+| Field  | Type      | Required | Description                        |
+| ------ | --------- | -------- | ---------------------------------- |
+| `uuid` | `String!` | Yes      | The execution's unique identifier. |
+
+## `WorkflowExecutionsInput`
+
+Used by [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions).
+
+| Field          | Type                         | Required | Description                                                                      |
+| -------------- | ---------------------------- | -------- | -------------------------------------------------------------------------------- |
+| `workflowUuid` | `String`                     | No       | Restrict to a single workflow. Omit to list executions across your organization. |
+| `status`       | `[WorkflowExecutionStatus!]` | No       | Restrict to one or more execution statuses. Maximum 10 entries.                  |
+| `search`       | `String`                     | No       | Text search filter.                                                              |
+| `from`         | `Time`                       | No       | Only include executions started on or after this time.                           |
+| `to`           | `Time`                       | No       | Only include executions started on or before this time.                          |
+| `orderBy`      | `WorkflowExecutionOrderBy`   | No       | Sort order.                                                                      |
+| `page`         | `Page`                       | No       | Pagination.                                                                      |
+
+## `WorkflowExecutionOrderBy`
+
+| Field   | Type                             | Required | Description                                                                                                              |
+| ------- | -------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `field` | `WorkflowExecutionOrderByField!` | Yes      | Field to sort by. See [`WorkflowExecutionOrderByField`](/cre/reference/graphql-api/enums#workflowexecutionorderbyfield). |
+| `order` | `SortingOrder!`                  | Yes      | Sort direction.                                                                                                          |
+
+## `WorkflowExecutionLogsInput`
+
+Used by [`workflowExecutionLogs`](/cre/reference/graphql-api/queries#workflowexecutionlogs).
+
+| Field                   | Type      | Required | Description                                  |
+| ----------------------- | --------- | -------- | -------------------------------------------- |
+| `workflowExecutionUUID` | `String!` | Yes      | The execution whose logs should be returned. |
+
+## `WorkflowExecutionEventsInput`
+
+Used by [`workflowExecutionEvents`](/cre/reference/graphql-api/queries#workflowexecutionevents).
+
+| Field                   | Type      | Required | Description                                       |
+| ----------------------- | --------- | -------- | ------------------------------------------------- |
+| `workflowExecutionUUID` | `String!` | Yes      | The execution whose events should be returned.    |
+| `capabilityID`          | `String`  | No       | Restrict results to a single capability.          |
+| `status`                | `String`  | No       | Restrict results to a single event status string. |
+
+## Filtering and sorting notes
+
+- List filters that accept arrays (`status`, `workflowOwnerAddress`) act as an **OR** — a workflow or execution matches if its value is in the given list.
+- Only one `orderBy` field can be specified per query; there is no multi-field sort.
+- `search` performs a case-insensitive substring match; there is no documented support for wildcards or regular expressions.
+- Filters can be combined freely within a single input object — for example, combining `status` and `search` on `workflows` narrows results by both.
+
+## Related
+
+- [Query Reference](/cre/reference/graphql-api/queries)
+- [Enum Reference](/cre/reference/graphql-api/enums)
+- [Pagination](/cre/reference/graphql-api/pagination)

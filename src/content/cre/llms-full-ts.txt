@@ -10625,6 +10625,2812 @@ See the [EVM Client helper functions](/cre/reference/sdk/evm-client-ts#helper-fu
 
 ---
 
+# GraphQL API
+Source: https://docs.chain.link/cre/reference/graphql-api
+Last Updated: 2026-08-31
+
+The CRE GraphQL API gives you programmatic, read access to your organization's CRE resources and workflow execution data.
+
+Use the API to:
+
+- List and inspect deployed **workflows** and their **deployments**.
+- Retrieve **workflow executions**, including status, timing, and errors.
+- Investigate failed executions using **execution logs** and **execution events** (the capability-level timeline for an execution).
+- Export workflow and execution data into your own dashboards, alerting, or observability systems.
+- Retrieve your **account** and **organization** details.
+
+The API is a single GraphQL endpoint. Every request is an HTTP `POST` with a GraphQL query in the body — there is no REST equivalent.
+
+## Endpoint
+
+| Environment | Endpoint                             |
+| ----------- | ------------------------------------ |
+| Production  | `https://api.cre.chain.link/graphql` |
+
+There is no separate staging endpoint documented for external use.
+
+```http
+POST /graphql
+Host: api.cre.chain.link
+Content-Type: application/json
+Authorization: Apikey <CRE_API_KEY>
+```
+
+## Authentication
+
+Every request requires a CRE API key, which in turn requires your account to have [deploy access](/cre/account/deploy-access) approval. See [Authentication](/cre/reference/graphql-api/authentication) for how to create a key and send it on each request.
+
+## Make your first request
+
+See the [Quickstart](/cre/reference/graphql-api/quickstart) to send your first request with cURL, TypeScript, or Go in a few minutes.
+
+## Explore by task
+
+The [Common Queries](/cre/reference/graphql-api/common-queries) guide organizes example queries by what you're trying to do — list workflows, find failed executions, retrieve execution logs — rather than requiring you to explore the schema first.
+
+## Explore the schema
+
+- [Query Reference](/cre/reference/graphql-api/queries) — every query, its arguments, and its return type
+- [Object Reference](/cre/reference/graphql-api/objects) — every object type and field, including scalars
+- [Enum Reference](/cre/reference/graphql-api/enums) — every enum and what each value means
+- [Input Reference](/cre/reference/graphql-api/inputs) — filter, sort, and pagination input types
+
+## API concepts
+
+- [Pagination](/cre/reference/graphql-api/pagination) — how to page through large result sets
+- [Errors & Rate Limits](/cre/reference/graphql-api/errors) — HTTP vs. GraphQL errors, and current rate-limit behavior
+
+<Aside type="note" title="Scope of this documentation">
+  This section documents the **queries** used to read workflow, deployment, and execution data. The schema also exposes
+  mutations for account, organization, API key, and offchain-workflow management (for example `createApiKey`,
+  `inviteOrganizationMembers`, `upsertOffchainWorkflow`). Those are used internally by the CRE CLI and platform UI and
+  are not covered here.
+</Aside>
+
+---
+
+# Authentication
+Source: https://docs.chain.link/cre/reference/graphql-api/authentication
+Last Updated: 2026-08-31
+
+Every request to the CRE GraphQL API must include an `Authorization` header carrying a CRE API key.
+
+<Aside type="note" title="Deploy access required">
+  Creating an API key requires your account to have deploy access approval. Run `cre account access` with the CRE CLI to
+  check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
+</Aside>
+
+## Creating an API key
+
+CRE API keys are created from the CRE platform UI, not from the GraphQL API itself.
+
+1. Log in to the <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">CRE platform</a>
+2. Navigate to the **Organization** page
+3. Select the **APIs** tab
+4. Click **+ Organization API**
+5. Give your key a name and confirm
+
+This is the same key used for `CRE_API_KEY` with the CRE CLI. For the full walkthrough, see [API key authentication](/cre/reference/cli/authentication#api-key-authentication) in the CLI reference.
+
+<Aside type="caution" title="Keep your API key secure">
+  Treat your API key like a password. Do not commit it to version control or share it in plain text. Store it in your
+  application's or CI/CD platform's secret management.
+</Aside>
+
+## Sending the API key
+
+Send the key in the `Authorization` header using the `Apikey` scheme — **not** `Bearer`:
+
+```http
+Authorization: Apikey <CRE_API_KEY>
+```
+
+### cURL
+
+```bash
+curl -X POST \
+  https://api.cre.chain.link/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <CRE_API_KEY>" \
+  -d '{
+    "query": "query { getAccountDetails { memberId displayName emailAddress } }"
+  }'
+```
+
+### TypeScript
+
+```typescript
+const response = await fetch("https://api.cre.chain.link/graphql", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Apikey ${process.env.CRE_API_KEY}`,
+  },
+  body: JSON.stringify({
+    query: `query { getAccountDetails { memberId displayName emailAddress } }`,
+  }),
+})
+
+const result = await response.json()
+```
+
+### Go
+
+```go
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"os"
+)
+
+func main() {
+	reqBody, _ := json.Marshal(map[string]string{
+		"query": `query { getAccountDetails { memberId displayName emailAddress } }`,
+	})
+
+	req, err := http.NewRequest("POST", "https://api.cre.chain.link/graphql", bytes.NewBuffer(reqBody))
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Apikey "+os.Getenv("CRE_API_KEY"))
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	var result map[string]any
+	json.NewDecoder(resp.Body).Decode(&result)
+	fmt.Println(result)
+}
+```
+
+## Invalid or missing credentials
+
+If the `Authorization` header is missing, malformed, or carries an invalid or expired key, the request fails authentication. See [Errors & Rate Limits](/cre/reference/graphql-api/errors#authentication-errors) for how to detect and handle this in your client — check both the HTTP status code and the response body's `errors` array, since either can carry the failure.
+
+## Related
+
+- [Quickstart](/cre/reference/graphql-api/quickstart)
+- [Requesting Deploy Access](/cre/account/deploy-access)
+- [CLI: API key authentication](/cre/reference/cli/authentication#api-key-authentication)
+
+---
+
+# Quickstart
+Source: https://docs.chain.link/cre/reference/graphql-api/quickstart
+Last Updated: 2026-08-31
+
+This page walks through a single successful request to the CRE GraphQL API — from credentials to a parsed response.
+
+## Step 1: Obtain credentials
+
+You need a CRE API key. See [Authentication](/cre/reference/graphql-api/authentication#creating-an-api-key) for how to create one. Creating a key requires [deploy access](/cre/account/deploy-access) approval.
+
+## Step 2: Identify the endpoint
+
+```text
+https://api.cre.chain.link/graphql
+```
+
+## Step 3: Make a request
+
+The simplest useful request is `getAccountDetails`, which takes no arguments and returns the account associated with your API key.
+
+### cURL
+
+```bash
+curl -X POST \
+  https://api.cre.chain.link/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <CRE_API_KEY>" \
+  -d '{
+    "query": "query { getAccountDetails { memberId displayName emailAddress organizationId memberStatus } }"
+  }'
+```
+
+### TypeScript
+
+```typescript
+const response = await fetch("https://api.cre.chain.link/graphql", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Apikey ${process.env.CRE_API_KEY}`,
+  },
+  body: JSON.stringify({
+    query: `
+      query GetAccountDetails {
+        getAccountDetails {
+          memberId
+          displayName
+          emailAddress
+          organizationId
+          memberStatus
+        }
+      }
+    `,
+  }),
+})
+
+const result = await response.json()
+console.log(result.data.getAccountDetails)
+```
+
+### Go
+
+```go
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"os"
+)
+
+type graphqlRequest struct {
+	Query string `json:"query"`
+}
+
+type accountDetailsResponse struct {
+	Data struct {
+		GetAccountDetails struct {
+			MemberID       string `json:"memberId"`
+			DisplayName    string `json:"displayName"`
+			EmailAddress   string `json:"emailAddress"`
+			OrganizationID string `json:"organizationId"`
+			MemberStatus   string `json:"memberStatus"`
+		} `json:"getAccountDetails"`
+	} `json:"data"`
+}
+
+func main() {
+	query := `query {
+		getAccountDetails {
+			memberId
+			displayName
+			emailAddress
+			organizationId
+			memberStatus
+		}
+	}`
+
+	body, _ := json.Marshal(graphqlRequest{Query: query})
+
+	req, _ := http.NewRequest("POST", "https://api.cre.chain.link/graphql", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Apikey "+os.Getenv("CRE_API_KEY"))
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	var result accountDetailsResponse
+	json.NewDecoder(resp.Body).Decode(&result)
+	fmt.Printf("%+v\n", result.Data.GetAccountDetails)
+}
+```
+
+## Step 4: Inspect the response
+
+```json
+{
+  "data": {
+    "getAccountDetails": {
+      "memberId": "<MEMBER_ID>",
+      "displayName": "Jane Doe",
+      "emailAddress": "jane.doe@example.com",
+      "organizationId": "<ORGANIZATION_ID>",
+      "memberStatus": "JOINED"
+    }
+  }
+}
+```
+
+## Step 5: Next steps
+
+- [Common Queries](/cre/reference/graphql-api/common-queries) — copy-pasteable recipes for workflows, deployments, and executions
+- [Query Reference](/cre/reference/graphql-api/queries) — every query, its arguments, and its return type
+- [Pagination](/cre/reference/graphql-api/pagination) — how to page through workflow and execution lists
+- [Errors & Rate Limits](/cre/reference/graphql-api/errors) — how to detect and handle failures
+
+---
+
+# Common Queries
+Source: https://docs.chain.link/cre/reference/graphql-api/common-queries
+Last Updated: 2026-08-31
+
+These recipes are organized around what you're trying to do, not around the GraphQL schema. Each one is a complete, runnable query. Replace placeholders such as `<WORKFLOW_UUID>` with real values, and see [Authentication](/cre/reference/graphql-api/authentication) for how to set the `Authorization` header.
+
+All examples below assume the request is sent as:
+
+```bash
+curl -X POST https://api.cre.chain.link/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <CRE_API_KEY>" \
+  -d '{"query": "<QUERY>", "variables": <VARIABLES>}'
+```
+
+## Organization & account
+
+### Get your account details
+
+Retrieve the account associated with the current API key or session. Use this to confirm which account and organization you're authenticated as.
+
+#### Query
+
+```graphql
+query GetAccountDetails {
+  getAccountDetails {
+    memberId
+    displayName
+    emailAddress
+    organizationId
+    memberStatus
+    createdAt
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "getAccountDetails": {
+      "memberId": "<MEMBER_ID>",
+      "displayName": "Jane Doe",
+      "emailAddress": "jane.doe@example.com",
+      "organizationId": "<ORGANIZATION_ID>",
+      "memberStatus": "JOINED",
+      "createdAt": "2026-01-15T09:00:00Z"
+    }
+  }
+}
+```
+
+#### Related
+
+- [`getAccountDetails`](/cre/reference/graphql-api/queries#getaccountdetails)
+- [`OrganizationAccount`](/cre/reference/graphql-api/objects#organizationaccount)
+
+### Get your organization details
+
+Retrieve the organization your account belongs to.
+
+#### Query
+
+```graphql
+query GetOrganization {
+  getOrganization {
+    organizationId
+    displayName
+    restrictionStatus
+    activeStatus
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "getOrganization": {
+      "organizationId": "<ORGANIZATION_ID>",
+      "displayName": "Acme Corp",
+      "restrictionStatus": "FULL_ACCESS",
+      "activeStatus": "ACTIVE"
+    }
+  }
+}
+```
+
+#### Related
+
+- [`getOrganization`](/cre/reference/graphql-api/queries#getorganization)
+- [`Organization`](/cre/reference/graphql-api/objects#organization)
+
+## Workflows
+
+### List workflows
+
+List the workflows deployed for your organization. Use this to display a workflow inventory, or to find a workflow's `uuid` before querying its deployments or executions.
+
+#### Query
+
+```graphql
+query ListWorkflows($page: Page) {
+  workflows(input: { page: $page }) {
+    data {
+      uuid
+      name
+      workflowId
+      status
+      registeredAt
+      executionCount
+      executionCountByStatus {
+        success
+        failure
+      }
+    }
+    count
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "page": { "number": 0, "size": 20 }
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflows": {
+      "data": [
+        {
+          "uuid": "<WORKFLOW_UUID>",
+          "name": "price-feed-monitor",
+          "workflowId": "<WORKFLOW_ID>",
+          "status": "ACTIVE",
+          "registeredAt": "2026-06-01T12:00:00Z",
+          "executionCount": 482,
+          "executionCountByStatus": { "success": 470, "failure": 12 }
+        }
+      ],
+      "count": 1
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflows`](/cre/reference/graphql-api/queries#workflows)
+- [`Workflow`](/cre/reference/graphql-api/objects#workflow)
+- [Pagination](/cre/reference/graphql-api/pagination)
+
+### Find workflows by status or name
+
+Filter the workflow list by deployment status and/or a text search on the workflow name.
+
+#### Query
+
+```graphql
+query FindWorkflows($status: [WorkflowDeploymentStatus!], $search: String) {
+  workflows(input: { status: $status, search: $search }) {
+    data {
+      uuid
+      name
+      status
+    }
+    count
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "status": ["ACTIVE"],
+  "search": "price-feed"
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflows": {
+      "data": [{ "uuid": "<WORKFLOW_UUID>", "name": "price-feed-monitor", "status": "ACTIVE" }],
+      "count": 1
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflows`](/cre/reference/graphql-api/queries#workflows)
+- [`WorkflowDeploymentStatus`](/cre/reference/graphql-api/enums#workflowdeploymentstatus)
+
+### Get a workflow
+
+Retrieve a single workflow by its `uuid`.
+
+#### Query
+
+```graphql
+query GetWorkflow($uuid: String!, $from: Time!) {
+  workflow(input: { uuid: $uuid, from: $from }) {
+    data {
+      uuid
+      name
+      ownerAddress
+      status
+      registeredAt
+      executedAt
+      executionCount
+      executionCountByStatus {
+        success
+        failure
+      }
+      hasTeeExecutions
+      hasNonTeeExecutions
+    }
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "uuid": "<WORKFLOW_UUID>",
+  "from": "2026-08-01T00:00:00Z"
+}
+```
+
+`from` is required — it sets the start of the time window used to compute the workflow's aggregate fields (`executionCount`, `executionCountByStatus`, `creditUsed`).
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflow": {
+      "data": {
+        "uuid": "<WORKFLOW_UUID>",
+        "name": "price-feed-monitor",
+        "ownerAddress": "0x1234567890abcdef1234567890abcdef12345678",
+        "status": "ACTIVE",
+        "registeredAt": "2026-06-01T12:00:00Z",
+        "executedAt": "2026-08-31T11:45:00Z",
+        "executionCount": 482,
+        "executionCountByStatus": { "success": 470, "failure": 12 },
+        "hasTeeExecutions": false,
+        "hasNonTeeExecutions": true
+      }
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflow`](/cre/reference/graphql-api/queries#workflow)
+- [`Workflow`](/cre/reference/graphql-api/objects#workflow)
+
+### Get workflow activity over time
+
+Retrieve success and failure counts bucketed over a time range — useful for health charts and monitoring dashboards.
+
+#### Query
+
+```graphql
+query WorkflowActivity($workflowUUID: String, $from: Time, $to: Time) {
+  workflowActivity(input: { workflowUUID: $workflowUUID, from: $from, to: $to }) {
+    data {
+      from
+      to
+      successCount
+      failureCount
+    }
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "workflowUUID": "<WORKFLOW_UUID>",
+  "from": "2026-08-24T00:00:00Z",
+  "to": "2026-08-31T00:00:00Z"
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowActivity": {
+      "data": [
+        { "from": "2026-08-24T00:00:00Z", "to": "2026-08-25T00:00:00Z", "successCount": 68, "failureCount": 1 },
+        { "from": "2026-08-25T00:00:00Z", "to": "2026-08-26T00:00:00Z", "successCount": 71, "failureCount": 0 }
+      ]
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflowActivity`](/cre/reference/graphql-api/queries#workflowactivity)
+- [`WorkflowActivityRow`](/cre/reference/graphql-api/objects#workflowactivityrow)
+
+## Deployments
+
+### List deployments for a workflow
+
+Retrieve the deployment history for a workflow — every deploy/activate/pause action recorded against it.
+
+#### Query
+
+```graphql
+query WorkflowDeployments($workflowUUID: String!, $page: Page) {
+  workflowDeployments(input: { workflowUUID: $workflowUUID, page: $page }) {
+    data {
+      uuid
+      status
+      deployedAt
+      txHash
+      errorMessage
+    }
+    count
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "workflowUUID": "<WORKFLOW_UUID>",
+  "page": { "number": 0, "size": 10 }
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowDeployments": {
+      "data": [
+        {
+          "uuid": "<DEPLOYMENT_UUID>",
+          "status": "ACTIVE",
+          "deployedAt": "2026-06-01T12:00:00Z",
+          "txHash": "0xabc123...",
+          "errorMessage": null
+        }
+      ],
+      "count": 1
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflowDeployments`](/cre/reference/graphql-api/queries#workflowdeployments)
+- [`WorkflowDeployment`](/cre/reference/graphql-api/objects#workflowdeployment)
+
+### Get a deployment
+
+Retrieve a single deployment by its `uuid`, including its binary and config artifact URLs.
+
+#### Query
+
+```graphql
+query WorkflowDeployment($uuid: String!) {
+  workflowDeployment(input: { uuid: $uuid }) {
+    data {
+      uuid
+      status
+      deployedAt
+      binaryURL
+      configURL
+    }
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "uuid": "<DEPLOYMENT_UUID>"
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowDeployment": {
+      "data": {
+        "uuid": "<DEPLOYMENT_UUID>",
+        "status": "ACTIVE",
+        "deployedAt": "2026-06-01T12:00:00Z",
+        "binaryURL": "https://.../binary.wasm",
+        "configURL": "https://.../config.json"
+      }
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflowDeployment`](/cre/reference/graphql-api/queries#workflowdeployment)
+- [`WorkflowDeployment`](/cre/reference/graphql-api/objects#workflowdeployment)
+
+## Executions
+
+### List recent workflow executions
+
+Retrieve the most recent executions for a workflow. Use this for execution history views or health monitoring.
+
+#### Query
+
+```graphql
+query WorkflowExecutions($workflowUuid: String, $page: Page) {
+  workflowExecutions(input: { workflowUuid: $workflowUuid, orderBy: { field: STARTED_AT, order: DESC }, page: $page }) {
+    data {
+      uuid
+      id
+      status
+      classifiedStatus
+      startedAt
+      finishedAt
+    }
+    count
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "workflowUuid": "<WORKFLOW_UUID>",
+  "page": { "number": 0, "size": 10 }
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowExecutions": {
+      "data": [
+        {
+          "uuid": "<EXECUTION_UUID>",
+          "id": "<EXECUTION_ID>",
+          "status": "SUCCESS",
+          "classifiedStatus": "SUCCESS",
+          "startedAt": "2026-08-31T11:45:00Z",
+          "finishedAt": "2026-08-31T11:45:02Z"
+        }
+      ],
+      "count": 1
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions)
+- [`WorkflowExecution`](/cre/reference/graphql-api/objects#workflowexecution)
+- [Pagination](/cre/reference/graphql-api/pagination)
+
+### Find failed executions
+
+Filter executions by status to investigate recent failures.
+
+#### Query
+
+```graphql
+query FailedExecutions($workflowUuid: String, $status: [WorkflowExecutionStatus!]) {
+  workflowExecutions(input: { workflowUuid: $workflowUuid, status: $status }) {
+    data {
+      uuid
+      status
+      classifiedStatus
+      startedAt
+      errors {
+        error
+        count
+      }
+    }
+    count
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "workflowUuid": "<WORKFLOW_UUID>",
+  "status": ["FAILURE"]
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowExecutions": {
+      "data": [
+        {
+          "uuid": "<EXECUTION_UUID>",
+          "status": "FAILURE",
+          "classifiedStatus": "USER_ERROR",
+          "startedAt": "2026-08-31T09:12:00Z",
+          "errors": [{ "error": "capability timeout", "count": 1 }]
+        }
+      ],
+      "count": 1
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions)
+- [`WorkflowExecutionStatus`](/cre/reference/graphql-api/enums#workflowexecutionstatus)
+- [`ExecutionError`](/cre/reference/graphql-api/objects#executionerror)
+
+### Get executions within a time range
+
+Retrieve executions started between two timestamps — useful for incremental exports.
+
+#### Query
+
+```graphql
+query ExecutionsInRange($workflowUuid: String, $from: Time, $to: Time, $page: Page) {
+  workflowExecutions(input: { workflowUuid: $workflowUuid, from: $from, to: $to, page: $page }) {
+    data {
+      uuid
+      status
+      startedAt
+      finishedAt
+    }
+    count
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "workflowUuid": "<WORKFLOW_UUID>",
+  "from": "2026-08-30T00:00:00Z",
+  "to": "2026-08-31T00:00:00Z",
+  "page": { "number": 0, "size": 100 }
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowExecutions": {
+      "data": [
+        {
+          "uuid": "<EXECUTION_UUID>",
+          "status": "SUCCESS",
+          "startedAt": "2026-08-30T14:00:00Z",
+          "finishedAt": "2026-08-30T14:00:03Z"
+        }
+      ],
+      "count": 1
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions)
+- [Pagination](/cre/reference/graphql-api/pagination)
+
+### Get a single execution
+
+Retrieve full detail for one execution by its `uuid`.
+
+#### Query
+
+```graphql
+query GetExecution($uuid: String!) {
+  workflowExecution(input: { uuid: $uuid }) {
+    data {
+      uuid
+      id
+      workflowName
+      status
+      classifiedStatus
+      startedAt
+      finishedAt
+      executedInTee
+      errors {
+        error
+        count
+      }
+    }
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "uuid": "<EXECUTION_UUID>"
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowExecution": {
+      "data": {
+        "uuid": "<EXECUTION_UUID>",
+        "id": "<EXECUTION_ID>",
+        "workflowName": "price-feed-monitor",
+        "status": "SUCCESS",
+        "classifiedStatus": "SUCCESS",
+        "startedAt": "2026-08-31T11:45:00Z",
+        "finishedAt": "2026-08-31T11:45:02Z",
+        "executedInTee": false,
+        "errors": null
+      }
+    }
+  }
+}
+```
+
+`workflowExecution.data` is nullable — it returns `null` if no execution matches the given `uuid`.
+
+#### Related
+
+- [`workflowExecution`](/cre/reference/graphql-api/queries#workflowexecution)
+- [`WorkflowExecution`](/cre/reference/graphql-api/objects#workflowexecution)
+
+## Observability
+
+### Get execution logs
+
+Retrieve the log lines emitted during an execution — the same data shown by `cre execution logs`.
+
+#### Query
+
+```graphql
+query ExecutionLogs($workflowExecutionUUID: String!) {
+  workflowExecutionLogs(input: { workflowExecutionUUID: $workflowExecutionUUID }) {
+    data {
+      nodeID
+      message
+      timestamp
+    }
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "workflowExecutionUUID": "<EXECUTION_UUID>"
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowExecutionLogs": {
+      "data": [
+        { "nodeID": "<NODE_ID>", "message": "trigger fired", "timestamp": "2026-08-31T11:45:00Z" },
+        { "nodeID": "<NODE_ID>", "message": "execution completed", "timestamp": "2026-08-31T11:45:02Z" }
+      ]
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflowExecutionLogs`](/cre/reference/graphql-api/queries#workflowexecutionlogs)
+- [`WorkflowExecutionLog`](/cre/reference/graphql-api/objects#workflowexecutionlog)
+
+### Get the capability event timeline for an execution
+
+Retrieve the per-capability event timeline for an execution — the same data shown by `cre execution events`. Optionally filter by capability or status.
+
+#### Query
+
+```graphql
+query ExecutionEvents($workflowExecutionUUID: String!, $capabilityID: String, $status: String) {
+  workflowExecutionEvents(
+    input: { workflowExecutionUUID: $workflowExecutionUUID, capabilityID: $capabilityID, status: $status }
+  ) {
+    data {
+      capabilityID
+      status
+      method
+      startedAt
+      finishedAt
+      errors {
+        error
+        count
+      }
+    }
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "workflowExecutionUUID": "<EXECUTION_UUID>",
+  "capabilityID": null,
+  "status": null
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowExecutionEvents": {
+      "data": [
+        {
+          "capabilityID": "http-trigger@1.0.0",
+          "status": "COMPLETED",
+          "method": "GET",
+          "startedAt": "2026-08-31T11:45:00Z",
+          "finishedAt": "2026-08-31T11:45:01Z",
+          "errors": null
+        }
+      ]
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflowExecutionEvents`](/cre/reference/graphql-api/queries#workflowexecutionevents)
+- [`WorkflowExecutionEvent`](/cre/reference/graphql-api/objects#workflowexecutionevent)
+
+---
+
+# Query Reference
+Source: https://docs.chain.link/cre/reference/graphql-api/queries
+Last Updated: 2026-08-31
+
+This page documents every query on the CRE GraphQL API's root `Query` type that reads workflow, deployment, execution, account, or organization data.
+
+<Aside type="note" title="Other queries in the schema">
+  The schema also exposes queries for organization member management (`listOrganizationMembers`), API key management
+  (`verifyApiKey`, `listApiKeys`), wallet-key linking (`listWorkflowOwners`), billing (`getWorkflowResourceConsumption`,
+  `getAggregatedWorkflowResourceConsumption`), and offchain-workflow management (`getOffchainWorkflowById` and related
+  queries). Those aren't covered here — this page focuses on reading workflow and execution data.
+</Aside>
+
+## `getAccountDetails`
+
+Retrieves the account associated with the current API key or session.
+
+Use this to confirm which account you're authenticated as, or to display account information in your application.
+
+### Arguments
+
+None.
+
+### Returns
+
+```text
+OrganizationAccount
+```
+
+Nullable. See [`OrganizationAccount`](/cre/reference/graphql-api/objects#organizationaccount).
+
+### Example
+
+```graphql
+query {
+  getAccountDetails {
+    memberId
+    displayName
+    emailAddress
+    organizationId
+  }
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "getAccountDetails": {
+      "memberId": "<MEMBER_ID>",
+      "displayName": "Jane Doe",
+      "emailAddress": "jane.doe@example.com",
+      "organizationId": "<ORGANIZATION_ID>"
+    }
+  }
+}
+```
+
+### Related
+
+- [Common Queries: Get your account details](/cre/reference/graphql-api/common-queries#get-your-account-details)
+- [`OrganizationAccount`](/cre/reference/graphql-api/objects#organizationaccount)
+
+***
+
+## `getOrganization`
+
+Retrieves the organization the current account belongs to.
+
+### Arguments
+
+None.
+
+### Returns
+
+```text
+Organization
+```
+
+Nullable. See [`Organization`](/cre/reference/graphql-api/objects#organization).
+
+### Example
+
+```graphql
+query {
+  getOrganization {
+    organizationId
+    displayName
+    restrictionStatus
+    activeStatus
+  }
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "getOrganization": {
+      "organizationId": "<ORGANIZATION_ID>",
+      "displayName": "Acme Corp",
+      "restrictionStatus": "FULL_ACCESS",
+      "activeStatus": "ACTIVE"
+    }
+  }
+}
+```
+
+### Related
+
+- [Common Queries: Get your organization details](/cre/reference/graphql-api/common-queries#get-your-organization-details)
+- [`Organization`](/cre/reference/graphql-api/objects#organization)
+
+***
+
+## `getTenantConfig`
+
+Retrieves tenant configuration for the authenticated user: available workflow registries, deployment forwarders, and the vault gateway URL. This is the same data the CRE CLI caches locally as `~/.cre/context.yaml` after login.
+
+Requires an authenticated request (`@isAuthenticated`).
+
+### Arguments
+
+None.
+
+### Returns
+
+```text
+TenantConfig!
+```
+
+Non-nullable. See [`TenantConfig`](/cre/reference/graphql-api/objects#tenantconfig).
+
+### Example
+
+```graphql
+query {
+  getTenantConfig {
+    tenantId
+    defaultDonFamily
+    vaultGatewayUrl
+    registries {
+      id
+      label
+      type
+    }
+  }
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "getTenantConfig": {
+      "tenantId": "<TENANT_ID>",
+      "defaultDonFamily": "zone-a",
+      "vaultGatewayUrl": "https://01.gateway.zone-a.cre.chain.link",
+      "registries": [
+        { "id": "onchain:ethereum-mainnet", "label": "ethereum-mainnet (0x1234...abcd)", "type": "ON_CHAIN" }
+      ]
+    }
+  }
+}
+```
+
+### Related
+
+- [`TenantConfig`](/cre/reference/graphql-api/objects#tenantconfig)
+- [CLI: Tenant context cache](/cre/reference/cli/authentication#tenant-context-cache)
+
+***
+
+## `workflow`
+
+Retrieves a single workflow by its `uuid`.
+
+Use this to display detailed workflow metadata, or to check a workflow's current deployment status and aggregate execution counts.
+
+### Arguments
+
+| Argument | Type             | Required | Description                                                                                                                 |
+| -------- | ---------------- | -------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `input`  | `WorkflowInput!` | Yes      | Identifies the workflow and the aggregation window. See [`WorkflowInput`](/cre/reference/graphql-api/inputs#workflowinput). |
+
+`WorkflowInput` fields:
+
+| Field  | Type      | Required | Description                                                                                                                          |
+| ------ | --------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `uuid` | `String!` | Yes      | The workflow's unique identifier (CRE-generated, distinct from the onchain `workflowId`).                                            |
+| `from` | `Time!`   | Yes      | Start of the time window used to compute the workflow's aggregate fields (`executionCount`, `executionCountByStatus`, `creditUsed`). |
+
+### Returns
+
+```text
+WorkflowOutput!
+```
+
+Non-nullable wrapper. See [`WorkflowOutput`](/cre/reference/graphql-api/objects#workflowoutput) and [`Workflow`](/cre/reference/graphql-api/objects#workflow).
+
+### Example
+
+```graphql
+query GetWorkflow($uuid: String!, $from: Time!) {
+  workflow(input: { uuid: $uuid, from: $from }) {
+    data {
+      uuid
+      name
+      status
+      executionCount
+    }
+  }
+}
+```
+
+### Variables
+
+```json
+{
+  "uuid": "<WORKFLOW_UUID>",
+  "from": "2026-08-01T00:00:00Z"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "workflow": {
+      "data": {
+        "uuid": "<WORKFLOW_UUID>",
+        "name": "price-feed-monitor",
+        "status": "ACTIVE",
+        "executionCount": 482
+      }
+    }
+  }
+}
+```
+
+### Related
+
+- [Common Queries: Get a workflow](/cre/reference/graphql-api/common-queries#get-a-workflow)
+- [`workflows`](#workflows)
+- [`Workflow`](/cre/reference/graphql-api/objects#workflow)
+
+***
+
+## `workflows`
+
+Retrieves a paginated list of workflows for your organization, with optional filtering by owner address, status, and a text search on name.
+
+Use this to display a workflow inventory, or to discover a workflow's `uuid` for use with other queries.
+
+### Arguments
+
+| Argument | Type              | Required | Description                                                                                                    |
+| -------- | ----------------- | -------- | -------------------------------------------------------------------------------------------------------------- |
+| `input`  | `WorkflowsInput!` | Yes      | Filters, sort order, and pagination. See [`WorkflowsInput`](/cre/reference/graphql-api/inputs#workflowsinput). |
+
+`WorkflowsInput` fields:
+
+| Field                  | Type                          | Required | Description                                                                                                                                                |
+| ---------------------- | ----------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `workflowOwnerAddress` | `[OnchainAddress!]`           | No       | Restrict results to workflows owned by one or more addresses (max 100).                                                                                    |
+| `status`               | `[WorkflowDeploymentStatus!]` | No       | Restrict results to one or more deployment statuses (max 10). See [`WorkflowDeploymentStatus`](/cre/reference/graphql-api/enums#workflowdeploymentstatus). |
+| `search`               | `String`                      | No       | Case-insensitive text search on workflow name.                                                                                                             |
+| `orderBy`              | `WorkflowOrderBy`             | No       | Sort field and direction. See [`WorkflowOrderBy`](/cre/reference/graphql-api/inputs#workfloworderby).                                                      |
+| `page`                 | `Page`                        | No       | Page number and size. Defaults to page `0`, size `10`. See [Pagination](/cre/reference/graphql-api/pagination).                                            |
+
+### Returns
+
+```text
+WorkflowsOutput!
+```
+
+Non-nullable. See [`WorkflowsOutput`](/cre/reference/graphql-api/objects#workflowsoutput). `data` is the page of results; `count` is the total number of matching workflows across all pages.
+
+### Example
+
+```graphql
+query ListWorkflows($status: [WorkflowDeploymentStatus!], $page: Page) {
+  workflows(input: { status: $status, page: $page }) {
+    data {
+      uuid
+      name
+      status
+    }
+    count
+  }
+}
+```
+
+### Variables
+
+```json
+{
+  "status": ["ACTIVE"],
+  "page": { "number": 0, "size": 20 }
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "workflows": {
+      "data": [{ "uuid": "<WORKFLOW_UUID>", "name": "price-feed-monitor", "status": "ACTIVE" }],
+      "count": 1
+    }
+  }
+}
+```
+
+### Related
+
+- [Common Queries: List workflows](/cre/reference/graphql-api/common-queries#list-workflows)
+- [`workflow`](#workflow)
+- [Pagination](/cre/reference/graphql-api/pagination)
+
+***
+
+## `workflowActivity`
+
+Retrieves success/failure execution counts bucketed over a time range, for one workflow or across your organization.
+
+Use this to build health charts or monitoring dashboards.
+
+### Arguments
+
+| Argument | Type                     | Required | Description                                                                             |
+| -------- | ------------------------ | -------- | --------------------------------------------------------------------------------------- |
+| `input`  | `WorkflowActivityInput!` | Yes      | See [`WorkflowActivityInput`](/cre/reference/graphql-api/inputs#workflowactivityinput). |
+
+`WorkflowActivityInput` fields:
+
+| Field          | Type     | Required | Description                                                                |
+| -------------- | -------- | -------- | -------------------------------------------------------------------------- |
+| `workflowUUID` | `String` | No       | Restrict to a single workflow. Omit to aggregate across your organization. |
+| `from`         | `Time`   | No       | Start of the time range.                                                   |
+| `to`           | `Time`   | No       | End of the time range.                                                     |
+
+### Returns
+
+```text
+WorkflowActivityOutput!
+```
+
+Non-nullable. See [`WorkflowActivityOutput`](/cre/reference/graphql-api/objects#workflowactivityoutput).
+
+### Example
+
+```graphql
+query WorkflowActivity($workflowUUID: String, $from: Time, $to: Time) {
+  workflowActivity(input: { workflowUUID: $workflowUUID, from: $from, to: $to }) {
+    data {
+      from
+      to
+      successCount
+      failureCount
+    }
+  }
+}
+```
+
+### Variables
+
+```json
+{
+  "workflowUUID": "<WORKFLOW_UUID>",
+  "from": "2026-08-24T00:00:00Z",
+  "to": "2026-08-31T00:00:00Z"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "workflowActivity": {
+      "data": [{ "from": "2026-08-24T00:00:00Z", "to": "2026-08-25T00:00:00Z", "successCount": 68, "failureCount": 1 }]
+    }
+  }
+}
+```
+
+### Related
+
+- [Common Queries: Get workflow activity over time](/cre/reference/graphql-api/common-queries#get-workflow-activity-over-time)
+- [`WorkflowActivityRow`](/cre/reference/graphql-api/objects#workflowactivityrow)
+
+***
+
+## `workflowDeployments`
+
+Retrieves a paginated list of deployments for a workflow.
+
+### Arguments
+
+| Argument | Type                        | Required | Description                                                                                   |
+| -------- | --------------------------- | -------- | --------------------------------------------------------------------------------------------- |
+| `input`  | `WorkflowDeploymentsInput!` | Yes      | See [`WorkflowDeploymentsInput`](/cre/reference/graphql-api/inputs#workflowdeploymentsinput). |
+
+`WorkflowDeploymentsInput` fields:
+
+| Field          | Type                          | Required | Description                                                                                                               |
+| -------------- | ----------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `workflowUUID` | `String!`                     | Yes      | The workflow whose deployments should be returned.                                                                        |
+| `status`       | `[WorkflowDeploymentStatus!]` | No       | Restrict results to one or more deployment statuses (max 10).                                                             |
+| `from`         | `Time`                        | No       | Only include deployments created on or after this time.                                                                   |
+| `to`           | `Time`                        | No       | Only include deployments created on or before this time.                                                                  |
+| `search`       | `String`                      | No       | Text search filter.                                                                                                       |
+| `orderBy`      | `WorkflowDeploymentOrderBy`   | No       | Sort field and direction. See [`WorkflowDeploymentOrderBy`](/cre/reference/graphql-api/inputs#workflowdeploymentorderby). |
+| `page`         | `Page`                        | No       | Page number and size.                                                                                                     |
+
+### Returns
+
+```text
+WorkflowDeploymentsOutput!
+```
+
+Non-nullable. See [`WorkflowDeploymentsOutput`](/cre/reference/graphql-api/objects#workflowdeploymentsoutput).
+
+### Example
+
+```graphql
+query WorkflowDeployments($workflowUUID: String!, $page: Page) {
+  workflowDeployments(input: { workflowUUID: $workflowUUID, page: $page }) {
+    data {
+      uuid
+      status
+      deployedAt
+    }
+    count
+  }
+}
+```
+
+### Variables
+
+```json
+{
+  "workflowUUID": "<WORKFLOW_UUID>",
+  "page": { "number": 0, "size": 10 }
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "workflowDeployments": {
+      "data": [{ "uuid": "<DEPLOYMENT_UUID>", "status": "ACTIVE", "deployedAt": "2026-06-01T12:00:00Z" }],
+      "count": 1
+    }
+  }
+}
+```
+
+### Related
+
+- [Common Queries: List deployments for a workflow](/cre/reference/graphql-api/common-queries#list-deployments-for-a-workflow)
+- [`workflowDeployment`](#workflowdeployment)
+
+***
+
+## `workflowDeployment`
+
+Retrieves a single deployment by its `uuid`.
+
+### Arguments
+
+| Argument | Type                       | Required | Description                                               |
+| -------- | -------------------------- | -------- | --------------------------------------------------------- |
+| `input`  | `WorkflowDeploymentInput!` | Yes      | `{ uuid: String! }` — the deployment's unique identifier. |
+
+### Returns
+
+```text
+WorkflowDeploymentOutput!
+```
+
+Non-nullable. See [`WorkflowDeploymentOutput`](/cre/reference/graphql-api/objects#workflowdeploymentoutput).
+
+### Example
+
+```graphql
+query WorkflowDeployment($uuid: String!) {
+  workflowDeployment(input: { uuid: $uuid }) {
+    data {
+      uuid
+      status
+      binaryURL
+      configURL
+    }
+  }
+}
+```
+
+### Variables
+
+```json
+{
+  "uuid": "<DEPLOYMENT_UUID>"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "workflowDeployment": {
+      "data": {
+        "uuid": "<DEPLOYMENT_UUID>",
+        "status": "ACTIVE",
+        "binaryURL": "https://.../binary.wasm",
+        "configURL": "https://.../config.json"
+      }
+    }
+  }
+}
+```
+
+### Related
+
+- [Common Queries: Get a deployment](/cre/reference/graphql-api/common-queries#get-a-deployment)
+- [`workflowDeployments`](#workflowdeployments)
+
+***
+
+## `workflowExecutions`
+
+Retrieves a paginated list of executions, filterable by workflow, status, and time range.
+
+Use this to build execution history views, monitor workflow health, or export execution data incrementally.
+
+### Arguments
+
+| Argument | Type                       | Required | Description                                                                                 |
+| -------- | -------------------------- | -------- | ------------------------------------------------------------------------------------------- |
+| `input`  | `WorkflowExecutionsInput!` | Yes      | See [`WorkflowExecutionsInput`](/cre/reference/graphql-api/inputs#workflowexecutionsinput). |
+
+`WorkflowExecutionsInput` fields:
+
+| Field          | Type                         | Required | Description                                                                                                                                             |
+| -------------- | ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `workflowUuid` | `String`                     | No       | Restrict to a single workflow. Omit to list executions across your organization.                                                                        |
+| `status`       | `[WorkflowExecutionStatus!]` | No       | Restrict results to one or more execution statuses (max 10). See [`WorkflowExecutionStatus`](/cre/reference/graphql-api/enums#workflowexecutionstatus). |
+| `search`       | `String`                     | No       | Text search filter.                                                                                                                                     |
+| `from`         | `Time`                       | No       | Only include executions started on or after this time.                                                                                                  |
+| `to`           | `Time`                       | No       | Only include executions started on or before this time.                                                                                                 |
+| `orderBy`      | `WorkflowExecutionOrderBy`   | No       | Sort field and direction. See [`WorkflowExecutionOrderBy`](/cre/reference/graphql-api/inputs#workflowexecutionorderby).                                 |
+| `page`         | `Page`                       | No       | Page number and size.                                                                                                                                   |
+
+### Returns
+
+```text
+WorkflowExecutionsOutput!
+```
+
+Non-nullable. See [`WorkflowExecutionsOutput`](/cre/reference/graphql-api/objects#workflowexecutionsoutput).
+
+### Example
+
+```graphql
+query WorkflowExecutions($workflowUuid: String, $status: [WorkflowExecutionStatus!], $page: Page) {
+  workflowExecutions(input: { workflowUuid: $workflowUuid, status: $status, page: $page }) {
+    data {
+      uuid
+      status
+      startedAt
+      finishedAt
+    }
+    count
+  }
+}
+```
+
+### Variables
+
+```json
+{
+  "workflowUuid": "<WORKFLOW_UUID>",
+  "status": ["FAILURE"],
+  "page": { "number": 0, "size": 10 }
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "workflowExecutions": {
+      "data": [
+        {
+          "uuid": "<EXECUTION_UUID>",
+          "status": "FAILURE",
+          "startedAt": "2026-08-31T09:12:00Z",
+          "finishedAt": "2026-08-31T09:12:05Z"
+        }
+      ],
+      "count": 1
+    }
+  }
+}
+```
+
+### Related
+
+- [Common Queries: List recent workflow executions](/cre/reference/graphql-api/common-queries#list-recent-workflow-executions)
+- [Common Queries: Find failed executions](/cre/reference/graphql-api/common-queries#find-failed-executions)
+- [`workflowExecution`](#workflowexecution)
+- [Pagination](/cre/reference/graphql-api/pagination)
+
+***
+
+## `workflowExecution`
+
+Retrieves a single execution by its `uuid`.
+
+### Arguments
+
+| Argument | Type                      | Required | Description                                              |
+| -------- | ------------------------- | -------- | -------------------------------------------------------- |
+| `input`  | `WorkflowExecutionInput!` | Yes      | `{ uuid: String! }` — the execution's unique identifier. |
+
+### Returns
+
+```text
+WorkflowExecutionOutput!
+```
+
+Non-nullable wrapper. `data: WorkflowExecution` is nullable — it's `null` if no execution matches the given `uuid`. See [`WorkflowExecutionOutput`](/cre/reference/graphql-api/objects#workflowexecutionoutput).
+
+### Example
+
+```graphql
+query GetExecution($uuid: String!) {
+  workflowExecution(input: { uuid: $uuid }) {
+    data {
+      uuid
+      status
+      startedAt
+      finishedAt
+      errors {
+        error
+        count
+      }
+    }
+  }
+}
+```
+
+### Variables
+
+```json
+{
+  "uuid": "<EXECUTION_UUID>"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "workflowExecution": {
+      "data": {
+        "uuid": "<EXECUTION_UUID>",
+        "status": "SUCCESS",
+        "startedAt": "2026-08-31T11:45:00Z",
+        "finishedAt": "2026-08-31T11:45:02Z",
+        "errors": null
+      }
+    }
+  }
+}
+```
+
+### Related
+
+- [Common Queries: Get a single execution](/cre/reference/graphql-api/common-queries#get-a-single-execution)
+- [`workflowExecutions`](#workflowexecutions)
+
+***
+
+## `workflowExecutionLogs`
+
+Retrieves the log lines emitted during an execution.
+
+### Arguments
+
+| Argument | Type                          | Required | Description                                                                         |
+| -------- | ----------------------------- | -------- | ----------------------------------------------------------------------------------- |
+| `input`  | `WorkflowExecutionLogsInput!` | Yes      | `{ workflowExecutionUUID: String! }` — the execution whose logs should be returned. |
+
+### Returns
+
+```text
+WorkflowExecutionLogsOutput!
+```
+
+Non-nullable wrapper; `data` is a nullable list. See [`WorkflowExecutionLogsOutput`](/cre/reference/graphql-api/objects#workflowexecutionlogsoutput).
+
+### Example
+
+```graphql
+query ExecutionLogs($workflowExecutionUUID: String!) {
+  workflowExecutionLogs(input: { workflowExecutionUUID: $workflowExecutionUUID }) {
+    data {
+      nodeID
+      message
+      timestamp
+    }
+  }
+}
+```
+
+### Variables
+
+```json
+{
+  "workflowExecutionUUID": "<EXECUTION_UUID>"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "workflowExecutionLogs": {
+      "data": [{ "nodeID": "<NODE_ID>", "message": "execution completed", "timestamp": "2026-08-31T11:45:02Z" }]
+    }
+  }
+}
+```
+
+### Related
+
+- [Common Queries: Get execution logs](/cre/reference/graphql-api/common-queries#get-execution-logs)
+- [`WorkflowExecutionLog`](/cre/reference/graphql-api/objects#workflowexecutionlog)
+
+***
+
+## `workflowExecutionEvents`
+
+Retrieves the per-capability event timeline for an execution, optionally filtered by capability ID or status.
+
+### Arguments
+
+| Argument | Type                            | Required | Description                                                                                           |
+| -------- | ------------------------------- | -------- | ----------------------------------------------------------------------------------------------------- |
+| `input`  | `WorkflowExecutionEventsInput!` | Yes      | See [`WorkflowExecutionEventsInput`](/cre/reference/graphql-api/inputs#workflowexecutioneventsinput). |
+
+`WorkflowExecutionEventsInput` fields:
+
+| Field                   | Type      | Required | Description                                       |
+| ----------------------- | --------- | -------- | ------------------------------------------------- |
+| `workflowExecutionUUID` | `String!` | Yes      | The execution whose events should be returned.    |
+| `capabilityID`          | `String`  | No       | Restrict results to a single capability.          |
+| `status`                | `String`  | No       | Restrict results to a single event status string. |
+
+### Returns
+
+```text
+WorkflowExecutionEventsOutput!
+```
+
+Non-nullable wrapper; `data` is a nullable list. See [`WorkflowExecutionEventsOutput`](/cre/reference/graphql-api/objects#workflowexecutioneventsoutput).
+
+### Example
+
+```graphql
+query ExecutionEvents($workflowExecutionUUID: String!) {
+  workflowExecutionEvents(input: { workflowExecutionUUID: $workflowExecutionUUID }) {
+    data {
+      capabilityID
+      status
+      startedAt
+      finishedAt
+    }
+  }
+}
+```
+
+### Variables
+
+```json
+{
+  "workflowExecutionUUID": "<EXECUTION_UUID>"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "workflowExecutionEvents": {
+      "data": [
+        {
+          "capabilityID": "http-trigger@1.0.0",
+          "status": "COMPLETED",
+          "startedAt": "2026-08-31T11:45:00Z",
+          "finishedAt": "2026-08-31T11:45:01Z"
+        }
+      ]
+    }
+  }
+}
+```
+
+### Related
+
+- [Common Queries: Get the capability event timeline for an execution](/cre/reference/graphql-api/common-queries#get-the-capability-event-timeline-for-an-execution)
+- [`WorkflowExecutionEvent`](/cre/reference/graphql-api/objects#workflowexecutionevent)
+
+---
+
+# Object Reference
+Source: https://docs.chain.link/cre/reference/graphql-api/objects
+Last Updated: 2026-08-31
+
+This page documents the object types and scalars returned by the queries in the [Query Reference](/cre/reference/graphql-api/queries). For filter/sort/pagination input types, see the [Input Reference](/cre/reference/graphql-api/inputs). For enums, see the [Enum Reference](/cre/reference/graphql-api/enums).
+
+## Scalars
+
+| Scalar           | Represents                                                                                                |
+| ---------------- | --------------------------------------------------------------------------------------------------------- |
+| `Time`           | An ISO 8601 timestamp, for example `2026-08-31T14:32:18Z`.                                                |
+| `WorkflowId`     | The onchain workflow identifier (distinct from a workflow's CRE-generated `uuid`).                        |
+| `OnchainAddress` | A blockchain address, for example a workflow owner's wallet or contract address.                          |
+| `ChainSelector`  | A Chainlink chain selector identifying a specific blockchain network.                                     |
+| `OrganizationId` | Unique, CRE-generated identifier for an organization.                                                     |
+| `TenantId`       | Unique, CRE-generated identifier for a tenant (an organization's deployment environment).                 |
+| `MemberId`       | Unique, CRE-generated identifier for an organization member (account).                                    |
+| `UserId`         | Unique, CRE-generated identifier for a user.                                                              |
+| `Email`          | An email address.                                                                                         |
+| `LabelText`      | A short, user-provided display label (for example an account or organization display name).               |
+| `CredentialText` | A sensitive credential value, such as an API key token. Never logged or displayed in full by CRE tooling. |
+| `CreditAmount`   | A numeric CRE credit amount, used for usage-based billing fields such as `creditUsed`.                    |
+| `UUID`           | A standard UUID string.                                                                                   |
+| `JSONObject`     | An arbitrary JSON object.                                                                                 |
+
+## `OrganizationAccount`
+
+Represents a member of your organization — typically your own account when returned from `getAccountDetails`.
+
+| Field            | Type              | Description                                                                                                                                |
+| ---------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `memberId`       | `MemberId!`       | Unique identifier for this organization member.                                                                                            |
+| `userId`         | `UserId`          | Underlying user identifier. `null` if the member hasn't completed signup.                                                                  |
+| `organizationId` | `OrganizationId!` | The organization this member belongs to.                                                                                                   |
+| `emailAddress`   | `Email!`          | The member's email address.                                                                                                                |
+| `displayName`    | `LabelText!`      | The member's display name.                                                                                                                 |
+| `memberType`     | `MemberType`      | The member's role. `null` for members without an assigned type. See [`MemberType`](/cre/reference/graphql-api/enums#membertype).           |
+| `memberStatus`   | `MemberStatus!`   | Whether the member has been invited, has joined, or has been removed. See [`MemberStatus`](/cre/reference/graphql-api/enums#memberstatus). |
+| `createdAt`      | `Time!`           | When this member record was created.                                                                                                       |
+| `updatedAt`      | `Time!`           | When this member record was last updated.                                                                                                  |
+| `invitedByUser`  | `UserId`          | The user who sent the invite. `null` if not invited.                                                                                       |
+| `invitedAt`      | `Time`            | When the member was invited. `null` if not invited.                                                                                        |
+| `joinedAt`       | `Time`            | When the member joined. `null` while still `INVITED`.                                                                                      |
+| `removedByUser`  | `UserId`          | The user who removed this member. `null` if not removed.                                                                                   |
+| `removedAt`      | `Time`            | When the member was removed. `null` if not removed.                                                                                        |
+
+## `Organization`
+
+Represents your CRE organization.
+
+| Field               | Type                             | Description                                                                                                                                                                   |
+| ------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `organizationId`    | `OrganizationId!`                | Unique identifier for the organization.                                                                                                                                       |
+| `displayName`       | `LabelText!`                     | The organization's display name.                                                                                                                                              |
+| `createdAt`         | `Time!`                          | When the organization was created.                                                                                                                                            |
+| `updatedAt`         | `Time!`                          | When the organization was last updated.                                                                                                                                       |
+| `restrictionStatus` | `OrganizationRestrictionStatus!` | Whether the organization is gated (limited access) or has full access. See [`OrganizationRestrictionStatus`](/cre/reference/graphql-api/enums#organizationrestrictionstatus). |
+| `activeStatus`      | `EntityActiveStatus!`            | Whether the organization is active or deleted. See [`EntityActiveStatus`](/cre/reference/graphql-api/enums#entityactivestatus).                                               |
+| `tenantId`          | `Int!`                           | Numeric tenant identifier for the organization.                                                                                                                               |
+
+## `TenantConfig`
+
+Tenant configuration for the authenticated user — the registry manifest the CRE CLI caches locally after login or when authenticating with an API key.
+
+| Field                  | Type               | Description                                                     |
+| ---------------------- | ------------------ | --------------------------------------------------------------- |
+| `tenantId`             | `TenantId!`        | Unique identifier for the tenant.                               |
+| `defaultDonFamily`     | `String!`          | The default DON family for this tenant. Overridable in the CLI. |
+| `vaultGatewayUrl`      | `String!`          | The Vault DON gateway URL used for secrets management.          |
+| `capabilitiesRegistry` | `OnChainContract!` | The CapabilitiesRegistry contract for this tenant.              |
+| `registries`           | `[Registry!]!`     | The workflow registries available to this tenant.               |
+| `forwarders`           | `[Forwarder!]!`    | The onchain forwarder contracts available to this tenant.       |
+
+## `OnChainContract`
+
+An onchain contract reference.
+
+| Field           | Type              | Description                            |
+| --------------- | ----------------- | -------------------------------------- |
+| `chainSelector` | `ChainSelector!`  | The chain the contract is deployed on. |
+| `address`       | `OnchainAddress!` | The contract's address.                |
+
+## `Registry`
+
+A workflow registry available to a tenant.
+
+| Field              | Type                  | Description                                                                                                                         |
+| ------------------ | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `id`               | `String!`             | Unique identifier for the registry.                                                                                                 |
+| `label`            | `String!`             | Human-readable label for the registry.                                                                                              |
+| `type`             | `RegistryType!`       | Whether the registry is onchain or offchain. See [`RegistryType`](/cre/reference/graphql-api/enums#registrytype).                   |
+| `chainSelector`    | `ChainSelector`       | The chain the registry is deployed on. `null` for offchain registries.                                                              |
+| `address`          | `OnchainAddress`      | The registry contract's address. `null` for offchain registries.                                                                    |
+| `secretsAuthFlows` | `[SecretsAuthFlow!]!` | The secrets authentication flows this registry supports. See [`SecretsAuthFlow`](/cre/reference/graphql-api/enums#secretsauthflow). |
+
+## `Forwarder`
+
+An onchain forwarder contract.
+
+| Field           | Type              | Description                             |
+| --------------- | ----------------- | --------------------------------------- |
+| `chainSelector` | `ChainSelector!`  | The chain the forwarder is deployed on. |
+| `address`       | `OnchainAddress!` | The forwarder contract's address.       |
+
+## `Workflow`
+
+Represents a workflow registered to your organization.
+
+| Field                    | Type                              | Description                                                                                                                            |
+| ------------------------ | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `uuid`                   | `String!`                         | CRE-generated unique identifier for the workflow. Use this to query deployments and executions.                                        |
+| `ownerAddress`           | `OnchainAddress!`                 | The wallet or multi-sig address that owns this workflow onchain.                                                                       |
+| `name`                   | `String!`                         | The workflow's name.                                                                                                                   |
+| `workflowId`             | `WorkflowId!`                     | The onchain workflow identifier.                                                                                                       |
+| `status`                 | `WorkflowDeploymentStatus!`       | The workflow's current deployment status. See [`WorkflowDeploymentStatus`](/cre/reference/graphql-api/enums#workflowdeploymentstatus). |
+| `registeredAt`           | `Time!`                           | When the workflow was first registered.                                                                                                |
+| `creditUsed`             | `CreditAmount`                    | Credits consumed by this workflow within the queried time window. `null` if not available.                                             |
+| `executedAt`             | `Time`                            | When the workflow last executed. `null` if it has never executed.                                                                      |
+| `executionCount`         | `Int!`                            | Total number of executions within the queried time window.                                                                             |
+| `executionCountByStatus` | `WorkflowExecutionCountByStatus!` | Execution counts broken down by success/failure within the queried time window.                                                        |
+| `workflowSource`         | `String!`                         | The language/runtime the workflow was written in.                                                                                      |
+| `hasTeeExecutions`       | `Boolean!`                        | Whether this workflow has executions that ran inside a Trusted Execution Environment.                                                  |
+| `hasNonTeeExecutions`    | `Boolean!`                        | Whether this workflow has executions that did not run inside a TEE.                                                                    |
+
+## `WorkflowExecutionCountByStatus`
+
+| Field     | Type   | Description                      |
+| --------- | ------ | -------------------------------- |
+| `success` | `Int!` | Number of successful executions. |
+| `failure` | `Int!` | Number of failed executions.     |
+
+## `WorkflowOutput`
+
+Wrapper type returned by the [`workflow`](/cre/reference/graphql-api/queries#workflow) query.
+
+| Field  | Type        | Description             |
+| ------ | ----------- | ----------------------- |
+| `data` | `Workflow!` | The requested workflow. |
+
+## `WorkflowsOutput`
+
+Wrapper type returned by the [`workflows`](/cre/reference/graphql-api/queries#workflows) query.
+
+| Field   | Type           | Description                                                     |
+| ------- | -------------- | --------------------------------------------------------------- |
+| `data`  | `[Workflow!]!` | The current page of workflows.                                  |
+| `count` | `Int!`         | Total number of workflows matching the query, across all pages. |
+
+## `WorkflowActivityRow`
+
+A single bucket of execution activity, returned by [`workflowActivity`](/cre/reference/graphql-api/queries#workflowactivity).
+
+| Field          | Type    | Description                                     |
+| -------------- | ------- | ----------------------------------------------- |
+| `from`         | `Time!` | Start of this activity bucket.                  |
+| `to`           | `Time!` | End of this activity bucket.                    |
+| `successCount` | `Int!`  | Number of successful executions in this bucket. |
+| `failureCount` | `Int!`  | Number of failed executions in this bucket.     |
+
+## `WorkflowActivityOutput`
+
+| Field  | Type                     | Description                          |
+| ------ | ------------------------ | ------------------------------------ |
+| `data` | `[WorkflowActivityRow!]` | The activity buckets. Nullable list. |
+
+## `WorkflowDeployment`
+
+Represents a single deployment of a workflow — one deploy, activate, pause, or delete action recorded against the Workflow Registry contract.
+
+| Field                    | Type                             | Description                                                                                                            |
+| ------------------------ | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `uuid`                   | `String!`                        | CRE-generated unique identifier for this deployment.                                                                   |
+| `workflowID`             | `String!`                        | The onchain workflow identifier this deployment belongs to.                                                            |
+| `errorMessage`           | `String`                         | Error message if the deployment failed. `null` otherwise.                                                              |
+| `txHash`                 | `String`                         | Transaction hash of the onchain deployment transaction. `null` if not applicable.                                      |
+| `binaryURL`              | `String`                         | URL to the deployed workflow binary artifact. `null` if not available.                                                 |
+| `configURL`              | `String`                         | URL to the deployed workflow config artifact. `null` if not available.                                                 |
+| `status`                 | `WorkflowDeploymentStatus!`      | This deployment's status. See [`WorkflowDeploymentStatus`](/cre/reference/graphql-api/enums#workflowdeploymentstatus). |
+| `deployedAt`             | `Time!`                          | When this deployment was created.                                                                                      |
+| `executionCountByStatus` | `WorkflowExecutionCountByStatus` | Execution counts for this specific deployment. `null` if not available.                                                |
+| `workflowSource`         | `String!`                        | The language/runtime the workflow was written in.                                                                      |
+| `hasTeeExecutions`       | `Boolean!`                       | Whether this deployment has executions that ran inside a TEE.                                                          |
+| `hasNonTeeExecutions`    | `Boolean!`                       | Whether this deployment has executions that did not run inside a TEE.                                                  |
+
+## `WorkflowDeploymentsOutput`
+
+Wrapper type returned by [`workflowDeployments`](/cre/reference/graphql-api/queries#workflowdeployments).
+
+| Field   | Type                     | Description                                     |
+| ------- | ------------------------ | ----------------------------------------------- |
+| `data`  | `[WorkflowDeployment!]!` | The current page of deployments.                |
+| `count` | `Int!`                   | Total number of deployments matching the query. |
+
+## `WorkflowDeploymentOutput`
+
+Wrapper type returned by [`workflowDeployment`](/cre/reference/graphql-api/queries#workflowdeployment).
+
+| Field  | Type                  | Description               |
+| ------ | --------------------- | ------------------------- |
+| `data` | `WorkflowDeployment!` | The requested deployment. |
+
+## `WorkflowExecution`
+
+Represents a single execution of a deployed CRE workflow.
+
+| Field              | Type                                | Description                                                                                                                                                                                   |
+| ------------------ | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `uuid`             | `String!`                           | CRE-generated unique identifier for this execution. Use this to query logs and events.                                                                                                        |
+| `workflowUUID`     | `String!`                           | The workflow this execution belongs to.                                                                                                                                                       |
+| `id`               | `String!`                           | The execution's identifier as reported by the DON.                                                                                                                                            |
+| `workflowName`     | `String!`                           | The workflow's name at the time of execution.                                                                                                                                                 |
+| `workflowId`       | `WorkflowId!`                       | The onchain workflow identifier.                                                                                                                                                              |
+| `status`           | `WorkflowExecutionStatus!`          | The execution's status. See [`WorkflowExecutionStatus`](/cre/reference/graphql-api/enums#workflowexecutionstatus).                                                                            |
+| `startedAt`        | `Time!`                             | When the execution started.                                                                                                                                                                   |
+| `finishedAt`       | `Time`                              | When the execution finished. `null` while the execution is still in progress.                                                                                                                 |
+| `creditUsed`       | `CreditAmount`                      | Credits consumed by this execution. `null` if not available.                                                                                                                                  |
+| `errors`           | `[ExecutionError]`                  | Errors encountered during this execution, grouped by error message with an occurrence count. `null` if none occurred.                                                                         |
+| `executedInTee`    | `Boolean`                           | Whether this execution ran inside a Trusted Execution Environment. `null` if unknown.                                                                                                         |
+| `classifiedStatus` | `WorkflowExecutionClassifiedStatus` | A more granular status distinguishing user-caused from system-caused failures. See [`WorkflowExecutionClassifiedStatus`](/cre/reference/graphql-api/enums#workflowexecutionclassifiedstatus). |
+
+## `ExecutionError`
+
+An error observed during a workflow execution.
+
+| Field   | Type      | Description                                               |
+| ------- | --------- | --------------------------------------------------------- |
+| `error` | `String!` | The error message.                                        |
+| `count` | `Int!`    | Number of times this error occurred during the execution. |
+
+## `WorkflowExecutionsOutput`
+
+Wrapper type returned by [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions).
+
+| Field   | Type                    | Description                                    |
+| ------- | ----------------------- | ---------------------------------------------- |
+| `data`  | `[WorkflowExecution!]!` | The current page of executions.                |
+| `count` | `Int!`                  | Total number of executions matching the query. |
+
+## `WorkflowExecutionOutput`
+
+Wrapper type returned by [`workflowExecution`](/cre/reference/graphql-api/queries#workflowexecution).
+
+| Field  | Type                | Description                                                               |
+| ------ | ------------------- | ------------------------------------------------------------------------- |
+| `data` | `WorkflowExecution` | The requested execution. `null` if no execution matches the given `uuid`. |
+
+## `WorkflowExecutionLog`
+
+A single log line emitted during a workflow execution.
+
+| Field       | Type      | Description                              |
+| ----------- | --------- | ---------------------------------------- |
+| `nodeID`    | `String!` | The DON node that emitted this log line. |
+| `message`   | `String!` | The log message.                         |
+| `timestamp` | `Time!`   | When the log line was emitted.           |
+
+## `WorkflowExecutionLogsOutput`
+
+Wrapper type returned by [`workflowExecutionLogs`](/cre/reference/graphql-api/queries#workflowexecutionlogs).
+
+| Field  | Type                      | Description                               |
+| ------ | ------------------------- | ----------------------------------------- |
+| `data` | `[WorkflowExecutionLog!]` | The execution's log lines. Nullable list. |
+
+## `CapabilityExecutionError`
+
+An error observed during a capability call within an execution.
+
+| Field   | Type      | Description                                                   |
+| ------- | --------- | ------------------------------------------------------------- |
+| `error` | `String!` | The error message.                                            |
+| `count` | `Int!`    | Number of times this error occurred for this capability call. |
+
+## `WorkflowExecutionEvent`
+
+A single capability event within an execution's timeline.
+
+| Field          | Type                         | Description                                                                                  |
+| -------------- | ---------------------------- | -------------------------------------------------------------------------------------------- |
+| `capabilityID` | `String!`                    | Identifier of the capability that produced this event (for example a trigger or action).     |
+| `status`       | `String!`                    | The event's status, as reported by the DON.                                                  |
+| `startedAt`    | `Time!`                      | When the capability call started.                                                            |
+| `finishedAt`   | `Time`                       | When the capability call finished. `null` while still in progress.                           |
+| `errors`       | `[CapabilityExecutionError]` | Errors encountered during this capability call. `null` if none occurred.                     |
+| `method`       | `String`                     | The capability method invoked, if applicable (for example an HTTP method). `null` otherwise. |
+
+## `WorkflowExecutionEventsOutput`
+
+Wrapper type returned by [`workflowExecutionEvents`](/cre/reference/graphql-api/queries#workflowexecutionevents).
+
+| Field  | Type                        | Description                                               |
+| ------ | --------------------------- | --------------------------------------------------------- |
+| `data` | `[WorkflowExecutionEvent!]` | The execution's capability event timeline. Nullable list. |
+
+## Related
+
+- [Query Reference](/cre/reference/graphql-api/queries)
+- [Enum Reference](/cre/reference/graphql-api/enums)
+- [Input Reference](/cre/reference/graphql-api/inputs)
+
+---
+
+# Enum Reference
+Source: https://docs.chain.link/cre/reference/graphql-api/enums
+Last Updated: 2026-08-31
+
+<Aside type="note" title="Value meanings">
+  The GraphQL schema itself does not carry descriptions for individual enum values. The descriptions below reflect each
+  value's plain meaning; if your application depends on precise semantics for a value not described further here, verify
+  against observed behavior or contact Chainlink support.
+</Aside>
+
+## `WorkflowDeploymentStatus`
+
+The deployment status of a [`Workflow`](/cre/reference/graphql-api/objects#workflow) or [`WorkflowDeployment`](/cre/reference/graphql-api/objects#workflowdeployment).
+
+| Value     | Description                                                                  |
+| --------- | ---------------------------------------------------------------------------- |
+| `PENDING` | The deployment has been submitted but is not yet confirmed onchain.          |
+| `FAILED`  | The deployment failed. See the deployment's `errorMessage` field for detail. |
+| `ACTIVE`  | The workflow is deployed and actively executing.                             |
+| `PAUSED`  | The workflow is deployed but paused; it will not execute until reactivated.  |
+| `DELETED` | The workflow has been deleted from the Workflow Registry.                    |
+
+## `WorkflowExecutionStatus`
+
+The status of a [`WorkflowExecution`](/cre/reference/graphql-api/objects#workflowexecution).
+
+| Value         | Description                                                                                  |
+| ------------- | -------------------------------------------------------------------------------------------- |
+| `UNKNOWN`     | The execution's status could not be determined.                                              |
+| `UNSPECIFIED` | No status has been set for this execution.                                                   |
+| `TRIGGERED`   | The execution has been triggered but has not yet started processing.                         |
+| `IN_PROGRESS` | The execution is currently running.                                                          |
+| `SUCCESS`     | The execution completed successfully.                                                        |
+| `FAILURE`     | The execution terminated because of an error. See the execution's `errors` field for detail. |
+
+## `WorkflowExecutionClassifiedStatus`
+
+A more granular classification of a finished execution's outcome, distinguishing who or what caused a failure.
+
+| Value          | Description                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------ |
+| `UNSPECIFIED`  | No classification has been set.                                                                              |
+| `SUCCESS`      | The execution completed successfully.                                                                        |
+| `USER_ERROR`   | The execution failed because of an error in the workflow's own logic or configuration.                       |
+| `SYSTEM_ERROR` | The execution failed because of an error in the CRE platform or DON infrastructure, not the workflow itself. |
+
+## `SortingOrder`
+
+Sort direction, used by the `orderBy` argument on list queries.
+
+| Value  | Description       |
+| ------ | ----------------- |
+| `ASC`  | Ascending order.  |
+| `DESC` | Descending order. |
+
+## `WorkflowOrderByField`
+
+Fields that [`workflows`](/cre/reference/graphql-api/queries#workflows) can sort by.
+
+| Value         | Description                                        |
+| ------------- | -------------------------------------------------- |
+| `NAME`        | Sort by workflow name.                             |
+| `STATUS`      | Sort by deployment status.                         |
+| `EXECUTED_AT` | Sort by the time of the workflow's last execution. |
+
+## `WorkflowDeploymentOrderByField`
+
+Fields that [`workflowDeployments`](/cre/reference/graphql-api/queries#workflowdeployments) can sort by.
+
+| Value         | Description                                  |
+| ------------- | -------------------------------------------- |
+| `WORKFLOW_ID` | Sort by the onchain workflow identifier.     |
+| `DEPLOYED_AT` | Sort by the time the deployment was created. |
+
+## `WorkflowExecutionOrderByField`
+
+Fields that [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions) can sort by.
+
+| Value         | Description                             |
+| ------------- | --------------------------------------- |
+| `ID`          | Sort by execution ID.                   |
+| `STATUS`      | Sort by execution status.               |
+| `STARTED_AT`  | Sort by the time the execution started. |
+| `CREDIT_USED` | Sort by credits consumed.               |
+
+## `OrganizationRestrictionStatus`
+
+The access level of an [`Organization`](/cre/reference/graphql-api/objects#organization).
+
+| Value         | Description                                                       |
+| ------------- | ----------------------------------------------------------------- |
+| `GATED`       | The organization has limited access pending closed-beta approval. |
+| `FULL_ACCESS` | The organization has full platform access.                        |
+
+## `EntityActiveStatus`
+
+Whether an entity such as an organization or API key is active or has been removed.
+
+| Value     | Description                                 |
+| --------- | ------------------------------------------- |
+| `ACTIVE`  | The entity is active.                       |
+| `DELETED` | The entity has been deleted or deactivated. |
+
+## `MemberType`
+
+The role of an [`OrganizationAccount`](/cre/reference/graphql-api/objects#organizationaccount).
+
+| Value   | Description                                 |
+| ------- | ------------------------------------------- |
+| `ROOT`  | The organization's root/owner account.      |
+| `ADMIN` | An account with administrative permissions. |
+
+## `MemberStatus`
+
+The invitation/membership state of an [`OrganizationAccount`](/cre/reference/graphql-api/objects#organizationaccount).
+
+| Value     | Description                                         |
+| --------- | --------------------------------------------------- |
+| `INVITED` | The account has been invited but hasn't joined yet. |
+| `JOINED`  | The account has joined the organization.            |
+| `REMOVED` | The account has been removed from the organization. |
+
+## `RegistryType`
+
+The kind of a [`Registry`](/cre/reference/graphql-api/objects#registry) returned by `getTenantConfig`.
+
+| Value       | Description                                           |
+| ----------- | ----------------------------------------------------- |
+| `ON_CHAIN`  | The registry is an onchain contract.                  |
+| `OFF_CHAIN` | The registry is a Chainlink-hosted offchain registry. |
+
+## `SecretsAuthFlow`
+
+A secrets authentication flow supported by a [`Registry`](/cre/reference/graphql-api/objects#registry).
+
+| Value               | Description                                                      |
+| ------------------- | ---------------------------------------------------------------- |
+| `BROWSER`           | Secrets are authorized through an interactive browser flow.      |
+| `OWNER_KEY_SIGNING` | Secrets are authorized by signing with the workflow owner's key. |
+
+## Related
+
+- [Object Reference](/cre/reference/graphql-api/objects)
+- [Query Reference](/cre/reference/graphql-api/queries)
+
+---
+
+# Input Reference
+Source: https://docs.chain.link/cre/reference/graphql-api/inputs
+Last Updated: 2026-08-31
+
+This page documents the input types used as arguments to the queries in the [Query Reference](/cre/reference/graphql-api/queries).
+
+## `Page`
+
+Used by [`workflows`](/cre/reference/graphql-api/queries#workflows), [`workflowDeployments`](/cre/reference/graphql-api/queries#workflowdeployments), and [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions) to paginate list results. See [Pagination](/cre/reference/graphql-api/pagination) for the full algorithm.
+
+| Field    | Type  | Required | Description                                                |
+| -------- | ----- | -------- | ---------------------------------------------------------- |
+| `number` | `Int` | No       | Zero-indexed page number. Defaults to `0`.                 |
+| `size`   | `Int` | No       | Number of items per page. Defaults to `10`. Maximum `100`. |
+
+## `WorkflowInput`
+
+Used by [`workflow`](/cre/reference/graphql-api/queries#workflow).
+
+| Field  | Type      | Required | Description                                                               |
+| ------ | --------- | -------- | ------------------------------------------------------------------------- |
+| `uuid` | `String!` | Yes      | The workflow's unique identifier.                                         |
+| `from` | `Time!`   | Yes      | Start of the time window used to compute the workflow's aggregate fields. |
+
+## `WorkflowsInput`
+
+Used by [`workflows`](/cre/reference/graphql-api/queries#workflows).
+
+| Field                  | Type                          | Required | Description                                                                |
+| ---------------------- | ----------------------------- | -------- | -------------------------------------------------------------------------- |
+| `workflowOwnerAddress` | `[OnchainAddress!]`           | No       | Restrict to workflows owned by one or more addresses. Maximum 100 entries. |
+| `status`               | `[WorkflowDeploymentStatus!]` | No       | Restrict to one or more deployment statuses. Maximum 10 entries.           |
+| `search`               | `String`                      | No       | Case-insensitive text search on workflow name.                             |
+| `orderBy`              | `WorkflowOrderBy`             | No       | Sort order.                                                                |
+| `page`                 | `Page`                        | No       | Pagination.                                                                |
+
+## `WorkflowOrderBy`
+
+| Field   | Type                    | Required | Description                                                                                            |
+| ------- | ----------------------- | -------- | ------------------------------------------------------------------------------------------------------ |
+| `field` | `WorkflowOrderByField!` | Yes      | Field to sort by. See [`WorkflowOrderByField`](/cre/reference/graphql-api/enums#workfloworderbyfield). |
+| `order` | `SortingOrder!`         | Yes      | Sort direction. See [`SortingOrder`](/cre/reference/graphql-api/enums#sortingorder).                   |
+
+## `WorkflowActivityInput`
+
+Used by [`workflowActivity`](/cre/reference/graphql-api/queries#workflowactivity).
+
+| Field          | Type     | Required | Description                                                                |
+| -------------- | -------- | -------- | -------------------------------------------------------------------------- |
+| `workflowUUID` | `String` | No       | Restrict to a single workflow. Omit to aggregate across your organization. |
+| `from`         | `Time`   | No       | Start of the time range.                                                   |
+| `to`           | `Time`   | No       | End of the time range.                                                     |
+
+## `WorkflowDeploymentInput`
+
+Used by [`workflowDeployment`](/cre/reference/graphql-api/queries#workflowdeployment).
+
+| Field  | Type      | Required | Description                         |
+| ------ | --------- | -------- | ----------------------------------- |
+| `uuid` | `String!` | Yes      | The deployment's unique identifier. |
+
+## `WorkflowDeploymentsInput`
+
+Used by [`workflowDeployments`](/cre/reference/graphql-api/queries#workflowdeployments).
+
+| Field          | Type                          | Required | Description                                                      |
+| -------------- | ----------------------------- | -------- | ---------------------------------------------------------------- |
+| `workflowUUID` | `String!`                     | Yes      | The workflow whose deployments should be returned.               |
+| `status`       | `[WorkflowDeploymentStatus!]` | No       | Restrict to one or more deployment statuses. Maximum 10 entries. |
+| `from`         | `Time`                        | No       | Only include deployments created on or after this time.          |
+| `to`           | `Time`                        | No       | Only include deployments created on or before this time.         |
+| `search`       | `String`                      | No       | Text search filter.                                              |
+| `orderBy`      | `WorkflowDeploymentOrderBy`   | No       | Sort order.                                                      |
+| `page`         | `Page`                        | No       | Pagination.                                                      |
+
+## `WorkflowDeploymentOrderBy`
+
+| Field   | Type                              | Required | Description                                                                                                                |
+| ------- | --------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `field` | `WorkflowDeploymentOrderByField!` | Yes      | Field to sort by. See [`WorkflowDeploymentOrderByField`](/cre/reference/graphql-api/enums#workflowdeploymentorderbyfield). |
+| `order` | `SortingOrder!`                   | Yes      | Sort direction.                                                                                                            |
+
+## `WorkflowExecutionInput`
+
+Used by [`workflowExecution`](/cre/reference/graphql-api/queries#workflowexecution).
+
+| Field  | Type      | Required | Description                        |
+| ------ | --------- | -------- | ---------------------------------- |
+| `uuid` | `String!` | Yes      | The execution's unique identifier. |
+
+## `WorkflowExecutionsInput`
+
+Used by [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions).
+
+| Field          | Type                         | Required | Description                                                                      |
+| -------------- | ---------------------------- | -------- | -------------------------------------------------------------------------------- |
+| `workflowUuid` | `String`                     | No       | Restrict to a single workflow. Omit to list executions across your organization. |
+| `status`       | `[WorkflowExecutionStatus!]` | No       | Restrict to one or more execution statuses. Maximum 10 entries.                  |
+| `search`       | `String`                     | No       | Text search filter.                                                              |
+| `from`         | `Time`                       | No       | Only include executions started on or after this time.                           |
+| `to`           | `Time`                       | No       | Only include executions started on or before this time.                          |
+| `orderBy`      | `WorkflowExecutionOrderBy`   | No       | Sort order.                                                                      |
+| `page`         | `Page`                       | No       | Pagination.                                                                      |
+
+## `WorkflowExecutionOrderBy`
+
+| Field   | Type                             | Required | Description                                                                                                              |
+| ------- | -------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `field` | `WorkflowExecutionOrderByField!` | Yes      | Field to sort by. See [`WorkflowExecutionOrderByField`](/cre/reference/graphql-api/enums#workflowexecutionorderbyfield). |
+| `order` | `SortingOrder!`                  | Yes      | Sort direction.                                                                                                          |
+
+## `WorkflowExecutionLogsInput`
+
+Used by [`workflowExecutionLogs`](/cre/reference/graphql-api/queries#workflowexecutionlogs).
+
+| Field                   | Type      | Required | Description                                  |
+| ----------------------- | --------- | -------- | -------------------------------------------- |
+| `workflowExecutionUUID` | `String!` | Yes      | The execution whose logs should be returned. |
+
+## `WorkflowExecutionEventsInput`
+
+Used by [`workflowExecutionEvents`](/cre/reference/graphql-api/queries#workflowexecutionevents).
+
+| Field                   | Type      | Required | Description                                       |
+| ----------------------- | --------- | -------- | ------------------------------------------------- |
+| `workflowExecutionUUID` | `String!` | Yes      | The execution whose events should be returned.    |
+| `capabilityID`          | `String`  | No       | Restrict results to a single capability.          |
+| `status`                | `String`  | No       | Restrict results to a single event status string. |
+
+## Filtering and sorting notes
+
+- List filters that accept arrays (`status`, `workflowOwnerAddress`) act as an **OR** — a workflow or execution matches if its value is in the given list.
+- Only one `orderBy` field can be specified per query; there is no multi-field sort.
+- `search` performs a case-insensitive substring match; there is no documented support for wildcards or regular expressions.
+- Filters can be combined freely within a single input object — for example, combining `status` and `search` on `workflows` narrows results by both.
+
+## Related
+
+- [Query Reference](/cre/reference/graphql-api/queries)
+- [Enum Reference](/cre/reference/graphql-api/enums)
+- [Pagination](/cre/reference/graphql-api/pagination)
+
+---
+
+# Pagination
+Source: https://docs.chain.link/cre/reference/graphql-api/pagination
+Last Updated: 2026-08-31
+
+The CRE GraphQL API uses **page-number pagination**, not cursor-based (Relay-style) pagination. List queries take an optional `page: Page` argument and return both a page of results and the total matching count.
+
+## The `Page` input
+
+```graphql
+input Page {
+  number: Int = 0
+  size: Int = 10
+}
+```
+
+| Field    | Type  | Default | Description                              |
+| -------- | ----- | ------- | ---------------------------------------- |
+| `number` | `Int` | `0`     | Zero-indexed page number.                |
+| `size`   | `Int` | `10`    | Number of items per page. Maximum `100`. |
+
+`Page` is accepted by [`workflows`](/cre/reference/graphql-api/queries#workflows), [`workflowDeployments`](/cre/reference/graphql-api/queries#workflowdeployments), and [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions).
+
+## The `count` field
+
+Every paginated response includes a `count` field alongside `data` — the total number of items matching the query across **all** pages, not just the current one.
+
+```graphql
+query ListWorkflows($page: Page) {
+  workflows(input: { page: $page }) {
+    data {
+      uuid
+      name
+    }
+    count
+  }
+}
+```
+
+```json
+{
+  "data": {
+    "workflows": {
+      "data": [
+        { "uuid": "<WORKFLOW_UUID_1>", "name": "price-feed-monitor" },
+        { "uuid": "<WORKFLOW_UUID_2>", "name": "keeper-bot" }
+      ],
+      "count": 47
+    }
+  }
+}
+```
+
+There is no `pageInfo`, `hasNextPage`, or cursor field — you determine whether more pages exist yourself.
+
+## Paginating through all results
+
+Because there's no `hasNextPage` flag, compute it from `page.number`, `page.size`, and the returned `count`:
+
+```text
+1. Start with page.number = 0 and a fixed page.size (for example 50).
+2. Send the request with { number: pageNumber, size: pageSize }.
+3. Read `count` from the response.
+4. More pages remain if (pageNumber + 1) * pageSize < count.
+5. If more pages remain, increment pageNumber and repeat from step 2.
+6. Stop once (pageNumber + 1) * pageSize >= count.
+```
+
+### TypeScript
+
+```typescript
+async function fetchAllWorkflows(apiKey: string): Promise<Workflow[]> {
+  const pageSize = 50
+  let pageNumber = 0
+  let all: Workflow[] = []
+  let total = Infinity
+
+  while (pageNumber * pageSize < total) {
+    const response = await fetch("https://api.cre.chain.link/graphql", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Apikey ${apiKey}`,
+      },
+      body: JSON.stringify({
+        query: `
+          query ListWorkflows($page: Page) {
+            workflows(input: { page: $page }) {
+              data { uuid name status }
+              count
+            }
+          }
+        `,
+        variables: { page: { number: pageNumber, size: pageSize } },
+      }),
+    })
+
+    const result = await response.json()
+    const { data, count } = result.data.workflows
+    all = all.concat(data)
+    total = count
+    pageNumber += 1
+  }
+
+  return all
+}
+```
+
+### Go
+
+```go
+func fetchAllWorkflows(apiKey string) ([]Workflow, error) {
+	const pageSize = 50
+	pageNumber := 0
+	var all []Workflow
+	total := -1
+
+	for total == -1 || pageNumber*pageSize < total {
+		body, _ := json.Marshal(map[string]any{
+			"query": `query ListWorkflows($page: Page) {
+				workflows(input: { page: $page }) {
+					data { uuid name status }
+					count
+				}
+			}`,
+			"variables": map[string]any{
+				"page": map[string]int{"number": pageNumber, "size": pageSize},
+			},
+		})
+
+		req, _ := http.NewRequest("POST", "https://api.cre.chain.link/graphql", bytes.NewBuffer(body))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Apikey "+apiKey)
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		var result workflowsPageResponse
+		json.NewDecoder(resp.Body).Decode(&result)
+		resp.Body.Close()
+
+		all = append(all, result.Data.Workflows.Data...)
+		total = result.Data.Workflows.Count
+		pageNumber++
+	}
+
+	return all, nil
+}
+```
+
+<Aside type="note" title="Page size limit">
+  `page.size` cannot exceed `100`. Requesting a larger value fails validation — see [Errors & Rate
+  Limits](/cre/reference/graphql-api/errors#validation-errors).
+</Aside>
+
+## Related
+
+- [`Page`](/cre/reference/graphql-api/inputs#page)
+- [`workflows`](/cre/reference/graphql-api/queries#workflows)
+- [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions)
+
+---
+
+# Errors & Rate Limits
+Source: https://docs.chain.link/cre/reference/graphql-api/errors
+Last Updated: 2026-08-31
+
+GraphQL distinguishes **HTTP-level failure** (the request itself couldn't be processed) from **operation-level failure** (the request was processed, but the operation failed). The CRE GraphQL API can surface errors at either level, so check both in your client.
+
+## Response shapes
+
+### Success
+
+```json
+{
+  "data": {
+    "workflow": {
+      "data": { "uuid": "<WORKFLOW_UUID>", "name": "price-feed-monitor" }
+    }
+  }
+}
+```
+
+### GraphQL-level error (HTTP `200 OK`)
+
+Standard GraphQL-over-HTTP behavior: a request can return `200 OK` with a populated `errors` array, `data` set to `null`, or `data` and `errors` both present (partial success).
+
+```json
+{
+  "data": null,
+  "errors": [
+    {
+      "message": "workflow not found"
+    }
+  ]
+}
+```
+
+<Aside type="caution" title="Always check errors, not just HTTP status">
+  A `200 OK` response does not guarantee the operation succeeded. Always check for a populated `errors` array in the
+  response body, even when the HTTP status is `200`.
+</Aside>
+
+### HTTP-level error
+
+For failures the server rejects before or independently of GraphQL execution — such as an invalid or missing API key — the API can also return a non-2xx HTTP status with an error body. Recommended client behavior: treat any non-2xx response as a failure, and prefer `errors[0].message` from the body when present; otherwise fall back to the HTTP status text.
+
+```typescript
+const response = await fetch(endpoint, { method: "POST", headers, body })
+const result = await response.json()
+
+if (!response.ok) {
+  const message = result.errors?.[0]?.message ?? `HTTP ${response.status}: ${response.statusText}`
+  throw new Error(message)
+}
+
+if (result.errors?.length) {
+  throw new Error(result.errors[0].message)
+}
+
+return result.data
+```
+
+## Authentication errors
+
+Requests with a missing, malformed, invalid, or expired API key fail authentication. Check both the HTTP status and the `errors` array — do not assume a specific status code without verifying it against a live response, since the exact status is not published in the schema.
+
+## Authorization errors
+
+Some fields require additional authorization beyond a valid API key — for example, `getTenantConfig` requires an authenticated caller (`@isAuthenticated`), and several account-management mutations require specific organization roles (`@hasAnyRole`). Calling a field your API key isn't authorized for returns a GraphQL error for that field rather than failing the whole request outside of GraphQL, if other requested fields succeed.
+
+## Validation errors
+
+Argument values are validated against the constraints declared in the schema — for example, `page.size` cannot exceed `100`, and list-filter arguments such as `WorkflowsInput.status` have maximum lengths. Sending an invalid value returns a GraphQL validation error before your resolver-level query executes:
+
+```json
+{
+  "errors": [
+    {
+      "message": "page.size must be at most 100"
+    }
+  ]
+}
+```
+
+## Not-found behavior
+
+Single-item lookups such as [`workflowExecution`](/cre/reference/graphql-api/queries#workflowexecution) return a `null` `data` field rather than an error when no item matches the given `uuid`:
+
+```json
+{
+  "data": {
+    "workflowExecution": {
+      "data": null
+    }
+  }
+}
+```
+
+List queries such as [`workflows`](/cre/reference/graphql-api/queries#workflows) return an empty `data` array and `count: 0` rather than an error when nothing matches.
+
+## Rate limits
+
+<Aside type="caution" title="No published rate limits">
+  Chainlink has not published specific rate-limit values, response headers, or reset behavior for the CRE GraphQL API.
+  If you build a client against this API, add retry-with-backoff for `429` and `5xx` responses as a defensive default,
+  and avoid tight polling loops. If you need higher sustained request volume, [request help](/cre/account/deploy-access)
+  through your CRE account contact.
+</Aside>
+
+## Related
+
+- [Authentication](/cre/reference/graphql-api/authentication)
+- [Pagination](/cre/reference/graphql-api/pagination)
+- [Query Reference](/cre/reference/graphql-api/queries)
+
+---
+
 # The Confidential HTTP Capability
 Source: https://docs.chain.link/cre/capabilities/confidential-http-ts
 Last Updated: 2026-07-21
