@@ -128,6 +128,7 @@ export const productChainLinks: ProductChainLinks = {
       linea: "/cre/supported-networks",
       mantle: "/cre/supported-networks",
       megaeth: "/cre/supported-networks",
+      monad: "/cre/supported-networks",
       optimism: "/cre/supported-networks",
       pharos: "/cre/supported-networks",
       plasma: "/cre/supported-networks",
