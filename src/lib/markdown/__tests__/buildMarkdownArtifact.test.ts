@@ -96,6 +96,12 @@ describe("buildMarkdownArtifact", () => {
       expect(markdown.includes("### Retrieving Secrets (Go)")).toBe(hasTitles)
     }
   )
+
+  it("projects FeedPage JSON links for the price feed addresses page", async () => {
+    const artifact = await buildMarkdownArtifact("data-feeds/price-feeds/addresses")
+
+    expect(artifact?.markdown).toContain("https://reference-data-directory.vercel.app/feeds-mainnet.json")
+  })
 })
 
 describe("transformPageBodyToMarkdown", () => {

@@ -32,6 +32,7 @@ import {
   handleResourcesCallout,
   handleDataStreams,
   handleSchemaFieldsTable,
+  handleFeedPage,
   loadCcipCommonMapping,
   replaceNode,
   staticEstreeValue,
@@ -205,6 +206,10 @@ export async function transformMarkdown(
           return handleSchemaFieldsTable(node as MdxJsxNode, parent, index, context)
         }
 
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "FeedPage") {
+          return handleFeedPage(node as MdxJsxNode, parent, index, context)
+        }
+
         if (
           (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
           (node as MdxJsxNode).name === "Address"
@@ -335,7 +340,8 @@ export async function transformMarkdown(
             (node as MdxJsxNode).name !== "FeedsCommonCallout" &&
             (node as MdxJsxNode).name !== "ResourcesCallout" &&
             (node as MdxJsxNode).name !== "DataStreams" &&
-            (node as MdxJsxNode).name !== "SchemaFieldsTable") ||
+            (node as MdxJsxNode).name !== "SchemaFieldsTable" &&
+            (node as MdxJsxNode).name !== "FeedPage") ||
           node.type === "mdxjsEsm" ||
           node.type === "import" ||
           node.type === "export" ||
