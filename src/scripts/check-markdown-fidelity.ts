@@ -19,6 +19,7 @@ import { markdownFidelityExceptions } from "./markdown-fidelity-exceptions.js"
 
 const CONTENT_ROOT = path.resolve("src/content")
 const DEFAULT_REPORT_PATH = "reports/markdown-fidelity-report.json"
+const DEFAULT_BASELINE_PATH = fileURLToPath(new URL("./markdown-fidelity-baseline.json", import.meta.url))
 const SITE_BASE = "https://docs.chain.link"
 const LLMS_DIRECTIVE = "> For the complete documentation index, see [llms.txt](/llms.txt)."
 
@@ -1516,8 +1517,35 @@ export function findingIdentity(finding: FidelityFinding): string {
   })
 }
 
-export function determineExitCode(mode: RunMode, findings: readonly FidelityFinding[]): 0 | 1 {
-  return mode === "focused" && findings.some((finding) => finding.status !== "present" && !finding.exception) ? 1 : 0
+export function determineExitCode(
+  mode: RunMode,
+  findings: readonly FidelityFinding[],
+  baselineIdentities: ReadonlySet<string> = new Set()
+): 0 | 1 {
+  return findings.some(
+    (finding) =>
+      finding.status !== "present" &&
+      !finding.exception &&
+      (mode === "focused" || !baselineIdentities.has(findingIdentity(finding)))
+  )
+    ? 1
+    : 0
+}
+
+async function loadBaseline(): Promise<ReadonlySet<string>> {
+  const baseline: unknown = JSON.parse(await fs.readFile(DEFAULT_BASELINE_PATH, "utf8"))
+  if (
+    typeof baseline !== "object" ||
+    baseline === null ||
+    !("version" in baseline) ||
+    baseline.version !== 1 ||
+    !("identities" in baseline) ||
+    !Array.isArray(baseline.identities) ||
+    !baseline.identities.every((identity) => typeof identity === "string")
+  ) {
+    throw new Error("Invalid Markdown fidelity baseline")
+  }
+  return new Set(baseline.identities)
 }
 
 function compareFinding(left: FidelityFinding, right: FidelityFinding): number {
@@ -1838,6 +1866,7 @@ export async function runMarkdownFidelity(
   options: { reportPath?: string; contentRoot?: string } = {}
 ): Promise<{ report: FidelityReport; exitCode: 0 | 1 }> {
   const parsed = parseCliArguments(argv)
+  const baselineIdentities = parsed.mode === "full-corpus" ? await loadBaseline() : new Set<string>()
   const paths = parsed.mode === "focused" ? parsed.paths : await collectCorpusPaths(options.contentRoot)
   const findings: FidelityFinding[] = []
   const globallyScheduledPaths = parsed.mode === "full-corpus" ? new Set(paths) : undefined
@@ -1865,7 +1894,7 @@ export async function runMarkdownFidelity(
   const reportPath = options.reportPath ?? DEFAULT_REPORT_PATH
   await fs.mkdir(path.dirname(reportPath), { recursive: true })
   await fs.writeFile(reportPath, serializeReport(report), "utf8")
-  return { report, exitCode: determineExitCode(parsed.mode, report.findings) }
+  return { report, exitCode: determineExitCode(parsed.mode, report.findings, baselineIdentities) }
 }
 
 async function main(): Promise<void> {

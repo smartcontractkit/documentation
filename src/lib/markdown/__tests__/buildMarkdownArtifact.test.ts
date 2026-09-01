@@ -56,9 +56,69 @@ describe("buildMarkdownArtifact", () => {
     expect(markdown).toContain(windows)
     expect(markdown.indexOf(macosLinux)).toBeLessThan(markdown.indexOf(windows))
   })
+
+  it.each([
+    {
+      lang: "typescript",
+      hasTypeScript: true,
+      hasGo: false,
+      hasTitles: false,
+    },
+    {
+      lang: "GO",
+      hasTypeScript: false,
+      hasGo: true,
+      hasTitles: false,
+    },
+    {
+      lang: "python",
+      hasTypeScript: true,
+      hasGo: true,
+      hasTitles: true,
+    },
+    {
+      lang: undefined,
+      hasTypeScript: true,
+      hasGo: true,
+      hasTitles: true,
+    },
+  ])(
+    "applies public lang=$lang selection without losing unknown or absent language branches",
+    async ({ lang, hasTypeScript, hasGo, hasTitles }) => {
+      const artifact = await buildMarkdownArtifact("cre/guides/workflow/secrets", lang === undefined ? {} : { lang })
+      const markdown = artifact?.markdown ?? ""
+
+      expect(markdown.includes('const secret = runtime.getSecret({ id: "API_KEY" }).result()')).toBe(hasTypeScript)
+      expect(markdown.includes('secret, err := runtime.GetSecret(&pb.SecretRequest{Id: "API_KEY"}).Await()')).toBe(
+        hasGo
+      )
+      expect(markdown.includes("### Retrieving Secrets (TypeScript)")).toBe(hasTitles)
+      expect(markdown.includes("### Retrieving Secrets (Go)")).toBe(hasTitles)
+    }
+  )
 })
 
 describe("transformPageBodyToMarkdown", () => {
+  it("retains titled branches when a recognized target has no matching component key", async () => {
+    const result = await transformPageBodyToMarkdown(
+      `<CodeHighlightBlockMulti
+  languages={{
+    go: { code: "package main", title: "Go only" },
+  }}
+/>`,
+      "/virtual/language-fallback.mdx",
+      { targetLanguage: "typescript" }
+    )
+
+    expect(result.transformMode).toBe("normal")
+    expect(result.markdown).toBe(`### Go only
+
+\`\`\`go
+package main
+\`\`\`
+`)
+  })
+
   it("reports the normal transform branch", async () => {
     const result = await transformPageBodyToMarkdown("# Kept", "/virtual/normal.mdx")
 

@@ -53,6 +53,230 @@ contract Test {
     expect(result).toContain("Col2")
   })
 
+  it.each([
+    {
+      name: "ClickToZoom",
+      component: `<ClickToZoom alt="A" src="/a.jpg" />`,
+      projection: "![A](/a.jpg)",
+    },
+    {
+      name: "Address",
+      component: `<Address address="0x1234" contractUrl="https://example.test/address" />`,
+      projection: "[0x1234](https://example.test/address)",
+    },
+    {
+      name: "Fragment",
+      component: `<Fragment>
+## Fragment heading
+
+- first
+- second
+</Fragment>`,
+      projection: `## Fragment heading
+
+- first
+- second`,
+    },
+    {
+      name: "Accordion",
+      component: `<Accordion title="Deploy" number={2}>
+- first
+- second
+</Accordion>`,
+      projection: `### 2. Deploy
+
+- first
+- second`,
+    },
+    {
+      name: "Tabs",
+      component: `<Tabs>
+  <Fragment slot="tab.shell">Shell</Fragment>
+  <Fragment slot="panel.shell">
+\`\`\`sh
+npm test
+\`\`\`
+  </Fragment>
+</Tabs>`,
+      projection: `### Shell
+
+\`\`\`sh
+npm test
+\`\`\``,
+    },
+    {
+      name: "PackageManagerTabs",
+      component: `<PackageManagerTabs>
+  <Fragment slot="yarn">
+\`\`\`sh
+yarn add
+\`\`\`
+  </Fragment>
+  <Fragment slot="npm">
+\`\`\`sh
+npm install
+\`\`\`
+  </Fragment>
+</PackageManagerTabs>`,
+      projection: `### npm
+
+\`\`\`sh
+npm install
+\`\`\`
+
+### yarn
+
+\`\`\`sh
+yarn add
+\`\`\``,
+    },
+  ])("keeps block siblings around a flow-position $name projection", async ({ component, projection }) => {
+    const result = await transformMarkdown(
+      `Intro paragraph.
+
+## Heading
+
+${component}
+
+### Sub
+
+Tail.`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(`Intro paragraph.
+
+## Heading
+
+${projection}
+
+### Sub
+
+Tail.
+`)
+  })
+
+  it("retains indented Tabs panel content inside a callout", async () => {
+    const result = await transformMarkdown(
+      `<Aside type="note" title="Install">
+    <Tabs>
+      <Fragment slot="tab.npm">npm</Fragment>
+      <Fragment slot="panel.npm">npm install example</Fragment>
+    </Tabs>
+</Aside>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toContain("> npm install example")
+  })
+
+  it("preserves inline links, code, strong text, and subscript children", async () => {
+    const result = await transformMarkdown(
+      `Please <a href="https://chain.link/contact">Contact us</a> to talk to an expert.
+
+The field <code>marketStatus</code> matters.
+
+<strong><sub>The bonded amount is credited.</sub></strong>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(`Please [Contact us](https://chain.link/contact) to talk to an expert.
+
+The field \`marketStatus\` matters.
+
+**The bonded amount is credited.**
+`)
+  })
+
+  it("preserves JSX links, code, and lists in table cells", async () => {
+    const result = await transformMarkdown(
+      `| Key | Value |
+| --- | --- |
+| <a href="#limit"><code>PerOwner.VaultSecretsLimit</code></a> | Max secrets per owner |
+| <ul><li>first</li><li>second</li></ul> | list |`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toContain("[`PerOwner.VaultSecretsLimit`](#limit)")
+    expect(result).toContain("first; second")
+    expect(result).not.toContain("<a")
+    expect(result).not.toContain("<ul")
+  })
+
+  it("keeps static MDX whitespace and string expressions while dropping dynamic expressions", async () => {
+    const result = await transformMarkdown(
+      `Word{" "}next and {"literal"} end.
+
+Before {runtimeValue} after.`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(`Word next and literal end.
+
+Before  after.
+`)
+  })
+
+  it("uses a depth-four Accordion heading", async () => {
+    const result = await transformMarkdown(
+      `<Accordion title="Deploy the contract" number={2} depth={4}>
+Body instructions.
+</Accordion>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(`#### 2. Deploy the contract
+
+Body instructions.
+`)
+  })
+
+  it("projects PageTabs header descriptions only when the header is shown", async () => {
+    const withHeader = await transformMarkdown(
+      `<PageTabs
+  headerTitle="Install"
+  headerDescription="Choose an installation path."
+  pages={[{ name: "macOS", url: "/macos" }, { name: "Windows", url: "/windows" }]}
+/>`,
+      "/fake/page.mdx"
+    )
+    expect(withHeader).toBe(`## Install
+
+Choose an installation path.
+
+- [macOS](/macos)
+
+- [Windows](/windows)
+`)
+
+    const withoutHeader = await transformMarkdown(
+      `<PageTabs
+  showHeader={false}
+  headerDescription="Hidden description."
+  pages={[{ name: "Only", url: "/only" }]}
+/>`,
+      "/fake/page.mdx"
+    )
+    expect(withoutHeader).toBe(`- [Only](/only)
+`)
+  })
+
+  it("keeps native and ClickToZoom images as Markdown image syntax", async () => {
+    const result = await transformMarkdown(
+      `![Plain](/plain.png)
+
+<ClickToZoom alt="Zoom" src="/zoom.png" />`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(`![Plain](/plain.png)
+
+![Zoom](/zoom.png)
+`)
+    expect(result).not.toContain("(Image: Plain)")
+    expect(result).not.toContain("(Image: Zoom)")
+  })
+
   it("projects PageTabs in source order with grouped labels and first URLs", async () => {
     const result = await transformMarkdown(
       `<PageTabs
