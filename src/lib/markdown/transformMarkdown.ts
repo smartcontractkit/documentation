@@ -33,6 +33,7 @@ import {
   handleDataStreams,
   handleSchemaFieldsTable,
   loadCcipCommonMapping,
+  replaceNode,
   staticEstreeValue,
 } from "./componentHandlers.js"
 import fs from "fs"
@@ -286,15 +287,22 @@ export async function transformMarkdown(
             return index
           }
 
+          // ponytail: unwrap HTML tables to text; emit markdown tables if agents need grid structure
           if (
             nodeName === "li" ||
             nodeName === "sub" ||
             nodeName === "span" ||
             nodeName === "p" ||
+            nodeName === "div" ||
+            nodeName === "table" ||
+            nodeName === "thead" ||
+            nodeName === "tbody" ||
+            nodeName === "tr" ||
+            nodeName === "th" ||
+            nodeName === "td" ||
             ((nodeName === "br" || nodeName === "nobr") && children.length > 0)
           ) {
-            parent.children.splice(index, 1, ...children)
-            return index
+            return replaceNode(mdxNode, parent, index, children)
           }
 
           if (nodeName === "br" || nodeName === "nobr") {

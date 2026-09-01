@@ -142,7 +142,7 @@ const FLOW_TYPES: Record<string, true> = {
   mdxjsEsm: true,
 }
 
-function replaceNode(node: MdxJsxNode, parent: Parent, index: number, replacement: Node[]): number {
+export function replaceNode(node: MdxJsxNode, parent: Parent, index: number, replacement: Node[]): number {
   if (node.type === "mdxJsxFlowElement") {
     const flowNodes: Node[] = []
     let phrasingNodes: Node[] = []
