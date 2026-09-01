@@ -18,15 +18,19 @@ whatsnext:
 
 import { Aside, CopyText } from "@components"
 
-The Discovery endpoint returns the catalog of Data Streams, including each stream's ID, asset pair, report schema version, and status. Use it to look up stream IDs programmatically instead of hardcoding them, and to confirm which streams your account can access.
+The Discovery endpoint returns the catalog of Data Streams, including each stream's ID, asset pair, report schema version, and status. Use it to look up stream IDs programmatically, to discover the [hidden streams](#hidden-streams) your account is entitled to, and to confirm which streams your account can access.
+
+The response also surfaces useful metadata for each stream, such as the [report schema version](#schema) it uses, its [market hours](/data-streams/market-hours), and its [expected decommission date](#schema), and more.
 
 ## Endpoint
 
 The Discovery endpoint is part of the [Data Streams REST API](/data-streams/reference/data-streams-api/interface-api) and lives on the same host:
 
-| Description        | Mainnet URL                                                                 |
-| :----------------- | :-------------------------------------------------------------------------- |
-| Discovery endpoint | <CopyText text="https://api.dataengine.chain.link/api/v1/discovery" code /> |
+| Description        | Testnet URL                                                                         | Mainnet URL                                                                 |
+| :----------------- | :---------------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| Discovery endpoint | <CopyText text="https://api.testnet-dataengine.chain.link/api/v1/discovery" code /> | <CopyText text="https://api.dataengine.chain.link/api/v1/discovery" code /> |
+
+##### Sample request
 
 ```http
 GET /api/v1/discovery
@@ -34,16 +38,14 @@ GET /api/v1/discovery
 
 ## Authentication
 
-Unlike the other REST API routes, the Discovery endpoint does **not** require authentication. It returns stream metadata — which streams exist and how they are configured — not report data.
+[Data Streams Authentication](/data-streams/reference/data-streams-api/authentication) is optional for the Discovery endpoint. It returns stream metadata, including which streams exist and their schema, _not_ report data. However, authentication provides additional access to streams valid for your API key:
 
 - **Without authentication**, the endpoint returns the streams Chainlink lists publicly.
 - **With authentication**, it also returns the streams your API key is entitled to, including any [hidden streams](#hidden-streams) provisioned for your account.
 
-Being listed is not the same as having access. Every stream in the response, public or hidden, still requires credentials and an entitlement to that stream before you can retrieve its reports.
+Authenticate the same way as any other Data Streams REST request, by sending the three HMAC headers described on the [Data Streams Authentication](/data-streams/reference/data-streams-api/authentication) page. If you use a [Data Streams SDK](/data-streams/reference/data-streams-api/go-sdk), authentication is handled for you.
 
-Authenticate the same way as any other Data Streams REST request, by sending the three HMAC headers described on the [Data Streams Authentication](/data-streams/reference/data-streams-api/authentication) page. If you use a Data Streams SDK, authentication is handled for you.
-
-Public request:
+For example, this public request returns all live streams:
 
 ```bash
 curl "https://api.dataengine.chain.link/api/v1/discovery?status=live"
@@ -56,7 +58,7 @@ curl "https://api.dataengine.chain.link/api/v1/discovery?status=live"
 
 ## Query parameters
 
-Every parameter is an optional filter. Omitting one means no restriction on that field.
+Query parameters are how you search the catalog. Use them to filter the response down to the streams you care about, for example, by asset, status, or network. Every parameter is optional; omitting one means no restriction on that field.
 
 - String filters accept a **comma-delimited list** and match **any** of the supplied values, compared **case-insensitively**. For example, `base_asset=btc,eth` returns both BTC and ETH streams.
 - Different parameters combine with **AND**. For example, `asset_class=Crypto&quote_asset=USD` returns only crypto streams quoted in USD.
@@ -68,12 +70,81 @@ Every parameter is an optional filter. Omitting one means no restriction on that
 | :--------------- | :------------------------------------------------------------------------------------------- | :------------------------ |
 | `base_asset`     | Base asset of the pair.                                                                      | `base_asset=BTC,ETH`      |
 | `quote_asset`    | Quote asset of the pair.                                                                     | `quote_asset=USD`         |
-| `asset_class`    | Broad asset category.                                                                        | `asset_class=Crypto`      |
-| `feed_type`      | Stream category.                                                                             | `feed_type=Equities`      |
-| `attribute_type` | The kind of data reported.                                                                   | `attribute_type=CexPrice` |
-| `status`         | Stream status. Use `live` for production streams or `testing` for pre-production streams.    | `status=live`             |
+| `asset_class`    | Broad asset category. See [filter values](#asset-class) below for the full list.             | `asset_class=Crypto`      |
+| `feed_type`      | Stream category. See [filter values](#feed-type) below for the full list.                    | `feed_type=Equities`      |
+| `attribute_type` | The kind of data reported. See [filter values](#attribute-type) below for the full list.     | `attribute_type=CexPrice` |
+| `status`         | Stream status. See [Stream status](#stream-status) below.                                    | `status=live`             |
 | `network_type`   | DON network type.                                                                            | `network_type=mainnet`    |
 | `hidden`         | Boolean. When `true`, includes the [hidden streams](#hidden-streams) your API key can reach. | `hidden=true`             |
+
+### Filter values
+
+The string filters accept the values the catalog currently uses. The lists below are not exhaustive — the catalog grows over time, so new values may appear.
+
+#### Asset class
+
+`asset_class` is a broad asset category. The catalog currently uses:
+
+| Value                  | Description                                                                                                 |
+| :--------------------- | :---------------------------------------------------------------------------------------------------------- |
+| `Crypto`               | Cryptocurrencies. See [Crypto streams](/data-streams/crypto-streams).                                       |
+| `Equities`             | Stocks and exchange-traded funds (ETFs). See [RWA streams](/data-streams/rwa-streams).                      |
+| `Forex`                | Foreign exchange currency pairs.                                                                            |
+| `Macroeconomics`       | Macroeconomic indicators.                                                                                   |
+| `NAV`                  | Net Asset Value of tokenized funds or portfolios. See [SmartData streams](/data-streams/smartdata-streams). |
+| `Tokenized Asset`      | Tokenized equities. See [Tokenized Asset streams](/data-streams/tokenized-asset-streams).                   |
+| `Tokenized CLO`        | Tokenized collateralized loan obligations.                                                                  |
+| `Tokenized Debt`       | Tokenized debt instruments.                                                                                 |
+| `Tokenized Treasuries` | Tokenized US Treasury securities.                                                                           |
+
+#### Feed type
+
+`feed_type` is a stream category. The catalog currently uses:
+
+| Value             | Description                                                                                                                                |
+| :---------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
+| `Crypto`          | Cryptocurrency price streams. See [Crypto streams](/data-streams/crypto-streams).                                                          |
+| `Crypto-DEX`      | Cryptocurrency prices derived from onchain liquidity pools. See [DEX State Price streams](/data-streams/concepts/dex-state-price-streams). |
+| `Datalink`        | Streams delivered through the [DataLink](/datalink) product.                                                                               |
+| `Equities`        | Equity price streams. See [RWA streams](/data-streams/rwa-streams).                                                                        |
+| `Forex`           | Foreign exchange price streams.                                                                                                            |
+| `Macroeconomics`  | Macroeconomic indicator streams.                                                                                                           |
+| `Net Asset Value` | Net Asset Value streams. See [SmartData streams](/data-streams/smartdata-streams).                                                         |
+| `SmartData`       | SmartData streams, including NAV and Proof of Reserve. See [SmartData streams](/data-streams/smartdata-streams).                           |
+| `Tokenized Asset` | Tokenized equity streams. See [Tokenized Asset streams](/data-streams/tokenized-asset-streams).                                            |
+
+#### Attribute type
+
+`attribute_type` is the kind of data reported. The catalog currently uses:
+
+| Value                       | Description                                                                                                                 |
+| :-------------------------- | :-------------------------------------------------------------------------------------------------------------------------- |
+| `CexPrice`                  | Centralized exchange price.                                                                                                 |
+| `DexPrice`                  | Decentralized exchange price.                                                                                               |
+| `EquityPrice`               | Equity price.                                                                                                               |
+| `ExchangeRate`              | Redemption rate of a staked asset. See [Exchange Rate streams](/data-streams/exchange-rate-streams).                        |
+| `ExtendedHoursEquityPrice`  | Equity price during extended trading hours.                                                                                 |
+| `ForexPrice`                | Foreign exchange price.                                                                                                     |
+| `NAV`                       | Net Asset Value. See [SmartData streams](/data-streams/smartdata-streams).                                                  |
+| `OvernightHoursEquityPrice` | Equity price during overnight trading hours.                                                                                |
+| `RegularHoursEquityPrice`   | Equity price during regular trading hours.                                                                                  |
+| `SmartData`                 | SmartData, including NAV and Proof of Reserve. See [SmartData streams](/data-streams/smartdata-streams).                    |
+| `TopOfBook`                 | Top-of-book bid and ask prices. See [Crypto Top-of-Book streams](/data-streams/concepts/crypto-top-of-book-and-mark-price). |
+
+<Aside type="note" title="Values can change">
+  The catalog grows over time, so new values may appear beyond those listed here. If you filter on a value and get an
+  empty `feeds` array, check the spelling first — an unrecognized value returns HTTP `200` with no results rather than
+  an error.
+</Aside>
+
+### Stream status
+
+The `status` filter distinguishes production streams from pre-production streams:
+
+- `live` - production streams that are ready for production use.
+- `testing` - pre-production streams used for validation.
+
+Testing streams are visible without authentication. Omitting the `status` filter returns both `live` and `testing` streams, so filter explicitly with `status=live` to return only streams that are ready for production.
 
 ### Date filters
 
@@ -90,25 +161,43 @@ Date filters take a `YYYY-MM-DD` date with no time component, and are strict: `a
 
 ### Examples
 
+The following examples show common ways to filter the catalog.
+
+**All live streams**
+
 ```http
 GET /api/v1/discovery?status=live
-GET /api/v1/discovery?asset_class=Crypto&quote_asset=USD&status=live
-GET /api/v1/discovery?base_asset=BTC,ETH,SOL
-GET /api/v1/discovery?created_after=2026-01-01&status=live
-GET /api/v1/discovery?status=live&hidden=true
 ```
 
-<Aside type="note" title="Omitting status does not mean live">
-  With no `status` filter, the response includes `testing` streams alongside production ones. Filter explicitly with
-  `status=live` for anything user-facing. An unrecognized value such as `status=lives` returns HTTP `200` with an empty
-  `feeds` array rather than an error, so check your spelling before assuming an entitlement problem.
-</Aside>
+**Crypto streams quoted in USD**
+
+```http
+GET /api/v1/discovery?asset_class=Crypto&quote_asset=USD&status=live
+```
+
+**Multiple base assets**
+
+```http
+GET /api/v1/discovery?base_asset=BTC,ETH,SOL
+```
+
+**Streams created after a date**
+
+```http
+GET /api/v1/discovery?created_after=2026-01-01&status=live
+```
+
+**Live streams, including hidden ones your key can reach**
+
+```http
+GET /api/v1/discovery?status=live&hidden=true
+```
 
 ## Hidden streams
 
 Chainlink often launches new streams privately, before they are announced or made generally available. These streams are marked as hidden: they are excluded from the public Chainlink documentation and from the default Discovery endpoint response, but they are fully functional for the accounts provisioned to use them.
 
-The `hidden` parameter is how you see those streams:
+For accounts entitled to these streams, the `hidden` parameter retrieves their metadata:
 
 ```bash
 curl "https://api.dataengine.chain.link/api/v1/discovery?hidden=true&status=live" \
@@ -116,8 +205,6 @@ curl "https://api.dataengine.chain.link/api/v1/discovery?hidden=true&status=live
   -H "X-Authorization-Timestamp: $TIMESTAMP" \
   -H "X-Authorization-Signature-SHA256: $SIGNATURE"
 ```
-
-Hidden streams are gated on **entitlement**, not on the parameter. Setting `hidden=true` on an unauthenticated request, or on a request signed with a key that has no hidden entitlements, returns the same public catalog. Authenticating with an entitled key is what reveals them.
 
 ## Response
 
