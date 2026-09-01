@@ -931,6 +931,176 @@ Developers are responsible for understanding and managing all additional risk fa
 
 ---
 
+# Discovery Endpoint
+Source: https://docs.chain.link/data-streams/discovery-endpoint
+
+The Discovery endpoint returns the catalog of Data Streams, including each stream's ID, asset pair, report schema version, and status. Use it to look up stream IDs programmatically instead of hardcoding them, and to confirm which streams your account can access.
+
+## Endpoint
+
+The Discovery endpoint is part of the [Data Streams REST API](/data-streams/reference/data-streams-api/interface-api) and lives on the same host:
+
+| Description        | Mainnet URL                                         |
+| :----------------- | :-------------------------------------------------- |
+| Discovery endpoint | https\://api.dataengine.chain.link/api/v1/discovery |
+
+```http
+GET /api/v1/discovery
+```
+
+## Authentication
+
+Unlike the other REST API routes, the Discovery endpoint does **not** require authentication. It returns stream metadata — which streams exist and how they are configured — not report data.
+
+- **Without authentication**, the endpoint returns the streams Chainlink lists publicly.
+- **With authentication**, it also returns the streams your API key is entitled to, including any [hidden streams](#hidden-streams) provisioned for your account.
+
+Being listed is not the same as having access. Every stream in the response, public or hidden, still requires credentials and an entitlement to that stream before you can retrieve its reports.
+
+Authenticate the same way as any other Data Streams REST request, by sending the three HMAC headers described on the [Data Streams Authentication](/data-streams/reference/data-streams-api/authentication) page. If you use a Data Streams SDK, authentication is handled for you.
+
+Public request:
+
+```bash
+curl "https://api.dataengine.chain.link/api/v1/discovery?status=live"
+```
+
+<Aside type="note" title="Your entitlements come from your key">
+  The response is scoped to the credentials you sign with. Query parameters filter what your key can already reach; they
+  never widen your access. If you expect a stream and don't see it, contact your Chainlink representative.
+</Aside>
+
+## Query parameters
+
+Every parameter is an optional filter. Omitting one means no restriction on that field.
+
+- String filters accept a **comma-delimited list** and match **any** of the supplied values, compared **case-insensitively**. For example, `base_asset=btc,eth` returns both BTC and ETH streams.
+- Different parameters combine with **AND**. For example, `asset_class=Crypto&quote_asset=USD` returns only crypto streams quoted in USD.
+- Unrecognized parameters are ignored.
+
+### Metadata filters
+
+| Parameter        | Description                                                                                  | Example                   |
+| :--------------- | :------------------------------------------------------------------------------------------- | :------------------------ |
+| `base_asset`     | Base asset of the pair.                                                                      | `base_asset=BTC,ETH`      |
+| `quote_asset`    | Quote asset of the pair.                                                                     | `quote_asset=USD`         |
+| `asset_class`    | Broad asset category.                                                                        | `asset_class=Crypto`      |
+| `feed_type`      | Stream category.                                                                             | `feed_type=Equities`      |
+| `attribute_type` | The kind of data reported.                                                                   | `attribute_type=CexPrice` |
+| `status`         | Stream status. Use `live` for production streams or `testing` for pre-production streams.    | `status=live`             |
+| `network_type`   | DON network type.                                                                            | `network_type=mainnet`    |
+| `hidden`         | Boolean. When `true`, includes the [hidden streams](#hidden-streams) your API key can reach. | `hidden=true`             |
+
+### Date filters
+
+Date filters take a `YYYY-MM-DD` date with no time component, and are strict: `after` and `before` exclude the date itself. A value that isn't a plain date returns HTTP `400`.
+
+| Parameter                      | Description                                                      |
+| :----------------------------- | :--------------------------------------------------------------- |
+| `created_after`                | Streams created strictly after this date.                        |
+| `created_before`               | Streams created strictly before this date.                       |
+| `expected_decommission_after`  | Streams with an expected decommission strictly after this date.  |
+| `expected_decommission_before` | Streams with an expected decommission strictly before this date. |
+| `decommissioned_after`         | Streams decommissioned strictly after this date.                 |
+| `decommissioned_before`        | Streams decommissioned strictly before this date.                |
+
+### Examples
+
+```http
+GET /api/v1/discovery?status=live
+GET /api/v1/discovery?asset_class=Crypto&quote_asset=USD&status=live
+GET /api/v1/discovery?base_asset=BTC,ETH,SOL
+GET /api/v1/discovery?created_after=2026-01-01&status=live
+GET /api/v1/discovery?status=live&hidden=true
+```
+
+<Aside type="note" title="Omitting status does not mean live">
+  With no `status` filter, the response includes `testing` streams alongside production ones. Filter explicitly with
+  `status=live` for anything user-facing. An unrecognized value such as `status=lives` returns HTTP `200` with an empty
+  `feeds` array rather than an error, so check your spelling before assuming an entitlement problem.
+</Aside>
+
+## Hidden streams
+
+Chainlink often launches new streams privately, before they are announced or made generally available. These streams are marked as hidden: they are excluded from the public Chainlink documentation and from the default Discovery endpoint response, but they are fully functional for the accounts provisioned to use them.
+
+The `hidden` parameter is how you see those streams:
+
+```bash
+curl "https://api.dataengine.chain.link/api/v1/discovery?hidden=true&status=live" \
+  -H "Authorization: $API_KEY" \
+  -H "X-Authorization-Timestamp: $TIMESTAMP" \
+  -H "X-Authorization-Signature-SHA256: $SIGNATURE"
+```
+
+Hidden streams are gated on **entitlement**, not on the parameter. Setting `hidden=true` on an unauthenticated request, or on a request signed with a key that has no hidden entitlements, returns the same public catalog. Authenticating with an entitled key is what reveals them.
+
+## Response
+
+The response is a JSON object with a single `feeds` array:
+
+```json
+{
+  "feeds": [
+    {
+      "assetClass": "Crypto",
+      "assetName": "Render",
+      "baseAsset": "RENDER",
+      "quoteAsset": "USD",
+      "attributeType": "CexPrice",
+      "feedType": "Crypto",
+      "createdAt": "2024-09-19T17:05:44.554814Z",
+      "decommissionedAt": null,
+      "expectedDecommissionAt": null,
+      "feedId": "0x00034e3ab3a1c0809fe3f56ffe755155ace8564512cbc3884e9463dba081c02a",
+      "marketHours": "Crypto",
+      "name": "RENDER/USD-Streams-CexPrice",
+      "networkType": "mainnet",
+      "schemaVersion": "V3",
+      "serviceLevel": "Streams",
+      "status": "live"
+    }
+  ]
+}
+```
+
+### Schema
+
+| Field                    | Type           | Description                                                                                                            |
+| :----------------------- | :------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| `feedId`                 | string         | The stream ID, as a 32-byte hex value. Pass this to the report endpoints.                                              |
+| `name`                   | string         | The full stream name, for example `RENDER/USD-Streams-CexPrice`.                                                       |
+| `assetName`              | string         | Human-readable name of the underlying asset, for example `Render`.                                                     |
+| `baseAsset`              | string         | Base asset of the pair, for example `RENDER`.                                                                          |
+| `quoteAsset`             | string         | Quote asset of the pair, for example `USD`.                                                                            |
+| `assetClass`             | string         | Broad asset category, for example `Crypto`, `Equities`, `Forex`, or `Tokenized Asset`.                                 |
+| `feedType`               | string         | Stream category, for example `Crypto`, `Crypto-DEX`, `Equities`, or `Net Asset Value`.                                 |
+| `attributeType`          | string         | The kind of data reported, for example `CexPrice`, `DexPrice`, `ExchangeRate`, or `RegularHoursEquityPrice`.           |
+| `marketHours`            | string         | The [market hours](/data-streams/market-hours) schedule that applies, for example `Crypto` or `US Equities Regular`.   |
+| `schemaVersion`          | string         | The [report schema](/data-streams/reference/report-schema-overview) the stream uses, for example `V3`, `V7`, or `V11`. |
+| `serviceLevel`           | string         | The product the stream belongs to, for example `Streams` or `Datalink`.                                                |
+| `networkType`            | string         | `mainnet` or `testnet`, matching the host you queried.                                                                 |
+| `status`                 | string         | `live` for production streams, `testing` for pre-production streams.                                                   |
+| `createdAt`              | string         | RFC 3339 timestamp for when the stream was created.                                                                    |
+| `expectedDecommissionAt` | string \| null | RFC 3339 timestamp for a scheduled [decommission](/data-streams/deprecating-streams). `null` if none is scheduled.     |
+| `decommissionedAt`       | string \| null | RFC 3339 timestamp for when the stream was decommissioned. `null` if the stream is still available.                    |
+
+The Discovery endpoint returns the schema *version* a stream uses, not the report schema itself. To find the fields a given `schemaVersion` contains and how to decode them, see the [Report Schemas](/data-streams/reference/report-schema-overview) page.
+
+## Errors and caching
+
+Errors return a JSON object with a single `error` field describing the problem.
+
+| Status | Meaning                                                                                                            |
+| :----- | :----------------------------------------------------------------------------------------------------------------- |
+| `200`  | Success. A filter that matches nothing returns an empty `feeds` array, not an error.                               |
+| `400`  | A parameter failed to parse — for example, a date that isn't in `YYYY-MM-DD` form or a non-boolean `hidden` value. |
+| `500`  | The service could not fetch the DON or stream data. Retry the request.                                             |
+
+Successful responses are cacheable and are served with `Cache-Control: public, max-age=300`. Expect a newly launched stream to take up to five minutes to appear.
+
+---
+
 # Exchange Rate Data Streams
 Source: https://docs.chain.link/data-streams/exchange-rate-streams
 

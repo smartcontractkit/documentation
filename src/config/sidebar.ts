@@ -1198,6 +1198,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/developer-responsibilities",
         },
         {
+          title: "Discovery Endpoint",
+          url: "data-streams/discovery-endpoint",
+        },
+        {
           title: "Supported Networks",
           url: "data-streams/supported-networks",
         },
