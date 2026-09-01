@@ -543,7 +543,7 @@ Read the warning.
     expect(result).toContain("Time-weighted average price")
   })
 
-  it("projects FeedPage as feed JSON links without merging flow siblings", async () => {
+  it("projects FeedPage as an official API placeholder without merging flow siblings", async () => {
     const result = await transformMarkdown(
       `Intro paragraph.
 
@@ -557,30 +557,29 @@ Tail.`,
       "/fake/page.mdx"
     )
 
-    expect(result).toContain("## Heading\n\nFeed addresses are not inlined here.")
-    expect(result).toContain("Ethereum Mainnet")
-    expect(result).toContain("https://reference-data-directory.vercel.app/feeds-mainnet.json")
-    expect(result).toContain("`proxyAddress` (falling back to `transmissionsAccount`)")
-    expect(result).toContain("For Data Streams, use `feedId`.")
-    expect(result).toMatch(/\n\n### Sub\n\nTail\.\n$/)
+    expect(result).toBe(`Intro paragraph.
+
+## Heading
+
+Live values such as feed contract addresses are not inlined here. Wait for the official API to obtain current data.
+
+### Sub
+
+Tail.
+`)
     expect(result).not.toContain("<FeedPage")
+    expect(result).not.toContain("reference-data-directory")
+    expect(result).not.toContain("rddUrl")
   })
 
-  it("filters FeedPage JSON links by feed type tags", async () => {
+  it("projects FeedPage with static props as the same official API placeholder", async () => {
     const result = await transformMarkdown(`<FeedPage dataFeedType="rates" />`, "/fake/page.mdx")
 
-    expect(result).toContain("Sepolia Testnet")
-    expect(result).toContain("https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia.json")
+    expect(result).toContain(
+      "Live values such as feed contract addresses are not inlined here. Wait for the official API to obtain current data."
+    )
+    expect(result).not.toContain("https://")
   })
-
-  it.each(["dataFeedType", "ecosystem", "initialNetwork"])(
-    "drops FeedPage when %s is non-static",
-    async (attribute) => {
-      const result = await transformMarkdown(`<FeedPage ${attribute}={dynamicValue} />`, "/fake/page.mdx")
-
-      expect(result).toBe("")
-    }
-  )
 
   it("projects every static CodeHighlightBlockMulti language when no target is set", async () => {
     const result = await transformMarkdown(

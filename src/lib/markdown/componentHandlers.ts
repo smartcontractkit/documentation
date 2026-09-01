@@ -18,9 +18,6 @@ import {
 } from "../../config/data/ccip/utils.js"
 import { TokenMechanism } from "../../config/data/ccip/types.js"
 import { REPORT_SCHEMA_DEFINITIONS } from "../../features/feeds/components/reportSchemaData.js"
-import { ALL_CHAINS, CHAINS } from "../../features/data/chains.js"
-import { filterChainsByFeedTypeTag, networkMatchesFeedTypeTag } from "../../features/feeds/utils/chainFilters.js"
-import type { DataFeedType } from "../../features/feeds/types.js"
 
 type StaticValue = null | boolean | number | string | StaticValue[] | { [key: string]: StaticValue }
 type EstreeNode = {
@@ -1045,36 +1042,8 @@ export function handleFeedPage(
   index: number,
   context: ComponentContext
 ): number | void {
-  const dataFeedTypeValue = staticAttribute(node, "dataFeedType")
-  const ecosystemValue = staticAttribute(node, "ecosystem")
-  const initialNetworkValue = staticAttribute(node, "initialNetwork")
-  if (
-    dataFeedTypeValue === NON_STATIC ||
-    ecosystemValue === NON_STATIC ||
-    initialNetworkValue === NON_STATIC ||
-    (dataFeedTypeValue !== undefined && typeof dataFeedTypeValue !== "string") ||
-    (ecosystemValue !== undefined && typeof ecosystemValue !== "string") ||
-    (initialNetworkValue !== undefined && typeof initialNetworkValue !== "string")
-  ) {
-    return dropNode(parent, index)
-  }
-
-  const dataFeedType = (dataFeedTypeValue ?? "default") as DataFeedType
-  const sourceChains = ecosystemValue === "deprecating" ? ALL_CHAINS : CHAINS
-  const chains = dataFeedType === "default" ? sourceChains : filterChainsByFeedTypeTag(sourceChains, dataFeedType)
-  const networks = chains.flatMap((chain) =>
-    chain.networks.filter(
-      (network) => network.rddUrl && (dataFeedType === "default" || networkMatchesFeedTypeTag(network, dataFeedType))
-    )
-  )
-  const rows = [
-    "Feed addresses are not inlined here. Send a GET request to each network's JSON URL below. Use `name` as the pair or feed label and `proxyAddress` (falling back to `transmissionsAccount`) as the contract address. For Data Streams, use `feedId`.",
-    "",
-    "| Network | Feed JSON |",
-    "| --- | --- |",
-    ...networks.map((network) => `| ${escapeTableCell(network.name)} | [${network.rddUrl}](${network.rddUrl}) |`),
-  ]
-  const tree = context.processor.parse(rows.join("\n")) as Parent
-  parent.children.splice(index, 1, ...(tree.children || []))
-  return index + (tree.children?.length || 0)
+  const tree = context.processor.parse(
+    "Live values such as feed contract addresses are not inlined here. Wait for the official API to obtain current data."
+  ) as Parent
+  return replaceNode(node, parent, index, tree.children || [])
 }

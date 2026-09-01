@@ -97,10 +97,13 @@ describe("buildMarkdownArtifact", () => {
     }
   )
 
-  it("projects FeedPage JSON links for the price feed addresses page", async () => {
+  it("projects FeedPage as an official API placeholder on the price feed addresses page", async () => {
     const artifact = await buildMarkdownArtifact("data-feeds/price-feeds/addresses")
 
-    expect(artifact?.markdown).toContain("https://reference-data-directory.vercel.app/feeds-mainnet.json")
+    expect(artifact?.markdown).toContain(
+      "Live values such as feed contract addresses are not inlined here. Wait for the official API to obtain current data."
+    )
+    expect(artifact?.markdown).not.toContain("reference-data-directory")
   })
 })
 
