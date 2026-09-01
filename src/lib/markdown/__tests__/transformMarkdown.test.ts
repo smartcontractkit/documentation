@@ -250,6 +250,58 @@ Tail.
     expect(result).not.toContain("<td")
   })
 
+  it("keeps a flow HTML link without collapsing surrounding blocks", async () => {
+    const result = await transformMarkdown(
+      `Intro paragraph.
+
+## Heading
+
+<div class="remix-callout">
+  <a href="https://example.test">See the code</a>
+</div>
+
+### Sub
+
+Tail.`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(`Intro paragraph.
+
+## Heading
+
+[See the code](https://example.test)
+
+### Sub
+
+Tail.
+`)
+  })
+
+  it("keeps a flow MDX string expression without collapsing surrounding blocks", async () => {
+    const result = await transformMarkdown(
+      `Intro paragraph.
+
+## Heading
+
+{" "}
+
+### Sub
+
+Tail.`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(`Intro paragraph.
+
+## Heading
+
+### Sub
+
+Tail.
+`)
+  })
+
   it("keeps static MDX whitespace and string expressions while dropping dynamic expressions", async () => {
     const result = await transformMarkdown(
       `Word{" "}next and {"literal"} end.

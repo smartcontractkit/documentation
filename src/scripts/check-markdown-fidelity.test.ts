@@ -6,6 +6,7 @@ import { buildMarkdownArtifact } from "@lib/markdown/buildMarkdownArtifact.js"
 import type { MarkdownArtifact } from "@lib/markdown/types.js"
 import {
   analyzeSourceMarkdown,
+  blockingFindings,
   compareSourceToArtifact,
   checkPath,
   createReport,
@@ -58,6 +59,12 @@ describe("Markdown fidelity execution modes", () => {
       expect(determineExitCode("full-corpus", [current], new Set())).toBe(1)
     }
   )
+
+  test("full-corpus names the new identity that fails the run", () => {
+    const current = finding("unverifiable", "lang=default;new=parse")
+    current.reason = "Could not parse expression with acorn"
+    expect(blockingFindings("full-corpus", [current], new Set())).toEqual([current])
+  })
 
   test("full-corpus ignores resolved baseline identities and present findings", () => {
     const resolved = finding("missing", "lang=default;fact=1;text=resolved")

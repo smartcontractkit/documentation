@@ -1517,19 +1517,25 @@ export function findingIdentity(finding: FidelityFinding): string {
   })
 }
 
-export function determineExitCode(
+export function blockingFindings(
   mode: RunMode,
   findings: readonly FidelityFinding[],
   baselineIdentities: ReadonlySet<string> = new Set()
-): 0 | 1 {
-  return findings.some(
+): FidelityFinding[] {
+  return findings.filter(
     (finding) =>
       finding.status !== "present" &&
       !finding.exception &&
       (mode === "focused" || !baselineIdentities.has(findingIdentity(finding)))
   )
-    ? 1
-    : 0
+}
+
+export function determineExitCode(
+  mode: RunMode,
+  findings: readonly FidelityFinding[],
+  baselineIdentities: ReadonlySet<string> = new Set()
+): 0 | 1 {
+  return blockingFindings(mode, findings, baselineIdentities).length > 0 ? 1 : 0
 }
 
 async function loadBaseline(): Promise<ReadonlySet<string>> {
@@ -1864,7 +1870,7 @@ export async function checkPath(
 export async function runMarkdownFidelity(
   argv: readonly string[],
   options: { reportPath?: string; contentRoot?: string } = {}
-): Promise<{ report: FidelityReport; exitCode: 0 | 1 }> {
+): Promise<{ report: FidelityReport; exitCode: 0 | 1; blockers: FidelityFinding[] }> {
   const parsed = parseCliArguments(argv)
   const baselineIdentities = parsed.mode === "full-corpus" ? await loadBaseline() : new Set<string>()
   const paths = parsed.mode === "focused" ? parsed.paths : await collectCorpusPaths(options.contentRoot)
@@ -1894,15 +1900,23 @@ export async function runMarkdownFidelity(
   const reportPath = options.reportPath ?? DEFAULT_REPORT_PATH
   await fs.mkdir(path.dirname(reportPath), { recursive: true })
   await fs.writeFile(reportPath, serializeReport(report), "utf8")
-  return { report, exitCode: determineExitCode(parsed.mode, report.findings, baselineIdentities) }
+  const blockers = blockingFindings(parsed.mode, report.findings, baselineIdentities)
+  return { report, exitCode: blockers.length > 0 ? 1 : 0, blockers }
 }
 
 async function main(): Promise<void> {
-  const { report, exitCode } = await runMarkdownFidelity(process.argv.slice(2))
+  const { report, exitCode, blockers } = await runMarkdownFidelity(process.argv.slice(2))
   const counts = Object.entries(report.counts)
     .map(([status, count]) => `${status}=${count}`)
     .join(" ")
   console.log(`Markdown fidelity: paths=${report.pathCount} ${counts}`)
+  if (blockers.length > 0) {
+    console.error(`Markdown fidelity failed: ${blockers.length} new finding(s)`)
+    for (const finding of blockers) {
+      const detail = finding.reason ?? finding.expected ?? finding.occurrence
+      console.error(`${finding.path}: ${finding.status} ${detail}`)
+    }
+  }
   process.exitCode = exitCode
 }
 
