@@ -203,6 +203,53 @@ The field \`marketStatus\` matters.
     expect(result).not.toContain("<ul")
   })
 
+  it("keeps HTML table cell text without collapsing surrounding blocks", async () => {
+    const result = await transformMarkdown(
+      `Intro paragraph.
+
+## Heading
+
+<div>
+  <table>
+    <thead>
+      <tr>
+        <th>Network</th>
+        <th>Chain ID</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Ethereum Mainnet</td>
+        <td><code>1</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Sub
+
+Tail.`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(`Intro paragraph.
+
+## Heading
+
+Network
+Chain ID
+
+Ethereum Mainnet
+\`1\`
+
+### Sub
+
+Tail.
+`)
+    expect(result).not.toContain("<table")
+    expect(result).not.toContain("<td")
+  })
+
   it("keeps static MDX whitespace and string expressions while dropping dynamic expressions", async () => {
     const result = await transformMarkdown(
       `Word{" "}next and {"literal"} end.
