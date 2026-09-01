@@ -543,6 +543,45 @@ Read the warning.
     expect(result).toContain("Time-weighted average price")
   })
 
+  it("projects FeedPage as feed JSON links without merging flow siblings", async () => {
+    const result = await transformMarkdown(
+      `Intro paragraph.
+
+## Heading
+
+<FeedPage />
+
+### Sub
+
+Tail.`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toContain("## Heading\n\nFeed addresses are not inlined here.")
+    expect(result).toContain("Ethereum Mainnet")
+    expect(result).toContain("https://reference-data-directory.vercel.app/feeds-mainnet.json")
+    expect(result).toContain("`proxyAddress` (falling back to `transmissionsAccount`)")
+    expect(result).toContain("For Data Streams, use `feedId`.")
+    expect(result).toMatch(/\n\n### Sub\n\nTail\.\n$/)
+    expect(result).not.toContain("<FeedPage")
+  })
+
+  it("filters FeedPage JSON links by feed type tags", async () => {
+    const result = await transformMarkdown(`<FeedPage dataFeedType="rates" />`, "/fake/page.mdx")
+
+    expect(result).toContain("Sepolia Testnet")
+    expect(result).toContain("https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia.json")
+  })
+
+  it.each(["dataFeedType", "ecosystem", "initialNetwork"])(
+    "drops FeedPage when %s is non-static",
+    async (attribute) => {
+      const result = await transformMarkdown(`<FeedPage ${attribute}={dynamicValue} />`, "/fake/page.mdx")
+
+      expect(result).toBe("")
+    }
+  )
+
   it("projects every static CodeHighlightBlockMulti language when no target is set", async () => {
     const result = await transformMarkdown(
       `<CodeHighlightBlockMulti
