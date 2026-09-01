@@ -39,7 +39,7 @@ type EstreeNode = {
 
 const NON_STATIC = Symbol("non-static")
 
-function staticEstreeValue(node: EstreeNode | undefined): StaticValue | typeof NON_STATIC {
+export function staticEstreeValue(node: EstreeNode | undefined): StaticValue | typeof NON_STATIC {
   if (!node) return NON_STATIC
   if (node.type === "Literal") {
     return node.value === null || ["boolean", "number", "string"].includes(typeof node.value)
@@ -121,6 +121,47 @@ function headingNode(depth: number, value: string): Parent {
 
 function paragraphNode(children: Node[]): Parent {
   return { type: "paragraph", children } as Parent
+}
+
+const FLOW_TYPES: Record<string, true> = {
+  paragraph: true,
+  heading: true,
+  blockquote: true,
+  list: true,
+  listItem: true,
+  code: true,
+  table: true,
+  tableRow: true,
+  tableCell: true,
+  thematicBreak: true,
+  html: true,
+  definition: true,
+  footnoteDefinition: true,
+  mdxJsxFlowElement: true,
+  mdxFlowExpression: true,
+  mdxjsEsm: true,
+}
+
+function replaceNode(node: MdxJsxNode, parent: Parent, index: number, replacement: Node[]): number {
+  if (node.type === "mdxJsxFlowElement") {
+    const flowNodes: Node[] = []
+    let phrasingNodes: Node[] = []
+    for (const replacementNode of replacement) {
+      if (FLOW_TYPES[replacementNode.type]) {
+        if (phrasingNodes.length > 0) {
+          flowNodes.push(paragraphNode(phrasingNodes))
+          phrasingNodes = []
+        }
+        flowNodes.push(replacementNode)
+      } else {
+        phrasingNodes.push(replacementNode)
+      }
+    }
+    if (phrasingNodes.length > 0) flowNodes.push(paragraphNode(phrasingNodes))
+    replacement = flowNodes
+  }
+  parent.children.splice(index, 1, ...replacement)
+  return index
 }
 
 function linkNode(label: string, url: string): Parent {
@@ -325,9 +366,29 @@ export function handleCodeHighlightBlockMulti(
         data?: { estree?: { body?: { expression?: EstreeNode }[] } }
       }
     )?.data?.estree?.body?.[0]?.expression
+    const requestedLanguage = context.targetLanguage?.toLowerCase()
+    const normalizedLanguage =
+      requestedLanguage === "typescript"
+        ? "ts"
+        : requestedLanguage === "golang"
+          ? "go"
+          : requestedLanguage === "ts" || requestedLanguage === "go"
+            ? requestedLanguage
+            : undefined
     if (expression?.type !== "ObjectExpression") {
       return dropNode(parent, index)
     }
+    const targetLanguage =
+      normalizedLanguage &&
+      (expression.properties || []).some(
+        (property) =>
+          property.type === "Property" &&
+          !property.computed &&
+          ((property.key?.type === "Identifier" && property.key.name === normalizedLanguage) ||
+            (property.key?.type === "Literal" && property.key.value === normalizedLanguage))
+      )
+        ? normalizedLanguage
+        : undefined
 
     const codeNodes: Node[] = []
     const imports = readStaticDefaultImports(context.markdown)
@@ -339,7 +400,7 @@ export function handleCodeHighlightBlockMulti(
           : languageProperty.key?.type === "Literal" && typeof languageProperty.key.value === "string"
             ? languageProperty.key.value
             : undefined
-      if (!language || (context.targetLanguage && language !== context.targetLanguage)) continue
+      if (!language || (targetLanguage && language !== targetLanguage)) continue
 
       const languageConfig = languageProperty.value as EstreeNode
       if (languageConfig?.type !== "ObjectExpression") continue
@@ -350,6 +411,14 @@ export function handleCodeHighlightBlockMulti(
           (property.key?.type === "Literal" && property.key.value === "code")
         )
       })
+      const titleProperty = (languageConfig.properties || []).find((property) => {
+        if (property.type !== "Property" || property.computed) return false
+        return (
+          (property.key?.type === "Identifier" && property.key.name === "title") ||
+          (property.key?.type === "Literal" && property.key.value === "title")
+        )
+      })
+      const title = staticEstreeValue(titleProperty?.value as EstreeNode | undefined)
       const codeExpression = codeProperty?.value as EstreeNode | undefined
       let code: string | undefined
       let codeLanguage = language
@@ -372,6 +441,9 @@ export function handleCodeHighlightBlockMulti(
       }
 
       if (code !== undefined) {
+        if (!targetLanguage && typeof title === "string" && title) {
+          codeNodes.push(headingNode(3, title))
+        }
         codeNodes.push({
           type: "code",
           lang: codeLanguage,
@@ -492,12 +564,13 @@ export function handleClickToZoom(
 
     if (!src) return
 
-    // Create markdown image node
-    parent.children[index] = {
-      type: "image",
-      url: src,
-      alt,
-    } as Literal & { url: string; alt: string }
+    replaceNode(node, parent, index, [
+      {
+        type: "image",
+        url: src,
+        alt,
+      } as Literal & { url: string; alt: string },
+    ])
   } catch (e) {
     console.warn(`Failed to process ClickToZoom in ${context.mdxAbsPath}:`, e)
   }
@@ -678,13 +751,16 @@ export function handlePageTabs(node: MdxJsxNode, parent: Parent, index: number):
   const pages = staticAttribute(node, "pages")
   const showHeader = staticAttribute(node, "showHeader")
   const headerTitle = staticAttribute(node, "headerTitle")
+  const headerDescription = staticAttribute(node, "headerDescription")
   if (
     pages === NON_STATIC ||
     !Array.isArray(pages) ||
     showHeader === NON_STATIC ||
     (showHeader !== undefined && typeof showHeader !== "boolean") ||
     headerTitle === NON_STATIC ||
-    (headerTitle !== undefined && typeof headerTitle !== "string")
+    (headerTitle !== undefined && typeof headerTitle !== "string") ||
+    headerDescription === NON_STATIC ||
+    (headerDescription !== undefined && typeof headerDescription !== "string")
   ) {
     return dropNode(parent, index)
   }
@@ -712,8 +788,12 @@ export function handlePageTabs(node: MdxJsxNode, parent: Parent, index: number):
   }
 
   const replacement: Node[] = []
-  if (showHeader !== false)
+  if (showHeader !== false) {
     replacement.push(headingNode(2, typeof headerTitle === "string" ? headerTitle : "Guide Versions"))
+    if (typeof headerDescription === "string" && headerDescription) {
+      replacement.push(paragraphNode([textNode(headerDescription)]))
+    }
+  }
   if (links.length > 0) {
     replacement.push({
       type: "list",
@@ -769,10 +849,9 @@ export function handleTabs(node: MdxJsxNode, parent: Parent, index: number): num
     replacement.push(headingNode(3, tab.label), ...panel)
   }
   if (replacement.length === 0) {
-    return dropNode(parent, index)
+    return replaceNode(node, parent, index, (node as Parent).children || [])
   }
-  parent.children.splice(index, 1, ...replacement)
-  return index
+  return replaceNode(node, parent, index, replacement)
 }
 
 export function handlePackageManagerTabs(node: MdxJsxNode, parent: Parent, index: number): number | void {
@@ -783,21 +862,19 @@ export function handlePackageManagerTabs(node: MdxJsxNode, parent: Parent, index
     if (content) replacement.push(headingNode(3, manager), ...(content.children || []))
   }
   if (replacement.length === 0) {
-    return dropNode(parent, index)
+    return replaceNode(node, parent, index, (node as Parent).children || [])
   }
-  parent.children.splice(index, 1, ...replacement)
-  return index
+  return replaceNode(node, parent, index, replacement)
 }
 
 export function handleFragment(node: MdxJsxNode, parent: Parent, index: number): number | void {
-  const children = (node as Parent).children || []
-  parent.children.splice(index, 1, ...children)
-  return index
+  return replaceNode(node, parent, index, (node as Parent).children || [])
 }
 
 export function handleAccordion(node: MdxJsxNode, parent: Parent, index: number): number | void {
   const title = staticAttribute(node, "title")
   const number = staticAttribute(node, "number")
+  const depth = staticAttribute(node, "depth")
   const titleSlot = slottedElements(node as Parent).find(({ slot }) => slot === "title")
   const slotTitle = titleSlot ? staticChildrenText(titleSlot.node as Parent) : undefined
   if (
@@ -814,9 +891,8 @@ export function handleAccordion(node: MdxJsxNode, parent: Parent, index: number)
     titleSlot.parent.children.splice(titleSlot.parent.children.indexOf(titleSlot.node), 1)
   }
   const label = `${typeof number === "number" ? `${number}. ` : ""}${slotTitle || title}`
-  const replacement: Node[] = [headingNode(3, label), ...((node as Parent).children || [])]
-  parent.children.splice(index, 1, ...replacement)
-  return index
+  const replacement: Node[] = [headingNode(depth === 4 ? 4 : 3, label), ...((node as Parent).children || [])]
+  return replaceNode(node, parent, index, replacement)
 }
 
 export function handleAddress(node: MdxJsxNode, parent: Parent, index: number): number | void {
@@ -839,7 +915,7 @@ export function handleAddress(node: MdxJsxNode, parent: Parent, index: number): 
     typeof endLength === "number" && endLength > 0
       ? `${value.slice(0, endLength + 2)}...${value.slice(-endLength)}`
       : value
-  parent.children[index] = linkNode(display, contractUrl)
+  replaceNode(node, parent, index, [linkNode(display, contractUrl)])
 }
 
 export function handleCallout(

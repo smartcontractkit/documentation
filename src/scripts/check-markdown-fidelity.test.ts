@@ -44,8 +44,35 @@ function finding(status: FidelityFinding["status"], occurrence: string, sourceLi
 }
 
 describe("Markdown fidelity execution modes", () => {
-  test("full-corpus reports findings without blocking", () => {
-    expect(determineExitCode("full-corpus", [finding("missing", "lang=default;fact=1;text=known")])).toBe(0)
+  test("full-corpus accepts a current identity from the baseline", () => {
+    const known = finding("missing", "lang=default;fact=1;text=known")
+    expect(known.status).toBe("missing")
+    expect(determineExitCode("full-corpus", [known], new Set([findingIdentity(known)]))).toBe(0)
+  })
+
+  test.each(["missing", "unsupported", "unverifiable", "degraded"] as const)(
+    "full-corpus blocks a new %s identity",
+    (status) => {
+      const current = finding(status, `lang=default;new=${status}`)
+      expect(current.status).toBe(status)
+      expect(determineExitCode("full-corpus", [current], new Set())).toBe(1)
+    }
+  )
+
+  test("full-corpus ignores resolved baseline identities and present findings", () => {
+    const resolved = finding("missing", "lang=default;fact=1;text=resolved")
+    const present = finding("present", "lang=default;fact=1;text=current")
+    const baseline = new Set([findingIdentity(resolved)])
+    expect(resolved.status).toBe("missing")
+    expect(present.status).toBe("present")
+    expect(determineExitCode("full-corpus", [], baseline)).toBe(0)
+    expect(determineExitCode("full-corpus", [present], baseline)).toBe(0)
+  })
+
+  test("focused mode blocks a baseline-listed identity", () => {
+    const known = finding("unsupported", "lang=default;diagnostic=known")
+    expect(known.status).toBe("unsupported")
+    expect(determineExitCode("focused", [known], new Set([findingIdentity(known)]))).toBe(1)
   })
 
   test("--path is repeatable and blocks on every non-exempt failure", () => {

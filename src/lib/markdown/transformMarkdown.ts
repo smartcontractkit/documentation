@@ -33,10 +33,19 @@ import {
   handleDataStreams,
   handleSchemaFieldsTable,
   loadCcipCommonMapping,
+  staticEstreeValue,
 } from "./componentHandlers.js"
 import fs from "fs"
 import path from "path"
 import { removeLeadingMdxFrontmatter } from "./sourceScanners.js"
+
+function staticMdxString(value: unknown): string | undefined {
+  const expression = (
+    value as { data?: { estree?: { body?: { expression?: Parameters<typeof staticEstreeValue>[0] }[] } } } | undefined
+  )?.data?.estree?.body?.[0]?.expression
+  const staticValue = staticEstreeValue(expression)
+  return typeof staticValue === "string" ? staticValue : undefined
+}
 
 /**
  * Preprocess CcipCommon components by inlining their content
@@ -224,6 +233,86 @@ export async function transformMarkdown(
           }
         }
 
+        if (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") {
+          const mdxNode = node as MdxJsxNode
+          const nodeName = mdxNode.name
+          const children = (mdxNode as Parent).children || []
+
+          if (nodeName === "a") {
+            const hrefAttribute = mdxNode.attributes?.find((attribute) => attribute.name === "href")
+            const href =
+              typeof hrefAttribute?.value === "string" ? hrefAttribute.value : staticMdxString(hrefAttribute?.value)
+            if (href !== undefined) {
+              parent.children[index] = { type: "link", url: href, children } as Parent & { url: string }
+              return
+            }
+            parent.children.splice(index, 1, ...children)
+            return index
+          }
+
+          if (nodeName === "code") {
+            let value = ""
+            for (const child of children) {
+              if (child.type === "text") value += String((child as Literal).value)
+              else if (child.type === "mdxTextExpression" || child.type === "mdxFlowExpression") {
+                value += staticMdxString(child) ?? ""
+              }
+            }
+            parent.children[index] = { type: "inlineCode", value } as Literal
+            return
+          }
+
+          if (nodeName === "b" || nodeName === "strong") {
+            parent.children[index] = { type: "strong", children } as Parent
+            return
+          }
+
+          if (nodeName === "ul") {
+            const replacement: Node[] = []
+            let listItemCount = 0
+            for (const child of children) {
+              if (
+                (child.type === "mdxJsxFlowElement" || child.type === "mdxJsxTextElement") &&
+                (child as MdxJsxNode).name === "li"
+              ) {
+                if (listItemCount > 0) replacement.push({ type: "text", value: "; " } as Literal)
+                replacement.push(...((child as Parent).children || []))
+                listItemCount++
+              } else if (child.type !== "text" || String((child as Literal).value).trim()) {
+                replacement.push(child)
+              }
+            }
+            parent.children.splice(index, 1, ...replacement)
+            return index
+          }
+
+          if (
+            nodeName === "li" ||
+            nodeName === "sub" ||
+            nodeName === "span" ||
+            nodeName === "p" ||
+            ((nodeName === "br" || nodeName === "nobr") && children.length > 0)
+          ) {
+            parent.children.splice(index, 1, ...children)
+            return index
+          }
+
+          if (nodeName === "br" || nodeName === "nobr") {
+            parent.children.splice(index, 1)
+            return index
+          }
+        }
+
+        if (node.type === "mdxFlowExpression" || node.type === "mdxTextExpression") {
+          const value = staticMdxString(node)
+          if (value !== undefined) {
+            parent.children[index] = { type: "text", value } as Literal
+            return
+          }
+          parent.children.splice(index, 1)
+          return index
+        }
+
         // Drop MDX/import/export nodes except the explicitly projected component names above.
         if (
           ((node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
@@ -248,18 +337,10 @@ export async function transformMarkdown(
           node.type === "mdxjsEsm" ||
           node.type === "import" ||
           node.type === "export" ||
-          node.type === "mdxFlowExpression" ||
-          node.type === "mdxTextExpression" ||
           node.type === "html"
         ) {
           parent.children.splice(index, 1)
           return index
-        }
-
-        // Replace images with their alt text
-        if (node.type === "image") {
-          const alt = (node as { alt?: string }).alt ? String((node as { alt?: string }).alt) : "Image"
-          parent.children[index] = { type: "text", value: `(Image: ${alt})` } as Literal
         }
 
         // Note: We preserve link nodes as-is so they're rendered as markdown links [text](url)
