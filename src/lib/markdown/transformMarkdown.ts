@@ -244,11 +244,11 @@ export async function transformMarkdown(
             const href =
               typeof hrefAttribute?.value === "string" ? hrefAttribute.value : staticMdxString(hrefAttribute?.value)
             if (href !== undefined) {
-              parent.children[index] = { type: "link", url: href, children } as Parent & { url: string }
-              return
+              return replaceNode(mdxNode, parent, index, [
+                { type: "link", url: href, children } as Parent & { url: string },
+              ])
             }
-            parent.children.splice(index, 1, ...children)
-            return index
+            return replaceNode(mdxNode, parent, index, children)
           }
 
           if (nodeName === "code") {
@@ -259,13 +259,11 @@ export async function transformMarkdown(
                 value += staticMdxString(child) ?? ""
               }
             }
-            parent.children[index] = { type: "inlineCode", value } as Literal
-            return
+            return replaceNode(mdxNode, parent, index, [{ type: "inlineCode", value } as Literal])
           }
 
           if (nodeName === "b" || nodeName === "strong") {
-            parent.children[index] = { type: "strong", children } as Parent
-            return
+            return replaceNode(mdxNode, parent, index, [{ type: "strong", children } as Parent])
           }
 
           if (nodeName === "ul") {
@@ -283,8 +281,7 @@ export async function transformMarkdown(
                 replacement.push(child)
               }
             }
-            parent.children.splice(index, 1, ...replacement)
-            return index
+            return replaceNode(mdxNode, parent, index, replacement)
           }
 
           // ponytail: unwrap HTML tables to text; emit markdown tables if agents need grid structure
@@ -313,12 +310,9 @@ export async function transformMarkdown(
 
         if (node.type === "mdxFlowExpression" || node.type === "mdxTextExpression") {
           const value = staticMdxString(node)
-          if (value !== undefined) {
-            parent.children[index] = { type: "text", value } as Literal
-            return
-          }
-          parent.children.splice(index, 1)
-          return index
+          if (value === undefined) return replaceNode(node, parent, index, [])
+          if (node.type === "mdxFlowExpression" && !value.trim()) return replaceNode(node, parent, index, [])
+          return replaceNode(node, parent, index, [{ type: "text", value } as Literal])
         }
 
         // Drop MDX/import/export nodes except the explicitly projected component names above.
