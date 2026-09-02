@@ -227,6 +227,7 @@ const RISK_TIER_SHORT_LABELS: Record<string, string> = {
   new: "New token",
   custom: "Custom",
   deprecating: "Deprecating",
+  unrated: "Unrated",
 }
 
 const normalizeRiskKey = (riskTier?: string | null) => riskTier?.toLowerCase().replace(/\s+/g, "") ?? ""
@@ -282,9 +283,14 @@ const RiskCell = ({
 }) => {
   const [tooltipPos, setTooltipPos] = useState<ReturnType<typeof getRiskTooltipPosition> | null>(null)
   const normalizedKey = normalizeRiskKey(riskTier)
-  const category = normalizedKey ? FEED_CATEGORY_CONFIG[normalizedKey as CategoryKey] : undefined
-  const tooltipText = category ? getRiskTooltipText(normalizedKey as CategoryKey, product) : ""
-  const riskLink = category ? getRiskCategoryLink(normalizedKey as CategoryKey, product) : ""
+  // When no risk tier is available (e.g. no Supabase return), fall back to the
+  // "Unrated" category so the feed/stream is shown with the ⚪ circle instead of a dash.
+  const categoryKey = (normalizedKey ? FEED_CATEGORY_CONFIG[normalizedKey as CategoryKey] : undefined)
+    ? (normalizedKey as CategoryKey)
+    : "unrated"
+  const category = FEED_CATEGORY_CONFIG[categoryKey]
+  const tooltipText = getRiskTooltipText(categoryKey, product)
+  const riskLink = getRiskCategoryLink(categoryKey, product)
 
   useEffect(() => {
     if (!tooltipPos || typeof document === "undefined") return
@@ -314,14 +320,6 @@ const RiskCell = ({
       container.remove()
     }
   }, [tooltipPos, tooltipText])
-
-  if (!category) {
-    return (
-      <td className={tableStyles.riskCol}>
-        <span className={tableStyles.riskUnavailable}>—</span>
-      </td>
-    )
-  }
 
   const showTooltip = (event: Event) => {
     setTooltipPos(getRiskTooltipPosition(event.currentTarget as HTMLElement))
