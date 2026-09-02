@@ -30,6 +30,7 @@ export type SectionContent = {
   children?: SectionContent[]
   isCollapsible?: boolean
   chainTypes?: ChainType[]
+  openInNewTab?: boolean
 }
 
 /**
