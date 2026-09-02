@@ -14,12 +14,6 @@ Use CRE Connect when your application needs to:
 
 You sign operations with keys you already use: local ECDSA, AWS KMS, HashiCorp Vault, Fireblocks, Privy, or a custom signer. CRE Connect delivers verifiable events and results, and the SDK gives you helpers to verify them locally before acting on them.
 
-<Aside type="note" title="Beta: permissioned access">
-  CRE Connect is currently in **private beta**. Your organization must be provisioned by Chainlink before any of the
-  examples in these docs will work against the live API. See [Prerequisites](/crec/getting-started/prerequisites) for
-  the onboarding flow.
-</Aside>
-
 ## What you can build
 
 | Capability              | What it gives you                                                                                                                                   | Where to start                                                                   |
@@ -89,16 +83,75 @@ Jump straight to the relevant guide:
 
 ## Where to go next?
 
-- [Getting Started](/crec/getting-started): follow the recommended onboarding sequence.
+- [Private Beta](/crec/private-beta): access, scope, and current limitations.
+- [Getting Started](/crec/getting-started/prerequisites): follow the recommended onboarding sequence.
 - [Architecture](/crec/concepts/architecture): understand how the SDK, REST API, DON workflows, and Smart Accounts fit together.
 - [REST API Reference](/crec/reference/rest-api) · [Go SDK Reference](/crec/reference/go-sdk): look up endpoint and SDK details.
 - [Release Notes](/crec/release-notes): see current versions and changes.
 
 ---
 
+# Private Beta
+Source: https://docs.chain.link/crec/private-beta
+Last Updated: 2026-09-02
+
+<CrecCommon callout="beta" />
+
+CRE Connect is in **private beta**: the product is complete enough to build real integrations, but access is permissioned and some capabilities are still evolving. This page explains what that means in practice, so you can decide what to build today and what to plan around.
+
+## How access works
+
+During the beta, CRE Connect is not self-serve. Your organization must be provisioned by Chainlink Labs before you can create API keys or call the API:
+
+1. [Contact Chainlink](https://chain.link/contact) to request access or schedule a demo.
+2. Share your **Organization ID** with your Chainlink Labs contact so they can enable CRE Connect for your organization.
+3. Once enabled, generate an API key from the **Organization → APIs** tab on [app.chain.link](https://app.chain.link).
+
+See [Prerequisites](/crec/getting-started/prerequisites) for the detailed onboarding flow, and the [Overview](/crec) for what you can build with CRE Connect.
+
+## What the beta includes
+
+The core product surface is available and supported:
+
+- **Verifiable on-chain events**: subscribe to contract events on [supported networks](/crec/supported-networks); every event is signed by the Chainlink DON and verifiable end-to-end. See [Verifiable Events](/crec/concepts/verifiable-events).
+- **Gas-less, account-abstracted operations**: sign one EIP-712 payload; CRE Connect executes one or more EVM transactions atomically through your Smart Account. See [Operations & Transactions](/crec/concepts/operations).
+- **Chain queries**: one-shot, DON-backed, verifiable EVM reads. See [Chain Queries](/crec/concepts/queries).
+- **Signer integrations**: local ECDSA/RSA, AWS KMS, HashiCorp Vault, Fireblocks, Privy, and a documented [custom signer interface](/crec/guides/signers/custom).
+- **Extensions**: the [DTA (Digital Transfer Agent)](/crec/extensions/dta) extension is available at launch.
+
+## Current limitations
+
+The following limitations apply today:
+
+### Signer sets are fixed at wallet creation
+
+A wallet's signer set cannot be modified after creation. To rotate signers today, archive the old wallet and provision a new one with the updated signer lists. See [Manage Wallet Signers](/crec/guides/wallets/manage-signers).
+
+### Per-environment quotas are negotiated
+
+The number of watchers per channel, rate limits, and other per-environment quotas are soft limits negotiated with the Chainlink team rather than fixed published numbers. See [Service Limits](/crec/reference/service-limits) for the hard limits that are enforced server-side.
+
+## Support and feedback
+
+During the beta, support flows through your Chainlink Labs contact:
+
+- **Issues and bugs**: include the operation or event ID where possible.
+- **Feature requests**: the beta is the time to shape the product: share your use cases and gaps.
+- **Quota changes**: rate limits and per-environment quotas can be adjusted on request.
+
+## See also
+
+- [Prerequisites](/crec/getting-started/prerequisites): the detailed onboarding flow.
+- [Release Notes](/crec/release-notes): version history for the SDK, REST API, and extensions.
+- [Service Limits](/crec/reference/service-limits): hard limits enforced by the API.
+
+---
+
 # Supported Networks
 Source: https://docs.chain.link/crec/supported-networks
 Last Updated: 2026-08-31
+
+<CrecCommon callout="beta" />
 
 <Aside type="note" title="About chain selectors">
   A **chain selector** is Chainlink's globally-unique numeric identifier for a blockchain. Unlike chain IDs, chain
@@ -216,6 +269,8 @@ Network-level **confidence levels** (`latest`, `safe`, `finalized`) are configur
 Source: https://docs.chain.link/crec/release-notes
 Last Updated: 2026-09-01
 
+<CrecCommon callout="beta" />
+
 ## 2026-09-01 — SDK v0.8.0 — DON Configuration, Structured Conflict Errors
 
 **Versions**
@@ -272,27 +327,11 @@ See [Supported Networks](/crec/supported-networks).
 
 ---
 
-# Get Access to CRE Connect
-Source: https://docs.chain.link/crec/getting-started
-Last Updated: 2026-09-02
-
-Chainlink CRE Connect is currently in **private beta**. To request access, schedule a demo, or learn more about how CRE Connect can fit into your application, [contact us](https://chain.link/contact).
-
-Once your organization is provisioned, you will be able to:
-
-- Subscribe to **verifiable on-chain events** signed end-to-end by the Chainlink Decentralized Oracle Network (DON), on every supported network.
-- Submit **gas-less, account-abstracted operations** — atomic batches of EVM transactions that the DON broadcasts on-chain through your Smart Account.
-- Use the **DTA extension** to interact with Digital Transfer Agent contracts through typed, protocol-aware operations.
-
-You sign with the keys you already have, and CRE Connect handles event verification, gas, nonces, relayers, and the on-chain account.
-
-For an overview of CRE Connect and its capabilities, see the [Overview](/crec) page and explore the [Concepts](/crec/concepts/architecture) section.
-
----
-
 # Prerequisites
 Source: https://docs.chain.link/crec/getting-started/prerequisites
 Last Updated: 2026-08-31
+
+<CrecCommon callout="beta" />
 
 CRE Connect is a permissioned service. Before you can use the SDK or call the API, your organization must exist on the <a href="https://app.chain.link" target="_blank" rel="noopener noreferrer">Chainlink Platform</a> and be provisioned by Chainlink Labs for CRE Connect. Steps 1–3 cover the account and API key; steps 4–6 cover the local toolchain and integration choices.
 
@@ -305,11 +344,6 @@ Once signed in, click on **your organization's name** in the bottom-left corner 
 ## 2. Share your Organization ID
 
 Share your Organization ID with your Chainlink Labs contact so they can enable CRE Connect for your organization. **You cannot create API keys or use CRE Connect until this step is complete.**
-
-<Aside type="note" title="Beta: permissioned access">
-  During the **private beta**, CRE Connect enablement requires Chainlink Labs to provision the service for your
-  organization.
-</Aside>
 
 ## 3. Create an API key
 
@@ -434,6 +468,8 @@ When all of these are checked, continue to [SDK Installation](/crec/getting-star
 # SDK Installation
 Source: https://docs.chain.link/crec/getting-started/sdk-installation
 Last Updated: 2026-08-31
+
+<CrecCommon callout="beta" />
 
 The CRE Connect SDK is distributed as a Go module. There is one core module and one optional extension per supported protocol.
 
@@ -586,6 +622,8 @@ If that prints without errors, you are ready for [Authentication](/crec/getting-
 # Authentication
 Source: https://docs.chain.link/crec/getting-started/authentication
 Last Updated: 2026-08-31
+
+<CrecCommon callout="beta" />
 
 CRE Connect uses a single header, `Authorization: Apikey <key>`, for every request. The SDK attaches that header automatically once you construct a client.
 
@@ -769,6 +807,8 @@ Once `ListNetworks` returns at least one network, you have everything needed to 
 # Quickstart: Watch On-Chain Events
 Source: https://docs.chain.link/crec/getting-started/quickstart-watch-events
 Last Updated: 2026-08-31
+
+<CrecCommon callout="beta" />
 
 A **watcher** is a CRE Connect resource that monitors a contract on a chain and turns matching logs into verifiable events on your channel. In this quickstart you attach a watcher to the **Sepolia WETH token** (the WETH9 contract used by Uniswap V3) using a custom ABI, then poll the channel, cryptographically verify each event, and decode it into a Go map. You never sign a transaction: the watcher only reads.
 
@@ -1292,6 +1332,8 @@ go run .
 # Quickstart: Send Your First Operation
 Source: https://docs.chain.link/crec/getting-started/quickstart-send-operation
 Last Updated: 2026-08-31
+
+<CrecCommon callout="beta" />
 
 An **Operation** is a batch of EVM transactions executed atomically by a **Smart Account**, an on-chain contract that runs authorized transactions on your behalf. In this quickstart you build a one-call `Operation`, sign it with a local ECDSA key, and submit it through CRE Connect. The Chainlink DON broadcasts the transaction on Sepolia and pays the gas: your signing key never holds ETH, and you never manage a nonce or a relayer.
 
@@ -1924,7 +1966,7 @@ Every state transition in the table is observable through `client.Events`, which
 - [Channels](/crec/concepts/channels) · [Watchers](/crec/concepts/watchers) · [Smart Accounts](/crec/concepts/smart-accounts) · [Operations](/crec/concepts/operations): every component in detail.
 - [Verifiable Events](/crec/concepts/verifiable-events): what makes an event "verifiable" in this architecture.
 - [Chain Queries](/crec/concepts/queries): one-shot, DON-backed reads.
-- [Getting Started](/crec/getting-started): turn the model into running code.
+- [Getting Started](/crec/getting-started/prerequisites): turn the model into running code.
 
 ---
 
@@ -7235,6 +7277,8 @@ Several event payloads reference enum types from `events/types.go`:
 # REST API Reference
 Source: https://docs.chain.link/crec/reference/rest-api
 Last Updated: 2026-08-31
+
+<CrecCommon callout="beta" />
 
 This page is the narrative companion to the live, generated REST API reference.
 

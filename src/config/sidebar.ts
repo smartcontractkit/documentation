@@ -841,6 +841,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Chainlink CRE Connect",
       contents: [
         { title: "Overview", url: "crec" },
+        { title: "Private Beta", url: "crec/private-beta" },
         { title: "Supported Networks", url: "crec/supported-networks" },
         { title: "Release Notes", url: "crec/release-notes" },
       ],
@@ -848,7 +849,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Getting Started",
       contents: [
-        { title: "Get Access", url: "crec/getting-started" },
         { title: "Prerequisites", url: "crec/getting-started/prerequisites" },
         { title: "SDK Installation", url: "crec/getting-started/sdk-installation" },
         { title: "Authentication", url: "crec/getting-started/authentication" },
