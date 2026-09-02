@@ -611,6 +611,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "JOVAY_MAINNET"
     case "jovay-testnet":
       return "JOVAY_TESTNET"
+    case "mova-mainnet-2":
+      return "MOVA_MAINNET"
+    case "mova-testnet":
+      return "MOVA_TESTNET"
     case "stable-mainnet":
       return "STABLE_MAINNET"
     case "tempo-testnet":
@@ -981,6 +985,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "jovay-mainnet"
     case "JOVAY_TESTNET":
       return "jovay-testnet"
+    case "MOVA_MAINNET":
+      return "mova-mainnet-2"
+    case "MOVA_TESTNET":
+      return "mova-testnet"
     case "STABLE_MAINNET":
       return "stable-mainnet"
     case "TEMPO_TESTNET":
