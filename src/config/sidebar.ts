@@ -1420,6 +1420,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "API Reference",
               url: "data-streams/reference/data-streams-api/interface-api",
+              children: [
+                {
+                  title: "Discovery Endpoint",
+                  url: "data-streams/reference/data-streams-api/discovery-endpoint",
+                },
+              ],
             },
             {
               title: "WebSocket Reference",
