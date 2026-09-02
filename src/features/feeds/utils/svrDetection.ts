@@ -2,8 +2,15 @@ import { type ChainMetadata } from "~/features/data/api/index.ts"
 import type { DataFeedType } from "../types.ts"
 import { type FeedVisibilityOptions, isFeedVisible } from "./feedVisibility.ts"
 
-// This file contains *temporary* functions to detect SVR feeds based on their metadata
-// These functions are used to identify specific types of SVR feeds based on their metadata properties
+// This file contains functions to detect and classify SVR feeds based on their metadata.
+// SVR feeds are identified by the presence of a secondaryProxyAddress.
+//
+// Classification (based on path suffix):
+//   *-svr (no "shared")        → Aave-SVR    (dedicated to Aave)
+//   *-shared-svr-2             → SVR         (new shared, canonical)
+//   *-shared-svr (no "-2")     → SVR-Backup  (legacy shared)
+
+export type SvrFeedType = "Aave-SVR" | "SVR" | "SVR-Backup"
 
 export function isSvrFeed(metadata: ChainMetadata): boolean {
   return !!metadata?.secondaryProxyAddress
@@ -35,20 +42,35 @@ export function chainHasSvrFeeds(
 }
 
 /**
- * Determines if a feed is a Shared SVR feed based on its path
- * @param metadata - The feed metadata object
- * @returns true if the feed is a shared SVR feed
+ * Determines if a feed is a legacy shared SVR feed (SVR-Backup).
+ * Path ends with "-shared-svr" but NOT "-shared-svr-2".
  */
 export const isSharedSVR = (metadata: ChainMetadata): boolean => {
-  // Check the path field for feeds ending with "-shared-svr"
   return typeof metadata.path === "string" && /-shared-svr$/.test(metadata.path)
 }
 
 /**
- * Determines if a feed is an Aave dedicated SVR feed
- * @param metadata - The feed metadata object
- * @returns true if the feed has a secondary proxy address but is not a shared SVR feed
+ * Determines if a feed is a new shared SVR feed (canonical SVR).
+ * Path ends with "-shared-svr-2".
+ */
+export const isNewSharedSVR = (metadata: ChainMetadata): boolean => {
+  return typeof metadata.path === "string" && /-shared-svr-2$/.test(metadata.path)
+}
+
+/**
+ * Determines if a feed is an Aave dedicated SVR feed.
+ * Has a secondary proxy address but is neither a shared nor new-shared SVR feed.
  */
 export const isAaveSVR = (metadata: ChainMetadata): boolean => {
-  return !!metadata?.secondaryProxyAddress && !isSharedSVR(metadata)
+  return !!metadata?.secondaryProxyAddress && !isSharedSVR(metadata) && !isNewSharedSVR(metadata)
+}
+
+/**
+ * Returns the SVR feed type label for a given feed metadata.
+ */
+export const getSvrType = (metadata: ChainMetadata): SvrFeedType | null => {
+  if (!metadata?.secondaryProxyAddress) return null
+  if (isNewSharedSVR(metadata)) return "SVR"
+  if (isSharedSVR(metadata)) return "SVR-Backup"
+  return "Aave-SVR"
 }
