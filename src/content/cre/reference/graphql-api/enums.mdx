@@ -1,0 +1,152 @@
+---
+section: cre
+title: "Enum Reference"
+date: Last Modified
+metadata:
+  description: "Reference for CRE GraphQL enum types used by workflow, deployment, and execution queries."
+  datePublished: "2026-08-31"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="Value meanings">
+  The GraphQL schema itself does not carry descriptions for individual enum values. The descriptions below reflect each
+  value's plain meaning; if your application depends on precise semantics for a value not described further here, verify
+  against observed behavior or contact Chainlink support.
+</Aside>
+
+## `WorkflowDeploymentStatus`
+
+The deployment status of a [`Workflow`](/cre/reference/graphql-api/objects#workflow) or [`WorkflowDeployment`](/cre/reference/graphql-api/objects#workflowdeployment).
+
+| Value     | Description                                                                  |
+| --------- | ---------------------------------------------------------------------------- |
+| `PENDING` | The deployment has been submitted but is not yet confirmed onchain.          |
+| `FAILED`  | The deployment failed. See the deployment's `errorMessage` field for detail. |
+| `ACTIVE`  | The workflow is deployed and actively executing.                             |
+| `PAUSED`  | The workflow is deployed but paused; it will not execute until reactivated.  |
+| `DELETED` | The workflow has been deleted from the Workflow Registry.                    |
+
+## `WorkflowExecutionStatus`
+
+The status of a [`WorkflowExecution`](/cre/reference/graphql-api/objects#workflowexecution).
+
+| Value         | Description                                                                                  |
+| ------------- | -------------------------------------------------------------------------------------------- |
+| `UNKNOWN`     | The execution's status could not be determined.                                              |
+| `UNSPECIFIED` | No status has been set for this execution.                                                   |
+| `TRIGGERED`   | The execution has been triggered but has not yet started processing.                         |
+| `IN_PROGRESS` | The execution is currently running.                                                          |
+| `SUCCESS`     | The execution completed successfully.                                                        |
+| `FAILURE`     | The execution terminated because of an error. See the execution's `errors` field for detail. |
+
+## `WorkflowExecutionClassifiedStatus`
+
+A more granular classification of a finished execution's outcome, distinguishing who or what caused a failure.
+
+| Value          | Description                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------ |
+| `UNSPECIFIED`  | No classification has been set.                                                                              |
+| `SUCCESS`      | The execution completed successfully.                                                                        |
+| `USER_ERROR`   | The execution failed because of an error in the workflow's own logic or configuration.                       |
+| `SYSTEM_ERROR` | The execution failed because of an error in the CRE platform or DON infrastructure, not the workflow itself. |
+
+## `SortingOrder`
+
+Sort direction, used by the `orderBy` argument on list queries.
+
+| Value  | Description       |
+| ------ | ----------------- |
+| `ASC`  | Ascending order.  |
+| `DESC` | Descending order. |
+
+## `WorkflowOrderByField`
+
+Fields that [`workflows`](/cre/reference/graphql-api/queries#workflows) can sort by.
+
+| Value         | Description                                        |
+| ------------- | -------------------------------------------------- |
+| `NAME`        | Sort by workflow name.                             |
+| `STATUS`      | Sort by deployment status.                         |
+| `EXECUTED_AT` | Sort by the time of the workflow's last execution. |
+
+## `WorkflowDeploymentOrderByField`
+
+Fields that [`workflowDeployments`](/cre/reference/graphql-api/queries#workflowdeployments) can sort by.
+
+| Value         | Description                                  |
+| ------------- | -------------------------------------------- |
+| `WORKFLOW_ID` | Sort by the onchain workflow identifier.     |
+| `DEPLOYED_AT` | Sort by the time the deployment was created. |
+
+## `WorkflowExecutionOrderByField`
+
+Fields that [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions) can sort by.
+
+| Value         | Description                             |
+| ------------- | --------------------------------------- |
+| `ID`          | Sort by execution ID.                   |
+| `STATUS`      | Sort by execution status.               |
+| `STARTED_AT`  | Sort by the time the execution started. |
+| `CREDIT_USED` | Sort by credits consumed.               |
+
+## `OrganizationRestrictionStatus`
+
+The access level of an [`Organization`](/cre/reference/graphql-api/objects#organization).
+
+| Value         | Description                                                       |
+| ------------- | ----------------------------------------------------------------- |
+| `GATED`       | The organization has limited access pending closed-beta approval. |
+| `FULL_ACCESS` | The organization has full platform access.                        |
+
+## `EntityActiveStatus`
+
+Whether an entity such as an organization or API key is active or has been removed.
+
+| Value     | Description                                 |
+| --------- | ------------------------------------------- |
+| `ACTIVE`  | The entity is active.                       |
+| `DELETED` | The entity has been deleted or deactivated. |
+
+## `MemberType`
+
+The role of an [`OrganizationAccount`](/cre/reference/graphql-api/objects#organizationaccount).
+
+| Value   | Description                                 |
+| ------- | ------------------------------------------- |
+| `ROOT`  | The organization's root/owner account.      |
+| `ADMIN` | An account with administrative permissions. |
+
+## `MemberStatus`
+
+The invitation/membership state of an [`OrganizationAccount`](/cre/reference/graphql-api/objects#organizationaccount).
+
+| Value     | Description                                         |
+| --------- | --------------------------------------------------- |
+| `INVITED` | The account has been invited but hasn't joined yet. |
+| `JOINED`  | The account has joined the organization.            |
+| `REMOVED` | The account has been removed from the organization. |
+
+## `RegistryType`
+
+The kind of a [`Registry`](/cre/reference/graphql-api/objects#registry) returned by `getTenantConfig`.
+
+| Value       | Description                                           |
+| ----------- | ----------------------------------------------------- |
+| `ON_CHAIN`  | The registry is an onchain contract.                  |
+| `OFF_CHAIN` | The registry is a Chainlink-hosted offchain registry. |
+
+## `SecretsAuthFlow`
+
+A secrets authentication flow supported by a [`Registry`](/cre/reference/graphql-api/objects#registry).
+
+| Value               | Description                                                      |
+| ------------------- | ---------------------------------------------------------------- |
+| `BROWSER`           | Secrets are authorized through an interactive browser flow.      |
+| `OWNER_KEY_SIGNING` | Secrets are authorized by signing with the workflow owner's key. |
+
+## Related
+
+- [Object Reference](/cre/reference/graphql-api/objects)
+- [Query Reference](/cre/reference/graphql-api/queries)
