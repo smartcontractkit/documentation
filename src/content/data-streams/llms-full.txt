@@ -6022,6 +6022,8 @@ The [RWA Standard (v8)](/data-streams/reference/report-schema-v8) report schema 
 
 RWA assets trade on traditional exchanges during [market hours](/data-streams/market-hours). These market hours vary by asset class and can be subject to unexpected halts, pauses and other behaviors affecting traditional markets. For this reason, this schema includes a market hours flag and a staleness measure to equip users to handle these events correctly. It is critical that users implement correct safeguards on their end to pause markets, add more conservative risk caps, or do whatever else is appropriate for their application.
 
+For US Equities specifically, [RWA Advanced (v11)](/data-streams/reference/report-schema-v11) is strongly recommended over v8 — see below.
+
 ### RWA Advanced (v11)
 
 The [RWA Advanced (v11)](/data-streams/reference/report-schema-v11) report schema offers enhanced market data capabilities with additional fields: liquidity-weighted mid (`mid`), consensus bid and ask prices (`bid`, `ask`), resting book depth (`bidVolume`, `askVolume`), most recent execution (`lastTradedPrice`), nanosecond precision freshness (`lastSeenTimestampNs`), and expanded market status (`marketStatus`) that distinguishes between pre-market, regular hours, post-market, overnight, and weekend periods.
@@ -6339,6 +6341,12 @@ Source: https://docs.chain.link/data-streams/reference/report-schema-v8
 <DataStreams section="dsNotes" />
 
 RWA streams adhere to the report schema outlined below.
+
+<Aside type="note" title="Integrating US Equities?">
+  For US Equities streams, [RWA Advanced (v11)](/data-streams/reference/report-schema-v11) is strongly recommended over
+  this schema. v11 adds bid/ask prices, nanosecond-precision timestamps, and expanded market status values that
+  distinguish pre-market, regular hours, post-market, and overnight sessions.
+</Aside>
 
 ### Schema Fields
 
@@ -7034,6 +7042,11 @@ Announcements can cause sharp price spikes or sustained moves.
 Source: https://docs.chain.link/data-streams/rwa-streams/handling-market-events
 
 <MarketEventsTabs />
+
+<Aside type="note" title="Integrating US Equities?">
+  See the [Handling Market Events (v11)](/data-streams/rwa-streams/handling-market-events-v11) guide instead. RWA
+  Advanced (v11) is strongly recommended over this schema for US Equities streams.
+</Aside>
 
 Apply these best practices when integrating or operating markets that use tokenized real-world assets. Developers and operators are responsible for assessing market integrity, implementing mitigations, and managing application-level risks — see the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance for details.
 
