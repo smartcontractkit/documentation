@@ -3,10 +3,14 @@ section: ace
 title: "Key Terms and Concepts"
 date: Last Modified
 metadata:
-  description: "Glossary of Chainlink ACE terminology: CCID, credentials, registries, policies, PolicyEngine, extractors, policy chains, default results, delegated signing, self-signing, Proof of Reserve, CRE Connect, and all other key concepts."
-  datePublished: "2026-04-20"
-  lastModified: "2026-08-18"
+  description: "Glossary of Chainlink ACE terminology: CCID, credentials, registries, policies, PolicyEngine, extractors, policy chains, default results, delegated signing, Proof of Reserve, CRE Connect, and all other key concepts."
+  datePublished: "2026-03-31"
+  lastModified: "2026-07-17"
 ---
+
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
 
 This glossary defines the key terms used throughout the ACE documentation. Use it as a quick reference when reading other pages.
 
@@ -20,7 +24,7 @@ A set of laws, regulations, and procedures designed to prevent criminals from di
 
 ### Access grant
 
-A cross-organization link that gives another organization read access to one of your resources. For registries, an access grant lets a **grantee** organization read a **grantor**'s registry and use it as a credential source. Grants are `active` or `revoked`, and only the resource owner can create or revoke them. Learn more in [Cross-Chain Identity](/ace/concepts/cross-chain-identity#sharing-registries-across-organizations).
+A cross-organization link that gives another organization read access to one of your resources. For registries, an access grant lets a **grantee** organization read a **grantor**'s registry and use it as a credential source. Grants are `active` or `revoked`, and only the resource owner can create or revoke them. Learn more in [External Registries](/ace/guides/identity-manager/external-registries).
 
 ### CCID (Cross-Chain Identifier)
 
@@ -36,7 +40,7 @@ A `bytes` field passed through the policy execution flow, used to supply arbitra
 
 ### Coordinator API
 
-The management API for creating, configuring, and deploying ACE resources (policy engines, policies, identities, credentials). Part of the [ACE Platform](#ace-platform). Everything available in the [Platform UI](#platform-ui) is also available through this API. See the [Coordinator API overview](/ace/reference/api/coordinator) for details.
+The management API for creating, configuring, and deploying ACE resources (policy engines, policies, identities, credentials). Part of the [ACE Platform](#ace-platform). Everything available in the [Platform UI](#platform-ui) is also available through this API. See the [interactive API reference](/api/ace/coordinator/docs) for details.
 
 ### CRE Connect
 
@@ -48,11 +52,11 @@ A verifiable attribute linked to a [CCID](#ccid-cross-chain-identifier), such as
 
 ### Credential Data Validator
 
-An optional onchain contract (also called a **Data Validator**) configured on a [Credential Source](#credential-source) that inspects the contents of a credential's `credentialData` field. This enables decisions based on what's inside a credential (for example, a jurisdiction code), not just whether the credential exists. ACE provides a pre-built AllowDenyList Data Validator for jurisdiction control; when no validator is configured, a source is attestation-only. Learn more in [Cross-Chain Identity — Credential data and privacy](/ace/concepts/cross-chain-identity#credential-data-and-privacy).
+An optional onchain contract (also called a **Data Validator**) configured on a [Credential Source](#credential-source) that inspects the contents of a credential's `credentialData` field. This enables decisions based on what's inside a credential (for example, a jurisdiction code), not just whether the credential exists. ACE provides a pre-built AllowDenyList Data Validator for jurisdiction control; when no validator is configured, a source is attestation-only. Learn more in [Managing Data Validators](/ace/guides/policy-manager/manage-data-validators) and [Cross-Chain Identity — Credential data and privacy](/ace/concepts/cross-chain-identity#credential-data-and-privacy).
 
 ### Data Schema
 
-A reusable definition of the shape and format of a credential's data, linked to a [Credential Type](#credential-type-identifier) so that credentials issued against it carry validated structured data (for example, [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes). Data schemas make a credential type _typed_ rather than attestation-only. Learn more in [Cross-Chain Identity — Credential data and privacy](/ace/concepts/cross-chain-identity#credential-data-and-privacy).
+A reusable definition of the shape and format of a credential's data, linked to a [Credential Type](#credential-type-identifier) so that credentials issued against it carry validated structured data (for example, [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes). Data schemas make a credential type _typed_ rather than attestation-only. Learn more in [Managing Credential Types](/ace/guides/identity-manager/manage-credential-types#typed-credentials-with-data-schemas).
 
 ### Credential Issuer
 
@@ -72,7 +76,7 @@ A `bytes32` value that denotes the type of credential (for example, KYC, AML, or
 
 ### Custom policy
 
-A policy implemented by your own contract (rather than the [pre-built library](/ace/reference/policy-library)) and registered with the ACE Platform. Custom policy implementations are scoped to your organization and, once registered, are used exactly like library policies. Learn more in [Policy Management](/ace/concepts/policy-management).
+A policy implemented by your own contract (rather than the [pre-built library](/ace/reference/policy-library)) and registered with the ACE Platform. Custom policy implementations are scoped to your organization and, once registered, are used exactly like library policies. Learn more in [Custom Policies](/ace/guides/policy-manager/custom-policies).
 
 ### Default result
 
@@ -100,15 +104,15 @@ An Ethereum standard that enables contracts to declare the interfaces they imple
 
 ### ERC-3643
 
-A regulated token standard (also known as T-REX) designed for securities and permissioned tokens. ACE provides a reference implementation (`ComplianceTokenERC3643`) that replaces the canonical T-REX identity (ONCHAINID) and compliance (ModularCompliance) systems with ACE equivalents.
+A regulated token standard (also known as T-REX) designed for securities and permissioned tokens. ACE provides a reference implementation (`ComplianceTokenERC3643`) that replaces the canonical T-REX identity (ONCHAINID) and compliance (ModularCompliance) systems with ACE equivalents. Learn more in [Building an ERC-3643 Compliance Token](/ace/guides/policy-manager/contracts/erc3643-token).
 
 ### External registry
 
-A registry owned by another organization that has been shared with yours through an [access grant](#access-grant). From the grantee's perspective it appears with `access_type: "granted"` and is read-only — you can reference its identities and credentials as a credential source but cannot write to it. Learn more in [Cross-Chain Identity](/ace/concepts/cross-chain-identity#sharing-registries-across-organizations).
+A registry owned by another organization that has been shared with yours through an [access grant](#access-grant). From the grantee's perspective it appears with `access_type: "granted"` and is read-only — you can reference its identities and credentials as a credential source but cannot write to it. Learn more in [External Registries](/ace/guides/identity-manager/external-registries).
 
 ### Evaluation API
 
-The runtime API for requesting and monitoring managed offchain policy evaluations. An application submits a transaction intent, receives a deterministic permit ID, and polls until the permit is ready onchain or the evaluation is rejected or fails. Contact your Chainlink representative for help with setup, and see the [Evaluation API overview](/ace/reference/api/evaluation).
+The MVP runtime API for requesting and monitoring managed offchain policy evaluations. An application submits a transaction intent, receives a deterministic permit ID, and polls until the permit is ready onchain or the evaluation is rejected or fails. Contact your Chainlink representative for help with setup, and see [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits) and the [interactive API reference](/api/ace/evaluation/docs).
 
 ### Extractor
 
@@ -136,7 +140,7 @@ An optional helper contract used to transform or combine parameters extracted fr
 
 ### Managed offchain policy
 
-An offchain compliance rule delivered as a managed service. You configure the rule and attach it to a target function; Chainlink manages the CRE workflow, external provider call, [CADV](/ace/reference/policy-library/certified-action-don-validator-policy) deployment, and onchain permit delivery. ACE Beta provides the `wallet_risk_scoring` policy for TRM Wallet Screening. Contact your Chainlink representative for help with setup, and see [Off-Chain Policy Execution](/ace/concepts/off-chain-policies).
+An MVP offchain compliance rule delivered as a managed service. You configure the rule and attach it to a target function; Chainlink manages the CRE workflow, external provider call, [CADV](/ace/reference/policy-library/certified-action-don-validator-policy) deployment, and onchain permit delivery. ACE Beta provides the `wallet_risk_scoring` policy for TRM Wallet Screening. Contact your Chainlink representative for help with setup, and see [Managing Offchain Policies (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies).
 
 ### Permit
 
@@ -156,7 +160,7 @@ A self-contained onchain contract that holds a single compliance rule. Each poli
 
 ### Policy implementation
 
-The reusable template (contract code + configuration schema) that a [policy](#policy) instance is created from. Implementations are either pre-built [library](/ace/reference/policy-library) types (global) or [custom](#custom-policy) types registered by an organization (org-scoped). Learn more in [Policy Management](/ace/concepts/policy-management).
+The reusable template (contract code + configuration schema) that a [policy](#policy) instance is created from. Implementations are either pre-built [library](/ace/reference/policy-library) types (global) or [custom](#custom-policy) types registered by an organization (org-scoped). See [Managing Policies](/ace/guides/policy-manager/manage-policies#policy-implementations-vs-policy-instances).
 
 ### PolicyFactory
 
@@ -192,7 +196,7 @@ A function on your smart contract that is guarded by the `runPolicy` modifier. W
 
 ### Reporting API
 
-The API for querying onchain state, transaction history, and policy run results. Chainlink's indexing infrastructure monitors onchain events emitted by your PolicyEngines and makes the data available through this API. Part of the [ACE Platform](#ace-platform). See the [Reporting API overview](/ace/reference/api/reporting) for details.
+The API for querying onchain state, transaction history, and policy run results. Chainlink's indexing infrastructure monitors onchain events emitted by your PolicyEngines and makes the data available through this API. Part of the [ACE Platform](#ace-platform). See the [interactive API reference](/api/ace/reporting/docs) for details.
 
 ### Reporting Manager
 
@@ -200,7 +204,7 @@ The ACE Beta product for querying onchain state, transaction history, and policy
 
 ### CRE Connect Wallet
 
-A dedicated onchain smart contract wallet deployed for your organization on each network where you use ACE. Your wallet owns the CRE Connect Wallet, and the CRE Connect Wallet owns all your ACE contracts (policy engines, registries, policies). Chainlink is registered as an authorized operator, allowed to execute operations on your behalf but unable to change ownership or authorization settings.
+A dedicated onchain smart contract wallet deployed for your organization on each network where you use ACE. Your wallet owns the CRE Connect Wallet, and the CRE Connect Wallet owns all your ACE contracts (policy engines, registries, policies). Chainlink is registered as an authorized operator, allowed to execute operations on your behalf but unable to change ownership or authorization settings. Learn more in [Signing & Ownership Model](/ace/concepts/signing-ownership).
 
 ### Trusted Verifier
 

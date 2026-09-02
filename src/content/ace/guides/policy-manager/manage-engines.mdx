@@ -1,0 +1,266 @@
+---
+section: ace
+title: "Managing Policy Engines"
+date: Last Modified
+metadata:
+  description: "Create, view, update, add or remove extractors, and archive ACE policy engines using the Platform UI or the Coordinator API."
+  datePublished: "2026-04-06"
+  lastModified: "2026-05-26"
+---
+
+import { Aside, ClickToZoom, MethodTabs } from "@components"
+
+A **policy engine** is the on-chain orchestrator that evaluates policies whenever a protected function is called. Each policy engine is deployed as a smart contract on one or more chains, and all your targets, policies, and protections are scoped to a specific engine. For a deeper explanation of how policy engines fit into the architecture, see [Architecture](/ace/concepts/architecture) and [Policy Management](/ace/concepts/policy-management).
+
+<Aside type="note">
+  Before creating a policy engine, make sure you have completed [Account Setup](/ace/getting-started/account-setup) and
+  have a [CRE Connect Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) deployed on each chain
+  where you want the engine to operate.
+</Aside>
+
+## Create a policy engine
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager**.
+    1. Click **Create a new engine**.
+    1. Complete the three-step wizard:
+       - **Basic details** — enter an engine name and optional description. This metadata is internal and is not written onchain.
+       - **Networks** — select every chain where you want this engine deployed. Only networks enabled in your CRE account appear. If you do not see a network, contact your admin to ensure it is enabled in your CRE account first. Deploy a [CRE Connect Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) on each selected chain before creating the engine.
+       - **Contract types** — select **ERC-20** and/or **ERC-3643**. ACE attaches all pre-built extractors for the selected types automatically.
+    1. Submit the wizard and wait for onchain deployment to complete. The engine starts in `creation_pending` status until deployment finishes.
+    1. Open the engine in Policy Manager and confirm its status is **Active**. Click the **gear icon** to view the onchain contract addresses and attached extractors.
+
+    For verification and troubleshooting during deployment, see [Create a PolicyEngine](/ace/getting-started/policy-manager#create-a-policyengine) in the Policy Manager Quick Start.
+
+    <Aside type="note" title="Mainnet access">
+      Mainnet networks are not enabled for all organizations by default. If you do not see mainnet networks in the
+      **Networks** step, contact your Chainlink contact to request access.
+    </Aside>
+
+  </Fragment>
+  <Fragment slot="api">
+    Create a policy engine with a `POST` request. Each entry in `onchain_policy_engines` specifies a `chain_selector` for a target chain (see [Supported Networks](/ace/supported-networks) for available chain selectors):
+
+    ```bash
+    curl -X POST https://ace.api.chain.link/v1/policy-engines \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "name": "Production Policy Engine",
+        "description": "Main policy engine for compliance enforcement",
+        "onchain_policy_engines": [
+          { "chain_selector": "16015286601757825753" },
+          { "chain_selector": "3478487238524512106" },
+          { "chain_selector": "14767482510784806043" },
+          { "chain_selector": "16281711391670634445" },
+          { "chain_selector": "10344971235874465080" }
+        ]
+      }'
+    ```
+
+    | Field | Required | Description |
+    | --- | --- | --- |
+    | `name` | Yes | Human-readable name |
+    | `description` | No | Description of the engine's purpose |
+    | `extractor_ids` | No | Array of extractor UUIDs to register with the engine |
+    | `onchain_policy_engines` | Yes | Array of objects with `chain_selector` values for each deployment chain |
+
+    <Aside type="tip" title="Attach extractors at creation time">
+      Include the `extractor_ids` field when creating your engine so extractors are registered immediately.
+      ACE Beta supports ERC-20 and ERC-3643 contracts — attach all extractors for your contract type upfront to avoid
+      additional updates later. See the [Policy Manager Quick Start](/ace/getting-started/policy-manager#extractor-ids-for-api-creation)
+      for the full list of extractor IDs.
+    </Aside>
+
+    Each on-chain engine starts in `creation_pending` status until deployment completes. The response includes the engine `id` and the on-chain contract addresses.
+
+  </Fragment>
+</MethodTabs>
+
+## View policy engines
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager** in the left sidebar. You see all the policy engines in your organization.
+    1. Click on a policy engine to open it. The detail view has two tabs:
+       - **Contracts** — lists the target contracts protected by this policy engine.
+       - **Policy types** — lists all policy instances created for this policy engine.
+
+       <ClickToZoom src="/images/ace/policy-engines/policy-engine-view-1.webp" caption="Policy engine detail view showing the Contracts and Policy types tabs." />
+
+    1. To view the engine's on-chain details, click the **gear icon** (shown in the screenshot above) to open the settings page. There you can see:
+       - The **PolicyEngine contract addresses** on each network the engine is deployed to.
+       - The **Extractors** currently attached to this policy engine.
+
+       <ClickToZoom src="/images/ace/policy-engines/policy-engine-settings-2.webp" caption="Policy engine settings showing contract addresses and attached extractors." />
+
+  </Fragment>
+  <Fragment slot="api">
+    List all policy engines:
+
+    ```bash
+    curl https://ace.api.chain.link/v1/policy-engines \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    | Parameter | Description |
+    | --- | --- |
+    | `page` | Page number (default: 1) |
+    | `page_size` | Results per page (max: 100) |
+    | `include_onchains` | Include on-chain deployment details (default: true) |
+
+    To retrieve a specific engine by ID:
+
+    ```bash
+    curl https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+## Update a policy engine
+
+You can update a policy engine's name, description, and extractor associations.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    <Aside type="note">
+      Updating a policy engine is not yet available through the Platform UI. Use the **API** tab to update one via the Coordinator API.
+    </Aside>
+  </Fragment>
+  <Fragment slot="api">
+    Update a policy engine with a `PUT` request. Both `name` and `onchain_policy_engines` are required:
+
+    ```bash
+    curl -X PUT https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "name": "Production Policy Engine (Updated)",
+        "description": "Updated description",
+        "extractor_ids": ["<EXTRACTOR_ID>"],
+        "onchain_policy_engines": [
+          { "chain_selector": "16015286601757825753" },
+          { "chain_selector": "3478487238524512106" },
+          { "chain_selector": "14767482510784806043" },
+          { "chain_selector": "16281711391670634445" },
+          { "chain_selector": "10344971235874465080" }
+        ]
+      }'
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+## Add or remove extractors
+
+Extractors decode transaction calldata into named parameters (sender, recipient, amount, etc.) so policies can evaluate them. If you forgot to attach an extractor during engine creation or need to remove one, use the `PUT /policy-engines/{id}` endpoint.
+
+<Aside type="caution" title="Full replacement">
+  The `extractor_ids` field in a PUT request **replaces all current extractors** — it is not additive. Always include
+  every extractor you want to keep. Omitting an extractor from the list detaches it from the engine.
+</Aside>
+
+### Add a missing extractor
+
+First, retrieve your engine to see which extractors are currently attached:
+
+```bash
+curl https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+Check the `extractor_registrations` array in the response. Then send a PUT request that includes the existing extractor IDs plus the new one:
+
+```bash
+curl -X PUT https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "name": "My Policy Engine",
+    "extractor_ids": [
+      "d4b8cd51-7d5a-487a-9ba5-bb7236e3184c",
+      "572201bb-170b-4fda-ab89-a65b5bbc594b",
+      "f17bbe8b-8462-4dd7-8fb7-a4973dff04fc"
+    ],
+    "onchain_policy_engines": [
+      { "chain_selector": "16015286601757825753" },
+      { "chain_selector": "3478487238524512106" },
+      { "chain_selector": "14767482510784806043" },
+      { "chain_selector": "16281711391670634445" },
+      { "chain_selector": "10344971235874465080" }
+    ]
+  }'
+```
+
+In this example, `f17bbe8b-8462-4dd7-8fb7-a4973dff04fc` is the new extractor being added alongside two that were already attached.
+
+### Remove an extractor
+
+Send a PUT request with the `extractor_ids` array that **omits** the extractor you want to detach:
+
+```bash
+curl -X PUT https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "name": "My Policy Engine",
+    "extractor_ids": [
+      "d4b8cd51-7d5a-487a-9ba5-bb7236e3184c",
+      "572201bb-170b-4fda-ab89-a65b5bbc594b"
+    ],
+    "onchain_policy_engines": [
+      { "chain_selector": "16015286601757825753" },
+      { "chain_selector": "3478487238524512106" },
+      { "chain_selector": "14767482510784806043" },
+      { "chain_selector": "16281711391670634445" },
+      { "chain_selector": "10344971235874465080" }
+    ]
+  }'
+```
+
+<Aside type="tip" title="Available extractors">
+  See the [Policy Manager Quick Start](/ace/getting-started/policy-manager#extractor-ids-for-api-creation) for the full
+  list of pre-deployed extractor IDs for ERC-20 and ERC-3643 contracts, or retrieve them at any time with `GET
+  https://ace.api.chain.link/v1/extractors`.
+</Aside>
+
+## Archive a policy engine
+
+Archiving a policy engine deactivates it and prevents any further operations. All policy instances associated with the engine must be archived first.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    <Aside type="note">
+      Archiving a policy engine is not yet available through the Platform UI. Use the **API** tab to archive one via the Coordinator API.
+    </Aside>
+  </Fragment>
+  <Fragment slot="api">
+    Archive a policy engine with a `PATCH` request:
+
+    ```bash
+    curl -X PATCH https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "status": "archived"
+      }'
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+<Aside type="caution">
+  All policy instances must be archived before the engine itself can be archived. Attempting to archive an engine with
+  active policies returns an error.
+</Aside>
+
+## Related pages
+
+- [Architecture](/ace/concepts/architecture) — how PolicyEngine contracts fit into the ACE system
+- [Policy Management](/ace/concepts/policy-management) — how policy chains and evaluation work
+- [Managing Targets](/ace/guides/policy-manager/manage-targets) — register contracts to protect under an engine
+- [Managing Policies](/ace/guides/policy-manager/manage-policies) — create and configure policy instances
+- [Coordinator API Reference](/api/ace/coordinator/docs) — full API schema

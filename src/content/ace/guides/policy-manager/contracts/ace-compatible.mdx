@@ -1,0 +1,75 @@
+---
+section: ace
+title: "Making Your Contract ACE-Compatible"
+date: Last Modified
+metadata:
+  description: "Learn what your smart contract needs to be ACE-compatible: inheriting PolicyProtected, adding the runPolicy modifier, connecting to a PolicyEngine, and registering extractors."
+  datePublished: "2026-03-31"
+  lastModified: "2026-05-26"
+---
+
+import { Aside } from "@components"
+
+A contract is ACE-compatible when it can route function calls through a PolicyEngine for compliance checks before execution. This requires four things: inheriting a base contract, marking functions for protection, connecting to a PolicyEngine, and registering extractors. This page explains what each requirement means at a high level — the sub-pages linked below walk through the implementation in detail.
+
+For background on how these components interact, see the [Architecture page](/ace/concepts/architecture#policy-management-contracts) and the [Policy Management](/ace/concepts/policy-management) concepts page.
+
+<Aside type="note" title="Building for production">
+  Many teams start on testnets to experiment with ACE during Beta, then move to mainnet when ready. The upgrade guide is
+  here so you can plan ahead — upgrading production contracts is straightforward with multiple well-defined paths.
+</Aside>
+
+## What your contract needs
+
+### 1. Inherit from PolicyProtected
+
+Your contract must inherit from `PolicyProtected` (for new contracts) or `PolicyProtectedUpgradeable` (for contracts deployed behind a proxy that need an upgrade path). This base contract provides:
+
+- The `runPolicy` and `runPolicyWithContext` modifiers that hook your functions into the policy system.
+- Functions to attach and manage the connection to a PolicyEngine.
+- Context handling for passing additional data (like offchain signatures) to policies.
+
+### 2. Add the runPolicy modifier to protected functions
+
+Any function that should be subject to compliance checks needs the `runPolicy` modifier. The modifier intercepts the call and routes it through the [PolicyEngine](/ace/guides/policy-manager/manage-engines) before your function body executes.
+
+```solidity
+// Before: no compliance checks
+function transfer(address to, uint256 amount) public returns (bool) {
+    return super.transfer(to, amount);
+}
+
+// After: the PolicyEngine checks all attached policies before execution
+function transfer(address to, uint256 amount) public runPolicy returns (bool) {
+    return super.transfer(to, amount);
+}
+```
+
+You choose which functions to protect. Unprotected functions continue to work normally without any policy checks.
+
+### 3. Connect to a PolicyEngine
+
+Your contract must be connected to a [PolicyEngine](/ace/guides/policy-manager/manage-engines) — the central orchestrator that holds all policies and executes them in order when a protected function is called. The connection is established during initialization (for [new contracts](/ace/guides/policy-manager/contracts/new-contract)) or migration (for [upgrades](/ace/guides/policy-manager/contracts/upgrade-existing)).
+
+### 4. Register extractors for protected functions
+
+[Extractors](/ace/guides/policy-manager/manage-policies#managing-extractors) are helper contracts that parse the calldata of your protected functions into named parameters (for example, `to` and `value` for an ERC-20 `transfer`). Policies use these named parameters to make their decisions — a volume limit policy reads `value`, a sanctions check reads `to`.
+
+One extractor is registered per function signature. To bind policies to specific functions, see [Protecting Target Functions](/ace/guides/policy-manager/manage-protections).
+
+<Aside type="note" title="ACE Beta: pre-built extractors only">
+  During ACE Beta, the platform provides pre-built extractors for **ERC-20 and ERC-3643 function signatures only**.
+  Chainlink registers these extractors for your protected functions when setting up your infrastructure. Custom
+  extractors for other contract types are not available through the platform in Beta — see [Beta
+  Scope](/ace/beta-scope#no-custom-extractors-or-mappers) for details.
+</Aside>
+
+## Integration paths
+
+How you integrate ACE depends on where your contract is today:
+
+- **[Building a New Contract](/ace/guides/policy-manager/contracts/new-contract)** — Starting a new project? ACE provides audited reference implementations for ERC-20 and ERC-3643 tokens that come pre-integrated with PolicyProtected. This is the fastest path.
+
+- **[Upgrading Existing Contracts](/ace/guides/policy-manager/contracts/upgrade-existing)** — Already have a deployed contract behind a proxy? You can add ACE compliance through a standard proxy upgrade without disrupting existing state, balances, or integrations.
+
+- **Non-upgradeable contract?** — If your contract is not behind a proxy, the upgrade guide also covers [alternative approaches](/ace/guides/policy-manager/contracts/upgrade-existing#alternatives-for-non-upgradeable-contracts) — wrapped contracts, contract migration, and edge protection — each with different tradeoffs depending on your constraints.
