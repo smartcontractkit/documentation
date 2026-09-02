@@ -1,0 +1,546 @@
+---
+section: crec
+title: "Quickstart: Send Your First Operation"
+date: Last Modified
+metadata:
+  description: "End-to-end Go tutorial: scaffold a Go project, create a Chainlink CRE Connect channel and ECDSA Smart Account, build calldata for a contract call, sign an EIP-712 operation with a local signer, and execute it gas-free on Sepolia."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+An **Operation** is a batch of EVM transactions executed atomically by a **Smart Account**, an on-chain contract that runs authorized transactions on your behalf. In this quickstart you build a one-call `Operation`, sign it with a local ECDSA key, and submit it through CRE Connect. The Chainlink DON broadcasts the transaction on Sepolia and pays the gas: your signing key never holds ETH, and you never manage a nonce or a relayer.
+
+**Success looks like this**: the program creates a channel, provisions a Smart Account on Sepolia, builds and signs a single-call `Operation` against your target contract, and prints the operation status as it walks through relay and confirmation. The two slowest stretches are the Smart Account deploy and on-chain inclusion of the operation; their duration depends on Sepolia network conditions.
+
+Sections 1–8 build a single `main.go` piece by piece: construct the client, create a channel, provision the wallet, build the calldata, assemble the operation, sign and submit, then track it to a confirmation status. The complete file is in [Part 11 Full program](#11-full-program) if you prefer to copy-paste-and-go.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Before you start">
+  This quickstart calls `increment()` on a public, verified counter we maintain on Sepolia
+  (<a href="https://sepolia.etherscan.io/address/0xD64EaB779f61EF99C19D892eeC8cBD0534df9374#code" target="_blank" rel="noopener noreferrer">`CrecQuickstartCounter`</a> at
+  `0xD64EaB779f61EF99C19D892eeC8cBD0534df9374`): there is **nothing to deploy on your end**. You only need:
+
+- A private key you control end-to-end (used for the local signer), exported as `CREC_SIGNER_PRIVATE_KEY`. **Never paste it into source and never commit it.**
+- A [Chainlink Platform API key + Organization ID](/crec/getting-started/prerequisites) exported as `CREC_API_KEY` and `CREC_ORG_ID`.
+
+</Aside>
+
+## 0. Set up your project
+
+If you already have a Go module (for example by following [SDK Installation](/crec/getting-started/sdk-installation)), skip ahead to [Part 1](#1-imports-and-configuration).
+
+Otherwise, scaffold a fresh project from your terminal:
+
+```bash
+mkdir crec-send-operation && cd crec-send-operation
+go mod init crec-send-operation
+go mod edit -go=1.25.5 -toolchain=go1.25.9
+touch main.go
+```
+
+Open `main.go` in your editor. You will paste the snippets from Parts 1-8 into it in order (or, if you'd rather skip ahead, paste the full program from [Part 11](#11-full-program)). Dependencies are fetched at the run step in [Part 11](#11-full-program), once the file has imports for `go mod tidy` to resolve.
+
+<Aside type="note" title="Why pin `go 1.25.5` and `toolchain=go1.25.9`">
+  The CRE Connect SDK requires Go **1.25.3+** and the DTA extension requires Go **1.25.5+**. Pinning both directives
+  lets `go mod tidy` and `go run` work on machines where the system Go is older. `GOTOOLCHAIN=auto` (the default since
+  Go 1.21) will fetch the matching toolchain transparently.
+</Aside>
+
+## 1. Imports and configuration
+
+The first snippet is the `package` declaration, the imports, and the constants that drive the rest of the file. Paste it at the very top of `main.go`:
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "math/big"
+    "os"
+    "strings"
+    "time"
+
+    "github.com/ethereum/go-ethereum/accounts/abi"
+    "github.com/ethereum/go-ethereum/common"
+    "github.com/ethereum/go-ethereum/crypto"
+
+    apiClient "github.com/smartcontractkit/crec-api-go/client"
+
+    "github.com/smartcontractkit/crec-sdk"
+    "github.com/smartcontractkit/crec-sdk/channels"
+    "github.com/smartcontractkit/crec-sdk/transact/signer/local"
+    "github.com/smartcontractkit/crec-sdk/transact/types"
+    "github.com/smartcontractkit/crec-sdk/wallets"
+)
+
+const (
+    chainSelector = "16015286601757825753"                       // ethereum-testnet-sepolia
+    counterAddr   = "0xD64EaB779f61EF99C19D892eeC8cBD0534df9374" // CrecQuickstartCounter, verified on Sepolia
+)
+```
+
+The signing key is read at runtime from `CREC_SIGNER_PRIVATE_KEY` (Part 4 below). It is the same key you list as the wallet's `AllowedEcdsaSigners`: the Smart Account contract only accepts operations signed by one of its allowed signers. **Never hardcode it in source.**
+
+<Aside type="tip" title="Your target contract needs nothing CRE-Connect-specific">
+  `CrecQuickstartCounter` is a plain Solidity contract with a single `function increment() external` and an
+  `Incremented(address indexed caller, uint256 newGlobalCount, uint256 newCallerCount)` event. No inherited
+  `ReceiverTemplate`, no `onReport(bytes)` handler, no Forwarder check. The Smart Account ([Concepts → Account
+  Abstraction](/crec/concepts/account-abstraction)) is what receives the DON-paid call and verifies your EIP-712
+  signature; it then makes a vanilla EVM CALL into the target. From the target's perspective the call is
+  indistinguishable from any other transaction. You can point this same quickstart at any contract on a [supported
+  network](/crec/supported-networks): an ERC-20 `transfer`, a Uniswap router, your own production contract, without
+  modifying the target at all.
+</Aside>
+
+## 2. Construct the client
+
+Everything from here on goes **inside `func main() { ... }`**: append each snippet to the bottom of `main.go`'s `main` function in order.
+
+```go
+ctx := context.Background()
+
+client, err := crec.NewClient(
+    "https://cre-connect.api.chain.link/v1",
+    os.Getenv("CREC_API_KEY"),
+    crec.WithOrgID(os.Getenv("CREC_ORG_ID")),
+)
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+`WithOrgID` is not required to _send_ an operation, but without it `client.Events.VerifyOperationStatus(...)` returns `events.ErrOrgIDOrWorkflowOwnerReq` on every call. Set it once at construction so the rest of this quickstart and the [watch-events quickstart](/crec/getting-started/quickstart-watch-events) stay consistent. Your Organization ID looks like `org_example00000000000`; see [Prerequisites](/crec/getting-started/prerequisites) for where to find it.
+
+## 3. Create a channel
+
+```go
+ch, err := client.Channels.Create(ctx, channels.CreateInput{
+    Name: "quickstart-send-operation",
+})
+if err != nil {
+    log.Fatalf("create channel: %v", err)
+}
+```
+
+## 4. Provision an ECDSA Smart Account
+
+A Smart Account is a contract deployed on the target chain. Creating one through the SDK queues an on-chain deploy and returns the wallet record immediately.
+
+```go
+signerKeyHex := strings.TrimPrefix(os.Getenv("CREC_SIGNER_PRIVATE_KEY"), "0x")
+if signerKeyHex == "" {
+    log.Fatal("CREC_SIGNER_PRIVATE_KEY is not set")
+}
+pk, err := crypto.HexToECDSA(signerKeyHex)
+if err != nil {
+    log.Fatalf("invalid CREC_SIGNER_PRIVATE_KEY: %v", err)
+}
+ownerAddr := crypto.PubkeyToAddress(pk.PublicKey).Hex()
+
+allowedSigners := []string{ownerAddr}
+walletType := apiClient.WalletType("ecdsa")
+
+statusChannelID := ch.ChannelId // reuse the channel created in step 3 for status events
+w, err := client.Wallets.Create(ctx, wallets.CreateInput{
+    Name:                "quickstart-wallet",
+    ChainSelector:       chainSelector,
+    WalletOwnerAddress:  ownerAddr,
+    WalletType:          walletType,
+    AllowedEcdsaSigners: &allowedSigners,
+    StatusChannelId:     &statusChannelID, // optional; receives wallet.status events
+})
+if err != nil {
+    log.Fatalf("create wallet: %v", err)
+}
+fmt.Printf("wallet %s status=%s\n", w.WalletId, w.Status)
+```
+
+The wallet starts in `pending`; the deploy proceeds asynchronously. For this quickstart, poll until the on-chain account is ready:
+
+```go
+deadline := time.Now().Add(3 * time.Minute)
+for time.Now().Before(deadline) {
+    cur, err := client.Wallets.Get(ctx, w.WalletId)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("  ...wallet status=%s\n", cur.Status)
+    if cur.Status == "deployed" {
+        w = cur
+        break
+    }
+    if cur.Status == "failed" {
+        log.Fatalf("wallet deploy failed (status=%s): subscribe to the wallet's status_channel_id for the StatusReason", cur.Status)
+    }
+    time.Sleep(5 * time.Second)
+}
+if w.Status != "deployed" {
+    log.Fatal("wallet did not deploy in time")
+}
+fmt.Printf("Smart Account = %s\n", w.Address)
+```
+
+`w.Address` is the deployed contract address; this is the `Operation.Account` for every operation you submit through this wallet.
+
+## 5. Build the calldata
+
+Using `go-ethereum/accounts/abi`, encode the call to `increment()` on the counter contract. This produces standard EVM calldata, the same bytes you would pass to `eth_sendTransaction.data` for a direct call:
+
+```go
+const counterABI = `[{"type":"function","name":"increment","inputs":[],"outputs":[]}]`
+
+parsed, err := abi.JSON(strings.NewReader(counterABI))
+if err != nil {
+    log.Fatal(err)
+}
+
+calldata, err := parsed.Pack("increment")
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+For a function with arguments, pass them positionally to `Pack(...)` after the function name (for example `parsed.Pack("transfer", recipient, amount)`).
+
+## 6. Build the operation
+
+An `Operation` is a list of `Transaction`s plus the Smart Account it executes against. Here we build the Operation manually and use `time.Now().Unix()` as the ID, which is unique as long as you submit at most one operation per second. (`ExecuteTransactions` generates a random 128-bit ID for you instead.) `Deadline` is required (`big.NewInt(0)` means no expiration).
+
+```go
+op := &types.Operation{
+    ID:       big.NewInt(time.Now().Unix()),
+    Account:  common.HexToAddress(w.Address),
+    Deadline: big.NewInt(0),
+    Transactions: []types.Transaction{{
+        To:    common.HexToAddress(counterAddr),
+        Value: big.NewInt(0),
+        Data:  calldata,
+    }},
+}
+```
+
+Multiple `Transaction`s in one `Operation` execute atomically; see [Batch Transactions](/crec/guides/operations/batch-transactions).
+
+## 7. Sign and execute
+
+`ExecuteOperation` performs both EIP-712 signing and submission in one call.
+
+```go
+opSigner := local.NewSigner(pk)
+
+submitted, err := client.Transact.ExecuteOperation(ctx, ch.ChannelId, opSigner, op, chainSelector)
+if err != nil {
+    log.Fatalf("execute: %v", err)
+}
+fmt.Printf("operation %s accepted (status=%s)\n", submitted.OperationId, submitted.Status)
+```
+
+If you need to inspect or audit the signed payload before sending, split this into two calls instead:
+
+```go
+hash, sig, err := client.Transact.SignOperation(ctx, op, opSigner, chainSelector)
+// ... display hash, log sig, persist for compliance ...
+sent, err := client.Transact.SendSignedOperation(ctx, ch.ChannelId, op, sig, chainSelector)
+```
+
+See [Build and Sign Operations](/crec/guides/operations/build-and-sign) for the breakdown.
+
+## 8. Track until confirmed
+
+Operations move through relay statuses (`accepted`, `sending`, `sent`, `broadcasting`) and then into confirmation statuses such as `confirmed_latest`, `confirmed_safe`, or `confirmed`. Poll `GetOperation` until you reach the confirmation level your application needs:
+
+```go
+for {
+    op, err := client.Transact.GetOperation(ctx, ch.ChannelId, submitted.OperationId)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("  status=%s\n", op.Status)
+    if op.Status == "confirmed_latest" || op.Status == "confirmed_safe" || op.Status == "confirmed" {
+        break
+    }
+    if op.Status == "failed" {
+        log.Fatalf("operation failed (status=%s): subscribe to the channel for the operation.status event with StatusReason", op.Status)
+    }
+    time.Sleep(3 * time.Second)
+}
+fmt.Println("done: operation confirmed on-chain")
+```
+
+For this quickstart, any confirmation status is enough to prove the operation landed. Production workflows should choose the right status for the action they take next; see [Multi-Event Finality](/crec/concepts/multi-event-finality).
+
+## 9. Expected output
+
+When you run the program (see [Part 11 Full program](#11-full-program) for the complete file and the run command), you should see something like this. Exact UUIDs, addresses, and timings will differ, but the shape will match:
+
+```bash
+2026/04/27 12:04:11 INFO Channel created successfully channel_id=51c0f0c9-7a9d-4b32-9f9b-6c4d2c3a4e7d name=quickstart-send-operation
+created channel 51c0f0c9-7a9d-4b32-9f9b-6c4d2c3a4e7d
+2026/04/27 12:04:11 INFO Wallet created successfully wallet_id=2f8c9a31-5b8e-4d12-90fb-1d3a7c0b6e22 status=pending
+wallet 2f8c9a31-5b8e-4d12-90fb-1d3a7c0b6e22 status=pending
+  ...wallet status=pending
+  ...wallet status=pending
+  ...wallet status=deploying
+  ...wallet status=deploying
+  ...wallet status=deploying
+  ...wallet status=deploying
+  ...wallet status=deploying
+  ...wallet status=deployed
+Smart Account = 0xC4f7DE4dB6Ea02C5dC37c60B8a3E81F4Cf5A1234
+2026/04/27 12:05:32 INFO Operation accepted operation_id=8d5b9c1e-3f4a-42b8-a01c-67d9b2f4e3a1
+operation 8d5b9c1e-3f4a-42b8-a01c-67d9b2f4e3a1 accepted (status=accepted)
+  status=accepted
+  status=sending
+  status=sent
+  status=broadcasting
+  status=broadcasting
+    status=confirmed_latest
+done: operation confirmed on-chain
+2026/04/27 12:06:18 INFO Wallet archive initiated (async) wallet_id=2f8c9a31-5b8e-4d12-90fb-1d3a7c0b6e22
+2026/04/27 12:06:18 INFO Channel archived successfully channel_id=51c0f0c9-7a9d-4b32-9f9b-6c4d2c3a4e7d
+```
+
+## 10. Verify it worked
+
+There are two complementary cross-checks: looking at the **Counter contract** to confirm your call actually landed, and looking at the **Smart Account** to see the account-abstracted gas flow.
+
+### Check the Counter
+
+Open the deployed `CrecQuickstartCounter` on Sepolia Etherscan:
+
+<a
+  href="https://sepolia.etherscan.io/address/0xD64EaB779f61EF99C19D892eeC8cBD0534df9374"
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  https://sepolia.etherscan.io/address/0xD64EaB779f61EF99C19D892eeC8cBD0534df9374
+</a>
+
+On the **Events** tab, filter by your Smart Account address (the `Smart Account = 0x...` line from your run). You should see one new `Incremented` event from the time of your run, with:
+
+| Topic / data field       | Expected value                                                                          |
+| ------------------------ | --------------------------------------------------------------------------------------- |
+| `caller` (indexed topic) | Your Smart Account address, **not** the EOA derived from `CREC_SIGNER_PRIVATE_KEY`      |
+| `newGlobalCount`         | The Counter's global `count` after your call (whatever it had crept up to + 1)          |
+| `newCallerCount`         | `1` if this is your Smart Account's first call to the Counter; otherwise `previous + 1` |
+
+You can also confirm directly on the **Read Contract** tab: `countOf(<your Smart Account address>)` should return `1` (or whatever number of times your specific Smart Account has called `increment`).
+
+### Check the gas flow on your Smart Account
+
+Now paste the Smart Account address into the same explorer's search bar. Open the most recent transaction. In the call trace you should see:
+
+- **From** (`tx.origin`): an EOA you don't recognize. This is the DON's writer EOA paying gas. **Not** the EOA derived from your `CREC_SIGNER_PRIVATE_KEY`.
+- **To**: a Chainlink-operated writer contract that the DON uses to dispatch the call into your Smart Account.
+- **Internal txns**: the Smart Account calling `CrecQuickstartCounter.increment()` at `0xD64EaB779f61EF99C19D892eeC8cBD0534df9374`.
+- **Status**: `Success` ✓
+
+That `From` field is the whole point of this quickstart: gas came from the DON, not from your wallet, even though the call effectively executed `increment()` on your behalf. See [Concepts: Account Abstraction](/crec/concepts/account-abstraction) for the full picture of the trust path.
+
+<Aside type="tip" title="Verify the operation status event end-to-end">
+  CRE Connect also publishes signed `operation.status` events to your channel. To round-trip cryptographically verify
+  the result (instead of just trusting `GetOperation`), pass the event into `client.Events.VerifyOperationStatus(...)`:
+  see [Submit and Track Operations](/crec/guides/operations/submit-and-track) for that pattern.
+</Aside>
+
+## What just happened
+
+End-to-end, one `increment()` call traveled this path:
+
+1. **Your app** built an `Operation` (target contract, calldata, deadline) and handed it to `client.Transact.ExecuteOperation`.
+2. **The SDK** hashed it as EIP-712 typed data, signed the digest with your local signer, and POSTed `(operation, signature)` to the CRE Connect API.
+3. **The CRE Connect API** queued the request and handed it off to a CRE workflow on the Chainlink DON.
+4. **The DON** signed and broadcast the underlying transaction on-chain, paying gas from its own writer EOA, not yours.
+5. **Your Smart Account** (deployed at `w.Address`) verified your EIP-712 signature against its allow-list of approved signers, then made a vanilla EVM `CALL` into `CrecQuickstartCounter.increment()`.
+6. **The DON** observed the on-chain confirmation and emitted an `operation.status` event back into your channel. Your `GetOperation` polling loop saw that confirmation status on its last iteration.
+
+## 11. Full program
+
+Here is everything wired together as a single `main.go`. The trailing `Archive` calls clean up the wallet and channel so they stop consuming DON capacity for your tenant. Drop them if you want to keep the Smart Account around for follow-up operations.
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "math/big"
+    "os"
+    "strings"
+    "time"
+
+    "github.com/ethereum/go-ethereum/accounts/abi"
+    "github.com/ethereum/go-ethereum/common"
+    "github.com/ethereum/go-ethereum/crypto"
+
+    apiClient "github.com/smartcontractkit/crec-api-go/client"
+
+    "github.com/smartcontractkit/crec-sdk"
+    "github.com/smartcontractkit/crec-sdk/channels"
+    "github.com/smartcontractkit/crec-sdk/transact/signer/local"
+    "github.com/smartcontractkit/crec-sdk/transact/types"
+    "github.com/smartcontractkit/crec-sdk/wallets"
+)
+
+const (
+    chainSelector = "16015286601757825753"                       // ethereum-testnet-sepolia
+    counterAddr   = "0xD64EaB779f61EF99C19D892eeC8cBD0534df9374" // CrecQuickstartCounter, verified on Sepolia
+)
+
+const counterABI = `[{"type":"function","name":"increment","inputs":[],"outputs":[]}]`
+
+func main() {
+    ctx := context.Background()
+
+    client, err := crec.NewClient(
+        "https://cre-connect.api.chain.link/v1",
+        os.Getenv("CREC_API_KEY"),
+        crec.WithOrgID(os.Getenv("CREC_ORG_ID")),
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    ch, err := client.Channels.Create(ctx, channels.CreateInput{
+        Name: "quickstart-send-operation",
+    })
+    if err != nil {
+        log.Fatalf("create channel: %v", err)
+    }
+    fmt.Printf("created channel %s\n", ch.ChannelId)
+
+    signerKeyHex := strings.TrimPrefix(os.Getenv("CREC_SIGNER_PRIVATE_KEY"), "0x")
+    if signerKeyHex == "" {
+        log.Fatal("CREC_SIGNER_PRIVATE_KEY is not set")
+    }
+    pk, err := crypto.HexToECDSA(signerKeyHex)
+    if err != nil {
+        log.Fatalf("invalid CREC_SIGNER_PRIVATE_KEY: %v", err)
+    }
+    ownerAddr := crypto.PubkeyToAddress(pk.PublicKey).Hex()
+
+    allowedSigners := []string{ownerAddr}
+    walletType := apiClient.WalletType("ecdsa")
+
+    statusChannelID := ch.ChannelId
+    w, err := client.Wallets.Create(ctx, wallets.CreateInput{
+        Name:                "quickstart-wallet",
+        ChainSelector:       chainSelector,
+        WalletOwnerAddress:  ownerAddr,
+        WalletType:          walletType,
+        AllowedEcdsaSigners: &allowedSigners,
+        StatusChannelId:     &statusChannelID,
+    })
+    if err != nil {
+        log.Fatalf("create wallet: %v", err)
+    }
+    fmt.Printf("wallet %s status=%s\n", w.WalletId, w.Status)
+
+    deadline := time.Now().Add(3 * time.Minute)
+    for time.Now().Before(deadline) {
+        cur, err := client.Wallets.Get(ctx, w.WalletId)
+        if err != nil {
+            log.Fatal(err)
+        }
+        fmt.Printf("  ...wallet status=%s\n", cur.Status)
+        if cur.Status == "deployed" {
+            w = cur
+            break
+        }
+        if cur.Status == "failed" {
+            log.Fatalf("wallet deploy failed (status=%s): subscribe to the wallet's status_channel_id for the StatusReason", cur.Status)
+        }
+        time.Sleep(5 * time.Second)
+    }
+    if w.Status != "deployed" {
+        log.Fatal("wallet did not deploy in time")
+    }
+    fmt.Printf("Smart Account = %s\n", w.Address)
+
+    parsed, err := abi.JSON(strings.NewReader(counterABI))
+    if err != nil {
+        log.Fatal(err)
+    }
+    calldata, err := parsed.Pack("increment")
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    op := &types.Operation{
+        ID:       big.NewInt(time.Now().Unix()),
+        Account:  common.HexToAddress(w.Address),
+        Deadline: big.NewInt(0),
+        Transactions: []types.Transaction{{
+            To:    common.HexToAddress(counterAddr),
+            Value: big.NewInt(0),
+            Data:  calldata,
+        }},
+    }
+
+    opSigner := local.NewSigner(pk)
+
+    submitted, err := client.Transact.ExecuteOperation(ctx, ch.ChannelId, opSigner, op, chainSelector)
+    if err != nil {
+        log.Fatalf("execute: %v", err)
+    }
+    fmt.Printf("operation %s accepted (status=%s)\n", submitted.OperationId, submitted.Status)
+
+    for {
+        cur, err := client.Transact.GetOperation(ctx, ch.ChannelId, submitted.OperationId)
+        if err != nil {
+            log.Fatal(err)
+        }
+        fmt.Printf("  status=%s\n", cur.Status)
+        if cur.Status == "confirmed_latest" || cur.Status == "confirmed_safe" || cur.Status == "confirmed" {
+            break
+        }
+        if cur.Status == "failed" {
+            log.Fatalf("operation failed (status=%s): subscribe to the channel for the operation.status event with StatusReason", cur.Status)
+        }
+        time.Sleep(3 * time.Second)
+    }
+    fmt.Println("done: operation confirmed on-chain")
+
+    if err := client.Wallets.Archive(ctx, w.WalletId); err != nil {
+        log.Printf("archive wallet: %v", err)
+    }
+    if _, err := client.Channels.Archive(ctx, ch.ChannelId); err != nil {
+        log.Printf("archive channel: %v", err)
+    }
+}
+```
+
+Run it from inside your project folder. Fetch dependencies, export your API key and Organization ID (the latter is in the header of your org's **Organization** page on <a href="https://app.chain.link" target="_blank" rel="noopener noreferrer">app.chain.link</a>), and your signer private key, then run:
+
+```bash
+go mod tidy
+export CREC_API_KEY=<your-api-key>
+export CREC_ORG_ID=<your-org-id>                           # e.g. org_example00000000000
+export CREC_SIGNER_PRIVATE_KEY=<your-64-hex-private-key>   # `0x` prefix optional
+go run .
+```
+
+<Aside type="caution" title="Keep `CREC_SIGNER_PRIVATE_KEY` out of source and shell history">
+  Prefer a secrets file your shell sources only when you need it (`source ~/.crec.env`, with `~/.crec.env` in your
+  global gitignore), or a secret manager like `direnv` / `1Password CLI` / `op run --env-file`. For production
+  workloads, replace the local signer entirely with one of the [managed signers](#next-steps): the private key never
+  leaves the HSM/KMS in those flows.
+</Aside>
+
+<Aside type="caution" title="If `go mod tidy` errors on `gogo/protobuf v1.3.3`">
+  Use `go mod tidy -e` to ignore the error and continue. It's a known indirect, test-only dependency that is never
+  reached by your code; it will be removed in a future SDK release.
+</Aside>
+
+## Next steps
+
+- **Watch your own operation as a verifiable event**: point the [watch-events quickstart](/crec/getting-started/quickstart-watch-events) at the same `CrecQuickstartCounter` address (`0xD64EaB779f61EF99C19D892eeC8cBD0534df9374`) with the `Incremented` ABI. Filter by your Smart Account address as the indexed `caller` topic and you'll see your own gas-free `increment` flow back through the events pipeline, signed by the production DON and decoded.
+- Production-grade signing: replace `local.NewSigner` with [AWS KMS](/crec/guides/signers/aws-kms), [HashiCorp Vault](/crec/guides/signers/hashicorp-vault), [Fireblocks](/crec/guides/signers/fireblocks), or [Privy](/crec/guides/signers/privy).
+- Atomic batches and approve-then-call patterns: [Batch Transactions](/crec/guides/operations/batch-transactions).
+- Auditable signing: [Signing Transparency](/crec/guides/operations/signing-transparency).
+- Use the **DTA extension** for typed Operation builders: [DTA Overview](/crec/extensions/dta).

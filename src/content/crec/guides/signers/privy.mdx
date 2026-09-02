@@ -1,0 +1,125 @@
+---
+section: crec
+title: "Privy Signer"
+date: Last Modified
+metadata:
+  description: "Sign Chainlink CRE Connect operations with Privy-managed embedded wallets: the right choice when each end-user owns their own signer."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+The Privy signer (`github.com/smartcontractkit/crec-sdk/transact/signer/privy`) signs CRE Connect operations through <a href="https://www.privy.io/" target="_blank" rel="noopener noreferrer">Privy's wallet-as-a-service</a> API. It is designed for consumer applications where each end-user has their own embedded wallet.
+
+## When to use
+
+- Per-user Smart Accounts whose signer is the user's Privy wallet.
+- Server-side flows that need to act on behalf of a Privy-managed wallet (e.g. policy-gated background jobs).
+- Existing apps already using Privy for auth and wallet provisioning.
+
+For team-owned signers (production batch jobs, treasury operations) prefer [AWS KMS](/crec/guides/signers/aws-kms), [Vault](/crec/guides/signers/hashicorp-vault), or [Fireblocks](/crec/guides/signers/fireblocks).
+
+## Prerequisites
+
+- Privy app ID and app secret.
+- A Privy wallet ID for the user/account this signer drives.
+- Network egress to `https://api.privy.io` (or your configured base URL).
+
+## Construct the signer
+
+### Explicit parameters
+
+```go
+import "github.com/smartcontractkit/crec-sdk/transact/signer/privy"
+
+s, err := privy.NewSigner(
+    os.Getenv("PRIVY_APP_ID"),
+    os.Getenv("PRIVY_APP_SECRET"),
+    walletID,
+)
+if err != nil { return err }
+```
+
+`walletID` is the user-specific wallet identifier returned by Privy.
+
+### From environment
+
+```go
+s, err := privy.NewSignerFromEnv()
+```
+
+Reads:
+
+| Variable           | Required | Notes                               |
+| ------------------ | -------- | ----------------------------------- |
+| `PRIVY_APP_ID`     | yes      | Your Privy app ID.                  |
+| `PRIVY_APP_SECRET` | yes      | Privy app secret.                   |
+| `PRIVY_WALLET_ID`  | yes      | Wallet ID this signer signs for.    |
+| `PRIVY_BASE_URL`   | no       | Defaults to `https://api.privy.io`. |
+
+### Inject a custom HTTP client (tests)
+
+```go
+s, err := privy.NewSigner(appID, appSecret, walletID,
+    privy.WithHTTPClient(mockHTTP),
+    privy.WithBaseURL("https://api.privy.io"),
+)
+```
+
+## Read the wallet's address
+
+```go
+addr, err := s.GetWalletAddress(ctx)
+if err != nil { return err }
+fmt.Println("Privy wallet address:", addr)
+```
+
+This is the address you add to `AllowedEcdsaSigners` when provisioning the corresponding CREC wallet; see [Manage Wallet Signers](/crec/guides/wallets/manage-signers).
+
+## Sign an operation
+
+```go
+opHash, sig, err := client.Transact.SignOperation(ctx, op, s, chainSelector)
+```
+
+Internally `Sign(ctx, hash)`:
+
+1. Hex-encodes the digest (`0x...`).
+2. POSTs `/v1/wallets/{walletID}/rpc` with `method: "secp256k1_sign"` and params `{ "message": "0x...", "encoding": "hex" }`.
+3. Authenticates with Basic Auth (`appID:appSecret`) plus the `privy-app-id` header.
+4. Returns the raw signature bytes from the response.
+
+The returned signature is suitable for `ecrecover` with the wallet's address.
+
+## Per-request flow
+
+Each `Sign` call is one HTTP round-trip to Privy. There is **no asynchronous approval flow** in this signer: Privy handles authentication / authorisation policy internally based on your app config. If you want a confirmation UI, build it client-side before calling the server endpoint that triggers `SignOperation`.
+
+## Using server-side vs. client-side
+
+The Privy signer in the CREC SDK uses the **app secret** and runs server-side. It is **not** a browser SDK. The typical architecture is:
+
+1. The user authenticates with Privy in the browser (Privy frontend SDK).
+2. The user requests an action from your service.
+3. Your service constructs the `types.Operation`, calls `signer.Sign` via the Privy server-side signer, submits with `Transact.SendSignedOperation`.
+
+If you need the user to physically click "Sign" before each operation, surface a confirmation in your UI before the server-side `Sign` is invoked, and persist the user's intent (signed message, JWT, etc.) so you can prove they consented.
+
+## Operational notes
+
+- **Throughput** is bounded by Privy's API quotas; check your plan.
+- **Latency.** Each `SignOperation` makes a single HTTP request to Privy's `/v1/wallets/{walletID}/rpc` endpoint with method `secp256k1_sign`. Total latency is set by Privy and the network path between your service and Privy.
+- **Error model.** Any non-200 from Privy surfaces as `RPC request failed with status <code>: <body>`. Inspect the body to distinguish auth failures (`401`), policy rejections (`403`), or wallet-not-found (`404`).
+
+<Aside type="note" title="`secp256k1_sign` vs typed-data">
+  The Privy signer uses Privy's `secp256k1_sign` RPC, which signs the raw 32-byte digest the SDK passes in. The CREC
+  EIP-712 hashing happens on the server before `Sign` is called, so the signature still verifies correctly against the
+  Smart Account's EIP-712 check. If you need Privy to display the typed-data structure to the end-user (e.g. for a
+  hardware-wallet-backed Privy account), construct that flow in your frontend with Privy's web SDK.
+</Aside>
+
+## Next steps
+
+- [Build and Sign Operations](/crec/guides/operations/build-and-sign): construct the `Operation` that the Privy signer will sign.
+- [Custom Signer](/crec/guides/signers/custom): if Privy's flow doesn't fit, implement your own.

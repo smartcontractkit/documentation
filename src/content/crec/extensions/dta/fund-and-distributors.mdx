@@ -1,0 +1,267 @@
+---
+section: crec
+title: "DTA Fund and Distributor Management"
+date: Last Modified
+metadata:
+  description: "Use the DTA v2 extension to onboard fund admins, register and toggle fund tokens, manage distributors, and configure cross-DTA settlement (allowDTA / disallowDTA, authorize / revoke distributor)."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="DTA roles live in the DTA standard docs">
+  What a [Transfer Agent](https://docs.chain.link/dta-technical-standard/actors#transfer-agent), [Fund
+  Administrator](https://docs.chain.link/dta-technical-standard/actors#fund-administrator), [Fund
+  Distributor](https://docs.chain.link/dta-technical-standard/actors#fund-distributor), and [Fund
+  Issuer](https://docs.chain.link/dta-technical-standard/actors#fund-issuer) are, and what each is responsible for, is
+  documented in the **[DTA technical standard](https://docs.chain.link/dta-technical-standard/actors)**. This page is
+  the **CRE Connect SDK reference** for the operator-side calls those roles need to perform.
+</Aside>
+
+This page covers the **operator-side** flows of DTA v2: onboarding fund admins, registering fund tokens, managing distributors, and wiring cross-DTA settlement. Investor-facing flows (subscriptions, redemptions) live in [Subscriptions and Redemptions](/crec/extensions/dta/subscriptions-redemptions).
+
+All examples assume an extension constructed as in [DTA Overview](/crec/extensions/dta/):
+
+```go
+ext, _ := dtaop.New(&dtaop.Options{
+    AccountAddress:              smartAccount.Hex(),
+    DTARequestManagementAddress: mgmtAddr.Hex(),
+    DTARequestSettlementAddress: settleAddr.Hex(),
+})
+```
+
+## Fund admin onboarding
+
+Register once per Smart Account that will act as a [Fund Administrator](https://docs.chain.link/dta-technical-standard/actors#fund-administrator):
+
+```go
+op, err := ext.PrepareRegisterFundAdminOperation()
+```
+
+Underlying call: `DTARequestManagement.registerFundAdmin()`. Emits `FundAdminRegistered`:
+
+```go
+type FundAdminRegistered struct {
+    FundAdminAddr common.Address
+}
+```
+
+## Register a fund token
+
+Each tokenised fund is registered once with its complete configuration:
+
+```go
+import dtaevents "github.com/smartcontractkit/crec-sdk-ext-dta/v2/events"
+
+tokenData := dtaevents.FundTokenData{
+    FundTokenAddr:                fundTokenAddr,
+    NavFeedDecimals:              8,
+    PurchaseTokenRoundingDecimals: 6,
+    PurchaseTokenDecimals:        6,    // e.g. USDC
+    FundRoundingDecimals:         18,
+    FundTokenDecimals:            18,
+    RequestsPerDay:               4,
+    NavAddr:                      navOracleAddr,
+    TokenChainSelector:           5009297550715157269, // Ethereum mainnet
+    DtaRequestSettlementAddr:     settleAddr,
+    TimezoneOffsetSecs:           big.NewInt(0),
+    NavTTL:                       big.NewInt(86400),
+    PaymentInfo: dtaevents.DTAPayment{
+        OffChainPaymentCurrency: 0,
+        PaymentTokenSourceAddr:  paymentTokenAddr,
+        PaymentTokenDestAddr:    paymentDestAddr,
+    },
+}
+
+op, err := ext.PrepareRegisterFundTokenOperation(fundTokenId, tokenData)
+```
+
+Underlying call: `DTARequestManagement.registerFundToken(fundTokenId, tokenData)`. Emits `FundTokenRegistered`:
+
+```go
+type FundTokenRegistered struct {
+    FundAdminAddr      common.Address
+    FundTokenId        common.Hash
+    FundTokenAddr      common.Address
+    NavAddr            common.Address
+    TokenChainSelector uint64
+}
+```
+
+`fundTokenId` is the [Fund Token ID](https://docs.chain.link/dta-technical-standard/reference/glossary#fund-token-id), a `[32]byte` (`bytes32`) identifier defined by the DTA Technical Standard. Choose a derivation strategy that fits your fund-token registry; see the DTA Standard glossary for the canonical definition.
+
+### Toggle availability
+
+A fund token can be temporarily disabled (rejecting new requests) without re-registering:
+
+```go
+op, _ := ext.PrepareDisableFundTokenOperation(fundTokenId)
+op, _ := ext.PrepareEnableFundTokenOperation(fundTokenId)
+```
+
+Underlying calls: `disableFundToken(fundTokenId)` / `enableFundToken(fundTokenId)`. Both emit no separate event; observe via the on-chain reference data.
+
+## Distributor lifecycle
+
+A [Fund Distributor](https://docs.chain.link/dta-technical-standard/actors#fund-distributor) is a Smart Account authorised to submit subscription / redemption requests on behalf of investors.
+
+### Register a distributor
+
+```go
+op, err := ext.PrepareRegisterDistributorOperation(distributorWalletAddr)
+```
+
+Underlying call: `DTARequestManagement.registerDistributor(distributorWalletAddr)`. Emits `DistributorRegistered`:
+
+```go
+type DistributorRegistered struct {
+    DistributorAddr common.Address
+}
+```
+
+### Authorise / revoke a distributor for a fund token (v2 model)
+
+DTA v2 uses an **authorise / revoke** model rather than the v1 allow / disallow flag. The fund admin signs `authorize` or `revoke` calls to set per-token distributor permissions:
+
+```go
+op, _ := ext.PrepareAuthorizeDistributorForTokenOperation(fundAdminAddr, fundTokenId, distributorAddr)
+op, _ := ext.PrepareRevokeDistributorForTokenOperation(fundAdminAddr, fundTokenId, distributorAddr)
+```
+
+Underlying calls:
+
+- `authorizeDistributorForToken(fundAdminAddr, fundTokenId, distributorAddr)`
+- `revokeDistributorForToken(fundAdminAddr, fundTokenId, distributorAddr)`
+
+Both emit `DistributorAuthorizationUpdated`:
+
+```go
+type DistributorAuthorizationUpdated struct {
+    DistributorAddr common.Address
+    FundAdminAddr   common.Address
+    FundTokenId     common.Hash
+    Authorized      bool
+}
+```
+
+### Allow-list (per-token, no admin involvement)
+
+For lower-trust scenarios where the fund admin already pre-approved a category of distributors, the per-token allow-list is the lightweight knob:
+
+```go
+op, _ := ext.PrepareAllowDistributorForTokenOperation(fundTokenId, distributorAddr)
+op, _ := ext.PrepareDisallowDistributorForTokenOperation(fundTokenId, distributorAddr)
+```
+
+Emits `FundTokenAllowlistUpdated`:
+
+```go
+type FundTokenAllowlistUpdated struct {
+    FundAdminAddr   common.Address
+    FundTokenId     common.Hash
+    DistributorAddr common.Address
+    Allowed         bool
+}
+```
+
+<Aside type="note" title="Authorise vs. allow">
+  `authorize` / `revoke` are signed by the **fund admin** and create a permission relationship. `allow` / `disallow` are
+  simpler allow-list flips. Most production setups use `authorize` for explicit distributor onboarding.
+</Aside>
+
+## Cross-DTA settlement
+
+For [cross-chain settlement](https://docs.chain.link/dta-technical-standard/concepts/payment-modes#3-cross-chain-onchain-settlement) topologies, configure which remote DTA contracts are allowed to settle against your settlement contract. The [Chain Selector](https://docs.chain.link/dta-technical-standard/reference/glossary#chain-selector) identifies the remote chain.
+
+```go
+op, _ := ext.PrepareAllowDTAOperation(
+    dtaAddr,             // remote DTA contract
+    dtaChainSelector,    // CCIP chain selector
+    fundAdminAddr,
+    fundTokenId,
+    fundTokenAddr,
+    dtaevents.TokenMintTypeMint,        // or TokenMintTypeIssueTokens
+    dtaevents.TokenBurnTypeBurn,        // or BurnFrom / BurnWithReason / ForceBurn
+)
+op, _ := ext.PrepareDisallowDTAOperation(dtaAddr, dtaChainSelector, fundAdminAddr, fundTokenId)
+```
+
+Emits `DTAAdded` / `DTARemoved`:
+
+```go
+type DTAAdded struct {
+    DtaAddr          common.Address
+    DtaChainSelector uint64
+    FundAdminAddr    common.Address
+    FundTokenId      common.Hash
+    FundTokenAddr    common.Address
+}
+
+type DTARemoved struct {
+    DtaAddr          common.Address
+    DtaChainSelector uint64
+    FundAdminAddr    common.Address
+    FundTokenId      common.Hash
+}
+```
+
+Match the `TokenMintType` / `TokenBurnType` to the fund token contract's interface; see the <a href="https://github.com/smartcontractkit/crec-sdk-ext-dta" target="_blank" rel="noopener noreferrer">v2 events `types.go`</a> for the full mapping.
+
+## Settlement contract operations
+
+Two ownership operations bind to the settlement contract:
+
+```go
+op, _ := ext.PrepareTransferDTARequestSettlementOwnershipOperation(newOwner)
+op, _ := ext.PrepareRenounceDTARequestSettlementOwnershipOperation()
+```
+
+These are standard OpenZeppelin `Ownable` operations.
+
+### Token withdrawals
+
+Both contracts expose a `withdrawTokens` operation for sweeping accidentally-sent ERC-20 balances:
+
+```go
+op, _ := ext.PrepareWithdrawManagementTokensOperation(token, recipient, amount)
+op, _ := ext.PrepareWithdrawSettlementTokensOperation(token, recipient, amount)
+```
+
+Emits `TokenWithdrawn`:
+
+```go
+type TokenWithdrawn struct {
+    Token     common.Address
+    Recipient common.Address
+    Amount    *big.Int
+}
+```
+
+### CCIP gas-limit tuning
+
+For cross-chain operations, both contracts let the owner adjust the CCIP message gas limit:
+
+```go
+op, _ := ext.PrepareSetManagementCCIPGasLimitOperation(big.NewInt(500_000))
+op, _ := ext.PrepareSetSettlementCCIPGasLimitOperation(big.NewInt(500_000))
+```
+
+Tune in response to gas-limit-exceeded settlement failures.
+
+## Suggested onboarding sequence
+
+```
+1. PrepareRegisterFundAdminOperation                  (fund admin)
+2. PrepareRegisterFundTokenOperation                  (fund admin, per token)
+3. PrepareEnableFundTokenOperation                    (fund admin)
+4. PrepareRegisterDistributorOperation                (distributor)
+5. PrepareAuthorizeDistributorForTokenOperation       (fund admin, per (token, distributor))
+6. (optionally) PrepareAllowDTAOperation              (cross-chain DTA)
+7. Investors can now subscribe / redeem
+```
+
+## Next steps
+
+- [Subscriptions and Redemptions](/crec/extensions/dta/subscriptions-redemptions): investor-facing flows.
+- [DTA Events](/crec/extensions/dta/events): every emitted event with its decoded struct.

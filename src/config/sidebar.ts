@@ -846,7 +846,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     },
     {
       section: "Getting Started",
-      contents: [{ title: "Get Access", url: "crec/getting-started" }],
+      contents: [
+        { title: "Get Access", url: "crec/getting-started" },
+        { title: "Prerequisites", url: "crec/getting-started/prerequisites" },
+        { title: "SDK Installation", url: "crec/getting-started/sdk-installation" },
+        { title: "Authentication", url: "crec/getting-started/authentication" },
+        { title: "Quickstart: Watch On-Chain Events", url: "crec/getting-started/quickstart-watch-events" },
+        { title: "Quickstart: Send Your First Operation", url: "crec/getting-started/quickstart-send-operation" },
+      ],
     },
     {
       section: "Concepts",
@@ -856,19 +863,206 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         { title: "Watchers", url: "crec/concepts/watchers" },
         { title: "Verifiable Events", url: "crec/concepts/verifiable-events" },
         { title: "Event Verification", url: "crec/concepts/event-verification" },
-        { title: "Operations & Transactions", url: "crec/concepts/operations" },
-        { title: "EIP-712 Signing", url: "crec/concepts/eip712-signing" },
-        { title: "Smart Accounts", url: "crec/concepts/smart-accounts" },
-        { title: "Account Abstraction & Gas Sponsorship", url: "crec/concepts/account-abstraction" },
         { title: "Confidence Levels", url: "crec/concepts/confidence-levels" },
+        { title: "Smart Accounts", url: "crec/concepts/smart-accounts" },
+        { title: "Operations & Transactions", url: "crec/concepts/operations" },
+        { title: "Draft Operations", url: "crec/concepts/drafts" },
+        { title: "Multi-Event Finality", url: "crec/concepts/multi-event-finality" },
+        { title: "EIP-712 Signing", url: "crec/concepts/eip712-signing" },
+        { title: "Account Abstraction & Gas Sponsorship", url: "crec/concepts/account-abstraction" },
+        { title: "Chain Queries", url: "crec/concepts/queries" },
         { title: "Extensions", url: "crec/concepts/extensions" },
+      ],
+    },
+    {
+      section: "Guides",
+      contents: [
+        {
+          title: "Channels",
+          children: [
+            {
+              title: "Create and Manage Channels",
+              url: "crec/guides/channels/manage-channels",
+            },
+          ],
+        },
+        {
+          title: "Watchers",
+          children: [
+            {
+              title: "Create a Watcher with a Predefined Service",
+              url: "crec/guides/watchers/create-with-service",
+            },
+            {
+              title: "Create a Watcher with a Custom ABI",
+              url: "crec/guides/watchers/create-with-abi",
+            },
+            {
+              title: "Manage Watcher Lifecycle",
+              url: "crec/guides/watchers/manage-lifecycle",
+            },
+          ],
+        },
+        {
+          title: "Events",
+          children: [
+            {
+              title: "Poll and Search Events",
+              url: "crec/guides/events/poll-and-search",
+            },
+            {
+              title: "Verify Event Signatures",
+              url: "crec/guides/events/verify-signatures",
+            },
+            {
+              title: "Decode Event Data",
+              url: "crec/guides/events/decode-data",
+            },
+          ],
+        },
+        {
+          title: "Operations",
+          children: [
+            {
+              title: "Build and Sign Operations",
+              url: "crec/guides/operations/build-and-sign",
+            },
+            {
+              title: "Draft Operations",
+              url: "crec/guides/operations/drafts",
+            },
+            {
+              title: "Submit and Track Operations",
+              url: "crec/guides/operations/submit-and-track",
+            },
+            {
+              title: "Batch Transactions",
+              url: "crec/guides/operations/batch-transactions",
+            },
+            {
+              title: "Signing Transparency",
+              url: "crec/guides/operations/signing-transparency",
+            },
+          ],
+        },
+        {
+          title: "Queries",
+          children: [
+            {
+              title: "Execute a Chain Query",
+              url: "crec/guides/queries/execute-a-query",
+            },
+          ],
+        },
+        {
+          title: "Wallets",
+          children: [
+            {
+              title: "Create and Manage Wallets",
+              url: "crec/guides/wallets/create-and-manage",
+            },
+            {
+              title: "Manage Wallet Signers",
+              url: "crec/guides/wallets/manage-signers",
+            },
+          ],
+        },
+        {
+          title: "Signers",
+          children: [
+            {
+              title: "Local (ECDSA) Signer",
+              url: "crec/guides/signers/local",
+            },
+            {
+              title: "AWS KMS Signer",
+              url: "crec/guides/signers/aws-kms",
+            },
+            {
+              title: "HashiCorp Vault Signer",
+              url: "crec/guides/signers/hashicorp-vault",
+            },
+            {
+              title: "Fireblocks Signer",
+              url: "crec/guides/signers/fireblocks",
+            },
+            {
+              title: "Privy Signer",
+              url: "crec/guides/signers/privy",
+            },
+            {
+              title: "Implement a Custom Signer",
+              url: "crec/guides/signers/custom",
+            },
+          ],
+        },
       ],
     },
     {
       section: "Extensions",
       contents: [
-        { title: "Overview", url: "crec/extensions" },
-        { title: "DTA (Digital Transfer Agent)", url: "crec/extensions/dta" },
+        {
+          title: "Extensions Overview",
+          url: "crec/extensions",
+        },
+        {
+          title: "DTA (Digital Transfer Agent)",
+          url: "crec/extensions/dta",
+          children: [
+            {
+              title: "DTA Subscriptions and Redemptions",
+              url: "crec/extensions/dta/subscriptions-redemptions",
+            },
+            {
+              title: "DTA Fund and Distributor Management",
+              url: "crec/extensions/dta/fund-and-distributors",
+            },
+            {
+              title: "DTA Events",
+              url: "crec/extensions/dta/events",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      section: "Reference",
+      contents: [
+        {
+          title: "REST API Reference",
+          url: "crec/reference/rest-api",
+          children: [
+            {
+              title: "REST API Explorer (Swagger)",
+              url: "api/crec/docs",
+              openInNewTab: true,
+            },
+          ],
+        },
+        {
+          title: "Go SDK Reference",
+          url: "crec/reference/go-sdk",
+        },
+        {
+          title: "SDK Configuration Options",
+          url: "crec/reference/sdk-configuration",
+        },
+        {
+          title: "Lifecycles",
+          url: "crec/reference/lifecycles",
+        },
+        {
+          title: "Event Types and Payloads",
+          url: "crec/reference/event-payloads",
+        },
+        {
+          title: "Error Handling",
+          url: "crec/reference/error-handling",
+        },
+        {
+          title: "Service Limits",
+          url: "crec/reference/service-limits",
+        },
       ],
     },
   ],

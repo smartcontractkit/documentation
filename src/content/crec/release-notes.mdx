@@ -3,25 +3,61 @@ section: crec
 title: "Release Notes"
 date: Last Modified
 metadata:
-  description: "Release notes and version history for Chainlink CRE Connect."
+  description: "Release notes and version history for Chainlink CRE Connect: SDK, REST API, and extensions."
   datePublished: "2026-05-01"
-  lastModified: "2026-05-01"
+  lastModified: "2026-09-01"
 ---
+
+## 2026-09-01 — SDK v0.8.0 — DON Configuration, Structured Conflict Errors
+
+**Versions**
+
+- Go SDK: `github.com/smartcontractkit/crec-sdk` **v0.8.0**
+- REST API: **0.8.0** (`https://cre-connect.api.chain.link/v1`)
+
+**What's new**
+
+- **DON configuration**: configure event verification for your organisation's DON as one atomic unit (tenant ID, signature threshold, signer set) with the new `WithDONConfig` option. See [SDK Configuration Options](/crec/reference/sdk-configuration).
+- **Structured conflict errors**: HTTP `409` responses now carry machine-readable codes, mapped by the SDK to sentinel errors that work with `errors.Is`. See [Error Handling](/crec/reference/error-handling).
+- **More precise verification failures**: verification now distinguishes a workflow-owner mismatch from an insufficient signature count, instead of returning a generic error. See [Event Verification](/crec/concepts/event-verification).
+- **Optional wallet configuration**: the `configuration` field on wallet creation is now optional.
+- **DON signer rotation completed**: the default signer set now counts 10 production signers.
+
+## 2026-08-06 — SDK v0.7.14 — Draft Operations, Chain Queries, Multi-Event Finality
+
+**Versions**
+
+- Go SDK: `github.com/smartcontractkit/crec-sdk` **v0.7.14**
+- REST API: **0.7.0** (`https://cre-connect.api.chain.link/v1`)
+
+**What's new since initial release**
+
+- **Draft operations**: create unsigned operations and finalize them later with an external signer. Enables deferred-signing workflows: MPC (Fireblocks, Privy, AWS KMS with approval), human approval gates, preview-before-sign, and cancellation before execution. See [Draft Operations](/crec/concepts/drafts).
+- **Chain queries**: submit asynchronous, DON-backed, verifiable EVM `eth_call` reads and receive OCR-signed results with resolved block metadata. See [Chain Queries](/crec/concepts/queries).
+- **Multi-event finality**: operations now report progressive on-chain confirmations (`confirmed_latest` → `confirmed_safe` → `confirmed`) as the block matures through finality stages. See [Multi-Event Finality](/crec/concepts/multi-event-finality).
+- **RSA local signer**: in-memory RSA signing for development and testing, alongside the existing ECDSA local signer.
+- **Structured error codes**: the REST API now returns machine-readable `ApplicationError` with `type` and `code` fields (e.g. `OPERATION_NOT_FINALIZABLE`, `IDEMPOTENCY_KEY_MISMATCH`).
 
 ## 2026-05-01 — Initial release
 
 Chainlink CRE Connect is now available as a **private beta**.
 
+**Versions**
+
+- Go SDK: `github.com/smartcontractkit/crec-sdk` **v0.6.7**
+- DTA extension: `github.com/smartcontractkit/crec-sdk-ext-dta/v2` **v0.0.13**
+- REST API: **0.4.0** (`https://cre-connect.api.chain.link/v1`)
+
 **Capabilities**
 
-- **Verifiable on-chain events** — subscribe to contract events on supported networks; every event is signed by the Chainlink DON and is verifiable end-to-end against the on-chain DON signer set.
-- **Gas-less, account-abstracted operations** — sign one EIP-712 payload; CRE Connect executes one or more EVM transactions atomically through your Smart Account, with no gas, nonce, or relayer management on your side.
-- **Extensions** — protocol-specific modules layered on top of the core product. Available at launch: [DTA](/crec/extensions/dta).
+- **Verifiable on-chain events**: subscribe to contract events on supported networks; every event is signed by the Chainlink DON and verifiable end-to-end via `client.Events.Verify` (and `client.Events.VerifyOperationStatus` for operation lifecycle events).
+- **Gas-less, account-abstracted operations**: sign one EIP-712 payload; CRE Connect executes one or more EVM transactions atomically through your Smart Account, with no gas, nonce, or relayer management on your side.
+- **Extensions**: typed Go modules layered on the core SDK. Available at launch: [DTA](/crec/extensions/dta).
 
 **Signer integrations**
 
-CRE Connect supports common key-management options at launch, including local ECDSA keys, AWS KMS, HashiCorp Vault, Fireblocks, Privy, and a custom signer extensibility point.
+Local ECDSA, AWS KMS, HashiCorp Vault, Fireblocks, Privy, and a documented [custom signer interface](/crec/guides/signers/custom).
 
-**Access**
+**Supported networks**
 
-Access is permissioned. See [Get Access](/crec/getting-started) for the onboarding flow.
+See [Supported Networks](/crec/supported-networks).

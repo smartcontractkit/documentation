@@ -1,0 +1,274 @@
+---
+section: crec
+title: "Execute a Chain Query"
+date: Last Modified
+metadata:
+  description: "Step-by-step guide to executing DON-backed verifiable chain queries in CRE Connect: one-call helpers, manual lifecycle, block selection, idempotency, and result verification."
+  datePublished: "2026-08-26"
+  lastModified: "2026-08-26"
+---
+
+import { Aside } from "@components"
+
+A **chain query** is a one-shot, read-only EVM call executed by a Chainlink DON. You submit the query to CRE Connect, the DON executes it against the block you selected, and you receive a signed result you can verify off-chain. Nothing is written on chain.
+
+This guide covers the three SDK paths (one-call with raw calldata, one-call with ABI unpacking, and the manual submit-then-wait lifecycle), block selection, idempotency keys, and result verification. For the conceptual model, see [Chain Queries](/crec/concepts/queries).
+
+## Prerequisites
+
+You need:
+
+- A CRE Connect client (`crec.Client`) constructed with your base URL, API key, and org ID. See [Authentication](/crec/getting-started/authentication).
+- A **channel ID**: queries are scoped to a channel.
+- A **chain selector** for the target network. See [Supported Networks](/crec/supported-networks).
+- The **contract address** you want to read from.
+
+## Path 1: One-call with `CallContract`
+
+The simplest path: submit the query, wait for completion, and decode the result in a single call.
+
+```go
+import (
+    "fmt"
+    "math/big"
+    "time"
+
+    "github.com/smartcontractkit/crec-sdk/queries"
+)
+
+finalized, err := queries.Finalized()
+if err != nil {
+    return err
+}
+
+result, err := client.Queries.CallContract(ctx, queries.CallContractInput{
+    CallInput: queries.EVMCallInput{
+        ChannelID:       channelID,
+        ChainSelector:   "16015286601757825753", // Ethereum Sepolia
+        ContractAddress: "0x1234567890123456789012345678901234567890",
+        CallData:        []byte{0x18, 0x16, 0x0d, 0xdd}, // totalSupply()
+        BlockSelection:  finalized,
+        IdempotencyKey:  "total-supply-finalized-001",
+    },
+    MaxWaitTime: 30 * time.Second,
+})
+if err != nil {
+    return err // API, polling, or decode error
+}
+if result.Error != nil {
+    return fmt.Errorf("query failed: %s: %s", result.Error.Code, result.Error.Message)
+}
+
+totalSupply := new(big.Int).SetBytes(result.RawReturnData)
+fmt.Println("total supply:", totalSupply)
+```
+
+`CallContract` handles the full lifecycle: create → wait → decode. Use it when you have the calldata ready and want the result synchronously.
+
+## Path 2: One-call with `CallContractWithABI`
+
+When you want the SDK to pack arguments and unpack return values, use `CallContractWithABI`:
+
+```go
+result, err := client.Queries.CallContractWithABI(ctx, queries.CallContractWithABIInput{
+    ChannelID:       channelID,
+    ChainSelector:   chainSelector,
+    ContractAddress: tokenAddress,
+    ABIFragment:     "function balanceOf(address owner) view returns (uint256)",
+    FunctionName:    "balanceOf",
+    Args:            []any{"0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"},
+    BlockSelection:  finalized,
+    IdempotencyKey:  "balance-finalized-001",
+    MaxWaitTime:     30 * time.Second,
+})
+if err != nil {
+    return err
+}
+if result.Error != nil {
+    return fmt.Errorf("query failed: %s", result.Error.Message)
+}
+
+balance := result.Outputs[0].(*big.Int)
+fmt.Println("balance:", balance)
+```
+
+The `ABIFragment` accepts a human-readable function signature string (as shown above) or a JSON ABI fragment.
+
+## Path 3: Manual lifecycle
+
+When you need to submit now and check later, use the individual steps:
+
+```go
+// 1. Submit the query (async)
+latest, err := queries.Latest()
+if err != nil {
+    return err
+}
+
+accepted, err := client.Queries.CreateEVMCall(ctx, queries.EVMCallInput{
+    ChannelID:       channelID,
+    ChainSelector:   chainSelector,
+    ContractAddress: tokenAddress,
+    CallData:        []byte{0x18, 0x16, 0x0d, 0xdd},
+    BlockSelection:  latest,
+    IdempotencyKey:  "total-supply-async-001",
+})
+if err != nil {
+    return err
+}
+
+// 2. Wait for terminal status (later, or in a different goroutine)
+query, err := client.Queries.Wait(ctx, channelID, accepted.QueryId, 30*time.Second)
+if err != nil {
+    return err
+}
+
+// 3. Decode the result
+result, err := queries.ResultFromQuery(query)
+if err != nil {
+    return err
+}
+```
+
+Use this path when you want to inspect intermediate statuses, decouple submission from completion, or manage your own polling cadence.
+
+## Block selection helpers
+
+The `queries` package provides helpers for all three block selectors:
+
+```go
+latest, _ := queries.Latest()
+finalized, _ := queries.Finalized()
+blockNum, _ := queries.BlockNumber(6500000)
+blockNumFromString, _ := queries.BlockNumberFromString("6500000")
+```
+
+All return `(BlockSelection, error)`.
+
+## Idempotency keys
+
+Every query create requires an `IdempotencyKey`. Choose a key that is:
+
+- **Deterministic**: derived from the logical request, not a random UUID.
+- **Unique per logical request**: different queries get different keys.
+
+```go
+IdempotencyKey: "balance-of-0x742d-eth-finalized-2026-08-26",
+```
+
+If you retry after a network error with the same key and the same request parameters, you get the original query back. If the parameters differ, you get `409 Conflict` with `IDEMPOTENCY_KEY_MISMATCH`.
+
+## Detecting completion via channel events
+
+For event-driven architectures, search for `query.status` events instead of polling the query resource:
+
+```go
+import (
+    apiClient "github.com/smartcontractkit/crec-api-go/client"
+)
+
+limit := 100
+eventTypes := []apiClient.EventType{apiClient.EventTypeQueryStatus}
+channelEvents, hasMore, err := client.Events.SearchEvents(
+    ctx,
+    channelID,
+    &apiClient.SearchChannelEventsParams{
+        Type:  &eventTypes,
+        Limit: &limit,
+    },
+)
+if err != nil {
+    return err
+}
+
+for i := range channelEvents {
+    event := &channelEvents[i]
+    payload, err := event.Payload.AsQueryStatusPayload()
+    if err != nil || payload.QueryId != queryID {
+        continue
+    }
+
+    // Verify the event
+    verified, err := client.Events.VerifyQueryStatus(event)
+    if err != nil || !verified {
+        return err
+    }
+
+    // Decode the verifiable result
+    decoded, err := client.Events.DecodeQueryStatusVerifiableEvent(&payload)
+    if err != nil {
+        return err
+    }
+    _ = decoded.Data
+}
+```
+
+## Error handling
+
+### Transport errors (returned as Go errors)
+
+| Error                       | When                                                                |
+| --------------------------- | ------------------------------------------------------------------- |
+| `ErrChannelNotFound`        | The channel does not exist or was archived (404).                   |
+| `ErrQueryNotFound`          | The query ID does not exist (404).                                  |
+| `ErrIdempotencyConflict`    | Same idempotency key with different parameters (409).               |
+| `ErrRateLimitExceeded`      | Query create quota or workflow admission rate limit exceeded (429). |
+| `ErrWaitQueryTimeout`       | `Wait` exceeded `maxWaitTime` before terminal status.               |
+| `ErrUnsupportedQueryKind`   | Query kind is not `evm_call`.                                       |
+| `ErrDecodeVerifiableResult` | Verifiable result could not be decoded.                             |
+
+### Signed terminal errors (in `result.Error`)
+
+When the query reaches `failed` or `expired`, the Go method returns `nil` error but `result.Error` is non-nil:
+
+```go
+if result.Error != nil {
+    fmt.Errorf("query failed: %s: %s", result.Error.Code, result.Error.Message)
+}
+```
+
+If the query status is `failed` or `expired` but no signed error is present in the verifiable result, the SDK synthesizes one (`CRE_WORKFLOW_FAILED` for `failed`, `QUERY_EXPIRED` for `expired`).
+
+See [Error Handling](/crec/reference/error-handling) for the full sentinel error catalog.
+
+## REST API
+
+### Create a query
+
+```bash
+curl -X POST https://cre-connect.api.chain.link/v1/channels/$CHANNEL_ID/queries \
+  -H "Authorization: Apikey $CREC_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "idempotency_key": "total-supply-finalized-001",
+    "query_kind": "evm_call",
+    "chain_selector": "16015286601757825753",
+    "params": {
+      "contract_address": "0x1234567890123456789012345678901234567890",
+      "call_data": "0x18160ddd",
+      "block_selection": { "type": "finalized" }
+    }
+  }'
+```
+
+Returns `202 Accepted` with the query in the `accepted` state.
+
+### Get a query
+
+```bash
+curl https://cre-connect.api.chain.link/v1/channels/$CHANNEL_ID/queries/$QUERY_ID \
+  -H "Authorization: Apikey $CREC_API_KEY"
+```
+
+### List queries
+
+```bash
+curl "https://cre-connect.api.chain.link/v1/channels/$CHANNEL_ID/queries?status=completed&limit=20" \
+  -H "Authorization: Apikey $CREC_API_KEY"
+```
+
+## Next steps
+
+- Read the [Chain Queries concept page](/crec/concepts/queries) for the full data model and verification details.
+- See [Event Verification](/crec/concepts/event-verification) for the OCR proof algorithm.
+- See [Lifecycles](/crec/reference/lifecycles#query-lifecycle) for the query state machine.

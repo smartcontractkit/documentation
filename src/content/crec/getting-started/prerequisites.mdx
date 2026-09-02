@@ -1,0 +1,146 @@
+---
+section: crec
+title: "Prerequisites"
+date: Last Modified
+metadata:
+  description: "Everything you need before installing the Chainlink CRE Connect SDK: create your organization on app.chain.link, share your Organization ID with Chainlink for CRE Connect provisioning, generate an API key, install Go, pick a supported network, and choose a signer."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+CRE Connect is a permissioned service. Before you can use the SDK or call the API, your organization must exist on the <a href="https://app.chain.link" target="_blank" rel="noopener noreferrer">Chainlink Platform</a> and be provisioned by Chainlink Labs for CRE Connect. Steps 1–3 cover the account and API key; steps 4–6 cover the local toolchain and integration choices.
+
+## 1. Create your organization
+
+Go to <a href="https://app.chain.link" target="_blank" rel="noopener noreferrer">app.chain.link</a> and create an account or sign in.
+
+Once signed in, click on **your organization's name** in the bottom-left corner of the sidebar to open its **Organization** page. Your **Organization ID** is displayed in the page header: copy it. It is a short prefixed string, for example `org_example00000000000` (not a UUID).
+
+## 2. Share your Organization ID
+
+Share your Organization ID with your Chainlink Labs contact so they can enable CRE Connect for your organization. **You cannot create API keys or use CRE Connect until this step is complete.**
+
+<Aside type="note" title="Beta: permissioned access">
+  During the **private beta**, CRE Connect enablement requires Chainlink Labs to provision the service for your
+  organization.
+</Aside>
+
+## 3. Create an API key
+
+<Aside type="caution" title="Wait for CRE Connect enablement">
+  Do not create an API key until your Chainlink Labs contact confirms CRE Connect has been enabled for your
+  organization. API keys created before enablement will not have access to CRE Connect endpoints.
+</Aside>
+
+Once your account has been provisioned, create an API key for authentication:
+
+1. Sign in to the <a href="https://app.chain.link" target="_blank" rel="noopener noreferrer">Chainlink Platform</a>, click on **your organization's name** in the bottom-left corner of the sidebar to open its **Organization** page, then select the **"APIs"** tab.
+2. Click **"+ Organization API"**.
+3. Enter a name for the key and select an expiration period (1 day, 1 month, or 1 year).
+4. Click **"Generate"**. The API key is displayed once: copy it immediately.
+
+<Aside type="caution" title="Save your API key">
+  The API key is only shown once at creation time. Copy it immediately: if you lose it, you will need to generate a new
+  one. Never share your API key. Each user in your organization should create and manage their own key.
+</Aside>
+
+You will use this key in the `Authorization` header for all CRE Connect REST calls and as the `apiKey` argument to the Go SDK constructor:
+
+```bash
+curl https://cre-connect.api.chain.link/v1/<endpoint> \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+```go
+client, err := crec.NewClient(
+    "https://cre-connect.api.chain.link/v1",
+    "<API_KEY>",
+    crec.WithOrgID("<your-org-id>"),
+)
+```
+
+For local development, store the key, the base URL, **and your Organization ID** in environment variables so they never land in source control:
+
+```bash
+export CREC_BASE_URL="https://cre-connect.api.chain.link/v1"
+export CREC_API_KEY="<your-api-key>"
+export CREC_ORG_ID="<your-org-id>"   # the Organization ID from step 1, e.g. org_example00000000000
+```
+
+<Aside type="note" title="Why the Organization ID matters at the SDK level">
+  CRE Connect derives your tenant's **workflow owner address** deterministically from the Organization ID. The SDK uses
+  it to bind every event hash to your tenant during `Events.Verify` (and `Events.VerifyOperationStatus`). If you forget
+  `WithOrgID`, every verification call returns `events.ErrOrgIDOrWorkflowOwnerReq`. See [Verify Event
+  Signatures](/crec/guides/events/verify-signatures) for multi-org and per-event variants.
+</Aside>
+
+## 4. Go toolchain
+
+The CRE Connect SDK targets **Go 1.25.3 or higher**, and the DTA extension targets **Go 1.25.5 or higher**. Use **Go 1.25.5+** to cover both. Check your version:
+
+```bash
+go version
+```
+
+If your installed Go is older, you have two options:
+
+- **Upgrade your toolchain**: follow the official install instructions at <a href="https://go.dev/dl/" target="_blank" rel="noopener noreferrer">go.dev/dl</a>.
+- **Let Go fetch the right toolchain on demand**: `GOTOOLCHAIN=auto` is the default since Go 1.21, so as long as your `go.mod` declares `go 1.25.5` (or higher) and a `toolchain` directive, Go will download the matching toolchain transparently the first time you run `go build`, `go run`, or `go mod tidy`. For a fresh project:
+
+  ```bash
+  go mod init <your-module>
+  go mod edit -go=1.25.5 -toolchain=go1.25.9
+  ```
+
+## 5. A supported network and chain selector
+
+Watchers and wallets are pinned to a network. CRE Connect identifies networks by their **chain selector** (a `uint64` represented as a string in API payloads, for example `5009297550715157269` for Ethereum Mainnet).
+
+You can list supported networks at runtime once authenticated (see [Authentication](/crec/getting-started/authentication)) or consult the static [Supported Networks](/crec/supported-networks) reference.
+
+The quickstarts in this section target Sepolia (`16015286601757825753`).
+
+## 6. A signer
+
+Operations are signed off-chain before being submitted to CRE Connect. You will need a key (or a key-management service) to produce ECDSA signatures.
+
+The fastest option for the quickstarts is the **local ECDSA signer** in `crec-sdk/transact/signer/local`, which loads a `*ecdsa.PrivateKey` directly into memory:
+
+```go
+import (
+    "github.com/ethereum/go-ethereum/crypto"
+    "github.com/smartcontractkit/crec-sdk/transact/signer/local"
+)
+
+pk, _ := crypto.HexToECDSA("ab12...")
+signer := local.NewSigner(pk)
+```
+
+The SDK ships first-class adapters for managed signers:
+
+- AWS KMS: `crec-sdk/transact/signer/kms`
+- HashiCorp Vault: `crec-sdk/transact/signer/vault`
+- Fireblocks: `crec-sdk/transact/signer/fireblocks`
+- Privy: `crec-sdk/transact/signer/privy`
+
+You can also implement your own by satisfying the `signer.Signer` interface; see [Implement a Custom Signer](/crec/guides/signers/custom).
+
+## Checklist
+
+- Organization created on <a href="https://app.chain.link" target="_blank" rel="noopener noreferrer">app.chain.link</a>; Organization ID copied.
+- Organization ID shared with Chainlink Labs and CRE Connect enablement confirmed.
+- API key generated in your org's **Organization &rarr; APIs** tab, stored securely, and exposed via env var.
+- `CREC_BASE_URL`, `CREC_API_KEY`, and `CREC_ORG_ID` exported in your shell.
+- `go version` reports **1.25.5** or higher (or your `go.mod` has `go 1.25.5` + a `toolchain` directive).
+- You have picked a supported network and know its chain selector.
+- You have a signer (local key for the quickstarts; managed signer for production).
+
+When all of these are checked, continue to [SDK Installation](/crec/getting-started/sdk-installation).
+
+## Related
+
+- [SDK Installation](/crec/getting-started/sdk-installation): install the modules you'll use in the next step.
+- [Authentication](/crec/getting-started/authentication): initialize the client with the API key you just created.
+- [Supported Networks](/crec/supported-networks): pick a chain and grab its chain selector.
