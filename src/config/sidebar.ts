@@ -812,6 +812,21 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
           ],
         },
+        {
+          title: "GraphQL API",
+          url: "cre/reference/graphql-api",
+          children: [
+            { title: "Authentication", url: "cre/reference/graphql-api/authentication" },
+            { title: "Quickstart", url: "cre/reference/graphql-api/quickstart" },
+            { title: "Common Queries", url: "cre/reference/graphql-api/common-queries" },
+            { title: "Query Reference", url: "cre/reference/graphql-api/queries" },
+            { title: "Object Reference", url: "cre/reference/graphql-api/objects" },
+            { title: "Enum Reference", url: "cre/reference/graphql-api/enums" },
+            { title: "Input Reference", url: "cre/reference/graphql-api/inputs" },
+            { title: "Pagination", url: "cre/reference/graphql-api/pagination" },
+            { title: "Errors & Rate Limits", url: "cre/reference/graphql-api/errors" },
+          ],
+        },
       ],
     },
     {
@@ -1424,6 +1439,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "API Reference",
               url: "data-streams/reference/data-streams-api/interface-api",
+              children: [
+                {
+                  title: "Discovery Endpoint",
+                  url: "data-streams/reference/data-streams-api/discovery-endpoint",
+                },
+              ],
             },
             {
               title: "WebSocket Reference",
