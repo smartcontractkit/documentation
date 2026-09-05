@@ -1,0 +1,270 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Getting Started with Data Feeds (using Remix)"
+metadata:
+  title: "Getting Started with Chainlink Data Feeds — Low code (Remix)"
+  description: "Read Chainlink Data Feeds in a smart contract using the Remix IDE. Deploy a consumer contract on Sepolia and read the BTC/USD price feed — no local installation required."
+  excerpt: "Deploy a consumer contract and read Data Feeds onchain using Remix"
+  image: "/files/1a63254-link.png"
+  difficulty: "beginner"
+  estimatedTime: "15 minutes"
+  datePublished: "2026-07-22"
+  lastModified: "2026-07-22"
+whatsnext:
+  {
+    "Read Data Feeds on other EVM chains and with other Web3 libraries": "/data-feeds/using-data-feeds",
+    "Retrieve Historical Price Data": "/data-feeds/historical-data",
+    "Read the Data Feeds API Reference": "/data-feeds/api-reference",
+    "Find Price Feed addresses on other networks": "/data-feeds/price-feeds/addresses",
+  }
+---
+
+import { Accordion, Aside, CodeSample, CopyText, ClickToZoom, PageTabs } from "@components"
+
+Chainlink Data Feeds are the fastest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health. Each feed is aggregated by many independent Chainlink node operators and published onchain through a decentralized oracle network, giving your contracts a reliable, manipulation-resistant source of data.
+
+Each price feed has an onchain address and functions that enable contracts to read pricing data from that address.
+
+In this guide you will fetch the pricing data from a price feed, for example the [BTC / USD feed](https://data.chain.link/feeds/ethereum/mainnet/btc-usd), using the [Remix IDE](https://remix.ethereum.org/) — no local installation required.
+
+## What you'll do
+
+- Deploy and retrieve the latest price onchain using a Solidity consumer contract that reads the BTC / USD price feed on Sepolia. _(Onchain methods are useful for when you need to apply smart contract logic in your application based on the pricing data.)_
+- Learn the key safety checks to apply before moving to production.
+
+**Note:** The code for reading Data Feeds on Ethereum and other EVM-compatible blockchains is the same for every chain and every feed type. You choose different feeds for different use cases, but the request and response format is always the same. The answer's decimal length and expected value range may differ depending on the feed.
+
+<PageTabs
+  pages={[
+    {
+      name: "Foundry",
+      url: "/data-feeds/getting-started",
+      icon: "/images/tutorial-icons/foundry-icn.png",
+    },
+    {
+      name: "Hardhat",
+      url: "/data-feeds/getting-started-hardhat",
+      icon: "/images/tutorial-icons/hardhat-icn.png",
+    },
+    {
+      name: "Low code (Remix)",
+      url: "/data-feeds/getting-started-remix",
+      icon: "/images/tutorial-icons/remix-icn.png",
+    },
+  ]}
+/>
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Using Data Feeds on L2 networks">
+  If you are using Chainlink Data Feeds on L2 networks like Arbitrum, OP, and Metis, you must also check the latest
+  answer from the L2 Sequencer Uptime Feed to ensure that the data is accurate in the event of an L2 sequencer outage.
+  See the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) page to learn how to use Data Feeds on L2
+  networks.
+</Aside>
+
+## Before you begin
+
+If you are new to smart contract development, complete the [Deploy Your First Smart Contract](/quickstarts/deploy-your-first-contract) quickstart first. It walks you through installing and funding a MetaMask wallet and using Remix, which this guide assumes you already know.
+
+You will need:
+
+- A funded wallet on the **Sepolia** testnet (chain ID `11155111`). Get testnet ETH from a [Sepolia faucet](/resources/link-token-contracts/#sepolia-testnet).
+- The [Remix IDE](https://remix.ethereum.org/) open in your browser. No local installation required.
+- MetaMask configured for Sepolia.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Why a proxy?">
+  Consumer contracts call a _proxy_ contract, which forwards reads to the current _aggregator_. When Chainlink
+  upgrades an aggregator, the proxy is repointed to the new implementation and your consumer contract keeps working
+  unchanged. Always read from the proxy address listed on the
+  [Price Feed Addresses](/data-feeds/price-feeds/addresses) page, not from the underlying aggregator.
+</Aside>
+
+## Getting the feed address
+
+Before we even begin, we need to know the address of the feed we want to read. The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the feeds available on each network. For this guide, we will use the BTC / USD feed on Sepolia, with the proxy address: <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code />
+
+## Retrieving the price data from the feed
+
+<Accordion title="Fetching price data offchain" number={1} contentReference="read-offchain">
+You can read Data Feeds directly from the feed proxy without deploying any consumer contract. This is useful for backends, bots, dashboards, and pre-trade checks. No consumer contract is required — the feed proxy is a public contract and `latestRoundData()` is a `view` function, so anyone can call it directly from a script or CLI.
+
+You can check our [Foundry](/data-feeds/getting-started) or [Hardhat](/data-feeds/getting-started-hardhat) getting started guides to learn how to read Data Feeds offchain.
+
+</Accordion>
+
+<Accordion title="Fetching price data onchain using a consumer contract" number={2}>
+
+<Accordion title="Examine the sample contract" number={2.1} contentReference="examine-the-sample-contract">
+
+The example contract below reads the latest answer from the [BTC / USD feed](/data-feeds/price-feeds/addresses) on Sepolia. It targets Solidity `^0.8.7`. You can modify it to read any of the [Types of Data Feeds](/data-feeds#types-of-data-feeds).
+
+<CodeSample src="samples/DataFeeds/DataConsumerV3.sol" />
+
+The contract has the following components:
+
+- The `import` line brings in [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink-evm/blob/contracts-v1.5.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol)
+  - It exposes `latestRoundData()`, `getRoundData()`, `decimals()`, and `version()`. The sample uses `latestRoundData` to fetch the current price.
+- The `constructor()`
+  - Initializes a `dataFeed` object that uses `AggregatorV3Interface` pointing at the proxy aggregator deployed at <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code/>.
+  - This is the proxy address for the Sepolia `BTC / USD` feed. The proxy lets the aggregator be upgraded without breaking consumer contracts.
+- The `getChainlinkDataFeedLatestAnswer()` function
+  - Calls your `dataFeed` object and runs the `latestRoundData()` function and returns the `answer` variable.
+  - When you deploy the contract, it initializes the `dataFeed` object to point to the aggregator at <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code />, which is the proxy address for the Sepolia `BTC / USD` data feed. Your contract connects to that address and executes the function.
+  - The aggregator connects with several oracle nodes and aggregates the pricing data from those nodes. The response from the aggregator includes several variables, but `getChainlinkDataFeedLatestAnswer()` returns only the `answer` variable. The full response includes `roundId`, `startedAt`, `updatedAt`, and `answeredInRound` — see the [API Reference](/data-feeds/api-reference) for details.
+
+</Accordion>
+
+<Accordion title="Compile the contract in Remix" number={2.2}>
+
+1. [Open the example contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataFeeds/DataConsumerV3.sol) in Remix. Remix loads the file and its imports automatically.
+
+   {/* prettier-ignore */}
+   <div class="remix-callout">
+     <a href="https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataFeeds/DataConsumerV3.sol">Open the contract in Remix</a>
+   </div>
+
+1. Navigate to the **Solidity Compiler** tab on Remix left sidebar.
+
+   <ClickToZoom
+     src="/images/getting-started/new_navigateSolidityCompiler.png"
+     alt="Solidity Compiler tab in Remix"
+     style="max-width: 70%;"
+   />
+
+1. Keep the default compiler settings and click **Compile DataConsumerV3.sol**. Remix auto-detects the compiler version from the `pragma` statement. You can ignore warnings about unused local variables — the example destructures `latestRoundData()` but only uses `answer`.
+
+   <ClickToZoom
+     src="/images/getting-started/new_compiledDataConsumerV3.png"
+     alt="Compile DataConsumerV3.sol button in Remix"
+     style="max-width: 70%;"
+   />
+
+</Accordion>
+
+<Accordion title="Deploy to Sepolia" number={2.3} contentReference="deploy-to-sepolia">
+
+1. Open MetaMask and switch to the **Sepolia** network. If you don't have it configured, you can find the chain ID and RPC details on the [LINK Token Contracts](/resources/link-token-contracts#sepolia-testnet) page.
+
+1. Open the **Deploy & Run Transactions** tab on Remix and set the **Environment** to **Browser Extension** and then select **Sepolia Testnet - MetaMask**. We do this becuase the contract must run in a Web3 context because it reads from another onchain contract (the price feed). Running in the "Remix VM" will not work.
+
+   <ClickToZoom
+     src="/images/getting-started/new_connectRemix.png"
+     alt="Select Browser Extension in Remix"
+     style="max-width: 70%;"
+   />
+   <ClickToZoom
+     src="/images/getting-started/new_chooseSepolia.png"
+     alt="Select Sepolia Testnet in Remix"
+     style="max-width: 70%;"
+   />
+
+1. In the **Contract** dropdown, explicitly select `DataConsumerV3`. This is the contract we want to deploy. Ensure you have this selected. Finally, click **Deploy** to deploy the contract to Sepolia.
+
+<ClickToZoom
+  src="/images/getting-started/new_deployDataConsumerV3Contract.png"
+  alt="Select DataConsumerV3 as the contract to deploy"
+  style="max-width: 70%;"
+/>
+
+1. MetaMask opens and asks confirmation for the deployment transaction. In the MetaMask prompt, click **Confirm** to approve the transaction. This will result in an actual onchain transaction that deploys the contract to Sepolia.
+
+_Note: You will pay gas for this transaction, so ensure your wallet has enough Sepolia ETH._
+
+<ClickToZoom
+  src="/images/getting-started/new_metamaskDeployDataConsumerV3.png"
+  alt="Deploy DataConsumerV3 to Sepolia"
+  style="max-width: 70%;"
+/>
+
+1. After a few seconds, the transaction completes and your contract appears under **Deployed Contracts** in Remix. Click the contract dropdown to expand its available variables and functions.
+
+   <ClickToZoom
+     src="/images/getting-started/new_deployedContractDataConsumerV3.png"
+     alt="DataConsumerV3 deployed in Remix"
+     style="max-width: 70%;"
+   />
+
+</Accordion>
+
+<Accordion title="Read the latest price onchain" number={2.4}>
+
+1. Find the function **getChainlinkDataFeedLatestAnswer** in the function selector and then click it to call the function. The latest answer from the aggregator appears just above the button.
+
+   <ClickToZoom
+     src="/images/getting-started/new_chooseFunction.png"
+     alt="Choosing the getChainlinkDataFeedLatestAnswer function in Remix"
+     style="max-width: 70%;"
+   />
+   <ClickToZoom
+     src="/images/getting-started/new_getLatestPrice.png"
+     alt="Latest price answer returned by the contract"
+     style="max-width: 70%;"
+   />
+
+1. The returned answer is an integer with no decimal point. The BTC / USD feed uses **8 decimals**, so an answer of `7836308000000` represents a BTC / USD price of `78363.08`. Each feed uses a different number of decimals — you can find the exact value on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) and checking the **More Details** checkbox. You can also call the `decimals()` function on the feed to get the decimal count programmatically.
+
+{/* prettier-ignore */}
+<Aside type="tip" title="Always scale by `decimals()`">
+  Never hardcode the decimal count. Call `decimals()` on the feed and scale the answer programmatically. This keeps
+  your contract correct if you later point it at a feed with a different precision (e.g., some feeds use 18 decimals).
+</Aside>
+
+</Accordion>
+
+</Accordion>
+
+## Before you go to production
+
+The example intentionally omits the safety checks a production integration needs. Before shipping, review the following points and the [Developer Responsibilities](/data-feeds/developer-responsibilities) page.
+
+### Check `updatedAt` and staleness
+
+`latestRoundData()` returns `updatedAt` (the timestamp of the latest round) and `answeredInRound` (the round in which the answer was finalized). Always verify the feed is fresh:
+
+```solidity
+(uint80 roundId, int256 answer, , uint256 updatedAt, uint80 answeredInRound) = dataFeed.latestRoundData();
+
+require(answeredInRound >= roundId, "Stale price");
+require(block.timestamp - updatedAt < TIMEOUT, "Stale price");
+```
+
+Choose a `TIMEOUT` that matches your application's risk tolerance — shorter for trading, longer for less time-sensitive use cases.
+
+### Use the right feed for your asset
+
+Not all feeds are equal. Low-liquidity assets are more exposed to market manipulation. Review [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) and the [Data Feed Categories](/data-feeds/selecting-data-feeds#data-feed-categories) before choosing a feed.
+
+### Handle L2 sequencer risk
+
+On L2s, a sequencer outage can cause stale or incorrect prices. Always pair L2 price feeds with a check on the [L2 Sequencer Uptime Feed](/data-feeds/l2-sequencer-feeds). The `DataConsumerWithSequencerCheck` sample shows the pattern. Try it out in Remix below:
+
+<CodeSample src="samples/DataFeeds/DataConsumerWithSequencerCheck.sol" showButtonOnly />
+
+### Audit your integration
+
+The sample code is unaudited and hardcodes values for clarity. Before production, complete your own audit, review your dependencies, and apply the risk-mitigation practices described in [Developer Responsibilities](/data-feeds/developer-responsibilities).
+
+## FAQ
+
+### Do I need a consumer contract to read a Data Feed?
+
+**Only if another smart contract needs the price onchain.** A consumer contract exists to wrap a feed read in your own contract's logic so that _your other contracts_ can use the price onchain — for collateral checks, settlements, circuit breakers, and so on. The read is atomic with your onchain action and verifiable on the blockchain.
+
+If you only need the price in an offchain system (a backend, bot, dashboard, or pre-trade check), you do **not** need a consumer contract. The feed proxy is a public contract and `latestRoundData()` is a `view` function — anyone can call it directly from a script using `cast`, ethers.js, or viem. See [Step 1: Fetching price data offchain](#read-offchain) on this page, or the [Foundry](/data-feeds/getting-started#read-offchain) and [Hardhat](/data-feeds/getting-started-hardhat#read-offchain) offchain read sections.
+
+|                                 | Consumer contract (onchain)           | Direct read (offchain)               |
+| ------------------------------- | ------------------------------------- | ------------------------------------ |
+| **Who needs the price?**        | Another smart contract                | A script, backend, bot, or dashboard |
+| **Gas cost?**                   | Pay to deploy + gas for onchain reads | Free (view calls from a script)      |
+| **Deployment required?**        | Yes                                   | No                                   |
+| **Atomic with onchain action?** | Yes                                   | No                                   |
+
+### Remix says "contract not found" when deploying
+
+In the **Contract** dropdown on the Deploy & Run Transactions tab, explicitly select `DataConsumerV3`. When a file has multiple imports, Remix defaults to the first contract alphabetically, which may not be the one you want to deploy.
+
+### The MetaMask transaction reverted on deployment
+
+Make sure MetaMask is set to the **Sepolia** network (chain ID `11155111`) before confirming. If you're on another network, the deployment will revert or land on the wrong chain. Also confirm your wallet has enough testnet ETH to cover gas — check a [Sepolia faucet](/resources/link-token-contracts/#sepolia-testnet) if needed.

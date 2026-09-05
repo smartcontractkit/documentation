@@ -1,11 +1,11 @@
 ---
 section: dataFeeds
 date: Last Modified
-title: "Getting Started with Data Feeds"
+title: "Getting Started with Data Feeds (using Hardhat)"
 metadata:
-  title: "Getting Started with Chainlink Data Feeds — Foundry"
-  description: "Read Chainlink Data Feeds using the Foundry CLI. Deploy a consumer contract on Sepolia with forge, read the BTC/USD price feed onchain, and read feeds offchain with cast call."
-  excerpt: "Deploy a consumer contract with forge and read Data Feeds with cast"
+  title: "Getting Started with Chainlink Data Feeds — Hardhat"
+  description: "Read Chainlink Data Feeds in a smart contract using Hardhat. Deploy a consumer contract on Sepolia with ethers.js, read the BTC/USD price feed onchain, and read feeds offchain from a script."
+  excerpt: "Deploy a consumer contract with Hardhat and read Data Feeds onchain and offchain"
   image: "/files/1a63254-link.png"
   difficulty: "beginner"
   estimatedTime: "15 minutes"
@@ -68,9 +68,18 @@ If you are new to smart contract development, complete the [Deploy Your First Sm
 
 You will need:
 
-- [Foundry](https://book.getfoundry.sh/getting-started/installation) installed (`forge`, `cast`).
-- A funded wallet with its private key on the **Sepolia** testnet that will be used as your deployer. Get testnet ETH from a [Sepolia faucet](/resources/link-token-contracts/#sepolia-testnet).
+- [Node.js](https://nodejs.org/) v22.13.0 or later (required by Hardhat 3).
+- A funded wallet on the **Sepolia** testnet. Get testnet ETH from a [Sepolia faucet](/resources/link-token-contracts/#sepolia-testnet).
 - A Sepolia RPC URL (e.g. from a [node provider](https://ethereum.org/en/developers/docs/nodes-and-clients/nodes-as-a-service/)).
+- A funded deployer private key for Sepolia.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Keep your private key safe">
+  Never commit your private key to version control or hardcode it in a script. This guide uses Hardhat 3
+  [configuration variables](https://hardhat.org/docs/guides/configuration-variables), which read secrets from
+  environment variables or an encrypted keystore — no `.env` file required. If you do use a `.env` file, add it to
+  your `.gitignore`.
+</Aside>
 
 {/* prettier-ignore */}
 <Aside type="note" title="Why a proxy?">
@@ -86,20 +95,74 @@ Before we even begin, we need to know the address of the feed we want to read. T
 
 ## Retrieving the price data from the feed
 
-<Accordion title="Fetching price data offchain" number={1}>
-You can read Data Feeds directly from the feed proxy without deploying any consumer contract. This is useful for backends, bots, dashboards, and pre-trade checks. Meaning it's as simple as just calling the feed proxy contract and reading the latest answer.
+<Accordion title="Fetching price data offchain" number={1} contentReference="read-offchain">
+You can read Data Feeds directly from the feed proxy without deploying any consumer contract. This is useful for backends, bots, dashboards, and pre-trade checks.  Meaning it's as simple as just calling the feed proxy contract and reading the latest answer.
 
-With Foundry, you can read the latest answer with a single `cast call` against the feed proxy at <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code/>:
+<Accordion title="Using a standalone ethers.js script (no Hardhat project needed)" number={1.1}>
 
-```bash
-cast call 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43 "latestRoundData()(uint80,int256,uint256,uint256,uint80)" --rpc-url $SEPOLIA_RPC_URL
-```
-
-Read the decimals so you can scale the answer:
+Install ethers in an empty directory:
 
 ```bash
-cast call 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43 "decimals()(uint8)" --rpc-url $SEPOLIA_RPC_URL
+npm install ethers
 ```
+
+Save the following snippet below as `readFeed.js`:
+
+```javascript
+const { ethers } = require("ethers")
+
+const provider = new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL)
+const feed = new ethers.Contract(
+  "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43",
+  [
+    "function latestRoundData() view returns (uint80, int256, uint256, uint256, uint80)",
+    "function decimals() view returns (uint8)",
+  ],
+  provider
+)
+
+async function main() {
+  const { answer } = await feed.latestRoundData()
+  const decimals = await feed.decimals()
+  console.log("Latest answer (raw):", answer.toString())
+  console.log("Price (USD):", Number(answer) / 10 ** Number(decimals))
+}
+
+main().catch(console.error)
+```
+
+Run it with your Sepolia RPC URL:
+
+```bash
+SEPOLIA_RPC_URL=your_sepolia_rpc_url node readFeed.js
+```
+
+</Accordion>
+
+<Accordion title="Using the Hardhat console (if you already have a Hardhat project set up)" number={1.2}>
+
+```bash
+npx hardhat console --network sepolia
+```
+
+In Hardhat 3, obtain `ethers` from `network.create()` first, then read the feed directly from the proxy:
+
+```javascript
+const { ethers } = await network.create()
+const feed = await ethers.getContractAt(
+  [
+    "function latestRoundData() view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)",
+    "function decimals() view returns (uint8)",
+  ],
+  "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43"
+)
+const { answer } = await feed.latestRoundData()
+const decimals = await feed.decimals()
+console.log("Latest answer (raw):", answer.toString())
+console.log("Price (USD):", Number(answer) / 10 ** Number(decimals))
+```
+
+</Accordion>
 
 The BTC / USD feed returns `8` for decimals. Divide the raw integer answer by `10 ** decimals` to get the human-readable price. For example, an answer of `3030914000000` with 8 decimals is `30309.14` USD.
 
@@ -113,7 +176,7 @@ The example contract below reads the latest answer from the [BTC / USD feed](/da
 
 {/* <CodeSample src="samples/DataFeeds/DataConsumerV3.sol"/> */}
 
-```solidity filename='src/DataFeeds/DataConsumerV3.sol'
+```solidity filename='contracts/DataFeeds/DataConsumerV3.sol'
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
@@ -180,152 +243,190 @@ The contract has the following components:
 
 </Accordion>
 
-<Accordion title="Set up a Foundry project" number={2.2}>
+<Accordion title="Set up a Hardhat project" number={2.2}>
 
-1. Create a new Foundry project and add the Chainlink contracts dependency:
+1. Create a new Hardhat 3 project and initialize it with the Mocha + Ethers.js template:
 
    ```bash
-   forge init data-feeds-quickstart
+   mkdir data-feeds-quickstart
    cd data-feeds-quickstart
-   forge install smartcontractkit/chainlink-evm@contracts-v1.5.0
+   npm init -y
+   npm install --save-dev hardhat
+   npx hardhat --init --template mocha-ethers
    ```
 
-1. Add this remapping to `remappings.txt` so Solidity can resolve `@chainlink/contracts`:
-
-   ```text
-   @chainlink/contracts/=lib/chainlink-evm/contracts/
-   ```
-
-   You can write it with a single command:
+1. Install the Chainlink contracts npm package:
 
    ```bash
-   echo '@chainlink/contracts/=lib/chainlink-evm/contracts/' > remappings.txt
+   npm install @chainlink/contracts
    ```
+
+   Hardhat resolves `@chainlink/contracts` from `node_modules` automatically — no remapping file needed (unlike Foundry).
 
 1. Create the directories for the sample consumer contract and deploy script:
 
    ```bash
-   mkdir -p src/DataFeeds script/DataFeeds
+   mkdir -p contracts/DataFeeds scripts/DataFeeds
    ```
 
 1. Create the following files and paste in the code from the rendered code blocks on this page:
 
-   - Create `src/DataFeeds/DataConsumerV3.sol` and paste in the contract from [Step 2.1: Examine the sample contract](#examine-the-sample-contract).
-   - Create `script/DataFeeds/DeployAndReadDataConsumerV3.s.sol` and paste in the script from [Step 2.3: Deploy the contract with a Forge script](#deploy-with-forge-script).
+   - Create `contracts/DataFeeds/DataConsumerV3.sol` and paste in the contract from [Step 2.1: Examine the sample contract](#examine-the-sample-contract).
+   - Create `scripts/DataFeeds/DeployAndReadDataConsumerV3.js` and paste in the script from [Step 2.3: Deploy the contract with a Hardhat script](#deploy-with-hardhat-script).
 
-   Make sure the filenames match exactly — Foundry looks for the contract in `src/` and the script in `script/`.
+   Make sure the filenames match exactly — Hardhat looks for the contract in `contracts/` and the script in `scripts/`.
+
+1. Configure your `hardhat.config.ts` to compile the Chainlink contracts and use Sepolia. Replace its contents with:
+
+   ```typescript filename='hardhat.config.ts'
+   import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers"
+   import { configVariable, defineConfig } from "hardhat/config"
+
+   export default defineConfig({
+     plugins: [hardhatToolboxMochaEthersPlugin],
+     solidity: {
+       profiles: {
+         default: {
+           version: "0.8.28",
+         },
+         production: {
+           version: "0.8.28",
+           settings: {
+             optimizer: { enabled: true, runs: 200 },
+           },
+         },
+       },
+     },
+     networks: {
+       hardhatMainnet: {
+         type: "edr-simulated",
+         chainType: "l1",
+       },
+       hardhatOp: {
+         type: "edr-simulated",
+         chainType: "op",
+       },
+       sepolia: {
+         type: "http",
+         chainType: "l1",
+         url: configVariable("SEPOLIA_RPC_URL"),
+         accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
+       },
+     },
+   })
+   ```
+
+1. Set your Sepolia RPC URL and deployer private key as environment variables (or store them in the Hardhat keystore as noted above):
+
+   ```bash
+   export SEPOLIA_RPC_URL=your_sepolia_rpc_url
+   export SEPOLIA_PRIVATE_KEY=your_deployer_private_key
+   ```
 
 1. Verify the project compiles:
 
    ```bash
-   forge build
+   npx hardhat compile
    ```
 
-   You should see `Compiler run successful`. If you see an import error, double-check the `remappings.txt` line from step 2.
+   You should see `Compiled 2 Solidity files with solc 0.8.28`. If you see an import error, check that `@chainlink/contracts` is installed (step 2) and that the contract is under `contracts/`.
 
 </Accordion>
 
-<Accordion title="Deploy the contract with a Forge script" number={2.3} contentReference="deploy-with-forge-script">
+<Accordion title="Deploy the contract with a Hardhat script" number={2.3} contentReference="deploy-with-hardhat-script">
 
-The deploy script (`script/DataFeeds/DeployAndReadDataConsumerV3.s.sol`) deploys `DataConsumerV3` and immediately reads the latest price through it. For reference, here is the script:
+The deploy script (`scripts/DataFeeds/DeployAndReadDataConsumerV3.js`) deploys `DataConsumerV3` and immediately reads the latest price through it. For reference, here is the script:
 
-{/* <CodeSample src="samples/DataFeeds/Foundry/DeployAndReadDataConsumerV3.s.sol" /> */}
+{/* <CodeSample src="samples/DataFeeds/Hardhat/DeployAndReadDataConsumerV3.js" /> */}
 
-```solidity filename='script/DataFeeds/DeployAndReadDataConsumerV3.s.sol'
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
-
-/* solhint-disable no-console */
-
-import {DataConsumerV3} from "../../src/DataFeeds/DataConsumerV3.sol";
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
-import {Script} from "forge-std/Script.sol";
-import {console2} from "forge-std/console2.sol";
+```javascript filename='scripts/DataFeeds/DeployAndReadDataConsumerV3.js'
+import { network } from "hardhat"
 
 /**
  * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
  * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
  * DO NOT USE THIS CODE IN PRODUCTION.
- *
- * Deploy DataConsumerV3 and read the latest BTC/USD price on Sepolia.
- *
- * Usage:
- *   forge script script/DataFeeds/DeployAndReadDataConsumerV3.s.sol \
- *     --rpc-url $SEPOLIA_RPC_URL \
- *     --broadcast \
- *     --private-key $PRIVATE_KEY
  */
-contract DeployAndReadDataConsumerV3 is Script {
+
+const { ethers } = await network.create()
+
+async function main() {
+  // 1. Deploy the DataConsumerV3 contract
+  const consumer = await ethers.deployContract("DataConsumerV3")
+  await consumer.waitForDeployment()
+
+  const consumerAddress = await consumer.getAddress()
+  console.log("DataConsumerV3 deployed at:", consumerAddress)
+
+  // 2. Read the latest price through the consumer contract
+  const answer = await consumer.getChainlinkDataFeedLatestAnswer()
+  console.log("Latest answer (raw):", answer.toString())
+
+  // 3. Read decimals directly from the feed to scale the answer
   // Sepolia BTC / USD price feed proxy address
-  address public constant SEPOLIA_BTC_USD = 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43;
+  const feedAddress = "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43"
+  const AggregatorV3Interface = [
+    {
+      inputs: [],
+      name: "decimals",
+      outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+      stateMutability: "view",
+      type: "function",
+    },
+  ]
+  const feed = await ethers.getContractAt(AggregatorV3Interface, feedAddress)
+  const decimals = await feed.decimals()
+  console.log("Decimals:", decimals)
 
-  function run() public {
-    vm.startBroadcast();
-
-    // 1. Deploy the consumer contract
-    DataConsumerV3 consumer = new DataConsumerV3();
-    console2.log("DataConsumerV3 deployed at:", address(consumer));
-
-    vm.stopBroadcast();
-
-    // 2. Read the latest price through the consumer
-    int256 answer = consumer.getChainlinkDataFeedLatestAnswer();
-    console2.log("Latest answer (raw):", uint256(answer));
-
-    // 3. Read decimals directly from the feed to scale the answer
-    uint8 decimals = AggregatorV3Interface(SEPOLIA_BTC_USD).decimals();
-    console2.log("Decimals:", decimals);
-    console2.log("Latest price (scaled): %s", _scale(answer, decimals));
-  }
-
-  function _scale(
-    int256 answer,
-    uint8 decimals
-  ) internal pure returns (string memory) {
-    // Convert the integer answer to a human-readable price string.
-    // For 8 decimals, 3030914000000 -> "30309.14000000"
-    uint256 magnitude = uint256(answer);
-    uint256 base = 10 ** decimals;
-    uint256 whole = magnitude / base;
-    uint256 fraction = magnitude % base;
-    return string.concat(vm.toString(whole), ".", vm.toString(fraction));
-  }
+  // 4. Scale and print the human-readable price
+  const scaled = Number(answer) / 10 ** Number(decimals)
+  console.log("Latest price (USD):", scaled)
 }
+
+main().catch((error) => {
+  console.error(error)
+  process.exit(1)
+})
 ```
 
-Run it against Sepolia. Replace `$SEPOLIA_RPC_URL` and `$PRIVATE_KEY` with your own values:
+Run it against Sepolia:
 
 ```bash
-forge script script/DataFeeds/DeployAndReadDataConsumerV3.s.sol \
-  --rpc-url $SEPOLIA_RPC_URL \
-  --broadcast \
-  --private-key $PRIVATE_KEY
+npx hardhat run scripts/DataFeeds/DeployAndReadDataConsumerV3.js --network sepolia
 ```
 
 The script logs the deployed contract address, the raw integer answer, the feed's decimals, and the human-readable price.
 
 Save the deployed contract address for the next step.
 
-{/* prettier-ignore */}
-<Aside type="note" title="Prefer not to broadcast?">
-  Drop `--broadcast` and `--private-key` to run the script in simulation mode. Useful for verifying your setup before
-  spending testnet ETH.
-</Aside>
-
 </Accordion>
 
 <Accordion title="Read the latest price onchain" number={2.4}>
 
-Use `cast call` to read the latest answer through your deployed consumer. Replace `$CONSUMER_ADDRESS` with the address logged by the deploy script:
+Open a Hardhat console against Sepolia:
 
 ```bash
-cast call $CONSUMER_ADDRESS "getChainlinkDataFeedLatestAnswer()(int256)" --rpc-url $SEPOLIA_RPC_URL
+npx hardhat console --network sepolia
+```
+
+In Hardhat 3, obtain `ethers` from `network.create()` at the prompt, then read through your consumer. Replace `0xYOUR_CONSUMER_ADDRESS` with the address the deploy script logged in the previous step:
+
+```javascript
+const { ethers } = await network.create()
+const consumer = await ethers.getContractAt("DataConsumerV3", "0xYOUR_CONSUMER_ADDRESS")
+const answer = await consumer.getChainlinkDataFeedLatestAnswer()
+console.log("Latest answer (raw):", answer.toString())
 ```
 
 Read the feed's decimals directly to scale the answer yourself:
 
-```bash
-cast call 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43 "decimals()(uint8)" --rpc-url $SEPOLIA_RPC_URL
+```javascript
+const feed = await ethers.getContractAt(
+  ["function decimals() view returns (uint8)"],
+  "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43"
+)
+const decimals = await feed.decimals()
+console.log("Decimals:", decimals)
 ```
 
 The BTC / USD feed returns `8` for decimals. To convert the raw integer answer to a human-readable price, divide by `10 ** decimals`. For example, an answer of `3030914000000` with 8 decimals is `30309.14` USD.
@@ -377,7 +478,7 @@ The sample code is unaudited and hardcodes values for clarity. Before production
 
 **Only if another smart contract needs the price onchain.** A consumer contract exists to wrap a feed read in your own contract's logic so that _your other contracts_ can use the price onchain — for collateral checks, settlements, circuit breakers, and so on. The read is atomic with your onchain action and verifiable on the blockchain.
 
-If you only need the price in an offchain system (a backend, bot, dashboard, or pre-trade check), you do **not** need a consumer contract. The feed proxy is a public contract and `latestRoundData()` is a `view` function — anyone can call it directly from a script using `cast` or ethers.js. See [Step 2.5: Read the same feed offchain](#read-offchain) on this page, or the [Hardhat](/data-feeds/getting-started-hardhat) guide.
+If you only need the price in an offchain system (a backend, bot, dashboard, or pre-trade check), you do **not** need a consumer contract. The feed proxy is a public contract and `latestRoundData()` is a `view` function — anyone can call it directly from a script using ethers.js, viem, or `cast`. See [Step 1: Fetching price data offchain](#read-offchain) on this page.
 
 |                                 | Consumer contract (onchain)           | Direct read (offchain)               |
 | ------------------------------- | ------------------------------------- | ------------------------------------ |
