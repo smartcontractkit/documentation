@@ -30,6 +30,7 @@ export type SectionContent = {
   children?: SectionContent[]
   isCollapsible?: boolean
   chainTypes?: ChainType[]
+  openInNewTab?: boolean
 }
 
 /**
@@ -82,6 +83,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         { title: "Architecture", url: "ace/concepts/architecture" },
         { title: "Key Terms", url: "ace/concepts/key-terms" },
         { title: "Signing & Ownership Model", url: "ace/concepts/signing-ownership" },
+        { title: "Security Model", url: "ace/concepts/security" },
         {
           title: "Policy Management",
           url: "ace/concepts/policy-management",
@@ -94,7 +96,119 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     },
     {
       section: "Getting Started",
-      contents: [{ title: "Get Access", url: "ace/getting-started" }],
+      contents: [
+        { title: "Getting Started with ACE", url: "ace/getting-started" },
+        { title: "Account Setup", url: "ace/getting-started/account-setup" },
+        { title: "Policy Manager Quick Start", url: "ace/getting-started/policy-manager" },
+        { title: "Identity Manager Quick Start", url: "ace/getting-started/identity-manager" },
+      ],
+    },
+    {
+      section: "Guides",
+      contents: [
+        {
+          title: "Policy Manager",
+          url: "ace/guides/policy-manager",
+          children: [
+            {
+              title: "Making Your Contract ACE-Compatible",
+              url: "ace/guides/policy-manager/contracts/ace-compatible",
+              children: [
+                {
+                  title: "Building a New Contract",
+                  url: "ace/guides/policy-manager/contracts/new-contract",
+                  children: [
+                    {
+                      title: "Building an ERC-20 Token",
+                      url: "ace/guides/policy-manager/contracts/erc20-token",
+                    },
+                    {
+                      title: "Building an ERC-3643 Token",
+                      url: "ace/guides/policy-manager/contracts/erc3643-token",
+                    },
+                  ],
+                },
+                {
+                  title: "Upgrading Existing Contracts",
+                  url: "ace/guides/policy-manager/contracts/upgrade-existing",
+                },
+                {
+                  title: "Security Considerations",
+                  url: "ace/guides/policy-manager/contracts/security-considerations",
+                },
+              ],
+            },
+            {
+              title: "Managing Policy Engines",
+              url: "ace/guides/policy-manager/manage-engines",
+            },
+            {
+              title: "Managing Targets",
+              url: "ace/guides/policy-manager/manage-targets",
+            },
+            {
+              title: "Managing Policies",
+              url: "ace/guides/policy-manager/manage-policies",
+            },
+            {
+              title: "Protecting Target Functions",
+              url: "ace/guides/policy-manager/manage-protections",
+            },
+            {
+              title: "Managing Data Validators",
+              url: "ace/guides/policy-manager/manage-data-validators",
+            },
+            {
+              title: "Custom Policies",
+              url: "ace/guides/policy-manager/custom-policies",
+            },
+            {
+              title: "Offchain Policies",
+              url: "ace/guides/policy-manager/offchain-policies",
+              children: [
+                {
+                  title: "Managing Offchain Policies (MVP)",
+                  url: "ace/guides/policy-manager/offchain-policies/manage-offchain-policies",
+                },
+                {
+                  title: "Requesting Offchain Permits",
+                  url: "ace/guides/policy-manager/offchain-policies/request-offchain-permits",
+                },
+                {
+                  title: "Granting Evaluation Access",
+                  url: "ace/guides/policy-manager/offchain-policies/grant-evaluation-access",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          title: "Identity Manager",
+          url: "ace/guides/identity-manager",
+          children: [
+            {
+              title: "Managing Registries",
+              url: "ace/guides/identity-manager/manage-registries",
+            },
+            {
+              title: "Managing Identities",
+              url: "ace/guides/identity-manager/manage-identities",
+            },
+            {
+              title: "Managing Credential Types",
+              url: "ace/guides/identity-manager/manage-credential-types",
+            },
+            {
+              title: "Managing Credentials",
+              url: "ace/guides/identity-manager/manage-credentials",
+            },
+            {
+              title: "External Registries",
+              url: "ace/guides/identity-manager/external-registries",
+            },
+          ],
+        },
+      ],
     },
     {
       section: "Reference",
@@ -146,10 +260,23 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "APIs",
+          url: "ace/reference/apis",
           children: [
-            { title: "Coordinator API", url: "ace/reference/api/coordinator" },
-            { title: "Evaluation API", url: "ace/reference/api/evaluation" },
-            { title: "Reporting API", url: "ace/reference/api/reporting" },
+            {
+              title: "Coordinator API",
+              url: "api/ace/coordinator/docs",
+              openInNewTab: true,
+            },
+            {
+              title: "Evaluation API (MVP)",
+              url: "api/ace/evaluation/docs",
+              openInNewTab: true,
+            },
+            {
+              title: "Reporting API",
+              url: "api/ace/reporting/docs",
+              openInNewTab: true,
+            },
           ],
         },
       ],

@@ -1,0 +1,220 @@
+---
+section: ace
+title: "Protecting Target Functions"
+date: Last Modified
+metadata:
+  description: "Create, view, update, and archive target protections to bind policy instances to specific contract functions in Chainlink ACE using the Platform UI or the Coordinator API."
+  datePublished: "2026-04-06"
+  lastModified: "2026-05-26"
+---
+
+import { Aside, MethodTabs } from "@components"
+
+A **target protection** is the link between a [policy instance](/ace/guides/policy-manager/manage-policies) and a specific function on a [target contract](/ace/guides/policy-manager/manage-targets). When a user calls the protected function, the policy engine evaluates the bound policies in order and decides whether to allow or reject the transaction. Target protections are the final step in setting up on-chain compliance enforcement.
+
+## Prerequisites
+
+Before creating a target protection, you need:
+
+1. A [policy engine](/ace/guides/policy-manager/manage-engines) deployed on your target chains.
+1. A [target contract](/ace/guides/policy-manager/manage-targets) registered under that engine.
+1. A [policy instance](/ace/guides/policy-manager/manage-policies) created from a policy implementation and associated with the same engine.
+1. Extractors attached to the engine that support the function signatures you want to protect (see the [Policy Manager Quick Start](/ace/getting-started/policy-manager#extractor-ids-for-api-creation) for the full list).
+
+## Create a target protection
+
+A protection binds a policy instance to a specific function on your target contract. Once created, every call to that function is evaluated against the policy.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager** in the left sidebar.
+    1. Click on the policy engine that manages your target contract.
+    1. In the **Contracts** tab, click on the target contract you want to protect.
+    1. Click the **Attach Policy** button.
+    1. **Step 1 — Select policy:** Choose the policy type and the specific policy instance you want to use.
+    1. **Step 2 — Define protected functions:** Use the **Contract functions** dropdown to select a function to protect. For each function, choose the **Execution order**:
+       - **Last (default)** — the policy is added at the end of the evaluation chain.
+       - **First** — the policy is evaluated before all other policies on this function.
+
+       To protect multiple functions with the same policy, click **Add more** and repeat for each function.
+
+       <Aside type="tip">
+         Execution order matters when multiple policies protect the same function. Policies are evaluated sequentially — if an
+         earlier policy rejects, the transaction is reverted immediately. See [Policy Ordering & Composition](/ace/concepts/policy-ordering)
+         for guidance on composing effective rulesets.
+       </Aside>
+
+    1. **Step 3 — Review and deploy:** Confirm your selections and deploy the protection.
+
+  </Fragment>
+  <Fragment slot="api">
+    Create a target protection with a `POST` request:
+
+    ```bash
+    curl -X POST https://ace.api.chain.link/v1/targets/<TARGET_ID>/protections \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "function_signature": "transfer(address,uint256)",
+        "policy_instance_id": "<POLICY_ID>",
+        "desired_position": 0,
+        "extractor_output_ids": [
+          "<EXTRACTOR_OUTPUT_ID_FOR_ACCOUNT>",
+          "<EXTRACTOR_OUTPUT_ID_FOR_AMOUNT>"
+        ],
+        "onchain_target_protections": [
+          { "chain_selector": "16015286601757825753" }
+        ]
+      }'
+    ```
+
+    | Field | Required | Description |
+    | --- | --- | --- |
+    | `function_signature` | Yes | The function to protect (e.g., `transfer(address,uint256)`) |
+    | `policy_instance_id` | Yes | UUID of the policy instance to bind |
+    | `desired_position` | No | Evaluation order (0 is first). Determines where in the policy chain this policy runs |
+    | `extractor_output_ids` | No | Array of extractor output UUIDs mapping extracted calldata to the policy's parameters |
+    | `onchain_target_protections` | No | Array of objects with `chain_selector` to specify deployment chains |
+
+    Each on-chain protection starts in `creation_pending` status until the `AddPolicy` call completes. The combination of policy instance, target, and function selector must be unique.
+
+  </Fragment>
+</MethodTabs>
+
+## Position and evaluation order
+
+The `desired_position` determines the order in which policies are evaluated when a protected function is called:
+
+- **Position 0** is evaluated first.
+- Policies are evaluated sequentially. If a policy returns **Reject**, the transaction is reverted immediately and remaining policies are not evaluated.
+- If all policies return **Allow**, or if no policy explicitly rejects, the `desired_default_allow` setting on the [target](/ace/guides/policy-manager/manage-targets#default-allow-behavior) determines the outcome.
+
+For detailed information on composing effective rulesets, see [Policy Ordering & Composition](/ace/concepts/policy-ordering).
+
+## View protections
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager** in the left sidebar.
+    1. Click on the policy engine, then click on the target contract.
+    1. Choose one of two views:
+       - **Functions** — groups protections by function. You see two sections: **Unprotected functions** (no policies attached) and **Protected functions** (with the policies protecting each function and their deployment status).
+       - **Policies** — groups protections by policy instance. Each policy card shows which functions it protects.
+
+       You can also filter by **Policy** or **Status** using the dropdowns at the top.
+
+  </Fragment>
+  <Fragment slot="api">
+    List all protections for a target:
+
+    ```bash
+    curl https://ace.api.chain.link/v1/targets/<TARGET_ID>/protections \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    | Parameter | Description |
+    | --- | --- |
+    | `page` | Page number (default: 1) |
+    | `page_size` | Results per page (max: 100) |
+    | `include_onchains` | Include per-chain deployment details (default: true) |
+    | `function_signature` | Filter by function signature |
+    | `policy_instance_id` | Filter by policy instance |
+    | `status` | Filter by on-chain status (`creation_pending`, `created`, `removal_pending`, etc.) |
+
+    To retrieve a specific protection:
+
+    ```bash
+    curl https://ace.api.chain.link/v1/targets/<TARGET_ID>/protections/<PROTECTION_ID> \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+## Manage an existing protection
+
+From the **Functions** or **Policies** view on your target contract (see [View protections](#view-protections) above), click on a policy instance to open a detail drawer. From there you can:
+
+- **Detach policy** — removes the protection so the policy no longer evaluates this function (see [Archive a protection](#archive-a-protection) below).
+- **Edit instance** — opens the policy instance configuration (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)).
+
+### Extend a protection to additional chains
+
+If you created a protection on one chain and later want it to apply on additional chains, you can extend it via the API.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    <Aside type="note">
+      When you attach a policy through the UI, the protection is automatically created on all chains where both the target
+      contract and the policy instance are deployed. To extend a protection to a chain added later, use the **API** tab.
+    </Aside>
+  </Fragment>
+  <Fragment slot="api">
+    Extend a protection to additional chains with a `PUT` request:
+
+    ```bash
+    curl -X PUT https://ace.api.chain.link/v1/targets/<TARGET_ID>/protections/<PROTECTION_ID> \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "onchain_target_protections": [
+          { "chain_selector": "16015286601757825753" },
+          { "chain_selector": "3478487238524512106" }
+        ]
+      }'
+    ```
+
+    <Aside type="note">
+      The function, policy instance, and evaluation order on a protection are immutable. To change those, archive the
+      existing protection and create a new one.
+    </Aside>
+
+  </Fragment>
+</MethodTabs>
+
+### Archive a protection
+
+Archiving a protection unbinds the policy from the function. Once archived, the policy no longer evaluates transactions on that function.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. From the **Functions** or **Policies** view on your target contract, click on the policy instance you want to detach.
+    1. In the detail drawer, click **Detach policy**.
+  </Fragment>
+  <Fragment slot="api">
+    Archive a protection with a `PATCH` request:
+
+    ```bash
+    curl -X PATCH https://ace.api.chain.link/v1/targets/<TARGET_ID>/protections/<PROTECTION_ID> \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "status": "archived"
+      }'
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+<Aside type="note">
+  Protections must be archived before their parent [policy](/ace/guides/policy-manager/manage-policies#archive-a-policy)
+  or [target](/ace/guides/policy-manager/manage-targets#archive-a-target) can be archived. Always archive protections
+  first in the dependency chain.
+</Aside>
+
+## Archival dependency chain
+
+ACE enforces an ordered archival flow. You must archive resources from the outside in:
+
+1. **Target protections** — archive these first
+1. **Policy instances** — archive after all protections referencing them are archived
+1. **Targets** — archive after all protections on the target are archived
+1. **Policy engines** — archive after all policies in the engine are archived
+
+## Related pages
+
+- [Policy Ordering & Composition](/ace/concepts/policy-ordering) — how evaluation order affects transaction outcomes
+- [Managing Policy Engines](/ace/guides/policy-manager/manage-engines) — create the engine that manages policies
+- [Managing Targets](/ace/guides/policy-manager/manage-targets) — register contracts to protect
+- [Managing Policies](/ace/guides/policy-manager/manage-policies) — create and configure policy instances
+- [Coordinator API Reference](/api/ace/coordinator/docs) — full API schema

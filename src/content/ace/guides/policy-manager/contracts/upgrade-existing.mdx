@@ -1,0 +1,535 @@
+---
+section: ace
+title: "Upgrading Existing Contracts"
+date: Last Modified
+metadata:
+  description: "Add Chainlink ACE compliance to an already-deployed smart contract: storage safety with ERC-7201, two integration approaches, step-by-step instructions, alternatives for non-upgradeable contracts, and FAQ."
+  datePublished: "2026-03-31"
+  lastModified: "2026-05-26"
+---
+
+import { Aside } from "@components"
+
+This guide explains how to add ACE compliance to a contract that is already deployed. The process is a standard proxy upgrade — your existing state (balances, allowances, mappings) is fully preserved, your contract address stays the same, and all existing integrations continue to work.
+
+<Aside type="note" title="Plan ahead for production">
+  ACE Beta is available on [supported mainnet and testnet networks](/ace/supported-networks), so most teams will [build
+  new contracts](/ace/guides/policy-manager/contracts/new-contract) to experiment before upgrading existing production
+  contracts. This guide helps you plan ahead: upgrading production contracts is straightforward with multiple paths
+  depending on your constraints.
+</Aside>
+
+<Aside type="note" title="ACE Beta: supported contract types">
+  During Beta, the platform provides pre-built extractors for ERC-20 and ERC-3643 function signatures only. If you are
+  upgrading a contract with different function signatures, custom extractors are required but [not available through the
+  platform in Beta](/ace/beta-scope#no-custom-extractors-or-mappers).
+</Aside>
+
+## Prerequisites
+
+Before starting, you should be familiar with:
+
+- [ACE Architecture](/ace/concepts/architecture) — how PolicyEngine, policies, and extractors work together
+- [Policy Management](/ace/concepts/policy-management) — the execution model and policy outcomes
+
+### Your contract must be upgradeable
+
+This guide covers contracts deployed behind a proxy pattern — UUPS, Transparent Proxy, or Beacon Proxy. You need upgrade authority over the contract.
+
+If your contract is **not upgradeable**, see [Alternatives for non-upgradeable contracts](#alternatives-for-non-upgradeable-contracts) below.
+
+## Key concept: Storage safety with ERC-7201
+
+When upgrading a contract, new variables must not overwrite existing state. `PolicyProtectedUpgradeable` uses [ERC-7201 namespaced storage](https://eips.ethereum.org/EIPS/eip-7201), which isolates all ACE data in a deterministic storage slot that cannot collide with your existing storage layout.
+
+```solidity
+bytes32 private constant STORAGE_LOCATION =
+    keccak256(abi.encode(uint256(keccak256("chainlink.ace.PolicyProtected")) - 1))
+    & ~bytes32(uint256(0xff));
+```
+
+This formula produces a storage location that is guaranteed not to overlap with Solidity's default sequential storage layout. Your existing balances, allowances, and other state remain untouched.
+
+## Choosing your approach
+
+There are two ways to integrate ACE into an upgradeable contract:
+
+| Aspect                    | Approach 1: Extend PolicyProtectedUpgradeable | Approach 2: Implement IPolicyProtected      |
+| ------------------------- | --------------------------------------------- | ------------------------------------------- |
+| **Bytecode impact**       | +5-6 KB                                       | +1-2 KB                                     |
+| **Implementation effort** | Add inheritance + modifiers                   | Write storage, context, and execution logic |
+| **Maintenance**           | Inherits ACE updates automatically            | You maintain all custom code                |
+| **Risk**                  | Lower — proven patterns                       | Higher — custom code means custom bugs      |
+
+**Recommendation:** Use Approach 1 unless your contract is near the 24 KB bytecode limit or you need custom control over how context is stored or policies are executed.
+
+## Approach 1: Extend PolicyProtectedUpgradeable (recommended)
+
+This approach inherits from `PolicyProtectedUpgradeable`, which provides built-in modifiers and automatic storage management.
+
+### Step 1: Update contract inheritance
+
+Add `PolicyProtectedUpgradeable` to your inheritance chain.
+
+**Before:**
+
+```solidity
+import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+
+contract MyToken is Initializable, ERC20Upgradeable, OwnableUpgradeable {
+    // ...
+}
+```
+
+**After:**
+
+```solidity
+import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {PolicyProtectedUpgradeable} from "@chainlink/policy-management/core/PolicyProtectedUpgradeable.sol";
+
+contract MyToken is PolicyProtectedUpgradeable, ERC20Upgradeable, UUPSUpgradeable {
+    // ...
+}
+```
+
+<Aside type="caution" title="Inheritance conflict">
+  `PolicyProtectedUpgradeable` already inherits from `Initializable` and `OwnableUpgradeable`. If your contract
+  explicitly lists these, remove them from your inheritance to avoid a "Linearization of inheritance graph impossible"
+  error.
+</Aside>
+
+### Step 2: Add a migration function
+
+Your original `initialize()` has already been called, so you cannot modify it. Instead, add a migration function using `reinitializer`:
+
+```solidity
+function migrateToACE(address policyEngine) public reinitializer(2) onlyOwner {
+    __PolicyProtected_init_unchained(policyEngine);
+}
+```
+
+`reinitializer(2)` ensures this migration runs exactly once (version 1 was your original `initialize()`). If you have had previous upgrades with reinitializers, increment the version accordingly.
+
+`__PolicyProtected_init_unchained()` stores the PolicyEngine address in namespaced storage and registers your contract with the PolicyEngine.
+
+<Aside type="note" title="Where does the PolicyEngine address come from?">
+  During ACE Beta, you receive the PolicyEngine address from the ACE Platform after Chainlink deploys your
+  infrastructure. Use this address as the `policyEngine` argument when calling `migrateToACE()`.
+</Aside>
+
+If you need to switch to a different PolicyEngine later, call `attachPolicyEngine(newAddress)` (owner-only).
+
+### Step 3: Add runPolicy to protected functions
+
+Add the `runPolicy` modifier to each function that should be subject to policy checks.
+
+**Before:**
+
+```solidity
+function mint(address to, uint256 amount) public onlyOwner {
+    _mint(to, amount);
+}
+
+function transfer(address to, uint256 amount) public virtual override returns (bool) {
+    return super.transfer(to, amount);
+}
+```
+
+**After:**
+
+```solidity
+function mint(address to, uint256 amount) public runPolicy {
+    _mint(to, amount);
+}
+
+function transfer(address to, uint256 amount) public virtual override runPolicy returns (bool) {
+    return super.transfer(to, amount);
+}
+```
+
+Access control (restricting who can mint, for example) is now enforced through policies rather than traditional `onlyOwner` modifiers. This lets you change access rules by updating policies without upgrading the contract.
+
+For functions that need additional data passed to policies (signatures, proofs), use `runPolicyWithContext`:
+
+```solidity
+function forceTransfer(
+    address from,
+    address to,
+    uint256 amount,
+    bytes calldata context
+) public runPolicyWithContext(context) {
+    _update(from, to, amount);
+}
+```
+
+### Complete before/after example
+
+**Before (standard upgradeable ERC-20):**
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.27;
+
+import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+
+contract MyToken is Initializable, ERC20Upgradeable, OwnableUpgradeable, UUPSUpgradeable {
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(address initialOwner) public initializer {
+        __ERC20_init("MyToken", "MTK");
+        __Ownable_init(initialOwner);
+    }
+
+    function mint(address to, uint256 amount) public onlyOwner {
+        _mint(to, amount);
+    }
+
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+}
+```
+
+**After (with ACE integration):**
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.27;
+
+import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {PolicyProtectedUpgradeable} from "@chainlink/policy-management/core/PolicyProtectedUpgradeable.sol";
+
+contract MyToken is PolicyProtectedUpgradeable, ERC20Upgradeable, UUPSUpgradeable {
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(address initialOwner) public initializer {
+        __ERC20_init("MyToken", "MTK");
+        __Ownable_init(initialOwner);
+    }
+
+    function migrateToACE(address policyEngine) public reinitializer(2) onlyOwner {
+        __PolicyProtected_init_unchained(policyEngine);
+    }
+
+    function mint(address to, uint256 amount) public runPolicy {
+        _mint(to, amount);
+    }
+
+    function transfer(address to, uint256 amount)
+        public
+        virtual
+        override
+        runPolicy
+        returns (bool)
+    {
+        return super.transfer(to, amount);
+    }
+
+    function transferFrom(address from, address to, uint256 amount)
+        public
+        virtual
+        override
+        runPolicy
+        returns (bool)
+    {
+        return super.transferFrom(from, to, amount);
+    }
+
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+}
+```
+
+**Key changes:**
+
+1. Import and inherit `PolicyProtectedUpgradeable` (remove explicit `Initializable` and `OwnableUpgradeable` — they are inherited through `PolicyProtectedUpgradeable`).
+2. Add `migrateToACE()` with `reinitializer(2)`.
+3. Add `runPolicy` to functions that need policy protection.
+
+## Approach 2: Implement IPolicyProtected (advanced)
+
+If your contract is near the 24 KB bytecode limit or you need custom control over policy execution, you can implement the `IPolicyProtected` interface directly instead of inheriting from `PolicyProtectedUpgradeable`. This adds only ~1-2 KB of bytecode but requires more code.
+
+### What you must implement
+
+You are responsible for:
+
+1. **Storage** — Storing the PolicyEngine address and per-sender context using ERC-7201 namespaced storage.
+2. **Policy execution** — Calling `policyEngine.run()` with the correct payload in each protected function.
+3. **Context handling** — Storing, retrieving, and clearing context data.
+4. **Registration** — Attaching to and detaching from the PolicyEngine.
+5. **ERC-165 support** — Implementing `supportsInterface()`.
+
+### Interface methods
+
+```solidity
+interface IPolicyProtected {
+    function attachPolicyEngine(address policyEngine) external;
+    function getPolicyEngine() external view returns (address);
+    function setContext(bytes calldata context) external;
+    function getContext() external view returns (bytes memory);
+    function clearContext() external;
+}
+```
+
+| Method               | Purpose                                         |
+| -------------------- | ----------------------------------------------- |
+| `attachPolicyEngine` | Registers your contract with a PolicyEngine     |
+| `getPolicyEngine`    | Returns the current PolicyEngine address        |
+| `setContext`         | Stores context data for the next protected call |
+| `getContext`         | Retrieves stored context for the current caller |
+| `clearContext`       | Clears context after use to prevent replay      |
+
+### Implementation skeleton
+
+The following skeleton shows the key pieces for an ERC-20 token. It uses the same migration pattern as Approach 1, but all ACE logic is implemented manually.
+
+```solidity
+import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {IPolicyProtected} from "@chainlink/policy-management/interfaces/IPolicyProtected.sol";
+import {IPolicyEngine} from "@chainlink/policy-management/interfaces/IPolicyEngine.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+
+contract MyToken is ERC20Upgradeable, OwnableUpgradeable, UUPSUpgradeable, IPolicyProtected {
+
+    // --- ERC-7201 Namespaced Storage ---
+
+    struct ACEStorage {
+        address policyEngine;
+        mapping(address => bytes) senderContext;
+    }
+
+    // Replace with your calculated ERC-7201 storage slot
+    bytes32 private constant ACE_STORAGE_LOCATION = 0x...;
+
+    function _getACEStorage() private pure returns (ACEStorage storage $) {
+        assembly {
+            $.slot := ACE_STORAGE_LOCATION
+        }
+    }
+
+    // --- Migration ---
+
+    function migrateToACE(address policyEngine) public reinitializer(2) onlyOwner {
+        _attachPolicyEngine(policyEngine);
+    }
+
+    // --- IPolicyProtected ---
+
+    function attachPolicyEngine(address policyEngine) external onlyOwner {
+        _attachPolicyEngine(policyEngine);
+    }
+
+    function _attachPolicyEngine(address policyEngine) internal {
+        require(policyEngine != address(0), "Zero address");
+        ACEStorage storage $ = _getACEStorage();
+        $.policyEngine = policyEngine;
+        IPolicyEngine(policyEngine).attach();
+    }
+
+    function getPolicyEngine() public view returns (address) {
+        return _getACEStorage().policyEngine;
+    }
+
+    function setContext(bytes calldata context) external {
+        _getACEStorage().senderContext[msg.sender] = context;
+    }
+
+    function getContext() public view returns (bytes memory) {
+        return _getACEStorage().senderContext[msg.sender];
+    }
+
+    function clearContext() public {
+        delete _getACEStorage().senderContext[msg.sender];
+    }
+
+    function supportsInterface(bytes4 interfaceId) external pure returns (bool) {
+        return interfaceId == type(IPolicyProtected).interfaceId ||
+               interfaceId == type(IERC165).interfaceId;
+    }
+
+    // --- Policy Execution ---
+
+    function _runPolicy() internal {
+        ACEStorage storage $ = _getACEStorage();
+        require($.policyEngine != address(0), "PolicyEngine not set");
+
+        bytes memory context = getContext();
+        IPolicyEngine($.policyEngine).run(
+            IPolicyEngine.Payload({
+                selector: msg.sig,
+                sender: msg.sender,
+                data: msg.data[4:],
+                context: context
+            })
+        );
+
+        if (context.length > 0) {
+            clearContext();
+        }
+    }
+
+    // --- Protected Functions ---
+
+    function transfer(address to, uint256 amount) public virtual override returns (bool) {
+        _runPolicy();
+        return super.transfer(to, amount);
+    }
+
+    // ... other protected functions follow the same pattern
+}
+```
+
+<Aside type="note" title="ERC-7201 storage location">
+  To calculate your storage slot, choose a unique namespace string (e.g., `"mycompany.mytoken.ace.storage"`) and apply
+  the ERC-7201 formula: `keccak256(abi.encode(uint256(keccak256("your.namespace")) - 1)) & ~bytes32(uint256(0xff))`. See
+  `PolicyProtectedUpgradeable.sol` in the [chainlink-ace repository](https://github.com/smartcontractkit/chainlink-ace)
+  for a working reference.
+</Aside>
+
+## Execute the upgrade
+
+At this point your updated implementation contract is ready. You need the PolicyEngine address to proceed.
+
+### Pre-upgrade checklist
+
+**Development:**
+
+- Updated contract compiles successfully
+- Final bytecode is under 24 KB
+- Unit tests pass
+- Integration tests with PolicyEngine pass
+
+**Infrastructure:**
+
+- PolicyEngine address received from the ACE Platform (Beta) or deployed by your team (GA)
+
+### Upgrade execution
+
+Deploy the new implementation, then execute the upgrade and migration in one transaction. The exact pattern depends on your proxy type:
+
+**UUPS:**
+
+```solidity
+bytes memory data = abi.encodeCall(MyToken.migrateToACE, (policyEngineAddress));
+MyToken(proxyAddress).upgradeToAndCall(newImplementationAddress, data);
+```
+
+**Transparent Proxy:**
+
+```solidity
+bytes memory data = abi.encodeCall(MyToken.migrateToACE, (policyEngineAddress));
+ProxyAdmin(proxyAdminAddress).upgradeAndCall(proxyAddress, newImplementationAddress, data);
+```
+
+**Beacon Proxy:**
+
+```solidity
+// Beacon does not support upgradeAndCall — execute separately
+UpgradeableBeacon(beaconAddress).upgradeTo(newImplementationAddress);
+MyToken(proxyAddress).migrateToACE(policyEngineAddress);
+```
+
+### Post-upgrade verification
+
+- `getPolicyEngine()` returns the correct address
+- Protected functions trigger policy checks
+- Policies allow and reject transactions as expected
+- Existing balances, allowances, and other state are unchanged
+
+## Alternatives for non-upgradeable contracts
+
+If your contract is not deployed behind a proxy, a standard upgrade is not possible. Depending on your situation, there are three alternative approaches to bring ACE compliance to your application.
+
+### Wrapped contract
+
+Deploy a new ACE-compatible wrapper contract that sits in front of your original contract. Users interact with the wrapper, which enforces policies before delegating calls to the underlying contract.
+
+**How it works:** The wrapper inherits from `PolicyProtected` and exposes the same external interface as the original contract. Each function on the wrapper calls `runPolicy`, then forwards the call to the original contract. The original contract remains completely untouched.
+
+**When to use:** Your contract's logic does not need to change, but you need compliance checks on interactions with it. Works well for contracts where you can redirect user traffic to a new entry point.
+
+**Tradeoffs:**
+
+- The wrapper has a **different contract address**, so integrators (DEXs, lending protocols, front ends) must update their references.
+- If wrapping a token, users may need to **migrate balances** or **re-approve allowances** to the wrapper.
+- Adds a layer of indirection, which slightly increases gas costs per call.
+
+### Contract migration
+
+Deploy a brand-new ACE-native contract and migrate state from the old contract to the new one. The new contract is built from scratch with `PolicyProtected` integrated from the start.
+
+**How it works:** You take a snapshot of the old contract's state (balances, allowances, roles, etc.) and seed the new contract with that data during deployment or through a claim-based migration. The old contract is then deprecated or paused.
+
+**When to use:** You want no wrapper indirection, no legacy contract to maintain. Particularly suited for tokens where a coordinated migration event is feasible (for example, a token swap or airdrop).
+
+**Tradeoffs:**
+
+- Requires a **coordinated migration event** — all holders and integrators must move to the new contract.
+- The new contract has a **different address**, which affects all downstream integrations.
+- Migration patterns (snapshot + airdrop, or claim-based redemption) add operational complexity.
+- The old contract must be handled (paused, drained, or deprecated) to prevent confusion.
+
+### Edge protection
+
+Instead of modifying your contract, apply ACE policies at the integration points that interact with it — for example, a DEX pool, a bridge, or a lending protocol front end.
+
+**How it works:** The protected contract is not your original contract, but the integration layer. A DEX pool contract or a custom router contract inherits `PolicyProtected` and enforces compliance checks before interacting with your original token or vault. Your contract is never modified.
+
+**When to use:** Modifying the contract is not an option (immutable deployment, no migration path), and you can control the integration points where compliance matters. Works well when compliance is needed at specific boundaries rather than on every direct interaction.
+
+**Tradeoffs:**
+
+- **Does not protect direct contract interactions** — any user who calls your contract directly (bypassing the protected integration point) is not subject to policy checks.
+- Only covers the specific integration points where ACE is applied. Comprehensive coverage requires wrapping all relevant entry points.
+- The original contract's functionality is unchanged, which may be a regulatory concern if direct access remains open.
+
+<Aside type="note" title="Need guidance?">
+  Each of these approaches involves architectural decisions specific to your contract, user base, and regulatory
+  requirements. [Contact the Chainlink team](https://chain.link/ace-early-access) to discuss which option fits your
+  situation.
+</Aside>
+
+## FAQ
+
+### Will this upgrade overwrite my existing state?
+
+No. `PolicyProtectedUpgradeable` uses ERC-7201 namespaced storage, which stores ACE data in an isolated slot. Your existing balances, allowances, and all other state remain untouched.
+
+### What happens to token balances and allowances?
+
+All state is preserved. The upgrade replaces the implementation contract (the code), but all state lives in the proxy's storage and is not affected. Users do not need to re-approve.
+
+### What about tokens held in external contracts (DEXs, protocols)?
+
+Unaffected. Your contract address does not change, so all existing integrations continue working. The only difference is that transactions may revert if policies reject them.
+
+### Can I protect only some functions?
+
+Yes. You only add `runPolicy` to the functions you want to protect. All other functions continue working normally without policy checks.
+
+### Can I update policies after the upgrade?
+
+Yes. Policies can be added, removed, reordered, and reconfigured through the ACE Platform without touching your contract code.
+
+### What if I need to switch to a different PolicyEngine?
+
+Call `attachPolicyEngine(newAddress)` (owner-only). This detaches the old engine and registers your contract with the new one. Once ACE is integrated, a PolicyEngine is always required — you cannot set it to the zero address.
+
+### How many policies can I attach to a single function?
+
+The PolicyEngine supports up to 8 policies per function selector.
+
+### My contract is near the 24 KB bytecode limit. What can I do?
+
+Use [Approach 2](#approach-2-implement-ipolicyprotected-advanced), which adds only ~1-2 KB. You can also enable the Solidity optimizer with higher runs, move logic to external libraries, or split functionality into separate contracts.

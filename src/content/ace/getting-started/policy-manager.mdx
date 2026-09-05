@@ -1,0 +1,277 @@
+---
+section: ace
+title: "Policy Manager Quick Start"
+date: Last Modified
+metadata:
+  description: "Get started as a Policy Manager with Chainlink ACE: create your account, get your PolicyEngine address, integrate your smart contract, configure compliance policies, and test your first policy-protected transaction."
+  datePublished: "2026-04-15"
+  lastModified: "2026-05-26"
+---
+
+import { Aside, MethodTabs } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+This guide walks you through the **Policy Manager** — the ACE component for attaching and configuring compliance policies on smart contracts. By the end you will have a policy-protected contract running on a supported network.
+
+### 1. Prerequisites
+
+- Solidity basics
+- **Must-read before proceeding:** [Signing & Ownership Model](/ace/concepts/signing-ownership) — understand how ACE manages keys, who owns what, and how the delegated trust model works
+
+### 2. Account setup
+
+Complete the [Account Setup](/ace/getting-started/account-setup) steps — organization creation, API key generation, and CRE Connect Wallet deployment — before proceeding.
+
+### 3. Create a PolicyEngine
+
+A **PolicyEngine** is the onchain contract that evaluates compliance rules on your smart contract. When you create a PolicyEngine, you also attach **extractors** — modules that decode transaction calldata so the PolicyEngine can evaluate policies against function arguments (sender, recipient, amount, etc.).
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager**.
+    1. Click **Create a new engine**.
+    1. Complete the three-step wizard:
+       - **Basic details** — enter an engine name and optional description. This metadata is internal and is not written onchain.
+       - **Networks** — select every chain where you want this engine deployed. Only networks enabled in your CRE account appear. Deploy a [CRE Connect Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) on each selected chain before creating the engine.
+       - **Contract types** — select **ERC-20** and/or **ERC-3643**. ACE attaches all pre-built extractors for the selected types automatically — you do not pick individual extractors in the UI.
+    1. Submit the wizard and wait for onchain deployment to complete.
+    1. Open the engine in Policy Manager and confirm its status is **Active**. Click the **gear icon** to copy the onchain PolicyEngine contract address for each network — you need these addresses in the next step.
+
+    For full UI steps, see [Create a policy engine](/ace/guides/policy-manager/manage-engines#create-a-policy-engine).
+
+    <Aside type="note" title="Mainnet access">
+      Mainnet networks are not enabled for all organizations by default. If you do not see mainnet networks in the
+      **Networks** step, contact your Chainlink contact to request access.
+    </Aside>
+
+  </Fragment>
+  <Fragment slot="api">
+    ACE Beta supports two contract types. Attach **all** extractors for your contract type at creation time so you don't have to add more later.
+
+    #### Extractor IDs for API creation
+
+    ##### ERC-20 extractors
+
+    | Extractor                              | ID                                     | Functions covered                                                     |
+    | -------------------------------------- | -------------------------------------- | --------------------------------------------------------------------- |
+    | ERC20TransferExtractor                 | `d4b8cd51-7d5a-487a-9ba5-bb7236e3184c` | `transfer(address,uint256)`, `transferFrom(address,address,uint256)`  |
+    | ERC20ApproveExtractor                  | `572201bb-170b-4fda-ab89-a65b5bbc594b` | `approve(address,uint256)`                                            |
+    | ComplianceTokenMintBurnExtractor       | `245c24a9-6fdd-48e0-a418-725ed0b2056c` | `mint(address,uint256)`, `burnFrom(address,uint256)`, `burn(uint256)` |
+    | ComplianceTokenFreezeUnfreezeExtractor | `89df90a8-7f93-4ce1-9752-c0568062ae41` | `freeze(address,uint256,bytes)`, `unfreeze(address,uint256,bytes)`    |
+    | ComplianceTokenForceTransferExtractor  | `c360c6f1-1df5-43b3-bd53-ad7d4c0bba54` | `forceTransfer(address,address,uint256,bytes)`                        |
+
+    ##### ERC-3643 extractors
+
+    | Extractor                        | ID                                     | Functions covered                                                                |
+    | -------------------------------- | -------------------------------------- | -------------------------------------------------------------------------------- |
+    | ERC20TransferExtractor           | `d4b8cd51-7d5a-487a-9ba5-bb7236e3184c` | `transfer(address,uint256)`, `transferFrom(address,address,uint256)`             |
+    | ERC20ApproveExtractor            | `572201bb-170b-4fda-ab89-a65b5bbc594b` | `approve(address,uint256)`                                                       |
+    | ERC3643MintBurnExtractor         | `f17bbe8b-8462-4dd7-8fb7-a4973dff04fc` | `mint(address,uint256)`, `burn(address,uint256)`                                 |
+    | ERC3643FreezeUnfreezeExtractor   | `a6422540-76fb-46bc-90e2-16cc7b0aaa1e` | `freezePartialTokens(address,uint256)`, `unfreezePartialTokens(address,uint256)` |
+    | ERC3643SetAddressFrozenExtractor | `bd80dda1-fa6c-4028-a26e-a1802ae41ec7` | `setAddressFrozen(address,bool)`                                                 |
+    | ERC3643ForcedTransferExtractor   | `d9015eeb-3345-478f-b2f1-2194b6689078` | `forcedTransfer(address,address,uint256)`                                        |
+
+    <Aside type="tip" title="Listing extractors via the API">
+      You can retrieve the full list of available extractors and their IDs at any time with `GET
+      https://ace.api.chain.link/v1/extractors`. See the [Coordinator API Reference](/api/ace/coordinator/docs) for details.
+    </Aside>
+
+    Use `POST /policy-engines` with the `extractor_ids` for your contract type. Deploy on all available networks upfront to avoid additional updates later (see [Supported Networks](/ace/supported-networks) for chain selectors).
+
+    **For an ERC-20 contract:**
+
+    ```bash
+    curl -X POST https://ace.api.chain.link/v1/policy-engines \
+      -H "Authorization: Apikey <API_KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "My Policy Engine",
+        "description": "Policy engine for my ERC-20 token",
+        "extractor_ids": [
+          "d4b8cd51-7d5a-487a-9ba5-bb7236e3184c",
+          "572201bb-170b-4fda-ab89-a65b5bbc594b",
+          "245c24a9-6fdd-48e0-a418-725ed0b2056c",
+          "89df90a8-7f93-4ce1-9752-c0568062ae41",
+          "c360c6f1-1df5-43b3-bd53-ad7d4c0bba54"
+        ],
+        "onchain_policy_engines": [
+          { "chain_selector": "16015286601757825753" },
+          { "chain_selector": "3478487238524512106" },
+          { "chain_selector": "14767482510784806043" },
+          { "chain_selector": "16281711391670634445" },
+          { "chain_selector": "10344971235874465080" }
+        ]
+      }'
+    ```
+
+    **For an ERC-3643 contract:**
+
+    ```bash
+    curl -X POST https://ace.api.chain.link/v1/policy-engines \
+      -H "Authorization: Apikey <API_KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "My Policy Engine",
+        "description": "Policy engine for my ERC-3643 token",
+        "extractor_ids": [
+          "d4b8cd51-7d5a-487a-9ba5-bb7236e3184c",
+          "572201bb-170b-4fda-ab89-a65b5bbc594b",
+          "f17bbe8b-8462-4dd7-8fb7-a4973dff04fc",
+          "a6422540-76fb-46bc-90e2-16cc7b0aaa1e",
+          "bd80dda1-fa6c-4028-a26e-a1802ae41ec7",
+          "d9015eeb-3345-478f-b2f1-2194b6689078"
+        ],
+        "onchain_policy_engines": [
+          { "chain_selector": "16015286601757825753" },
+          { "chain_selector": "3478487238524512106" },
+          { "chain_selector": "14767482510784806043" },
+          { "chain_selector": "16281711391670634445" },
+          { "chain_selector": "10344971235874465080" }
+        ]
+      }'
+    ```
+
+    The response includes the PolicyEngine `id` and the onchain addresses for each chain:
+
+    ```json
+    {
+      "id": "28755f4d-81c4-4df8-b424-a65782704d89",
+      "name": "My Policy Engine",
+      "type": "standard",
+      "chain_selectors": [
+        "16015286601757825753",
+        "3478487238524512106",
+        "14767482510784806043",
+        "16281711391670634445",
+        "10344971235874465080"
+      ],
+      "onchain_policy_engines": [
+        {
+          "id": "a3f7c2e1-9b04-4d6a-8e5f-1c2d3e4f5a6b",
+          "chain_selector": "16015286601757825753",
+          "address": "0x1234567890abcdef1234567890abcdef12345678",
+          "status": "creation_pending"
+        },
+        {
+          "id": "b4e8d3f2-0c15-4e7b-9f6a-2d3e4f5a6b7c",
+          "chain_selector": "3478487238524512106",
+          "address": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+          "status": "creation_pending"
+        }
+        // ... one entry per chain
+      ],
+      "extractor_registrations": [],
+      "created_at": 1775580000,
+      "updated_at": 1775580000
+    }
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+#### Verify deployment
+
+The PolicyEngine and its extractors start with `"creation_pending"` / `"inactive"` status while the onchain transactions are processed. Poll until everything is ready:
+
+```bash
+curl https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+Check two things in the response:
+
+1. **PolicyEngine deployed** — Every entry in `onchain_policy_engines` shows `"status": "created"`.
+1. **Extractors active** — Every entry in `extractor_registrations[].onchain_extractor_registrations` shows `"status": "active"`.
+
+In the Platform UI, confirm the engine status is **Active** and extractors appear in the engine settings page.
+
+<Aside type="caution" title="Deployment failure">
+  If any chain shows `"status": "creation_failed"`, the onchain deployment did not succeed. Create a new PolicyEngine
+  and retry. Contact your Chainlink representative if the issue persists.
+</Aside>
+
+#### Save the PolicyEngine addresses
+
+Copy the `address` value from each entry in `onchain_policy_engines` — or from the engine settings page in the UI — you need these addresses to deploy or upgrade your smart contract in the next step. Each chain has a different PolicyEngine contract address.
+
+### 4. Integrate your contract
+
+See [Making Your Contract ACE-Compatible](/ace/guides/policy-manager/contracts/ace-compatible) for a full overview of what your contract needs. In short:
+
+- Inherit from `PolicyProtected` (or `PolicyProtectedUpgradeable` for upgradeable contracts)
+- Add the `runPolicy` modifier to the functions you want to protect
+- Pass the PolicyEngine address during deployment or initialization
+
+**Choose your path:**
+
+#### New contract
+
+If you are building a new token or contract from scratch, ACE provides reference implementations you can use as a starting point:
+
+- **ERC-20** — see [Building an ERC-20 Compliance Token](/ace/guides/policy-manager/contracts/erc20-token) for the full guide
+- **ERC-3643** — see [Building an ERC-3643 Compliance Token](/ace/guides/policy-manager/contracts/erc3643-token) for the full guide
+
+#### Existing contract
+
+If you have an already-deployed contract you want to add ACE compliance to, this involves modifying your implementation contract, testing, and executing a proxy upgrade. This is typically the longest step in the onboarding process.
+
+- See [Upgrading Existing Contracts](/ace/guides/policy-manager/contracts/upgrade-existing) for the step-by-step guide
+- Non-upgradeable contracts require alternative approaches — contact your Chainlink representative for guidance
+
+### 5. Register your contract as a target
+
+After deploying your contract, register it as a target under your PolicyEngine. Provide the contract name, type, protected methods, and on-chain addresses for each chain where the contract is deployed.
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/targets \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "title": "My ERC-20 Token",
+    "description": "Production ERC-20 token with compliance enforcement",
+    "policy_engine_id": "<POLICY_ENGINE_ID>",
+    "protected_methods": [
+      "transfer(address,uint256)",
+      "transferFrom(address,address,uint256)",
+      #[any other methods you want to protect]
+    ],
+    "desired_default_allow": true,
+    "metadata": {"contract_type": "ERC-20"},
+    "onchain_targets": [
+      {
+        "chain_selector": "16015286601757825753",
+        "address": "0xYourContractAddressOnSepolia"
+      },
+      {
+        "chain_selector": "3478487238524512106",
+        "address": "0xYourContractAddressOnArbitrumSepolia"
+      },
+      #[any other chains where your contract is deployed]
+    ]
+  }'
+```
+
+Include an entry in `onchain_targets` for every chain where you deployed the contract. Once registered, your target appears in the ACE Platform dashboard under your policy engine.
+
+For a full description of all fields and options, see [Managing Targets](/ace/guides/policy-manager/manage-targets#register-a-target).
+
+### 6. Post-setup checklist
+
+Before creating policies, confirm that every component is in the expected state. You can verify each of these with a single API call.
+
+| <div style={{ width: "200px" }}>Check</div> | What to look for                                                                                         |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| CRE Connect Wallets created                 | `GET /wallets` — every wallet shows `"status": "created"`                                                |
+| PolicyEngine deployed                       | `GET /policy-engines/<ID>` — every `onchain_policy_engines[].status` is `"created"`                      |
+| Extractors active                           | Same response — every `extractor_registrations[].onchain_extractor_registrations[].status` is `"active"` |
+| Contract visible in platform                | Your target contract appears in the ACE Platform dashboard                                               |
+
+### 7. Create and configure policies
+
+From the UI or API, create policy instances and attach them to your contract's protected functions. See [Managing Policies](/ace/guides/policy-manager/manage-policies) for creating and configuring policies, then [Protecting Target Functions](/ace/guides/policy-manager/manage-protections) for attaching them to specific functions on your contracts.
+
+### 8. Test it
+
+Make a transaction against your protected contract, verify the policy enforces correctly, and check the results in the [Reporting Manager](/ace/concepts/reporting).

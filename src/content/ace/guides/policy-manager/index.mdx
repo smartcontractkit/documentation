@@ -1,0 +1,66 @@
+---
+section: ace
+title: "Policy Manager Guides"
+isIndex: true
+date: Last Modified
+metadata:
+  description: "Overview of the Policy Manager operational model and guides for Chainlink ACE: understand how policy engines, targets, policies, and protections fit together, integrate smart contracts, and configure compliance policies."
+  datePublished: "2026-04-06"
+  lastModified: "2026-07-17"
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+These guides cover the day-to-day operations of a Policy Manager — from integrating your smart contracts with ACE to configuring and managing compliance policies.
+
+<Aside type="note">
+  New to ACE? Start with the [Policy Manager Quick Start](/ace/getting-started/policy-manager) for a step-by-step
+  onboarding walkthrough.
+</Aside>
+
+## How it all fits together
+
+The Policy Manager revolves around a handful of entities that work together to enforce compliance on your smart contracts. Understanding how they relate to each other makes the individual guides much easier to follow.
+
+<ClickToZoom src="/images/ace/policy-management-overall.png" />
+
+- **PolicyEngine** — The on-chain orchestrator that evaluates policies. Everything — targets, policy instances, and extractors — is scoped to a single engine.
+- **Extractors** — Modules that decode transaction calldata into named parameters (sender, amount, etc.) so policies can evaluate them. Attached to the engine at creation time.
+- **Target** — A smart contract registered under an engine via the API or UI.
+- **Policy Implementation** — A reusable compliance rule from the [Policy Library](/ace/reference/policy-library) (e.g., allowlist, volume limit, pause toggle).
+- **Policy Instance** — A deployed copy of an implementation, configured with your specific parameters and scoped to an engine.
+- **Protection** — The binding between a policy instance and a specific function on a target contract. This is what makes a function "policy-protected."
+- **Data Validator** — An optional contract attached to an identity policy's credential source that validates the _contents_ of a credential (e.g., a jurisdiction allow/deny list), not just its existence.
+- **Managed offchain policy (MVP)** — A CRE workflow and onchain validator managed by Chainlink that evaluate external risk data before issuing a permit for a specific transaction intent.
+
+### Typical setup flow
+
+1. [Create a PolicyEngine](/ace/guides/policy-manager/manage-engines) with extractors for your contract type (ERC-20 or ERC-3643).
+1. [Integrate your contract](/ace/guides/policy-manager/contracts/ace-compatible) by inheriting `PolicyProtected` and adding the `runPolicy` modifier.
+1. Deploy or upgrade your contract — it [appears as a target](/ace/guides/policy-manager/manage-targets) automatically.
+1. [Create policy instances](/ace/guides/policy-manager/manage-policies) from the Policy Library with your configuration.
+1. [Attach policies to functions](/ace/guides/policy-manager/manage-protections) by creating protections.
+
+## Smart contract integration
+
+- [Making Your Contract ACE-Compatible](/ace/guides/policy-manager/contracts/ace-compatible) — what your contract needs to work with ACE (inheriting `PolicyProtected`, adding the `runPolicy` modifier)
+- [Building a New ERC-20 Token](/ace/guides/policy-manager/contracts/erc20-token) — reference implementation for a compliance-ready ERC-20 token
+- [Building a New ERC-3643 Token](/ace/guides/policy-manager/contracts/erc3643-token) — reference implementation for an ERC-3643 security token
+- [Upgrading Existing Contracts](/ace/guides/policy-manager/contracts/upgrade-existing) — how to add ACE compliance to an already-deployed upgradeable contract
+- [Security Considerations](/ace/guides/policy-manager/contracts/security-considerations) — key security patterns and pitfalls when integrating with ACE
+
+## Policy engine and policy management
+
+- [Managing Policy Engines](/ace/guides/policy-manager/manage-engines) — create, view, update, and archive policy engines
+- [Managing Targets](/ace/guides/policy-manager/manage-targets) — register your deployed contracts as targets under a policy engine
+- [Managing Policies](/ace/guides/policy-manager/manage-policies) — browse policy implementations, create and configure policy instances
+- [Protecting Target Functions](/ace/guides/policy-manager/manage-protections) — bind policy instances to specific functions on your target contracts
+- [Managing Data Validators](/ace/guides/policy-manager/manage-data-validators) — enforce rules on credential contents (e.g., jurisdiction allow/deny lists) by attaching Data Validators to identity policies
+- [Custom Policies](/ace/guides/policy-manager/custom-policies) — write, deploy, and register your own policy contract, then use it like a library policy
+
+<Aside type="caution" title="Offchain risk policies are an MVP">
+  Managed offchain risk policies are an MVP. Their interfaces and capabilities can change during Beta. Contact your
+  Chainlink representative before using this feature and for help with setup.
+</Aside>
+
+- [Offchain Policies](/ace/guides/policy-manager/offchain-policies) — understand the managed and custom models, configure the managed wallet screening MVP, and integrate offchain permits
