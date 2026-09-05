@@ -22,7 +22,7 @@ This tutorial demonstrates how to send a data-only CCIP message from Canton test
 
 <Aside title="Prerequisites">
 
-Complete the [Canton as Source prerequisites](/ccip/tutorials/canton/source/prerequisites) before starting this tutorial. Your Canton party needs **Amulet** holdings to pay CCIP fees (or use `--feeToken link`).
+Complete the [Canton as Source prerequisites](/ccip/tutorials/canton/source/prerequisites) before starting this tutorial. Your Canton party needs **Amulet** holdings to pay CCIP fees.
 
 These steps use **Canton testnet** and **Ethereum Sepolia** only.
 
@@ -42,7 +42,7 @@ This tutorial covers sending arbitrary data from Canton to Ethereum Sepolia with
 In this tutorial, you will:
 
 - Run `canton2any:data` to send a UTF-8 data payload from Canton to Sepolia.
-- Pay CCIP fees in Amulet (default) or LINK.
+- Pay CCIP fees in Amulet.
 - Track delivery in the [CCIP Explorer](/ccip/tools-resources/ccip-explorer).
 - Optionally execute manually on Sepolia with `canton2any:manual-exec`.
 
@@ -51,7 +51,7 @@ In this tutorial, you will:
 Key points for data-only sends from Canton:
 
 - **Data only**: No `tokenAmounts` — only a `data` payload is delivered to the Sepolia receiver contract's `ccipReceive` function.
-- **Fee payment**: CCIP fees are paid on Canton in **Amulet** by default. Pass `--feeToken link` to pay in CCIP LINK instead.
+- **Fee payment**: CCIP fees are paid on Canton in **Amulet**.
 - **Auto-execution**: By default, the starter kit allows automatic execution on Sepolia when an executor is configured. Pass `--no-exec` to skip auto-execution and run `canton2any:manual-exec` after Committee Verifier proofs are on the indexer.
 - **Receiver**: Defaults to the starter kit's demo receiver on Sepolia. Override with `--evmReceiver`.
 
@@ -62,7 +62,7 @@ See the [Canton as Source flow](/ccip/concepts/canton/overview#canton--public-ch
 The `scripts/canton2any/ccipSendData.ts` script uses `@chainlink/ccip-sdk` `CantonChain.sendMessage`:
 
 1. **Context initialization**: Loads `canton-config.json`, authenticates to the Ledger API, and connects.
-2. **Argument parsing**: Reads `--dataString`, `--feeToken`, `--evmReceiver`, `--gasLimit` (default `200000`), and `--no-exec`.
+2. **Argument parsing**: Reads `--dataString`, `--evmReceiver`, `--gasLimit` (default `200000`), and `--no-exec`.
 3. **Message construction**: Builds a CCIP message with encoded data, fee token, and `extraArgs` (gas limit and optional `executorMode: 'none'`).
 4. **Ledger submit**: Submits the send via authenticated direct ledger submit — no local Canton signing key required.
 5. **Output**: Prints the CCIP Message ID, CCIP Explorer URL, and Canton Lighthouse transaction link.
@@ -88,12 +88,6 @@ Send a data-only message from Canton to Sepolia:
 
 ```bash filename="Terminal"
 npm run canton2any:data -- --dataString "Hello Sepolia"
-```
-
-Pay the CCIP fee in LINK instead of Amulet:
-
-```bash filename="Terminal"
-npm run canton2any:data -- --dataString "Hello Sepolia" --feeToken link
 ```
 
 Skip automatic execution on Sepolia and execute manually after Committee Verifier proofs are on the indexer:
