@@ -20,63 +20,38 @@ import {
   handleClickToZoom,
   handleCodeSample,
   handleBilling,
+  handlePageTabs,
+  handleTabs,
+  handlePackageManagerTabs,
+  handleFragment,
+  handleAccordion,
+  handleAddress,
+  handleCallout,
+  handleAnyApiCallout,
+  handleFeedsCommonCallout,
+  handleResourcesCallout,
+  handleDataStreams,
+  handleSchemaFieldsTable,
+  handleFeedPage,
   loadCcipCommonMapping,
+  replaceNode,
+  staticEstreeValue,
 } from "./componentHandlers.js"
 import fs from "fs"
 import path from "path"
+import { removeLeadingMdxFrontmatter } from "./sourceScanners.js"
 
-/**
- * Convert Aside components to markdown blockquotes
- * Handles multi-line Aside tags by converting them to blockquote format
- * Preserves Asides with nested JSX components (they'll be handled by AST or remain as-is)
- * @param content - Markdown content that may contain Aside components
- * @returns Content with simple Aside tags converted to blockquotes
- */
-function convertAsidesToBlockquotes(content: string): string {
-  // Match multi-line Aside components
-  const asideRegex = /<Aside\s+type="(\w+)"(?:\s+title="([^"]*)")?\s*>([\s\S]*?)<\/Aside>/g
-
-  return content.replace(asideRegex, (fullMatch, type, title, children) => {
-    // Check if the Aside contains other JSX components (like Tabs, CopyText, etc.)
-    const hasJSXComponents = /<[A-Z]\w+/.test(children)
-
-    if (hasJSXComponents) {
-      // Keep as-is - these complex nested structures need manual handling
-      // or will be dropped by the AST handlers
-      return fullMatch
-    }
-
-    // Create a blockquote directly in markdown format
-    // This avoids JSX parsing issues entirely
-    const cleanChildren = children.trim()
-    const asideType = type.toUpperCase()
-    const header = title ? `**${asideType}: ${title}**` : `**${asideType}**`
-
-    // Return as markdown blockquote
-    return `\n\n> ${header}\n>\n> ${cleanChildren}\n\n`
-  })
-}
-
-/**
- * Convert ClickToZoom components to markdown images
- * Handles self-closing ClickToZoom tags by converting to standard markdown image syntax
- * @param content - Markdown content that may contain ClickToZoom components
- * @returns Content with ClickToZoom tags converted to markdown images
- */
-function convertClickToZoomToImages(content: string): string {
-  // Match self-closing ClickToZoom tags with any attributes
-  // Captures src and alt, ignores other attributes like style
-  const clickToZoomRegex = /<ClickToZoom\s+[^>]*src="([^"]+)"[^>]*(?:alt="([^"]*)")?[^>]*\/>/g
-
-  return content.replace(clickToZoomRegex, (_, src, alt) => {
-    const altText = alt || "Image"
-    return `![${altText}](${src})`
-  })
+function staticMdxString(value: unknown): string | undefined {
+  const expression = (
+    value as { data?: { estree?: { body?: { expression?: Parameters<typeof staticEstreeValue>[0] }[] } } } | undefined
+  )?.data?.estree?.body?.[0]?.expression
+  const staticValue = staticEstreeValue(expression)
+  return typeof staticValue === "string" ? staticValue : undefined
 }
 
 /**
  * Preprocess CcipCommon components by inlining their content
- * This is essential because remarkMdx doesn't always parse self-closing JSX tags properly
+ * Inlined MDX components continue through the normal remark AST visitor
  * @param markdown - Raw markdown content
  * @returns Markdown with CcipCommon components replaced by their content
  */
@@ -90,22 +65,24 @@ function preprocessCcipCommon(markdown: string): string {
     const fileName = calloutFileMap[calloutName]
 
     if (fileName) {
-      const calloutPath = path.resolve("src/features/ccip", fileName)
-      if (fs.existsSync(calloutPath)) {
+      let calloutPath: string | undefined
+      try {
+        const ccipRoot = fs.realpathSync(path.resolve("src/features/ccip"))
+        const candidate = fs.realpathSync(path.resolve(ccipRoot, fileName))
+        if (candidate === ccipRoot || candidate.startsWith(ccipRoot + path.sep)) calloutPath = candidate
+      } catch {
+        // Missing or escaping selector targets remain unexpanded and are dropped by the AST visitor.
+      }
+      if (calloutPath) {
         let calloutContent = fs.readFileSync(calloutPath, "utf-8")
 
         // Strip frontmatter if present
-        if (calloutContent.trim().startsWith("---")) {
-          calloutContent = calloutContent.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, "")
-        }
+        calloutContent = removeLeadingMdxFrontmatter(calloutContent)
 
         // Strip import statements
         calloutContent = calloutContent.replace(/^import\s+.+$/gm, "").trim()
 
-        // Convert Aside components to blockquotes
-        calloutContent = convertAsidesToBlockquotes(calloutContent)
-
-        // Replace the CcipCommon tag with the processed content
+        // Replace the CcipCommon tag with the inlined content
         preprocessedMarkdown = preprocessedMarkdown.replace(fullMatch, "\n\n" + calloutContent + "\n\n")
       }
     }
@@ -128,18 +105,8 @@ export async function transformMarkdown(
 ): Promise<string> {
   const { targetLanguage } = config
 
-  // Preprocessing pipeline - apply transformations before AST parsing
-  // This handles components that remarkMdx struggles to parse (multi-line JSX)
-
-  // Step 1: Preprocess CcipCommon components (inline callout content)
-  let preprocessedMarkdown = preprocessCcipCommon(markdown)
-
-  // Step 2: Convert Aside components to markdown blockquotes
-  // Applies to both main content and inlined CcipCommon content
-  preprocessedMarkdown = convertAsidesToBlockquotes(preprocessedMarkdown)
-
-  // Step 3: Convert ClickToZoom to markdown images
-  preprocessedMarkdown = convertClickToZoomToImages(preprocessedMarkdown)
+  // Inline CcipCommon content before AST parsing so embedded components reach the normal AST handlers.
+  const preprocessedMarkdown = preprocessCcipCommon(markdown)
 
   // Create unified processor with remark plugins
   const processor = unified()
@@ -179,7 +146,10 @@ export async function transformMarkdown(
         }
 
         // Handle ClickToZoom
-        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "ClickToZoom") {
+        if (
+          (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
+          (node as MdxJsxNode).name === "ClickToZoom"
+        ) {
           return handleClickToZoom(node as MdxJsxNode, parent, index, context)
         }
 
@@ -190,7 +160,68 @@ export async function transformMarkdown(
 
         // Handle Billing
         if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "Billing") {
-          return handleBilling(node as MdxJsxNode, parent, index, context)
+          return handleBilling(parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "PageTabs") {
+          return handlePageTabs(node as MdxJsxNode, parent, index)
+        }
+
+        if (
+          node.type === "mdxJsxFlowElement" &&
+          ((node as MdxJsxNode).name === "Tabs" || (node as MdxJsxNode).name === "TabsContent")
+        ) {
+          return handleTabs(node as MdxJsxNode, parent, index)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "PackageManagerTabs") {
+          return handlePackageManagerTabs(node as MdxJsxNode, parent, index)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "Accordion") {
+          return handleAccordion(node as MdxJsxNode, parent, index)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "Callout") {
+          return handleCallout(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "AnyApiCallout") {
+          return handleAnyApiCallout(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "FeedsCommonCallout") {
+          return handleFeedsCommonCallout(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "ResourcesCallout") {
+          return handleResourcesCallout(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "DataStreams") {
+          return handleDataStreams(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "SchemaFieldsTable") {
+          return handleSchemaFieldsTable(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "FeedPage") {
+          return handleFeedPage(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (
+          (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
+          (node as MdxJsxNode).name === "Address"
+        ) {
+          return handleAddress(node as MdxJsxNode, parent, index)
+        }
+
+        if (
+          (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
+          (node as MdxJsxNode).name === "Fragment"
+        ) {
+          return handleFragment(node as MdxJsxNode, parent, index)
         }
 
         // Handle MDX JSX text elements
@@ -208,42 +239,116 @@ export async function transformMarkdown(
           }
         }
 
-        // Drop MDX/import/export nodes (except handled components)
+        if (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") {
+          const mdxNode = node as MdxJsxNode
+          const nodeName = mdxNode.name
+          const children = (mdxNode as Parent).children || []
+
+          if (nodeName === "a") {
+            const hrefAttribute = mdxNode.attributes?.find((attribute) => attribute.name === "href")
+            const href =
+              typeof hrefAttribute?.value === "string" ? hrefAttribute.value : staticMdxString(hrefAttribute?.value)
+            if (href !== undefined) {
+              return replaceNode(mdxNode, parent, index, [
+                { type: "link", url: href, children } as Parent & { url: string },
+              ])
+            }
+            return replaceNode(mdxNode, parent, index, children)
+          }
+
+          if (nodeName === "code") {
+            let value = ""
+            for (const child of children) {
+              if (child.type === "text") value += String((child as Literal).value)
+              else if (child.type === "mdxTextExpression" || child.type === "mdxFlowExpression") {
+                value += staticMdxString(child) ?? ""
+              }
+            }
+            return replaceNode(mdxNode, parent, index, [{ type: "inlineCode", value } as Literal])
+          }
+
+          if (nodeName === "b" || nodeName === "strong") {
+            return replaceNode(mdxNode, parent, index, [{ type: "strong", children } as Parent])
+          }
+
+          if (nodeName === "ul") {
+            const replacement: Node[] = []
+            let listItemCount = 0
+            for (const child of children) {
+              if (
+                (child.type === "mdxJsxFlowElement" || child.type === "mdxJsxTextElement") &&
+                (child as MdxJsxNode).name === "li"
+              ) {
+                if (listItemCount > 0) replacement.push({ type: "text", value: "; " } as Literal)
+                replacement.push(...((child as Parent).children || []))
+                listItemCount++
+              } else if (child.type !== "text" || String((child as Literal).value).trim()) {
+                replacement.push(child)
+              }
+            }
+            return replaceNode(mdxNode, parent, index, replacement)
+          }
+
+          // ponytail: unwrap HTML tables to text; emit markdown tables if agents need grid structure
+          if (
+            nodeName === "li" ||
+            nodeName === "sub" ||
+            nodeName === "span" ||
+            nodeName === "p" ||
+            nodeName === "div" ||
+            nodeName === "table" ||
+            nodeName === "thead" ||
+            nodeName === "tbody" ||
+            nodeName === "tr" ||
+            nodeName === "th" ||
+            nodeName === "td" ||
+            ((nodeName === "br" || nodeName === "nobr") && children.length > 0)
+          ) {
+            return replaceNode(mdxNode, parent, index, children)
+          }
+
+          if (nodeName === "br" || nodeName === "nobr") {
+            parent.children.splice(index, 1)
+            return index
+          }
+        }
+
+        if (node.type === "mdxFlowExpression" || node.type === "mdxTextExpression") {
+          const value = staticMdxString(node)
+          if (value === undefined) return replaceNode(node, parent, index, [])
+          if (node.type === "mdxFlowExpression" && !value.trim()) return replaceNode(node, parent, index, [])
+          return replaceNode(node, parent, index, [{ type: "text", value } as Literal])
+        }
+
+        // Drop MDX/import/export nodes except the explicitly projected component names above.
         if (
-          (node.type === "mdxJsxFlowElement" &&
+          ((node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
             (node as MdxJsxNode).name !== "Aside" &&
             (node as MdxJsxNode).name !== "CcipCommon" &&
             (node as MdxJsxNode).name !== "ClickToZoom" &&
             (node as MdxJsxNode).name !== "CodeSample" &&
-            (node as MdxJsxNode).name !== "Billing") ||
+            (node as MdxJsxNode).name !== "Billing" &&
+            (node as MdxJsxNode).name !== "PageTabs" &&
+            (node as MdxJsxNode).name !== "Tabs" &&
+            (node as MdxJsxNode).name !== "TabsContent" &&
+            (node as MdxJsxNode).name !== "PackageManagerTabs" &&
+            (node as MdxJsxNode).name !== "Fragment" &&
+            (node as MdxJsxNode).name !== "Accordion" &&
+            (node as MdxJsxNode).name !== "Address" &&
+            (node as MdxJsxNode).name !== "Callout" &&
+            (node as MdxJsxNode).name !== "AnyApiCallout" &&
+            (node as MdxJsxNode).name !== "FeedsCommonCallout" &&
+            (node as MdxJsxNode).name !== "ResourcesCallout" &&
+            (node as MdxJsxNode).name !== "DataStreams" &&
+            (node as MdxJsxNode).name !== "SchemaFieldsTable" &&
+            (node as MdxJsxNode).name !== "FeedPage") ||
           node.type === "mdxjsEsm" ||
           node.type === "import" ||
-          node.type === "export"
+          node.type === "export" ||
+          node.type === "html"
         ) {
           parent.children.splice(index, 1)
-          return
-        }
-
-        // Handle HTML nodes - drop them
-        if (node.type === "html") {
-          parent.children.splice(index, 1)
-          return
-        }
-
-        // Handle JSX comments - drop them
-        if (
-          (node.type === "mdxFlowExpression" || node.type === "mdxTextExpression") &&
-          typeof (node as { value?: string }).value === "string" &&
-          (node as { value?: string }).value?.trim().match(/^\/\*[\s\S]*?\*\/$/)
-        ) {
-          parent.children.splice(index, 1)
-          return
-        }
-
-        // Replace images with their alt text
-        if (node.type === "image") {
-          const alt = (node as { alt?: string }).alt ? String((node as { alt?: string }).alt) : "Image"
-          parent.children[index] = { type: "text", value: `(Image: ${alt})` } as Literal
+          return index
         }
 
         // Note: We preserve link nodes as-is so they're rendered as markdown links [text](url)
