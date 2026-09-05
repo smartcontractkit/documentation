@@ -1,0 +1,165 @@
+---
+section: crec
+title: "Signing Transparency"
+date: Last Modified
+metadata:
+  description: "Show users a complete, verifiable summary of every Chainlink CRE Connect Operation before they sign: including the EIP-712 typed data, decoded calldata, and the resulting on-chain hash."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+When the Smart Account holder is a human (browser wallet, hardware wallet, MPC approval flow), they should be able to see what they are signing in unambiguous terms, not just an opaque 32-byte hash. CRE Connect operations are EIP-712 typed data, so the typed-data structure is itself the user-facing description; you just need to expose it well.
+
+This guide collects the reusable building blocks. There is no built-in helper for "render-this-operation" today; the recipe below uses `crec-sdk/transact` plus standard `go-ethereum` packages.
+
+## What to surface
+
+For every operation, expose at minimum:
+
+| Field                                   | Source                                                                             |
+| --------------------------------------- | ---------------------------------------------------------------------------------- |
+| Smart Account address                   | `op.Account`                                                                       |
+| Network (chain ID + chain selector)     | `chainSelector` argument + `chain-selectors` lookup                                |
+| Operation ID (nonce)                    | `op.ID`                                                                            |
+| Deadline                                | `op.Deadline` (decoded as Unix seconds → human time)                               |
+| Each transaction's target               | `tx.To`                                                                            |
+| Each transaction's value                | `tx.Value` (decoded as native units)                                               |
+| Each transaction's function + arguments | Decoded against the contract ABI                                                   |
+| EIP-712 domain                          | `CLLSmartAccount` v1, chainId = network chain ID, verifyingContract = `op.Account` |
+| EIP-712 typed-data hash (the digest)    | `client.Transact.HashOperation(op, chainSelector)`                                 |
+
+## Build a typed-data summary
+
+The SDK exposes `op.TypedData(chainID)` directly:
+
+```go
+import (
+    "encoding/json"
+    "github.com/smartcontractkit/chain-selectors"
+    "github.com/smartcontractkit/crec-sdk/transact/types"
+)
+
+family, _ := chain_selectors.GetSelectorFamily(chainSelectorUint)
+chainID, _ := chain_selectors.GetChainIDFromSelector(chainSelectorUint)
+
+td, err := op.TypedData(chainID)
+if err != nil { return err }
+
+pretty, _ := json.MarshalIndent(td, "", "  ")
+fmt.Println(string(pretty))
+```
+
+This produces the exact `apitypes.TypedData` document that the signer consumes. Render it as JSON, or break it into the table above for a friendlier UI.
+
+## Decode each transaction's calldata
+
+The Smart Account's job is to invoke `to.call(value, data)` for each transaction; you should resolve the `(method, arguments)` pair before showing it.
+
+```go
+import (
+    "github.com/ethereum/go-ethereum/accounts/abi"
+)
+
+func decodeCall(parsed abi.ABI, data []byte) (string, []any, error) {
+    if len(data) < 4 { return "", nil, fmt.Errorf("calldata too short") }
+    method, err := parsed.MethodById(data[:4])
+    if err != nil { return "", nil, err }
+    args, err := method.Inputs.Unpack(data[4:])
+    if err != nil { return method.Name, nil, err }
+    return method.Name, args, nil
+}
+```
+
+Combine with the operation:
+
+```go
+for i, tx := range op.Transactions {
+    name, args, err := decodeCall(parsed, tx.Data)
+    if err != nil {
+        log.Printf("tx[%d] %s: undecodable calldata", i, tx.To.Hex())
+        continue
+    }
+    log.Printf("tx[%d] %s.%s(%v) value=%s", i, tx.To.Hex(), name, args, tx.Value.String())
+}
+```
+
+For unknown ABIs, fall back to the 4-byte selector and the raw hex payload.
+
+## Compute and display the hash
+
+Always show the user the **same digest the signer will sign**:
+
+```go
+opHash, err := client.Transact.HashOperation(op, chainSelector)
+if err != nil { return err }
+fmt.Println("EIP-712 digest:", opHash.Hex())
+```
+
+If you split the flow across two services (one renders the summary, another invokes the signer), pin the operation by its hash so you can detect tampering between the two stages.
+
+## Hardware wallet considerations
+
+Hardware wallets that natively support EIP-712 (Ledger / Trezor with Eth app ≥ 1.10) will display the typed data directly. The user sees:
+
+- Domain: `CLLSmartAccount`, version `1`, chainId, verifyingContract.
+- Primary type: `Operation`.
+- Message fields: `id`, `account`, `deadline`, and the array of `transactions`.
+
+The on-screen display **does not** decode `transactions[i].data`: it shows the raw bytes. Pair the device confirmation with an off-device decoded summary so the user can cross-check.
+
+## MPC / approval-policy signers
+
+For Fireblocks, Privy, and similar custody systems, push the typed-data document and the decoded summary into the approval payload. Most providers support a free-form "transaction note" field; populate it with a short, human description (e.g. `Deposit 1.0 USDC into Vault 0x…cafe`) that mirrors the decoded calldata. Approvers should be trained to reject if the note doesn't match the typed data.
+
+## A reusable rendering function
+
+```go
+type Summary struct {
+    SmartAccount string
+    ChainID      string
+    Nonce        string
+    Deadline     time.Time
+    Hash         string
+    Transactions []TxSummary
+}
+
+type TxSummary struct {
+    To       string
+    Value    string
+    Method   string
+    Args     []any
+    Selector string
+    Raw      string
+}
+
+func Summarise(op *types.Operation, abis map[common.Address]abi.ABI, chainSelector string, chainID string, hash common.Hash) Summary {
+    out := Summary{
+        SmartAccount: op.Account.Hex(),
+        ChainID:      chainID,
+        Nonce:        op.ID.String(),
+        Deadline:     time.Unix(op.Deadline.Int64(), 0).UTC(),
+        Hash:         hash.Hex(),
+    }
+    for _, tx := range op.Transactions {
+        sel := "0x" + common.Bytes2Hex(tx.Data[:4])
+        sum := TxSummary{To: tx.To.Hex(), Value: tx.Value.String(), Selector: sel, Raw: "0x" + common.Bytes2Hex(tx.Data)}
+        if abi, ok := abis[tx.To]; ok {
+            if name, args, err := decodeCall(abi, tx.Data); err == nil {
+                sum.Method = name
+                sum.Args = args
+            }
+        }
+        out.Transactions = append(out.Transactions, sum)
+    }
+    return out
+}
+```
+
+Call `Summarise` immediately before `SignOperationHash` and surface the `Summary` to the user (web UI, CLI prompt, audit log, etc.).
+
+## Next steps
+
+- [Build and Sign Operations](/crec/guides/operations/build-and-sign): for the underlying `HashOperation` / `SignOperationHash` calls.
+- [EIP-712 Signing](/crec/concepts/eip712-signing): full typed-data schema reference.

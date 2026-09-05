@@ -1,0 +1,159 @@
+---
+section: crec
+title: "SDK Installation"
+date: Last Modified
+metadata:
+  description: "Install the Chainlink CRE Connect Go SDK and its optional protocol extensions, and learn the canonical import paths for each sub-client."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import CrecCommon from "@features/crec/common/CrecCommon.astro"
+
+<CrecCommon callout="beta" />
+
+The CRE Connect SDK is distributed as a Go module. There is one core module and one optional extension per supported protocol.
+
+## Install the core SDK
+
+```bash
+go get github.com/smartcontractkit/crec-sdk
+```
+
+This pulls the unified client and every sub-client (`channels`, `events`, `transact`, `wallets`, `watchers`) along with their dependencies.
+
+## Install protocol extensions (optional)
+
+Extensions sit on top of the core SDK and supply typed Operation builders, decoded event structs, and pre-packaged watcher provisioning for a given protocol. Install only the extensions you need.
+
+### DTA (Digital Transfer Agent)
+
+```bash
+go get github.com/smartcontractkit/crec-sdk-ext-dta/v2
+```
+
+Use the **v2** module path explicitly. v1 is **not** documented or supported by the current `dta.v2` service.
+
+See the [DTA Overview](/crec/extensions/dta) for the full surface.
+
+## Canonical import paths
+
+These are the imports you will reach for most often. Each Go file should import only what it needs: there is no umbrella import that pulls everything in.
+
+### Unified client
+
+```go
+import "github.com/smartcontractkit/crec-sdk"
+```
+
+This package exposes `crec.NewClient`, `crec.NewAPIClient`, all `crec.Option` constructors, and the sentinel errors (`ErrBaseURLRequired`, `ErrAPIKeyRequired`, `ErrInvalidEventVerificationConfig`, `ErrListNetworks`).
+
+### Sub-clients
+
+```go
+import (
+    "github.com/smartcontractkit/crec-sdk/channels"
+    "github.com/smartcontractkit/crec-sdk/events"
+    "github.com/smartcontractkit/crec-sdk/transact"
+    "github.com/smartcontractkit/crec-sdk/wallets"
+    "github.com/smartcontractkit/crec-sdk/watchers"
+)
+```
+
+### Operation types and signing
+
+```go
+import (
+    "github.com/smartcontractkit/crec-sdk/transact/types"
+    "github.com/smartcontractkit/crec-sdk/transact/eip712"
+    "github.com/smartcontractkit/crec-sdk/transact/signer"
+)
+```
+
+### Signer adapters
+
+Pick whichever matches your key store:
+
+```go
+import "github.com/smartcontractkit/crec-sdk/transact/signer/local"
+import "github.com/smartcontractkit/crec-sdk/transact/signer/kms"
+import "github.com/smartcontractkit/crec-sdk/transact/signer/vault"
+import "github.com/smartcontractkit/crec-sdk/transact/signer/fireblocks"
+import "github.com/smartcontractkit/crec-sdk/transact/signer/privy"
+```
+
+### DTA extension
+
+```go
+import (
+    dtaops "github.com/smartcontractkit/crec-sdk-ext-dta/v2/operations"
+    dtaevents "github.com/smartcontractkit/crec-sdk-ext-dta/v2/events"
+    dtawatcher "github.com/smartcontractkit/crec-sdk-ext-dta/v2/watcher/bundle"
+)
+```
+
+## Use the unified client or per-package clients
+
+Two construction patterns are supported.
+
+### Unified (recommended)
+
+```go
+client, err := crec.NewClient(
+    "https://cre-connect.api.chain.link/v1",
+    apiKey,
+    crec.WithOrgID(orgID), // required for Events.Verify and Events.VerifyOperationStatus
+)
+// client.Channels, client.Events, client.Transact, client.Wallets, client.Watchers
+```
+
+This wires every sub-client with the same authenticated transport, logger, and event-verification configuration. Pass `crec.WithOrgID(...)` so the events client can derive your tenant's workflow owner address; see [Prerequisites](/crec/getting-started/prerequisites) for where to find your Organization ID.
+
+### Per-package (for small footprints)
+
+If you only need one or two sub-clients (for example a service that only polls events), share the underlying API client to avoid redundant configuration. The events client takes the same `OrgID` (or `WorkflowOwner`) you would otherwise pass to `crec.NewClient`, so verification still works:
+
+```go
+api, err := crec.NewAPIClient(
+    "https://cre-connect.api.chain.link/v1",
+    apiKey,
+)
+if err != nil { return err }
+
+eventsClient, err := events.NewClient(&events.Options{
+    CRECClient: api,
+    OrgID:      orgID, // required for Verify / VerifyOperationStatus
+})
+```
+
+Both patterns talk to the same backend. Pick whichever makes your dependency surface smaller.
+
+## Verify the install
+
+Compile a one-line program to confirm modules resolve:
+
+```go
+package main
+
+import (
+    "fmt"
+    "github.com/smartcontractkit/crec-sdk"
+)
+
+func main() {
+    fmt.Printf("ErrAPIKeyRequired = %v\n", crec.ErrAPIKeyRequired)
+}
+```
+
+```bash
+go run main.go
+# ErrAPIKeyRequired = API key is required
+```
+
+If that prints without errors, you are ready for [Authentication](/crec/getting-started/authentication).
+
+## Related
+
+- [Authentication](/crec/getting-started/authentication): initialize the client you just installed.
+- [Go SDK Reference](/crec/reference/go-sdk): every package this section imports.
+- [Extensions](/crec/extensions): when to install the optional DTA module.
