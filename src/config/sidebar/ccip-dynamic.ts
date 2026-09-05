@@ -467,6 +467,11 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         chainTypes: ["evm"],
         children: [
           {
+            title: "Operational Security",
+            url: "ccip/tutorials/evm/cross-chain-tokens/operational-security",
+            chainTypes: ["evm"],
+          },
+          {
             title: "Using Remix IDE",
             chainTypes: ["evm"],
             children: [
