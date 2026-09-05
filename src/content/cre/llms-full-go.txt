@@ -20674,7 +20674,9 @@ Last Updated: 2026-07-17
 <Aside type="note" title="TL;DR">
   Use `runtime.Rand()` to generate random numbers in your workflows. This provides deterministic randomness that ensures
   all nodes in the network generate the same values and can reach consensus. Do **not** use Go's global `rand`
-  package—it can break consensus. Note that `runtime.Rand()` is **not** cryptographically secure.
+  package—it can break consensus. Note that `runtime.Rand()` is **not** cryptographically secure, and the seed it
+  derives from can be predictable depending on your [trigger](#seed-predictability-and-trigger-choice). Read that
+  section before using this randomness for anything with direct economic value.
 </Aside>
 
 ## The problem: Why randomness needs special handling
@@ -20703,12 +20705,49 @@ randomInt := rnd.Intn(100)           // Random int in [0, 100)
 randomBigInt := new(big.Int).Rand(rnd, big.NewInt(1000))  // Random big.Int
 ```
 
+## Seed predictability and trigger choice
+
+`runtime.Rand()` is deterministic **given the same seed**: every node computes the same sequence from a per-execution seed derived from the workflow's execution ID, so the DON can agree on a result without a single node choosing it. There is no secret value mixed into that seed — anyone who can compute the seed ahead of time can compute the resulting random values ahead of time, too.
+
+How predictable the seed is depends entirely on what [trigger](/cre/guides/workflow/using-triggers/overview) starts the workflow:
+
+| Trigger                                                              | What seeds the execution                    | Who can predict it, and when                                                                                                                                                                           |
+| :------------------------------------------------------------------- | :------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Cron](/cre/guides/workflow/using-triggers/cron-trigger-go)          | The scheduled execution time                | Anyone, before the workflow runs — the schedule is public.                                                                                                                                             |
+| [EVM Log](/cre/guides/workflow/using-triggers/evm-log-trigger-go)    | Block hash, transaction hash, and log index | Validators/block producers, before the block finalizes — they can reorder or drop transactions to change the outcome.                                                                                  |
+| [HTTP](/cre/guides/workflow/using-triggers/http-trigger/overview-go) | A request identifier supplied by the caller | Whoever holds the authorized private key that signs requests — if that key leaks, its holder can grind candidate payloads off-chain in advance and submit only the one that yields a favorable result. |
+
+This means the trigger you choose sets the actual security bar for anything that depends on the random result:
+
+- **A cron-triggered draw is fully predictable in advance** because the schedule is known to everyone. Only use cron for randomness where no party benefits from knowing the outcome ahead of time.
+- **An EVM Log trigger is only as unpredictable as the underlying chain's block production.** It removes the caller-grinding risk from HTTP triggers, but a party capable of influencing block production (or observing a block before it finalizes) can still see the seed early, same as reading `blockhash` directly in a smart contract.
+- **An HTTP trigger's unpredictability depends entirely on keeping the authorized signing key private.** Only requests signed by a key you've listed in `authorizedKeys` can trigger the workflow, so an outside caller can't grind requests on their own. But that key's holder can: whoever controls it can compute many candidate payloads offline, compute the outcome each one would produce, and submit only the one they want. Treat that private key with the same care you'd give a key that directly controls funds — if it leaks, so does control over the random outcome.
+
+If your use case needs to stay adversarial-resistant on a trigger that's otherwise grindable or front-runnable, apply a standard **commit-reveal** pattern: lock in the choice that the random result will affect (a bet, a purchase, an entry) in a transaction that happens *before* the seed becomes visible to anyone, and only let the workflow act on it afterward. This closes the window an EVM Log trigger otherwise leaves open between a block being visible and the workflow consuming it, and prevents a request from being resubmitted once its outcome is known.
+
+<Aside type="caution" title="No party with an interest in the outcome should be able to compute the seed early">
+  Regardless of trigger, if a participant — the holder of an authorized signing key, a validator, or anyone else with
+  something to gain — can compute or influence the seed before the result is used onchain, they can also compute the
+  resulting random values in advance. Treat the trigger, and who holds the keys that can drive it, as part of your
+  threat model, not an implementation detail.
+</Aside>
+
+## Choosing between CRE randomness and Chainlink VRF
+
+CRE's randomness is well suited to cases where the value it produces is one input among several in a broader automated workflow, and no party able to see or influence the seed — including whoever holds the keys or infrastructure that trigger the workflow — stands to gain from knowing the result in advance. Typical examples:
+
+- Load balancing, sampling, or jitter (retry backoff, staggering requests) where no outcome carries direct value.
+- Internal identifiers, nonces, or tie-breaking where nothing of value is riding on a specific value being chosen.
+- Operational workflows where the trigger and, for HTTP triggers, the authorized signing key are fully under your own control and secured accordingly, so the party who could predict the seed has no incentive to exploit it.
+
+For randomness that assigns direct economic value — public lotteries, gaming rewards, giveaways, or any draw where whoever can see the seed early (a validator, or the holder of an HTTP trigger's authorized key) would benefit from steering the result — use [Chainlink VRF](/vrf) instead. VRF generates each random value together with a cryptographic proof, verified onchain before your contract accepts it, so the outcome cannot be predicted or influenced by anyone, no matter who holds which keys or how the request is triggered. A CRE workflow's result, by contrast, is accepted onchain because it carries a valid DON signature — that tells your contract the result came from the DON you authorized and reflects consensus among its nodes, but it isn't a mathematical proof that the value itself was generated fairly, the way VRF's proof is.
+
 ## Common use cases
 
-- Selecting a winner from a lottery or pool
+- Selecting a winner from a lottery or pool, when participants and triggers are trusted (see [above](#choosing-between-cre-randomness-and-chainlink-vrf) for the public/adversarial case)
 - Generating nonces for transactions
 - Creating random identifiers or values
-- Any random selection that needs to be agreed upon by all nodes
+- Any random selection that needs to be agreed upon by all nodes, where no party can gain from predicting the seed
 
 ## Working with big.Int random values
 
@@ -20876,7 +20915,7 @@ Random generators are tied to the mode they were created in. **Do not** attempt 
 
 **Is the randomness cryptographically secure?**
 
-No. `runtime.Rand()` returns a seeded pseudo-random number generator (Go's `math/rand`). The seed is coordinated by the CRE platform so that all nodes in the DON produce the same sequence — that is what makes consensus possible — but it is not cryptographically secure. Do not use it for key generation, signature nonces, or any security-sensitive purpose. For cryptographic randomness, use Go's `crypto/rand` package.
+No. `runtime.Rand()` returns a seeded pseudo-random number generator (Go's `math/rand`). The seed is coordinated by the CRE platform so that all nodes in the DON produce the same sequence — that is what makes consensus possible — but no secret value is mixed into it, and it is not cryptographically secure. Do not use it for key generation, signature nonces, or any security-sensitive purpose. See [Seed predictability and trigger choice](#seed-predictability-and-trigger-choice) for how predictable a given execution's seed is, and [Choosing between CRE randomness and Chainlink VRF](#choosing-between-cre-randomness-and-chainlink-vrf) for when to reach for VRF instead. For cryptographic randomness, use Go's `crypto/rand` package.
 
 **What happens if I try to use randomness in the wrong mode?**
 
