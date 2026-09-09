@@ -118,7 +118,7 @@ export const CHAINS: Chain[] = [
     networks: [
       {
         name: "Arc Mainnet",
-        explorerUrl: "https://www.arcexplorer.org/address/%s",
+        explorerUrl: "https://explorer.arc.io/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-arc-mainnet.json",
         rddBundleUrl: "https://reference-data-directory.vercel.app/bundle-proxies-arc-mainnet.json",
