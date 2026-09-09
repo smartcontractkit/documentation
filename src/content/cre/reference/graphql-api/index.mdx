@@ -1,0 +1,70 @@
+---
+section: cre
+title: "GraphQL API"
+date: Last Modified
+isIndex: true
+metadata:
+  description: "Overview of the CRE GraphQL API: programmatic access to CRE workflows, deployments, and execution data."
+  datePublished: "2026-08-31"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+The CRE GraphQL API gives you programmatic, read access to your organization's CRE resources and workflow execution data.
+
+Use the API to:
+
+- List and inspect deployed **workflows** and their **deployments**.
+- Retrieve **workflow executions**, including status, timing, and errors.
+- Investigate failed executions using **execution logs** and **execution events** (the capability-level timeline for an execution).
+- Export workflow and execution data into your own dashboards, alerting, or observability systems.
+- Retrieve your **account** and **organization** details.
+
+The API is a single GraphQL endpoint. Every request is an HTTP `POST` with a GraphQL query in the body — there is no REST equivalent.
+
+## Endpoint
+
+| Environment | Endpoint                             |
+| ----------- | ------------------------------------ |
+| Production  | `https://api.cre.chain.link/graphql` |
+
+There is no separate staging endpoint documented for external use.
+
+```http
+POST /graphql
+Host: api.cre.chain.link
+Content-Type: application/json
+Authorization: Apikey <CRE_API_KEY>
+```
+
+## Authentication
+
+Every request requires a CRE API key, which in turn requires your account to have [deploy access](/cre/account/deploy-access) approval. See [Authentication](/cre/reference/graphql-api/authentication) for how to create a key and send it on each request.
+
+## Make your first request
+
+See the [Quickstart](/cre/reference/graphql-api/quickstart) to send your first request with cURL, TypeScript, or Go in a few minutes.
+
+## Explore by task
+
+The [Common Queries](/cre/reference/graphql-api/common-queries) guide organizes example queries by what you're trying to do — list workflows, find failed executions, retrieve execution logs — rather than requiring you to explore the schema first.
+
+## Explore the schema
+
+- [Query Reference](/cre/reference/graphql-api/queries) — every query, its arguments, and its return type
+- [Object Reference](/cre/reference/graphql-api/objects) — every object type and field, including scalars
+- [Enum Reference](/cre/reference/graphql-api/enums) — every enum and what each value means
+- [Input Reference](/cre/reference/graphql-api/inputs) — filter, sort, and pagination input types
+
+## API concepts
+
+- [Pagination](/cre/reference/graphql-api/pagination) — how to page through large result sets
+- [Errors & Rate Limits](/cre/reference/graphql-api/errors) — HTTP vs. GraphQL errors, and current rate-limit behavior
+
+<Aside type="note" title="Scope of this documentation">
+  This section documents the **queries** used to read workflow, deployment, and execution data. The schema also exposes
+  mutations for account, organization, API key, and offchain-workflow management (for example `createApiKey`,
+  `inviteOrganizationMembers`, `upsertOffchainWorkflow`). Those are used internally by the CRE CLI and platform UI and
+  are not covered here.
+</Aside>

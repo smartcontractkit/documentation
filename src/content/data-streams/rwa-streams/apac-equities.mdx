@@ -98,6 +98,16 @@ Protocols should account for session-open volatility by:
 - Widening deviation thresholds or reducing position exposure during the first minutes of each session
 - Avoiding liquidation triggers driven purely by price movement relative to the prior session's close
 
+### Session open: delayed quote availability
+
+Right after a session opens (the start of the morning session, or the afternoon session following a lunch break), bid/ask quotes from the exchange may not yet be available. For highly liquid stocks and indices, this typically lasts only a few seconds (around 10–20 seconds), while for less liquid stocks it can take several minutes. Until live quotes become available, the reported price may continue to reflect the prior session's close rather than current market activity.
+
+Unlike US Equities streams, APAC Equities streams have no extended-hours session, so there is no alternative live stream to fall back on during this transition window. Protocols should factor this delay into their risk logic and consider strategies such as:
+
+- Pause or restrict market activity for a short window after each session open
+- Widen deviation thresholds until fresh quotes are confirmed via `marketStatus` and an advancing `lastSeenTimestampNs`
+- Avoid triggering liquidations based solely on the price observed immediately at session open
+
 ### Pre-open prints on new listings
 
 On the morning a new instrument first lists, the stream may carry one or more prints at the issue price shortly before the exchange's opening call auction begins. These are pre-open reference prints disseminated by the exchange to establish a reference level ahead of price discovery — they are not executions, and `marketStatus` remains `5` (Closed) while they are published.

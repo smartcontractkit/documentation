@@ -61,11 +61,6 @@ const STREAM_DEPRECATION_ENDPOINTS: Array<{ network: string; networkType: "mainn
     networkType: "mainnet",
     url: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
   },
-  {
-    network: "arbitrum",
-    networkType: "testnet",
-    url: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-arbitrum-1.json",
-  },
 ]
 
 // Path to the baseline JSON file that contains known feed IDs

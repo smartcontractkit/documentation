@@ -1,0 +1,120 @@
+---
+section: cre
+title: "Errors & Rate Limits"
+date: Last Modified
+metadata:
+  description: "How the CRE GraphQL API reports errors, and current rate-limit behavior."
+  datePublished: "2026-08-31"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+GraphQL distinguishes **HTTP-level failure** (the request itself couldn't be processed) from **operation-level failure** (the request was processed, but the operation failed). The CRE GraphQL API can surface errors at either level, so check both in your client.
+
+## Response shapes
+
+### Success
+
+```json
+{
+  "data": {
+    "workflow": {
+      "data": { "uuid": "<WORKFLOW_UUID>", "name": "price-feed-monitor" }
+    }
+  }
+}
+```
+
+### GraphQL-level error (HTTP `200 OK`)
+
+Standard GraphQL-over-HTTP behavior: a request can return `200 OK` with a populated `errors` array, `data` set to `null`, or `data` and `errors` both present (partial success).
+
+```json
+{
+  "data": null,
+  "errors": [
+    {
+      "message": "workflow not found"
+    }
+  ]
+}
+```
+
+<Aside type="caution" title="Always check errors, not just HTTP status">
+  A `200 OK` response does not guarantee the operation succeeded. Always check for a populated `errors` array in the
+  response body, even when the HTTP status is `200`.
+</Aside>
+
+### HTTP-level error
+
+For failures the server rejects before or independently of GraphQL execution — such as an invalid or missing API key — the API can also return a non-2xx HTTP status with an error body. Recommended client behavior: treat any non-2xx response as a failure, and prefer `errors[0].message` from the body when present; otherwise fall back to the HTTP status text.
+
+```typescript
+const response = await fetch(endpoint, { method: "POST", headers, body })
+const result = await response.json()
+
+if (!response.ok) {
+  const message = result.errors?.[0]?.message ?? `HTTP ${response.status}: ${response.statusText}`
+  throw new Error(message)
+}
+
+if (result.errors?.length) {
+  throw new Error(result.errors[0].message)
+}
+
+return result.data
+```
+
+## Authentication errors
+
+Requests with a missing, malformed, invalid, or expired API key fail authentication. Check both the HTTP status and the `errors` array — do not assume a specific status code without verifying it against a live response, since the exact status is not published in the schema.
+
+## Authorization errors
+
+Some fields require additional authorization beyond a valid API key — for example, `getTenantConfig` requires an authenticated caller (`@isAuthenticated`), and several account-management mutations require specific organization roles (`@hasAnyRole`). Calling a field your API key isn't authorized for returns a GraphQL error for that field rather than failing the whole request outside of GraphQL, if other requested fields succeed.
+
+## Validation errors
+
+Argument values are validated against the constraints declared in the schema — for example, `page.size` cannot exceed `100`, and list-filter arguments such as `WorkflowsInput.status` have maximum lengths. Sending an invalid value returns a GraphQL validation error before your resolver-level query executes:
+
+```json
+{
+  "errors": [
+    {
+      "message": "page.size must be at most 100"
+    }
+  ]
+}
+```
+
+## Not-found behavior
+
+Single-item lookups such as [`workflowExecution`](/cre/reference/graphql-api/queries#workflowexecution) return a `null` `data` field rather than an error when no item matches the given `uuid`:
+
+```json
+{
+  "data": {
+    "workflowExecution": {
+      "data": null
+    }
+  }
+}
+```
+
+List queries such as [`workflows`](/cre/reference/graphql-api/queries#workflows) return an empty `data` array and `count: 0` rather than an error when nothing matches.
+
+## Rate limits
+
+<Aside type="caution" title="No published rate limits">
+  Chainlink has not published specific rate-limit values, response headers, or reset behavior for the CRE GraphQL API.
+  If you build a client against this API, add retry-with-backoff for `429` and `5xx` responses as a defensive default,
+  and avoid tight polling loops. If you need higher sustained request volume, [request help](/cre/account/deploy-access)
+  through your CRE account contact.
+</Aside>
+
+## Related
+
+- [Authentication](/cre/reference/graphql-api/authentication)
+- [Pagination](/cre/reference/graphql-api/pagination)
+- [Query Reference](/cre/reference/graphql-api/queries)

@@ -64,11 +64,6 @@ export function shouldHideAddress(feed: any, riskTier?: string | null): boolean 
     return false
   }
 
-  // Coinbase (B20) tokenized equity feeds on Base display their proxy address directly.
-  if (isCoinbaseTokenizedEquityFeed(feed)) {
-    return false
-  }
-
   if (feed.docs?.productSubType === "calculatedPrice") return true
   const proxy: string | null | undefined = feed.proxyAddress
   if (proxy != null && CONTACT_EMAIL_PROXY_ADDRESSES.has(proxy.toLowerCase())) return true
