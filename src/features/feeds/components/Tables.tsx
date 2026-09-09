@@ -1385,8 +1385,11 @@ const streamsCategoryMap = {
 }
 
 export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) => {
-  const finalTier = metadata.finalCategory
   const isDeprecating = !!metadata.docs?.shutdownDate
+  // Deprecating streams always show the deprecating category, even when the
+  // stream is rendered from a path that doesn't enrich finalCategory (e.g. the
+  // deprecating streams page) or when no Supabase risk tier is available.
+  const finalTier = isDeprecating ? "deprecating" : metadata.finalCategory
   const hideFeedId = shouldHideStreamFeedId(metadata)
 
   // Temporary calculated stream detection until proper metadata tagging is implemented
