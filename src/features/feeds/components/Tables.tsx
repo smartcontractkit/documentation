@@ -552,9 +552,9 @@ const DefaultTr = ({
                 href="/data-feeds/svr-feeds"
                 target="_blank"
                 className={tableStyles.feedVariantBadge}
-                title={`${getSvrType(metadata)} Feed`}
+                title={`${getSvrType(metadata, network)} Feed`}
               >
-                {getSvrType(metadata)}
+                {getSvrType(metadata, network)}
               </a>
             </div>
           )}
@@ -697,7 +697,7 @@ const DefaultTr = ({
                 <div className={tableStyles.separator} />
                 <div className={tableStyles.assetAddress}>
                   <dt>
-                    <span className="label">{getSvrType(metadata)} Proxy:</span>
+                    <span className="label">{getSvrType(metadata, network)} Proxy:</span>
                   </dt>
                   <dd>
                     {hideAddress ? (
@@ -1716,10 +1716,10 @@ export const MainnetTable = ({
   const typeFilteredMetadata = useMemo(() => {
     if (!isSvr || !svrTypeFilters || svrTypeFilters.size === 0) return filteredMetadata
     return filteredMetadata.filter((m) => {
-      const svrType = getSvrType(m)
+      const svrType = getSvrType(m, network)
       return svrType && !svrTypeFilters.has(svrType)
     })
-  }, [filteredMetadata, isSvr, svrTypeFilters])
+  }, [filteredMetadata, isSvr, svrTypeFilters, network])
 
   const slicedFilteredMetadata = typeFilteredMetadata.slice(firstAddr, lastAddr)
 
