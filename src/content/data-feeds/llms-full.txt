@@ -5490,7 +5490,7 @@ Consumers call the following functions on the proxy contract. The interface is d
 | ---------------------------------------- | ----------------------------------------------------------------------- |
 | `latest_round(data_id, decimals)`        | The most recent round for that feed, scaled to the requested `decimals` |
 | `get_round(data_id, round_id, decimals)` | A specific historical round, scaled to the requested `decimals`         |
-| `decimals(data_id)`                      | Decimal places for the answer                                           |
+| `decimals(data_id)`                      | The storage precision of the feed, currently always `18`                |
 | `description(data_id)`                   | Human-readable pair name                                                |
 
 ### Round structure
@@ -5510,8 +5510,8 @@ When you call the proxy, the contract can return a `ProxyReadError`. The followi
 | Error             | Meaning                                                                                                                                         |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `NoDataPresent`   | No round is available for the requested `data_id` or `round_id`. This can happen if the feed has not been written yet or the round has expired. |
-| `InvalidDecimals` | The `decimals` you requested is outside the supported range for the feed.                                                                       |
-| `RoundsToZero`    | Scaling the answer to the requested `decimals` rounds the answer to zero. Request fewer decimal places.                                         |
+| `InvalidDecimals` | The `decimals` you requested is outside the supported range for the feed. The valid range is `[min_decimals(feed), 18]`.                        |
+| `RoundsToZero`    | A non-zero answer would truncate to zero at the requested `decimals`. Request fewer decimal places.                                             |
 
 ## How long a round is available
 
@@ -5524,23 +5524,17 @@ You can read Chainlink Data Feeds on Stellar either onchain or offchain:
 - **Onchain**: Deploy a [Soroban contract in Rust](/data-feeds/stellar/using-data-feeds-on-chain) that calls the proxy and reads a price, deployed with `stellar-cli` to the Stellar Testnet.
 - **Offchain**: Read a feed via [Soroban RPC simulation](/data-feeds/stellar/using-data-feeds-off-chain) using `stellar-cli` and the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk).
 
-## Error handling
+## Answer precision
 
-When you call the proxy, the contract can return a `ProxyReadError`. The following cases describe what each error means for a consumer:
+The cache stores every answer at a fixed `18` decimal places (`DECIMALS`). Feeds sourced at a lower precision, such as `8` decimals, are scaled up to `18` on write, so the stored value is always `18`-decimal regardless of the feed's native precision. As a result, `decimals(data_id)` on the proxy currently always returns `18`; it describes the storage precision, not the originating feed.
 
-| Error            | Meaning                                                                                                                                                                                                                              |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `InvalidDataId`  | The `data_id` you passed does not correspond to a known feed. Check that you are using the correct `data_id` from the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected. |
-| `InvalidRoundId` | The `round_id` you requested does not exist for that feed.                                                                                                                                                                           |
-| `RoundNotFound`  | The requested round is not available. This can happen if the round has expired or has not yet been written.                                                                                                                          |
+Decimal conversion is applied at the proxy level. When you call `latest_round` or `get_round`, you pass the precision you want the answer returned at. The valid range is `[min_decimals(feed), 18]`:
 
-{/* TODO: Confirm the exact ProxyReadError cases and their names with engineering before publishing. */}
+- A feed's minimum precision is owner-configurable and defaults to `18`, which locks the feed to full precision unless the owner explicitly opens it up.
+- Downscaling truncates toward zero, matching the behavior of Solidity integer division that EVM consumers already use.
+- A non-zero answer that would truncate to zero at the requested precision fails with a distinct error rather than silently returning zero. An answer that is genuinely zero returns zero at any precision.
 
-## How long a round is available
-
-A round is typically available for a limited period of time before it expires. After a round expires, it can no longer be read from the proxy.
-
-{/* TODO: Add the length of time a round is held before expiring once engineering provides the value. */}
+{/* TODO: Confirm the finalised precision interface with engineering. The `decimals` parameter on `latest_round`/`get_round`, the per-feed `min_decimals` concept, and the precision error cases are in flight and should be verified before publishing. */}
 
 <Aside type="danger" title="Select quality data feeds">
   Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds).
