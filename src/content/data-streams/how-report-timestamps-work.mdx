@@ -29,20 +29,20 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
 
 <DataStreams section="dsNotes" />
 
-Every Data Streams report carries two timestamps: `validFromTimestamp` and `observationsTimestamp`. Together they describe a span of time rather than a single instant. This page explains how that span is constructed, what to expect when no report exists for a given second, and how timestamps apply to Time Weighted Average Price (TWAP) streams.
+Every Data Streams report carries two timestamps:
 
-## Reports are spans, not ticks
+- **`validFromTimestamp`** — when the report's price _starts being valid_
+- **`observationsTimestamp`** — when the report's price _was last observed_.
 
-A report doesn't represent a price at an instant. It represents a price over a span of time:
+Together, they describe a span of time rather than a single instant. Below find information about how that span is constructed, what to expect when no report exists for a given second, and how timestamps apply to Time Weighted Average Price (TWAP) streams.
 
-> From `validFromTimestamp` through `observationsTimestamp`, the price is X.
+## Report Spans
 
-- **`validFromTimestamp`** — the floor of the span
-- **`observationsTimestamp`** — the ceiling of the span
+A report does not have verified price for a single instant in time. The `validFromTimestamp` marks the beginning of the span, and the `observationsTimestamp` marks the end.
 
-Both fields are Unix timestamps in seconds.
+Both fields are Unix timestamps in seconds. [Each report schema](/data-streams/reference/report-schema-overview) contains definitions, including the unit of time, for all fields.
 
-This span can be 1 second wide or several seconds wide, depending on how frequently the Decentralized Oracle Network (DON) can observe the data and generate reports. Spans are contiguous by construction: each one starts the second after the previous one ended. No gaps, no overlaps — every second in time belongs to exactly one report.
+The span of time can vary depending on how frequently the Decentralized Oracle Network (DON) can observe the data and generate reports. Spans are contiguous by construction: each one starts the immediately following the previous span. Each report is designed to have no gaps or overlap, with every price interval belonging to exactly one report.
 
 ## Understanding real-time transmission
 
