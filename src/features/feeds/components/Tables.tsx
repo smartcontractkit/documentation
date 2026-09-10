@@ -18,13 +18,7 @@ import {
 import type { MarketPricingRiskProduct } from "../content/marketPricingRiskTerms.ts"
 import { REPORT_SCHEMA_DEFINITIONS, type SchemaDefinition } from "./reportSchemaData.ts"
 import schemaFieldsTableStyles from "../../data-streams/common/schemaFieldsTable.module.css"
-import {
-  isSharedSVR,
-  isAaveSVR,
-  isNewSharedSVR,
-  getSvrType,
-  type SvrFeedType,
-} from "~/features/feeds/utils/svrDetection.ts"
+import { getSvrType, type SvrFeedType } from "~/features/feeds/utils/svrDetection.ts"
 import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
 import {
   shouldHideAddress,
@@ -552,9 +546,9 @@ const DefaultTr = ({
                 href="/data-feeds/svr-feeds"
                 target="_blank"
                 className={tableStyles.feedVariantBadge}
-                title={`${getSvrType(metadata)} Feed`}
+                title={`${getSvrType(metadata, network)} Feed`}
               >
-                {getSvrType(metadata)}
+                {getSvrType(metadata, network)}
               </a>
             </div>
           )}
@@ -697,7 +691,7 @@ const DefaultTr = ({
                 <div className={tableStyles.separator} />
                 <div className={tableStyles.assetAddress}>
                   <dt>
-                    <span className="label">{getSvrType(metadata)} Proxy:</span>
+                    <span className="label">{getSvrType(metadata, network)} Proxy:</span>
                   </dt>
                   <dd>
                     {hideAddress ? (
@@ -730,7 +724,7 @@ const DefaultTr = ({
                     )}
                   </dd>
                 </div>
-                {isAaveSVR(metadata) && !hideAddress && (
+                {getSvrType(metadata, network) === "Aave-SVR" && !hideAddress && (
                   <div className={clsx(tableStyles.aaveCallout)}>
                     <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
                     Aave protocol. Learn more about{" "}
@@ -740,7 +734,7 @@ const DefaultTr = ({
                     .
                   </div>
                 )}
-                {isNewSharedSVR(metadata) && !hideAddress && (
+                {getSvrType(metadata, network) === "SVR" && !hideAddress && (
                   <div className={clsx(tableStyles.sharedCallout)}>
                     <strong>🔗 SVR Feed:</strong> This SVR proxy feed is usable by any protocol. Learn more about{" "}
                     <a href="/data-feeds/svr-feeds" target="_blank">
@@ -749,7 +743,7 @@ const DefaultTr = ({
                     .
                   </div>
                 )}
-                {isSharedSVR(metadata) && !hideAddress && (
+                {getSvrType(metadata, network) === "SVR-Backup" && !hideAddress && (
                   <div className={clsx(tableStyles.sharedCallout)}>
                     <strong>🔗 SVR-Backup Feed:</strong> This is a legacy SVR proxy feed. New integrations should use
                     the <strong>SVR</strong> feeds. Learn more about{" "}
@@ -1716,10 +1710,10 @@ export const MainnetTable = ({
   const typeFilteredMetadata = useMemo(() => {
     if (!isSvr || !svrTypeFilters || svrTypeFilters.size === 0) return filteredMetadata
     return filteredMetadata.filter((m) => {
-      const svrType = getSvrType(m)
+      const svrType = getSvrType(m, network)
       return svrType && !svrTypeFilters.has(svrType)
     })
-  }, [filteredMetadata, isSvr, svrTypeFilters])
+  }, [filteredMetadata, isSvr, svrTypeFilters, network])
 
   const slicedFilteredMetadata = typeFilteredMetadata.slice(firstAddr, lastAddr)
 
