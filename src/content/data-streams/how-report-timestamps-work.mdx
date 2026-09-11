@@ -34,7 +34,7 @@ Every Data Streams report carries two timestamps:
 - **`validFromTimestamp`** — when the report's price _starts being valid_
 - **`observationsTimestamp`** — when the report's price _was last observed_.
 
-Together, they describe a window of time rather than a single instant. This page explains how that window is constructed, what to expect when no report exists for a given second, and how timestamps apply to Time Weighted Average Price (TWAP) streams.
+Together, they describe a window of time rather than a single instant. This page explains how that window is constructed, what to expect when no report exists for a given moment, and how timestamps apply to Time Weighted Average Price (TWAP) streams.
 
 ## Report windows
 
@@ -61,7 +61,7 @@ It is possible for no report to be observed with `observationsTimestamp = 12:05:
 
 The next report's `validFromTimestamp` is `12:05:00`, absorbing the gap and creating a 2-second window (`12:05:00` → `12:05:01`). In this example, the price for `12:05:00` is observed one second later at `12:05:01`.
 
-Because windows can vary in width, **do not assume every report covers exactly one second**. Read `validFromTimestamp` and `observationsTimestamp` from each report rather than deriving the window from the previous report's timestamp or from your own clock.
+Because windows can vary in width, **do not assume every report covers the same window**. Read `validFromTimestamp` and `observationsTimestamp` from each report rather than deriving the window from the previous report's timestamp or from your own clock.
 
 ## TWAP streams
 
