@@ -967,19 +967,19 @@ Every Data Streams report carries two timestamps:
 - **`validFromTimestamp`** — when the report's price *starts being valid*
 - **`observationsTimestamp`** — when the report's price *was last observed*.
 
-Together, they describe a span of time rather than a single instant. Below, find information about how that span is constructed, what to expect when no report exists for a given second, and how timestamps apply to Time Weighted Average Price (TWAP) streams.
+Together, they describe a window of time rather than a single instant. This page explains how that window is constructed, what to expect when no report exists for a given second, and how timestamps apply to Time Weighted Average Price (TWAP) streams.
 
-## Report Spans
+## Report windows
 
-A report does not have verified price for a single instant in time. The `validFromTimestamp` marks the beginning of the span, and the `observationsTimestamp` marks the end.
+A report does not have verified price for a single instant in time. The `validFromTimestamp` marks the beginning of the window, and the `observationsTimestamp` marks the end.
 
 Both fields are Unix timestamps in seconds. [Each report schema](/data-streams/reference/report-schema-overview) contains definitions, including the unit of time, for all fields.
 
-The span of time can vary depending on how frequently the Decentralized Oracle Network (DON) can observe the data and generate reports. Spans are contiguous by construction: each one starts the immediately following the previous span. Each report is designed to have no gaps or overlap, with every price interval belonging to exactly one report.
+The window of time can vary depending on how frequently the Decentralized Oracle Network (DON) can observe the data and generate reports. Windows are contiguous by construction: each one starts immediately following the previous window. Each report is designed to have no gaps or overlap, with every time interval belonging to exactly one report.
 
 ## Determining current price
 
-Because each report covers a span rather than an instant, the "current" price at any given moment is the price of the report whose span contains that moment. Whether such a report exists yet depends on how recently the DON observed the data and delivered the report.
+Because each report covers a window rather than an instant, the "current" price at any given moment is the price of the report whose window contains that moment. Whether such a report exists yet depends on how recently the DON observed the data and delivered the report.
 
 **Normal case: a report exists at that exact moment**
 
@@ -1002,7 +1002,7 @@ Time Weighted Average Price (TWAP) streams report the average price over a rolli
 
 A TWAP window is anchored to the latest observation and moves forward with each new report. Unlike standard streams, it doesn't align to the clock or snap to round numbers.
 
-For example, a 60-second TWAP requested "at `12:05:01`" covers `12:04:01` to `12:05:01`.
+For example, a 60-second TWAP requested "at `12:05:01`" covers `12:04:01` → `12:05:01`.
 
 **Formula:**
 
@@ -1013,7 +1013,7 @@ TWAP = (sum of price × duration for each report in the window) / window length 
 - 30-second TWAP → divide by 30
 - 60-second TWAP → divide by 60
 
-The TWAP is constructed from underlying reports that fall within its window. Each underlying report normally covers about 1 second, but if a report's window is wider because it absorbed a gap, its price is weighted across the full window covered in the TWAP calculation.
+The TWAP is constructed from the underlying reports that fall within its window. Each underlying report normally covers about 1 second, but if a report's window is wider because it absorbed a gap, its price is weighted across the full window it covers.
 
 ---
 
