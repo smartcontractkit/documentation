@@ -18,8 +18,8 @@ import { Aside } from "@components"
 </Aside>
 
 {/* prettier-ignore */}
-<Aside type="note" title="Early Access required">
-  Workflow deployment is currently in Early Access. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+<Aside type="note" title="Deploy access required">
+  Workflow deployment requires approval. Run `cre account access` to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
 </Aside>
 
 The **public onchain registry** is the Workflow Registry contract on Ethereum Mainnet. Deploying to it records your workflow onchain — your linked wallet address becomes the workflow owner and every lifecycle operation (deploy, activate, pause, update, delete) submits a transaction to that contract.
@@ -30,7 +30,7 @@ For a lower-friction alternative that requires no wallet or gas for registry man
 
 Before deploying to the onchain registry, ensure you have:
 
-- **Early Access approval**: Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
+- **Deploy access approval**: Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
 - **[Authenticated](/cre/reference/cli/authentication)**: Logged in via `cre login` or using an [API key](/cre/reference/cli/authentication#api-key-authentication) (`CRE_API_KEY`). To verify, run `cre whoami`.
 - **[Linked your key](/cre/organization/linking-keys)**: Linked your EOA or multi-sig wallet to your CRE organization by running `cre account link-key`. See [Linking Wallet Keys](/cre/organization/linking-keys) for instructions.
 - **A funded wallet**: The account you are deploying from must hold ETH on Ethereum Mainnet to pay gas for the registration transaction.
@@ -45,11 +45,6 @@ The `cre workflow deploy` command handles the entire end-to-end process:
 1. **Compiles** your workflow to a WASM binary.
 1. **Uploads** the compiled binary and any associated configuration files to the CRE Storage Service.
 1. **Registers** the workflow onchain by submitting a transaction to the Workflow Registry contract on Ethereum Mainnet. Your wallet must have ETH for gas fees, and your `project.yaml` must include an RPC configuration for `ethereum-mainnet`. The transaction contains the workflow's name, owner, and artifact URLs.
-
-{/* prettier-ignore */}
-<Aside type="caution" title="Early Access: Disclaimer">
-Chainlink Runtime Environment (CRE) deployment is in the "Early Access" stage of development, which means that CRE currently has functionality which is under development and may be changed in later versions. By using CRE, you expressly acknowledge and agree to accept the Chainlink <a href="https://chain.link/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>, which provides important information and disclosures.
-</Aside>
 
 ### Step 1: Ensure your configuration is correct
 

@@ -140,12 +140,28 @@ There's no upfront declaration like Confidential HTTP's `VaultDonSecrets`—the 
 
 ### `runtime.GetSecrets`
 
-Fetches multiple secrets in a single batch call.
+Fetches multiple secrets in a single batch call, decrypted only inside the enclave.
 
 **Signature:**
 
 ```go
 func (r TeeRuntime) GetSecrets([]*SecretRequest) Promise[[]*Secret]
+```
+
+The promise resolves to a slice of `*Secret` values, in the same order as the requests. If any secret in the batch fails, the promise resolves with an error that includes the failing secret ids and their error messages.
+
+**Example:**
+
+```go
+secrets, err := runtime.GetSecrets([]*cre.SecretRequest{
+	{Id: "API_KEY"},
+	{Id: "DB_URL"},
+}).Await()
+if err != nil {
+	return "", fmt.Errorf("failed to get secrets: %w", err)
+}
+apiKey := secrets[0].Value
+dbUrl := secrets[1].Value
 ```
 
 ## Crossing back to the DON

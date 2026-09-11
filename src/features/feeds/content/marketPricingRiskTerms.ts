@@ -7,6 +7,7 @@ export type MarketPricingRiskTerms = {
   categoriesHeading: string
   categoriesIntro: string
   categoriesListIntro: string
+  categoriesUnratedNote: string
   sectionIntro: string
   newTokenListLabel: string
   customListLabel: string
@@ -27,6 +28,8 @@ const FEEDS_TERMS: MarketPricingRiskTerms = {
     "This categorization is put in place to inform users about the intended use cases of feeds and help highlight some of the inherent market integrity risks surrounding the data quality of these feeds.",
   categoriesListIntro:
     "Data feeds are grouped into the following categories based on the level of market pricing risk, based on multiple factors, from lowest to highest:",
+  categoriesUnratedNote:
+    "If a feed does not display one of these categories, it has not yet been evaluated for market pricing risk. Treat it as unevaluated and use it at your own risk.",
   sectionIntro:
     "These subsections describe standard market price feeds at each pricing risk level and correspond to the [category list](#data-feed-categories) above.",
   newTokenListLabel: "New Token Feeds",
@@ -48,6 +51,8 @@ const STREAMS_TERMS: MarketPricingRiskTerms = {
     "This categorization is put in place to inform users about the intended use cases of streams and help highlight some of the inherent market integrity risks surrounding the data quality of these streams.",
   categoriesListIntro:
     "Data streams are grouped into the following categories based on the level of market pricing risk, based on multiple factors, from lowest to highest:",
+  categoriesUnratedNote:
+    "If a stream does not display one of these categories, it has not yet been evaluated for market pricing risk. Treat it as unevaluated and use it at your own risk.",
   sectionIntro:
     "These subsections describe standard market price streams at each pricing risk level and correspond to the [category list](#data-stream-categories) above.",
   newTokenListLabel: "New Token Streams",

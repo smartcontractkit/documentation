@@ -406,6 +406,10 @@ For best practices regarding stock splits and reverse splits for tokenized asset
 
 Each report applies to a span of time defined by `validFromTimestamp` and `observationsTimestamp`, and that span isn't always exactly one second wide. Read both fields from each report rather than assuming a fixed cadence or deriving the window from your own clock. See [How Report Timestamps Work](/data-streams/how-report-timestamps-work) for details, including how gaps between reports are absorbed and how timestamps apply to TWAP streams.
 
+## Rate Limits
+
+Rely on the WebSocket stream for report delivery rather than polling a REST endpoint in a tight loop, and implement exponential backoff on reconnect logic. See the [Rate Limits and Fair Use Policy](/data-streams/rate-limits) page for applicable limits and how to avoid HTTP 429 responses.
+
 ---
 
 # Calculated Streams
@@ -955,6 +959,10 @@ The portal automatically includes your Data Streams user ID with the ticket.
 
 If you are using Data Streams credentials that were issued outside the self-service portal, your streams user ID will not be attached automatically. Include your streams user ID — represented as a UUID — in your support request.
 
+## Rate limiting
+
+If you believe you've been rate limited unexpectedly, see the [Rate Limits and Fair Use Policy](/data-streams/rate-limits) page for details on fair usage limits and what to include in your support request.
+
 ---
 
 # How Report Timestamps Work
@@ -1090,7 +1098,7 @@ Access data directly through REST APIs or WebSocket connections using our SDKs:
 
 1. Understand the Architecture: Review the [system components and data flow](/data-streams/architecture) to understand how Data Streams works.
 
-2. Explore Available Data: Browse [available reports and associated schemas](/data-streams/reference/report-schema-overview) to see what data is available.
+2. Explore Available Data: Browse [available reports and associated schemas](/data-streams/reference/report-schema-overview) to see what data is available, or [discover streams programmatically](/data-streams/reference/data-streams-api/discovery-endpoint) with the Discovery endpoint.
 
 3. Try the API: Follow our [hands-on tutorial](/data-streams/tutorials/go-sdk-fetch) to fetch and decode your first report.
 
@@ -1190,11 +1198,18 @@ APAC Equities streams use the [RWA Advanced (v11) schema](/data-streams/referenc
 
 APAC streams quote in each exchange's local currency (for example, `/JPY` for Japanese equities). All times are **local exchange time** (Mon–Fri unless noted). UTC offsets are fixed for the listed timezone.
 
-| Exchange                     | Code | Currency | Status    | Time zone   | Session   | Hours (local) | UTC equivalent  | Notes                                                                               |
-| ---------------------------- | ---- | -------- | --------- | ----------- | --------- | ------------- | --------------- | ----------------------------------------------------------------------------------- |
-| **Korean Equities + ETFs**   | KRX  | KRW      | Available | KST (UTC+9) | Regular   | 09:00–15:20   | 00:00–06:20 UTC |                                                                                     |
-| **Japanese Equities + ETFs** | TSE  | JPY      | Available | JST (UTC+9) | Morning   | 09:00–11:30   | 00:00–02:30 UTC |                                                                                     |
-|                              |      |          |           |             | Afternoon | 12:30–15:25   | 03:30–06:25 UTC | One-hour lunch break 11:30–12:30. Closing auction 15:25–15:30 (`marketStatus = 5`). |
+| Exchange                      | Code | Currency | Status    | Time zone   | Session   | Hours (local) | UTC equivalent  | Notes                                                                                |
+| ----------------------------- | ---- | -------- | --------- | ----------- | --------- | ------------- | --------------- | ------------------------------------------------------------------------------------ |
+| **Korean Equities + ETFs**    | KRX  | KRW      | Available | KST (UTC+9) | Regular   | 09:00–15:20   | 00:00–06:20 UTC |                                                                                      |
+| **Japanese Equities + ETFs**  | TSE  | JPY      | Available | JST (UTC+9) | Morning   | 09:00–11:30   | 00:00–02:30 UTC |                                                                                      |
+|                               |      |          |           |             | Afternoon | 12:30–15:25   | 03:30–06:25 UTC | One-hour lunch break 11:30–12:30. Closing auction 15:25–15:30 (`marketStatus = 5`).  |
+| **Shanghai Equities + ETFs**  | SSE  | CNY      | Available | CST (UTC+8) | Morning   | 09:30–11:30   | 01:30–03:30 UTC |                                                                                      |
+|                               |      |          |           |             | Afternoon | 13:00–14:57   | 05:00–06:57 UTC | 90-minute lunch break 11:30–13:00. Closing auction 14:57–15:00 (`marketStatus = 5`). |
+| **Shenzhen Equities + ETFs**  | SZSE | CNY      | Available | CST (UTC+8) | Morning   | 09:30–11:30   | 01:30–03:30 UTC |                                                                                      |
+|                               |      |          |           |             | Afternoon | 13:00–14:57   | 05:00–06:57 UTC | 90-minute lunch break 11:30–13:00. Closing auction 14:57–15:00 (`marketStatus = 5`). |
+| **Taiwan Equities + ETFs**    | TWSE | TWD      | Available | CST (UTC+8) | Regular   | 09:00–13:25   | 01:00–05:25 UTC | Closing auction 13:25–13:30 (`marketStatus = 5`).                                    |
+| **Hong Kong Equities + ETFs** | HKEX | HKD      | Available | HKT (UTC+8) | Morning   | 09:30–12:00   | 01:30–04:00 UTC |                                                                                      |
+|                               |      |          |           |             | Afternoon | 13:00–16:00   | 05:00–08:00 UTC | One-hour lunch break 12:00–13:00. Closing auction 16:00–16:10 (`marketStatus = 5`).  |
 
 See the [APAC Equities](/data-streams/rwa-streams/apac-equities) page for coverage and risk considerations.
 
@@ -1271,6 +1286,55 @@ Used by 24/5 US Equities streams with extended and overnight sessions.
 ## Best practices
 
 For comprehensive guidance on managing risks related to market hours, market gaps, volatility, and corporate actions, see the [Best Practices](/data-streams/concepts/best-practices#market-hours) page.
+
+---
+
+# Data Streams Rate Limits and Fair Use Policy
+Source: https://docs.chain.link/data-streams/rate-limits
+
+To ensure reliable access to Chainlink Data Streams for all consumers, rate limits are enforced on API and WebSocket usage. This page describes what constitutes fair usage.
+
+## Fair usage definition
+
+Rate limits are defined by your service agreement. For users with a self-service subscription purchased through [app.chain.link](https://app.chain.link), fair usage is defined as:
+
+- 20 concurrent WebSocket connections
+- 10 requests per second per endpoint on the REST service
+
+These limits apply per user ID. For example, your account is limited to 10 requests per second on *each* of the following endpoints (limits are not cumulative across endpoints):
+
+- `/api/v1/reports`
+- `/api/v1/reports/latest`
+- `/api/v1/reports/page`
+- `/api/v1/reports/bulk`
+
+Users with a contracted service agreement have higher limits defined by their agreement. [Contact us](/data-streams/get-support) for higher rate limits.
+
+Requests that exceed the applicable limit receive an HTTP 429 (Too Many Requests) response.
+
+## Report retrieval
+
+Reports are pushed as soon as they are available. Sending a higher volume of REST requests to retrieve the latest report will not return it any faster, and adds unnecessary load to the service. Use the WebSocket stream for timely report delivery rather than polling a REST endpoint.
+
+## Prohibited: redistribution via proxy
+
+Proxying Chainlink Data Streams with the intent to share or redistribute data to a wider audience (for example, re-serving stream data to third parties who are not party to your license or agreement) is strictly prohibited under the [Terms of Service](https://chain.link/terms). Each consumer must connect and authenticate directly under their own credentials.
+
+## Best practices to avoid rate limiting
+
+- Rely on the WebSocket stream for report delivery rather than polling a REST endpoint in a tight loop.
+- Ensure your client properly closes WebSocket connections on disconnect and reconnect to avoid connection leaks.
+- Implement exponential backoff on reconnect logic.
+- If you require higher throughput or connection limits than the defaults, [reach out proactively](/data-streams/get-support) rather than working around the limit — we're happy to discuss options for your use case.
+
+<Aside type="note" title="Contact">
+  If you have questions about this policy, or believe you've been rate limited unexpectedly, [contact
+  support](/data-streams/get-support) with:
+
+  - Your API user ID identifier
+  - Timestamps of the affected requests or connections
+  - A brief description of your integration and expected usage pattern
+</Aside>
 
 ---
 
@@ -2146,7 +2210,7 @@ This page explains how to authenticate with the Chainlink Data Streams API, cove
 
 ## Authentication Requirements
 
-All requests to the Data Streams API (both REST and WebSocket) require three authentication headers:
+All requests to the Data Streams API (both REST and WebSocket) require three authentication headers, with one exception: the [Discovery endpoint](/data-streams/reference/data-streams-api/discovery-endpoint) does not require authentication to list publicly available streams. Authenticate to see the [hidden streams](/data-streams/reference/data-streams-api/discovery-endpoint#hidden-streams) your API key is entitled to.
 
 | Header                             | Description                                  |
 | ---------------------------------- | -------------------------------------------- |
@@ -3928,6 +3992,263 @@ While this example already includes many production-ready features (keepalive, t
 
 ---
 
+# Discovery Endpoint
+Source: https://docs.chain.link/data-streams/reference/data-streams-api/discovery-endpoint
+
+The Discovery endpoint returns the catalog of Data Streams, including each stream's ID, asset pair, report schema version, and status. Use it to look up stream IDs programmatically, to discover the [hidden streams](#hidden-streams) your account is entitled to, and to confirm which streams your account can access.
+
+The response also surfaces useful metadata for each stream, such as the [report schema version](#schema) it uses, its [market hours](/data-streams/market-hours), and its [expected decommission date](#schema), and more.
+
+## Endpoint
+
+The Discovery endpoint is part of the [Data Streams REST API](/data-streams/reference/data-streams-api/interface-api) and lives on the same host:
+
+| Description        | Testnet URL                                                 | Mainnet URL                                         |
+| :----------------- | :---------------------------------------------------------- | :-------------------------------------------------- |
+| Discovery endpoint | https\://api.testnet-dataengine.chain.link/api/v1/discovery | https\://api.dataengine.chain.link/api/v1/discovery |
+
+##### Sample request
+
+```http
+GET /api/v1/discovery
+```
+
+## Authentication
+
+[Data Streams Authentication](/data-streams/reference/data-streams-api/authentication) is optional for the Discovery endpoint. It returns stream metadata, including which streams exist and their schema, *not* report data. However, authentication provides additional access to streams valid for your API key:
+
+- **Without authentication**, the endpoint returns the streams Chainlink lists publicly.
+- **With authentication**, it also returns the streams your API key is entitled to, including any [hidden streams](#hidden-streams) provisioned for your account.
+
+Authenticate the same way as any other Data Streams REST request, by sending the three HMAC headers described on the [Data Streams Authentication](/data-streams/reference/data-streams-api/authentication) page. If you use a [Data Streams SDK](/data-streams/reference/data-streams-api/go-sdk), authentication is handled for you.
+
+For example, this public request returns all live streams:
+
+```bash
+curl "https://api.dataengine.chain.link/api/v1/discovery?status=live"
+```
+
+<Aside type="note" title="Your entitlements come from your key">
+  The response is scoped to the credentials you sign with. Query parameters filter what your key can already reach; they
+  never widen your access. If you expect a stream and don't see it, contact your Chainlink representative.
+</Aside>
+
+## Query parameters
+
+Query parameters are how you search the catalog. Use them to filter the response down to the streams you care about, for example, by asset, status, or network. Every parameter is optional; omitting one means no restriction on that field.
+
+- String filters accept a **comma-delimited list** and match **any** of the supplied values, compared **case-insensitively**. For example, `base_asset=btc,eth` returns both BTC and ETH streams.
+- Different parameters combine with **AND**. For example, `asset_class=Crypto&quote_asset=USD` returns only crypto streams quoted in USD.
+- Unrecognized parameters are ignored.
+
+### Metadata filters
+
+| Parameter        | Description                                                                                  | Example                   |
+| :--------------- | :------------------------------------------------------------------------------------------- | :------------------------ |
+| `base_asset`     | Base asset of the pair.                                                                      | `base_asset=BTC,ETH`      |
+| `quote_asset`    | Quote asset of the pair.                                                                     | `quote_asset=USD`         |
+| `asset_class`    | Broad asset category. See [filter values](#asset-class) below for the full list.             | `asset_class=Crypto`      |
+| `feed_type`      | Stream category. See [filter values](#feed-type) below for the full list.                    | `feed_type=Equities`      |
+| `attribute_type` | The kind of data reported. See [filter values](#attribute-type) below for the full list.     | `attribute_type=CexPrice` |
+| `status`         | Stream status. See [Stream status](#stream-status) below.                                    | `status=live`             |
+| `network_type`   | DON network type.                                                                            | `network_type=mainnet`    |
+| `hidden`         | Boolean. When `true`, includes the [hidden streams](#hidden-streams) your API key can reach. | `hidden=true`             |
+
+### Filter values
+
+The string filters accept the values the catalog currently uses. The lists below are not exhaustive — the catalog grows over time, so new values may appear.
+
+#### Asset class
+
+`asset_class` is a broad asset category. The catalog currently uses:
+
+| Value                  | Description                                                                                                 |
+| :--------------------- | :---------------------------------------------------------------------------------------------------------- |
+| `Crypto`               | Cryptocurrencies. See [Crypto streams](/data-streams/crypto-streams).                                       |
+| `Equities`             | Stocks and exchange-traded funds (ETFs). See [RWA streams](/data-streams/rwa-streams).                      |
+| `Forex`                | Foreign exchange currency pairs.                                                                            |
+| `Macroeconomics`       | Macroeconomic indicators.                                                                                   |
+| `NAV`                  | Net Asset Value of tokenized funds or portfolios. See [SmartData streams](/data-streams/smartdata-streams). |
+| `Tokenized Asset`      | Tokenized equities. See [Tokenized Asset streams](/data-streams/tokenized-asset-streams).                   |
+| `Tokenized CLO`        | Tokenized collateralized loan obligations.                                                                  |
+| `Tokenized Debt`       | Tokenized debt instruments.                                                                                 |
+| `Tokenized Treasuries` | Tokenized US Treasury securities.                                                                           |
+
+#### Feed type
+
+`feed_type` is a stream category. The catalog currently uses:
+
+| Value             | Description                                                                                                                                |
+| :---------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
+| `Crypto`          | Cryptocurrency price streams. See [Crypto streams](/data-streams/crypto-streams).                                                          |
+| `Crypto-DEX`      | Cryptocurrency prices derived from onchain liquidity pools. See [DEX State Price streams](/data-streams/concepts/dex-state-price-streams). |
+| `Datalink`        | Streams delivered through the [DataLink](/datalink) product.                                                                               |
+| `Equities`        | Equity price streams. See [RWA streams](/data-streams/rwa-streams).                                                                        |
+| `Forex`           | Foreign exchange price streams.                                                                                                            |
+| `Macroeconomics`  | Macroeconomic indicator streams.                                                                                                           |
+| `Net Asset Value` | Net Asset Value streams. See [SmartData streams](/data-streams/smartdata-streams).                                                         |
+| `SmartData`       | SmartData streams, including NAV and Proof of Reserve. See [SmartData streams](/data-streams/smartdata-streams).                           |
+| `Tokenized Asset` | Tokenized equity streams. See [Tokenized Asset streams](/data-streams/tokenized-asset-streams).                                            |
+
+#### Attribute type
+
+`attribute_type` is the kind of data reported. The catalog currently uses:
+
+| Value                       | Description                                                                                                                 |
+| :-------------------------- | :-------------------------------------------------------------------------------------------------------------------------- |
+| `CexPrice`                  | Centralized exchange price.                                                                                                 |
+| `DexPrice`                  | Decentralized exchange price.                                                                                               |
+| `EquityPrice`               | Equity price.                                                                                                               |
+| `ExchangeRate`              | Redemption rate of a staked asset. See [Exchange Rate streams](/data-streams/exchange-rate-streams).                        |
+| `ExtendedHoursEquityPrice`  | Equity price during extended trading hours.                                                                                 |
+| `ForexPrice`                | Foreign exchange price.                                                                                                     |
+| `NAV`                       | Net Asset Value. See [SmartData streams](/data-streams/smartdata-streams).                                                  |
+| `OvernightHoursEquityPrice` | Equity price during overnight trading hours.                                                                                |
+| `RegularHoursEquityPrice`   | Equity price during regular trading hours.                                                                                  |
+| `SmartData`                 | SmartData, including NAV and Proof of Reserve. See [SmartData streams](/data-streams/smartdata-streams).                    |
+| `TopOfBook`                 | Top-of-book bid and ask prices. See [Crypto Top-of-Book streams](/data-streams/concepts/crypto-top-of-book-and-mark-price). |
+
+<Aside type="note" title="Values can change">
+  The catalog grows over time, so new values may appear beyond those listed here. If you filter on a value and get an
+  empty `feeds` array, check the spelling first — an unrecognized value returns HTTP `200` with no results rather than
+  an error.
+</Aside>
+
+### Stream status
+
+The `status` filter distinguishes production streams from pre-production streams:
+
+- `live` - production streams that are ready for production use.
+- `testing` - pre-production streams used for validation.
+
+Testing streams are visible without authentication. Omitting the `status` filter returns both `live` and `testing` streams, so filter explicitly with `status=live` to return only streams that are ready for production.
+
+### Date filters
+
+Date filters take a `YYYY-MM-DD` date with no time component, and are strict: `after` and `before` exclude the date itself. A value that isn't a plain date returns HTTP `400`.
+
+| Parameter                      | Description                                                      |
+| :----------------------------- | :--------------------------------------------------------------- |
+| `created_after`                | Streams created strictly after this date.                        |
+| `created_before`               | Streams created strictly before this date.                       |
+| `expected_decommission_after`  | Streams with an expected decommission strictly after this date.  |
+| `expected_decommission_before` | Streams with an expected decommission strictly before this date. |
+| `decommissioned_after`         | Streams decommissioned strictly after this date.                 |
+| `decommissioned_before`        | Streams decommissioned strictly before this date.                |
+
+### Examples
+
+The following examples show common ways to filter the catalog.
+
+**All live streams**
+
+```http
+GET /api/v1/discovery?status=live
+```
+
+**Crypto streams quoted in USD**
+
+```http
+GET /api/v1/discovery?asset_class=Crypto&quote_asset=USD&status=live
+```
+
+**Multiple base assets**
+
+```http
+GET /api/v1/discovery?base_asset=BTC,ETH,SOL
+```
+
+**Streams created after a date**
+
+```http
+GET /api/v1/discovery?created_after=2026-01-01&status=live
+```
+
+**Live streams, including hidden ones your key can reach**
+
+```http
+GET /api/v1/discovery?status=live&hidden=true
+```
+
+## Hidden streams
+
+Chainlink often launches new streams privately, before they are announced or made generally available. These streams are marked as hidden: they are excluded from the public Chainlink documentation and from the default Discovery endpoint response, but they are fully functional for the accounts provisioned to use them.
+
+For accounts entitled to these streams, the `hidden` parameter retrieves their metadata:
+
+```bash
+curl "https://api.dataengine.chain.link/api/v1/discovery?hidden=true&status=live" \
+  -H "Authorization: $API_KEY" \
+  -H "X-Authorization-Timestamp: $TIMESTAMP" \
+  -H "X-Authorization-Signature-SHA256: $SIGNATURE"
+```
+
+## Response
+
+The response is a JSON object with a single `feeds` array:
+
+```json
+{
+  "feeds": [
+    {
+      "assetClass": "Crypto",
+      "assetName": "Render",
+      "baseAsset": "RENDER",
+      "quoteAsset": "USD",
+      "attributeType": "CexPrice",
+      "feedType": "Crypto",
+      "createdAt": "2024-09-19T17:05:44.554814Z",
+      "decommissionedAt": null,
+      "expectedDecommissionAt": null,
+      "feedId": "0x00034e3ab3a1c0809fe3f56ffe755155ace8564512cbc3884e9463dba081c02a",
+      "marketHours": "Crypto",
+      "name": "RENDER/USD-Streams-CexPrice",
+      "networkType": "mainnet",
+      "schemaVersion": "V3",
+      "serviceLevel": "Streams",
+      "status": "live"
+    }
+  ]
+}
+```
+
+### Schema
+
+| Field                    | Type           | Description                                                                                                            |
+| :----------------------- | :------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| `feedId`                 | string         | The stream ID, as a 32-byte hex value. Pass this to the report endpoints.                                              |
+| `name`                   | string         | The full stream name, for example `RENDER/USD-Streams-CexPrice`.                                                       |
+| `assetName`              | string         | Human-readable name of the underlying asset, for example `Render`.                                                     |
+| `baseAsset`              | string         | Base asset of the pair, for example `RENDER`.                                                                          |
+| `quoteAsset`             | string         | Quote asset of the pair, for example `USD`.                                                                            |
+| `assetClass`             | string         | Broad asset category, for example `Crypto`, `Equities`, `Forex`, or `Tokenized Asset`.                                 |
+| `feedType`               | string         | Stream category, for example `Crypto`, `Crypto-DEX`, `Equities`, or `Net Asset Value`.                                 |
+| `attributeType`          | string         | The kind of data reported, for example `CexPrice`, `DexPrice`, `ExchangeRate`, or `RegularHoursEquityPrice`.           |
+| `marketHours`            | string         | The [market hours](/data-streams/market-hours) schedule that applies, for example `Crypto` or `US Equities Regular`.   |
+| `schemaVersion`          | string         | The [report schema](/data-streams/reference/report-schema-overview) the stream uses, for example `V3`, `V7`, or `V11`. |
+| `serviceLevel`           | string         | The product the stream belongs to, for example `Streams` or `Datalink`.                                                |
+| `networkType`            | string         | `mainnet` or `testnet`, matching the host you queried.                                                                 |
+| `status`                 | string         | `live` for production streams, `testing` for pre-production streams.                                                   |
+| `createdAt`              | string         | RFC 3339 timestamp for when the stream was created.                                                                    |
+| `expectedDecommissionAt` | string \| null | RFC 3339 timestamp for a scheduled [decommission](/data-streams/deprecating-streams). `null` if none is scheduled.     |
+| `decommissionedAt`       | string \| null | RFC 3339 timestamp for when the stream was decommissioned. `null` if the stream is still available.                    |
+
+The Discovery endpoint returns the schema *version* a stream uses, not the report schema itself. To find the fields a given `schemaVersion` contains and how to decode them, see the [Report Schemas](/data-streams/reference/report-schema-overview) page.
+
+## Errors and caching
+
+Errors return a JSON object with a single `error` field describing the problem.
+
+| Status | Meaning                                                                                                            |
+| :----- | :----------------------------------------------------------------------------------------------------------------- |
+| `200`  | Success. A filter that matches nothing returns an empty `feeds` array, not an error.                               |
+| `400`  | A parameter failed to parse — for example, a date that isn't in `YYYY-MM-DD` form or a non-boolean `hidden` value. |
+| `500`  | The service could not fetch the DON or stream data. Retry the request.                                             |
+
+Successful responses are cacheable and are served with `Cache-Control: public, max-age=300`. Expect a newly launched stream to take up to five minutes to appear.
+
+---
+
 # Data Streams SDK (Go)
 Source: https://docs.chain.link/data-streams/reference/data-streams-api/go-sdk
 
@@ -4443,7 +4764,7 @@ Source: https://docs.chain.link/data-streams/reference/data-streams-api/interfac
 
 ## Authentication
 
-All requests to the Data Streams REST API require authentication. For comprehensive documentation on generating authentication headers and implementing the HMAC authentication process, please refer to the [Data Streams Authentication](/data-streams/reference/data-streams-api/authentication) page.
+All requests to the Data Streams REST API require authentication, with one exception: the [Discovery endpoint](/data-streams/reference/data-streams-api/discovery-endpoint) does not require authentication to list publicly available streams. For comprehensive documentation on generating authentication headers and implementing the HMAC authentication process, please refer to the [Data Streams Authentication](/data-streams/reference/data-streams-api/authentication) page.
 
 **Note**: If you're using a [Data Streams SDK](/data-streams/reference/data-streams-api/go-sdk), you don't need to manually generate authentication headers.
 
@@ -4460,6 +4781,40 @@ All routes require the following three headers for user authentication:
 ## API endpoints
 
 Report responses include `validFromTimestamp` and `observationsTimestamp`, which together define the span of time the report's price applies to rather than a single instant. See [How Report Timestamps Work](/data-streams/how-report-timestamps-work) for details, including what happens when no report exists for a given second.
+
+### Discover data streams
+
+##### Endpoint
+
+**`/api/v1/discovery`**
+
+The Discovery endpoint returns the catalog of Data Streams, including each stream's ID, asset pair, and status. See the [Discovery Endpoint](/data-streams/reference/data-streams-api/discovery-endpoint) page for the full reference, including query parameters, hidden streams, and the response schema.
+
+<Aside type="note" title="No authentication required">
+  Unlike the other REST API routes, the Discovery endpoint does **not** require authentication to list publicly
+  available streams. Authenticate if you want to see the [hidden
+  streams](/data-streams/reference/data-streams-api/discovery-endpoint#hidden-streams) your API key is entitled to.
+</Aside>
+
+| Type     | Description                                                                              | Parameter(s) |
+| -------- | ---------------------------------------------------------------------------------------- | ------------ |
+| HTTP GET | Returns the catalog of Data Streams, including each stream's ID, asset pair, and status. | See below.   |
+
+The Discovery endpoint accepts the following optional query parameters:
+
+- `base_asset`: Base asset of the pair.
+- `quote_asset`: Quote asset of the pair.
+- `asset_class`: Broad asset category.
+- `feed_type`: Stream category.
+- `attribute_type`: The kind of data reported.
+- `status`: Stream status.
+- `network_type`: DON network type.
+- `hidden`: Boolean. Includes hidden streams your API key can reach.
+- `created_after` / `created_before`: Filter by creation date.
+- `expected_decommission_after` / `expected_decommission_before`: Filter by scheduled decommission date.
+- `decommissioned_after` / `decommissioned_before`: Filter by decommission date.
+
+[Learn more about the Discovery endpoint](/data-streams/reference/data-streams-api/discovery-endpoint).
 
 ### Return a single report at a given timestamp
 
@@ -4589,6 +4944,7 @@ GET /api/v1/reports/page?feedID=<FeedID>&startTimestamp=<StartTimestamp>&limit=<
 | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 400 Bad Request                           | This error is triggered when: <ul><li>There is any missing/malformed query argument.</li><li>Required headers are missing or provided with incorrect values.</li></ul>                                                                                                                                                                               |
 | 401 Unauthorized User                     | This error is triggered when: <ul><li>Authentication fails, typically because the HMAC signature provided by the client doesn't match the one expected by the server.</li><li>A user requests access to a stream without the appropriate permission or that does not exist.</li></ul>                                                                |
+| 429 Too Many Requests                     | Indicates the request exceeded your account's rate limit. See the [Rate Limits and Fair Use Policy](/data-streams/rate-limits) page for applicable limits and how to request higher limits.                                                                                                                                                          |
 | 500 Internal Server                       | Indicates an unexpected condition encountered by the server, preventing it from fulfilling the request. This error typically points to issues on the server side.                                                                                                                                                                                    |
 | 502 Bad Gateway / 503 Service Unavailable | Indicates a transient error. Retry the request — see [Retry Guidance for REST Requests](/data-streams/architecture#retry-guidance-for-rest-requests).                                                                                                                                                                                                |
 | 206 Missing data (`/bulk` endpoint only)  | Indicates that at least one stream ID data is missing from the report. E.g., you requested a report for stream IDs `<feedID1>`, `<feedID2>`, and `<feedID3>` at a given timestamp. If data for `<feedID2>` is missing from the report (not available yet at the specified timestamp), you get `[<feedID1 data>, <feedID3 data>]` and a 206 response. |
@@ -4664,6 +5020,7 @@ GET /api/v1/ws?feedIDs=<feedID1>,<feedID2>,...
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 400 Bad Request       | This error is triggered when: <ul><li>There is any missing/malformed query argument.</li><li>Required headers are missing or provided with incorrect values.</li></ul>                                                                                                                |
 | 401 Unauthorized User | This error is triggered when: <ul><li>Authentication fails, typically because the HMAC signature provided by the client doesn't match the one expected by the server.</li><li>A user requests access to a stream without the appropriate permission or that does not exist.</li></ul> |
+| 429 Too Many Requests | Indicates the request exceeded your account's rate limit. See the [Rate Limits and Fair Use Policy](/data-streams/rate-limits) page for applicable limits and how to request higher limits.                                                                                           |
 | 500 Internal Server   | Indicates an unexpected condition encountered by the server, preventing it from fulfilling the request. This error typically points to issues on the server side.                                                                                                                     |
 
 ---
@@ -5680,6 +6037,8 @@ Source: https://docs.chain.link/data-streams/reference/report-schema-overview
 
 <DataStreams section="dsNotes" />
 
+To look up stream IDs programmatically instead of browsing the catalog, use the [Discovery endpoint](/data-streams/reference/data-streams-api/discovery-endpoint).
+
 ## Stream Categories and Report Schemas
 
 Each stream category uses one or more report schemas to deliver data. Several categories of Data Streams offer more than one schema to accommodate specialized use cases.
@@ -5688,8 +6047,13 @@ Each stream category uses one or more report schemas to deliver data. Several ca
 
 Cryptocurrency streams deliver high-frequency market data for digital assets.
 
+- [**Crypto Standard (v2)**](#crypto-standard-v2) provides a single consensus price point for crypto assets.
 - [**Crypto Advanced (v3)**](#crypto-advanced-v3) aggregate order-book liquidity across top venues to provide a consensus mid price alongside simulated bid and ask levels.
 - [**Crypto Advanced (v3) - DEX State Price**](#crypto-advanced-v3---dex-state-price) derive pricing from onchain liquidity pools to reflect decentralized market conditions.
+
+### Crypto Standard (v2)
+
+[Chainlink Cryptocurrency Reports](/data-streams/reference/report-schema-v2) provide market data for digital assets using a streamlined schema. Each report includes a single time-weighted average price (`price`), making it suitable for use cases that require a TWAP price point.
 
 ### Crypto Advanced (v3)
 
@@ -5723,6 +6087,8 @@ While the Data Streams architecture is designed to deliver updates at least once
 The [RWA Standard (v8)](/data-streams/reference/report-schema-v8) report schema provides real-world asset pricing with essential fields: consensus median price (`midPrice`), market status (`marketStatus`), and staleness measure (`lastUpdateTimestamp`).
 
 RWA assets trade on traditional exchanges during [market hours](/data-streams/market-hours). These market hours vary by asset class and can be subject to unexpected halts, pauses and other behaviors affecting traditional markets. For this reason, this schema includes a market hours flag and a staleness measure to equip users to handle these events correctly. It is critical that users implement correct safeguards on their end to pause markets, add more conservative risk caps, or do whatever else is appropriate for their application.
+
+For US Equities specifically, [RWA Advanced (v11)](/data-streams/reference/report-schema-v11) is strongly recommended over v8 — see below.
 
 ### RWA Advanced (v11)
 
@@ -5874,6 +6240,17 @@ Implement appropriate safeguards based on market status — such as pausing trad
 - **IMPORTANT**: The `lastSeenTimestampNs` field reflects the timestamp of the last update for the `mid` price only. Do not assume this timestamp applies to `bid`, `ask`, `bidVolume`, `askVolume`, or `lastTradedPrice`. Different fields may have been updated at different times.
 - **Do not use `lastSeenTimestampNs` (or any other timestamp field) to determine which stream to select or to infer whether the market is open.** Timestamps indicate when data was last recorded, not whether the market is currently active. Use the `marketStatus` field as the authoritative signal for market availability and stream selection.
 
+#### `lastSeenTimestampNs` is not guaranteed to be monotonic
+
+Do not assume `lastSeenTimestampNs` strictly increases from one report to the next. Use `marketStatus` to determine whether a market is open.
+
+`lastSeenTimestampNs` is not guaranteed to be monotonic (that is, it does not always increase from one report to the next); the value can vary between reports. Reasons for this include:
+
+- A provider dropping in or out between reports can shift the median.
+- The fewer providers contribute to a report, the more a single provider's inclusion or exclusion can move the result. For example, if a provider is excluded from one report (due to a timeout) and included in the next, the median can shift to an earlier value than the previous report.
+
+Under normal circumstances, expect this value to advance with each report. A single occurrence of non-monotonic movement is not by itself cause for concern: treat it as a potential issue only if the behavior persists across multiple consecutive reports.
+
 #### Bid/Ask Volume
 
 For U.S. equities, there is no single consolidated order book. Instead, multiple venues each maintain their own order books. Because data providers source from different markets, the `bidVolume` and `askVolume` reported at each update come from one specific order book at a time, not an aggregate across all venues.
@@ -5884,6 +6261,33 @@ As a result, these volume fields should not be treated as a proxy for total mark
 
 - Future streams using this format may adopt different report schemas as needed.
 - Data availability and sourcing vary by session. Liquidity is typically highest during regular hours and lower during extended and overnight sessions.
+
+---
+
+# Report Schema: Crypto Standard (v2)
+Source: https://docs.chain.link/data-streams/reference/report-schema-v2
+
+<DataStreams section="dsNotes" />
+
+Cryptocurrency streams adhere to the report schema outlined below.
+
+## Time-Weighted Average Price (TWAP)
+
+The v2 schema is used by TWAP streams. The `price` field carries the time-weighted average price for the stream's configured window, not a spot or median price. Each TWAP stream is scoped to one asset and one window length (for example, 30 seconds or 60 seconds). The window length is part of the stream's name and metadata.
+
+## Schema Fields
+
+| Field                   | Type      | Description                                                              |
+| ----------------------- | --------- | ------------------------------------------------------------------------ |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                              |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                     |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                       |
+| `nativeFee`             | `uint192` | Legacy onchain verification fee field                                    |
+| `linkFee`               | `uint192` | Legacy onchain verification fee field; not used for subscription billing |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                  |
+| `price`                 | `int192`  | Time-weighted average price (TWAP) for the stream's window               |
+
+**Note**: Future Cryptocurrency streams may use different report schemas.
 
 ---
 
@@ -6004,6 +6408,12 @@ Source: https://docs.chain.link/data-streams/reference/report-schema-v8
 
 RWA streams adhere to the report schema outlined below.
 
+<Aside type="note" title="Integrating US Equities?">
+  For US Equities streams, [RWA Advanced (v11)](/data-streams/reference/report-schema-v11) is strongly recommended over
+  this schema. v11 adds bid/ask prices, nanosecond-precision timestamps, and expanded market status values that
+  distinguish pre-market, regular hours, post-market, and overnight sessions.
+</Aside>
+
 ### Schema Fields
 
 | Field                   | Type      | Description                                                              |
@@ -6018,7 +6428,20 @@ RWA streams adhere to the report schema outlined below.
 | `midPrice`              | `int192`  | DON's consensus median price                                             |
 | `marketStatus`          | `uint32`  | Market status. See schema docs for value mappings.                       |
 
-### Market Status Values
+### Notes
+
+#### `lastUpdateTimestamp` is not guaranteed to be monotonic
+
+Do not assume `lastUpdateTimestamp` strictly increases from one report to the next. Use `marketStatus` to determine whether a market is open.
+
+`lastUpdateTimestamp` is not guaranteed to be monotonic (that is, it does not always increase from one report to the next); the value can vary between reports. Reasons for this include:
+
+- A provider dropping in or out between reports can shift the median.
+- The fewer providers contribute to a report, the more a single provider's inclusion or exclusion can move the result. For example, if a provider is excluded from one report (due to a timeout) and included in the next, the median can shift to an earlier value than the previous report.
+
+Under normal circumstances, expect this value to advance with each report. A single occurrence of non-monotonic movement is not by itself cause for concern: treat it as a potential issue only if the behavior persists across multiple consecutive reports.
+
+#### Market Status Values
 
 <Aside type="caution" title="Use marketStatus, not timestamps">
   Always use <code>marketStatus</code> to determine whether a market is open. Do <strong>not</strong> use
@@ -6036,7 +6459,7 @@ v8 streams use a three-value mapping:
 
 For trading schedules by asset class, see [Market Hours](/data-streams/market-hours). For integration guidance during market transitions, see [Handling Market Events](/data-streams/rwa-streams/handling-market-events).
 
-### Notes
+### Additional Notes
 
 - Users are responsible for handling market status changes in their applications.
 - Future RWA streams may use different report schemas.
@@ -6191,6 +6614,17 @@ Consumers must treat `marketStatus = 5` (Closed) as a valid state and define det
 #### Stale Data Detection
 
 Markets may stop updating due to exchange outages, circuit breakers, trading halts, or corporate actions. The `marketStatus` field will continue reflecting the status that it normally would. Use the `lastSeenTimestampNs` field (which reflects the timestamp of the last update for the `mid` price only) to detect staleness by comparing it against the current time. When this timestamp stops advancing, it indicates the underlying venue has stopped providing updates.
+
+##### Why `lastSeenTimestampNs` can pause, or move non-monotonically, without an outage
+
+`mid` and its timestamp `lastSeenTimestampNs` are derived from a consensus across the data providers configured for a feed, and both only update when that consensus changes. Because the result depends on exactly which providers are included in a given report, any single provider dropping in or out can shift that result — and the fewer providers contribute to a report, the more a single provider's inclusion or exclusion can move the outcome. Two related behaviors follow from this:
+
+- **Pausing:** Individual data providers do not all publish at the same rate — some sourcing venues naturally have lower update frequency during certain windows, particularly for less liquid names or during thinner trading periods. When enough providers are momentarily quiet, the consensus value — and its timestamp — can hold steady for longer than you might expect, even though the DON is healthy and continuing to produce reports.
+- **Non-monotonic movement:** Which providers are actually included in a given report can also change from one report to the next, for example if a provider times out on one report and returns on the next. Because the timestamp is derived from whichever providers are included, it is not guaranteed to strictly increase — it can occasionally shift to an earlier value than the previous report's timestamp.
+
+In the normal case, expect `lastSeenTimestampNs` to advance in line with the update cadence for a given symbol and session. Neither of the above is a sign that the feed or DON is down. Do not assume `lastSeenTimestampNs` strictly increases between reports.
+
+A single stalled or backward-moving report is not, by itself, cause for concern. Treat it as a potential issue only if the behavior recurs across multiple consecutive reports, or the pause exceeds your own configured staleness threshold (see the staleness check example in [Stream Switching Example Logic](#stream-switching-example-logic)). At that point, apply your staleness safeguards regardless of whether the eventual cause turns out to be provider behavior or something else.
 
 Phase-specific feeds can introduce unique behavior due to venue-specific operational characteristics and market microstructure. The following are some examples of scenarios that may occur during session transitions or under specific market conditions:
 
@@ -6386,6 +6820,12 @@ APAC Equities data is delivered using the [RWA Advanced (v11) schema](/data-stre
 | `lastTradedPrice`       | `int192`  | Not populated for APAC equities; reported as 0                           |
 | `marketStatus`          | `uint32`  | Market status. Mapping varies by feed; see schema docs.                  |
 
+<Aside type="note" title="lastTradedPrice availability varies by market">
+  `lastTradedPrice` is only populated where the underlying data provider supplies trade data. Korea and Japan are
+  quote-only markets, so `lastTradedPrice` is not meaningfully populated for those streams. China, Hong Kong, and Taiwan
+  streams source trade data in addition to quotes.
+</Aside>
+
 For `marketStatus` value mappings, see [Standard-hours feeds (v11)](/data-streams/reference/report-schema-v11#standard-hours-feeds). For exchange schedules, see [Market Hours (APAC Equities)](/data-streams/market-hours#apac-equities).
 
 ## Coverage
@@ -6394,12 +6834,14 @@ APAC Equities streams cover major indices and single-name stocks across Asia-Pac
 
 ### Exchanges
 
-| Exchange             | Code | Local currency | Status    |
-| -------------------- | ---- | -------------- | --------- |
-| Korea Exchange       | KRX  | KRW            | Available |
-| Tokyo Stock Exchange | TSE  | JPY            | Available |
-
-Other APAC exchanges are coming soon.
+| Exchange                | Code | Local currency | Status    |
+| ----------------------- | ---- | -------------- | --------- |
+| Korea Exchange          | KRX  | KRW            | Available |
+| Tokyo Stock Exchange    | TSE  | JPY            | Available |
+| Shanghai Stock Exchange | SSE  | CNY            | Available |
+| Shenzhen Stock Exchange | SZSE | CNY            | Available |
+| Taiwan Stock Exchange   | TWSE | TWD            | Available |
+| Hong Kong Exchange      | HKEX | HKD            | Available |
 
 ## Trading hours
 
@@ -6421,23 +6863,47 @@ When a session is closed, prices hold at the last traded value until the next se
 
 TSE-listed equities observe a scheduled lunch break (11:30–12:30 JST / 02:30–03:30 UTC) during which `marketStatus = 5` (Closed) and no new price data is published. `lastSeenTimestampNs` will not advance for approximately 60 minutes during this window.
 
-Freshness monitoring logic that evaluates timestamp age alone should account for this break. A staleness threshold shorter than \~60 minutes will fire during the TSE lunch break, producing false-positive alerts and potentially unnecessary circuit-breaker activity.
+SSE- and SZSE-listed equities observe a similar scheduled lunch break (11:30–13:00 CST / 03:30–05:00 UTC). HKEX-listed equities observe a one-hour lunch break (12:00–13:00 HKT / 04:00–05:00 UTC).
+
+Freshness monitoring logic that evaluates timestamp age alone should account for these breaks. A staleness threshold shorter than the break duration will fire during the lunch break, producing false-positive alerts and potentially unnecessary circuit-breaker activity.
 
 Recommended approach: check `marketStatus` before evaluating freshness. If `marketStatus = 5`, staleness is expected and should not trigger restrictions; evaluate freshness thresholds only when `marketStatus = 2` (Open).
 
-KRX-listed equities have no intraday break; the session runs continuously from 09:00–15:20 KST (00:00–06:20 UTC).
+KRX-listed and TWSE-listed equities have no intraday break; KRX runs continuously from 09:00–15:20 KST (00:00–06:20 UTC), and TWSE runs continuously from 09:00–13:25 CST (01:00–05:25 UTC).
+
+### Minimum tick size (Asian exchanges)
+
+Certain Asian exchanges apply a minimum tick size that increases with an instrument's price. For TWD-denominated streams in particular, higher-priced instruments can exhibit more staggered, or seemingly exaggerated, tick-by-tick price movement in the base currency than lower-priced ones.
+
+Aggregated data from underlying providers may or may not respect the instrument's tick size at the mid-price or bid-ask spread level. Protocols should use caution when setting risk parameters such as deviation thresholds, accounting for the rounding this can introduce on feeds with a non-trivial minimum tick size.
 
 ### Opening and closing auction prices
 
 At the open of each session, prices may reflect the exchange's opening auction mechanism rather than continuous traded prices. Opening auctions concentrate deferred orders from the closed period into a single price discovery event, which can produce an opening price that deviates materially from the prior session's close. This is normal exchange behavior, not a data quality issue.
 
-The same consideration applies at the start of the TSE afternoon session (12:30 JST / 03:30 UTC) following the lunch break.
+The same consideration applies at the start of the TSE afternoon session (12:30 JST / 03:30 UTC), the SSE/SZSE afternoon session (13:00 CST / 05:00 UTC), and the HKEX afternoon session (13:00 HKT / 05:00 UTC), following their respective lunch breaks.
 
 Protocols should account for session-open volatility by:
 
 - Treating the `marketStatus` transition from `5` (Closed) to `2` (Open) as a signal to re-evaluate risk parameters before acting on the opening price
 - Widening deviation thresholds or reducing position exposure during the first minutes of each session
 - Avoiding liquidation triggers driven purely by price movement relative to the prior session's close
+
+### Session open: delayed quote availability
+
+Right after a session opens (the start of the morning session, or the afternoon session following a lunch break), bid/ask quotes from the exchange may not yet be available. For highly liquid stocks and indices, this typically lasts only a few seconds (around 10–20 seconds), while for less liquid stocks it can take several minutes. Until live quotes become available, the reported price may continue to reflect the prior session's close rather than current market activity.
+
+Unlike US Equities streams, APAC Equities streams have no extended-hours session, so there is no alternative live stream to fall back on during this transition window. Protocols should factor this delay into their risk logic and consider strategies such as:
+
+- Pause or restrict market activity for a short window after each session open
+- Widen deviation thresholds until fresh quotes are confirmed via `marketStatus` and an advancing `lastSeenTimestampNs`
+- Avoid triggering liquidations based solely on the price observed immediately at session open
+
+### Pre-open prints on new listings
+
+On the morning a new instrument first lists, the stream may carry one or more prints at the issue price shortly before the exchange's opening call auction begins. These are pre-open reference prints disseminated by the exchange to establish a reference level ahead of price discovery — they are not executions, and `marketStatus` remains `5` (Closed) while they are published.
+
+Do not treat these reference prints as tradable prices. Real price discovery begins with the opening call auction; wait for `marketStatus` to transition to `2` (Open) before acting on the resulting price.
 
 ### Exchange halts
 
@@ -6642,6 +7108,11 @@ Announcements can cause sharp price spikes or sustained moves.
 Source: https://docs.chain.link/data-streams/rwa-streams/handling-market-events
 
 <MarketEventsTabs />
+
+<Aside type="note" title="Integrating US Equities?">
+  See the [Handling Market Events (v11)](/data-streams/rwa-streams/handling-market-events-v11) guide instead. RWA
+  Advanced (v11) is strongly recommended over this schema for US Equities streams.
+</Aside>
 
 Apply these best practices when integrating or operating markets that use tokenized real-world assets. Developers and operators are responsible for assessing market integrity, implementing mitigations, and managing application-level risks — see the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance for details.
 

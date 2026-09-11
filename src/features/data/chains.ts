@@ -10,7 +10,9 @@ type ChainTags = (
   | "streams"
   | "usGovernmentMacroeconomicData"
   | "tokenizedEquity"
-  | "blendedPreciousMetals"
+  | "extendedHours"
+  | "svr"
+  | "svrAtlas"
 )[]
 export interface ChainNetwork {
   name: string
@@ -82,7 +84,7 @@ export const CHAINS: Chain[] = [
     title: "Arbitrum Data Feeds",
     img: "/assets/chains/arbitrum.svg",
     networkStatusUrl: "https://arbiscan.freshstatus.io/",
-    tags: ["default", "rates", "streams", "smartData", "usGovernmentMacroeconomicData"],
+    tags: ["default", "rates", "streams", "smartData", "usGovernmentMacroeconomicData", "svrAtlas"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     l2SequencerFeed: true,
     networks: [
@@ -105,6 +107,26 @@ export const CHAINS: Chain[] = [
         tags: ["rates", "streams", "smartData", "usGovernmentMacroeconomicData"],
       },
     ],
+  },
+  {
+    page: "arc",
+    title: "Arc Data Feeds",
+    img: "/assets/chains/arc.svg",
+    networkStatusUrl: "https://status.arc.network/",
+    tags: ["default", "smartData"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Arc Mainnet",
+        explorerUrl: "https://www.arcexplorer.org/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-arc-mainnet.json",
+        rddBundleUrl: "https://reference-data-directory.vercel.app/bundle-proxies-arc-mainnet.json",
+        queryString: "arc-mainnet",
+        tags: ["smartData"],
+      },
+    ],
+    label: "Arc",
   },
   {
     page: "avalanche",
@@ -140,7 +162,7 @@ export const CHAINS: Chain[] = [
     title: "Base Data Feeds",
     img: "/assets/chains/base.svg",
     networkStatusUrl: "https://basescan.statuspage.io/",
-    tags: ["default", "smartData", "usGovernmentMacroeconomicData", "tokenizedEquity"],
+    tags: ["default", "smartData", "usGovernmentMacroeconomicData", "tokenizedEquity", "extendedHours", "svrAtlas"],
     supportedFeatures: ["feeds"],
     l2SequencerFeed: true,
     networks: [
@@ -150,7 +172,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-base-1.json",
         queryString: "base-mainnet",
-        tags: ["smartData", "usGovernmentMacroeconomicData", "tokenizedEquity"],
+        tags: ["smartData", "usGovernmentMacroeconomicData", "extendedHours", "tokenizedEquity"],
       },
       {
         name: "Base Sepolia testnet",
@@ -167,7 +189,7 @@ export const CHAINS: Chain[] = [
     title: "BNB Chain Data Feeds",
     img: "/assets/chains/bnb-chain.svg",
     networkStatusUrl: "https://bscscan.freshstatus.io/",
-    tags: ["default", "smartData", "usGovernmentMacroeconomicData"],
+    tags: ["default", "smartData", "usGovernmentMacroeconomicData", "svrAtlas"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -262,14 +284,7 @@ export const CHAINS: Chain[] = [
     title: "Data Feeds",
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.dev/",
-    tags: [
-      "default",
-      "smartData",
-      "rates",
-      "usGovernmentMacroeconomicData",
-      "tokenizedEquity",
-      "blendedPreciousMetals",
-    ],
+    tags: ["default", "smartData", "rates", "usGovernmentMacroeconomicData", "tokenizedEquity", "extendedHours", "svr"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -279,7 +294,7 @@ export const CHAINS: Chain[] = [
         rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
         rddBundleUrl: "https://reference-data-directory.vercel.app/bundle-proxies-mainnet.json",
         queryString: "ethereum-mainnet",
-        tags: ["smartData", "usGovernmentMacroeconomicData", "tokenizedEquity", "blendedPreciousMetals"],
+        tags: ["smartData", "usGovernmentMacroeconomicData", "tokenizedEquity", "extendedHours"],
       },
       {
         name: "Sepolia Testnet",
@@ -493,7 +508,7 @@ export const CHAINS: Chain[] = [
     label: "Monad",
     img: "/assets/chains/monad.svg",
     networkStatusUrl: "https://monadvision.com/",
-    tags: ["default", "smartData"],
+    tags: ["default", "smartData", "svrAtlas"],
     supportedFeatures: ["feeds"],
     networks: [
       {

@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Generate typed Go structs from Anchor IDL files to write data to Solana programs from CRE workflows."
   datePublished: "2026-07-06"
-  lastModified: "2026-07-08"
+  lastModified: "2026-08-20"
 ---
 
 import { Aside } from "@components"
@@ -76,34 +76,70 @@ After generation, run `go mod tidy` if you need to sync new dependencies.
 
 For each struct in your IDL's `types` section, the generator creates a `WriteReportFrom<StructName>()` method that Borsh-encodes your data, builds the forwarder report, and submits it in one step. These methods return a `Promise`, which you must `.Await()` to get the result after consensus.
 
-**Example: A minimal `DataStorage` IDL**
+**Example: A minimal `cre_docs_receiver` IDL**
 
-The following IDL is enough to generate a `WriteReportFromUserData()` helper. Save it as `contracts/solana/src/idl/data_storage.json`.
+The following IDL is enough to generate a `WriteReportFromUserData()` helper. Save it as `contracts/solana/src/idl/cre_docs_receiver.json`.
 
 ```json
 {
-  "address": "64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31",
+  "address": "7k8NypziCPqVY8GYyCw7aqaR5aamFAMdH5ZaHVrZCS94",
   "metadata": {
-    "name": "data_storage",
+    "name": "cre_docs_receiver",
     "version": "0.1.0",
     "spec": "0.1.0",
-    "description": "Minimal CRE Solana write example IDL"
+    "description": "Receiver for cre-cli Solana forwarder simulation that logs a decoded UserData payload"
   },
   "instructions": [
     {
       "name": "on_report",
       "discriminator": [214, 173, 18, 221, 173, 148, 151, 208],
-      "accounts": [],
+      "accounts": [
+        { "name": "state" },
+        {
+          "name": "forwarder_authority",
+          "docs": ["PDA signer supplied by the forwarder CPI."],
+          "signer": true
+        }
+      ],
       "args": [
-        { "name": "_metadata", "type": "bytes" },
-        { "name": "payload", "type": "bytes" }
+        { "name": "metadata", "type": "bytes" },
+        { "name": "report", "type": "bytes" }
       ]
     }
   ],
-  "accounts": [],
-  "events": [],
-  "errors": [],
+  "events": [
+    {
+      "name": "ReceivedUserData",
+      "discriminator": [154, 5, 186, 144, 208, 168, 118, 242]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidForwarderAuthority",
+      "msg": "forwarder_authority is not the PDA for this state, receiver, and forwarder program"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidUserData",
+      "msg": "report payload could not be decoded as UserData"
+    }
+  ],
   "types": [
+    {
+      "name": "ReceivedUserData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "forwarder", "type": "pubkey" },
+          { "name": "forwarder_state", "type": "pubkey" },
+          { "name": "forwarder_authority", "type": "pubkey" },
+          { "name": "metadata_len", "type": "u32" },
+          { "name": "report_len", "type": "u32" },
+          { "name": "user", "type": { "defined": { "name": "UserData" } } }
+        ]
+      }
+    },
     {
       "name": "UserData",
       "type": {
@@ -118,32 +154,32 @@ The following IDL is enough to generate a `WriteReportFromUserData()` helper. Sa
 }
 ```
 
-After running `cre generate-bindings solana`, use the generated `data_storage` package in your workflow:
+After running `cre generate-bindings solana`, use the generated `cre_docs_receiver` package in your workflow:
 
 ```go
 import (
 	solanago "github.com/gagliardetto/solana-go"
 	solana "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana"
 
-	"<project-name>/contracts/solana/src/generated/data_storage"
+	"<project-name>/contracts/solana/src/generated/cre_docs_receiver"
 )
 
 // In your workflow handler...
 client := &solana.Client{ChainSelector: config.ChainSelector}
-ds, err := data_storage.NewDataStorage(client)
+ds, err := cre_docs_receiver.NewCreDocsReceiver(client)
 if err != nil {
 	return "", err
 }
 
-// remainingAccounts: Index 0 forwarderState, 1 forwarderAuthority, 2+ receiver accounts
+// remainingAccounts: Index 0 forwarderState, 1 forwarderAuthority, 2+ receiver accounts.
+// cre_docs_receiver needs no receiver-specific accounts, so we pass just [state, authority].
 accounts := []*solana.AccountMeta{
 	{PublicKey: forwarderStatePk[:], IsWritable: false},
 	{PublicKey: forwarderAuthPk[:], IsWritable: false},
-	{PublicKey: reportStatePk[:], IsWritable: true},
 }
 
 // Pass the struct data directly — types are derived from the IDL
-result, err := ds.WriteReportFromUserData(runtime, data_storage.UserData{
+result, err := ds.WriteReportFromUserData(runtime, cre_docs_receiver.UserData{
 	Key:   "price",
 	Value: "500000",
 }, accounts, &solana.ComputeConfig{ComputeLimit: 200_000}).Await()
@@ -160,7 +196,7 @@ For a full walkthrough including config, simulation, and production deployment, 
 
 ## What the CLI generates
 
-The generator creates a Go package for each IDL file in `contracts/solana/src/generated/<program_name>/`.
+The generator creates a Go package for each IDL file in `contracts/solana/src/generated/<program_name>/` (for example, `cre_docs_receiver/`).
 
 What's inside depends on your IDL:
 

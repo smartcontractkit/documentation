@@ -74,16 +74,30 @@ func main() {
 
 ### Step 2: Fetch a secret inside the enclave
 
-Your callback receives a [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-go#creteeruntime). Call [`runtime.GetSecret()`](/cre/reference/sdk/confidential-workflows-client-go#runtimegetsecret) to fetch a secret at the point you need it:
+Your callback receives a [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-go#creteeruntime). Call [`runtime.GetSecrets()`](/cre/reference/sdk/confidential-workflows-client-go#runtimegetsecrets) to fetch the secrets you need in a single batch call:
 
 ```go
 func onCronTrigger(config *Config, runtime cre.TeeRuntime, _ *cron.Payload) (string, error) {
-	secret, err := runtime.GetSecret(&cre.SecretRequest{Id: "MY_API_KEY"}).Await()
+	secrets, err := runtime.GetSecrets([]*cre.SecretRequest{
+		{Id: "API_KEY"},
+		{Id: "DB_URL"},
+	}).Await()
 	if err != nil {
-		return "", fmt.Errorf("failed to get secret: %w", err)
+		return "", fmt.Errorf("failed to get secrets: %w", err)
 	}
+	apiKey := secrets[0].Value
+	dbUrl := secrets[1].Value
 
 	// ...
+}
+```
+
+To fetch a single secret, use [`runtime.GetSecret()`](/cre/reference/sdk/confidential-workflows-client-go#runtimegetsecret):
+
+```go
+secret, err := runtime.GetSecret(&cre.SecretRequest{Id: "MY_API_KEY"}).Await()
+if err != nil {
+	return "", fmt.Errorf("failed to get secret: %w", err)
 }
 ```
 
@@ -105,7 +119,7 @@ which takes your [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-cl
 		Url:    config.URL,
 		Method: "GET",
 		MultiHeaders: map[string]*http.HeaderValues{
-			"Authorization": {Values: []string{"Bearer " + secret.Value}},
+			"Authorization": {Values: []string{"Bearer " + apiKey}},
 		},
 	}
 
@@ -205,18 +219,22 @@ func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.Secre
 }
 
 func onCronTrigger(config *Config, runtime cre.TeeRuntime, _ *cron.Payload) (string, error) {
-	// 1. Fetch a secret dynamically, inside the enclave.
-	secret, err := runtime.GetSecret(&cre.SecretRequest{Id: "MY_API_KEY"}).Await()
+	// 1. Fetch secrets dynamically, inside the enclave.
+	secrets, err := runtime.GetSecrets([]*cre.SecretRequest{
+		{Id: "API_KEY"},
+		{Id: "DB_URL"},
+	}).Await()
 	if err != nil {
-		return "", fmt.Errorf("failed to get secret: %w", err)
+		return "", fmt.Errorf("failed to get secrets: %w", err)
 	}
+	apiKey := secrets[0].Value
 
 	// 2. Make an HTTP request from inside the enclave.
 	req := &http.Request{
 		Url:    config.URL,
 		Method: "GET",
 		MultiHeaders: map[string]*http.HeaderValues{
-			"Authorization": {Values: []string{"Bearer " + secret.Value}},
+			"Authorization": {Values: []string{"Bearer " + apiKey}},
 		},
 	}
 	resp, err := (&http.Client{}).SendRequestInTee(runtime, req).Await()

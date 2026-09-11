@@ -18,11 +18,21 @@ export const CONTACT_EMAIL_PROXY_ADDRESSES = new Set<string>([
 ])
 
 /**
- * Proxy addresses (lowercase) for 24/7 blended gold feeds.
- * Add new blended gold feed proxy addresses here to include them in the
- * blended gold feed page and badge.
+ * Proxy addresses (lowercase) for 24/7 extended-hours feeds, grouped by asset
+ * class. Add new feeds to the relevant category to include them on the
+ * 24/7 Extended-Hours page and in the badge.
  */
-export const BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES = new Set<string>(["0x369c67e8b026cc4ef98350f332d7dd52b85b7674"])
+export type ExtendedHoursCategory = "preciousMetals" | "forex"
+
+export const EXTENDED_HOURS_FEED_CATEGORIES: Record<ExtendedHoursCategory, Set<string>> = {
+  preciousMetals: new Set(["0x369c67e8b026cc4ef98350f332d7dd52b85b7674"]),
+  forex: new Set(["0x9eb8a54d0590798880c665c7a6d51b95f4078ad7"]),
+}
+
+/** Union of all extended-hours proxy addresses, used for the badge and unfiltered visibility. */
+export const ALL_EXTENDED_HOURS_PROXY_ADDRESSES = new Set<string>(
+  Object.values(EXTENDED_HOURS_FEED_CATEGORIES).flatMap((addresses) => [...addresses])
+)
 
 /**
  * Returns true when a feed is a Coinbase (B20) tokenized equity feed on Base.
@@ -51,11 +61,6 @@ export function isCoinbaseTokenizedEquityFeed(feed: any): boolean {
 export function shouldHideAddress(feed: any, riskTier?: string | null): boolean {
   // Robinhood tokenized equity feeds display their proxy address directly.
   if (feed.docs?.blockchainName === "Robinhood" && feed.docs?.productTypeCode === "primaryTokenizedPrice") {
-    return false
-  }
-
-  // Coinbase (B20) tokenized equity feeds on Base display their proxy address directly.
-  if (isCoinbaseTokenizedEquityFeed(feed)) {
     return false
   }
 
@@ -94,8 +99,11 @@ export interface FeedVisibilityOptions {
   showOnlyDatalinkFeeds?: boolean
   streamCategoryFilter?: string
   rwaSchemaFilter?: string
+  cryptoSchemaFilter?: string
   showOnlyMVRFeeds?: boolean
   tokenizedEquityProvider?: string
+  /** When set, only show extended-hours feeds in this category (e.g. "preciousMetals"). */
+  extendedHoursCategory?: ExtendedHoursCategory
 }
 
 /**
@@ -115,8 +123,9 @@ export function isFeedVisible(
   // 1. Universal Exclusions
   // ===========================================================================
   const isTokenizedEquity = dataFeedType === "tokenizedEquity"
-  const isBlendedPreciousMetals = dataFeedType === "blendedPreciousMetals"
-  if (feed.docs?.hidden && !isTokenizedEquity && !isBlendedPreciousMetals) return false
+  const isExtendedHours = dataFeedType === "extendedHours"
+  const isSvr = dataFeedType === "svr" || dataFeedType === "svrAtlas"
+  if (feed.docs?.hidden && !isTokenizedEquity && !isExtendedHours && !isSvr) return false
 
   const isDeprecating = ecosystem === "deprecating"
   const isStreams =
@@ -148,7 +157,18 @@ export function isFeedVisible(
       isVisible = dataFeedType === "streamsRwa" || (DATALINK_STREAM_MATCH[dataFeedType]?.(feed) ?? false)
     } else {
       if (dataFeedType === "streamsCrypto") {
-        isVisible = ["Crypto", "Crypto-DEX"].includes(feed.docs?.feedType)
+        const schemaVersion = getSchemaVersion(feed)
+        const feedType = feed.docs?.feedType
+        // Only show streams whose schema is explicitly v2 or v3 on the crypto page.
+        // Avoid falling back to feedType heuristics when the schema is missing or ambiguous.
+        // v2 streams are TWAP streams: only show them when attributeType is TWAP.
+        if (schemaVersion === "v2" && feedType === "Crypto" && feed.docs?.attributeType === "TWAP") {
+          isVisible = true
+        } else if (schemaVersion === "v3" && (feedType === "Crypto" || feedType === "Crypto-DEX")) {
+          isVisible = true
+        } else {
+          isVisible = false
+        }
       } else if (dataFeedType === "streamsRwa") {
         isVisible = ["Equities", "Forex"].includes(feed.docs?.feedType)
       } else if (dataFeedType === "streamsNav") {
@@ -156,7 +176,14 @@ export function isFeedVisible(
       } else if (dataFeedType === "streamsExRate") {
         isVisible = feed.docs?.productTypeCode === "ExRate"
       } else if (dataFeedType === "streamsBacked") {
-        isVisible = feed.docs?.feedType === "Tokenized Equities"
+        const schemaVersion = getSchemaVersion(feed)
+        const feedType = feed.docs?.feedType
+        // Only show streams whose schema is explicitly v10 on the tokenized asset page.
+        if (schemaVersion === "v10" && feedType === "Tokenized Equities") {
+          isVisible = true
+        } else {
+          isVisible = false
+        }
       }
     }
   } else if (isSmartData) {
@@ -177,8 +204,15 @@ export function isFeedVisible(
       (assetClass === "Equity" || assetClass === "Equities") &&
       feed.contractType !== "verifier" &&
       feed.docs?.productTypeCode === "primaryTokenizedPrice"
-  } else if (isBlendedPreciousMetals) {
-    isVisible = BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES.has(feed.proxyAddress?.toLowerCase())
+  } else if (isExtendedHours) {
+    const proxy = feed.proxyAddress?.toLowerCase()
+    isVisible = ALL_EXTENDED_HOURS_PROXY_ADDRESSES.has(proxy)
+    if (isVisible && options.extendedHoursCategory) {
+      isVisible = EXTENDED_HOURS_FEED_CATEGORIES[options.extendedHoursCategory].has(proxy)
+    }
+  } else if (isSvr) {
+    // SVR feeds are identified by having a secondaryProxyAddress
+    isVisible = !!feed.secondaryProxyAddress
   } else {
     isVisible =
       !feed.docs?.porType &&
@@ -212,6 +246,14 @@ export function isFeedVisible(
     const schemaVersion = getSchemaVersion(feed)
     if (options.rwaSchemaFilter === "v8" && schemaVersion !== "v8") return false
     if (options.rwaSchemaFilter === "v11" && schemaVersion !== "v11") return false
+  }
+
+  if (dataFeedType === "streamsCrypto" && options.cryptoSchemaFilter && options.cryptoSchemaFilter !== "all") {
+    const schemaVersion = getSchemaVersion(feed)
+    const feedType = feed.docs?.feedType
+    if (options.cryptoSchemaFilter === "v2" && (schemaVersion !== "v2" || feedType !== "Crypto")) return false
+    if (options.cryptoSchemaFilter === "v3" && (schemaVersion !== "v3" || feedType !== "Crypto")) return false
+    if (options.cryptoSchemaFilter === "v3-dex" && (schemaVersion !== "v3" || feedType !== "Crypto-DEX")) return false
   }
 
   if (isSmartData && options.showOnlyMVRFeeds) {

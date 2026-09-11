@@ -23,7 +23,7 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 Deploy a **BurnMint** token pool on Canton, register it on the Token Admin Registry (TAR), and enable a cross-chain lane. Use the [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton) for pool deployment and TAR registration, or submit Ledger API commands directly.
 
-This guide assumes you already have a token instrument live on Canton with supply minted on-ledger — for example a Registry instrument from Digital Asset's [Registry utility](https://docs.digitalasset.com/registry/overview), or any instrument supporting CIP-56 with the `BurnMintFactory` interface.
+This guide assumes you already have a token instrument live on Canton — for example a Registry instrument from Digital Asset's [Registry utility](https://docs.digitalasset.com/registry/overview), or any instrument supporting CIP-56 with the `BurnMintFactory` interface.
 
 **Scope:** On-ledger pool connection — deploy, TAR registration, and lane enablement. Does not cover [EDS setup](/ccip/concepts/canton/explicit-disclosure) or end-to-end transfer tests.
 
@@ -109,7 +109,7 @@ Submit a `CreateCommand` for `BurnMintTokenPool` via your participant's JSON Led
 | Argument                  | Guidance                                                                                  |
 | :------------------------ | :---------------------------------------------------------------------------------------- |
 | `instanceId`              | Unique string for your party, e.g. `acme-eur-bm-pool`                                     |
-| `poolOwner`               | Party that owns the pool. Recommended: instrument admin.                                  |
+| `poolOwner`               | Party that owns the pool. Must be the same as `instrumentId.admin`.                       |
 | `ccipOwner`               | Chainlink CCIP owner party from ops                                                       |
 | `instrumentId`            | Your underlying asset's `InstrumentId`                                                    |
 | `decimals`                | Standard value: `10`                                                                      |
@@ -141,14 +141,14 @@ When setting `tokenTransferFeeConfigs` (map keyed by destination chain selector)
 
 | Field                     | Testnet                                                                                                    | Mainnet                                                                                                                |
 | :------------------------ | :--------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
-| Token Admin Registry      | `tokenadminregistry-lzrnd@ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551` | Contact the [CCIP team](https://chain.link/ccip-contact) for the Token Admin Registry address to register a token pool |
-| RMNRemote                 | `rmn_remote-nzvtd@rmnOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551`          | `rmn_remote-mnprd@rmnOwner::122012714685760dc1927c4cfe119ce2126c48756154e95c06f5c181da05a5519093`                      |
-| FeeQuoter                 | `feequoter-scxln@ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551`          | `feequoter-fpxih@ccipOwner::122012714685760dc1927c4cfe119ce2126c48756154e95c06f5c181da05a5519093`                      |
+| Token Admin Registry      | `tokenadminregistry-nbehb@ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551` | Contact the [CCIP team](https://chain.link/ccip-contact) for the Token Admin Registry address to register a token pool |
+| RMNRemote                 | `rmn_remote-pttst@rmnOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551`          | `rmn_remote-zqxpl@rmnOwner::122012714685760dc1927c4cfe119ce2126c48756154e95c06f5c181da05a5519093`                      |
+| FeeQuoter                 | `feequoter-koyox@ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551`          | `feequoter-dwxyx@ccipOwner::122012714685760dc1927c4cfe119ce2126c48756154e95c06f5c181da05a5519093`                      |
 | CCIP owner party          | `ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551`                          | `ccipOwner::122012714685760dc1927c4cfe119ce2126c48756154e95c06f5c181da05a5519093`                                      |
 | Global EDS                | `https://eds.testnet.ccip.chain.link`                                                                      | `https://eds.ccip.chain.link`                                                                                          |
 | Indexer                   | `https://indexer-1.testnet.ccip.chain.link`                                                                | Primary: `https://indexer-1.ccip.chain.link` · Backup: `https://indexer-2.ccip.chain.link`                             |
 | Canton chain selector     | `9268731218649498074`                                                                                      | `2308837218439511688`                                                                                                  |
-| Default CommitteeVerifier | `committeeverifier-tqkny@ccvOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551`   | `committeeverifier-mnprd@ccvOwner::122096accf0a84fc7d80d5fce5ea3135317a03eb22e62e0d8cdd7548865f984f11ff`               |
+| Default CommitteeVerifier | `committeeverifier-pttst@ccvOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551`   | `committeeverifier-vnmkd@ccvOwner::122096accf0a84fc7d80d5fce5ea3135317a03eb22e62e0d8cdd7548865f984f11ff`               |
 
 ## Step 2 — Register on the Token Admin Registry
 
@@ -209,7 +209,7 @@ curl --request POST \
   --header 'content-type: application/json' \
   --data '{
   "addresses": [
-    "tokenadminregistry-lzrnd@ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551"
+    "tokenadminregistry-nbehb@ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551"
   ]
 }'
 ```
@@ -245,16 +245,16 @@ Created by `poolOwner` with matching `poolInstanceId`, `poolOwner`, and `remoteC
 
 Call [`ApplyChainUpdates`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/pools/burn-mint-token-pool/daml/CCIP/BurnMintTokenPoolV2.daml) on the pool:
 
-| ChainUpdate field                            | Guidance                                                                   |
-| :------------------------------------------- | :------------------------------------------------------------------------- |
-| `remoteChainSelector`                        | Destination chain selector — see [CCIP Directory](/ccip/directory/testnet) |
-| `remotePools`                                | Remote token pool address(es)                                              |
-| `remoteTokenAddress`                         | Remote token address                                                       |
-| `inboundCCVs` / `outboundCCVs`               | Default CommitteeVerifier (testnet address above) unless custom            |
-| `finalityConfig`                             | `WaitForFinality` for default finalized source tx                          |
-| `inboundRateLimiter`                         | Inbound default limiter CID                                                |
-| `inboundCustomBlockConfirmationsRateLimiter` | Inbound custom limiter CID                                                 |
-| `outboundRateLimiter`                        | Outbound limiter CID                                                       |
+| ChainUpdate field                            | Guidance                                                                        |
+| :------------------------------------------- | :------------------------------------------------------------------------------ |
+| `remoteChainSelector`                        | Destination chain selector — see [CCIP Directory](/ccip/directory/testnet)      |
+| `remotePools`                                | Remote token pool address(es). Padded to 32 bytes in the case of EVM addresses. |
+| `remoteTokenAddress`                         | Remote token address. Padded to 32 bytes in the case of EVM addresses.          |
+| `inboundCCVs` / `outboundCCVs`               | Default CommitteeVerifier (testnet address above) unless custom                 |
+| `finalityConfig`                             | `WaitForFinality` for default finalized source tx                               |
+| `inboundRateLimiter`                         | Inbound default limiter address                                                 |
+| `inboundCustomBlockConfirmationsRateLimiter` | Inbound custom limiter address                                                  |
+| `outboundRateLimiter`                        | Outbound limiter address                                                        |
 
 Once applied, the on-ledger lane is complete.
 
@@ -274,7 +274,5 @@ Users need [explicit disclosures](/ccip/concepts/canton/explicit-disclosure) for
 ### Test transactions
 
 See [CCIP on Canton — Overview](/ccip/concepts/canton/overview) for user flows. Track messages in [CCIP Explorer](/ccip/tools-resources/ccip-explorer).
-
-For Registry-issued tokens, also complete [`SetBurnMintFactory`](/ccip/tutorials/canton/cross-chain-tokens/registry-issuer-guide) with your `AllocationFactory` contract ID.
 
 <CcipCommon callout="educationalDisclaimer" />

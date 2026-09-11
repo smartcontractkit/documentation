@@ -213,7 +213,8 @@ The session-aware smoothing that mitigates phantom liquidations also introduces 
 
 Traditional equity markets are closed on weekends and holidays. During these periods:
 
-- The feed will report the last closing price prior to the holiday market close
+- The feed will report the last onchain value published before the market closed, which may have occurred minutes to hours before the market close based on the deviation or heartbeat thresholds. It may not match the official exchange closing price of the underlying equity.
+- These feeds do not publish updates, including heartbeat updates, while markets are closed. The feed's timestamp reflects the final update published before the market closed.
 - No new price discovery occurs in the underlying markets
 - The staleness indicator will show increasingly old timestamps
 

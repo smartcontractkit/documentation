@@ -177,6 +177,8 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   MORPH_HOODI_TESTNET: () => new JsonRpcProvider("https://rpc-hoodi.morphl2.io/"),
   JOVAY_MAINNET: () => new JsonRpcProvider("https://rpc.jovay.io"),
   JOVAY_TESTNET: () => new JsonRpcProvider("https://api.zan.top/public/jovay-testnet"),
+  MOVA_MAINNET: () => new JsonRpcProvider("https://rpc.movan.movachain.com"),
+  MOVA_TESTNET: () => new JsonRpcProvider("https://mars.rpc.movachain.com"),
   STABLE_MAINNET: () => new JsonRpcProvider("https://rpc.stable.xyz"),
   TEMPO_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.tempo.xyz"),
   TEMPO_TESTNET_MODERATO: () => new JsonRpcProvider("https://rpc.moderato.tempo.xyz"),

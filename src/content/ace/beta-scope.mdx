@@ -3,9 +3,9 @@ section: ace
 title: "Beta Scope"
 date: Last Modified
 metadata:
-  description: "ACE Beta scope: testnet only, supported contract types, attestation-only credentials, self-deployed contract visibility, custom policies and extractors, signing model, and contract upgradeability."
+  description: "ACE Beta scope: supported networks, managed offchain risk policies, contract types, customizations, signing model, and contract upgradeability."
   datePublished: "2026-04-20"
-  lastModified: "2026-04-20"
+  lastModified: "2026-08-18"
 ---
 
 import { Aside } from "@components"
@@ -21,17 +21,16 @@ ACE Beta is an early-access release for testing and integration on supported mai
 
 ACE Beta is available on selected [mainnet and testnet networks](/ace/supported-networks). Additional networks may be added before general availability (GA).
 
-## No custom policies, extractors, or mappers
+## No custom extractors or mappers
 
-ACE Beta provides a library of [pre-built, audited policies](/ace/reference/policy-library) (allowlists, volume limits, role-based access control, pause controls, and more). The following customizations are **not available** through the platform during Beta:
+ACE Beta provides a library of [pre-built, audited policies](/ace/reference/policy-library) (allowlists, volume limits, role-based access control, pause controls, and more). You can also register your own [custom policies](/ace/concepts/policy-management). The following customizations are **not available** through the platform during Beta:
 
-- **Custom policies** — Creating and deploying your own policy contracts.
-- **Custom extractors** — Writing extractors for function signatures beyond the pre-built ERC-20 and ERC-3643 set.
-- **Custom mappers** — Deploying mapper contracts that transform or combine extracted parameters before they reach a policy.
+- **Custom extractors**: Writing extractors for function signatures beyond the pre-built ERC-20 and ERC-3643 set.
+- **Custom mappers**: Deploying mapper contracts that transform or combine extracted parameters before they reach a policy.
 
 Because custom extractors are not available, the platform supports **ERC-20 and ERC-3643** function signatures only. These are the only contract types that get the full managed experience — policy configuration, reporting, and monitoring — through the Platform UI and Coordinator API. If you are building a different type of contract (vault, DEX, lending protocol), making it ACE-compatible could require custom extractors. Support for additional contract types and custom extractors is on the roadmap.
 
-Users can deploy custom policies, extractors, or mappers onchain directly, but these fall under the [self-deployed contracts limitation](#self-deployed-contracts-are-not-visible-in-the-platform) below — they will not be visible or manageable through the platform.
+Users can deploy custom extractors or mappers onchain directly, but these fall under the [self-deployed contracts limitation](#self-deployed-contracts-are-not-visible-in-the-platform) below — they will not be visible or manageable through the platform.
 
 ## Self-deployed contracts are not visible in the platform
 
@@ -41,10 +40,22 @@ The ACE Platform only tracks and manages contracts it deploys. Self-deployed Pol
 
 To use the full managed experience (UI dashboards, Reporting API queries, policy management), deploy contracts through the Platform UI or Coordinator API.
 
-## Credential checks are attestation-only
+## Credential data validation is a curated catalog
 
-The ACE Platform (UI and Coordinator API) supports attestation-based credential checks only — verifying whether a credential exists. Credential Data Validator contracts, which can inspect the contents of the `credentialData` field for more granular checks, are not configurable through the platform during Beta.
+In addition to attestation-based checks (verifying whether a credential exists), the ACE Platform supports **credential data validation** — inspecting the contents of a credential's `credentialData` field for more granular checks. You link a data schema to a credential type, issue credentials that carry data, and attach a **Data Validator** to a policy's credential source to enforce rules on that data.
 
-For a full explanation of attestation-only vs. Credential Data Validator checks, see [Cross-Chain Identity — Credential data and privacy](/ace/concepts/cross-chain-identity#credential-data-and-privacy).
+Data Validators are a **curated catalog maintained by Chainlink**, not something organizations deploy themselves. This is **by design**: curating the available validators and their data schemas ensures no personally identifiable information (PII) are used. The first available validator supports **jurisdiction control** using [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes; Chainlink may add further validators over time. Bringing your own Data Validator is not offered — this is a permanent design choice, not a Beta limitation.
 
-For Beta, model compliance checks as attestations. For example, have the Credential Issuer issue a `not_ofac_sanctioned` credential that attests the user has passed the sanctions check, rather than storing data for onchain evaluation.
+For the conceptual explanation of attestation-only vs. Credential Data Validator checks, see [Cross-Chain Identity — Credential data and privacy](/ace/concepts/cross-chain-identity#credential-data-and-privacy).
+
+## Signing model is chosen at onboarding
+
+ACE supports two signing models: **delegated signing** (Chainlink signs and executes transactions on your behalf) and **self-signing** (you sign operations yourself using the [CRE Connect SDK](https://github.com/smartcontractkit/crec-sdk)). Your organization chooses its signing model during onboarding.
+
+In both models, you retain full ownership of your contracts through the [CRE Connect Wallet](/ace/concepts/key-terms#cre-connect-wallet). See [Signing & Ownership Model](/ace/concepts/signing-ownership) for details on how each model works.
+
+## Managed offchain risk policies are limited during Beta
+
+ACE Beta provides a managed policy that screens transaction participants with <a href="https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening" target="_blank">TRM Wallet Screening</a> and delivers approved permits onchain through a managed <a href="https://docs.chain.link/cre" target="_blank">CRE</a> workflow.
+
+See [Off-Chain Policy Execution](/ace/concepts/off-chain-policies) for a conceptual overview of managed and custom offchain policies.

@@ -15,7 +15,7 @@ githubRepoLinks:
   - label: "Go"
     url: "https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/confidential-workflows/automated-portfolio-rebalancing/automated-portfolio-rebalancing-go"
 datePublished: "2026-08-04"
-lastModified: "2026-08-06"
+lastModified: "2026-08-17"
 ---
 
 import { Aside } from "@components"
@@ -23,134 +23,195 @@ import { Aside } from "@components"
 <Aside type="caution" title="Private beta">
   [Confidential Workflows](https://docs.chain.link/cre/concepts/confidential-workflows) is in **private beta** and
   requires enrollment through your Chainlink account team - see [Requesting Confidential Workflows
-  Access](https://docs.chain.link/cre/account/confidential-workflows-access).
+  Access](https://docs.chain.link/cre/account/confidential-workflows-access). Do not wait for early access. Simulate
+  confidential workflows in minutes.
 </Aside>
 
-This standalone CRE project implements a confidential portfolio rebalancing workflow for crypto allocations.
+## What this template does
 
-## Description
+This CRE workflow implements a confidential portfolio rebalancing system for crypto allocations. It runs on a cron schedule, continuously monitors the drift between current and target asset weights, and automatically executes trades to restore the portfolio when a configurable threshold is exceeded. Exchange credentials, LLM reasoning, target allocations, and all execution preferences remain protected inside confidential execution.
 
-The workflow continuously tracks allocation drift and triggers rebalancing when policy thresholds are exceeded. It
-is designed to restore user-defined target weights while protecting sensitive operational inputs, including
-exchange credentials, model credentials, policy thresholds, and execution preferences inside confidential execution.
+**Data flow:**
 
-## Target Customer
+1. Fetch current portfolio state: holdings, asset prices, volatility index, and stablecoin reserve depth.
+2. Calculate per-asset allocation drift from configured target weights (BTC, ETH, USDC).
+3. If maximum drift across all assets is below the policy threshold, exit with `NOOP` and take no action.
+4. Send portfolio state and policy to an LLM reasoning model for trade selection.
+5. Reconcile LLM-proposed trades against policy constraints: venue overrides and slippage caps take precedence over LLM suggestions.
+6. Reject any trade that would breach the reserve floor. Cap oversized trades and split them into chunks.
+7. Separate trades into on-chain and off-chain execution routes and submit the full plan to the execute API.
 
-- Professional retail traders
-- Developer shops
-- Founders building trading products
+## Policy Constraints and Risk Flags
 
-## Structure
+### Policy constraints
 
-- `project.yaml`: project-level target settings
-- `secrets.yaml`: secret ID mappings used by the workflow
-- `mock-server.js`: local deterministic API server
-- `automated-portfolio-rebalancing-ts/`: TypeScript workflow implementation
-- `automated-portfolio-rebalancing-go/`: Go workflow implementation
+All policy values are loaded from secrets at runtime and enforced before any trade is submitted to the execute API.
 
-## Private Inputs
+| Constraint         | Description                                                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Target allocations | Target weight for each asset as a decimal (e.g., `0.5` = 50% BTC). All three values must sum to `1.0`.                                |
+| Drift threshold    | Minimum drift percentage that triggers a rebalance. The workflow exits with `NOOP` if no asset exceeds this.                          |
+| Maximum trade size | Per-chunk trade size cap in USD. Trades above this are split into equal-sized chunks.                                                 |
+| Reserve floor      | Minimum USDC that must remain after all buy trades. Buy capacity is reduced to protect the floor; trades that breach it are rejected. |
+| Slippage limit     | Maximum acceptable slippage in basis points. LLM-proposed slippage values are clamped to this ceiling.                                |
+| Trade ordering     | Sequence in which trades execute: `sells-first`, `buys-first`, or `model-order`                                                       |
+| Preferred venues   | Comma-separated venue priority list used when the LLM does not specify a venue                                                        |
 
-The following inputs are handled as confidential:
+### Drift monitoring
 
-- Exchange API credentials used to read holdings, reserve data, and execution context, including stablecoin reserve depth and cash balance.
-- LLM reasoning API credentials.
-- Portfolio policy settings such as target allocation mix, minimum drift threshold, maximum trade size per execution, and required stablecoin reserve floor.
-- Execution preferences such as venue priority, slippage limits, and trade chunking/ordering behavior.
+The workflow computes allocation drift for each asset and triggers a rebalance when any asset exceeds the threshold:
 
-## Workflow Notes
+```
+currentWeight = assetValueUsd / totalPortfolioValueUsd
+drift = |currentWeight − targetWeight| × 100
+```
 
-1. Monitor portfolio state.
-   The workflow gathers market prices, current asset weights, drift from target allocations, reserve health, and volatility signals.
-2. Enforce user-defined portfolio constraints.
-   Confidential reasoning validates weight constraints, drift triggers, rebalance sizing limits, reserve protection requirements, and slippage controls.
-3. Build a rebalance action plan.
-   The plan can include buying underweight assets, selling overweight assets, enforcing reserve floors, capping per-trade notionals, and optimizing execution through chunking and smart venue routing.
-4. Execute rebalance actions across venues.
-   Depending on route selection, the workflow can execute both on-chain operations (such as swaps) and off-chain operations (such as centralized exchange API trades).
+If `maxDrift < driftThresholdPct` across all assets, the workflow exits with `NOOP`. Otherwise, it builds sell orders for overweight assets and buy orders for underweight assets.
 
-Note: Reasoning stages can be implemented with deterministic rule-based logic instead of an LLM when a fully rules-driven execution model is preferred.
+### Trade execution guardrails
 
-## Required Environment Variables
+- **Reserve floor**: Buy capacity is computed as `stablecoinReserve − reserveFloor + totalPlannedSellUsd`. Trades that would cause the reserve to drop below the floor are rejected.
+- **Slippage**: Each trade's slippage is clamped to `min(llmProposed, maxSlippageBps)`.
+- **Trade chunking**: Trades larger than `maxTradeUsd` are split into chunks of up to `maxTradeUsd` each (the final chunk may be smaller), tracked with `chunkIndex` and `chunkCount`.
+- **LLM reconciliation**: LLM-proposed trade symbols and directions must align with policy-computed targets. Policy venue and slippage values override LLM suggestions when they conflict.
 
-Copy `.env.example` to `.env` and provide values for:
+## Prerequisites
 
-- `CRE_ETH_PRIVATE_KEY` (optional for local simulate)
-- `MOCK_PORT`
-- `MOCK_EXCHANGE_API_KEY`
-- `MOCK_OPENAI_API_KEY`
-- `MOCK_REBALANCING_TARGET_ALLOCATION_BTC_PCT`
-- `MOCK_REBALANCING_TARGET_ALLOCATION_ETH_PCT`
-- `MOCK_REBALANCING_TARGET_ALLOCATION_USDC_PCT`
-- `MOCK_REBALANCING_DRIFT_THRESHOLD_PCT`
-- `MOCK_REBALANCING_MAX_TRADE_USD`
-- `MOCK_REBALANCING_RESERVE_FLOOR_USDC`
-- `MOCK_REBALANCING_MAX_SLIPPAGE_BPS`
-- `MOCK_REBALANCING_PREFERRED_VENUES`
-- `MOCK_REBALANCING_ORDER_SEQUENCE_PREFERENCE`
+- [Bun](https://bun.sh) runtime
+- CRE CLI (`cre`)
+- An exchange or portfolio API that exposes current holdings, asset prices, and reserve data
+- An LLM API endpoint for reasoning (e.g., an OpenAI-compatible endpoint)
 
-The local mock server for this project only exposes routes under `/rebalancing/*`.
+## Configuration
 
-**Quick navigation:**
+The workflow ships with two config files:
 
-- [TypeScript Quick Start](#typescript-quick-start)
-- [Go Quick Start](#go-quick-start)
+- `automated-portfolio-rebalancing-ts/config.staging.json` (TypeScript) and `automated-portfolio-rebalancing-go/config.staging.json` (Go): targets mock server endpoints
+- `automated-portfolio-rebalancing-ts/config.production.json` (TypeScript) and `automated-portfolio-rebalancing-go/config.production.json` (Go): same structure with empty URLs for you to populate
 
-## TypeScript Quick Start
+Key fields:
+
+| Field           | Description                                                 |
+| --------------- | ----------------------------------------------------------- |
+| `schedule`      | Cron expression. Default: `0 */5 * * * *` (every 5 minutes) |
+| `mock_base_url` | Base URL for the exchange or portfolio API                  |
+| `openai_url`    | LLM reasoning endpoint                                      |
+| `openai_model`  | Model identifier (e.g., `gpt-4.1-mini`)                     |
+| `secrets_ids.*` | Secret IDs for API keys and all policy parameters           |
+
+## Secrets
+
+Copy `.env.example` to `.env` and populate all values before running locally. The workflow enforces a strict limit of exactly 11 secrets and 5 HTTP calls per invocation.
+
+| Environment variable                          | Secret ID                                | Purpose                                                              |
+| --------------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------- |
+| `MOCK_EXCHANGE_API_KEY`                       | `exchange_api_key`                       | Authenticates exchange API requests                                  |
+| `MOCK_OPENAI_API_KEY`                         | `openai_api_key`                         | Authenticates LLM reasoning API requests                             |
+| `MOCK_REBALANCING_TARGET_ALLOCATION_BTC_PCT`  | `rebalancing_target_allocation_btc_pct`  | Target BTC weight as a decimal (e.g., `0.5`)                         |
+| `MOCK_REBALANCING_TARGET_ALLOCATION_ETH_PCT`  | `rebalancing_target_allocation_eth_pct`  | Target ETH weight as a decimal (e.g., `0.3`)                         |
+| `MOCK_REBALANCING_TARGET_ALLOCATION_USDC_PCT` | `rebalancing_target_allocation_usdc_pct` | Target USDC weight as a decimal (e.g., `0.2`)                        |
+| `MOCK_REBALANCING_DRIFT_THRESHOLD_PCT`        | `rebalancing_drift_threshold_pct`        | Drift percentage that triggers rebalancing (e.g., `5`)               |
+| `MOCK_REBALANCING_MAX_TRADE_USD`              | `rebalancing_max_trade_usd`              | Maximum USD per trade chunk (e.g., `5000`)                           |
+| `MOCK_REBALANCING_RESERVE_FLOOR_USDC`         | `rebalancing_reserve_floor_usdc`         | Minimum USDC to keep in reserve (e.g., `2000`)                       |
+| `MOCK_REBALANCING_MAX_SLIPPAGE_BPS`           | `rebalancing_max_slippage_bps`           | Maximum slippage in basis points (e.g., `50`)                        |
+| `MOCK_REBALANCING_PREFERRED_VENUES`           | `rebalancing_preferred_venues`           | Comma-separated venue list (e.g., `binance,coinbase,onchain`)        |
+| `MOCK_REBALANCING_ORDER_SEQUENCE_PREFERENCE`  | `rebalancing_order_sequence_preference`  | `model-order`, `sells-first`, or `buys-first`                        |
+| `CRE_ETH_PRIVATE_KEY`                         | _(framework-level)_                      | Optional for local simulation. Required for on-chain swap execution. |
+
+## Quick start
+
+**TypeScript**
+
+Run all commands from the `automated-portfolio-rebalancing` directory (the project root).
 
 1. Install dependencies
 
-```bash
-bun install
-```
+   ```bash
+   cd automated-portfolio-rebalancing-ts && bun install && cd ..
+   ```
 
 2. Create environment file
 
-```bash
-cp .env.example .env
-```
+   ```bash
+   cp .env.example .env
+   ```
 
 3. Start mock server
 
-```bash
-bun run mock:server
-```
+   ```bash
+   cd automated-portfolio-rebalancing-ts && bun run mock:server
+   ```
 
-4. In another terminal, run checks
+4. In another terminal, run checks and simulate
 
-```bash
-bun run typecheck
-bun run test
-```
+   ```bash
+   cd automated-portfolio-rebalancing-ts
+   bun run typecheck
+   bun run test
+   cd .. && cre workflow simulate ./automated-portfolio-rebalancing-ts --project-root ./ --target=staging-settings --env ./.env
+   ```
 
-5. Simulate workflow
+**Go**
 
-```bash
-cre workflow simulate ./automated-portfolio-rebalancing-ts --target=staging-settings
-```
+Run all commands from the `automated-portfolio-rebalancing` directory (the project root).
 
-## Go Quick Start
+1. Create environment file
 
-1. Create environment file (at the shared project root)
+   ```bash
+   cp .env.example .env
+   ```
 
-```bash
-cp ../.env.example ../.env
-```
+2. Start the mock server from the TypeScript directory (requires Node or Bun)
 
-2. Start the mock server (requires Node or Bun)
+   ```bash
+   cd automated-portfolio-rebalancing-ts && bun run mock:server
+   ```
 
-```bash
-bun mock-server.js
-```
+3. In another terminal, run checks and simulate
 
-3. In another terminal, run checks
+   ```bash
+   cd automated-portfolio-rebalancing-go
+   go vet ./...
+   go test ./...
+   cd .. && cre workflow simulate ./automated-portfolio-rebalancing-go --project-root ./ --target=staging-settings --env ./.env
+   ```
 
-```bash
-go vet ./...
-go test ./...
-```
+## Production checklist
 
-4. Simulate workflow
+- Populate `config.production.json` with real `mock_base_url` and `openai_url`.
+- Register all 11 secrets in the CRE secrets manager and verify secret IDs match those defined in `config.production.json` under `secrets_ids`.
+- Confirm target allocation secrets sum to `1.0` across BTC, ETH, and USDC before registering.
+- Set `MOCK_REBALANCING_RESERVE_FLOOR_USDC` to a value that provides a meaningful liquidity buffer for your portfolio size.
+- Set `CRE_ETH_PRIVATE_KEY` if on-chain swap routes are enabled.
+- Confirm the exchange API returns the expected portfolio state schema before deploying.
+- Run `bun run typecheck && bun run test` (TypeScript) or `go vet ./... && go test ./...` (Go) before registering.
+- Run `cre workflow simulate` against production endpoints to validate end-to-end behavior.
+- Register the workflow:
+  - TypeScript: `cre workflow register ./automated-portfolio-rebalancing-ts --project-root ./ --target=production-settings`
+  - Go: `cre workflow register ./automated-portfolio-rebalancing-go --project-root ./ --target=production-settings`
 
-```bash
-cd .. && cre workflow simulate ./automated-portfolio-rebalancing-go --target=staging-settings
-```
+## Troubleshooting
+
+**Workflow exits with NOOP**
+
+This is expected behavior when allocation drift is below the configured threshold. Check current versus target allocations and compare against `MOCK_REBALANCING_DRIFT_THRESHOLD_PCT`. Lower the threshold value to trigger rebalancing more frequently.
+
+**Reserve floor breach error**
+
+If you see `trade X breaches reserve floor: projected Y < floor Z`, a planned buy trade would consume too much of the stablecoin reserve. Decrease `MOCK_REBALANCING_RESERVE_FLOOR_USDC`, reduce `MOCK_REBALANCING_MAX_TRADE_USD`, or reduce the proportion of buy trades.
+
+**Config validation error**
+
+If you see `config requires schedule, mock_base_url, openai_url, and openai_model`, one of those fields is missing from the active config file. Verify that all four fields are populated in `config.production.json` (or `config.staging.json`).
+
+**LLM response format mismatch**
+
+If the LLM response cannot be parsed, the model must return an `output_text` field containing a JSON object with `shouldRebalance`, `reasoning`, and `trades` fields. Check that your LLM endpoint returns this structure and that the API key is valid.
+
+**HTTP request failures**
+
+If you see `request failed status=4XX`, confirm the mock server is running and that `MOCK_EXCHANGE_API_KEY` and `MOCK_OPENAI_API_KEY` in `.env` match the values expected by the mock server.
+
+**Secrets must be finite numbers**
+
+If you see `secret X must be a finite number`, one of the numeric policy secrets was set to a non-numeric value. Confirm that all numeric environment variables in `.env` are valid floats or integers.

@@ -11,14 +11,16 @@ export type DataFeedType =
   | "rates"
   | "usGovernmentMacroeconomicData"
   | "tokenizedEquity"
-  | "blendedPreciousMetals"
+  | "extendedHours"
+  | "svr"
+  | "svrAtlas"
   | "streamsCrypto"
   | "streamsRwa"
   | "streamsNav"
   | "streamsExRate"
   | "streamsBacked"
 
-export type SchemaFilterValue = "all" | "v8" | "v11"
+export type SchemaFilterValue = "all" | "v2" | "v3" | "v3-dex" | "v8" | "v11"
 export type StreamsRwaFeedTypeValue = "all" | "datalink" | "equities" | "forex"
 export type TradingHoursFilterValue = "all" | "regular" | "extended" | "overnight"
 
@@ -28,7 +30,8 @@ export interface FeedTypeFlags {
   isSmartData: boolean
   isRates: boolean
   isUSGovernmentMacroeconomicData: boolean
-  /** Standard price feeds table (excludes streams/smartdata/macro; testnet also excludes rates). */
+  isSvr: boolean
+  /** Standard price feeds table (excludes streams/smartdata/macro/svr; testnet also excludes rates). */
   isDefaultTable: boolean
 }
 
@@ -42,11 +45,12 @@ export function getFeedTypeFlags(dataFeedType: string, environment: "mainnet" | 
   const isSmartData = dataFeedType === "smartdata"
   const isRates = dataFeedType === "rates"
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
+  const isSvr = dataFeedType === "svr" || dataFeedType === "svrAtlas"
 
   const isDefaultTable =
     environment === "testnet"
       ? !isSmartData && !isRates && !isStreams && !isUSGovernmentMacroeconomicData
       : !isStreams && !isSmartData && !isUSGovernmentMacroeconomicData
 
-  return { isStreams, isSmartData, isRates, isUSGovernmentMacroeconomicData, isDefaultTable }
+  return { isStreams, isSmartData, isRates, isUSGovernmentMacroeconomicData, isSvr, isDefaultTable }
 }

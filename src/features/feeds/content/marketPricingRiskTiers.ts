@@ -124,6 +124,15 @@ export function getMarketPricingRiskTiers(terms: MarketPricingRiskTerms): Market
       ],
       closingParagraphs: [],
     },
+    {
+      id: "-unrated",
+      icon: "⚪",
+      title: "Unrated",
+      leadParagraphs: [
+        `These ${terms.productPlural} have not yet been evaluated for market pricing risk. Treat them as unevaluated and use them at your own risk.`,
+      ],
+      closingParagraphs: [],
+    },
   ]
 }
 
@@ -140,5 +149,6 @@ export function getCategoryListItems(terms: MarketPricingRiskTerms) {
     { icon: "🆕", label: terms.newTokenListLabel, href: tierAnchor("new-token", terms) },
     { icon: "🔵", label: terms.customListLabel, href: tierAnchor("custom", terms) },
     { icon: "⭕", label: "Deprecating", href: "#-deprecating" },
+    { icon: "⚪", label: "Unrated", href: "#-unrated" },
   ]
 }

@@ -1,0 +1,66 @@
+---
+section: chainlinkFunctions
+date: Last Modified
+title: "Cancel a Subscription and Withdraw Funds"
+isMdx: true
+whatsnext:
+  {
+    "Managing CL Functions Subscriptions": "/chainlink-functions/resources/subscriptions",
+    "Chainlink Functions Billing": "/chainlink-functions/resources/billing",
+    "Migrate from Chainlink Functions to Chainlink CRE": "/cre/reference/clf-migration",
+  }
+---
+
+import { Aside } from "@components"
+import ChainlinkFunctions from "@features/chainlink-functions/common/ChainlinkFunctions.astro"
+import { SubscriptionLookup } from "@features/chainlink-functions/components"
+
+<ChainlinkFunctions callout="shutdown" />
+
+Cancelling a Chainlink Functions subscription and withdrawing its remaining LINK balance is a single onchain transaction: calling `cancelSubscription` deletes the subscription, removes all associated consumers, and transfers the remaining balance in one call. Only the subscription owner can perform this action.
+
+## Prerequisites
+
+- **Your Subscription ID.** If you don't know it, see [Find your Subscription ID](#find-your-subscription-id) below.
+- **The FunctionsRouter address** for the network your subscription is on. Find it in the [Supported Networks](/chainlink-functions/supported-networks) reference.
+- **No in-flight requests.** A subscription cannot be canceled while it has pending requests. Any request that has been pending for longer than five minutes must first be [timed out](/chainlink-functions/resources/subscriptions#time-out-pending-requests-manually).
+- **A wallet you can sign transactions with** using the subscription owner address. The examples below use [Foundry's `cast`](https://getfoundry.sh/cast/overview) with a raw private key, but you can substitute a keystore or Ledger. See [Sending Transactions](https://www.getfoundry.sh/cast/sending-transactions) in the Foundry docs for the equivalent `--account` or `--ledger` flags.
+
+## Find your Subscription ID
+
+If you already know your Subscription ID, skip to [Cancel the subscription and withdraw funds](#cancel-the-subscription-and-withdraw-funds).
+
+- **Using the Subscription Manager:** Go to the [Chainlink Functions Subscription Manager](https://functions.chain.link/), connect the owner wallet, and open the subscription under **My Subscriptions**. The Subscription ID is shown on the subscription's detail page.
+- **Using the lookup tool below:** If you no longer have access to the owner wallet's session or the subscription isn't showing in the app, enter your owner address to find its Subscription IDs.
+
+<SubscriptionLookup client:load />
+
+This tool searches the same data published in the [Chainlink Functions Subscription ID Registry](https://docs.google.com/spreadsheets/d/1X33O8ra6lwhhFKV7o3Ut-dOq8pXVAyb6gcHlXOtYmUA/edit?gid=1541416076#gid=1541416076) spreadsheet.
+
+## Cancel the subscription and withdraw funds
+
+Call `cancelSubscription` on the FunctionsRouter contract, passing your Subscription ID and the address that should receive the remaining LINK balance:
+
+```shell
+cast send FUNCTIONS_ROUTER_ADDRESS \
+"cancelSubscription(uint64,address)" \
+SUBSCRIPTION_ID \
+TO_ADDRESS \
+--rpc-url $CHAIN_RPC_URL \
+--private-key $PRIVATE_KEY
+```
+
+Where:
+
+- `FUNCTIONS_ROUTER_ADDRESS` is the address of the FunctionsRouter contract for your network.
+- `SUBSCRIPTION_ID` is your numerical Subscription ID.
+- `TO_ADDRESS` is the wallet address that should receive the withdrawn LINK.
+- `CHAIN_RPC_URL` is the HTTP RPC URL for your network.
+
+<Aside type="note" title="Cancellation fee">
+  If your subscription has not spent enough in fees to clear the request threshold for your network, a cancellation fee
+  is deducted from its balance before the remainder is sent to `TO_ADDRESS`. See [Supported
+  Networks](/chainlink-functions/supported-networks) for the cancellation fee on each network.
+</Aside>
+
+Once this transaction confirms, the Subscription ID is deleted, all consumers are removed, and the remaining LINK balance is transferred to `TO_ADDRESS`.

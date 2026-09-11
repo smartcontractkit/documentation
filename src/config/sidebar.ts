@@ -81,6 +81,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         { title: "Architecture", url: "ace/concepts/architecture" },
         { title: "Key Terms", url: "ace/concepts/key-terms" },
+        { title: "Signing & Ownership Model", url: "ace/concepts/signing-ownership" },
         {
           title: "Policy Management",
           url: "ace/concepts/policy-management",
@@ -116,6 +117,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   title: "CredentialRegistryIdentityValidatorPolicy",
                   url: "ace/reference/policy-library/credential-registry-identity-validator-policy",
                 },
+                {
+                  title: "GroupedIdentityValidatorPolicy",
+                  url: "ace/reference/policy-library/grouped-identity-validator-policy",
+                },
                 { title: "IntervalPolicy", url: "ace/reference/policy-library/interval-policy" },
                 { title: "MaxPolicy", url: "ace/reference/policy-library/max-policy" },
                 {
@@ -143,6 +148,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "APIs",
           children: [
             { title: "Coordinator API", url: "ace/reference/api/coordinator" },
+            { title: "Evaluation API", url: "ace/reference/api/evaluation" },
             { title: "Reporting API", url: "ace/reference/api/reporting" },
           ],
         },
@@ -495,6 +501,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/guides/workflow/using-randomness",
           highlightAsCurrent: ["cre/guides/workflow/using-randomness-ts", "cre/guides/workflow/using-randomness-go"],
         },
+        {
+          title: "Building a Reusable Library",
+          url: "cre/guides/workflow/building-a-library",
+          highlightAsCurrent: [
+            "cre/guides/workflow/building-a-library-ts",
+            "cre/guides/workflow/building-a-library-go",
+          ],
+        },
       ],
     },
     {
@@ -798,6 +812,21 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
           ],
         },
+        {
+          title: "GraphQL API",
+          url: "cre/reference/graphql-api",
+          children: [
+            { title: "Authentication", url: "cre/reference/graphql-api/authentication" },
+            { title: "Quickstart", url: "cre/reference/graphql-api/quickstart" },
+            { title: "Common Queries", url: "cre/reference/graphql-api/common-queries" },
+            { title: "Query Reference", url: "cre/reference/graphql-api/queries" },
+            { title: "Object Reference", url: "cre/reference/graphql-api/objects" },
+            { title: "Enum Reference", url: "cre/reference/graphql-api/enums" },
+            { title: "Input Reference", url: "cre/reference/graphql-api/inputs" },
+            { title: "Pagination", url: "cre/reference/graphql-api/pagination" },
+            { title: "Errors & Rate Limits", url: "cre/reference/graphql-api/errors" },
+          ],
+        },
       ],
     },
     {
@@ -918,7 +947,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
             { title: "Rate and Volatility Feeds", url: "data-feeds/rates-feeds" },
             { title: "L2 Sequencer Uptime Feeds", url: "data-feeds/l2-sequencer-feeds" },
-            { title: "24/7 Blended Precious Metals Feeds", url: "data-feeds/blended-precious-metals-feeds" },
+            { title: "24/7 Extended-Hours Data Feeds", url: "data-feeds/24-7-extended-hours-data-feeds" },
             { title: "Self-Managed Feeds", url: "data-feeds/self-managed-feeds" },
           ],
         },
@@ -1192,6 +1221,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/billing",
         },
         {
+          title: "Rate Limits and Fair Use Policy",
+          url: "data-streams/rate-limits",
+        },
+        {
           title: "Data Sources",
           url: "data-streams/data-sources",
         },
@@ -1212,6 +1245,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Cryptocurrency",
           url: "data-streams/crypto-streams",
           children: [
+            {
+              title: "Report Schema v2 (Crypto Standard)",
+              url: "data-streams/reference/report-schema-v2",
+            },
             {
               title: "Report Schema v3 (Crypto Advanced)",
               url: "data-streams/reference/report-schema-v3",
@@ -1402,6 +1439,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "API Reference",
               url: "data-streams/reference/data-streams-api/interface-api",
+              children: [
+                {
+                  title: "Discovery Endpoint",
+                  url: "data-streams/reference/data-streams-api/discovery-endpoint",
+                },
+              ],
             },
             {
               title: "WebSocket Reference",
@@ -1771,6 +1814,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Guides",
       contents: [
+        {
+          title: "Cancel a Subscription and Withdraw Funds",
+          url: "chainlink-functions/guides/cancel-subscription",
+        },
         {
           title: "Simple Computation",
           url: "chainlink-functions/tutorials/simple-computation",

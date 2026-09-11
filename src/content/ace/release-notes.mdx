@@ -5,8 +5,21 @@ date: Last Modified
 metadata:
   description: "Chainlink ACE release notes: Beta scope, known constraints, changelog, and what is supported in each release."
   datePublished: "2026-04-20"
-  lastModified: "2026-04-20"
+  lastModified: "2026-08-18"
 ---
+
+## July 17, 2026 — ACE Beta+
+
+ACE Beta+ builds on ACE Beta with new compliance capabilities. This release is still a Beta; see [Beta Scope](/ace/beta-scope) for the current scope and limitations.
+
+### What's new
+
+- **Custom policies**: You can now write, deploy, and register your own policy contract and use it like a pre-built library policy. See [Custom policy](/ace/concepts/key-terms#custom-policy).
+- **Grouped identity validation**: The new [GroupedIdentityValidatorPolicy](/ace/reference/policy-library/grouped-identity-validator-policy) applies different credential requirements to different accounts. It routes each account to a group, by credential attestation or by credential data (for example, jurisdiction), then validates the account against that group's requirements. Use it to enforce, for example, one rule set for individuals and another for businesses, or different rules per jurisdiction, within a single policy.
+- **External registries**: Organizations can now share registries with each other. A registry owner grants another organization read access, and the grantee can use the shared registry's identities and credentials as a credential source in its own policies without re-issuing credentials. Access is read-only for the recipient and revocable at any time. See [Cross-Chain Identity](/ace/concepts/cross-chain-identity#sharing-registries-across-organizations).
+- **Credential data validation**: Credentials are no longer limited to attestation-only. You can now link a data schema to a credential type, issue credentials that carry structured data, and attach a [Data Validator](/ace/concepts/cross-chain-identity#credential-data-and-privacy) to a policy's credential source to enforce rules on that data. The first use case is **jurisdiction control** using a pre-built AllowDenyList Data Validator with [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes. Data Validators are a curated catalog maintained by Chainlink.
+- **Self-signing model**: Organizations can now choose between **delegated signing** (Chainlink signs on your behalf) and **self-signing** (you sign operations yourself) at onboarding. With self-signing, ACE creates unsigned draft operations that you poll, sign (EIP-712), and submit using the [CRE Connect SDK](https://github.com/smartcontractkit/crec-sdk). Both models use the same CRE Connect Wallet and all platform capabilities work identically. See [Signing & Ownership Model](/ace/concepts/signing-ownership).
+- **Managed offchain risk policies**: Screen transaction participants with [TRM Wallet Screening](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening) before allowing a protected onchain action. Configure global and category-specific risk thresholds, request evaluations through the new [Evaluation API](/ace/reference/api/evaluation), and receive single-use permits delivered onchain by a managed CRE workflow. See [Off-Chain Policy Execution](/ace/concepts/off-chain-policies).
 
 ## May 26, 2026 — Mainnet support
 
@@ -20,9 +33,9 @@ Chainlink ACE Beta is now available to a first set of selected participants as a
 
 ACE Beta ships with three core components:
 
-- **Policy Manager** — Create policy engines, register target contracts, configure policy instances from the pre-built library, and enforce compliance rules on-chain.
-- **Identity Manager** — Set up identity registries, register on-chain identities, define credential types, and issue verifiable credentials for use in identity-based policies.
-- **Reporting Manager** — Query on-chain policy configurations, identity states, and transaction history via a read-only API to support compliance verification and auditing workflows.
+- **Policy Manager**: Create policy engines, register target contracts, configure policy instances from the pre-built library, and enforce compliance rules on-chain.
+- **Identity Manager**: Set up identity registries, register on-chain identities, define credential types, and issue verifiable credentials for use in identity-based policies.
+- **Reporting Manager**: Query on-chain policy configurations, identity states, and transaction history via a read-only API to support compliance verification and auditing workflows.
 
 All three components support multi-chain deployments across all [supported testnets](/ace/supported-networks) and are accessible via the [Chainlink Platform UI](https://app.chain.link) and the Coordinator and Reporting APIs, once Chainlink provisions your organization with ACE Beta access.
 

@@ -760,11 +760,6 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         chainTypes: ["canton"],
         children: [
           {
-            title: "Registry Issuer Guide",
-            url: "ccip/tutorials/canton/cross-chain-tokens/registry-issuer-guide",
-            chainTypes: ["canton"],
-          },
-          {
             title: "BurnMint Token Pool Deployment",
             url: "ccip/tutorials/canton/cross-chain-tokens/burn-mint-token-pool",
             chainTypes: ["canton"],
