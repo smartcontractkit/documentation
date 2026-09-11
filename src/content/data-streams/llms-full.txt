@@ -402,6 +402,10 @@ For best practices regarding RWA streams:
 
 For best practices regarding stock splits and reverse splits for tokenized assets, please see the [Handling Stock Splits](/data-streams/tokenized-asset-streams/handling-stock-splits) guide.
 
+## Report Timestamps
+
+Each report applies to a span of time defined by `validFromTimestamp` and `observationsTimestamp`, and that span can vary in width. Read both fields from each report rather than assuming a fixed cadence or deriving the window from your own clock. See [How Report Timestamps Work](/data-streams/how-report-timestamps-work) for details, including how gaps between reports are absorbed and how timestamps apply to TWAP streams.
+
 ## Rate Limits
 
 Rely on the WebSocket stream for report delivery rather than polling a REST endpoint in a tight loop, and implement exponential backoff on reconnect logic. See the [Rate Limits and Fair Use Policy](/data-streams/rate-limits) page for applicable limits and how to avoid HTTP 429 responses.
@@ -958,6 +962,66 @@ If you are using Data Streams credentials that were issued outside the self-serv
 ## Rate limiting
 
 If you believe you've been rate limited unexpectedly, see the [Rate Limits and Fair Use Policy](/data-streams/rate-limits) page for details on fair usage limits and what to include in your support request.
+
+---
+
+# How Report Timestamps Work
+Source: https://docs.chain.link/data-streams/how-report-timestamps-work
+
+<DataStreams section="dsNotes" />
+
+Every Data Streams report carries two timestamps:
+
+- **`validFromTimestamp`** — when the report's price *starts being valid*
+- **`observationsTimestamp`** — when the report's price *was last observed*.
+
+Together, they describe a window of time rather than a single instant. This page explains how the two timestamps define a [report's window](#report-windows), what to expect when [no report exists for a given moment](#determining-current-price), and how timestamps apply to [Time Weighted Average Price (TWAP) streams](#twap-streams).
+
+## Report windows
+
+A report does not have verified price for a single instant in time. The `validFromTimestamp` marks the beginning of the window, and the `observationsTimestamp` marks the end.
+
+Both fields are Unix timestamps in seconds. [Each report schema](/data-streams/reference/report-schema-overview) contains definitions, including the unit of time, for all fields.
+
+The window of time can vary depending on how frequently the Decentralized Oracle Network (DON) can observe the data and generate reports. Windows are contiguous by construction: each one starts immediately following the previous window. Each report is designed to have no gaps or overlap, with every time interval belonging to exactly one report.
+
+## Determining current price
+
+Because each report covers a window rather than an instant, the "current" price at any given moment is the price of the report whose window contains that moment. Whether such a report exists yet depends on how recently the DON observed the data and delivered the report.
+
+**Normal case: a report exists at that exact moment**
+
+For example, a report exists with `observationsTimestamp = 12:05:00` and a 1-second window. The report is delivered slightly after `12:05:00` (for reports with second-precision timestamps, typically up to 1-2 seconds later) due to DON consensus and transmission.
+
+**Edge case: no report at that exact moment**
+
+It is possible for no report to be observed with `observationsTimestamp = 12:05:00`. For example:
+
+- Last report: `observationsTimestamp = 12:04:59`
+- Next report: `observationsTimestamp = 12:05:01`
+
+The next report's `validFromTimestamp` is `12:05:00`, absorbing the gap and creating a 2-second window (`12:05:00` → `12:05:01`). In this example, the price for `12:05:00` is observed one second later at `12:05:01`.
+
+Because windows can vary in width, **do not assume every report covers the same window**. Read `validFromTimestamp` and `observationsTimestamp` from each report rather than deriving the window from the previous report's timestamp or from your own clock.
+
+## TWAP streams
+
+Time Weighted Average Price (TWAP) streams report the average price over a rolling window, rather than a single observed price. A TWAP report is an **aggregated calculation** derived from the underlying reports. See the [TWAP report schema](/data-streams/reference/report-schema-v2#time-weighted-average-price-twap) for the full field definitions.
+
+A TWAP window is anchored to the latest observation and moves forward with each new report. Unlike standard streams, it doesn't align to the clock or snap to round numbers.
+
+For example, a 60-second TWAP requested "at `12:05:01`" covers `12:04:01` → `12:05:01`.
+
+**Formula:**
+
+```
+TWAP = (sum of price × duration for each report in the window) / window length in seconds
+```
+
+- 30-second TWAP → divide by 30
+- 60-second TWAP → divide by 60
+
+The TWAP is constructed from the underlying reports that fall within its window. Each underlying report normally covers about 1 second, but if a report's window is wider because it absorbed a gap, its price is weighted across the full window it covers.
 
 ---
 
@@ -4716,6 +4780,8 @@ All routes require the following three headers for user authentication:
 
 ## API endpoints
 
+Report responses include `validFromTimestamp` and `observationsTimestamp`, which together define the span of time the report's price applies to rather than a single instant. See [How Report Timestamps Work](/data-streams/how-report-timestamps-work) for details, including what happens when no report exists for a given moment.
+
 ### Discover data streams
 
 ##### Endpoint
@@ -6207,7 +6273,7 @@ Cryptocurrency streams adhere to the report schema outlined below.
 
 ## Time-Weighted Average Price (TWAP)
 
-The v2 schema is used by TWAP streams. The `price` field carries the time-weighted average price for the stream's configured window, not a spot or median price. Each TWAP stream is scoped to one asset and one window length (for example, 30 seconds or 60 seconds). The window length is part of the stream's name and metadata.
+The v2 schema is used by TWAP streams. The `price` field carries the time-weighted average price for the stream's configured window, not a spot or median price. Each TWAP stream is scoped to one asset and one window length (for example, 30 seconds or 60 seconds). The window length is part of the stream's name and metadata. See [How Report Timestamps Work](/data-streams/how-report-timestamps-work) for how timestamps apply to TWAP streams.
 
 ## Schema Fields
 
