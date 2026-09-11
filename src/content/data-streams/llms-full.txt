@@ -6080,7 +6080,7 @@ While the Data Streams architecture is designed to deliver updates at least once
 [Chainlink RWA streams](/data-streams/rwa-streams) deliver real-world asset pricing through two report schemas:
 
 - **[RWA Standard (v8)](/data-streams/reference/report-schema-v8)** — standard RWA format with consolidated mid price, market status, and freshness indicators. Used by the majority of RWA streams.
-- **[RWA Advanced (v11)](/data-streams/reference/report-schema-v11)** — adds bid/ask prices, volume depth, last traded price, nanosecond-precision timestamps, and expanded market status values. Supports extended trading sessions where applicable.
+- **[RWA Advanced (v11)](/data-streams/reference/report-schema-v11)** — adds bid/ask prices, volume depth, last traded price where supported, nanosecond-precision timestamps, and expanded market status values. Supports extended trading sessions where applicable.
 
 ### RWA Standard (v8)
 
@@ -6092,7 +6092,7 @@ For US Equities specifically, [RWA Advanced (v11)](/data-streams/reference/repor
 
 ### RWA Advanced (v11)
 
-The [RWA Advanced (v11)](/data-streams/reference/report-schema-v11) report schema offers enhanced market data capabilities with additional fields: liquidity-weighted mid (`mid`), consensus bid and ask prices (`bid`, `ask`), resting book depth (`bidVolume`, `askVolume`), most recent execution (`lastTradedPrice`), nanosecond precision freshness (`lastSeenTimestampNs`), and expanded market status (`marketStatus`) that distinguishes between pre-market, regular hours, post-market, overnight, and weekend periods.
+The [RWA Advanced (v11)](/data-streams/reference/report-schema-v11) report schema offers enhanced market data capabilities with additional fields: liquidity-weighted mid (`mid`), consensus bid and ask prices (`bid`, `ask`), resting book depth (`bidVolume`, `askVolume`), `lastTradedPrice` where supported, nanosecond precision freshness (`lastSeenTimestampNs`), and expanded market status (`marketStatus`) that distinguishes between pre-market, regular hours, post-market, overnight, and weekend periods. Field availability and production support vary by stream.
 
 These advanced fields enable protocols to implement more sophisticated risk management and settlement logic. Where applicable, streams using this schema can provide coverage across extended trading sessions including pre-market, post-market, and overnight hours — though extended hours availability varies by stream. See individual [RWA stream details](/data-streams/rwa-streams?schema=v11) for specific coverage and the [RWA Advanced (v11) reference](/data-streams/reference/report-schema-v11) for complete field specifications.
 
@@ -6183,7 +6183,7 @@ Chainlink Data Streams that use the RWA Advanced (v11) schema adhere to the stru
 | `bidVolume`             | `int192`  | Volume at bid price                                                      |
 | `ask`                   | `int192`  | Median ask price                                                         |
 | `askVolume`             | `int192`  | Volume at ask price                                                      |
-| `lastTradedPrice`       | `int192`  | Last traded price                                                        |
+| `lastTradedPrice`       | `int192`  | Last traded price. Availability and production support vary by stream.   |
 | `marketStatus`          | `uint32`  | Market status. Mapping varies by feed; see schema docs.                  |
 
 ### Market Status Values
@@ -6220,6 +6220,11 @@ During closing auction periods and daily lunch breaks on APAC exchanges, `market
 #### 24/5 US Equities feeds
 
 Used by [24/5 US Equities](/data-streams/rwa-streams/24-5-us-equities-user-guide) streams with extended and overnight sessions.
+
+<Aside type="caution" title="Deprecated as a production input">
+  On 24/5 U.S. Equity Streams, `lastTradedPrice` is deprecated as a production input. See the [24/5 U.S. Equities User
+  Guide](/data-streams/rwa-streams/24-5-us-equities-user-guide) for the effective date.
+</Aside>
 
 | Value | Status            | Hours (ET)                            | Description                                                                            |
 | ----- | ----------------- | ------------------------------------- | -------------------------------------------------------------------------------------- |
@@ -6502,7 +6507,7 @@ Chainlink SmartData streams adhere to the report schema outlined below.
 # 24/5 US Equities User Guide
 Source: https://docs.chain.link/data-streams/rwa-streams/24-5-us-equities-user-guide
 
-Chainlink 24/5 U.S. Equities Streams provide real-time equity pricing data across all major U.S. single-name equities and ETFs spanning regular, pre-market, post-market, and overnight trading sessions. The [advanced RWA schema](/data-streams/reference/report-schema-v11) includes fields such as market status flags, best bid and ask prices, bid and ask volumes, staleness measures, and last traded prices to facilitate more advanced execution and risk management.
+Chainlink 24/5 U.S. Equities Streams provide real-time equity pricing data across all major U.S. single-name equities and ETFs spanning regular, pre-market, post-market, and overnight trading sessions. The [advanced RWA schema](/data-streams/reference/report-schema-v11) includes market status flags, best bid and ask prices, bid and ask volumes, and staleness measures to support advanced execution and risk management.
 
 The data referenced in this document covers 24/5 trading hours in US equities on a range of traditional venues. While there is currently no trading activity in traditional markets over the weekend on any venue, protocols can extend their pricing coverage to 24/7 in multiple ways, such as leveraging the pricing of [tokenized stocks](#stream-switching-example-logic) on secondary markets such as CEXes and DEXes.
 
@@ -6512,7 +6517,18 @@ Developers are responsible for choosing the appropriate feed and ensuring that t
 
 The data is delivered using the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11).
 
-This advanced RWA schema is built to support 24/5 streams, including DON Consensus `mid` price (with its corresponding timestamp `lastSeenTimestampNs` for staleness tracking), order book depth (`bid`, `ask`, `bidVolume`, `askVolume`), execution data (`lastTradedPrice`), and granular market phases (`marketStatus` values for Pre-market, Regular hours, Post-market, Overnight, and Closed).
+The RWA Advanced (v11) schema supports 24/5 streams with a DON consensus `mid` price, `lastSeenTimestampNs` for mid-price staleness tracking, order-book data (`bid`, `ask`, `bidVolume`, and `askVolume`), and granular market phases through `marketStatus`.
+
+<Aside type="caution" title="Deprecated as a production input">
+  On Chainlink 24/5 U.S. Equity Streams, `lastTradedPrice` is deprecated as a production input. New integrations should
+  not depend on it, and existing integrations should remove production dependencies by **October 12, 2026**.
+
+  The field will remain in the RWA Advanced (v11) schema and may continue to be populated. After October 12, 2026, it
+  will no longer be monitored for availability, accuracy, or data quality on these streams. Continued use is unsupported
+  and at the user's own risk.
+
+  This change does not apply to other streams using the RWA Advanced (v11) schema.
+</Aside>
 
 <Aside type="caution" title="Important: Timestamp Scope">
   The `lastSeenTimestampNs` field reflects the timestamp of the last update for the `mid` price only. This timestamp
