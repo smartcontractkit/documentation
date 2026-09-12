@@ -1056,6 +1056,23 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
+      section: "Stellar Guides",
+      contents: [
+        {
+          title: "Data Feeds on Stellar",
+          url: "data-feeds/stellar",
+        },
+        {
+          title: "Using Data Feeds Offchain",
+          url: "data-feeds/stellar/using-data-feeds-off-chain",
+        },
+        {
+          title: "Using Data Feeds Onchain",
+          url: "data-feeds/stellar/using-data-feeds-on-chain",
+        },
+      ],
+    },
+    {
       section: "Starknet Guides",
       contents: [
         {
