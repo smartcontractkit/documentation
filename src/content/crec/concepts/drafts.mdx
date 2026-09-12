@@ -1,0 +1,100 @@
+---
+section: crec
+title: "Draft Operations"
+date: Last Modified
+metadata:
+  description: "Draft operations in Chainlink CRE Connect: create unsigned operations, finalize them with an external signer, or cancel before execution. Enables deferred-signing workflows like MPC, human approval gates, and preview-before-sign."
+  datePublished: "2026-08-31"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+A **draft operation** is an [Operation](/crec/concepts/operations) created without a signature. CRE Connect stores it in `pending_signature` until your application finalizes it with a digest and signature, cancels it, or lets its deadline expire.
+
+Drafts support workflows where the system that builds an Operation cannot sign it immediately. Common examples include MPC approval queues, human review, KMS-based approval, preview-before-sign interfaces, and cancellation before execution.
+
+## Signed operations vs drafts
+
+| Capability                        | Signed operation     | Draft operation                         |
+| --------------------------------- | -------------------- | --------------------------------------- |
+| Created with `signature`          | Yes                  | No                                      |
+| Initial status                    | `accepted`           | `pending_signature`                     |
+| Relayed to the DON immediately    | Yes                  | No. CRE Connect waits for finalization. |
+| Can include transaction previews  | No                   | Yes                                     |
+| Can be cancelled before execution | No                   | Yes, while still `pending_signature`.   |
+| Uses the EIP-712 digest           | Yes, during signing. | Yes, during finalization.               |
+
+Use a signed Operation when your signer is available synchronously. Use a draft when another system or person must approve the Operation before CRE Connect relays it.
+
+## Draft lifecycle
+
+A draft starts in `pending_signature`. From there, only three outcomes matter:
+
+| Status      | How it happens                                                                                                 | Meaning                                                                         |
+| ----------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `accepted`  | `PATCH /channels/{channel_id}/operations/{operation_id}` with `status: "accepted"`, `signature`, and `digest`. | The draft has been finalized and can now follow the normal operation lifecycle. |
+| `cancelled` | `PATCH /channels/{channel_id}/operations/{operation_id}` with `status: "cancelled"`.                           | The draft was cancelled before finalization. Terminal.                          |
+| `expired`   | The operation deadline elapsed before finalization.                                                            | The draft can no longer be finalized. Terminal.                                 |
+
+See [Lifecycles](/crec/reference/lifecycles#operation-lifecycle) for the complete `OperationStatus` reference.
+
+## Digest and finalization
+
+CRE Connect computes the EIP-712 digest when you create the Operation. This is the same 32-byte digest that the SDK computes with `client.Transact.HashOperation(op, chainSelector)`.
+
+When you finalize a draft, you send both values:
+
+- `digest`: the EIP-712 operation hash.
+- `signature`: a 65-byte signature over that digest.
+
+The digest acts as an integrity check. It binds the signature to the exact Operation that CRE Connect stored as the draft: same wallet operation ID, [Smart Account](/crec/concepts/smart-accounts), deadline, chain, and transactions.
+
+<Aside type="note" title="The SDK does not compare the digest for you">
+  If your workflow needs to prove that an external signer approved exactly the draft CRE Connect returned, compute the
+  digest locally with <code>client.Transact.HashOperation</code> and compare it with the digest you pass into
+  finalization.
+</Aside>
+
+## Deadlines
+
+`Operation.Deadline` is part of the EIP-712 payload. You choose it before draft creation, and you cannot change it later without creating and signing a different operation.
+
+- `deadline = 0`: no expiration.
+- `deadline > 0`: Unix timestamp after which the operation can no longer execute.
+
+For drafts, the deadline controls how long the operation can wait for signature. If the deadline passes before finalization, the operation moves to `expired`. A finalize attempt near or after the deadline fails with `OPERATION_DEADLINE_ELAPSED`.
+
+## Transaction previews
+
+Drafts can include optional transaction previews. A preview captures decoded calldata metadata for a transaction, such as the function signature and UI-friendly metadata your application wants to show to an approver.
+
+Previews help teams build approval screens that say what the user is about to sign instead of only showing raw calldata. They do not change the signed EIP-712 operation. The signed payload remains the operation fields: ID, account, deadline, and transactions.
+
+## Events and verification
+
+Draft lifecycle events are operational notifications, not DON-verified attestations. Events for `pending_signature`, `cancelled`, and `expired` do not carry OCR proofs.
+
+After a draft reaches `accepted`, it follows the normal operation path. On-chain confirmation events, such as `confirmed`, carry DON proofs and can be verified with `client.Events.VerifyOperationStatus`.
+
+## Wallet operation ID reuse
+
+The `wallet_operation_id` must be unique for active operations on the same wallet and chain. After a draft reaches a terminal state such as `cancelled` or `expired`, you can reuse that ID for a new operation.
+
+In most integrations, a fresh ID is simpler and safer. Reuse mainly helps approval systems that want to preserve a business reference after a user cancels and recreates a draft.
+
+## Common use cases
+
+| Use case                | Draft flow                                                                                                                         |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| MPC or policy approval  | Create a draft, route the digest to Fireblocks, Privy, KMS, or another approval system, then finalize with the returned signature. |
+| Human review            | Create a draft with previews, show the decoded transaction intent, then finalize or cancel based on the approver's decision.       |
+| Preview before signing  | Store transaction preview metadata with the draft so the UI can render what the signer will approve.                               |
+| Cancel before execution | Cancel a `pending_signature` draft before it becomes executable.                                                                   |
+
+## Related
+
+- [Draft Operations: Create, Finalize, Cancel](/crec/guides/operations/drafts): step-by-step SDK and REST flow.
+- [Operations and Transactions](/crec/concepts/operations): the operation data model.
+- [EIP-712 Signing](/crec/concepts/eip712-signing): how CRE Connect computes and signs operation digests.
+- [Lifecycles](/crec/reference/lifecycles#operation-lifecycle): complete operation status reference.

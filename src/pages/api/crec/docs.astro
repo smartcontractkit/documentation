@@ -1,0 +1,275 @@
+---
+import openapiSpec from "../../../../public/api/crec/openapi.json"
+Astro.response.headers.set("Content-Type", "text/html; charset=utf-8")
+Astro.response.headers.set("Cache-Control", "s-max-age=300, stale-while-revalidate")
+
+const apiVersion = `v${(openapiSpec as { info: { version: string } }).info.version}`
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CRE Connect API Reference</title>
+
+    <!-- SEO Metadata -->
+    <meta
+      name="description"
+      content="REST API reference for Chainlink CRE Connect. Manage channels, watchers, events, operations, wallets, and supported networks for verifiable event streams and gas-less on-chain operations."
+    />
+    <meta
+      name="keywords"
+      content="CRE Connect, CREC, Chainlink, Runtime Environment, Verifiable Events, Smart Accounts, Account Abstraction, Watchers, Operations, API Documentation"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="canonical" href="https://docs.chain.link/api/crec/docs" />
+
+    <!-- Open Graph tags -->
+    <meta property="og:title" content="CRE Connect API Reference" />
+    <meta
+      property="og:description"
+      content="REST API reference for Chainlink CRE Connect. Manage channels, watchers, events, operations, and wallets."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://docs.chain.link/api/crec/docs" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CRE Connect API Reference" />
+    <meta name="twitter:description" content="REST API reference for Chainlink CRE Connect." />
+
+    <!-- Resource hints -->
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="dns-prefetch" href="https://unpkg.com" />
+
+    <!-- Swagger UI CSS -->
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.32.0/swagger-ui.css" />
+
+    <!-- Structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "CRE Connect API Reference",
+        "description": "REST API reference for Chainlink CRE Connect — the client-facing interface to the Chainlink Runtime Environment.",
+        "author": {
+          "@type": "Organization",
+          "name": "Chainlink"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Chainlink",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://cdn.prod.website-files.com/5f6b7190899f41fb70882d08/665705c1f3833b5b5d8f4ffb_logo-chainlink-blue.svg"
+          }
+        },
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https://docs.chain.link/api/crec/docs"
+        }
+      }
+    </script>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", sans-serif;
+        line-height: 1.6;
+        color: #333;
+      }
+
+      .api-doc-header {
+        background-color: #f8f9fa;
+        padding: 40px 20px;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: #375bd2;
+      }
+
+      h2 {
+        font-size: 1.8rem;
+        margin: 1.5rem 0 1rem;
+        color: #333;
+      }
+
+      .lead {
+        font-size: 1.25rem;
+        margin-bottom: 2rem;
+        max-width: 800px;
+      }
+
+      .api-overview {
+        margin: 2rem 0;
+        max-width: 800px;
+      }
+
+      .api-overview ul {
+        margin-bottom: 1.5rem;
+        padding-left: 1.5rem;
+      }
+
+      .api-overview li {
+        margin-bottom: 0.5rem;
+      }
+
+      .version-badge {
+        display: inline-block;
+        background-color: #375bd2;
+        color: white;
+        padding: 0.25em 0.8em;
+        border-radius: 2em;
+        font-size: 0.9rem;
+        margin-left: 10px;
+        vertical-align: middle;
+      }
+
+      #swagger-ui {
+        max-width: 1460px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .swagger-ui .topbar {
+        background-color: #375bd2;
+      }
+
+      .swagger-ui .info .title small.version-stamp {
+        background-color: #375bd2;
+      }
+
+      .swagger-ui .scheme-container {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 4px;
+      }
+
+      .swagger-ui .opblock-tag {
+        border-bottom: 1px solid #e9ecef;
+        padding: 10px 0;
+      }
+
+      .swagger-ui .opblock {
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .swagger-ui .opblock .opblock-summary {
+        padding: 8px 20px;
+      }
+
+      .swagger-ui .opblock .opblock-summary-method {
+        min-width: 80px;
+        text-align: center;
+      }
+
+      .swagger-ui .model-box {
+        background-color: #fff;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin: 10px 0;
+      }
+
+      @media (max-width: 768px) {
+        h1 {
+          font-size: 2rem;
+        }
+
+        .lead {
+          font-size: 1.1rem;
+        }
+
+        .api-doc-header {
+          padding: 20px 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="api-doc-header">
+      <div class="container">
+        <h1>CRE Connect API <span class="version-badge">{apiVersion}</span></h1>
+        <p class="lead">
+          The CRE Connect REST API is the control plane for receiving verifiable on-chain events and submitting
+          gas-less, account-abstracted operations through the Chainlink Runtime Environment.
+        </p>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin:24px 0;">
+          <a
+            href="#swagger-ui"
+            style="display:inline-block;background:#375bd2;color:#fff;padding:10px 20px;border-radius:4px;text-decoration:none;font-size:0.95rem;"
+            >Explore Endpoints</a
+          >
+          <a
+            href="/api/crec/openapi.json"
+            style="display:inline-block;background:#fff;color:#375bd2;padding:10px 20px;border-radius:4px;text-decoration:none;font-size:0.95rem;border:1px solid #375bd2;"
+            >View OpenAPI Specification</a
+          >
+        </div>
+
+        <div class="api-overview">
+          <h2>Resources</h2>
+          <ul>
+            <li><strong>Networks</strong> — list supported blockchains and their chain selectors</li>
+            <li><strong>Channels</strong> — logical groupings for watchers, events, and operations</li>
+            <li><strong>Watchers</strong> — on-chain event monitors backed by CRE workflows (service or ABI based)</li>
+            <li><strong>Events</strong> — poll, search, and inspect verifiable events emitted into channels</li>
+            <li>
+              <strong>Operations</strong> — submit and track signed Operations executed by smart accounts on-chain
+            </li>
+            <li><strong>Wallets</strong> — create and manage ECDSA / RSA smart accounts</li>
+          </ul>
+          <p>See also: <a href="/crec/reference/rest-api">REST API narrative reference</a></p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Swagger UI container -->
+    <div id="swagger-ui"></div>
+
+    <!-- Swagger UI scripts -->
+    <script src="https://unpkg.com/swagger-ui-dist@5.32.0/swagger-ui-standalone-preset.js" crossorigin="anonymous" defer
+    ></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.32.0/swagger-ui-bundle.js" crossorigin="anonymous" defer></script>
+
+    <script is:inline>
+      window.addEventListener("load", function () {
+        const ui = SwaggerUIBundle({
+          url: "/api/crec/openapi.json",
+          dom_id: "#swagger-ui",
+          deepLinking: true,
+          presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+          plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+          layout: "StandaloneLayout",
+          defaultModelsExpandDepth: -1,
+          defaultModelExpandDepth: 3,
+          displayRequestDuration: true,
+          docExpansion: "list",
+          filter: true,
+          showExtensions: true,
+          validatorUrl: null,
+          tryItOutEnabled: false,
+          supportedSubmitMethods: [],
+          syntaxHighlight: {
+            activated: true,
+            theme: "monokai",
+          },
+        })
+
+        window.ui = ui
+      })
+    </script>
+  </body>
+</html>

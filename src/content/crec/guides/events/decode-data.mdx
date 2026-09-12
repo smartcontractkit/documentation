@@ -1,0 +1,192 @@
+---
+section: crec
+title: "Decode Event Data"
+date: Last Modified
+metadata:
+  description: "Decode the raw envelope returned by Chainlink CRE Connect into typed Go structs: both the standard VerifiableEvent (chain event + decoded params) and extension-decoded payloads."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+After verifying an event you typically want a typed Go value rather than the `apiClient.Event` envelope. The SDK provides three layers of decoding, each suited to a different use case.
+
+| Helper                                                       | Returns                                                                                  | Use when                                                                                                                                       |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Events.DecodeVerifiableEvent`                               | `*models.VerifiableEvent`                                                                | You want the canonical structured representation: chain family/selector, EVM event metadata, decoded `params` map.                             |
+| `Events.Decode`                                              | Custom struct (caller-supplied)                                                          | You have a hand-written Go type that mirrors the payload schema and want to map directly onto it.                                              |
+| `<extension>.DecodeFromEvent` (e.g. `dtav2.DecodeFromEvent`) | Extension `DecodedEvent` wrapper carrying the typed `ConcreteEvent` plus enrichment data | You're consuming an extension service (DTA v2 etc.). The extension SDK ships one entry-point decoder that resolves the concrete event by name. |
+
+## 1. Canonical decoding with `DecodeVerifiableEvent`
+
+Each `apiClient.Event` carries a base64-encoded `VerifiableEvent` string in its `Payload`. `DecodeVerifiableEvent` decodes it into the `models.VerifiableEvent` struct exposed by `crec-api-go/models`.
+
+```go
+import (
+    apiClient "github.com/smartcontractkit/crec-api-go/client"
+    "github.com/smartcontractkit/crec-api-go/models"
+)
+
+events, _, err := client.Events.Poll(ctx, channelID, nil)
+if err != nil {
+    return err
+}
+
+for _, ev := range events {
+    if ok, _ := client.Events.Verify(&ev); !ok {
+        continue
+    }
+
+    payload, err := ev.Payload.AsWatcherEventPayload()
+    if err != nil {
+        return err
+    }
+
+    ve, err := client.Events.DecodeVerifiableEvent(&payload)
+    if err != nil {
+        return err
+    }
+
+    fmt.Println(ve.Name)         // "Transfer"
+    fmt.Println(*ve.ChainFamily) // "evm"
+    if ve.ChainEvent != nil {
+        evm, err := ve.ChainEvent.AsEVMEvent()
+        if err == nil {
+            fmt.Println(evm.Address, evm.TxHash, evm.BlockNumber, evm.LogIndex)
+            fmt.Println(*evm.Params) // map[string]any{"from": "...", "to": "...", "value": ...}
+        }
+    }
+}
+```
+
+`models.VerifiableEvent` fields:
+
+| Field           | Type                          | Notes                                                                                                                                          |
+| --------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Name`          | `string`                      | Event name. For ABI-defined events this is the Solidity event name (`Transfer`, `Swap`…). For extension events it is the service-defined name. |
+| `Service`       | `*string`                     | The service that produced the event (`_crec` for non-service events).                                                                          |
+| `ChainFamily`   | `*string`                     | E.g. `"evm"`.                                                                                                                                  |
+| `ChainSelector` | `*string`                     | Chain selector string.                                                                                                                         |
+| `ChainEvent`    | `*VerifiableEvent_ChainEvent` | Discriminated union: call `.AsEVMEvent()` for EVM events.                                                                                      |
+| `Data`          | `*map[string]any`             | Service-defined free-form data (used by extension events).                                                                                     |
+| `Timestamp`     | `time.Time`                   | When the event was produced.                                                                                                                   |
+
+`models.EVMEvent` fields are: `Address`, `BlockNumber`, `BlockTimestamp`, `ChainId`, `EventSignature`, `LogIndex`, `TopicHash`, `TxHash`, `Params`.
+
+## 2. Direct decoding with `Events.Decode`
+
+If you control the consumer end and want strong types end-to-end, declare a Go struct that mirrors the envelope you expect and decode straight into it:
+
+```go
+type TransferEvent struct {
+    Headers struct {
+        Type      apiClient.EventType `json:"type"`
+        Service   string              `json:"service,omitempty"`
+        EventName string              `json:"event_name,omitempty"`
+        ChainSelector string          `json:"chain_selector,omitempty"`
+    } `json:"headers"`
+    Payload struct {
+        VerifiableEvent string `json:"verifiable_event"`
+        OcrProofs       []struct {
+            OcrReport  string   `json:"ocr_report"`
+            OcrContext string   `json:"ocr_context"`
+            Signatures []string `json:"signatures"`
+        } `json:"ocr_proofs"`
+    } `json:"payload"`
+}
+
+var typed TransferEvent
+if err := client.Events.Decode(&ev, &typed); err != nil {
+    return err
+}
+```
+
+`Events.Decode` re-marshals the event to JSON and unmarshals into your struct, so any field naming mismatch will surface as zero values. Use this for top-level envelope shaping; use `DecodeVerifiableEvent` for the embedded chain event.
+
+<Aside type="caution" title="Events.Decode does NOT extract chain-event params">
+  `Events.Decode` re-marshals the **entire** `apiClient.Event` envelope and unmarshals it into your target. Decoding
+  into a `map[string]any` and reading `m["from"] / m["to"] / m["value"]` will give you `nil` for every key: those fields
+  live three layers down in `WatcherEventPayload → VerifiableEvent → EVMEvent.Params`. To pull out EVM event parameters,
+  always use the `AsWatcherEventPayload → DecodeVerifiableEvent → AsEVMEvent → *Params` pipeline shown above.
+</Aside>
+
+## 3. Extension-decoded payloads (DTA v2)
+
+Extensions ship typed event structs and a single entry-point decoder so you never have to touch a `map[string]any`. For DTA v2 the entry point is `dtav2.DecodeFromEvent` (package `github.com/smartcontractkit/crec-sdk-ext-dta/v2`):
+
+```go
+import (
+    dtav2 "github.com/smartcontractkit/crec-sdk-ext-dta/v2"
+    dtaevents "github.com/smartcontractkit/crec-sdk-ext-dta/v2/events"
+)
+
+dec, err := dtav2.DecodeFromEvent(ctx, ev)
+if err != nil {
+    return err
+}
+
+switch concrete := dec.ConcreteEvent.(type) {
+case dtaevents.SubscriptionRequested:
+    fmt.Println(concrete.RequestId, concrete.FundAdminAddr, concrete.FundTokenId, concrete.Amount)
+case dtaevents.RedemptionRequested:
+    fmt.Println(concrete.RequestId, concrete.FundAdminAddr, concrete.FundTokenId, concrete.Shares)
+case dtaevents.DistributorRequestProcessing:
+    fmt.Println(concrete.RequestId, concrete.FundAdminAddr, concrete.FundTokenId)
+}
+
+// Enrichment data (when present on the verifiable event)
+if dec.FundTokenData != nil {
+    fmt.Println("fund token:", dec.FundTokenData)
+}
+if dec.DistributorRequest != nil {
+    fmt.Println("distributor request:", dec.DistributorRequest)
+}
+```
+
+`DecodeFromEvent`:
+
+- Extracts the `WatcherEventPayload` (returns an error otherwise).
+- Decodes the underlying `VerifiableEvent` and resolves the concrete event by name via `events.EventDecoders()`.
+- Surfaces enrichment data from the on-chain reference data attached to the event (fund-token configuration, distributor request, payment requests).
+
+The extension does **not** export sentinel error variables; failures are returned as wrapped `fmt.Errorf` errors describing the failed step.
+
+See [DTA Events](/crec/extensions/dta/events) for the full list of typed event structs.
+
+## EVM `params` decoding tips
+
+`EVMEvent.Params` is the result of decoding the log against the watcher's ABI. Numbers are returned as JSON numbers (so `string` for any uint256 above `2^53`):
+
+```go
+params := *evm.Params
+amountStr := params["value"].(string)
+amount, ok := new(big.Int).SetString(amountStr, 10)
+if !ok {
+    return fmt.Errorf("invalid amount %q", amountStr)
+}
+```
+
+Address fields come back as 0x-prefixed hex strings; bytes fields as 0x-prefixed hex.
+
+<Aside type="note" title="Watcher must include the param">
+  Only fields explicitly listed in the ABI input will be decoded. If you need an indexed-only parameter or a topic, add
+  it to your watcher's ABI when you create it.
+</Aside>
+
+## `operation.status` events
+
+`operation.status` payloads are decoded through the same machinery. The difference is that you call `AsOperationStatusPayload()` and `DecodeOperationStatusVerifiableEvent`:
+
+```go
+osPayload, err := ev.Payload.AsOperationStatusPayload()
+if err != nil { return err }
+ve, err := client.Events.DecodeOperationStatusVerifiableEvent(&osPayload)
+```
+
+The resulting `VerifiableEvent.Data` carries the operation outcome (`status`, `tx_hash`, `error_message` if any). See [Submit and Track Operations](/crec/guides/operations/submit-and-track) for a full status-watching loop.
+
+## Next steps
+
+- [Event Types and Payloads](/crec/reference/event-payloads): schemas for every payload variant.
+- [Operations: Submit and Track](/crec/guides/operations/submit-and-track): apply decoding to `operation.status` events.

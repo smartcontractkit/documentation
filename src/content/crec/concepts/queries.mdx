@@ -1,0 +1,139 @@
+---
+section: crec
+title: "Chain Queries"
+date: Last Modified
+metadata:
+  description: "Chain queries in Chainlink CRE Connect: asynchronous, DON-backed, verifiable blockchain reads. Submit an evm_call query, receive an OCR-signed result with resolved block metadata, and verify it end-to-end."
+  datePublished: "2026-08-26"
+  lastModified: "2026-08-26"
+---
+
+import { Aside } from "@components"
+
+A **chain query** is a one-shot, DON-backed, verifiable blockchain read. You submit a query to CRE Connect, the Chainlink DON executes it against a target block, and you receive a cryptographically signed result that you can verify end-to-end off-chain.
+
+Queries are [channel](/crec/concepts/channels)-scoped and asynchronous: creation returns `202 Accepted` immediately, and the result arrives via polling or as a `query.status` event on the channel's event stream.
+
+## `evm_call` query kind
+
+The only supported query kind today is **`evm_call`**: a read-only EVM `eth_call` against a specified block. The DON executes the call and returns the raw ABI-encoded return bytes. No state is modified on chain.
+
+## Block selection
+
+Every query specifies a **block selection** that determines which block the call executes against:
+
+| Selector       | Description                                                  |
+| -------------- | ------------------------------------------------------------ |
+| `latest`       | Resolve to the latest block before executing.                |
+| `finalized`    | Resolve to the finalized block before executing.             |
+| `block_number` | Execute against an explicit block number (decimal `uint64`). |
+
+<Aside type="note" title="`safe` is not available for queries">
+  Watchers support three confidence levels (`latest`, `safe`, `finalized`), but queries only support
+  <code>latest</code>, <code>finalized</code>, and explicit <code>block_number</code>. The <code>safe</code> tag is not
+  available for query block selection.
+</Aside>
+
+The **resolved block** (block number, block hash, block timestamp) is included in the verifiable result, proving which block was actually read. This means you can verify not just _what_ the DON read, but _when_ it read it.
+
+## Query lifecycle
+
+Queries move through a bounded state machine:
+
+| State       | Description                                                    | Terminal? |
+| ----------- | -------------------------------------------------------------- | --------- |
+| `accepted`  | Query created and persisted; job enqueued for dispatch.        | No        |
+| `sending`   | Dispatch worker is actively sending to the CRE gateway.        | No        |
+| `sent`      | Successfully dispatched to CRE gateway; awaiting DON callback. | No        |
+| `completed` | DON returned a successful result with OCR proof.               | Yes       |
+| `failed`    | DON returned an error, or dispatch failed permanently.         | Yes       |
+| `expired`   | TTL elapsed before a terminal callback arrived.                | Yes       |
+
+The default TTL is **5 minutes**. If no terminal callback arrives within this window, the query transitions to `expired`.
+
+See [Lifecycles](/crec/reference/lifecycles#query-lifecycle) for the full state diagram.
+
+## How results are delivered
+
+There are two complementary paths:
+
+1. **Poll the query resource**: call `GET /channels/{channel_id}/queries/{query_id}` (or use `client.Queries.Wait`) until the query reaches a terminal status. This is the primary SDK path.
+2. **Channel events**: terminal query results are emitted as `query.status` events on the channel's event stream. Search or poll for them with `client.Events.SearchEvents`, filtered by `type=query.status`.
+
+Both paths carry the same data: the `verifiable_result`, `event_hash`, and OCR `proof`.
+
+## The verifiable result
+
+When a query reaches `completed` or `failed`, the result includes a base64-encoded `verifiable_result` string. Decoding it yields a `ChainQueryVerifiableEvent` envelope:
+
+| Field                            | Description                                                                   |
+| -------------------------------- | ----------------------------------------------------------------------------- |
+| `service`                        | Always `"_crec"`.                                                             |
+| `name`                           | Always `"ChainQuery"`.                                                        |
+| `chain_selector`                 | The chain the query was executed on.                                          |
+| `timestamp`                      | When the terminal result was produced.                                        |
+| `data.query_id`                  | UUID of the query.                                                            |
+| `data.channel_id`                | UUID of the owning channel.                                                   |
+| `data.query_kind`                | The query kind (`evm_call`).                                                  |
+| `data.target`                    | The EVM call target: `from_address`, `contract_address`, `call_data`.         |
+| `data.block_selection.requested` | The original block selector you chose.                                        |
+| `data.block_selection.resolved`  | The concrete block metadata: `block_number`, `block_hash`, `block_timestamp`. |
+| `data.result`                    | Present on success: `raw_return_data` (0x-prefixed ABI-encoded bytes).        |
+| `data.error`                     | Present on failure: `code`, `message`, and optional `raw_revert_data`.        |
+
+Exactly one of `data.result` or `data.error` is present on a terminal result.
+
+## Verification
+
+Terminal `query.status` events carry OCR proofs and can be verified with `client.Events.VerifyQueryStatus`. The verification algorithm is the same as for `watcher.event` and `operation.status`, with one difference: the event hash is computed as `Keccak256(verifiable_result)` instead of `Keccak256(verifiable_event)`.
+
+See [Event Verification](/crec/concepts/event-verification) for the full algorithm.
+
+## Idempotency keys
+
+Every query create requires an **idempotency key**. Keys are scoped to `(org_id, channel_id, idempotency_key)`:
+
+- **Same key, same request** → the original query is returned (idempotent success).
+- **Same key, different request** → `409 Conflict` with `IDEMPOTENCY_KEY_MISMATCH`.
+
+Use a deterministic, unique-per-logical-request key (e.g. `"balance-check-eth-2026-08-26-001"`) so that retries after network errors don't create duplicate queries.
+
+## Queries vs watchers
+
+Both queries and [watchers](/crec/concepts/watchers) are channel-scoped, DON-backed chain reads, but they serve different purposes:
+
+| Aspect          | Queries                                                           | Watchers                                           |
+| --------------- | ----------------------------------------------------------------- | -------------------------------------------------- |
+| Purpose         | One-shot on-demand read                                           | Persistent event subscription                      |
+| Execution       | Single call, returns a result                                     | Continuous monitoring, emits events                |
+| Lifecycle       | `accepted` → … → `completed` / `failed` / `expired` (TTL-bounded) | `pending` → `active` → `archived` (no TTL)         |
+| TTL             | 5 minutes default                                                 | No expiry                                          |
+| Block selection | Explicit (`latest` / `finalized` / `block_number`)                | Confidence level (`latest` / `safe` / `finalized`) |
+| Idempotency     | Required (`idempotency_key`)                                      | Not applicable                                     |
+| Result          | Single verifiable result with OCR proof                           | Stream of verifiable events with OCR proofs        |
+
+A query asks "what is the value of X at block Y?" and gets a single signed answer. A watcher asks "tell me whenever event X happens" and receives a stream of signed events over time.
+
+## Error codes
+
+When a query reaches `failed`, the `data.error` object in the verifiable result carries a machine-readable error code:
+
+| Code                            | Meaning                                                         |
+| ------------------------------- | --------------------------------------------------------------- |
+| `CRE_GATEWAY_REJECTED`          | CRE gateway rejected the query (e.g. 4xx).                      |
+| `CONTRACT_NOT_FOUND`            | The target contract address does not exist on chain.            |
+| `CALL_REVERTED`                 | The EVM call reverted; `raw_revert_data` contains revert bytes. |
+| `CHAIN_UNAVAILABLE`             | The target chain was unreachable during execution.              |
+| `BLOCK_SELECTION_NOT_AVAILABLE` | The requested block is not available.                           |
+| `CRE_WORKFLOW_FAILED`           | The CRE chain-query workflow itself failed.                     |
+| `QUERY_EXPIRED`                 | Query expired before a terminal callback arrived.               |
+| `INTERNAL_ERROR`                | Unexpected internal error.                                      |
+
+See [Error Handling](/crec/reference/error-handling) for the full sentinel error catalog.
+
+## Related
+
+- [Execute a Chain Query](/crec/guides/queries/execute-a-query): step-by-step guide with code examples.
+- [Watchers](/crec/concepts/watchers): the persistent alternative for event subscriptions.
+- [Event Verification](/crec/concepts/event-verification): the cryptographic verification algorithm.
+- [Lifecycles](/crec/reference/lifecycles#query-lifecycle): the full query state machine.

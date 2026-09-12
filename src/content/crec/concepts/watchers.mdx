@@ -5,19 +5,19 @@ date: Last Modified
 metadata:
   description: "Watchers are CRE Connect's on-chain event monitors. Each watcher targets a specific contract on a specific chain and emits OCR-signed verifiable events back to its channel as matching logs are observed."
   datePublished: "2026-05-01"
-  lastModified: "2026-05-01"
+  lastModified: "2026-08-31"
 ---
 
 import { Aside, ClickToZoom } from "@components"
 
 A **watcher** is the resource that turns raw on-chain logs into [verifiable events](/crec/concepts/verifiable-events) inside a channel. Each watcher is bound to:
 
-- **One channel** — the scope into which the verifiable events are emitted.
-- **One chain** — identified by a chain selector.
-- **One contract address** — the contract being observed.
-- **One or more event signatures** — the specific logs you care about.
+- **One channel**: the scope into which the verifiable events are emitted.
+- **One chain**: identified by a CCIP chain selector (see [Supported Networks](/crec/supported-networks)).
+- **One contract address**: the contract being observed.
+- **One or more event signatures**: the specific logs you care about.
 
-When a matching log is observed and reaches the configured [confidence level](/crec/concepts/confidence-levels), the underlying CRE workflow signs a verifiable record with the DON's Off-Chain Reporting (OCR) keys and posts it back to CRE Connect, where it becomes available as a `watcher.event` event in the channel's stream.
+When a matching log is observed and reaches the configured [confidence level](/crec/concepts/confidence-levels), the underlying CRE workflow signs a verifiable record with the DON's Off-Chain Reporting (OCR) keys and posts it back to CRE Connect, where it becomes available through the SDK as a `watcher.event` event.
 
 ## Two ways to create a watcher
 
@@ -29,40 +29,81 @@ A **service-backed** watcher uses a pre-packaged **CRE Connect extension** that 
 
 - A protocol-aware monitoring pipeline (provisioned for you by CRE Connect).
 - The ABIs of every contract in scope.
-- Decoded event types so applications do not need to write ABI-decoding glue.
+- Decoded event types so you do not need to write ABI-decoding glue (see [Decode Event Data](/crec/guides/events/decode-data)).
 
-When a CRE Connect extension exists for your protocol, this path lets you reference the service by name (`dta.v2`) instead of supplying the contract ABI yourself.
+When a CRE Connect extension exists for your protocol, this path lets you reference the service by name (`Service: "dta.v2"`) instead of supplying the contract ABI yourself. See [Create a Watcher with a Predefined Service](/crec/guides/watchers/create-with-service).
+
+```go
+watcher, err := client.Watchers.CreateWithService(
+    ctx,
+    channelID,
+    watchers.CreateWithServiceInput{
+        Name:          "DTA fund alpha",
+        ChainSelector: "16015286601757825753", // Ethereum Sepolia
+        Address:       "0xFundAddress...",
+        Service:       "dta.v2",
+        Events:        []string{"SubscriptionRequested", "RedemptionRequested"},
+    },
+)
+```
 
 ### ABI-backed watcher (custom)
 
-An **ABI-backed** watcher accepts a raw ABI and one or more event names. CRE Connect generates the watching pipeline on the fly. Use this path for any contract that is not covered by a predefined service.
+An **ABI-backed** watcher accepts a raw ABI and one or more event names. CRE Connect generates the watching pipeline on the fly. Use this path for any contract that is not covered by a predefined service. See [Create a Watcher with a Custom ABI](/crec/guides/watchers/create-with-abi).
+
+```go
+watcher, err := client.Watchers.CreateWithABI(
+    ctx,
+    channelID,
+    watchers.CreateWithABIInput{
+        Name:          "USDC transfers on Sepolia",
+        ChainSelector: "16015286601757825753",
+        Address:       "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+        ABI:           usdcABI, // []watchers.EventABIInput
+        Events:        []string{"Transfer"},
+    },
+)
+```
+
+The SDK validates that every requested event name exists in the ABI and that every supplied entry is of type `event` before the request is sent.
 
 ## Lifecycle
 
-Watchers are stateful resources. The status enum has these values:
+Watchers are stateful resources. The `WatcherStatus` enum has these values:
 
 <ClickToZoom src="/images/crec/architecture/architecture-watcher-lifecycle.png" />
 
-| <div style="width: 100px;">Status</div> | Meaning                                                             | What it means in practice                                                           |
-| --------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `pending`                               | The watcher request was accepted; CRE is provisioning the workflow. | Wait for the watcher to become `active` before relying on it.                       |
-| `active`                                | The watcher is observing chain state and emitting events.           | Verifiable events are flowing into the channel.                                     |
-| `archiving`                             | An archive request is in progress.                                  | Async teardown. The watcher is no longer emitting new events.                       |
-| `archived`                              | The watcher is fully torn down.                                     | The watcher is read-only; its historical events remain accessible.                  |
-| `failed`                                | An unrecoverable error occurred during create or archive.           | Inspect the latest watcher status event for the error reason; archive and recreate. |
+| <div style="width: 100px;">Status</div> | Meaning                                                                 | What you can do                                                                       |
+| --------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `pending`                               | The watcher request was accepted; CRE is provisioning the workflow.     | Use `WaitForActive(ctx, channelID, watcherID, timeout)` to block until ready.         |
+| `active`                                | The watcher is observing chain state and emitting events.               | Poll events with `client.Events.Poll(...)`.                                           |
+| `archiving`                             | An archive request is in progress (operation is async: `202 Accepted`). | Use `WaitForArchived(ctx, channelID, watcherID, timeout)`.                            |
+| `archived`                              | The watcher is fully torn down.                                         | The watcher is read-only; its historical events remain accessible.                    |
+| `failed`                                | An unrecoverable error occurred during create or archive.               | Inspect the latest `watcher.status` event for the error reason; archive and recreate. |
 
-A separate watcher-event-status enum is carried inside `watcher.status` events. It includes everything in the lifecycle above plus an explicit `archive_failed` value, so subscribers can distinguish a failed deployment from a failed teardown.
+A separate `WatcherEventStatus` enum is carried inside `watcher.status` events. It includes everything in `WatcherStatus` plus an explicit `archive_failed` value, so subscribers can distinguish a failed deployment from a failed teardown.
 
-## DON family
+## DON family (`don_family`)
 
-Every watcher carries a **DON family** field (e.g. `"zone-a"`). It identifies the DON whose nodes provisioned the watcher's workflow and signed its events. You do **not** set `don_family` on creation — the platform assigns it based on your channel's deployment — but it is useful to:
+Every `Watcher` and `WatcherSummary` returned by the API carries a **`don_family`** field (e.g. `"zone-a"`). It identifies the DON whose nodes provisioned the watcher's workflow and signed its events. You do **not** set `don_family` on creation: the backend assigns it based on your channel's deployment. Surface it in dashboards and use it to **verify event signatures**: match the signers reported in `watcher.event` payloads against the keys announced by that DON family. See [Verify Signatures](/crec/guides/events/verify-signatures).
 
-- **Verify event signatures** — match the signers reported in watcher events against the keys announced by that DON family.
-- **Diagnose health issues** — if a watcher stalls, knowing the `don_family` tells the on-call rotation which set of nodes to look at.
+```go
+w, _ := client.Watchers.Get(ctx, channelID, watcherID)
+fmt.Println("watcher", w.WatcherId, "is signed by DON family", w.DonFamily)
+```
+
+## Defaults and limits (SDK)
+
+| Setting                     | Default                                        | Configurable via                                                                         |
+| --------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Watcher name minimum length | 4 runes (after trimming whitespace)            | n/a: enforced client-side                                                                |
+| Polling interval (events)   | 2 seconds                                      | `crec.WithWatcherPolling(...)`                                                           |
+| Eventual-consistency window | 2 seconds                                      | `crec.WithWatcherPolling(...)`                                                           |
+| Confidence level            | Per-network default returned by `ListNetworks` | Currently set by the platform; see [Confidence Levels](/crec/concepts/confidence-levels) |
 
 ## Updating a watcher
 
-Updates after creation are intentionally narrow: only the watcher **name** can be changed. To change the chain, address, ABI, or event list, archive the watcher and create a new one.
+Updates after creation are intentionally narrow: only the watcher **name** can be changed via `Update`. To change the chain, address, ABI, or event list, archive the watcher and create a new one.
 
 <Aside type="tip" title="Naming convention">
 Watcher names are not unique across a channel, but human-readable, stable
@@ -74,6 +115,7 @@ practice (e.g. `prod-dta-fund-alpha-eth`).
 
 ## Related
 
-- [Verifiable Events](/crec/concepts/verifiable-events) — what a watcher emits.
-- [Confidence Levels](/crec/concepts/confidence-levels) — how a watcher decides when an event is "ready".
-- [Channels](/crec/concepts/channels) — the container a watcher lives in.
+- [Create a Watcher with a Predefined Service](/crec/guides/watchers/create-with-service) · [Create a Watcher with a Custom ABI](/crec/guides/watchers/create-with-abi) · [Manage Watcher Lifecycle](/crec/guides/watchers/manage-lifecycle): the implementation guides.
+- [Verifiable Events](/crec/concepts/verifiable-events): what a watcher emits.
+- [Confidence Levels](/crec/concepts/confidence-levels): how a watcher decides when an event is "ready".
+- [Channels](/crec/concepts/channels): the container a watcher lives in.

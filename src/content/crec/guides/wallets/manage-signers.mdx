@@ -1,0 +1,128 @@
+---
+section: crec
+title: "Manage Wallet Signers"
+date: Last Modified
+metadata:
+  description: "Configure which keys are authorised to drive a Chainlink CRE Connect wallet: set the allowed-signer list at wallet-creation time and read it back via the Go SDK or REST API."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+A wallet's **signer set** is the list of keys CRE Connect will accept signatures from when executing operations against the wallet's Smart Account. The set is typed: `ecdsa` wallets accept EVM addresses, `rsa` wallets accept RSA public keys.
+
+## What can be configured today
+
+| Operation                       | Supported via Go SDK | Notes                                                                                                                           |
+| ------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Set initial signer set          | Yes                  | At wallet-creation time, via `wallets.CreateInput`.                                                                             |
+| Read current signer set         | Yes                  | `Wallets.Get` returns `AllowedEcdsaSigners` / `AllowedRsaSigners`.                                                              |
+| Add / remove signers at runtime | No                   | The Go SDK exposes no API for mutating the signer set after creation; `wallets.UpdateInput` only accepts `Name`.                |
+| Rename wallet                   | Yes                  | `Wallets.Update` (Go SDK) accepts only `Name`. The REST `PATCH /wallets/{id}` endpoint also accepts `description` and `status`. |
+| Archive wallet                  | Yes                  | `Wallets.Archive` is synchronous (PATCHes status to `archived`); the on-chain Smart Account contract is not modified.           |
+
+## Set the signer set at creation time
+
+`StatusChannelId` is optional on `Create` (the SDK rejects a zero-UUID value with `wallets.ErrStatusChannelIDZero`); pass the channel where you want `wallet.status` events to land.
+
+ECDSA wallet:
+
+```go
+import (
+    "github.com/smartcontractkit/crec-sdk/wallets"
+    apiClient "github.com/smartcontractkit/crec-api-go/client"
+)
+
+statusChannelID := channelID // any channel you own
+ecdsaSigners := []string{
+    "0x1111111111111111111111111111111111111111",
+    "0x2222222222222222222222222222222222222222",
+}
+
+w, err := client.Wallets.Create(ctx, wallets.CreateInput{
+    Name:                "treasury-eth",
+    ChainSelector:       "5009297550715157269",
+    WalletOwnerAddress:  "0xYourOwnerEOA",
+    WalletType:          apiClient.Ecdsa,
+    AllowedEcdsaSigners: &ecdsaSigners,
+    StatusChannelId:     &statusChannelID,
+})
+```
+
+RSA wallet:
+
+```go
+rsaSigners := apiClient.RSASignersList{
+    // E and N are 0x-prefixed hex strings (validated by the API regex
+    // `^0x[a-fA-F0-9]{2,34}$` for `e` and `^0x[a-fA-F0-9]{512,}$` for `n`).
+    // E is typically `0x010001` (= 65537). N is at least 2048 bits = 512 hex chars.
+    {E: "0x010001", N: "0xc2a8...hex-encoded-modulus..."},
+}
+
+w, err := client.Wallets.Create(ctx, wallets.CreateInput{
+    Name:               "rsa-treasury-eth",
+    ChainSelector:      "5009297550715157269",
+    WalletOwnerAddress: "0xYourOwnerEOA",
+    WalletType:         apiClient.Rsa,
+    AllowedRsaSigners:  &rsaSigners,
+    StatusChannelId:    &statusChannelID,
+})
+```
+
+Service limits enforced by the API (`RSASignersList` / `ECDSASignersList` schemas, `maxItems: 10`): **maximum 10 ECDSA signers** and **maximum 10 RSA signers** per wallet.
+
+## Read the current signer set
+
+```go
+w, err := client.Wallets.Get(ctx, walletID)
+if err != nil { return err }
+
+if w.AllowedEcdsaSigners != nil {
+    for _, addr := range *w.AllowedEcdsaSigners {
+        fmt.Println("ecdsa signer:", addr)
+    }
+}
+if w.AllowedRsaSigners != nil {
+    for _, k := range *w.AllowedRsaSigners {
+        fmt.Println("rsa signer:", k.E, k.N)
+    }
+}
+```
+
+curl:
+
+```bash
+curl -sS "$CREC_BASE_URL/wallets/$WALLET_ID" \
+  -H "Authorization: Apikey $CREC_API_KEY" \
+  | jq '{allowed_ecdsa_signers, allowed_rsa_signers}'
+```
+
+## Changing the signer set after creation
+
+The signer set is fixed at creation. To use a different signer set, provision a new wallet with `Wallets.Create` and (when the old wallet is no longer needed) archive it with `Wallets.Archive`. Both APIs are the same ones documented above.
+
+## Choosing signer addresses up front
+
+When you call `Wallets.Create` you don't pass a `signer.Signer` instance: you pass the **address (ECDSA)** or **`{e, n}` pair (RSA)** that signer will produce. Each per-provider guide documents the exact helper to use:
+
+- [Local Signer](/crec/guides/signers/local): `crypto.PubkeyToAddress(privateKey.PublicKey)`.
+- [AWS KMS Signer](/crec/guides/signers/aws-kms): `awskms.GetPubKeyCtx(ctx, client, keyID)` then `crypto.PubkeyToAddress`.
+- [HashiCorp Vault Signer](/crec/guides/signers/hashicorp-vault): `s.Public()` for ECDSA keys; `s.GetRSAModulus()` for RSA keys.
+- [Fireblocks Signer](/crec/guides/signers/fireblocks): `s.GetVaultAccountAddress(ctx)`.
+- [Privy Signer](/crec/guides/signers/privy): `s.GetWalletAddress(ctx)`.
+
+For **RSA** signers the modulus `n` and exponent `e` must be **`0x`-prefixed hex** strings, validated by the API regex `^0x[a-fA-F0-9]{2,34}$` for `e` and `^0x[a-fA-F0-9]{512,}$` for `n` (i.e. ≥ 2048-bit modulus). The Vault helper `GetRSAModulus()` returns hex **without** the `0x` prefix; prepend it before passing the value to `wallets.Create`.
+
+## Sentinel errors
+
+| Error                               | Trigger                                                       |
+| ----------------------------------- | ------------------------------------------------------------- |
+| `wallets.ErrInvalidEcdsaSigner`     | An entry in `AllowedEcdsaSigners` is not a valid hex address. |
+| `wallets.ErrInvalidRsaSigner`       | An entry in `AllowedRsaSigners` has empty `E` or `N`.         |
+| `wallets.ErrInvalidSignersForEcdsa` | `AllowedRsaSigners` set on an `ecdsa` wallet.                 |
+| `wallets.ErrInvalidSignersForRsa`   | `AllowedEcdsaSigners` set on an `rsa` wallet.                 |
+
+## Next steps
+
+- [Local Signer](/crec/guides/signers/local): generate an ECDSA address from a private key for testing.
+- [AWS KMS Signer](/crec/guides/signers/aws-kms): derive an address from a KMS-held key for production.
+- [Smart Accounts](/crec/concepts/smart-accounts): what the signer set protects.

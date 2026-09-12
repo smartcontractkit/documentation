@@ -3,9 +3,9 @@ section: crec
 title: "Confidence Levels"
 date: Last Modified
 metadata:
-  description: "Confidence levels (latest, safe, finalized) determine the finality threshold at which a Chainlink CRE Connect watcher reports an on-chain event. Defaults are set per supported network."
+  description: "Confidence levels (latest, safe, finalized) determine the finality threshold at which a Chainlink CRE Connect watcher reports an on-chain event. Defaults are set per supported network and surfaced through ListNetworks."
   datePublished: "2026-05-01"
-  lastModified: "2026-05-01"
+  lastModified: "2026-08-31"
 ---
 
 import { Aside } from "@components"
@@ -14,13 +14,39 @@ A **confidence level** specifies how deep into a chain's consensus an event must
 
 ## The three levels
 
-| <div style="width: 120px;">Level</div> | Semantics                                                                                                                                                                         | When to use                                                                                                   |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `latest`                               | The event is included in the most recent block from the chain's perspective. Reorganizations can still drop it.                                                                   | Read-only dashboards, tail-following loggers, low-stakes notifications.                                       |
-| `safe`                                 | The event is included in a "safe" block under the chain's pre-finality definition (post-Merge `safe` for Ethereum, finalized-by-fast-track on rollups). Reorgs are very unlikely. | Operational alerting, non-financial side effects.                                                             |
-| `finalized`                            | The event is in a block the chain treats as economically final. It cannot be reorganized away under honest-majority assumptions.                                                  | Anything that triggers irreversible business action — fund flows, regulatory reporting, downstream API calls. |
+| <div style="width: 120px;">Level</div> | Semantics                                                                                                                                                                         | When to use                                                                                                  |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `latest`                               | The event is included in the most recent block from the chain's perspective. Reorganizations can still drop it.                                                                   | Read-only dashboards, tail-following loggers, low-stakes notifications.                                      |
+| `safe`                                 | The event is included in a "safe" block under the chain's pre-finality definition (post-Merge `safe` for Ethereum, finalized-by-fast-track on rollups). Reorgs are very unlikely. | Operational alerting, non-financial side effects.                                                            |
+| `finalized`                            | The event is in a block the chain treats as economically final. It cannot be reorganized away under honest-majority assumptions.                                                  | Anything that triggers irreversible business action: fund flows, regulatory reporting, downstream API calls. |
 
-The exact mapping of `safe` and `finalized` depends on the chain. CRE Connect uses the chain's own definition (e.g. Ethereum's `safe` and `finalized` block tags, the equivalent rollup-specific tags) — consult the chain's documentation for precise semantics and the latency each level implies on that chain.
+The exact mapping of `safe` and `finalized` depends on the chain. CRE Connect uses the chain's own definition (e.g. Ethereum's `safe` and `finalized` block tags, the equivalent rollup-specific tags). Consult the chain's documentation for precise semantics and the latency each level implies on that chain.
+
+## Where confidence levels live
+
+Confidence levels appear in several places in CRE Connect, each for a different purpose:
+
+| Location                                                  | Field                               | Purpose                                                                                         |
+| --------------------------------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Network metadata (returned by `client.ListNetworks(...)`) | `Network.DefaultConfidenceLevel`    | The platform-managed default for a network. New watchers on this network start with this level. |
+| Watcher resource                                          | `Watcher.ConfidenceLevel`           | The level the watcher is currently using, returned by `Get` and `List`.                         |
+| Wallet resource                                           | `Wallet.ConfidenceLevel` (optional) | The level applied to wallet-related on-chain observations.                                      |
+
+Service-backed watchers (those created with `CreateWithService`) carry a confidence level chosen by the extension. Read it back from `Watcher.ConfidenceLevel` after creation.
+
+## Multi-event finality for operations
+
+Confidence levels also shape [Operation](/crec/concepts/operations) confirmation. An Operation can produce multiple `operation.status` events as its block matures: `confirmed_latest`, then `confirmed_safe`, then `confirmed`.
+
+This progression lets your application react quickly to low-risk updates while still waiting for stronger finality before irreversible actions. See [Multi-Event Finality](/crec/concepts/multi-event-finality) for the operation-specific model.
+
+## What clients can and cannot configure today
+
+- **Clients receive the chosen confidence level back in every Watcher and Network response.** Use `client.ListNetworks(...)` to enumerate the per-network defaults at runtime.
+- **The SDK does not currently send a `confidence_level` field when creating a watcher.** `CreateWithService` and `CreateWithABI` accept the chain selector, address, ABI/service, and event list. Confidence is set server-side based on the network default and the service's own default (when applicable).
+- **Event polling and search APIs do not accept a confidence-level filter today.** Confidence is a property of the event's source, not a query parameter on the read path.
+
+If your integration requires a non-default confidence level for a specific watcher, contact the CRE Connect team.
 
 ## How confidence interacts with verification
 
@@ -38,11 +64,9 @@ A `latest`-confidence event can pass verification and still be invalidated by a 
   acting on a reorganized event and having to compensate afterward.
 </Aside>
 
-## Per-network defaults
-
-Each network supported by CRE Connect carries a default confidence level chosen by the platform. Watchers created on that network inherit the default unless the underlying extension or service specifies a different one. Applications can read the active confidence level back from each watcher and event so they always know the finality at which a given event was observed.
-
 ## Related
 
-- [Watchers](/crec/concepts/watchers) — the resource that emits events at a chosen confidence level.
-- [Verifiable Events](/crec/concepts/verifiable-events) — the cryptographic property that is _independent_ of confidence.
+- [Watchers](/crec/concepts/watchers): the resource that emits events at a chosen confidence level.
+- [Multi-Event Finality](/crec/concepts/multi-event-finality): how operations report progressive confirmations.
+- [Verifiable Events](/crec/concepts/verifiable-events): the cryptographic property that is _independent_ of confidence.
+- [Supported Networks](/crec/supported-networks): the per-network defaults exposed via `ListNetworks`.

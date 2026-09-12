@@ -1,0 +1,61 @@
+---
+section: crec
+title: "Private Beta"
+date: Last Modified
+metadata:
+  description: "CRE Connect private beta scope: how access works, what is included, current limitations, and how to get support during the beta period."
+  datePublished: "2026-09-02"
+  lastModified: "2026-09-02"
+---
+
+import CrecCommon from "@features/crec/common/CrecCommon.astro"
+
+<CrecCommon callout="beta" />
+
+CRE Connect is in **private beta**: the product is complete enough to build real integrations, but access is permissioned and some capabilities are still evolving. This page explains what that means in practice, so you can decide what to build today and what to plan around.
+
+## How access works
+
+During the beta, CRE Connect is not self-serve. Your organization must be provisioned by Chainlink Labs before you can create API keys or call the API:
+
+1. [Contact Chainlink](https://chain.link/contact) to request access or schedule a demo.
+2. Share your **Organization ID** with your Chainlink Labs contact so they can enable CRE Connect for your organization.
+3. Once enabled, generate an API key from the **Organization → APIs** tab on [app.chain.link](https://app.chain.link).
+
+See [Prerequisites](/crec/getting-started/prerequisites) for the detailed onboarding flow, and the [Overview](/crec) for what you can build with CRE Connect.
+
+## What the beta includes
+
+The core product surface is available and supported:
+
+- **Verifiable on-chain events**: subscribe to contract events on [supported networks](/crec/supported-networks); every event is signed by the Chainlink DON and verifiable end-to-end. See [Verifiable Events](/crec/concepts/verifiable-events).
+- **Gas-less, account-abstracted operations**: sign one EIP-712 payload; CRE Connect executes one or more EVM transactions atomically through your Smart Account. See [Operations & Transactions](/crec/concepts/operations).
+- **Chain queries**: one-shot, DON-backed, verifiable EVM reads. See [Chain Queries](/crec/concepts/queries).
+- **Signer integrations**: local ECDSA/RSA, AWS KMS, HashiCorp Vault, Fireblocks, Privy, and a documented [custom signer interface](/crec/guides/signers/custom).
+- **Extensions**: the [DTA (Digital Transfer Agent)](/crec/extensions/dta) extension is available at launch.
+
+## Current limitations
+
+The following limitations apply today:
+
+### Signer sets are fixed at wallet creation
+
+A wallet's signer set cannot be modified after creation. To rotate signers today, archive the old wallet and provision a new one with the updated signer lists. See [Manage Wallet Signers](/crec/guides/wallets/manage-signers).
+
+### Per-environment quotas are negotiated
+
+The number of watchers per channel, rate limits, and other per-environment quotas are soft limits negotiated with the Chainlink team rather than fixed published numbers. See [Service Limits](/crec/reference/service-limits) for the hard limits that are enforced server-side.
+
+## Support and feedback
+
+During the beta, support flows through your Chainlink Labs contact:
+
+- **Issues and bugs**: include the operation or event ID where possible.
+- **Feature requests**: the beta is the time to shape the product: share your use cases and gaps.
+- **Quota changes**: rate limits and per-environment quotas can be adjusted on request.
+
+## See also
+
+- [Prerequisites](/crec/getting-started/prerequisites): the detailed onboarding flow.
+- [Release Notes](/crec/release-notes): version history for the SDK, REST API, and extensions.
+- [Service Limits](/crec/reference/service-limits): hard limits enforced by the API.
