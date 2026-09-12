@@ -1,0 +1,249 @@
+---
+section: ace
+title: "Requesting Offchain Permits"
+date: Last Modified
+metadata:
+  description: "Call the Chainlink ACE Evaluation API, monitor a TRM wallet risk evaluation, and use the resulting permit for a protected onchain transaction."
+  datePublished: "2026-07-17"
+  lastModified: "2026-07-17"
+---
+
+import { Aside } from "@components"
+
+After a managed offchain risk policy protects a function, the function rejects calls that do not have a matching permit. Your application must request an evaluation, wait for the permit to be stored onchain, and then submit the protected transaction.
+
+This guide uses an ERC-20 `transfer(address,uint256)` as the example. For policy and protection setup, see [Managing Offchain Policies (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies).
+
+<Aside type="caution" title="MVP feature">
+  Managed offchain risk policies and the Evaluation API are an MVP. Their interfaces and capabilities can change during
+  Beta. Contact your Chainlink representative before integrating this feature and for help with setup.
+</Aside>
+
+## Evaluation flow
+
+1. Your application describes the intended transaction to the ACE Evaluation API.
+1. ACE triggers the managed CRE workflow for your organization.
+1. The workflow extracts the configured addresses and screens them with TRM Wallet Screening.
+1. If the risk rules reject any address, the evaluation becomes `rejected` and no permit is created.
+1. If the risk rules pass, the workflow writes a permit to the CADV contract through the Keystone Forwarder.
+1. After ACE observes the onchain `PermitStored` event, the evaluation becomes `ready`.
+1. Your application submits the protected transaction with the same caller, target, function, and parameter values.
+1. The policy engine finds and consumes the permit. The permit cannot authorize another transaction.
+
+## Prerequisites
+
+Before requesting an evaluation, verify that:
+
+- The offchain policy has `deployment_status: active`.
+- Its protection for the target function has `status: active`.
+- You know the target contract address and chain selector.
+- You know the wallet that will submit the onchain transaction. It must be the same address as `caller_address`.
+- You know the ordered extractor outputs configured on the protection. Your `permit_parameters` must use that same order.
+
+## Evaluation API
+
+The production Evaluation API base URL is:
+
+```text
+https://ace.api.chain.link/v1/evaluation
+```
+
+It uses the same ACE API key as the Coordinator API:
+
+```http
+Authorization: Apikey <API_KEY>
+```
+
+<Aside type="caution">
+  Call the Evaluation API from a trusted backend. Do not expose your ACE API key in browser or mobile application code.
+</Aside>
+
+## Construct the evaluation request
+
+Start an evaluation with `POST /evaluate`:
+
+```json
+{
+  "caller_address": "0x1111111111111111111111111111111111111111",
+  "subject": "0x2222222222222222222222222222222222222222",
+  "function_signature": "transfer(address,uint256)",
+  "parameters": {
+    "to": "0x3333333333333333333333333333333333333333",
+    "amount": "100"
+  },
+  "permit_parameters": [
+    "0x0000000000000000000000001111111111111111111111111111111111111111",
+    "0x0000000000000000000000003333333333333333333333333333333333333333",
+    "0x0000000000000000000000000000000000000000000000000000000000000064"
+  ],
+  "chain_selector": "<CHAIN_SELECTOR>",
+  "unique_evaluation_id": "transfer-018f6b3e-7c42-7a1f-a8ed-5ecf90c03b30"
+}
+```
+
+| <div style={{ width: "175px" }}>Field</div> | Description                                                                                                |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `caller_address`                            | Wallet that will submit the protected transaction.                                                         |
+| `subject`                                   | Address of the protected target contract.                                                                  |
+| `function_signature`                        | Canonical function signature, such as `transfer(address,uint256)`. Do not send the four-byte selector.     |
+| `parameters`                                | Structured representation of the function arguments. ACE stores it with the evaluation as contextual data. |
+| `permit_parameters`                         | Ordered ABI-encoded values used for address screening and exact onchain permit matching.                   |
+| `chain_selector`                            | Chain where the target, policy engine, protection, and CADV are deployed.                                  |
+| `unique_evaluation_id`                      | Client-generated identifier unique to this transaction intent. ACE uses it to derive the permit ID.        |
+
+### Encode permit parameters
+
+Each `permit_parameters` item is a `0x`-prefixed, 32-byte ABI word. The items must have the same order as the `extractor_output_ids` on the protection.
+
+For `transfer(address,uint256)`, the `ERC20TransferExtractor` produces:
+
+```text
+[from, to, amount]
+```
+
+Therefore, encode:
+
+1. `from`: the transaction caller, as an ABI `address`.
+1. `to`: the transfer recipient, as an ABI `address`.
+1. `amount`: the transfer amount, as an ABI `uint256`.
+
+Use a standard ABI library rather than concatenating untrusted values manually. For example, with ethers v6:
+
+```javascript
+import { AbiCoder } from "ethers"
+
+const abiCoder = AbiCoder.defaultAbiCoder()
+
+const permitParameters = [
+  abiCoder.encode(["address"], [callerAddress]),
+  abiCoder.encode(["address"], [recipientAddress]),
+  abiCoder.encode(["uint256"], [amount]),
+]
+```
+
+<Aside type="caution" title="The permit must match the eventual transaction">
+  A permit can become `ready` but still fail to authorize the transaction if `caller_address`, `subject`, the function
+  selector, or any extracted parameter differs. Construct the evaluation and transaction from the same immutable intent
+  in your application.
+</Aside>
+
+### Choose a unique evaluation ID
+
+`unique_evaluation_id` is scoped to your ACE organization. ACE combines it with the organization ID to derive a deterministic `permit_id`.
+
+Retrying with the same `unique_evaluation_id` is idempotent: ACE returns the existing evaluation instead of triggering another workflow execution. Never reuse an ID for a different caller, target, function, or set of parameters.
+
+Use a UUID or another collision-resistant identifier generated by your backend. Store it with the transaction intent so you can safely recover from a lost HTTP response.
+
+## Start the evaluation
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/evaluation/evaluate \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d @evaluation.json
+```
+
+The response contains the deterministic permit ID and initial status:
+
+```json
+{
+  "permit_id": "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "status": "evaluating"
+}
+```
+
+The response does not mean that the transaction is approved. Wait until the evaluation becomes `ready`.
+
+## Poll the evaluation
+
+Retrieve the evaluation using the returned permit ID:
+
+```bash
+curl \
+  https://ace.api.chain.link/v1/evaluation/evaluate/<PERMIT_ID> \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+Polling every five seconds is a reasonable default. Stop when the evaluation reaches a terminal status.
+
+| Status       | Terminal | Meaning                                                                             |
+| ------------ | -------- | ----------------------------------------------------------------------------------- |
+| `evaluating` | No       | The workflow is screening the configured addresses.                                 |
+| `approving`  | No       | TRM checks passed and the workflow is publishing the permit onchain.                |
+| `ready`      | Yes      | The permit was stored onchain. The protected transaction can now be submitted.      |
+| `rejected`   | Yes      | At least one configured risk rule rejected the evaluation. No permit was created.   |
+| `error`      | Yes      | The evaluation or onchain permit publication failed. No usable permit is available. |
+
+For `rejected` and `error`, the response can include a `reason`. `workflow_execution_id` identifies the CRE execution when available. Because permits do not expire in the current release, `expires_at` is normally `null`.
+
+```json
+{
+  "permit_id": "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "status": "ready",
+  "reason": null,
+  "workflow_execution_id": "<WORKFLOW_EXECUTION_ID>",
+  "expires_at": null
+}
+```
+
+## Retry an evaluation
+
+The CRE HTTP trigger allows one new execution per workflow every 60 seconds. Polling an existing evaluation does not trigger the workflow and is not subject to that trigger rate.
+
+- If the initial HTTP response is lost or ambiguous, retry `POST /evaluate` with the same `unique_evaluation_id`. ACE returns the existing evaluation if it was created.
+- If an evaluation reaches `rejected`, changing the identifier alone does not change the policy decision. Review the risk result or transaction intent.
+- If an evaluation reaches `error` and the underlying issue is resolved, wait at least 60 seconds and submit a new evaluation with a new `unique_evaluation_id`.
+
+See [CRE Service Quotas](https://docs.chain.link/cre/service-quotas) for current workflow limits.
+
+## Submit the protected transaction
+
+Submit the transaction only after the evaluation becomes `ready`. The sender must be `caller_address`, and the target function must receive values that produce the same extracted parameters as `permit_parameters`.
+
+No permit bytes are added to the transaction. The CADV already stores the permit and looks it up from the action's caller, target, selector, and extracted parameters.
+
+After the protected call succeeds, the CADV increments the permit's usage counter. Managed risk policy permits have `maxUses = 1`, so another transaction with the same intent requires a new evaluation and permit.
+
+<Aside type="caution" title="Request permits shortly before use">
+  Managed risk policy permits do not expire in the current release. Request an evaluation only when the application is
+  ready to submit the corresponding transaction, and do not treat the passage of time as invalidating an unused permit.
+</Aside>
+
+## Troubleshooting
+
+### Evaluation is rejected
+
+- At least one address met or exceeded the global `risk_threshold`.
+- A TRM risk indicator met or exceeded a configured category threshold.
+- TRM returned `UNKNOWN` and `block_unknown` is enabled.
+
+Review the response `reason` and the policy configuration. Do not retry a rejected intent without understanding why it was rejected.
+
+### Evaluation returns an error
+
+- The Vault DON secret identifier does not match `secret_name`.
+- The TRM credential was not encoded as `<API_KEY>:<API_KEY>` before Base64 encoding.
+- TRM or the CRE confidential HTTP request failed.
+- The selected chain does not have an active CADV for the policy.
+- The workflow could not write the permit onchain.
+
+If a TRM HTTP error should allow the action, review the policy's `fail_mode`. Use `OPEN` only after assessing the compliance impact.
+
+### Evaluation is ready but the transaction reverts
+
+- The transaction sender differs from `caller_address`.
+- The target address or function differs from the evaluation.
+- The eventual transaction produces different extractor values than `permit_parameters`.
+- The protection's extractor outputs are missing or ordered differently.
+- The permit has already been consumed.
+- Another policy in the target function's policy chain rejected the call.
+
+## Related pages
+
+- [Managing Offchain Policies (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies) — configure TRM screening and attach protections
+- [Granting Evaluation Access](/ace/guides/policy-manager/offchain-policies/grant-evaluation-access) — let another organization request evaluations against your target
+- [Off-Chain Policy Execution](/ace/concepts/off-chain-policies) — conceptual overview
+- [CertifiedActionDONValidatorPolicy](/ace/reference/policy-library/certified-action-don-validator-policy) — how permits are stored and consumed onchain
+- [Evaluation API Reference](/api/ace/evaluation/docs) — complete request, response, and error schemas
+- [CRE Service Quotas](https://docs.chain.link/cre/service-quotas) — current CRE workflow limits

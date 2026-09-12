@@ -1,0 +1,197 @@
+---
+section: ace
+title: "Managing Data Validators"
+date: Last Modified
+metadata:
+  description: "Create, configure, and attach Credential Data Validators in Chainlink ACE to enforce rules on credential contents — such as jurisdiction allow/deny lists — using the Coordinator API."
+  datePublished: "2026-07-17"
+  lastModified: "2026-07-17"
+---
+
+import { Aside } from "@components"
+
+A **Data Validator** is an on-chain contract that inspects the **contents** of a credential — not just whether it exists. Attaching a Data Validator to an identity-validation policy lets you enforce rules on credential data, such as "only allow investors whose credential says they are in the US or Canada" or "reject any account whose credential country is on a sanctions list".
+
+This guide covers creating, configuring, and attaching Data Validators. For the credential side of the workflow — linking a data schema to a credential type and issuing credentials with data — see [Managing Credential Types](/ace/guides/identity-manager/manage-credential-types#typed-credentials-with-data-schemas) and [Managing Credentials](/ace/guides/identity-manager/manage-credentials#issue-a-credential-with-data).
+
+<Aside type="note" title="Two halves of one feature">
+  Credential data has a **producer** and a **consumer**. The credential issuer produces the data (Identity Manager:
+  attach a data schema to a credential type, issue credentials with values). The application consumes it (Policy
+  Manager: attach a Data Validator to a policy's credential source). This page covers the consumer side.
+</Aside>
+
+## How Data Validators fit in
+
+Identity-validation policies — the [CredentialRegistryIdentityValidatorPolicy](/ace/reference/policy-library/credential-registry-identity-validator-policy) and the [GroupedIdentityValidatorPolicy](/ace/reference/policy-library/grouped-identity-validator-policy) — resolve a caller's address to a CCID and check credentials from **credential sources**. Each credential source can optionally reference a Data Validator.
+
+When a credential source has a Data Validator configured, the policy performs an extra step at transaction time:
+
+1. Resolve the account's CCID and confirm the credential exists (attestation check).
+1. Fetch the credential's stored `credentialData`.
+1. Call the Data Validator's `validateCredentialData(...)`, which returns `true` or `false`.
+
+The credential passes only if **both** the attestation check and the data check succeed. Without a Data Validator, the source is attestation-only — it confirms the credential exists but ignores its contents.
+
+<Aside type="note" title="Data Validator vs. data routing">
+  A Data Validator checks whether a credential's contents are acceptable for a **requirement**. This is different from
+  the [GroupedIdentityValidatorPolicy](/ace/reference/policy-library/grouped-identity-validator-policy)'s **data
+  routing**, which uses credential contents to decide **which group** an account belongs to. Both read `credentialData`,
+  but they serve different purposes and can be combined.
+</Aside>
+
+## The AllowDenyList Data Validator
+
+ACE provides a pre-built, audited Data Validator implementation: the **AllowDenyList Data Validator**. It validates a credential payload against an **allowlist** and a **denylist**, with an optional restriction by credential type. Its rules are:
+
+- If the **denylist** contains any value present in the credential, validation **fails**.
+- If the **allowlist** is non-empty, at least one value in the credential must be allowlisted; otherwise validation **fails**.
+- If the allowlist is empty, the allow check passes (deny-only mode).
+
+The first use case shipped on top of this implementation is **jurisdiction control** using [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes (e.g., `US`, `CA`, `GB`). The country codes are the values checked against the allow and deny lists.
+
+<Aside type="tip" title="Generic building block">
+  The AllowDenyList Data Validator works with any `bytes32` values, not only country codes. The jurisdiction use case is
+  a convention layered on top: country codes are encoded as `bytes32` and matched against the lists.
+</Aside>
+
+## Prerequisites
+
+Before creating a Data Validator:
+
+1. A [policy engine](/ace/guides/policy-manager/manage-engines) deployed on your target chains.
+1. A credential type linked to a **data schema** so its credentials carry data — for the jurisdiction use case, the ISO 3166-1 alpha-2 country code schema. See [Managing Credential Types](/ace/guides/identity-manager/manage-credential-types#typed-credentials-with-data-schemas).
+1. Credentials issued **with data** against that credential type. See [Managing Credentials](/ace/guides/identity-manager/manage-credentials#issue-a-credential-with-data).
+
+## Create a Data Validator
+
+A **Data Validator instance** is a deployed copy of a Data Validator implementation (such as the AllowDenyList country-code validator), configured with your specific allow and deny lists and scoped to one or more chains — the same shape as a policy instance.
+
+The AllowDenyList (country codes) Data Validator implementation ID is:
+
+```text
+2aed366a-38af-4f48-b8e2-8fd1489db9fa
+```
+
+Create a Data Validator instance with a `POST` request. Provide the implementation ID and, for each chain, the `initial_config` with your allow and deny lists:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/data-validators \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "name": "Jurisdiction allow/deny",
+    "description": "Allow US and CA, deny KP",
+    "data_validator_implementation_id": "2aed366a-38af-4f48-b8e2-8fd1489db9fa",
+    "onchain_data_validators": [
+      {
+        "chain_selector": "16015286601757825753",
+        "initial_config": {
+          "allowlist": [{ "item": "US" }, { "item": "CA" }],
+          "denylist": [{ "item": "KP" }],
+          "supportedDataTypes": []
+        }
+      }
+    ]
+  }'
+```
+
+| Field                              | Required | Description                                                               |
+| ---------------------------------- | -------- | ------------------------------------------------------------------------- |
+| `name`                             | Yes      | Human-readable name for the instance                                      |
+| `description`                      | No       | Description of the instance's purpose                                     |
+| `data_validator_implementation_id` | Yes      | UUID of the Data Validator implementation to instantiate                  |
+| `onchain_data_validators`          | Yes      | Array of per-chain deployments with `chain_selector` and `initial_config` |
+
+Each on-chain Data Validator starts in `creation_pending` status until deployment completes. The response includes the instance `id` and the on-chain addresses per chain.
+
+<Aside type="note" title="Config fields">
+  `allowlist` and `denylist` are country codes. `supportedDataTypes` optionally restricts the validator to specific
+  credential type hashes — when non-empty, the validator returns `false` for any other credential type. Leave it empty
+  to accept any credential type routed to it.
+</Aside>
+
+## Update a Data Validator configuration
+
+You can update the allow and deny lists after deployment without redeploying the validator. Configuration changes use JSON Patch and are version-checked per chain for optimistic concurrency.
+
+Update the configuration with a `PATCH` request. Supply `on_chains` with the `current_config_version` for each chain you are changing:
+
+```bash
+curl -X PATCH https://ace.api.chain.link/v1/data-validators/<DATA_VALIDATOR_ID>/configs \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "patches": [
+      { "op": "add", "path": "/allowlist/-", "value": "GB" }
+    ],
+    "on_chains": [
+      { "chain_selector": "16015286601757825753", "current_config_version": "0" }
+    ]
+  }'
+```
+
+The JSON Patch format follows [RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902). If the `current_config_version` does not match the on-chain state, the request is rejected — re-fetch the instance and retry with the current version.
+
+## Attach a Data Validator to a credential source
+
+A Data Validator takes effect only when it is referenced by a **credential source** on an identity-validation policy. Each credential source has a `dataValidator` field:
+
+- `0x0000000000000000000000000000000000000000` — attestation-only (default). The source checks only that the credential exists.
+- A Data Validator address — the source additionally validates credential contents through that validator.
+
+Set the `dataValidator` field to your deployed Data Validator address when configuring the credential source on your [CredentialRegistryIdentityValidatorPolicy](/ace/reference/policy-library/credential-registry-identity-validator-policy) or [GroupedIdentityValidatorPolicy](/ace/reference/policy-library/grouped-identity-validator-policy) instance. See [Managing Policies — Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration) for how to change a policy instance's configuration.
+
+<Aside type="caution" title="Match the validator to the credential's chain">
+  Credential sources are configured per network with on-chain addresses. Use the Data Validator address deployed on the
+  same chain as the credential source's identity and credential registries.
+</Aside>
+
+## View Data Validators
+
+List all Data Validators:
+
+```bash
+curl https://ace.api.chain.link/v1/data-validators \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+| Parameter                          | Description                          |
+| ---------------------------------- | ------------------------------------ |
+| `page`                             | Page number (default: 1)             |
+| `page_size`                        | Results per page                     |
+| `include_onchains`                 | Include per-chain deployment details |
+| `data_validator_implementation_id` | Filter by implementation             |
+| `chain_selector`                   | Filter by chain                      |
+| `address`                          | Filter by on-chain address           |
+| `status`                           | Filter by on-chain status            |
+
+To retrieve a specific Data Validator by ID:
+
+```bash
+curl https://ace.api.chain.link/v1/data-validators/<DATA_VALIDATOR_ID> \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+## Archive a Data Validator
+
+Archiving a Data Validator deactivates the instance. Before archiving, detach it from any credential source that references it (set that source's `dataValidator` back to the zero address).
+
+Archive a Data Validator with a `PATCH` request:
+
+```bash
+curl -X PATCH https://ace.api.chain.link/v1/data-validators/<DATA_VALIDATOR_ID> \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "status": "archived"
+  }'
+```
+
+## Related pages
+
+- [Cross-Chain Identity — Credential data and privacy](/ace/concepts/cross-chain-identity#credential-data-and-privacy) — attestation-only vs. Data Validator checks
+- [Managing Credential Types](/ace/guides/identity-manager/manage-credential-types) — link a data schema to a credential type
+- [Managing Credentials](/ace/guides/identity-manager/manage-credentials) — issue credentials with data
+- [CredentialRegistryIdentityValidatorPolicy](/ace/reference/policy-library/credential-registry-identity-validator-policy) — the policy that consumes Data Validators via credential sources
+- [GroupedIdentityValidatorPolicy](/ace/reference/policy-library/grouped-identity-validator-policy) — grouped identity validation with routing and Data Validators
+- [Coordinator API Reference](/api/ace/coordinator/docs) — full API schema

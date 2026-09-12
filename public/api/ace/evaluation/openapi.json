@@ -1,0 +1,329 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Chainlink ACE Evaluation API",
+    "version": "0.1.0",
+    "description": "MVP API for starting and monitoring managed offchain policy evaluations. Its interfaces and capabilities can change during Beta. Contact your Chainlink representative for help with setup. Use the same API key authentication as the ACE Coordinator API."
+  },
+  "servers": [
+    {
+      "url": "https://ace.api.chain.link/v1/evaluation"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Evaluation",
+      "description": "Request and monitor managed offchain policy permits."
+    },
+    {
+      "name": "Health Check"
+    }
+  ],
+  "paths": {
+    "/evaluate": {
+      "post": {
+        "tags": ["Evaluation"],
+        "summary": "Start permit evaluation",
+        "description": "Derives a deterministic permit_id from the authenticated organization and unique_evaluation_id, starts the evaluation, and returns the same evaluation on idempotent retries.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluateRequest"
+              },
+              "example": {
+                "caller_address": "0x1111111111111111111111111111111111111111",
+                "subject": "0x2222222222222222222222222222222222222222",
+                "function_signature": "transfer(address,uint256)",
+                "parameters": {
+                  "to": "0x3333333333333333333333333333333333333333",
+                  "amount": "100"
+                },
+                "permit_parameters": [
+                  "0x0000000000000000000000001111111111111111111111111111111111111111",
+                  "0x0000000000000000000000003333333333333333333333333333333333333333",
+                  "0x0000000000000000000000000000000000000000000000000000000000000064"
+                ],
+                "chain_selector": "<CHAIN_SELECTOR>",
+                "unique_evaluation_id": "transfer-018f6b3e-7c42-7a1f-a8ed-5ecf90c03b30"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Evaluation accepted or duplicate request returning existing state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/evaluate/{permitId}": {
+      "get": {
+        "tags": ["Evaluation"],
+        "operationId": "getEvaluationByPermitId",
+        "summary": "Get evaluation run by permit ID",
+        "description": "Returns the evaluation for the authenticated organization. Returns 404 when the permit does not exist or belongs to another organization.",
+        "parameters": [
+          {
+            "name": "permitId",
+            "in": "path",
+            "required": true,
+            "description": "Permit identifier returned by POST /evaluate.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Evaluation found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationDetailResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid permit ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Permit missing or not visible to this organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health-check": {
+      "get": {
+        "tags": ["Health Check"],
+        "summary": "Health check",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthCheck"
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "API key authentication. Format: Apikey <api-key>"
+      }
+    },
+    "schemas": {
+      "EvaluateRequest": {
+        "type": "object",
+        "required": [
+          "caller_address",
+          "subject",
+          "function_signature",
+          "parameters",
+          "chain_selector",
+          "unique_evaluation_id"
+        ],
+        "properties": {
+          "caller_address": {
+            "$ref": "#/components/schemas/EthAddress"
+          },
+          "subject": {
+            "$ref": "#/components/schemas/EthAddress"
+          },
+          "function_signature": {
+            "type": "string",
+            "description": "Canonical ABI function signature, for example transfer(address,uint256). The coordinator derives the four-byte selector from this value."
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Structured function parameters stored with the evaluation as contextual data."
+          },
+          "permit_parameters": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional ABI-encoded permit parameters as 0x-prefixed 32-byte words. ACE forwards them to the workflow for address screening and exact onchain permit binding. For transfer(address,uint256), supply [from, to, amount]."
+          },
+          "chain_selector": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20,
+            "description": "Chain selector for the target and CADV deployment."
+          },
+          "unique_evaluation_id": {
+            "type": "string",
+            "description": "Client-generated identifier unique to this evaluation intent. Reusing it within the same organization returns the existing evaluation."
+          }
+        }
+      },
+      "EvaluateResponse": {
+        "type": "object",
+        "required": ["permit_id", "status"],
+        "properties": {
+          "permit_id": {
+            "type": "string",
+            "description": "Hex-encoded bytes32 identifier for the evaluation."
+          },
+          "status": {
+            "$ref": "#/components/schemas/EvaluationRunStatus"
+          }
+        }
+      },
+      "EvaluationDetailResponse": {
+        "type": "object",
+        "required": ["permit_id", "status"],
+        "properties": {
+          "permit_id": {
+            "type": "string",
+            "description": "Permit identifier returned by POST /evaluate."
+          },
+          "status": {
+            "$ref": "#/components/schemas/EvaluationRunStatus"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Details for a rejected or failed evaluation when available."
+          },
+          "workflow_execution_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "CRE workflow execution identifier when available."
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Permit expiry when available. Managed wallet risk permits currently do not expire, so this is normally null."
+          }
+        }
+      },
+      "EvaluationRunStatus": {
+        "type": "string",
+        "description": "Lifecycle status of an offchain policy evaluation.",
+        "enum": ["evaluating", "rejected", "approving", "error", "ready"]
+      },
+      "EthAddress": {
+        "type": "string",
+        "pattern": "^0x[a-fA-F0-9]{40}$",
+        "description": "Ethereum address"
+      },
+      "ApiErrorResponse": {
+        "type": "object",
+        "required": ["error", "message"],
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string",
+            "enum": ["Already exists", "Internal error", "Not found", "Bad request", "Unauthorized", "Forbidden"]
+          }
+        }
+      },
+      "HealthCheck": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok"
+          }
+        }
+      }
+    }
+  }
+}

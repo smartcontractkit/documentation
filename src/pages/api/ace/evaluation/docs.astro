@@ -1,0 +1,224 @@
+---
+Astro.response.headers.set("Content-Type", "text/html; charset=utf-8")
+Astro.response.headers.set("Cache-Control", "s-max-age=300, stale-while-revalidate")
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>ACE Evaluation API Documentation</title>
+    <meta
+      name="description"
+      content="API reference for the Chainlink ACE Evaluation API. Request and monitor managed offchain policy permits."
+    />
+    <meta
+      name="keywords"
+      content="ACE, Evaluation API, Chainlink, Offchain Policy, TRM, Wallet Screening, Permits, API Documentation"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="canonical" href="https://docs.chain.link/api/ace/evaluation/docs" />
+
+    <meta property="og:title" content="ACE Evaluation API Documentation" />
+    <meta
+      property="og:description"
+      content="Request managed offchain policy evaluations and monitor onchain permit delivery."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://docs.chain.link/api/ace/evaluation/docs" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ACE Evaluation API Documentation" />
+    <meta name="twitter:description" content="API reference for the Chainlink ACE Evaluation API." />
+
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="dns-prefetch" href="https://unpkg.com" />
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.32.0/swagger-ui.css" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "ACE Evaluation API Documentation",
+        "description": "API reference for requesting managed offchain policy evaluations and monitoring permit delivery",
+        "author": { "@type": "Organization", "name": "Chainlink" },
+        "publisher": { "@type": "Organization", "name": "Chainlink" },
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https://docs.chain.link/api/ace/evaluation/docs"
+        }
+      }
+    </script>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", sans-serif;
+        line-height: 1.6;
+        color: #333;
+      }
+
+      .api-doc-header {
+        background-color: #f8f9fa;
+        padding: 40px 20px;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      h1 {
+        color: #375bd2;
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+      }
+
+      h2 {
+        color: #333;
+        font-size: 1.8rem;
+        margin: 1.5rem 0 1rem;
+      }
+
+      .lead {
+        font-size: 1.25rem;
+        margin-bottom: 2rem;
+        max-width: 800px;
+      }
+
+      .api-overview {
+        margin: 2rem 0;
+        max-width: 800px;
+      }
+
+      .mvp-notice {
+        max-width: 800px;
+        margin: 1.5rem 0;
+        padding: 16px 20px;
+        border: 1px solid #d97706;
+        border-radius: 6px;
+        background: #fffbeb;
+        color: #78350f;
+      }
+
+      .version-badge {
+        display: inline-block;
+        background-color: #375bd2;
+        color: white;
+        padding: 0.25em 0.8em;
+        border-radius: 2em;
+        font-size: 0.9rem;
+        margin-left: 10px;
+        vertical-align: middle;
+      }
+
+      #swagger-ui {
+        max-width: 1460px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .swagger-ui .topbar,
+      .swagger-ui .info .title small.version-stamp {
+        background-color: #375bd2;
+      }
+
+      .swagger-ui .scheme-container {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 4px;
+      }
+
+      @media (max-width: 768px) {
+        h1 {
+          font-size: 2rem;
+        }
+
+        .api-doc-header {
+          padding: 20px 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="api-doc-header">
+      <div class="container">
+        <h1>ACE Evaluation API <span class="version-badge">v1</span></h1>
+        <p class="lead">
+          Use the Evaluation API to request managed offchain policy evaluations, monitor TRM wallet screening, and
+          determine when an approved permit is ready onchain.
+        </p>
+
+        <div class="mvp-notice" role="note">
+          <strong>MVP API:</strong> Managed offchain risk policies and the Evaluation API are an MVP. Their interfaces and
+          capabilities can change during Beta. Contact your Chainlink representative before integrating this API and for help
+          with setup.
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin:24px 0;">
+          <a
+            href="#swagger-ui"
+            style="display:inline-block;background:#375bd2;color:#fff;padding:10px 20px;border-radius:4px;text-decoration:none;font-size:0.95rem;"
+            >Explore Endpoints</a
+          >
+          <a
+            href="/api/ace/evaluation/openapi.json"
+            style="display:inline-block;background:#fff;color:#375bd2;padding:10px 20px;border-radius:4px;text-decoration:none;font-size:0.95rem;border:1px solid #375bd2;"
+            >View OpenAPI Specification</a
+          >
+        </div>
+
+        <div class="api-overview">
+          <h2>Evaluation flow</h2>
+          <ul>
+            <li><strong>POST /evaluate</strong> — request an evaluation and receive its deterministic permit ID</li>
+            <li>
+              <strong>GET /evaluate/&#123;permitId&#125;</strong> — monitor evaluation and onchain permit delivery status
+            </li>
+          </ul>
+          <p>
+            See <a href="/ace/guides/policy-manager/offchain-policies/request-offchain-permits"
+              >Requesting Offchain Permits</a
+            > for the integration guide. See also: <a href="/api/ace/coordinator/docs">Coordinator API Reference</a> and
+            <a href="/api/ace/reporting/docs">Reporting API Reference</a>.
+          </p>
+        </div>
+      </div>
+    </header>
+
+    <div id="swagger-ui"></div>
+
+    <script src="https://unpkg.com/swagger-ui-dist@5.32.0/swagger-ui-standalone-preset.js" crossorigin="anonymous" defer
+    ></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.32.0/swagger-ui-bundle.js" crossorigin="anonymous" defer></script>
+
+    <script is:inline>
+      window.addEventListener("load", function () {
+        const ui = SwaggerUIBundle({
+          url: "/api/ace/evaluation/openapi.json",
+          dom_id: "#swagger-ui",
+          deepLinking: true,
+          presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+          plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+          layout: "StandaloneLayout",
+          defaultModelsExpandDepth: -1,
+          defaultModelExpandDepth: 3,
+          displayRequestDuration: true,
+          docExpansion: "list",
+          filter: true,
+          showExtensions: true,
+          validatorUrl: null,
+          tryItOutEnabled: false,
+          supportedSubmitMethods: [],
+          syntaxHighlight: { activated: true, theme: "monokai" },
+        })
+
+        window.ui = ui
+      })
+    </script>
+  </body>
+</html>

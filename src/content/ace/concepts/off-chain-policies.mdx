@@ -4,8 +4,8 @@ title: "Off-Chain Policy Execution"
 date: Last Modified
 metadata:
   description: "How ACE evaluates compliance rules offchain through managed wallet risk screening or custom integrations and delivers the result onchain as a permit."
-  datePublished: "2026-04-20"
-  lastModified: "2026-08-18"
+  datePublished: "2026-04-06"
+  lastModified: "2026-07-17"
 ---
 
 import { Aside, ClickToZoom } from "@components"
@@ -14,12 +14,18 @@ ACE policies are not limited to on-chain logic. Off-chain policy execution lets 
 
 ACE provides two ways to use offchain policies:
 
-- **Managed wallet risk screening** — An out-of-the-box policy that screens wallet addresses with TRM Wallet Screening. You configure the risk thresholds and call the ACE Evaluation API; Chainlink manages the CRE workflow and onchain permit delivery.
+- **Managed wallet risk screening (MVP)** — An out-of-the-box policy that screens wallet addresses with TRM Wallet Screening. You configure the risk thresholds and call the ACE Evaluation API; Chainlink manages the CRE workflow and onchain permit delivery.
 - **Custom offchain integrations** — An advanced model for internal compliance systems, custom policy endpoints, and other business logic. These integrations require infrastructure hosted by your organization and assistance from Chainlink during Beta.
 
 <Aside type="tip" title="Start with managed wallet screening">
-  To understand how managed TRM wallet screening works, see the flow below. For the conceptual overview of the
-  Evaluation API, see the [Evaluation API overview](/ace/reference/api/evaluation).
+  To configure the managed TRM policy, see [Managing Offchain Risk Policies
+  (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies). To request permits from an application,
+  see [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits).
+</Aside>
+
+<Aside type="caution" title="Managed service is an MVP">
+  Managed offchain risk policies and the Evaluation API are an MVP. Their interfaces and capabilities can change during
+  Beta. Contact your Chainlink representative before using the managed service and for help with setup.
 </Aside>
 
 ## Why off-chain policies?
@@ -46,7 +52,7 @@ A protected function that requires off-chain verification will revert if the cal
 1. ACE triggers a managed CRE workflow. The workflow selects the configured addresses and calls TRM Wallet Screening using the credential your organization stores in Vault DON.
 1. The workflow compares TRM's results with the policy's global risk threshold, unknown-risk setting, and category-specific thresholds.
 1. If an address is rejected, the evaluation becomes `rejected` and no permit is created.
-1. If the evaluation passes, the workflow delivers a permit through the Keystone Forwarder. The [CertifiedActionDONValidatorPolicy](/ace/reference/policy-library/certified-action-don-validator-policy) (CADV) stores it onchain.
+1. If the evaluation passes, the workflow delivers a permit through the Keystone Forwarder. The [CertifiedActionDONValidatorPolicy](/ace/reference/policy-library/certified-action-don-validator-policy) stores it onchain.
 1. Your application polls the Evaluation API. When the status becomes `ready`, it submits the protected transaction.
 1. The onchain policy matches the action to the stored permit and consumes it after the call succeeds.
 
@@ -91,7 +97,8 @@ From the policy engine's perspective, the CertifiedActionDONValidatorPolicy is j
 
 ## Related pages
 
-- [Evaluation API](/ace/reference/api/evaluation) — the runtime API for requesting managed offchain permits
+- [Managing Offchain Policies (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies) — configure managed TRM wallet screening
+- [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits) — integrate the Evaluation API into an application
 - [Policy Management](/ace/concepts/policy-management) — how policy chains and evaluation work
 - [Architecture](/ace/concepts/architecture) — how the on-chain and off-chain layers connect
 - [CertifiedActionDONValidatorPolicy](/ace/reference/policy-library/certified-action-don-validator-policy) — the on-chain contract reference

@@ -1,0 +1,133 @@
+---
+section: ace
+title: "Granting Evaluation Access"
+date: Last Modified
+metadata:
+  description: "Grant another organization access to request offchain permit evaluations against your protected target contract. Manage evaluation access grants for cross-organization compliance workflows."
+  datePublished: "2026-07-17"
+  lastModified: "2026-07-17"
+---
+
+import { Aside } from "@components"
+
+By default, only the organization that owns a target contract can request offchain permit evaluations for it through the [Evaluation API](/ace/guides/policy-manager/offchain-policies/request-offchain-permits). **Evaluation access grants** let you extend this capability to other organizations — for example, allowing a DEX or lending protocol to request permits against your token's compliance rules.
+
+When you grant evaluation access, the grantee organization can call the Evaluation API for the specified target and offchain policy. The evaluation runs against **your** managed CRE workflow and risk configuration — the grantee does not need its own offchain policy or TRM credential.
+
+<Aside type="caution" title="MVP feature">
+  Managed offchain risk policies and the Evaluation API are an MVP. Their interfaces and capabilities can change during
+  Beta. Contact your Chainlink representative before using this feature and for help with setup.
+</Aside>
+
+## Roles and concepts
+
+| <div style={{ width: "100px" }}>Term</div> | Meaning                                                                                                                                                                                                                                               |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Grantor**                                | The organization that **owns** the target contract and the offchain policy, and grants evaluation access.                                                                                                                                             |
+| **Grantee**                                | The organization that **receives** evaluation access. It can call the Evaluation API for the specified target and policy.                                                                                                                             |
+| **Access grant**                           | The link between an offchain policy–target pair and a grantee organization. It is either `active` or `revoked`.                                                                                                                                       |
+| **Org ID**                                 | The identifier of an organization. The grantee shares theirs with the grantor so the grantor can create the grant. Retrieve it with `GET /organizations/me` (<a href="/api/ace/coordinator/docs#/Organizations" target="_blank">Coordinator API</a>). |
+
+## What the grantee can and cannot do
+
+An active evaluation access grant lets the grantee:
+
+- **Call the Evaluation API** (`POST /evaluate`) for the granted target and offchain policy. The evaluation uses the grantor's managed workflow and TRM configuration.
+- **Poll evaluation status** (`GET /evaluate/{permitId}`) for evaluations the grantee started.
+- **List granted targets** using `GET /targets?include_granted=true` to discover targets other organizations have shared with them.
+
+The grantee **cannot**:
+
+- Modify the offchain policy, its risk thresholds, or the protection configuration.
+- Manage the target contract, its policy engine, or any other resource owned by the grantor.
+- Re-share evaluation access with a third organization.
+
+<Aside type="note" title="Only the owner manages grants">
+  Creating, listing, and revoking evaluation access grants requires **ownership** of both the offchain policy and the
+  target. A grantee cannot re-share access that was shared with it.
+</Aside>
+
+## Prerequisites
+
+Before granting evaluation access:
+
+1. You have a [managed offchain policy](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies) with `deployment_status: active`.
+1. The offchain policy has an active [protection](/ace/guides/policy-manager/manage-protections) on the target function.
+1. You know the grantee's **Org ID**. Ask them to retrieve it:
+
+```bash
+# Run by the grantee
+curl https://ace.api.chain.link/v1/organizations/me \
+  -H "Authorization: Apikey <GRANTEE_API_KEY>"
+```
+
+## Grant evaluation access
+
+As the target and policy owner, create the grant by specifying the offchain policy ID, target ID, and the grantee's Org ID:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/policies/<POLICY_ID>/targets/<TARGET_ID>/access-grants \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "grantee_org_id": "<GRANTEE_ORG_ID>"
+  }'
+```
+
+The response is the created grant:
+
+```json
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "grantee_org_id": "org-456",
+  "grantor_org_id": "org-123",
+  "status": "active",
+  "granted_at": 1800000000,
+  "revoked_at": null
+}
+```
+
+## View who has access
+
+List the active and past grants for a specific offchain policy and target pair:
+
+```bash
+curl https://ace.api.chain.link/v1/policies/<POLICY_ID>/targets/<TARGET_ID>/access-grants \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+Each entry includes the grantee, the status (`active` or `revoked`), and timestamps, giving you an audit trail of who was granted access and when.
+
+## Discover granted targets (grantee)
+
+As a grantee, include `include_granted=true` when listing targets to see targets other organizations have shared with you, alongside your own:
+
+```bash
+curl "https://ace.api.chain.link/v1/targets?include_granted=true" \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+Once you can see a granted target, you can call the Evaluation API for it the same way you would for your own targets. See [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits) for the full evaluation workflow.
+
+## Revoke access
+
+As the policy and target owner, revoke a grant by setting its status to `revoked`:
+
+```bash
+curl -X PATCH \
+  https://ace.api.chain.link/v1/policies/<POLICY_ID>/targets/<TARGET_ID>/access-grants/<GRANTEE_ORG_ID> \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "status": "revoked"
+  }'
+```
+
+Revocation takes effect immediately. The grantee can no longer request evaluations for this target and policy. The grant record is retained with a `revoked_at` timestamp for audit purposes. To restore access later, create a new grant.
+
+## Related pages
+
+- [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits) — call the Evaluation API and submit the protected transaction
+- [Managing Offchain Policies (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies) — configure TRM screening and attach protections
+- [External Registries](/ace/guides/identity-manager/external-registries) — a similar grant model for sharing identity and credential registries
+- [Coordinator API Reference](/api/ace/coordinator/docs) — full API schema

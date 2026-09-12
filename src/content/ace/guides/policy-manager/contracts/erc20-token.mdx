@@ -1,0 +1,102 @@
+---
+section: ace
+title: "Building an ERC-20 Compliance Token"
+date: Last Modified
+metadata:
+  description: "Build and deploy a policy-protected ERC-20 token using the Chainlink ACE reference implementation: token features, frozen token behavior, deployment patterns, and policy setup."
+  datePublished: "2026-03-31"
+  lastModified: "2026-03-31"
+---
+
+import { Aside } from "@components"
+
+The `ComplianceTokenERC20` is a ready-to-deploy, policy-protected ERC-20 token provided as an ACE reference implementation. It inherits `PolicyProtectedUpgradeable`, routes every state-changing function through a PolicyEngine, and is designed for deployment behind a proxy.
+
+For a comparison with the ERC-3643 variant and guidance on which to choose, see [Building a New Contract](/ace/guides/policy-manager/contracts/new-contract#choosing-between-erc-20-and-erc-3643).
+
+## What makes it ACE-compatible
+
+The token satisfies all the requirements described in [Making Your Contract ACE-Compatible](/ace/guides/policy-manager/contracts/ace-compatible):
+
+1. **Inherits `PolicyProtectedUpgradeable`** — The contract calls `__PolicyProtected_init` during initialization, which sets the contract owner and connects it to a PolicyEngine.
+1. **All state-changing functions are policy-protected** — Every function that modifies balances, allowances, or frozen state carries the `runPolicy` or `runPolicyWithContext` modifier. The PolicyEngine evaluates all attached policies before the function body executes.
+1. **ERC-7201 namespaced storage** — All token state lives in a dedicated `ComplianceTokenStoreERC20` storage struct, following the [ERC-7201](https://eips.ethereum.org/EIPS/eip-7201) pattern for safe upgradeable storage.
+
+## Protected functions
+
+Every state-changing function on the token is policy-protected. The [`runPolicy` modifier](/ace/concepts/policy-management#the-policy-execution-flow) intercepts each call and routes it through the PolicyEngine, which evaluates all attached policies before the function body executes. Functions that need to pass additional context (such as offchain signatures or metadata) use [`runPolicyWithContext`](/ace/concepts/policy-management#the-context-parameter) instead, which forwards a `bytes context` parameter to every policy in the chain.
+
+### ERC-20 standard
+
+| Function                         | <div style="width: 100px;">Modifier</div> | Description                                                      |
+| -------------------------------- | ----------------------------------------- | ---------------------------------------------------------------- |
+| `transfer(to, amount)`           | `runPolicy`                               | Transfer tokens from the caller to another address.              |
+| `transferFrom(from, to, amount)` | `runPolicy`                               | Transfer tokens on behalf of another address using an allowance. |
+| `approve(spender, amount)`       | `runPolicy`                               | Set an allowance for a spender.                                  |
+
+### Minting and burning
+
+| Function                 | Modifier    | Description                                      |
+| ------------------------ | ----------- | ------------------------------------------------ |
+| `mint(to, amount)`       | `runPolicy` | Create new tokens and assign them to an address. |
+| `burn(amount)`           | `runPolicy` | Destroy tokens from the caller's balance.        |
+| `burnFrom(from, amount)` | `runPolicy` | Destroy tokens from another address.             |
+
+### Administrative and compliance
+
+| Function                                   | <div style="width: 170px;">Modifier</div> | Description                                                                                      |
+| ------------------------------------------ | ----------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `freeze(account, amount, context)`         | `runPolicyWithContext`                    | Freeze a specific amount of tokens on an account. Frozen tokens cannot be transferred or burned. |
+| `unfreeze(account, amount, context)`       | `runPolicyWithContext`                    | Unfreeze a previously frozen amount on an account.                                               |
+| `forceTransfer(from, to, amount, context)` | `runPolicyWithContext`                    | Administratively move tokens between accounts, subject to frozen balance checks.                 |
+
+<Aside type="note" title="Context parameter">
+  Functions that accept a `bytes context` parameter use `runPolicyWithContext`, which forwards the context to the
+  PolicyEngine. Policies can use this context for additional validation — for example, verifying an offchain signature
+  or passing metadata about the operation. See [The context
+  parameter](/ace/concepts/policy-management#the-context-parameter) for details on both methods of passing context.
+</Aside>
+
+## Frozen token behavior
+
+`ComplianceTokenERC20` uses a **strict preservation** model for frozen tokens:
+
+- **Available balance** = total balance - frozen balance. Every transfer, burn, and force transfer checks that the sender has sufficient _unfrozen_ balance and reverts if not.
+- **No automatic unfreezing** — Frozen tokens remain frozen during all operations. An administrator must explicitly call `unfreeze` before those tokens can be moved or burned.
+- **Pre-freezing** — Tokens can be frozen on an account before they are received. The frozen amount is tracked independently from the balance, so an admin can set a frozen amount in advance and the restriction takes effect as soon as tokens arrive.
+
+This model provides maximum compliance control: every change to frozen status is an explicit, auditable administrative action.
+
+<Aside type="tip" title="ERC-3643 handles this differently">
+  The [ERC-3643 compliance token](/ace/guides/policy-manager/contracts/erc3643-token) uses automatic unfreezing — burns
+  and force transfers can proceed even if the unfrozen balance is insufficient, because the contract automatically
+  reduces the frozen amount. See [Building a New
+  Contract](/ace/guides/policy-manager/contracts/new-contract#frozen-token-behavior-explained) for a detailed
+  comparison.
+</Aside>
+
+## Storage layout
+
+All token state is stored in `ComplianceTokenStoreERC20`, which uses ERC-7201 namespaced storage at a deterministic slot:
+
+| Field            | Type                                              | Description                       |
+| ---------------- | ------------------------------------------------- | --------------------------------- |
+| `name`           | `string`                                          | Token name.                       |
+| `symbol`         | `string`                                          | Token symbol.                     |
+| `decimals`       | `uint8`                                           | Decimal precision for display.    |
+| `totalSupply`    | `uint256`                                         | Total supply of tokens.           |
+| `balances`       | `mapping(address => uint256)`                     | Per-account token balances.       |
+| `allowances`     | `mapping(address => mapping(address => uint256))` | Per-account spender allowances.   |
+| `frozenBalances` | `mapping(address => uint256)`                     | Per-account frozen token amounts. |
+| `data`           | `mapping(bytes32 => bytes)`                       | Generic storage for extensions.   |
+
+## CCIP compatibility
+
+The contract exposes `getCCIPAdmin()`, which returns the contract owner. This enables integration with [Chainlink CCIP](/ccip) for cross-chain token transfers by identifying the admin authorized to configure the token's CCIP settings.
+
+## Reference implementation
+
+The full source code for the ERC-20 compliance token:
+
+- [ComplianceTokenERC20.sol](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/tokens/erc-20/src/ComplianceTokenERC20.sol) — Token contract with all protected functions and frozen token logic.
+- [ComplianceTokenStoreERC20.sol](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/tokens/erc-20/src/ComplianceTokenStoreERC20.sol) — ERC-7201 namespaced storage layout.

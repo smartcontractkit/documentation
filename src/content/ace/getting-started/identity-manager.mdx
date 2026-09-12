@@ -1,0 +1,191 @@
+---
+section: ace
+title: "Identity Manager Quick Start"
+date: Last Modified
+metadata:
+  description: "Get started as an Identity Manager with Chainlink ACE: create your account, set up identity and credential registries, register identities, issue credentials, and verify compliance via the Reporting Manager."
+  datePublished: "2026-04-06"
+  lastModified: "2026-05-26"
+---
+
+import { Aside, ClickToZoom, MethodTabs } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+This guide walks you through the **Identity Manager** — the ACE component for managing identity registries, registering cross-chain identities (CCIDs), and issuing credentials such as Proof of Identity, accreditation proofs, or sanctions clearance. By the end you will have identities registered and credentials issued on a supported network.
+
+### 1. Prerequisites
+
+- Familiarity with [Cross-Chain Identity](/ace/concepts/cross-chain-identity) concepts — CCIDs, credential registries, credential types, and credential sources
+- **Must-read before proceeding:** [Signing & Ownership Model](/ace/concepts/signing-ownership) — understand how ACE manages keys, who owns what, and how the delegated trust model works
+
+### 2. Account setup
+
+Complete the [Account Setup](/ace/getting-started/account-setup) steps — organization creation, API key generation, and CRE Connect Wallet deployment — before proceeding.
+
+### 3. Set up your registries
+
+A **registry** is the top-level resource that groups an **identity registry** and a **credential registry**, deployed together on each chain you operate on.
+
+- The identity registry maps wallet addresses to cross-chain identities (CCIDs)
+- The credential registry stores credential attestations linked to those CCIDs
+
+See [Managing Registries](/ace/guides/identity-manager/manage-registries) for full details.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink App](https://app.chain.link), navigate to **Compliance > Identity Manager** in the left sidebar.
+    1. Click the **Add a new registry** card.
+    1. Enter a **Registry name** and optional **Description**, then click **Continue**.
+    1. Select the networks you want to deploy the registry to, then click **Deploy registry**. ACE deploys the identity and credential registry contracts on each selected chain.
+    1. Once deployed, click the **gear icon** next to the registry name to view the on-chain contract addresses for each identity and credential registry.
+       <ClickToZoom
+         src="/images/ace/identity-manager-getting-started/registry-1.webp"
+         caption="Click the gear icon to view registry contract addresses."
+       />
+  </Fragment>
+  <Fragment slot="api">
+    Create a registry with a `POST` request:
+
+    ```bash
+    curl -X POST "https://ace.api.chain.link/v1/registries" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "My First Registry",
+        "description": "Identity and credential registries for my organization",
+        "identity_registries": [
+          { "name": "Identity Registry - Sepolia", "description": "Identity registry on Ethereum Sepolia", "chain_selector": "16015286601757825753" },
+          { "name": "Identity Registry - Arbitrum", "description": "Identity registry on Arbitrum Sepolia", "chain_selector": "3478487238524512106" }
+        ],
+        "credential_registries": [
+          { "name": "Credential Registry - Sepolia", "description": "Credential registry on Ethereum Sepolia", "chain_selector": "16015286601757825753" },
+          { "name": "Credential Registry - Arbitrum", "description": "Credential registry on Arbitrum Sepolia", "chain_selector": "3478487238524512106" }
+        ]
+      }'
+    ```
+
+    ACE deploys the identity and credential registry contracts on each specified chain. The response includes the registry `id` you will use in subsequent steps.
+
+  </Fragment>
+</MethodTabs>
+
+### 4. Define credential types
+
+Credential types represent the categories of attestation you issue — for example, Proof of Identity, accredited investor, or sanctions clearance. Each credential type is scoped to a specific registry and identified by a `credential_type` string that gets hashed on-chain to a `credential_type_hash`. This value is hashed using keccak256 — the standard cryptographic hash function used by Ethereum and EVM-compatible blockchains — and the resulting `credential_type_hash` is what gets recorded on-chain and referenced by policies.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink App](https://app.chain.link), navigate to **Compliance > Identity Manager** and click on your registry card.
+    1. Select the **Credential types** tab, then click **+ Add credential type**.
+    1. In the drawer that opens, fill in:
+       - **Internal Display Name** — A label used by your team to identify and track this credential (not stored on-chain).
+       - **Credential** — The credential type string (e.g., `proof_of_identity_basic`).
+       - **Description** — Optional description.
+    1. Click **Save**.
+  </Fragment>
+  <Fragment slot="api">
+    Create a credential type with a `POST` request. The `registry_id` was returned in the response when you created your registry. To retrieve it later, list your registries with `GET /registries`.
+
+    ```bash
+    curl -X POST "https://ace.api.chain.link/v1/credential-types" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "registry_id": "<YOUR_REGISTRY_ID>",
+        "title": "KYC Verification",
+        "credential_type": "kyc_basic",
+        "description": "Basic KYC identity verification"
+      }'
+    ```
+
+    You can list existing credential types for a registry at any time:
+
+    ```bash
+    curl -X GET "https://ace.api.chain.link/v1/credential-types?registry_id=a1b2c3d4-5678-9abc-def0-1234567890ab" \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+### 5. Register identities and issue credentials
+
+A cross-chain identity (CCID) aggregates one or more wallet addresses across EVM chains into a single logical entity. When you register an identity, you provide the on-chain addresses that belong to that entity and ACE writes the mapping into the identity registry on each relevant chain.
+
+A single CCID can span multiple chains and addresses — for example, one entity might have wallets on Ethereum, Arbitrum, and Avalanche that all resolve to the same CCID.
+
+Credentials are attestations linked to a registered identity. During Beta, ACE uses an **attestation-only** model — the Identity Manager asserts that a credential holds for a given CCID, and the credential registry records that attestation on-chain.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    The Platform UI lets you register an identity and assign credentials in a single flow:
+
+    1. In the [Chainlink App](https://app.chain.link), navigate to **Compliance > Identity Manager** and click on your registry card.
+    1. Click **+ Add identity**.
+    1. Fill in:
+       - **Alias** — An internal name for this identity. This is never written on-chain.
+       - **Metadata** — Optional internal reference data, also never written on-chain.
+    1. Click **Continue**.
+    1. Enter the wallet address(es) for the identity on each network where your registry is deployed. Click **Add more** to add multiple addresses per network or addresses on different networks.
+    1. Click **Continue**.
+    1. Assign credential types to this identity and set an expiration date for each credential. The expiration is optional — if omitted, the credential does not expire.
+    1. Click **Deploy identity**. ACE registers the identity and issues the assigned credentials on-chain in one transaction.
+
+  </Fragment>
+  <Fragment slot="api">
+    Register an identity and issue credentials in a single `POST` request by including the optional `credentials` array:
+
+    ```bash
+    curl -X POST "https://ace.api.chain.link/v1/identities" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "title": "My First Identity",
+        "entity_id": "user-12345",
+        "registry_id": "<YOUR_REGISTRY_ID>",
+        "description": "Test identity for getting started",
+        "onchain_identities": [
+          {
+            "address": "0x1234567890abcdef1234567890abcdef12345678",
+            "chain_selector": "16015286601757825753"
+          }
+        ],
+        "credentials": [
+          {
+            "credential_type_id": "<YOUR_CREDENTIAL_TYPE_ID>",
+            "expires_at": 1800000000
+          }
+        ]
+      }'
+    ```
+
+    The `credentials` array is optional — omit it to register an identity without credentials. Within each credential, `expires_at` is also optional (a Unix timestamp); if omitted, the credential does not expire.
+
+    You can also issue credentials separately after the identity is created using `POST /credentials`. See [Managing Credentials](/ace/guides/identity-manager/manage-credentials) for details.
+
+    <Aside type="tip" title="Bulk import identities">
+      Need to register many identities at once? Use the batch endpoint to create multiple identities (with credentials) in a single atomic request. See [Bulk import identities](/ace/guides/identity-manager/manage-identities#bulk-import-identities) for details.
+    </Aside>
+
+  </Fragment>
+</MethodTabs>
+
+### 6. Verify via Reporting
+
+After issuing credentials, confirm they are visible and queryable through the **Reporting Manager**. The Reporting Manager provides a read-only view of all identities and credentials across your registries, which Policy Managers rely on when evaluating identity-based policies at transaction time.
+
+- Open the <a href="/api/ace/reporting/docs" target="_blank">Reporting API</a> to query credentials by identity, entity, or registry
+- See [Reporting](/ace/concepts/reporting) for details on how reporting data flows into policy evaluation
+
+Once credentials appear in reporting, Policy Managers can reference them in identity-based policies such as the [Credential Registry Identity Validator](/ace/reference/policy-library/credential-registry-identity-validator-policy).
+
+### 7. What's next
+
+Explore the detailed guides for each Identity Manager workflow:
+
+- [Managing Identities](/ace/guides/identity-manager/manage-identities) — add, update, and remove CCIDs and their on-chain address mappings
+- [Managing Credential Types](/ace/guides/identity-manager/manage-credential-types) — create and organize the credential categories your registry supports
+- [Managing Credentials](/ace/guides/identity-manager/manage-credentials) — issue, revoke, and set expiration on credentials
+- [Managing Registries](/ace/guides/identity-manager/manage-registries) — view and manage your identity and credential registry deployments

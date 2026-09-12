@@ -1,0 +1,104 @@
+---
+section: ace
+title: "ACE API Overview"
+date: Last Modified
+metadata:
+  description: "Overview of the Chainlink ACE Coordinator, Evaluation, and Reporting APIs."
+  datePublished: "2026-03-31"
+  lastModified: "2026-07-17"
+---
+
+import { Aside } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+ACE exposes three APIs. They share the same host and authentication model, but serve different purposes and use different base paths.
+
+| API                  | Purpose                                                | Access     | Reference                                                                         |
+| -------------------- | ------------------------------------------------------ | ---------- | --------------------------------------------------------------------------------- |
+| Coordinator API      | Create, update, and delete ACE resources.              | Read-write | <a href="/api/ace/coordinator/docs" target="_blank">Coordinator API Reference</a> |
+| Evaluation API (MVP) | Start and monitor managed offchain policy evaluations. | Read-write | <a href="/api/ace/evaluation/docs" target="_blank">Evaluation API Reference</a>   |
+| Reporting API        | Query onchain state and transaction history.           | Read-only  | <a href="/api/ace/reporting/docs" target="_blank">Reporting API Reference</a>     |
+
+## Authentication
+
+All API requests require an API key passed in the `Authorization` header. Create your API key in the [Chainlink App](https://app.chain.link) — see [Account Setup](/ace/getting-started/account-setup#3-create-an-api-key) for instructions.
+
+```bash
+curl https://ace.api.chain.link/v1/<endpoint> \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+<Aside type="caution" title="API key security">
+  Your API key grants full read-write access to your organization's ACE resources. Never share it, commit it to source
+  control, or expose it in client-side code.
+</Aside>
+
+## Base URLs
+
+The APIs use different base paths on the same host:
+
+| API                  | Base URL                                   |
+| -------------------- | ------------------------------------------ |
+| Coordinator API      | `https://ace.api.chain.link/v1`            |
+| Evaluation API (MVP) | `https://ace.api.chain.link/v1/evaluation` |
+| Reporting API        | `https://ace.api.chain.link/v1/reporting`  |
+
+## Coordinator API
+
+The Coordinator API is the management interface for all ACE resources. Everything available in the [Platform UI](https://app.chain.link) is also available through this API.
+
+**Policy Manager operations:**
+
+- Create and manage CRE Connect Wallets
+- Deploy and configure PolicyEngine instances
+- Create and configure policy instances (from the [Policy Library](/ace/reference/policy-library))
+- Register targets and attach policy protections to function selectors
+- Manage extractors
+- Create and configure [Data Validators](/ace/guides/policy-manager/manage-data-validators) for credential-data checks
+
+**Identity Manager operations:**
+
+- Create and manage identity and credential registries
+- Register cross-chain identities (CCIDs) and map wallet addresses
+- Define credential types (optionally typed with data schemas) and issue credentials
+
+The Coordinator API also exposes cross-organization access grants (sharing registries and policies), organization settings, and off-chain policy management. For the full schema, parameters, and request/response examples, see the <a href="/api/ace/coordinator/docs" target="_blank">Coordinator API Reference</a>.
+
+## Evaluation API (MVP)
+
+The Evaluation API is the runtime interface for [managed offchain risk policies](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies). An application uses it to:
+
+<Aside type="caution" title="MVP API">
+  The Evaluation API and managed offchain risk policies are an MVP. Their interfaces and capabilities can change during
+  Beta. Contact your Chainlink representative before integrating this API and for help with setup.
+</Aside>
+
+- Request a TRM wallet risk evaluation for a specific caller, target, function, chain, and set of permit parameters.
+- Receive the deterministic permit ID for that evaluation.
+- Poll the evaluation through `evaluating`, `approving`, and a terminal status.
+- Submit the protected transaction after the status becomes `ready` and the permit is stored onchain.
+
+For the integration flow, ABI encoding requirements, idempotency, and retry guidance, see [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits). For the full schema, see the <a href="/api/ace/evaluation/docs" target="_blank">Evaluation API Reference</a>.
+
+## Reporting API
+
+The Reporting API provides read-only access to onchain state indexed by Chainlink's infrastructure. Use it for audit trails, compliance verification, and monitoring. For a detailed explanation of the data model and indexing pipeline, see [Reporting Manager](/ace/concepts/reporting).
+
+**Queryable resources:**
+
+- **Transactions** — every policy engine evaluation, including the policies that ran, parameters extracted, and outcomes. Filterable by chain, time range, sender, target, function selector, and policy address.
+- **Policies** — deployed policy instances and their configuration state at any point in time.
+- **Targets** — protected contracts and their full policy wiring (engines, selectors, extractors, policies, defaults).
+- **Identities** — identity records, registry memberships, and credentials. Optionally includes full credential details.
+- **Permits** — off-chain policy permits delivered on-chain (from off-chain policy evaluation).
+- **Registry usage** — registry usage events, for metering and monitoring.
+
+The Policies, Targets, and Identities endpoints accept an `as_of` timestamp for point-in-time historical queries. The Transactions endpoint uses `from`/`to` time range filters.
+
+<Aside type="note" title="API-only reporting">
+  The Reporting Manager is API-only — there is no reporting UI. See [Beta Scope](/ace/beta-scope) for details.
+</Aside>
+
+For the full schema, parameters, and request/response examples, see the <a href="/api/ace/reporting/docs" target="_blank">Reporting API Reference</a>.
