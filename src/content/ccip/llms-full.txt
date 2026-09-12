@@ -4612,6 +4612,74 @@ All standard token pools (BurnMint, LockRelease) automatically call [`to_svm_tok
 
 ---
 
+# Cross-Chain Token Standard - Token Mint Authority
+Source: https://docs.chain.link/ccip/concepts/cross-chain-token/svm/token-mint-authority
+Last Updated: 2025-05-19
+
+This applies only for Burn And Mint Token Pools onboarded in CCIP
+
+## Mint Authority on Solana
+
+For CCIP to work, the token pool program onboarded must be able to mint tokens. Because of that, the pool signer PDA of the token pool program must be the mint authority.
+A PDA has no private key. Therefore, no individual, wallet, or external system can directly sign as this mint authority. Only the program from which the PDA was derived can authorize it to sign, and only while executing an instruction on Solana.
+
+### How minting works
+
+1. CCIP verifies and executes the incoming cross-chain message.
+2. The token pool program validates that the transfer is authorized and satisfies its configured controls.
+3. The token pool program invokes the Solana Token Program to mint the token.
+4. During this invocation, the Solana runtime allows the token pool program to sign on behalf of its mint-authority PDA.
+5. The Token Program verifies that this PDA matches the mint authority configured on the token mint before issuing any tokens.
+6. The mint authority cannot sign arbitrary transactions independently. It can only participate as a signer through the token pool program’s defined execution paths.
+
+### Why the address appears as “off-curve”
+
+PDAs are intentionally generated outside the Ed25519 cryptographic curve. This guarantees that no corresponding private key can exist.
+
+Solana derives a PDA deterministically from:
+
+- A program address
+- A defined set of seeds
+- A bump value
+
+*Only the program used in this derivation* can cause the PDA to be recognized as a signer by the Solana runtime. This is part of Solana’s native security model, documented in [Solana’s PDA documentation](https://solana.com/docs/core/pda).
+
+Therefore, the mint authority appearing as `“off-curve”` is expected and does not indicate an unknown or inaccessible private key.
+
+### Why the PDA may not appear as an initialized account
+
+A PDA does not need to hold data or be initialized as an on-chain account to act as a program signer.
+
+Creating an account at the PDA address would allocate storage and assign an account owner, but it would not change:
+
+- Which program derived the PDA
+- Which program can sign for it
+- The program logic governing minting
+- The security of the mint authority
+
+Initializing it only to improve explorer visibility would therefore add operational state without providing an additional security guarantee. Some explorers also cannot infer a PDA’s originating program or derivation seeds from the address alone.
+
+## Token Multisig as Mint Authority
+
+It can happen that the token needs to have another address able to mint, so when that's the case a Token Multisig Mint Authority needs to be used.
+
+The mint authority is an [SPL Token Multisig account](https://www.solana-program.com/docs/token#multisig-usage). It defines a set of authorized signers and the number of signatures required to approve minting.
+
+### How CCIP Minting Works
+
+When a token is transferred to Solana through CCIP:
+
+1. CCIP verifies and executes the incoming cross-chain message.
+2. The token pool program validates the transfer and its configuration.
+3. The token pool invokes the SPL Token Program to mint the token.
+4. The token pool program signs for its token pool signer PDA.
+5. The SPL Token Program verifies that the PDA is an authorized signer of the mint-authority multisig.
+6. The multisig’s configured signing requirements are applied before minting is authorized.
+
+*The CCIP token pool can therefore participate in token minting without storing or managing a private key.*
+
+---
+
 # Cross-Chain Token Standard - Integration Guide (SVM)
 Source: https://docs.chain.link/ccip/concepts/cross-chain-token/svm/integration-guide
 
@@ -68784,6 +68852,7 @@ This section provides detailed guidance for integrating tokens with Chainlink CC
 - **[Architecture](/ccip/concepts/cross-chain-token/svm/architecture)**: Understand the specific architecture for CCTs on SVM chains.
 - **[Tokens](/ccip/concepts/cross-chain-token/svm/tokens)**: Learn about the requirements and compatibility for your SPL tokens.
 - **[Token Pools](/ccip/concepts/cross-chain-token/svm/token-pools)**: Explore the different types of token pool programs and how to use them.
+- **[Token Mint Authority](/ccip/concepts/cross-chain-token/svm/token-mint-authority)**: Understand Solana Token Mint Authority in BnM Token Pool.
 - **[Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide)**: Determine your integration path based on mint authority control and deployment preferences. Includes decision tree and touch points with Chainlink governance.
 - **[Registration and Administration](/ccip/concepts/cross-chain-token/svm/registration-administration)**: Details on registering your token with CCIP and managing administrative roles on SVM.
 - **[Upgradability](/ccip/concepts/cross-chain-token/svm/upgradability)**: Information on upgrading token pool programs.
