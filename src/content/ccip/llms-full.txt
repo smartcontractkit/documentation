@@ -5893,32 +5893,63 @@ Emergency actions are scoped to a **specific token pool and lane**. They do not 
 
 ## Locking down a lane with minimal values
 
-To effectively stop bridging activity on a lane, you can configure rate limits with **very small capacity and refill values**.
+To stop bridging activity on a lane, configure rate limits with the smallest values your deployed pool version accepts.
 
-Because rate limits cannot be set to zero while enabled, the practical approach is to set:
+<Aside type="caution" title="Confirm your deployed TokenPool version">
+  Rate limit validation changed between TokenPool releases. Call `typeAndVersion()` on each deployed pool before you apply
+  any configuration described on this page.
 
-- **capacity** to the smallest transferable unit (for example, `1`)
-- **rate** to `1`
+  - **Pools reporting 1.6.1 or later** (including development stamps such as `1.6.x-dev`) — an enabled bucket is rejected
+    only when `rate > capacity`, so an enabled `capacity: 0`, `rate: 0` is accepted and pauses the lane.
+  - **Pools reporting versions before 1.6.1** — an enabled bucket is rejected when `rate >= capacity` or when `rate == 0`.
+    A configuration of `capacity: 1`, `rate: 1` reverts. Use at least `capacity: 2`, `rate: 1` on these releases. (Version
+    strings here are `1.5.1` or lower — a pool built from the 1.6.0 contracts release reports `1.5.1`.)
+  - **All releases from 1.4.0 onward** — a disabled bucket must have `capacity: 0` and `rate: 0`, otherwise the call
+    reverts.
+</Aside>
 
-This configuration allows only a negligible transfer before the bucket is depleted, causing subsequent transfers to fail.
+### Pools reporting 1.6.1 or later: pause the lane
 
-## Example configuration
-
-Conceptually, a lane can be locked down by calling `setChainRateLimiterConfig` with the following values:
+Pause the lane by keeping the rate limit **enabled** and setting both values to zero on the affected direction via
+`setChainRateLimiterConfig` (or `setChainRateLimiterConfigs` for several lanes at once):
 
 ```solidity
-outboundConfig = [true, 1, 1];
-inboundConfig  = [true, 1, 1];
+outboundConfig = [true, 0, 0];
+inboundConfig  = [true, 0, 0];
 ```
 
-Both inbound and outbound limits should be set to ensure transfers are blocked in both directions.
+This blocks all transfers in that direction — an inbound pause intentionally holds in-flight transfers — until you
+restore normal values.
+
+<Aside type="caution">
+  - Keep `isEnabled: true` when pausing. A disabled bucket (which requires `capacity: 0`, `rate: 0`) turns rate limiting
+    off entirely — the opposite of a pause. The flag decides what the zeros mean.
+  - Do not set `rate: 0` with a non-zero capacity: validation accepts it, but once the bucket depletes, transfers fail
+    with an arithmetic panic instead of a clean rate-limit error.
+</Aside>
+
+### Pools reporting versions before 1.6.1: use minimal values
+
+A full stop through rate limits is not possible on these pools: an enabled bucket is rejected when `rate >= capacity`
+or when `rate == 0`. Use the smallest accepted configuration, `capacity: 2`, `rate: 1`:
+
+```solidity
+outboundConfig = [true, 2, 1];
+inboundConfig  = [true, 2, 1];
+```
+
+This allows only a negligible trickle before the bucket is depleted, causing subsequent transfers to fail. The trickle
+that remains possible can be material for tokens with few decimals.
+
+In both cases, apply the configuration to **both inbound and outbound** limits so transfers are blocked in both
+directions.
 
 ## Important considerations
 
 When locking down a lane:
 
-- transfers may still succeed for a minimal amount before capacity is exhausted
-- behavior depends on the token's smallest unit
+- on pools reporting versions before 1.6.1, transfers may still succeed for a minimal amount, and behavior depends on
+  the token's smallest unit
 - the change takes effect immediately after the transaction is confirmed
 
 This approach is intended to **contain activity**, not to permanently disable rate limits.
@@ -6014,15 +6045,37 @@ Use this pattern during incidents, investigations, or maintenance when transfers
 
 ### Configuration pattern
 
-To lock down a lane:
+The correct values depend on the deployed token pool version. Call `typeAndVersion()` on each pool before applying
+either pattern.
 
-- enable the rate limit
-- set capacity to `1`
-- set refill rate to `1`
+On pools reporting `1.6.1` or later (including development stamps such as `1.6.x-dev`), pause the lane by keeping the
+rate limit enabled and setting both values to zero:
 
-Apply this configuration to **both inbound and outbound** limits for the lane.
+- set `isEnabled` to `true`
+- set `capacity` to `0`
+- set `rate` to `0`
 
-This allows only a negligible transfer before capacity is exhausted, causing subsequent transfers to fail.
+This blocks all transfers in that direction until you restore normal values.
+
+On pools reporting versions before `1.6.1` (version strings `1.5.1` or lower — a pool built from the 1.6.0 contracts
+release reports `1.5.1`), an enabled bucket is rejected when `rate >= capacity` or when `rate == 0`, so a full stop is
+not possible. Use the smallest accepted configuration:
+
+- set `isEnabled` to `true`
+- set `capacity` to `2`
+- set `rate` to `1`
+
+This allows only a negligible trickle before capacity is exhausted, causing subsequent transfers to fail. The trickle
+that remains possible can be material for tokens with few decimals.
+
+Apply the configuration to **both inbound and outbound** limits for the lane.
+
+<Aside type="caution">
+  - Keep `isEnabled: true` when pausing. The same zeros with `isEnabled: false` turn rate limiting off entirely — the
+    flag decides what the zeros mean (see the removing rate limits scenario below).
+  - On pools reporting `1.6.1` or later, do not set `rate: 0` with a non-zero capacity: validation accepts it, but once
+    the bucket depletes, transfers fail with an arithmetic panic instead of a clean rate-limit error.
+</Aside>
 
 ## Scenario: removing rate limits
 
@@ -6041,6 +6094,9 @@ To remove rate limits:
 - set `rate` to `0`
 
 Apply this configuration to both inbound and outbound limits.
+
+On pools reporting `1.6.1` or later, the same zeros with `isEnabled: true` pause the lane instead — the flag decides
+what the zeros mean.
 
 ## Important notes
 
@@ -10356,6 +10412,414 @@ The tutorials will implement the logic of this process, which involves deploying
   Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
   that are generated due to errors in code.
 </Aside>
+
+---
+
+# Cross-Chain Token (CCT) Operational Security (EVM)
+Source: https://docs.chain.link/ccip/tutorials/evm/cross-chain-tokens/operational-security
+Last Updated: 2026-08-29
+
+<Aside type="note" title="Talk to a CCIP expert">
+  If you require technical advice or wish to consult on your project's implementation, please contact a CCIP expert. Our
+  dedicated team is ready to support your projects and ensure their success. For expert guidance, visit the [Chainlink
+  CCIP Contact form](https://chain.link/ccip-contact).
+</Aside>
+
+This page covers the best practices the Chainlink team recommends for Cross-Chain Token (CCT) deployments on EVM chains. It is written for
+token developers who are enabling a token for CCIP or already operating one in production. Follow these practices for any
+CCT in production.
+
+Guidance here assumes CCIP v1.6.1 token pools. You are responsible for assessing which items apply to your own
+deployment and risk profile.
+
+<Aside type="caution" title="Token Pool Ownership">
+  Self-Administered Token Pools are deployed and managed directly by token developers, and are not controlled by Chainlink Labs, the Chainlink Foundation, or Chainlink node operators. Such token pools exist outside of the CCIP protocol and must be evaluated by users on a case-by-case basis. Please review [CCIP Service Responsibility](/ccip/service-responsibility) for more information.
+</Aside>
+
+<Aside type="caution" title="Confirm your deployed TokenPool version">
+  Rate limit validation changed between TokenPool releases a while back.
+  Users can call `typeAndVersion()` on each deployed pool before they apply any configuration described on this page.
+
+  - **Pools reporting versions before 1.6.1**: an enabled bucket is rejected when `rate >= capacity` or when `rate == 0`.
+    A configuration of `capacity: 1`, `rate: 1` will also revert.
+    Use at least `capacity: 2`, `rate: 1` on these releases. (Version strings here are `1.5.1` or lower: a pool built from the 1.6.0 contracts release reports `1.5.1`.)
+
+  - **Pools `1.6.1` or later**: an enabled bucket is rejected
+    only when `rate > capacity`, so `capacity: 1`, `rate: 1` and an enabled `capacity: 0`, `rate: 0` are both accepted.
+    For pausing a lane, see
+    [Distinguish an intentional pause from a misconfiguration](#distinguish-an-intentional-pause-from-a-misconfiguration).
+    - Basically, on versions `1.6.1` or later, a hard pause of the lane is allowed, with `0` tokens transferable. This is different from
+      earlier versions, where the minimum value of `rate` had to be at least `1`, thus preventing a hard pause, even if the amount allowed
+      was miniscule.
+</Aside>
+
+## Critical
+
+### Secure the roles that control your token and pools
+
+The token administrator, the token pool owner, and any address holding mint or burn rights can change how your token
+moves across chains. Each of these roles is held by whatever address you assign to it:
+
+- an externally owned account (EOA),
+- a multi-signature smart account,
+- or another contract.
+
+**Risk:** A single compromised private key is enough to redirect transfers, mint unbacked supply, or take control of
+your pools.
+
+**What should you do:**
+
+- Assign contract ownership, the CCIP administrator role, and mint and burn rights to a multi-signature smart account
+  such as a [Safe Smart Account](https://github.com/safe-global/safe-smart-account), using a threshold of at least
+  3-of-n, commensurate with the value at risk. We recommend a minimum of 5 signers to ensure sufficient decentralization and security.
+- Add a timelock so that critical actions may be reviewed and cancelled with a sufficient time buffer.
+- The multi-signature account and timelock should own the token, the pools,
+  and any related contracts from day one, rather than being retrofitted after launch.
+- Remove departed or compromised signers promptly, and confirm routinely that every remaining signer still
+  controls their key.
+- Distribute signers so a quorum is reachable quickly during an incident, rather than concentrating them in one team,
+  location, or time zone.
+- Assign and transfer the administrator role through the TokenAdminRegistry. See
+  [Registration and Administration](/ccip/concepts/cross-chain-token/evm/registration-administration) and the
+  [TokenAdminRegistry API reference](/ccip/api-reference/evm/v1.6.1/token-admin-registry).
+- For executing configuration changes from a multi-signature account, see
+  [Executing with a Multisig](/ccip/concepts/rate-limit-management/executing-with-a-multisig) and
+  [Prerequisites and Permissions](/ccip/concepts/rate-limit-management/prerequisites-and-permissions).
+
+| Risk        | Setup                                                                                                       |
+| ----------- | ----------------------------------------------------------------------------------------------------------- |
+| 🟢 Lowest   | Multi-signature smart account (3-of-n or higher) with a timelock providing a propose, review, cancel window |
+| 🟢 Low      | Multi-signature smart account, 3-of-n or higher, without a timelock                                         |
+| 🟡 Medium   | Smart contract with unclassified governance                                                                 |
+| 🔴 High     | EOA (single private key control)                                                                            |
+| 🔴 Critical | EOA holding mint rights                                                                                     |
+
+### Keep locked supply at or above remote minted supply
+
+In a Lock and Mint architecture, tokens are locked in a LockRelease pool on the issuing chain and minted on remote
+chains. The locked balance is the only backing for that remote supply.
+
+**Risk:** If locked supply falls below the total minted across remote chains, transfers back to the issuing chain fail
+and users cannot withdraw until the shortfall is covered.
+
+**What should you do:**
+
+- Continuously compare the locked balance held by the pool on the issuing chain against the sum of total supply across
+  every remote burn and mint chain.
+- Alert on the ratio between them, not only on the absolute balance, and set thresholds that trigger action well before
+  the pool is exhausted.
+- See [Tokens](/ccip/concepts/cross-chain-token/evm/tokens) and the
+  [LockReleaseTokenPool API reference](/ccip/api-reference/evm/v1.6.1/lock-release-token-pool).
+
+### Configure both sides of every lane symmetrically
+
+A lane works only when both pools work in tandem with each other. The configuration for the remote pool on the other end is applied independently on each chain, so the
+two sides can drift apart without any error being raised at the time of the change.
+
+**Risk:** Mismatched configuration causes transfers to revert, or to become stuck in flight until the configuration is
+corrected.
+
+**What should you do:**
+
+- On the source pool, confirm the configured remote pool addresses (`getRemotePools`) resolve to the actual destination
+  pool address.
+- On the source pool, confirm the configured remote token address (`getRemoteToken`) matches the token the destination
+  pool reports (`getToken`).
+- Confirm the destination chain has a pool registered against the token in the TokenAdminRegistry (`setPool`, verified
+  with `getPool`).
+- Apply chain updates on both pools (`applyChainUpdates`), with matching chain selectors, before enabling traffic on the
+  lane.
+- See [Registration and Administration](/ccip/concepts/cross-chain-token/evm/registration-administration), the
+  [TokenPool API reference](/ccip/api-reference/evm/v1.6.1/token-pool), and the
+  [TokenAdminRegistry API reference](/ccip/api-reference/evm/v1.6.1/token-admin-registry).
+
+### Keep siloed lanes isolated from non-hub chains
+
+A siloed liquidity design isolates each remote chain's liquidity to a designated hub chain. Connecting a siloed lane to
+any network other than its hub breaks that isolation.
+
+**Risk:** Cross-silo connections corrupt accounting and can result in stuck transfers or loss of funds.
+
+**What should you do:**
+
+- Review every remote chain configured on a siloed pool and remove any chain that is not the designated
+  hub, using `applyChainUpdates` with the chain selector in the removal list.
+
+### Account for decimal differences between chains
+
+Token decimals are set independently on each chain where your token is deployed. CCIP converts amounts during transfer,
+and rate limit values are denominated in the token's smallest unit on the chain the bucket applies to.
+
+**Risk:** Mismatched decimals can cause transfers to fail, or cause a rate limit to throttle at a value orders of
+magnitude away from the one you intended to set.
+
+**What should you do:**
+
+- Use matching decimals on every chain where your token is deployed whenever you can.
+- Where decimals differ, configure every rate limit in the smallest unit of the chain that bucket applies to, and verify the
+  resulting value against the amount you intended.
+- See [Token Units and Decimals](/ccip/concepts/rate-limit-management/token-units-and-decimals) and
+  [Token Pools](/ccip/concepts/cross-chain-token/evm/token-pools).
+
+### Do not let source outbound capacity exceed destination inbound capacity
+
+Outbound capacity is consumed on the source chain when tokens are locked or burned. Inbound capacity is consumed on the
+destination chain when tokens are released or minted. They are separate buckets and are configured independently.
+
+**Risk:** A transfer that passes the source outbound limit but exceeds the destination inbound limit is stuck in flight
+until inbound capacity becomes available.
+
+**What should you do:**
+
+- Size destination inbound capacity to absorb the full outbound capacity of every source lane pointing at
+  it, and re-verify the relationship after every change to either side.
+
+- See [How Rate Limits Work](/ccip/concepts/rate-limit-management/how-rate-limits-work) and
+  [Update Rate Limits](/ccip/concepts/rate-limit-management/update-rate-limits).
+
+### Enable rate limits on every production lane
+
+Token pool rate limits are the primary in-protocol control over how much value can move on a lane within a given window.
+A disabled bucket applies no volume ceiling in that direction.
+
+**Risk:** Without rate limits, a compromise elsewhere in your system can move the full transferable supply through CCIP
+before you are able to intervene.
+
+**What should you do:**
+
+- Enable both inbound and outbound rate limits on every production lane, and confirm the deployed values
+  match what you intended.
+- See [Rate Limit Management](/ccip/concepts/rate-limit-management/overview) and
+  [Inspect Current Rate Limits](/ccip/concepts/rate-limit-management/inspect-current-rate-limits).
+
+### Prepare an emergency pause path before you need it
+
+Rate limit changes are your main lever during an incident, and they are only useful if you can execute them quickly.
+The owner path behind a multi-signature account and timelock is slow by design.
+
+**Risk:** Without a prepared fast path, pausing a lane takes as long as your slowest governance process while an
+incident drains value in minutes.
+
+**What should you do:**
+
+- Give the rate limit admin role to signers who can execute within minutes. See
+  [Delegate rate limit changes to the rate limit admin role](#delegate-rate-limit-changes-to-the-rate-limit-admin-role).
+- The role can raise limits as well as lower them, so scope what your fast path can do.
+- Prepare the logistics in advance: which lanes, which values for your deployed pool version (see
+  [Distinguish an intentional pause from a misconfiguration](#distinguish-an-intentional-pause-from-a-misconfiguration)),
+  who executes, and how the decision to lift it is made.
+- Rehearse the runbook on a testnet lane regularly.
+
+## Strongly recommended
+
+### Remove stale remote pool addresses after a migration
+
+Zero-downtime pool upgrades temporarily configure more than one remote pool address for a chain so that in-flight
+messages from the previous pool can still be processed.
+
+**Risk:** A deprecated pool left configured continues to be accepted as a message source, and may contain faulty or
+unintended logic.
+
+**What should you do:**
+
+- Once all in-flight messages from the old pool have settled, remove the stale remote pool address with
+  `removeRemotePool`.
+- Confirm there are no pending or failed transactions referencing the old pool in the
+  [CCIP Explorer](/ccip/tools-resources/ccip-explorer) before removing it.
+- Seen [Upgradability](/ccip/concepts/cross-chain-token/evm/upgradability) and the
+  [TokenPool API reference](/ccip/api-reference/evm/v1.6.1/token-pool).
+
+### Clear an unintended pending token administrator or owner
+
+Transferring the token administrator or owner role is a two-step process. Until the proposed address accepts, the transfer sits
+pending and can be accepted at any time.
+
+**Risk:** An address proposed in error, or one that is no longer trusted, can take the administrator or owner role whenever it
+chooses.
+
+**What should you do:**
+
+- Cancel an unintended transfer by calling `transferAdminRole(localToken, address(0))` on the
+  TokenAdminRegistry. This clears the pending administrator without changing the active one. See the
+  [TokenAdminRegistry API reference](/ccip/api-reference/evm/v1.6.1/token-admin-registry).
+- Cancel an unintended transfer of the owner role by calling `transferOwnership(address(0))` on the relevant contract.
+  This clears the pending owner without changing the active one. See the [Ownable API reference](https://docs.openzeppelin.com/contracts/4.x/api/access#Ownable).
+
+### Restrict burn and mint rights to the active pool
+
+Mint and burn permissions on your token determine who can change the supply. In a CCIP deployment, only the active token
+pool needs them for cross-chain operation.
+
+**Risk:** Any additional address holding mint rights can create unbacked supply; any address holding burn rights can
+destroy user balances.
+
+**What should you do:**
+
+- Enumerate every address holding mint or burn permissions and revoke each one that is not the active
+  token pool or an owner-like administrative role you have deliberately retained. Re-run this audit after every pool
+  migration. See [Tokens](/ccip/concepts/cross-chain-token/evm/tokens).
+
+### Remove lanes pointing at chains the router does not support
+
+A pool can be configured with a remote chain selector that the CCIP router does not currently serve.
+
+**Risk:** The lane may appear configured while transfers revert. If that chain is later added to the router, the lane
+becomes live without a deliberate decision to enable it.
+
+**What should you do:**
+
+- Validate every configured chain selector against the [CCIP Directory](/ccip/directory), and remove any
+  remote chain that was not intentionally configured.
+
+### Keep `destGasOverhead` consistent across lanes
+
+`destGasOverhead` covers the gas your token pool consumes on the destination chain. It is part of the token transfer
+fee configuration that CCIP maintains for your token; for current pool versions (`<2.0`), non-default values are applied by
+Chainlink Labs on your behalf. Using a non-default value is justified only when your pool or token costs more to
+execute.
+
+**Risk:** An insufficient value causes transfers to fail automatic execution and require manual execution. An
+unnecessarily high value causes users to overpay. Inconsistent values across lanes pointing at the same destination
+usually indicate a configuration error.
+
+**What should you do:**
+
+- Test that token transfers execute automatically on every configured lane before going to production.
+- Include first-time receivers in that test. An account that has never held your token can cost more gas.
+- Use consistent values across lanes pointing at the same destination unless you have a documented reason not to.
+- See [Token Pools](/ccip/concepts/cross-chain-token/evm/token-pools) and
+  [Network Specific](/ccip/tools-resources/network-specific).
+
+### Give inbound capacity headroom over outbound
+
+Matching destination inbound capacity exactly to source outbound capacity leaves no margin. While a transfer is in
+flight, the destination bucket is also being consumed by other traffic and refilling at its own rate.
+
+**Risk:** Transfers that arrive without enough inbound capacity require manual execution, or wait for the bucket to
+refill before they can be executed.
+
+**What should you do:**
+
+- Set destination inbound capacity above the corresponding source outbound capacity, sized against the
+  destination refill rate and the latency of the lane. See
+  [Common Scenarios](/ccip/concepts/rate-limit-management/common-scenarios).
+
+### Tune the refill rate for both availability and throttling
+
+The refill rate determines how quickly a bucket returns to full capacity after being consumed.
+
+**Risk:** A refill rate that is too slow blocks legitimate transfers for extended periods. One that is too fast fails to
+throttle abnormal flows.
+
+**What should you do:**
+
+- Choose a refill rate that restores capacity fast enough for normal user activity but slow enough to
+  constrain a sustained abnormal flow.
+- See [Common Scenarios](/ccip/concepts/rate-limit-management/common-scenarios) and [How Rate Limits Work](/ccip/concepts/rate-limit-management/how-rate-limits-work).
+- The exact numbers will vary upon network choices and traffic patterns for your specific protocol. It is the responsibility of the protocol to designate sensible numbers.
+
+### Distinguish an intentional pause from a misconfiguration
+
+Understand how rate limit configurations differ across versions
+
+**Risk:** An accidental pause blocks users indefinitely, and a pause applied with the wrong values either fails to stop
+transfers or removes rate limiting entirely.
+
+**What should you do:**
+
+- On pools reporting `1.6.1` or later, pause a lane by setting `isEnabled: true`, `capacity: 0`, `rate: 0` on the
+  affected direction via `setChainRateLimiterConfig` (or `setChainRateLimiterConfigs` for several lanes at once). This
+  blocks all transfers in that direction (an inbound pause intentionally holds in-flight transfers) until you restore
+  normal values.
+- On these same pools, do not set `rate: 0` with a non-zero capacity: validation accepts it, but once the bucket
+  depletes, transfers fail with an arithmetic panic instead of a clean rate-limit error.
+- Keep `isEnabled: true` when pausing. A disabled bucket (which requires `capacity: 0`, `rate: 0`) turns rate limiting
+  off entirely.
+- On pools reporting versions before `1.6.1`, a full stop through rate limits is not possible: use the smallest
+  accepted configuration, `capacity: 2`, `rate: 1`, and account for the small trickle that remains possible, which can
+  be material for tokens with few decimals.
+- Record every intentional pause, including who applied it and the condition for lifting it, and review paused lanes on
+  a fixed interval.
+
+See [Emergency Actions](/ccip/concepts/rate-limit-management/emergency-actions).
+
+### Review network-specific requirements before enabling a chain
+
+Some networks have configuration requirements, gas behavior, RPC characteristics, or service limits that differ from
+the defaults.
+
+**Risk:** A configuration that is correct on one chain can cause failed execution or an outage on another.
+
+**What should you do:**
+
+- Read the guidance for each network before you enable a lane to it. See
+  [Network Specific](/ccip/tools-resources/network-specific) and [Service Limits](/ccip/service-limits/evm).
+
+### Settle in-flight transfers before reducing inbound capacity
+
+Reducing a destination inbound capacity affects messages that are already in flight toward that chain, not only future
+ones.
+
+**Risk:** In-flight transfers whose amounts exceed the new inbound capacity stall until an administrator intervenes or
+capacity refills.
+
+**What should you do:**
+
+- Set the new outbound capacities on the source chains first.
+- Check the [CCIP Explorer](/ccip/tools-resources/ccip-explorer) for in-flight messages whose amounts exceed the
+  inbound capacities you intend to set.
+- Wait for those transfers to settle on their destination chains.
+- Then reduce the inbound capacities.
+
+See [Update Rate Limits](/ccip/concepts/rate-limit-management/update-rate-limits).
+
+### Run the latest available TokenPool release
+
+We recommend using our latest pool versions for improved security, reliability, and access to the latest features.
+
+**Risk:** Operating on an older release exposes you to issues that may have been resolved on newer versions.
+
+**What should you do:**
+
+- Confirm what you are running with `typeAndVersion()` on each pool, compare against the published
+  releases of [`@chainlink/contracts-ccip`](https://www.npmjs.com/package/@chainlink/contracts-ccip?activeTab=versions),
+  and upgrade when feasible.
+- The on-chain version string does not always match the package release: a pool built from
+  the `1.6.0` release reports `1.5.1`, and some releases report development stamps such as `1.6.x-dev`. See
+  [Upgradability](/ccip/concepts/cross-chain-token/evm/upgradability).
+
+### Shut down lanes that carry little or no traffic
+
+Every enabled lane is an active path into and out of your token.
+
+**Risk:** An unused lane contributes no benefit while remaining available during an incident on either of the chains it
+connects.
+
+**What should you do:**
+
+- Review traffic per lane periodically and remove remote chains serving lanes that do not justify the
+  exposure. Where possible, consolidate toward a hub-and-spoke topology rather than connecting every chain to every
+  other chain.
+
+### Delegate rate limit changes to the rate limit admin role
+
+The token pool owner can assign a separate rate limit admin (`setRateLimitAdmin`), an address permitted to change rate
+limits but nothing else about the pool configuration.
+
+**Risk:** Rate limit changes are made relatively often, including under time pressure during an incident. Performing
+them with the pool owner key exposes your highest-privilege credential to routine use.
+
+**What should you do:** Assign the rate limit admin role to a dedicated multi-party signer, or to a contract if you want to
+constrain it further to specific pre-defined adjustments. Keep the pool owner key reserved for changes that require
+it. See the [TokenPool API reference](/ccip/api-reference/evm/v1.6.1/token-pool) and
+[Prerequisites and Permissions](/ccip/concepts/rate-limit-management/prerequisites-and-permissions).
+
+## Get help
+
+If you are assessing an existing CCT deployment, or want a second opinion on your authority structure or rate limit
+configuration, [contact Chainlink Labs](https://chain.link/ccip-contact). For the division of
+responsibilities between token developers, application developers, and Chainlink, see
+[CCIP Service Responsibility](/ccip/service-responsibility).
 
 ---
 
@@ -33274,20 +33738,6 @@ A library implementing the Token Bucket algorithm for rate limiting cross-chain 
 
 ## Events
 
-### TokensConsumed
-
-```solidity
-event TokensConsumed(uint256 tokens);
-```
-
-<Aside>Emitted when tokens are successfully consumed from the [`TokenBucket`](#tokenbucket).</Aside>
-
-**Parameters**
-
-| Name     | Type      | Description                   |
-| -------- | --------- | ----------------------------- |
-| `tokens` | `uint256` | The number of tokens consumed |
-
 ### ConfigChanged
 
 ```solidity
@@ -33312,14 +33762,6 @@ error BucketOverfilled();
 
 <Aside>Thrown when the [`TokenBucket`](#tokenbucket) contains more tokens than its capacity.</Aside>
 
-### OnlyCallableByAdminOrOwner
-
-```solidity
-error OnlyCallableByAdminOrOwner();
-```
-
-<Aside>Thrown when a restricted function is called by an unauthorized address.</Aside>
-
 ### TokenMaxCapacityExceeded
 
 ```solidity
@@ -33338,31 +33780,13 @@ error TokenRateLimitReached(uint256 minWaitInSeconds, uint256 available, address
   Thrown when attempting to consume more tokens than currently available in the [`TokenBucket`](#tokenbucket).
 </Aside>
 
-### AggregateValueMaxCapacityExceeded
-
-```solidity
-error AggregateValueMaxCapacityExceeded(uint256 capacity, uint256 requested);
-```
-
-<Aside>Thrown when attempting to consume more aggregate value than the [`TokenBucket`](#tokenbucket)'s capacity.</Aside>
-
-### AggregateValueRateLimitReached
-
-```solidity
-error AggregateValueRateLimitReached(uint256 minWaitInSeconds, uint256 available);
-```
-
-<Aside>
-  Thrown when attempting to consume more aggregate value than currently available in the [`TokenBucket`](#tokenbucket).
-</Aside>
-
 ### InvalidRateLimitRate
 
 ```solidity
 error InvalidRateLimitRate(Config rateLimiterConfig);
 ```
 
-<Aside>Thrown when the rate limit [`Config`](#config) is invalid (rate is zero or exceeds capacity).</Aside>
+<Aside>Thrown when the rate limit [`Config`](#config) is invalid (rate exceeds capacity).</Aside>
 
 ### DisabledNonZeroRateLimit
 
@@ -33371,14 +33795,6 @@ error DisabledNonZeroRateLimit(Config config);
 ```
 
 <Aside>Thrown when a disabled [`Config`](#config) has non-zero rate or capacity values.</Aside>
-
-### RateLimitMustBeDisabled
-
-```solidity
-error RateLimitMustBeDisabled();
-```
-
-<Aside>Thrown when attempting to enable rate limiting in a context where it must be disabled.</Aside>
 
 ## Structs
 
@@ -33444,7 +33860,6 @@ function _consume(TokenBucket storage s_bucket, uint256 requestTokens, address t
   - Skips execution if rate limiting is disabled or requestTokens is zero
   - Automatically refills tokens based on elapsed time
   - Enforces capacity and rate limits
-  - Emits [`TokensConsumed`](#tokensconsumed) event for non-zero consumption
   - Reverts with [`TokenMaxCapacityExceeded`](#tokenmaxcapacityexceeded) or [`TokenRateLimitReached`](#tokenratelimitreached) on violations
 </Aside>
 
@@ -33507,26 +33922,24 @@ function _setTokenBucketConfig(TokenBucket storage s_bucket, Config memory confi
 Validates rate limiter configuration parameters.
 
 ```solidity
-function _validateTokenBucketConfig(Config memory config, bool mustBeDisabled) internal pure;
+function _validateTokenBucketConfig(Config memory config) internal pure;
 ```
 
 <Aside>
   Validation rules:
 
   - For enabled configurations:
-    - Rate must be non-zero and less than capacity
-    - Validates against mustBeDisabled requirement
+    - Rate must be less than or equal to capacity
   - For disabled configurations:
     - Rate and capacity must be zero
-  - May throw [`InvalidRateLimitRate`](#invalidratelimitrate), [`DisabledNonZeroRateLimit`](#disablednonzeroratelimit), or [`RateLimitMustBeDisabled`](#ratelimitmustbedisabled)
+  - May throw [`InvalidRateLimitRate`](#invalidratelimitrate) or [`DisabledNonZeroRateLimit`](#disablednonzeroratelimit)
 </Aside>
 
 **Parameters**
 
-| Name             | Type                | Description                                |
-| ---------------- | ------------------- | ------------------------------------------ |
-| `config`         | [`Config`](#config) | The configuration to validate              |
-| `mustBeDisabled` | `bool`              | Whether the configuration must be disabled |
+| Name     | Type                | Description                   |
+| -------- | ------------------- | ----------------------------- |
+| `config` | [`Config`](#config) | The configuration to validate |
 
 ### _calculateRefill
 
@@ -59225,20 +59638,6 @@ A library implementing the Token Bucket algorithm for rate limiting cross-chain 
 
 ## Events
 
-### TokensConsumed
-
-```solidity
-event TokensConsumed(uint256 tokens);
-```
-
-<Aside>Emitted when tokens are successfully consumed from the [`TokenBucket`](#tokenbucket).</Aside>
-
-**Parameters**
-
-| Name     | Type      | Description                   |
-| -------- | --------- | ----------------------------- |
-| `tokens` | `uint256` | The number of tokens consumed |
-
 ### ConfigChanged
 
 ```solidity
@@ -59263,14 +59662,6 @@ error BucketOverfilled();
 
 <Aside>Thrown when the [`TokenBucket`](#tokenbucket) contains more tokens than its capacity.</Aside>
 
-### OnlyCallableByAdminOrOwner
-
-```solidity
-error OnlyCallableByAdminOrOwner();
-```
-
-<Aside>Thrown when a restricted function is called by an unauthorized address.</Aside>
-
 ### TokenMaxCapacityExceeded
 
 ```solidity
@@ -59289,31 +59680,13 @@ error TokenRateLimitReached(uint256 minWaitInSeconds, uint256 available, address
   Thrown when attempting to consume more tokens than currently available in the [`TokenBucket`](#tokenbucket).
 </Aside>
 
-### AggregateValueMaxCapacityExceeded
-
-```solidity
-error AggregateValueMaxCapacityExceeded(uint256 capacity, uint256 requested);
-```
-
-<Aside>Thrown when attempting to consume more aggregate value than the [`TokenBucket`](#tokenbucket)'s capacity.</Aside>
-
-### AggregateValueRateLimitReached
-
-```solidity
-error AggregateValueRateLimitReached(uint256 minWaitInSeconds, uint256 available);
-```
-
-<Aside>
-  Thrown when attempting to consume more aggregate value than currently available in the [`TokenBucket`](#tokenbucket).
-</Aside>
-
 ### InvalidRateLimitRate
 
 ```solidity
 error InvalidRateLimitRate(Config rateLimiterConfig);
 ```
 
-<Aside>Thrown when the rate limit [`Config`](#config) is invalid (rate is zero or exceeds capacity).</Aside>
+<Aside>Thrown when the rate limit [`Config`](#config) is invalid (rate exceeds capacity).</Aside>
 
 ### DisabledNonZeroRateLimit
 
@@ -59322,14 +59695,6 @@ error DisabledNonZeroRateLimit(Config config);
 ```
 
 <Aside>Thrown when a disabled [`Config`](#config) has non-zero rate or capacity values.</Aside>
-
-### RateLimitMustBeDisabled
-
-```solidity
-error RateLimitMustBeDisabled();
-```
-
-<Aside>Thrown when attempting to enable rate limiting in a context where it must be disabled.</Aside>
 
 ## Structs
 
@@ -59395,7 +59760,6 @@ function _consume(TokenBucket storage s_bucket, uint256 requestTokens, address t
   - Skips execution if rate limiting is disabled or requestTokens is zero
   - Automatically refills tokens based on elapsed time
   - Enforces capacity and rate limits
-  - Emits [`TokensConsumed`](#tokensconsumed) event for non-zero consumption
   - Reverts with [`TokenMaxCapacityExceeded`](#tokenmaxcapacityexceeded) or [`TokenRateLimitReached`](#tokenratelimitreached) on violations
 </Aside>
 
@@ -59458,26 +59822,24 @@ function _setTokenBucketConfig(TokenBucket storage s_bucket, Config memory confi
 Validates rate limiter configuration parameters.
 
 ```solidity
-function _validateTokenBucketConfig(Config memory config, bool mustBeDisabled) internal pure;
+function _validateTokenBucketConfig(Config memory config) internal pure;
 ```
 
 <Aside>
   Validation rules:
 
   - For enabled configurations:
-    - Rate must be non-zero and less than capacity
-    - Validates against mustBeDisabled requirement
+    - Rate must be less than or equal to capacity
   - For disabled configurations:
     - Rate and capacity must be zero
-  - May throw [`InvalidRateLimitRate`](#invalidratelimitrate), [`DisabledNonZeroRateLimit`](#disablednonzeroratelimit), or [`RateLimitMustBeDisabled`](#ratelimitmustbedisabled)
+  - May throw [`InvalidRateLimitRate`](#invalidratelimitrate) or [`DisabledNonZeroRateLimit`](#disablednonzeroratelimit)
 </Aside>
 
 **Parameters**
 
-| Name             | Type                | Description                                |
-| ---------------- | ------------------- | ------------------------------------------ |
-| `config`         | [`Config`](#config) | The configuration to validate              |
-| `mustBeDisabled` | `bool`              | Whether the configuration must be disabled |
+| Name     | Type                | Description                   |
+| -------- | ------------------- | ----------------------------- |
+| `config` | [`Config`](#config) | The configuration to validate |
 
 ### _calculateRefill
 
@@ -65948,20 +66310,6 @@ A library implementing the Token Bucket algorithm for rate limiting cross-chain 
 
 ## Events
 
-### TokensConsumed
-
-```solidity
-event TokensConsumed(uint256 tokens);
-```
-
-<Aside>Emitted when tokens are successfully consumed from the [`TokenBucket`](#tokenbucket).</Aside>
-
-**Parameters**
-
-| Name     | Type      | Description                   |
-| -------- | --------- | ----------------------------- |
-| `tokens` | `uint256` | The number of tokens consumed |
-
 ### ConfigChanged
 
 ```solidity
@@ -65986,14 +66334,6 @@ error BucketOverfilled();
 
 <Aside>Thrown when the [`TokenBucket`](#tokenbucket) contains more tokens than its capacity.</Aside>
 
-### OnlyCallableByAdminOrOwner
-
-```solidity
-error OnlyCallableByAdminOrOwner();
-```
-
-<Aside>Thrown when a restricted function is called by an unauthorized address.</Aside>
-
 ### TokenMaxCapacityExceeded
 
 ```solidity
@@ -66012,31 +66352,13 @@ error TokenRateLimitReached(uint256 minWaitInSeconds, uint256 available, address
   Thrown when attempting to consume more tokens than currently available in the [`TokenBucket`](#tokenbucket).
 </Aside>
 
-### AggregateValueMaxCapacityExceeded
-
-```solidity
-error AggregateValueMaxCapacityExceeded(uint256 capacity, uint256 requested);
-```
-
-<Aside>Thrown when attempting to consume more aggregate value than the [`TokenBucket`](#tokenbucket)'s capacity.</Aside>
-
-### AggregateValueRateLimitReached
-
-```solidity
-error AggregateValueRateLimitReached(uint256 minWaitInSeconds, uint256 available);
-```
-
-<Aside>
-  Thrown when attempting to consume more aggregate value than currently available in the [`TokenBucket`](#tokenbucket).
-</Aside>
-
 ### InvalidRateLimitRate
 
 ```solidity
 error InvalidRateLimitRate(Config rateLimiterConfig);
 ```
 
-<Aside>Thrown when the rate limit [`Config`](#config) is invalid (rate is zero or exceeds capacity).</Aside>
+<Aside>Thrown when the rate limit [`Config`](#config) is invalid (rate exceeds capacity).</Aside>
 
 ### DisabledNonZeroRateLimit
 
@@ -66045,14 +66367,6 @@ error DisabledNonZeroRateLimit(Config config);
 ```
 
 <Aside>Thrown when a disabled [`Config`](#config) has non-zero rate or capacity values.</Aside>
-
-### RateLimitMustBeDisabled
-
-```solidity
-error RateLimitMustBeDisabled();
-```
-
-<Aside>Thrown when attempting to enable rate limiting in a context where it must be disabled.</Aside>
 
 ## Structs
 
@@ -66118,7 +66432,6 @@ function _consume(TokenBucket storage s_bucket, uint256 requestTokens, address t
   - Skips execution if rate limiting is disabled or requestTokens is zero
   - Automatically refills tokens based on elapsed time
   - Enforces capacity and rate limits
-  - Emits [`TokensConsumed`](#tokensconsumed) event for non-zero consumption
   - Reverts with [`TokenMaxCapacityExceeded`](#tokenmaxcapacityexceeded) or [`TokenRateLimitReached`](#tokenratelimitreached) on violations
 </Aside>
 
@@ -66181,26 +66494,24 @@ function _setTokenBucketConfig(TokenBucket storage s_bucket, Config memory confi
 Validates rate limiter configuration parameters.
 
 ```solidity
-function _validateTokenBucketConfig(Config memory config, bool mustBeDisabled) internal pure;
+function _validateTokenBucketConfig(Config memory config) internal pure;
 ```
 
 <Aside>
   Validation rules:
 
   - For enabled configurations:
-    - Rate must be non-zero and less than capacity
-    - Validates against mustBeDisabled requirement
+    - Rate must be less than or equal to capacity
   - For disabled configurations:
     - Rate and capacity must be zero
-  - May throw [`InvalidRateLimitRate`](#invalidratelimitrate), [`DisabledNonZeroRateLimit`](#disablednonzeroratelimit), or [`RateLimitMustBeDisabled`](#ratelimitmustbedisabled)
+  - May throw [`InvalidRateLimitRate`](#invalidratelimitrate) or [`DisabledNonZeroRateLimit`](#disablednonzeroratelimit)
 </Aside>
 
 **Parameters**
 
-| Name             | Type                | Description                                |
-| ---------------- | ------------------- | ------------------------------------------ |
-| `config`         | [`Config`](#config) | The configuration to validate              |
-| `mustBeDisabled` | `bool`              | Whether the configuration must be disabled |
+| Name     | Type                | Description                   |
+| -------- | ------------------- | ----------------------------- |
+| `config` | [`Config`](#config) | The configuration to validate |
 
 ### _calculateRefill
 
