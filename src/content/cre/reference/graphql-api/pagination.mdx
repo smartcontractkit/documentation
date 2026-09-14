@@ -1,0 +1,169 @@
+---
+section: cre
+title: "Pagination"
+date: Last Modified
+metadata:
+  description: "How pagination works for CRE GraphQL list queries: the Page input, page size limits, and the total count field."
+  datePublished: "2026-08-31"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+The CRE GraphQL API uses **page-number pagination**, not cursor-based (Relay-style) pagination. List queries take an optional `page: Page` argument and return both a page of results and the total matching count.
+
+## The `Page` input
+
+```graphql
+input Page {
+  number: Int = 0
+  size: Int = 10
+}
+```
+
+| Field    | Type  | Default | Description                              |
+| -------- | ----- | ------- | ---------------------------------------- |
+| `number` | `Int` | `0`     | Zero-indexed page number.                |
+| `size`   | `Int` | `10`    | Number of items per page. Maximum `100`. |
+
+`Page` is accepted by [`workflows`](/cre/reference/graphql-api/queries#workflows), [`workflowDeployments`](/cre/reference/graphql-api/queries#workflowdeployments), and [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions).
+
+## The `count` field
+
+Every paginated response includes a `count` field alongside `data` — the total number of items matching the query across **all** pages, not just the current one.
+
+```graphql
+query ListWorkflows($page: Page) {
+  workflows(input: { page: $page }) {
+    data {
+      uuid
+      name
+    }
+    count
+  }
+}
+```
+
+```json
+{
+  "data": {
+    "workflows": {
+      "data": [
+        { "uuid": "<WORKFLOW_UUID_1>", "name": "price-feed-monitor" },
+        { "uuid": "<WORKFLOW_UUID_2>", "name": "keeper-bot" }
+      ],
+      "count": 47
+    }
+  }
+}
+```
+
+There is no `pageInfo`, `hasNextPage`, or cursor field — you determine whether more pages exist yourself.
+
+## Paginating through all results
+
+Because there's no `hasNextPage` flag, compute it from `page.number`, `page.size`, and the returned `count`:
+
+```text
+1. Start with page.number = 0 and a fixed page.size (for example 50).
+2. Send the request with { number: pageNumber, size: pageSize }.
+3. Read `count` from the response.
+4. More pages remain if (pageNumber + 1) * pageSize < count.
+5. If more pages remain, increment pageNumber and repeat from step 2.
+6. Stop once (pageNumber + 1) * pageSize >= count.
+```
+
+### TypeScript
+
+```typescript
+async function fetchAllWorkflows(apiKey: string): Promise<Workflow[]> {
+  const pageSize = 50
+  let pageNumber = 0
+  let all: Workflow[] = []
+  let total = Infinity
+
+  while (pageNumber * pageSize < total) {
+    const response = await fetch("https://api.cre.chain.link/graphql", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Apikey ${apiKey}`,
+      },
+      body: JSON.stringify({
+        query: `
+          query ListWorkflows($page: Page) {
+            workflows(input: { page: $page }) {
+              data { uuid name status }
+              count
+            }
+          }
+        `,
+        variables: { page: { number: pageNumber, size: pageSize } },
+      }),
+    })
+
+    const result = await response.json()
+    const { data, count } = result.data.workflows
+    all = all.concat(data)
+    total = count
+    pageNumber += 1
+  }
+
+  return all
+}
+```
+
+### Go
+
+```go
+func fetchAllWorkflows(apiKey string) ([]Workflow, error) {
+	const pageSize = 50
+	pageNumber := 0
+	var all []Workflow
+	total := -1
+
+	for total == -1 || pageNumber*pageSize < total {
+		body, _ := json.Marshal(map[string]any{
+			"query": `query ListWorkflows($page: Page) {
+				workflows(input: { page: $page }) {
+					data { uuid name status }
+					count
+				}
+			}`,
+			"variables": map[string]any{
+				"page": map[string]int{"number": pageNumber, "size": pageSize},
+			},
+		})
+
+		req, _ := http.NewRequest("POST", "https://api.cre.chain.link/graphql", bytes.NewBuffer(body))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Apikey "+apiKey)
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		var result workflowsPageResponse
+		json.NewDecoder(resp.Body).Decode(&result)
+		resp.Body.Close()
+
+		all = append(all, result.Data.Workflows.Data...)
+		total = result.Data.Workflows.Count
+		pageNumber++
+	}
+
+	return all, nil
+}
+```
+
+<Aside type="note" title="Page size limit">
+  `page.size` cannot exceed `100`. Requesting a larger value fails validation — see [Errors & Rate
+  Limits](/cre/reference/graphql-api/errors#validation-errors).
+</Aside>
+
+## Related
+
+- [`Page`](/cre/reference/graphql-api/inputs#page)
+- [`workflows`](/cre/reference/graphql-api/queries#workflows)
+- [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions)

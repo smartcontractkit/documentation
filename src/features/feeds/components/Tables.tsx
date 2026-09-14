@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { useEffect, useState } from "preact/hooks"
+import { useEffect, useState, useMemo } from "preact/hooks"
 import { Fragment, render } from "preact"
 import feedList from "./FeedList.module.css"
 import { clsx } from "~/lib/clsx/clsx.ts"
@@ -18,7 +18,7 @@ import {
 import type { MarketPricingRiskProduct } from "../content/marketPricingRiskTerms.ts"
 import { REPORT_SCHEMA_DEFINITIONS, type SchemaDefinition } from "./reportSchemaData.ts"
 import schemaFieldsTableStyles from "../../data-streams/common/schemaFieldsTable.module.css"
-import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
+import { getSvrType, type SvrFeedType } from "~/features/feeds/utils/svrDetection.ts"
 import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
 import {
   shouldHideAddress,
@@ -221,6 +221,7 @@ const RISK_TIER_SHORT_LABELS: Record<string, string> = {
   new: "New token",
   custom: "Custom",
   deprecating: "Deprecating",
+  unrated: "Unrated",
 }
 
 const normalizeRiskKey = (riskTier?: string | null) => riskTier?.toLowerCase().replace(/\s+/g, "") ?? ""
@@ -276,9 +277,14 @@ const RiskCell = ({
 }) => {
   const [tooltipPos, setTooltipPos] = useState<ReturnType<typeof getRiskTooltipPosition> | null>(null)
   const normalizedKey = normalizeRiskKey(riskTier)
-  const category = normalizedKey ? FEED_CATEGORY_CONFIG[normalizedKey as CategoryKey] : undefined
-  const tooltipText = category ? getRiskTooltipText(normalizedKey as CategoryKey, product) : ""
-  const riskLink = category ? getRiskCategoryLink(normalizedKey as CategoryKey, product) : ""
+  // When no risk tier is available (e.g. no Supabase return), fall back to the
+  // "Unrated" category so the feed/stream is shown with the ⚪ circle instead of a dash.
+  const categoryKey = (normalizedKey ? FEED_CATEGORY_CONFIG[normalizedKey as CategoryKey] : undefined)
+    ? (normalizedKey as CategoryKey)
+    : "unrated"
+  const category = FEED_CATEGORY_CONFIG[categoryKey]
+  const tooltipText = getRiskTooltipText(categoryKey, product)
+  const riskLink = getRiskCategoryLink(categoryKey, product)
 
   useEffect(() => {
     if (!tooltipPos || typeof document === "undefined") return
@@ -308,14 +314,6 @@ const RiskCell = ({
       container.remove()
     }
   }, [tooltipPos, tooltipText])
-
-  if (!category) {
-    return (
-      <td className={tableStyles.riskCol}>
-        <span className={tableStyles.riskUnavailable}>—</span>
-      </td>
-    )
-  }
 
   const showTooltip = (event: Event) => {
     setTooltipPos(getRiskTooltipPosition(event.currentTarget as HTMLElement))
@@ -456,11 +454,13 @@ const DefaultTHead = ({
   networkName,
   dataFeedType,
   showRiskColumn = true,
+  isSvr = false,
 }: {
   showExtraDetails: boolean
   networkName: string
   dataFeedType: string
   showRiskColumn?: boolean
+  isSvr?: boolean
 }) => {
   const isAptosNetwork = networkName === "Aptos Mainnet" || networkName === "Aptos Testnet"
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
@@ -473,7 +473,7 @@ const DefaultTHead = ({
         <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Deviation</th>
         <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Heartbeat</th>
         <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Dec</th>
-        <th>{isAptosNetwork ? "Feed ID and info" : "Address and info"}</th>
+        <th>{isSvr ? "Aggregator and info" : isAptosNetwork ? "Feed ID and info" : "Address and info"}</th>
       </tr>
     </thead>
   )
@@ -504,6 +504,7 @@ const DefaultTr = ({
   batchedCategoryData,
   dataFeedType,
   showRiskColumn = true,
+  isSvr = false,
 }) => {
   // Use the pre-computed finalCategory from enriched metadata
   // (already includes deprecating status and Supabase risk tier)
@@ -542,20 +543,12 @@ const DefaultTr = ({
           {metadata.secondaryProxyAddress && (
             <div style={{ marginTop: "5px" }}>
               <a
-                href={
-                  isAaveSVR(metadata)
-                    ? "/data-feeds/svr-feeds#aave-svr-feeds"
-                    : isSharedSVR(metadata)
-                      ? "/data-feeds/svr-feeds"
-                      : "/data-feeds/svr-feeds"
-                }
+                href="/data-feeds/svr-feeds"
                 target="_blank"
                 className={tableStyles.feedVariantBadge}
-                title={
-                  isAaveSVR(metadata) ? "Aave Dedicated SVR Feed" : isSharedSVR(metadata) ? " SVR Feed" : "SVR Feed"
-                }
+                title={`${getSvrType(metadata, network)} Feed`}
               >
-                {isAaveSVR(metadata) ? "Aave SVR" : isSharedSVR(metadata) ? "SVR" : "SVR"}
+                {getSvrType(metadata, network)}
               </a>
             </div>
           )}
@@ -616,26 +609,33 @@ const DefaultTr = ({
         <div>
           <dl className={tableStyles.listContainer}>
             <div className={tableStyles.definitionGroup}>
-              {metadata.secondaryProxyAddress && (
+              {metadata.secondaryProxyAddress && !isSvr && (
                 <dt>
                   <span className="label">Standard Proxy:</span>
                 </dt>
               )}
+              {isSvr && (
+                <dt>
+                  <span className="label">Aggregator:</span>
+                </dt>
+              )}
               <dd>
-                {hideAddress ? (
+                {hideAddress && !isSvr ? (
                   <HiddenAddressContact className={tableStyles.addressLink} />
                 ) : (
                   <div className={tableStyles.assetAddress}>
                     <button
                       className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                      data-clipboard-text={metadata.proxyAddress ?? metadata.transmissionsAccount}
+                      data-clipboard-text={
+                        isSvr ? metadata.contractAddress : (metadata.proxyAddress ?? metadata.transmissionsAccount)
+                      }
                       onClick={(e) =>
                         handleClick(e, {
                           product: "FEEDS",
                           action: "feedId_copied",
                           extraInfo1: network.name,
                           extraInfo2: metadata.name,
-                          extraInfo3: metadata.proxyAddress,
+                          extraInfo3: isSvr ? metadata.contractAddress : metadata.proxyAddress,
                         })
                       }
                     >
@@ -643,10 +643,13 @@ const DefaultTr = ({
                     </button>
                     <a
                       className={tableStyles.addressLink}
-                      href={network.explorerUrl.replace("%s", metadata.proxyAddress ?? metadata.transmissionsAccount)}
+                      href={network.explorerUrl.replace(
+                        "%s",
+                        isSvr ? metadata.contractAddress : (metadata.proxyAddress ?? metadata.transmissionsAccount)
+                      )}
                       target="_blank"
                     >
-                      {metadata.proxyAddress ?? metadata.transmissionsAccount}
+                      {isSvr ? metadata.contractAddress : (metadata.proxyAddress ?? metadata.transmissionsAccount)}
                     </a>
                   </div>
                 )}
@@ -688,7 +691,7 @@ const DefaultTr = ({
                 <div className={tableStyles.separator} />
                 <div className={tableStyles.assetAddress}>
                   <dt>
-                    <span className="label">{isAaveSVR(metadata) ? "AAVE SVR Proxy:" : "SVR Proxy:"}</span>
+                    <span className="label">{getSvrType(metadata, network)} Proxy:</span>
                   </dt>
                   <dd>
                     {hideAddress ? (
@@ -721,7 +724,7 @@ const DefaultTr = ({
                     )}
                   </dd>
                 </div>
-                {isAaveSVR(metadata) && !hideAddress && (
+                {getSvrType(metadata, network) === "Aave-SVR" && !hideAddress && (
                   <div className={clsx(tableStyles.aaveCallout)}>
                     <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
                     Aave protocol. Learn more about{" "}
@@ -731,9 +734,19 @@ const DefaultTr = ({
                     .
                   </div>
                 )}
-                {isSharedSVR(metadata) && !hideAddress && (
+                {getSvrType(metadata, network) === "SVR" && !hideAddress && (
                   <div className={clsx(tableStyles.sharedCallout)}>
                     <strong>🔗 SVR Feed:</strong> This SVR proxy feed is usable by any protocol. Learn more about{" "}
+                    <a href="/data-feeds/svr-feeds" target="_blank">
+                      SVR Feeds
+                    </a>
+                    .
+                  </div>
+                )}
+                {getSvrType(metadata, network) === "SVR-Backup" && !hideAddress && (
+                  <div className={clsx(tableStyles.sharedCallout)}>
+                    <strong>🔗 SVR-Backup Feed:</strong> This is a legacy SVR proxy feed. New integrations should use
+                    the <strong>SVR</strong> feeds. Learn more about{" "}
                     <a href="/data-feeds/svr-feeds" target="_blank">
                       SVR Feeds
                     </a>
@@ -1366,8 +1379,11 @@ const streamsCategoryMap = {
 }
 
 export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) => {
-  const finalTier = metadata.finalCategory
   const isDeprecating = !!metadata.docs?.shutdownDate
+  // Deprecating streams always show the deprecating category, even when the
+  // stream is rendered from a path that doesn't enrich finalCategory (e.g. the
+  // deprecating streams page) or when no Supabase risk tier is available.
+  const finalTier = isDeprecating ? "deprecating" : metadata.finalCategory
   const hideFeedId = shouldHideStreamFeedId(metadata)
 
   // Temporary calculated stream detection until proper metadata tagging is implemented
@@ -1633,6 +1649,8 @@ export const MainnetTable = ({
   searchValue,
   tokenizedEquityProvider,
   forceExtendedHoursCategory,
+  isSvr,
+  svrTypeFilters,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -1657,6 +1675,8 @@ export const MainnetTable = ({
   searchValue: string
   tokenizedEquityProvider?: string
   forceExtendedHoursCategory?: ExtendedHoursCategory
+  isSvr?: boolean
+  svrTypeFilters?: Set<SvrFeedType>
 }) => {
   if (!network.metadata) return null
 
@@ -1686,7 +1706,16 @@ export const MainnetTable = ({
     },
   })
 
-  const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
+  // Apply SVR type filters when in SVR mode
+  const typeFilteredMetadata = useMemo(() => {
+    if (!isSvr || !svrTypeFilters || svrTypeFilters.size === 0) return filteredMetadata
+    return filteredMetadata.filter((m) => {
+      const svrType = getSvrType(m, network)
+      return svrType && !svrTypeFilters.has(svrType)
+    })
+  }, [filteredMetadata, isSvr, svrTypeFilters, network])
+
+  const slicedFilteredMetadata = typeFilteredMetadata.slice(firstAddr, lastAddr)
 
   if (isBatchLoading) {
     return <p style="font-style: italic;">Loading...</p>
@@ -1739,6 +1768,7 @@ export const MainnetTable = ({
                         showExtraDetails={showExtraDetails}
                         batchedCategoryData={batchedCategoryData}
                         dataFeedType={dataFeedType}
+                        isSvr={isSvr}
                       />
                     )}
                   </>

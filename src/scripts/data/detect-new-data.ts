@@ -53,6 +53,7 @@ const NETWORK_ENDPOINTS: Record<string, string> = {
   megaeth: "https://reference-data-directory.vercel.app/feeds-megaeth-mainnet.json",
   robinhood: "https://reference-data-directory.vercel.app/feeds-robinhood-mainnet.json",
   tempo: "https://reference-data-directory.vercel.app/feeds-tempo-mainnet.json",
+  arc: "https://reference-data-directory.vercel.app/feeds-arc-mainnet.json",
 }
 
 const STREAM_DEPRECATION_ENDPOINTS: Array<{ network: string; networkType: "mainnet" | "testnet"; url: string }> = [
@@ -60,11 +61,6 @@ const STREAM_DEPRECATION_ENDPOINTS: Array<{ network: string; networkType: "mainn
     network: "arbitrum",
     networkType: "mainnet",
     url: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
-  },
-  {
-    network: "arbitrum",
-    networkType: "testnet",
-    url: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-arbitrum-1.json",
   },
 ]
 

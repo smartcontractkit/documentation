@@ -19,7 +19,7 @@ import {
   networkHasVisibleFeeds,
   type ExtendedHoursCategory,
 } from "../utils/feedVisibility.ts"
-import { chainHasSvrFeeds } from "../utils/svrDetection.ts"
+import { chainHasSvrFeeds, getSvrType, type SvrFeedType } from "../utils/svrDetection.ts"
 import {
   filterChainsByFeedTypeTag,
   networkMatchesFeedTypeTag,
@@ -172,7 +172,7 @@ export const FeedList = ({
   forceExtendedHoursCategory?: ExtendedHoursCategory
 }) => {
   const feedTypeFlags = getFeedTypeFlags(dataFeedType)
-  const { isStreams, isSmartData, isRates, isUSGovernmentMacroeconomicData } = feedTypeFlags
+  const { isStreams, isSmartData, isRates, isUSGovernmentMacroeconomicData, isSvr } = feedTypeFlags
   const isDeprecating = ecosystem === "deprecating"
   const chains = isDeprecating && isStreams ? ALL_CHAINS : CHAINS
 
@@ -336,8 +336,10 @@ export const FeedList = ({
   }
 
   const [showSvrParam, setShowSvrParam] = useQueryString("showSvr")
-  const showOnlySVR = showSvrParam === "true"
+  // When dataFeedType is "svr", always show only SVR feeds (locked)
+  const showOnlySVR = isSvr ? true : showSvrParam === "true"
   const setShowOnlySVR = (value: boolean) => {
+    if (isSvr) return // locked
     setShowSvrParam(value ? "true" : "")
     updateUrlClean({ showSvr: value || undefined })
     if (value) paginate(1)
@@ -348,6 +350,8 @@ export const FeedList = ({
   const [showOnlyMVRFeedsTestnet, setShowOnlyMVRFeedsTestnet] = useState(false)
   const [showOnlyDEXFeeds, setShowOnlyDEXFeeds] = useState(false)
   const [showOnlyDEXFeedsTestnet, setShowOnlyDEXFeedsTestnet] = useState(false)
+  // SVR type filters (only used when dataFeedType === "svr")
+  const [svrTypeFilters, setSvrTypeFilters] = useState<Set<SvrFeedType>>(new Set())
   const [showOnlyDatalinkFeeds, setShowOnlyDatalinkFeeds] = useState(false)
   const [showOnlyDatalinkFeedsTestnet, setShowOnlyDatalinkFeedsTestnet] = useState(false)
   const [show24x5FeedsParam, setShow24x5FeedsParam] = useQueryString("show24x5")
@@ -1466,6 +1470,8 @@ export const FeedList = ({
                   searchValue={typeof searchValue === "string" ? searchValue : ""}
                   tokenizedEquityProvider={tokenizedEquityProvider}
                   forceExtendedHoursCategory={forceExtendedHoursCategory}
+                  isSvr={isSvr}
+                  svrTypeFilters={svrTypeFilters}
                 />
               ))
             ) : (
@@ -1790,7 +1796,7 @@ export const FeedList = ({
                       )}
                       <div className={feedList.tableFilters}>
                         <div className={feedList.filterControls}>
-                          {!isStreams && !isSmartData && availableAssetTypes.length > 1 && (
+                          {!isStreams && !isSmartData && !isSvr && availableAssetTypes.length > 1 && (
                             <details class={feedList.filterDropdown_details}>
                               <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
                                 Asset Type
@@ -1863,7 +1869,7 @@ export const FeedList = ({
                               Show Multiple-Variable Response (MVR) feeds
                             </label>
                           )}
-                          {!isStreams && !isSmartData && !isUSGovernmentMacroeconomicData && chainHasSvr && (
+                          {!isStreams && !isSmartData && !isUSGovernmentMacroeconomicData && chainHasSvr && !isSvr && (
                             <span className={feedList.filterCheckboxGroup}>
                               <label className={feedList.detailsLabel}>
                                 <input
@@ -1883,6 +1889,91 @@ export const FeedList = ({
                                 ?
                               </a>
                             </span>
+                          )}
+                          {isSvr && (
+                            <>
+                              <span className={feedList.filterCheckboxGroup}>
+                                <label className={feedList.detailsLabel}>
+                                  <input
+                                    type="checkbox"
+                                    className={feedList.feedCheckbox}
+                                    checked={!svrTypeFilters.has("Aave-SVR")}
+                                    onChange={() => {
+                                      setSvrTypeFilters((prev) => {
+                                        const next = new Set(prev)
+                                        if (next.has("Aave-SVR")) next.delete("Aave-SVR")
+                                        else next.add("Aave-SVR")
+                                        return next
+                                      })
+                                      setCurrentPage("1")
+                                    }}
+                                  />
+                                  Aave-SVR
+                                </label>
+                                <a
+                                  href="/data-feeds/svr-feeds#aave-svr-feeds"
+                                  className={feedList.filterHelpLink}
+                                  title="Dedicated SVR feeds exclusively for the Aave protocol"
+                                  aria-label="Learn about Aave-SVR feeds"
+                                >
+                                  ?
+                                </a>
+                              </span>
+                              <span className={feedList.filterCheckboxGroup}>
+                                <label className={feedList.detailsLabel}>
+                                  <input
+                                    type="checkbox"
+                                    className={feedList.feedCheckbox}
+                                    checked={!svrTypeFilters.has("SVR")}
+                                    onChange={() => {
+                                      setSvrTypeFilters((prev) => {
+                                        const next = new Set(prev)
+                                        if (next.has("SVR")) next.delete("SVR")
+                                        else next.add("SVR")
+                                        return next
+                                      })
+                                      setCurrentPage("1")
+                                    }}
+                                  />
+                                  SVR
+                                </label>
+                                <a
+                                  href="/data-feeds/svr-feeds#svr-shared"
+                                  className={feedList.filterHelpLink}
+                                  title="Canonical shared SVR feeds for use by any protocol"
+                                  aria-label="Learn about SVR feeds"
+                                >
+                                  ?
+                                </a>
+                              </span>
+                              <span className={feedList.filterCheckboxGroup}>
+                                <label className={feedList.detailsLabel}>
+                                  <input
+                                    type="checkbox"
+                                    className={feedList.feedCheckbox}
+                                    checked={!svrTypeFilters.has("SVR-Backup")}
+                                    onChange={() => {
+                                      setSvrTypeFilters((prev) => {
+                                        const next = new Set(prev)
+                                        if (next.has("SVR-Backup")) next.delete("SVR-Backup")
+                                        else next.add("SVR-Backup")
+                                        return next
+                                      })
+                                      setCurrentPage("1")
+                                    }}
+                                  />
+                                  SVR-Backup
+                                </label>
+                                <a
+                                  href="/data-feeds/svr-feeds#svr-backup-legacy"
+                                  className={feedList.filterHelpLink}
+                                  title="Legacy shared SVR feeds. New integrations should use SVR feeds instead."
+                                  aria-label="Learn about SVR-Backup feeds"
+                                >
+                                  ?
+                                </a>
+                              </span>
+                            </>
                           )}
                         </div>
                         <form class={clsx(feedList.tableSearch, feedList.filterDropdown_search)}>
@@ -1941,6 +2032,8 @@ export const FeedList = ({
                         searchValue={typeof searchValue === "string" ? searchValue : ""}
                         tokenizedEquityProvider={tokenizedEquityProvider}
                         forceExtendedHoursCategory={forceExtendedHoursCategory}
+                        isSvr={isSvr}
+                        svrTypeFilters={svrTypeFilters}
                       />
                     </>
                   ) : (
