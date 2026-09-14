@@ -71,15 +71,20 @@ The execution path fetches proofs, Global CCIP EDS disclosures, and token pool o
 npm run any2canton:data-and-token -- --dataString "Hello" --amount 1
 ```
 
-Pay CCIP fee in LINK and use block-depth finality:
+Pay CCIP fee in LINK:
 
 ```bash filename="Terminal"
 npm run any2canton:data-and-token -- \
   --dataString "Hello" \
   --amount 1 \
-  --feeToken link \
-  --finality 32
+  --feeToken link
 ```
+
+<Aside type="note" title="Finality not customizable for token transfers">
+
+The TEST ↔ LINK token pool only supports default (`finalized`) source finality. Do **not** pass `--finality` to `any2canton:data-and-token` — it is not supported by the pool. The `--finality` flag is only valid for data-only sends (`any2canton:data`). Wait for Sepolia finality before running `any2canton:manual-exec`.
+
+</Aside>
 
 ### Expected send output
 
@@ -89,7 +94,7 @@ npm run any2canton:data-and-token -- \
    LINK is minted on Canton only after manual execution.
 🆔 CCIP Message ID: 0x…
 
-⚙️  Execute on Canton once Sepolia reaches 32 block confirmations for this message:
+⚙️  Execute on Canton once the message is finalized on Sepolia:
    npm run any2canton:manual-exec -- 0x<messageId>
 ```
 
