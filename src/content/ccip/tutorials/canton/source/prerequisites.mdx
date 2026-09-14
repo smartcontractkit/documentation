@@ -111,15 +111,20 @@ Network selectors, router addresses, token instruments, and the default **`--gas
 
 ## Optional script flags
 
-Send scripts (`canton2any:*` and `any2canton:*`) share these common flags:
+`canton2any:*` send scripts accept these flags:
 
-| Flag                                 | Default      | Description                                                                                                                              |
-| :----------------------------------- | :----------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
-| `--gasLimit`                         | `200000`     | Gas limit for `ccipReceive` on the destination chain (Sepolia for `canton2any`, Canton for `any2canton`)                                 |
-| `--feeToken`                         | `native`     | CCIP fee token on the source chain (`native`: Amulet on Canton, ETH on Sepolia; or `link`)                                               |
-| `--evmReceiver` / `--cantonReceiver` | See config   | Override the default receiver on the destination chain                                                                                   |
-| `--no-exec`                          | auto-exec on | `canton2any` only — skip automatic execution on Sepolia; run `canton2any:manual-exec` after Committee Verifier proofs are on the indexer |
-| `--finality`                         | `finalized`  | `any2canton` only — requested source finality (`finalized` or block depth, e.g. `32`)                                                    |
+| Flag                         | Default                   | Description                                                                                                          |
+| :--------------------------- | :------------------------ | :------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`--gasLimit`</nobr>    | <nobr>`200000`</nobr>     | Gas limit for `ccipReceive` on Sepolia (the destination chain)                                                       |
+| <nobr>`--feeToken`</nobr>    | <nobr>`native`</nobr>     | CCIP fee token on Canton (`native`: Amulet; or `link`)                                                               |
+| <nobr>`--evmReceiver`</nobr> | <nobr>See config</nobr>   | Override the default Sepolia receiver contract                                                                       |
+| <nobr>`--no-exec`</nobr>     | <nobr>auto-exec on</nobr> | Skip automatic execution on Sepolia; run `canton2any:manual-exec` after Committee Verifier proofs are on the indexer |
+
+<Aside type="note" title="Finality flag">
+
+`--finality` is an `any2canton`-only flag (Canton as destination). It is supported for data-only sends; for token or data-and-token sends, only if your token pool supports it — the starter kit's TEST ↔ LINK pool does not. See the [Canton as Destination prerequisites](/ccip/tutorials/canton/destination/prerequisites#optional-script-flags) for details. It is not accepted by `canton2any:*` send scripts.
+
+</Aside>
 
 ## Canton Ledger Access
 
