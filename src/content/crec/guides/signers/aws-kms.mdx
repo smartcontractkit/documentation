@@ -1,0 +1,154 @@
+---
+section: crec
+title: "AWS KMS Signer"
+date: Last Modified
+metadata:
+  description: "Sign Chainlink CRE Connect operations with an ECDSA secp256k1 key held in AWS KMS: the production-grade choice for AWS-based deployments."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+The KMS signer (`github.com/smartcontractkit/crec-sdk/transact/signer/kms`) signs CRE Connect operations using a secp256k1 key held in AWS Key Management Service. The private key never leaves the AWS HSM; the signer asks KMS to sign a digest and returns an Ethereum-canonical 65-byte signature.
+
+## Prerequisites
+
+- A KMS key with `KeyUsage=SIGN_VERIFY` and `KeySpec=ECC_SECG_P256K1`.
+- AWS credentials available to the process (env vars, IAM role, or config file).
+- IAM permissions: `kms:Sign` and `kms:GetPublicKey` on the target key.
+
+Create the key:
+
+```bash
+aws kms create-key \
+  --key-usage SIGN_VERIFY \
+  --key-spec ECC_SECG_P256K1 \
+  --description "CREC signing key for treasury-prod-eth"
+```
+
+Note the key ARN: you'll pass it to `NewSigner`.
+
+## Construct the signer
+
+```go
+import (
+    "github.com/smartcontractkit/crec-sdk/transact/signer/kms"
+)
+
+s, err := kms.NewSigner(ctx, "arn:aws:kms:us-west-2:123456789012:key/abcd-...")
+if err != nil {
+    return err
+}
+```
+
+`NewSigner` loads AWS configuration via `config.LoadDefaultConfig(ctx)` (standard AWS SDK env / role chain).
+
+### Custom AWS configuration
+
+Pin a region or credentials explicitly:
+
+```go
+cfg, _ := config.LoadDefaultConfig(ctx, config.WithRegion("us-east-1"))
+s, err := kms.NewSignerWithConfig(cfg, keyID)
+```
+
+### Testing with a mock client
+
+```go
+import "github.com/smartcontractkit/crec-sdk/transact/signer/kms"
+
+mockKMS := &mocks.KMSClient{}
+s, err := kms.NewSigner(ctx, keyID, kms.WithClient(mockKMS))
+```
+
+## Derive the signer's address
+
+Before you can provision a wallet you need the address the KMS key signs as. The signer exposes a helper:
+
+```go
+import (
+    "github.com/aws/aws-sdk-go-v2/service/kms"
+    awskms "github.com/smartcontractkit/crec-sdk/transact/signer/kms"
+    "github.com/ethereum/go-ethereum/crypto"
+)
+
+cfg, _ := config.LoadDefaultConfig(ctx)
+client := kms.NewFromConfig(cfg)
+
+pubKey, err := awskms.GetPubKeyCtx(ctx, client, keyID)
+if err != nil { return err }
+
+addr := crypto.PubkeyToAddress(*pubKey).Hex()
+fmt.Println("KMS signer address:", addr)
+```
+
+Add this address to `AllowedEcdsaSigners` when you create the wallet; see [Manage Wallet Signers](/crec/guides/wallets/manage-signers).
+
+## Sign an operation
+
+```go
+opHash, sig, err := client.Transact.SignOperation(ctx, op, s, chainSelector)
+```
+
+Internally `Sign(ctx, hash)`:
+
+1. Calls `KMS.GetPublicKey` to retrieve the secp256k1 public key (used to disambiguate the recovery byte).
+2. Calls `KMS.Sign` with `MessageType=DIGEST` and `SigningAlgorithm=ECDSA_SHA_256`.
+3. Decodes the ASN.1 ECDSA signature into raw `(r, s)`.
+4. Normalises `s` to the lower half of the curve (Ethereum BIP-62 rule).
+5. Tries `v=0` and `v=1` in turn, picking whichever recovers to the public key returned by `GetPublicKey`.
+
+The result is a 65-byte `(r ∥ s ∥ v)` signature that the Smart Account verifies with `ecrecover` (the on-chain verifier accepts the raw recovery byte).
+
+## End-to-end flow
+
+```go
+import (
+    "github.com/smartcontractkit/crec-sdk/transact/signer/kms"
+)
+
+s, err := kms.NewSigner(ctx, os.Getenv("KMS_KEY_ID"))
+if err != nil { return err }
+
+op := &types.Operation{ /* ... build as usual ... */ }
+
+opr, err := client.Transact.ExecuteOperation(ctx, channelID, s, op, chainSelector)
+if err != nil { return err }
+```
+
+## IAM least-privilege policy
+
+The signer needs only `Sign` and `GetPublicKey`:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["kms:Sign", "kms:GetPublicKey"],
+      "Resource": "arn:aws:kms:us-west-2:123456789012:key/abcd-..."
+    }
+  ]
+}
+```
+
+Avoid wildcard resources: bind the policy to the specific key ARN your service is allowed to drive.
+
+## Operational notes
+
+- **API calls per signature.** `Sign` issues two KMS round-trips per signature: one `GetPublicKey` to disambiguate the recovery byte, then one `Sign`. Latency is dominated by the network path between your service and KMS; measure it from your own deployment.
+- **Throughput.** Per-account `kms:Sign` request rate is governed by AWS KMS service quotas. Confirm the current limits and any account-specific overrides in the AWS KMS console (Quotas) before sizing a high-throughput workload.
+- **Cost.** A `kms:Sign` call on an asymmetric key is billed per request; check the current AWS pricing page.
+- **Audit.** Every `Sign` shows up in CloudTrail. Pair with the [Signing Transparency](/crec/guides/operations/signing-transparency) guide to keep an off-AWS audit trail too.
+
+<Aside type="note" title="Use IAM roles, not long-lived keys">
+  For services running on EC2, ECS, EKS, or Lambda, use the instance / task role and let the AWS SDK pick up credentials
+  automatically. Avoid checking long-lived `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` into the environment.
+</Aside>
+
+## Next steps
+
+- [HashiCorp Vault Signer](/crec/guides/signers/hashicorp-vault): for self-hosted secret management.
+- [Smart Accounts](/crec/concepts/smart-accounts): how the recovered signer address is checked on chain.

@@ -1,0 +1,186 @@
+---
+section: crec
+title: "SDK Configuration"
+date: Last Modified
+metadata:
+  description: "Complete reference for the Go SDK's NewClient signature and every functional Option (WithHTTPClient, WithLogger, WithEventVerification, WithoutEventVerification, WithOrgID, WithWorkflowOwner, WithCRETenantID, WithWatcherPolling)."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+This page enumerates every constructor option exposed by the root `crec` SDK package. All options follow the functional-options pattern.
+
+## `NewClient`
+
+```go
+import crec "github.com/smartcontractkit/crec-sdk"
+
+func NewClient(baseURL, apiKey string, opts ...crec.Option) (*crec.Client, error)
+```
+
+| Parameter | Required | Notes                                                                                                                |
+| --------- | -------- | -------------------------------------------------------------------------------------------------------------------- |
+| `baseURL` | yes      | Environment-specific base URL (e.g. `https://cre-connect.api.chain.link/v1`). Returns `ErrBaseURLRequired` if empty. |
+| `apiKey`  | yes      | Organisation API key. Sent internally as `Authorization: Apikey <key>`. Returns `ErrAPIKeyRequired` if empty.        |
+| `opts`    | no       | Zero or more of the options below.                                                                                   |
+
+`NewClient` validates the event-verification config (`ErrInvalidEventVerificationConfig`) and constructs every sub-client (`Channels`, `Events`, `Transact`, `Wallets`, `Watchers`, `Queries`).
+
+### Example
+
+```go
+client, err := crec.NewClient(
+    os.Getenv("CREC_BASE_URL"),
+    os.Getenv("CREC_API_KEY"),
+    crec.WithLogger(slog.Default()),
+    crec.WithOrgID(orgID),
+)
+if err != nil { return err }
+```
+
+## Defaults
+
+| Default                 | Constant / value                          | Notes                                                       |
+| ----------------------- | ----------------------------------------- | ----------------------------------------------------------- |
+| HTTP client             | `http.DefaultClient`                      | Override with `WithHTTPClient`.                             |
+| Logger                  | `slog.Default()`                          | Override with `WithLogger`.                                 |
+| Min required signatures | `crec.DefaultMinRequiredSignatures` (= 4) | F+1 where F = 3 (production DON Byzantine fault tolerance). |
+| Valid signers           | `crec.DefaultValidSigners`                | 10 production DON node addresses (Zone A).                  |
+| Event verification      | enabled                                   | Disable with `WithoutEventVerification()` (test only).      |
+| CRE tenant ID           | `events.CreMainlineTenantID` (= `"1"`)    | Override with `WithCRETenantID`.                            |
+
+## Options
+
+### `WithHTTPClient(c *http.Client)`
+
+Override the default HTTP client. Use this to configure timeouts, proxies, or instrumentation.
+
+```go
+crec.WithHTTPClient(&http.Client{ Timeout: 10 * time.Second })
+```
+
+### `WithLogger(l *slog.Logger)`
+
+Inject a custom `slog.Logger`. Defaults to `slog.Default()`.
+
+```go
+crec.WithLogger(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+```
+
+### `WithDONConfig(creTenantID string, minRequiredSignatures int, validSigners []string)`
+
+Configure event verification for your organisation's DON as one atomic unit: the CRE tenant ID (used for workflow-owner derivation), the signature threshold, and the signer set. These values are provided at onboarding; they are not SDK constants.
+
+```go
+crec.WithDONConfig("3", 2, []string{
+    "0x4d6cfd44f94408a39fb1af94a53c107a730ba161",
+    // … your DON's signer list …
+})
+```
+
+The unit must be complete: `NewClient` returns `crec.ErrIncompleteDONConfig` if the tenant ID is empty, the signer list is empty, or the threshold is not positive. If you combine `WithDONConfig` with the granular options below, the last applied option wins per field; once `WithDONConfig` is used, the completeness requirement applies regardless of option order.
+
+<Aside type="caution" title="Don't raise the threshold above the DON quorum">
+  The DON transmits as soon as it has F+1 valid signatures, so reports will never contain more than F+1 signatures.
+  Raising
+  <code>minRequiredSignatures</code> above the DON's F+1 will cause every event to fail verification.
+</Aside>
+
+### `WithEventVerification(min int, signers []string)`
+
+**Deprecated**: use `WithDONConfig` instead, which configures the CRE tenant ID, signature threshold, and signer set as one unit.
+
+Override both the minimum required signatures and the set of valid signer addresses used by `events.Client.Verify`.
+
+```go
+crec.WithEventVerification(4, []string{
+    "0xff9b062fccb2f042311343048b9518068370f837",
+    // …
+})
+```
+
+### `WithoutEventVerification()`
+
+Skip the default signer-set backfill: the client ends up with no signers, and verification calls fail with `events.ErrVerificationNotConfigured`. This does not override explicitly configured signers: those set via `WithEventVerification` or `WithDONConfig` still apply.
+
+```go
+crec.WithoutEventVerification()
+```
+
+### `WithOrgID(orgID string)`
+
+Set the default organisation ID for `events.Client.Verify` and `events.Client.VerifyOperationStatus`. With this option, you can call those methods without passing `orgID` explicitly. For multi-org applications, omit this option and use `VerifyWithOrgID` / `VerifyOperationStatusWithOrgID`.
+
+### `WithWorkflowOwner(owner string)`
+
+Set the default workflow-owner address for verification. Use `VerifyWithWorkflowOwner` / `VerifyOperationStatusWithWorkflowOwner` for per-call overrides.
+
+### `WithCRETenantID(tenant string)`
+
+**Deprecated**: use `WithDONConfig` instead, which sets the CRE tenant ID together with the threshold and signer set.
+
+Override the CRE tenant ID used for workflow-owner address derivation. Defaults to `events.CreMainlineTenantID` (`"1"`). Use a different tenant ID when targeting a non-mainline CRE environment.
+
+### `WithWatcherPolling(pollInterval, eventualConsistencyWindow time.Duration)`
+
+Tune the `watchers` client's polling behaviour:
+
+- `pollInterval`: wait between polls when waiting for a watcher state change.
+- `eventualConsistencyWindow`: how long to tolerate `404` responses immediately after creating a watcher.
+
+```go
+crec.WithWatcherPolling(2*time.Second, 30*time.Second)
+```
+
+## Constants exposed by `crec`
+
+```go
+const DefaultMinRequiredSignatures = 4
+```
+
+`DefaultMinRequiredSignatures = F + 1` where F = 3 (production DON Byzantine fault tolerance). The DON only transmits once at least F+1 signatures are gathered, so verification will always succeed at this default for production events.
+
+`DefaultValidSigners` is the production DON node set on Ethereum Mainnet (Zone A), exported as a `[]string` of 10 addresses. These keys rarely change; when they do, update the SDK to pick up the new set.
+
+| Node Operator | Public Key                                   |
+| ------------- | -------------------------------------------- |
+| Chainlayer    | `0xff9b062fccb2f042311343048b9518068370f837` |
+| CLP           | `0xe55fcaf921e76c6bbcf9415bba12b1236f07b0c3` |
+| Dextrac       | `0x4d6cfd44f94408a39fb1af94a53c107a730ba161` |
+| Fiews         | `0xde5cd1dd4300a0b4854f8223add60d20e1dfe21b` |
+| Inotel        | `0xf3baa9a99b5ad64f50779f449bac83baac8bfdb6` |
+| LinkForest    | `0xd7f22fb5382ff477d2ff5c702cab0ef8abf18233` |
+| LinkPool      | `0xcdf20f8ffd41b02c680988b20e68735cc8c1ca17` |
+| LinkRiver     | `0x4d7d71c7e584cfa1f5c06275e5d283b9d3176924` |
+| PierTwo       | `0xedf4bc027a750d1a88b8ca3ec5e8a5506f6019be` |
+| SimplyVC      | `0x4f99b550623e77b807df7cbed9c79d55e1163b48` |
+
+## Errors
+
+| Error                                    | Returned by                                                                                                                              |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `crec.ErrBaseURLRequired`                | `NewClient` / `NewAPIClient` when `baseURL == ""`.                                                                                       |
+| `crec.ErrAPIKeyRequired`                 | `NewClient` / `NewAPIClient` when `apiKey == ""`.                                                                                        |
+| `crec.ErrInvalidEventVerificationConfig` | `NewClient` when `validSigners` is set but `minRequiredSignatures <= 0`.                                                                 |
+| `crec.ErrIncompleteDONConfig`            | `NewClient` when `WithDONConfig` was used but the DON unit is incomplete: empty tenant ID, empty signer list, or non-positive threshold. |
+
+## Sub-client construction
+
+If you only need one sub-client (e.g. just `channels`), construct an `APIClient` and pass it explicitly:
+
+```go
+api, err := crec.NewAPIClient(baseURL, apiKey)
+if err != nil { return err }
+
+channelsClient, err := channels.NewClient(&channels.Options{ APIClient: api })
+```
+
+This pattern is useful in services that import the SDK as a thin transport layer.
+
+## See also
+
+- [Authentication](/crec/getting-started/authentication): basic `NewClient` setup.
+- [Event Verification](/crec/concepts/event-verification): what `WithEventVerification` actually controls.
+- [Error Handling](/crec/reference/error-handling): sentinel errors and retry policies.

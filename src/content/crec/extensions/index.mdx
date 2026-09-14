@@ -4,43 +4,94 @@ title: "Extensions Overview"
 isIndex: true
 date: Last Modified
 metadata:
-  description: "Chainlink CRE Connect extensions package strongly-typed operation builders, decoded event types, and one-call watcher provisioning for specific services like DTA."
+  description: "Chainlink CRE Connect extensions package strongly-typed operation builders, decoded event types, and one-call watcher provisioning for specific services like DTA. Learn how extensions plug into the SDK."
   datePublished: "2026-05-01"
-  lastModified: "2026-05-01"
+  lastModified: "2026-08-31"
 ---
 
-CRE Connect **extensions** are first-party modules that wrap CRE Connect with service-specific helpers. Each extension provides three things:
+CRE Connect **extensions** are first-party Go modules that wrap the generic `crec-sdk` with service-specific helpers. Each extension provides three things:
 
-1. **An operation builder** that packs calldata for the service's smart contracts so applications don't have to manage the ABI themselves.
-2. **A typed event decoder** so service-specific events arrive as strongly-typed values rather than untyped maps.
-3. **One-call watcher provisioning.** CRE Connect ships pre-packaged watchers for the service so a single call provisions every watcher the service needs.
+1. **An operation builder** that packs calldata for the service's smart contracts so you don't have to manage the ABI yourself.
+2. **A typed event decoder** so that `dta.SubscriptionRequested` arrives as a Go struct, not a `map[string]any`.
+3. **One-call watcher provisioning.** CRE Connect ships pre-packaged watchers for the service so a single SDK call provisions every watcher the service needs.
 
-Extensions are independent modules; applications consume only the ones they need.
+Extensions are independent Go modules; you import only the ones you need.
 
 ## Available extensions
 
-| Extension                                                                           | Use when                                                            |
-| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| **DTA** ([Digital Transfer Agent](https://docs.chain.link/dta-technical-standard/)) | Tokenised funds: subscriptions, redemptions, distributor lifecycle. |
+| Extension                                                                           | Module                                         | Use when                                                            |
+| ----------------------------------------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------- |
+| **DTA** ([Digital Transfer Agent](https://docs.chain.link/dta-technical-standard/)) | `github.com/smartcontractkit/crec-sdk-ext-dta` | Tokenised funds: subscriptions, redemptions, distributor lifecycle. |
 
-The DTA extension uses **contract versioning** — each deployed contract ABI is exposed as a separate sub-module (`/v1`, `/v2`, …). This versioning matches the on-chain contract ABI version and is independent of the extension's own semantic version. The CRE Connect documentation focuses on the **v2** ABI.
-
-## Why extensions matter
-
-- **No ABI bookkeeping.** Calldata packing happens inside the extension; bumping a contract version is a single dependency upgrade.
-- **Typed events.** Each on-chain event is decoded into a strongly-typed value with named fields, instead of opaque strings or maps.
-- **One-call watcher provisioning.** Naming the extension's service is enough for CRE Connect to set up every watcher the service requires.
-- **Backwards-compatible upgrades.** When an event schema or operation signature changes, the extension version bumps and applications get a compile-time signal rather than silent runtime drift.
+The DTA extension repository uses **contract versioning**: each deployed contract ABI is exposed as a separate import path (`/v1`, `/v2`, …) under the same Go module. Per the extension's [README](https://github.com/smartcontractkit/crec-sdk-ext-dta#readme), this versioning matches the on-chain contract ABI version and is independent of Go module semantic versioning. The CRE Connect documentation focuses on the **v2** import path; if you operate against v1 contracts, import the corresponding `/v1` sub-package and consult the extension README for v1-specific operation signatures.
 
 ## Anatomy of an extension
 
-Every CRE Connect extension exposes the same shape:
+Take DTA v2 as the example. The module exposes three sub-packages:
 
-- An **operations** surface — one builder per on-chain action the service supports.
-- An **events** surface — one typed value per on-chain event the service emits, plus a single `Decode` helper that dispatches a verifiable event to the matching typed value.
-- A **watcher bundle** — the service descriptor (name plus the set of events it covers) consumed by CRE Connect to provision the service's watchers in one call.
+```
+crec-sdk-ext-dta/v2
+├── /                    // Decode helper: v2.DecodeFromEvent
+├── /events              // Typed event structs + EventName constants + decoders
+├── /operations          // Extension client: PrepareXxxOperation builders
+└── /watcher/bundle      // bundle.Get(): service name + ABIs (consumed by CRE Connect)
+```
+
+`v2/operations` exposes an `Extension` struct with one `PrepareXxxOperation` method per on-chain action. Each method returns a `*types.Operation` ready to sign and send through `crec-sdk/transact`:
+
+```go
+import "github.com/smartcontractkit/crec-sdk-ext-dta/v2/operations"
+
+ext, err := operations.New(&operations.Options{
+    AccountAddress:              smartAccount.Hex(),
+    DTARequestManagementAddress: managementAddr.Hex(),
+    DTARequestSettlementAddress: settlementAddr.Hex(),
+})
+op, err := ext.PrepareRequestSubscriptionOperation(fundAdmin, fundTokenId, amount, referenceID)
+```
+
+`v2/events` declares one Go struct per Solidity event (e.g. `SubscriptionRequested`, `DistributorRegistered`) and an `EventName` enum. The root `v2.DecodeFromEvent(ctx, ev)` helper combines watcher decoding with on-chain reference-data enrichment.
+
+`v2/watcher/bundle` ships the service descriptor (name + ABIs) that CRE Connect uses to expose this service to `watchers.CreateWithService`. You typically don't import this package directly; only use it if you want to inspect the published service name or event list from your own code.
+
+## Why extensions matter
+
+- **No ABI bookkeeping.** Calldata packing happens inside the extension; bumping a contract version is a single-module dependency upgrade.
+- **Typed events.** `events.SubscriptionRequested` carries `FundAdminAddr common.Address`, `Amount *big.Int`, etc.: no string casting.
+- **One-call watcher provisioning.** Pass `Service: "dta.v2"` to `watchers.CreateWithService` and CRE Connect sets up every watcher in `bundle.Get().Events`.
+- **Backwards-compatible upgrades.** When an event schema or operation signature changes, the extension version bumps and you get a compile error rather than a silent runtime drift.
+
+## Using an extension
+
+Three integration points:
+
+```go
+import (
+    crec "github.com/smartcontractkit/crec-sdk"
+    dta "github.com/smartcontractkit/crec-sdk-ext-dta/v2"
+    dtaop "github.com/smartcontractkit/crec-sdk-ext-dta/v2/operations"
+)
+
+client, _ := crec.NewClient(baseURL, apiKey)
+
+ext, _ := dtaop.New(&dtaop.Options{
+    AccountAddress:              smartAccount.Hex(),
+    DTARequestManagementAddress: mgmtAddr.Hex(),
+    DTARequestSettlementAddress: settleAddr.Hex(),
+})
+
+op, _ := ext.PrepareRequestSubscriptionOperation(fundAdmin, fundTokenId, amount, refID)
+opr, _ := client.Transact.ExecuteOperation(ctx, channelID, signer, op, chainSelector)
+
+events, _, _ := client.Events.Poll(ctx, channelID, nil)
+for _, ev := range events {
+    decoded, err := dta.DecodeFromEvent(ctx, ev)
+    if err != nil { continue }
+    fmt.Println(decoded.EventName(), decoded.ConcreteEvent)
+}
+```
 
 ## What's next
 
-- [DTA Overview](/crec/extensions/dta) — the first available CRE Connect extension.
-- [Concepts → Extensions](/crec/concepts/extensions) — design philosophy and how extensions compose with the core product.
+- [DTA Overview](/crec/extensions/dta/): the `dta.v2` extension end-to-end.
+- [Concepts: Extensions](/crec/concepts/extensions): design philosophy and combination patterns.

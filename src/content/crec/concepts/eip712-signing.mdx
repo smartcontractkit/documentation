@@ -3,27 +3,27 @@ section: crec
 title: "EIP-712 Signing"
 date: Last Modified
 metadata:
-  description: "Chainlink CRE Connect uses EIP-712 typed-data signing to authorize Operations from Smart Accounts. This page describes the typed-data schema, the CRE Connect domain, and the role of signers."
+  description: "Chainlink CRE Connect uses EIP-712 typed-data signing to authorize Operations from Smart Accounts. This page describes the typed-data schema, the CLLSmartAccount domain, the hashing pipeline, and the Signer interface."
   datePublished: "2026-05-01"
-  lastModified: "2026-05-01"
+  lastModified: "2026-08-31"
 ---
 
 import { Aside, ClickToZoom } from "@components"
 
-CRE Connect authorizes every [Operation](/crec/concepts/operations) with an **<a href="https://eips.ethereum.org/EIPS/eip-712" target="_blank" rel="noopener noreferrer">EIP-712</a> typed-data signature**. The signature is verified on-chain by the [Smart Account](/crec/concepts/smart-accounts) before any transaction in the Operation runs. EIP-712 was chosen so that a wallet UI — or a key-management operator inspecting a payload — can render a human-readable approval prompt instead of an opaque hash.
+CRE Connect authorizes every [Operation](/crec/concepts/operations) with an **<a href="https://eips.ethereum.org/EIPS/eip-712" target="_blank" rel="noopener noreferrer">EIP-712</a> typed-data signature**. The [Smart Account](/crec/concepts/smart-accounts) verifies the signature on-chain before any transaction in the Operation runs. With EIP-712, wallet UIs and key-management systems can show a human-readable approval prompt instead of an opaque hash.
 
 ## Domain
 
-CRE Connect uses a fixed EIP-712 domain to identify "this is a CRE Connect Smart Account Operation":
+The EIP-712 domain is constant across CRE Connect:
 
-| Domain field        | Value                                                                     |
-| ------------------- | ------------------------------------------------------------------------- |
-| `name`              | `CLLSmartAccount`                                                         |
-| `version`           | `1`                                                                       |
-| `chainId`           | The numeric chain ID of the chain on which the Smart Account is deployed. |
-| `verifyingContract` | The Smart Account address — the wallet that will execute the Operation.   |
+| <div style="width: 130px;">Field</div> | Value                                                                             | Source                                                      |
+| -------------------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `name`                                 | `CLLSmartAccount`                                                                 | `transact/types` constant `EIP712DomainName`.               |
+| `version`                              | `1`                                                                               | `transact/types` constant `EIP712DomainVersion`.            |
+| `chainId`                              | The numeric chain ID, derived from the **CCIP chain selector** passed to the SDK. | Resolved with `GetChainIDFromSelector(selector)`. EVM-only. |
+| `verifyingContract`                    | The Smart Account address (`Operation.Account`).                                  | Built by `SmartAccountEIP712Domain(chainId, account)`.      |
 
-Because `verifyingContract` is the Smart Account itself, two wallets on the same chain produce _different_ domain hashes — a signature for wallet A is unusable on wallet B even if both contracts speak the same protocol. This is what makes the EIP-712 binding **per-account**.
+Because `verifyingContract` is the Smart Account itself, two wallets on the same chain produce _different_ domain hashes. A signature for wallet A is unusable on wallet B even if both contracts speak the same protocol. This is what makes the EIP-712 binding _per-account_.
 
 ## Typed-data schema
 
@@ -44,37 +44,74 @@ Transaction {
 }
 ```
 
-These are the same fields documented in [Operations](/crec/concepts/operations). The signature is a standard EIP-712 digest over this typed structure and the domain — bit-for-bit compatible with any EIP-712 implementation in Solidity, Ethers, viem, or rust-ethereum.
+These are the same fields documented in [Operations](/crec/concepts/operations). EIP-712 hashing follows the standard rules:
 
-## Hashing pipeline
+- `bytes` and `string` fields are hashed with `keccak256` before being included.
+- Dynamic arrays are hashed by concatenating the hashes of each element and `keccak256`-ing the result.
+- The struct hash is `keccak256(typeHash ‖ encoded fields)`.
+- The final digest is `keccak256("\x19\x01" ‖ domainSeparator ‖ structHash)`.
+
+The SDK builds this digest with `go-ethereum`'s `apitypes.TypedDataAndHash`, so the bytes are bit-for-bit compatible with any EIP-712 implementation in Solidity, Ethers, viem, or rust-ethereum.
+
+## Hashing pipeline (in code)
 
 <ClickToZoom src="/images/crec/concepts/eip712-hashing-pipeline.png" />
 
-The application supplies the Operation; CRE Connect builds the typed-data payload, computes the digest, and asks the configured signer to sign it. Signing is a 32-bytes-in, 65-bytes-out operation — the signer never has to understand CRE Connect's domain or types.
+Most application code does not call the `Handler` directly. Use the high-level entry points on the unified client:
+
+- `client.Transact.HashOperation(op, chainSelector)`: returns the 32-byte digest without signing. Use this for [draft operations](/crec/concepts/drafts) and external approval workflows.
+- `client.Transact.SignOperation(ctx, op, signer, chainSelector)`: returns the 32-byte digest and the signature.
+- `client.Transact.ExecuteOperation(ctx, channelID, signer, op, chainSelector)`: signs and submits in one call.
+- `client.Transact.ExecuteTransactions(ctx, channelID, signer, executorAccount, txs, deadline, chainSelector)`: convenience wrapper that builds the `Operation` for you.
+
+Draft operations use the same digest. In the draft flow, CRE Connect stores the unsigned operation first, then your application sends the digest and signature when it finalizes the draft.
+
+The lower-level handler is exposed in `transact/eip712` if you need the digest without signing or want to drive the pipeline yourself:
+
+- `eip712.Handler.HashOperation(op, chainSelector)`: returns the 32-byte digest, no signing.
+- `eip712.Handler.SignOperation(ctx, op, signer, chainSelector)`: computes the digest _and_ asks the supplied `Signer` to sign it.
 
 ## Signers
 
-A signer is anything that can produce an ECDSA signature over a 32-byte hash. CRE Connect supports several common key-management options at launch:
+A `signer.Signer` is anything that produces a 65-byte ECDSA signature over a 32-byte hash. The interface lives in `github.com/smartcontractkit/crec-sdk/transact/signer`:
 
-| Adapter             | Notes                                                   |
-| ------------------- | ------------------------------------------------------- |
-| **Local (ECDSA)**   | In-process key. Recommended for local development only. |
-| **AWS KMS**         | KMS-managed `secp256k1` key.                            |
-| **HashiCorp Vault** | Vault Transit secrets engine, ECDSA `secp256k1` key.    |
-| **Fireblocks**      | Hosted custody with optional human approval workflow.   |
-| **Privy**           | Privy embedded wallet via REST.                         |
-| **Custom**          | Any implementation that signs a 32-byte hash.           |
+```go
+import "github.com/smartcontractkit/crec-sdk/transact/signer"
 
-Some signer adapters can also render the EIP-712 typed data directly to a human approver, which makes the contents of the Operation human-readable in the approval UI rather than displaying an opaque hash.
+type Signer interface {
+    Sign(ctx context.Context, hash []byte) ([]byte, error)
+}
+```
+
+Some signer adapters (for example, Fireblocks) also implement `signer.TypedDataSigner`, which lets the adapter render a typed-data prompt to a human approver:
+
+```go
+type TypedDataSigner interface {
+    SignTypedData(ctx context.Context, typedData *TypedData) ([]byte, error)
+}
+```
+
+The SDK ships five built-in adapters and supports any custom implementation:
+
+| Adapter             | Package                      | Notes                                                   |
+| ------------------- | ---------------------------- | ------------------------------------------------------- |
+| **Local (ECDSA)**   | `transact/signer/local`      | In-process key. Recommended for local development only. |
+| **AWS KMS**         | `transact/signer/kms`        | KMS-managed `ECC_SECG_P256K1` key.                      |
+| **HashiCorp Vault** | `transact/signer/vault`      | Vault Transit secrets engine, ECDSA `secp256k1` key.    |
+| **Fireblocks**      | `transact/signer/fireblocks` | Implements both `Signer` and `TypedDataSigner`.         |
+| **Privy**           | `transact/signer/privy`      | Privy wallet via REST API.                              |
+| **Custom**          | any package                  | Any type implementing the `Signer` interface.           |
+
+See [Signers](/crec/guides/signers/local) for runnable setup guides.
 
 ## Authorization vs execution
 
-EIP-712 signing only **authorizes** the Operation. It does not pay gas, and it does not put the Operation on-chain by itself. Execution still goes through the Chainlink DON, which signs and broadcasts the underlying transaction on the Smart Account's behalf (see [Account Abstraction & Gas Sponsorship](/crec/concepts/account-abstraction)).
+EIP-712 signing only **authorizes** the Operation. It does not pay gas, and it does not put the Operation on-chain by itself. Execution still goes through the Chainlink DON, which signs and broadcasts the underlying transaction on your Smart Account's behalf (see [Account Abstraction & Gas Sponsorship](/crec/concepts/account-abstraction)).
 
 This separation has two practical consequences:
 
 1. **The signing key never holds gas.** A KMS- or Vault-managed key with no on-chain presence is sufficient.
-2. **The on-chain `tx.origin` is the DON's writer, not the user.** Authorization is anchored on the EIP-712-recovered signer address compared against the wallet's allow-list, not on the message sender — see [Smart Accounts](/crec/concepts/smart-accounts) for the contract-level model.
+2. **The on-chain `tx.origin` is the DON's writer, not the user.** Authorization is anchored on the EIP-712-recovered signer address compared against the wallet's allow-list, not on the message sender. See [Smart Accounts](/crec/concepts/smart-accounts) for the contract-level model.
 
 <Aside type="caution" title="Always sign over the deadline">
   The `deadline` field is part of the EIP-712 message, so any change to the deadline invalidates the signature. Choose
@@ -84,9 +121,10 @@ This separation has two practical consequences:
 
 ## Related
 
-- [Operations & Transactions](/crec/concepts/operations) — what gets signed.
-- [Smart Accounts](/crec/concepts/smart-accounts) — the on-chain verifier of the signature.
-- <a href="https://eips.ethereum.org/EIPS/eip-712" target="_blank" rel="noopener noreferrer">
-    EIP-712: Typed structured data hashing and signing
-  </a>
-  — the canonical Ethereum specification.
+- [Operations & Transactions](/crec/concepts/operations): what gets signed.
+- [Draft Operations](/crec/concepts/drafts): deferred signing with the same EIP-712 digest.
+- [Build and Sign Operations](/crec/guides/operations/build-and-sign): the SDK call flow.
+- [Signing Transparency](/crec/guides/operations/signing-transparency): render the typed data for human approvers.
+- [Smart Accounts](/crec/concepts/smart-accounts): the on-chain verifier of the signature.
+- [EIP-712: Typed structured data hashing and signing](https://eips.ethereum.org/EIPS/eip-712): the canonical Ethereum
+  specification.
