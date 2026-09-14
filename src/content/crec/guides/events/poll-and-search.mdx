@@ -1,0 +1,200 @@
+---
+section: crec
+title: "Poll and Search Events"
+date: Last Modified
+metadata:
+  description: "Use Chainlink CRE Connect's Poll and SearchEvents to consume verifiable events from a channel: real-time tail-following with Poll, historical filtering with SearchEvents."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside, MethodTabs } from "@components"
+
+The events client exposes three read paths:
+
+| Method                                                          | Use case                                                      | Pagination     | Filter surface                                                         |
+| --------------------------------------------------------------- | ------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------- |
+| `Events.Poll`                                                   | Real-time tail-following of a channel                         | offset / limit | None: pure `GET /channels/{id}/events`                                 |
+| `Events.SearchEvents`                                           | Historical queries and analytics                              | offset / limit | Type, date range, chain, watcher, wallet, address, event name, service |
+| `apiClient.GetChannelsChannelIdEventsSearchEventIdWithResponse` | Fetch one event by UUID (via the underlying generated client) | —              | —                                                                      |
+
+## Poll for new events
+
+`Poll` is the simplest path: it returns a batch ordered by **descending offset** (newest first) and a `hasMore` flag. Most consumers run it in a loop with a small back-off when the channel is idle.
+
+<MethodTabs>
+  <Fragment slot="ui">
+
+The Platform UI does not poll the API on your behalf: events are streamed onto the channel detail page as they arrive. There is **no poll button and no full-text search** of events in the UI; consume events programmatically with the Go SDK or REST API for any production use case.
+
+To browse events for a channel:
+
+1. Go to [app.chain.link/cre-connect](https://app.chain.link/cre-connect/) and open the channel detail page.
+2. Select the **Events** tab (next to **Watchers** and **Operations**).
+3. The events list is populated automatically and shows, for each event: **Type**, **Name**, **Source**, **Service**, **Network**, and **Timestamp**. **Type**, **Source**, and **Timestamp** columns are sortable. **Source** is rendered as a clickable link to the originating contract (for `watcher.event`) or wallet/operation/watcher detail page.
+4. Narrow the list with the three filter dropdowns at the top right of the table:
+
+   | Filter      | Values                                                                                |
+   | ----------- | ------------------------------------------------------------------------------------- |
+   | **Type**    | Multi-select: `Operation status`, `Watcher status`, `Watcher event`, `Wallet status`. |
+   | **Source**  | Filter to a specific source (watcher / wallet / operation) on the channel.            |
+   | **Network** | Filter to events emitted on a specific network.                                       |
+
+   The search box inside each dropdown filters the option list, not the events themselves.
+
+  </Fragment>
+  <Fragment slot="api">
+
+**Go SDK**
+
+```go
+events, hasMore, err := client.Events.Poll(ctx, channelID, nil)
+if err != nil {
+    return err
+}
+for _, ev := range events {
+    fmt.Println(ev.EventId, ev.Headers.Type, ev.Headers.Offset)
+}
+```
+
+You can pass an `apiClient.GetChannelsChannelIdEventsParams` to control pagination:
+
+```go
+import apiClient "github.com/smartcontractkit/crec-api-go/client"
+
+limit := 100
+offset := int64(0)
+events, hasMore, err := client.Events.Poll(ctx, channelID, &apiClient.GetChannelsChannelIdEventsParams{
+    Limit:  &limit,
+    Offset: &offset,
+})
+```
+
+**curl**
+
+```bash
+curl -sS "$CREC_BASE_URL/channels/$CHANNEL_ID/events?limit=100&offset=0" \
+  -H "Authorization: Apikey $CREC_API_KEY"
+```
+
+  </Fragment>
+</MethodTabs>
+
+### Loop pattern
+
+```go
+import (
+    crecevents "github.com/smartcontractkit/crec-sdk/events"
+)
+
+for {
+    evts, hasMore, err := client.Events.Poll(ctx, channelID, nil)
+    if err != nil {
+        if errors.Is(err, crecevents.ErrChannelNotFound) {
+            return err
+        }
+        log.Printf("transient poll error: %v", err)
+        time.Sleep(2 * time.Second)
+        continue
+    }
+
+    for _, ev := range evts {
+        if ok, _ := client.Events.Verify(&ev); !ok {
+            continue
+        }
+        process(ev)
+    }
+
+    if !hasMore {
+        time.Sleep(5 * time.Second)
+    }
+}
+```
+
+The SDK does **not** advance an internal cursor for you. `Poll` returns the most-recent unread events for the channel; persist the largest `Headers.Offset` you have processed so you can resume across restarts.
+
+## Search historical events
+
+For point-in-time queries (date ranges, address filters, event-name filters) use `SearchEvents`. It accepts the full `GetChannelsChannelIdEventsSearchParams` filter set:
+
+```go
+import apiClient "github.com/smartcontractkit/crec-api-go/client"
+
+types := []apiClient.EventType{apiClient.EventTypeWatcherEvent}
+addresses := []apiClient.EthereumAddress{"0xYourErc20"}
+chainSelectors := []string{"16015286601757825753"}
+createdGte := time.Now().Add(-24 * time.Hour).Unix()
+createdLte := time.Now().Unix()
+eventName := "Transfer"
+
+params := &apiClient.GetChannelsChannelIdEventsSearchParams{
+    Type:          &types,
+    EventName:     &eventName,
+    Address:       &addresses,
+    ChainSelector: &chainSelectors,
+    CreatedGte:    &createdGte,
+    CreatedLte:    &createdLte,
+}
+
+events, hasMore, err := client.Events.SearchEvents(ctx, channelID, params)
+```
+
+curl equivalent (note the dotted query params `created.gte`, `created.lte`):
+
+```bash
+curl -sS "$CREC_BASE_URL/channels/$CHANNEL_ID/events/search?type=watcher.event&event_name=Transfer&address=0xYourErc20&chain_selector=16015286601757825753&created.gte=...&created.lte=..." \
+  -H "Authorization: Apikey $CREC_API_KEY"
+```
+
+### Filter reference
+
+| Filter                                                  | Type                           | Notes                                                                                 |
+| ------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------- |
+| `Type`                                                  | `*[]apiClient.EventType`       | Multi-value: `watcher.event`, `watcher.status`, `operation.status`, `wallet.status`.  |
+| `EventName`                                             | `*string`                      | Filter to a specific event name (e.g. `"Transfer"`). Applies to `watcher.event` only. |
+| `Address`                                               | `*[]apiClient.EthereumAddress` | Multi-value EVM addresses.                                                            |
+| `ChainSelector`                                         | `*[]string`                    | Multi-value chain selectors.                                                          |
+| `WatcherId` / `WalletId`                                | `*openapi_types.UUID`          | Filter to events from a specific watcher / wallet.                                    |
+| `Service`                                               | `*[]string`                    | Multi-value (e.g. `["dta.v2"]`).                                                      |
+| `Status`                                                | `*[]string`                    | For `operation.status` / `wallet.status` / `watcher.status` events.                   |
+| `WalletOperationId` / `OperationId`                     | `*string`                      | Applies to `operation.status` events.                                                 |
+| `CreatedGt` / `CreatedGte` / `CreatedLt` / `CreatedLte` | `*int64`                       | Unix-second range filters (sent as `created.gt`, etc.).                               |
+| `Limit` / `Offset`                                      | `*int` / `*int64`              | Pagination (default `limit=50`, max `200`).                                           |
+
+The SDK returns these error shapes from `SearchEvents`:
+
+| Sentinel                                                           | Trigger                                                              |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| `events.ErrSearchEvents` wrapping `events.ErrBadRequest`           | API returned **400** with a `Message` describing the invalid filter. |
+| `events.ErrChannelNotFound`                                        | The channel does not exist.                                          |
+| `events.ErrSearchEvents` wrapping `events.ErrUnexpectedStatusCode` | Any other non-200.                                                   |
+
+## Get a specific event
+
+There is no typed helper for single-event fetch. Use the underlying API client:
+
+```go
+import apiClient "github.com/smartcontractkit/crec-api-go/client"
+
+api, err := crec.NewAPIClient("https://cre-connect.api.chain.link/v1", apiKey)
+if err != nil { return err }
+
+resp, err := api.GetChannelsChannelIdEventsSearchEventIdWithResponse(ctx, channelID, eventID)
+if err != nil { return err }
+if resp.JSON200 == nil { return fmt.Errorf("nil event payload") }
+ev := *resp.JSON200
+```
+
+## Always verify before processing
+
+<Aside type="caution" title="Don't skip verification">
+  `Poll` and `SearchEvents` return events **as the API serves them**; verification is a separate step. Treat any event
+  whose `Verify` returned `false` as untrusted. The default SDK configuration rejects events not signed by the
+  production DON. See [Verify Event Signatures](/crec/guides/events/verify-signatures).
+</Aside>
+
+## Next steps
+
+- [Verify Event Signatures](/crec/guides/events/verify-signatures): cryptographically authenticate every event.
+- [Decode Event Data](/crec/guides/events/decode-data): turn the verified payload into a Go struct.
+- [Event Types and Payloads](/crec/reference/event-payloads): every payload variant in one table.
