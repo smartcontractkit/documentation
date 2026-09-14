@@ -1,0 +1,76 @@
+---
+section: ace
+title: "Building a New Contract"
+date: Last Modified
+metadata:
+  description: "Choose the right ACE-compatible contract type for your use case: ERC-20 compliance token or ERC-3643 (T-REX) compliant token, and understand the differences between them."
+  datePublished: "2026-03-31"
+  lastModified: "2026-03-31"
+---
+
+import { Aside } from "@components"
+
+If you are starting a new project, ACE provides audited reference implementations that come pre-integrated with PolicyProtected. You do not need to implement the ACE integration yourself — these contracts are ready to deploy and protect with policies.
+
+If you already have a deployed contract, see [Upgrading Existing Contracts](/ace/guides/policy-manager/contracts/upgrade-existing) instead.
+
+## Reference implementations
+
+ACE offers two token implementations, each designed for different regulatory contexts:
+
+- **ComplianceTokenERC20** — A policy-protected ERC-20 token with advanced frozen token handling, force transfers, and mint/burn controls.
+- **ComplianceTokenERC3643** — A compliant implementation of the [ERC-3643 (T-REX)](https://eips.ethereum.org/EIPS/eip-3643) standard, using ACE Cross-Chain Identity instead of ONCHAINID and ACE Policy Management instead of T-REX ModularCompliance.
+
+Both implementations inherit from `PolicyProtectedUpgradeable` and must be deployed behind a proxy. During ACE Beta, deployment is managed through the ACE Platform.
+
+## Choosing between ERC-20 and ERC-3643
+
+The right choice depends on your regulatory requirements, the asset type you are tokenizing, and how you need frozen tokens to behave.
+
+| Aspect                    | ERC-20 Compliance Token                                                            | ERC-3643 Compliance Token                                                                         |
+| ------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **Standard**              | ERC-20                                                                             | ERC-3643 (T-REX)                                                                                  |
+| **Regulatory context**    | Broad — suitable for any token that needs policy-based compliance                  | Securities — designed for regulated securities and financial instruments                          |
+| **Identity system**       | ACE Cross-Chain Identity                                                           | ACE Cross-Chain Identity (replaces ONCHAINID)                                                     |
+| **Compliance system**     | ACE Policy Management                                                              | ACE Policy Management (replaces T-REX ModularCompliance)                                          |
+| **Frozen token behavior** | Strict preservation — frozen tokens remain frozen during burns and force transfers | Operational flexibility — burns and force transfers can automatically unfreeze tokens when needed |
+| **Pause support**         | No built-in pause (use a PausePolicy instead)                                      | Built-in `pause`/`unpause` with `whenNotPaused` modifier                                          |
+| **Batch operations**      | No                                                                                 | Yes — batch transfer, mint, burn, freeze/unfreeze                                                 |
+| **CCIP admin**            | `getCCIPAdmin()` returns the contract owner                                        | Not included                                                                                      |
+
+### Frozen token behavior explained
+
+The most significant difference between the two implementations is how frozen tokens are handled during administrative operations:
+
+**ERC-20 approach (strict preservation):** When an admin performs a burn or force transfer on an account with frozen tokens, the frozen balance is preserved. The operation only succeeds if the account has sufficient _unfrozen_ balance. This means an admin must explicitly unfreeze tokens before they can be burned or force-transferred.
+
+**ERC-3643 approach (automatic unfreezing):** When an admin performs a burn or force transfer, the contract automatically unfreezes tokens if the unfrozen balance is insufficient. This follows the T-REX philosophy that administrative actions should not be blocked by frozen status — the admin has already decided the operation is necessary.
+
+### When to choose each
+
+**Choose ERC-20** when:
+
+- You need a general-purpose compliant token without a specific regulatory framework requirement.
+- You want strict control over frozen tokens — every unfreeze must be an explicit administrative action.
+- You plan to integrate with CCIP for cross-chain transfers.
+
+**Choose ERC-3643** when:
+
+- You are tokenizing regulated securities and need compliance with the ERC-3643 standard.
+- Your regulatory framework requires or benefits from the T-REX interface (existing tooling, auditor familiarity).
+- You need batch operations for managing large numbers of holders efficiently.
+- You prefer operational flexibility for administrative actions on frozen tokens.
+
+## Next steps
+
+- **[Building an ERC-20 Compliance Token](/ace/guides/policy-manager/contracts/erc20-token)** — Detailed guide for deploying and configuring the ERC-20 reference implementation.
+- **[Building an ERC-3643 Compliance Token](/ace/guides/policy-manager/contracts/erc3643-token)** — Detailed guide for deploying and configuring the ERC-3643 reference implementation.
+
+<Aside type="note" title="Not building a token?">
+  The reference implementations above are specifically for tokens. If you are building a different type of contract
+  (vault, DEX, lending protocol, etc.), you can make any contract ACE-compatible by following the [integration
+  requirements](/ace/guides/policy-manager/contracts/ace-compatible) — inherit from `PolicyProtected`, add `runPolicy`
+  to your functions, and connect to a PolicyEngine. During ACE Beta, the platform provides extractors for ERC-20 and
+  ERC-3643 function signatures only — other contract types require custom extractors, which are [not available through
+  the platform in Beta](/ace/beta-scope#no-custom-extractors-or-mappers).
+</Aside>
