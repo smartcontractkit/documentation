@@ -110,8 +110,6 @@ Fill in the following values:
 
 In `canton-config.json`, set **`party`** to your Canton testnet party ID and **`transferInstructionUrl`** to your validator's transfer-instruction API. See [source prerequisites](/ccip/tutorials/canton/source/prerequisites#understanding-canton-configuration-canton-configjson) for field reference.
 
-Send scripts use a default **`--gasLimit` of `200000`** for destination `ccipReceive` (see [optional script flags](/ccip/tutorials/canton/source/prerequisites#optional-script-flags) in source prerequisites).
-
 **Example `.env` file:**
 
 ```bash filename=".env"
@@ -127,6 +125,23 @@ CANTON_CLIENT_SECRET=your_client_secret
 <Aside type="caution" title="Keep your secrets safe">
 
 Never commit `.env`, OIDC secrets, or private keys to version control.
+
+</Aside>
+
+## Optional script flags
+
+`any2canton:*` send scripts accept these flags:
+
+| Flag                            | Default                  | Description                                                                                                                                                                                                                                                |
+| :------------------------------ | :----------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`--gasLimit`</nobr>       | <nobr>`200000`</nobr>    | Gas limit for `ccipReceive` on Canton (the destination chain)                                                                                                                                                                                              |
+| <nobr>`--feeToken`</nobr>       | <nobr>`native`</nobr>    | CCIP fee token on Sepolia (`native`: ETH; or `link`)                                                                                                                                                                                                       |
+| <nobr>`--cantonReceiver`</nobr> | <nobr>See config</nobr>  | Override the default Canton receiver party                                                                                                                                                                                                                 |
+| <nobr>`--finality`</nobr>       | <nobr>`finalized`</nobr> | Requested source finality (`finalized` or block depth, e.g. `32`). Supported for data-only sends; for token / data-and-token sends, only if your token pool supports it — the starter kit's TEST ↔ LINK pool does not, and only supports default finality. |
+
+<Aside type="note" title="No-exec flag">
+
+`--no-exec` is a `canton2any`-only flag (Canton as source). All `any2canton` token transfers require manual execution on Canton via `any2canton:manual-exec` — there is no auto-exec path to skip.
 
 </Aside>
 
