@@ -66,11 +66,40 @@ export const isAaveSVR = (metadata: ChainMetadata): boolean => {
 }
 
 /**
- * Returns the SVR feed type label for a given feed metadata.
+ * Determines whether a network has at least one new shared SVR feed
+ * (path ends with "-shared-svr-2"). When a network has both versions,
+ * the legacy "-shared-svr" feeds are considered backups.
  */
-export const getSvrType = (metadata: ChainMetadata): SvrFeedType | null => {
+export const networkHasNewSharedSVR = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  network: any
+): boolean => {
+  return (
+    network?.metadata?.some(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (feed: any) => isNewSharedSVR(feed)
+    ) ?? false
+  )
+}
+
+/**
+ * Returns the SVR feed type label for a given feed metadata.
+ *
+ * Classification is network-aware: a "-shared-svr" feed is only labeled
+ * "SVR-Backup" when the network also has a "-shared-svr-2" feed. On networks
+ * that only have "-shared-svr" feeds (e.g. BNB, Arbitrum, Monad), those feeds
+ * are the canonical SVR feeds and are labeled "SVR".
+ */
+export const getSvrType = (
+  metadata: ChainMetadata,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  network?: any
+): SvrFeedType | null => {
   if (!metadata?.secondaryProxyAddress) return null
   if (isNewSharedSVR(metadata)) return "SVR"
-  if (isSharedSVR(metadata)) return "SVR-Backup"
+  if (isSharedSVR(metadata)) {
+    // Only treat as backup when the network also has a new shared SVR feed.
+    return networkHasNewSharedSVR(network) ? "SVR-Backup" : "SVR"
+  }
   return "Aave-SVR"
 }

@@ -109,6 +109,26 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
+    page: "arc",
+    title: "Arc Data Feeds",
+    img: "/assets/chains/arc.svg",
+    networkStatusUrl: "https://status.arc.network/",
+    tags: ["default", "smartData"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Arc Mainnet",
+        explorerUrl: "https://explorer.arc.io/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-arc-mainnet.json",
+        rddBundleUrl: "https://reference-data-directory.vercel.app/bundle-proxies-arc-mainnet.json",
+        queryString: "arc-mainnet",
+        tags: ["smartData"],
+      },
+    ],
+    label: "Arc",
+  },
+  {
     page: "avalanche",
     title: "Avalanche Data Feeds",
     img: "/assets/chains/avalanche.svg",
