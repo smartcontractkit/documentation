@@ -128,6 +128,7 @@ export const productChainLinks: ProductChainLinks = {
       linea: "/cre/supported-networks",
       mantle: "/cre/supported-networks",
       megaeth: "/cre/supported-networks",
+      monad: "/cre/supported-networks",
       optimism: "/cre/supported-networks",
       pharos: "/cre/supported-networks",
       plasma: "/cre/supported-networks",
@@ -146,6 +147,7 @@ export const productChainLinks: ProductChainLinks = {
     chains: {
       aptos: "/data-feeds/price-feeds/addresses?page=1&network=aptos#networks",
       arbitrum: "/data-feeds/price-feeds/addresses?page=1&network=arbitrum#networks",
+      arc: "/data-feeds/price-feeds/addresses?page=1&network=arc#networks",
       avalanche: "/data-feeds/price-feeds/addresses?page=1&network=avalanche#networks",
       base: "/data-feeds/price-feeds/addresses?page=1&network=base#networks",
       "bnb-chain": "/data-feeds/price-feeds/addresses?page=1&network=bnb-chain#networks",

@@ -84,6 +84,14 @@ export const FEED_CATEGORY_CONFIG = {
     title: "Deprecating - These feeds are scheduled for deprecation.",
     link: "/data-feeds/selecting-data-feeds#-deprecating",
   },
+  unrated: {
+    key: "unrated",
+    name: "Unrated",
+    icon: "⚪",
+    title:
+      "Unrated - These feeds have not yet been evaluated for market pricing risk. Treat them as unevaluated and use them at your own risk.",
+    link: "/data-feeds/selecting-data-feeds#-unrated",
+  },
 } as const
 
 export type CategoryKey = keyof typeof FEED_CATEGORY_CONFIG
@@ -96,6 +104,7 @@ const TIER_ANCHOR_KEY: Record<CategoryKey, string> = {
   new: "new-token",
   custom: "custom",
   deprecating: "deprecating",
+  unrated: "unrated",
 }
 
 const RISK_DOC_BASE_PATH: Record<MarketPricingRiskProduct, string> = {
@@ -108,6 +117,10 @@ export function getRiskCategoryLink(key: CategoryKey, product: MarketPricingRisk
 
   if (key === "deprecating") {
     return `${base}#-deprecating`
+  }
+
+  if (key === "unrated") {
+    return `${base}#-unrated`
   }
 
   return `${base}${tierAnchor(TIER_ANCHOR_KEY[key], getMarketPricingRiskTerms(product))}`
