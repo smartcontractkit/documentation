@@ -27433,7 +27433,7 @@ Network selectors, router addresses, token instruments, and the default **`--gas
 | <nobr>`--no-exec`</nobr>     | <nobr>auto-exec on</nobr> | Skip automatic execution on Sepolia; run `canton2any:manual-exec` after Committee Verifier proofs are on the indexer |
 
 <Aside type="note" title="Finality flag">
-  `--finality` is an `any2canton`-only flag (Canton as destination). See the [Canton as Destination prerequisites](/ccip/tutorials/canton/destination/prerequisites#optional-script-flags) for its details — it is not accepted by `canton2any:*` send scripts.
+  `--finality` is an `any2canton`-only flag (Canton as destination). It is supported for data-only sends; for token or data-and-token sends, only if your token pool supports it — the starter kit's TEST ↔ LINK pool does not. See the [Canton as Destination prerequisites](/ccip/tutorials/canton/destination/prerequisites#optional-script-flags) for details. It is not accepted by `canton2any:*` send scripts.
 </Aside>
 
 ## Canton Ledger Access
@@ -28146,12 +28146,12 @@ CANTON_CLIENT_SECRET=your_client_secret
 
 `any2canton:*` send scripts accept these flags:
 
-| Flag                            | Default                  | Description                                                                                                                                                                                                  |
-| :------------------------------ | :----------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <nobr>`--gasLimit`</nobr>       | <nobr>`200000`</nobr>    | Gas limit for `ccipReceive` on Canton (the destination chain)                                                                                                                                                |
-| <nobr>`--feeToken`</nobr>       | <nobr>`native`</nobr>    | CCIP fee token on Sepolia (`native`: ETH; or `link`)                                                                                                                                                         |
-| <nobr>`--cantonReceiver`</nobr> | <nobr>See config</nobr>  | Override the default Canton receiver party                                                                                                                                                                   |
-| <nobr>`--finality`</nobr>       | <nobr>`finalized`</nobr> | **Data-only sends** — requested source finality (`finalized` or block depth, e.g. `32`). Not supported for token / data-and-token sends on the TEST ↔ LINK token pool, which only supports default finality. |
+| Flag                            | Default                  | Description                                                                                                                                                                                                                                                |
+| :------------------------------ | :----------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`--gasLimit`</nobr>       | <nobr>`200000`</nobr>    | Gas limit for `ccipReceive` on Canton (the destination chain)                                                                                                                                                                                              |
+| <nobr>`--feeToken`</nobr>       | <nobr>`native`</nobr>    | CCIP fee token on Sepolia (`native`: ETH; or `link`)                                                                                                                                                                                                       |
+| <nobr>`--cantonReceiver`</nobr> | <nobr>See config</nobr>  | Override the default Canton receiver party                                                                                                                                                                                                                 |
+| <nobr>`--finality`</nobr>       | <nobr>`finalized`</nobr> | Requested source finality (`finalized` or block depth, e.g. `32`). Supported for data-only sends; for token / data-and-token sends, only if your token pool supports it — the starter kit's TEST ↔ LINK pool does not, and only supports default finality. |
 
 <Aside type="note" title="No-exec flag">
   `--no-exec` is a `canton2any`-only flag (Canton as source). All `any2canton` token transfers require manual execution on Canton via `any2canton:manual-exec` — there is no auto-exec path to skip.
@@ -28253,7 +28253,7 @@ Key points:
 - **Burn and mint**: TEST is burned on Sepolia; LINK is minted on Canton after execution.
 - **Manual execution required**: Unlike `canton2any` default auto-exec on Sepolia, all `any2canton` token transfers require `any2canton:manual-exec` on Canton.
 - **Token pool disclosures**: Execution fetches disclosures from Global CCIP EDS and the token pool operator EDS.
-- **Finality**: The TEST ↔ LINK token pool only supports default (`finalized`) source finality. Unlike data-only sends, you cannot pass `--finality` to `any2canton:token`.
+- **Finality**: The starter kit uses the TEST ↔ LINK token pool, which only supports default (`finalized`) source finality. A custom `--finality` on token sends is only supported if your token pool supports it — since this starter kit uses LINK, do not pass `--finality` to `any2canton:token`.
 
 See the [Canton as Destination flow](/ccip/concepts/canton/overview#public-chain--canton) — `TokenReceiveTicket` and token pool release steps.
 
@@ -28285,8 +28285,8 @@ See the [Canton as Destination flow](/ccip/concepts/canton/overview#public-chain
 npm run any2canton:token -- --amount 1
 ```
 
-<Aside type="note" title="Finality not customizable for token transfers">
-  The TEST ↔ LINK token pool only supports default (`finalized`) source finality. Do **not** pass `--finality` to `any2canton:token` — it is not supported by the pool. The `--finality` flag is only valid for data-only sends (`any2canton:data`). Wait for Sepolia finality before running `any2canton:manual-exec`.
+<Aside type="note" title="Finality not customizable for LINK token transfers">
+  The starter kit uses the TEST ↔ LINK token pool, which only supports default (`finalized`) source finality. A custom `--finality` on token sends is only supported if your token pool supports it — since this starter kit uses LINK, do **not** pass `--finality` to `any2canton:token`. Wait for Sepolia finality before running `any2canton:manual-exec`.
 </Aside>
 
 ### Expected send output
@@ -28574,8 +28574,8 @@ npm run any2canton:data-and-token -- \
   --feeToken link
 ```
 
-<Aside type="note" title="Finality not customizable for token transfers">
-  The TEST ↔ LINK token pool only supports default (`finalized`) source finality. Do **not** pass `--finality` to `any2canton:data-and-token` — it is not supported by the pool. The `--finality` flag is only valid for data-only sends (`any2canton:data`). Wait for Sepolia finality before running `any2canton:manual-exec`.
+<Aside type="note" title="Finality not customizable for LINK token transfers">
+  The starter kit uses the TEST ↔ LINK token pool, which only supports default (`finalized`) source finality. A custom `--finality` on token sends is only supported if your token pool supports it — since this starter kit uses LINK, do **not** pass `--finality` to `any2canton:data-and-token`. Wait for Sepolia finality before running `any2canton:manual-exec`.
 </Aside>
 
 ### Expected send output
