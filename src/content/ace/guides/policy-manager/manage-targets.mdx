@@ -1,0 +1,279 @@
+---
+section: ace
+title: "Managing Targets"
+date: Last Modified
+metadata:
+  description: "Register, view, configure, and archive target contracts in Chainlink ACE using the Platform UI or the Coordinator API."
+  datePublished: "2026-04-06"
+  lastModified: "2026-04-06"
+---
+
+import { Aside, MethodTabs } from "@components"
+
+A **target** is a smart contract protected by ACE. After deploying your [ACE-compatible contract](/ace/guides/policy-manager/contracts/ace-compatible), you register it as a target under a PolicyEngine. Once registered, you can configure the [default policy result](#default-allow-behavior) and attach [policies](/ace/guides/policy-manager/manage-policies) to its functions via [protections](/ace/guides/policy-manager/manage-protections).
+
+<Aside type="note">
+  Before registering a target, your contract must be
+  [ACE-compatible](/ace/guides/policy-manager/contracts/ace-compatible) — it needs to inherit `PolicyProtected` and use
+  the `runPolicy` modifier on the functions you want to protect. You also need a [deployed
+  PolicyEngine](/ace/guides/policy-manager/manage-engines).
+</Aside>
+
+## Register a target
+
+After deploying your contract, register it as a target with a `POST` request. Provide the contract name, type, protected methods, and on-chain addresses:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/targets \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "title": "My ERC-20 Token",
+    "description": "Production ERC-20 token with compliance enforcement",
+    "policy_engine_id": "<POLICY_ENGINE_ID>",
+    "protected_methods": [
+      "transfer(address,uint256)",
+      "transferFrom(address,address,uint256)"
+      #[any other methods you want to protect]
+    ],
+    "desired_default_allow": true,
+    "metadata": {"contract_type": "ERC-20"},
+    "onchain_targets": [
+      {
+        "chain_selector": "16015286601757825753",
+        "address": "0xYourContractAddressOnSepolia"
+      },
+      {
+        "chain_selector": "3478487238524512106",
+        "address": "0xYourContractAddressOnArbitrumSepolia"
+      },
+      #[any other chains where your contract is deployed]
+    ]
+  }'
+```
+
+| Field                   | Required | Description                                                   |
+| ----------------------- | -------- | ------------------------------------------------------------- |
+| `title`                 | Yes      | Human-readable name for the target                            |
+| `description`           | No       | Description of the contract                                   |
+| `policy_engine_id`      | Yes      | UUID of the policy engine to associate with                   |
+| `protected_methods`     | No       | Array of function signatures that can be protected            |
+| `desired_default_allow` | No       | Whether to allow transactions by default (default: `true`)    |
+| `onchain_targets`       | No       | Array of objects with `chain_selector` and contract `address` |
+| `metadata`              | No       | Arbitrary JSON metadata (e.g., `{"contract_type": "ERC-20"}`) |
+
+## Default allow behavior
+
+The **default policy result** controls what happens when a transaction passes through the entire policy chain and no policy explicitly returns Allow or Reject (i.e., every policy returns Continue). This is configured per target contract via the `desired_default_allow` field:
+
+- **`true` (default)** — The transaction is allowed. This is appropriate when you want policies to act as blockers (reject specific cases), and everything else passes through.
+- **`false`** — The transaction is rejected. This is appropriate for allowlist-style enforcement where only explicitly approved transactions proceed.
+
+For more on how policy evaluation ordering works, see [Policy Ordering & Composition](/ace/concepts/policy-ordering#the-default-result).
+
+### Change the default policy result
+
+<MethodTabs>
+  <Fragment slot="ui">
+    <Aside type="note">
+      Changing the default policy result is not yet available through the Platform UI. Use the **API** tab to update it via the Coordinator API.
+    </Aside>
+  </Fragment>
+  <Fragment slot="api">
+    Update an existing target's default with a `PUT` request. Set `desired_default_allow` to `true` (allow by default) or `false` (reject by default). Because PUT is a full replacement, include all fields you want to keep:
+
+    ```bash
+    curl -X PUT https://ace.api.chain.link/v1/targets/<TARGET_ID> \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "title": "My ERC-20 Token",
+        "description": "Production ERC-20 token with compliance enforcement",
+        "protected_methods": [
+          "transfer(address,uint256)",
+          "transferFrom(address,address,uint256)"
+        ],
+        "desired_default_allow": false,
+        "metadata": {"contract_type": "ERC-20"}
+      }'
+    ```
+
+    The Coordinator calls `SetTargetDefaultPolicyAllow` on the PolicyEngine contract for each chain where the target is deployed.
+
+  </Fragment>
+</MethodTabs>
+
+## View targets
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager** in the left sidebar. You see all the policy engines in your organization.
+    1. Click on a policy engine to open it. The **Contracts** tab lists all target contracts protected by this policy engine.
+    1. Click on a target contract card to see its details. You can switch between two views:
+       - **Functions** — shows unprotected and protected functions, along with the policies protecting each protected function.
+       - **Policies** — shows the list of policies protecting this target contract and which specific functions each policy applies to.
+  </Fragment>
+  <Fragment slot="api">
+    List all targets:
+
+    ```bash
+    curl https://ace.api.chain.link/v1/targets \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    | Parameter | Description |
+    | --- | --- |
+    | `page` | Page number (default: 1) |
+    | `page_size` | Results per page (max: 100) |
+    | `include_onchains` | Include on-chain contract details (default: true) |
+    | `policy_engine_id` | Filter by policy engine |
+    | `chain_selector` | Filter by chain |
+    | `search` | Search by target title or on-chain address |
+
+    To retrieve a specific target by ID:
+
+    ```bash
+    curl https://ace.api.chain.link/v1/targets/<TARGET_ID> \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+## Update a target
+
+You can update a target's name, description, contract type, protected methods, default allow behavior, and on-chain addresses.
+
+<Aside type="caution" title="PUT is a full replacement">
+  The `PUT /targets/{id}` endpoint **replaces the entire resource** — any field you omit is reset to its default (empty
+  string, empty array, or `true` for `desired_default_allow`). Always include every field you want to keep, not just the
+  ones you are changing.
+</Aside>
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [ACE Platform](https://app.chain.link), go to **Compliance > Policy Manager** and click on your policy engine.
+    1. In the **Contracts** tab, click on the target contract you want to update.
+    1. Click the **Edit** icon in the contract header. A drawer opens on the right.
+    1. Update the **Name**, **Contract type**, or **Description** as needed.
+    1. Click **Save changes**.
+
+    <Aside type="note">
+      The UI supports editing the contract name, type, and description. To update `protected_methods`,
+      `desired_default_allow`, or other fields, use the **API** tab.
+    </Aside>
+
+  </Fragment>
+  <Fragment slot="api">
+    Update a target with a `PUT` request. Include all fields you want to preserve:
+
+    ```bash
+    curl -X PUT https://ace.api.chain.link/v1/targets/<TARGET_ID> \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "title": "My ERC-20 Token (Updated)",
+        "description": "Updated description",
+        "protected_methods": [
+          "transfer(address,uint256)",
+          "transferFrom(address,address,uint256)",
+          "mint(address,uint256)"
+        ],
+        "desired_default_allow": true,
+        "metadata": {"contract_type": "ERC-20"}
+      }'
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+## Link targets
+
+When you deploy your ACE-compatible contract on a new chain, the control plane detects it automatically and creates a separate **detected target** (titled "unknown target"). Rather than managing each chain deployment as its own target, you can **merge** detected targets into an existing target to keep a single multi-chain target with all its on-chain addresses in one place.
+
+### Conditions
+
+A detected target can be merged (linked) into an existing target when:
+
+- The detected target was auto-discovered — it still has the default "unknown target" title.
+- The detected target has at least one on-chain address.
+- A valid destination target exists in the same policy engine: it must be a different target, already named, and deployed on a **different chain** than the source (no shared chain selectors).
+
+If no valid destination exists, the detected target cannot be merged — you can only rename it via **Edit details**.
+
+### How it works
+
+Merging transfers the on-chain addresses from the source target(s) to the destination target, then archives the sources. After the merge, the destination target contains all chain deployments and any protections remain on the destination.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager** and open your policy engine.
+    1. In the **Contracts** tab, locate the detected contract (shown as "unknown target").
+    1. Click the **three-dot menu** on the detected contract card.
+    1. Click **Link to existing contract**.
+    1. Select the destination contract you want to merge into.
+    1. Confirm the merge. The detected contract's on-chain address is transferred to the destination and the detected target is archived.
+  </Fragment>
+  <Fragment slot="api">
+    Merge one or more source targets into a destination target with a `POST` request:
+
+    ```bash
+    curl -X POST "https://ace.api.chain.link/v1/targets/<DESTINATION_TARGET_ID>/merge" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "source_target_ids": ["<SOURCE_TARGET_ID>"]
+      }'
+    ```
+
+    | <div style={{ width: "160px" }}>Field</div> | Required | Description |
+    | --- | --- | --- |
+    | `source_target_ids` | Yes | Array of UUID(s) — the detected targets whose on-chain addresses will be transferred to the destination |
+
+    The response returns the updated destination target with all merged on-chain addresses. The source targets are archived automatically.
+
+  </Fragment>
+</MethodTabs>
+
+<Aside type="caution">
+  Merging is irreversible. The source targets are archived and their on-chain addresses become part of the destination
+  target. Make sure you select the correct destination before confirming.
+</Aside>
+
+## Archive a target
+
+Archiving a target removes it from active use. All target protections associated with the target must be archived first.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    <Aside type="note">
+      Archiving a target is not yet available through the Platform UI. Use the **API** tab to archive one via the Coordinator API.
+    </Aside>
+  </Fragment>
+  <Fragment slot="api">
+    Archive a target with a `PATCH` request:
+
+    ```bash
+    curl -X PATCH https://ace.api.chain.link/v1/targets/<TARGET_ID> \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "status": "archived"
+      }'
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+<Aside type="caution">
+  All target protections must be archived before the target itself can be archived. See [Protecting Target
+  Functions](/ace/guides/policy-manager/manage-protections) for how to archive protections.
+</Aside>
+
+## Related pages
+
+- [Making Your Contract ACE-Compatible](/ace/guides/policy-manager/contracts/ace-compatible) — how to integrate `PolicyProtected` into your contract
+- [Managing Policy Engines](/ace/guides/policy-manager/manage-engines) — create the engine your target will use
+- [Managing Policies](/ace/guides/policy-manager/manage-policies) — create policy instances to attach to your target
+- [Protecting Target Functions](/ace/guides/policy-manager/manage-protections) — attach policies to specific functions on your target
+- [Coordinator API Reference](/api/ace/coordinator/docs) — full API schema
