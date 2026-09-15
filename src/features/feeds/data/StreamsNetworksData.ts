@@ -90,6 +90,11 @@ export const StreamsNetworksData: NetworkData[] = [
   {
     network: "Arc",
     logoUrl: "/assets/chains/arc.svg",
+    mainnet: {
+      label: "Arc Mainnet",
+      verifierProxy: "0xcE73c8ad08CBDEaCa6078BF0627C8fe0a9a536E7",
+      explorerUrl: "https://explorer.arc.io/address/%s",
+    },
     testnet: {
       label: "Arc Testnet",
       verifierProxy: "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",
