@@ -15,6 +15,7 @@ export const CONTACT_EMAIL_PROXY_ADDRESSES = new Set<string>([
   "0x0101166b3b000332000000000000000000000000000000000000000000000000",
   "0x7cf132bd0456af4ecfceaae684fd7967df931141",
   "0xbb65fa58bdb7d33e4a3d1a40a7a9bd99e746367b",
+  "0x9eb8a54d0590798880c665c7a6d51b95f4078ad7",
 ])
 
 /**
@@ -26,7 +27,7 @@ export type ExtendedHoursCategory = "preciousMetals" | "forex"
 
 export const EXTENDED_HOURS_FEED_CATEGORIES: Record<ExtendedHoursCategory, Set<string>> = {
   preciousMetals: new Set(["0x369c67e8b026cc4ef98350f332d7dd52b85b7674"]),
-  forex: new Set(["0x9eb8a54d0590798880c665c7a6d51b95f4078ad7"]),
+  forex: new Set(["0x9eb8a54d0590798880c665c7a6d51b95f4078ad7", "0xbb65fa58bdb7d33e4a3d1a40a7a9bd99e746367b"]),
 }
 
 /** Union of all extended-hours proxy addresses, used for the badge and unfiltered visibility. */
