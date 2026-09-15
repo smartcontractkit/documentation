@@ -20,7 +20,7 @@ whatsnext:
 
 import { Accordion, CodeSample, ClickToZoom, CopyText, Aside, PageTabs } from "@components"
 
-Chainlink Data Feeds are the fastest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health. Each feed is aggregated by many independent Chainlink node operators and published onchain through a decentralized oracle network, giving your contracts a reliable, manipulation-resistant source of data.
+Chainlink Data Feeds are the fastest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health. Each feed is aggregated by many independent Chainlink node operators and published onchain through a decentralized oracle network, so no single node can manipulate the price your contract reads.
 
 Each price feed has an onchain address and functions that enable contracts to read pricing data from that address.
 
@@ -77,26 +77,26 @@ You will need:
 <Aside type="caution" title="Keep your private key safe">
   Never commit your private key to version control or hardcode it in a script. This guide uses Hardhat 3
   [configuration variables](https://hardhat.org/docs/guides/configuration-variables), which read secrets from
-  environment variables or an encrypted keystore — no `.env` file required. If you do use a `.env` file, add it to
+  environment variables or an encrypted keystore, so no `.env` file is required. If you do use a `.env` file, add it to
   your `.gitignore`.
 </Aside>
 
 {/* prettier-ignore */}
 <Aside type="note" title="Why a proxy?">
   Consumer contracts call a _proxy_ contract, which forwards reads to the current _aggregator_. When Chainlink
-  upgrades an aggregator, the proxy is repointed to the new implementation and your consumer contract keeps working
-  unchanged. Always read from the proxy address listed on the
+  upgrades an aggregator, Chainlink repoints the proxy to the new implementation and your consumer contract keeps
+  working unchanged. Always read from the proxy address listed on the
   [Price Feed Addresses](/data-feeds/price-feeds/addresses) page, not from the underlying aggregator.
 </Aside>
 
 ## Getting the feed address
 
-Before we even begin, we need to know the address of the feed we want to read. The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the feeds available on each network. For this guide, we will use the BTC / USD feed on Sepolia, with the proxy address: <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code />
+The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the feeds available on each network. This guide uses the BTC / USD feed on Sepolia, with the proxy address: <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code />
 
 ## Retrieving the price data from the feed
 
 <Accordion title="Fetching price data offchain" number={1} contentReference="read-offchain">
-You can read Data Feeds directly from the feed proxy without deploying any consumer contract. This is useful for backends, bots, dashboards, and pre-trade checks.  Meaning it's as simple as just calling the feed proxy contract and reading the latest answer.
+You can read Data Feeds directly from the feed proxy without deploying any consumer contract. This is useful for backends, bots, dashboards, and pre-trade checks.
 
 <Accordion title="Using a standalone ethers.js script (no Hardhat project needed)" number={1.1}>
 
@@ -237,9 +237,8 @@ The contract has the following components:
   - Initializes a `dataFeed` object that uses `AggregatorV3Interface` pointing at the proxy aggregator deployed at <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code/>.
   - This is the proxy address for the Sepolia `BTC / USD` feed. The proxy lets the aggregator be upgraded without breaking consumer contracts.
 - The `getChainlinkDataFeedLatestAnswer()` function
-  - Calls your `dataFeed` object and runs the `latestRoundData()` function and returns the `answer` variable.
-  - When you deploy the contract, it initializes the `dataFeed` object to point to the aggregator at <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code />, which is the proxy address for the Sepolia `BTC / USD` data feed. Your contract connects to that address and executes the function.
-  - The aggregator connects with several oracle nodes and aggregates the pricing data from those nodes. The response from the aggregator includes several variables, but `getChainlinkDataFeedLatestAnswer()` returns only the `answer` variable. The full response includes `roundId`, `startedAt`, `updatedAt`, and `answeredInRound` — see the [API Reference](/data-feeds/api-reference) for details.
+  - Calls `latestRoundData()` on the `dataFeed` object and returns the `answer` variable.
+  - The full response from `latestRoundData()` includes `roundId`, `startedAt`, `updatedAt`, and `answeredInRound`. See the [API Reference](/data-feeds/api-reference) for details.
 
 </Accordion>
 
@@ -261,7 +260,7 @@ The contract has the following components:
    npm install @chainlink/contracts
    ```
 
-   Hardhat resolves `@chainlink/contracts` from `node_modules` automatically — no remapping file needed (unlike Foundry).
+   Hardhat resolves `@chainlink/contracts` from `node_modules` automatically, so no remapping file is needed (unlike Foundry).
 
 1. Create the directories for the sample consumer contract and deploy script:
 
@@ -274,7 +273,7 @@ The contract has the following components:
    - Create `contracts/DataFeeds/DataConsumerV3.sol` and paste in the contract from [Step 2.1: Examine the sample contract](#examine-the-sample-contract).
    - Create `scripts/DataFeeds/DeployAndReadDataConsumerV3.js` and paste in the script from [Step 2.3: Deploy the contract with a Hardhat script](#deploy-with-hardhat-script).
 
-   Make sure the filenames match exactly — Hardhat looks for the contract in `contracts/` and the script in `scripts/`.
+   Make sure the filenames match exactly: Hardhat looks for the contract in `contracts/` and the script in `scripts/`.
 
 1. Configure your `hardhat.config.ts` to compile the Chainlink contracts and use Sepolia. Replace its contents with:
 
@@ -429,7 +428,7 @@ const decimals = await feed.decimals()
 console.log("Decimals:", decimals)
 ```
 
-The BTC / USD feed returns `8` for decimals. To convert the raw integer answer to a human-readable price, divide by `10 ** decimals`. For example, an answer of `3030914000000` with 8 decimals is `30309.14` USD.
+The BTC / USD feed returns `8` for decimals. Scale the raw answer by `10 ** decimals` as shown in [step 1](#read-offchain).
 
 {/* prettier-ignore */}
 <Aside type="tip" title="Always scale by `decimals()`">
@@ -456,7 +455,7 @@ require(answeredInRound >= roundId, "Stale price");
 require(block.timestamp - updatedAt < TIMEOUT, "Stale price");
 ```
 
-Choose a `TIMEOUT` that matches your application's risk tolerance — shorter for trading, longer for less time-sensitive use cases.
+Choose a `TIMEOUT` that matches your application's risk tolerance: shorter for trading, longer for less time-sensitive use cases.
 
 ### Use the right feed for your asset
 
@@ -476,9 +475,9 @@ The sample code is unaudited and hardcodes values for clarity. Before production
 
 ### Do I need a consumer contract to read a Data Feed?
 
-**Only if another smart contract needs the price onchain.** A consumer contract exists to wrap a feed read in your own contract's logic so that _your other contracts_ can use the price onchain — for collateral checks, settlements, circuit breakers, and so on. The read is atomic with your onchain action and verifiable on the blockchain.
+**Only if another smart contract needs the price onchain.** A consumer contract exists to wrap a feed read in your own contract's logic so that _your other contracts_ can use the price onchain: collateral checks, settlements, circuit breakers, and so on. The read is atomic with your onchain action and verifiable on the blockchain.
 
-If you only need the price in an offchain system (a backend, bot, dashboard, or pre-trade check), you do **not** need a consumer contract. The feed proxy is a public contract and `latestRoundData()` is a `view` function — anyone can call it directly from a script using ethers.js, viem, or `cast`. See [Step 1: Fetching price data offchain](#read-offchain) on this page.
+If you only need the price in an offchain system (a backend, bot, dashboard, or pre-trade check), you do **not** need a consumer contract. The feed proxy is a public contract and `latestRoundData()` is a `view` function: anyone can call it directly from a script using ethers.js, viem, or `cast`. See [Step 1: Fetching price data offchain](#read-offchain) on this page.
 
 |                                 | Consumer contract (onchain)           | Direct read (offchain)               |
 | ------------------------------- | ------------------------------------- | ------------------------------------ |

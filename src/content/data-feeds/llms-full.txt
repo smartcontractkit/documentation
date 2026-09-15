@@ -1143,7 +1143,7 @@ Chainlink Data Feeds provide multiple feed types for different onchain use cases
 # Getting Started with Data Feeds (using Hardhat)
 Source: https://docs.chain.link/data-feeds/getting-started-hardhat
 
-Chainlink Data Feeds are the fastest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health. Each feed is aggregated by many independent Chainlink node operators and published onchain through a decentralized oracle network, giving your contracts a reliable, manipulation-resistant source of data.
+Chainlink Data Feeds are the fastest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health. Each feed is aggregated by many independent Chainlink node operators and published onchain through a decentralized oracle network, so no single node can manipulate the price your contract reads.
 
 Each price feed has an onchain address and functions that enable contracts to read pricing data from that address.
 
@@ -1180,21 +1180,21 @@ You will need:
 <Aside type="caution" title="Keep your private key safe">
   Never commit your private key to version control or hardcode it in a script. This guide uses Hardhat 3
   [configuration variables](https://hardhat.org/docs/guides/configuration-variables), which read secrets from
-  environment variables or an encrypted keystore — no `.env` file required. If you do use a `.env` file, add it to
+  environment variables or an encrypted keystore, so no `.env` file is required. If you do use a `.env` file, add it to
   your `.gitignore`.
 </Aside>
 
 
 <Aside type="note" title="Why a proxy?">
   Consumer contracts call a *proxy* contract, which forwards reads to the current *aggregator*. When Chainlink
-  upgrades an aggregator, the proxy is repointed to the new implementation and your consumer contract keeps working
-  unchanged. Always read from the proxy address listed on the
+  upgrades an aggregator, Chainlink repoints the proxy to the new implementation and your consumer contract keeps
+  working unchanged. Always read from the proxy address listed on the
   [Price Feed Addresses](/data-feeds/price-feeds/addresses) page, not from the underlying aggregator.
 </Aside>
 
 ## Getting the feed address
 
-Before we even begin, we need to know the address of the feed we want to read. The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the feeds available on each network. For this guide, we will use the BTC / USD feed on Sepolia, with the proxy address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
+The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the feeds available on each network. This guide uses the BTC / USD feed on Sepolia, with the proxy address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
 
 ## Retrieving the price data from the feed
 
@@ -1265,9 +1265,8 @@ Before we even begin, we need to know the address of the feed we want to read. T
       - Initializes a `dataFeed` object that uses `AggregatorV3Interface` pointing at the proxy aggregator deployed at <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code />.
       - This is the proxy address for the Sepolia `BTC / USD` feed. The proxy lets the aggregator be upgraded without breaking consumer contracts.
     - The `getChainlinkDataFeedLatestAnswer()` function
-      - Calls your `dataFeed` object and runs the `latestRoundData()` function and returns the `answer` variable.
-      - When you deploy the contract, it initializes the `dataFeed` object to point to the aggregator at <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code />, which is the proxy address for the Sepolia `BTC / USD` data feed. Your contract connects to that address and executes the function.
-      - The aggregator connects with several oracle nodes and aggregates the pricing data from those nodes. The response from the aggregator includes several variables, but `getChainlinkDataFeedLatestAnswer()` returns only the `answer` variable. The full response includes `roundId`, `startedAt`, `updatedAt`, and `answeredInRound` — see the [API Reference](/data-feeds/api-reference) for details.
+      - Calls `latestRoundData()` on the `dataFeed` object and returns the `answer` variable.
+      - The full response from `latestRoundData()` includes `roundId`, `startedAt`, `updatedAt`, and `answeredInRound`. See the [API Reference](/data-feeds/api-reference) for details.
   </Accordion>
 
   <Accordion title="Set up a Hardhat project" number={2.2}>
@@ -1287,7 +1286,7 @@ Before we even begin, we need to know the address of the feed we want to read. T
        npm install @chainlink/contracts
        ```
 
-       Hardhat resolves `@chainlink/contracts` from `node_modules` automatically — no remapping file needed (unlike Foundry).
+       Hardhat resolves `@chainlink/contracts` from `node_modules` automatically, so no remapping file is needed (unlike Foundry).
 
     3. Create the directories for the sample consumer contract and deploy script:
 
@@ -1300,7 +1299,7 @@ Before we even begin, we need to know the address of the feed we want to read. T
        - Create `contracts/DataFeeds/DataConsumerV3.sol` and paste in the contract from [Step 2.1: Examine the sample contract](#examine-the-sample-contract).
        - Create `scripts/DataFeeds/DeployAndReadDataConsumerV3.js` and paste in the script from [Step 2.3: Deploy the contract with a Hardhat script](#deploy-with-hardhat-script).
 
-       Make sure the filenames match exactly — Hardhat looks for the contract in `contracts/` and the script in `scripts/`.
+       Make sure the filenames match exactly: Hardhat looks for the contract in `contracts/` and the script in `scripts/`.
 
     5. Configure your `hardhat.config.ts` to compile the Chainlink contracts and use Sepolia. Replace its contents with:
 
@@ -1451,7 +1450,7 @@ Before we even begin, we need to know the address of the feed we want to read. T
     console.log("Decimals:", decimals)
     ```
 
-    The BTC / USD feed returns `8` for decimals. To convert the raw integer answer to a human-readable price, divide by `10 ** decimals`. For example, an answer of `3030914000000` with 8 decimals is `30309.14` USD.
+    The BTC / USD feed returns `8` for decimals. Scale the raw answer by `10 ** decimals` as shown in [step 1](#read-offchain).
 
 
     <Aside type="tip" title="Always scale by `decimals()`">
@@ -1476,7 +1475,7 @@ require(answeredInRound >= roundId, "Stale price");
 require(block.timestamp - updatedAt < TIMEOUT, "Stale price");
 ```
 
-Choose a `TIMEOUT` that matches your application's risk tolerance — shorter for trading, longer for less time-sensitive use cases.
+Choose a `TIMEOUT` that matches your application's risk tolerance: shorter for trading, longer for less time-sensitive use cases.
 
 ### Use the right feed for your asset
 
@@ -1571,9 +1570,9 @@ The sample code is unaudited and hardcodes values for clarity. Before production
 
 ### Do I need a consumer contract to read a Data Feed?
 
-**Only if another smart contract needs the price onchain.** A consumer contract exists to wrap a feed read in your own contract's logic so that *your other contracts* can use the price onchain — for collateral checks, settlements, circuit breakers, and so on. The read is atomic with your onchain action and verifiable on the blockchain.
+**Only if another smart contract needs the price onchain.** A consumer contract exists to wrap a feed read in your own contract's logic so that *your other contracts* can use the price onchain: collateral checks, settlements, circuit breakers, and so on. The read is atomic with your onchain action and verifiable on the blockchain.
 
-If you only need the price in an offchain system (a backend, bot, dashboard, or pre-trade check), you do **not** need a consumer contract. The feed proxy is a public contract and `latestRoundData()` is a `view` function — anyone can call it directly from a script using ethers.js, viem, or `cast`. See [Step 1: Fetching price data offchain](#read-offchain) on this page.
+If you only need the price in an offchain system (a backend, bot, dashboard, or pre-trade check), you do **not** need a consumer contract. The feed proxy is a public contract and `latestRoundData()` is a `view` function: anyone can call it directly from a script using ethers.js, viem, or `cast`. See [Step 1: Fetching price data offchain](#read-offchain) on this page.
 
 |                                 | Consumer contract (onchain)           | Direct read (offchain)               |
 | ------------------------------- | ------------------------------------- | ------------------------------------ |
@@ -1588,11 +1587,11 @@ If you only need the price in an offchain system (a backend, bot, dashboard, or 
 Source: https://docs.chain.link/data-feeds/getting-started-remix
 Last Updated: 2026-07-22
 
-Chainlink Data Feeds are the fastest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health. Each feed is aggregated by many independent Chainlink node operators and published onchain through a decentralized oracle network, giving your contracts a reliable, manipulation-resistant source of data.
+Chainlink Data Feeds are the fastest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health. Each feed is aggregated by many independent Chainlink node operators and published onchain through a decentralized oracle network, so no single node can manipulate the price your contract reads.
 
 Each price feed has an onchain address and functions that enable contracts to read pricing data from that address.
 
-In this guide you will fetch the pricing data from a price feed, for example the [BTC / USD feed](https://data.chain.link/feeds/ethereum/mainnet/btc-usd), using the [Remix IDE](https://remix.ethereum.org/) — no local installation required.
+In this guide you will fetch the pricing data from a price feed, for example the [BTC / USD feed](https://data.chain.link/feeds/ethereum/mainnet/btc-usd), using the [Remix IDE](https://remix.ethereum.org/). No local installation is required.
 
 ## What you'll do
 
@@ -1622,14 +1621,14 @@ You will need:
 
 <Aside type="note" title="Why a proxy?">
   Consumer contracts call a *proxy* contract, which forwards reads to the current *aggregator*. When Chainlink
-  upgrades an aggregator, the proxy is repointed to the new implementation and your consumer contract keeps working
-  unchanged. Always read from the proxy address listed on the
+  upgrades an aggregator, Chainlink repoints the proxy to the new implementation and your consumer contract keeps
+  working unchanged. Always read from the proxy address listed on the
   [Price Feed Addresses](/data-feeds/price-feeds/addresses) page, not from the underlying aggregator.
 </Aside>
 
 ## Getting the feed address
 
-Before we even begin, we need to know the address of the feed we want to read. The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the feeds available on each network. For this guide, we will use the BTC / USD feed on Sepolia, with the proxy address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
+The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the feeds available on each network. This guide uses the BTC / USD feed on Sepolia, with the proxy address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
 
 ## Retrieving the price data from the feed
 
@@ -1647,9 +1646,8 @@ Before we even begin, we need to know the address of the feed we want to read. T
       - Initializes a `dataFeed` object that uses `AggregatorV3Interface` pointing at the proxy aggregator deployed at <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code />.
       - This is the proxy address for the Sepolia `BTC / USD` feed. The proxy lets the aggregator be upgraded without breaking consumer contracts.
     - The `getChainlinkDataFeedLatestAnswer()` function
-      - Calls your `dataFeed` object and runs the `latestRoundData()` function and returns the `answer` variable.
-      - When you deploy the contract, it initializes the `dataFeed` object to point to the aggregator at <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code />, which is the proxy address for the Sepolia `BTC / USD` data feed. Your contract connects to that address and executes the function.
-      - The aggregator connects with several oracle nodes and aggregates the pricing data from those nodes. The response from the aggregator includes several variables, but `getChainlinkDataFeedLatestAnswer()` returns only the `answer` variable. The full response includes `roundId`, `startedAt`, `updatedAt`, and `answeredInRound` — see the [API Reference](/data-feeds/api-reference) for details.
+      - Calls `latestRoundData()` on the `dataFeed` object and returns the `answer` variable.
+      - The full response from `latestRoundData()` includes `roundId`, `startedAt`, `updatedAt`, and `answeredInRound`. See the [API Reference](/data-feeds/api-reference) for details.
   </Accordion>
 
   <Accordion title="Compile the contract in Remix" number={2.2}>
@@ -1664,7 +1662,7 @@ Before we even begin, we need to know the address of the feed we want to read. T
 
        <ClickToZoom src="/images/getting-started/new_navigateSolidityCompiler.png" alt="Solidity Compiler tab in Remix" style="max-width: 70%;" />
 
-    3. Keep the default compiler settings and click **Compile DataConsumerV3.sol**. Remix auto-detects the compiler version from the `pragma` statement. You can ignore warnings about unused local variables — the example destructures `latestRoundData()` but only uses `answer`.
+    3. Keep the default compiler settings and click **Compile DataConsumerV3.sol**. Remix auto-detects the compiler version from the `pragma` statement. You can ignore warnings about unused local variables: the example destructures `latestRoundData()` but only uses `answer`.
 
        <ClickToZoom src="/images/getting-started/new_compiledDataConsumerV3.png" alt="Compile DataConsumerV3.sol button in Remix" style="max-width: 70%;" />
   </Accordion>
@@ -1672,17 +1670,17 @@ Before we even begin, we need to know the address of the feed we want to read. T
   <Accordion title="Deploy to Sepolia" number={2.3} contentReference="deploy-to-sepolia">
     1. Open MetaMask and switch to the **Sepolia** network. If you don't have it configured, you can find the chain ID and RPC details on the [LINK Token Contracts](/resources/link-token-contracts#sepolia-testnet) page.
 
-    2. Open the **Deploy & Run Transactions** tab on Remix and set the **Environment** to **Browser Extension** and then select **Sepolia Testnet - MetaMask**. We do this becuase the contract must run in a Web3 context because it reads from another onchain contract (the price feed). Running in the "Remix VM" will not work.
+    2. Open the **Deploy & Run Transactions** tab on Remix and set the **Environment** to **Browser Extension**, then select **Sepolia Testnet - MetaMask**. The contract must run in a Web3 context because it reads from another onchain contract (the price feed). Running in the "Remix VM" will not work.
 
        <ClickToZoom src="/images/getting-started/new_connectRemix.png" alt="Select Browser Extension in Remix" style="max-width: 70%;" />
 
        <ClickToZoom src="/images/getting-started/new_chooseSepolia.png" alt="Select Sepolia Testnet in Remix" style="max-width: 70%;" />
 
-    3. In the **Contract** dropdown, explicitly select `DataConsumerV3`. This is the contract we want to deploy. Ensure you have this selected. Finally, click **Deploy** to deploy the contract to Sepolia.
+    3. In the **Contract** dropdown, select `DataConsumerV3`, then click **Deploy** to deploy the contract to Sepolia.
 
     <ClickToZoom src="/images/getting-started/new_deployDataConsumerV3Contract.png" alt="Select DataConsumerV3 as the contract to deploy" style="max-width: 70%;" />
 
-    1. MetaMask opens and asks confirmation for the deployment transaction. In the MetaMask prompt, click **Confirm** to approve the transaction. This will result in an actual onchain transaction that deploys the contract to Sepolia.
+    1. MetaMask prompts you to confirm the deployment transaction. Click **Confirm** to approve it. This sends an onchain transaction that deploys the contract to Sepolia.
 
     *Note: You will pay gas for this transaction, so ensure your wallet has enough Sepolia ETH.*
 
@@ -1700,7 +1698,7 @@ Before we even begin, we need to know the address of the feed we want to read. T
 
        <ClickToZoom src="/images/getting-started/new_getLatestPrice.png" alt="Latest price answer returned by the contract" style="max-width: 70%;" />
 
-    2. The returned answer is an integer with no decimal point. The BTC / USD feed uses **8 decimals**, so an answer of `7836308000000` represents a BTC / USD price of `78363.08`. Each feed uses a different number of decimals — you can find the exact value on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) and checking the **More Details** checkbox. You can also call the `decimals()` function on the feed to get the decimal count programmatically.
+    2. The returned answer is an integer with no decimal point. The BTC / USD feed uses **8 decimals**, so an answer of `7836308000000` represents a BTC / USD price of `78363.08`. Each feed uses a different number of decimals. Find the exact value on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page by checking the **More Details** checkbox, or call the `decimals()` function on the feed to get the decimal count programmatically.
 
 
     <Aside type="tip" title="Always scale by `decimals()`">
@@ -1725,7 +1723,7 @@ require(answeredInRound >= roundId, "Stale price");
 require(block.timestamp - updatedAt < TIMEOUT, "Stale price");
 ```
 
-Choose a `TIMEOUT` that matches your application's risk tolerance — shorter for trading, longer for less time-sensitive use cases.
+Choose a `TIMEOUT` that matches your application's risk tolerance: shorter for trading, longer for less time-sensitive use cases.
 
 ### Use the right feed for your asset
 
@@ -1820,9 +1818,9 @@ The sample code is unaudited and hardcodes values for clarity. Before production
 
 ### Do I need a consumer contract to read a Data Feed?
 
-**Only if another smart contract needs the price onchain.** A consumer contract exists to wrap a feed read in your own contract's logic so that *your other contracts* can use the price onchain — for collateral checks, settlements, circuit breakers, and so on. The read is atomic with your onchain action and verifiable on the blockchain.
+**Only if another smart contract needs the price onchain.** A consumer contract exists to wrap a feed read in your own contract's logic so that *your other contracts* can use the price onchain: collateral checks, settlements, circuit breakers, and so on. The read is atomic with your onchain action and verifiable on the blockchain.
 
-If you only need the price in an offchain system (a backend, bot, dashboard, or pre-trade check), you do **not** need a consumer contract. The feed proxy is a public contract and `latestRoundData()` is a `view` function — anyone can call it directly from a script using `cast`, ethers.js, or viem. See [Step 1: Fetching price data offchain](#read-offchain) on this page, or the [Foundry](/data-feeds/getting-started#read-offchain) and [Hardhat](/data-feeds/getting-started-hardhat#read-offchain) offchain read sections.
+If you only need the price in an offchain system (a backend, bot, dashboard, or pre-trade check), you do **not** need a consumer contract. The feed proxy is a public contract and `latestRoundData()` is a `view` function: anyone can call it directly from a script using `cast`, ethers.js, or viem. See [Step 1: Fetching price data offchain](#read-offchain) on this page, or the [Foundry](/data-feeds/getting-started#read-offchain) and [Hardhat](/data-feeds/getting-started-hardhat#read-offchain) offchain read sections.
 
 |                                 | Consumer contract (onchain)           | Direct read (offchain)               |
 | ------------------------------- | ------------------------------------- | ------------------------------------ |
@@ -1837,14 +1835,14 @@ In the **Contract** dropdown on the Deploy & Run Transactions tab, explicitly se
 
 ### The MetaMask transaction reverted on deployment
 
-Make sure MetaMask is set to the **Sepolia** network (chain ID `11155111`) before confirming. If you're on another network, the deployment will revert or land on the wrong chain. Also confirm your wallet has enough testnet ETH to cover gas — check a [Sepolia faucet](/resources/link-token-contracts/#sepolia-testnet) if needed.
+Make sure MetaMask is set to the **Sepolia** network (chain ID `11155111`) before confirming. If you're on another network, the deployment will revert or land on the wrong chain. Also confirm your wallet has enough testnet ETH to cover gas. Check a [Sepolia faucet](/resources/link-token-contracts/#sepolia-testnet) if needed.
 
 ---
 
 # Getting Started with Data Feeds
 Source: https://docs.chain.link/data-feeds/getting-started
 
-Chainlink Data Feeds are the fastest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health. Each feed is aggregated by many independent Chainlink node operators and published onchain through a decentralized oracle network, giving your contracts a reliable, manipulation-resistant source of data.
+Chainlink Data Feeds are the fastest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health. Each feed is aggregated by many independent Chainlink node operators and published onchain through a decentralized oracle network, so no single node can manipulate the price your contract reads.
 
 Each price feed has an onchain address and functions that enable contracts to read pricing data from that address.
 
@@ -1879,14 +1877,14 @@ You will need:
 
 <Aside type="note" title="Why a proxy?">
   Consumer contracts call a *proxy* contract, which forwards reads to the current *aggregator*. When Chainlink
-  upgrades an aggregator, the proxy is repointed to the new implementation and your consumer contract keeps working
-  unchanged. Always read from the proxy address listed on the
+  upgrades an aggregator, Chainlink repoints the proxy to the new implementation and your consumer contract keeps
+  working unchanged. Always read from the proxy address listed on the
   [Price Feed Addresses](/data-feeds/price-feeds/addresses) page, not from the underlying aggregator.
 </Aside>
 
 ## Getting the feed address
 
-Before we even begin, we need to know the address of the feed we want to read. The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the feeds available on each network. For this guide, we will use the BTC / USD feed on Sepolia, with the proxy address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
+The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the feeds available on each network. This guide uses the BTC / USD feed on Sepolia, with the proxy address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
 
 ## Retrieving the price data from the feed
 
@@ -1957,9 +1955,8 @@ Before we even begin, we need to know the address of the feed we want to read. T
       - Initializes a `dataFeed` object that uses `AggregatorV3Interface` pointing at the proxy aggregator deployed at <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code />.
       - This is the proxy address for the Sepolia `BTC / USD` feed. The proxy lets the aggregator be upgraded without breaking consumer contracts.
     - The `getChainlinkDataFeedLatestAnswer()` function
-      - Calls your `dataFeed` object and runs the `latestRoundData()` function and returns the `answer` variable.
-      - When you deploy the contract, it initializes the `dataFeed` object to point to the aggregator at <CopyText text="0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" code />, which is the proxy address for the Sepolia `BTC / USD` data feed. Your contract connects to that address and executes the function.
-      - The aggregator connects with several oracle nodes and aggregates the pricing data from those nodes. The response from the aggregator includes several variables, but `getChainlinkDataFeedLatestAnswer()` returns only the `answer` variable. The full response includes `roundId`, `startedAt`, `updatedAt`, and `answeredInRound` — see the [API Reference](/data-feeds/api-reference) for details.
+      - Calls `latestRoundData()` on the `dataFeed` object and returns the `answer` variable.
+      - The full response from `latestRoundData()` includes `roundId`, `startedAt`, `updatedAt`, and `answeredInRound`. See the [API Reference](/data-feeds/api-reference) for details.
   </Accordion>
 
   <Accordion title="Set up a Foundry project" number={2.2}>
@@ -1994,7 +1991,7 @@ Before we even begin, we need to know the address of the feed we want to read. T
        - Create `src/DataFeeds/DataConsumerV3.sol` and paste in the contract from [Step 2.1: Examine the sample contract](#examine-the-sample-contract).
        - Create `script/DataFeeds/DeployAndReadDataConsumerV3.s.sol` and paste in the script from [Step 2.3: Deploy the contract with a Forge script](#deploy-with-forge-script).
 
-       Make sure the filenames match exactly — Foundry looks for the contract in `src/` and the script in `script/`.
+       Make sure the filenames match exactly: Foundry looks for the contract in `src/` and the script in `script/`.
 
     5. Verify the project compiles:
 
@@ -2105,7 +2102,7 @@ Before we even begin, we need to know the address of the feed we want to read. T
     cast call 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43 "decimals()(uint8)" --rpc-url $SEPOLIA_RPC_URL
     ```
 
-    The BTC / USD feed returns `8` for decimals. To convert the raw integer answer to a human-readable price, divide by `10 ** decimals`. For example, an answer of `3030914000000` with 8 decimals is `30309.14` USD.
+    The BTC / USD feed returns `8` for decimals. Scale the raw answer by `10 ** decimals` as shown in [step 1](#fetching-price-data-offchain).
 
 
     <Aside type="tip" title="Always scale by `decimals()`">
@@ -2130,7 +2127,7 @@ require(answeredInRound >= roundId, "Stale price");
 require(block.timestamp - updatedAt < TIMEOUT, "Stale price");
 ```
 
-Choose a `TIMEOUT` that matches your application's risk tolerance — shorter for trading, longer for less time-sensitive use cases.
+Choose a `TIMEOUT` that matches your application's risk tolerance: shorter for trading, longer for less time-sensitive use cases.
 
 ### Use the right feed for your asset
 
@@ -2225,9 +2222,9 @@ The sample code is unaudited and hardcodes values for clarity. Before production
 
 ### Do I need a consumer contract to read a Data Feed?
 
-**Only if another smart contract needs the price onchain.** A consumer contract exists to wrap a feed read in your own contract's logic so that *your other contracts* can use the price onchain — for collateral checks, settlements, circuit breakers, and so on. The read is atomic with your onchain action and verifiable on the blockchain.
+**Only if another smart contract needs the price onchain.** A consumer contract exists to wrap a feed read in your own contract's logic so that *your other contracts* can use the price onchain: collateral checks, settlements, circuit breakers, and so on. The read is atomic with your onchain action and verifiable on the blockchain.
 
-If you only need the price in an offchain system (a backend, bot, dashboard, or pre-trade check), you do **not** need a consumer contract. The feed proxy is a public contract and `latestRoundData()` is a `view` function — anyone can call it directly from a script using `cast` or ethers.js. See [Step 2.5: Read the same feed offchain](#read-offchain) on this page, or the [Hardhat](/data-feeds/getting-started-hardhat) guide.
+If you only need the price in an offchain system (a backend, bot, dashboard, or pre-trade check), you do **not** need a consumer contract. The feed proxy is a public contract and `latestRoundData()` is a `view` function: anyone can call it directly from a script using `cast` or ethers.js. See [Step 1: Fetching price data offchain](#read-offchain) on this page, or the [Hardhat](/data-feeds/getting-started-hardhat) guide.
 
 |                                 | Consumer contract (onchain)           | Direct read (offchain)               |
 | ------------------------------- | ------------------------------------- | ------------------------------------ |
@@ -2507,7 +2504,7 @@ Chainlink Data Feeds are the quickest way to connect your smart contracts to rea
 
 If you already started a project and need to integrate Chainlink, you can [add Chainlink to your existing project](/resources/create-a-chainlinked-project?parent=dataFeeds#installing-into-existing-projects) with the [`@chainlink/contracts` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
 
-Or you can get started and familiarize yourself with Data Feeds before integrating them into your project by following the [Data Feeds Getting Started guide](/data-feeds/getting-started).
+To learn Data Feeds before integrating them into your project, follow the [Getting Started guide](/data-feeds/getting-started).
 
 ## Types of data feeds
 
