@@ -623,6 +623,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "TEMPO_TESTNET_MODERATO"
     case "tempo-mainnet":
       return "TEMPO_MAINNET"
+    case "arc-mainnet":
+      return "ARC_NETWORK_MAINNET"
     case "arc-testnet":
       return "ARC_NETWORK_TESTNET"
     case "doge-os-chikyu-testnet":
@@ -997,6 +999,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "tempo-testnet-moderato"
     case "TEMPO_MAINNET":
       return "tempo-mainnet"
+    case "ARC_NETWORK_MAINNET":
+      return "arc-mainnet"
     case "ARC_NETWORK_TESTNET":
       return "arc-testnet"
     case "DOGE_OS_CHIKYU_TESTNET":
