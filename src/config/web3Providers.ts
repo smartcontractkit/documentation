@@ -183,6 +183,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   TEMPO_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.tempo.xyz"),
   TEMPO_TESTNET_MODERATO: () => new JsonRpcProvider("https://rpc.moderato.tempo.xyz"),
   TEMPO_MAINNET: () => new JsonRpcProvider("https://rpc.tempo.xyz"),
+  ARC_NETWORK_MAINNET: () => new JsonRpcProvider("https://rpc.mainnet.arc.io"),
   ARC_NETWORK_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.arc.network"),
   DOGE_OS_CHIKYU_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.dogeos.com/"),
   ADI_NETWORK_AB_TESTNET: () => new JsonRpcProvider("https://rpc.ab.testnet.adifoundation.ai/"),
