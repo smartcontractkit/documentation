@@ -70,20 +70,26 @@ Details:
 1. In the **Overview** section, find the **Workflow ID** field
 1. Click the copy button to copy it to your clipboard
 
+## Gateway URLs
+
+The gateway you send trigger requests to depends on the **execution environment (DON)** your workflow runs on:
+
+| Execution environment | Gateway URL                                            |
+| --------------------- | ------------------------------------------------------ |
+| Public DON            | `https://01.gateway.zone-a.cre.chain.link`             |
+| Enterprise DON        | `https://01.enterprise-gateway.zone-a.cre.chain.link/` |
+
+To determine which gateway to use:
+
+- **Public DON**: The default execution environment available to all CRE users. Whether you deploy your workflow
+  onchain or to the private registry, it runs on the public DON and is triggered through the public gateway.
+- **Enterprise DON**: A separate, dedicated execution environment provisioned for organizations with an Enterprise
+  agreement with Chainlink. Only workflows deployed to the Enterprise DON are triggered through the enterprise
+  gateway.
+
 ## Request format
 
 All workflow executions use JSON-RPC 2.0 format:
-
-{/* prettier-ignore */}
-<Aside type="note" title="Gateway URL depends on your registry">
-  The gateway URL differs based on how your workflow is deployed:
-
-- **Public (onchain) registry**: `https://01.gateway.zone-a.cre.chain.link`
-- **Private registry** (`deployment-registry: "private"`): `https://01.enterprise-gateway.zone-a.cre.chain.link/`
-
-Use the URL that matches the registry your workflow is deployed to. Run `cre registry list` or check your `workflow.yaml` if you're unsure.
-
-</Aside>
 
 ```http
 POST https://01.gateway.zone-a.cre.chain.link
@@ -247,7 +253,7 @@ If you're testing deployed workflows during development, use the [Local Testing 
 
 ## Example request (conceptual)
 
-Here's what a complete curl request looks like (using the public registry gateway — substitute `https://01.enterprise-gateway.zone-a.cre.chain.link/` if your workflow is deployed to the private registry):
+Here's what a complete curl request looks like (using the public DON gateway — see [Gateway URLs](#gateway-urls) to pick the right endpoint for your workflow's execution environment):
 
 ```bash
 curl -X POST https://01.gateway.zone-a.cre.chain.link \

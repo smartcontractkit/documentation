@@ -2238,19 +2238,26 @@ Details:
 3. In the **Overview** section, find the **Workflow ID** field
 4. Click the copy button to copy it to your clipboard
 
+## Gateway URLs
+
+The gateway you send trigger requests to depends on the **execution environment (DON)** your workflow runs on:
+
+| Execution environment | Gateway URL                                            |
+| --------------------- | ------------------------------------------------------ |
+| Public DON            | `https://01.gateway.zone-a.cre.chain.link`             |
+| Enterprise DON        | `https://01.enterprise-gateway.zone-a.cre.chain.link/` |
+
+To determine which gateway to use:
+
+- **Public DON**: The default execution environment available to all CRE users. Whether you deploy your workflow
+  onchain or to the private registry, it runs on the public DON and is triggered through the public gateway.
+- **Enterprise DON**: A separate, dedicated execution environment provisioned for organizations with an Enterprise
+  agreement with Chainlink. Only workflows deployed to the Enterprise DON are triggered through the enterprise
+  gateway.
+
 ## Request format
 
 All workflow executions use JSON-RPC 2.0 format:
-
-
-<Aside type="note" title="Gateway URL depends on your registry">
-  The gateway URL differs based on how your workflow is deployed:
-
-  - **Public (onchain) registry**: `https://01.gateway.zone-a.cre.chain.link`
-  - **Private registry** (`deployment-registry: "private"`): `https://01.enterprise-gateway.zone-a.cre.chain.link/`
-
-  Use the URL that matches the registry your workflow is deployed to. Run `cre registry list` or check your `workflow.yaml` if you're unsure.
-</Aside>
 
 ```http
 POST https://01.gateway.zone-a.cre.chain.link
@@ -2414,7 +2421,7 @@ If you're testing deployed workflows during development, use the [Local Testing 
 
 ## Example request (conceptual)
 
-Here's what a complete curl request looks like (using the public registry gateway — substitute `https://01.enterprise-gateway.zone-a.cre.chain.link/` if your workflow is deployed to the private registry):
+Here's what a complete curl request looks like (using the public DON gateway — see [Gateway URLs](#gateway-urls) to pick the right endpoint for your workflow's execution environment):
 
 ```bash
 curl -X POST https://01.gateway.zone-a.cre.chain.link \
@@ -2606,14 +2613,11 @@ GATEWAY_URL=https://01.gateway.zone-a.cre.chain.link
 Replace `0xYourPrivateKeyHere` with your EVM private key.
 
 
-<Aside type="note" title="Private registry gateway URL">
-  If your workflow is deployed to the **private registry** (`deployment-registry: "private"`), set `GATEWAY_URL` to:
-
-  ```
-  GATEWAY_URL=https://01.enterprise-gateway.zone-a.cre.chain.link/
-  ```
-
-  Use `https://01.gateway.zone-a.cre.chain.link` for workflows deployed to the public onchain registry.
+<Aside type="note" title="Gateway URL depends on your execution environment">
+  The `GATEWAY_URL` depends on the execution environment (DON) your workflow runs on, not on which registry it was
+  deployed to. A workflow deployed to the private registry still runs on the public DON, so it uses the public gateway.
+  See [Gateway URLs](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#gateway-urls) to
+  pick the right endpoint for your workflow.
 </Aside>
 
 <Aside type="caution" title="Keep your .env file secure">
@@ -16038,14 +16042,9 @@ See [Using Secrets with Deployed Workflows](/cre/guides/workflow/secrets/using-s
 
 ## HTTP triggers with the private registry
 
-If your private registry workflow uses an HTTP trigger, note that the gateway endpoint is different from the public registry:
+If your private registry workflow uses an HTTP trigger, note that the gateway endpoint depends on the execution environment (DON) your workflow runs on, not on which registry it was deployed to. A workflow deployed to the private registry still runs on the public DON, so it uses the same public gateway as onchain deployments.
 
-| Registry         | HTTP trigger gateway URL                               |
-| ---------------- | ------------------------------------------------------ |
-| Public (onchain) | `https://01.gateway.zone-a.cre.chain.link`             |
-| **Private**      | `https://01.enterprise-gateway.zone-a.cre.chain.link/` |
-
-Update your `GATEWAY_URL` (or equivalent configuration) wherever you send trigger requests — in local testing, CI scripts, or backend integrations — to use the enterprise gateway URL when targeting private registry workflows.
+Update your `GATEWAY_URL` (or equivalent configuration) wherever you send trigger requests — in local testing, CI scripts, or backend integrations — to use the gateway that matches your workflow's execution environment. See [Gateway URLs](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#gateway-urls) to pick the right endpoint.
 
 See [Triggering Deployed Workflows](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows) for the full HTTP trigger request format and authentication details.
 
@@ -20508,7 +20507,7 @@ Use this path if you want the receiver itself to be a CRE workflow with an HTTP 
 
 
 <Aside type="note" title="Using the private registry?">
-  This guide uses the **Capability Registry** (DON signers), not the **workflow registry** where you deploy. [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) works the same way regardless of which registry you deployed with. For HTTP-triggered receivers, use the [enterprise gateway URL](/cre/guides/operations/deploying-to-private-registry-ts#http-triggers-with-the-private-registry). Local simulation may need an `ethereum-mainnet` RPC in `project.yaml` for registry reads.
+  This guide uses the **Capability Registry** (DON signers), not the **workflow registry** where you deploy. [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) works the same way regardless of which registry you deployed with. For HTTP-triggered receivers, the gateway URL depends on the workflow's [execution environment](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#gateway-urls), not the registry. Local simulation may need an `ethereum-mainnet` RPC in `project.yaml` for registry reads.
 </Aside>
 
 ### Testing with simulation
@@ -22742,12 +22741,12 @@ This section provides everything you need to work with HTTP triggers:
 
 ## Quick comparison: Simulation vs Production
 
-| Aspect             | Simulation                      | Production                                                                                                                                           |
-| ------------------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Authorization**  | Optional (can use empty config) | Required (`authorizedKeys` must be configured)                                                                                                       |
-| **Trigger method** | CLI with `--input` flag         | HTTP POST to gateway endpoint with JWT                                                                                                               |
-| **Endpoint**       | Local simulator                 | CRE gateway — public registry: `https://01.gateway.zone-a.cre.chain.link` / private registry: `https://01.enterprise-gateway.zone-a.cre.chain.link/` |
-| **Use case**       | Development, testing, debugging | Live integrations, webhooks, production APIs                                                                                                         |
+| Aspect             | Simulation                      | Production                                                                                                                    |
+| ------------------ | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **Authorization**  | Optional (can use empty config) | Required (`authorizedKeys` must be configured)                                                                                |
+| **Trigger method** | CLI with `--input` flag         | HTTP POST to gateway endpoint with JWT                                                                                        |
+| **Endpoint**       | Local simulator                 | CRE gateway (see [Gateway URLs](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#gateway-urls)) |
+| **Use case**       | Development, testing, debugging | Live integrations, webhooks, production APIs                                                                                  |
 
 ## Key concepts
 
