@@ -1,0 +1,76 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Report Schema: Futures (v14)"
+metadata:
+  title: "Futures (v14) | Chainlink Data Streams"
+  description: "Learn about Chainlink Data Streams Futures (v14) schema, including fields, encoding, and examples for integrating futures price data in your applications."
+  keywords:
+    [
+      "Report Schema",
+      "v14 Schema",
+      "Data Format",
+      "Report Structure",
+      "Futures",
+      "Commodities",
+      "Goldman Roll",
+      "marketStatus",
+      "contractMonth",
+    ]
+---
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import ReportSchemaTabs from "@features/data-streams/common/ReportSchemaTabs.astro"
+import SchemaFieldsTable from "@features/data-streams/common/SchemaFieldsTable.astro"
+
+import { Aside } from "@components"
+
+<DataStreams section="dsNotes" />
+
+<ReportSchemaTabs />
+
+Chainlink Data Streams that use the Futures (v14) schema adhere to the structure outlined below.
+
+<Aside type="note" title="Beta">
+  Futures streams are in beta. To request access, contact
+  [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
+</Aside>
+
+## Schema Fields
+
+<SchemaFieldsTable schema="v14" />
+
+### Market Status Values
+
+<Aside type="caution" title="Use marketStatus, not timestamps">
+  Always use <code>marketStatus</code> to determine whether a market is open. Do <strong>not</strong> use
+  <code>observationsTimestamp</code>, <code>lastSeenTimestampNs</code>, or other timestamp fields — timestamps indicate
+  when data was last recorded, not whether the market is currently active.
+</Aside>
+
+Each feed's `marketStatus` field reflects the current market status of the primary exchange venue for that instrument. Futures trade during standard trading hours for each instrument, with a scheduled break each trading day. Consult the exchange where the underlying contract is listed for holiday and early-close schedules.
+
+For full trading schedules and `marketStatus` mappings, see [Market Hours](/data-streams/market-hours) and the [Futures](/data-streams/rwa-streams/futures) reference.
+
+### Continuous roll price fields
+
+In addition to the raw generic feed prices — which switch entirely to the next contract at the first notice date — the v14 schema includes continuous price series built using alternative rolling methodologies, for integrators who want a smoothed price instead of a hard cutover:
+
+| Field                          | Description                                                                                                                                                         |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `goldmanRollPrice`             | Uses the Goldman Roll (GSCI methodology): shifts 20% of the position to the next contract each business day, over business days 5–9 of the month preceding delivery |
+| `interpolatedGoldmanRollPrice` | Interpolated Goldman Roll price. Reported as `0` when the feed is not within an active roll window                                                                  |
+| `currentBusinessDay`           | Current business day count within the active roll window, so integrators can implement the Goldman Roll methodology themselves                                      |
+
+For details on how the generic feeds rotate between contracts and how the continuous roll fields behave, see the [Futures](/data-streams/rwa-streams/futures) reference.
+
+### Notes
+
+#### `lastSeenTimestampNs`
+
+- `lastSeenTimestampNs` helps applications detect stale data, especially important during market transitions and holidays.
+- **Do not use `lastSeenTimestampNs` (or any other timestamp field) to determine whether the market is open.** Timestamps indicate when data was last recorded, not whether the market is currently active. Use the `marketStatus` field as the authoritative signal for market availability.
+
+#### `interpolatedGoldmanRollPrice`
+
+`interpolatedGoldmanRollPrice` is reported as `0` when the feed is not within an active roll window. Behavior on non-trading days (holding the last value versus resetting to zero) is still being finalized.

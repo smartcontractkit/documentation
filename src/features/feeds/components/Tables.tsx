@@ -86,6 +86,7 @@ const getSchemaDefinitionKey = (metadata: any): string | undefined => {
   if (schemaVersion === "v11") {
     return isApacEquitiesStreamFeed(metadata) ? "v11-apac" : "v11"
   }
+  if (schemaVersion === "v14") return "v14"
   if (schemaVersion === "v7") return "v7"
   if (schemaVersion === "v3") {
     return feedType === "Crypto-DEX" ? "v3-dex" : "v3-crypto"
@@ -1527,6 +1528,14 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
                 </dd>
               </div>
             ) : null}
+            {metadata.feedType === "Futures" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Feed cut:</span>
+                </dt>
+                <dd>Front</dd>
+              </div>
+            )}
             {(() => {
               const assetSubClass = (metadata.docs as any)?.assetSubClass
               const clicProductName = (metadata.docs as any)?.clicProductName || ""
@@ -1637,6 +1646,7 @@ export const MainnetTable = ({
   streamCategoryFilter,
   show24x5Feeds,
   showApacEquitiesFeeds,
+  showFuturesFeeds,
   tradingHoursFilter,
   dataFeedType,
   ecosystem,
@@ -1660,9 +1670,10 @@ export const MainnetTable = ({
   showOnlyDatalinkFeeds?: boolean
   rwaSchemaFilter?: SchemaFilterValue
   cryptoSchemaFilter?: SchemaFilterValue
-  streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
+  streamCategoryFilter?: "all" | "datalink" | "equities" | "forex" | "futures"
   show24x5Feeds?: boolean
   showApacEquitiesFeeds?: boolean
+  showFuturesFeeds?: boolean
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
   dataFeedType: string
   ecosystem: string
@@ -1693,6 +1704,7 @@ export const MainnetTable = ({
     showOnlySVR,
     show24x5Feeds,
     showApacEquitiesFeeds,
+    showFuturesFeeds,
     tradingHoursFilter,
     visibilityOptions: {
       showOnlyDEXFeeds,
@@ -1814,6 +1826,7 @@ export const TestnetTable = ({
   streamCategoryFilter,
   show24x5Feeds,
   showApacEquitiesFeeds,
+  showFuturesFeeds,
   tradingHoursFilter,
   tokenizedEquityProvider,
   forceExtendedHoursCategory,
@@ -1834,9 +1847,10 @@ export const TestnetTable = ({
   showOnlyDatalinkFeeds?: boolean
   rwaSchemaFilter?: SchemaFilterValue
   cryptoSchemaFilter?: SchemaFilterValue
-  streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
+  streamCategoryFilter?: "all" | "datalink" | "equities" | "forex" | "futures"
   show24x5Feeds?: boolean
   showApacEquitiesFeeds?: boolean
+  showFuturesFeeds?: boolean
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
   tokenizedEquityProvider?: string
   forceExtendedHoursCategory?: ExtendedHoursCategory
@@ -1860,6 +1874,7 @@ export const TestnetTable = ({
     searchVariant: "testnet",
     show24x5Feeds,
     showApacEquitiesFeeds,
+    showFuturesFeeds,
     tradingHoursFilter,
     visibilityOptions: {
       showOnlyDEXFeeds,

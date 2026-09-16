@@ -1603,6 +1603,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "data-streams/reference/report-schema-v11",
             },
             {
+              title: "Report Schema v14 (Futures)",
+              url: "data-streams/reference/report-schema-v14",
+            },
+            {
               title: "Handling Market Events",
               url: "data-streams/rwa-streams/handling-market-events",
               highlightAsCurrent: ["data-streams/rwa-streams/handling-market-events-v11"],

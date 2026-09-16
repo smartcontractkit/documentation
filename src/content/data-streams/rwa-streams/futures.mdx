@@ -7,13 +7,16 @@ metadata:
   description: "Reference for Chainlink Futures Data Streams, covering coverage, generic feed rotation, and risk considerations."
 whatsnext:
   {
+    "Find the schema of data to expect from Futures reports": "/data-streams/reference/report-schema-v14",
     "Learn about developer responsibilities": "/data-streams/developer-responsibilities",
     "Learn about Data Streams market hours and schedules": "/data-streams/market-hours",
     "Find the list of available RWA streams": "/data-streams/rwa-streams",
   }
 ---
 
-import { Aside } from "@components"
+import { Aside, CodeSample } from "@components"
+import { Tabs } from "@components/Tabs"
+import { FeedList } from "@features/feeds"
 
 <Aside type="note" title="Beta">
   Futures streams are in beta. To request access, contact
@@ -28,32 +31,200 @@ Developers are responsible for choosing the appropriate feed and ensuring that t
 
 ## Schema
 
-Futures streams use the v14 schema.
+Futures streams use the [Futures (v14) schema](/data-streams/reference/report-schema-v14).
 
-| Field                 | Description                                                                                                      |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `mid`                 | Mid price                                                                                                        |
-| `bid`                 | Bid price                                                                                                        |
-| `ask`                 | Ask price                                                                                                        |
-| `expiry_time`         | Contract expiration time                                                                                         |
-| `roll_date`           | First day of notice, as a Unix timestamp                                                                         |
-| `lastSeenTimestampNs` | Timestamp of the last update received from the data provider                                                     |
-| `marketStatus`        | Market status indicator                                                                                          |
-| `contract_month`      | Standard futures month code (F=Jan, G=Feb, H=Mar, J=Apr, K=May, M=Jun, N=Jul, Q=Aug, U=Sep, V=Oct, X=Nov, Z=Dec) |
-| `last_trading_day`    | The final day the current contract trades                                                                        |
+The v14 schema includes consensus mid, bid, and ask prices, contract expiration and first day of notice, the tracked contract month, market status, and a staleness measure. It also includes continuous roll price fields — `goldmanRollPrice`, `interpolatedGoldmanRollPrice`, and `currentBusinessDay` — described below.
 
 ### Continuous roll price fields
 
 In addition to the raw generic feed prices above — which switch entirely to the next contract at the first notice date — Chainlink also publishes continuous price series built using alternative rolling methodologies, for integrators who want a smoothed price instead of a hard cutover:
 
-| Field                   | Description                                                                                                                                                         |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `price_notice_roll`     | Equivalent to the generic front feed price: switches entirely to the next contract at the first notice date                                                         |
-| `price_goldman_roll`    | Uses the Goldman Roll (GSCI methodology): shifts 20% of the position to the next contract each business day, over business days 5–9 of the month preceding delivery |
-| `price_continuous_roll` | Smooths the transition evenly (1/N per business day) across the entire contract cycle, rather than a fixed window                                                   |
-| `first_notice_date`     | Date on which `price_notice_roll` switches to the next contract                                                                                                     |
+| Field                          | Description                                                                                                                                                         |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `goldmanRollPrice`             | Uses the Goldman Roll (GSCI methodology): shifts 20% of the position to the next contract each business day, over business days 5–9 of the month preceding delivery |
+| `interpolatedGoldmanRollPrice` | Interpolated Goldman Roll price. Reported as `0` when the feed is not within an active roll window                                                                  |
+| `currentBusinessDay`           | Current business day count within the active roll window, so integrators can implement the Goldman Roll methodology themselves                                      |
 
-Chainlink also plans to publish the current business day count within the active roll window, so integrators can implement the Goldman Roll or Continuous Roll methodology themselves. Behavior on non-trading days (holding the last value versus resetting to zero) is still being finalized.
+For the complete field list and definitions, see the [Futures (v14) schema](/data-streams/reference/report-schema-v14).
+
+## Implementation
+
+<Aside type="caution" title="In development">
+  Futures streams are still under active development. The single-report fetch and decode examples below work against the
+  current testnet feed, but the **three generic feeds** (front, second, and third) and the example of switching between
+  future cuts are **not yet available**. The guidance in [Consuming the three generic
+  feeds](#consuming-the-three-generic-feeds) describes the intended design and is subject to change as the streams are
+  finalized.
+</Aside>
+
+Futures streams are consumed like any other [Data Streams report](/data-streams/tutorials/go-sdk-fetch): you fetch the latest report for a feed ID and decode it with the SDK. The only difference is the report schema version, which is **v14** for futures streams.
+
+The examples below fetch and decode a live `NY-UKOIL/USD` futures report from the testnet API. Each SDK auto-detects or explicitly targets the v14 schema.
+
+{/* prettier-ignore */}
+<Tabs client:visible>
+  <Fragment slot="tab.1">Go</Fragment>
+  <Fragment slot="tab.2">TypeScript</Fragment>
+  <Fragment slot="tab.3">Rust</Fragment>
+  <Fragment slot="panel.1">
+    <CodeSample src="samples/DataStreams/FuturesFetch.go" />
+  </Fragment>
+  <Fragment slot="panel.2">
+    <CodeSample src="samples/DataStreams/FuturesFetch.ts" />
+  </Fragment>
+  <Fragment slot="panel.3">
+    <CodeSample src="samples/DataStreams/FuturesFetch.rs" />
+  </Fragment>
+</Tabs>
+
+<Aside type="note" title="SDK version">
+  v14 support requires the latest Data Streams SDK. The Go SDK uses the v2 module
+  (`github.com/smartcontractkit/data-streams-sdk/go/v2`); the TypeScript and Rust SDKs auto-detect the report version
+  from the feed ID.
+</Aside>
+
+### Expected output
+
+Running any of the examples above against a live `NY-UKOIL/USD` futures feed produces a decoded report similar to the following (values are illustrative and change with each report):
+
+```text
+Decoded V14 Report for Stream ID 0x000ebfe7b7560e1866ef91d4607ce5ee7474382794e5ec755f38b70b1f30e647:
+------------------------------------------
+Valid From Timestamp  : 1789593821
+Observations Timestamp: 1789593821
+Native Fee            : 132954556310247
+LINK Fee              : 29292627326579709
+Expires At            : 1792185821
+Mid Price             : 105584000000000000000
+Bid Price             : 105539000000000000000
+Ask Price             : 105629000000000000000
+Expiry Time           : 1790740800
+First Day of Notice   : 1790740800
+Last Seen TimestampNs : 1789592399813000000
+Market Status         : 1
+Contract Month        : 11
+Goldman Roll Price    : 100574999999999990000
+Current Business Day  : 11
+Interp Goldman Roll   : 0
+------------------------------------------
+```
+
+The prices above are 18-decimal fixed-point integers. For example, `Mid Price` `105584000000000000000` equals `105.584` USD. `Contract Month` `11` is November, and `Market Status` `1` means the market is closed.
+
+### Decoded fields
+
+The v14 report decodes to the following fields. Prices are 18-decimal fixed-point integers; timestamps are Unix epoch seconds unless noted.
+
+| Field                              | Type     | Meaning                                                    |
+| ---------------------------------- | -------- | ---------------------------------------------------------- |
+| `midPrice`, `bidPrice`, `askPrice` | `int192` | Consensus mid, bid, and ask prices (18 decimals)           |
+| `expiryTime`                       | `uint64` | Contract expiration, Unix seconds                          |
+| `firstDayOfNotice`                 | `uint64` | First day of notice, Unix seconds                          |
+| `lastSeenTimestampNs`              | `uint64` | Last provider update, nanoseconds                          |
+| `marketStatus`                     | `uint32` | Market status: `0` Unknown, `1` Closed, `2` Open           |
+| `contractMonth`                    | `uint32` | Contract month, `1` (Jan) to `12` (Dec)                    |
+| `goldmanRollPrice`                 | `int192` | Goldman Roll continuous price (18 decimals)                |
+| `currentBusinessDay`               | `uint32` | Current business day in the roll window                    |
+| `interpolatedGoldmanRollPrice`     | `int192` | Interpolated Goldman Roll price; `0` outside a roll window |
+
+### Implementation patterns
+
+Futures streams differ from spot streams in a few ways that affect how you consume them:
+
+- **Use `marketStatus`, not timestamps, to gate trading.** `marketStatus` is the authoritative signal for whether the market is open. Do not infer market state from `lastSeenTimestampNs` or other timestamps; they only indicate when data was last recorded. See [Market Hours](/data-streams/market-hours) for the value mapping per feed.
+- **Monitor `lastSeenTimestampNs` for staleness.** Futures are sourced from a single provider per feed. If updates stop arriving, the price can go stale without an obvious price change. Pause trading or restrict liquidations when the timestamp lags your freshness threshold.
+- **Expect a price discontinuity at each roll.** When the front contract expires, the feed re-maps to the next contract, which can trade at a different price. Do not treat this step as a data error. If your application needs a smooth series, build it from the continuous roll fields (`goldmanRollPrice`, `interpolatedGoldmanRollPrice`) or construct your own off-chain.
+- **Do not hardcode contract-month spacing.** The gap between the front, second, and third feeds varies by instrument (one month for energy, up to a few months for precious metals). Read `contractMonth` from the report rather than assuming monthly spacing.
+- **Roll early if you are expiry-sensitive.** In the final days of a contract, liquidity migrates to the next contract while the front feed still tracks the expiring one, which can increase volatility. If your application is sensitive to this, roll ahead of expiry using the second feed.
+
+### Consuming the three generic feeds
+
+<Aside type="note" title="In development">
+  The three generic feeds and the stream-switching example below describe the intended design. They are **not yet
+  available**, and only a single futures feed per instrument is currently exposed. This section is subject to change as
+  the streams are finalized.
+</Aside>
+
+Each instrument is exposed as three feeds that always track the front, second, and third eligible contracts. The three feeds are the same schema (v14) and differ only in which contract they currently reference. To consume the curve correctly:
+
+- **Identify the cut from `contractMonth` and `expiryTime`, not from the feed ID.** The feed IDs are static and do not encode which cut a feed is. Read `contractMonth` and `expiryTime` from each report to know which contract a feed currently tracks. The feed with the nearest `expiryTime` is the front; the next two are the second and third.
+- **The three feeds cascade on the front contract's expiry.** When the front expires, the front feed takes over the second feed's contract, the second takes over the third's, and the third picks up the next eligible contract. Your integration should not hardcode which contract a feed tracks; it should re-read `contractMonth`/`expiryTime` each report.
+- **Build your own roll strategy.** Data Streams does not impose one. You can hold the front feed to expiry, roll early to the second feed when liquidity migrates, or construct a continuous series off-chain. The three feeds give you the visibility to implement whichever you choose.
+
+The example below fetches all three feeds for an instrument and prints which contract each currently tracks, so you can see the curve and detect a roll:
+
+{/* prettier-ignore */}
+<Tabs client:visible>
+  <Fragment slot="tab.1">Go</Fragment>
+  <Fragment slot="tab.2">TypeScript</Fragment>
+  <Fragment slot="tab.3">Rust</Fragment>
+  <Fragment slot="panel.1">
+    ```go
+    // Read the front, second, and third feeds for an instrument.
+    // Replace the three feed IDs with the front/second/third feeds for your instrument.
+    feedIDs := []feed.ID{frontID, secondID, thirdID}
+
+    for _, id := range feedIDs {
+        resp, err := client.GetLatestReport(ctx, id)
+        if err != nil {
+            log.Fatalf("fetch %s: %v", id, err)
+        }
+        decoded, err := report.Decode[v14.Data](resp.FullReport)
+        if err != nil {
+            log.Fatalf("decode %s: %v", id, err)
+        }
+        d := decoded.Data
+        fmt.Printf("%s -> contract month %d, expiry %d, mid %s\n",
+            id, d.ContractMonth, d.ExpiryTime.Unix(), d.MidPrice.String())
+    }
+    ```
+
+  </Fragment>
+  <Fragment slot="panel.2">
+    ```typescript
+    // Read the front, second, and third feeds for an instrument.
+    // Replace the three feed IDs with the front/second/third feeds for your instrument.
+    const feedIds = [frontId, secondId, thirdId]
+
+    for (const id of feedIds) {
+      const report = await client.getLatestReport(id)
+      const decoded = decodeReport(report.fullReport, report.feedID) as any
+      console.log(`${id} -> contract month ${decoded.contractMonth}, expiry ${decoded.expiryTime}, mid ${decoded.midPrice}`)
+    }
+    ```
+
+  </Fragment>
+  <Fragment slot="panel.3">
+    ```rust
+    // Read the front, second, and third feeds for an instrument.
+    // Replace the three feed IDs with the front/second/third feeds for your instrument.
+    let feed_ids = [front_id, second_id, third_id];
+
+    for id in feed_ids {
+        let resp = client.get_latest_report(id).await?;
+        let full_report = hex::decode(&resp.report.full_report[2..])?;
+        let (_ctx, blob) = decode_full_report(&full_report)?;
+        let d = ReportDataV14::decode(&blob)?;
+        println!("{} -> contract month {}, expiry {}, mid {}",
+            id, d.contract_month, d.expiry_time, d.mid_price);
+    }
+    ```
+
+  </Fragment>
+</Tabs>
+
+<Aside type="note" title="Detecting a roll">
+  Because the feeds re-map on expiry, the `contractMonth` and `expiryTime` for a given feed ID change over time. If your
+  application needs to react to a roll, compare `contractMonth`/`expiryTime` between consecutive reports for the same
+  feed ID. A change signals that the feed has rolled to the next contract.
+</Aside>
+
+### Notes
+
+- **Prices are 18-decimal fixed-point integers.** `midPrice`, `bidPrice`, `askPrice`, `goldmanRollPrice`, and `interpolatedGoldmanRollPrice` are raw integers. Divide by `10^18` to get the human-readable price. In Go and Rust these are big-number types; call `.String()` to display them.
+- **`interpolatedGoldmanRollPrice` is `0` outside a roll window.** Do not treat a `0` value as a price of zero; it means the feed is not currently in an active roll window.
+- **`contractMonth` is validated to `1`–`12`.** The SDKs reject reports with an out-of-range month, so a successful decode guarantees a valid month.
+- **The feed ID encodes the schema version.** The TypeScript SDK's `getReportVersion` and the Go SDK's `feedID.Version()` derive the schema from the feed ID. Use the v14 decoder for futures feeds.
 
 ## Coverage
 
@@ -153,6 +324,18 @@ Integrating protocols are responsible for implementing appropriate monitoring an
 Each Futures instrument is sourced from a single institutional-grade data provider per feed. While this enables high-frequency, low-latency delivery, it introduces dependency on that provider's data quality and availability. There is no redundant cross-validation between providers for a given feed.
 
 If the underlying provider fails to deliver data, there is no fallback source, and a gap in data may not be immediately obvious from price alone. Protocols should continuously monitor feed freshness and implement safeguards — such as pausing trading or restricting liquidations — if updates stop arriving or a feed appears stale. Review the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance before integration.
+
+## Available streams
+
+The table below shows all available Futures streams.
+
+<FeedList
+  client:idle
+  initialNetwork="arbitrum"
+  dataFeedType="streamsRwa"
+  forceFuturesOnly={true}
+  allowNetworkTableExpansion={true}
+/>
 
 ## Support
 
