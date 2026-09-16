@@ -1,0 +1,124 @@
+---
+section: crec
+title: "Create a Watcher with a Predefined Service"
+date: Last Modified
+metadata:
+  description: "Use Chainlink CRE Connect's CreateWithService to attach a watcher backed by a published service (for example dta.v2) without supplying the contract ABI."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { MethodTabs } from "@components"
+
+When the contract you want to monitor is supported by a published CRE Connect service (for example `dta.v2`), use **`watchers.Client.CreateWithService`** instead of `CreateWithABI`. The service ships everything CRE Connect needs to monitor that contract: the ABIs, the event schemas, and the underlying processing pipeline. You only supply the chain selector, address, the event names you want to subscribe to, and (optionally) a `service_config` map.
+
+## When to use this
+
+| You should use `CreateWithService` if...                                      | Otherwise use [`CreateWithABI`](/crec/guides/watchers/create-with-abi) |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| The contract is covered by a CRE Connect extension.                           | The contract is custom or not yet supported by an extension.           |
+| You want typed event payloads via the extension's `events`/`decode` packages. | You are happy decoding the raw event payload with `Client.Decode`.     |
+| You want service-managed defaults (confidence level, polling cadence).        | You need an ad-hoc watcher with no protocol-specific behavior.         |
+
+## Procedure
+
+<MethodTabs>
+  <Fragment slot="ui">
+
+To create a service-backed watcher from the Platform UI:
+
+1. Open your channel from the [Channels page](https://app.chain.link/cre-connect/channels).
+2. Click **Watchers → Add watcher**.
+3. Enter the **Name**, **Network**, and **Target contract address**.
+4. Select the **Service** from the dropdown (e.g. DTA).
+5. Select the **Event types** to subscribe to.
+6. Click **Deploy watcher**. The watcher appears in `pending` status and transitions to `active` once the deployment workflow completes.
+
+  </Fragment>
+  <Fragment slot="api">
+
+**Go SDK**
+
+```go
+import (
+    "github.com/google/uuid"
+    "github.com/smartcontractkit/crec-sdk/watchers"
+)
+
+w, err := client.Watchers.CreateWithService(ctx, channelID, watchers.CreateWithServiceInput{
+    Name:          "dta-fund-watcher",
+    ChainSelector: chainSelector,
+    Service:       "dta.v2",
+    Address:       "0xYourFundContract",
+    Events: []string{
+        "SubscriptionRequested",
+        "RedemptionRequested",
+        "DistributorAuthorizationUpdated",
+    },
+    ServiceConfig: map[string]any{
+        // optional service-specific overrides
+    },
+})
+if err != nil {
+    return fmt.Errorf("create watcher: %w", err)
+}
+fmt.Println(w.WatcherId, w.Status) // -> <uuid> pending
+```
+
+**curl**
+
+```bash
+curl -sS -X POST "$CREC_BASE_URL/channels/$CHANNEL_ID/watchers" \
+  -H "Authorization: Apikey $CREC_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "dta-fund-watcher",
+    "chain_selector": "16015286601757825753",
+    "service": "dta.v2",
+    "address": "0xYourFundContract",
+    "events": ["SubscriptionRequested","RedemptionRequested","DistributorAuthorizationUpdated"]
+  }'
+```
+
+The SDK validates locally:
+
+- `ChannelID` is non-nil (`watchers.ErrChannelIDRequired`).
+- `ChainSelector` is non-empty and not `"0"` (`watchers.ErrChainSelectorRequired`).
+- `Address` is non-empty (`watchers.ErrAddressRequired`).
+- `Service` is non-empty (`watchers.ErrServiceRequired`).
+- `Events` has at least one entry (`watchers.ErrEventsRequired`).
+- `Name` is at least 4 characters after trim (`watchers.ErrWatcherNameTooShort`).
+
+The server returns the new watcher with HTTP **201** and `status: pending`.
+
+  </Fragment>
+</MethodTabs>
+
+## Wait for the watcher to become active
+
+A service-based watcher is "active" once CRE Connect has deployed and confirmed it healthy. Use `WaitForActive` to block until the transition completes (or fails):
+
+```go
+active, err := client.Watchers.WaitForActive(ctx, channelID, w.WatcherId, 2*time.Minute)
+switch {
+case errors.Is(err, watchers.ErrWaitForActiveTimeout):
+    log.Fatal("watcher took too long to deploy")
+case errors.Is(err, watchers.ErrWatcherDeploymentFailed):
+    log.Fatal("watcher failed to deploy: check service / address")
+case err != nil:
+    log.Fatal(err)
+}
+fmt.Println(active.Status) // -> active
+```
+
+`WaitForActive` polls every `Options.PollInterval` (default 2 s; configurable via [`crec.WithWatcherPolling`](/crec/reference/sdk-configuration)) and tolerates `404` responses for `Options.EventualConsistencyWindow` (default 2 s) to absorb propagation lag right after creation.
+
+## What `service_config` accepts
+
+Every service defines its own config schema. The DTA v2 service accepts an empty config in the typical case; specialized scenarios (custom polling cadence, alternative confidence level, additional indexer hints) are covered in the extension's own README. Pass `nil` (Go) or omit the field (REST) when in doubt.
+
+## Next steps
+
+- [Manage Watcher Lifecycle](/crec/guides/watchers/manage-lifecycle): list, update, archive, and inspect status.
+- [DTA Subscriptions and Redemptions](/crec/extensions/dta/subscriptions-redemptions): typed examples using the same `dta.v2` service.
+- [Verifiable Events](/crec/concepts/verifiable-events): what the watcher actually emits.

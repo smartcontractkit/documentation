@@ -1,0 +1,193 @@
+---
+section: crec
+title: "Create and Manage Channels"
+date: Last Modified
+metadata:
+  description: "Create, list, filter, update, and archive Chainlink CRE Connect channels through the Platform UI or the Go SDK / REST API."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside, MethodTabs } from "@components"
+
+A **channel** is a logical container for the watchers, events, and operations that belong to one application or environment. Most teams create a channel per application (and per environment within that application).
+
+This guide covers the four channel-management operations exposed by the SDK and the [Channels page](https://app.chain.link/cre-connect/channels) in the CRE Connect UI: **create**, **list/filter**, **update**, and **archive**.
+
+## Create a channel
+
+<MethodTabs>
+  <Fragment slot="ui">
+
+The fastest way to create a channel is through the Platform UI.
+
+1. Navigate to [`app.chain.link/cre-connect/channels`](https://app.chain.link/cre-connect/channels).
+2. Click the **Create channel** button in the top-right corner.
+3. Enter a unique **name** and an optional **description**.
+4. Click **Create channel**.
+
+The new channel appears in the list with status `active`.
+
+  </Fragment>
+  <Fragment slot="api">
+
+Use the SDK or POST `/channels` directly.
+
+**Go SDK**
+
+```go
+ch, err := client.Channels.Create(ctx, channels.CreateInput{
+    Name:        "my-app-prod",
+    Description: ptr("Production channel for My App"),
+})
+if err != nil {
+    return fmt.Errorf("create channel: %w", err)
+}
+fmt.Println(ch.ChannelId, ch.Status) // -> <uuid> active
+```
+
+**curl**
+
+```bash
+curl -sS -X POST "$CREC_BASE_URL/channels" \
+  -H "Authorization: Apikey $CREC_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"my-app-prod","description":"Production channel for My App"}'
+```
+
+The SDK validates locally that:
+
+- `Name` is non-empty (`channels.ErrChannelNameRequired`).
+- `Name` ≤ `MaxChannelNameLength` (`channels.ErrChannelNameTooLong`).
+
+The server returns the created channel with HTTP **201**.
+
+  </Fragment>
+</MethodTabs>
+
+## List and filter channels
+
+<MethodTabs>
+  <Fragment slot="ui">
+
+The [Channels page](https://app.chain.link/cre-connect/channels) lists every channel in your tenant. Use the **Search** field to filter by name and the **Status** dropdown to include archived channels (hidden by default).
+
+  </Fragment>
+  <Fragment slot="api">
+
+**Go SDK**
+
+```go
+limit := 50
+list, hasMore, err := client.Channels.List(ctx, channels.ListInput{
+    Name:  ptr("my-app"),
+    Limit: &limit,
+})
+if err != nil {
+    return err
+}
+for _, c := range list {
+    fmt.Println(c.ChannelId, c.Name, c.Status)
+}
+```
+
+**curl**
+
+```bash
+curl -sS "$CREC_BASE_URL/channels?name=my-app&limit=50" \
+  -H "Authorization: Apikey $CREC_API_KEY"
+```
+
+Filters supported by `ListInput`:
+
+| Field    | Notes                                                                          |
+| -------- | ------------------------------------------------------------------------------ |
+| `Name`   | Partial-match search on channel name.                                          |
+| `Status` | Slice of `apiClient.ChannelStatus`. Archived channels are excluded by default. |
+| `Limit`  | 1–50, default 20.                                                              |
+| `Offset` | Cursor offset for pagination; check `hasMore` and increment.                   |
+
+  </Fragment>
+</MethodTabs>
+
+## Update channel metadata
+
+<MethodTabs>
+  <Fragment slot="ui">
+
+Open a channel from the list, click the **pencil** icon next to the name, edit the value, and save.
+
+  </Fragment>
+  <Fragment slot="api">
+
+**Go SDK**
+
+```go
+updated, err := client.Channels.Update(ctx, channelID, channels.UpdateInput{
+    Name:        "my-app-prod-renamed",
+    Description: ptr("New description"),
+})
+```
+
+**curl**
+
+```bash
+curl -sS -X PATCH "$CREC_BASE_URL/channels/$CHANNEL_ID" \
+  -H "Authorization: Apikey $CREC_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"my-app-prod-renamed","description":"New description"}'
+```
+
+Both `Name` and `Description` can be updated. If the channel does not exist the SDK returns `channels.ErrChannelNotFound` and the API returns **404**.
+
+  </Fragment>
+</MethodTabs>
+
+## Archive a channel
+
+<Aside type="caution" title="Active watchers block archive">
+  A channel cannot be archived while it still has watchers in `active`, `pending`, or `archiving` state. Archive every
+  watcher first, then archive the channel.
+</Aside>
+
+<MethodTabs>
+  <Fragment slot="ui">
+
+From the [Channels page](https://app.chain.link/cre-connect/channels), click the **⋯** menu on the channel and select **Archive**. Confirm in the dialog. The channel transitions immediately to `archived`.
+
+  </Fragment>
+  <Fragment slot="api">
+
+**Go SDK**
+
+```go
+archived, err := client.Channels.Archive(ctx, channelID)
+if err != nil {
+    return err
+}
+fmt.Println(archived.Status) // -> archived
+```
+
+**curl**
+
+```bash
+curl -sS -X PATCH "$CREC_BASE_URL/channels/$CHANNEL_ID" \
+  -H "Authorization: Apikey $CREC_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"archived"}'
+```
+
+Archive is **synchronous** and returns the channel with `status: archived`.
+
+  </Fragment>
+</MethodTabs>
+
+## Naming constraints
+
+Channel names must be **unique within your organisation** (verified by the SDK package documentation in `crec-sdk/channels`). Pick a naming scheme that encodes the channel's purpose and environment so collisions are obvious before you call `Create`. The `Description` field is free-form text up to 255 characters and is a useful place for ownership / on-call context.
+
+## Next steps
+
+- Provision your first watcher: [Create a Watcher with a Predefined Service](/crec/guides/watchers/create-with-service).
+- Stand up a Smart Account: [Create and Manage Wallets](/crec/guides/wallets/create-and-manage).
+- Read the [Channels concept page](/crec/concepts/channels) for the design rationale.

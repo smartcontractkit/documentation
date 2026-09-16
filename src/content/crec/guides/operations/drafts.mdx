@@ -1,0 +1,250 @@
+---
+section: crec
+title: "Draft Operations: Create, Finalize, Cancel"
+date: Last Modified
+metadata:
+  description: "Step-by-step guide to creating unsigned draft operations in CRE Connect, finalizing them with an external signer, and cancelling before execution."
+  datePublished: "2026-08-31"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+[Draft operations](/crec/concepts/drafts) let you create an operation first and collect the signature later. Use this flow when an approval system, MPC signer, KMS operator, or user review screen needs to inspect the operation before it becomes executable.
+
+This guide shows the SDK path first, then the REST shape for integrations that call the API directly.
+
+## Prerequisites
+
+Before you start, you need:
+
+- An active CRE Connect channel ID.
+- A Smart Account address on the target chain.
+- The chain selector for that network.
+- One or more encoded EVM transactions.
+- A signer that the Smart Account accepts when you finalize the draft.
+
+See [Prerequisites](/crec/getting-started/prerequisites), [Create and Manage Wallets](/crec/guides/wallets/create-and-manage), and [Build and Sign Operations](/crec/guides/operations/build-and-sign) for setup.
+
+## Build the operation
+
+A draft uses the same `types.Operation` payload as a signed operation. The difference is that you submit it without a signature.
+
+```go
+import (
+    "math/big"
+    "time"
+
+    "github.com/ethereum/go-ethereum/common"
+    "github.com/ethereum/go-ethereum/common/hexutil"
+    "github.com/smartcontractkit/crec-sdk/transact/types"
+)
+
+op := &types.Operation{
+    ID:       big.NewInt(time.Now().Unix()),
+    Account:  common.HexToAddress("0xYourSmartAccount"),
+    Deadline: big.NewInt(time.Now().Add(30 * time.Minute).Unix()),
+    Transactions: []types.Transaction{{
+        To:    common.HexToAddress("0xTargetContract"),
+        Value: big.NewInt(0),
+        Data:  hexutil.Bytes(callData),
+    }},
+}
+```
+
+`Deadline` is part of the EIP-712 payload. Choose it before you create the draft. If the operation expires before finalization, CRE Connect rejects finalization with `OPERATION_DEADLINE_ELAPSED`.
+
+## Create a draft
+
+Use `SendDraftOperation` when you already have a `types.Operation`.
+
+```go
+import "github.com/smartcontractkit/crec-sdk/transact"
+
+previews := []*transact.DraftTransactionPreview{{
+    FunctionSignature: "transfer(address,uint256)",
+}}
+
+draftID, err := client.Transact.SendDraftOperation(
+    ctx,
+    channelID,
+    op,
+    chainSelector,
+    previews,
+)
+if err != nil {
+    return err
+}
+
+draft, err := client.Transact.GetOperation(ctx, channelID, *draftID)
+if err != nil {
+    return err
+}
+
+fmt.Println(draft.OperationId, draft.Status) // -> <uuid> pending_signature
+```
+
+Use `CreateUnsignedDraftOperation` when your application already works with API-shaped strings:
+
+```go
+draftID, err := client.Transact.CreateUnsignedDraftOperation(ctx, channelID, transact.CreateDraftOperationInput{
+    ChainSelector:     chainSelector,
+    Address:           op.Account.Hex(),
+    WalletOperationID: op.ID.String(),
+    Deadline:          op.Deadline.Int64(),
+    Transactions: []transact.DraftTransactionRequest{{
+        To:    op.Transactions[0].To.Hex(),
+        Value: op.Transactions[0].Value.String(),
+        Data:  "0x" + common.Bytes2Hex(op.Transactions[0].Data),
+        Preview: &transact.DraftTransactionPreview{
+            FunctionSignature: "transfer(address,uint256)",
+        },
+    }},
+})
+```
+
+REST equivalent:
+
+```bash
+curl -sS -X POST "$CREC_BASE_URL/channels/$CHANNEL_ID/operations" \
+  -H "Authorization: Apikey $CREC_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "chain_selector": "16015286601757825753",
+    "address": "0xYourSmartAccount",
+    "wallet_operation_id": "1735312000",
+    "deadline": 1788192000,
+    "transactions": [
+      {
+        "to": "0xTargetContract",
+        "value": "0",
+        "data": "0xa9059cbb...",
+        "preview": {
+          "function_signature": "transfer(address,uint256)"
+        }
+      }
+    ]
+  }'
+```
+
+The omitted `signature` field makes this a draft. The operation starts in `pending_signature` and CRE Connect does not relay it to the DON yet.
+
+## Compute and sign the digest
+
+Compute the EIP-712 digest locally, then send it to your signer or approval system.
+
+```go
+digest, err := client.Transact.HashOperation(op, chainSelector)
+if err != nil {
+    return err
+}
+
+signature, err := client.Transact.SignOperationHash(ctx, digest, operationSigner)
+if err != nil {
+    return err
+}
+```
+
+The same signer types work here as in regular operation flows: local ECDSA, AWS KMS, HashiCorp Vault, Fireblocks, Privy, or any custom `signer.Signer`.
+
+<Aside type="note" title="Compare the digest when your signer is external">
+  External approval systems often store the draft ID and digest together. Compare the digest you intend to sign with the
+  digest for the original operation before finalizing, especially if users can edit or recreate drafts in your UI.
+</Aside>
+
+## Finalize the draft
+
+If the SDK should sign the digest and finalize in one call, use `ExecuteDraftOperation`:
+
+```go
+finalized, err := client.Transact.ExecuteDraftOperation(
+    ctx,
+    channelID,
+    *draftID,
+    digest.Bytes(),
+    operationSigner,
+)
+if err != nil {
+    return err
+}
+
+fmt.Println(finalized.Status) // -> accepted
+```
+
+If another system already produced the signature, use `SendSignedDraftOperation`:
+
+```go
+finalized, err := client.Transact.SendSignedDraftOperation(
+    ctx,
+    channelID,
+    *draftID,
+    digest.Bytes(),
+    signature,
+)
+```
+
+REST equivalent:
+
+```bash
+curl -sS -X PATCH "$CREC_BASE_URL/channels/$CHANNEL_ID/operations/$OPERATION_ID" \
+  -H "Authorization: Apikey $CREC_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "accepted",
+    "digest": "0x1234...",
+    "signature": "0xabcdef..."
+  }'
+```
+
+After finalization, the operation transitions from `pending_signature` to `accepted`. It then follows the normal operation lifecycle through `sending`, `sent`, `broadcasting`, and a terminal status.
+
+## Cancel a draft
+
+Cancel a draft while it is still `pending_signature`:
+
+```go
+if err := client.Transact.CancelDraftOperation(ctx, channelID, *draftID); err != nil {
+    return err
+}
+```
+
+REST equivalent:
+
+```bash
+curl -sS -X PATCH "$CREC_BASE_URL/channels/$CHANNEL_ID/operations/$OPERATION_ID" \
+  -H "Authorization: Apikey $CREC_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"cancelled"}'
+```
+
+You cannot finalize a cancelled draft. Create a new draft if the user wants to approve a revised operation.
+
+## Handle expiration
+
+Drafts use the same `deadline` field as signed operations:
+
+- `0` means no expiration.
+- A positive value is a Unix timestamp.
+- CRE Connect can mark a draft `expired` when the deadline passes.
+- A finalize request near or after the deadline can fail with `OPERATION_DEADLINE_ELAPSED`.
+
+After `cancelled`, `expired`, or `failed`, the same `wallet_operation_id` can be reused for a new operation on the same wallet and chain. In most systems, generating a fresh ID remains easier to reason about.
+
+## Error handling
+
+| Error or code                     | When it happens                                                                       | Action                                                    |
+| --------------------------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `transact.ErrDraftNotFound`       | The draft operation does not exist, or the channel/operation ID is wrong.             | Check the IDs and channel ownership.                      |
+| `transact.ErrDraftNotFinalizable` | The draft is not in `pending_signature`, or the API returned a finalization conflict. | Fetch the operation and inspect its current status.       |
+| `transact.ErrDraftNotCancellable` | The draft is not in `pending_signature`, or the API returned a cancellation conflict. | Fetch the operation before showing another cancel action. |
+| `transact.ErrDigestRequired`      | Finalization did not include a 32-byte digest.                                        | Compute the digest with `HashOperation`.                  |
+| `transact.ErrSignatureRequired`   | Finalization did not include a signature.                                             | Sign the digest before finalizing.                        |
+| `OPERATION_DEADLINE_ELAPSED`      | The deadline elapsed before finalization.                                             | Create a new draft with a fresh deadline.                 |
+
+See [Error Handling](/crec/reference/error-handling) for the full REST and SDK error catalog.
+
+## Next steps
+
+- [Submit and Track Operations](/crec/guides/operations/submit-and-track): track the operation after finalization.
+- [Signing Transparency](/crec/guides/operations/signing-transparency): show users what they approve before signing.
+- [Operation Lifecycles](/crec/reference/lifecycles#operation-lifecycle): review every operation status.

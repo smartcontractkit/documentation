@@ -1,0 +1,235 @@
+---
+section: ace
+title: "Custom Policies"
+date: Last Modified
+metadata:
+  description: "Write, deploy, and register your own ACE policy contract, then use it like any pre-built policy: the IPolicy contract, the config schema, registering an implementation, and creating instances."
+  datePublished: "2026-07-17"
+  lastModified: "2026-07-17"
+---
+
+import { Aside } from "@components"
+
+In addition to the [pre-built Policy Library](/ace/reference/policy-library), you can write and deploy **your own policy contract** and register it with the ACE Platform. Once registered, a custom policy behaves exactly like a library policy — you create instances of it, configure them, and attach them to protected functions.
+
+A custom policy implementation is **private to your organization**: it appears in your Policy Manager alongside the global library, but other organizations do not see it.
+
+<Aside type="note" title="You own the contract">
+  With a custom policy, your organization writes, deploys, and owns the policy contract. The ACE Platform references and
+  orchestrates it, but the security of the policy is your responsibility. Read [Security
+  Considerations](/ace/guides/policy-manager/contracts/security-considerations) before deploying one.
+</Aside>
+
+## How it fits together
+
+A custom policy follows the same [implementation vs. instance](/ace/guides/policy-manager/manage-policies#policy-implementations-vs-policy-instances) model as library policies:
+
+1. **Write** a policy contract that implements the `IPolicy` interface.
+1. **Deploy** it — this is your policy **implementation** contract — on each chain where you need it.
+1. **Register** the implementation with the ACE Platform, providing its on-chain addresses and a **config schema**. This makes it an org-scoped policy type.
+1. **Create instances** from it and **attach** them to target functions, exactly like a library policy.
+
+At instance-creation time, ACE's on-chain `PolicyFactory` clones your implementation into an instance and initializes it. The factory verifies that your implementation declares support for `IPolicy` (via ERC-165) — a contract that does not implement `IPolicy` cannot be instantiated.
+
+## Prerequisites
+
+- Solidity development experience and a deployment toolchain (Foundry, Hardhat, etc.).
+- Familiarity with [Policy Management](/ace/concepts/policy-management) (the execution model, `run`/`postRun`, extractors, and parameters) and [Policy Ordering & Composition](/ace/concepts/policy-ordering).
+- A deployed [PolicyEngine](/ace/guides/policy-manager/manage-engines).
+- The `@chainlink/policy-management` contracts available in your project.
+
+## Step 1: Write the policy contract
+
+Every policy inherits from the base `Policy` contract and implements `run`. The base contract provides ownership, upgradeability, ERC-165 support, and the binding to a PolicyEngine.
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import {Policy} from "@chainlink/policy-management/core/Policy.sol";
+import {IPolicyEngine} from "@chainlink/policy-management/interfaces/IPolicyEngine.sol";
+
+contract LockoutPolicy is Policy {
+    string public constant override typeAndVersion = "LockoutPolicy 1.0.0";
+
+    mapping(address => uint256) public lockoutExpiresAt;
+
+    /// @notice Configuration setter — locks an address for a duration (seconds).
+    function setLockout(address account, uint256 duration) public onlyOwner {
+        lockoutExpiresAt[account] = block.timestamp + duration;
+    }
+
+    /// @notice Authorize setLockout so the PolicyEngine can apply configuration changes.
+    function authorizeConfigSelector(bytes4 selector) public pure override returns (bool) {
+        return selector == this.setLockout.selector;
+    }
+
+    function run(
+        address, /* caller */
+        address, /* subject */
+        bytes4, /* selector */
+        bytes[] calldata parameters,
+        bytes calldata /* context */
+    ) public view override returns (IPolicyEngine.PolicyResult) {
+        // Always validate the inputs your policy expects.
+        require(parameters.length == 1, "LockoutPolicy: expected 1 parameter");
+        address recipient = abi.decode(parameters[0], (address));
+
+        if (lockoutExpiresAt[recipient] > block.timestamp) {
+            revert IPolicyEngine.PolicyRejected("LockoutPolicy: address is locked out");
+        }
+        return IPolicyEngine.PolicyResult.Continue;
+    }
+}
+```
+
+Key pieces:
+
+- **`run(...)`** — read-only evaluation returning `Continue` (defer to the next policy), `Allowed` (approve and skip the rest of the chain), or reverting with `PolicyRejected` to block the transaction. The `parameters` array holds the extractor outputs mapped to this policy; always validate its length and decode defensively.
+- **`postRun(...)`** _(optional)_ — override it to mutate state after a successful check (for example, incrementing a counter). It is `onlyPolicyEngine` and is not called when the policy rejects.
+- **`configure(bytes)`** _(optional)_ — override it to decode initial configuration passed at instance creation. The base `initialize` calls it.
+- **Configuration setters + `authorizeConfigSelector`** — expose owner-callable setters (like `setLockout`) to reconfigure the policy after deployment, and override `authorizeConfigSelector` to return `true` for those selectors so the PolicyEngine is allowed to call them. Selectors you do not authorize can only be called by the owner directly, not through the platform.
+- **`typeAndVersion`** — a human-readable identifier, e.g. `"LockoutPolicy 1.0.0"`.
+
+<Aside type="tip" title="Start from the boilerplate">
+  The Chainlink ACE repository includes a full walkthrough and a copy-pasteable template — the [Custom Policies
+  Tutorial](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/docs/CUSTOM_POLICIES_TUTORIAL.md).
+  The pre-built policies in the [policy-management
+  package](https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/policy-management/src/policies) are also
+  good references.
+</Aside>
+
+## Step 2: Deploy the implementation
+
+Deploy your policy contract on each chain where you intend to use it. This deployed contract is the **implementation** — ACE clones it into instances; you do not attach the implementation to functions directly. Record the deployed address per chain; you need them in the next step.
+
+<Aside type="caution" title="ERC-165 is required">
+  Your implementation must return `true` from `supportsInterface(type(IPolicy).interfaceId)`. Inheriting from the base
+  `Policy` contract handles this. If it does not, instance creation reverts.
+</Aside>
+
+## Step 3: Register the implementation
+
+Register the deployed implementation with the Coordinator API so the platform can manage it. Provide a name, description, the on-chain addresses, and a **config schema**.
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/policy-implementations \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "name": "Lockout Policy",
+    "description": "Blocks transfers to locked-out recipients for a period of time",
+    "onchain_policy_implementations": [
+      { "chain_selector": "16015286601757825753", "address": "0xYourImplementationOnSepolia" }
+    ],
+    "policy_config_schema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lockouts": {
+          "type": "array",
+          "description": "Accounts to lock out and for how long.",
+          "items": {
+            "type": "object",
+            "required": ["account", "duration"],
+            "properties": {
+              "account": { "type": "string", "pattern": "^0x[a-fA-F0-9]{40}$" },
+              "duration": { "type": "integer" }
+            }
+          },
+          "metadata": {
+            "display_hints": { "network_behaviour": "apply_per_chain", "title": "Lockouts" },
+            "primary_key_fields": ["account"],
+            "on_chain_operations": [
+              {
+                "type": "add",
+                "function_abi": {
+                  "name": "setLockout",
+                  "type": "function",
+                  "stateMutability": "nonpayable",
+                  "inputs": [
+                    { "name": "account", "type": "address" },
+                    { "name": "duration", "type": "uint256" }
+                  ],
+                  "outputs": []
+                }
+              }
+            ]
+          }
+        }
+      },
+      "policy_run_parameters": [
+        { "name": "Recipient", "type": "address", "max": 1 }
+      ],
+      "initial_configs": []
+    }
+  }'
+```
+
+| <div style="width: 220px;">Field</div> | Required | Description                                                                                                                                                  |
+| -------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `name`                                 | Yes      | Human-readable name shown in Policy Manager                                                                                                                  |
+| `description`                          | Yes      | What the policy does                                                                                                                                         |
+| `policy_config_schema`                 | Yes      | JSON Schema describing configurable fields, the parameters the policy consumes, and how configuration maps to on-chain setters (see below)                   |
+| `onchain_policy_implementations`       | No       | Array of `{ chain_selector, address }` for your deployed implementation on each chain. ACE records these; it does **not** deploy the implementation for you. |
+
+The registered implementation is created with type `custom` and scoped to your organization. It now appears in `GET /policy-implementations` alongside the global library.
+
+## The config schema
+
+The `policy_config_schema` is a [JSON Schema (draft-07)](https://json-schema.org/draft-07) document with three ACE-specific parts. It drives the Platform UI, validates the configuration you supply, and tells the platform how to translate configuration into on-chain calls.
+
+### `properties` — configurable fields
+
+Each property is a configurable field of your policy. Its `metadata.on_chain_operations` map configuration changes to your contract's setter functions:
+
+- `add` / `remove` — for list-style fields (add or remove an entry), pointing at setters like `setLockout`.
+- `replace` — for scalar fields (set a single value), pointing at a setter like `setMax`.
+
+Each operation carries the `function_abi` of the setter to call. **Those setters must be authorized by your contract's `authorizeConfigSelector`** — otherwise the PolicyEngine cannot call them and configuration changes will fail.
+
+### `policy_run_parameters` — what the policy consumes
+
+An ordered array declaring the parameters your `run` function expects, each with a `name`, a Solidity `type`, and a `max`:
+
+- `max: 1` — exactly one value at that position.
+- `max: -1` — a variable number of values (must be the last parameter). Use this for policies that check an arbitrary number of addresses.
+
+When you attach the policy to a function, the extractor outputs you map to it must match these parameters by type and position. See [Policy Management — the extractor and mapper pattern](/ace/concepts/policy-management#the-extractor-and-mapper-pattern).
+
+### `initial_configs` — what is set at creation
+
+An array of property names that are provided when an instance is **created** (in the instance's `initial_config`) rather than configured afterward. Leave it empty to configure everything after deployment.
+
+## Step 4: Create and use instances
+
+From here, a custom policy is used exactly like a library policy:
+
+1. [Create a policy instance](/ace/guides/policy-manager/manage-policies#create-a-policy-instance) from your implementation, supplying an `initial_config` that matches your config schema. ACE clones your implementation through the `PolicyFactory` and initializes the instance.
+1. [Attach the instance to a protected function](/ace/guides/policy-manager/manage-protections), mapping the extractor outputs to your `policy_run_parameters`.
+1. [Update the configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration) over time through the authorized config selectors.
+
+## Manage a custom implementation
+
+- **Update** name, description, or on-chain addresses with `PUT /policy-implementations/{id}`.
+- **Archive** with `PATCH /policy-implementations/{id}` (`{"status":"archived"}`). All instances of the implementation must be archived first.
+
+## Security considerations
+
+A custom policy runs inside the policy chain of every function it protects, so a bug or malicious construct affects those transactions. In particular:
+
+- Keep `run` read-only and defensive — validate `parameters` length and decode carefully.
+- Ensure any external calls cannot revert the whole chain unexpectedly; return a decision rather than propagating failures.
+- Treat `postRun` state changes with the same care as any state-changing external function (reentrancy, access control).
+
+See [Security Considerations](/ace/guides/policy-manager/contracts/security-considerations) and the [Security Model](/ace/concepts/security) for the full trust model.
+
+## Related pages
+
+- [Custom Policies Tutorial](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/docs/CUSTOM_POLICIES_TUTORIAL.md) — end-to-end contract walkthrough with a boilerplate template
+- [Policy Management](/ace/concepts/policy-management) — execution model, `run`/`postRun`, parameters
+- [Policy Management Contracts](/ace/reference/policy-management-contracts) — `IPolicy`, `IPolicyEngine`, and other interfaces
+- [Managing Policies](/ace/guides/policy-manager/manage-policies) — create and configure policy instances
+- [Protecting Target Functions](/ace/guides/policy-manager/manage-protections) — attach policies to functions
+- [Security Considerations](/ace/guides/policy-manager/contracts/security-considerations) — trust boundaries and defensive patterns

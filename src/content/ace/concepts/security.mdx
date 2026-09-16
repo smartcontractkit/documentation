@@ -1,0 +1,51 @@
+---
+section: ace
+title: "Security Model"
+date: Last Modified
+metadata:
+  description: "Learn about the Chainlink ACE security model: policy administration controls, execution ordering, registry governance, and privacy guarantees."
+  datePublished: "2026-03-31"
+  lastModified: "2026-03-31"
+---
+
+This page covers the governance and operational security principles behind how ACE protects onchain assets and identity data — the controls, ordering guarantees, and privacy properties that administrators, auditors, and compliance teams should understand.
+
+For implementation-level security guidance (trust boundaries for policies and extractors, context handling, view function requirements), see [Security Considerations for Smart Contracts](/ace/guides/policy-manager/contracts/security-considerations).
+
+## Policy administration is a critical control
+
+The ability to add, remove, or reorder policies in a PolicyEngine is the most sensitive administrative power in ACE. An actor who gains control over these functions can effectively disable or bypass all compliance rules for every contract connected to that engine.
+
+In ACE Beta, policy administration is handled through the [ACE Platform](/ace/concepts/key-terms#ace-platform) — the Coordinator API and Platform UI — which means configuration changes go through the platform's authentication and authorization layer. The underlying onchain contracts enforce that only the [CRE Connect Wallet](/ace/concepts/key-terms#cre-connect-wallet) (which the platform operates on your behalf) can call administrative functions like `addPolicy`, `removePolicy`, `setExtractor`, and `setDefaultAllow`.
+
+## Policy execution order matters
+
+Policies execute in a strict, sequential order — the order they were added to the PolicyEngine for a given function selector. This order has direct security implications because of how the three policy outcomes interact:
+
+- **Reject** halts execution immediately and reverts the transaction. No subsequent policies run.
+- **Allow** approves the transaction immediately and **bypasses all subsequent policies**.
+- **Continue** passes the decision to the next policy in the chain.
+
+Because Allow skips everything after it, a permissive policy placed too early in the chain can inadvertently bypass critical security checks. For example, if an admin bypass policy is placed before a sanctions check, an admin address would never be screened.
+
+**Best practice:** Order restrictive policies (sanctions screening, denylist checks) before permissive ones (admin bypass, authorized sender lists). This ensures that hard blocks cannot be circumvented by an early Allow.
+
+For a detailed guide on ordering strategies, see [Policy Ordering & Composition](/ace/concepts/policy-ordering).
+
+## Registry governance
+
+The IdentityRegistry and CredentialRegistry are not protected by simple access-control lists. Instead, their administrative functions — `registerIdentity`, `registerCredential`, `removeCredential`, and others — are themselves protected by a PolicyEngine. This means:
+
+- Only addresses authorized by the registry's PolicyEngine can modify identity or credential data.
+- The same policy model that protects application contracts also protects the identity infrastructure.
+- Authorization can be as simple as an allowlist of Credential Issuers, or as sophisticated as a multi-policy chain with role checks and volume limits on issuance.
+
+This design ensures that credential issuance is governed by explicit, auditable rules rather than hardcoded access controls. In ACE Beta, the [Identity Manager](/ace/concepts/key-terms#identity-manager) handles registry governance through the platform — users in your organization can create registries, register identities, define credential types, and issue credentials, and the platform's CRE Connect Wallet executes these operations onchain.
+
+## Privacy guarantees
+
+ACE is designed so that no personally identifiable information (PII) is stored onchain:
+
+- **Credential data** is arbitrary `bytes` — typically a hash of offchain data or a non-sensitive reference. The system never requires raw PII to be written to the blockchain.
+- **CCID-to-address mappings** are publicly readable onchain. This is by design — it enables cross-chain verification — but it means anyone can see which addresses share the same identity. For applications where this transparency is a concern, multiple CCIDs per user can be used to limit correlation across domains. See [Cross-Chain Identity: Privacy and correlation](/ace/concepts/cross-chain-identity#privacy-and-correlation) for details.
+- **Credential type identifiers** are hashed (`keccak256`) but use known namespaced strings (e.g., `common.kyc`), so standard types are effectively public knowledge.

@@ -55,6 +55,7 @@ Key points:
 - **Burn and mint**: TEST is burned on Sepolia; LINK is minted on Canton after execution.
 - **Manual execution required**: Unlike `canton2any` default auto-exec on Sepolia, all `any2canton` token transfers require `any2canton:manual-exec` on Canton.
 - **Token pool disclosures**: Execution fetches disclosures from Global CCIP EDS and the token pool operator EDS.
+- **Finality**: The starter kit uses the TEST ↔ LINK token pool, which only supports default (`finalized`) source finality. A custom `--finality` on token sends is only supported if your token pool supports it — since this starter kit uses LINK, do not pass `--finality` to `any2canton:token`.
 
 See the [Canton as Destination flow](/ccip/concepts/canton/overview#public-chain--canton) — `TokenReceiveTicket` and token pool release steps.
 
@@ -87,11 +88,11 @@ Use the optional `--receiver` flag on `any2canton:manual-exec` only when you nee
 npm run any2canton:token -- --amount 1
 ```
 
-Faster finality (32 block confirmations):
+<Aside type="note" title="Finality not customizable for LINK token transfers">
 
-```bash filename="Terminal"
-npm run any2canton:token -- --amount 1 --finality 32
-```
+The starter kit uses the TEST ↔ LINK token pool, which only supports default (`finalized`) source finality. A custom `--finality` on token sends is only supported if your token pool supports it — since this starter kit uses LINK, do **not** pass `--finality` to `any2canton:token`. Wait for Sepolia finality before running `any2canton:manual-exec`.
+
+</Aside>
 
 ### Expected send output
 
