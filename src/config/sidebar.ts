@@ -1217,6 +1217,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds",
         },
         {
+          title: "Key Terms and Concepts",
+          url: "data-feeds/key-terms",
+        },
+        {
           title: "Getting Started",
           url: "data-feeds/getting-started",
         },

@@ -1127,16 +1127,80 @@ contract ENSConsumer {
 # Feed Types
 Source: https://docs.chain.link/data-feeds/feed-types
 
-Chainlink Data Feeds provide multiple feed types for different onchain use cases.
+Chainlink Data Feeds provide multiple feed types for different onchain use cases. Choose the correct feed category before retrieving addresses or implementation details.
 
-| Feed Type                                                   | Purpose                                                                                                                                                                 |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Price Feeds](/data-feeds/price-feeds)                      | Aggregated, decentralized asset prices with cryptographic integrity for collateral, lending, and derivatives.                                                           |
-| [SmartData](/data-feeds/smartdata)                          | RWA-focused single-value and multi-variable (MVR) feeds (reserves, NAV, AUM, bundled OHLC sets) enabling secure, data-rich tokenization with efficient onchain reads.   |
-| [Smart Value Recapture (SVR) Feeds](/data-feeds/svr-feeds)  | Specialized feeds providing metrics that help protocols recapture MEV or reduce external value leakage.                                                                 |
-| [Rate and Volatility Feeds](/data-feeds/rates-feeds)        | Interest rate curves, staking APR, and realized volatility benchmarks used for pricing models, risk controls, and hedging strategies.                                   |
-| [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) | Real-time status of L2 sequencer availability for protective circuit breakers and fallback transaction logic.                                                           |
-| [Self-Managed Feeds](/data-feeds/self-managed-feeds)        | Data Feeds where a chain or third party publishes onchain updates instead of Chainlink Labs–managed oracle infrastructure; not operated or monitored by Chainlink Labs. |
+| Feed Type                                                                    | Purpose                                                                                                                                                                 |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Price Feeds](/data-feeds/price-feeds)                                       | Aggregated, decentralized asset prices with cryptographic integrity for collateral, lending, and derivatives.                                                           |
+| [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds)                 | Continuous 24/5 pricing for tokenized representations of US equities and ETFs, including regular, pre-market, post-market, and overnight sessions.                      |
+| [SmartData](/data-feeds/smartdata)                                           | RWA-focused single-value and multi-variable (MVR) feeds (reserves, NAV, AUM, bundled OHLC sets) enabling secure, data-rich tokenization with efficient onchain reads.   |
+| [Smart Value Recapture (SVR) Feeds](/data-feeds/svr-feeds)                   | Specialized feeds providing metrics that help protocols recapture MEV or reduce external value leakage.                                                                 |
+| [Rate and Volatility Feeds](/data-feeds/rates-feeds)                         | Interest rate curves, staking APR, and realized volatility benchmarks used for pricing models, risk controls, and hedging strategies.                                   |
+| [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds)                  | Real-time status of L2 sequencer availability for protective circuit breakers and fallback transaction logic.                                                           |
+| [24/7 Extended-Hours Data Feeds](/data-feeds/24-7-extended-hours-data-feeds) | Continuous pricing for assets whose underlying markets normally close, including blended precious metals and crypto-derived 24/7 forex rates.                           |
+| [Self-Managed Feeds](/data-feeds/self-managed-feeds)                         | Data Feeds where a chain or third party publishes onchain updates instead of Chainlink Labs–managed oracle infrastructure; not operated or monitored by Chainlink Labs. |
+
+## Price Feeds
+
+Smart contracts often act in real-time on data such as prices of assets. This is especially true in [DeFi](https://chain.link/use-cases/defi).
+
+For example, lending and borrowing platforms like [Aave](https://aave.com) utilize Data Feeds to assess collateral value accurately, while perpetual platforms such as [GMX](https://gmx.io) rely on these feeds to validate offchain data and ensure that each deposit or withdrawal executes at the correct market value.
+
+- To learn how to use Price Feeds, see the [Price Feeds](/data-feeds/price-feeds) documentation.
+- See the [Data Feeds Contract Addresses](/data-feeds/price-feeds/addresses) page for a list of available networks and addresses.
+
+## Tokenized Equity Feeds
+
+Chainlink Tokenized Equity Feeds provide continuous 24/5 pricing for tokenized representations of US equities and ETFs. These feeds deliver the calculated primary market price of the token as determined by the issuer's pricing methodology.
+
+- To learn more, see the [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds) documentation.
+- See the [Provider Catalog](/data-feeds/tokenized-equity-feeds/providers) for a list of supported providers.
+
+## SmartData Feeds
+
+Chainlink SmartData is a suite of onchain data offerings designed to unlock the utility, accessibility, and reliability of tokenized real-world assets (RWAs). By providing secure minting assurances alongside essential real-world data such as reserves, Net Asset Value (NAV), and Assets Under Management (AUM) data, the SmartData suite embeds security and enriches data into tokenized RWA offerings.
+
+- To learn more about the broader SmartData suite, see the [SmartData](/data-feeds/smartdata) documentation.
+- See the [SmartData Contract Addresses](/data-feeds/smartdata/addresses) page for a list of available networks and addresses.
+
+### Multiple-Variable Response (MVR) Feeds
+
+The SmartData suite includes [Multiple-Variable Response (MVR) Feeds](/data-feeds/mvr-feeds), which bundle multiple data points of various types into a single onchain update. Unlike traditional feeds that provide only one numeric value, MVR feeds can return multiple values of different types (both numeric and non-numeric) in a single transaction.
+
+- To learn more about MVR Feeds, see the [Multiple-Variable Response (MVR) Feeds](/data-feeds/mvr-feeds) documentation.
+- See the [SmartData Contract Addresses](/data-feeds/smartdata/addresses) page for a list of available networks and addresses. Use the *Show Multiple-Variable Response (MVR) feeds* checkbox to filter the list.
+
+## Smart Value Recapture (SVR) Feeds
+
+Smart Value Recapture (SVR) Feeds introduce a mechanism to recapture Oracle Extractable Value (OEV), a form of MEV associated with oracle updates, often observed during liquidations.
+
+- To learn more, see the [Smart Value Recapture (SVR) Feeds](/data-feeds/svr-feeds) documentation.
+- Find SVR-enabled addresses on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page by filtering for SVR feeds.
+
+## Rate and Volatility Feeds
+
+Several feeds provide interest rate curve data, APY data, and realized asset price volatility.
+
+- To learn more, see the [Rate and Volatility Feeds](/data-feeds/rates-feeds) documentation.
+- See the [Rate and Volatility Contract Addresses](/data-feeds/rates-feeds/addresses) page for a list of available networks and addresses.
+
+## L2 sequencer uptime feeds
+
+L2 sequencer feeds track the last known status of the sequencer on an L2 network at a given point in time. This helps you prevent mass liquidations by providing a grace period to allow customers to react to these events.
+
+To learn how to use L2 sequencer uptime feeds, see the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) documentation.
+
+## 24/7 Extended-Hours Data Feeds
+
+Some assets only trade during specific market hours: precious metals and forex markets close on weekends and holidays, and some currencies trade mainly during local hours or are subject to capital controls. To support applications that need continuous price data anyway, Chainlink offers 24/7 extended-hours feeds for certain assets in these categories.
+
+To learn more, see the [24/7 Extended-Hours Data Feeds](/data-feeds/24-7-extended-hours-data-feeds) documentation.
+
+## Self-managed feeds
+
+Some networks publish Data Feed–style proxy contracts where **onchain updates are written by the chain or a third-party operator** (for example using a CRE workflow that reads [Chainlink Data Streams](/data-streams)), rather than through Chainlink Labs–managed decentralized oracle networks. **Chainlink Labs does not operate, monitor, or list addresses** for these deployments in official feed catalogs.
+
+For responsibilities, monitoring scope, and how to obtain contract addresses, see [Self-Managed Feeds](/data-feeds/self-managed-feeds).
 
 ---
 
@@ -1535,72 +1599,175 @@ Source: https://docs.chain.link/data-feeds
   Data Feeds with your applications.
 </Aside>
 
-Chainlink Data Feeds are the quickest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health.
+Chainlink Data Feeds are the quickest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health. Data Feeds aggregate data from many independent sources and publish it onchain, so your smart contracts can read it and act on it within the same transaction.
 
-If you already started a project and need to integrate Chainlink, you can [add Chainlink to your existing project](/resources/create-a-chainlinked-project?parent=dataFeeds#installing-into-existing-projects) with the [`@chainlink/contracts` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
+## Get started
+
+- **New to Data Feeds?** Follow the [Getting Started guide](/data-feeds/getting-started) to read your first feed.
+- **Need to read a feed in your contract?** See [Using Data Feeds on EVM Chains](/data-feeds/using-data-feeds).
+- **Looking for a feed address?** Browse the [Price Feed Addresses](/data-feeds/price-feeds/addresses), [SmartData Addresses](/data-feeds/smartdata/addresses), or [Rate and Volatility Addresses](/data-feeds/rates-feeds/addresses) pages.
+- **Want to understand the terminology?** See [Key Terms and Concepts](/data-feeds/key-terms).
+- **Already have a project?** [Add Chainlink to your existing project](/resources/create-a-chainlinked-project?parent=dataFeeds#installing-into-existing-projects) with the [`@chainlink/contracts` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
 
 ## Types of data feeds
 
-Data feeds provide many different types of data for your applications.
+Data Feeds provide many different types of data for your applications. See [Feed Types](/data-feeds/feed-types) for a full overview of each type.
 
-- [Price Feeds](#price-feeds)
-- [SmartData Feeds](#smartdata-feeds)
-  - [Multiple-Variable Response (MVR) Feeds](#multiple-variable-response-mvr-feeds)
-- [Smart Value Recapture (SVR) Feeds](#smart-value-recapture-svr-feeds)
-- [Rate and Volatility Feeds](#rate-and-volatility-feeds)
-- [L2 sequencer uptime feeds](#l2-sequencer-uptime-feeds)
-- [Self-managed feeds](#self-managed-feeds)
+| Feed Type                                                                    | Purpose                                                                      |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| [Price Feeds](/data-feeds/price-feeds)                                       | Aggregated, decentralized asset prices.                                      |
+| [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds)                 | Continuous pricing for tokenized stocks and ETFs.                            |
+| [SmartData Feeds](/data-feeds/smartdata)                                     | Data for tokenized real-world assets (RWAs), such as reserves, NAV, and AUM. |
+| [Smart Value Recapture (SVR) Feeds](/data-feeds/svr-feeds)                   | Feeds that help protocols recapture MEV.                                     |
+| [Rate and Volatility Feeds](/data-feeds/rates-feeds)                         | Interest rates, APY, and realized volatility.                                |
+| [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds)                  | L2 sequencer health status.                                                  |
+| [24/7 Extended-Hours Data Feeds](/data-feeds/24-7-extended-hours-data-feeds) | Continuous pricing for assets whose markets normally close.                  |
+| [Self-Managed Feeds](/data-feeds/self-managed-feeds)                         | Feeds published by a chain or third-party operator.                          |
 
-### Price Feeds
+## Learn more
 
-Smart contracts often act in real-time on data such as prices of assets. This is especially true in [DeFi](https://chain.link/use-cases/defi).
+| Topic                                                                | Description                                              |
+| -------------------------------------------------------------------- | -------------------------------------------------------- |
+| [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds)     | Evaluate feed quality and risk.                          |
+| [Developer Responsibilities](/data-feeds/developer-responsibilities) | Understand your responsibilities when integrating feeds. |
+| [Data Feeds API Reference](/data-feeds/api-reference)                | The full API for reading feeds.                          |
+| [Historical Price Data](/data-feeds/historical-data)                 | Retrieve past answers.                                   |
 
-For example, lending and borrowing platforms like [Aave](https://aave.com) utilize Data Feeds to assess collateral value accurately, while perpetual platforms such as [GMX](https://gmx.io) rely on these feeds to validate offchain data and ensure that each deposit or withdrawal executes at the correct market value.
+---
 
-Data Feeds aggregate many data sources and publish them onchain using a combination of the [Decentralized Data Model](/architecture-overview/architecture-decentralized-model?parent=dataFeeds) and [Offchain Reporting](/architecture-overview/off-chain-reporting?parent=dataFeeds).
+# Key Terms and Concepts
+Source: https://docs.chain.link/data-feeds/key-terms
 
-- To learn how to use Price Feeds, see the [Price Feeds](/data-feeds/price-feeds) documentation.
-- See the [Data Feeds Contract Addresses](/data-feeds/price-feeds/addresses) page for a list of available networks and addresses.
+This page explains the columns and fields shown in the [Data Feeds address tables](/data-feeds/price-feeds/addresses), along with the key concepts behind how Data Feeds work. Use it as a reference when reading the tables or integrating a feed.
 
-### SmartData Feeds
+For an overview of the different kinds of feeds, see [Feed Types](/data-feeds/feed-types).
 
-Chainlink SmartData is a suite of onchain data offerings designed to unlock the utility, accessibility, and reliability of tokenized real-world assets (RWAs). By providing secure minting assurances alongside essential real-world data such as reserves, Net Asset Value (NAV), and Assets Under Management (AUM) data, the SmartData suite embeds security and enriches data into tokenized RWA offerings.
+## Table columns
 
-- To learn more about the broader SmartData suite, see the [SmartData](/data-feeds/smartdata) documentation.
-- See the [SmartData Contract Addresses](/data-feeds/smartdata/addresses) page for a list of available networks and addresses.
+Each row in a Data Feeds address table represents a single feed. The columns describe how the feed reports data and how to read it.
 
-#### Multiple-Variable Response (MVR) Feeds
+### Risk
 
-The SmartData suite includes [Multiple-Variable Response (MVR) Feeds](/data-feeds/mvr-feeds), which bundle multiple data points of various types into a single onchain update. Unlike traditional feeds that provide only one numeric value, MVR feeds can return multiple values of different types (both numeric and non-numeric) in a single transaction.
+The market pricing risk category assigned to the feed. Feeds are categorized as 🟢 Low, 🟡 Medium, 🟠 High, or 🔴 Very High market pricing risk based on how reliably the asset can be priced. The risk category helps you evaluate whether a feed is appropriate for your use case.
 
-- To learn more about MVR Feeds, see the [Multiple-Variable Response (MVR) Feeds](/data-feeds/mvr-feeds) documentation.
-- See the [SmartData Contract Addresses](/data-feeds/smartdata/addresses) page for a list of available networks and addresses. Use the *Show Multiple-Variable Response (MVR) feeds* checkbox to filter the list.
+To learn how each risk category is defined and how to mitigate risk, see [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds#data-feed-categories).
 
-### Smart Value Recapture (SVR) Feeds
+### Pair
 
-Smart Value Recapture (SVR) Feeds introduce a mechanism to recapture Oracle Extractable Value (OEV), a form of MEV associated with oracle updates, often observed during liquidations.
+The asset pair that the feed reports, such as `BTC / USD`. The pair identifies the base asset and the quote asset used to express the price.
 
-- To learn more, see the [Smart Value Recapture (SVR) Feeds](/data-feeds/svr-feeds) documentation.
-- Find SVR-enabled addresses on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page by filtering for SVR feeds.
+### Deviation
 
-### Rate and Volatility Feeds
+The deviation threshold that triggers a new onchain update. When the reported price moves by at least this percentage from the last reported value, the oracle network publishes a new answer. For example, a deviation of `0.5%` means the feed updates when the price changes by 0.5% or more.
 
-Several feeds provide interest rate curve data, APY data, and realized asset price volatility.
+### Heartbeat
 
-- To learn more, see the [Rate and Volatility Feeds](/data-feeds/rates-feeds) documentation.
-- See the [Rate and Volatility Contract Addresses](/data-feeds/rates-feeds/addresses) page for a list of available networks and addresses.
+The maximum time between onchain updates, expressed in seconds. The oracle network publishes a new answer at least this often, even if the price has not moved enough to trigger the [deviation](#deviation) threshold. For example, a heartbeat of `3600s` means the feed updates at least once per hour.
 
-### L2 sequencer uptime feeds
+### Dec
 
-L2 sequencer feeds track the last known status of the sequencer on an L2 network at a given point in time. This helps you prevent mass liquidations by providing a grace period to allow customers to react to these events.
+The number of decimal places used to represent the feed's answer. Because answers are stored as integers, you must know the feed's decimal precision to interpret its value. This column is hidden by default and appears when you toggle **More Details**. See [Decimal precision](#decimal-precision) below.
 
-To learn how to use L2 sequencer uptime feeds, see the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) documentation.
+### Address and info
 
-### Self-managed feeds
+The onchain address of the feed's [proxy contract](#proxy-contract), which points to the underlying [aggregator contract](#aggregator-contract). Click the address to view it in a blockchain explorer, or use the copy button to copy it. This column also expands to show additional details about the feed, described in [More info fields](#more-info-fields) below.
 
-Some networks publish Data Feed–style proxy contracts where **onchain updates are written by the chain or a third-party operator** (for example using a CRE workflow that reads [Chainlink Data Streams](/data-streams)), rather than through Chainlink Labs–managed decentralized oracle networks. **Chainlink Labs does not operate, monitor, or list addresses** for these deployments in official feed catalogs.
+## More info fields
 
-For responsibilities, monitoring scope, and how to obtain contract addresses, see [Self-Managed Feeds](/data-feeds/self-managed-feeds).
+Expanding a row in the address table reveals additional details about the feed.
+
+### Asset name
+
+The name of the underlying asset that the feed reports, such as `1inch`. This is the base asset in the [pair](#pair).
+
+### Asset type
+
+The category of the underlying asset, such as `Crypto`, `FX`, or `Precious Metals`. The asset type helps you understand the market the feed tracks and which [decimal precision](#decimal-precision) standard applies.
+
+### Market hours
+
+The hours during which the underlying market is open and trading. Some markets, such as precious metals and forex, close on weekends and holidays. To learn how market hours affect feed behavior, see [Market hours](/data-feeds/selecting-data-feeds#market-hours).
+
+### Asset class
+
+A broader classification of the asset, such as `Crypto`, `Equities`, or `Macroeconomics`. This is similar to [asset type](#asset-type) but can include additional sub-classifications.
+
+### Full name
+
+The full product name of the feed, when available. This is a more descriptive label than the [pair](#pair).
+
+### Trading hours
+
+The specific trading session hours for equity feeds, such as `Regular Hours` (9:30am–4:00pm Mon–Fri ET). This is more granular than [market hours](#market-hours) and applies mainly to tokenized equity feeds.
+
+### Bounded (Upper)
+
+A note shown when a feed has a maximum reportable price. This applies to certain stablecoin feeds that are capped at an upper price bound. To learn more, see [Bounded Market Price Feeds](/data-feeds/selecting-data-feeds#bounded-market-price-feeds).
+
+### Deprecating
+
+A note shown when a feed is scheduled for deprecation, including its shutdown date. To learn more, see [Deprecating Feeds](/data-feeds/deprecating-feeds).
+
+## Decimal precision
+
+Chainlink Data Feeds use the following decimal precision standards:
+
+| Asset                  | Decimal Standard |
+| ---------------------- | ---------------- |
+| Crypto - USD (Non-Eth) | 8                |
+| Crypto - ETH           | 18               |
+| FX                     | 8                |
+| Precious Metals        | 8                |
+| Commodities/Energy     | 8                |
+| All others             | Feed specific    |
+
+Decimal precision standards are subject to reevaluation. Decimal precision is not changed on live feeds; if an asset pricing falls below a certain acceptable decimal precision, protocols can talk to their Chainlink representatives about spinning up a new feed to accommodate.
+
+To get the decimal precision of a given feed, use the `decimals` function as described in the [Getting Started Guide](/data-feeds/getting-started#compile-deploy-and-run-the-contract) and verify with the contract onchain or via [the Address pages](/data-feeds/price-feeds/addresses?showDetails=true#overview).
+
+For example, when you call `getChainlinkDataFeedLatestAnswer` to retrieve the latest answer from the aggregator contract, the returned value is an integer without a decimal point. You can find the correct number of decimal places for this answer on the [Price Feed addresses](/data-feeds/price-feeds/addresses) page by clicking the **Show more details** checkbox. The answer on the BTC / USD feed uses 8 decimal places, so an answer of `3030914000000` indicates a BTC / USD price of `30309.14`. Each feed uses a different number of decimal places for answers.
+
+## Related concepts
+
+### Answer
+
+The numeric value that a data feed publishes onchain, such as an asset price. Answers are stored as integers in fixed-point format, so they do not include a decimal point. To interpret an answer correctly, you need to know the feed's [decimal precision](#decimal-precision).
+
+### Aggregator contract
+
+An onchain contract that receives periodic data updates from the oracle network and stores the aggregated data so that consumers can retrieve it and act on it within the same transaction. Aggregators are the underlying contracts that [proxy contracts](#proxy-contract) point to. For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/data-feeds/api-reference#accesscontrolledoffchainaggregator).
+
+### Consumer
+
+An onchain or offchain application that uses Data Feeds. Consumer contracts use the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol) to call functions on the [proxy contract](#proxy-contract) and retrieve information from the [aggregator contract](#aggregator-contract). For a complete list of functions available in the `AggregatorV3Interface`, see the [Data Feeds API Reference](/data-feeds/api-reference#aggregatorv3interface).
+
+### Data Feed
+
+A decentralized oracle network that aggregates data from many independent sources and publishes it onchain so that smart contracts can access real-world data such as asset prices, reserve balances, and L2 sequencer health. See the [Data Feeds Overview](/data-feeds) to learn more.
+
+### Decentralized Oracle Network (DON)
+
+A decentralized, peer-to-peer network of independent node operators that work together to fetch, validate, and deliver data to a data feed. Data Feeds aggregate many data sources and publish them onchain using a combination of the [Decentralized Data Model](/architecture-overview/architecture-decentralized-model?parent=dataFeeds) and [Offchain Reporting](/architecture-overview/off-chain-reporting?parent=dataFeeds).
+
+### Feed type
+
+The category of data that a feed provides. Chainlink Data Feeds include [Price Feeds](/data-feeds/price-feeds), [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds), [SmartData Feeds](/data-feeds/smartdata), [Smart Value Recapture (SVR) Feeds](/data-feeds/svr-feeds), [Rate and Volatility Feeds](/data-feeds/rates-feeds), [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds), [24/7 Extended-Hours Data Feeds](/data-feeds/24-7-extended-hours-data-feeds), and [Self-Managed Feeds](/data-feeds/self-managed-feeds). See [Feed Types](/data-feeds/feed-types) for an overview.
+
+### Latest round data
+
+The most recent data published by a feed, retrieved using the `latestRoundData` function. This function returns five values representing information about the latest price data, including the answer, the round ID, and timestamps. See the [Data Feeds API Reference](/data-feeds/api-reference) for more details.
+
+### Price Feed
+
+A type of data feed that provides aggregated, decentralized asset prices with cryptographic integrity, commonly used for collateral, lending, and derivatives. See [Price Feeds](/data-feeds/price-feeds) to learn more.
+
+### Proxy contract
+
+An onchain proxy that points to the [aggregator contract](#aggregator-contract) for a particular data feed. Using proxies enables the underlying aggregator to be upgraded without any service interruption to consuming contracts. Proxy contracts can vary from one data feed to another, but the [`EACAggregatorProxy.sol` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.6/EACAggregatorProxy.sol) on GitHub is a common example.
+
+### Round
+
+A single update cycle in which the oracle network publishes a new answer to a feed. Each round has a unique round ID, and historical answers can be retrieved by round ID. See [Historical Price Data](/data-feeds/historical-data) to learn more.
 
 ## Components of a data feed
 
@@ -1610,9 +1777,9 @@ Data Feeds are examples of decentralized oracle networks with different interfac
 
 Data feeds that deliver a single numeric value (such as price feeds or single-value [SmartData feeds](/data-feeds/smartdata)) include the following components:
 
-- **Consumer**: A consumer is an onchain or offchain application that uses Data Feeds. Consumer contracts use the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol) to call functions on the proxy contract and retrieve information from the aggregator contract. For a complete list of functions available in the `AggregatorV3Interface`, see the [Data Feeds API Reference](/data-feeds/api-reference/#aggregatorv3interface).
+- **Consumer**: A consumer is an onchain or offchain application that uses Data Feeds. Consumer contracts use the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol) to call functions on the proxy contract and retrieve information from the aggregator contract. For a complete list of functions available in the `AggregatorV3Interface`, see the [Data Feeds API Reference](/data-feeds/api-reference#aggregatorv3interface).
 - **Proxy contract**: Proxy contracts are onchain proxies that point to the aggregator for a particular data feed. Using proxies enables the underlying aggregator to be upgraded without any service interruption to consuming contracts. Proxy contracts can vary from one data feed to another, but the [`EACAggregatorProxy.sol` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.6/EACAggregatorProxy.sol) on Github is a common example.
-- **Aggregator contract**: An aggregator is a contract that receives periodic data updates from the oracle network. Aggregators store aggregated data onchain so that consumers can retrieve it and act upon it within the same transaction. For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/data-feeds/api-reference/#accesscontrolledoffchainaggregator).
+- **Aggregator contract**: An aggregator is a contract that receives periodic data updates from the oracle network. Aggregators store aggregated data onchain so that consumers can retrieve it and act upon it within the same transaction. For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/data-feeds/api-reference#accesscontrolledoffchainaggregator).
 
 To learn how to create a consumer contract that uses an existing price feed, read the [Using Data Feeds](/data-feeds/price-feeds) documentation.
 
@@ -1620,8 +1787,8 @@ To learn how to create a consumer contract that uses an existing price feed, rea
 
 [Multiple-Variable Response (MVR) Feeds](/data-feeds/mvr-feeds), which deliver multiple data points of various types in a single bundle, include the following components:
 
-- **Consumer**: A consumer is an onchain or offchain application that uses MVR Feeds. Consumer contracts use the [`IBundleAggregatorProxy`](/data-feeds/mvr-feeds/api-reference/#ibundleaggregatorproxy) interface to call functions on the proxy contract and retrieve bundle data.
-- **Bundle Aggregator Proxy**: This proxy contract points to the underlying bundle aggregator. Using proxies enables the underlying aggregator to be upgraded without service interruption to consuming contracts. The proxy exposes functions like [`latestBundle()`](/data-feeds/mvr-feeds/api-reference/#latestbundle), [`bundleDecimals()`](/data-feeds/mvr-feeds/api-reference/#bundledecimals), and [`latestBundleTimestamp()`](/data-feeds/mvr-feeds/api-reference/#latestbundletimestamp) for consumers to access the bundled data.
+- **Consumer**: A consumer is an onchain or offchain application that uses MVR Feeds. Consumer contracts use the [`IBundleAggregatorProxy`](/data-feeds/mvr-feeds/api-reference#ibundleaggregatorproxy) interface to call functions on the proxy contract and retrieve bundle data.
+- **Bundle Aggregator Proxy**: This proxy contract points to the underlying bundle aggregator. Using proxies enables the underlying aggregator to be upgraded without service interruption to consuming contracts. The proxy exposes functions like [`latestBundle()`](/data-feeds/mvr-feeds/api-reference#latestbundle), [`bundleDecimals()`](/data-feeds/mvr-feeds/api-reference#bundledecimals), and [`latestBundleTimestamp()`](/data-feeds/mvr-feeds/api-reference#latestbundletimestamp) for consumers to access the bundled data.
 
 To learn how to create a consumer contract that uses an existing MVR feed, read the [Using MVR Feeds on EVM Chains (Solidity)](/data-feeds/mvr-feeds/guides/evm-solidity) guide.
 
@@ -1643,7 +1810,7 @@ Always check the contract source code and configuration to understand how specif
 
 For examples of the contracts that are typically used in aggregator deployments, see the [libocr repository](https://github.com/smartcontractkit/libocr/blob/master/contract/) on GitHub.
 
-For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/data-feeds/api-reference/#accesscontrolledoffchainaggregator).
+For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/data-feeds/api-reference#accesscontrolledoffchainaggregator).
 
 ## Updates to proxy and aggregator contracts
 
@@ -3650,6 +3817,11 @@ Source: https://docs.chain.link/data-feeds/price-feeds/addresses
 # Price Feeds
 Source: https://docs.chain.link/data-feeds/price-feeds
 
+<Aside type="note" title="Looking for feed addresses?">
+  Find the contract addresses for all Price Feeds on the [Price Feed Contract
+  Addresses](/data-feeds/price-feeds/addresses) page.
+</Aside>
+
 Chainlink Data Feeds provide data that is aggregated from many data sources by a decentralized set of independent node operators. The [Decentralized Data Model](/architecture-overview/architecture-decentralized-model?parent=dataFeeds) describes this in detail. However, there are some exceptions where data for a feed can come only from a single data source or where data values are calculated. Read the [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) to learn about the different data feed categories and how to identify them.
 
 ---
@@ -3852,7 +4024,7 @@ To help you prepare for unforeseen market events, you should take additional ste
 - **Soak testing:** Users are strongly advised to thoroughly test price feed integrations and incorporate a [soak period](https://en.wikipedia.org/wiki/Soak_testing) prior to providing access to end users or securing value.
 - **Provider/source dependency controls:** For single-source feeds, implement controls that detect stale, delayed, missing, or unexpected values from the underlying provider. Where possible, compare the feed against independent references, enforce value bounds or caps, and define fallback or pause behavior before securing value with the feed.
 
-For more detailed information about some of these examples, see the [Monitoring data feeds](/data-feeds/#monitoring-data-feeds) documentation.
+For more detailed information about some of these examples, see the [Monitoring data feeds](/data-feeds/key-terms#monitoring-data-feeds) documentation.
 
 For important updates regarding the use of Chainlink Price Feeds, users should join the official Chainlink Discord and subscribe to the [data-feeds-user-notifications channel](https://discord.gg/Dqy5N9UbsR).
 
