@@ -1,0 +1,170 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Using Data Feeds Onchain (Stellar)"
+whatsnext:
+  {
+    "Use Data Feeds Offchain": "/data-feeds/stellar/using-data-feeds-off-chain",
+    "See the available data feeds on Stellar": "/data-feeds/price-feeds/addresses?network=stellar",
+  }
+metadata:
+  title: "Using Data Feeds Onchain (Stellar)"
+  description: "How to use Chainlink Data Feeds in your onchain Soroban contracts on Stellar."
+---
+
+import { Aside, CopyText } from "@components"
+
+Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. This guide demonstrates how to deploy a [Soroban](https://soroban.stellar.org/) contract in Rust to the Stellar Testnet and read a price onchain by calling the Chainlink Data Feeds proxy. To learn how to read price feed data using offchain applications, see the [Using Data Feeds Offchain](/data-feeds/stellar/using-data-feeds-off-chain) guide.
+
+To get the full list of available Chainlink Data Feeds on Stellar, see the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+
+<Aside type="danger" title="Select quality data feeds">
+
+Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds).
+
+</Aside>
+
+## Requirements
+
+Make sure you have the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli) installed. You can run <CopyText text="stellar --version" code /> in your terminal to verify if the CLI is correctly installed.
+
+You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to build the Soroban contract.
+
+## Set up your Stellar testnet account
+
+1. Create a new directory for your project and navigate to it in your terminal:
+
+   ```bash
+   mkdir stellar-data-feeds && cd stellar-data-feeds
+   ```
+
+1. Generate a keypair for your testnet account:
+
+   ```bash
+   stellar keys generate --network testnet my-account
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Secret key already exists for key my-account
+   ```
+
+1. Fund your account with testnet XLM using the friendbot faucet:
+
+   ```bash
+   stellar keys fund my-account --network testnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Funded account <YOUR_PUBLIC_KEY> with 10000.0000000 XLM
+   ```
+
+## Create the Soroban contract
+
+1. Initialize a Soroban contract project:
+
+   ```bash
+   stellar contract init consumer --name consumer
+   ```
+
+   This creates a `consumer` directory with a default Soroban contract scaffold.
+
+1. Open the `consumer/src/lib.rs` file and replace its contents with the following contract. This contract calls the Chainlink Data Feeds proxy to read the latest price for a given `data_id` and returns the answer. The proxy interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_proxy.rs) repository:
+
+   ```rust
+   #![no_std]
+   use soroban_sdk::{contract, contractimpl, contractclient, Address, BytesN, Env, I256};
+
+   #[contractclient(name = "DataFeedsProxyClient")]
+   pub trait DataFeedsProxy {
+       fn latest_round(env: Env, data_id: BytesN<32>, decimals: u32) -> Result<Round, ProxyReadError>;
+   }
+
+   #[contracttype]
+   pub struct Round {
+       pub round_id: u64,
+       pub answer: I256,
+       pub timestamp: u64,
+   }
+
+   #[contracterror]
+   pub enum ProxyReadError {
+       NoDataPresent = 50,
+       InvalidDecimals = 51,
+       RoundsToZero = 52,
+   }
+
+   #[contract]
+   pub struct Consumer;
+
+   #[contractimpl]
+   impl Consumer {
+       /// Read the latest round for a feed and return its answer.
+       pub fn read_latest_price(env: Env, proxy: Address, data_id: BytesN<32>) -> I256 {
+           let client = DataFeedsProxyClient::new(&env, &proxy);
+           let round = client.latest_round(&data_id, &18).unwrap();
+           round.answer
+       }
+   }
+   ```
+
+   This contract uses the `latest_round` function with `18` decimal places, matching the `DECIMALS` constant used by the data feeds contracts. The returned `Round` contains the `round_id`, `answer`, and `timestamp` for the feed.
+
+## Build and deploy the contract
+
+1. Build the contract:
+
+   ```bash
+   stellar contract build
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Compiling consumer...
+   Finished `release` profile [optimized] target(s) in 5.00s
+   ```
+
+1. Deploy the contract to the Stellar Testnet:
+
+   ```bash
+   stellar contract deploy \
+   --wasm target/wasm32-unknown-unknown/release/consumer.wasm \
+   --source my-account \
+   --network testnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   <YOUR_CONTRACT_ADDRESS>
+   ```
+
+   Note the contract address that is printed. You use it to invoke the contract in the next step.
+
+## Invoke the contract
+
+1. Invoke the `read_latest_price` function on your deployed contract, passing the proxy contract address and the `data_id` for the feed you want to read. The BTC/USD `data_id` on Stellar Testnet is <CopyText text="<TESTNET_BTC_USD_DATA_ID>" code />. You can find the `data_id` for other assets on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+
+   ```bash
+   stellar contract invoke \
+   --id <YOUR_CONTRACT_ADDRESS> \
+   --source my-account \
+   --network testnet \
+   -- read_latest_price \
+   --proxy <TESTNET_PROXY_ADDRESS> \
+   --data_id <TESTNET_BTC_USD_DATA_ID>
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   [<latest_price>]
+   ```
+
+   Where `<latest_price>` is the latest BTC/USD price for the feed.
+
+{/* TODO: Replace the placeholder proxy address and BTC/USD data_id once engineering provides the final testnet proxy address and launch feed list. */}
