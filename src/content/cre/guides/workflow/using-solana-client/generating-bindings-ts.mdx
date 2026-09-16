@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Generate typed TypeScript classes from Anchor IDL files to write data to Solana programs from CRE workflows."
   datePublished: "2026-07-06"
-  lastModified: "2026-07-08"
+  lastModified: "2026-08-20"
 ---
 
 import { Aside } from "@components"
@@ -68,34 +68,70 @@ This reads all `.json` IDL files in `contracts/solana/src/idl/` and generates Ty
 
 For each struct in your IDL's `types` section, the generator creates a `writeReportFrom<StructName>()` method that Borsh-encodes your data, builds the forwarder report, and submits it in one step.
 
-**Example: A minimal `DataStorage` IDL**
+**Example: A minimal `cre_docs_receiver` IDL**
 
-The following IDL is enough to generate a `writeReportFromUserData()` helper. Save it as `my-workflow/contracts/solana/src/idl/data_storage.json`.
+The following IDL is enough to generate a `writeReportFromUserData()` helper. Save it as `my-workflow/contracts/solana/src/idl/cre_docs_receiver.json`.
 
 ```json
 {
-  "address": "64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31",
+  "address": "7k8NypziCPqVY8GYyCw7aqaR5aamFAMdH5ZaHVrZCS94",
   "metadata": {
-    "name": "data_storage",
+    "name": "cre_docs_receiver",
     "version": "0.1.0",
     "spec": "0.1.0",
-    "description": "Minimal CRE Solana write example IDL"
+    "description": "Receiver for cre-cli Solana forwarder simulation that logs a decoded UserData payload"
   },
   "instructions": [
     {
       "name": "on_report",
       "discriminator": [214, 173, 18, 221, 173, 148, 151, 208],
-      "accounts": [],
+      "accounts": [
+        { "name": "state" },
+        {
+          "name": "forwarder_authority",
+          "docs": ["PDA signer supplied by the forwarder CPI."],
+          "signer": true
+        }
+      ],
       "args": [
-        { "name": "_metadata", "type": "bytes" },
-        { "name": "payload", "type": "bytes" }
+        { "name": "metadata", "type": "bytes" },
+        { "name": "report", "type": "bytes" }
       ]
     }
   ],
-  "accounts": [],
-  "events": [],
-  "errors": [],
+  "events": [
+    {
+      "name": "ReceivedUserData",
+      "discriminator": [154, 5, 186, 144, 208, 168, 118, 242]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidForwarderAuthority",
+      "msg": "forwarder_authority is not the PDA for this state, receiver, and forwarder program"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidUserData",
+      "msg": "report payload could not be decoded as UserData"
+    }
+  ],
   "types": [
+    {
+      "name": "ReceivedUserData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "forwarder", "type": "pubkey" },
+          { "name": "forwarder_state", "type": "pubkey" },
+          { "name": "forwarder_authority", "type": "pubkey" },
+          { "name": "metadata_len", "type": "u32" },
+          { "name": "report_len", "type": "u32" },
+          { "name": "user", "type": { "defined": { "name": "UserData" } } }
+        ]
+      }
+    },
     {
       "name": "UserData",
       "type": {
@@ -110,21 +146,21 @@ The following IDL is enough to generate a `writeReportFromUserData()` helper. Sa
 }
 ```
 
-After running `cre generate-bindings solana`, use the generated `DataStorage` class in your workflow:
+After running `cre generate-bindings solana`, use the generated `CreDocsReceiver` class in your workflow:
 
 ```typescript
 import { SolanaClient, solanaAccountMeta, type Runtime } from "@chainlink/cre-sdk"
-import { DataStorage } from "./contracts/solana/ts/generated/DataStorage"
+import { CreDocsReceiver } from "./contracts/solana/ts/generated/CreDocsReceiver"
 
 // In your workflow handler...
 const client = new SolanaClient(BigInt(config.chainSelector))
-const ds = new DataStorage(client)
+const ds = new CreDocsReceiver(client, config.receiverProgramId)
 
-// remainingAccounts: Index 0 forwarderState, 1 forwarderAuthority, 2+ receiver accounts
+// remainingAccounts: Index 0 forwarderState, 1 forwarderAuthority, 2+ receiver accounts.
+// cre_docs_receiver needs no receiver-specific accounts, so we pass just [state, authority].
 const remainingAccounts = [
   solanaAccountMeta(config.forwarderState, false),
   solanaAccountMeta(config.forwarderAuthority, false),
-  solanaAccountMeta(config.reportState, true),
 ]
 
 // Pass the struct data directly — types are derived from the IDL
@@ -136,9 +172,10 @@ const result = ds.writeReportFromUserData(runtime, { key: "price", value: "50000
 For a full walkthrough including config, simulation, and production deployment, see [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-ts).
 
 <Aside type="note" title="What does writeReportFrom do?">
-  The generated method Borsh-encodes the struct with `@solana/codecs`, hashes `remainingAccounts` via
-  `calculateAccountsHash`, encodes a forwarder report and calls `runtime.report()` with `prepareSolanaReportRequest`,
-  calls `SolanaClient.writeReport()` to submit it, and returns the transaction result synchronously (after consensus).
+  The generated method Borsh-encodes the struct with `@solana/codecs` and `@solana/addresses`, hashes
+  `remainingAccounts` via `calculateAccountsHash`, encodes a forwarder report and calls `runtime.report()` with
+  `prepareSolanaReportRequest`, calls `SolanaClient.writeReport()` to submit it, and returns the transaction result
+  synchronously (after consensus).
 </Aside>
 
 ## What the CLI generates
@@ -161,7 +198,7 @@ What's inside depends on your IDL:
 You can import from the barrel file to keep imports clean:
 
 ```typescript
-import { DataStorage } from "./contracts/solana/ts/generated"
+import { CreDocsReceiver } from "./contracts/solana/ts/generated"
 ```
 
 ## `remainingAccounts` layout

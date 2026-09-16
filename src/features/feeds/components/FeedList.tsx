@@ -19,7 +19,7 @@ import {
   networkHasVisibleFeeds,
   type ExtendedHoursCategory,
 } from "../utils/feedVisibility.ts"
-import { chainHasSvrFeeds } from "../utils/svrDetection.ts"
+import { chainHasSvrFeeds, getSvrType, type SvrFeedType } from "../utils/svrDetection.ts"
 import {
   filterChainsByFeedTypeTag,
   networkMatchesFeedTypeTag,
@@ -66,6 +66,13 @@ const schemaFilterOptions: FilterOption<SchemaFilterValue>[] = [
   { label: "RWA Advanced (v11)", value: "v11" },
 ]
 
+const cryptoSchemaFilterOptions: FilterOption<SchemaFilterValue>[] = [
+  { label: "All", value: "all" },
+  { label: "Crypto Standard (v2)", value: "v2" },
+  { label: "Crypto Advanced (v3)", value: "v3" },
+  { label: "Crypto Advanced DEX (v3)", value: "v3-dex" },
+]
+
 const feedTypeFilterOptions: FilterOption<StreamsRwaFeedTypeValue>[] = [
   { label: "All", value: "all" },
   { label: "Datalink Streams", value: "datalink" },
@@ -81,7 +88,7 @@ const tradingHoursFilterOptions: FilterOption<TradingHoursFilterValue>[] = [
 ]
 
 const isSchemaFilterValue = (value: unknown): value is SchemaFilterValue =>
-  value === "all" || value === "v8" || value === "v11"
+  value === "all" || value === "v2" || value === "v3" || value === "v3-dex" || value === "v8" || value === "v11"
 const isStreamsRwaFeedTypeValue = (value: unknown): value is StreamsRwaFeedTypeValue =>
   value === "all" || value === "datalink" || value === "equities" || value === "forex"
 const isTradingHoursFilterValue = (value: unknown): value is TradingHoursFilterValue =>
@@ -165,7 +172,7 @@ export const FeedList = ({
   forceExtendedHoursCategory?: ExtendedHoursCategory
 }) => {
   const feedTypeFlags = getFeedTypeFlags(dataFeedType)
-  const { isStreams, isSmartData, isRates, isUSGovernmentMacroeconomicData } = feedTypeFlags
+  const { isStreams, isSmartData, isRates, isUSGovernmentMacroeconomicData, isSvr } = feedTypeFlags
   const isDeprecating = ecosystem === "deprecating"
   const chains = isDeprecating && isStreams ? ALL_CHAINS : CHAINS
 
@@ -329,8 +336,10 @@ export const FeedList = ({
   }
 
   const [showSvrParam, setShowSvrParam] = useQueryString("showSvr")
-  const showOnlySVR = showSvrParam === "true"
+  // When dataFeedType is "svr", always show only SVR feeds (locked)
+  const showOnlySVR = isSvr ? true : showSvrParam === "true"
   const setShowOnlySVR = (value: boolean) => {
+    if (isSvr) return // locked
     setShowSvrParam(value ? "true" : "")
     updateUrlClean({ showSvr: value || undefined })
     if (value) paginate(1)
@@ -341,6 +350,8 @@ export const FeedList = ({
   const [showOnlyMVRFeedsTestnet, setShowOnlyMVRFeedsTestnet] = useState(false)
   const [showOnlyDEXFeeds, setShowOnlyDEXFeeds] = useState(false)
   const [showOnlyDEXFeedsTestnet, setShowOnlyDEXFeedsTestnet] = useState(false)
+  // SVR type filters (only used when dataFeedType === "svr")
+  const [svrTypeFilters, setSvrTypeFilters] = useState<Set<SvrFeedType>>(new Set())
   const [showOnlyDatalinkFeeds, setShowOnlyDatalinkFeeds] = useState(false)
   const [showOnlyDatalinkFeedsTestnet, setShowOnlyDatalinkFeedsTestnet] = useState(false)
   const [show24x5FeedsParam, setShow24x5FeedsParam] = useQueryString("show24x5")
@@ -365,6 +376,14 @@ export const FeedList = ({
   const setRwaSchemaFilter = (next: SchemaFilterValue) => {
     setRwaSchemaFilterParam(next === "all" ? [] : next)
   }
+  const [cryptoSchemaFilterParam, setCryptoSchemaFilterParam] = useQueryString("cryptoSchema")
+  const cryptoSchemaFilter =
+    typeof cryptoSchemaFilterParam === "string" && isSchemaFilterValue(cryptoSchemaFilterParam)
+      ? cryptoSchemaFilterParam
+      : "all"
+  const setCryptoSchemaFilter = (next: SchemaFilterValue) => {
+    setCryptoSchemaFilterParam(next === "all" ? [] : next)
+  }
   const [testnetRwaSchemaFilterParam, setTestnetRwaSchemaFilterParam] = useQueryString("testnetSchema")
   const testnetRwaSchemaFilter =
     typeof testnetRwaSchemaFilterParam === "string" && isSchemaFilterValue(testnetRwaSchemaFilterParam)
@@ -372,6 +391,14 @@ export const FeedList = ({
       : "all"
   const setTestnetRwaSchemaFilter = (next: SchemaFilterValue) => {
     setTestnetRwaSchemaFilterParam(next === "all" ? [] : next)
+  }
+  const [testnetCryptoSchemaFilterParam, setTestnetCryptoSchemaFilterParam] = useQueryString("testnetCryptoSchema")
+  const testnetCryptoSchemaFilter =
+    typeof testnetCryptoSchemaFilterParam === "string" && isSchemaFilterValue(testnetCryptoSchemaFilterParam)
+      ? testnetCryptoSchemaFilterParam
+      : "all"
+  const setTestnetCryptoSchemaFilter = (next: SchemaFilterValue) => {
+    setTestnetCryptoSchemaFilterParam(next === "all" ? [] : next)
   }
   const [show24x5FeedsTestnetParam, setShow24x5FeedsTestnetParam] = useQueryString("testnetShow24x5")
   const show24x5FeedsTestnet = force24x5Only || show24x5FeedsTestnetParam === "true"
@@ -1264,36 +1291,36 @@ export const FeedList = ({
             <div className={feedList.tableFilters}>
               <div className={feedList.filterControls}>
                 {dataFeedType === "streamsCrypto" && (
-                  <div className={feedList.checkboxContainer}>
-                    <label className={feedList.detailsLabel}>
-                      <input
-                        type="checkbox"
-                        className={feedList.feedCheckbox}
-                        checked={showOnlyDEXFeeds}
-                        onChange={() => {
-                          closeAllDropdowns()
-                          setShowOnlyDEXFeeds((old) => !old)
-                          if (showOnlyDatalinkFeeds) setShowOnlyDatalinkFeeds(false)
-                          setCurrentPage("1")
-                        }}
-                      />
-                      Show DEX State Price streams
-                    </label>
-                    <label className={feedList.detailsLabel}>
-                      <input
-                        type="checkbox"
-                        className={feedList.feedCheckbox}
-                        checked={showOnlyDatalinkFeeds}
-                        onChange={() => {
-                          closeAllDropdowns()
-                          setShowOnlyDatalinkFeeds((old) => !old)
-                          if (showOnlyDEXFeeds) setShowOnlyDEXFeeds(false)
-                          setCurrentPage("1")
-                        }}
-                      />
-                      Show Datalink streams
-                    </label>
-                  </div>
+                  <>
+                    <FilterDropdown
+                      isOpen={openDropdownId === "main-crypto-schema"}
+                      onToggle={(isOpen) => handleDropdownToggle("main-crypto-schema", isOpen)}
+                      onClose={closeAllDropdowns}
+                      label="Filter schema"
+                      options={cryptoSchemaFilterOptions}
+                      value={cryptoSchemaFilter}
+                      groupId="crypto-schema-main"
+                      onSelect={(next) => {
+                        setCryptoSchemaFilter(next)
+                        setCurrentPage("1")
+                      }}
+                    />
+                    <div className={feedList.checkboxContainer}>
+                      <label className={feedList.detailsLabel}>
+                        <input
+                          type="checkbox"
+                          className={feedList.feedCheckbox}
+                          checked={showOnlyDatalinkFeeds}
+                          onChange={() => {
+                            closeAllDropdowns()
+                            setShowOnlyDatalinkFeeds((old) => !old)
+                            setCurrentPage("1")
+                          }}
+                        />
+                        Show Datalink streams
+                      </label>
+                    </div>
+                  </>
                 )}
                 {dataFeedType === "streamsRwa" && (
                   <>
@@ -1366,6 +1393,7 @@ export const FeedList = ({
                     )}
                     {(searchValue ||
                       rwaSchemaFilter !== "all" ||
+                      cryptoSchemaFilter !== "all" ||
                       (!forceStreamCategoryFilter && streamCategoryFilter !== "all") ||
                       show24x5Feeds) && (
                       <button
@@ -1375,6 +1403,7 @@ export const FeedList = ({
                           closeAllDropdowns()
                           setSearchValue("")
                           setRwaSchemaFilter("all")
+                          setCryptoSchemaFilter("all")
                           if (!forceStreamCategoryFilter) setStreamCategoryFilter("all")
                           setShow24x5Feeds(false)
                           setTradingHoursFilter("all")
@@ -1426,6 +1455,7 @@ export const FeedList = ({
                   showOnlyDEXFeeds={showOnlyDEXFeeds}
                   showOnlyDatalinkFeeds={showOnlyDatalinkFeeds}
                   rwaSchemaFilter={rwaSchemaFilter}
+                  cryptoSchemaFilter={cryptoSchemaFilter}
                   streamCategoryFilter={streamCategoryFilter}
                   show24x5Feeds={show24x5Feeds}
                   showApacEquitiesFeeds={showApacEquitiesFeeds}
@@ -1440,6 +1470,8 @@ export const FeedList = ({
                   searchValue={typeof searchValue === "string" ? searchValue : ""}
                   tokenizedEquityProvider={tokenizedEquityProvider}
                   forceExtendedHoursCategory={forceExtendedHoursCategory}
+                  isSvr={isSvr}
+                  svrTypeFilters={svrTypeFilters}
                 />
               ))
             ) : (
@@ -1457,34 +1489,36 @@ export const FeedList = ({
             <div className={feedList.tableFilters}>
               <div className={feedList.filterControls}>
                 {dataFeedType === "streamsCrypto" && (
-                  <div className={feedList.checkboxContainer}>
-                    <label className={feedList.detailsLabel}>
-                      <input
-                        type="checkbox"
-                        className={feedList.feedCheckbox}
-                        checked={showOnlyDEXFeedsTestnet}
-                        onChange={() => {
-                          setShowOnlyDEXFeedsTestnet((old) => !old)
-                          if (showOnlyDatalinkFeedsTestnet) setShowOnlyDatalinkFeedsTestnet(false)
-                          setTestnetCurrentPage("1")
-                        }}
-                      />
-                      Show DEX State Price streams
-                    </label>
-                    <label className={feedList.detailsLabel}>
-                      <input
-                        type="checkbox"
-                        className={feedList.feedCheckbox}
-                        checked={showOnlyDatalinkFeedsTestnet}
-                        onChange={() => {
-                          setShowOnlyDatalinkFeedsTestnet((old) => !old)
-                          if (showOnlyDEXFeedsTestnet) setShowOnlyDEXFeedsTestnet(false)
-                          setTestnetCurrentPage("1")
-                        }}
-                      />
-                      Show Datalink streams
-                    </label>
-                  </div>
+                  <>
+                    <FilterDropdown
+                      isOpen={openDropdownId === "test-crypto-schema"}
+                      onToggle={(isOpen) => handleDropdownToggle("test-crypto-schema", isOpen)}
+                      onClose={closeAllDropdowns}
+                      label="Filter schema"
+                      options={cryptoSchemaFilterOptions}
+                      value={testnetCryptoSchemaFilter}
+                      groupId="crypto-schema-testnet"
+                      onSelect={(next) => {
+                        setTestnetCryptoSchemaFilter(next)
+                        setTestnetCurrentPage("1")
+                      }}
+                    />
+                    <div className={feedList.checkboxContainer}>
+                      <label className={feedList.detailsLabel}>
+                        <input
+                          type="checkbox"
+                          className={feedList.feedCheckbox}
+                          checked={showOnlyDatalinkFeedsTestnet}
+                          onChange={() => {
+                            closeAllDropdowns()
+                            setShowOnlyDatalinkFeedsTestnet((old) => !old)
+                            setTestnetCurrentPage("1")
+                          }}
+                        />
+                        Show Datalink streams
+                      </label>
+                    </div>
+                  </>
                 )}
                 {dataFeedType === "streamsRwa" && (
                   <>
@@ -1557,6 +1591,7 @@ export const FeedList = ({
                     )}
                     {(testnetSearchValue ||
                       testnetRwaSchemaFilter !== "all" ||
+                      testnetCryptoSchemaFilter !== "all" ||
                       (!forceStreamCategoryFilter && testnetStreamCategoryFilter !== "all") ||
                       show24x5FeedsTestnet) && (
                       <button
@@ -1566,6 +1601,7 @@ export const FeedList = ({
                           closeAllDropdowns()
                           setTestnetSearchValue("")
                           setTestnetRwaSchemaFilter("all")
+                          setTestnetCryptoSchemaFilter("all")
                           if (!forceStreamCategoryFilter) setTestnetStreamCategoryFilter("all")
                           setShow24x5FeedsTestnet(false)
                           setTestnetTradingHoursFilter("all")
@@ -1619,6 +1655,7 @@ export const FeedList = ({
                   showOnlyDEXFeeds={showOnlyDEXFeedsTestnet}
                   showOnlyDatalinkFeeds={showOnlyDatalinkFeedsTestnet}
                   rwaSchemaFilter={testnetRwaSchemaFilter}
+                  cryptoSchemaFilter={testnetCryptoSchemaFilter}
                   streamCategoryFilter={testnetStreamCategoryFilter}
                   show24x5Feeds={show24x5FeedsTestnet}
                   showApacEquitiesFeeds={showApacEquitiesFeedsTestnet}
@@ -1759,7 +1796,7 @@ export const FeedList = ({
                       )}
                       <div className={feedList.tableFilters}>
                         <div className={feedList.filterControls}>
-                          {!isStreams && !isSmartData && availableAssetTypes.length > 1 && (
+                          {!isStreams && !isSmartData && !isSvr && availableAssetTypes.length > 1 && (
                             <details class={feedList.filterDropdown_details}>
                               <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
                                 Asset Type
@@ -1832,7 +1869,7 @@ export const FeedList = ({
                               Show Multiple-Variable Response (MVR) feeds
                             </label>
                           )}
-                          {!isStreams && !isSmartData && !isUSGovernmentMacroeconomicData && chainHasSvr && (
+                          {!isStreams && !isSmartData && !isUSGovernmentMacroeconomicData && chainHasSvr && !isSvr && (
                             <span className={feedList.filterCheckboxGroup}>
                               <label className={feedList.detailsLabel}>
                                 <input
@@ -1852,6 +1889,91 @@ export const FeedList = ({
                                 ?
                               </a>
                             </span>
+                          )}
+                          {isSvr && (
+                            <>
+                              <span className={feedList.filterCheckboxGroup}>
+                                <label className={feedList.detailsLabel}>
+                                  <input
+                                    type="checkbox"
+                                    className={feedList.feedCheckbox}
+                                    checked={!svrTypeFilters.has("Aave-SVR")}
+                                    onChange={() => {
+                                      setSvrTypeFilters((prev) => {
+                                        const next = new Set(prev)
+                                        if (next.has("Aave-SVR")) next.delete("Aave-SVR")
+                                        else next.add("Aave-SVR")
+                                        return next
+                                      })
+                                      setCurrentPage("1")
+                                    }}
+                                  />
+                                  Aave-SVR
+                                </label>
+                                <a
+                                  href="/data-feeds/svr-feeds#aave-svr-feeds"
+                                  className={feedList.filterHelpLink}
+                                  title="Dedicated SVR feeds exclusively for the Aave protocol"
+                                  aria-label="Learn about Aave-SVR feeds"
+                                >
+                                  ?
+                                </a>
+                              </span>
+                              <span className={feedList.filterCheckboxGroup}>
+                                <label className={feedList.detailsLabel}>
+                                  <input
+                                    type="checkbox"
+                                    className={feedList.feedCheckbox}
+                                    checked={!svrTypeFilters.has("SVR")}
+                                    onChange={() => {
+                                      setSvrTypeFilters((prev) => {
+                                        const next = new Set(prev)
+                                        if (next.has("SVR")) next.delete("SVR")
+                                        else next.add("SVR")
+                                        return next
+                                      })
+                                      setCurrentPage("1")
+                                    }}
+                                  />
+                                  SVR
+                                </label>
+                                <a
+                                  href="/data-feeds/svr-feeds#svr-shared"
+                                  className={feedList.filterHelpLink}
+                                  title="Canonical shared SVR feeds for use by any protocol"
+                                  aria-label="Learn about SVR feeds"
+                                >
+                                  ?
+                                </a>
+                              </span>
+                              <span className={feedList.filterCheckboxGroup}>
+                                <label className={feedList.detailsLabel}>
+                                  <input
+                                    type="checkbox"
+                                    className={feedList.feedCheckbox}
+                                    checked={!svrTypeFilters.has("SVR-Backup")}
+                                    onChange={() => {
+                                      setSvrTypeFilters((prev) => {
+                                        const next = new Set(prev)
+                                        if (next.has("SVR-Backup")) next.delete("SVR-Backup")
+                                        else next.add("SVR-Backup")
+                                        return next
+                                      })
+                                      setCurrentPage("1")
+                                    }}
+                                  />
+                                  SVR-Backup
+                                </label>
+                                <a
+                                  href="/data-feeds/svr-feeds#svr-backup-legacy"
+                                  className={feedList.filterHelpLink}
+                                  title="Legacy shared SVR feeds. New integrations should use SVR feeds instead."
+                                  aria-label="Learn about SVR-Backup feeds"
+                                >
+                                  ?
+                                </a>
+                              </span>
+                            </>
                           )}
                         </div>
                         <form class={clsx(feedList.tableSearch, feedList.filterDropdown_search)}>
@@ -1910,6 +2032,8 @@ export const FeedList = ({
                         searchValue={typeof searchValue === "string" ? searchValue : ""}
                         tokenizedEquityProvider={tokenizedEquityProvider}
                         forceExtendedHoursCategory={forceExtendedHoursCategory}
+                        isSvr={isSvr}
+                        svrTypeFilters={svrTypeFilters}
                       />
                     </>
                   ) : (

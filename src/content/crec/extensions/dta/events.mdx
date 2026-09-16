@@ -1,0 +1,453 @@
+---
+section: crec
+title: "DTA Events Reference"
+date: Last Modified
+metadata:
+  description: "Complete reference of every event emitted by the DTA v2 contracts (DTARequestManagement, DTARequestSettlement): Go struct, fields, and which operations produce it."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+The DTA v2 extension provisions watchers for every event emitted by `DTARequestManagement` and `DTARequestSettlement`. This page enumerates each one, its payload, and the operation(s) that emit it.
+
+For the **state semantics** behind these events, including when a request is `Pending` vs `Processing` vs `Processed`, how NAV TTL changes the flow, and how the [settlement model](https://docs.chain.link/dta-technical-standard/concepts/payment-modes) determines what fires, see the [DTA request lifecycle](https://docs.chain.link/dta-technical-standard/concepts/request-lifecycle).
+
+## Decoder dispatch
+
+Use the root-package helper to decode any DTA event in one call:
+
+```go
+import (
+    dtav2 "github.com/smartcontractkit/crec-sdk-ext-dta/v2"
+    dtaevents "github.com/smartcontractkit/crec-sdk-ext-dta/v2/events"
+)
+
+decoded, err := dtav2.DecodeFromEvent(ctx, ev)
+if err != nil { return err }
+
+switch v := decoded.ConcreteEvent.(type) {
+case dtaevents.SubscriptionRequested:
+    // ...
+case dtaevents.RedemptionRequested:
+    // ...
+}
+
+if decoded.FundTokenData != nil {
+    fmt.Println("fund token NAV addr:", decoded.FundTokenData.NavAddr)
+}
+if decoded.DistributorRequest != nil {
+    fmt.Println("status:", decoded.DistributorRequest.Status)
+}
+```
+
+`DecodedEvent` carries the raw `WatcherEventPayload`, the typed `ConcreteEvent`, and three enrichment fields (`FundTokenData`, `DistributorRequest`, `PaymentRequests`) populated from the verifiable event's reference data when present.
+
+## Event catalogue
+
+The full `EventName` enum (from `events_gen.go`):
+
+```
+AnswerUpdated                          CCIPMessageDecodeFailed
+CCIPMessageHandleFailed                DTAAdded
+DTARemoved                             DTASettlementClosed
+DTASettlementOpened                    DistributorAuthorizationUpdated
+DistributorRegistered                  DistributorRequestCanceled
+DistributorRequestProcessed            DistributorRequestProcessing
+EmptyRequestType                       FundAdminRegistered
+FundTokenAllowlistUpdated              FundTokenRegistered
+Initialized                            InvalidDTARequestSettlement
+InvalidSubscriptionCrossChainPayment   MessageFailed
+NativeFundsRecovered                   OwnershipTransferred
+RedemptionRequested                    RequestAlreadyProcessed
+SettlementFailed                       SubscriptionRequested
+TokenWithdrawn                         UnauthorizedSenderDTA
+Unknown
+```
+
+The `dta.v2` service publishes the subset that downstream applications typically subscribe to (exposed via `bundle.Get().Events`). Other events still flow through CRE Connect; they just aren't part of the `dta.v2` service.
+
+## Investor lifecycle events
+
+### `SubscriptionRequested`
+
+Emitted by `DTARequestManagement.requestSubscription` (with or without inline approval).
+
+```go
+type SubscriptionRequested struct {
+    FundAdminAddr   common.Address
+    FundTokenId     common.Hash
+    DistributorAddr common.Address
+    ReferenceID     common.Hash
+    RequestId       common.Hash
+    Amount          *big.Int
+    CreatedAt       uint64
+}
+```
+
+### `RedemptionRequested`
+
+Emitted by `DTARequestManagement.requestRedemption`.
+
+```go
+type RedemptionRequested struct {
+    FundAdminAddr   common.Address
+    FundTokenId     common.Hash
+    DistributorAddr common.Address
+    ReferenceID     common.Hash
+    RequestId       common.Hash
+    Shares          *big.Int
+    CreatedAt       uint64
+}
+```
+
+### `DistributorRequestCanceled`
+
+Emitted by `cancelDistributorRequest`.
+
+```go
+type DistributorRequestCanceled struct {
+    FundAdminAddr   common.Address
+    FundTokenId     common.Hash
+    DistributorAddr common.Address
+    RequestId       common.Hash
+}
+```
+
+### `DistributorRequestProcessing`
+
+Emitted by `processDistributorRequest`. Enriched with `DistributorRequest` + `FundTokenData` reference data.
+
+```go
+type DistributorRequestProcessing struct {
+    FundAdminAddr   common.Address
+    FundTokenId     common.Hash
+    DistributorAddr common.Address
+    RequestId       common.Hash
+    Shares          *big.Int
+    Amount          *big.Int
+}
+```
+
+### `DistributorRequestProcessed`
+
+Emitted by `completeRequestProcessing`. Final state of a request.
+
+```go
+type DistributorRequestProcessed struct {
+    RequestId common.Hash
+    Shares    *big.Int
+    Status    RequestStatus  // Pending / Processing / Processed / Canceled / Failed
+    Error     []byte         // ABI-encoded revert reason on failure
+}
+```
+
+## Cross-DTA settlement events
+
+### `DTASettlementOpened`
+
+Emitted by `DTARequestSettlement` when a settlement run is initiated. Enriched with `payment_request` reference data.
+
+```go
+type DTASettlementOpened struct {
+    FundAdminAddr         common.Address
+    FundTokenId           common.Hash
+    RequestType           DistributorRequestType  // Subscription / Redemption
+    DistributorAddr       common.Address
+    DtaChainSelector      uint64
+    DtaAddr               common.Address
+    RequestId             common.Hash
+    DistributorWalletAddr common.Address
+    Shares                *big.Int
+    Amount                *big.Int
+    Currency              uint8
+}
+```
+
+### `DTASettlementClosed`
+
+Emitted at the end of a settlement run.
+
+```go
+type DTASettlementClosed struct {
+    FundAdminAddr    common.Address
+    FundTokenId      common.Hash
+    RequestType      DistributorRequestType
+    DistributorAddr  common.Address
+    DtaChainSelector uint64
+    DtaAddr          common.Address
+    RequestId        common.Hash
+    Success          bool
+    Err              []byte
+}
+```
+
+### `SettlementFailed`
+
+Emitted when an individual settlement leg fails (e.g. payment token transfer revert).
+
+```go
+type SettlementFailed struct {
+    FundAdminAddr         common.Address
+    FundTokenId           common.Hash
+    DistributorAddr       common.Address
+    DtaChainSelector      uint64
+    DtaAddr               common.Address
+    PaymentTokenAddr      common.Address
+    DistributorWalletAddr common.Address
+    RequestId             common.Hash
+    Shares                *big.Int
+    Amount                *big.Int
+    ErrData               []byte
+}
+```
+
+### `InvalidDTARequestSettlement`
+
+Emitted when an inbound CCIP message references a settlement contract that doesn't match the locally configured one.
+
+```go
+type InvalidDTARequestSettlement struct {
+    FundAdminAddr                  common.Address
+    FundTokenId                    common.Hash
+    RequestId                      common.Hash
+    ActualChainSelector            uint64
+    ActualDTARequestSettlementAddr common.Address
+}
+```
+
+### `InvalidSubscriptionCrossChainPayment`
+
+Emitted when a cross-chain subscription payment fails token / amount checks.
+
+```go
+type InvalidSubscriptionCrossChainPayment struct {
+    FundAdminAddr              common.Address
+    FundTokenId                common.Hash
+    RequestId                  common.Hash
+    DtaChainSelector           uint64
+    DtaAddr                    common.Address
+    PaymentTokenDestAddr       common.Address
+    CcipDestTokenAmountsLength *big.Int
+    CcipPaymentTokenAddr       common.Address
+}
+```
+
+## Configuration / lifecycle events
+
+### `FundAdminRegistered`
+
+```go
+type FundAdminRegistered struct {
+    FundAdminAddr common.Address
+}
+```
+
+### `FundTokenRegistered`
+
+Emitted by `registerFundToken`.
+
+```go
+type FundTokenRegistered struct {
+    FundAdminAddr      common.Address
+    FundTokenId        common.Hash
+    FundTokenAddr      common.Address
+    NavAddr            common.Address
+    TokenChainSelector uint64
+}
+```
+
+### `FundTokenAllowlistUpdated`
+
+Emitted by `allowDistributorForToken` / `disallowDistributorForToken`.
+
+```go
+type FundTokenAllowlistUpdated struct {
+    FundAdminAddr   common.Address
+    FundTokenId     common.Hash
+    DistributorAddr common.Address
+    Allowed         bool
+}
+```
+
+### `DistributorRegistered`
+
+```go
+type DistributorRegistered struct {
+    DistributorAddr common.Address
+}
+```
+
+### `DistributorAuthorizationUpdated`
+
+Emitted by `authorizeDistributorForToken` / `revokeDistributorForToken`.
+
+```go
+type DistributorAuthorizationUpdated struct {
+    DistributorAddr common.Address
+    FundAdminAddr   common.Address
+    FundTokenId     common.Hash
+    Authorized      bool
+}
+```
+
+### `DTAAdded` / `DTARemoved`
+
+Emitted by `allowDTA` / `disallowDTA`. See [Fund & Distributor Management](/crec/extensions/dta/fund-and-distributors#cross-dta-settlement) for the structs.
+
+## Operational events
+
+### `TokenWithdrawn`
+
+Emitted by `withdrawTokens` on either contract.
+
+```go
+type TokenWithdrawn struct {
+    Token     common.Address
+    Recipient common.Address
+    Amount    *big.Int
+}
+```
+
+### `NativeFundsRecovered`
+
+Emitted on native-balance sweep operations.
+
+```go
+type NativeFundsRecovered struct {
+    To     common.Address
+    Amount *big.Int
+}
+```
+
+### `OwnershipTransferred`
+
+Standard OpenZeppelin `Ownable` event, emitted by `transferOwnership` / `renounceOwnership`.
+
+```go
+type OwnershipTransferred struct {
+    PreviousOwner common.Address
+    NewOwner      common.Address
+}
+```
+
+### `Initialized`
+
+Emitted once at contract deployment.
+
+```go
+type Initialized struct {
+    Version uint64
+}
+```
+
+### `AnswerUpdated`
+
+NAV oracle update event (from the wired `AggregatorV3Interface`).
+
+```go
+type AnswerUpdated struct {
+    Current   *big.Int
+    RoundId   *big.Int
+    UpdatedAt *big.Int
+}
+```
+
+## Diagnostic / failure events
+
+### `RequestAlreadyProcessed`
+
+Emitted when a CCIP message tries to settle a request that is already terminal.
+
+```go
+type RequestAlreadyProcessed struct {
+    RequestId        common.Hash
+    DtaAddr          common.Address
+    DtaChainSelector uint64
+    FundAdminAddr    common.Address
+    FundTokenId      common.Hash
+}
+```
+
+### `EmptyRequestType`
+
+Emitted when an inbound CCIP message has a missing `request_type` discriminator.
+
+```go
+type EmptyRequestType struct {
+    MessageId           common.Hash
+    SourceChainSelector uint64
+    DtaAddr             common.Address
+    RequestId           common.Hash
+}
+```
+
+### `UnauthorizedSenderDTA`
+
+Emitted when a CCIP message's sender DTA is not on the local allow-list.
+
+```go
+type UnauthorizedSenderDTA struct {
+    DtaAddr          common.Address
+    DtaChainSelector uint64
+    FundAdminAddr    common.Address
+    FundTokenId      common.Hash
+    DistributorAddr  common.Address
+    RequestId        common.Hash
+    ReqType          DistributorRequestType
+}
+```
+
+### `CCIPMessageDecodeFailed` / `CCIPMessageHandleFailed`
+
+Catch-all CCIP error events.
+
+```go
+type CCIPMessageDecodeFailed struct {
+    MessageId           common.Hash
+    SourceChainSelector uint64
+    Reason              []byte
+}
+
+type CCIPMessageHandleFailed struct {
+    MessageId           common.Hash
+    SourceChainSelector uint64
+    DtaAddr             common.Address
+    Reason              []byte
+}
+```
+
+### `MessageFailed`
+
+Emitted when a generic message handler reverts.
+
+```go
+type MessageFailed struct {
+    MessageId common.Hash
+    Reason    []byte
+}
+```
+
+## Enum reference
+
+Several event payloads reference enum types from `events/types.go`:
+
+| Enum                     | Variants                                                           | Reference                                                                                                                    |
+| ------------------------ | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `RequestStatus`          | `None`, `Pending`, `Processing`, `Processed`, `Canceled`, `Failed` | [Request lifecycle](https://docs.chain.link/dta-technical-standard/concepts/request-lifecycle)                               |
+| `DistributorRequestType` | `None`, `Subscription`, `Redemption`                               | [Subscription / Redemption requests](https://docs.chain.link/dta-technical-standard/reference/glossary#subscription-request) |
+| `TokenMintType`          | `Mint` (ERC-3643/CMTAT), `IssueTokens` (DSToken/BUIDL)             | Fund token contract interface                                                                                                |
+| `TokenBurnType`          | `Burn`, `BurnFrom`, `BurnWithReason`, `ForceBurn`                  | Fund token contract interface                                                                                                |
+
+<Aside type="note" title="Solidity enum drift">
+  ABIs encode enums as `uint8` without preserving names. The extension's enum constants are kept in sync with the
+  Solidity definitions, but if you upgrade the contracts independently double-check `events/types.go` matches your
+  deployed bytecode.
+</Aside>
+
+## See also
+
+- [Subscriptions and Redemptions](/crec/extensions/dta/subscriptions-redemptions): which operations emit each lifecycle event.
+- [Fund and Distributor Management](/crec/extensions/dta/fund-and-distributors): which operations emit each configuration event.
+- [Decode Event Data](/crec/guides/events/decode-data): generic decoding patterns and the `Events.Decode` machinery.

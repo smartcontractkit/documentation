@@ -611,6 +611,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "JOVAY_MAINNET"
     case "jovay-testnet":
       return "JOVAY_TESTNET"
+    case "mova-mainnet-2":
+      return "MOVA_MAINNET"
+    case "mova-testnet":
+      return "MOVA_TESTNET"
     case "stable-mainnet":
       return "STABLE_MAINNET"
     case "tempo-testnet":
@@ -619,6 +623,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "TEMPO_TESTNET_MODERATO"
     case "tempo-mainnet":
       return "TEMPO_MAINNET"
+    case "arc-mainnet":
+      return "ARC_NETWORK_MAINNET"
     case "arc-testnet":
       return "ARC_NETWORK_TESTNET"
     case "doge-os-chikyu-testnet":
@@ -981,6 +987,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "jovay-mainnet"
     case "JOVAY_TESTNET":
       return "jovay-testnet"
+    case "MOVA_MAINNET":
+      return "mova-mainnet-2"
+    case "MOVA_TESTNET":
+      return "mova-testnet"
     case "STABLE_MAINNET":
       return "stable-mainnet"
     case "TEMPO_TESTNET":
@@ -989,6 +999,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "tempo-testnet-moderato"
     case "TEMPO_MAINNET":
       return "tempo-mainnet"
+    case "ARC_NETWORK_MAINNET":
+      return "arc-mainnet"
     case "ARC_NETWORK_TESTNET":
       return "arc-testnet"
     case "DOGE_OS_CHIKYU_TESTNET":

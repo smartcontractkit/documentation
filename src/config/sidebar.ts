@@ -30,6 +30,7 @@ export type SectionContent = {
   children?: SectionContent[]
   isCollapsible?: boolean
   chainTypes?: ChainType[]
+  openInNewTab?: boolean
 }
 
 /**
@@ -82,6 +83,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         { title: "Architecture", url: "ace/concepts/architecture" },
         { title: "Key Terms", url: "ace/concepts/key-terms" },
         { title: "Signing & Ownership Model", url: "ace/concepts/signing-ownership" },
+        { title: "Security Model", url: "ace/concepts/security" },
         {
           title: "Policy Management",
           url: "ace/concepts/policy-management",
@@ -94,7 +96,119 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     },
     {
       section: "Getting Started",
-      contents: [{ title: "Get Access", url: "ace/getting-started" }],
+      contents: [
+        { title: "Getting Started with ACE", url: "ace/getting-started" },
+        { title: "Account Setup", url: "ace/getting-started/account-setup" },
+        { title: "Policy Manager Quick Start", url: "ace/getting-started/policy-manager" },
+        { title: "Identity Manager Quick Start", url: "ace/getting-started/identity-manager" },
+      ],
+    },
+    {
+      section: "Guides",
+      contents: [
+        {
+          title: "Policy Manager",
+          url: "ace/guides/policy-manager",
+          children: [
+            {
+              title: "Making Your Contract ACE-Compatible",
+              url: "ace/guides/policy-manager/contracts/ace-compatible",
+              children: [
+                {
+                  title: "Building a New Contract",
+                  url: "ace/guides/policy-manager/contracts/new-contract",
+                  children: [
+                    {
+                      title: "Building an ERC-20 Token",
+                      url: "ace/guides/policy-manager/contracts/erc20-token",
+                    },
+                    {
+                      title: "Building an ERC-3643 Token",
+                      url: "ace/guides/policy-manager/contracts/erc3643-token",
+                    },
+                  ],
+                },
+                {
+                  title: "Upgrading Existing Contracts",
+                  url: "ace/guides/policy-manager/contracts/upgrade-existing",
+                },
+                {
+                  title: "Security Considerations",
+                  url: "ace/guides/policy-manager/contracts/security-considerations",
+                },
+              ],
+            },
+            {
+              title: "Managing Policy Engines",
+              url: "ace/guides/policy-manager/manage-engines",
+            },
+            {
+              title: "Managing Targets",
+              url: "ace/guides/policy-manager/manage-targets",
+            },
+            {
+              title: "Managing Policies",
+              url: "ace/guides/policy-manager/manage-policies",
+            },
+            {
+              title: "Protecting Target Functions",
+              url: "ace/guides/policy-manager/manage-protections",
+            },
+            {
+              title: "Managing Data Validators",
+              url: "ace/guides/policy-manager/manage-data-validators",
+            },
+            {
+              title: "Custom Policies",
+              url: "ace/guides/policy-manager/custom-policies",
+            },
+            {
+              title: "Offchain Policies",
+              url: "ace/guides/policy-manager/offchain-policies",
+              children: [
+                {
+                  title: "Managing Offchain Policies (MVP)",
+                  url: "ace/guides/policy-manager/offchain-policies/manage-offchain-policies",
+                },
+                {
+                  title: "Requesting Offchain Permits",
+                  url: "ace/guides/policy-manager/offchain-policies/request-offchain-permits",
+                },
+                {
+                  title: "Granting Evaluation Access",
+                  url: "ace/guides/policy-manager/offchain-policies/grant-evaluation-access",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          title: "Identity Manager",
+          url: "ace/guides/identity-manager",
+          children: [
+            {
+              title: "Managing Registries",
+              url: "ace/guides/identity-manager/manage-registries",
+            },
+            {
+              title: "Managing Identities",
+              url: "ace/guides/identity-manager/manage-identities",
+            },
+            {
+              title: "Managing Credential Types",
+              url: "ace/guides/identity-manager/manage-credential-types",
+            },
+            {
+              title: "Managing Credentials",
+              url: "ace/guides/identity-manager/manage-credentials",
+            },
+            {
+              title: "External Registries",
+              url: "ace/guides/identity-manager/external-registries",
+            },
+          ],
+        },
+      ],
     },
     {
       section: "Reference",
@@ -146,10 +260,23 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "APIs",
+          url: "ace/reference/apis",
           children: [
-            { title: "Coordinator API", url: "ace/reference/api/coordinator" },
-            { title: "Evaluation API", url: "ace/reference/api/evaluation" },
-            { title: "Reporting API", url: "ace/reference/api/reporting" },
+            {
+              title: "Coordinator API",
+              url: "api/ace/coordinator/docs",
+              openInNewTab: true,
+            },
+            {
+              title: "Evaluation API (MVP)",
+              url: "api/ace/evaluation/docs",
+              openInNewTab: true,
+            },
+            {
+              title: "Reporting API",
+              url: "api/ace/reporting/docs",
+              openInNewTab: true,
+            },
           ],
         },
       ],
@@ -812,6 +939,21 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
           ],
         },
+        {
+          title: "GraphQL API",
+          url: "cre/reference/graphql-api",
+          children: [
+            { title: "Authentication", url: "cre/reference/graphql-api/authentication" },
+            { title: "Quickstart", url: "cre/reference/graphql-api/quickstart" },
+            { title: "Common Queries", url: "cre/reference/graphql-api/common-queries" },
+            { title: "Query Reference", url: "cre/reference/graphql-api/queries" },
+            { title: "Object Reference", url: "cre/reference/graphql-api/objects" },
+            { title: "Enum Reference", url: "cre/reference/graphql-api/enums" },
+            { title: "Input Reference", url: "cre/reference/graphql-api/inputs" },
+            { title: "Pagination", url: "cre/reference/graphql-api/pagination" },
+            { title: "Errors & Rate Limits", url: "cre/reference/graphql-api/errors" },
+          ],
+        },
       ],
     },
     {
@@ -840,13 +982,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Chainlink CRE Connect",
       contents: [
         { title: "Overview", url: "crec" },
+        { title: "Private Beta", url: "crec/private-beta" },
         { title: "Supported Networks", url: "crec/supported-networks" },
         { title: "Release Notes", url: "crec/release-notes" },
       ],
     },
     {
       section: "Getting Started",
-      contents: [{ title: "Get Access", url: "crec/getting-started" }],
+      contents: [
+        { title: "Prerequisites", url: "crec/getting-started/prerequisites" },
+        { title: "SDK Installation", url: "crec/getting-started/sdk-installation" },
+        { title: "Authentication", url: "crec/getting-started/authentication" },
+        { title: "Quickstart: Watch On-Chain Events", url: "crec/getting-started/quickstart-watch-events" },
+        { title: "Quickstart: Send Your First Operation", url: "crec/getting-started/quickstart-send-operation" },
+      ],
     },
     {
       section: "Concepts",
@@ -856,19 +1005,206 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         { title: "Watchers", url: "crec/concepts/watchers" },
         { title: "Verifiable Events", url: "crec/concepts/verifiable-events" },
         { title: "Event Verification", url: "crec/concepts/event-verification" },
-        { title: "Operations & Transactions", url: "crec/concepts/operations" },
-        { title: "EIP-712 Signing", url: "crec/concepts/eip712-signing" },
-        { title: "Smart Accounts", url: "crec/concepts/smart-accounts" },
-        { title: "Account Abstraction & Gas Sponsorship", url: "crec/concepts/account-abstraction" },
         { title: "Confidence Levels", url: "crec/concepts/confidence-levels" },
+        { title: "Smart Accounts", url: "crec/concepts/smart-accounts" },
+        { title: "Operations & Transactions", url: "crec/concepts/operations" },
+        { title: "Draft Operations", url: "crec/concepts/drafts" },
+        { title: "Multi-Event Finality", url: "crec/concepts/multi-event-finality" },
+        { title: "EIP-712 Signing", url: "crec/concepts/eip712-signing" },
+        { title: "Account Abstraction & Gas Sponsorship", url: "crec/concepts/account-abstraction" },
+        { title: "Chain Queries", url: "crec/concepts/queries" },
         { title: "Extensions", url: "crec/concepts/extensions" },
+      ],
+    },
+    {
+      section: "Guides",
+      contents: [
+        {
+          title: "Channels",
+          children: [
+            {
+              title: "Create and Manage Channels",
+              url: "crec/guides/channels/manage-channels",
+            },
+          ],
+        },
+        {
+          title: "Watchers",
+          children: [
+            {
+              title: "Create a Watcher with a Predefined Service",
+              url: "crec/guides/watchers/create-with-service",
+            },
+            {
+              title: "Create a Watcher with a Custom ABI",
+              url: "crec/guides/watchers/create-with-abi",
+            },
+            {
+              title: "Manage Watcher Lifecycle",
+              url: "crec/guides/watchers/manage-lifecycle",
+            },
+          ],
+        },
+        {
+          title: "Events",
+          children: [
+            {
+              title: "Poll and Search Events",
+              url: "crec/guides/events/poll-and-search",
+            },
+            {
+              title: "Verify Event Signatures",
+              url: "crec/guides/events/verify-signatures",
+            },
+            {
+              title: "Decode Event Data",
+              url: "crec/guides/events/decode-data",
+            },
+          ],
+        },
+        {
+          title: "Operations",
+          children: [
+            {
+              title: "Build and Sign Operations",
+              url: "crec/guides/operations/build-and-sign",
+            },
+            {
+              title: "Draft Operations",
+              url: "crec/guides/operations/drafts",
+            },
+            {
+              title: "Submit and Track Operations",
+              url: "crec/guides/operations/submit-and-track",
+            },
+            {
+              title: "Batch Transactions",
+              url: "crec/guides/operations/batch-transactions",
+            },
+            {
+              title: "Signing Transparency",
+              url: "crec/guides/operations/signing-transparency",
+            },
+          ],
+        },
+        {
+          title: "Queries",
+          children: [
+            {
+              title: "Execute a Chain Query",
+              url: "crec/guides/queries/execute-a-query",
+            },
+          ],
+        },
+        {
+          title: "Wallets",
+          children: [
+            {
+              title: "Create and Manage Wallets",
+              url: "crec/guides/wallets/create-and-manage",
+            },
+            {
+              title: "Manage Wallet Signers",
+              url: "crec/guides/wallets/manage-signers",
+            },
+          ],
+        },
+        {
+          title: "Signers",
+          children: [
+            {
+              title: "Local (ECDSA) Signer",
+              url: "crec/guides/signers/local",
+            },
+            {
+              title: "AWS KMS Signer",
+              url: "crec/guides/signers/aws-kms",
+            },
+            {
+              title: "HashiCorp Vault Signer",
+              url: "crec/guides/signers/hashicorp-vault",
+            },
+            {
+              title: "Fireblocks Signer",
+              url: "crec/guides/signers/fireblocks",
+            },
+            {
+              title: "Privy Signer",
+              url: "crec/guides/signers/privy",
+            },
+            {
+              title: "Implement a Custom Signer",
+              url: "crec/guides/signers/custom",
+            },
+          ],
+        },
       ],
     },
     {
       section: "Extensions",
       contents: [
-        { title: "Overview", url: "crec/extensions" },
-        { title: "DTA (Digital Transfer Agent)", url: "crec/extensions/dta" },
+        {
+          title: "Extensions Overview",
+          url: "crec/extensions",
+        },
+        {
+          title: "DTA (Digital Transfer Agent)",
+          url: "crec/extensions/dta",
+          children: [
+            {
+              title: "DTA Subscriptions and Redemptions",
+              url: "crec/extensions/dta/subscriptions-redemptions",
+            },
+            {
+              title: "DTA Fund and Distributor Management",
+              url: "crec/extensions/dta/fund-and-distributors",
+            },
+            {
+              title: "DTA Events",
+              url: "crec/extensions/dta/events",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      section: "Reference",
+      contents: [
+        {
+          title: "REST API Reference",
+          url: "crec/reference/rest-api",
+          children: [
+            {
+              title: "REST API Explorer (Swagger)",
+              url: "api/crec/docs",
+              openInNewTab: true,
+            },
+          ],
+        },
+        {
+          title: "Go SDK Reference",
+          url: "crec/reference/go-sdk",
+        },
+        {
+          title: "SDK Configuration Options",
+          url: "crec/reference/sdk-configuration",
+        },
+        {
+          title: "Lifecycles",
+          url: "crec/reference/lifecycles",
+        },
+        {
+          title: "Event Types and Payloads",
+          url: "crec/reference/event-payloads",
+        },
+        {
+          title: "Error Handling",
+          url: "crec/reference/error-handling",
+        },
+        {
+          title: "Service Limits",
+          url: "crec/reference/service-limits",
+        },
       ],
     },
   ],
@@ -1231,6 +1567,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/crypto-streams",
           children: [
             {
+              title: "Report Schema v2 (Crypto Standard)",
+              url: "data-streams/reference/report-schema-v2",
+            },
+            {
               title: "Report Schema v3 (Crypto Advanced)",
               url: "data-streams/reference/report-schema-v3",
             },
@@ -1363,6 +1703,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/architecture",
         },
         {
+          title: "How Report Timestamps Work",
+          url: "data-streams/how-report-timestamps-work",
+        },
+        {
           title: "Best Practices",
           url: "data-streams/concepts/best-practices",
         },
@@ -1420,6 +1764,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "API Reference",
               url: "data-streams/reference/data-streams-api/interface-api",
+              children: [
+                {
+                  title: "Discovery Endpoint",
+                  url: "data-streams/reference/data-streams-api/discovery-endpoint",
+                },
+              ],
             },
             {
               title: "WebSocket Reference",
@@ -1789,6 +2139,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Guides",
       contents: [
+        {
+          title: "Cancel a Subscription and Withdraw Funds",
+          url: "chainlink-functions/guides/cancel-subscription",
+        },
         {
           title: "Simple Computation",
           url: "chainlink-functions/tutorials/simple-computation",

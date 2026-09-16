@@ -4,47 +4,98 @@ title: "Chainlink CRE Connect"
 isIndex: true
 date: Last Modified
 metadata:
-  description: "Chainlink CRE Connect — verifiable on-chain events and gas-less, account-abstracted operations powered by the Chainlink Runtime Environment."
+  description: "Chainlink CRE Connect: a managed API and Go SDK for verifiable on-chain events, gas-less operations, and DON-backed chain queries. Start here to find quickstarts, concepts, guides, and references."
   datePublished: "2026-05-01"
-  lastModified: "2026-05-01"
+  lastModified: "2026-08-31"
 ---
 
-import { Aside } from "@components"
+import CrecCommon from "@features/crec/common/CrecCommon.astro"
 
-**Chainlink CRE Connect (CREC)** is the client-facing interface to the <a href="https://docs.chain.link/cre" target="_blank" rel="noopener noreferrer">Chainlink Runtime Environment</a>. It gives applications two capabilities:
+**Chainlink CRE Connect (CREC)** is a managed API and Go SDK for applications that need verified on-chain observations and gas-less on-chain execution. Your application calls one API; Chainlink runs the oracle network and on-chain execution infrastructure behind it.
 
-- **Inbound** — subscribe to **verifiable on-chain events** signed end-to-end by a Chainlink Decentralized Oracle Network (DON), on every supported network.
-- **Outbound** — submit **gas-less, account-abstracted operations** (atomic batches of EVM transactions) that the DON broadcasts on-chain through your Smart Account.
+CRE Connect uses the <a href="https://chain.link/cre" target="_blank" rel="noopener noreferrer">Chainlink Runtime Environment</a> and Chainlink Decentralized Oracle Networks (DONs), which are groups of independent Chainlink nodes that observe chains, produce signed reports, and submit transactions. CRE Connect packages those capabilities into one developer interface.
 
-You sign with the keys you already have. CRE Connect handles event verification, gas, nonces, relayers, and the on-chain account.
+Use CRE Connect when your application needs to:
 
-<Aside type="note" title="Beta — permissioned access">
-  CRE Connect is currently in **private beta**. Your organization must be provisioned by Chainlink before you can use
-  the product. See [Get Access](/crec/getting-started) for the onboarding flow.
-</Aside>
+- **Watch on-chain events**: subscribe to contract logs and verify that a Chainlink DON observed them.
+- **Execute gas-less operations**: submit an Operation, which is an EIP-712-signed batch of EVM transactions that a Smart Account, your on-chain execution account, runs atomically.
+- **Run one-shot chain queries**: request a read-only EVM call and receive a DON-backed result.
+
+You sign operations with keys you already use: local ECDSA, AWS KMS, HashiCorp Vault, Fireblocks, Privy, or a custom signer. CRE Connect delivers verifiable events and results, and the SDK gives you helpers to verify them locally before acting on them.
+
+<CrecCommon callout="beta" />
 
 ## What you can build
 
-| Capability              | What it gives you                                                                                                                                                                                                                                                                     |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Verifiable events**   | A stream of on-chain events signed by the DON using <a href="/architecture-overview/off-chain-reporting" target="_blank" rel="noopener noreferrer">Off-Chain Reporting (OCR)</a>, which your application can poll, decode, and re-verify locally against the on-chain DON signer set. |
-| **Gas-less operations** | A single signed payload becomes one or more EVM transactions executed atomically by your Smart Account — with no gas, nonce, or relayer management on your end.                                                                                                                       |
-| **Protocol extensions** | Pre-packaged, protocol-aware modules layered on top of CRE Connect. The first available is [DTA](/crec/extensions/dta).                                                                                                                                                               |
+| <div style="width: 140px;">Capability</div> | What it gives you                                                                                                                                   | Where to start                                                                   |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| **Verifiable events**                       | DON-signed on-chain events delivered through one channel event stream.                                                                              | [Quickstart: Watch Events](/crec/getting-started/quickstart-watch-events)        |
+| **Gas-less operations**                     | One EIP-712-signed payload becomes one or more EVM transactions executed atomically by your Smart Account.                                          | [Quickstart: Send an Operation](/crec/getting-started/quickstart-send-operation) |
+| **Chain queries**                           | One-shot, DON-backed reads for EVM `eth_call` requests against a selected block.                                                                    | [Execute a Chain Query](/crec/guides/queries/execute-a-query)                    |
+| **Protocol extensions**                     | Pre-packaged typed builders and watcher provisioning for supported partner protocols. The first available extension is [DTA](/crec/extensions/dta). | [Extensions](/crec/extensions)                                                   |
 
-## Understand the model
+## Core model
 
-Start with the [Architecture](/crec/concepts/architecture) overview, then read the concept pages for the resources that make up the product:
+Most integrations use the same small set of resources:
 
-- [Channels](/crec/concepts/channels) — the top-level scoping unit.
-- [Watchers](/crec/concepts/watchers) — how on-chain contracts are observed.
-- [Verifiable Events](/crec/concepts/verifiable-events) and [Event Verification](/crec/concepts/event-verification) — how OCR signatures travel with every event.
-- [Operations & Transactions](/crec/concepts/operations) and [EIP-712 Signing](/crec/concepts/eip712-signing) — how gas-less writes are authorized.
-- [Smart Accounts](/crec/concepts/smart-accounts) and [Account Abstraction & Gas Sponsorship](/crec/concepts/account-abstraction) — the on-chain execution model.
-- [Confidence Levels](/crec/concepts/confidence-levels) — finality and latency trade-offs.
-- [Extensions](/crec/concepts/extensions) — protocol-specific modules.
+| Resource                   | What it does                                                                                                                 | Start here                                            |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| **Channel**                | Scopes watchers, wallets, operations, queries, and the ordered event stream for one application or environment.              | [Channels](/crec/concepts/channels)                   |
+| **Watcher**                | Monitors a contract on a supported chain and emits `watcher.event` records when matching logs appear.                        | [Watchers](/crec/concepts/watchers)                   |
+| **Event**                  | Carries watcher data, lifecycle updates, or query results through one poll/search API. Verifiable events include OCR proofs. | [Verifiable Events](/crec/concepts/verifiable-events) |
+| **Wallet / Smart Account** | Represents the on-chain account that executes operations and the signer set allowed to authorize them.                       | [Smart Accounts](/crec/concepts/smart-accounts)       |
+| **Operation**              | Packages one or more EVM transactions into an atomic, EIP-712-authorized write.                                              | [Operations](/crec/concepts/operations)               |
+| **Query**                  | Requests a one-shot, read-only EVM call and returns a signed result.                                                         | [Chain Queries](/crec/concepts/queries)               |
 
-## Get started
+## Pick your path
 
-- [Get Access](/crec/getting-started) — request access to the private beta.
-- [Extensions: DTA](/crec/extensions/dta) — the first available protocol extension.
-- [Release Notes](/crec/release-notes) — current status and changes.
+Choose the entry point that matches what you're trying to do right now.
+
+### I'm new: get me to a working integration
+
+Read these in order.
+
+1. [Prerequisites](/crec/getting-started/prerequisites): request access, install Go, gather your API key, pick a signer.
+2. [SDK Installation](/crec/getting-started/sdk-installation): `go get` the core SDK and optionally the DTA extension.
+3. [Authentication](/crec/getting-started/authentication): initialize the client and run a `ListNetworks` smoke test.
+4. [Quickstart: Watch On-Chain Events](/crec/getting-started/quickstart-watch-events): your first verifiable event.
+5. [Quickstart: Send Your First Operation](/crec/getting-started/quickstart-send-operation): your first gas-less write.
+
+### I want to understand the model
+
+Start with the [Architecture](/crec/concepts/architecture) overview, then follow the path that matches your integration:
+
+- **For event monitoring**: [Channels](/crec/concepts/channels), [Watchers](/crec/concepts/watchers), [Verifiable Events](/crec/concepts/verifiable-events), and [Confidence Levels](/crec/concepts/confidence-levels).
+- **For on-chain execution**: [Smart Accounts](/crec/concepts/smart-accounts), [Operations](/crec/concepts/operations), [EIP-712 Signing](/crec/concepts/eip712-signing), [Draft Operations](/crec/concepts/drafts), and [Multi-Event Finality](/crec/concepts/multi-event-finality).
+- **For on-chain reads**: [Chain Queries](/crec/concepts/queries).
+
+### I'm integrating now: show me the code
+
+Jump straight to the relevant guide:
+
+- **Channels**: [Create and manage channels](/crec/guides/channels/manage-channels)
+- **Watchers**: [Predefined service](/crec/guides/watchers/create-with-service) · [Custom ABI](/crec/guides/watchers/create-with-abi) · [Lifecycle](/crec/guides/watchers/manage-lifecycle)
+- **Events**: [Poll and search](/crec/guides/events/poll-and-search) · [Verify signatures](/crec/guides/events/verify-signatures) · [Decode data](/crec/guides/events/decode-data)
+- **Operations**: [Build and sign](/crec/guides/operations/build-and-sign) · [Draft operations](/crec/guides/operations/drafts) · [Submit and track](/crec/guides/operations/submit-and-track) · [Batch](/crec/guides/operations/batch-transactions) · [Signing transparency](/crec/guides/operations/signing-transparency)
+- **Queries**: [Execute a query](/crec/guides/queries/execute-a-query)
+- **Wallets**: [Create and manage](/crec/guides/wallets/create-and-manage) · [Manage signers](/crec/guides/wallets/manage-signers)
+- **Signers**: [Local](/crec/guides/signers/local) · [AWS KMS](/crec/guides/signers/aws-kms) · [HashiCorp Vault](/crec/guides/signers/hashicorp-vault) · [Fireblocks](/crec/guides/signers/fireblocks) · [Privy](/crec/guides/signers/privy) · [Custom](/crec/guides/signers/custom)
+
+### I just need to look up a fact
+
+- [REST API Reference](/crec/reference/rest-api): narrative companion to the <a href="/api/crec/docs" target="_blank" rel="noopener noreferrer">interactive Swagger explorer</a>.
+- [Go SDK Reference](/crec/reference/go-sdk): every public sub-package with links to `pkg.go.dev`.
+- [SDK Configuration Options](/crec/reference/sdk-configuration): every functional option on `crec.NewClient`.
+- [Lifecycles](/crec/reference/lifecycles): every status enum and state transition.
+- [Event Types and Payloads](/crec/reference/event-payloads): the five `Event_Payload` shapes.
+- [Error Handling](/crec/reference/error-handling): sentinel errors, REST envelope, retry policy.
+- [Service Limits](/crec/reference/service-limits): hard limits and quotas.
+- [Supported Networks](/crec/supported-networks): discoverable at runtime via `ListNetworks`.
+
+## Where to go next?
+
+- [Private Beta](/crec/private-beta): access, scope, and current limitations.
+- [Getting Started](/crec/getting-started/prerequisites): follow the recommended onboarding sequence.
+- [Architecture](/crec/concepts/architecture): understand how the SDK, REST API, DON workflows, and Smart Accounts fit together.
+- [REST API Reference](/crec/reference/rest-api) · [Go SDK Reference](/crec/reference/go-sdk): look up endpoint and SDK details.
+- [Release Notes](/crec/release-notes): see current versions and changes.

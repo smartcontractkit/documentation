@@ -15,7 +15,7 @@ githubRepoLinks:
   - label: "Go"
     url: "https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/confidential-workflows/ai-audit-firewall/ai-audit-firewall-go"
 datePublished: "2026-08-04"
-lastModified: "2026-08-06"
+lastModified: "2026-08-17"
 ---
 
 import { Aside } from "@components"
@@ -23,128 +23,204 @@ import { Aside } from "@components"
 <Aside type="caution" title="Private beta">
   [Confidential Workflows](https://docs.chain.link/cre/concepts/confidential-workflows) is in **private beta** and
   requires enrollment through your Chainlink account team - see [Requesting Confidential Workflows
-  Access](https://docs.chain.link/cre/account/confidential-workflows-access).
+  Access](https://docs.chain.link/cre/account/confidential-workflows-access). Do not wait for early access. Simulate
+  confidential workflows in minutes.
 </Aside>
 
-This standalone CRE project implements a confidential pre-execution security firewall for smart contract interactions.
+## What this template does
 
-## Description
+This CRE workflow implements a confidential pre-execution security firewall for smart contract interactions. Before a proposed transaction is allowed to proceed, the workflow fetches token and protocol contract artifacts from a blockchain scanner, submits them to two independent AI reasoning models, and enforces a security verdict. All scanner and LLM credentials remain protected inside confidential execution throughout the process.
 
-The workflow screens proposed transactions before they are allowed to proceed. It fetches and validates contract
-intelligence, runs confidential reasoning to classify risk, and then enforces a firewall decision path. Scanner and
-model credentials remain protected inside confidential execution throughout the process.
+**Data flow:**
 
-## Target Customer
+1. Receive a candidate transaction containing token and protocol contract addresses.
+2. Validate scanner credential scopes (`verification:read`, `contracts:read`) before trusting fetched data.
+3. Fetch source and ABI artifacts for both contracts through the scanner.
+4. Verify that both contracts are on-chain verified. Unverified contracts result in an immediate denial.
+5. Submit each contract to independent primary and secondary reasoning models in sequence, using primary analysis results as prior context for the secondary model.
+6. Merge risk flags from both models using OR logic and determine the final verdict.
+7. Post audit and firewall action records to the database log.
+8. Optionally deliver the signed verdict on-chain to a consumer contract.
 
-- Professional retail traders
-- Developer shops
-- Founders building trading products
+## Risk Flags and Verdict Logic
 
-## Structure
+### Risk flags
 
-- `project.yaml`: project-level target settings
-- `secrets.yaml`: secret ID mappings used by the workflow
-- `mock-server.js`: local deterministic API server
-- `ai-audit-firewall-ts/`: TypeScript workflow implementation
-- `ai-audit-firewall-go/`: Go workflow implementation
+Both models independently classify contract behavior into four structured risk signals:
 
-## Private Inputs
+| Flag                  | Description                                                    |
+| --------------------- | -------------------------------------------------------------- |
+| `obfuscatedTax`       | Hidden fee or tax mechanism detected in the contract           |
+| `privilegeEscalation` | Owner or operator can drain funds or alter critical parameters |
+| `externalCallRisk`    | Calls to external contracts that can alter contract behavior   |
+| `logicBomb`           | Dormant code that activates under a specific condition         |
 
-The following inputs are handled as confidential:
+Risk flags from both models are merged with OR logic: if either model sets a flag, it is included in the final risk assessment.
 
-- Chain scanner API credentials used for contract metadata retrieval and verification checks.
-- LLM reasoning API credentials used for independent audit analysis.
+### Verdict logic
 
-## Workflow Notes
+| Verdict         | Condition                                                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `DENY`          | Either contract is unverified, or any merged risk flag is `true`                                                          |
+| `MANUAL_REVIEW` | Either model recommends review, either model has confidence below 0.7, or the two models disagree on their recommendation |
+| `ALLOW`         | No risk flags detected, both models recommend allow, and both models have confidence ≥ 0.7                                |
 
-1. Monitor and ingest the proposed interaction.
-   The workflow receives candidate transaction context, including token and protocol contract addresses.
-2. Fetch and validate contract data confidentially.
-   It retrieves source and ABI artifacts through the scanner and verifies scanner credential permissions before trusting fetched data.
-3. Run smart contract audit analysis.
-   The workflow submits context to multiple reasoning models and classifies behavior into structured risk signals:
-   - `obfuscatedTax`
-   - `privilegeEscalation`
-   - `externalCallRisk`
-   - `logicBomb`
-4. Enforce firewall action and record outcomes.
-   Based on aggregate risk, the workflow allows execution, blocks malicious interactions, or routes the attempt for manual review while preserving audit and action logs.
+## Prerequisites
 
-Note: Any reasoning stage can be replaced with deterministic rule-based logic if a purely policy-engine implementation is preferred.
+- [Bun](https://bun.sh) runtime
+- CRE CLI (`cre`)
+- A blockchain scanner account with an API key that has `verification:read` and `contracts:read` scopes
+- API keys for two LLM reasoning endpoints (primary and secondary)
 
-## Required Environment Variables
+## Configuration
 
-Copy `.env.example` to `.env` and provide values for:
+The workflow ships with two config files:
 
-- `CRE_ETH_PRIVATE_KEY` (optional for local simulate, required for real chain writes)
-- `MOCK_PORT`
-- `MOCK_SCANNER_API_KEY`
-- `MOCK_PRIMARY_LLM_API_KEY`
-- `MOCK_SECONDARY_LLM_API_KEY`
+- `ai-audit-firewall-ts/config.staging.json` (TypeScript) and `ai-audit-firewall-go/config.staging.json` (Go): targets mock server endpoints and Ethereum Sepolia testnet
+- `ai-audit-firewall-ts/config.production.json` (TypeScript) and `ai-audit-firewall-go/config.production.json` (Go): same structure with empty URLs for you to populate
 
-The local mock server for this project only exposes routes under `/audit-firewall/*`.
+Key fields:
 
-**Quick navigation:**
+| Field                                  | Description                                                                         |
+| -------------------------------------- | ----------------------------------------------------------------------------------- |
+| `schedule`                             | Cron expression for execution frequency. Default: `0 */5 * * * *` (every 5 minutes) |
+| `scanner_url`                          | Scanner API endpoint for contract metadata and verification                         |
+| `primary_llm_url`                      | Primary reasoning model endpoint                                                    |
+| `secondary_llm_url`                    | Secondary reasoning model endpoint                                                  |
+| `secrets_ids.scanner_api_key_id`       | Secret ID for scanner credentials                                                   |
+| `secrets_ids.primary_llm_api_key_id`   | Secret ID for primary model credentials                                             |
+| `secrets_ids.secondary_llm_api_key_id` | Secret ID for secondary model credentials                                           |
+| `mock_base_url`                        | Base URL used for audit log and firewall action posts. Required even in production. |
+| `evms[].chain_selector_name`           | Target chain for on-chain verdict delivery. Remove the `evms` array to disable.     |
+| `evms[].consumer_address`              | Deployed `AuditFirewallConsumer` contract address                                   |
+| `evms[].gas_limit`                     | Gas limit for on-chain verdict writes                                               |
 
-- [TypeScript Quick Start](#typescript-quick-start)
-- [Go Quick Start](#go-quick-start)
+## Secrets
 
-## TypeScript Quick Start
+Copy `.env.example` to `.env` and populate all values before running locally.
+
+| Environment variable         | Secret ID               | Purpose                                                                          |
+| ---------------------------- | ----------------------- | -------------------------------------------------------------------------------- |
+| `MOCK_SCANNER_API_KEY`       | `scanner_api_key`       | Authenticates requests to the blockchain scanner                                 |
+| `MOCK_PRIMARY_LLM_API_KEY`   | `primary_llm_api_key`   | Authenticates requests to the primary reasoning model                            |
+| `MOCK_SECONDARY_LLM_API_KEY` | `secondary_llm_api_key` | Authenticates requests to the secondary reasoning model                          |
+| `CRE_ETH_PRIVATE_KEY`        | _(framework-level)_     | Signs transactions for on-chain verdict delivery. Optional for local simulation. |
+
+Secret IDs are referenced in `secrets.yaml` and mapped to their corresponding secret IDs in `config.staging.json` under `secrets_ids`. For production, register each secret with the CRE secrets manager using those IDs.
+
+## Quick start
+
+**TypeScript**
+
+Run all commands from the `ai-audit-firewall` directory (the project root).
 
 1. Install dependencies
 
-```bash
-bun install
-```
+   ```bash
+   cd ai-audit-firewall-ts && bun install && cd ..
+   ```
 
 2. Create environment file
 
-```bash
-cp .env.example .env
-```
+   ```bash
+   cp .env.example .env
+   ```
 
 3. Start mock server
 
-```bash
-bun run mock:server
-```
+   ```bash
+   cd ai-audit-firewall-ts && bun run mock:server
+   ```
 
-4. In another terminal, run checks
+4. In another terminal, run checks and simulate
 
-```bash
-bun run typecheck
-bun run test
-```
+   ```bash
+   cd ai-audit-firewall-ts
+   bun run typecheck
+   bun run test
+   cd .. && cre workflow simulate ./ai-audit-firewall-ts --project-root ./ --target=staging-settings --env ./.env
+   ```
 
-5. Simulate workflow
+**Go**
 
-```bash
-cre workflow simulate ./ai-audit-firewall-ts --target=staging-settings
-```
+Run all commands from the `ai-audit-firewall` directory (the project root).
 
-## Go Quick Start
+1. Create environment file
 
-1. Create environment file (at the shared project root)
+   ```bash
+   cp .env.example .env
+   ```
 
-```bash
-cp ../.env.example ../.env
-```
+2. Start the mock server from the TypeScript directory (requires Node or Bun)
 
-2. Start the mock server (requires Node or Bun)
+   ```bash
+   cd ai-audit-firewall-ts && bun run mock:server
+   ```
 
-```bash
-bun mock-server.js
-```
+3. In another terminal, run checks and simulate
 
-3. In another terminal, run checks
+   ```bash
+   cd ai-audit-firewall-go
+   go vet ./...
+   go test ./...
+   cd .. && cre workflow simulate ./ai-audit-firewall-go --project-root ./ --target=staging-settings --env ./.env
+   ```
 
-```bash
-go vet ./...
-go test ./...
-```
+## Production checklist
 
-4. Simulate workflow
+- Populate `config.production.json` with real `scanner_url`, `primary_llm_url`, `secondary_llm_url`, and `mock_base_url`.
+- Register `scanner_api_key`, `primary_llm_api_key`, and `secondary_llm_api_key` in the CRE secrets manager.
+- Confirm the scanner API key has both `verification:read` and `contracts:read` scopes. The workflow validates this at runtime and fails fast if scopes are missing.
+- Set `CRE_ETH_PRIVATE_KEY` if on-chain verdict delivery is enabled.
+- Deploy `AuditFirewallConsumer.sol` and set its address in `config.production.json` under `evms[].consumer_address`.
+- Run `bun run typecheck && bun run test` (TypeScript) or `go vet ./... && go test ./...` (Go) before registering.
+- Run `cre workflow simulate` against production endpoints to validate end-to-end behavior before going live.
+- Register the workflow:
+  - TypeScript: `cre workflow register ./ai-audit-firewall-ts --project-root ./ --target=production-settings`
+  - Go: `cre workflow register ./ai-audit-firewall-go --project-root ./ --target=production-settings`
 
-```bash
-cd .. && cre workflow simulate ./ai-audit-firewall-go --target=staging-settings
-```
+## Troubleshooting
+
+**Scanner credential validation fails**
+
+The workflow validates scopes before making any scanner calls. If you see a scope-related error, confirm your scanner API key has `verification:read` and `contracts:read` permissions. The error message includes the detected scopes for diagnosis.
+
+**Verdict is `DENY` for an unverified contract**
+
+Unverified contracts are denied without running LLM analysis. If you are testing with a contract that is not on-chain verified, use the mock server (which returns mock verification status) or switch to a verified contract address.
+
+**LLM response cannot be parsed**
+
+If you see `invalid json response` or a parsing error, the reasoning endpoint returned a malformed body. Confirm that the LLM URL and API key are correct and that the model returns a JSON object with `recommendation`, `confidence`, and `riskFlags` fields.
+
+**On-chain write fails**
+
+Confirm that `CRE_ETH_PRIVATE_KEY` is set and the consumer contract is deployed on the target chain. The workflow logs `audit-firewall-onchain tx_hash=...` on success. A failed transaction throws an error with the transaction status.
+
+**Capability limit errors**
+
+The workflow enforces a cap of 10 total capability calls per invocation (8 HTTP, 1 Report/consensus, and optionally 1 EVM write when on-chain delivery is enabled). If you extend the workflow with additional HTTP calls, update the pre-hook capability limits accordingly.
+
+## Optional on-chain delivery
+
+After each audit, the workflow can write a signed verdict to an on-chain consumer contract. On-chain delivery is controlled by the `evms` array in the config. Remove the array or leave it empty to run the workflow without any on-chain writes.
+
+**Verdict encoding**
+
+Verdicts are ABI-encoded as `(uint8 verdictCode, uint8 riskMask, uint64 chainSelector)`:
+
+| Field         | Value | Meaning       |
+| ------------- | ----- | ------------- |
+| `verdictCode` | `1`   | ALLOW         |
+| `verdictCode` | `2`   | DENY          |
+| `verdictCode` | `3`   | MANUAL_REVIEW |
+
+Risk flags are packed into `riskMask` as a single bitmask byte: bit 0 = `obfuscatedTax`, bit 1 = `privilegeEscalation`, bit 2 = `externalCallRisk`, bit 3 = `logicBomb`.
+
+**Consumer contract**
+
+The included `AuditFirewallConsumer.sol` extends `ReceiverTemplate` and exposes the latest verdict, risk mask, and chain selector as public state variables. It emits a `VerdictReceived` event on each report. Deploy this contract and set its address in `config.production.json` under `evms[].consumer_address`.
+
+**Deployment target**
+
+The staging config targets Ethereum Sepolia (`ethereum-testnet-sepolia`). For mainnet delivery, update `chain_selector_name` to `ethereum-mainnet` and redeploy the consumer contract to that network.

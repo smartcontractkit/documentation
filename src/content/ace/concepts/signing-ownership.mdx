@@ -4,8 +4,8 @@ title: "Signing and Ownership Model"
 date: Last Modified
 metadata:
   description: "Understand how Chainlink ACE handles transaction signing and contract ownership: delegated signing and self-signing models, CRE Connect Wallet, and how to choose."
-  datePublished: "2026-07-17"
-  lastModified: "2026-08-18"
+  datePublished: "2026-03-31"
+  lastModified: "2026-07-17"
 ---
 
 import { Aside, ClickToZoom } from "@components"
@@ -29,22 +29,68 @@ In the delegated model, ACE uses a **delegated trust** approach centered around 
 
 ### How it works
 
-When you trigger an action — whether from the ACE Platform UI or the API:
+When your organization onboards onto ACE, the system deploys a CRE Connect Wallet for you on every network you require.
 
-1. The **Coordinator API** receives your request and sends it to **CRE Connect**.
-1. CRE Connect prepares and signs the blockchain transaction on your behalf.
-1. The signed transaction is routed through your organization's **CRE Connect Wallet** onchain.
-1. The CRE Connect Wallet verifies authorization and executes the operation on the target contract.
+Here is the key principle:
 
-You never handle signing keys or submit raw transactions. Chainlink handles the entire signing and execution pipeline, while you retain full ownership of all deployed contracts.
+- **Your wallet owns the CRE Connect Wallet.**
+- **The CRE Connect Wallet owns all your ACE contracts** (policy engines, registries, policies, etc.).
+- **Chainlink is registered as an authorized operator** on your CRE Connect Wallet — allowed to execute operations, but nothing more.
+
+This means you indirectly own every contract that ACE deploys for your organization, through the CRE Connect Wallet.
+
+### Permissions
+
+The CRE Connect Wallet enforces strict permission boundaries between you and Chainlink:
+
+| Action                                                     | You (client) | Chainlink   |
+| :--------------------------------------------------------- | :----------- | :---------- |
+| **Change ownership** of the CRE Connect Wallet             | Allowed      | Not allowed |
+| **Manage authorized signers** (add/remove who can operate) | Allowed      | Not allowed |
+| **Execute operations** on your contracts                   | Allowed      | Allowed     |
+
+Chainlink can only execute operations (deploy contracts, configure policies, register identities, etc.) — it cannot change who owns the account or who is authorized to sign.
+
+### What happens during setup
+
+When your organization is onboarded onto ACE:
+
+1. You provide your wallet address to the ACE platform.
+1. Chainlink creates an internal signing key dedicated to your organization. This key is managed entirely by Chainlink — you never see or interact with it.
+1. ACE deploys a CRE Connect Wallet onchain, sets your wallet as its owner, and registers Chainlink's signing key as an authorized operator — all in a single deployment step.
+1. ACE deploys all application contracts (policy engines, registries, etc.) and assigns ownership to your CRE Connect Wallet.
+
+Once setup is complete, the permission boundaries described above take effect: only you can change ownership or manage authorized signers. Chainlink can only execute operations.
+
+<ClickToZoom
+  src="/images/ace/signing-model-sva-setup.png"
+  caption="Delegated signing: how ACE sets up your CRE Connect Wallet and deploys contracts on your behalf."
+/>
+
+### What happens during operations
+
+When you trigger an action — whether from the ACE platform UI or the API:
+
+1. You perform an action (e.g., "deploy a new policy instance on Ethereum").
+1. ACE prepares the corresponding blockchain transaction and signs it using Chainlink's internal signing key for your organization.
+1. ACE sends the signed transaction to your CRE Connect Wallet.
+1. The CRE Connect Wallet verifies that the signer is in its list of authorized operators.
+1. If authorized, the CRE Connect Wallet executes the operation on the target contract.
+
+During day-to-day operations, you never interact with a blockchain wallet or sign a transaction. ACE handles the signing and execution, while your CRE Connect Wallet enforces that only authorized operators can act.
+
+<ClickToZoom
+  src="/images/ace/signing-model-sva-operations.png"
+  caption="Delegated signing: how ACE signs and executes operations through your CRE Connect Wallet."
+/>
 
 ### Your safety net
 
 You are always in control. Because your wallet owns the CRE Connect Wallet, you can at any time:
 
-- Interact with the CRE Connect Wallet directly, bypassing Chainlink.
-- Add or remove authorized operators (including Chainlink).
-- Take over operational responsibility entirely.
+- **Interact with the CRE Connect Wallet directly** — bypassing ACE entirely.
+- **Remove Chainlink as an authorized signer** — immediately revoking ACE's ability to execute operations on your contracts.
+- **Add other signers** — granting operation rights to your own keys or third parties.
 
 Revoking Chainlink's access does not affect your contract ownership. Your contracts remain yours, managed through your CRE Connect Wallet. You would simply take over operational responsibility.
 
@@ -62,14 +108,14 @@ When you trigger an action — whether from the ACE Platform UI or the API:
 
 1. You perform an action (e.g., "deploy a new policy instance on Ethereum").
 1. ACE prepares the corresponding blockchain transaction and creates an **unsigned draft operation** with status `pending_signature`.
-1. You poll for pending operations using the CRE Connect SDK and retrieve the draft.
+1. You poll for pending operations using the [CRE Connect SDK](https://github.com/smartcontractkit/crec-sdk) and retrieve the draft.
 1. You sign the operation using your own key (EIP-712 typed data signing).
 1. You submit the signed operation back through the CRE Connect SDK.
 1. The CRE Connect Wallet verifies your signature and executes the operation onchain.
 
 ### Polling and signing with the CRE Connect SDK
 
-The [CRE Connect SDK](https://github.com/smartcontractkit/crec-sdk) is a client library that provides all the tools needed for the self-signing workflow:
+The [CRE Connect SDK](https://github.com/smartcontractkit/crec-sdk) is a Go client library that provides all the tools needed for the self-signing workflow:
 
 - **List pending operations** — Poll for unsigned draft operations waiting for your signature.
 - **Hash operations** — Compute the EIP-712 digest for an operation locally.
@@ -81,9 +127,3 @@ The SDK supports multiple signer backends: local ECDSA keys, AWS KMS, HashiCorp 
 ### Your safety net
 
 The same safety net applies as with delegated signing. Because your wallet owns the CRE Connect Wallet, you can at any time interact with it directly, add or remove authorized signers, or take over operational responsibility entirely.
-
-## Related pages
-
-- [Architecture](/ace/concepts/architecture) — how signing fits into the overall ACE system
-- [Key Terms](/ace/concepts/key-terms) — definitions of CRE Connect, CRE Connect Wallet, and related terms
-- [Beta Scope](/ace/beta-scope) — current scope and limitations

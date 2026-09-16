@@ -1,0 +1,305 @@
+---
+section: cre
+title: "Object Reference"
+date: Last Modified
+metadata:
+  description: "Reference for CRE GraphQL object types and scalars: fields, types, and nullability."
+  datePublished: "2026-08-31"
+  lastModified: "2026-08-31"
+---
+
+This page documents the object types and scalars returned by the queries in the [Query Reference](/cre/reference/graphql-api/queries). For filter/sort/pagination input types, see the [Input Reference](/cre/reference/graphql-api/inputs). For enums, see the [Enum Reference](/cre/reference/graphql-api/enums).
+
+## Scalars
+
+| Scalar           | Represents                                                                                                |
+| ---------------- | --------------------------------------------------------------------------------------------------------- |
+| `Time`           | An ISO 8601 timestamp, for example `2026-08-31T14:32:18Z`.                                                |
+| `WorkflowId`     | The onchain workflow identifier (distinct from a workflow's CRE-generated `uuid`).                        |
+| `OnchainAddress` | A blockchain address, for example a workflow owner's wallet or contract address.                          |
+| `ChainSelector`  | A Chainlink chain selector identifying a specific blockchain network.                                     |
+| `OrganizationId` | Unique, CRE-generated identifier for an organization.                                                     |
+| `TenantId`       | Unique, CRE-generated identifier for a tenant (an organization's deployment environment).                 |
+| `MemberId`       | Unique, CRE-generated identifier for an organization member (account).                                    |
+| `UserId`         | Unique, CRE-generated identifier for a user.                                                              |
+| `Email`          | An email address.                                                                                         |
+| `LabelText`      | A short, user-provided display label (for example an account or organization display name).               |
+| `CredentialText` | A sensitive credential value, such as an API key token. Never logged or displayed in full by CRE tooling. |
+| `CreditAmount`   | A numeric CRE credit amount, used for usage-based billing fields such as `creditUsed`.                    |
+| `UUID`           | A standard UUID string.                                                                                   |
+| `JSONObject`     | An arbitrary JSON object.                                                                                 |
+
+## `OrganizationAccount`
+
+Represents a member of your organization — typically your own account when returned from `getAccountDetails`.
+
+| Field            | Type              | Description                                                                                                                                |
+| ---------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `memberId`       | `MemberId!`       | Unique identifier for this organization member.                                                                                            |
+| `userId`         | `UserId`          | Underlying user identifier. `null` if the member hasn't completed signup.                                                                  |
+| `organizationId` | `OrganizationId!` | The organization this member belongs to.                                                                                                   |
+| `emailAddress`   | `Email!`          | The member's email address.                                                                                                                |
+| `displayName`    | `LabelText!`      | The member's display name.                                                                                                                 |
+| `memberType`     | `MemberType`      | The member's role. `null` for members without an assigned type. See [`MemberType`](/cre/reference/graphql-api/enums#membertype).           |
+| `memberStatus`   | `MemberStatus!`   | Whether the member has been invited, has joined, or has been removed. See [`MemberStatus`](/cre/reference/graphql-api/enums#memberstatus). |
+| `createdAt`      | `Time!`           | When this member record was created.                                                                                                       |
+| `updatedAt`      | `Time!`           | When this member record was last updated.                                                                                                  |
+| `invitedByUser`  | `UserId`          | The user who sent the invite. `null` if not invited.                                                                                       |
+| `invitedAt`      | `Time`            | When the member was invited. `null` if not invited.                                                                                        |
+| `joinedAt`       | `Time`            | When the member joined. `null` while still `INVITED`.                                                                                      |
+| `removedByUser`  | `UserId`          | The user who removed this member. `null` if not removed.                                                                                   |
+| `removedAt`      | `Time`            | When the member was removed. `null` if not removed.                                                                                        |
+
+## `Organization`
+
+Represents your CRE organization.
+
+| Field               | Type                             | Description                                                                                                                                                                   |
+| ------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `organizationId`    | `OrganizationId!`                | Unique identifier for the organization.                                                                                                                                       |
+| `displayName`       | `LabelText!`                     | The organization's display name.                                                                                                                                              |
+| `createdAt`         | `Time!`                          | When the organization was created.                                                                                                                                            |
+| `updatedAt`         | `Time!`                          | When the organization was last updated.                                                                                                                                       |
+| `restrictionStatus` | `OrganizationRestrictionStatus!` | Whether the organization is gated (limited access) or has full access. See [`OrganizationRestrictionStatus`](/cre/reference/graphql-api/enums#organizationrestrictionstatus). |
+| `activeStatus`      | `EntityActiveStatus!`            | Whether the organization is active or deleted. See [`EntityActiveStatus`](/cre/reference/graphql-api/enums#entityactivestatus).                                               |
+| `tenantId`          | `Int!`                           | Numeric tenant identifier for the organization.                                                                                                                               |
+
+## `TenantConfig`
+
+Tenant configuration for the authenticated user — the registry manifest the CRE CLI caches locally after login or when authenticating with an API key.
+
+| Field                  | Type               | Description                                                     |
+| ---------------------- | ------------------ | --------------------------------------------------------------- |
+| `tenantId`             | `TenantId!`        | Unique identifier for the tenant.                               |
+| `defaultDonFamily`     | `String!`          | The default DON family for this tenant. Overridable in the CLI. |
+| `vaultGatewayUrl`      | `String!`          | The Vault DON gateway URL used for secrets management.          |
+| `capabilitiesRegistry` | `OnChainContract!` | The CapabilitiesRegistry contract for this tenant.              |
+| `registries`           | `[Registry!]!`     | The workflow registries available to this tenant.               |
+| `forwarders`           | `[Forwarder!]!`    | The onchain forwarder contracts available to this tenant.       |
+
+## `OnChainContract`
+
+An onchain contract reference.
+
+| Field           | Type              | Description                            |
+| --------------- | ----------------- | -------------------------------------- |
+| `chainSelector` | `ChainSelector!`  | The chain the contract is deployed on. |
+| `address`       | `OnchainAddress!` | The contract's address.                |
+
+## `Registry`
+
+A workflow registry available to a tenant.
+
+| Field              | Type                  | Description                                                                                                                         |
+| ------------------ | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `id`               | `String!`             | Unique identifier for the registry.                                                                                                 |
+| `label`            | `String!`             | Human-readable label for the registry.                                                                                              |
+| `type`             | `RegistryType!`       | Whether the registry is onchain or offchain. See [`RegistryType`](/cre/reference/graphql-api/enums#registrytype).                   |
+| `chainSelector`    | `ChainSelector`       | The chain the registry is deployed on. `null` for offchain registries.                                                              |
+| `address`          | `OnchainAddress`      | The registry contract's address. `null` for offchain registries.                                                                    |
+| `secretsAuthFlows` | `[SecretsAuthFlow!]!` | The secrets authentication flows this registry supports. See [`SecretsAuthFlow`](/cre/reference/graphql-api/enums#secretsauthflow). |
+
+## `Forwarder`
+
+An onchain forwarder contract.
+
+| Field           | Type              | Description                             |
+| --------------- | ----------------- | --------------------------------------- |
+| `chainSelector` | `ChainSelector!`  | The chain the forwarder is deployed on. |
+| `address`       | `OnchainAddress!` | The forwarder contract's address.       |
+
+## `Workflow`
+
+Represents a workflow registered to your organization.
+
+| Field                    | Type                              | Description                                                                                                                            |
+| ------------------------ | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `uuid`                   | `String!`                         | CRE-generated unique identifier for the workflow. Use this to query deployments and executions.                                        |
+| `ownerAddress`           | `OnchainAddress!`                 | The wallet or multi-sig address that owns this workflow onchain.                                                                       |
+| `name`                   | `String!`                         | The workflow's name.                                                                                                                   |
+| `workflowId`             | `WorkflowId!`                     | The onchain workflow identifier.                                                                                                       |
+| `status`                 | `WorkflowDeploymentStatus!`       | The workflow's current deployment status. See [`WorkflowDeploymentStatus`](/cre/reference/graphql-api/enums#workflowdeploymentstatus). |
+| `registeredAt`           | `Time!`                           | When the workflow was first registered.                                                                                                |
+| `creditUsed`             | `CreditAmount`                    | Credits consumed by this workflow within the queried time window. `null` if not available.                                             |
+| `executedAt`             | `Time`                            | When the workflow last executed. `null` if it has never executed.                                                                      |
+| `executionCount`         | `Int!`                            | Total number of executions within the queried time window.                                                                             |
+| `executionCountByStatus` | `WorkflowExecutionCountByStatus!` | Execution counts broken down by success/failure within the queried time window.                                                        |
+| `workflowSource`         | `String!`                         | The language/runtime the workflow was written in.                                                                                      |
+| `hasTeeExecutions`       | `Boolean!`                        | Whether this workflow has executions that ran inside a Trusted Execution Environment.                                                  |
+| `hasNonTeeExecutions`    | `Boolean!`                        | Whether this workflow has executions that did not run inside a TEE.                                                                    |
+
+## `WorkflowExecutionCountByStatus`
+
+| Field     | Type   | Description                      |
+| --------- | ------ | -------------------------------- |
+| `success` | `Int!` | Number of successful executions. |
+| `failure` | `Int!` | Number of failed executions.     |
+
+## `WorkflowOutput`
+
+Wrapper type returned by the [`workflow`](/cre/reference/graphql-api/queries#workflow) query.
+
+| Field  | Type        | Description             |
+| ------ | ----------- | ----------------------- |
+| `data` | `Workflow!` | The requested workflow. |
+
+## `WorkflowsOutput`
+
+Wrapper type returned by the [`workflows`](/cre/reference/graphql-api/queries#workflows) query.
+
+| Field   | Type           | Description                                                     |
+| ------- | -------------- | --------------------------------------------------------------- |
+| `data`  | `[Workflow!]!` | The current page of workflows.                                  |
+| `count` | `Int!`         | Total number of workflows matching the query, across all pages. |
+
+## `WorkflowActivityRow`
+
+A single bucket of execution activity, returned by [`workflowActivity`](/cre/reference/graphql-api/queries#workflowactivity).
+
+| Field          | Type    | Description                                     |
+| -------------- | ------- | ----------------------------------------------- |
+| `from`         | `Time!` | Start of this activity bucket.                  |
+| `to`           | `Time!` | End of this activity bucket.                    |
+| `successCount` | `Int!`  | Number of successful executions in this bucket. |
+| `failureCount` | `Int!`  | Number of failed executions in this bucket.     |
+
+## `WorkflowActivityOutput`
+
+| Field  | Type                     | Description                          |
+| ------ | ------------------------ | ------------------------------------ |
+| `data` | `[WorkflowActivityRow!]` | The activity buckets. Nullable list. |
+
+## `WorkflowDeployment`
+
+Represents a single deployment of a workflow — one deploy, activate, pause, or delete action recorded against the Workflow Registry contract.
+
+| Field                    | Type                             | Description                                                                                                            |
+| ------------------------ | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `uuid`                   | `String!`                        | CRE-generated unique identifier for this deployment.                                                                   |
+| `workflowID`             | `String!`                        | The onchain workflow identifier this deployment belongs to.                                                            |
+| `errorMessage`           | `String`                         | Error message if the deployment failed. `null` otherwise.                                                              |
+| `txHash`                 | `String`                         | Transaction hash of the onchain deployment transaction. `null` if not applicable.                                      |
+| `binaryURL`              | `String`                         | URL to the deployed workflow binary artifact. `null` if not available.                                                 |
+| `configURL`              | `String`                         | URL to the deployed workflow config artifact. `null` if not available.                                                 |
+| `status`                 | `WorkflowDeploymentStatus!`      | This deployment's status. See [`WorkflowDeploymentStatus`](/cre/reference/graphql-api/enums#workflowdeploymentstatus). |
+| `deployedAt`             | `Time!`                          | When this deployment was created.                                                                                      |
+| `executionCountByStatus` | `WorkflowExecutionCountByStatus` | Execution counts for this specific deployment. `null` if not available.                                                |
+| `workflowSource`         | `String!`                        | The language/runtime the workflow was written in.                                                                      |
+| `hasTeeExecutions`       | `Boolean!`                       | Whether this deployment has executions that ran inside a TEE.                                                          |
+| `hasNonTeeExecutions`    | `Boolean!`                       | Whether this deployment has executions that did not run inside a TEE.                                                  |
+
+## `WorkflowDeploymentsOutput`
+
+Wrapper type returned by [`workflowDeployments`](/cre/reference/graphql-api/queries#workflowdeployments).
+
+| Field   | Type                     | Description                                     |
+| ------- | ------------------------ | ----------------------------------------------- |
+| `data`  | `[WorkflowDeployment!]!` | The current page of deployments.                |
+| `count` | `Int!`                   | Total number of deployments matching the query. |
+
+## `WorkflowDeploymentOutput`
+
+Wrapper type returned by [`workflowDeployment`](/cre/reference/graphql-api/queries#workflowdeployment).
+
+| Field  | Type                  | Description               |
+| ------ | --------------------- | ------------------------- |
+| `data` | `WorkflowDeployment!` | The requested deployment. |
+
+## `WorkflowExecution`
+
+Represents a single execution of a deployed CRE workflow.
+
+| Field              | Type                                | Description                                                                                                                                                                                   |
+| ------------------ | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `uuid`             | `String!`                           | CRE-generated unique identifier for this execution. Use this to query logs and events.                                                                                                        |
+| `workflowUUID`     | `String!`                           | The workflow this execution belongs to.                                                                                                                                                       |
+| `id`               | `String!`                           | The execution's identifier as reported by the DON.                                                                                                                                            |
+| `workflowName`     | `String!`                           | The workflow's name at the time of execution.                                                                                                                                                 |
+| `workflowId`       | `WorkflowId!`                       | The onchain workflow identifier.                                                                                                                                                              |
+| `status`           | `WorkflowExecutionStatus!`          | The execution's status. See [`WorkflowExecutionStatus`](/cre/reference/graphql-api/enums#workflowexecutionstatus).                                                                            |
+| `startedAt`        | `Time!`                             | When the execution started.                                                                                                                                                                   |
+| `finishedAt`       | `Time`                              | When the execution finished. `null` while the execution is still in progress.                                                                                                                 |
+| `creditUsed`       | `CreditAmount`                      | Credits consumed by this execution. `null` if not available.                                                                                                                                  |
+| `errors`           | `[ExecutionError]`                  | Errors encountered during this execution, grouped by error message with an occurrence count. `null` if none occurred.                                                                         |
+| `executedInTee`    | `Boolean`                           | Whether this execution ran inside a Trusted Execution Environment. `null` if unknown.                                                                                                         |
+| `classifiedStatus` | `WorkflowExecutionClassifiedStatus` | A more granular status distinguishing user-caused from system-caused failures. See [`WorkflowExecutionClassifiedStatus`](/cre/reference/graphql-api/enums#workflowexecutionclassifiedstatus). |
+
+## `ExecutionError`
+
+An error observed during a workflow execution.
+
+| Field   | Type      | Description                                               |
+| ------- | --------- | --------------------------------------------------------- |
+| `error` | `String!` | The error message.                                        |
+| `count` | `Int!`    | Number of times this error occurred during the execution. |
+
+## `WorkflowExecutionsOutput`
+
+Wrapper type returned by [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions).
+
+| Field   | Type                    | Description                                    |
+| ------- | ----------------------- | ---------------------------------------------- |
+| `data`  | `[WorkflowExecution!]!` | The current page of executions.                |
+| `count` | `Int!`                  | Total number of executions matching the query. |
+
+## `WorkflowExecutionOutput`
+
+Wrapper type returned by [`workflowExecution`](/cre/reference/graphql-api/queries#workflowexecution).
+
+| Field  | Type                | Description                                                               |
+| ------ | ------------------- | ------------------------------------------------------------------------- |
+| `data` | `WorkflowExecution` | The requested execution. `null` if no execution matches the given `uuid`. |
+
+## `WorkflowExecutionLog`
+
+A single log line emitted during a workflow execution.
+
+| Field       | Type      | Description                              |
+| ----------- | --------- | ---------------------------------------- |
+| `nodeID`    | `String!` | The DON node that emitted this log line. |
+| `message`   | `String!` | The log message.                         |
+| `timestamp` | `Time!`   | When the log line was emitted.           |
+
+## `WorkflowExecutionLogsOutput`
+
+Wrapper type returned by [`workflowExecutionLogs`](/cre/reference/graphql-api/queries#workflowexecutionlogs).
+
+| Field  | Type                      | Description                               |
+| ------ | ------------------------- | ----------------------------------------- |
+| `data` | `[WorkflowExecutionLog!]` | The execution's log lines. Nullable list. |
+
+## `CapabilityExecutionError`
+
+An error observed during a capability call within an execution.
+
+| Field   | Type      | Description                                                   |
+| ------- | --------- | ------------------------------------------------------------- |
+| `error` | `String!` | The error message.                                            |
+| `count` | `Int!`    | Number of times this error occurred for this capability call. |
+
+## `WorkflowExecutionEvent`
+
+A single capability event within an execution's timeline.
+
+| Field          | Type                         | Description                                                                                  |
+| -------------- | ---------------------------- | -------------------------------------------------------------------------------------------- |
+| `capabilityID` | `String!`                    | Identifier of the capability that produced this event (for example a trigger or action).     |
+| `status`       | `String!`                    | The event's status, as reported by the DON.                                                  |
+| `startedAt`    | `Time!`                      | When the capability call started.                                                            |
+| `finishedAt`   | `Time`                       | When the capability call finished. `null` while still in progress.                           |
+| `errors`       | `[CapabilityExecutionError]` | Errors encountered during this capability call. `null` if none occurred.                     |
+| `method`       | `String`                     | The capability method invoked, if applicable (for example an HTTP method). `null` otherwise. |
+
+## `WorkflowExecutionEventsOutput`
+
+Wrapper type returned by [`workflowExecutionEvents`](/cre/reference/graphql-api/queries#workflowexecutionevents).
+
+| Field  | Type                        | Description                                               |
+| ------ | --------------------------- | --------------------------------------------------------- |
+| `data` | `[WorkflowExecutionEvent!]` | The execution's capability event timeline. Nullable list. |
+
+## Related
+
+- [Query Reference](/cre/reference/graphql-api/queries)
+- [Enum Reference](/cre/reference/graphql-api/enums)
+- [Input Reference](/cre/reference/graphql-api/inputs)

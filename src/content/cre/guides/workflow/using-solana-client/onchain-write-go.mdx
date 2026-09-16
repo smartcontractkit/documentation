@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Write verified CRE workflow results to Solana programs using Go: step-by-step guide with generated Anchor bindings."
   datePublished: "2026-07-06"
-  lastModified: "2026-07-13"
+  lastModified: "2026-08-20"
 ---
 
 import { Aside, CopyText } from "@components"
@@ -29,7 +29,7 @@ For IDL layout, generator output, and what each `WriteReportFrom...` method does
 ## Prerequisites
 
 - A CRE Go project initialized with `cre init`. See [Part 1: Project Setup](/cre/getting-started/part-1-project-setup-go) if you are starting from scratch.
-- CRE CLI **v1.24.0 or later** (`cre version` / `cre update`) with Solana binding generation.
+- The latest version of the CRE CLI (`cre version` / `cre update`); **v1.29.0 or later** is required for Solana binding generation.
 - A funded Solana Devnet keypair for `CRE_SOLANA_PRIVATE_KEY` (required even for dry-run). Generate one with `solana-keygen new`, fund it with `solana airdrop` (or a transfer), and put the 64-byte base58 keypair in your project `.env`. See [Step 4](#step-4-run-the-simulation).
 
 ## What you need: a receiver program
@@ -38,43 +38,106 @@ Your Solana program must implement an `on_report` instruction that accepts the p
 forwarder CPIs into your program after verifying the DON signatures. Your Anchor IDL's `types` section defines the
 struct(s) you will write; the generator turns each into a `WriteReportFrom<StructName>()` method.
 
-This guide uses a minimal `DataStorage` / `UserData` IDL with a receiver program already deployed to Solana Devnet at
-`64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31`. You can simulate against it without deploying your own program. Swap in
-your IDL and call the generated helpers for your structs when you are ready.
+This guide uses a minimal `cre_docs_receiver` program deployed to Solana Devnet at
+`7k8NypziCPqVY8GYyCw7aqaR5aamFAMdH5ZaHVrZCS94`. Its `on_report` re-derives and verifies the `forwarder_authority` PDA,
+then Borsh-decodes the report payload into a `UserData { key, value }` struct and logs it. It requires **no
+receiver-specific accounts** beyond the two the forwarder always supplies (`state` and `forwarder_authority`). You can
+simulate against it without deploying your own program. Swap in your IDL and call the generated helpers for your structs
+when you are ready.
 
-<Aside type="note" title="Forwarder strips leading accounts">
-  The forwarder passes only indices 2+ of your `accounts` slice to your program's CPI call. Indices 0 (`forwarderState`)
-  and 1 (`forwarderAuthority`) are consumed by the forwarder itself.
+```rust
+// cre_docs_receiver on_report (abridged)
+pub fn on_report(ctx: Context<OnReport>, metadata: Vec<u8>, report: Vec<u8>) -> Result<()> {
+    // ... re-derive + verify forwarder_authority PDA ...
+    let user = UserData::deserialize(&mut &report[..])?; // Borsh { key, value }
+    msg!("user.key={} user.value={}", user.key, user.value);
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct OnReport<'info> {
+    /// CHECK: forwarder state; its owner is the forwarder program.
+    pub state: UncheckedAccount<'info>,
+    /// PDA signer supplied by the forwarder CPI.
+    pub forwarder_authority: Signer<'info>,
+}
+```
+
+<Aside type="note" title="How remainingAccounts maps to the forwarder">
+  You provide `remainingAccounts` as `[forwarderState, forwarderAuthority, ...receiverAccounts]`. The **whole** list is
+  hashed into the report (an integrity check the forwarder re-computes onchain). The Solana write capability then
+  consumes indices 0 and 1 (`forwarderState`, `forwarderAuthority`) — it builds those into the forwarder instruction
+  itself — and forwards only indices 2+ (your receiver-specific accounts) to your program's `on_report` CPI. So indices
+  0 and 1 must be present in the list you build (so the hash matches), even though the capability supplies them to the
+  instruction directly. `cre_docs_receiver` has no receiver-specific accounts, so its list is just `[forwarderState,
+  forwarderAuthority]`.
 </Aside>
 
 ## Step 1: Add your IDL and generate bindings
 
-1. Save the following as `contracts/solana/src/idl/data_storage.json` (or copy your own Anchor IDL into that folder).
+1. Save the following as `contracts/solana/src/idl/cre_docs_receiver.json` (or copy your own Anchor IDL into that
+   folder). This is the deployed `cre_docs_receiver` program's IDL.
 
    ```json
    {
-     "address": "64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31",
+     "address": "7k8NypziCPqVY8GYyCw7aqaR5aamFAMdH5ZaHVrZCS94",
      "metadata": {
-       "name": "data_storage",
+       "name": "cre_docs_receiver",
        "version": "0.1.0",
        "spec": "0.1.0",
-       "description": "Minimal CRE Solana write example IDL"
+       "description": "Receiver for cre-cli Solana forwarder simulation that logs a decoded UserData payload"
      },
      "instructions": [
        {
          "name": "on_report",
          "discriminator": [214, 173, 18, 221, 173, 148, 151, 208],
-         "accounts": [],
+         "accounts": [
+           { "name": "state" },
+           {
+             "name": "forwarder_authority",
+             "docs": ["PDA signer supplied by the forwarder CPI."],
+             "signer": true
+           }
+         ],
          "args": [
-           { "name": "_metadata", "type": "bytes" },
-           { "name": "payload", "type": "bytes" }
+           { "name": "metadata", "type": "bytes" },
+           { "name": "report", "type": "bytes" }
          ]
        }
      ],
-     "accounts": [],
-     "events": [],
-     "errors": [],
+     "events": [
+       {
+         "name": "ReceivedUserData",
+         "discriminator": [154, 5, 186, 144, 208, 168, 118, 242]
+       }
+     ],
+     "errors": [
+       {
+         "code": 6000,
+         "name": "InvalidForwarderAuthority",
+         "msg": "forwarder_authority is not the PDA for this state, receiver, and forwarder program"
+       },
+       {
+         "code": 6001,
+         "name": "InvalidUserData",
+         "msg": "report payload could not be decoded as UserData"
+       }
+     ],
      "types": [
+       {
+         "name": "ReceivedUserData",
+         "type": {
+           "kind": "struct",
+           "fields": [
+             { "name": "forwarder", "type": "pubkey" },
+             { "name": "forwarder_state", "type": "pubkey" },
+             { "name": "forwarder_authority", "type": "pubkey" },
+             { "name": "metadata_len", "type": "u32" },
+             { "name": "report_len", "type": "u32" },
+             { "name": "user", "type": { "defined": { "name": "UserData" } } }
+           ]
+         }
+       },
        {
          "name": "UserData",
          "type": {
@@ -89,13 +152,22 @@ your IDL and call the generated helpers for your structs when you are ready.
    }
    ```
 
+   {/* prettier-ignore */}
+   <Aside type="note" title="Why UserData is referenced by the event">
+     Anchor only emits a type into the IDL if it is referenced by an instruction argument, account, or event. Because
+     `on_report` takes the payload as raw `bytes`, `UserData` would be dropped from the IDL — and the generator would not
+     produce `WriteReportFromUserData`. `cre_docs_receiver` references `UserData` in its `ReceivedUserData` event to keep
+     it in the IDL. If your own program already takes a typed struct or exposes it via an account/event, no extra step is
+     needed.
+   </Aside>
+
 1. From your project root, generate the bindings:
 
    ```bash
-   cre generate-bindings solana
+   cre generate-bindings solana --language go
    ```
 
-   This creates `contracts/solana/src/generated/data_storage/` with a `UserData` struct and
+   This creates `contracts/solana/src/generated/cre_docs_receiver/` with a `UserData` struct and
    `WriteReportFromUserData(runtime, input, remainingAccounts, computeConfig)`.
 
 1. Sync dependencies.
@@ -116,11 +188,9 @@ your IDL and call the generated helpers for your structs when you are ready.
    {
      "schedule": "*/30 * * * * *",
      "chainSelector": "16423721717087811551",
-     "receiverProgramId": "64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31",
+     "receiverProgramId": "7k8NypziCPqVY8GYyCw7aqaR5aamFAMdH5ZaHVrZCS94",
      "forwarderProgramId": "7kuEAA3mSC1Tz8gQjnvH7bKFda9xSPRRin9SZbH49cNK",
-     "forwarderState": "5Tipz3yhTBdVsDbaBxZkrp7Gjf3brGq5SKkxReefPMP7",
-     "reportState": "HxzqwQZNyDM3Tvp9nR8v9tgJ5ZZ1Lm8LiJ8kxoyu539K",
-     "computeLimit": 200000
+     "forwarderState": "5Tipz3yhTBdVsDbaBxZkrp7Gjf3brGq5SKkxReefPMP7"
    }
    ```
 
@@ -130,8 +200,6 @@ your IDL and call the generated helpers for your structs when you are ready.
    | `receiverProgramId`  | Your receiver program (IDL address for this example)                                      |
    | `forwarderProgramId` | Forwarder program ID used for local simulation (fixed Devnet value)                       |
    | `forwarderState`     | Forwarder state account used for local simulation (fixed Devnet value)                    |
-   | `reportState`        | Writable account required by your receiver (DataAccount PDA for this example)             |
-   | `computeLimit`       | Solana compute units; must be greater than 0 for simulation                               |
 
    The workflow derives `forwarderAuthority` at runtime from
    `[]byte("forwarder")`, forwarder state bytes, and receiver program bytes under `forwarderProgramId`. When you deploy
@@ -177,8 +245,8 @@ production `forwarderProgramId`.
 ## Step 3: Write the workflow
 
 This step is a complete, pasteable workflow that performs one Solana write on a cron trigger using **generated
-bindings**. It reads config, derives the forwarder authority PDA, builds the account list the forwarder expects, and
-calls `WriteReportFromUserData()`. Replace `data_storage` / `UserData` with your generated package and struct when you
+bindings**. It reads config, derives the forwarder authority PDA, builds the `remainingAccounts` list, and calls
+`WriteReportFromUserData()`. Replace `cre_docs_receiver` / `UserData` with your generated package and struct when you
 use your own IDL.
 
 1. Save the following as `my-workflow/workflow.go`.
@@ -199,19 +267,15 @@ use your own IDL.
    	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
    	"github.com/smartcontractkit/cre-sdk-go/cre"
 
-   	"<project-name>/contracts/solana/src/generated/data_storage"
+   	"<project-name>/contracts/solana/src/generated/cre_docs_receiver"
    )
-
-   const defaultComputeLimit uint32 = 200_000
 
    type Config struct {
    	Schedule           string `json:"schedule"`
    	ChainSelector      uint64 `json:"chainSelector,string"`
    	ReceiverProgramID  string `json:"receiverProgramId"`
-   	ForwarderProgramID string `json:"forwarderProgramId"`
    	ForwarderState     string `json:"forwarderState"`
-   	ReportState        string `json:"reportState"`
-   	ComputeLimit       uint32 `json:"computeLimit"`
+   	ForwarderProgramID string `json:"forwarderProgramId"`
    }
 
    func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
@@ -222,23 +286,11 @@ use your own IDL.
    	}, nil
    }
 
-   func deriveForwarderAuthority(forwarderState, receiverProgram, forwarderProgram solanago.PublicKey) (solanago.PublicKey, error) {
-   	authority, _, err := solanago.FindProgramAddress(
-   		[][]byte{
-   			[]byte("forwarder"),
-   			forwarderState[:],
-   			receiverProgram[:],
-   		},
-   		forwarderProgram,
-   	)
-   	return authority, err
-   }
-
    func onCronTrigger(config *Config, runtime cre.Runtime, _ *cron.Payload) (string, error) {
    	client := &solana.Client{ChainSelector: config.ChainSelector}
 
-   	// NewDataStorage uses the program ID baked into the IDL (regenerate bindings when it changes).
-   	ds, err := data_storage.NewDataStorage(client)
+   	// NewCreDocsReceiver uses the program ID baked into the IDL (regenerate bindings when it changes).
+   	ds, err := cre_docs_receiver.NewCreDocsReceiver(client)
    	if err != nil {
    		return "", err
    	}
@@ -246,49 +298,70 @@ use your own IDL.
    	forwarderStatePk := solanago.MustPublicKeyFromBase58(config.ForwarderState)
    	receiverPk := solanago.MustPublicKeyFromBase58(config.ReceiverProgramID)
    	forwarderProgramPk := solanago.MustPublicKeyFromBase58(config.ForwarderProgramID)
-   	reportStatePk := solanago.MustPublicKeyFromBase58(config.ReportState)
 
-   	forwarderAuthority, err := deriveForwarderAuthority(forwarderStatePk, receiverPk, forwarderProgramPk)
+   	// Derive the forwarder_authority PDA the same way the on-chain forwarder /
+   	// receiver do: seeds = ["forwarder", forwarderState, receiverProgram],
+   	// program = forwarderProgram.
+   	forwarderAuthority, _, err := solanago.FindProgramAddress(
+   		[][]byte{
+   			[]byte("forwarder"),
+   			forwarderStatePk[:],
+   			receiverPk[:],
+   		},
+   		forwarderProgramPk,
+   	)
    	if err != nil {
    		return "", err
    	}
 
-   	// Index 0 forwarderState, 1 forwarderAuthority (derived), 2+ reportState.
+   	// remainingAccounts layout:
+   	//   index 0: forwarderState, index 1: forwarderAuthority, index 2+: receiver accounts.
+   	// The full list is hashed into the report; the Solana write capability consumes
+   	// indices 0/1 and forwards index 2+ to your program's on_report CPI.
+   	// cre_docs_receiver needs no receiver-specific accounts, so we pass just [state, authority].
    	accounts := []*solana.AccountMeta{
    		{PublicKey: forwarderStatePk[:], IsWritable: false},
    		{PublicKey: forwarderAuthority[:], IsWritable: false},
-   		{PublicKey: reportStatePk[:], IsWritable: true},
+   		// Append any receiver-specific accounts your program requires at index 2+, e.g.:
+   		// {PublicKey: myWritableStatePda[:], IsWritable: true},
    	}
 
-   	payload := data_storage.UserData{
+   	payload := cre_docs_receiver.UserData{
    		Key:   "price",
    		Value: "500000",
    	}
 
-   	runtime.Logger().Info("Submitting UserData via bindings",
-   		"key", payload.Key,
-   		"forwarderAuthority", forwarderAuthority.String(),
-   	)
+   	runtime.Logger().Info("Submitting UserData to Solana cre_docs_receiver program")
 
-   	computeLimit := config.ComputeLimit
-   	if computeLimit == 0 {
-   		computeLimit = defaultComputeLimit
-   	}
-   	computeConfig := &solana.ComputeConfig{ComputeLimit: computeLimit}
+   	// Solana simulate requires a non-nil computeConfig with computeLimit > 0
+   	computeConfig := &solana.ComputeConfig{ComputeLimit: 200_000}
 
    	result, err := ds.WriteReportFromUserData(runtime, payload, accounts, computeConfig).Await()
    	if err != nil {
    		return "", err
    	}
 
-   	runtime.Logger().Info("Write completed",
+   	runtime.Logger().Info("Solana write result",
    		"txStatus", result.GetTxStatus().String(),
-   		"errorMessage", result.GetErrorMessage(),
-   		"txSignature", result.GetTxSignature(),
+   		"receiverStatus", result.GetReceiverContractExecutionStatus().String(),
+   		"transactionFee", result.GetTransactionFee(),
    	)
-   	if msg := result.GetErrorMessage(); msg != "" {
-   		return msg, nil
+   	if sig := result.GetTxSignature(); len(sig) > 0 {
+   		// txSignature is []byte (raw 64-byte signature); convert to base58 for explorer links.
+   		var txSig solanago.Signature
+   		copy(txSig[:], sig)
+   		txHash := txSig.String()
+   		runtime.Logger().Info("Transaction broadcast",
+   			"txHash", txHash,
+   			"explorer", "https://explorer.solana.com/tx/"+txHash+"?cluster=devnet",
+   		)
+   	} else {
+   		runtime.Logger().Info("Transaction not broadcast (simulation does not submit the transaction)")
    	}
+   	if msg := result.GetErrorMessage(); msg != "" {
+   		runtime.Logger().Info("errorMessage", "msg", msg)
+   	}
+
    	return "Success", nil
    }
    ```
@@ -296,6 +369,19 @@ use your own IDL.
 ## Step 4: Run the simulation
 
 Use this step to confirm compile, trigger, and the bindings write path with `cre workflow simulate`.
+
+<Aside type="note" title="Two separate YAML files">
+  CRE uses two configuration files that live in different directories:
+
+- **`workflow.yaml`** lives inside your workflow folder (`my-workflow/workflow.yaml`). It defines workflow metadata
+  (name, registry) and points to your `main.go` and config JSON.
+- **`project.yaml`** lives at your **project root** (the directory you ran `cre init` in, one level above
+  `my-workflow/`). It defines RPC endpoints and other project-level settings per target.
+
+Both files use the same target names (e.g. `staging-settings`, `production-settings`) to link a workflow to its
+RPCs. You will add to both files in this step.
+
+</Aside>
 
 1. Create a `workflow.yaml` in your workflow folder so the CLI can find your staging target.
 
@@ -309,7 +395,8 @@ Use this step to confirm compile, trigger, and the bindings write path with `cre
        secrets-path: ""
    ```
 
-1. Add a Solana RPC endpoint to your `project.yaml` under your simulation target.
+1. Add a Solana RPC endpoint to your `project.yaml` (at your project root, **not** inside `my-workflow/`) under your
+   simulation target.
 
    ```yaml
    staging-settings:
@@ -328,30 +415,86 @@ Use this step to confirm compile, trigger, and the bindings write path with `cre
    CRE_SOLANA_PRIVATE_KEY=<your-64-byte-base58-keypair>
    ```
 
+   {/* prettier-ignore */}
+   <Aside type="caution" title="CRE_ETH_PRIVATE_KEY is also required">
+     The CRE CLI requires `CRE_ETH_PRIVATE_KEY` to be set even for Solana-only workflows — it is used for workflow
+     owner derivation, not for the Solana transaction itself. Set any valid EVM private key in your `.env`:
+
+   ```bash
+   CRE_ETH_PRIVATE_KEY=0x<your-evm-private-key>
+   ```
+
+   Without it, `cre workflow simulate` and `cre workflow deploy` will fail with
+   `CRE_ETH_PRIVATE_KEY is not set`.
+
+   </Aside>
+
 1. Run the dry-run simulation.
 
    ```bash
    cre workflow simulate my-workflow --target staging-settings
    ```
 
-   Confirm the workflow compiles, the cron trigger runs, and your USER LOGs appear. A successful onchain write
-   requires deploying to the DON with the production Keystone Forwarder (see [Step 5](#step-5-deploy-the-workflow)).
+   Because `cre_docs_receiver` is deployed and the account list matches what the forwarder expects, the write completes
+   successfully (`txStatus: SUCCESS`, `receiverStatus: SUCCESS`). Simulation does not broadcast the transaction here, so there
+   is no `txSignature` / explorer link in the dry-run.
 
    ```
    ✓ Workflow compiled
    [SIMULATION] Simulator Initialized
    [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-   [USER LOG] msg="Submitting UserData via bindings" key=price forwarderAuthority=...
-   [USER LOG] msg="Write completed" txStatus=... errorMessage=... txSignature=""
+   [USER LOG] msg="Submitting UserData to Solana cre_docs_receiver program"
+   [USER LOG] msg="Solana write result" txStatus="SUCCESS" receiverStatus="SUCCESS" transactionFee=15667
+   [USER LOG] msg="Transaction not broadcast (simulation does not submit the transaction)"
 
    ✓ Workflow Simulation Result:
-   ...
+   {
+     "$typeName": "capabilities.blockchain.solana.v1alpha.WriteReportReply",
+     "receiverContractExecutionStatus": 0,
+     "transactionFee": 15667,
+     "txStatus": 2
+   }
    ```
 
    {/* prettier-ignore */}
-   <Aside type="note" title="Simulation error: Custom:6002">
-     `Custom:6002` is a known limitation of the current simulator and will be patched in a future CLI update.
+   <Aside type="note" title="Troubleshooting write failures">
+     `Custom:6002` (`InvalidAccountHash`) means the report's account hash did not match what the forwarder computed —
+     usually because `forwarderProgramId` / `forwarderState` do not match the forwarder you are targeting, or the account
+     list you built is wrong. `Custom:6000` (`InvalidForwarderAuthority`) means the derived `forwarder_authority` PDA is
+     wrong for that state/receiver/forwarder combination. `Custom:6001` (`InvalidUserData`) means the receiver could not
+     Borsh-decode the payload into `UserData`.
    </Aside>
+
+1. (Optional) Broadcast the transaction to Solana Devnet.
+
+   By default, simulation dry-runs the write and returns no signature. Add `--broadcast` to actually submit the
+   transaction through the mock forwarder. Your `CRE_SOLANA_PRIVATE_KEY` (transmitter) pays the fee, so it must be funded
+   on Devnet.
+
+   ```bash
+   cre workflow simulate my-workflow --target staging-settings --broadcast
+   ```
+
+   This time `WriteReport` returns a real `txSignature`, and the workflow logs a `txSignature` plus an explorer link:
+
+   ```
+   [USER LOG] msg="Submitting UserData to Solana cre_docs_receiver program"
+   [USER LOG] msg="Solana write result" txStatus="SUCCESS" receiverStatus="SUCCESS" transactionFee=5000
+   [USER LOG] msg="Transaction broadcast" txSignature="c8ifuihaPd2erDuQvees1s2o8ikFmZuNF7WQE63PPGG2SXHZk5vXrHfe7nm4cj4fo7cE3Aq48ksMjP6ugPxAhqn"
+   [USER LOG] msg="explorer" explorer="https://explorer.solana.com/tx/c8ifuihaPd2erDuQvees1s2o8ikFmZuNF7WQE63PPGG2SXHZk5vXrHfe7nm4cj4fo7cE3Aq48ksMjP6ugPxAhqn?cluster=devnet"
+
+   ✓ Workflow Simulation Result:
+   {
+     "$typeName": "capabilities.blockchain.solana.v1alpha.WriteReportReply",
+     "receiverContractExecutionStatus": 0,
+     "transactionFee": 5000,
+     "txSignature": "Hkwkf/rL44luYyMfBIOJ9JgyLUUFUcMChfbqDTGcCND3zN9RziakjeWeywBkcjgXpYBRc23eVFM0BYeLcuMNBQ==",
+     "txStatus": 2
+   }
+   ```
+
+   Open the explorer link to confirm the transaction onchain: the mock forwarder is the top-level program and
+   `cre_docs_receiver` appears as a CPI target.
 
    When you are ready to run on the DON with **your** receiver, continue to [Step 5](#step-5-deploy-the-workflow).
 
@@ -361,33 +504,32 @@ A deployed workflow runs on the DON, which submits reports through the live Keys
 the [private registry](/cre/guides/operations/deploying-to-private-registry-go) for this example (CRE login session; no
 Ethereum gas for registry ops). You need [Deploy Access](/cre/account/deploy-access).
 
-You can use the `DataStorage` example receiver as-is — it's deployed on Devnet and ready to accept writes. If you have
-your own receiver program, update the IDL address, regenerate bindings, and set `receiverProgramId` to your own value
-(Go bindings use the program ID baked into the generated package for the write receiver; config is used to derive the
-forwarder authority PDA).
+You can use the `cre_docs_receiver` example receiver as-is — it's deployed on Devnet and ready to accept writes. If you
+have your own receiver program, update the IDL address, regenerate bindings, and set `receiverProgramId` to your own
+value (Go bindings use the program ID baked into the generated package for the write receiver; config is used to derive
+the forwarder authority PDA).
 
-1. Create `config.production.json`. Copy your `receiverProgramId` and `reportState` from the staging config and
-   swap in the production Keystone Forwarder addresses:
+1. Create `config.production.json`. Keep your `receiverProgramId` and swap in the production Keystone Forwarder
+   addresses:
 
    ```json
    {
      "schedule": "30 */5 * * * *",
      "chainSelector": "16423721717087811551",
-     "receiverProgramId": "64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31",
+     "receiverProgramId": "7k8NypziCPqVY8GYyCw7aqaR5aamFAMdH5ZaHVrZCS94",
      "forwarderProgramId": "CXsKEJcs25TQEYU2e5jZ8QTPE3ffMLZhH6BWHrdcCCB5",
-     "forwarderState": "8QoomCQyPSkJ8WopJbX9B4HyvrFzziwvJdU8hZE6DCr9",
-     "reportState": "HxzqwQZNyDM3Tvp9nR8v9tgJ5ZZ1Lm8LiJ8kxoyu539K",
-     "computeLimit": 290000
+     "forwarderState": "8QoomCQyPSkJ8WopJbX9B4HyvrFzziwvJdU8hZE6DCr9"
    }
    ```
 
    These are the Solana Devnet production Keystone Forwarder addresses. For Mainnet, see the
-   [forwarder address table](#production-keystone-forwarder) above. If you are using your own receiver program,
-   replace `receiverProgramId` and `reportState` with your own values. The workflow still derives
+   [forwarder address table](#production-keystone-forwarder) above. If you are using your own receiver program, replace
+   `receiverProgramId` with your own value. The workflow still derives
    `forwarderAuthority` from `[]byte("forwarder")`, forwarder state bytes, and receiver program bytes under that
    `forwarderProgramId`.
 
-1. Point a deploy target at that config and the private registry in `my-workflow/workflow.yaml`.
+1. Add a `production-settings` target to your existing `my-workflow/workflow.yaml` (append it below the
+   `staging-settings` block you created in Step 4 — do not replace the staging block).
 
    ```yaml
    production-settings:
@@ -400,7 +542,8 @@ forwarder authority PDA).
        secrets-path: ""
    ```
 
-1. Add the Solana Devnet RPC under `production-settings` in `project.yaml` (same URL as staging is fine).
+1. Add the Solana Devnet RPC under a `production-settings` block in your `project.yaml` (at your project root —
+   append it below the existing `staging-settings` block). The URL can be the same as staging.
 
 1. Deploy from your project root.
 
@@ -419,19 +562,53 @@ forwarder authority PDA).
         Status:           Active
    ```
 
-1. After the cron fires, open the workflow in the [CRE platform](https://app.chain.link/cre/workflows) (or run
-   `cre execution list my-solana-write`) and confirm node logs reach the write path:
+1. After the cron fires, check that the workflow executed successfully. You can view executions and logs in the
+   [CRE platform](https://app.chain.link/cre/workflows), or use the CLI. List recent executions:
+
+   ```bash
+   cre execution list my-solana-write
+   ```
 
    ```
-   Submitting UserData via bindings key=...
+   Executions
+
+   1. 47517057f8ecb7455ddf9eb58d4a635e96bd968158146ed1973f9591cfdc1421
+        Workflow:  my-solana-write
+        Status:    SUCCESS
+        Started:   2026-08-20 19:50:31 UTC
+        Finished:  2026-08-20 19:50:43 UTC (12s)
    ```
 
-   If WriteReport returns a Solana `txSignature`, confirm the transaction on
-   [Solana Explorer](https://explorer.solana.com/?cluster=devnet) (forwarder as the top-level program, your receiver as
-   a CPI).
+1. View the execution logs to confirm the write reached Solana:
 
-   Here is an example of a successful write from this guide's `DataStorage` receiver on Solana Devnet:
-   [view on Explorer](https://explorer.solana.com/tx/2tfcA2jKvaP3JrVaURQEPuWCLtjV8ZdzMCppCUa9a41LQoG5847MzJNJmwdepzjQHxrJak8Umr4fHebkhBMGTqFM?cluster=devnet).
+   ```bash
+   cre execution logs <execution-id>
+   ```
+
+   Each DON node executes the workflow and logs the write result. A successful execution shows all nodes reaching
+   `txStatus: SUCCESS` with a real on-chain transaction hash:
+
+   ```
+   [2026-08-20 19:50:31 UTC] [Node 1] Submitting UserData to Solana cre_docs_receiver program
+   [2026-08-20 19:50:31 UTC] [Node 6] Submitting UserData to Solana cre_docs_receiver program
+   ...
+   [2026-08-20 19:50:43 UTC] [Node 1] Solana write result:
+   [2026-08-20 19:50:43 UTC] [Node 1]   txStatus:       SUCCESS (2)
+   [2026-08-20 19:50:43 UTC] [Node 1]   receiverStatus: (n/a)
+   [2026-08-20 19:50:43 UTC] [Node 1]   transactionFee: 0 lamports
+   [2026-08-20 19:50:43 UTC] [Node 1]   txHash:         2dJiCNgbGGhoMd7LSQH9FoUCWwUSzFyP8JHDzNrfcsGZcroSt1rsVPNzgq6LbMG8vjTzJPgeoGaViSABdeqa2v62
+   [2026-08-20 19:50:43 UTC] [Node 1]   explorer:       https://explorer.solana.com/tx/2dJiCNgbGGhoMd7LSQH9FoUCWwUSzFyP8JHDzNrfcsGZcroSt1rsVPNzgq6LbMG8vjTzJPgeoGaViSABdeqa2v62?cluster=devnet
+   ```
+
+   Open the explorer link to confirm the transaction onchain: the Keystone Forwarder is the top-level program and
+   `cre_docs_receiver` appears as a CPI target. All nodes share the same `txHash` because the DON reaches consensus on
+   a single transaction.
+
+   When you are done testing, pause the workflow to stop it from running:
+
+   ```bash
+   cre workflow pause my-workflow
+   ```
 
 See [Deploying to the Private Registry](/cre/guides/operations/deploying-to-private-registry-go) for registry details, activate/pause, and CI flags.
 
@@ -441,8 +618,9 @@ When the deployed workflow runs on the DON:
 
 1. The DON nodes each execute your workflow and reach consensus on the encoded payload.
 1. A DON node calls the Keystone Forwarder program with the signed report and account list.
-1. The forwarder verifies all DON signatures.
-1. The forwarder CPIs into your program's `on_report` instruction with the decoded payload and receiver accounts.
+1. The forwarder verifies all DON signatures and re-computes the account hash over the full account list.
+1. The forwarder supplies `forwarderState` + `forwarderAuthority` and CPIs into your program's `on_report` instruction
+   with the decoded payload and your receiver-specific accounts (indices 2+).
 
 The transaction on Solana Explorer will show the forwarder program as the initial callee, with your program appearing as a CPI target.
 

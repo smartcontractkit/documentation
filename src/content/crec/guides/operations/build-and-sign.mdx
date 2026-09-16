@@ -1,0 +1,164 @@
+---
+section: crec
+title: "Build and Sign Operations"
+date: Last Modified
+metadata:
+  description: "Construct a Chainlink CRE Connect Operation from one or more Transactions, encode the calldata, and produce an EIP-712 signature ready to submit."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+A CRE Connect **operation** is a batch of one or more transactions, signed once with EIP-712 and executed atomically by your Smart Account. This guide covers the build → sign half of the lifecycle. The submit → track half is in [Submit and Track Operations](/crec/guides/operations/submit-and-track).
+
+## The data model
+
+```go
+import (
+    "math/big"
+    "github.com/ethereum/go-ethereum/common"
+    "github.com/ethereum/go-ethereum/common/hexutil"
+    "github.com/smartcontractkit/crec-sdk/transact/types"
+)
+
+op := &types.Operation{
+    ID:       big.NewInt(time.Now().Unix()),
+    Account:  common.HexToAddress("0xYourSmartAccount"),
+    Deadline: big.NewInt(0),
+    Transactions: []types.Transaction{{
+        To:    common.HexToAddress("0xTargetContract"),
+        Value: big.NewInt(0),
+        Data:  hexutil.Bytes(callData),
+    }},
+}
+```
+
+Field rules:
+
+| Field          | Notes                                                                                                                                                                                                                                                                                                                             |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ID`           | Unique-per-account nonce. Must be a non-negative integer. If you build the Operation yourself, pick any scheme that never repeats per Smart Account (a counter, a UUID-derived value). The Smart Account rejects re-used IDs. Note: `ExecuteTransactions` does not use this convention; it generates a random 128-bit ID for you. |
+| `Account`      | Address of your **Smart Account** (not your EOA / signer). This is the `verifyingContract` in the EIP-712 domain.                                                                                                                                                                                                                 |
+| `Deadline`     | Unix seconds. `0` means no expiration. The Smart Account reverts after `block.timestamp > deadline`.                                                                                                                                                                                                                              |
+| `Transactions` | At least one. Each `Transaction` is `(to, value, data)`.                                                                                                                                                                                                                                                                          |
+
+### Building calldata
+
+The SDK does not include an ABI encoder; use `go-ethereum`'s `accounts/abi`:
+
+```go
+import (
+    "strings"
+    "github.com/ethereum/go-ethereum/accounts/abi"
+)
+
+const counterABI = `[{"inputs":[{"internalType":"uint256","name":"by","type":"uint256"}],"name":"incrementBy","outputs":[],"stateMutability":"nonpayable","type":"function"}]`
+
+parsed, err := abi.JSON(strings.NewReader(counterABI))
+if err != nil { return err }
+
+callData, err := parsed.Pack("incrementBy", big.NewInt(7))
+if err != nil { return err }
+```
+
+For batched operations, append further `types.Transaction` entries with their own `callData`.
+
+## Sign with EIP-712
+
+The `transact` client embeds an `eip712.Handler` that:
+
+1. Resolves the chain ID from the chain selector (via `smartcontractkit/chain-selectors`).
+2. Builds the `TypedData` (domain `CLLSmartAccount` v1, primary type `Operation`).
+3. Hashes it (`EIP712Hash`).
+4. Asks the configured `signer.Signer` to produce a signature.
+
+You can do this in one call:
+
+```go
+import (
+    "github.com/ethereum/go-ethereum/crypto"
+    "github.com/smartcontractkit/crec-sdk/transact/signer/local"
+)
+
+pk, err := crypto.HexToECDSA(privateKeyHex) // 64-char hex, no 0x
+if err != nil { return err }
+
+ecdsa := local.NewSigner(pk)
+
+opHash, sig, err := client.Transact.SignOperation(ctx, op, ecdsa, chainSelector)
+```
+
+Or in two steps if you want to inspect/audit the hash before signing:
+
+```go
+opHash, err := client.Transact.HashOperation(op, chainSelector)
+if err != nil { return err }
+
+sig, err := client.Transact.SignOperationHash(ctx, opHash, ecdsa)
+```
+
+The returned signature is **65 bytes** (r ∥ s ∥ v), suitable for `eth_sign`-style recovery on chain.
+
+<Aside type="note" title="Domain is fixed">
+  The EIP-712 domain is hard-coded to `CLLSmartAccount` / version `1` / `verifyingContract = op.Account`. You don't
+  choose it. See [EIP-712 Signing](/crec/concepts/eip712-signing) for the type definitions.
+</Aside>
+
+## Picking the right signer
+
+Any type that implements `signer.Signer` (and `signer.TypedDataSigner`) works:
+
+| Signer          | Package                               | Use for                                 |
+| --------------- | ------------------------------------- | --------------------------------------- |
+| Local ECDSA     | `crec-sdk/transact/signer/local`      | Tests, CLIs, dev environments.          |
+| AWS KMS         | `crec-sdk/transact/signer/kms`        | Production where keys must stay in HSM. |
+| HashiCorp Vault | `crec-sdk/transact/signer/vault`      | Self-hosted secret management.          |
+| Fireblocks      | `crec-sdk/transact/signer/fireblocks` | MPC-managed keys with policy approval.  |
+| Privy           | `crec-sdk/transact/signer/privy`      | Embedded user wallets.                  |
+| Custom          | implement `signer.Signer` yourself    | Bring-your-own KMS / multisig flow.     |
+
+The signer's address must match, or be allowed by, the Smart Account's signer set. See [Manage Wallet Signers](/crec/guides/wallets/manage-signers).
+
+## Re-signing for the same operation ID
+
+`Operation.ID` is a per-account nonce. If you build an operation, sign it, then change anything (`Transactions`, `Deadline`, anything that changes the typed-data hash), you must:
+
+- Either re-sign with the same `ID` **and** make sure no copy of the original signed payload was sent. If both reach CRE Connect, the second one will be rejected on chain.
+- Or bump `ID` (e.g. `time.Now().Unix() + 1`) and sign that.
+
+Most flows just regenerate the operation from scratch.
+
+## End-to-end example
+
+```go
+op := &types.Operation{
+    ID:       big.NewInt(time.Now().Unix()),
+    Account:  smartAccount,
+    Deadline: big.NewInt(0),
+    Transactions: []types.Transaction{{
+        To:    counterAddr,
+        Value: big.NewInt(0),
+        Data:  hexutil.Bytes(callData),
+    }},
+}
+
+opHash, sig, err := client.Transact.SignOperation(ctx, op, ecdsa, chainSelector)
+if err != nil { return err }
+fmt.Printf("hash=%s sig=0x%x\n", opHash.Hex(), sig)
+```
+
+The `(op, sig)` pair is now ready to send. Continue with [Submit and Track Operations](/crec/guides/operations/submit-and-track).
+
+## Deferred signing
+
+If your signer cannot approve the operation synchronously, create a draft instead of producing the signature in this guide. A draft stores the unsigned operation in `pending_signature`, lets your approval system sign the digest later, and can be cancelled before execution.
+
+Use this for MPC policy review, human approval queues, KMS workflows, or preview-before-sign screens. See [Draft Operations](/crec/concepts/drafts) for the model and [Draft Operations: Create, Finalize, Cancel](/crec/guides/operations/drafts) for the SDK and REST flow.
+
+## Next steps
+
+- [Submit and Track Operations](/crec/guides/operations/submit-and-track): send the signed operation and watch the resulting status events.
+- [Draft Operations: Create, Finalize, Cancel](/crec/guides/operations/drafts): create an unsigned operation and finalize it later.
+- [Batch Multiple Transactions](/crec/guides/operations/batch-transactions): group several calls into a single atomic operation.
+- [Signing Transparency](/crec/guides/operations/signing-transparency): show users exactly what they're signing.
