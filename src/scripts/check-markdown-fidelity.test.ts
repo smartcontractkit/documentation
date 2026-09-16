@@ -86,9 +86,19 @@ describe("Markdown fidelity execution modes", () => {
     expect(parseCliArguments(["--path", "cre/example", "--path", "ccip/example"])).toEqual({
       mode: "focused",
       paths: ["ccip/example", "cre/example"],
+      warnOnly: false,
     })
     expect(determineExitCode("focused", [finding("degraded", "lang=default;transform=fallback")])).toBe(1)
     expect(determineExitCode("focused", [finding("unsupported", "lang=default;diagnostic=1;Widget")])).toBe(1)
+  })
+
+  test("--warn-only is accepted with or without --path", () => {
+    expect(parseCliArguments(["--warn-only"])).toEqual({ mode: "full-corpus", paths: [], warnOnly: true })
+    expect(parseCliArguments(["--path", "cre/example", "--warn-only"])).toEqual({
+      mode: "focused",
+      paths: ["cre/example"],
+      warnOnly: true,
+    })
   })
 
   test.each([
@@ -99,7 +109,11 @@ describe("Markdown fidelity execution modes", () => {
     ],
     ["src/content/cre/getting-started/cli-installation/windows.mdx", "cre/getting-started/cli-installation/windows"],
   ])("maps source path %s to production request path", (sourcePath, requestPath) => {
-    expect(parseCliArguments(["--path", sourcePath])).toEqual({ mode: "focused", paths: [requestPath] })
+    expect(parseCliArguments(["--path", sourcePath])).toEqual({
+      mode: "focused",
+      paths: [requestPath],
+      warnOnly: false,
+    })
   })
 
   test.each([
@@ -137,6 +151,25 @@ describe("Markdown fidelity execution modes", () => {
       expect(report.findings.every((candidate) => candidate.path === requestPath)).toBe(true)
       expect(report.findings.some((candidate) => candidate.occurrence === "lang=default;artifact")).toBe(false)
       expect(JSON.parse(await fs.readFile(reportPath, "utf8"))).toMatchObject({ pathCount: 1 })
+    } finally {
+      await fs.rm(directory, { recursive: true, force: true })
+    }
+  })
+
+  test("--warn-only reports blockers but exits 0", async () => {
+    const directory = await fs.mkdtemp(path.join(os.tmpdir(), "markdown-fidelity-"))
+    const reportPath = path.join(directory, "report.json")
+    try {
+      const sourcePath = "src/content/data-streams/reference/report-schema-v11.mdx"
+      const blocking = await runMarkdownFidelity(["--path", sourcePath], { reportPath })
+      const warned = await runMarkdownFidelity(["--warn-only", "--path", sourcePath], { reportPath })
+
+      expect(blocking.blockers.length).toBeGreaterThan(0)
+      expect(blocking.exitCode).toBe(1)
+      expect(blocking.warnOnly).toBe(false)
+      expect(warned.blockers.length).toBe(blocking.blockers.length)
+      expect(warned.exitCode).toBe(0)
+      expect(warned.warnOnly).toBe(true)
     } finally {
       await fs.rm(directory, { recursive: true, force: true })
     }

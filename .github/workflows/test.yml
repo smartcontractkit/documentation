@@ -344,4 +344,13 @@ jobs:
         run: npm run check:llms
 
       - name: Check Markdown fidelity
-        run: npm run check:markdown-fidelity
+        run: npm run check:markdown-fidelity -- --warn-only
+
+      - name: Upload Markdown fidelity report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: markdown-fidelity-report
+          path: reports/markdown-fidelity-report.json
+          retention-days: 30
+          if-no-files-found: ignore

@@ -1595,9 +1595,14 @@ function cliRequestPath(value: string): string | null {
   return normalizeMarkdownPath(value)
 }
 
-export function parseCliArguments(argv: readonly string[]): { mode: RunMode; paths: string[] } {
+export function parseCliArguments(argv: readonly string[]): { mode: RunMode; paths: string[]; warnOnly: boolean } {
   const paths: string[] = []
+  let warnOnly = false
   for (let index = 0; index < argv.length; index += 1) {
+    if (argv[index] === "--warn-only") {
+      warnOnly = true
+      continue
+    }
     if (argv[index] !== "--path") throw new Error(`Unknown argument: ${argv[index]}`)
     const value = argv[index + 1]
     if (!value || value.startsWith("--")) throw new Error("--path requires a value")
@@ -1606,7 +1611,9 @@ export function parseCliArguments(argv: readonly string[]): { mode: RunMode; pat
     paths.push(normalized)
     index += 1
   }
-  return paths.length ? { mode: "focused", paths: [...new Set(paths)].sort() } : { mode: "full-corpus", paths: [] }
+  return paths.length
+    ? { mode: "focused", paths: [...new Set(paths)].sort(), warnOnly }
+    : { mode: "full-corpus", paths: [], warnOnly }
 }
 
 function sourceRoute(relativePath: string): string {
@@ -1870,7 +1877,7 @@ export async function checkPath(
 export async function runMarkdownFidelity(
   argv: readonly string[],
   options: { reportPath?: string; contentRoot?: string } = {}
-): Promise<{ report: FidelityReport; exitCode: 0 | 1; blockers: FidelityFinding[] }> {
+): Promise<{ report: FidelityReport; exitCode: 0 | 1; blockers: FidelityFinding[]; warnOnly: boolean }> {
   const parsed = parseCliArguments(argv)
   const baselineIdentities = parsed.mode === "full-corpus" ? await loadBaseline() : new Set<string>()
   const paths = parsed.mode === "focused" ? parsed.paths : await collectCorpusPaths(options.contentRoot)
@@ -1901,20 +1908,31 @@ export async function runMarkdownFidelity(
   await fs.mkdir(path.dirname(reportPath), { recursive: true })
   await fs.writeFile(reportPath, serializeReport(report), "utf8")
   const blockers = blockingFindings(parsed.mode, report.findings, baselineIdentities)
-  return { report, exitCode: blockers.length > 0 ? 1 : 0, blockers }
+  return {
+    report,
+    exitCode: parsed.warnOnly || blockers.length === 0 ? 0 : 1,
+    blockers,
+    warnOnly: parsed.warnOnly,
+  }
 }
 
 async function main(): Promise<void> {
-  const { report, exitCode, blockers } = await runMarkdownFidelity(process.argv.slice(2))
+  const { report, exitCode, blockers, warnOnly } = await runMarkdownFidelity(process.argv.slice(2))
   const counts = Object.entries(report.counts)
     .map(([status, count]) => `${status}=${count}`)
     .join(" ")
   console.log(`Markdown fidelity: paths=${report.pathCount} ${counts}`)
   if (blockers.length > 0) {
-    console.error(`Markdown fidelity failed: ${blockers.length} new finding(s)`)
+    const label = warnOnly ? "warning" : "failed"
+    console.error(`Markdown fidelity ${label}: ${blockers.length} new finding(s)`)
     for (const finding of blockers) {
       const detail = finding.reason ?? finding.expected ?? finding.occurrence
       console.error(`${finding.path}: ${finding.status} ${detail}`)
+    }
+    if (warnOnly && process.env.GITHUB_ACTIONS === "true") {
+      console.error(
+        `::warning::Markdown fidelity found ${blockers.length} new finding(s). The check is warn-only and does not fail CI.`
+      )
     }
   }
   process.exitCode = exitCode
