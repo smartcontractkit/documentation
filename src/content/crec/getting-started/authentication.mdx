@@ -1,0 +1,191 @@
+---
+section: crec
+title: "Authentication"
+date: Last Modified
+metadata:
+  description: "Initialize the Chainlink CRE Connect client with your API key, configure optional parameters, and run a ListNetworks smoke test to confirm connectivity."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+import CrecCommon from "@features/crec/common/CrecCommon.astro"
+
+<CrecCommon callout="beta" />
+
+CRE Connect uses a single header, `Authorization: Apikey <key>`, for every request. The SDK attaches that header automatically once you construct a client.
+
+## Environment variables
+
+Throughout these docs, code samples and `curl` snippets read from three environment variables. Export them once and the rest of the examples will work as-is:
+
+```bash
+export CREC_BASE_URL="https://cre-connect.api.chain.link/v1"
+export CREC_API_KEY="<your-api-key>"
+export CREC_ORG_ID="<your-org-id>"   # e.g. org_example00000000000, see Prerequisites
+```
+
+<Aside type="note" title="REST auth header">
+Both the Go SDK and direct REST calls use the same header: `Authorization: Apikey <key>`. The SDK sets it for you; for `curl` you set it yourself. See [REST API](/crec/reference/rest-api) for details.
+</Aside>
+
+## Construct a client
+
+```go
+package main
+
+import (
+    "log"
+    "os"
+
+    "github.com/smartcontractkit/crec-sdk"
+)
+
+func main() {
+    apiKey := os.Getenv("CREC_API_KEY")
+    if apiKey == "" {
+        log.Fatal("CREC_API_KEY must be set")
+    }
+    orgID := os.Getenv("CREC_ORG_ID")
+    if orgID == "" {
+        log.Fatal("CREC_ORG_ID must be set")
+    }
+
+    client, err := crec.NewClient(
+        "https://cre-connect.api.chain.link/v1",
+        apiKey,
+        crec.WithOrgID(orgID),
+    )
+    if err != nil {
+        log.Fatalf("failed to construct CREC client: %v", err)
+    }
+
+    _ = client
+}
+```
+
+`NewClient` validates required inputs and applies these defaults:
+
+| Concern                                          | Default                                                                                         |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| HTTP client                                      | `http.DefaultClient`                                                                            |
+| Logger                                           | `slog.Default()`                                                                                |
+| Off-Chain Reporting (OCR) signature verification | Enabled, with the production DON signer set and `DefaultMinRequiredSignatures` (4)              |
+| Event-hash binding                               | **Off by default: you must opt in** with `crec.WithOrgID(...)` or `crec.WithWorkflowOwner(...)` |
+| Watcher polling                                  | `PollInterval` 2s, `EventualConsistencyWindow` 2s (override with `WithWatcherPolling`)          |
+
+It returns sentinel errors for the two unrecoverable misconfigurations:
+
+- `crec.ErrBaseURLRequired`: the base URL was empty.
+- `crec.ErrAPIKeyRequired`: the API key was empty.
+
+<Aside type="caution" title="WithOrgID is required for Events.Verify">
+  This is a deliberate guardrail: verifying the OCR signatures alone is not enough; the SDK must also confirm each event
+  hash is bound to your tenant's workflow owner. See [Verify Event Signatures](/crec/guides/events/verify-signatures)
+  for multi-org and per-event variants.
+</Aside>
+
+## Apply options
+
+Options are applied in order; later options override earlier ones.
+
+```go
+import (
+    "log/slog"
+    "net/http"
+    "os"
+    "time"
+
+    "github.com/smartcontractkit/crec-sdk"
+)
+
+logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
+client, err := crec.NewClient(
+    "https://cre-connect.api.chain.link/v1",
+    os.Getenv("CREC_API_KEY"),
+    crec.WithOrgID(os.Getenv("CREC_ORG_ID")),
+    crec.WithLogger(logger),
+    crec.WithHTTPClient(&http.Client{Timeout: 30 * time.Second}),
+    crec.WithWatcherPolling(5*time.Second, 10*time.Second),
+)
+```
+
+The full set of options is documented in the [SDK Configuration](/crec/reference/sdk-configuration) reference. For event verification specifically, see [Verify Event Signatures](/crec/guides/events/verify-signatures).
+
+<Aside type="caution" title="Skipping the default signer set">
+  `crec.WithoutEventVerification()` skips the default signer-set backfill: the client ends up with no signers and
+  verification calls fail with `events.ErrVerificationNotConfigured`. It does not override signers configured explicitly
+  via `WithDONConfig` or `WithEventVerification`. Use it for testing and trusted-network scenarios only; in production,
+  configure your DON's signer set so the SDK can tell a real DON-signed event from a forged one.
+</Aside>
+
+## Smoke test: `ListNetworks`
+
+`ListNetworks` performs a single authenticated `GET /networks` and returns the list of networks your tenant can use. It confirms in one call that your client, your API key, and the CRE Connect endpoint are all healthy.
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "os"
+
+    "github.com/smartcontractkit/crec-sdk"
+)
+
+func main() {
+    client, err := crec.NewClient(
+        "https://cre-connect.api.chain.link/v1",
+        os.Getenv("CREC_API_KEY"),
+        crec.WithOrgID(os.Getenv("CREC_ORG_ID")),
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    networks, hasMore, err := client.ListNetworks(context.Background())
+    if err != nil {
+        log.Fatalf("ListNetworks failed: %v", err)
+    }
+
+    for _, n := range networks {
+        fmt.Printf("- %-30s  family=%s  chainID=%s  selector=%s\n",
+            n.Name, n.ChainFamily, n.ChainId, n.ChainSelector)
+    }
+    if hasMore {
+        fmt.Println("(more results available: paginate)")
+    }
+}
+```
+
+A successful run prints something like:
+
+```text
+- Ethereum Mainnet               family=evm  chainID=1     selector=5009297550715157269
+- Base Sepolia                   family=evm  chainID=84532 selector=...
+```
+
+If you instead see an authentication error, double-check:
+
+- The base URL points to the environment your key was issued for.
+- The key is the **full** value (no leading/trailing whitespace, no missing characters).
+- Your machine has outbound network access to the API host.
+
+If the request reaches the server but fails with a non-200 status, the SDK wraps the error with `crec.ErrListNetworks`:
+
+```go
+if errors.Is(err, crec.ErrListNetworks) {
+    // network reachable, but request was rejected: inspect logs
+}
+```
+
+Once `ListNetworks` returns at least one network, you have everything needed to move on to [Quickstart: Watch On-Chain Events](/crec/getting-started/quickstart-watch-events).
+
+## Related
+
+- [SDK Configuration Options](/crec/reference/sdk-configuration): every functional option on `crec.NewClient`.
+- [Verify Event Signatures](/crec/guides/events/verify-signatures): what `WithOrgID` enables.
+- [Quickstart: Watch On-Chain Events](/crec/getting-started/quickstart-watch-events): the next step.

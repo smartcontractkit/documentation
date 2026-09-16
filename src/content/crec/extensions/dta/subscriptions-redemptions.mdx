@@ -1,0 +1,255 @@
+---
+section: crec
+title: "DTA Subscriptions and Redemptions"
+date: Last Modified
+metadata:
+  description: "Use the DTA v2 extension to request subscriptions (with optional token approval), request redemptions, and drive the request-processing lifecycle."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="DTA semantics live in the DTA standard docs">
+  What a subscription / redemption is, the [request
+  lifecycle](https://docs.chain.link/dta-technical-standard/concepts/request-lifecycle) (`Pending → Processing →
+  Processed / Canceled / Failed`), [NAV
+  TTL](https://docs.chain.link/dta-technical-standard/reference/glossary#nav-ttl-net-asset-value-time-to-live) behavior,
+  and the [settlement models](https://docs.chain.link/dta-technical-standard/concepts/payment-modes) are documented in
+  the **[DTA technical standard](https://docs.chain.link/dta-technical-standard/)**. This page is the **CRE Connect SDK
+  reference** for those flows: which Go method to call, what payload it produces, what event you should expect back.
+</Aside>
+
+This page covers the SDK calls for the investor-facing DTA flows, `requestSubscription`, `requestRedemption`, and `cancelDistributorRequest`, and the fund-admin operations that drive a request through to settlement (`processDistributorRequest`, `completeRequestProcessing`).
+
+## Prerequisites
+
+Before any subscription or redemption can succeed, the actors and fund must be set up per the [DTA standard](https://docs.chain.link/dta-technical-standard/actors). In SDK terms:
+
+- The fund admin must be registered (`PrepareRegisterFundAdminOperation`; see [Fund & Distributor Management](/crec/extensions/dta/fund-and-distributors)).
+- The fund token must be registered and enabled.
+- The distributor must be registered and authorised for the fund token.
+
+You also need the extension constructed:
+
+```go
+import (
+    dtaop "github.com/smartcontractkit/crec-sdk-ext-dta/v2/operations"
+)
+
+ext, err := dtaop.New(&dtaop.Options{
+    AccountAddress:              smartAccount.Hex(),
+    DTARequestManagementAddress: mgmtAddr.Hex(),
+    DTARequestSettlementAddress: settleAddr.Hex(),
+})
+```
+
+## Request a subscription
+
+Two flavours: with and without an inline token approval.
+
+### Without approval (token already approved)
+
+```go
+op, err := ext.PrepareRequestSubscriptionOperation(
+    fundAdminAddr,
+    fundTokenId,    // [32]byte
+    amount,         // *big.Int: payment-token units
+    referenceID,    // [32]byte: your idempotency key
+)
+if err != nil { return err }
+
+opr, err := client.Transact.ExecuteOperation(ctx, channelID, signer, op, chainSelector)
+```
+
+Underlying call:
+
+`DTARequestManagement.requestSubscription(fundAdminAddr, fundTokenId, amount, referenceID)`
+
+Use this when the investor's Smart Account has previously approved the management contract for `amount`.
+
+### With inline `approve` (recommended)
+
+For first-time subscriptions or whenever the existing allowance is insufficient, batch `approve` and `requestSubscription` into a single atomic operation:
+
+```go
+op, err := ext.PrepareRequestSubscriptionWithTokenApprovalOperation(
+    fundAdminAddr,
+    fundTokenId,
+    amount,
+    referenceID,
+    paymentTokenAddress, // ERC-20 used for payment (e.g. USDC)
+)
+```
+
+The returned operation contains **two transactions**:
+
+1. `paymentToken.approve(managementAddr, amount)`
+2. `DTARequestManagement.requestSubscription(fundAdminAddr, fundTokenId, amount, referenceID)`
+
+Either both succeed atomically or neither does; see [Batch Multiple Transactions](/crec/guides/operations/batch-transactions).
+
+### Resulting events
+
+A successful `requestSubscription` emits one `SubscriptionRequested` event:
+
+```go
+type SubscriptionRequested struct {
+    FundAdminAddr   common.Address
+    FundTokenId     common.Hash
+    DistributorAddr common.Address
+    ReferenceID     common.Hash
+    RequestId       common.Hash
+    Amount          *big.Int
+    CreatedAt       uint64
+}
+```
+
+Persist `RequestId`: it threads through the entire request lifecycle.
+
+## Request a redemption
+
+```go
+op, err := ext.PrepareRequestRedemptionOperation(
+    fundAdminAddr,
+    fundTokenId,
+    shares,         // *big.Int: fund-token units
+    referenceID,
+)
+```
+
+Underlying call:
+
+`DTARequestManagement.requestRedemption(fundAdminAddr, fundTokenId, shares, referenceID)`
+
+The Smart Account must already hold (or be approved for) the fund tokens being redeemed. Build a separate batched operation if you need to combine `approve(fundToken, mgmt, shares) + requestRedemption(...)`.
+
+### Resulting events
+
+```go
+type RedemptionRequested struct {
+    FundAdminAddr   common.Address
+    FundTokenId     common.Hash
+    DistributorAddr common.Address
+    ReferenceID     common.Hash
+    RequestId       common.Hash
+    Shares          *big.Int
+    CreatedAt       uint64
+}
+```
+
+## Cancel a request
+
+Investors (or the distributor on their behalf) can cancel a request before it is picked up:
+
+```go
+op, err := ext.PrepareCancelDistributorRequestOperation(requestId)
+```
+
+Underlying call: `DTARequestManagement.cancelDistributorRequest(requestId)`. Emits `DistributorRequestCanceled`:
+
+```go
+type DistributorRequestCanceled struct {
+    FundAdminAddr   common.Address
+    FundTokenId     common.Hash
+    DistributorAddr common.Address
+    RequestId       common.Hash
+}
+```
+
+A cancelled request cannot be reopened: re-issue with a fresh `referenceID` if needed.
+
+## Process a request (fund admin)
+
+The fund admin's worker picks up an open request:
+
+```go
+op, err := ext.PrepareProcessDistributorRequestOperation(requestId)
+```
+
+Underlying call: `DTARequestManagement.processDistributorRequest(requestId)`. Emits `DistributorRequestProcessing`:
+
+```go
+type DistributorRequestProcessing struct {
+    FundAdminAddr   common.Address
+    FundTokenId     common.Hash
+    DistributorAddr common.Address
+    RequestId       common.Hash
+    Shares          *big.Int
+    Amount          *big.Int
+}
+```
+
+This event is enriched with on-chain reference data (`distributor_request`, `fund_token_data`); see [DTA Events](/crec/extensions/dta/events).
+
+## Complete a request (settlement)
+
+After settlement processing succeeds (or fails) on the fund side:
+
+```go
+op, err := ext.PrepareCompleteRequestProcessingOperation(
+    requestId,
+    success,        // bool: true if shares were minted / payment was made
+    errBytes,       // []byte: abi-encoded revert reason if !success
+    revertOnErr,    // bool: true to bubble error up to the caller
+)
+```
+
+Underlying call: `DTARequestSettlement.completeRequestProcessing(requestId, success, err, revertOnErr)`. Emits `DistributorRequestProcessed`:
+
+```go
+type DistributorRequestProcessed struct {
+    RequestId common.Hash
+    Shares    *big.Int
+    Status    RequestStatus
+    Error     []byte
+}
+```
+
+`Status` is the [DTA request state machine](https://docs.chain.link/dta-technical-standard/concepts/request-lifecycle), surfaced from the Solidity enum as a Go `uint8`. The SDK exposes named constants for every value:
+
+| Constant                  | Standard state                                                                                     |
+| ------------------------- | -------------------------------------------------------------------------------------------------- |
+| `RequestStatusNone`       | Zero value (request not yet recorded)                                                              |
+| `RequestStatusPending`    | [Pending](https://docs.chain.link/dta-technical-standard/concepts/request-lifecycle#pending)       |
+| `RequestStatusProcessing` | [Processing](https://docs.chain.link/dta-technical-standard/concepts/request-lifecycle#processing) |
+| `RequestStatusProcessed`  | [Processed](https://docs.chain.link/dta-technical-standard/concepts/request-lifecycle#processed)   |
+| `RequestStatusCanceled`   | [Canceled](https://docs.chain.link/dta-technical-standard/concepts/request-lifecycle#canceled)     |
+| `RequestStatusFailed`     | [Failed](https://docs.chain.link/dta-technical-standard/concepts/request-lifecycle#failed)         |
+
+For the full state diagram and NAV-TTL behavior (manual vs automatic processing), see the [request lifecycle](https://docs.chain.link/dta-technical-standard/concepts/request-lifecycle) page.
+
+## Where the SDK fits in the standard's flow
+
+The [DTA standard](https://docs.chain.link/dta-technical-standard/how-it-works) describes a four-step subscription flow (Request Submission → NAV Update → Request Processing → Token Minting & Escrow → Settlement). The CRE Connect SDK is the **submission and observation layer** for that flow:
+
+| Standard step              | SDK call                                                                    | Resulting event (decoded via `dtav2.DecodeFromEvent`)                                           |
+| -------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Request Submission         | `PrepareRequestSubscriptionWithTokenApprovalOperation` + `ExecuteOperation` | `SubscriptionRequested`                                                                         |
+| Request Processing (admin) | `PrepareProcessDistributorRequestOperation` + `ExecuteOperation`            | `DistributorRequestProcessing`                                                                  |
+| Settlement completion      | `PrepareCompleteRequestProcessingOperation` + `ExecuteOperation`            | `DistributorRequestProcessed` (+ `DTASettlementOpened` / `DTASettlementClosed` for cross-chain) |
+
+Subscribe to these events via the `dta.v2` service (`Service: "dta.v2"` on `Watchers.CreateWithService`); see [DTA Events](/crec/extensions/dta/events) for every payload shape.
+
+## Idempotency with `referenceID`
+
+Always pass a stable `referenceID` (a 32-byte hash of your client-side request ID). The contract uses it to detect duplicates and to surface the chain-side `RequestId` back to your application via the emitted event.
+
+```go
+import "github.com/ethereum/go-ethereum/crypto"
+
+referenceID := crypto.Keccak256Hash([]byte(yourInternalRequestUUID))
+var refArr [32]byte
+copy(refArr[:], referenceID.Bytes())
+```
+
+<Aside type="caution" title="Pre-approval matters">
+  A `requestSubscription` will revert if the management contract is not approved for `amount` of the payment token. Use
+  `PrepareRequestSubscriptionWithTokenApprovalOperation` unless you are absolutely certain the allowance is sufficient.
+</Aside>
+
+## Next steps
+
+- [Fund & Distributor Management](/crec/extensions/dta/fund-and-distributors): set up admins, tokens, and distributors before subscribing.
+- [DTA Events](/crec/extensions/dta/events): full event reference, including settlement events.
+- [Submit and Track Operations](/crec/guides/operations/submit-and-track): drive the operation through to `confirmed`.

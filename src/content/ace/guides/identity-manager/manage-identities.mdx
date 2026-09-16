@@ -1,0 +1,332 @@
+---
+section: ace
+title: "Managing Identities"
+date: Last Modified
+metadata:
+  description: "Register, update, and manage cross-chain identities (CCIDs) in Chainlink ACE using the Platform UI or the Coordinator API."
+  datePublished: "2026-03-31"
+  lastModified: "2026-04-06"
+---
+
+import { Aside, MethodTabs } from "@components"
+
+This guide covers how to register, view, update, and archive cross-chain identities (CCIDs) using the ACE Platform UI or the Coordinator API. Identities are the foundation of ACE's credential system — every credential is issued against an identity.
+
+<Aside type="note">
+  This page focuses on identity management. For related workflows, see [Managing
+  Registries](/ace/guides/identity-manager/manage-registries), [Managing Credential
+  Types](/ace/guides/identity-manager/manage-credential-types), and [Managing
+  Credentials](/ace/guides/identity-manager/manage-credentials).
+</Aside>
+
+## What are identities (CCIDs)?
+
+A **cross-chain identity (CCID)** aggregates multiple wallet addresses across EVM chains into a single logical entity. Rather than treating each address on each chain as a separate user, ACE maps them all to one CCID. Credentials issued against that CCID are then valid for every linked address on every chain — no re-issuance or bridging required.
+
+Each identity includes:
+
+- **Title** — A human-readable label for internal use only (e.g., "Jane Doe"). This value is never written on-chain.
+- **Entity ID** — A unique external identifier that ties the identity back to your system of record (e.g., a KYC provider user ID). This value must be unique within a registry.
+- **Registry** — The registry the identity belongs to.
+- **On-chain identities** — One or more wallet address + chain selector pairs that map to this CCID on-chain.
+
+For a deeper look at how CCIDs work, how they are generated, and the privacy considerations involved, see [Cross-Chain Identity](/ace/concepts/cross-chain-identity).
+
+## Register an identity
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Identity Manager** and click on the registry you want to add an identity to.
+    1. In the **Identities** tab, click **+ Add identity**.
+    1. **Step 1 — Identity details:** Enter an alias and optional description for this identity. This metadata is for internal use only and is never written on-chain.
+    1. **Step 2 — Add wallets:** Add the wallet address(es) for this identity on each chain where you need them. Your registry must be deployed on these chains.
+    1. **Step 3 — Assign credentials (optional):** Optionally assign credentials to this identity, along with an optional expiration date for each.
+  </Fragment>
+  <Fragment slot="api">
+    Send a `POST` request to `/identities`:
+
+    ```bash
+    curl -X POST "https://ace.api.chain.link/v1/identities" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "title": "Jane Doe",
+        "entity_id": "jane-doe-001",
+        "registry_id": "a1b2c3d4-5678-9abc-def0-1234567890ab",
+        "description": "Jane Doe's multi-chain wallets",
+        "onchain_identities": [
+          {
+            "chain_selector": "16015286601757825753",
+            "address": "0x1234567890abcdef1234567890abcdef12345678"
+          },
+          {
+            "chain_selector": "3478487238524512106",
+            "address": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+          }
+        ]
+      }'
+    ```
+
+    You can also issue credentials inline at creation time by including a `credentials` array. This is useful when you already have the credential types and want to skip a separate issuance step:
+
+    ```bash
+    curl -X POST "https://ace.api.chain.link/v1/identities" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "title": "Jane Doe",
+        "entity_id": "jane-doe-001",
+        "registry_id": "a1b2c3d4-5678-9abc-def0-1234567890ab",
+        "onchain_identities": [
+          {
+            "chain_selector": "16015286601757825753",
+            "address": "0x1234567890abcdef1234567890abcdef12345678"
+          }
+        ],
+        "credentials": [
+          {
+            "credential_type_id": "f0e1d2c3-b4a5-6789-0123-456789abcdef",
+            "expires_at": 1800000000
+          }
+        ]
+      }'
+    ```
+
+    See [Managing Credentials](/ace/guides/identity-manager/manage-credentials) for the full credential issuance workflow.
+
+  </Fragment>
+</MethodTabs>
+
+## Bulk import identities
+
+When onboarding many users at once, use the batch endpoint to create multiple identities in a single atomic request. Each identity in the batch follows the same schema as the single-create endpoint, including the optional `credentials` array — so you can register identities and issue credentials in one call.
+
+This feature is **API-only**. In the Platform UI, the **Bulk import via API** option under **+ Add identity** links to this documentation.
+
+Send a `POST` request to `/identities/batch`:
+
+```bash
+curl -X POST "https://ace.api.chain.link/v1/identities/batch" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "identities": [
+      {
+        "title": "Identity A",
+        "entity_id": "user-001",
+        "registry_id": "<YOUR_REGISTRY_ID>",
+        "onchain_identities": [
+          {
+            "address": "0x1111111111111111111111111111111111111111",
+            "chain_selector": "16015286601757825753"
+          }
+        ],
+        "credentials": [
+          {
+            "credential_type_id": "<YOUR_CREDENTIAL_TYPE_ID>",
+            "expires_at": 1800000000
+          }
+        ]
+      },
+      {
+        "title": "Identity B",
+        "entity_id": "user-002",
+        "registry_id": "<YOUR_REGISTRY_ID>",
+        "onchain_identities": [
+          {
+            "address": "0x2222222222222222222222222222222222222222",
+            "chain_selector": "16015286601757825753"
+          },
+          {
+            "address": "0x3333333333333333333333333333333333333333",
+            "chain_selector": "3478487238524512106"
+          }
+        ]
+      }
+    ]
+  }'
+```
+
+The `credentials` array is optional on each identity. The second identity in this example is created without credentials.
+
+<Aside type="caution" title="Atomic operation">
+  Batch creation is all-or-nothing. If any identity in the batch fails validation, the entire request is rejected and no
+  identities are created. Verify each entry before submitting.
+</Aside>
+
+## View and search identities
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Identity Manager** and click on the registry you want to browse.
+    1. The **Identities** tab displays a list of all identities with their alias, CCID, and the networks they are deployed on. You can search by name or filter by network using the controls at the top.
+    1. Click on any identity to view its details:
+       - **Credentials** — the credentials assigned to this identity.
+       - **Wallets** — the wallet addresses registered for this identity on each network.
+  </Fragment>
+  <Fragment slot="api">
+    Send a `GET` request to `/identities`:
+
+    ```bash
+    curl -X GET "https://ace.api.chain.link/v1/identities?page=1&page_size=25&include_onchains=true" \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    To search for identities by title, use the `query` parameter:
+
+    ```bash
+    curl -X GET "https://ace.api.chain.link/v1/identities?query=jane&include_onchains=true" \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    To retrieve a specific identity by ID:
+
+    ```bash
+    curl -X GET "https://ace.api.chain.link/v1/identities/98765432-10fe-dcba-9876-543210fedcba" \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+## Update an identity
+
+You can update an identity's title, description, and on-chain address mappings. ACE offers two update approaches: full replacement and partial update.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. Open the identity detail page (see [View and search identities](#view-and-search-identities) above).
+    1. Click the **Edit** button next to the alias name.
+    1. A drawer opens where you can edit the alias and description.
+
+    <Aside type="note">
+      Updating on-chain wallet mappings is not available through the Platform UI. Use the **API** tab to add or remove wallet addresses.
+    </Aside>
+
+  </Fragment>
+  <Fragment slot="api">
+    ### Full update (PUT)
+
+    A `PUT` request replaces the identity's mutable fields entirely. The `onchain_identities` array you provide becomes the complete set of address mappings — any existing mappings not included in the request are removed.
+
+    ```bash
+    curl -X PUT "https://ace.api.chain.link/v1/identities/98765432-10fe-dcba-9876-543210fedcba" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "title": "Jane Doe (Updated)",
+        "onchain_identities": [
+          {
+            "chain_selector": "16015286601757825753",
+            "address": "0x1234567890abcdef1234567890abcdef12345678"
+          },
+          {
+            "chain_selector": "3478487238524512106",
+            "address": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+          },
+          {
+            "chain_selector": "10344971235874465080",
+            "address": "0x5555555555555555555555555555555555555555"
+          }
+        ]
+      }'
+    ```
+
+    <Aside type="caution" title="Full replacement">
+      `PUT` replaces the entire `onchain_identities` list. To add a new chain, include all existing address mappings plus the
+      new one. Omitting an existing mapping removes it.
+    </Aside>
+
+    ### Partial update (PATCH)
+
+    A `PATCH` request updates only the fields you include. Use this when you want to change the title or description without touching the on-chain mappings.
+
+    ```bash
+    curl -X PATCH "https://ace.api.chain.link/v1/identities/98765432-10fe-dcba-9876-543210fedcba" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "title": "Jane Doe — Primary",
+        "description": "Updated description for primary treasury wallets"
+      }'
+    ```
+
+    <Aside type="note">
+      The `PATCH` endpoint treats `status` changes and field updates as mutually exclusive. You cannot update the title and
+      archive the identity in the same request. See [Archive an identity](#archive-an-identity) for status changes.
+    </Aside>
+
+  </Fragment>
+</MethodTabs>
+
+## Cross-chain identity mapping
+
+A single CCID can span as many chains and addresses as needed. This is the core value proposition of ACE's identity model: one credential verification applies everywhere.
+
+For example, an entity operating wallets on Ethereum Sepolia, Arbitrum Sepolia, and Base Sepolia would have a single identity with three on-chain mappings:
+
+```bash
+curl -X POST "https://ace.api.chain.link/v1/identities" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Multi-Chain Operator",
+    "entity_id": "operator-xyz-007",
+    "registry_id": "a1b2c3d4-5678-9abc-def0-1234567890ab",
+    "onchain_identities": [
+      {
+        "chain_selector": "16015286601757825753",
+        "address": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      {
+        "chain_selector": "3478487238524512106",
+        "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      {
+        "chain_selector": "10344971235874465080",
+        "address": "0xcccccccccccccccccccccccccccccccccccccccc"
+      }
+    ]
+  }'
+```
+
+| Chain            | Chain Selector         | Address         |
+| :--------------- | :--------------------- | :-------------- |
+| Ethereum Sepolia | `16015286601757825753` | `0xaaaa...aaaa` |
+| Arbitrum Sepolia | `3478487238524512106`  | `0xbbbb...bbbb` |
+| Base Sepolia     | `10344971235874465080` | `0xcccc...cccc` |
+
+All three addresses resolve to the same CCID. A credential issued against this identity — such as a KYC attestation — is valid for all three addresses across all three chains. When any of these addresses interacts with a policy-protected contract, the policy resolves the address to the shared CCID and checks credentials from there.
+
+To add or remove chains later, use the [full update (PUT)](#full-update-put) endpoint with the updated list of on-chain identities.
+
+## Archive an identity
+
+Archiving marks an identity as inactive. Archived identities are retained for audit purposes but are no longer considered active.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    <Aside type="note">
+      Archiving an identity is not yet available through the Platform UI. Use the **API** tab to archive one via the Coordinator API.
+    </Aside>
+  </Fragment>
+  <Fragment slot="api">
+    Send a `PATCH` request with the `status` field:
+
+    ```bash
+    curl -X PATCH "https://ace.api.chain.link/v1/identities/98765432-10fe-dcba-9876-543210fedcba" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "status": "archived"
+      }'
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+<Aside type="caution" title="Archive credentials first">
+  Before archiving an identity, archive or revoke any active credentials associated with it. Credentials linked to an
+  archived identity may no longer be evaluated correctly by policies. See [Managing
+  Credentials](/ace/guides/identity-manager/manage-credentials) for credential lifecycle management.
+</Aside>
