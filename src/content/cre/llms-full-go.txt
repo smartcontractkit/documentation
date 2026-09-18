@@ -5011,7 +5011,7 @@ When submitting reports onchain, follow these practices to ensure reliability an
 
 3. **Monitor transaction status**: Always check the `TxStatus` field in the response to ensure your transaction was successful. Handle `REVERTED` and `FATAL` statuses appropriately.
    ```go
-   if resp.TxStatus != evm.TxStatusSuccess {
+   if resp.TxStatus != evm.TxStatus_TX_STATUS_SUCCESS {
        return fmt.Errorf("transaction failed with status: %v, error: %s", resp.TxStatus, *resp.ErrorMessage)
    }
    ```
@@ -5111,7 +5111,7 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 	}
 
 	// Check transaction status
-	if resp.TxStatus != evm.TxStatusSuccess {
+	if resp.TxStatus != evm.TxStatus_TX_STATUS_SUCCESS {
 		errorMsg := "unknown error"
 		if resp.ErrorMessage != nil {
 			errorMsg = *resp.ErrorMessage
@@ -18424,7 +18424,7 @@ You pass this file to the simulator using the `--config` flag: `cre workflow sim
 
 # Onchain Write
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/overview-go
-Last Updated: 2025-11-04
+Last Updated: 2026-09-18
 
 This guide explains how to write data from your CRE workflow to a smart contract on the blockchain.
 
@@ -18629,6 +18629,167 @@ allowanceInput := ierc20.AllowanceInput{
 ### Working with bytes
 
 Solidity types like `bytes` and `bytes32` map to `[]byte` in Go.
+
+## Inspecting onchain transactions
+
+When your workflow submits a report onchain, the transaction can fail in two distinct ways: the **transaction itself** can revert (for example, out of gas or an invalid receiver), or the transaction can succeed but your consumer contract's `onReport()` function can **revert during execution**. You should inspect both outcomes and decide how to respond.
+
+### Understanding the response
+
+`evm.Client.WriteReport()` returns an [`evm.WriteReportReply`](/cre/reference/sdk/evm-client-go#evm-writereportreply) with two status fields you should check:
+
+| Field                             | Type                               | Meaning                                                                                       |
+| --------------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------- |
+| `TxStatus`                        | `TxStatus`                         | Whether the transaction itself succeeded: `SUCCESS`, `REVERTED`, or `FATAL`.                  |
+| `ReceiverContractExecutionStatus` | `*ReceiverContractExecutionStatus` | Whether your consumer contract's `onReport()` executed successfully: `SUCCESS` or `REVERTED`. |
+| `TxHash`                          | `[]byte`                           | The 32-byte transaction hash, useful for looking up the transaction on a block explorer.      |
+| `ErrorMessage`                    | `*string`                          | An error message if the transaction failed.                                                   |
+
+**Important**: `TxStatus` and `ReceiverContractExecutionStatus` are independent. A transaction can succeed (`TxStatus == SUCCESS`) while the consumer contract's `onReport()` reverts (`ReceiverContractExecutionStatus == REVERTED`). Always check both.
+
+### How to know if `onReport()` succeeded
+
+The `ReceiverContractExecutionStatus` field tells you whether your consumer contract's `onReport()` function executed successfully. Check it after every write and log the result so you can monitor and troubleshoot deliveries:
+
+```go
+resp, err := writePromise.Await()
+if err != nil {
+    return fmt.Errorf("failed to write report: %w", err)
+}
+
+// Always log the transaction hash and both statuses
+txHash := fmt.Sprintf("0x%x", resp.TxHash)
+logger.Info("Write report response",
+    "txHash", txHash,
+    "txStatus", resp.TxStatus.String(),
+    "receiverStatus", resp.ReceiverContractExecutionStatus.String(),
+)
+
+// Check the transaction status first
+if resp.TxStatus != evm.TxStatus_TX_STATUS_SUCCESS {
+    errorMsg := "unknown error"
+    if resp.ErrorMessage != nil {
+        errorMsg = *resp.ErrorMessage
+    }
+    return fmt.Errorf("transaction failed with status %v: %s", resp.TxStatus, errorMsg)
+}
+
+// Then check whether onReport() executed successfully
+if resp.ReceiverContractExecutionStatus != nil &&
+    *resp.ReceiverContractExecutionStatus != evm.ReceiverContractExecutionStatus_RECEIVER_CONTRACT_EXECUTION_STATUS_SUCCESS {
+    return fmt.Errorf("onReport() reverted with status %v", *resp.ReceiverContractExecutionStatus)
+}
+```
+
+### Retry and reporting example
+
+The following example shows a complete pattern for inspecting a write, logging the outcome, and retrying when the transaction or the consumer contract execution fails:
+
+```go
+const maxRetries = 3
+
+func submitReport(runtime cre.Runtime, evmClient *evm.Client, receiver common.Address, report *cre.Report, attempt int) error {
+    logger := runtime.Logger()
+
+    writePromise := evmClient.WriteReport(runtime, &evm.WriteCreReportRequest{
+        Receiver: receiver.Bytes(),
+        Report:   report,
+    })
+
+    resp, err := writePromise.Await()
+    if err != nil {
+        logger.Error("WriteReport await failed", "error", err)
+        return err
+    }
+
+    txHash := fmt.Sprintf("0x%x", resp.TxHash)
+    logger.Info("Write report response",
+        "txHash", txHash,
+        "txStatus", resp.TxStatus.String(),
+        "receiverStatus", resp.ReceiverContractExecutionStatus.String(),
+    )
+
+    // Retry on transaction failure
+    if resp.TxStatus != evm.TxStatus_TX_STATUS_SUCCESS {
+        errorMsg := "unknown error"
+        if resp.ErrorMessage != nil {
+            errorMsg = *resp.ErrorMessage
+        }
+        logger.Error("Transaction failed, retrying", "status", resp.TxStatus.String(), "error", errorMsg)
+        return retrySubmit(runtime, evmClient, receiver, report, attempt)
+    }
+
+    // Retry if onReport() reverted even though the transaction succeeded
+    if resp.ReceiverContractExecutionStatus != nil &&
+        *resp.ReceiverContractExecutionStatus != evm.ReceiverContractExecutionStatus_RECEIVER_CONTRACT_EXECUTION_STATUS_SUCCESS {
+        logger.Error("onReport() reverted, retrying", "status", resp.ReceiverContractExecutionStatus.String())
+        return retrySubmit(runtime, evmClient, receiver, report, attempt)
+    }
+
+    logger.Info("Report delivered successfully", "txHash", txHash)
+    return nil
+}
+
+func retrySubmit(runtime cre.Runtime, evmClient *evm.Client, receiver common.Address, report *cre.Report, attempt int) error {
+    if attempt >= maxRetries {
+        return fmt.Errorf("report delivery failed after %d attempts", maxRetries)
+    }
+    logger := runtime.Logger()
+    logger.Info("Retrying submission", "attempt", attempt+1, "maxRetries", maxRetries)
+    // Add a delay here if your runtime supports it. Be careful about replay attacks — see below.
+    return submitReport(runtime, evmClient, receiver, report, attempt+1)
+}
+```
+
+
+<Aside type="caution" title="Replay attacks on retry">
+  A reverted report is **not** marked as used by the forwarder, so retrying (or anyone else) can resubmit the same signed report once conditions change. If your workflow takes corrective action after a failure, embed a monotonic execution timestamp in the report payload and reject stale reports in your consumer contract. See [Same-chain replay on failure](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#same-chain-replay-on-failure).
+</Aside>
+
+### Inspecting executions with the CLI
+
+Once your workflow is deployed, you can inspect its executions programmatically with the CRE CLI. All commands support `--output json` for scripting. You can also view the same information in the [CRE Workflows dashboard](https://app.chain.link/cre/workflows).
+
+**Workflow-level inspection:**
+
+```bash
+# List all workflows for your organization
+cre workflow list
+
+# Deployment health + most recent execution for a workflow
+cre workflow get ./my-workflow --target production-settings
+```
+
+**Execution-level inspection:**
+
+```bash
+# List executions (optionally filtered by workflow, status, or time range)
+cre execution list evm-write-inspection
+cre execution list evm-write-inspection --status FAILURE
+cre execution list evm-write-inspection --limit 50 --output json
+
+# Detailed status of a single execution (incl. top-level errors)
+cre execution status <execution-uuid>
+
+# Capability event timeline (per-event status, method, duration, errors)
+cre execution events <execution-uuid>
+
+# User-emitted log lines (e.g. your "Write report response" logs)
+cre execution logs <execution-uuid>
+```
+
+**Control commands:**
+
+```bash
+# Pause / resume a workflow to stop or start trigger execution
+cre workflow pause ./my-workflow --target production-settings --yes
+cre workflow activate ./my-workflow --target production-settings --yes
+```
+
+
+<Aside type="note" title="Simulation vs production">
+  `cre workflow simulate` uses a **MockForwarder** that records the report but does **not** call your consumer contract's `onReport()`. As a result, `ReceiverContractExecutionStatus` is always `SUCCESS` in simulation. To observe real `onReport()` reverts (and the retry behavior above), deploy the workflow with `cre workflow deploy` and inspect its executions with the CLI commands above.
+</Aside>
 
 ## Learn more
 
