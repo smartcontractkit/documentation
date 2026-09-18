@@ -30,6 +30,7 @@ import {
   getFeedAssetType,
   is24x5StreamFeed,
   isApacEquitiesStreamFeed,
+  isFuturesStreamFeed,
   mergeStreamEnvironmentAvailability,
 } from "../utils/feedMetadata.ts"
 import { getAddrPerPage, SMART_DATA_CATEGORY_OPTIONS } from "../constants.ts"
@@ -64,6 +65,7 @@ const schemaFilterOptions: FilterOption<SchemaFilterValue>[] = [
   { label: "All", value: "all" },
   { label: "RWA Standard (v8)", value: "v8" },
   { label: "RWA Advanced (v11)", value: "v11" },
+  { label: "Futures (v14)", value: "v14" },
 ]
 
 const cryptoSchemaFilterOptions: FilterOption<SchemaFilterValue>[] = [
@@ -78,6 +80,7 @@ const feedTypeFilterOptions: FilterOption<StreamsRwaFeedTypeValue>[] = [
   { label: "Datalink Streams", value: "datalink" },
   { label: "Equity Streams", value: "equities" },
   { label: "Forex Streams", value: "forex" },
+  { label: "Futures Streams", value: "futures" },
 ]
 
 const tradingHoursFilterOptions: FilterOption<TradingHoursFilterValue>[] = [
@@ -88,9 +91,15 @@ const tradingHoursFilterOptions: FilterOption<TradingHoursFilterValue>[] = [
 ]
 
 const isSchemaFilterValue = (value: unknown): value is SchemaFilterValue =>
-  value === "all" || value === "v2" || value === "v3" || value === "v3-dex" || value === "v8" || value === "v11"
+  value === "all" ||
+  value === "v2" ||
+  value === "v3" ||
+  value === "v3-dex" ||
+  value === "v8" ||
+  value === "v11" ||
+  value === "v14"
 const isStreamsRwaFeedTypeValue = (value: unknown): value is StreamsRwaFeedTypeValue =>
-  value === "all" || value === "datalink" || value === "equities" || value === "forex"
+  value === "all" || value === "datalink" || value === "equities" || value === "forex" || value === "futures"
 const isTradingHoursFilterValue = (value: unknown): value is TradingHoursFilterValue =>
   value === "all" || value === "regular" || value === "extended" || value === "overnight"
 
@@ -155,6 +164,7 @@ export const FeedList = ({
   defaultNetworkTableExpanded = false,
   force24x5Only = false,
   forceApacEquitiesOnly = false,
+  forceFuturesOnly = false,
   forceStreamCategoryFilter,
   tokenizedEquityProvider,
   forceExtendedHoursCategory,
@@ -167,6 +177,7 @@ export const FeedList = ({
   defaultNetworkTableExpanded?: boolean
   force24x5Only?: boolean
   forceApacEquitiesOnly?: boolean
+  forceFuturesOnly?: boolean
   forceStreamCategoryFilter?: StreamsRwaFeedTypeValue
   tokenizedEquityProvider?: string
   forceExtendedHoursCategory?: ExtendedHoursCategory
@@ -357,6 +368,7 @@ export const FeedList = ({
   const [show24x5FeedsParam, setShow24x5FeedsParam] = useQueryString("show24x5")
   const show24x5Feeds = force24x5Only || show24x5FeedsParam === "true"
   const showApacEquitiesFeeds = forceApacEquitiesOnly
+  const showFuturesFeeds = forceFuturesOnly
   const setShow24x5Feeds = (value: boolean) => {
     if (!force24x5Only) {
       setShow24x5FeedsParam(value ? "true" : [])
@@ -403,6 +415,7 @@ export const FeedList = ({
   const [show24x5FeedsTestnetParam, setShow24x5FeedsTestnetParam] = useQueryString("testnetShow24x5")
   const show24x5FeedsTestnet = force24x5Only || show24x5FeedsTestnetParam === "true"
   const showApacEquitiesFeedsTestnet = forceApacEquitiesOnly
+  const showFuturesFeedsTestnet = forceFuturesOnly
   const setShow24x5FeedsTestnet = (value: boolean) => {
     if (!force24x5Only) {
       setShow24x5FeedsTestnetParam(value ? "true" : [])
@@ -837,6 +850,14 @@ export const FeedList = ({
           )
         }
 
+        if (isStreams && forceFuturesOnly) {
+          return (
+            network.metadata?.some(
+              (feed) => isFeedVisible(feed, dataFeedType, ecosystem, visibilityOptions) && isFuturesStreamFeed(feed)
+            ) ?? false
+          )
+        }
+
         return networkHasVisibleFeeds(network, dataFeedType, ecosystem, visibilityOptions)
       })
 
@@ -862,6 +883,7 @@ export const FeedList = ({
     forceStreamCategoryFilter,
     force24x5Only,
     forceApacEquitiesOnly,
+    forceFuturesOnly,
     forceExtendedHoursCategory,
   ])
 
@@ -960,13 +982,17 @@ export const FeedList = ({
 
   const forcedCategoryLabel = forceApacEquitiesOnly
     ? "APAC Equities Streams"
-    : forceStreamCategoryFilter === "datalink"
-      ? "DataLink Streams"
-      : forceStreamCategoryFilter === "equities"
-        ? "Equity Streams"
-        : forceStreamCategoryFilter === "forex"
-          ? "Forex Streams"
-          : null
+    : forceFuturesOnly
+      ? "Futures Streams"
+      : forceStreamCategoryFilter === "datalink"
+        ? "DataLink Streams"
+        : forceStreamCategoryFilter === "equities"
+          ? "Equity Streams"
+          : forceStreamCategoryFilter === "forex"
+            ? "Forex Streams"
+            : forceStreamCategoryFilter === "futures"
+              ? "Futures Streams"
+              : null
 
   const streamsMainnetSectionTitle = forcedCategoryLabel
     ? `Mainnet ${forcedCategoryLabel}`
@@ -1241,6 +1267,14 @@ export const FeedList = ({
         )
       }
 
+      if (forceFuturesOnly) {
+        return (
+          network.metadata?.some(
+            (feed) => isFeedVisible(feed, dataFeedType, ecosystem, visibilityOptions) && isFuturesStreamFeed(feed)
+          ) ?? false
+        )
+      }
+
       return networkHasVisibleFeeds(network, dataFeedType, ecosystem, visibilityOptions)
     }
 
@@ -1324,7 +1358,7 @@ export const FeedList = ({
                 )}
                 {dataFeedType === "streamsRwa" && (
                   <>
-                    {!forceStreamCategoryFilter && !show24x5Feeds && !forceApacEquitiesOnly && (
+                    {!forceStreamCategoryFilter && !show24x5Feeds && !forceApacEquitiesOnly && !forceFuturesOnly && (
                       <>
                         <FilterDropdown
                           isOpen={openDropdownId === "main-schema"}
@@ -1354,7 +1388,7 @@ export const FeedList = ({
                         />
                       </>
                     )}
-                    {!force24x5Only && !forceApacEquitiesOnly && !forceStreamCategoryFilter && (
+                    {!force24x5Only && !forceApacEquitiesOnly && !forceFuturesOnly && !forceStreamCategoryFilter && (
                       <div className={feedList.checkboxContainer}>
                         <label className={feedList.detailsLabel}>
                           <input
@@ -1459,6 +1493,7 @@ export const FeedList = ({
                   streamCategoryFilter={streamCategoryFilter}
                   show24x5Feeds={show24x5Feeds}
                   showApacEquitiesFeeds={showApacEquitiesFeeds}
+                  showFuturesFeeds={showFuturesFeeds}
                   tradingHoursFilter={tradingHoursFilter}
                   dataFeedType={dataFeedType}
                   ecosystem={ecosystem}
@@ -1522,37 +1557,40 @@ export const FeedList = ({
                 )}
                 {dataFeedType === "streamsRwa" && (
                   <>
-                    {!forceStreamCategoryFilter && !show24x5FeedsTestnet && !forceApacEquitiesOnly && (
-                      <>
-                        <FilterDropdown
-                          isOpen={openDropdownId === "test-schema"}
-                          onToggle={(isOpen) => handleDropdownToggle("test-schema", isOpen)}
-                          onClose={closeAllDropdowns}
-                          label="Filter schema"
-                          options={schemaFilterOptions}
-                          value={testnetRwaSchemaFilter}
-                          groupId="schema-testnet"
-                          onSelect={(next) => {
-                            setTestnetRwaSchemaFilter(next)
-                            setTestnetCurrentPage("1")
-                          }}
-                        />
-                        <FilterDropdown
-                          isOpen={openDropdownId === "test-feed-type"}
-                          onToggle={(isOpen) => handleDropdownToggle("test-feed-type", isOpen)}
-                          onClose={closeAllDropdowns}
-                          label="Filter category"
-                          options={feedTypeFilterOptions}
-                          value={testnetStreamCategoryFilter}
-                          groupId="feed-type-testnet"
-                          onSelect={(next) => {
-                            setTestnetStreamCategoryFilter(next)
-                            setTestnetCurrentPage("1")
-                          }}
-                        />
-                      </>
-                    )}
-                    {!force24x5Only && !forceApacEquitiesOnly && !forceStreamCategoryFilter && (
+                    {!forceStreamCategoryFilter &&
+                      !show24x5FeedsTestnet &&
+                      !forceApacEquitiesOnly &&
+                      !forceFuturesOnly && (
+                        <>
+                          <FilterDropdown
+                            isOpen={openDropdownId === "test-schema"}
+                            onToggle={(isOpen) => handleDropdownToggle("test-schema", isOpen)}
+                            onClose={closeAllDropdowns}
+                            label="Filter schema"
+                            options={schemaFilterOptions}
+                            value={testnetRwaSchemaFilter}
+                            groupId="schema-testnet"
+                            onSelect={(next) => {
+                              setTestnetRwaSchemaFilter(next)
+                              setTestnetCurrentPage("1")
+                            }}
+                          />
+                          <FilterDropdown
+                            isOpen={openDropdownId === "test-feed-type"}
+                            onToggle={(isOpen) => handleDropdownToggle("test-feed-type", isOpen)}
+                            onClose={closeAllDropdowns}
+                            label="Filter category"
+                            options={feedTypeFilterOptions}
+                            value={testnetStreamCategoryFilter}
+                            groupId="feed-type-testnet"
+                            onSelect={(next) => {
+                              setTestnetStreamCategoryFilter(next)
+                              setTestnetCurrentPage("1")
+                            }}
+                          />
+                        </>
+                      )}
+                    {!force24x5Only && !forceApacEquitiesOnly && !forceFuturesOnly && !forceStreamCategoryFilter && (
                       <div className={feedList.checkboxContainer}>
                         <label className={feedList.detailsLabel}>
                           <input
@@ -1659,6 +1697,7 @@ export const FeedList = ({
                   streamCategoryFilter={testnetStreamCategoryFilter}
                   show24x5Feeds={show24x5FeedsTestnet}
                   showApacEquitiesFeeds={showApacEquitiesFeedsTestnet}
+                  showFuturesFeeds={showFuturesFeedsTestnet}
                   tradingHoursFilter={testnetTradingHoursFilter}
                   firstAddr={testnetFirstAddr}
                   lastAddr={testnetLastAddr}
