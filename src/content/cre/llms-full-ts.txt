@@ -144,7 +144,7 @@ Jump to what you need:
 
 - **[Workflow Guides](/cre/guides/workflow/using-triggers/overview)** - Learn how to use triggers, make API calls, and interact with blockchains
 - **[Workflow Operations](/cre/guides/operations/simulating-workflows)** - Simulate, deploy, and manage your workflows
-- **[SDK Reference](/cre/reference/sdk)** - Detailed API documentation for Go and TypeScript SDKs
+- **[SDK Reference](/cre/reference/sdk/overview)** - Detailed API documentation for Go and TypeScript SDKs
 
 
 <Aside type="caution" title="Disclaimer">
@@ -2858,7 +2858,7 @@ This tool is **not intended for production use**. For production integrations:
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts
 Last Updated: 2026-05-08
 
-When your workflow [writes data to the blockchain](/cre/guides/workflow/using-evm-client/onchain-write), it doesn't call your contract directly. Instead, it submits a signed report to a Chainlink `KeystoneForwarder` contract, which then calls your contract.
+When your workflow [writes data to the blockchain](/cre/guides/workflow/using-evm-client/onchain-write/overview), it doesn't call your contract directly. Instead, it submits a signed report to a Chainlink `KeystoneForwarder` contract, which then calls your contract.
 
 This guide explains how to build a consumer contract that can securely receive and process data from a CRE workflow.
 
@@ -4646,7 +4646,7 @@ Before managing secrets for deployed workflows, ensure you have:
 
 ## Auth modes: web3 key vs. browser auth
 
-`cre secrets` supports two ways to authorize Vault operations, mirroring the [private vs. public workflow management split](/cre/guides/operations/deploying-workflows#private-vs-public-workflow-management) used for workflow deployment:
+`cre secrets` supports two ways to authorize Vault operations, mirroring the [private vs. public workflow management split](/cre/guides/operations/deploying-workflows#comparing-registries) used for workflow deployment:
 
 - **Web3-keyed.** Each operation submits an onchain authorization tied to your linked workflow owner address (`workflow-owner-address`). Use this when your workflow is deployed to the onchain registry (`deployment-registry: "onchain:ethereum-mainnet"`).
 - **Browser auth (`--secrets-auth=browser`).** The CLI opens a browser-based OAuth (PKCE) flow against the Vault DON gateway and authorizes the operation against your CRE organization. No wallet, no gas, no `workflow-owner-address` needed. Use this when your workflow is deployed to the `private` registry, or when your team manages secrets at the organization level rather than per-wallet.
@@ -8749,7 +8749,7 @@ The typical workflow development process uses these commands in sequence:
 ## Learn more
 
 - **[CLI Installation](/cre/getting-started/cli-installation)** — How to install and set up the CRE CLI
-- **[Getting Started](/cre/getting-started)** — Step-by-step tutorials using the CLI
+- **[Getting Started](/cre/getting-started/overview)** — Step-by-step tutorials using the CLI
 - **[Project Configuration](/cre/reference/project-configuration)** — Understanding project structure and configuration files
 
 ---
@@ -10028,7 +10028,7 @@ The `cre secrets` commands manage secrets stored in the Vault DON (Decentralized
 
 ## Auth modes
 
-`cre secrets` supports two authorization modes, mirroring the [private vs. public workflow management split](/cre/guides/operations/deploying-workflows#private-vs-public-workflow-management) used for workflow deployment:
+`cre secrets` supports two authorization modes, mirroring the [private vs. public workflow management split](/cre/guides/operations/deploying-workflows#comparing-registries) used for workflow deployment:
 
 - **Web3-keyed.** Each operation is tied to your linked `workflow-owner-address`. Use this when your workflow is deployed to the onchain registry (`deployment-registry: "onchain:ethereum-mainnet"`).
 - **Browser auth (`--secrets-auth=browser`).** Each operation is authorized through a browser-based OAuth (PKCE) flow against the Vault DON gateway, using your CRE login session. No wallet or `workflow-owner-address` required. Use this when your workflow is deployed to the `private` registry, or when secrets are owned at the organization level.
@@ -10472,7 +10472,7 @@ cre update
 
 
 <Aside type="note" title="Updating existing projects">
-  Running `cre update` updates the CLI itself. For existing projects, you may also need to update your SDK dependency to access new features. See [Updating Dependencies](/cre/reference/project-configuration#updating-dependencies) for instructions.
+  Running `cre update` updates the CLI itself. For existing projects, you may also need to update your SDK dependency to access new features. See [Updating Dependencies](/cre/reference/project-configuration#5-updating-dependencies) for instructions.
 </Aside>
 
 ## `cre version`
@@ -14655,7 +14655,7 @@ export async function main() {
 
 
 <Aside type="tip" title="Optional: Add runtime validation">
-  If you added Zod validation in Part 1, you can continue using it here by replacing the `Config` type definition with a Zod schema and passing `configSchema` to `Runner.newRunner<Config>({ configSchema })`. See [Part 1: Optional Runtime Validation](/cre/getting-started/part-1-project-setup#optional-runtime-validation) for details.
+  If you added Zod validation in Part 1, you can continue using it here by replacing the `Config` type definition with a Zod schema and passing `configSchema` to `Runner.newRunner<Config>({ configSchema })`. See [Part 1: Optional Runtime Validation](/cre/getting-started/part-1-project-setup-ts#optional-runtime-validation) for details.
 </Aside>
 
 <Aside type="note" title="The .result() method">
@@ -14989,7 +14989,7 @@ export async function main() {
 
 
 <Aside type="tip" title="Optional: Add runtime validation">
-  If you added Zod validation in Part 1, you can continue using it here. The `Config` type now includes the `evms` array, so update your Zod schema accordingly and pass `configSchema` to `Runner.newRunner<Config>({ configSchema })`. See [Part 1: Optional Runtime Validation](/cre/getting-started/part-1-project-setup#optional-runtime-validation) for details.
+  If you added Zod validation in Part 1, you can continue using it here. The `Config` type now includes the `evms` array, so update your Zod schema accordingly and pass `configSchema` to `Runner.newRunner<Config>({ configSchema })`. See [Part 1: Optional Runtime Validation](/cre/getting-started/part-1-project-setup-ts#optional-runtime-validation) for details.
 </Aside>
 
 **Key TypeScript SDK features:**
@@ -15389,7 +15389,7 @@ export async function main() {
 
 
 <Aside type="note" title="Optional: Add runtime validation">
-  If you added Zod validation in Part 1, you can continue using it here. The `Config` type now includes `gasLimit` and `calculatorConsumerAddress` fields, so update your Zod schema accordingly. See [Part 1: Optional Runtime Validation](/cre/getting-started/part-1-project-setup#optional-runtime-validation) for details.
+  If you added Zod validation in Part 1, you can continue using it here. The `Config` type now includes `gasLimit` and `calculatorConsumerAddress` fields, so update your Zod schema accordingly. See [Part 1: Optional Runtime Validation](/cre/getting-started/part-1-project-setup-ts#optional-runtime-validation) for details.
 </Aside>
 
 **Key TypeScript SDK features for writing:**
@@ -17436,7 +17436,7 @@ This reference provides three key pieces of information for each network:
 
 Forwarder addresses identify the trusted Chainlink Forwarder contract that delivers verified workflow reports to your consumer contract. Your workflow code does not interact with forwarders directly—the EVM capability handles report delivery automatically. Learn more: [Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write/overview-ts).
 
-**Using the [ReceiverTemplate](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#3-using-receivertemplate) (recommended)**: If you use the [`ReceiverTemplate`](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#receivertemplate), the forwarder address is **required** in the constructor. This ensures your contract only accepts reports from the trusted Chainlink Forwarder.
+**Using the [ReceiverTemplate](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#3-using-receivertemplate) (recommended)**: If you use the [`ReceiverTemplate`](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#3-using-receivertemplate), the forwarder address is **required** in the constructor. This ensures your contract only accepts reports from the trusted Chainlink Forwarder.
 
 **Custom implementations**: If you implement the `IReceiver` interface directly without using `ReceiverTemplate`, you control your own security checks. See [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts) for details.
 
@@ -20123,7 +20123,7 @@ export async function main() {
    ```bash
    cre workflow simulate my-workflow --target staging-settings
    ```
-4. On webhook.site, open the request **Content** tab. You should see JSON with `report`, `context`, and `signatures` (hex strings). Use that JSON to test a receiver workflow in [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts#testing-locally-with-simulation).
+4. On webhook.site, open the request **Content** tab. You should see JSON with `report`, `context`, and `signatures` (hex strings). Use that JSON to test a receiver workflow in [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-ts#testing-with-simulation).
 
 
 <Aside type="note" title="Binary vs JSON for verify testing">
@@ -24747,12 +24747,12 @@ const initWorkflow = (config: Config) => {
 }
 ```
 
-- **The Trigger**: An instance of a trigger capability (e.g., `cron.trigger(...)`). This defines the event that will start your workflow. See the [Triggers reference](/cre/reference/sdk/triggers) for details.
+- **The Trigger**: An instance of a trigger capability (e.g., `cron.trigger(...)`). This defines the event that will start your workflow. See the [Triggers reference](/cre/reference/sdk/triggers/overview-ts) for details.
 - **The Callback**: The function to be executed when the trigger fires. The signature of your callback function must match the output type of the trigger you are using.
 
 <Aside type="note" title="Callback Function Signatures">
-  Each trigger type requires a specific callback signature. See the [Triggers reference](/cre/reference/sdk/triggers)
-  for the exact signature required for each trigger type.
+  Each trigger type requires a specific callback signature. See the [Triggers
+  reference](/cre/reference/sdk/triggers/overview-ts) for the exact signature required for each trigger type.
 </Aside>
 
 ### `Runtime` and `NodeRuntime`
