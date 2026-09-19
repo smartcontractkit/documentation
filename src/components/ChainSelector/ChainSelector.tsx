@@ -213,63 +213,65 @@ export function ChainSelector({
           </div>
         </button>
 
-        <div className={styles.networkSwitcher}>
-          <button
-            type="button"
-            className={clsx(
-              styles.networkToggle,
-              selectedNetworkType === "mainnet" && styles.networkToggleActive,
-              !availableNetworkTypes.mainnet && styles.networkToggleDisabled
-            )}
-            onClick={() => {
-              if (availableNetworkTypes.mainnet) {
-                handleNetworkTypeToggle("mainnet")
+        <div className={styles.networkSwitcherStack}>
+          <div className={styles.networkSwitcher}>
+            <button
+              type="button"
+              className={clsx(
+                styles.networkToggle,
+                selectedNetworkType === "mainnet" && styles.networkToggleActive,
+                !availableNetworkTypes.mainnet && styles.networkToggleDisabled
+              )}
+              onClick={() => {
+                if (availableNetworkTypes.mainnet) {
+                  handleNetworkTypeToggle("mainnet")
+                }
+              }}
+              onKeyDown={(e) => handleNetworkToggleKeyDown(e, "mainnet")}
+              disabled={!availableNetworkTypes.mainnet}
+              aria-pressed={selectedNetworkType === "mainnet"}
+              title={
+                !availableNetworkTypes.mainnet ? `${selectedChain.label} feeds are not available on mainnet` : undefined
               }
-            }}
-            onKeyDown={(e) => handleNetworkToggleKeyDown(e, "mainnet")}
-            disabled={!availableNetworkTypes.mainnet}
-            aria-pressed={selectedNetworkType === "mainnet"}
-            title={
-              !availableNetworkTypes.mainnet ? `${selectedChain.label} feeds are not available on mainnet` : undefined
-            }
-          >
-            Mainnet
-          </button>
-          <button
-            type="button"
-            className={clsx(
-              styles.networkToggle,
-              selectedNetworkType === "testnet" && styles.networkToggleActive,
-              !availableNetworkTypes.testnet && styles.networkToggleDisabled
-            )}
-            onClick={() => {
-              if (availableNetworkTypes.testnet) {
-                handleNetworkTypeToggle("testnet")
+            >
+              Mainnet
+            </button>
+            <button
+              type="button"
+              className={clsx(
+                styles.networkToggle,
+                selectedNetworkType === "testnet" && styles.networkToggleActive,
+                !availableNetworkTypes.testnet && styles.networkToggleDisabled
+              )}
+              onClick={() => {
+                if (availableNetworkTypes.testnet) {
+                  handleNetworkTypeToggle("testnet")
+                }
+              }}
+              onKeyDown={(e) => handleNetworkToggleKeyDown(e, "testnet")}
+              disabled={!availableNetworkTypes.testnet}
+              aria-pressed={selectedNetworkType === "testnet"}
+              title={
+                !availableNetworkTypes.testnet ? `${selectedChain.label} feeds are not available on testnet` : undefined
               }
-            }}
-            onKeyDown={(e) => handleNetworkToggleKeyDown(e, "testnet")}
-            disabled={!availableNetworkTypes.testnet}
-            aria-pressed={selectedNetworkType === "testnet"}
-            title={
-              !availableNetworkTypes.testnet ? `${selectedChain.label} feeds are not available on testnet` : undefined
-            }
-          >
-            Testnet
-          </button>
-        </div>
+            >
+              Testnet
+            </button>
+          </div>
 
-        {selectedChain.networkStatusUrl && (
-          <a
-            href={selectedChain.networkStatusUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.networkStatusLink}
-            title={`Track ${selectedChain.label} network status`}
-          >
-            Network Status
-            <span className={styles.externalArrow}>↗</span>
-          </a>
-        )}
+          {selectedChain.networkStatusUrl && (
+            <a
+              href={selectedChain.networkStatusUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.networkStatusLink}
+              title={`Track ${selectedChain.label} network status`}
+            >
+              Network Status
+              <span className={styles.externalArrow}>↗</span>
+            </a>
+          )}
+        </div>
       </div>
 
       {isOpen && (
