@@ -743,6 +743,31 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
+    page: "stellar",
+    label: "Stellar",
+    title: "Stellar Data Feeds",
+    img: "/assets/chains/stellar.svg",
+    networkStatusUrl: "https://status.stellar.org/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Stellar Mainnet",
+        explorerUrl: "",
+        networkType: "mainnet",
+        rddUrl: "https://docs.chain.link/files/json/feeds-stellar-mainnet.json",
+        queryString: "stellar-mainnet",
+      },
+      {
+        name: "Stellar Testnet",
+        explorerUrl: "",
+        networkType: "testnet",
+        rddUrl: "https://docs.chain.link/files/json/feeds-stellar-testnet.json",
+        queryString: "stellar-testnet",
+      },
+    ],
+  },
+  {
     page: "sonic",
     label: "Sonic",
     title: "Sonic Data Feeds",
