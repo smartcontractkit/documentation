@@ -483,7 +483,7 @@ export const StreamsNetworksData: NetworkData[] = [
     },
     testnet: {
       label: "Monad Testnet",
-      verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
+      verifierProxy: "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",
       explorerUrl: "https://testnet.monadvision.com/address/%s",
     },
   },

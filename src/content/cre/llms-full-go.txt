@@ -299,7 +299,7 @@ The mechanism by which a DON comes to a single, reliable, and tamper-proof resul
 
 # Service Quotas
 Source: https://docs.chain.link/cre/service-quotas
-Last Updated: 2026-05-26
+Last Updated: 2026-09-16
 
 This page documents the service quotas for Chainlink Runtime Environment (CRE) workflows.
 
@@ -338,7 +338,7 @@ These quotas apply to each workflow owner (user account) within an organization.
 
 | Quota Key                                                                                                                                              | Description                                                 | Value |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- | ----- |
-| <a href="#perowner-workflowexecutionconcurrencylimit" id="perowner-workflowexecutionconcurrencylimit">`PerOwner.WorkflowExecutionConcurrencyLimit`</a> | Maximum number of workflows that can execute simultaneously | 5     |
+| <a href="#perowner-workflowexecutionconcurrencylimit" id="perowner-workflowexecutionconcurrencylimit">`PerOwner.WorkflowExecutionConcurrencyLimit`</a> | Maximum number of workflows that can execute simultaneously | 200   |
 | <a href="#perowner-vaultsecretslimit" id="perowner-vaultsecretslimit">`PerOwner.VaultSecretsLimit`</a>                                                 | Maximum number of secrets that can be stored per owner      | 100   |
 
 <Aside type="note" title="Quota enforcement">
@@ -368,7 +368,7 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                               | Description                                                     | Value     |
 | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | --------- |
-| <a href="#perworkflow-executionconcurrencylimit" id="perworkflow-executionconcurrencylimit">`PerWorkflow.ExecutionConcurrencyLimit`</a> | Maximum number of concurrent executions for a specific workflow | 10        |
+| <a href="#perworkflow-executionconcurrencylimit" id="perworkflow-executionconcurrencylimit">`PerWorkflow.ExecutionConcurrencyLimit`</a> | Maximum number of concurrent executions for a specific workflow | 50        |
 | <a href="#perworkflow-executiontimeout" id="perworkflow-executiontimeout">`PerWorkflow.ExecutionTimeout`</a>                            | Maximum total execution time for a single workflow run          | 5 minutes |
 | <a href="#perworkflow-wasmmemorylimit" id="perworkflow-wasmmemorylimit">`PerWorkflow.WASMMemoryLimit`</a>                               | Maximum memory allocated to a workflow                          | 100 MB    |
 | <a href="#perworkflow-executionresponselimit" id="perworkflow-executionresponselimit">`PerWorkflow.ExecutionResponseLimit`</a>          | Maximum size of the data a workflow can return                  | 100 KB    |
@@ -394,7 +394,7 @@ These quotas apply to each individual workflow.
 | Quota Key                                                                                                                                              | Description                                                      | Value |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- | ----- |
 | <a href="#perworkflow-consensus-observationsizelimit" id="perworkflow-consensus-observationsizelimit">`PerWorkflow.Consensus.ObservationSizeLimit`</a> | Maximum size of data that can be passed to consensus aggregation | 25 KB |
-| <a href="#perworkflow-consensus-calllimit" id="perworkflow-consensus-calllimit">`PerWorkflow.Consensus.CallLimit`</a>                                  | Maximum number of consensus calls per workflow execution         | 20    |
+| <a href="#perworkflow-consensus-calllimit" id="perworkflow-consensus-calllimit">`PerWorkflow.Consensus.CallLimit`</a>                                  | Maximum number of consensus calls per workflow execution         | 50    |
 
 ### Logging quotas
 
@@ -420,7 +420,7 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                   | Description                                    | Value                                  |
 | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------------- |
-| <a href="#perworkflow-httptrigger-ratelimit" id="perworkflow-httptrigger-ratelimit">`PerWorkflow.HTTPTrigger.RateLimit`</a> | Maximum rate at which an HTTP trigger can fire | Rate: 1 per 60 seconds <br /> Burst: 1 |
+| <a href="#perworkflow-httptrigger-ratelimit" id="perworkflow-httptrigger-ratelimit">`PerWorkflow.HTTPTrigger.RateLimit`</a> | Maximum rate at which an HTTP trigger can fire | Rate: 1 per 30 seconds <br /> Burst: 1 |
 
 ### EVM log trigger
 
@@ -435,11 +435,11 @@ These quotas apply to each individual workflow.
 
 ### EVM write capability
 
-| Quota Key                                                                                                                                                          | Description                                               | Value     |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- | --------- |
-| <a href="#perworkflow-chainwrite-targetslimit" id="perworkflow-chainwrite-targetslimit">`PerWorkflow.ChainWrite.TargetsLimit`</a>                                  | Maximum number of destination chains for write operations | 10        |
-| <a href="#perworkflow-chainwrite-reportsizelimit" id="perworkflow-chainwrite-reportsizelimit">`PerWorkflow.ChainWrite.ReportSizeLimit`</a>                         | Maximum size of a report payload                          | 5 KB      |
-| <a href="#perworkflow-chainwrite-evm-transactiongaslimit" id="perworkflow-chainwrite-evm-transactiongaslimit">`PerWorkflow.ChainWrite.EVM.TransactionGasLimit`</a> | Gas quota per EVM transaction                             | 5,000,000 |
+| Quota Key                                                                                                                                                          | Description                                               | Value      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- | ---------- |
+| <a href="#perworkflow-chainwrite-targetslimit" id="perworkflow-chainwrite-targetslimit">`PerWorkflow.ChainWrite.TargetsLimit`</a>                                  | Maximum number of destination chains for write operations | 10         |
+| <a href="#perworkflow-chainwrite-reportsizelimit" id="perworkflow-chainwrite-reportsizelimit">`PerWorkflow.ChainWrite.ReportSizeLimit`</a>                         | Maximum size of a report payload                          | 50 KB      |
+| <a href="#perworkflow-chainwrite-evm-transactiongaslimit" id="perworkflow-chainwrite-evm-transactiongaslimit">`PerWorkflow.ChainWrite.EVM.TransactionGasLimit`</a> | Gas quota per EVM transaction                             | 10,000,000 |
 
 ### EVM read capability
 
@@ -453,20 +453,20 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                                        | Description                                            | Value      |
 | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ | ---------- |
-| <a href="#perworkflow-httpaction-calllimit" id="perworkflow-httpaction-calllimit">`PerWorkflow.HTTPAction.CallLimit`</a>                         | Maximum number of HTTP requests per workflow execution | 5          |
-| <a href="#perworkflow-httpaction-responsesizelimit" id="perworkflow-httpaction-responsesizelimit">`PerWorkflow.HTTPAction.ResponseSizeLimit`</a> | Maximum size of an HTTP response                       | 100 KB     |
+| <a href="#perworkflow-httpaction-calllimit" id="perworkflow-httpaction-calllimit">`PerWorkflow.HTTPAction.CallLimit`</a>                         | Maximum number of HTTP requests per workflow execution | 15         |
+| <a href="#perworkflow-httpaction-responsesizelimit" id="perworkflow-httpaction-responsesizelimit">`PerWorkflow.HTTPAction.ResponseSizeLimit`</a> | Maximum size of an HTTP response                       | 250 KB     |
 | <a href="#perworkflow-httpaction-connectiontimeout" id="perworkflow-httpaction-connectiontimeout">`PerWorkflow.HTTPAction.ConnectionTimeout`</a> | Maximum time to establish an HTTP connection           | 10 seconds |
-| <a href="#perworkflow-httpaction-requestsizelimit" id="perworkflow-httpaction-requestsizelimit">`PerWorkflow.HTTPAction.RequestSizeLimit`</a>    | Maximum size of an HTTP request payload                | 10 KB      |
+| <a href="#perworkflow-httpaction-requestsizelimit" id="perworkflow-httpaction-requestsizelimit">`PerWorkflow.HTTPAction.RequestSizeLimit`</a>    | Maximum size of an HTTP request payload                | 120 KB     |
 | <a href="#perworkflow-httpaction-cacheagelimit" id="perworkflow-httpaction-cacheagelimit">`PerWorkflow.HTTPAction.CacheAgeLimit`</a>             | Maximum time HTTP responses can be cached              | 10 minutes |
 
 ### Confidential HTTP capability
 
 | Quota Key                                                                                                                                                          | Description                                                         | Value      |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- | ---------- |
-| <a href="#perworkflow-confidentialhttp-calllimit" id="perworkflow-confidentialhttp-calllimit">`PerWorkflow.ConfidentialHTTP.CallLimit`</a>                         | Maximum number of confidential HTTP requests per workflow execution | 5          |
-| <a href="#perworkflow-confidentialhttp-requestsizelimit" id="perworkflow-confidentialhttp-requestsizelimit">`PerWorkflow.ConfidentialHTTP.RequestSizeLimit`</a>    | Maximum size of a confidential HTTP request payload                 | 10 KB      |
-| <a href="#perworkflow-confidentialhttp-responsesizelimit" id="perworkflow-confidentialhttp-responsesizelimit">`PerWorkflow.ConfidentialHTTP.ResponseSizeLimit`</a> | Maximum size of a confidential HTTP response                        | 100 KB     |
-| <a href="#perworkflow-confidentialhttp-timeout" id="perworkflow-confidentialhttp-timeout">`PerWorkflow.ConfidentialHTTP.TimeOut`</a>                               | Maximum time for a confidential HTTP request to complete            | 10 seconds |
+| <a href="#perworkflow-confidentialhttp-calllimit" id="perworkflow-confidentialhttp-calllimit">`PerWorkflow.ConfidentialHTTP.CallLimit`</a>                         | Maximum number of confidential HTTP requests per workflow execution | 15         |
+| <a href="#perworkflow-confidentialhttp-requestsizelimit" id="perworkflow-confidentialhttp-requestsizelimit">`PerWorkflow.ConfidentialHTTP.RequestSizeLimit`</a>    | Maximum size of a confidential HTTP request payload                 | 125 KB     |
+| <a href="#perworkflow-confidentialhttp-responsesizelimit" id="perworkflow-confidentialhttp-responsesizelimit">`PerWorkflow.ConfidentialHTTP.ResponseSizeLimit`</a> | Maximum size of a confidential HTTP response                        | 500 KB     |
+| <a href="#perworkflow-confidentialhttp-timeout" id="perworkflow-confidentialhttp-timeout">`PerWorkflow.ConfidentialHTTP.TimeOut`</a>                               | Maximum time for a confidential HTTP request to complete            | 90 seconds |
 
 ## Quota increases
 
@@ -2252,19 +2252,20 @@ Details:
 3. In the **Overview** section, find the **Workflow ID** field
 4. Click the copy button to copy it to your clipboard
 
+## Gateway URLs
+
+Find your production HTTP trigger endpoint in the UI under [Endpoints](https://app.chain.link/organization?otab=configuration). To see your environment, run `cre whoami` in the CLI.
+
+Here are the trigger endpoints per environment:
+
+| Environment    | Trigger endpoint                                       |
+| -------------- | ------------------------------------------------------ |
+| CRE Public     | `https://01.gateway.zone-a.cre.chain.link`             |
+| CRE Enterprise | `https://01.enterprise-gateway.zone-a.cre.chain.link/` |
+
 ## Request format
 
 All workflow executions use JSON-RPC 2.0 format:
-
-
-<Aside type="note" title="Gateway URL depends on your registry">
-  The gateway URL differs based on how your workflow is deployed:
-
-  - **Public (onchain) registry**: `https://01.gateway.zone-a.cre.chain.link`
-  - **Private registry** (`deployment-registry: "private"`): `https://01.enterprise-gateway.zone-a.cre.chain.link/`
-
-  Use the URL that matches the registry your workflow is deployed to. Run `cre registry list` or check your `workflow.yaml` if you're unsure.
-</Aside>
 
 ```http
 POST https://01.gateway.zone-a.cre.chain.link
@@ -2428,7 +2429,7 @@ If you're testing deployed workflows during development, use the [Local Testing 
 
 ## Example request (conceptual)
 
-Here's what a complete curl request looks like (using the public registry gateway — substitute `https://01.enterprise-gateway.zone-a.cre.chain.link/` if your workflow is deployed to the private registry):
+Here's what a complete curl request looks like (using the public DON gateway — see [Gateway URLs](#gateway-urls) to pick the right endpoint for your workflow's execution environment):
 
 ```bash
 curl -X POST https://01.gateway.zone-a.cre.chain.link \
@@ -2620,14 +2621,11 @@ GATEWAY_URL=https://01.gateway.zone-a.cre.chain.link
 Replace `0xYourPrivateKeyHere` with your EVM private key.
 
 
-<Aside type="note" title="Private registry gateway URL">
-  If your workflow is deployed to the **private registry** (`deployment-registry: "private"`), set `GATEWAY_URL` to:
-
-  ```
-  GATEWAY_URL=https://01.enterprise-gateway.zone-a.cre.chain.link/
-  ```
-
-  Use `https://01.gateway.zone-a.cre.chain.link` for workflows deployed to the public onchain registry.
+<Aside type="note" title="Gateway URL depends on your execution environment">
+  The `GATEWAY_URL` depends on the execution environment (DON) your workflow runs on, not on which registry it was
+  deployed to. A workflow deployed to the private registry still runs on the public DON, so it uses the public gateway.
+  See [Gateway URLs](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#gateway-urls) to
+  pick the right endpoint for your workflow.
 </Aside>
 
 <Aside type="caution" title="Keep your .env file secure">
@@ -15858,14 +15856,9 @@ See [Using Secrets with Deployed Workflows](/cre/guides/workflow/secrets/using-s
 
 ## HTTP triggers with the private registry
 
-If your private registry workflow uses an HTTP trigger, note that the gateway endpoint is different from the public registry:
+If your private registry workflow uses an HTTP trigger, note that the gateway endpoint depends on the execution environment (DON) your workflow runs on, not on which registry it was deployed to. A workflow deployed to the private registry still runs on the public DON, so it uses the same public gateway as onchain deployments.
 
-| Registry         | HTTP trigger gateway URL                               |
-| ---------------- | ------------------------------------------------------ |
-| Public (onchain) | `https://01.gateway.zone-a.cre.chain.link`             |
-| **Private**      | `https://01.enterprise-gateway.zone-a.cre.chain.link/` |
-
-Update your `GATEWAY_URL` (or equivalent configuration) wherever you send trigger requests — in local testing, CI scripts, or backend integrations — to use the enterprise gateway URL when targeting private registry workflows.
+Update your `GATEWAY_URL` (or equivalent configuration) wherever you send trigger requests — in local testing, CI scripts, or backend integrations — to use the gateway that matches your workflow's execution environment. See [Gateway URLs](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#gateway-urls) to pick the right endpoint.
 
 See [Triggering Deployed Workflows](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows) for the full HTTP trigger request format and authentication details.
 
@@ -20449,7 +20442,7 @@ Use this path if you want the receiver itself to be a CRE workflow with an HTTP 
 
 
 <Aside type="note" title="Using the private registry?">
-  This guide uses the **Capability Registry** (DON signers), not the **workflow registry** where you deploy. [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport) works the same way regardless of which registry you deployed with. For HTTP-triggered receivers, use the [enterprise gateway URL](/cre/guides/operations/deploying-to-private-registry-go#http-triggers-with-the-private-registry). Local simulation may need an `ethereum-mainnet` RPC in `project.yaml` for registry reads.
+  This guide uses the **Capability Registry** (DON signers), not the **workflow registry** where you deploy. [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport) works the same way regardless of which registry you deployed with. For HTTP-triggered receivers, the gateway URL depends on the workflow's [execution environment](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#gateway-urls), not the registry. Local simulation may need an `ethereum-mainnet` RPC in `project.yaml` for registry reads.
 </Aside>
 
 ### Testing with simulation
@@ -22523,12 +22516,12 @@ This section provides everything you need to work with HTTP triggers:
 
 ## Quick comparison: Simulation vs Production
 
-| Aspect             | Simulation                      | Production                                                                                                                                           |
-| ------------------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Authorization**  | Optional (can use empty config) | Required (`authorizedKeys` must be configured)                                                                                                       |
-| **Trigger method** | CLI with `--input` flag         | HTTP POST to gateway endpoint with JWT                                                                                                               |
-| **Endpoint**       | Local simulator                 | CRE gateway — public registry: `https://01.gateway.zone-a.cre.chain.link` / private registry: `https://01.enterprise-gateway.zone-a.cre.chain.link/` |
-| **Use case**       | Development, testing, debugging | Live integrations, webhooks, production APIs                                                                                                         |
+| Aspect             | Simulation                      | Production                                                                                                                    |
+| ------------------ | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **Authorization**  | Optional (can use empty config) | Required (`authorizedKeys` must be configured)                                                                                |
+| **Trigger method** | CLI with `--input` flag         | HTTP POST to gateway endpoint with JWT                                                                                        |
+| **Endpoint**       | Local simulator                 | CRE gateway (see [Gateway URLs](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#gateway-urls)) |
+| **Use case**       | Development, testing, debugging | Live integrations, webhooks, production APIs                                                                                  |
 
 ## Key concepts
 
