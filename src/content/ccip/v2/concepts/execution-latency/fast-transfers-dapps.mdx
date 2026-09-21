@@ -291,21 +291,54 @@ On failure: execution state **FAILURE** (`ExecutionStateChanged`); retries fail 
 1. For transfers that involve tokens, setting it to block depth = 1 allows any FTF transfers to be received (but they have already been gated by the token issuer's finality setting on source).
 2. For transfers that are data-only, receivers should ideally whitelist specific senders and set the `allowedFinalityConfig` to a safe value.
 
-## Best practices (dos and don'ts)
+## Best practices
 
-| Do                                                                                            | Don't                                                                                                       |
-| :-------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
-| Use a V2 sender/receiver pair for FTF                                                         | Expect V1 receivers to accept FTF (they cannot)                                                             |
-| Coordinate receiver policy with upstream pools/CCVs/senders                                   | Tighten `allowedFinalityConfig` while FTF messages are in flight                                            |
-| Leave `allowedFinalityConfig` at `WAIT_FOR_FINALITY_FLAG` unless FTF is required on that lane | Enable FTF globally by default                                                                              |
-| Gate FTF by sender when only known partners should use fast delivery                          | Assume non-zero `allowedFinalityConfig` per chain limits FTF to allowlisted senders without explicit checks |
-| Authenticate `message.sender` before non-idempotent `ccipReceive` logic on open FTF lanes     | Act on `data` from unknown senders when reorg duplicates would be harmful                                   |
-| Configure finality **per source chain**                                                       | Reuse one policy for all chains                                                                             |
-| Track processed `messageId`s for non-idempotent effects                                       | Assume OffRamp deduplicates reorg retries                                                                   |
-| Implement `IAny2EVMMessageReceiver` **and** ERC-165                                           | Rely on `ccipReceive` alone — without ERC-165, OffRamp may skip callback even with non-empty `data`         |
-| Upgrade to `IAny2EVMMessageReceiverV2` before setting non-zero inbound finality               | Expect custom finality on legacy receivers                                                                  |
-| Plan owner-mediated recovery for stranded messages                                            | Assume source finalization will eventually deliver a mismatched FTF request                                 |
-| Verify third-party CCV reorg behavior                                                         | Assume all CCVs match committee reorg quarantine                                                            |
-| Test FTF scenarios on testnet                                                                 | Ship permissive mainnet config without FTF testing                                                          |
+### Use V2 senders and receivers for FTF
+
+Use a V2 sender and receiver pair for FTF. V1 receivers cannot accept FTF messages.
+
+### Coordinate finality policies
+
+Coordinate the receiver policy with upstream pools, CCVs, and senders. Do not tighten `allowedFinalityConfig` while FTF messages are in flight.
+
+### Require full finality by default
+
+Leave `allowedFinalityConfig` at `WAIT_FOR_FINALITY_FLAG` unless FTF is required on that lane. Do not enable FTF globally by default.
+
+### Gate FTF by sender
+
+When only known partners should use fast delivery, explicitly gate FTF by sender. A non-zero `allowedFinalityConfig` for a source chain does not restrict FTF to allowlisted senders without additional checks.
+
+### Authenticate senders before non-idempotent operations
+
+On open FTF lanes, authenticate `message.sender` before executing non-idempotent `ccipReceive` logic. Do not act on `data` from unknown senders when reorg duplicates could be harmful.
+
+### Configure finality per source chain
+
+Set an appropriate finality policy for each source chain instead of reusing one policy across all chains.
+
+### Track processed messages
+
+Track processed `messageId`s for non-idempotent effects. Do not assume that the OffRamp deduplicates retries caused by reorgs.
+
+### Implement the receiver interface and ERC-165
+
+Implement both `IAny2EVMMessageReceiver` and ERC-165. Do not rely on `ccipReceive` alone; without ERC-165, the OffRamp might skip the callback even when `data` is non-empty.
+
+### Upgrade legacy receivers before enabling FTF
+
+Upgrade to `IAny2EVMMessageReceiverV2` before setting a non-zero inbound finality configuration. Legacy receivers do not support custom finality.
+
+### Plan recovery for stranded messages
+
+Plan an owner-mediated recovery process for stranded messages. A mismatched FTF request does not become executable merely because the source chain reaches finality.
+
+### Verify third-party CCV behavior
+
+Verify how each third-party CCV handles reorgs. Do not assume that every CCV implements the same reorg quarantine behavior as the Chainlink Committee Verifier.
+
+### Test FTF configurations
+
+Test FTF scenarios on testnet before deployment. Do not deploy a permissive FTF configuration to mainnet without testing it first.
 
 <CcipCommon callout="conceptualDisclaimer" />
