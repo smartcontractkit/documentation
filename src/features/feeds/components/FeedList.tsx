@@ -500,11 +500,8 @@ export const FeedList = ({
     return filteredChainsByTag.filter((chain) => chain.page === lockedNetwork)
   }, [filteredChainsByTag, lockedNetwork])
 
-  const availableChainsForSelection = lockedChains
-    ? lockedChains
-    : selectableChains.length > 0
-      ? selectableChains
-      : filteredChainsByTag
+  const availableChainsForSelection =
+    lockedChains || (selectableChains.length > 0 ? selectableChains : filteredChainsByTag)
 
   // Find the selected chain from available chains (filtered by dataFeedType)
   const selectedChain = useMemo(() => {
@@ -1811,11 +1808,10 @@ export const FeedList = ({
                       {network.name === "Stellar Mainnet" && (
                         <>
                           <p>
-                            Unlike EVM chains, Stellar uses a single cache contract for all feeds. Instead of a
-                            per-feed contract address, you select a feed by its <strong>feed ID</strong> (data_id)
-                            shown below. See the{" "}
-                            <a href="/data-feeds/stellar/">Using Data Feeds on Stellar</a> guide to learn how to read
-                            these feeds.
+                            Unlike EVM chains, Stellar uses a single cache contract for all feeds. Instead of a per-feed
+                            contract address, you select a feed by its <strong>feed ID</strong> (data_id) shown below.
+                            See the <a href="/data-feeds/stellar/">Using Data Feeds on Stellar</a> guide to learn how to
+                            read these feeds.
                           </p>
                           <ul>
                             <li>
@@ -2125,11 +2121,10 @@ export const FeedList = ({
                       {network.name === "Stellar Testnet" && (
                         <>
                           <p>
-                            Unlike EVM chains, Stellar uses a single cache contract for all feeds. Instead of a
-                            per-feed contract address, you select a feed by its <strong>feed ID</strong> (data_id)
-                            shown below. See the{" "}
-                            <a href="/data-feeds/stellar/">Using Data Feeds on Stellar</a> guide to learn how to read
-                            these feeds.
+                            Unlike EVM chains, Stellar uses a single cache contract for all feeds. Instead of a per-feed
+                            contract address, you select a feed by its <strong>feed ID</strong> (data_id) shown below.
+                            See the <a href="/data-feeds/stellar/">Using Data Feeds on Stellar</a> guide to learn how to
+                            read these feeds.
                           </p>
                           <ul>
                             <li>
