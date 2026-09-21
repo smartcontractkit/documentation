@@ -1794,6 +1794,36 @@ export const FeedList = ({
                           </ul>
                         </>
                       )}
+                      {network.name === "Stellar Mainnet" && (
+                        <>
+                          <p>
+                            Unlike EVM chains, Stellar uses a single cache contract for all feeds. Instead of a
+                            per-feed contract address, you select a feed by its <strong>feed ID</strong> (data_id)
+                            shown below. See the{" "}
+                            <a href="/data-feeds/stellar/">Using Data Feeds on Stellar</a> guide to learn how to read
+                            these feeds.
+                          </p>
+                          <ul>
+                            <li>
+                              Data Feeds cache contract on Stellar Mainnet:{" "}
+                              <a
+                                className={tableStyles.addressLink}
+                                href="https://stellar.expert/explorer/pubnet/contract/CAAFKBE6AMTERARISMMT4TCC4UGNO35XCKQNC5XVLL5WY5GRWXH6AMIO"
+                                target="_blank"
+                              >
+                                CAAFKBE6AMTERARISMMT4TCC4UGNO35XCKQNC5XVLL5WY5GRWXH6AMIO
+                              </a>
+                              <button
+                                className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                                style={{ height: "16px", width: "16px", marginLeft: "5px" }}
+                                data-clipboard-text="CAAFKBE6AMTERARISMMT4TCC4UGNO35XCKQNC5XVLL5WY5GRWXH6AMIO"
+                              >
+                                <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                              </button>
+                            </li>
+                          </ul>
+                        </>
+                      )}
                       <div className={feedList.tableFilters}>
                         <div className={feedList.filterControls}>
                           {!isStreams && !isSmartData && !isSvr && availableAssetTypes.length > 1 && (
@@ -2071,6 +2101,36 @@ export const FeedList = ({
                                 className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
                                 style={{ height: "16px", width: "16px", marginLeft: "5px" }}
                                 data-clipboard-text="0x516e771e1b4a903afe74c27d057c65849ecc1383782f6642d7ff21425f4f9c99"
+                              >
+                                <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                              </button>
+                            </li>
+                          </ul>
+                        </>
+                      )}
+                      {network.name === "Stellar Testnet" && (
+                        <>
+                          <p>
+                            Unlike EVM chains, Stellar uses a single cache contract for all feeds. Instead of a
+                            per-feed contract address, you select a feed by its <strong>feed ID</strong> (data_id)
+                            shown below. See the{" "}
+                            <a href="/data-feeds/stellar/">Using Data Feeds on Stellar</a> guide to learn how to read
+                            these feeds.
+                          </p>
+                          <ul>
+                            <li>
+                              Data Feeds cache contract on Stellar Testnet:{" "}
+                              <a
+                                className={tableStyles.addressLink}
+                                href="https://stellar.expert/explorer/testnet/contract/CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW"
+                                target="_blank"
+                              >
+                                CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW
+                              </a>
+                              <button
+                                className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                                style={{ height: "16px", width: "16px", marginLeft: "5px" }}
+                                data-clipboard-text="CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW"
                               >
                                 <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
                               </button>
