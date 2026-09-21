@@ -105,16 +105,15 @@ ACE Beta is an early-access release for testing and integration on supported mai
 
 ACE Beta is available on selected [mainnet and testnet networks](/ace/supported-networks). Additional networks may be added before general availability (GA).
 
-## No custom extractors or mappers
+## Custom extractors are registered by you, custom mappers are not available
 
-ACE Beta provides a library of [pre-built, audited policies](/ace/reference/policy-library) (allowlists, volume limits, role-based access control, pause controls, and more). You can also register your own [custom policies](/ace/guides/policy-manager/custom-policies). The following customizations are **not available** through the platform during Beta:
+ACE Beta provides a library of [pre-built, audited policies](/ace/reference/policy-library) (allowlists, volume limits, role-based access control, pause controls, and more) and pre-built extractors for **ERC-20 and ERC-3643** function signatures. You can also register your own [custom policies](/ace/guides/policy-manager/custom-policies) and [custom extractors](/ace/guides/policy-manager/contracts/custom-contract-types):
 
-- **Custom extractors** — Writing extractors for function signatures beyond the pre-built ERC-20 and ERC-3643 set.
-- **Custom mappers** — Deploying mapper contracts that transform or combine extracted parameters before they reach a policy.
+- **Custom contract types**: You can declare contract types with your own function ABIs via the Coordinator API, so contracts beyond ERC-20 and ERC-3643 (vaults, lending pools, custom token variants) are first-class citizens in the platform.
+- **Custom extractors**: You write and deploy your own extractor contract (implementing `IExtractor`), then register it via the Coordinator API with its supported function signatures and per-chain deployment addresses. The platform does not write extractors for you: pre-built extractors cover ERC-20 and ERC-3643 signatures only.
+- **Custom mappers**: Deploying mapper contracts that transform or combine extracted parameters before they reach a policy is **not available** through the platform during Beta.
 
-Because custom extractors are not available, the platform supports **ERC-20 and ERC-3643** function signatures only. These are the only contract types that get the full managed experience — policy configuration, reporting, and monitoring — through the Platform UI and Coordinator API. If you are building a different type of contract (vault, DEX, lending protocol), making it ACE-compatible could require custom extractors. Support for additional contract types and custom extractors is on the roadmap.
-
-Users can deploy custom extractors or mappers onchain directly, but these fall under the [self-deployed contracts limitation](#self-deployed-contracts-are-not-visible-in-the-platform) below — they will not be visible or manageable through the platform.
+The built-in ERC-20 and ERC-3643 contract types get the full managed experience (policy configuration, reporting, and monitoring) through the Platform UI and Coordinator API, with extractors attached automatically. A built-in CCIP token pool type (CCIP-AdvancedPoolHooks) covers the `preflightCheck` and `postflightCheck` hook functions of CCIP token pools. Custom contract types and extractors are managed through the Coordinator API. See [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types) for the complete flow.
 
 ## Self-deployed contracts are not visible in the platform
 
@@ -191,6 +190,17 @@ Source: https://docs.chain.link/ace/release-notes
 Last Updated: 2026-07-17
 
 <AceCallout callout="privateBeta" />
+
+## September 14, 2026 — Custom contracts
+
+This release makes any ACE-compatible contract a first-class citizen in the platform, not just ERC-20 and ERC-3643 tokens.
+
+### What's new
+
+- **Custom contract types**: Declare contract types with your own function ABIs via the new `/contract-types` Coordinator API endpoints. Custom types appear alongside the built-in contract types (ERC-20, ERC-3643, and CCIP-AdvancedPoolHooks for CCIP token pool hooks) and can be attached to policy engines and targets with `contract_type_ids`. See [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types).
+- **Custom extractors**: Write and deploy your own extractor contract (implementing `IExtractor` from the [chainlink-ace](https://github.com/smartcontractkit/chainlink-ace) repository) and register it via `POST /extractors` with its supported function signatures and per-chain deployment addresses. Pre-built extractors still cover ERC-20 and ERC-3643 signatures only; custom extractors extend coverage to any function signature.
+- **Contract types on engines and targets**: `POST/PUT /policy-engines` and `POST/PUT /targets` accept `contract_type_ids`, and engine, target, and extractor responses now include their associated contract types (`contract_types`, `assigned_contract_types`).
+- **ERC-3643 extractor coverage fix**: `ERC3643MintBurnExtractor` now covers `burn(address,uint256)` only; `mint(address,uint256)` is covered by `ComplianceTokenMintBurnExtractor`. If you protect `mint` on an ERC-3643 token, attach `ComplianceTokenMintBurnExtractor`.
 
 ## July 17, 2026 — ACE Beta+
 
@@ -824,10 +834,10 @@ For most use cases, the process is straightforward:
 
 For example, an ERC-20 transfer might have an Extractor that produces `to` and `value`. A sanctions policy might only need `to`, while a volume limit policy only needs `value`. Each gets exactly what it asks for.
 
-<Aside type="note" title="ACE Beta: pre-built extractors only">
-  During ACE Beta, the platform provides pre-built extractors for ERC-20 and ERC-3643 function signatures only. Custom
-  extractors for other contract types are not available through the platform. See [Beta
-  Scope](/ace/beta-scope#no-custom-extractors-or-mappers) for details.
+<Aside type="note" title="Extractors: pre-built and custom">
+  The platform provides pre-built extractors for ERC-20 and ERC-3643 function signatures. For other contract types, you
+  write and deploy your own extractor contract (implementing `IExtractor`) and register it via the Coordinator API. See
+  [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types) for details.
 </Aside>
 
 ### Worked example: ERC-20 transfer
@@ -859,9 +869,10 @@ For example, a policy that enforces a USD volume limit might need a `usdValue` p
 
 Mappers are set per policy using `setPolicyMapper` and override the default name-based mapping for that policy only.
 
-<Aside type="note" title="ACE Beta: custom mappers not available">
+<Aside type="note" title="Custom mappers are not available">
   Custom Mappers are not available through the ACE Platform during Beta. The platform uses the default name-based
-  parameter mapping for all policies. See [Beta Scope](/ace/beta-scope#no-custom-extractors-or-mappers) for details.
+  parameter mapping for all policies. See [Beta
+  Scope](/ace/beta-scope#custom-extractors-are-registered-by-you-custom-mappers-are-not-available) for details.
 </Aside>
 
 ## The context parameter
@@ -1706,7 +1717,7 @@ The Policy Manager revolves around a handful of entities that work together to e
 
 ### Typical setup flow
 
-1. [Create a PolicyEngine](/ace/guides/policy-manager/manage-engines) with extractors for your contract type (ERC-20 or ERC-3643).
+1. [Create a PolicyEngine](/ace/guides/policy-manager/manage-engines) with extractors for your contract type (built-in ERC-20/ERC-3643, or [your own](/ace/guides/policy-manager/contracts/custom-contract-types)).
 2. [Integrate your contract](/ace/guides/policy-manager/contracts/ace-compatible) by inheriting `PolicyProtected` and adding the `runPolicy` modifier.
 3. Deploy or upgrade your contract — it [appears as a target](/ace/guides/policy-manager/manage-targets) automatically.
 4. [Create policy instances](/ace/guides/policy-manager/manage-policies) from the Policy Library with your configuration.
@@ -1789,11 +1800,12 @@ Your contract must be connected to a [PolicyEngine](/ace/guides/policy-manager/m
 
 One extractor is registered per function signature. To bind policies to specific functions, see [Protecting Target Functions](/ace/guides/policy-manager/manage-protections).
 
-<Aside type="note" title="ACE Beta: pre-built extractors only">
-  During ACE Beta, the platform provides pre-built extractors for **ERC-20 and ERC-3643 function signatures only**.
-  Chainlink registers these extractors for your protected functions when setting up your infrastructure. Custom
-  extractors for other contract types are not available through the platform in Beta — see [Beta
-  Scope](/ace/beta-scope#no-custom-extractors-or-mappers) for details.
+<Aside type="note" title="Extractors: pre-built and custom">
+  The platform provides pre-built extractors for **ERC-20 and ERC-3643 function signatures**, attached automatically for
+  those contract types. A built-in CCIP-AdvancedPoolHooks type covers CCIP token pool hook functions. For other function
+  signatures, you write and deploy your own extractor contract (implementing `IExtractor`) and register it via the
+  Coordinator API. See [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types)
+  for the complete flow.
 </Aside>
 
 ## Integration paths
@@ -1872,9 +1884,9 @@ The most significant difference between the two implementations is how frozen to
   The reference implementations above are specifically for tokens. If you are building a different type of contract
   (vault, DEX, lending protocol, etc.), you can make any contract ACE-compatible by following the [integration
   requirements](/ace/guides/policy-manager/contracts/ace-compatible) — inherit from `PolicyProtected`, add `runPolicy`
-  to your functions, and connect to a PolicyEngine. During ACE Beta, the platform provides extractors for ERC-20 and
-  ERC-3643 function signatures only — other contract types require custom extractors, which are [not available through
-  the platform in Beta](/ace/beta-scope#no-custom-extractors-or-mappers).
+  to your functions, and connect to a PolicyEngine. For function signatures beyond ERC-20 and ERC-3643, you write and
+  register your own extractors. See [Custom Contract Types &
+  Extractors](/ace/guides/policy-manager/contracts/custom-contract-types).
 </Aside>
 
 ---
@@ -2144,10 +2156,10 @@ This guide explains how to add ACE compliance to a contract that is already depl
   depending on your constraints.
 </Aside>
 
-<Aside type="note" title="ACE Beta: supported contract types">
-  During Beta, the platform provides pre-built extractors for ERC-20 and ERC-3643 function signatures only. If you are
-  upgrading a contract with different function signatures, custom extractors are required but [not available through the
-  platform in Beta](/ace/beta-scope#no-custom-extractors-or-mappers).
+<Aside type="note" title="Supported contract types">
+  The platform provides pre-built extractors for ERC-20 and ERC-3643 function signatures. If you are upgrading a
+  contract with different function signatures, you write and deploy your own extractor contract and register it via the
+  Coordinator API. See [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types).
 </Aside>
 
 ## Prerequisites
@@ -2661,6 +2673,253 @@ Use [Approach 2](#approach-2-implement-ipolicyprotected-advanced), which adds on
 
 ---
 
+# Custom Contract Types & Extractors
+Source: https://docs.chain.link/ace/guides/policy-manager/contracts/custom-contract-types
+Last Updated: 2026-09-21
+
+Any [ACE-compatible](/ace/guides/policy-manager/contracts/ace-compatible) contract can use ACE policy enforcement, not just ERC-20 and ERC-3643 tokens. An ACE-compatible contract inherits `PolicyProtected`, marks protected functions with the `runPolicy` modifier, and connects to a PolicyEngine. The platform ships built-in contract types (ERC-20, ERC-3643, and a CCIP token pool type), with pre-built, audited extractors attached automatically.
+
+For function signatures beyond the pre-built set, you combine two building blocks:
+
+- A **custom contract type**: a declaration of your contract's functions (their ABIs) that you register with the Coordinator API.
+- A **custom extractor**: a contract you write and deploy that parses your function calldata into named parameters for policies.
+
+<Aside type="note" title="When you need this">
+  If your contract is a standard ERC-20 or ERC-3643 token, you don't need any of this: use the built-in types and their
+  pre-built extractors (see the [Policy Manager Quick
+  Start](/ace/getting-started/policy-manager#extractor-ids-for-api-creation)). Custom contract types are for contracts
+  with additional or different function signatures: a vault, a lending pool, or a token with a custom `mint` variant,
+  for example.
+</Aside>
+
+## Prerequisites
+
+- An [API key](/ace/getting-started/account-setup#3-create-an-api-key) for the Coordinator API.
+- An ACE-compatible contract with the functions you want to protect.
+- A development environment for compiling and deploying Solidity contracts (for example, Foundry or Hardhat).
+
+## How it works
+
+A **contract type** describes what functions a contract has. An **extractor** parses those functions' calldata. When a protected function is called, the PolicyEngine looks up the extractor registered for that function's selector, calls `extract()`, and passes the named parameters to each attached policy.
+
+1. You declare a custom contract type with your function ABIs (`POST /contract-types`).
+2. You write an extractor contract implementing `IExtractor` and deploy it onchain.
+3. You register the extractor with the Coordinator API (`POST /extractors`), pointing to the deployed contract address.
+4. You attach the contract type and extractors to your [policy engine](/ace/guides/policy-manager/manage-engines) and [target](/ace/guides/policy-manager/manage-targets).
+
+## The IExtractor interface
+
+Your extractor contract must implement [`IExtractor`](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/interfaces/IExtractor.sol) from the [chainlink-ace](https://github.com/smartcontractkit/chainlink-ace) repository:
+
+```solidity
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.20;
+
+import {IExtractor} from "@chainlink/policy-management/interfaces/IExtractor.sol";
+import {IPolicyEngine} from "@chainlink/policy-management/interfaces/IPolicyEngine.sol";
+
+contract MyVaultExtractor is IExtractor {
+  string public constant override typeAndVersion = "MyVaultExtractor 1.0.0";
+
+  function extract(IPolicyEngine.Payload calldata payload)
+    external
+    pure
+    returns (IPolicyEngine.Parameter[] memory)
+  {
+    // payload.selector: the function selector of the protected call
+    // payload.sender:  the transaction sender
+    // payload.data:    the raw calldata after the selector
+    (address depositor, uint256 amount) = abi.decode(payload.data, (address, uint256));
+
+    IPolicyEngine.Parameter[] memory result = new IPolicyEngine.Parameter[](2);
+    result[0] = IPolicyEngine.Parameter(keccak256("account"), abi.encode(depositor));
+    result[1] = IPolicyEngine.Parameter(keccak256("amount"), abi.encode(amount));
+    return result;
+  }
+}
+```
+
+The `Payload` struct contains the raw call context, and `Parameter` is a named `bytes32`/`bytes` pair:
+
+```solidity
+struct Payload {
+  bytes4 selector;  // function selector of the protected call
+  address sender;   // transaction sender
+  bytes data;       // calldata after the selector
+  bytes context;    // additional context (e.g., offchain signatures)
+}
+
+struct Parameter {
+  bytes32 name;     // parameter name (keccak256 hash)
+  bytes value;      // ABI-encoded value
+}
+```
+
+<Aside type="caution" title="Parameter names must match your policy">
+  Policies receive parameters by name. When you attach a policy to a protected function, the parameter names your
+  extractor produces must match the names that policy expects (for example, a volume limit policy reads `amount`). See
+  [Policy Management — the extractor and mapper
+  pattern](/ace/concepts/policy-management#the-extractor-and-mapper-pattern) and [Custom
+  Policies](/ace/guides/policy-manager/custom-policies) for how policies declare their expected parameters.
+</Aside>
+
+For reference implementations, see the [pre-built extractors](https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/policy-management/src/extractors) in the chainlink-ace repository. [`ERC20TransferExtractor`](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/extractors/ERC20TransferExtractor.sol) decodes `transfer` and `transferFrom` calldata into `from`, `to`, and `amount` parameters.
+
+## Create a custom contract type
+
+Register your contract type with its function ABIs:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/contract-types \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Vault",
+    "description": "Vault with deposit/withdraw compliance checks",
+    "contract_type_functions": {
+      "function_abis": [
+        {
+          "type": "function",
+          "name": "deposit",
+          "inputs": [
+            { "name": "depositor", "type": "address" },
+            { "name": "amount", "type": "uint256" }
+          ],
+          "outputs": [],
+          "state_mutability": "nonpayable"
+        }
+      ]
+    },
+    "extractor_ids": ["<EXTRACTOR_ID>"]
+  }'
+```
+
+| Field                                   | Required | Description                                     |
+| --------------------------------------- | -------- | ----------------------------------------------- |
+| `name`                                  | Yes      | Human-readable name of the contract type        |
+| `description`                           | No       | Optional description                            |
+| `contract_type_functions.function_abis` | Yes      | Array of function ABIs the contract type covers |
+| `extractor_ids`                         | No       | Extractors to associate with the contract type  |
+
+Function ABIs support tuple types: use `type: "tuple"` or `"tuple[]"` with a `components` array describing each field, and `internal_type` for the Solidity internal type.
+
+To list contract types (yours plus the built-ins) or fetch one by ID:
+
+```bash
+curl https://ace.api.chain.link/v1/contract-types \
+  -H "Authorization: Apikey <API_KEY>"
+
+curl https://ace.api.chain.link/v1/contract-types/<CONTRACT_TYPE_ID> \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+`GET /contract-types` accepts a `policy_engine_id` filter to list only the types registered on a given engine.
+
+## Register your extractor
+
+After deploying your extractor contract onchain, register it with the Coordinator API. The `onchain_extractors` array maps each deployment chain to the deployed contract address:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/extractors \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "MyVaultExtractor",
+    "supported_function_signatures": ["deposit(address,uint256)"],
+    "outputs": [
+      { "name": "account", "type": "address" },
+      { "name": "amount", "type": "uint256" }
+    ],
+    "onchain_extractors": [
+      { "chain_selector": "16015286601757825753", "address": "0xYourExtractorAddress" }
+    ]
+  }'
+```
+
+| Field                           | Required | Description                                               |
+| ------------------------------- | -------- | --------------------------------------------------------- |
+| `name`                          | Yes      | Human-readable name, unique per organization              |
+| `supported_function_signatures` | Yes      | Function signatures the extractor parses                  |
+| `outputs`                       | Yes      | Named outputs the extractor produces, in order            |
+| `onchain_extractors`            | No       | Per-chain deployment addresses of your extractor contract |
+
+<Aside type="note" title="Extractor names are unique per organization">
+  An active extractor name must be unique within your organization. If you re-register an updated version, archive the
+  old extractor first (`PATCH /extractors/{id}` with `{"status": "archived"}`) or use a new name.
+</Aside>
+
+The `outputs` you declare must match what your contract's `extract()` returns: same names, same order.
+
+## Attach the contract type to your engine and target
+
+When creating (or updating) your [policy engine](/ace/guides/policy-manager/manage-engines), pass `contract_type_ids` alongside `extractor_ids`:
+
+```bash
+curl -X PUT https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Policy Engine",
+    "contract_type_ids": ["<CONTRACT_TYPE_ID>"],
+    "extractor_ids": ["<EXTRACTOR_ID>"],
+    "onchain_policy_engines": [{ "chain_selector": "16015286601757825753" }]
+  }'
+```
+
+When registering your [target](/ace/guides/policy-manager/manage-targets), pass `contract_type_ids` so the platform knows which contract type the target implements:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/targets \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "My Vault",
+    "policy_engine_id": "<POLICY_ENGINE_ID>",
+    "contract_type_ids": ["<CONTRACT_TYPE_ID>"],
+    "protected_methods": ["deposit(address,uint256)"],
+    "onchain_targets": [
+      { "chain_selector": "16015286601757825753", "address": "0xYourVaultAddress" }
+    ]
+  }'
+```
+
+From there, the flow is the same as for built-in types: [create policy instances](/ace/guides/policy-manager/manage-policies) and [attach them to your protected functions](/ace/guides/policy-manager/manage-protections) with `extractor_output_ids` mapping your extractor's outputs to the policy's parameters.
+
+## Verify your setup
+
+- `GET /contract-types`: lists your custom types plus the built-ins; each type shows its functions and associated extractors.
+- `GET /extractors`: your registered extractor appears with its `assigned_contract_types`.
+- `GET /policy-engines/<ID>`: the engine response includes its `contract_types` and `extractor_registrations`.
+
+## Archive a custom contract type
+
+Archive a contract type you no longer need with a PATCH request:
+
+```bash
+curl -X PATCH https://ace.api.chain.link/v1/contract-types/<CONTRACT_TYPE_ID> \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{ "status": "archived" }'
+```
+
+Chainlink maintains the built-in contract types (ERC-20, ERC-3643, and CCIP-AdvancedPoolHooks); you cannot archive them.
+
+## Protect CCIP token pools
+
+[TO UPDATE — Link to CCIP docs/complete ACExCCIP guide]
+
+CCIP token pools support customizable hooks that run before and after cross-chain token movements. The platform ships a built-in **CCIP-AdvancedPoolHooks** contract type for exactly this case: it covers the `preflightCheck` hook, which CCIP calls on the source chain before a cross-chain transfer starts, and the `postflightCheck` hook, which CCIP calls on the destination chain before tokens are released. A pre-built extractor decodes the calldata of both hooks into named parameters (sender, receiver, amount, source or destination chain, token, and more).
+
+To add compliance checks to a token pool:
+
+1. [Create a policy engine](/ace/guides/policy-manager/manage-engines) and attach the CCIP-AdvancedPoolHooks contract type (in the Platform UI, select it in the **Contract types** step; via the API, pass its contract type ID in `contract_type_ids`).
+2. [Register your AdvancedPoolHooks contract](/ace/guides/policy-manager/manage-targets) as a target under that engine.
+3. [Create policy instances](/ace/guides/policy-manager/manage-policies) and [attach them](/ace/guides/policy-manager/manage-protections) to the `preflightCheck` and `postflightCheck` functions. Policies receive the decoded hook parameters (for example, the original sender and receiver addresses) and can reject the cross-chain operation.
+
+For the hook contract itself, what it can do, and a full end-to-end tutorial (deploying the token and pool, connecting the hook, and observing rejected and successful transfers), see the CCIP documentation on advanced pool hooks.
+
+---
+
 # Security Considerations
 Source: https://docs.chain.link/ace/guides/policy-manager/contracts/security-considerations
 Last Updated: 2026-03-31
@@ -2886,6 +3145,7 @@ curl -X POST https://ace.api.chain.link/v1/targets \
 | `description`           | No       | Description of the contract                                   |
 | `policy_engine_id`      | Yes      | UUID of the policy engine to associate with                   |
 | `protected_methods`     | No       | Array of function signatures that can be protected            |
+| `contract_type_ids`     | No       | Array of contract type UUIDs the target implements            |
 | `desired_default_allow` | No       | Whether to allow transactions by default (default: `true`)    |
 | `onchain_targets`       | No       | Array of objects with `chain_selector` and contract `address` |
 | `metadata`              | No       | Arbitrary JSON metadata (e.g., `{"contract_type": "ERC-20"}`) |

@@ -48,7 +48,7 @@ A **PolicyEngine** is the onchain contract that evaluates compliance rules on yo
 
   </Fragment>
   <Fragment slot="api">
-    ACE Beta supports two contract types. Attach **all** extractors for your contract type at creation time so you don't have to add more later.
+    The platform ships with built-in contract types (ERC-20, ERC-3643, and a CCIP token pool type) whose extractors are pre-built and attached automatically. Attach **all** extractors for your contract type at creation time so you don't have to add more later. For contracts with other function signatures, see [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types).
 
     #### Extractor IDs for API creation
 
@@ -64,14 +64,15 @@ A **PolicyEngine** is the onchain contract that evaluates compliance rules on yo
 
     ##### ERC-3643 extractors
 
-    | Extractor                        | ID                                     | Functions covered                                                                |
-    | -------------------------------- | -------------------------------------- | -------------------------------------------------------------------------------- |
-    | ERC20TransferExtractor           | `d4b8cd51-7d5a-487a-9ba5-bb7236e3184c` | `transfer(address,uint256)`, `transferFrom(address,address,uint256)`             |
-    | ERC20ApproveExtractor            | `572201bb-170b-4fda-ab89-a65b5bbc594b` | `approve(address,uint256)`                                                       |
-    | ERC3643MintBurnExtractor         | `f17bbe8b-8462-4dd7-8fb7-a4973dff04fc` | `mint(address,uint256)`, `burn(address,uint256)`                                 |
-    | ERC3643FreezeUnfreezeExtractor   | `a6422540-76fb-46bc-90e2-16cc7b0aaa1e` | `freezePartialTokens(address,uint256)`, `unfreezePartialTokens(address,uint256)` |
-    | ERC3643SetAddressFrozenExtractor | `bd80dda1-fa6c-4028-a26e-a1802ae41ec7` | `setAddressFrozen(address,bool)`                                                 |
-    | ERC3643ForcedTransferExtractor   | `d9015eeb-3345-478f-b2f1-2194b6689078` | `forcedTransfer(address,address,uint256)`                                        |
+    | Extractor                              | ID                                     | Functions covered                                                                |
+    | -------------------------------------- | -------------------------------------- | -------------------------------------------------------------------------------- |
+    | ERC20TransferExtractor                 | `d4b8cd51-7d5a-487a-9ba5-bb7236e3184c` | `transfer(address,uint256)`, `transferFrom(address,address,uint256)`             |
+    | ERC20ApproveExtractor                  | `572201bb-170b-4fda-ab89-a65b5bbc594b` | `approve(address,uint256)`                                                       |
+    | ERC3643MintBurnExtractor               | `f17bbe8b-8462-4dd7-8fb7-a4973dff04fc` | `burn(address,uint256)`                                                          |
+    | ComplianceTokenMintBurnExtractor       | `245c24a9-6fdd-48e0-a418-725ed0b2056c` | `mint(address,uint256)`, `burnFrom(address,uint256)`, `burn(uint256)`            |
+    | ERC3643FreezeUnfreezeExtractor         | `a6422540-76fb-46bc-90e2-16cc7b0aaa1e` | `freezePartialTokens(address,uint256)`, `unfreezePartialTokens(address,uint256)` |
+    | ERC3643SetAddressFrozenExtractor       | `bd80dda1-fa6c-4028-a26e-a1802ae41ec7` | `setAddressFrozen(address,bool)`                                                 |
+    | ERC3643ForcedTransferExtractor         | `d9015eeb-3345-478f-b2f1-2194b6689078` | `forcedTransfer(address,address,uint256)`                                        |
 
     <Aside type="tip" title="Listing extractors via the API">
       You can retrieve the full list of available extractors and their IDs at any time with `GET

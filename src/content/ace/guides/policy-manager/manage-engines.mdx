@@ -64,13 +64,15 @@ A **policy engine** is the on-chain orchestrator that evaluates policies wheneve
     | `name` | Yes | Human-readable name |
     | `description` | No | Description of the engine's purpose |
     | `extractor_ids` | No | Array of extractor UUIDs to register with the engine |
+    | `contract_type_ids` | No | Array of contract type UUIDs to register on the engine |
     | `onchain_policy_engines` | Yes | Array of objects with `chain_selector` values for each deployment chain |
 
     <Aside type="tip" title="Attach extractors at creation time">
-      Include the `extractor_ids` field when creating your engine so extractors are registered immediately.
-      ACE Beta supports ERC-20 and ERC-3643 contracts — attach all extractors for your contract type upfront to avoid
-      additional updates later. See the [Policy Manager Quick Start](/ace/getting-started/policy-manager#extractor-ids-for-api-creation)
-      for the full list of extractor IDs.
+      Include the `extractor_ids` field when creating your engine so extractors are registered immediately. For ERC-20
+      and ERC-3643 contracts, attach all pre-built extractors for your contract type upfront. See the [Policy Manager
+      Quick Start](/ace/getting-started/policy-manager#extractor-ids-for-api-creation) for the full list of extractor
+      IDs. For other contract types, register your own extractors first. See [Custom Contract Types &
+      Extractors](/ace/guides/policy-manager/contracts/custom-contract-types).
     </Aside>
 
     Each on-chain engine starts in `creation_pending` status until deployment completes. The response includes the engine `id` and the on-chain contract addresses.

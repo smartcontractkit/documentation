@@ -120,10 +120,10 @@ For most use cases, the process is straightforward:
 
 For example, an ERC-20 transfer might have an Extractor that produces `to` and `value`. A sanctions policy might only need `to`, while a volume limit policy only needs `value`. Each gets exactly what it asks for.
 
-<Aside type="note" title="ACE Beta: pre-built extractors only">
-  During ACE Beta, the platform provides pre-built extractors for ERC-20 and ERC-3643 function signatures only. Custom
-  extractors for other contract types are not available through the platform. See [Beta
-  Scope](/ace/beta-scope#no-custom-extractors-or-mappers) for details.
+<Aside type="note" title="Extractors: pre-built and custom">
+  The platform provides pre-built extractors for ERC-20 and ERC-3643 function signatures. For other contract types, you
+  write and deploy your own extractor contract (implementing `IExtractor`) and register it via the Coordinator API. See
+  [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types) for details.
 </Aside>
 
 ### Worked example: ERC-20 transfer
@@ -157,9 +157,10 @@ For example, a policy that enforces a USD volume limit might need a `usdValue` p
 
 Mappers are set per policy using `setPolicyMapper` and override the default name-based mapping for that policy only.
 
-<Aside type="note" title="ACE Beta: custom mappers not available">
+<Aside type="note" title="Custom mappers are not available">
   Custom Mappers are not available through the ACE Platform during Beta. The platform uses the default name-based
-  parameter mapping for all policies. See [Beta Scope](/ace/beta-scope#no-custom-extractors-or-mappers) for details.
+  parameter mapping for all policies. See [Beta
+  Scope](/ace/beta-scope#custom-extractors-are-registered-by-you-custom-mappers-are-not-available) for details.
 </Aside>
 
 ## The context parameter
