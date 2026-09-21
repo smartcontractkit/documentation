@@ -5459,12 +5459,12 @@ Chainlink Data Feeds on Stellar follow the same pattern as [Data Feeds on Aptos]
 
 ## How Stellar Data Feeds work
 
-Data Feeds on Stellar use a proxy and cache model:
+Data Feeds on Stellar use a cache contract that the Chainlink oracle network writes into. Consumers read feeds directly from the cache by passing a 32-byte `data_id`:
 
-- **Proxy contract**: A single proxy contract is the only contract that consumers interact with. The proxy address stays stable across cache replacements, so your application does not need to change when the underlying data is upgraded.
-- **Cache contract**: The proxy delegates reads to a cache contract that the Chainlink oracle network writes into. When the cache is replaced, the proxy continues to point to the new cache, and the proxy address remains unchanged.
+- **Cache contract**: A single cache contract serves every feed. The Chainlink oracle network writes round data into the cache, and consumers read it by passing the `data_id` for the feed they need. The cache address stays stable across upgrades.
+- **Fallback proxy**: A separate fallback proxy exists for the DF1 data feed, but it is not customer-facing and is not documented here.
 
-Consumers select a feed by passing its 32-byte `data_id` to the proxy. You can find the `data_id` for each feed on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+Consumers select a feed by passing its 32-byte `data_id` to the cache. You can find the `data_id` for each feed on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
 
 ## Supported networks
 
@@ -5473,68 +5473,60 @@ Chainlink Data Feeds are available on the following Stellar networks:
 - [Stellar Testnet](https://stellar.org/developers/guides/concepts/networks#testnet)
 - [Stellar Mainnet (Pubnet)](https://stellar.org/developers/guides/concepts/networks#public-network)
 
-## Proxy contract addresses
+## Cache contract addresses
 
-The proxy contract address is the same for every feed on a given network. You only ever interact with the proxy.
+The cache contract address is the same for every feed on a given network. You only ever interact with the cache.
 
-- **Stellar Testnet**: \<TESTNET_PROXY_ADDRESS>
-- **Stellar Mainnet (Pubnet)**: \<MAINNET_PROXY_ADDRESS>
-
-{/* TODO: Replace the placeholder proxy addresses above once engineering provides the final testnet and mainnet proxy contract addresses. */}
+- **Stellar Testnet**: CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW
+- **Stellar Mainnet (Pubnet)**: CAAFKBE6AMTERARISMMT4TCC4UGNO35XCKQNC5XVLL5WY5GRWXH6AMIO
 
 ## Reader interface
 
-Consumers call the following functions on the proxy contract. The interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_proxy.rs) repository.
+Consumers call the following functions on the cache contract. The interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_cache.rs) repository.
 
-| Function                                 | Returns                                                                 |
-| ---------------------------------------- | ----------------------------------------------------------------------- |
-| `latest_round(data_id, decimals)`        | The most recent round for that feed, scaled to the requested `decimals` |
-| `get_round(data_id, round_id, decimals)` | A specific historical round, scaled to the requested `decimals`         |
-| `decimals(data_id)`                      | The storage precision of the feed, currently always `18`                |
-| `description(data_id)`                   | Human-readable pair name                                                |
+| Function                       | Returns                                               |
+| ------------------------------ | ----------------------------------------------------- |
+| `latest_round(data_ids)`       | The most recent round for each requested `data_id`    |
+| `get_round(data_id, round_id)` | A specific historical round                           |
+| `decimals(data_ids)`           | Decimal places for each requested `data_id`           |
+| `description(data_ids)`        | Human-readable pair name for each requested `data_id` |
 
 ### Round structure
 
-A round returned by the proxy carries the following fields:
+A round returned by the cache carries the following fields:
 
-| Field       | Description                                               |
-| ----------- | --------------------------------------------------------- |
-| `round_id`  | The unique identifier of the round                        |
-| `answer`    | The answer for the feed, represented as an `I256`         |
-| `timestamp` | The Unix timestamp in seconds when the round was recorded |
+| Field        | Description                                                   |
+| ------------ | ------------------------------------------------------------- |
+| `round_id`   | The unique identifier of the round                            |
+| `answer`     | The answer for the feed, represented as an `I256`             |
+| `timestamp`  | The Unix timestamp in seconds when the round was recorded     |
+| `ledger_seq` | The Stellar ledger sequence at which the round was recorded   |
+| `primary`    | Indicates whether the round is the primary round for the feed |
 
 ## Error handling
 
-When you call the proxy, the contract can return a `ProxyReadError`. The following cases describe what each error means for a consumer:
+When you call the cache, the contract can return a `CacheError`. The following cases describe what each error means for a consumer:
 
-| Error             | Meaning                                                                                                                                         |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `NoDataPresent`   | No round is available for the requested `data_id` or `round_id`. This can happen if the feed has not been written yet or the round has expired. |
-| `InvalidDecimals` | The `decimals` you requested is outside the supported range for the feed. The valid range is `[min_decimals(feed), 18]`.                        |
-| `RoundsToZero`    | A non-zero answer would truncate to zero at the requested `decimals`. Request fewer decimal places.                                             |
+| Error               | Meaning                                                                                                                                                                                                                                   |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `FeedNotConfigured` | The `data_id` you passed does not correspond to a configured feed. Check that you are using the correct `data_id` from the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected. |
+| `InvalidDataId`     | The `data_id` you passed is invalid.                                                                                                                                                                                                      |
+| `FeedFrozen`        | The feed is frozen and cannot be read.                                                                                                                                                                                                    |
 
 ## How long a round is available
 
-A round is stored in the cache contract's temporary storage with a retention period of `3,110,400` ledgers. After this period, a round can no longer be read from the proxy.
+A round is stored in the cache contract's temporary storage with a retention period of `3,110,400` ledgers. After this period, a round can no longer be read from the cache.
 
 ## Getting started
 
 You can read Chainlink Data Feeds on Stellar either onchain or offchain:
 
-- **Onchain**: Deploy a [Soroban contract in Rust](/data-feeds/stellar/using-data-feeds-on-chain) that calls the proxy and reads a price, deployed with `stellar-cli` to the Stellar Testnet.
+- **Onchain**: Deploy a [Soroban contract in Rust](/data-feeds/stellar/using-data-feeds-on-chain) that calls the cache and reads a price, deployed with `stellar-cli` to the Stellar Testnet.
 - **Offchain**: Read a feed via [Soroban RPC simulation](/data-feeds/stellar/using-data-feeds-off-chain) using `stellar-cli` and the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk).
 
 ## Answer precision
 
-The cache stores every answer at a fixed `18` decimal places (`DECIMALS`). Feeds sourced at a lower precision, such as `8` decimals, are scaled up to `18` on write, so the stored value is always `18`-decimal regardless of the feed's native precision. As a result, `decimals(data_id)` on the proxy currently always returns `18`; it describes the storage precision, not the originating feed.
-
-Decimal conversion is applied at the proxy level. When you call `latest_round` or `get_round`, you pass the precision you want the answer returned at. The valid range is `[min_decimals(feed), 18]`:
-
-- A feed's minimum precision is owner-configurable and defaults to `18`, which locks the feed to full precision unless the owner explicitly opens it up.
-- Downscaling truncates toward zero, matching the behavior of Solidity integer division that EVM consumers already use.
-- A non-zero answer that would truncate to zero at the requested precision fails with a distinct error rather than silently returning zero. An answer that is genuinely zero returns zero at any precision.
-
-{/* TODO: Confirm the finalised precision interface with engineering. The `decimals` parameter on `latest_round`/`get_round`, the per-feed `min_decimals` concept, and the precision error cases are in flight and should be verified before publishing. */}
+The cache stores every answer at a fixed `18` decimal places (`DECIMALS`). Feeds sourced at a lower precision, such as `8` decimals, are scaled up to `18` on write, so the stored value is always `18`-decimal regardless of the feed's native precision. When you read a round, the `answer` is returned at `18` decimal places.
 
 <Aside type="danger" title="Select quality data feeds">
   Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds).
@@ -5561,33 +5553,41 @@ You also need [Node.js 18 or higher](https://nodejs.org/en/download/) to run the
 
 ## Read a feed with the Stellar CLI
 
-You can read a Chainlink Data Feed offchain without deploying a contract by simulating a call to the proxy contract using the `stellar contract invoke` command with the `--simulate` flag. This does not submit a transaction and requires no XLM.
+You can read a Chainlink Data Feed offchain without deploying a contract by simulating a call to the cache contract using the `stellar contract invoke` command with the `--send=no` flag. This does not submit a transaction and requires no XLM.
 
-1. Run the following command, replacing `<TESTNET_PROXY_ADDRESS>` with the Stellar Testnet proxy contract address and `<TESTNET_BTC_USD_DATA_ID>` with the `data_id` for the feed you want to read. The `latest_round` function takes a `decimals` argument, which you set to `18` to match the `DECIMALS` constant used by the data feeds contracts:
+The cache contract exposes a batched `latest_round` function that takes a vector of `data_id`s and returns a round for each. You pass the `data_id` as raw hex (without the `0x` prefix).
+
+1. Run the following command, replacing `<SOURCE_ACCOUNT>` with any Stellar account public key. The cache contract on Stellar Testnet is `CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW`, and the BTC/USD `data_id` is `01a0b4d920000332000000000000000000000000000000000000000000000000`:
 
    ```bash
    stellar contract invoke \
-   --id <TESTNET_PROXY_ADDRESS> \
+   --id CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW \
+   --source-account <SOURCE_ACCOUNT> \
    --network testnet \
-   --simulate \
+   --send=no \
    -- latest_round \
-   --data_id <TESTNET_BTC_USD_DATA_ID> \
-   --decimals 18
+   --data_ids '["01a0b4d920000332000000000000000000000000000000000000000000000000"]'
    ```
 
    Expect an output similar to the following:
 
    ```bash
-   [<latest_round_data>]
+   [{"answer":"85965450000000000000000","ledger_seq":4795545,"primary":true,"round_id":47,"timestamp":1790001299}]
    ```
 
-   Where `<latest_round_data>` is the serialized round data for the feed, including the `round_id`, `answer`, and `timestamp` fields.
+   Where:
 
-{/* TODO: Replace the placeholder proxy address and BTC/USD data_id once engineering provides the final testnet proxy address and launch feed list. */}
+   - `answer` is the latest BTC/USD price with 18 decimal places (`85965450000000000000000` = 85965.45).
+   - `round_id` is the unique identifier of the round.
+   - `timestamp` is the Unix timestamp in seconds when the round was recorded.
+   - `ledger_seq` is the Stellar ledger sequence at which the round was recorded.
+   - `primary` indicates whether the round is the primary round for the feed.
+
+   You can pass multiple `data_id`s in the array to read several feeds in one call. You can find the `data_id` for each feed on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
 
 ## Read a feed with the Stellar JavaScript SDK
 
-You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk) with a Soroban RPC simulation.
+You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk) with a Soroban RPC query. This example uses the `queryContract` method available in SDK v17 and later.
 
 1. Create a new directory for your project and initialize it:
 
@@ -5601,34 +5601,25 @@ You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript S
    npm install @stellar/stellar-sdk
    ```
 
-3. Create a `read-feed.js` file with the following contents. This script simulates a call to the proxy contract's `latest_round` function for a given `data_id` and `decimals`:
+3. Create a `read-feed.js` file with the following contents. This script queries the cache contract's `latest_round` function for a given `data_id`:
 
    ```javascript
-   const { SorobanRpc, Address, xdr } = require("@stellar/stellar-sdk")
+   const { rpc, xdr } = require("@stellar/stellar-sdk")
 
-   const rpc = new SorobanRpc.Server("https://soroban-testnet.stellar.org")
-   const proxy = new Address("<TESTNET_PROXY_ADDRESS>")
-   const dataId = "<TESTNET_BTC_USD_DATA_ID>"
-   const decimals = 18
+   const server = new rpc.Server("https://soroban-testnet.stellar.org")
+   const cache = "CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW"
+   const dataId = "01a0b4d920000332000000000000000000000000000000000000000000000000"
 
    async function readLatestRound() {
-     const dataIdBytes = xdr.ScVal.scvVec(
-       [...Buffer.from(dataId.replace("0x", ""), "hex")].map((b) => xdr.ScVal.scvU32(b))
-     )
-
-     const result = await rpc.simulateContract({
-       contractAddress: proxy,
-       functionName: "latest_round",
-       args: [dataIdBytes, xdr.ScVal.scvU32(decimals)],
-     })
-
-     console.log("Latest round:", result)
+     const dataIdBytes = xdr.ScVal.scvVec([xdr.ScVal.scvBytes(Buffer.from(dataId, "hex"))])
+     const result = await server.queryContract(cache, "latest_round", { data_ids: dataIdBytes })
+     console.log("Latest round:", JSON.stringify(result, null, 2))
    }
 
    readLatestRound().catch(console.error)
    ```
 
-   {/* TODO: Replace the placeholder proxy address and data_id, and confirm the exact SDK invocation pattern, once engineering provides the final proxy address and interface. */}
+   {/* TODO: Confirm the exact queryContract args serialization for the Stellar JS SDK v17 before publishing. The CLI method above is verified working; the SDK API is version-specific. */}
 
 4. Run the script:
 
@@ -5637,8 +5628,6 @@ You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript S
    ```
 
    Expect an output that includes the latest round data for the feed, including the `answer` and `timestamp`.
-
-{/* TODO: Confirm the exact Soroban RPC simulation pattern and SDK usage with engineering before publishing. */}
 
 ---
 
@@ -5701,29 +5690,39 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
 
    This creates a `consumer` directory with a default Soroban contract scaffold.
 
-2. Open the `consumer/src/lib.rs` file and replace its contents with the following contract. This contract calls the Chainlink Data Feeds proxy to read the latest price for a given `data_id` and returns the answer. The proxy interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_proxy.rs) repository:
+2. Open the `consumer/src/lib.rs` file and replace its contents with the following contract. This contract calls the Chainlink Data Feeds cache contract to read the latest price for a given `data_id` and returns the answer. The cache interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_cache.rs) repository:
 
    ```rust
    #![no_std]
-   use soroban_sdk::{contract, contractimpl, contractclient, Address, BytesN, Env, I256};
+   use soroban_sdk::{contract, contractimpl, contractclient, vec, Address, BytesN, Env, I256, Vec};
 
-   #[contractclient(name = "DataFeedsProxyClient")]
-   pub trait DataFeedsProxy {
-       fn latest_round(env: Env, data_id: BytesN<32>, decimals: u32) -> Result<Round, ProxyReadError>;
+   #[contractclient(name = "DataFeedsCacheClient")]
+   pub trait DataFeedsCache {
+       fn latest_round(env: Env, data_ids: Vec<BytesN<32>>) -> Result<Vec<Option<RoundData>>, CacheError>;
    }
 
    #[contracttype]
-   pub struct Round {
+   pub struct RoundData {
        pub round_id: u64,
        pub answer: I256,
        pub timestamp: u64,
+       pub ledger_seq: u32,
+       pub primary: bool,
    }
 
    #[contracterror]
-   pub enum ProxyReadError {
-       NoDataPresent = 50,
-       InvalidDecimals = 51,
-       RoundsToZero = 52,
+   pub enum CacheError {
+       MalformedReport = 100,
+       UnauthorizedCaller = 101,
+       FeedNotConfigured = 102,
+       EmptyConfig = 103,
+       InvalidAddress = 104,
+       InvalidWorkflowName = 105,
+       DuplicatePermission = 106,
+       InvalidDataId = 107,
+       DuplicateFeedConfig = 108,
+       FeedFrozen = 109,
+       NoFeedState = 110,
    }
 
    #[contract]
@@ -5732,15 +5731,16 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
    #[contractimpl]
    impl Consumer {
        /// Read the latest round for a feed and return its answer.
-       pub fn read_latest_price(env: Env, proxy: Address, data_id: BytesN<32>) -> I256 {
-           let client = DataFeedsProxyClient::new(&env, &proxy);
-           let round = client.latest_round(&data_id, &18).unwrap();
+       pub fn read_latest_price(env: Env, cache: Address, data_id: BytesN<32>) -> I256 {
+           let client = DataFeedsCacheClient::new(&env, &cache);
+           let rounds = client.latest_round(&vec![&env, data_id]).unwrap();
+           let round = rounds.get_unchecked(0).unwrap();
            round.answer
        }
    }
    ```
 
-   This contract uses the `latest_round` function with `18` decimal places, matching the `DECIMALS` constant used by the data feeds contracts. The returned `Round` contains the `round_id`, `answer`, and `timestamp` for the feed.
+   This contract calls the cache's `latest_round` function with a vector containing a single `data_id`. The returned `RoundData` contains the `round_id`, `answer`, `timestamp`, `ledger_seq`, and `primary` fields for the feed. The answer is stored at `18` decimal places.
 
 ## Build and deploy the contract
 
@@ -5776,7 +5776,7 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
 
 ## Invoke the contract
 
-1. Invoke the `read_latest_price` function on your deployed contract, passing the proxy contract address and the `data_id` for the feed you want to read. The BTC/USD `data_id` on Stellar Testnet is \<TESTNET_BTC_USD_DATA_ID>. You can find the `data_id` for other assets on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+1. Invoke the `read_latest_price` function on your deployed contract, passing the cache contract address and the `data_id` for the feed you want to read. The cache contract on Stellar Testnet is `CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW`, and the BTC/USD `data_id` is `01a0b4d920000332000000000000000000000000000000000000000000000000`. You can find the `data_id` for other assets on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
 
    ```bash
    stellar contract invoke \
@@ -5784,8 +5784,8 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
    --source my-account \
    --network testnet \
    -- read_latest_price \
-   --proxy <TESTNET_PROXY_ADDRESS> \
-   --data_id <TESTNET_BTC_USD_DATA_ID>
+   --cache CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW \
+   --data_id 01a0b4d920000332000000000000000000000000000000000000000000000000
    ```
 
    Expect an output similar to the following:
@@ -5794,9 +5794,7 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
    [<latest_price>]
    ```
 
-   Where `<latest_price>` is the latest BTC/USD price for the feed.
-
-{/* TODO: Replace the placeholder proxy address and BTC/USD data_id once engineering provides the final testnet proxy address and launch feed list. */}
+   Where `<latest_price>` is the latest BTC/USD price for the feed, stored at 18 decimal places.
 
 ---
 

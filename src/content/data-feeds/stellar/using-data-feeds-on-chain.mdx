@@ -72,29 +72,39 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
 
    This creates a `consumer` directory with a default Soroban contract scaffold.
 
-1. Open the `consumer/src/lib.rs` file and replace its contents with the following contract. This contract calls the Chainlink Data Feeds proxy to read the latest price for a given `data_id` and returns the answer. The proxy interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_proxy.rs) repository:
+1. Open the `consumer/src/lib.rs` file and replace its contents with the following contract. This contract calls the Chainlink Data Feeds cache contract to read the latest price for a given `data_id` and returns the answer. The cache interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_cache.rs) repository:
 
    ```rust
    #![no_std]
-   use soroban_sdk::{contract, contractimpl, contractclient, Address, BytesN, Env, I256};
+   use soroban_sdk::{contract, contractimpl, contractclient, vec, Address, BytesN, Env, I256, Vec};
 
-   #[contractclient(name = "DataFeedsProxyClient")]
-   pub trait DataFeedsProxy {
-       fn latest_round(env: Env, data_id: BytesN<32>, decimals: u32) -> Result<Round, ProxyReadError>;
+   #[contractclient(name = "DataFeedsCacheClient")]
+   pub trait DataFeedsCache {
+       fn latest_round(env: Env, data_ids: Vec<BytesN<32>>) -> Result<Vec<Option<RoundData>>, CacheError>;
    }
 
    #[contracttype]
-   pub struct Round {
+   pub struct RoundData {
        pub round_id: u64,
        pub answer: I256,
        pub timestamp: u64,
+       pub ledger_seq: u32,
+       pub primary: bool,
    }
 
    #[contracterror]
-   pub enum ProxyReadError {
-       NoDataPresent = 50,
-       InvalidDecimals = 51,
-       RoundsToZero = 52,
+   pub enum CacheError {
+       MalformedReport = 100,
+       UnauthorizedCaller = 101,
+       FeedNotConfigured = 102,
+       EmptyConfig = 103,
+       InvalidAddress = 104,
+       InvalidWorkflowName = 105,
+       DuplicatePermission = 106,
+       InvalidDataId = 107,
+       DuplicateFeedConfig = 108,
+       FeedFrozen = 109,
+       NoFeedState = 110,
    }
 
    #[contract]
@@ -103,15 +113,16 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
    #[contractimpl]
    impl Consumer {
        /// Read the latest round for a feed and return its answer.
-       pub fn read_latest_price(env: Env, proxy: Address, data_id: BytesN<32>) -> I256 {
-           let client = DataFeedsProxyClient::new(&env, &proxy);
-           let round = client.latest_round(&data_id, &18).unwrap();
+       pub fn read_latest_price(env: Env, cache: Address, data_id: BytesN<32>) -> I256 {
+           let client = DataFeedsCacheClient::new(&env, &cache);
+           let rounds = client.latest_round(&vec![&env, data_id]).unwrap();
+           let round = rounds.get_unchecked(0).unwrap();
            round.answer
        }
    }
    ```
 
-   This contract uses the `latest_round` function with `18` decimal places, matching the `DECIMALS` constant used by the data feeds contracts. The returned `Round` contains the `round_id`, `answer`, and `timestamp` for the feed.
+   This contract calls the cache's `latest_round` function with a vector containing a single `data_id`. The returned `RoundData` contains the `round_id`, `answer`, `timestamp`, `ledger_seq`, and `primary` fields for the feed. The answer is stored at `18` decimal places.
 
 ## Build and deploy the contract
 
@@ -147,7 +158,7 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
 
 ## Invoke the contract
 
-1. Invoke the `read_latest_price` function on your deployed contract, passing the proxy contract address and the `data_id` for the feed you want to read. The BTC/USD `data_id` on Stellar Testnet is <CopyText text="<TESTNET_BTC_USD_DATA_ID>" code />. You can find the `data_id` for other assets on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+1. Invoke the `read_latest_price` function on your deployed contract, passing the cache contract address and the `data_id` for the feed you want to read. The cache contract on Stellar Testnet is `CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW`, and the BTC/USD `data_id` is `01a0b4d920000332000000000000000000000000000000000000000000000000`. You can find the `data_id` for other assets on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
 
    ```bash
    stellar contract invoke \
@@ -155,8 +166,8 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
    --source my-account \
    --network testnet \
    -- read_latest_price \
-   --proxy <TESTNET_PROXY_ADDRESS> \
-   --data_id <TESTNET_BTC_USD_DATA_ID>
+   --cache CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW \
+   --data_id 01a0b4d920000332000000000000000000000000000000000000000000000000
    ```
 
    Expect an output similar to the following:
@@ -165,6 +176,4 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
    [<latest_price>]
    ```
 
-   Where `<latest_price>` is the latest BTC/USD price for the feed.
-
-{/* TODO: Replace the placeholder proxy address and BTC/USD data_id once engineering provides the final testnet proxy address and launch feed list. */}
+   Where `<latest_price>` is the latest BTC/USD price for the feed, stored at 18 decimal places.

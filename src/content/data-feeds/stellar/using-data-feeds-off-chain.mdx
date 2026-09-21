@@ -32,33 +32,40 @@ You also need [Node.js 18 or higher](https://nodejs.org/en/download/) to run the
 
 ## Read a feed with the Stellar CLI
 
-You can read a Chainlink Data Feed offchain without deploying a contract by simulating a call to the proxy contract using the `stellar contract invoke` command with the `--simulate` flag. This does not submit a transaction and requires no XLM.
+You can read a Chainlink Data Feed offchain without deploying a contract by simulating a call to the cache contract using the `stellar contract invoke` command with the `--send=no` flag. This does not submit a transaction and requires no XLM.
 
-1. Run the following command, replacing `<TESTNET_PROXY_ADDRESS>` with the Stellar Testnet proxy contract address and `<TESTNET_BTC_USD_DATA_ID>` with the `data_id` for the feed you want to read. The `latest_round` function takes a `decimals` argument, which you set to `18` to match the `DECIMALS` constant used by the data feeds contracts:
+The cache contract exposes a batched `latest_round` function that takes a vector of `data_id`s and returns a round for each. You pass the `data_id` as raw hex (without the `0x` prefix).
+
+1. Run the following command, replacing `<SOURCE_ACCOUNT>` with any Stellar account public key. The cache contract on Stellar Testnet is `CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW`, and the BTC/USD `data_id` is `01a0b4d920000332000000000000000000000000000000000000000000000000`:
 
    ```bash
    stellar contract invoke \
-   --id <TESTNET_PROXY_ADDRESS> \
+   --id CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW \
+   --source-account <SOURCE_ACCOUNT> \
    --network testnet \
-   --simulate \
+   --send=no \
    -- latest_round \
-   --data_id <TESTNET_BTC_USD_DATA_ID> \
-   --decimals 18
+   --data_ids '["01a0b4d920000332000000000000000000000000000000000000000000000000"]'
    ```
 
    Expect an output similar to the following:
 
    ```bash
-   [<latest_round_data>]
+   [{"answer":"85965450000000000000000","ledger_seq":4795545,"primary":true,"round_id":47,"timestamp":1790001299}]
    ```
 
-   Where `<latest_round_data>` is the serialized round data for the feed, including the `round_id`, `answer`, and `timestamp` fields.
+   Where:
+   - `answer` is the latest BTC/USD price with 18 decimal places (`85965450000000000000000` = 85965.45).
+   - `round_id` is the unique identifier of the round.
+   - `timestamp` is the Unix timestamp in seconds when the round was recorded.
+   - `ledger_seq` is the Stellar ledger sequence at which the round was recorded.
+   - `primary` indicates whether the round is the primary round for the feed.
 
-{/* TODO: Replace the placeholder proxy address and BTC/USD data_id once engineering provides the final testnet proxy address and launch feed list. */}
+   You can pass multiple `data_id`s in the array to read several feeds in one call. You can find the `data_id` for each feed on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
 
 ## Read a feed with the Stellar JavaScript SDK
 
-You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk) with a Soroban RPC simulation.
+You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk) with a Soroban RPC query. This example uses the `queryContract` method available in SDK v17 and later.
 
 1. Create a new directory for your project and initialize it:
 
@@ -72,34 +79,25 @@ You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript S
    npm install @stellar/stellar-sdk
    ```
 
-1. Create a `read-feed.js` file with the following contents. This script simulates a call to the proxy contract's `latest_round` function for a given `data_id` and `decimals`:
+1. Create a `read-feed.js` file with the following contents. This script queries the cache contract's `latest_round` function for a given `data_id`:
 
    ```javascript
-   const { SorobanRpc, Address, xdr } = require("@stellar/stellar-sdk")
+   const { rpc, xdr } = require("@stellar/stellar-sdk")
 
-   const rpc = new SorobanRpc.Server("https://soroban-testnet.stellar.org")
-   const proxy = new Address("<TESTNET_PROXY_ADDRESS>")
-   const dataId = "<TESTNET_BTC_USD_DATA_ID>"
-   const decimals = 18
+   const server = new rpc.Server("https://soroban-testnet.stellar.org")
+   const cache = "CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW"
+   const dataId = "01a0b4d920000332000000000000000000000000000000000000000000000000"
 
    async function readLatestRound() {
-     const dataIdBytes = xdr.ScVal.scvVec(
-       [...Buffer.from(dataId.replace("0x", ""), "hex")].map((b) => xdr.ScVal.scvU32(b))
-     )
-
-     const result = await rpc.simulateContract({
-       contractAddress: proxy,
-       functionName: "latest_round",
-       args: [dataIdBytes, xdr.ScVal.scvU32(decimals)],
-     })
-
-     console.log("Latest round:", result)
+     const dataIdBytes = xdr.ScVal.scvVec([xdr.ScVal.scvBytes(Buffer.from(dataId, "hex"))])
+     const result = await server.queryContract(cache, "latest_round", { data_ids: dataIdBytes })
+     console.log("Latest round:", JSON.stringify(result, null, 2))
    }
 
    readLatestRound().catch(console.error)
    ```
 
-   {/* TODO: Replace the placeholder proxy address and data_id, and confirm the exact SDK invocation pattern, once engineering provides the final proxy address and interface. */}
+   {/* TODO: Confirm the exact queryContract args serialization for the Stellar JS SDK v17 before publishing. The CLI method above is verified working; the SDK API is version-specific. */}
 
 1. Run the script:
 
@@ -108,5 +106,3 @@ You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript S
    ```
 
    Expect an output that includes the latest round data for the feed, including the `answer` and `timestamp`.
-
-{/* TODO: Confirm the exact Soroban RPC simulation pattern and SDK usage with engineering before publishing. */}
