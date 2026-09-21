@@ -76195,7 +76195,7 @@ When the application sends a cross-chain message on a lane, four phases run in o
 The application calls `Router.getFee(destChainSelector, message)`.
 
 - The Router resolves the active OnRamp for the destination and delegates to `OnRamp.getFee()`.
-- If `feeToken` is empty, the Router treats payment as the native token (internally using the wrapped native address for pricing).
+- If `feeToken == address(0)`, the Router treats payment as the native token (internally using the wrapped native address for pricing).
 - `OnRamp.getFee()` builds the same verifier and executor list that send will use, then queries:
   - Fee Quoter — converts gas and byte overheads into a total fee in the fee token.
   - Each CCV — `getFee()` per verifier (flat USD cents plus gas/byte components).
