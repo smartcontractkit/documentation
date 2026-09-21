@@ -5453,9 +5453,9 @@ Source: https://docs.chain.link/data-feeds/stellar
 
 [Stellar](https://stellar.org/) is a Layer 1 blockchain that uses [Soroban](https://soroban.stellar.org/) smart contracts written in [Rust](https://www.rust-lang.org/). Chainlink Data Feeds on Stellar are delivered through [Chainlink Runtime Environment (CRE)](/cre), which publishes data onchain using a decentralized oracle network.
 
-Chainlink Data Feeds on Stellar follow the same pattern as [Data Feeds on Aptos](/data-feeds/aptos): a single proxy contract serves every feed, and consumers select a feed by its 32-byte `data_id` rather than by a per-feed contract address. This contrasts with Chainlink's integration on EVM blockchains, where each price feed has a separate contract address.
+Chainlink Data Feeds on Stellar follow the same pattern as [Data Feeds on Aptos](/data-feeds/aptos): a single cache contract serves every feed, and consumers select a feed by its 32-byte `data_id` rather than by a per-feed contract address. This contrasts with Chainlink's integration on EVM blockchains, where each price feed has a separate contract address.
 
-{/* Design note: The Stellar feed catalogue is served from the main Price Feed Contract Addresses page with Stellar selected (`/data-feeds/price-feeds/addresses?network=stellar`), not from a dedicated addresses page. The feed list is populated from the reference data directory JSON files (`public/files/json/feeds-stellar-mainnet.json` and `feeds-stellar-testnet.json`), mirroring the Aptos setup. TODO: Replace the placeholder `data_id` values in those JSON files with the final launch feed list once engineering provides it. */}
+A `data_id` is a 32-byte identifier for a feed, similar to how a contract address identifies a feed on EVM chains. It is the same value as the **Feed ID** shown in the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) table. You pass the `data_id` to the cache contract to read that feed's data.
 
 ## How Stellar Data Feeds work
 
@@ -5786,7 +5786,7 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
 
    ```bash
    stellar contract deploy \
-   --wasm target/wasm32-unknown-unknown/release/consumer.wasm \
+   --wasm target/wasm32v1-none/release/consumer.wasm \
    --source my-account \
    --network testnet
    ```
@@ -5803,11 +5803,14 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
 
 1. Invoke the `read_latest_price` function on your deployed contract, passing the cache contract address and the `data_id` for the feed you want to read. The cache contract on Stellar Testnet is `CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW`, and the BTC/USD `data_id` is `01a0b4d920000332000000000000000000000000000000000000000000000000`. You can find the `data_id` for other assets on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
 
+   Because `read_latest_price` is a read-only function, use the `--send=no` flag to simulate the call without submitting a transaction:
+
    ```bash
    stellar contract invoke \
    --id <YOUR_CONTRACT_ADDRESS> \
    --source my-account \
    --network testnet \
+   --send=no \
    -- read_latest_price \
    --cache CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW \
    --data_id 01a0b4d920000332000000000000000000000000000000000000000000000000
@@ -5819,7 +5822,7 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
    [<latest_price>]
    ```
 
-   Where `<latest_price>` is the latest BTC/USD price for the feed, stored at 18 decimal places.
+   Where `<latest_price>` is the latest BTC/USD price for the feed, stored at 18 decimal places. For example, `85965450000000000000000` represents a price of `85965.45`.
 
 ---
 

@@ -17,9 +17,9 @@ import { Aside, CopyText } from "@components"
 
 [Stellar](https://stellar.org/) is a Layer 1 blockchain that uses [Soroban](https://soroban.stellar.org/) smart contracts written in [Rust](https://www.rust-lang.org/). Chainlink Data Feeds on Stellar are delivered through [Chainlink Runtime Environment (CRE)](/cre), which publishes data onchain using a decentralized oracle network.
 
-Chainlink Data Feeds on Stellar follow the same pattern as [Data Feeds on Aptos](/data-feeds/aptos): a single proxy contract serves every feed, and consumers select a feed by its 32-byte `data_id` rather than by a per-feed contract address. This contrasts with Chainlink's integration on EVM blockchains, where each price feed has a separate contract address.
+Chainlink Data Feeds on Stellar follow the same pattern as [Data Feeds on Aptos](/data-feeds/aptos): a single cache contract serves every feed, and consumers select a feed by its 32-byte `data_id` rather than by a per-feed contract address. This contrasts with Chainlink's integration on EVM blockchains, where each price feed has a separate contract address.
 
-{/* Design note: The Stellar feed catalogue is served from the main Price Feed Contract Addresses page with Stellar selected (`/data-feeds/price-feeds/addresses?network=stellar`), not from a dedicated addresses page. The feed list is populated from the reference data directory JSON files (`public/files/json/feeds-stellar-mainnet.json` and `feeds-stellar-testnet.json`), mirroring the Aptos setup. TODO: Replace the placeholder `data_id` values in those JSON files with the final launch feed list once engineering provides it. */}
+A `data_id` is a 32-byte identifier for a feed, similar to how a contract address identifies a feed on EVM chains. It is the same value as the **Feed ID** shown in the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) table. You pass the `data_id` to the cache contract to read that feed's data.
 
 ## How Stellar Data Feeds work
 

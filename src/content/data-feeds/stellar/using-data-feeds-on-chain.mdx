@@ -146,7 +146,7 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
 
    ```bash
    stellar contract deploy \
-   --wasm target/wasm32-unknown-unknown/release/consumer.wasm \
+   --wasm target/wasm32v1-none/release/consumer.wasm \
    --source my-account \
    --network testnet
    ```
@@ -163,11 +163,14 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
 
 1. Invoke the `read_latest_price` function on your deployed contract, passing the cache contract address and the `data_id` for the feed you want to read. The cache contract on Stellar Testnet is `CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW`, and the BTC/USD `data_id` is `01a0b4d920000332000000000000000000000000000000000000000000000000`. You can find the `data_id` for other assets on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
 
+   Because `read_latest_price` is a read-only function, use the `--send=no` flag to simulate the call without submitting a transaction:
+
    ```bash
    stellar contract invoke \
    --id <YOUR_CONTRACT_ADDRESS> \
    --source my-account \
    --network testnet \
+   --send=no \
    -- read_latest_price \
    --cache CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW \
    --data_id 01a0b4d920000332000000000000000000000000000000000000000000000000
@@ -179,4 +182,4 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
    [<latest_price>]
    ```
 
-   Where `<latest_price>` is the latest BTC/USD price for the feed, stored at 18 decimal places.
+   Where `<latest_price>` is the latest BTC/USD price for the feed, stored at 18 decimal places. For example, `85965450000000000000000` represents a price of `85965.45`.
