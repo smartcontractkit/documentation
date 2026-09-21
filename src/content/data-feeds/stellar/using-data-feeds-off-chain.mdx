@@ -65,7 +65,7 @@ The cache contract exposes a batched `latest_round` function that takes a vector
 
 ## Read a feed with the Stellar JavaScript SDK
 
-You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk) with a Soroban RPC query. This example uses the `queryContract` method available in SDK v17 and later.
+You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk) with a Soroban RPC query. This example uses the `contract.Client` API available in SDK v17 and later.
 
 1. Create a new directory for your project and initialize it:
 
@@ -82,22 +82,32 @@ You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript S
 1. Create a `read-feed.js` file with the following contents. This script queries the cache contract's `latest_round` function for a given `data_id`:
 
    ```javascript
-   const { rpc, xdr } = require("@stellar/stellar-sdk")
+   const { contract } = require("@stellar/stellar-sdk")
 
-   const server = new rpc.Server("https://soroban-testnet.stellar.org")
    const cache = "CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW"
    const dataId = "01a0b4d920000332000000000000000000000000000000000000000000000000"
 
    async function readLatestRound() {
-     const dataIdBytes = xdr.ScVal.scvVec([xdr.ScVal.scvBytes(Buffer.from(dataId, "hex"))])
-     const result = await server.queryContract(cache, "latest_round", { data_ids: dataIdBytes })
-     console.log("Latest round:", JSON.stringify(result, null, 2))
+     const client = await contract.Client.from({
+       contractId: cache,
+       rpcUrl: "https://soroban-testnet.stellar.org",
+       networkPassphrase: "Test SDF Network ; September 2015",
+     })
+     const result = await client.latest_round({ data_ids: [Buffer.from(dataId, "hex")] })
+     const round = result.result.value[0]
+     console.log("Latest round:", {
+       round_id: round.round_id.toString(),
+       answer: round.answer.toString(),
+       timestamp: round.timestamp.toString(),
+       ledger_seq: round.ledger_seq,
+       primary: round.primary,
+     })
    }
 
    readLatestRound().catch(console.error)
    ```
 
-   {/* TODO: Confirm the exact queryContract args serialization for the Stellar JS SDK v17 before publishing. The CLI method above is verified working; the SDK API is version-specific. */}
+   The `data_ids` argument is an array of 32-byte values, passed as `Buffer` objects. The `latest_round` function returns a vector of rounds, one per requested `data_id`.
 
 1. Run the script:
 
@@ -105,4 +115,16 @@ You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript S
    node read-feed.js
    ```
 
-   Expect an output that includes the latest round data for the feed, including the `answer` and `timestamp`.
+   Expect an output similar to the following:
+
+   ```bash
+   Latest round: {
+     round_id: '47',
+     answer: '85965450000000000000000',
+     timestamp: '1790001299',
+     ledger_seq: 4795545,
+     primary: true
+   }
+   ```
+
+   Where `answer` is the latest BTC/USD price with 18 decimal places (`85965450000000000000000` = 85965.45).

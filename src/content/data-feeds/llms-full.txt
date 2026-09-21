@@ -5587,7 +5587,7 @@ The cache contract exposes a batched `latest_round` function that takes a vector
 
 ## Read a feed with the Stellar JavaScript SDK
 
-You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk) with a Soroban RPC query. This example uses the `queryContract` method available in SDK v17 and later.
+You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk) with a Soroban RPC query. This example uses the `contract.Client` API available in SDK v17 and later.
 
 1. Create a new directory for your project and initialize it:
 
@@ -5604,22 +5604,32 @@ You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript S
 3. Create a `read-feed.js` file with the following contents. This script queries the cache contract's `latest_round` function for a given `data_id`:
 
    ```javascript
-   const { rpc, xdr } = require("@stellar/stellar-sdk")
+   const { contract } = require("@stellar/stellar-sdk")
 
-   const server = new rpc.Server("https://soroban-testnet.stellar.org")
    const cache = "CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW"
    const dataId = "01a0b4d920000332000000000000000000000000000000000000000000000000"
 
    async function readLatestRound() {
-     const dataIdBytes = xdr.ScVal.scvVec([xdr.ScVal.scvBytes(Buffer.from(dataId, "hex"))])
-     const result = await server.queryContract(cache, "latest_round", { data_ids: dataIdBytes })
-     console.log("Latest round:", JSON.stringify(result, null, 2))
+     const client = await contract.Client.from({
+       contractId: cache,
+       rpcUrl: "https://soroban-testnet.stellar.org",
+       networkPassphrase: "Test SDF Network ; September 2015",
+     })
+     const result = await client.latest_round({ data_ids: [Buffer.from(dataId, "hex")] })
+     const round = result.result.value[0]
+     console.log("Latest round:", {
+       round_id: round.round_id.toString(),
+       answer: round.answer.toString(),
+       timestamp: round.timestamp.toString(),
+       ledger_seq: round.ledger_seq,
+       primary: round.primary,
+     })
    }
 
    readLatestRound().catch(console.error)
    ```
 
-   {/* TODO: Confirm the exact queryContract args serialization for the Stellar JS SDK v17 before publishing. The CLI method above is verified working; the SDK API is version-specific. */}
+   The `data_ids` argument is an array of 32-byte values, passed as `Buffer` objects. The `latest_round` function returns a vector of rounds, one per requested `data_id`.
 
 4. Run the script:
 
@@ -5627,14 +5637,26 @@ You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript S
    node read-feed.js
    ```
 
-   Expect an output that includes the latest round data for the feed, including the `answer` and `timestamp`.
+   Expect an output similar to the following:
+
+   ```bash
+   Latest round: {
+     round_id: '47',
+     answer: '85965450000000000000000',
+     timestamp: '1790001299',
+     ledger_seq: 4795545,
+     primary: true
+   }
+   ```
+
+   Where `answer` is the latest BTC/USD price with 18 decimal places (`85965450000000000000000` = 85965.45).
 
 ---
 
 # Using Data Feeds Onchain (Stellar)
 Source: https://docs.chain.link/data-feeds/stellar/using-data-feeds-on-chain
 
-Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. This guide demonstrates how to deploy a [Soroban](https://soroban.stellar.org/) contract in Rust to the Stellar Testnet and read a price onchain by calling the Chainlink Data Feeds proxy. To learn how to read price feed data using offchain applications, see the [Using Data Feeds Offchain](/data-feeds/stellar/using-data-feeds-off-chain) guide.
+Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. This guide demonstrates how to deploy a [Soroban](https://soroban.stellar.org/) contract in Rust to the Stellar Testnet and read a price onchain by calling the Chainlink Data Feeds cache contract. To learn how to read price feed data using offchain applications, see the [Using Data Feeds Offchain](/data-feeds/stellar/using-data-feeds-off-chain) guide.
 
 To get the full list of available Chainlink Data Feeds on Stellar, see the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
 
@@ -5690,11 +5712,11 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
 
    This creates a `consumer` directory with a default Soroban contract scaffold.
 
-2. Open the `consumer/src/lib.rs` file and replace its contents with the following contract. This contract calls the Chainlink Data Feeds cache contract to read the latest price for a given `data_id` and returns the answer. The cache interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_cache.rs) repository:
+2. Open the `consumer/contracts/consumer/src/lib.rs` file and replace its contents with the following contract. This contract calls the Chainlink Data Feeds cache contract to read the latest price for a given `data_id` and returns the answer. The cache interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_cache.rs) repository:
 
    ```rust
    #![no_std]
-   use soroban_sdk::{contract, contractimpl, contractclient, vec, Address, BytesN, Env, I256, Vec};
+   use soroban_sdk::{contract, contractimpl, contractclient, contracterror, contracttype, vec, Address, BytesN, Env, I256, Vec};
 
    #[contractclient(name = "DataFeedsCacheClient")]
    pub trait DataFeedsCache {
@@ -5702,6 +5724,7 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
    }
 
    #[contracttype]
+   #[derive(Clone, Debug)]
    pub struct RoundData {
        pub round_id: u64,
        pub answer: I256,
@@ -5711,6 +5734,8 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
    }
 
    #[contracterror]
+   #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+   #[repr(u32)]
    pub enum CacheError {
        MalformedReport = 100,
        UnauthorizedCaller = 101,
@@ -5733,7 +5758,7 @@ You also need a [Rust toolchain](https://www.rust-lang.org/tools/install) to bui
        /// Read the latest round for a feed and return its answer.
        pub fn read_latest_price(env: Env, cache: Address, data_id: BytesN<32>) -> I256 {
            let client = DataFeedsCacheClient::new(&env, &cache);
-           let rounds = client.latest_round(&vec![&env, data_id]).unwrap();
+           let rounds = client.latest_round(&vec![&env, data_id]);
            let round = rounds.get_unchecked(0).unwrap();
            round.answer
        }
