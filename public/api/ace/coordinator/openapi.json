@@ -65,7 +65,15 @@
           "error": {
             "type": "string",
             "description": "Error type",
-            "enum": ["Already exists", "Internal error", "Not found", "Bad request", "Unauthorized", "Forbidden"]
+            "enum": [
+              "Already exists",
+              "Internal error",
+              "Not found",
+              "Bad request",
+              "Unauthorized",
+              "Forbidden",
+              "Method not allowed"
+            ]
           }
         }
       },
@@ -487,7 +495,7 @@
       "CreateTargetProtectionRequest": {
         "type": "object",
         "required": ["function_signature", "policy_instance_id"],
-        "description": "For onchain policies, `policy_instance_id` is the onchain policy instance ID and `policy_kind` may be omitted (defaults to \"onchain\"). For offchain (CADV) policies, `policy_instance_id` is the offchain policy ID and `policy_kind` must be \"offchain\".\n",
+        "description": "`policy_instance_id` is the `id` of the policy to protect and `policy_kind` identifies which kind of policy that ID belongs to: omit `policy_kind` (or set it to \"onchain\") to reference an onchain Policy, or set it to \"offchain\" to reference an offchain (CADV) Policy.\n",
         "properties": {
           "function_signature": {
             "type": "string",
@@ -495,7 +503,7 @@
           },
           "policy_instance_id": {
             "$ref": "#/components/schemas/Id",
-            "description": "ID of the policy to protect. For onchain policies this is the policy instance ID; for offchain policies this is the offchain policy ID."
+            "description": "ID of the policy to protect, matching the `id` of the onchain or offchain policy identified by `policy_kind`."
           },
           "policy_kind": {
             "type": "string",
@@ -5769,7 +5777,7 @@
       "post": {
         "tags": ["Target Protections"],
         "summary": "Creates a new target protection (onchain or offchain). Rejected if the target uses the system policy engine (registry protections are managed internally).",
-        "description": "Set `policy_instance_id` to the policy ID to protect. For onchain policies this is the onchain policy instance ID (`policy_kind` may be omitted). For offchain (CADV) policies this is the offchain policy ID and `policy_kind` must be `\"offchain\"`. Onchain protections return 200; offchain protection attachment is queued and returns 202.\n",
+        "description": "Set `policy_instance_id` to the `id` of the policy to protect - the onchain Policy or the offchain (CADV) Policy, whichever you are protecting against - and set `policy_kind` to match that policy's kind: omit it (or set `\"onchain\"`) for an onchain policy, or set it to `\"offchain\"` for an offchain (CADV) policy.\nOnchain protections return 200; offchain protection attachment is queued and returns 202.\n",
         "parameters": [
           {
             "in": "path",
