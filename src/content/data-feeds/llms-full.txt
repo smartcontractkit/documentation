@@ -5451,9 +5451,7 @@ make ma-set-latest-round NETWORK=devnet && make ac-set-answer NETWORK=devnet && 
 # Using Data Feeds on Stellar
 Source: https://docs.chain.link/data-feeds/stellar
 
-[Stellar](https://stellar.org/) is a Layer 1 blockchain that uses [Soroban](https://soroban.stellar.org/) smart contracts written in [Rust](https://www.rust-lang.org/). Chainlink Data Feeds on Stellar are delivered through [Chainlink Runtime Environment (CRE)](/cre), which publishes data onchain using a decentralized oracle network.
-
-Chainlink Data Feeds on Stellar follow the same pattern as [Data Feeds on Aptos](/data-feeds/aptos): a single cache contract serves every feed, and consumers select a feed by its 32-byte `data_id` rather than by a per-feed contract address. This contrasts with Chainlink's integration on EVM blockchains, where each price feed has a separate contract address.
+[Stellar](https://stellar.org/) is a Layer 1 blockchain that uses [Soroban](https://soroban.stellar.org/) smart contracts written in [Rust](https://www.rust-lang.org/). Chainlink Data Feeds on Stellar use a single cache contract that serves every feed. Instead of a per-feed contract address, you select a feed by its 32-byte `data_id`.
 
 A `data_id` is a 32-byte identifier for a feed, similar to how a contract address identifies a feed on EVM chains. It is the same value as the **Feed ID** shown in the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) table. You pass the `data_id` to the cache contract to read that feed's data.
 
@@ -5462,7 +5460,6 @@ A `data_id` is a 32-byte identifier for a feed, similar to how a contract addres
 Data Feeds on Stellar use a cache contract that the Chainlink oracle network writes into. Consumers read feeds directly from the cache by passing a 32-byte `data_id`:
 
 - **Cache contract**: A single cache contract serves every feed. The Chainlink oracle network writes round data into the cache, and consumers read it by passing the `data_id` for the feed they need. The cache address stays stable across upgrades.
-- **Fallback proxy**: A separate fallback proxy exists for the DF1 data feed, but it is not customer-facing and is not documented here.
 
 Consumers select a feed by passing its 32-byte `data_id` to the cache. You can find the `data_id` for each feed on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
 
@@ -5472,6 +5469,10 @@ Chainlink Data Feeds are available on the following Stellar networks:
 
 - [Stellar Testnet](https://stellar.org/developers/guides/concepts/networks#testnet)
 - [Stellar Mainnet (Pubnet)](https://stellar.org/developers/guides/concepts/networks#public-network)
+
+## Available data feeds on Stellar
+
+The following table shows all available data feeds on Stellar. Each feed is identified by its `data_id` (the Feed ID), which you pass to the cache contract to read that feed's data.
 
 ## Cache contract addresses
 
@@ -5519,10 +5520,26 @@ A round is stored in the cache contract's temporary storage with a retention per
 
 ## Getting started
 
-You can read Chainlink Data Feeds on Stellar either onchain or offchain:
+You can read Chainlink Data Feeds on Stellar either onchain or offchain. Both methods read the same data from the cache contract, differing only in where the read happens.
 
-- **Onchain**: Deploy a [Soroban contract in Rust](/data-feeds/stellar/using-data-feeds-on-chain) that calls the cache and reads a price, deployed with `stellar-cli` to the Stellar Testnet.
-- **Offchain**: Read a feed via [Soroban RPC simulation](/data-feeds/stellar/using-data-feeds-off-chain) using `stellar-cli` and the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk).
+### Onchain
+
+Deploy a [Soroban contract in Rust](/data-feeds/stellar/using-data-feeds-on-chain) that calls the cache and reads a price. This method is for applications that need to read feed data directly within a smart contract.
+
+To complete the onchain guide, you'll need:
+
+- **Stellar CLI**: Install the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli). Run stellar --version to verify your installation.
+- **Rust toolchain**: Install [Rust](https://www.rust-lang.org/tools/install). Run cargo --version to verify your installation.
+- **Testnet XLM**: Fund a Stellar Testnet account using the friendbot faucet. Testnet XLM has no real value.
+
+### Offchain
+
+Read a feed via [Soroban RPC simulation](/data-feeds/stellar/using-data-feeds-off-chain) using `stellar-cli` and the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk). This method is for applications that need to read feed data without deploying a contract.
+
+To complete the offchain guide, you'll need:
+
+- **Stellar CLI**: Install the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli). Run stellar --version to verify your installation.
+- **Node.js 18 or higher**: Install [Node.js](https://nodejs.org/en/download/). Run node --version to verify your installation.
 
 ## Answer precision
 
@@ -5540,6 +5557,10 @@ Source: https://docs.chain.link/data-feeds/stellar/using-data-feeds-off-chain
 Chainlink Data Feeds are the quickest way to access market prices for real-world assets. This guide demonstrates how to read Chainlink Data Feeds on the Stellar Testnet offchain using a [Soroban RPC simulation](https://soroban.stellar.org/docs/reference/rpc) with the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli) and the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk). To learn how to use Data Feeds in your onchain Soroban contracts, see the [Using Data Feeds Onchain](/data-feeds/stellar/using-data-feeds-on-chain) guide.
 
 To get the full list of Chainlink Data Feeds on Stellar, see the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+
+## Available data feeds on Stellar
+
+The following table shows all available data feeds on Stellar. Each feed is identified by its `data_id` (the Feed ID), which you pass to the cache contract to read that feed's data.
 
 <Aside type="danger" title="Select quality data feeds">
   Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds).
@@ -5659,6 +5680,10 @@ Source: https://docs.chain.link/data-feeds/stellar/using-data-feeds-on-chain
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. This guide demonstrates how to deploy a [Soroban](https://soroban.stellar.org/) contract in Rust to the Stellar Testnet and read a price onchain by calling the Chainlink Data Feeds cache contract. To learn how to read price feed data using offchain applications, see the [Using Data Feeds Offchain](/data-feeds/stellar/using-data-feeds-off-chain) guide.
 
 To get the full list of available Chainlink Data Feeds on Stellar, see the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+
+## Available data feeds on Stellar
+
+The following table shows all available data feeds on Stellar. Each feed is identified by its `data_id` (the Feed ID), which you pass to the cache contract to read that feed's data.
 
 <Aside type="danger" title="Select quality data feeds">
   Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds).

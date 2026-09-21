@@ -158,6 +158,7 @@ export const FeedList = ({
   forceStreamCategoryFilter,
   tokenizedEquityProvider,
   forceExtendedHoursCategory,
+  lockedNetwork,
 }: {
   initialNetwork: string
   dataFeedType: DataFeedType
@@ -170,6 +171,8 @@ export const FeedList = ({
   forceStreamCategoryFilter?: StreamsRwaFeedTypeValue
   tokenizedEquityProvider?: string
   forceExtendedHoursCategory?: ExtendedHoursCategory
+  /** When set, restricts the network selector to a single chain (e.g. "stellar") and hides the selector. */
+  lockedNetwork?: string
 }) => {
   const feedTypeFlags = getFeedTypeFlags(dataFeedType)
   const { isStreams, isSmartData, isRates, isUSGovernmentMacroeconomicData, isSvr } = feedTypeFlags
@@ -491,7 +494,17 @@ export const FeedList = ({
     forceExtendedHoursCategory,
   ])
 
-  const availableChainsForSelection = selectableChains.length > 0 ? selectableChains : filteredChainsByTag
+  // When lockedNetwork is set, restrict the selectable chains to that single chain.
+  const lockedChains = useMemo(() => {
+    if (!lockedNetwork) return null
+    return filteredChainsByTag.filter((chain) => chain.page === lockedNetwork)
+  }, [filteredChainsByTag, lockedNetwork])
+
+  const availableChainsForSelection = lockedChains
+    ? lockedChains
+    : selectableChains.length > 0
+      ? selectableChains
+      : filteredChainsByTag
 
   // Find the selected chain from available chains (filtered by dataFeedType)
   const selectedChain = useMemo(() => {
@@ -1700,6 +1713,7 @@ export const FeedList = ({
               dataFeedType={dataFeedType}
               availableNetworkTypes={availableNetworkTypes}
               selectedNetworkType={selectedNetworkType}
+              disabled={!!lockedNetwork}
             />
           )}
         </div>
