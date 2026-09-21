@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+
+changed_files=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git diff --name-only HEAD)
+
+if [ -z "$changed_files" ]; then
+  exit 0
+fi
+
+npx prettier --write $changed_files
+
+code_files=$(echo "$changed_files" | grep -E '\.(js|jsx|ts|tsx)$' || true)
+if [ -n "$code_files" ]; then
+  npx eslint --fix $code_files
+fi
+
+if [ -n "$(git diff --name-only)" ]; then
+  echo "\nAuto-formatted changed files. Review and re-commit."
+  exit 1
+fi
