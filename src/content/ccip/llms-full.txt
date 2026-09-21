@@ -75794,14 +75794,25 @@ These surfaces provide visibility into how fees are distributed across component
 
 ## Designing for Cost Efficiency
 
-To reduce fee exposure:
+Cost efficient CCIP applications use the least expensive message configuration that still meets their security and execution requirements. The fee quote reflects the complete message, so decisions about payload size, destination gas, token transfers, finality, CCVs, and execution all affect the cost.
 
-- Minimize payload size
-- Keep receiver logic simple and bounded
-- Avoid unnecessary token transfers
-- Set appropriate gas limits without excessive over-provisioning
+### Set a realistic destination gas limit
 
-Fee predictability improves when execution complexity is controlled.
+The `gasLimit` in `extraArgs` is priced as par t of the fee quote, and unused gas is not refunded. Estimate the gas required by `ccipReceive()` under realistic destination-chain conditions, then include enough headroom for legitimate variations in execution. An arbitrarily high limit increases every quote, while a limit that is too low can cause destination execution to fail and require manual execution.
+
+Test the receiver with representative payloads and contract states instead of estimating from its simplest execution path. Keep the gas limit configurable so that you can adjust it as the receiver changes. For additional guidance, see [setting `gasLimit`](/ccip/evm/concepts/best-practices#setting-gaslimit).
+
+### Keep destination execution predictable
+
+Avoid unbounded loops, payload-dependent workloads with no enforced maximum, and unnecessary external calls or storage writes inside `ccipReceive()`. If the application can safely process work asynchronously, use the callback to validate and record the message, then perform nonessential work separately. This keeps the CCIP execution path smaller and reduces the chance that a state change on the destination chain makes the configured gas limit insufficient.
+
+### Keep payloads compact
+
+Payload bytes contribute to destination execution cost. Encode only the information the receiver needs, avoid repeating values that can be derived safely, and choose compact data structures where they remain clear and auditable.
+
+### Use token transfers and callbacks only when needed
+
+Token transfers add additional processing requirements, while a destination callback adds user-specified execution gas. Match the message type to the work the destination actually needs to perform.
 
 <Aside type="caution" title="Disclaimer">
   Chainlink CCIP is an interoperability messaging protocol. Chainlink does not hold or transfer any assets. The
