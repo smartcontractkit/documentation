@@ -6,7 +6,11 @@ if [ -z "$changed_files" ]; then
   exit 0
 fi
 
-npx prettier --write $changed_files
+# Only run Prettier on files it can parse (skip shell scripts, etc.)
+format_files=$(echo "$changed_files" | grep -E '\.(js|jsx|ts|tsx|json|css|md|mdx|yml|yaml|astro)$' || true)
+if [ -n "$format_files" ]; then
+  npx prettier --write $format_files
+fi
 
 code_files=$(echo "$changed_files" | grep -E '\.(js|jsx|ts|tsx)$' || true)
 if [ -n "$code_files" ]; then
