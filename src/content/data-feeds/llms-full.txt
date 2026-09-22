@@ -5630,8 +5630,8 @@ You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript S
        rpcUrl: "https://soroban-testnet.stellar.org",
        networkPassphrase: "Test SDF Network ; September 2015",
      })
-     const result = await client.latest_round({ data_id: Buffer.from(dataId, "hex"), decimals: 18 })
-     const round = result.result
+     const result = await client.latest_round({ data_id: Buffer.from(dataId, "hex") })
+     const round = result.result.value
      console.log("Latest round:", {
        round_id: round.round_id.toString(),
        answer: round.answer.toString(),
@@ -5642,7 +5642,7 @@ You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript S
    readLatestRound().catch(console.error)
    ```
 
-   The `data_id` argument is a 32-byte value, passed as a `Buffer` object. The `decimals` argument requests the precision at which the answer is returned; `18` is the default.
+   The `data_id` argument is a 32-byte value, passed as a `Buffer` object. The `latest_round` function returns a `Round` object wrapped in an `Ok` value, so you access it with `result.result.value`.
 
 4. Run the script:
 
