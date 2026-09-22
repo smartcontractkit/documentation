@@ -22,9 +22,9 @@ A `data_id` is a 32-byte identifier for a feed, similar to how a contract addres
 
 ## How Stellar Data Feeds work
 
-Data Feeds on Stellar use a proxy contract that sits in front of a cache contract. Consumers read feeds from the proxy by passing a 32-byte `data_id`:
+Data Feeds on Stellar use a single proxy contract that serves every feed. Consumers read feeds from the proxy by passing a 32-byte `data_id`:
 
-- **Proxy contract**: A single proxy contract serves every feed. Consumers read feed data from the proxy by passing the `data_id` for the feed they need. The proxy address stays stable, which lets the underlying cache be replaced without changing the address consumers use.
+- **Proxy contract**: A single proxy contract serves every feed. Consumers read feed data from the proxy by passing the `data_id` for the feed they need.
 
 Consumers select a feed by passing its 32-byte `data_id` to the proxy. You can find the `data_id` for each feed on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
 
@@ -81,7 +81,7 @@ When you call the proxy, the contract can return a `ProxyReadError`. The followi
 
 ## How long a round is available
 
-A round is stored in the cache contract's temporary storage with a retention period of `3,110,400` ledgers. After this period, a round can no longer be read from the proxy.
+A round is available for a retention period of `3,110,400` ledgers. After this period, a round can no longer be read from the proxy.
 
 ## Getting started
 
