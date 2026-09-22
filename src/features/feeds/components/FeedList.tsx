@@ -1808,25 +1808,25 @@ export const FeedList = ({
                       {network.name === "Stellar Mainnet" && (
                         <>
                           <p>
-                            Unlike EVM chains, Stellar uses a single cache contract for all feeds. Instead of a per-feed
+                            Unlike EVM chains, Stellar uses a single proxy contract for all feeds. Instead of a per-feed
                             contract address, you select a feed by its <strong>feed ID</strong> (data_id) shown below.
                             See the <a href="/data-feeds/stellar/">Using Data Feeds on Stellar</a> guide to learn how to
                             read these feeds.
                           </p>
                           <ul>
                             <li>
-                              Data Feeds cache contract on Stellar Mainnet:{" "}
+                              Data Feeds proxy contract on Stellar Mainnet:{" "}
                               <a
                                 className={tableStyles.addressLink}
-                                href="https://stellar.expert/explorer/pubnet/contract/CAAFKBE6AMTERARISMMT4TCC4UGNO35XCKQNC5XVLL5WY5GRWXH6AMIO"
+                                href="https://stellar.expert/explorer/pubnet/contract/CDQBHEUGLDHMSUHG4IH33RJBUTMNCZOT4JIAQR4WZFRDZW6DR6S32ZLZ"
                                 target="_blank"
                               >
-                                CAAFKBE6AMTERARISMMT4TCC4UGNO35XCKQNC5XVLL5WY5GRWXH6AMIO
+                                CDQBHEUGLDHMSUHG4IH33RJBUTMNCZOT4JIAQR4WZFRDZW6DR6S32ZLZ
                               </a>
                               <button
                                 className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
                                 style={{ height: "16px", width: "16px", marginLeft: "5px" }}
-                                data-clipboard-text="CAAFKBE6AMTERARISMMT4TCC4UGNO35XCKQNC5XVLL5WY5GRWXH6AMIO"
+                                data-clipboard-text="CDQBHEUGLDHMSUHG4IH33RJBUTMNCZOT4JIAQR4WZFRDZW6DR6S32ZLZ"
                               >
                                 <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
                               </button>
@@ -2121,25 +2121,25 @@ export const FeedList = ({
                       {network.name === "Stellar Testnet" && (
                         <>
                           <p>
-                            Unlike EVM chains, Stellar uses a single cache contract for all feeds. Instead of a per-feed
+                            Unlike EVM chains, Stellar uses a single proxy contract for all feeds. Instead of a per-feed
                             contract address, you select a feed by its <strong>feed ID</strong> (data_id) shown below.
                             See the <a href="/data-feeds/stellar/">Using Data Feeds on Stellar</a> guide to learn how to
                             read these feeds.
                           </p>
                           <ul>
                             <li>
-                              Data Feeds cache contract on Stellar Testnet:{" "}
+                              Data Feeds proxy contract on Stellar Testnet:{" "}
                               <a
                                 className={tableStyles.addressLink}
-                                href="https://stellar.expert/explorer/testnet/contract/CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW"
+                                href="https://stellar.expert/explorer/testnet/contract/CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4"
                                 target="_blank"
                               >
-                                CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW
+                                CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4
                               </a>
                               <button
                                 className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
                                 style={{ height: "16px", width: "16px", marginLeft: "5px" }}
-                                data-clipboard-text="CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW"
+                                data-clipboard-text="CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4"
                               >
                                 <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
                               </button>

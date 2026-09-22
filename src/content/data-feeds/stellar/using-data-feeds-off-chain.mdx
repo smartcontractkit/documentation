@@ -21,7 +21,7 @@ To get the full list of Chainlink Data Feeds on Stellar, see the [Price Feed Con
 
 ## Available data feeds on Stellar
 
-The following table shows all available data feeds on Stellar. Each feed is identified by its `data_id` (the Feed ID), which you pass to the cache contract to read that feed's data.
+The following table shows all available data feeds on Stellar. Each feed is identified by its `data_id` (the Feed ID), which you pass to the proxy contract to read that feed's data.
 
 <FeedList client:idle initialNetwork="stellar" lockedNetwork="stellar" />
 
@@ -48,36 +48,34 @@ To complete this guide, you'll need:
 
 ## Read a feed with the Stellar CLI
 
-You can read a Chainlink Data Feed offchain without deploying a contract by simulating a call to the cache contract using the `stellar contract invoke` command with the `--send=no` flag. This does not submit a transaction and requires no XLM.
+You can read a Chainlink Data Feed offchain without deploying a contract by simulating a call to the proxy contract using the `stellar contract invoke` command with the `--send=no` flag. This does not submit a transaction and requires no XLM.
 
-The cache contract exposes a batched `latest_round` function that takes a vector of `data_id`s and returns a round for each. You pass the `data_id` as raw hex (without the `0x` prefix).
+The proxy contract exposes a `latest_round` function that takes a `data_id` and returns the most recent round for that feed. You pass the `data_id` as raw hex (without the `0x` prefix).
 
-1. Run the following command, replacing `<SOURCE_ACCOUNT>` with any Stellar account public key. The cache contract on Stellar Testnet is `CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW`, and the BTC/USD `data_id` is `01a0b4d920000332000000000000000000000000000000000000000000000000`:
+1. Run the following command, replacing `<SOURCE_ACCOUNT>` with any Stellar account public key. The proxy contract on Stellar Testnet is `CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4`, and the BTC/USD `data_id` is `01a0b4d920000332000000000000000000000000000000000000000000000000`:
 
    ```bash
    stellar contract invoke \
-   --id CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW \
+   --id CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4 \
    --source-account <SOURCE_ACCOUNT> \
    --network testnet \
    --send=no \
    -- latest_round \
-   --data_ids '["01a0b4d920000332000000000000000000000000000000000000000000000000"]'
+   --data_id "01a0b4d920000332000000000000000000000000000000000000000000000000"
    ```
 
    Expect an output similar to the following:
 
    ```bash
-   [{"answer":"85965450000000000000000","ledger_seq":4795545,"primary":true,"round_id":47,"timestamp":1790001299}]
+   {"answer":"86352425538914820000000","round_id":59,"timestamp":1790089710}
    ```
 
    Where:
-   - `answer` is the latest BTC/USD price with 18 decimal places (`85965450000000000000000` = 85965.45).
+   - `answer` is the latest BTC/USD price with 18 decimal places (`86352425538914820000000` = 86352.43).
    - `round_id` is the unique identifier of the round.
    - `timestamp` is the Unix timestamp in seconds when the round was recorded.
-   - `ledger_seq` is the Stellar ledger sequence at which the round was recorded.
-   - `primary` indicates whether the round is the primary round for the feed.
 
-   You can pass multiple `data_id`s in the array to read several feeds in one call. You can find the `data_id` for each feed on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+   You can find the `data_id` for each feed on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
 
 ## Read a feed with the Stellar JavaScript SDK
 
@@ -95,35 +93,33 @@ You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript S
    npm install @stellar/stellar-sdk
    ```
 
-1. Create a `read-feed.js` file with the following contents. This script queries the cache contract's `latest_round` function for a given `data_id`:
+1. Create a `read-feed.js` file with the following contents. This script queries the proxy contract's `latest_round` function for a given `data_id`:
 
    ```javascript
    const { contract } = require("@stellar/stellar-sdk")
 
-   const cache = "CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW"
+   const proxy = "CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4"
    const dataId = "01a0b4d920000332000000000000000000000000000000000000000000000000"
 
    async function readLatestRound() {
      const client = await contract.Client.from({
-       contractId: cache,
+       contractId: proxy,
        rpcUrl: "https://soroban-testnet.stellar.org",
        networkPassphrase: "Test SDF Network ; September 2015",
      })
-     const result = await client.latest_round({ data_ids: [Buffer.from(dataId, "hex")] })
-     const round = result.result.value[0]
+     const result = await client.latest_round({ data_id: Buffer.from(dataId, "hex"), decimals: 18 })
+     const round = result.result
      console.log("Latest round:", {
        round_id: round.round_id.toString(),
        answer: round.answer.toString(),
        timestamp: round.timestamp.toString(),
-       ledger_seq: round.ledger_seq,
-       primary: round.primary,
      })
    }
 
    readLatestRound().catch(console.error)
    ```
 
-   The `data_ids` argument is an array of 32-byte values, passed as `Buffer` objects. The `latest_round` function returns a vector of rounds, one per requested `data_id`.
+   The `data_id` argument is a 32-byte value, passed as a `Buffer` object. The `decimals` argument requests the precision at which the answer is returned; `18` is the default.
 
 1. Run the script:
 
@@ -135,12 +131,10 @@ You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript S
 
    ```bash
    Latest round: {
-     round_id: '47',
-     answer: '85965450000000000000000',
-     timestamp: '1790001299',
-     ledger_seq: 4795545,
-     primary: true
+     round_id: '59',
+     answer: '86352425538914820000000',
+     timestamp: '1790089710'
    }
    ```
 
-   Where `answer` is the latest BTC/USD price with 18 decimal places (`85965450000000000000000` = 85965.45).
+   Where `answer` is the latest BTC/USD price with 18 decimal places (`86352425538914820000000` = 86352.43).

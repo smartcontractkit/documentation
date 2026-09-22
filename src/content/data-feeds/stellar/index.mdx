@@ -16,17 +16,17 @@ metadata:
 import { Aside, CopyText } from "@components"
 import { FeedList } from "@features/feeds"
 
-[Stellar](https://stellar.org/) is a Layer 1 blockchain that uses [Soroban](https://soroban.stellar.org/) smart contracts written in [Rust](https://www.rust-lang.org/). Chainlink Data Feeds on Stellar use a single cache contract that serves every feed. Instead of a per-feed contract address, you select a feed by its 32-byte `data_id`.
+[Stellar](https://stellar.org/) is a Layer 1 blockchain that uses [Soroban](https://soroban.stellar.org/) smart contracts written in [Rust](https://www.rust-lang.org/). Chainlink Data Feeds on Stellar use a single proxy contract that serves every feed. Instead of a per-feed contract address, you select a feed by its 32-byte `data_id`.
 
-A `data_id` is a 32-byte identifier for a feed, similar to how a contract address identifies a feed on EVM chains. It is the same value as the **Feed ID** shown in the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) table. You pass the `data_id` to the cache contract to read that feed's data.
+A `data_id` is a 32-byte identifier for a feed, similar to how a contract address identifies a feed on EVM chains. It is the same value as the **Feed ID** shown in the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) table. You pass the `data_id` to the proxy contract to read that feed's data.
 
 ## How Stellar Data Feeds work
 
-Data Feeds on Stellar use a cache contract that the Chainlink oracle network writes into. Consumers read feeds directly from the cache by passing a 32-byte `data_id`:
+Data Feeds on Stellar use a proxy contract that sits in front of a cache contract. Consumers read feeds from the proxy by passing a 32-byte `data_id`:
 
-- **Cache contract**: A single cache contract serves every feed. The Chainlink oracle network writes round data into the cache, and consumers read it by passing the `data_id` for the feed they need. The cache address stays stable across upgrades.
+- **Proxy contract**: A single proxy contract serves every feed. Consumers read feed data from the proxy by passing the `data_id` for the feed they need. The proxy address stays stable, which lets the underlying cache be replaced without changing the address consumers use.
 
-Consumers select a feed by passing its 32-byte `data_id` to the cache. You can find the `data_id` for each feed on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+Consumers select a feed by passing its 32-byte `data_id` to the proxy. You can find the `data_id` for each feed on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
 
 ## Supported networks
 
@@ -37,67 +37,67 @@ Chainlink Data Feeds are available on the following Stellar networks:
 
 ## Available data feeds on Stellar
 
-The following table shows all available data feeds on Stellar. Each feed is identified by its `data_id` (the Feed ID), which you pass to the cache contract to read that feed's data.
+The following table shows all available data feeds on Stellar. Each feed is identified by its `data_id` (the Feed ID), which you pass to the proxy contract to read that feed's data.
 
 <FeedList client:idle initialNetwork="stellar" lockedNetwork="stellar" />
 
-## Cache contract addresses
+## Proxy contract addresses
 
-The cache contract address is the same for every feed on a given network. You only ever interact with the cache.
+The proxy contract address is the same for every feed on a given network. You only ever interact with the proxy.
 
-- **Stellar Testnet**: <CopyText text="CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW" code />
-- **Stellar Mainnet (Pubnet)**: <CopyText text="CAAFKBE6AMTERARISMMT4TCC4UGNO35XCKQNC5XVLL5WY5GRWXH6AMIO" code />
+- **Stellar Testnet**: <CopyText text="CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4" code />
+- **Stellar Mainnet (Pubnet)**: <CopyText text="CDQBHEUGLDHMSUHG4IH33RJBUTMNCZOT4JIAQR4WZFRDZW6DR6S32ZLZ" code />
 
 ## Reader interface
 
-Consumers call the following functions on the cache contract. The interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_cache.rs) repository.
+Consumers call the following functions on the proxy contract. The interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_proxy.rs) repository.
 
-| Function                       | Returns                                               |
-| ------------------------------ | ----------------------------------------------------- |
-| `latest_round(data_ids)`       | The most recent round for each requested `data_id`    |
-| `get_round(data_id, round_id)` | A specific historical round                           |
-| `decimals(data_ids)`           | Decimal places for each requested `data_id`           |
-| `description(data_ids)`        | Human-readable pair name for each requested `data_id` |
+| Function                                 | Returns                                                          |
+| ---------------------------------------- | ---------------------------------------------------------------- |
+| `latest_round(data_id, decimals)`        | The most recent round for that feed, at the requested `decimals` |
+| `get_round(data_id, round_id, decimals)` | A specific historical round, at the requested `decimals`         |
+| `decimals(data_id)`                      | Decimal places for the answer                                    |
+| `description(data_id)`                   | Human-readable pair name                                         |
 
 ### Round structure
 
-A round returned by the cache carries the following fields:
+A round returned by the proxy carries the following fields:
 
-| Field        | Description                                                                                                                                           |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `round_id`   | The unique identifier of the round                                                                                                                    |
-| `answer`     | The answer for the feed, represented as an `I256`                                                                                                     |
-| `timestamp`  | The Unix timestamp in seconds when the round was recorded                                                                                             |
-| `ledger_seq` | The [Stellar ledger](https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/ledgers) sequence at which the round was recorded |
-| `primary`    | Indicates whether the round is the primary round for the feed                                                                                         |
+| Field       | Description                                               |
+| ----------- | --------------------------------------------------------- |
+| `round_id`  | The unique identifier of the round                        |
+| `answer`    | The answer for the feed, represented as an `I256`         |
+| `timestamp` | The Unix timestamp in seconds when the round was recorded |
 
 ## Error handling
 
-When you call the cache, the contract can return a `CacheError`. The following cases describe what each error means for a consumer:
+When you call the proxy, the contract can return a `ProxyReadError`. The following cases describe what each error means for a consumer:
 
-| Error               | Meaning                                                                                                                                                                                                                                   |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `FeedNotConfigured` | The `data_id` you passed does not correspond to a configured feed. Check that you are using the correct `data_id` from the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected. |
-| `InvalidDataId`     | The `data_id` you passed is invalid.                                                                                                                                                                                                      |
-| `FeedFrozen`        | The feed is frozen and cannot be read.                                                                                                                                                                                                    |
+| Error             | Meaning                                                                                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NoDataPresent`   | No round is available for the requested `data_id` or `round_id`. This can happen if the feed has not been written yet or the round has expired. |
+| `InvalidDecimals` | The `decimals` you requested is outside the supported range for the feed.                                                                       |
+| `RoundsToZero`    | A non-zero answer would truncate to zero at the requested `decimals`. Request fewer decimal places.                                             |
 
 ## How long a round is available
 
-A round is stored in the cache contract's temporary storage with a retention period of `3,110,400` ledgers. After this period, a round can no longer be read from the cache.
+A round is stored in the cache contract's temporary storage with a retention period of `3,110,400` ledgers. After this period, a round can no longer be read from the proxy.
 
 ## Getting started
 
-You can read Chainlink Data Feeds on Stellar either offchain or onchain. Both methods read the same data from the cache contract, differing only in where the read happens.
+You can read Chainlink Data Feeds on Stellar either offchain or onchain. Both methods read the same data from the proxy contract, differing only in where the read happens.
 
 - **[Using Data Feeds Offchain](/data-feeds/stellar/using-data-feeds-off-chain)**: Read a feed via Soroban RPC simulation using `stellar-cli` and the Stellar JavaScript SDK. This method is for applications that need to read feed data without deploying a contract.
 
-- **[Using Data Feeds Onchain](/data-feeds/stellar/using-data-feeds-on-chain)**: Deploy a Soroban contract in Rust that calls the cache and reads a price. This method is for applications that need to read feed data directly within a smart contract.
+- **[Using Data Feeds Onchain](/data-feeds/stellar/using-data-feeds-on-chain)**: Deploy a Soroban contract in Rust that calls the proxy and reads a price. This method is for applications that need to read feed data directly within a smart contract.
 
 Each guide lists the tools and requirements you need to complete it.
 
 ## Answer precision
 
-The cache stores every answer at a fixed `18` decimal places (`DECIMALS`). Feeds sourced at a lower precision, such as `8` decimals, are scaled up to `18` on write, so the stored value is always `18`-decimal regardless of the feed's native precision. When you read a round, the `answer` is returned at `18` decimal places.
+All feeds are stored at `18` decimal places and are typically returned at `18` decimal places. In some instances, Chainlink approves the serving of a reduced precision for certain feeds. In this case, you can pass the precision as a parameter when requesting a feed from the proxy.
+
+The precision is truncated, so if an `18`-decimal feed is requested at `8` decimal places, the answer is truncated (rounded down). Factor this into your calculations. If you need to control the precision yourself, request the feed at `18` decimal places and override the precision in your application.
 
 <Aside type="danger" title="Select quality data feeds">
 

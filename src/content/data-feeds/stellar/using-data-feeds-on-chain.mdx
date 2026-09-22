@@ -15,13 +15,13 @@ metadata:
 import { Aside, CopyText } from "@components"
 import { FeedList } from "@features/feeds"
 
-Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. This guide demonstrates how to deploy a [Soroban](https://soroban.stellar.org/) contract in Rust to the Stellar Testnet and read a price onchain by calling the Chainlink Data Feeds cache contract. To learn how to read price feed data using offchain applications, see the [Using Data Feeds Offchain](/data-feeds/stellar/using-data-feeds-off-chain) guide.
+Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. This guide demonstrates how to deploy a [Soroban](https://soroban.stellar.org/) contract in Rust to the Stellar Testnet and read a price onchain by calling the Chainlink Data Feeds proxy contract. To learn how to read price feed data using offchain applications, see the [Using Data Feeds Offchain](/data-feeds/stellar/using-data-feeds-off-chain) guide.
 
 To get the full list of available Chainlink Data Feeds on Stellar, see the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
 
 ## Available data feeds on Stellar
 
-The following table shows all available data feeds on Stellar. Each feed is identified by its `data_id` (the Feed ID), which you pass to the cache contract to read that feed's data.
+The following table shows all available data feeds on Stellar. Each feed is identified by its `data_id` (the Feed ID), which you pass to the proxy contract to read that feed's data.
 
 <FeedList client:idle initialNetwork="stellar" lockedNetwork="stellar" />
 
@@ -91,42 +91,32 @@ To complete this guide, you'll need:
 
    This creates a `consumer` directory with a default Soroban contract scaffold.
 
-1. Open the `consumer/contracts/consumer/src/lib.rs` file and replace its contents with the following contract. This contract calls the Chainlink Data Feeds cache contract to read the latest price for a given `data_id` and returns the answer. The cache interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_cache.rs) repository:
+1. Open the `consumer/contracts/consumer/src/lib.rs` file and replace its contents with the following contract. This contract calls the Chainlink Data Feeds proxy contract to read the latest price for a given `data_id` and returns the answer. The proxy interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_proxy.rs) repository:
 
    ```rust
    #![no_std]
-   use soroban_sdk::{contract, contractimpl, contractclient, contracterror, contracttype, vec, Address, BytesN, Env, I256, Vec};
+   use soroban_sdk::{contract, contractimpl, contractclient, contracterror, contracttype, Address, BytesN, Env, I256};
 
-   #[contractclient(name = "DataFeedsCacheClient")]
-   pub trait DataFeedsCache {
-       fn latest_round(env: Env, data_ids: Vec<BytesN<32>>) -> Result<Vec<Option<RoundData>>, CacheError>;
+   #[contractclient(name = "DataFeedsProxyClient")]
+   pub trait DataFeedsProxy {
+       fn latest_round(env: Env, data_id: BytesN<32>, decimals: u32) -> Result<Round, ProxyReadError>;
    }
 
    #[contracttype]
    #[derive(Clone, Debug)]
-   pub struct RoundData {
+   pub struct Round {
        pub round_id: u64,
        pub answer: I256,
        pub timestamp: u64,
-       pub ledger_seq: u32,
-       pub primary: bool,
    }
 
    #[contracterror]
    #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
    #[repr(u32)]
-   pub enum CacheError {
-       MalformedReport = 100,
-       UnauthorizedCaller = 101,
-       FeedNotConfigured = 102,
-       EmptyConfig = 103,
-       InvalidAddress = 104,
-       InvalidWorkflowName = 105,
-       DuplicatePermission = 106,
-       InvalidDataId = 107,
-       DuplicateFeedConfig = 108,
-       FeedFrozen = 109,
-       NoFeedState = 110,
+   pub enum ProxyReadError {
+       NoDataPresent = 50,
+       InvalidDecimals = 51,
+       RoundsToZero = 52,
    }
 
    #[contract]
@@ -135,16 +125,15 @@ To complete this guide, you'll need:
    #[contractimpl]
    impl Consumer {
        /// Read the latest round for a feed and return its answer.
-       pub fn read_latest_price(env: Env, cache: Address, data_id: BytesN<32>) -> I256 {
-           let client = DataFeedsCacheClient::new(&env, &cache);
-           let rounds = client.latest_round(&vec![&env, data_id]);
-           let round = rounds.get_unchecked(0).unwrap();
+       pub fn read_latest_price(env: Env, proxy: Address, data_id: BytesN<32>) -> I256 {
+           let client = DataFeedsProxyClient::new(&env, &proxy);
+           let round = client.latest_round(&data_id, &18).unwrap();
            round.answer
        }
    }
    ```
 
-   This contract calls the cache's `latest_round` function with a vector containing a single `data_id`. The returned `RoundData` contains the `round_id`, `answer`, `timestamp`, `ledger_seq`, and `primary` fields for the feed. The answer is stored at `18` decimal places.
+   This contract calls the proxy's `latest_round` function with a single `data_id` and requests the answer at `18` decimal places. The returned `Round` contains the `round_id`, `answer`, and `timestamp` fields for the feed.
 
 ## Build and deploy the contract
 
@@ -180,7 +169,7 @@ To complete this guide, you'll need:
 
 ## Invoke the contract
 
-1. Invoke the `read_latest_price` function on your deployed contract, passing the cache contract address and the `data_id` for the feed you want to read. The cache contract on Stellar Testnet is `CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW`, and the BTC/USD `data_id` is `01a0b4d920000332000000000000000000000000000000000000000000000000`. You can find the `data_id` for other assets on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+1. Invoke the `read_latest_price` function on your deployed contract, passing the proxy contract address and the `data_id` for the feed you want to read. The proxy contract on Stellar Testnet is `CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4`, and the BTC/USD `data_id` is `01a0b4d920000332000000000000000000000000000000000000000000000000`. You can find the `data_id` for other assets on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
 
    Because `read_latest_price` is a read-only function, use the `--send=no` flag to simulate the call without submitting a transaction:
 
@@ -191,7 +180,7 @@ To complete this guide, you'll need:
    --network testnet \
    --send=no \
    -- read_latest_price \
-   --cache CAVLZXJDRGOS6UZ7BHYTYW7STQMZIOCUJIVRMT7JE7T5F6JIA3LPAOVW \
+   --proxy CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4 \
    --data_id 01a0b4d920000332000000000000000000000000000000000000000000000000
    ```
 
