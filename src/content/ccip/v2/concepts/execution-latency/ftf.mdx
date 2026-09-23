@@ -62,7 +62,7 @@ If the Committee Verifier detects the reorg before attesting (via its reorg trac
 
 ## How CCIP v2 Handles Reorgs
 
-CCIP v2 uses a message-ID-based execution model with reorg tracking and reorg quarantining in the default Committee Verifier to minimize risk during fast transfers.
+CCIP v2 uses a message-ID-based execution model with reorg tracking and reorg quarantining in the default Committee Verifier to minimize risk during FTF transfers.
 
 - **Message ID keying:** Each message's execution on the destination chain is tracked by a unique message ID (`messageId = keccak256(encodedMessage)` — a hash of the full encoded payload, which commits to `messageNumber`, source/destination, receiver, token data including pool-returned fields, finality preference, and user data). Two different payloads always produce different IDs and are tracked independently in `s_executionStates[messageId]`. After a reorg, logically the "same" transfer can hash to a new ID if its assigned `messageNumber` differs (because other non-reorged sends on the canonical fork advanced the OnRamp counter) or if committed pool/token fields differ on re-send.
 - **Reorg tracking (Committee Verifier, offchain):** When CCIP's default Committee Verifier detects that a source chain reorg has occurred, all affected message numbers are quarantined — meaning the Committee Verifier pauses new attestations for those messages until the source chain reaches finality. When the Committee Verifier's source reader detects that a previously seen message disappeared from the canonical chain (indicating a reorg), it tracks that message's sequence number for the affected destination lane. While tracked, the verifier ignores the sender's FTF confirmation depth and waits for full source-chain finalization before producing an attestation. Tracking is per (source chain, destination chain) lane — not a global pause on all messages. Once the message block is finalized, the sequence number is removed from tracking and normal processing resumes. This behavior is specific to the default Committee Verifier offchain service.
@@ -103,7 +103,7 @@ Users who wait for full finality are not affected by the FTF behavior of other u
 
 When using FTF, the core tradeoff is speed vs. reorg risk. Since double execution may occur when your confirmation depth is less than or equal to the reorg size, the right setting depends on the reorg profile of your source chain.
 
-Senders request exactly one finality mode per message (full finality, a single block depth, or `WAIT_FOR_SAFE_FLAG`). Receivers and pools may configure multiple permitted modes simultaneously (e.g., accept safe-tag requests or depth ≥ 5 or full finality). See `FinalityCodec` and [Fast Transfers - dApps](/ccip/concepts/execution-latency/fast-transfers-dapps) for receiver-side configuration.
+Senders request exactly one finality mode per message (full finality, a single block depth, or `WAIT_FOR_SAFE_FLAG`). Receivers and pools may configure multiple permitted modes simultaneously (e.g., accept safe-tag requests or depth ≥ 5 or full finality). See `FinalityCodec` and [FTF - dApps](/ccip/concepts/execution-latency/ftf-dapps) for receiver-side configuration.
 
 **L1 chains with instant / fast finality:** Use defaults (full finality), as they are already fast enough for most use cases. CCIP still defaults to `WAIT_FOR_FINALITY_FLAG` unless you explicitly opt in — even on chains with fast native finality.
 
@@ -120,7 +120,7 @@ So, setting minimum block confirmations for L2 is a function of (a) L2's block t
 ## Related Pages
 
 - [Finality by Chain](/ccip/concepts/execution-latency/finality-by-chain) — Chain-specific finality behavior and time-to-finality
-- [Fast Transfers - Token Issuers](/ccip/concepts/execution-latency/fast-transfers-token-issuers) — Pool-side FTF controls
-- [Fast Transfers - dApps](/ccip/concepts/execution-latency/fast-transfers-dapps) — Receiver-side FTF controls
+- [FTF - Token Issuers](/ccip/concepts/execution-latency/ftf-token-issuers) — Pool-side FTF controls
+- [FTF - dApps](/ccip/concepts/execution-latency/ftf-dapps) — Receiver-side FTF controls
 
 <CcipCommon callout="conceptualDisclaimer" />
