@@ -3,14 +3,16 @@ section: ace
 title: "Making Your Contract ACE-Compatible"
 date: Last Modified
 metadata:
-  description: "Learn what your smart contract needs to be ACE-compatible: inheriting PolicyProtected, adding the runPolicy modifier, connecting to a PolicyEngine, and registering extractors."
+  description: "Learn how smart contracts integrate with ACE through PolicyProtected or direct Policy Engine calls, and how protected functions use extractors."
   datePublished: "2026-03-31"
-  lastModified: "2026-05-26"
+  lastModified: "2026-09-23"
 ---
 
 import { Aside } from "@components"
 
-A contract is ACE-compatible when it can route function calls through a PolicyEngine for compliance checks before execution. This requires four things: inheriting a base contract, marking functions for protection, connecting to a PolicyEngine, and registering extractors. This page explains what each requirement means at a high level — the sub-pages linked below walk through the implementation in detail.
+A contract is ACE-compatible when it routes function calls through a Policy Engine for compliance checks before execution. Most contracts inherit `PolicyProtected` and add the `runPolicy` modifier. A contract can also construct the ACE payload and call the Policy Engine directly, as `AdvancedPoolHooks` does.
+
+This page explains the `PolicyProtected` integration path. For the direct CCIP integration, see [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools).
 
 For background on how these components interact, see the [Architecture page](/ace/concepts/architecture#policy-management-contracts) and the [Policy Management](/ace/concepts/policy-management) concepts page.
 
@@ -19,7 +21,7 @@ For background on how these components interact, see the [Architecture page](/ac
   here so you can plan ahead — upgrading production contracts is straightforward with multiple well-defined paths.
 </Aside>
 
-## What your contract needs
+## What a PolicyProtected integration needs
 
 ### 1. Inherit from PolicyProtected
 
@@ -53,16 +55,17 @@ Your contract must be connected to a [PolicyEngine](/ace/guides/policy-manager/m
 
 ### 4. Register extractors for protected functions
 
-[Extractors](/ace/guides/policy-manager/manage-policies#managing-extractors) are helper contracts that parse the calldata of your protected functions into named parameters (for example, `to` and `value` for an ERC-20 `transfer`). Policies use these named parameters to make their decisions — a volume limit policy reads `value`, a sanctions check reads `to`.
+[Extractors](/ace/concepts/policy-management#the-extractor-and-mapper-pattern) are helper contracts that parse the calldata of your protected functions into named parameters (for example, `to` and `value` for an ERC-20 `transfer`). Policies use these named parameters to make their decisions — a volume limit policy reads `value`, a sanctions check reads `to`.
 
 One extractor is registered per function signature. To bind policies to specific functions, see [Protecting Target Functions](/ace/guides/policy-manager/manage-protections).
 
 <Aside type="note" title="Extractors: pre-built and custom">
   The platform provides pre-built extractors for **ERC-20 and ERC-3643 function signatures**, attached automatically for
-  those contract types. A built-in CCIP-AdvancedPoolHooks type covers CCIP token pool hook functions. For other function
-  signatures, you write and deploy your own extractor contract (implementing `IExtractor`) and register it via the
-  Coordinator API. See [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types)
-  for the complete flow.
+  those contract types. The built-in `CCIP-AdvancedPoolHooks` type covers CCIP Token Pool hook functions; see [Protect
+  CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools). For other function signatures, you write and
+  deploy your own extractor contract (implementing `IExtractor`) and register it through the Coordinator API. See
+  [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types) for the complete
+  flow.
 </Aside>
 
 ## Integration paths

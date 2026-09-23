@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "ACE Beta scope: supported networks, managed offchain risk policies, contract types, customizations, signing model, and contract upgradeability."
   datePublished: "2026-03-31"
-  lastModified: "2026-07-17"
+  lastModified: "2026-09-23"
 ---
 
 import { Aside } from "@components"
@@ -21,13 +21,13 @@ ACE Beta is available on selected [mainnet and testnet networks](/ace/supported-
 
 ## Custom extractors are registered by you, custom mappers are not available
 
-ACE Beta provides a library of [pre-built, audited policies](/ace/reference/policy-library) (allowlists, volume limits, role-based access control, pause controls, and more) and pre-built extractors for **ERC-20 and ERC-3643** function signatures. You can also register your own [custom policies](/ace/guides/policy-manager/custom-policies) and [custom extractors](/ace/guides/policy-manager/contracts/custom-contract-types):
+ACE Beta provides a library of [pre-built, audited policies](/ace/reference/policy-library) (allowlists, volume limits, role-based access control, pause controls, and more) and pre-built extractors for **ERC-20**, **ERC-3643**, and **CCIP-AdvancedPoolHooks** function signatures. You can also register your own [custom policies](/ace/guides/policy-manager/custom-policies) and [custom extractors](/ace/guides/policy-manager/contracts/custom-contract-types):
 
 - **Custom contract types**: You can declare contract types with your own function ABIs via the Coordinator API, so contracts beyond ERC-20 and ERC-3643 (vaults, lending pools, custom token variants) are first-class citizens in the platform.
-- **Custom extractors**: You write and deploy your own extractor contract (implementing `IExtractor`), then register it via the Coordinator API with its supported function signatures and per-chain deployment addresses. The platform does not write extractors for you: pre-built extractors cover ERC-20 and ERC-3643 signatures only.
+- **Custom extractors**: You write and deploy your own extractor contract (implementing `IExtractor`), then register it via the Coordinator API with its supported function signatures and per-chain deployment addresses. The platform does not write extractors for you: pre-built extractors cover ERC-20, ERC-3643, and CCIP-AdvancedPoolHooks signatures.
 - **Custom mappers**: Deploying mapper contracts that transform or combine extracted parameters before they reach a policy is **not available** through the platform during Beta.
 
-The built-in ERC-20 and ERC-3643 contract types get the full managed experience (policy configuration, reporting, and monitoring) through the Platform UI and Coordinator API, with extractors attached automatically. A built-in CCIP token pool type (CCIP-AdvancedPoolHooks) covers the `preflightCheck` and `postflightCheck` hook functions of CCIP token pools. Custom contract types and extractors are managed through the Coordinator API. See [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types) for the complete flow.
+The built-in ERC-20 and ERC-3643 contract types get the full managed experience (policy configuration, reporting, and monitoring) through the Platform UI and Coordinator API, with extractors attached automatically. The built-in `CCIP-AdvancedPoolHooks` type covers the `preflightCheck` and `postflightCheck` hook functions; see [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools). Custom contract types and extractors are managed through the Coordinator API. See [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types) for the custom flow.
 
 ## Self-deployed contracts are not visible in the platform
 

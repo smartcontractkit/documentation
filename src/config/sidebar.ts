@@ -163,6 +163,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ace/guides/policy-manager/manage-data-validators",
             },
             {
+              title: "Protect CCIP Token Pools with ACE",
+              url: "ace/guides/policy-manager/ccip-token-pools",
+            },
+            {
               title: "Custom Policies",
               url: "ace/guides/policy-manager/custom-policies",
             },
