@@ -17,6 +17,14 @@ const SVM_API_FILES = ["events", "router", "errors", "messages"]
 const APTOS_API_FILES = ["events", "router", "errors", "messages"]
 
 export const ccipRedirects = {
+  "/ccip/concepts/execution-latency/fast-transfers-dapps": {
+    status: 301,
+    destination: "/ccip/concepts/execution-latency/ftf-dapps",
+  },
+  "/ccip/concepts/execution-latency/fast-transfers-token-issuers": {
+    status: 301,
+    destination: "/ccip/concepts/execution-latency/ftf-token-issuers",
+  },
   ...EVM_API_FILES.reduce(
     (redirects, file) => {
       // Only create one redirect without trailing slash

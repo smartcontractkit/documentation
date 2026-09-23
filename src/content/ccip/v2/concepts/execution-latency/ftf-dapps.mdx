@@ -1,9 +1,9 @@
 ---
 section: ccip
 date: Last Modified
-title: "Fast Transfers - dApps"
+title: "FTF - dApps"
 metadata:
-  description: "Learn how dApp integrators configure receiver finality policy, avoid stranded inbound messages, and implement idempotency for FTF traffic."
+  description: "Learn how dApp integrators configure receiver finality policy, avoid stranded inbound messages, and implement idempotency for Faster-Than-Finality (FTF) traffic."
   excerpt: "FTF dApp allowedFinalityConfig receiver V2 idempotency stranding"
   datePublished: "2025-05-19"
   lastModified: "2025-05-19"
@@ -130,7 +130,7 @@ Admissibility rule (enforced inside `getFee` and `ccipSend`):
 | `_encodeBlockDepth(N)`       | Yes only if `N >=` the pool's floor                               |
 | `_encodeBlockDepth(N)`       | Reverts with `InvalidRequestedFinality` if `N <` the pool's floor |
 
-Find the token pool address for a given token and chain in the [CCIP Directory](/ccip/directory). See [Fast Transfers - Token Issuers](/ccip/concepts/execution-latency/fast-transfers-token-issuers) for how token issuers configure this floor.
+Find the token pool address for a given token and chain in the [CCIP Directory](/ccip/directory). See [FTF - Token Issuers](/ccip/concepts/execution-latency/ftf-token-issuers) for how token issuers configure this floor.
 
 ### Configuring the Application Receiver (via enableChain)
 
@@ -224,7 +224,7 @@ contract BidirectionalApp is CCIPClientExample {
 
 ## Fast USDC transfers
 
-Similar to other FTF messages, fast transfers for USDC can be chosen via `requestedFinalityConfig` in `ExtraArgsV3`. The behavior depends on whether the transfer is a pure token transfer or a token transfer with data and/or a non-zero user gas limit.
+Similar to other FTF messages, FTF transfers for USDC can be chosen via `requestedFinalityConfig` in `ExtraArgsV3`. The behavior depends on whether the transfer is a pure token transfer or a token transfer with data and/or a non-zero user gas limit.
 CCIP v2 supports fast USDC transfers on lanes that integrate with Circle's CCTP. Finality for USDC token transfers is therefore governed by [CCTP finality thresholds](https://developers.circle.com/cctp/concepts/finality-and-block-confirmations) per chain. For transfers sent to a smart contract — with a non-zero message gas limit or with data — both CCTP and message finality parameters determine the overall speed.
 
 CCIP's CCTP CCV integrates with CCTP smart contracts and the CCTP attestation service.

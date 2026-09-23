@@ -1,10 +1,10 @@
 ---
 section: ccip
 date: Last Modified
-title: "Fast Transfers - Token Issuers"
+title: "FTF - Token Issuers"
 metadata:
   description: "Learn how token issuers enable and manage Faster-Than-Finality (FTF) on CCIP v2 token pools, including confirmation floors, rate limits, and fees."
-  excerpt: "FTF token issuer allowedFinality rate limits fast transfer fees V2 token pool"
+  excerpt: "FTF token issuer allowedFinality rate limits FTF fees V2 token pool"
   datePublished: "2025-05-19"
   lastModified: "2025-05-19"
 ---
@@ -58,7 +58,7 @@ Token issuers can configure per-destination-chain fee parameters that charge dif
 
 |                    | basis points (collected in transferred token, deducted from amount sent) | Flat (charged in USD as part of fees paid) |
 | :----------------- | :----------------------------------------------------------------------- | :----------------------------------------- |
-| Fast Transfers     | `fastFinalityTransferFeeBps`                                             | `fastFinalityFeeUSDCents`                  |
+| FTF transfers      | `fastFinalityTransferFeeBps`                                             | `fastFinalityFeeUSDCents`                  |
 | Standard Transfers | `finalityTransferFeeBps`                                                 | `finalityFeeUSDCents`                      |
 
 This means a token issuer can set, for example, 0 basis points for standard transfers and 15 basis points for FTF transfers on a given lane — effectively pricing in the reorg risk they are taking on by allowing faster execution. The fee is deducted from the transferred amount on the source chain before the tokens are locked or burned. Accrued fees can be withdrawn by the pool owner or a designated fee admin. Flat fees instead of basis points can also be used. See [Fees and Billing](/ccip/concepts/fees-and-billing) for more details.
@@ -73,7 +73,7 @@ These fees may be used to fund the token issuer's own corrective mechanisms — 
 | **Separate FTF rate limits**         | Caps total in-flight value of non-finalized transfers per lane, isolating FTF exposure from standard transfers                                                                  |
 | **Differentiated basis points fees** | Charges a higher basis-point fee on FTF transfers to fund corrective mechanisms. Pool owner or fee admin withdraws accrued fees to fund corrective reserves                     |
 
-**To reiterate:** none of these mechanisms activate unless the token issuer explicitly enables fast transfers on a V2 pool. Existing V1 pools and new V2 pools with default settings both enforce full finality.
+**To reiterate:** none of these mechanisms activate unless the token issuer explicitly enables FTF on a V2 pool. Existing V1 pools and new V2 pools with default settings both enforce full finality.
 
 ## Practical Guidance
 
@@ -83,7 +83,7 @@ These fees may be used to fund the token issuer's own corrective mechanisms — 
 
 **For token issuers considering enabling FTF:** Start by setting a conservative `allowedFinality` floor well above typical reorg depths for your source chains. Configure separate FTF rate limits to cap your worst-case exposure. Consider setting fees to accumulate a fee reserve that funds corrective mechanisms for reorg-induced duplicates.
 
-**For dApps on CCIP:** Consider whether you can include an application-level idempotency key in your message payload. This is optional and doesn't leak into the protocol, but it gives you a clean way to deduplicate on the destination side without relying solely on the protocol's quarantine mechanism. If the token pool you interact with has not enabled FTF — whether it's an existing V1 pool or a V2 pool with default settings — your transfers will always wait for full finality regardless of what you request. See [Fast Transfers - dApps](/ccip/concepts/execution-latency/fast-transfers-dapps) for receiver-side guidance.
+**For dApps on CCIP:** Consider whether you can include an application-level idempotency key in your message payload. This is optional and doesn't leak into the protocol, but it gives you a clean way to deduplicate on the destination side without relying solely on the protocol's quarantine mechanism. If the token pool you interact with has not enabled FTF — whether it's an existing V1 pool or a V2 pool with default settings — your transfers will always wait for full finality regardless of what you request. See [FTF - dApps](/ccip/concepts/execution-latency/ftf-dapps) for receiver-side guidance.
 
 **When in doubt:** Use defaults and your pool will behave exactly as it does today — full finality for every transfer.
 
