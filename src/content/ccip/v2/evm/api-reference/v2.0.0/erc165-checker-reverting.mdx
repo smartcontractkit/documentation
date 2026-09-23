@@ -1,0 +1,116 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 ERC165CheckerReverting API Reference"
+metadata:
+  description: "Helper library for performing safe ERC-165 interface checks."
+  version: "2.0.0"
+---
+
+`ERC165CheckerReverting` performs ERC-165 interface checks with strict safety guarantees.
+
+Unlike standard interface checkers, it:
+
+- ensures sufficient gas is available for the call
+- validates return data explicitly
+- reverts on ambiguous or unsafe conditions
+
+This prevents silent failures when interacting with contracts that do not correctly implement ERC-165.
+
+> This library provides reusable helper functions and is not deployed as a standalone application-facing contract.
+
+## Usage Boundary
+
+**You do not call this library directly.**
+
+- Contracts use this library when verifying interface support on external contracts.
+- It is typically used in token pools and hooks to ensure compatibility.
+- You should use this library when interacting with untrusted or heterogeneous contracts.
+
+## Contract
+
+`libraries/ERC165CheckerReverting.sol`
+
+## Import
+
+```solidity
+import {ERC165CheckerReverting} from "chainlink-ccip/libraries/ERC165CheckerReverting.sol";
+```
+
+## Functions
+
+### \_supportsInterfaceReverting
+
+```solidity id="2r9jbh"
+function _supportsInterfaceReverting(
+  address account,
+  bytes4 interfaceId
+) internal view returns (bool)
+```
+
+> Checks whether a contract supports a given interface and reverts on failure.
+
+- Performs a safe ERC-165 check with validation.
+
+| Parameter     | Type      | Description                   |
+| ------------- | --------- | ----------------------------- |
+| `account`     | `address` | Contract address to query.    |
+| `interfaceId` | `bytes4`  | ERC-165 interface identifier. |
+
+Returns:
+
+| Type   | Description                         |
+| ------ | ----------------------------------- |
+| `bool` | True if the interface is supported. |
+
+---
+
+### \_supportsERC165InterfaceUncheckedReverting
+
+```solidity id="7yfgqk"
+function _supportsERC165InterfaceUncheckedReverting(
+  address account,
+  bytes4 interfaceId
+) internal view returns (bool)
+```
+
+> Performs a low-level ERC-165 interface check without prior ERC-165 support verification.
+
+- Intended for internal use when ERC-165 support is already assumed.
+
+| Parameter     | Type      | Description                   |
+| ------------- | --------- | ----------------------------- |
+| `account`     | `address` | Contract address to query.    |
+| `interfaceId` | `bytes4`  | ERC-165 interface identifier. |
+
+Returns:
+
+| Type   | Description                         |
+| ------ | ----------------------------------- |
+| `bool` | True if the interface is supported. |
+
+## Errors
+
+- `error InsufficientGasForStaticCall()`
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Notes
+
+- Calls revert if the target contract does not behave as expected under ERC-165.
+- Checks will revert if insufficient gas is available or if return data is malformed.
+- This library is stricter than standard ERC-165 helpers, which may return false instead of reverting.
+
+## Usage context
+
+Used for safe interface detection in:
+
+- [`AdvancedPoolHooks`](/ccip/evm/api-reference/v2.0.0/advanced-pool-hooks)
+- [`Pool`](/ccip/evm/api-reference/v2.0.0/pool)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+
+## Related Interfaces & Contracts
+
+- [`AdvancedPoolHooks`](/ccip/evm/api-reference/v2.0.0/advanced-pool-hooks)
+- [`Pool`](/ccip/evm/api-reference/v2.0.0/pool)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)

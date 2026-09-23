@@ -1,0 +1,136 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IBridgeV2 API Reference"
+metadata:
+  description: "Interface for Lombard Bridge V2 used by CCIP verifiers and pools."
+  version: "2.0.0"
+---
+
+## Summary
+
+`IBridgeV2` defines the minimal interface for Lombard Bridge V2 integrations.
+
+It exposes:
+
+- Mailbox discovery
+- Message version detection
+- Deposit initiation
+- Destination token resolution
+
+This interface is used by:
+
+- `[LombardVerifier](/ccip/evm/api-reference/v2.0.0/lombard-verifier)`
+- `[LombardTokenPool](/ccip/evm/api-reference/v2.0.0/lombard-token-pool)`
+
+---
+
+## Contract
+
+`chains/evm/contracts/interfaces/lombard/IBridgeV2.sol`
+
+---
+
+## Import
+
+```solidity
+import {IBridgeV2} from "chainlink-ccip/chains/evm/contracts/interfaces/lombard/IBridgeV2.sol";
+```
+
+---
+
+## Interface surface
+
+```solidity id="a1rfp9"
+interface IBridgeV2 {
+```
+
+---
+
+### mailbox
+
+```solidity id="o5qlmz"
+function mailbox() external view returns (address);
+```
+
+Returns the associated `IMailbox` contract address.
+
+---
+
+### MSG_VERSION
+
+```solidity id="l3ypxk"
+function MSG_VERSION() external view returns (uint8);
+```
+
+Returns the bridge message format version.
+
+---
+
+### deposit
+
+```solidity id="n5t7ql"
+function deposit(
+  bytes32 destinationChain,
+  address token,
+  address sender,
+  bytes32 recipient,
+  uint256 amount,
+  bytes32 destinationCaller
+) external payable returns (uint256, bytes32);
+```
+
+Initiates a cross-chain deposit.
+
+Parameters:
+
+- `destinationChain` — Lombard chain identifier.
+- `token` — Source token address.
+- `sender` — Logical sender for the deposit.
+- `recipient` — 32-byte destination recipient identifier.
+- `amount` — Token amount.
+- `destinationCaller` — Authorized destination handler.
+
+Returns:
+
+- `uint256` — Bridge-defined numeric identifier.
+- `bytes32` — Bridge-defined message or payload hash.
+
+Function is `payable` to allow bridge-native fee handling.
+
+---
+
+### getAllowedDestinationToken
+
+```solidity id="kpx8dz"
+function getAllowedDestinationToken(
+  bytes32 destinationChain,
+  address sourceToken
+) external view returns (bytes32);
+```
+
+Returns the destination token identifier approved for the `(destinationChain, sourceToken)` pair.
+
+---
+
+```solidity id="y4d9ft"
+}
+```
+
+---
+
+## Integration notes / expectations
+
+- Consumers should validate `MSG_VERSION()` matches expected version.
+- `deposit` may require native value depending on bridge implementation.
+- Destination token resolution must be verified before initiating deposits.
+- Return values from `deposit` are bridge-defined and not interpreted by this interface.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`IBridgeV3`](/ccip/evm/api-reference/v2.0.0/i-bridge-v3)
+- [`IMailbox`](/ccip/evm/api-reference/v2.0.0/i-mailbox)
+- [`LombardVerifier`](/ccip/evm/api-reference/v2.0.0/lombard-verifier)
+- [`LombardTokenPool`](/ccip/evm/api-reference/v2.0.0/lombard-token-pool)

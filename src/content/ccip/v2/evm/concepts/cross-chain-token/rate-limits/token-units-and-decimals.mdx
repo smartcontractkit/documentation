@@ -1,0 +1,137 @@
+---
+section: ccip
+date: Last Modified
+title: "Token Units and Decimals"
+metadata:
+  description: "How to convert human-readable token amounts into on-chain base units for CCIP rate limit configuration, with worked examples for 18-decimal and 6-decimal tokens and cross-decimal lane guidance."
+  excerpt: "CCIP rate limits token units decimals smallest unit base units ERC-20 18 decimals 6 decimals USDC LINK conversion cross-decimal lanes v1.x v1.6.1"
+  datePublished: "2025-06-09"
+  lastModified: "2025-06-09"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<Aside type="note" title="CCIP v2.0">
+  This page applies to manual on-chain configuration and deployment tooling output. **v1.x pools** differences are noted
+  inline.
+</Aside>
+
+When configuring CCIP rate limits, on-chain values are specified in the token's **smallest unit** on the chain where the pool is deployed, not in whole tokens.
+
+Incorrect unit handling can result in rate limits orders of magnitude larger or smaller than intended.
+
+## Smallest unit vs human-readable amounts
+
+Every ERC-20 token defines a number of decimal places that determine its smallest unit:
+
+- An 18-decimal token (for example, LINK or ETH) uses `10^18` base units per token
+- A 6-decimal token (for example, USDC or USDT) uses `10^6` base units per token
+
+Rate limit parameters such as capacity and rate must always be provided in these base units when submitting on-chain transactions.
+
+## Local denomination on each chain
+
+Outbound limits on chain A and inbound limits on chain B are **separate transactions**, each scaled to **that chain's decimals**. Do not copy a base-unit value from one chain to another unless decimals match and you intend identical limits.
+
+<Aside type="note" title="v1.x pools (EVM, pre-v1.6.1)">
+  Inbound limits on some legacy pools were stored using **remote/source decimals** rather than local destination
+  decimals. Pools at **v1.6.1 and later** use local denomination, same as v2.0. Always inspect on-chain state.
+</Aside>
+
+## Converting values for on-chain configuration
+
+To convert a human-readable token amount into the value used on-chain, apply the following formula:
+
+```
+On-chain value = human-readable amount × (10 ^ local token decimals)
+```
+
+This conversion applies to:
+
+- capacity values
+- refill rate values
+
+Use the decimals of the **chain where you are submitting the transaction**.
+
+## Example: 18-decimal token
+
+Token on Ethereum mainnet:
+
+- Decimals: 18
+- Desired outbound capacity: 100 tokens
+
+Calculation:
+
+```
+100 × 10^18 = 100000000000000000000
+```
+
+The capacity value passed to the token pool contract on Ethereum must be `100000000000000000000`.
+
+If the remote chain uses 18 decimals as well, the counterpart inbound capacity would typically be **110%** of the outbound value for headroom:
+
+```
+110 × 10^18 = 110000000000000000000
+```
+
+That inbound value is configured on the **destination** pool, not the source.
+
+## Example: 6-decimal token
+
+Token on a 6-decimal chain:
+
+- Decimals: 6
+- Desired outbound capacity: 500 tokens
+
+Calculation:
+
+```
+500 × 10^6 = 500000000
+```
+
+The capacity value passed to the token pool contract must be `500000000`.
+
+## Cross-decimal lanes
+
+If the same logical token uses different decimals on two chains, each side of the lane must be computed using **local decimals**. Do not reuse a base-unit value from one chain on another.
+
+## Common failure modes
+
+The most common causes of misconfiguration include:
+
+- assuming values are specified in whole tokens
+- applying the wrong decimal precision
+- copying a base-unit value from the source chain onto the destination chain without rescaling
+- copying example values without recalculating for the target token
+
+Any of these mistakes can:
+
+- unintentionally block transfers
+- allow far more volume than expected
+- create operational risk that is difficult to detect immediately
+
+## Before updating rate limits
+
+Before submitting any transaction that updates rate limits:
+
+- verify the token's decimal precision on **each chain** in the lane
+- recompute capacity and rate values from first principles
+- double-check values in base units
+- confirm inbound on the destination provides adequate headroom (typically ≥ 110% of source outbound)
+
+Once values are submitted on-chain, they take effect immediately and the bucket is refilled to full capacity.
+
+<Aside type="note" title="v2.0 only">
+  Once submitted, values take effect immediately and the bucket refills to full capacity.
+</Aside>
+
+<Aside type="note" title="v1.x pools">
+  Values take effect immediately, but the bucket refills at the normal rate — it does not jump to full capacity.
+</Aside>
+
+## What's next
+
+After validating units and conversions, you can proceed to [updating inbound and outbound rate limits](/ccip/evm/concepts/cross-chain-token/rate-limits/update-rate-limits) for the selected token pool and lane.
+
+<CcipCommon callout="conceptualDisclaimer" />

@@ -1,0 +1,794 @@
+---
+section: ccip
+date: Last Modified
+title: "Get Started with CCIP (EVM)"
+metadata:
+  description: "Get started with Chainlink CCIP 2.0 on EVM chains. Deploy sender/receiver contracts, send data cross-chain, and pay fees in LINK."
+  excerpt: "Chainlink CCIP 2.0, EVM chains, Ethereum Sepolia, Arbitrum Sepolia, cross-chain messaging, Solidity contracts, LINK token, Remix IDE, MetaMask, Testnet"
+  datePublished: "2025-05-19"
+  lastModified: "2026-07-23"
+  estimatedTime: "20 minutes"
+whatsnext:
+  {
+    "Learn how to transfer tokens": "/ccip/evm/tutorials/application-developers/transfer-tokens-from-contract",
+    "Learn how to transfer tokens and send data in a single CCIP transaction": "/ccip/evm/tutorials/application-developers/programmable-token-transfers",
+    "Learn how to send arbitrary data over CCIP": "/ccip/evm/tutorials/application-developers/send-arbitrary-data",
+    "CCIP Directory": "/ccip/directory",
+  }
+---
+
+import { AnchoredAccordion, CodeSample, ClickToZoom, CopyText, Aside } from "@components"
+import { GitHubCard, GitHubCards, DocCard, DocCards } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+Get started with Chainlink CCIP 2.0, as a user and as a developer
+
+In this guide, you will:
+
+1. Bridge tokens from one chain to another as a user, via Chainlink Transporter.
+2. Send and receive cross-chain messages as a developer, using Chainlink CCIP 2.0 infrastructure.
+
+## Bridge Tokens Using Chainlink Transporter
+
+The Transporter application is a user-friendly tool built by Chainlink Labs to allow users to bridge tokens from one chain to another seamlessly,
+leveraging the power of CCIP 2.0's infrastructure.
+
+<DocCards>
+  <DocCard title="Transporter UI (Testnet)" href="https://test.transporter.io/"></DocCard>
+  <DocCard title="Transporter UI (Mainnet)" href="https://www.transporter.io/"></DocCard>
+</DocCards>
+
+<AnchoredAccordion title="Connect Your Wallet" anchorId="connect-your-wallet" number={1} depth={3}>
+
+1. The Transporter UI supports most popular wallets, please make sure you have some funds on your desired chain in an account that is imported into one of these wallets.
+2. Click the `Connect +` button on the top right of the Transporter UI to connect your wallet.
+
+<ClickToZoom
+  src="/images/ccip/tutorials/getting-started/Transporter-ui-1.png"
+  alt="Chainlink CCIP Transporter Connect Wallet"
+/>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Select Lane and Approve Allowance" anchorId="select-lane-approve-allowance" number={2} depth={3}>
+
+1. Select the source and destination chains from the network dropdowns.
+2. This tutorial uses the testnet version of the Transporter UI, your view may differ depending on the version of the UI you are using, and the types of lanes that are
+   available in the moment.
+
+<ClickToZoom
+  src="/images/ccip/tutorials/getting-started/Transporter-ui-2.png"
+  alt="Chainlink CCIP Transporter Select Source and Destination Chains"
+/>
+
+3. The UI might ask you to `Approve` an allowance on the amount of tokens that you are trying to bridge. We highly recommend users to stick to a one-time
+   allowance and not approve an unlimited allowance, unless the user explicitly intends to do so.
+
+<ClickToZoom
+  src="/images/ccip/tutorials/getting-started/Transporter-ui-3.png"
+  alt="Chainlink CCIP Transporter Approve Allowance"
+/>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="(Optional): Pay Gas Fee using LINK" anchorId="pay-gas-using-link" number={3} depth={3}>
+
+1. The UI allows you to pay for the transfer using `LINK` tokens, as shown in the screenshot attached.
+2. If you select this option, the UI might ask for an additional approval of the `LINK` token, to pay for the gas fees.
+
+<ClickToZoom
+  src="/images/ccip/tutorials/getting-started/Transporter-ui-4.png"
+  alt="Chainlink CCIP Transporter Pay Gas Fee using LINK"
+/>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Initiate Transfer" anchorId="initiate-transfer" number={4} depth={3}>
+
+1. After all the settings are configured, and allowances approved, click on the `Send` button to initiate the transfer.
+2. Approve the transfer in the wallet popup.
+
+<ClickToZoom
+  src="/images/ccip/tutorials/getting-started/Transporter-ui-5.png"
+  alt="Chainlink CCIP Transporter Initiate Transfer"
+/>
+
+3. You can check out the status of the transfer in the `Activity` tab of the Transporter UI, or on the [CCIP Explorer](https://ccip.chain.link/).
+
+<ClickToZoom
+  src="/images/ccip/tutorials/getting-started/Transporter-ui-6.png"
+  alt="Chainlink CCIP Transporter Check Transfer Status"
+/>
+
+</AnchoredAccordion>
+
+## Send and Receive Cross-Chain Messages Using CCIP
+
+### Before you begin
+
+You will need:
+
+- Basic [Solidity](https://soliditylang.org/) and [smart contract deployment](/quickstarts/deploy-your-first-contract) experience
+- One [wallet](https://metamask.io/) funded on two CCIP-supported EVM testnets: [Ethereum Sepolia and Arbitrum Sepolia](/ccip/directory/testnet). You will need `ETH` and `LINK` on _Ethereum Sepolia_, and `ETH` on _Arbitrum Sepolia_.
+
+- Choose one of the following development environments:
+  - **[Hardhat 3](https://hardhat.org/docs/getting-started)**
+  - **[Foundry](https://book.getfoundry.sh/)**
+  - **[Remix](https://remix-ide.readthedocs.io/en/latest/)**
+
+### Examine the code
+
+This section goes through the code for the `Sender` and `Receiver` contracts needed to complete the tutorial.
+We will use the same contracts for all three development environments.
+
+<AnchoredAccordion title="Sender code" anchorId="sender-code" number={1} depth={4}>
+
+The sender contract interacts with CCIP to send data cross-chain. Key elements are explained below.
+
+<CodeSample src="samples/CCIP/Sender.sol" filename="Sender.sol" />
+
+##### Initializing the contract
+
+When deploying the contract, you define the router address and the LINK contract address of the blockchain where you deploy. The router provides:
+
+- The `getFee` [function](/ccip/evm/api-reference/v2.0.0/i-router-client#getfee) to estimate CCIP fees.
+- The `ccipSend` [function](/ccip/evm/api-reference/v2.0.0/i-router-client#ccipsend) to send CCIP messages.
+
+##### Sending data
+
+The `sendMessage` function:
+
+1. Constructs a CCIP message using the `EVM2AnyMessage` [struct](/ccip/evm/api-reference/v2.0.0/client#evm2anymessage):
+   - `receiver`: ABI-encoded destination address.
+   - `data`: ABI-encoded string payload.
+   - `tokenAmounts`: Empty array (no tokens sent).
+   - `extraArgs`: Encoded via `ExtraArgsCodec._getBasicEncodedExtraArgsV3` with a `gasLimit` of `200000` and default finality (`bytes4(0)`).
+   - `feeToken`: The LINK token address, indicating fees are paid in LINK.
+
+2. Computes the fees via the router's `getFee` [function](/ccip/evm/api-reference/v2.0.0/i-router-client#getfee).
+3. Verifies the contract's LINK balance covers the fees.
+4. Approves the router to spend the required LINK.
+5. Dispatches the message via the router's `ccipSend` [function](/ccip/evm/api-reference/v2.0.0/i-router-client#ccipsend).
+
+<CcipCommon callout="senderContractCalloutV2" />
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Receiver code" anchorId="receiver-code" number={2} depth={4}>
+
+The receiver contract interacts with CCIP to receive data on the destination chain.
+
+<CodeSample src="samples/CCIP/Receiver.sol" filename="Receiver.sol" />
+
+###### Initializing the contract
+
+When you deploy the contract, you define the router address. The receiver inherits from [CCIPReceiver](/ccip/evm/api-reference/v2.0.0/ccip-receiver), which uses the router address.
+
+###### Receiving data
+
+On the destination blockchain:
+
+1. The CCIP Router invokes `ccipReceive` [function](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive). This function is protected by the `onlyRouter` [modifier](/ccip/evm/api-reference/v2.0.0/ccip-receiver#onlyrouter), ensuring only the router can call it.
+
+2. `ccipReceive` calls the internal `_ccipReceive` [function](/ccip/evm/api-reference/v2.0.0/ccip-receiver#_ccipreceive).
+
+<Aside type="caution" title="_ccipReceive">
+  - The receiver contract must implement this function. - The CCIP router uses this function to deliver messages. -
+  Messages will not be delivered if this function is not implemented correctly.
+</Aside>
+
+3. `_ccipReceive` receives an `Any2EVMMessage` [struct](/ccip/evm/api-reference/v2.0.0/client#any2evmmessage) containing:
+   - The CCIP `messageId`.
+   - The `sourceChainSelector`.
+   - The `sender` address in bytes format, decoded via [abi.decode](https://docs.soliditylang.org/en/v0.8.20/abi-spec.html).
+   - The `data` in bytes format, decoded to a `string`.
+
+<Aside type="caution" title="Recommendations for receiver contracts">
+This example is simplified for learning purposes. For production code:
+
+- Validate the source chain.
+- Depending on your use case, validate the sender address.
+
+The receiver inherits from [CCIPReceiver](/ccip/evm/api-reference/v2.0.0/ccip-receiver), which uses the `onlyRouter` [modifier](/ccip/evm/api-reference/v2.0.0/ccip-receiver#onlyrouter) to ensure only the router can call `ccipReceive`.
+
+</Aside>
+
+</AnchoredAccordion>
+
+### Send a cross-chain message using CCIP
+
+Send and verify a cross-chain message using CCIP in under 10 minutes, with your favorite development framework.
+
+#### Hardhat 3
+
+Best for a `TypeScript`-based scripting workflow where you deploy contracts, send a CCIP message, and verify delivery from the command line.
+
+<AnchoredAccordion title="Bootstrap a new Hardhat project" anchorId="hardhat-bootstrap" number={1} depth={5}>
+
+1. Open a new terminal in a directory of your choice and run this command:
+
+```bash filename="Terminal"
+npx hardhat --init
+```
+
+Create a project with the following options:
+
+- Hardhat Version: hardhat-3
+- Initialize project: At root of the project
+- Type of project: A minimal Hardhat project
+- Install the necessary dependencies: Yes
+
+2. Install the additional dependencies required by this tutorial:
+
+```bash filename="Terminal"
+npm install @chainlink/contracts-ccip @chainlink/contracts viem
+npm install --save-dev @nomicfoundation/hardhat-viem @nomicfoundation/hardhat-keystore
+```
+
+<Aside type="caution" title="WE HIGHLY RECOMMEND NOT USING PLAINTEXT PRIVATE KEYS">
+
+1. It is not recommended to store your sensitive keys in plaintext in `.env` files.
+2. In this tutorial we use in-built keystores for both Hardhat and Foundry for their respective projects.
+
+</Aside>
+
+3. Update `hardhat.config.ts` to use the `hardhat-viem` and `hardhat-keystore` plugins:
+
+```typescript filename="hardhat.config.ts"
+import { configVariable, defineConfig } from "hardhat/config"
+import hardhatKeystore from "@nomicfoundation/hardhat-keystore"
+import hardhatViem from "@nomicfoundation/hardhat-viem"
+
+export default defineConfig({
+  plugins: [hardhatViem, hardhatKeystore],
+  solidity: {
+    version: "0.8.24",
+  },
+  networks: {
+    sepolia: {
+      type: "http",
+      url: configVariable("SEPOLIA_RPC_URL"),
+      accounts: [configVariable("PRIVATE_KEY")],
+    },
+    arbitrumSepolia: {
+      type: "http",
+      url: configVariable("ARBITRUM_SEPOLIA_RPC_URL"),
+      accounts: [configVariable("PRIVATE_KEY")],
+    },
+  },
+})
+```
+
+4. Set the environment variables using `hardhat-keystore`. Run the following commands in succession — Hardhat will ask you to enter a password for the keystore for each variable:
+
+```bash filename="Terminal"
+npx hardhat keystore set SEPOLIA_RPC_URL
+npx hardhat keystore set ARBITRUM_SEPOLIA_RPC_URL
+npx hardhat keystore set PRIVATE_KEY
+```
+
+The output of `npx hardhat keystore list` should look like this:
+
+      <ClickToZoom
+        src="/images/ccip/tutorials/ccip-getting-started-evm-1.png"
+        alt="Hardhat keystore list command output"
+      />
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Set up the contracts" anchorId="hardhat-contracts" number={2} depth={5}>
+
+1. Create a new directory named `contracts` for your smart contracts if it doesn't already exist.
+2. Create a new file named `Sender.sol` in this directory and paste the [sender contract code](#sender-code) inside it.
+3. Create a new file named `Receiver.sol` in the same directory and paste the [receiver contract code](#receiver-code) inside it.
+4. Run the following command to compile the contracts:
+
+```bash filename="Terminal"
+npx hardhat build
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Send a cross-chain message" anchorId="hardhat-send" number={3} depth={5}>
+
+1. Create a new directory named `scripts` at the root of the project if it doesn't already exist.
+2. Create a new file named `send-cross-chain-message.ts` in this directory and paste the following code inside it:
+
+```typescript filename="scripts/send-cross-chain-message.ts"
+import { network } from "hardhat"
+import { getContract, parseAbi, parseUnits } from "viem"
+
+// Ethereum Sepolia configuration
+const SEPOLIA_ROUTER = "0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59"
+const SEPOLIA_LINK = "0x779877A7B0D9E8603169DdbD7836e478b4624789"
+
+// Arbitrum Sepolia configuration
+const ARBITRUM_SEPOLIA_ROUTER = "0x2a9C5afB0d0e4BAb2BCdaE109EC4b0c4Be15a165"
+const ARBITRUM_SEPOLIA_CHAIN_SELECTOR = 3478487238524512106n
+
+// Connect to Ethereum Sepolia
+console.log("Connecting to Ethereum Sepolia...")
+const sepoliaNetwork = await network.connect("sepolia")
+
+// Connect to Arbitrum Sepolia
+console.log("Connecting to Arbitrum Sepolia...")
+const arbitrumSepoliaNetwork = await network.connect("arbitrumSepolia")
+
+// Step 1: Deploy Sender on Sepolia
+console.log("\n[Step 1] Deploying Sender contract on Ethereum Sepolia...")
+
+const sender = await sepoliaNetwork.viem.deployContract("Sender", [SEPOLIA_ROUTER, SEPOLIA_LINK])
+const sepoliaPublicClient = await sepoliaNetwork.viem.getPublicClient()
+
+console.log(`Sender deployed on Sepolia: ${sender.address}`)
+console.log(`View on Etherscan: https://sepolia.etherscan.io/address/${sender.address}`)
+
+// Step 2: Fund Sender with LINK
+console.log("\n[Step 2] Funding Sender with 1 LINK...")
+
+const [sepoliaWalletClient] = await sepoliaNetwork.viem.getWalletClients()
+if (!sepoliaWalletClient) {
+  throw new Error("No wallet client available. Check PRIVATE_KEY + network config in hardhat.config.ts.")
+}
+
+const linkTokenInterfaceAbi = parseAbi(["function transfer(address to, uint256 value) returns (bool)"])
+
+const link = getContract({
+  address: SEPOLIA_LINK,
+  abi: linkTokenInterfaceAbi,
+  client: { public: sepoliaPublicClient, wallet: sepoliaWalletClient },
+})
+
+const transferLinkTx = await link.write.transfer([sender.address, parseUnits("1", 18)])
+
+console.log("LINK token transfer in progress, awaiting confirmation...")
+await sepoliaPublicClient.waitForTransactionReceipt({ hash: transferLinkTx, confirmations: 1 })
+console.log("Funded Sender with 1 LINK")
+
+// Step 3: Deploy Receiver on Arbitrum Sepolia
+console.log("\n[Step 3] Deploying Receiver on Arbitrum Sepolia...")
+
+const receiver = await arbitrumSepoliaNetwork.viem.deployContract("Receiver", [ARBITRUM_SEPOLIA_ROUTER])
+const arbitrumSepoliaPublicClient = await arbitrumSepoliaNetwork.viem.getPublicClient()
+
+console.log(`Receiver deployed on Arbitrum Sepolia: ${receiver.address}`)
+console.log(`View on Arbiscan: https://sepolia.arbiscan.io/address/${receiver.address}`)
+console.log(`\n📋 Copy the receiver address since it will be needed to run the verification script 📋\n`)
+
+// Step 4: Send cross-chain message
+console.log("\n[Step 4] Sending cross-chain message...")
+
+const sendMessageTx = await sender.write.sendMessage([
+  ARBITRUM_SEPOLIA_CHAIN_SELECTOR,
+  receiver.address,
+  "Hello World from Hardhat script!",
+])
+
+console.log("Cross-chain message sent, awaiting confirmation...")
+console.log(`Message sent! ✅\nTx hash: ${sendMessageTx}`)
+console.log(`View transaction status on CCIP Explorer: https://ccip.chain.link`)
+console.log("Run the verification script after a few minutes to check if the message has been received.")
+```
+
+3. Run the following command to send the cross-chain message:
+
+```bash filename="Terminal"
+npx hardhat run scripts/send-cross-chain-message.ts
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Verify message delivery" anchorId="hardhat-verify" number={4} depth={5}>
+
+1. Wait for a few minutes for the message to be delivered to the receiver contract.
+
+2. Create a new file named `verify-cross-chain-message.ts` in the `scripts` directory and paste the following code inside it:
+
+<Aside type="note" title="Paste the Receiver contract address here">
+  The verification script calls `getLastReceivedMessageDetails` on the receiver contract. It needs the correct address.
+</Aside>
+
+```typescript filename="scripts/verify-cross-chain-message.ts"
+import { network } from "hardhat"
+
+// Paste the Receiver contract address
+const RECEIVER_ADDRESS = ""
+
+console.log("Connecting to Arbitrum Sepolia...")
+const arbitrumSepoliaNetwork = await network.connect("arbitrumSepolia")
+
+console.log("Checking for received message...\n")
+const receiver = await arbitrumSepoliaNetwork.viem.getContractAt("Receiver", RECEIVER_ADDRESS)
+
+const [messageId, text] = await receiver.read.getLastReceivedMessageDetails()
+
+const ZERO_BYTES32 = "0x0000000000000000000000000000000000000000000000000000000000000000"
+
+if (messageId === ZERO_BYTES32) {
+  console.log("No message received yet.")
+  console.log("Please wait a bit longer and try again.")
+  process.exit(1)
+} else {
+  console.log(`✅ Message ID: ${messageId}`)
+  console.log(`Text: "${text}"`)
+}
+```
+
+3. Run the following command to verify the cross-chain message:
+
+```bash filename="Terminal"
+npx hardhat run scripts/verify-cross-chain-message.ts
+```
+
+4. You should see the message ID and text of the last received message printed in the terminal.
+
+</AnchoredAccordion>
+
+#### Foundry
+
+Best for **Solidity-native** workflows that prefer a modular, powerful scripting framework.
+
+<AnchoredAccordion title="Bootstrap a new Foundry project" anchorId="foundry-bootstrap" number={1} depth={5}>
+
+1. Open a new terminal in a directory of your choice and run this command to initialize a new Foundry project:
+
+```bash filename="Terminal"
+forge init
+```
+
+2. Install the required dependencies:
+
+```bash filename="Terminal"
+forge install smartcontractkit/chainlink-ccip smartcontractkit/chainlink-evm
+```
+
+<Aside type="note" title="Note">
+  `cast wallet import` will throw an error if an `env` variable with the same name already exists. Use `cast wallet
+  list` to check previously set variables.
+</Aside>
+
+3. Use Foundry's `cast` command to create a new keystore for your `PRIVATE_KEY`:
+
+```bash filename="Terminal"
+cast wallet import --interactive PRIVATE_KEY
+```
+
+And use the `cast wallet list` command to verify:
+
+      <ClickToZoom
+        src="/images/ccip/tutorials/ccip-getting-started-evm-2.png"
+        alt="Foundry keystore list command output"
+      />
+
+<Aside type="caution" title="Note">
+  While the Hardhat project pulls RPC URLs via encrypted keystore variables, Foundry supports keystore encryption only
+  for private keys — not generic strings.
+</Aside>
+
+4. Configure the remappings so that your `foundry.toml` file looks like this:
+
+```toml filename="foundry.toml"
+[profile.default]
+solc = "0.8.24"
+src = "src"
+out = "out"
+libs = ["lib"]
+
+remappings = [
+  "forge-std/=lib/forge-std/src/",
+  "@chainlink/contracts-ccip/contracts/=lib/chainlink-ccip/chains/evm/contracts/",
+  "@chainlink/contracts/=lib/chainlink-evm/contracts/",
+  "@openzeppelin/contracts@5.3.0/utils/introspection/=lib/forge-std/src/interfaces/"
+]
+
+[rpc_endpoints]
+sepolia = "ENTER_YOUR_SEPOLIA_RPC_URL_HERE"
+arbitrumSepolia = "ENTER_YOUR_ARBITRUM_SEPOLIA_RPC_URL_HERE"
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Set up the contracts" anchorId="foundry-contracts" number={2} depth={5}>
+
+1. Create a new directory named `src` at the root of the project if it doesn't already exist.
+2. Create a new file named `Sender.sol` in this directory and paste the [sender contract code](#sender-code) inside it.
+3. Create a new file named `Receiver.sol` in the same directory and paste the [receiver contract code](#receiver-code) inside it.
+4. Run the following command to compile the contracts:
+
+```bash filename="Terminal"
+forge build
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Send a cross-chain message" anchorId="foundry-send" number={3} depth={5}>
+
+1. Create a new directory named `script` at the root of the project if it doesn't already exist.
+2. Create a new file named `SendCrossChainMessage.s.sol` in this directory and paste the following code inside it:
+
+```solidity filename="script/SendCrossChainMessage.s.sol"
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity 0.8.24;
+
+import {Script, console} from "forge-std/Script.sol";
+import {Sender} from "../src/Sender.sol";
+import {Receiver} from "../src/Receiver.sol";
+import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
+
+contract SendCrossChainMessage is Script {
+    // Ethereum Sepolia configuration
+    address constant SEPOLIA_ROUTER = 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59;
+    address constant SEPOLIA_LINK = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
+
+    // Arbitrum Sepolia configuration
+    address constant ARBITRUM_SEPOLIA_ROUTER = 0x2a9C5afB0d0e4BAb2BCdaE109EC4b0c4Be15a165;
+    uint64 constant ARBITRUM_SEPOLIA_CHAIN_SELECTOR = 3478487238524512106;
+
+    uint256 ONE_LINK = 1e18;
+
+    function run() public {
+
+        // Load RPC configs from foundry.toml
+        uint256 sepoliaFork = vm.createFork(vm.rpcUrl("sepolia"));
+        uint256 arbitrumSepoliaFork = vm.createFork(vm.rpcUrl("arbitrumSepolia"));
+
+        // Step 1: Deploy Sender on Sepolia
+        console.log("Connecting to Ethereum Sepolia...");
+        vm.selectFork(sepoliaFork);
+        vm.startBroadcast();
+
+        console.log("\n[Step 1] Deploying Sender contract on Ethereum Sepolia...");
+        Sender sender = new Sender(SEPOLIA_ROUTER, SEPOLIA_LINK);
+        console.log("Sender deployed on Sepolia:", address(sender));
+        console.log(
+            string.concat(
+                "View on Etherscan: https://sepolia.etherscan.io/address/",
+                vm.toString(address(sender))
+            )
+        );
+
+        // Step 2: Fund Sender with 1 LINK
+        console.log("\n[Step 2] Funding Sender with 1 LINK...");
+        LinkTokenInterface(SEPOLIA_LINK).transfer(address(sender), ONE_LINK);
+        vm.stopBroadcast();
+        console.log("Funded Sender with 1 LINK");
+
+        // Step 3: Deploy Receiver on Arbitrum Sepolia
+        console.log("\nConnecting to Arbitrum Sepolia...");
+        vm.selectFork(arbitrumSepoliaFork);
+        vm.startBroadcast();
+
+        console.log("\n[Step 3] Deploying Receiver on Arbitrum Sepolia...");
+        Receiver receiver = new Receiver(ARBITRUM_SEPOLIA_ROUTER);
+        vm.stopBroadcast();
+        console.log("Receiver deployed on Arbitrum Sepolia:", address(receiver));
+        console.log(
+            string.concat(
+                "View on Arbiscan: https://sepolia.arbiscan.io/address/",
+                vm.toString(address(receiver))
+            )
+        );
+        console.log("\n .....Copy the receiver address for the verification script.....\n");
+        console.log(address(receiver));
+
+        // Step 4: Send cross-chain message (Sepolia -> Arbitrum Sepolia)
+        vm.selectFork(sepoliaFork);
+        vm.startBroadcast();
+
+        console.log("\n[Step 4] Sending cross-chain message from Sepolia to Arbitrum Sepolia...");
+        bytes32 messageId = sender.sendMessage(
+            ARBITRUM_SEPOLIA_CHAIN_SELECTOR,
+            address(receiver),
+            "Hello World from Foundry script!"
+        );
+        vm.stopBroadcast();
+
+        console.log("Message sent! Check for delivery after a few minutes...");
+        console.log("CCIP messageId:");
+        console.logBytes32(messageId);
+        console.log("View transaction status on CCIP Explorer: https://ccip.chain.link");
+    }
+}
+```
+
+3. Run the following command to send the cross-chain message:
+
+```bash filename="Terminal"
+forge script script/SendCrossChainMessage.s.sol:SendCrossChainMessage --broadcast --multi --account PRIVATE_KEY
+```
+
+<Aside type="note">
+
+- The `--broadcast` flag broadcasts transactions to the network.
+- The `-vvvv` verbosity flag gives detailed runtime logs.
+- The `--multi` flag sends transactions to multiple chains.
+
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Verify message delivery" anchorId="foundry-verify" number={4} depth={5}>
+
+1. Create a new file named `VerifyCrossChainMessage.s.sol` in the `script` directory and paste the following code inside it:
+
+```solidity filename="script/VerifyCrossChainMessage.s.sol"
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity 0.8.24;
+
+import {Script, console} from "forge-std/Script.sol";
+import {Receiver} from "../src/Receiver.sol";
+
+contract VerifyCrossChainMessage is Script {
+
+    bytes32 constant ZERO_BYTES32 = bytes32(0);
+
+    function run() public {
+
+        address receiverAddress = PASTE_RECEIVER_ADDRESS_HERE;
+        require(receiverAddress != address(0), "Set RECEIVER_ADDRESS");
+
+        console.log("Connecting to Arbitrum Sepolia...");
+        uint256 arbitrumSepoliaFork = vm.createFork(vm.rpcUrl("arbitrumSepolia"));
+        vm.selectFork(arbitrumSepoliaFork);
+
+        console.log("Checking for received message...\n");
+        Receiver receiver = Receiver(receiverAddress);
+
+        (bytes32 messageId, string memory text) = receiver
+            .getLastReceivedMessageDetails();
+
+        if (messageId == ZERO_BYTES32) {
+            console.log("No message received yet.");
+            console.log("Please wait a bit longer and try again.");
+            revert("No message received yet");
+        }
+
+        console.log("Received Message ID:");
+        console.logBytes32(messageId);
+        console.log(string.concat('Received Text: "', text, '"'));
+    }
+}
+```
+
+2. Run the following command to verify the cross-chain message:
+
+```bash filename="Terminal"
+forge script script/VerifyCrossChainMessage.s.sol:VerifyCrossChainMessage
+```
+
+</AnchoredAccordion>
+
+#### Remix
+
+Best for **Web3-native** workflows that prefer a browser-based IDE.
+
+<AnchoredAccordion title="Deploy the sender contract" anchorId="remix-deploy-sender" number={1} depth={5}>
+
+Deploy the `Sender.sol` contract on _Ethereum Sepolia_. To see a detailed explanation of this contract, read the [Sender code](#sender-code) section.
+
+1. Open the Sender.sol contract in Remix.
+
+2. Compile the contract.
+
+3. Deploy the sender contract on _Ethereum Sepolia_:
+   1. Open MetaMask and select the _Ethereum Sepolia_ network.
+   2. In Remix under the **Deploy & Run Transactions** tab, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Ethereum Sepolia_.
+   3. Under the **Deploy** section, fill in the router address and the LINK token contract addresses. You can find both on the [CCIP Directory](/ccip/directory). For _Ethereum Sepolia_, the router address is <CopyText text="0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59" code/> and the LINK address is <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/>.
+
+      <ClickToZoom
+        src="/images/ccip/tutorials/deploy-sender-avalanche-fuji.webp"
+        alt="Chainlink CCIP deploy sender Ethereum Sepolia"
+      />
+
+   4. Click the **transact** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to _Ethereum Sepolia_.
+
+   5. After you confirm the transaction, the contract address appears in the **Deployed Contracts** list. Copy your contract address.
+
+      <ClickToZoom
+        src="/images/ccip/tutorials/deployed-sender-avalanche-fuji.webp"
+        alt="Chainlink CCIP deployed sender Ethereum Sepolia"
+        style="max-width: 70%;"
+      />
+
+   6. Open MetaMask and send <CopyText text="1" code/> LINK to the contract address that you copied. Your contract will pay CCIP fees in LINK.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Deploy the receiver contract" anchorId="remix-deploy-receiver" number={2} depth={5}>
+
+Deploy the receiver contract on _Arbitrum Sepolia_. You will use this contract to receive data from the sender on _Ethereum Sepolia_. To see a detailed explanation of this contract, read the [Receiver code](#receiver-code) section.
+
+1. [Open the Receiver.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/Receiver.sol) contract in Remix.
+
+   <CodeSample src="samples/CCIP/Receiver.sol" showButtonOnly={true} />
+
+2. Compile the contract.
+
+3. Deploy the receiver contract on _Arbitrum Sepolia_:
+   1. Open MetaMask and select the _Arbitrum Sepolia_ network.
+
+   2. In Remix under the **Deploy & Run Transactions** tab, make sure the **Environment** is still set to _Injected Provider - MetaMask_.
+   3. Under the **Deploy** section, fill in the router address field. For _Arbitrum Sepolia_, the Router address is <CopyText text="0x2a9C5afB0d0e4BAb2BCdaE109EC4b0c4Be15a165" code/>. You can find the addresses for each network on the [CCIP Directory](/ccip/directory).
+
+      <ClickToZoom
+        src="/images/ccip/tutorials/deploy-receiver-sepolia.webp"
+        alt="Chainlink CCIP Deploy receiver Arbitrum Sepolia"
+      />
+
+   4. Click the **Deploy** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to _Arbitrum Sepolia_.
+
+   5. After you confirm the transaction, the contract address appears as the second item in the **Deployed Contracts** list. Copy this contract address.
+
+      <ClickToZoom
+        src="/images/ccip/tutorials/deployed-receiver-sepolia.webp"
+        alt="Chainlink CCIP deployed receiver Arbitrum Sepolia"
+        style="max-width: 70%;"
+      />
+
+You now have one _sender_ contract on _Ethereum Sepolia_ and one _receiver_ contract on _Arbitrum Sepolia_. You sent `1` LINK to the _sender_ contract to pay the CCIP fees. Next, send data from the sender contract to the receiver contract.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Send data" anchorId="remix-send" number={3} depth={5}>
+
+Send a `Hello World!` string from your contract on _Ethereum Sepolia_ to the contract you deployed on _Arbitrum Sepolia_:
+
+1.  Open MetaMask and select the _Ethereum Sepolia_ network.
+2.  In Remix under the **Deploy & Run Transactions** tab, expand the first contract in the **Deployed Contracts** section.
+3.  Expand the **sendMessage** function and fill in the following arguments:
+
+    | Argument                 | Description                                                                                                                         | Value (_Arbitrum Sepolia_)                  |
+    | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+    | destinationChainSelector | CCIP Chain identifier of the target blockchain. You can find each network's chain selector on the [CCIP Directory](/ccip/directory) | <CopyText text="3478487238524512106" code/> |
+    | receiver                 | The destination smart contract address                                                                                              | Your deployed contract address              |
+    | text                     | Any `string`                                                                                                                        | <CopyText text="Hello World!" code/>        |
+
+    <ClickToZoom
+      src="/images/ccip/tutorials/fuji-sendmessage.webp"
+      alt="Chainlink CCIP Sepolia send message"
+      style="max-width: 70%;"
+    />
+
+4.  Click the **transact** button to run the function. MetaMask prompts you to confirm the transaction.
+
+    <CcipCommon callout="gasSpike" />
+
+5.  After the transaction is successful, note the transaction hash. Here is an [example](https://sepolia.etherscan.io/tx/0x113933ec9f1b2e795a1e2f564c9d452db92d3e9a150545712687eb546916e633) of a successful transaction on _Ethereum Sepolia_.
+
+After the transaction is finalized on the source chain, it will take a few minutes for CCIP to deliver the data to _Arbitrum Sepolia_ and call the `ccipReceive` function on your receiver contract. You can use the [CCIP explorer](https://ccip.chain.link/) to see the status of your CCIP transaction and then read data stored by your receiver contract.
+
+6. Open the [CCIP explorer](https://ccip.chain.link/) and use the transaction hash that you copied to search for your cross-chain transaction. The explorer provides several details about your request.
+
+   <ClickToZoom
+     src="/images/ccip/tutorials/ccip-explorer-tx-details.webp"
+     alt="Chainlink CCIP Explorer transaction details"
+   />
+
+7. When the status of the transaction is marked with a "Success" status, the CCIP transaction and the destination transaction are complete.
+
+   <ClickToZoom
+     src="/images/ccip/tutorials/ccip-explorer-tx-details-success.webp"
+     alt="Chainlink CCIP Explorer transaction details success"
+   />
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Read data" anchorId="remix-read" number={4} depth={5}>
+
+Read data stored by the receiver contract on _Arbitrum Sepolia_:
+
+1. Open MetaMask and select the _Arbitrum Sepolia_ network.
+2. In Remix under the **Deploy & Run Transactions** tab, expand the receiver contract deployed on _Arbitrum Sepolia_.
+3. Click the **getLastReceivedMessageDetails** function button to read the stored data. In this example, it should be "Hello World!".
+
+   <ClickToZoom
+     src="/images/ccip/tutorials/sepolia-getmessagedetails.webp"
+     alt="Chainlink CCIP Arbitrum Sepolia message details"
+     style="max-width: 70%;"
+   />
+
+Congratulations! You just sent your first cross-chain data using CCIP 2.0. Next, examine the example code to learn how this contract works.
+
+</AnchoredAccordion>
+
+Once you understand basic transfers, most applications move to [programmable token transfers (PTT)](/ccip/evm/tutorials/application-developers/programmable-token-transfers) to combine value and execution.

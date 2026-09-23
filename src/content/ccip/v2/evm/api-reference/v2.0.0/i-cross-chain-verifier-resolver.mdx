@@ -1,0 +1,110 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 ICrossChainVerifierResolver API Reference"
+metadata:
+  description: "Interface for resolver contracts that map inbound and outbound traffic to concrete cross-chain verifier implementations."
+  version: "2.0.0"
+---
+
+`ICrossChainVerifierResolver` defines the interface for routing messages to specific Cross-Chain Verifier (CCV) implementations.
+
+It determines which verifier contract should be used for:
+
+- inbound message validation
+- outbound message construction
+
+This interface enables flexible selection of verifier implementations based on message data, destination chain, or protocol configuration.
+
+> This interface defines functions implemented by protocol contracts and is not typically used directly by applications.
+
+## Usage Boundary
+
+**You do not call this interface directly.**
+
+- CCIP routing components use resolver implementations to select verifier contracts.
+- OnRamp and OffRamp components rely on this interface to determine which verifier to invoke.
+- You implement this interface when supporting multiple verifier types or versions.
+- You are responsible for ensuring resolver logic is deterministic and consistent across chains.
+
+## Contract
+
+`interfaces/ICrossChainVerifierResolver.sol`
+
+## Import
+
+```solidity
+import {ICrossChainVerifierResolver} from "chainlink-ccip/interfaces/ICrossChainVerifierResolver.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## External API
+
+### getInboundImplementation
+
+```solidity
+function getInboundImplementation(bytes calldata verifierResults) external view returns (address)
+```
+
+> Returns the verifier implementation used to validate an inbound message.
+
+- Selection is based on encoded verifier results from the source chain.
+
+| Parameter         | Type             | Description                                    |
+| ----------------- | ---------------- | ---------------------------------------------- |
+| `verifierResults` | `bytes calldata` | Encoded verifier output from the source chain. |
+
+Returns:
+
+| Type      | Description                                    |
+| --------- | ---------------------------------------------- |
+| `address` | Verifier contract used for inbound validation. |
+
+---
+
+### getOutboundImplementation
+
+```solidity
+function getOutboundImplementation(
+  uint64 destChainSelector,
+  bytes memory extraArgs
+) external view returns (address)
+```
+
+> Returns the verifier implementation used to construct an outbound message.
+
+- Selection may depend on destination chain and message configuration.
+
+| Parameter           | Type           | Description                                                        |
+| ------------------- | -------------- | ------------------------------------------------------------------ |
+| `destChainSelector` | `uint64`       | Destination chain identifier.                                      |
+| `extraArgs`         | `bytes memory` | Encoded message arguments used to select the appropriate verifier. |
+
+Returns:
+
+| Type      | Description                                     |
+| --------- | ----------------------------------------------- |
+| `address` | Verifier contract used for outbound processing. |
+
+## Notes
+
+- Resolver outputs must be deterministic for a given input to ensure consistent verification behavior across chains.
+- Resolver logic must be consistent across chains to ensure compatible verifier selection.
+- The resolver acts as a dispatcher between routing components and verifier implementations.
+- Inbound resolution must map to the same verifier implementation that produced the original verifier results.
+- Returning an incorrect verifier address may result in message validation failure or execution under the wrong security model.
+- Returning `address(0)` indicates no valid verifier is available and should be treated as an error condition.
+- Incorrect resolver logic may route messages to incompatible verifier implementations, causing execution failure.
+- Common use cases include routing between verifier versions or different verification strategies.
+
+## Related Interfaces & Contracts
+
+- [`ICrossChainVerifierV1`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-v1)
+- [`OnRamp`](/ccip/evm/api-reference/v2.0.0/onramp)
+- [`OffRamp`](/ccip/evm/api-reference/v2.0.0/offramp)
+- [`VersionedVerifierResolver`](/ccip/evm/api-reference/v2.0.0/versioned-verifier-resolver)

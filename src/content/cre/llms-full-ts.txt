@@ -1,6 +1,6 @@
-# Chainlink Runtime Environment (CRE)
-Source: https://docs.chain.link/cre
-Last Updated: 2026-01-20
+# What is Chainlink Runtime Environment (CRE)?
+Source: https://docs.chain.link/cre/overview
+Last Updated: 2026-09-16
 
 ## What is CRE?
 
@@ -144,7 +144,7 @@ Jump to what you need:
 
 - **[Workflow Guides](/cre/guides/workflow/using-triggers/overview)** - Learn how to use triggers, make API calls, and interact with blockchains
 - **[Workflow Operations](/cre/guides/operations/simulating-workflows)** - Simulate, deploy, and manage your workflows
-- **[SDK Reference](/cre/reference/sdk)** - Detailed API documentation for Go and TypeScript SDKs
+- **[SDK Reference](/cre/reference/sdk/overview)** - Detailed API documentation for Go and TypeScript SDKs
 
 
 <Aside type="caution" title="Disclaimer">
@@ -293,7 +293,7 @@ The mechanism by which a DON comes to a single, reliable, and tamper-proof resul
 ## Where to go next?
 
 - **[Getting Started](/cre/getting-started/overview)**: Start building your first workflow.
-- **[About CRE](/cre)**: Learn more about the vision and high-level architecture of CRE.
+- **[About CRE](/cre/overview)**: Learn more about the vision and high-level architecture of CRE.
 
 ---
 
@@ -1464,8 +1464,8 @@ Source: https://docs.chain.link/cre/getting-started/overview
 Last Updated: 2025-11-04
 
 <Aside type="note" title="First time here?">
-  Before you begin, we strongly recommend reading the [**About CRE**](/cre/) page to understand the fundamental concepts
-  of the platform, such as the trigger-and-callback model.
+  Before you begin, we strongly recommend reading the [**About CRE**](/cre/overview) page to understand the fundamental
+  concepts of the platform, such as the trigger-and-callback model.
 </Aside>
 
 This multi-part tutorial guides you through building a complete workflow from a blank slate.
@@ -1505,8 +1505,6 @@ This tutorial is designed to teach you the core features of the CRE SDK in a log
 - **[Part 3: Reading an Onchain Value](/cre/getting-started/part-3-reading-onchain-value)**: Generate contract bindings and use the `evm.Client` to read a value from the blockchain.
 
 - **[Part 4: Writing Onchain](/cre/getting-started/part-4-writing-onchain)**: Complete the calculator by writing your computed result back to a smart contract on Sepolia.
-
-- **[Conclusion](/cre/getting-started/conclusion)**: Review what you've learned and find resources to continue your journey.
 
 ---
 
@@ -2913,7 +2911,7 @@ This tool is **not intended for production use**. For production integrations:
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts
 Last Updated: 2026-05-08
 
-When your workflow [writes data to the blockchain](/cre/guides/workflow/using-evm-client/onchain-write), it doesn't call your contract directly. Instead, it submits a signed report to a Chainlink `KeystoneForwarder` contract, which then calls your contract.
+When your workflow [writes data to the blockchain](/cre/guides/workflow/using-evm-client/onchain-write/overview), it doesn't call your contract directly. Instead, it submits a signed report to a Chainlink `KeystoneForwarder` contract, which then calls your contract.
 
 This guide explains how to build a consumer contract that can securely receive and process data from a CRE workflow.
 
@@ -5855,6 +5853,118 @@ For complete setup instructions, configuration requirements, and step-by-step gu
 
 ---
 
+# Verifying Workflows
+Source: https://docs.chain.link/cre/guides/operations/verifying-workflows
+Last Updated: 2026-03-19
+
+Workflow verification ensures the integrity and authenticity of your workflows across deployment, onchain execution, and third-party auditing. This guide explains how workflow IDs are computed, how to verify workflows in consumer contracts, and how to enable independent verification by third parties.
+
+## Workflow ID
+
+The workflow ID is a unique hash that serves as the primary identifier for your workflow throughout its lifecycle. It is computed locally during [`cre workflow deploy`](/cre/reference/cli/workflow#cre-workflow-deploy) from the following inputs:
+
+- **workflowOwner**: The deployer's address
+- **workflowName**: The name specified in your workflow
+- **Compiled workflow binary**: The WASM binary produced from your workflow code
+- **Config file contents**: The contents of your workflow's config file
+- **Secrets hash**: An empty string placeholder for secrets
+
+Because the workflow ID is derived from these inputs, it deterministically represents a specific version of your workflow code and configuration.
+
+<Aside type="caution" title="Workflow ID changes on updates">
+  The workflow ID changes whenever you update your workflow code or config file, even if the workflow name stays the
+  same. For example, if you change contract bindings, the compiled binary changes, which produces a new workflow ID.
+  Plan for this when designing consumer contracts that permission on workflow ID.
+</Aside>
+
+Use [`cre workflow hash`](/cre/reference/cli/workflow#cre-workflow-hash) to inspect the workflow ID before deploying. This lets you preview the ID without submitting an onchain transaction.
+
+For more details on deployment and updates, see [Deploying Workflows](/cre/guides/operations/deploying-workflows) and [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows).
+
+## Verifying workflows onchain
+
+When a workflow writes onchain, the consumer contract receives both the report data and metadata through the `onReport` callback. The metadata contains information you can use to verify the source of the report:
+
+- **`workflowId`** (`bytes32`): The unique workflow hash
+- **`workflowName`** (`bytes10`): The workflow name, hash-encoded
+- **`workflowOwner`** (`address`): The address that deployed the workflow
+
+See [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts) for the full `IReceiver` interface and metadata structure.
+
+### Workflow name encoding
+
+The `workflowName` in metadata is not stored as a plain string. It is a SHA256 hash of the workflow name, truncated to `bytes10`. See [how workflow names are encoded](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#how-workflow-names-are-encoded) for the full encoding process.
+
+### Security best practices
+
+Follow these practices to ensure only authorized workflows can interact with your consumer contract:
+
+- **Verify `msg.sender`**: Always check that `msg.sender` is the expected forwarder address. See the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory) for addresses by network.
+- **Permission on workflow ID**: Use `setExpectedWorkflowId` from `ReceiverTemplate` to restrict which workflow can call your contract.
+
+<Aside type="tip" title="Permissioning without workflow ID">
+  If you permission on `workflowId`, you must update it in your contract every time you update the workflow. An
+  alternative is to use `setExpectedAuthor` and `setExpectedWorkflowName` from `ReceiverTemplate` instead. These values
+  don't change when you update your workflow code, so your contract won't need updates after each workflow deployment.
+</Aside>
+
+## Third-party verification
+
+<Aside type="note" title="Go workflows only">
+  Reproducible builds are currently supported for Go workflows only. TypeScript reproducible builds are in development.
+</Aside>
+
+Third-party verification allows customers or auditors to independently confirm that a deployed workflow matches its source code. The deployer shares the workflow source, and the verifier uses the CRE CLI to compute the workflow hash and compare it against the onchain workflow ID.
+
+### Steps for the workflow developer
+
+1. **Add a `.env.public` file** to your workflow folder with `GOTOOLCHAIN` set to the Go toolchain version you use to build the workflow. Pinning that version helps reproducible builds across machines and environments. Add this file *before* running `cre workflow deploy`.
+
+   Example (replace with your own version—the tag below is not prescriptive):
+
+   ```
+   GOTOOLCHAIN=go1.23.0
+   ```
+
+   Use the same toolchain string you build with; `go version` reports it (for example `go1.23.0 linux/amd64` → use `go1.23.0`).
+
+2. **Share your workflow source** with the customer. Provide a zip archive or repository link that includes all workflow files, including `.env.public`. Exclude `.env` files that contain private keys or secrets.
+
+### Steps for the verifier
+
+1. [**Install the CRE CLI**](/cre/getting-started/cli-installation). No login or deploy access is required for hash verification.
+
+2. **Unzip or clone** the shared workflow repository.
+
+3. **Run `cre workflow hash`** to compute the workflow hash:
+
+   ```bash
+   cre workflow hash ./workflow-folder --public_key=0xYourDeployerAddress
+   ```
+
+   Replace `./workflow-folder` with the path to the workflow source and `0xYourDeployerAddress` with the deployer's public address.
+
+4. **Compare the output** with the workflow ID observed onchain. The `Workflow hash` value in the output corresponds to the onchain workflow ID:
+
+   ```
+   Binary hash:   0dcbb19de3c22edfe61605a970eb6d42199df91ac3e992cd3f2e33cb13efbb4c
+   Config hash:   3bdaebcc2f639d77cb248242c1d01c8651f540cdbf423d26fe3128516fd225b6
+   Workflow hash: 004fff5bb1ae05cc16e453f8ad564f5e8b0eae1945ec22f3d0adfc0339954d56
+   ```
+
+   If the workflow hash matches the onchain workflow ID, the deployed workflow matches the shared source code.
+
+<Aside type="tip">Run `cre workflow hash -h` for full usage details and additional flags.</Aside>
+
+## Learn more
+
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows)
+- [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows)
+- [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)
+- [CRE CLI Workflow Reference](/cre/reference/cli/workflow)
+
+---
+
 # Deleting Workflows
 Source: https://docs.chain.link/cre/guides/operations/deleting-workflows
 Last Updated: 2025-11-04
@@ -8174,7 +8284,7 @@ The public keys of all accounts in this list are concatenated and SHA-256 hashed
 Source: https://docs.chain.link/cre/capabilities/triggers
 Last Updated: 2025-11-04
 
-**Triggers** are a special type of capability that initiate the execution of your workflow. They are event-driven services that constantly watch for a specific condition to be met. When the condition occurs, the trigger fires and instructs CRE to run the callback function you have registered for that event. Learn more about the [trigger-and-callback model](/cre/#the-trigger-and-callback-model).
+**Triggers** are a special type of capability that initiate the execution of your workflow. They are event-driven services that constantly watch for a specific condition to be met. When the condition occurs, the trigger fires and instructs CRE to run the callback function you have registered for that event. Learn more about the [trigger-and-callback model](/cre/overview#the-trigger-and-callback-model).
 
 ## Trigger types
 
@@ -8805,7 +8915,7 @@ The typical workflow development process uses these commands in sequence:
 ## Learn more
 
 - **[CLI Installation](/cre/getting-started/cli-installation)** — How to install and set up the CRE CLI
-- **[Getting Started](/cre/getting-started)** — Step-by-step tutorials using the CLI
+- **[Getting Started](/cre/getting-started/overview)** — Step-by-step tutorials using the CLI
 - **[Project Configuration](/cre/reference/project-configuration)** — Understanding project structure and configuration files
 
 ---
@@ -22997,6 +23107,212 @@ Or explore the SDK reference for detailed API documentation:
 
 ---
 
+# Chainlink Runtime Environment (CRE)
+Source: https://docs.chain.link/cre
+Last Updated: 2026-09-16
+
+export const getStarted = [
+  {
+    name: "Start Here",
+    links: [
+      {
+        title: "Getting Started Guide",
+        description:
+          "Build your first workflow step by step: run on a schedule, call an API, read a contract, and write the result onchain.",
+        link: "/cre/getting-started/overview",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Install the CLI",
+        description: "Install the `cre` command-line tool on macOS, Linux, or Windows.",
+        link: "/cre/getting-started/cli-installation",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Browse Templates",
+        description:
+          "Start from a working workflow, such as a custom data feed, liquidation protection, or a keeper bot, and adapt it.",
+        link: "/cre-templates",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Run a Demo Workflow",
+        description: "Run the Custom Data Feed template end to end, from API call to onchain write.",
+        link: "/cre/templates/running-demo-workflow",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Build with AI",
+        description:
+          "Use the CRE agent skill for Cursor, Claude Code, and Codex, or prompt LLMs to generate and debug workflows.",
+        link: "/cre/getting-started/build-with-ai",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Create Your Account",
+        description: "Sign up at app.chain.link, create or join an organization, and set up two-factor authentication.",
+        link: "/cre/account/creating-account",
+        personas: ["App Developers"],
+      },
+    ],
+  },
+  {
+    name: "Write Workflows",
+    links: [
+      {
+        title: "Fetch Data from APIs",
+        description: "Make GET requests from every node and reach consensus on the response before using it.",
+        link: "/cre/guides/workflow/using-http-client/get-request",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Read Onchain Data",
+        description: "Call view functions on smart contracts and use the returned state in your workflow.",
+        link: "/cre/guides/workflow/using-evm-client/onchain-read",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Write Onchain Data",
+        description: "Generate a signed report from your workflow's result and submit it to your contract.",
+        link: "/cre/guides/workflow/using-evm-client/onchain-write/overview",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Build Consumer Contracts",
+        description: "Implement the IReceiver interface so your contract can safely accept workflow reports.",
+        link: "/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Manage Secrets",
+        description: "Store API keys and credentials for both simulated and deployed workflows.",
+        link: "/cre/guides/workflow/secrets",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Make a Workflow Confidential",
+        description: "Run workflow logic inside a secure enclave so node operators cannot see your data or secrets.",
+        link: "/cre/guides/workflow/using-confidential-workflows",
+        personas: ["App Developers", "Advanced"],
+      },
+    ],
+  },
+  {
+    name: "Deploy & Monitor",
+    links: [
+      {
+        title: "Simulate Locally",
+        description: "Run a workflow on your machine against live APIs and testnets before deploying it.",
+        link: "/cre/guides/operations/simulating-workflows",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Request Deploy Access",
+        description: "Deploying to a DON requires approval. Check your status and request access from the CLI.",
+        link: "/cre/account/deploy-access",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Deploy Workflows",
+        description: "Register a workflow so it goes live on a DON and starts responding to its triggers.",
+        link: "/cre/guides/operations/deploying-workflows",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Monitor & Debug",
+        description: "Track execution history, view logs, and debug failures in the CRE UI.",
+        link: "/cre/guides/operations/monitoring-workflows",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Update Deployed Workflows",
+        description: "Ship a new version of a live workflow and replace the running one.",
+        link: "/cre/guides/operations/updating-deployed-workflows",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Service Quotas",
+        description: "Execution timeouts, trigger rates, WASM resources, and organization limits.",
+        link: "/cre/service-quotas",
+        personas: ["App Developers"],
+      },
+    ],
+  },
+  {
+    name: "Migrate",
+    links: [
+      {
+        title: "From Chainlink Functions",
+        description: "Map Functions requests, secrets, and onchain callbacks to CRE workflows.",
+        link: "/cre/reference/clf-migration",
+        personas: ["App Developers"],
+      },
+      {
+        title: "From Chainlink Automation",
+        description: "Map Automation upkeeps and triggers to CRE workflows.",
+        link: "/cre/reference/cla-migration",
+        personas: ["App Developers"],
+      },
+      {
+        title: "From Gelato Web3 Functions",
+        description: "Map Gelato Web3 Functions tasks and terminology to CRE workflows.",
+        link: "/cre/reference/gelato-migration",
+        personas: ["App Developers"],
+      },
+    ],
+  },
+]
+
+export const keyConcepts = [
+  {
+    title: "Key Terms and Concepts",
+    description: "Workflows, handlers, triggers, callbacks, capabilities, DONs, and consensus defined.",
+    link: "/cre/key-terms",
+  },
+  {
+    title: "Consensus Computing",
+    description: "How Byzantine Fault Tolerance keeps every workflow operation secure and tamper-resistant.",
+    link: "/cre/concepts/consensus-computing",
+  },
+  {
+    title: "Finality and Confidence Levels",
+    description: "Understand finality guarantees and confidence levels for onchain reads and writes.",
+    link: "/cre/concepts/finality",
+  },
+  {
+    title: "Avoiding Non-Determinism",
+    description: "Write deterministic callbacks so all DON nodes reach the same consensus result.",
+    link: "/cre/concepts/non-determinism",
+  },
+  {
+    title: "Confidential Workflows",
+    description: "Run sensitive logic inside a secure enclave (TEE), hidden from node operators.",
+    link: "/cre/concepts/confidential-workflows",
+  },
+  {
+    title: "Organizations",
+    description: "How accounts, members, and linked wallet keys are grouped under an organization.",
+    link: "/cre/organization/understanding-organizations",
+  },
+]
+
+<LayoutHero
+  title="Build with CRE"
+  description="CRE is the orchestration layer for onchain applications. You write workflows in Go or TypeScript: code that runs when a trigger fires, such as a schedule, an HTTP request, or an onchain event, and then calls APIs, reads and writes across blockchains, and handles secrets. A decentralized oracle network executes each step and reaches consensus on every result."
+  buttons={[
+  {
+    label: "Overview",
+    link: "/cre/overview",
+  },
+  {
+    label: "Get Started",
+    link: "/cre/getting-started/overview",
+  },
+]}
+/>
+
+---
+
 # Migrate from Chainlink Automation to Chainlink CRE
 Source: https://docs.chain.link/cre/reference/cla-migration-ts
 Last Updated: 2026-05-25
@@ -24964,12 +25280,12 @@ const initWorkflow = (config: Config) => {
 }
 ```
 
-- **The Trigger**: An instance of a trigger capability (e.g., `cron.trigger(...)`). This defines the event that will start your workflow. See the [Triggers reference](/cre/reference/sdk/triggers) for details.
+- **The Trigger**: An instance of a trigger capability (e.g., `cron.trigger(...)`). This defines the event that will start your workflow. See the [Triggers reference](/cre/reference/sdk/triggers/overview) for details.
 - **The Callback**: The function to be executed when the trigger fires. The signature of your callback function must match the output type of the trigger you are using.
 
 <Aside type="note" title="Callback Function Signatures">
-  Each trigger type requires a specific callback signature. See the [Triggers reference](/cre/reference/sdk/triggers)
-  for the exact signature required for each trigger type.
+  Each trigger type requires a specific callback signature. See the [Triggers
+  reference](/cre/reference/sdk/triggers/overview) for the exact signature required for each trigger type.
 </Aside>
 
 ### `Runtime` and `NodeRuntime`

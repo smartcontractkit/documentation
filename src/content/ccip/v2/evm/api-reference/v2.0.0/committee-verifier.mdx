@@ -1,0 +1,265 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 CommitteeVerifier API Reference"
+metadata:
+  description: "Cross-Chain Verifier that validates messages using signature quorum."
+  version: "2.0.0"
+---
+
+`CommitteeVerifier` is a CCIP Cross-Chain Verifier that validates messages using a signature quorum model.
+
+On the source chain, it produces verifier output containing signatures over the message hash.  
+On the destination chain, it verifies that a quorum of authorized signers has attested to the message before allowing execution.
+
+This verifier combines source-side and destination-side responsibilities behind a single proxy address per chain.
+
+- A single verifier instance per chain handles both source and destination responsibilities.
+
+> Applications do not call this contract directly.
+
+## Usage Boundary
+
+**You do not call this contract directly.**
+
+- OffRamp components invoke this verifier during message validation.
+- Verifier implementations use this contract to enforce quorum-based validation rules.
+- The owner configures quorum parameters and chain-specific behavior.
+- You are responsible for ensuring signer sets and configuration remain correct.
+
+## Contract
+
+`ccvs/CommitteeVerifier.sol`
+
+## Import
+
+```solidity
+import {CommitteeVerifier} from "chainlink-ccip/ccvs/CommitteeVerifier.sol";
+```
+
+## Inheritance
+
+- `Ownable2StepMsgSender`
+- `ICrossChainVerifierV1`
+- `SignatureQuorumValidator`
+- `BaseVerifier`
+
+## Constructor
+
+```solidity
+constructor(
+  DynamicConfig memory dynamicConfig,
+  string[] memory storageLocations,
+  address rmn,
+  bytes4 versionTag
+) BaseVerifier(
+  storageLocations,
+  rmn,
+  versionTag
+)
+```
+
+| Parameter          | Type                   | Description                                                  |
+| ------------------ | ---------------------- | ------------------------------------------------------------ |
+| `dynamicConfig`    | `DynamicConfig memory` | Configuration for quorum validation and runtime behavior.    |
+| `storageLocations` | `string[] memory`      | Off-chain storage locations used by verifier infrastructure. |
+| `rmn`              | `address`              | RMN contract used to enforce network-wide safety conditions. |
+| `versionTag`       | `bytes4`               | Identifier for the verifier implementation version.          |
+
+## External API
+
+### forwardToVerifier
+
+```solidity
+function forwardToVerifier(
+  MessageV1Codec.MessageV1 calldata message,
+  bytes32 messageId,
+  address feeToken,
+  uint256 feeTokenAmount,
+  bytes calldata verifierArgs
+) external view returns (bytes memory verifierReturnData)
+```
+
+> Produces verifier output containing signature data for the message.
+
+- Produces deterministic verifier output based on the message hash.
+- Output is consumed by `verifyMessage` on the destination chain.
+
+---
+
+### verifyMessage
+
+```solidity
+function verifyMessage(
+  MessageV1Codec.MessageV1 calldata message,
+  bytes32 messageHash,
+  bytes calldata verifierResults
+) external view
+```
+
+> Verifies that a sufficient quorum of signatures attests to the message before allowing execution.
+
+- Requires that signatures match the message hash and configured signer set.
+- `verifierResults` must match the output produced during verification forwarding.
+
+---
+
+### getDynamicConfig
+
+```solidity
+function getDynamicConfig() external view returns (DynamicConfig memory dynamicConfig)
+```
+
+> Returns runtime configuration.
+
+---
+
+### setDynamicConfig
+
+```solidity
+function setDynamicConfig(DynamicConfig memory dynamicConfig) external onlyOwner
+```
+
+> Updates runtime configuration.
+
+---
+
+### applyRemoteChainConfigUpdates
+
+```solidity
+function applyRemoteChainConfigUpdates(
+  RemoteChainConfigArgs[] calldata remoteChainConfigArgs
+) external onlyOwner
+```
+
+> Updates remote chain configuration.
+
+---
+
+### applyAllowlistUpdates
+
+```solidity
+function applyAllowlistUpdates(AllowlistConfigArgs[] calldata allowlistConfigArgsItems) external
+```
+
+> Updates allowlist configuration.
+
+---
+
+### setAllowedFinalityConfig
+
+```solidity
+function setAllowedFinalityConfig(bytes4 allowedFinality) external onlyOwner
+```
+
+> Sets allowed finality configuration.
+
+---
+
+### getStorageLocationsAdmin
+
+```solidity
+function getStorageLocationsAdmin() external view returns (address storageLocationsAdmin)
+```
+
+> Returns storage locations administrator.
+
+---
+
+### getPendingStorageLocationsAdmin
+
+```solidity
+function getPendingStorageLocationsAdmin() external view returns (address pendingStorageLocationsAdmin)
+```
+
+> Returns pending storage locations administrator.
+
+---
+
+### transferStorageLocationsAdmin
+
+```solidity
+function transferStorageLocationsAdmin(address to) external
+```
+
+> Proposes a new storage locations administrator.
+
+---
+
+### acceptStorageLocationsAdmin
+
+```solidity
+function acceptStorageLocationsAdmin() external
+```
+
+> Accepts storage locations administrator role.
+
+---
+
+### updateStorageLocations
+
+```solidity
+function updateStorageLocations(string[] memory newLocations) external
+```
+
+> Updates storage locations.
+
+---
+
+### withdrawFeeTokens
+
+```solidity
+function withdrawFeeTokens(address[] calldata feeTokens) external
+```
+
+> Withdraws accumulated fee tokens. Restricted to authorized callers.
+
+---
+
+## Events
+
+- `event ConfigSet(DynamicConfig dynamicConfig)`
+- `event StorageLocationsAdminTransferRequested(address indexed from, address indexed to)`
+- `event StorageLocationsAdminTransferred(address indexed from, address indexed to)`
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+- `error InvalidVerifierResults()`
+- `error InvalidCCVVersion(bytes4 verifierVersion)`
+- `error OnlyCallableByOwnerOrAllowlistAdmin()`
+- `error MustBeProposedStorageLocationsAdmin()`
+- `error OnlyCallableByStorageLocationsAdmin()`
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Notes
+
+- Verification is based on a quorum of signatures over the message hash.
+- Signatures are produced by a configured set of off-chain committee members.
+- A message is valid only if the number of valid signatures meets or exceeds the configured quorum threshold.
+- The message hash and signature set must match exactly between source and destination phases.
+- Each message is identified by its hash, preventing reuse of signatures for different messages.
+- Verifier output is generated on the source chain and consumed during destination validation.
+- Messages are executed only if both signature quorum validation and BaseVerifier checks succeed.
+- Messages will revert if signatures are invalid, insufficient, or from unauthorized signers.
+- Relies on `BaseVerifier` for router validation, RMN checks, and optional sender allowlisting.
+- Storage location configuration is controlled by a dedicated two-step admin role separate from the owner.
+
+## Security model
+
+- Relies on `SignatureQuorumValidator` to enforce quorum-based validation.
+- Relies on `BaseVerifier` for RMN checks, router validation, and sender allowlisting.
+- Owner controls dynamic configuration and remote chain settings.
+- Correct operation depends on integrity of signer set and quorum configuration.
+- Misconfiguration or compromised signer sets may allow invalid message execution or block valid messages.
+
+## Related Interfaces & Contracts
+
+- [`BaseVerifier`](/ccip/evm/api-reference/v2.0.0/base-verifier)
+- [`SignatureQuorumValidator`](/ccip/evm/api-reference/v2.0.0/signature-quorum-validator)
+- [`ICrossChainVerifierV1`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-v1)
+- [`VersionedVerifierResolver`](/ccip/evm/api-reference/v2.0.0/versioned-verifier-resolver)
+- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
+- [`FeeTokenHandler`](/ccip/evm/api-reference/v2.0.0/fee-token-handler)

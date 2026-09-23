@@ -8,9 +8,9 @@
  *
  * @example
  * // VM-specific API reference path
- * extractVersionInfo("ccip", "/ccip/api-reference/evm/v1.6.0/client")
- * extractVersionInfo("ccip", "/ccip/api-reference/svm/v1.0.0/client")
- * extractVersionInfo("ccip", "/ccip/api-reference/aptos/v1.0.0/client")
+ * extractVersionInfo("ccip", "/ccip/v1/evm/api-reference/v1.6.0/client")
+ * extractVersionInfo("ccip", "/ccip/v1/svm/api-reference/v1.0.0/client")
+ * extractVersionInfo("ccip", "/ccip/v1/aptos/api-reference/v1.0.0/client")
  *
  * @example
  * // Adding new VM types (just add to SUPPORTED_VM_TYPES)

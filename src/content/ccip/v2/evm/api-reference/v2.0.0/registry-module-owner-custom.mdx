@@ -1,0 +1,223 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 RegistryModuleOwnerCustom API Reference"
+metadata:
+  description: "Registry module enabling token-level admins to self-register in TokenAdminRegistry."
+  version: "2.0.0"
+---
+
+## Summary
+
+`RegistryModuleOwnerCustom` is a registry module used by `[TokenAdminRegistry](/ccip/evm/api-reference/v2.0.0/token-admin-registry)` to enable token-level administrators to self-register without registry owner intervention.
+
+It supports three authority discovery mechanisms:
+
+1. `getCCIPAdmin()` via `[IGetCCIPAdmin](/ccip/evm/api-reference/v2.0.0/i-get-ccip-admin)`
+2. `owner()` via `[IOwner](/ccip/evm/api-reference/v2.0.0/i-owner)`
+3. OpenZeppelin `AccessControl` with `DEFAULT_ADMIN_ROLE`
+
+The module proposes administrators in `TokenAdminRegistry`, but does not finalize the two-step transfer.
+
+---
+
+## Contract
+
+`chains/evm/contracts/tokenAdminRegistry/RegistryModuleOwnerCustom.sol`
+
+---
+
+## Import
+
+```solidity
+import {RegistryModuleOwnerCustom} from "chainlink-ccip/chains/evm/contracts/tokenAdminRegistry/RegistryModuleOwnerCustom.sol";
+```
+
+---
+
+## Inheritance
+
+- `ITypeAndVersion`
+
+---
+
+## typeAndVersion
+
+```solidity id="mp9dka"
+string public constant override typeAndVersion =
+  "RegistryModuleOwnerCustom 1.6.0";
+```
+
+---
+
+## State
+
+### Constants
+
+```solidity id="zqg1ji"
+string public constant override typeAndVersion =
+  "RegistryModuleOwnerCustom 1.6.0";
+```
+
+### Immutables
+
+```solidity id="yrz8kt"
+ITokenAdminRegistry internal immutable i_tokenAdminRegistry;
+```
+
+Reference to the `TokenAdminRegistry` where administrators are proposed.
+
+### Storage
+
+None declared.
+
+---
+
+## Constructor
+
+```solidity id="z9z8yd"
+constructor(address tokenAdminRegistry)
+```
+
+Validations:
+
+- Reverts `AddressZero()` if `tokenAdminRegistry == address(0)`.
+
+Sets:
+
+```solidity id="l9b1ot"
+i_tokenAdminRegistry = ITokenAdminRegistry(tokenAdminRegistry);
+```
+
+---
+
+## External API
+
+### registerAdminViaGetCCIPAdmin
+
+```solidity id="et1iz8"
+function registerAdminViaGetCCIPAdmin(address token)
+  external
+```
+
+Flow:
+
+1. Calls `IGetCCIPAdmin(token).getCCIPAdmin()`.
+2. Calls `_registerAdmin(token, derivedAdmin)`.
+
+Reverts `CanOnlySelfRegister(derivedAdmin, token)` if `derivedAdmin != msg.sender`.
+
+---
+
+### registerAdminViaOwner
+
+```solidity id="yzv7yx"
+function registerAdminViaOwner(address token)
+  external
+```
+
+Flow:
+
+1. Calls `IOwner(token).owner()`.
+2. Calls `_registerAdmin(token, derivedAdmin)`.
+
+Reverts `CanOnlySelfRegister(derivedAdmin, token)` if mismatch.
+
+---
+
+### registerAccessControlDefaultAdmin
+
+```solidity id="mb9v8d"
+function registerAccessControlDefaultAdmin(address token)
+  external
+```
+
+Flow:
+
+1. Reads:
+
+```solidity id="b3kq78"
+bytes32 role = AccessControl(token).DEFAULT_ADMIN_ROLE();
+```
+
+2. Validates:
+
+```solidity id="v8emna"
+AccessControl(token).hasRole(role, msg.sender)
+```
+
+Else reverts:
+
+```solidity id="f87n3v"
+error RequiredRoleNotFound(address msgSender, bytes32 role, address token);
+```
+
+3. Calls `_registerAdmin(token, msg.sender)`.
+
+---
+
+## Internal Functions
+
+### \_registerAdmin
+
+```solidity id="q3jby2"
+function _registerAdmin(address token, address admin)
+  internal
+```
+
+Validations:
+
+- Reverts `CanOnlySelfRegister(admin, token)` if `admin != msg.sender`.
+
+Effects:
+
+```solidity id="pl7as1"
+i_tokenAdminRegistry.proposeAdministrator(token, admin);
+```
+
+Emits:
+
+```solidity id="8du64k"
+event AdministratorRegistered(address indexed token, address indexed administrator);
+```
+
+---
+
+## Events
+
+```solidity id="b1ajpy"
+event AdministratorRegistered(
+  address indexed token,
+  address indexed administrator
+);
+```
+
+---
+
+## Errors
+
+```solidity id="q9q9lb"
+error CanOnlySelfRegister(address admin, address token);
+error RequiredRoleNotFound(address msgSender, bytes32 role, address token);
+error AddressZero();
+```
+
+---
+
+## Security model
+
+- Self-registration only: caller must match derived admin.
+- Does not bypass `TokenAdminRegistry` ownership rules.
+- Two-step admin transfer still required via `acceptAdminRole`.
+- Does not permit registry owner override via this module.
+- Token contract determines authoritative admin source.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`TokenAdminRegistry`](/ccip/evm/api-reference/v2.0.0/token-admin-registry)
+- [`IGetCCIPAdmin`](/ccip/evm/api-reference/v2.0.0/i-get-ccip-admin)
+- [`IOwner`](/ccip/evm/api-reference/v2.0.0/i-owner)
+- [`AccessControl`](https://github.com/OpenZeppelin/openzeppelin-contracts/tree/v5.4.0/contracts/access/AccessControl.sol)
+- [`FactoryBurnMintERC20`](/ccip/evm/api-reference/v2.0.0/factory-burn-mint-erc20)

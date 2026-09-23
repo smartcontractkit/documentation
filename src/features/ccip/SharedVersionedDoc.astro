@@ -1,0 +1,29 @@
+---
+import { getCollection, render } from "astro:content"
+import { toContentEntryId } from "~/lib/ccip/contentPathMapping.js"
+
+interface Props {
+  canonicalEntryId?: string
+}
+
+const { canonicalEntryId } = Astro.props
+
+if (!canonicalEntryId) {
+  throw new Error("[SharedVersionedDoc] Missing required prop: canonicalEntryId")
+}
+
+const allCcipDocs = await getCollection("ccip")
+// Resolve the canonical (latest) entry id to its on-disk content id (e.g. "evm/..." -> "v2/evm/...").
+const realId = toContentEntryId(canonicalEntryId)
+const canonicalEntry = allCcipDocs.find(
+  (entry) => entry.id === realId || entry.id.replace(/\.(md|mdx)$/, "") === realId
+)
+
+if (!canonicalEntry) {
+  throw new Error(`[SharedVersionedDoc] Canonical entry not found: ${canonicalEntryId} (resolved: ${realId})`)
+}
+
+const { Content } = await render(canonicalEntry)
+---
+
+<Content />

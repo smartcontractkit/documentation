@@ -1,0 +1,220 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 SiloedUSDCTokenPool API Reference"
+metadata:
+  description: "USDC-specific siloed lock/release pool with a controlled CCTP migration workflow."
+  version: "2.0.0"
+---
+
+`SiloedUSDCTokenPool` is a `SiloedLockReleaseTokenPool` variant that adds a controlled migration workflow for USDC lanes to CCTP.
+
+If you use this pool, token transfers operate using siloed lockboxes, and selected lanes can be migrated through a multi-step process that burns locked USDC and transitions to CCTP-based transfers.
+
+Use this variant when migrating existing USDC lock/release lanes to a CCTP-based model.
+
+> This contract is not intended to be called directly by applications. It is used by CCIP infrastructure and controlled workflows during migration.
+
+## Usage Boundary
+
+**You do not call this contract directly.**
+
+- The Router and OnRamp/OffRamp invoke this pool during normal transfers.
+- Owner-controlled functions manage migration state and liquidity transitions.
+- Use this pool only when performing controlled migrations to CCTP.
+- You are responsible for coordinating migration steps and ensuring correct configuration.
+
+## Contract
+
+`pools/USDC/SiloedUSDCTokenPool.sol`
+
+## Import
+
+```solidity
+import {SiloedUSDCTokenPool} from "chainlink-ccip/pools/USDC/SiloedUSDCTokenPool.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## Inheritance
+
+- `SiloedLockReleaseTokenPool`
+- `AuthorizedCallers`
+
+## Constructor
+
+```solidity
+constructor(
+  IERC20 token,
+  uint8 localTokenDecimals,
+  address advancedPoolHooks,
+  address rmnProxy,
+  address router
+)
+```
+
+| Parameter            | Type      | Description                       |
+| -------------------- | --------- | --------------------------------- |
+| `token`              | `IERC20`  | USDC token being bridged.         |
+| `localTokenDecimals` | `uint8`   | Number of decimals used by token. |
+| `advancedPoolHooks`  | `address` | Optional hook contract.           |
+| `rmnProxy`           | `address` | RMN proxy for curse checks.       |
+| `router`             | `address` | CCIP Router address.              |
+
+## External API
+
+### configureLockBoxes
+
+```solidity
+function configureLockBoxes(LockBoxConfig[] calldata lockBoxConfigs) public override onlyOwner
+```
+
+> Owner-only function to configure lockboxes for each remote chain. Incorrect configuration will cause transfers or migration to fail.
+
+---
+
+### releaseOrMint
+
+```solidity
+function releaseOrMint(
+  Pool.ReleaseOrMintInV1 calldata releaseOrMintIn,
+  bytes4 requestedFinalityConfig
+) public override returns (Pool.ReleaseOrMintOutV1 memory)
+```
+
+> Releases tokens during normal operation or after migration.
+
+---
+
+### proposeCCTPMigration
+
+```solidity
+function proposeCCTPMigration(uint64 remoteChainSelector) external onlyOwner
+```
+
+> Proposes migration of a specific chain to CCTP.
+
+---
+
+### cancelExistingCCTPMigrationProposal
+
+```solidity
+function cancelExistingCCTPMigrationProposal() external onlyOwner
+```
+
+> Cancels a pending migration proposal.
+
+---
+
+### getCurrentProposedCCTPChainMigration
+
+```solidity
+function getCurrentProposedCCTPChainMigration() public view returns (uint64)
+```
+
+> Returns the currently proposed migration chain.
+
+---
+
+### setCircleMigratorAddress
+
+```solidity
+function setCircleMigratorAddress(address migrator) external onlyOwner
+```
+
+> Sets the authorized Circle migrator that can execute migration.
+
+---
+
+### setLockedUSDCToBurn
+
+```solidity
+function setLockedUSDCToBurn(
+  uint64 remoteChainSelector,
+  uint256 lockedUSDCToBurn
+) external onlyOwner
+```
+
+> Defines the amount of USDC that will be burned during migration for a given chain.
+
+---
+
+### excludeTokensFromBurn
+
+```solidity
+function excludeTokensFromBurn(uint64 remoteChainSelector, uint256 amount) external onlyOwner
+```
+
+> Excludes a portion of tokens from being burned, typically to preserve liquidity or handle exceptional cases.
+
+---
+
+### getExcludedTokensByChain
+
+```solidity
+function getExcludedTokensByChain(uint64 remoteChainSelector) external view returns (uint256)
+```
+
+> Returns excluded token amount.
+
+---
+
+### getLockedUSDCToBurn
+
+```solidity
+function getLockedUSDCToBurn() external view returns (uint256)
+```
+
+> Returns total USDC scheduled for burn.
+
+---
+
+### burnLockedUSDC
+
+```solidity
+function burnLockedUSDC() external
+```
+
+> Executes the migration by burning locked USDC. Can only be called by the configured Circle migrator.
+
+---
+
+## Migration Workflow
+
+1. Propose migration (`proposeCCTPMigration`)
+2. Configure burn amounts and exclusions
+3. Set Circle migrator
+4. Execute burn (`burnLockedUSDC`)
+5. Transition lane to CCTP
+
+- Steps must be executed in order. Skipping or reordering steps will cause migration to fail or produce incorrect results.
+
+## Security model
+
+- Migration requires explicit owner approval.
+- Owner controls all migration configuration and can affect migration outcomes.
+- Only the configured Circle migrator can execute the burn.
+- Liquidity is isolated per chain using siloed lockboxes.
+- Correct operation depends on accurate configuration and sufficient liquidity.
+- Incorrect configuration or sequencing can cause failed transfers or incorrect accounting.
+
+## Notes
+
+- This pool extends `SiloedLockReleaseTokenPool` with a migration state machine.
+- Migration is irreversible once executed.
+- Migration is performed per remote chain (lane) and must be configured independently.
+- The amount of USDC burned must correspond to locked liquidity for that chain, accounting for exclusions.
+- Each lockbox must be pre-funded and correctly configured.
+- If burn configuration does not match actual liquidity, migration may fail or produce incorrect results.
+- Source and destination systems must be coordinated during migration.
+
+## Related Interfaces & Contracts
+
+- [`SiloedLockReleaseTokenPool`](/ccip/evm/api-reference/v2.0.0/siloed-lock-release-token-pool)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`AuthorizedCallers`](/ccip/evm/api-reference/v2.0.0/authorized-callers)
+- [`USDCTokenPoolProxy`](/ccip/evm/api-reference/v2.0.0/usdc-token-pool-proxy)

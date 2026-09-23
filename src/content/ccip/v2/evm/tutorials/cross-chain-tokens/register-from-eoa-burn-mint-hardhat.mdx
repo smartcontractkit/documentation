@@ -1,0 +1,1516 @@
+---
+section: ccip
+date: Last Modified
+title: "Enable your tokens in CCIP (Burn & Mint): Register from an EOA using Hardhat"
+metadata:
+  description: "Enable ERC-20 tokens in CCIP (Burn & Mint) with Hardhat. Deploy token, create pools, register admin, configure limits, and test cross‑chain transfers."
+  image: "/images/ccip/CCIP_enabled_tokens_flowchart.jpg"
+  excerpt: "Burn & Mint, Hardhat, ERC-20, ERC20, token pools, admin registry, CCIP, testing"
+  datePublished: "2024-10-29"
+  lastModified: "2026-04-24"
+  estimatedTime: "40 minutes"
+  difficulty: "intermediate"
+whatsnext:
+  "Enable your tokens in CCIP (Lock & Mint): Register from an EOA using Hardhat": "/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat"
+  "Set Token Pool rate limits using Hardhat": "/ccip/evm/tutorials/cross-chain-tokens/update-rate-limiters-hardhat"
+---
+
+import { AnchoredAccordion, Aside, GitHubCard, PageTabs } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<PageTabs
+  pages={[
+    {
+      name: "Foundry (Burn & Mint)",
+      url: "/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry",
+      icon: "/images/tutorial-icons/foundry-icn.png",
+    },
+    {
+      name: "Hardhat (Burn & Mint)",
+      url: "/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
+      icon: "/images/tutorial-icons/hardhat-icn.png",
+    },
+  ]}
+/>
+
+In this tutorial you will:
+
+1. Deploy a token on two chains using [Hardhat](https://hardhat.org/).
+2. Set up a `Burn Mint` token pool on each chain.
+3. Configure and activate the pools in CCIP so your token becomes a Cross-Chain Token (CCT).
+4. (Optional) Test the setup by minting and transferring tokens across networks.
+
+<Aside type="note" title="If you do not explicitly configure these features, default behavior applies">
+  <ol>
+    <li>
+      <strong>Default finality:</strong> Transfers use the chain's native finality (equivalent to omitting{" "}
+      <code>finality</code> or using <code>finality=finalized</code>) unless you opt into faster than finality via{" "}
+      <code>finality</code> (for example, <code>finality=&lt;N&gt;</code> for block-depth faster than finality).
+    </li>
+    <li>
+      <strong>Opt-in changes.</strong> New v2 behavior only applies when you explicitly configure it (for example,
+      pool-level fees or faster than finality).
+    </li>
+  </ol>
+</Aside>
+
+## Before You Begin
+
+<AnchoredAccordion title="Set up your development environment" number={1} depth={3}>
+
+1. Install Node.js and npm:
+   - Make sure you have `Node.js v22.10.0` or above installed. If not, install **`Node.js v22.10.0`** using their [documentation](https://nodejs.org/en/download/).
+   - `npm` is bundled with Node.js. If you can’t run `npm`, reinstall/update Node.js from the official installer.
+
+2. Install/Update [Chainlink CCIP-CLI](https://docs.chain.link/ccip/tools/cli/), you can also find the [GitHub repository here](https://github.com/smartcontractkit/ccip-cli).
+
+```bash filename="Terminal"
+npm install -g @chainlink/ccip-cli
+```
+
+Verify the installation by running the following command:
+
+```bash filename="Terminal"
+ccip-cli --version
+```
+
+3. **Clone the repository and navigate to the project directory**:
+
+<GitHubCard
+  title="CCIP 2.0 template"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat"
+  iconName="github-svg-card"
+>
+  Clone the CCIP 2.0 Hardhat template for a smoother setup.
+</GitHubCard>
+
+```bash filename="Terminal"
+git clone https://github.com/smartcontractkit/docs-cct-hardhat.git
+cd docs-cct-hardhat
+```
+
+4. Create a `.env` file by copying the `.env.example` file, and fill in the required values:
+
+```bash filename="Terminal"
+cp .env.example .env
+```
+
+```bash filename=".env"
+# Keystore name (created via `npx hardhat keystore set`)
+KEYSTORE_NAME=<your_private_key_name>
+
+# RPC URLs (add the ones you need)
+ETHEREUM_SEPOLIA_RPC_URL=your_eth_sepolia_rpc
+ARBITRUM_SEPOLIA_RPC_URL=your_arbitrum_sepolia_rpc
+
+# Etherscan API key (required only if you pass --verify to deployment tasks on Ethereum Sepolia)
+ETHERSCAN_API_KEY=your_etherscan_api_key
+```
+
+<GitHubCard
+  title="Complete List of Supported Chains"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/helper-config.ts"
+  iconName="github-svg-card"
+>
+  View the complete list of supported chains in the `helper-config.ts` file.
+</GitHubCard>
+
+5. To make sure your terminal has access to these variables, run the following command:
+
+```bash filename="Terminal"
+source .env
+```
+
+6. Build the project:
+
+```bash filename="Terminal"
+npm install && npx hardhat compile
+```
+
+7. Create an encrypted Hardhat keystore, if you haven't already:
+
+```bash filename="Terminal"
+npx hardhat keystore set <your_private_key_name>
+```
+
+<Aside type="caution" title="Private key format">
+  When prompted for your private key, include the <code>0x</code> prefix.
+</Aside>
+
+<Aside type="note" title="Note">
+  <ol>
+    <li>
+      Hardhat prompts for a keystore password: set it on first use, or enter it to unlock on subsequent uses. Then it
+      asks you to enter your private key as hidden text.
+    </li>
+    <li>
+      The name you choose (e.g. <code>PRIVATE_KEY</code>) is what you set as <code>KEYSTORE_NAME</code> in{" "}
+      <code>.env</code>.
+    </li>
+    <li>
+      Use <code>npx hardhat keystore list</code> to check previously created keystores.
+    </li>
+  </ol>
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="How to configure deployment parameters?" number={2} depth={3}>
+
+Deployment parameters can be configured in two ways:
+
+1. Edit the `.json` files in `input/`.
+2. Pass CLI flags inline at runtime.
+
+> **Note:** CLI flags take precedence over `.json` file values.
+
+#### Token Deployment Configuration
+
+Default values live in `input/token.json`:
+
+```json filename="input/token.json"
+{
+  "name": "BnM Test",
+  "symbol": "BnM-T",
+  "decimals": 18,
+  "maxSupply": 0,
+  "preMint": 0,
+  "tokenAmountToMint": 1000000000000000000000,
+  "tokenAmountToTransfer": 1000000000000000000
+}
+```
+
+Deployment fields can be overridden with CLI flags:
+
+| Flag          | Overrides (`token.json`) | Description                                   |
+| ------------- | ------------------------ | --------------------------------------------- |
+| `--name`      | `.name`                  | Token name                                    |
+| `--symbol`    | `.symbol`                | Token symbol                                  |
+| `--decimals`  | `.decimals`              | Decimal places (usually `18`)                 |
+| `--maxsupply` | `.maxSupply`             | Max supply in smallest unit (`0` = unlimited) |
+| `--premint`   | `.preMint`               | Amount pre-minted to deployer (`0` = none)    |
+
+#### (Optional) Advanced Pool Hooks
+
+<CcipCommon callout="advancedPoolHooks" />
+
+Default values live in `input/advanced-pool-hooks.json`:
+
+```json filename="input/advanced-pool-hooks.json"
+{
+  "allowlist": [],
+  "thresholdAmount": 0,
+  "policyEngine": "0x0000000000000000000000000000000000000000",
+  "authorizedCallers": []
+}
+```
+
+All fields can be overridden with CLI flags:
+
+| Flag                  | Overrides (`advanced-pool-hooks.json`) | Description                                                                              |
+| --------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `--allowlist`         | `.allowlist`                           | Addresses allowed to transfer (comma-separated)                                          |
+| `--thresholdamount`   | `.thresholdAmount`                     | Threshold amount after which additional hook checks/policy checks may apply (`0` = none) |
+| `--policyengine`      | `.policyEngine`                        | Policy engine contract address                                                           |
+| `--authorizedcallers` | `.authorizedCallers`                   | Addresses authorized to call the hooks (comma-separated)                                 |
+
+> **Note:** A complete tutorial on setting up Advanced Pool Hooks can be found in our docs here: [Set advanced pool hooks using Hardhat](/ccip/evm/tutorials/cross-chain-tokens/set-advanced-pool-hooks-hardhat)
+
+</AnchoredAccordion>
+
+## Tutorial
+
+### Prerequisites
+
+<Aside type="caution" title="Before you continue">
+  <ul>
+    <li>
+      <strong>Sepolia ETH</strong>: required for Sepolia transactions (deploy/configure/send).
+    </li>
+    <li>
+      <strong>Arbitrum Sepolia ETH</strong>: required for Arbitrum Sepolia transactions (deploy/configure).
+    </li>
+    <li>
+      <strong>LINK (optional)</strong>: if you plan to pay for the cross-chain transfer with `LINK`, fund the sender
+      wallet with testnet LINK on the <strong>source chain</strong>.{" "}
+    </li>
+    <li>You can use our [faucet](https://faucets.chain.link/) to get testnet LINK.</li>
+  </ul>
+</Aside>
+
+**Already have deployments? Skip only what you already have:**
+
+- If you already have tokens deployed on **both** chains, skip **Deploy Tokens**.
+- If you have deployed tokens but not the corresponding pools, you must still run **Deploy Token Pools** before continuing.
+- If you already have tokens and **V2-compatible** token pools deployed on **both** chains, skip both sections and move straight on to [Enablement](#enablement).
+
+**If you already have a V1 token pool deployed and want to use newer features or prepare for lane migration:**
+
+- You will need to deploy a **V2-compatible token pool**
+- Your existing V1 pool can continue to support current transfers
+- Follow the migration guide to upgrade your setup without disrupting your existing deployment
+
+> **Read**: [Migrate from V1 to V2 token pools](/ccip/evm/tutorials/cross-chain-tokens/migrate-from-v1-to-v2-burn-mint-hardhat)
+
+Before continuing, export the relevant addresses so subsequent tasks can find them:
+
+```bash filename="Terminal"
+# For tokens
+export ETHEREUM_SEPOLIA_TOKEN=<your_token_address_on_sepolia>
+export ARBITRUM_SEPOLIA_TOKEN=<your_token_address_on_arbitrum_sepolia>
+
+# For token pools
+export ETHEREUM_SEPOLIA_TOKEN_POOL=<your_token_pool_address_on_sepolia>
+export ARBITRUM_SEPOLIA_TOKEN_POOL=<your_token_pool_address_on_arbitrum_sepolia>
+```
+
+<AnchoredAccordion title="Deploy Tokens" number={1} depth={4}>
+
+<Aside type="tip" title="Already have tokens deployed?">
+  <ul>
+    <li>Your tokens must support burn and mint operations (this tutorial deploys Burn & Mint pools).</li>
+    <li>
+      They must also implement either `getCCIPAdmin()` or OpenZeppelin's `owner()` so the `Claim Admin Role` step can
+      identify the token administrator.
+    </li>
+  </ul>
+</Aside>
+
+Use the `deployToken` task to deploy [burn-mint ERC-20 tokens](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/interfaces/IBurnMintERC20.sol) on two testnets, Ethereum Sepolia and Arbitrum Sepolia. The deployed token implements the `IBurnMintERC20` interface, which exposes the `mint` and `burn` functions that the token pool later calls during cross-chain transfers.
+
+> **Note:** The task reads the `input/token.json` file to get the token name, symbol, decimals, maximum supply, and pre-mint amount. \
+> You can also override these values by providing CLI flags at runtime. \
+> See [how to configure deployment parameters](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat#token-deployment-configuration) for more details.
+
+<GitHubCard
+  title="deployToken.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/deploy/deployToken.ts"
+  iconName="github-svg-card"
+>
+  View the deployment task on GitHub.
+</GitHubCard>
+
+1. Deploy token on Ethereum Sepolia:
+
+```bash filename="Terminal"
+npx hardhat deployToken --network sepolia --rolesrecipient <your_desired_address> --verify
+```
+
+<Aside type="note" title="Please note">
+  <ol>
+    <li>
+      <code>--verify</code> requires <code>ETHERSCAN_API_KEY</code> to be set.
+    </li>
+    <li>
+      <code>--rolesrecipient</code> is an optional flag. If not provided, the task will use the deployer's address as
+      the roles recipient.
+    </li>
+  </ol>
+</Aside>
+
+Your output should look something like this:
+
+```
+========================================
+🪙 Deploy Token
+========================================
+Chain:        Ethereum Sepolia
+Action:       Deploy CrossChainToken
+========================================
+
+Token Parameters:
+  Name:       BnM Test
+  Symbol:     BnM-T
+  Decimals:   18
+  Max Supply: 0
+  Pre-Mint:   0
+
+  Pre-mint Recipient: 0xYourdesignatedAddressForPreMint
+  CCIP Admin:         0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+
+[Step 1] Deploying BnM Test (BnM-T) on Ethereum Sepolia
+⏳ Deployment tx: 0x7d2f5d7f4b7c9f3b5b8f6a4b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d
+   Waiting for 2 confirmation(s)...
+Token deployed at: 0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+https://sepolia.etherscan.io/address/0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+
+[Step 2] Granting mint and burn roles to: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+   Waiting for 2 confirmation(s)...
+✅ Roles granted successfully!
+
+Verifying contract on block explorer...
+✅ Contract verified successfully
+
+========================================
+✅ Deployment Complete on Ethereum Sepolia!
+========================================
+Token Address: 0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+https://sepolia.etherscan.io/address/0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+
+Run this command to set the environment variable:
+export ETHEREUM_SEPOLIA_TOKEN=0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+========================================
+```
+
+After deployment, the token address is automatically saved to:
+
+```bash
+deployments/tokens/{CHAIN_NAME_IDENTIFIER}/{timestamp}-{SYMBOL}-Token.json
+```
+
+1.  The file uses the env var name as the key (for example, `ETHEREUM_SEPOLIA_TOKEN`).
+2.  You can copy the key and value directly into an `export` command.
+3.  The `deployments/` directory is ignored by `.gitignore`, so these files stay local to each user.
+
+4.  Deploy token on Arbitrum Sepolia:
+
+```bash filename="Terminal"
+npx hardhat deployToken --network arbitrumSepolia --rolesrecipient <your_desired_address> --verify
+```
+
+Your output should look something like this:
+
+```
+========================================
+🪙 Deploy Token
+========================================
+Chain:        Arbitrum Sepolia
+Action:       Deploy CrossChainToken
+========================================
+
+Token Parameters:
+  Name:       BnM Test
+  Symbol:     BnM-T
+  Decimals:   18
+  Max Supply: 0
+  Pre-Mint:   0
+
+  Pre-mint Recipient: 0xYourdesignatedAddressForPreMint
+  CCIP Admin:         0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+
+[Step 1] Deploying BnM Test (BnM-T) on Arbitrum Sepolia
+⏳ Deployment tx: 0x2b6d9a1c4f3e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6f5e4d3c
+   Waiting for 2 confirmation(s)...
+Token deployed at: 0x5B3c8F2a9D4e7A1c6F0b3E8d5C9a2F4b7D1e6A3c
+https://sepolia.arbiscan.io/address/0x5B3c8F2a9D4e7A1c6F0b3E8d5C9a2F4b7D1e6A3c
+
+[Step 2] Granting mint and burn roles to: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+   Waiting for 2 confirmation(s)...
+✅ Roles granted successfully!
+
+Verifying contract on block explorer...
+✅ Contract verified successfully
+
+========================================
+✅ Deployment Complete on Arbitrum Sepolia!
+========================================
+Token Address: 0x5B3c8F2a9D4e7A1c6F0b3E8d5C9a2F4b7D1e6A3c
+https://sepolia.arbiscan.io/address/0x5B3c8F2a9D4e7A1c6F0b3E8d5C9a2F4b7D1e6A3c
+
+Run this command to set the environment variable:
+export ARBITRUM_SEPOLIA_TOKEN=0x5B3c8F2a9D4e7A1c6F0b3E8d5C9a2F4b7D1e6A3c
+========================================
+```
+
+After deployment, the token address is automatically saved to:
+
+```bash
+deployments/tokens/{CHAIN_NAME_IDENTIFIER}/{timestamp}-{SYMBOL}-Token.json
+```
+
+3. Set the environment variables for the deployed token addresses:
+
+<Aside type="note" title="Why do I need to export these?">
+  <ol>
+    <li>
+      Deployment addresses are persisted locally under <code>deployments/</code>, but each task still reads values from
+      your current shell environment.
+    </li>
+    <li>
+      Run the <code>export</code> commands so subsequent tasks in this terminal session can discover the correct
+      addresses.
+    </li>
+    <li>
+      You can also pass the addresses directly via `--tokenaddress` / `--tokenpool` flags on any task that requires
+      them.
+    </li>
+  </ol>
+</Aside>
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_TOKEN=0x...
+export ARBITRUM_SEPOLIA_TOKEN=0x...
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Deploy Token Pools" number={2} depth={4}>
+
+Use the `deployTokenPool` task to [deploy Burn & Mint token pools](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/BurnMintTokenPool.sol) for the tokens on both testnets, Ethereum Sepolia and Arbitrum Sepolia, and grant mint and burn roles to the token pools.
+
+A `BurnMintTokenPool` burns tokens on the source chain and mints the equivalent amount on the destination chain. For this to work, the pool must hold the token's mint and burn roles, which the task grants automatically after deployment.
+
+<GitHubCard
+  title="deployBurnMintTokenPool.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/deploy/deployBurnMintTokenPool.ts"
+  iconName="github-svg-card"
+>
+  View the deployment task on GitHub.
+</GitHubCard>
+
+1. Deploy a Burn & Mint token pool on Ethereum Sepolia:
+
+```bash filename="Terminal"
+npx hardhat deployTokenPool --network sepolia --verify
+```
+
+Your output should look something like this:
+
+```
+========================================
+🔥⚒️  Deploy Burn & Mint Token Pool
+========================================
+Chain:        Ethereum Sepolia
+Action:       Deploy BurnMintTokenPool
+========================================
+
+Token Pool Parameters:
+  Token:       0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+  Decimals:    18
+  Router:      0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+  RMN Proxy:   0xba3f6251de62dED61Ff98590cB2fDf6871FbB991
+  Pool Hooks:  None (0x0)
+
+[Step 1] Deploying BurnMintTokenPool on Ethereum Sepolia
+⏳ Deployment tx: 0x8a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0fedcba987654321
+   Waiting for 2 confirmation(s)...
+Token Pool deployed at: 0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+
+[Step 2] Granting mint and burn roles to token pool: 0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+   Waiting for 2 confirmation(s)...
+✅ Roles granted successfully!
+
+========================================
+✅ Deployment Complete on Ethereum Sepolia!
+========================================
+Token Pool Address: 0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+
+Run this command to set the environment variable:
+export ETHEREUM_SEPOLIA_TOKEN_POOL=0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+========================================
+
+Verifying contract on block explorer...
+✅ Contract verified successfully
+```
+
+2. Deploy a Burn & Mint token pool on Arbitrum Sepolia:
+
+```bash filename="Terminal"
+npx hardhat deployTokenPool --network arbitrumSepolia --verify
+```
+
+Your output should look something like this:
+
+```
+========================================
+🔥⚒️  Deploy Burn & Mint Token Pool
+========================================
+Chain:        Arbitrum Sepolia
+Action:       Deploy BurnMintTokenPool
+========================================
+
+Token Pool Parameters:
+  Token:       0x5B3c8F2a9D4e7A1c6F0b3E8d5C9a2F4b7D1e6A3c
+  Decimals:    18
+  Router:      0x2a9C5afB0d0e4BAb2BCdaE109EC4b0c4Be15a165
+  RMN Proxy:   0x9527E2d01A3064ef6b50c1Da1C0cC523803BCFF2
+  Pool Hooks:  None (0x0)
+
+[Step 1] Deploying BurnMintTokenPool on Arbitrum Sepolia
+⏳ Deployment tx: 0x6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d
+   Waiting for 2 confirmation(s)...
+Token Pool deployed at: 0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+https://sepolia.arbiscan.io/address/0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+
+[Step 2] Granting mint and burn roles to token pool: 0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+   Waiting for 2 confirmation(s)...
+✅ Roles granted successfully!
+
+========================================
+✅ Deployment Complete on Arbitrum Sepolia!
+========================================
+Token Pool Address: 0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+https://sepolia.arbiscan.io/address/0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+
+Run this command to set the environment variable:
+export ARBITRUM_SEPOLIA_TOKEN_POOL=0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+========================================
+
+Verifying contract on block explorer...
+✅ Contract verified successfully
+```
+
+<Aside type="note" title="Token role-grant fallback">
+  <ol>
+    <li>
+      The task attempts to call <code>grantMintAndBurnRoles</code> on the token to grant the pool mint and burn rights.
+    </li>
+    <li>If the token does not implement this function, the task prints instructions to grant the roles manually.</li>
+  </ol>
+</Aside>
+
+3. Set the environment variables for the deployed token pool addresses:
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_TOKEN_POOL=0x...
+export ARBITRUM_SEPOLIA_TOKEN_POOL=0x...
+```
+
+</AnchoredAccordion>
+
+### Enablement
+
+These steps configure your token pools and activate them under the CCIP protocol so your token becomes a truly Cross-Chain Token (CCT).
+
+<AnchoredAccordion title="Claim Admin Role" number={1} depth={4}>
+
+Use the `claimAdmin` task to register your EOA as the administrator for the deployed tokens on both chains. \
+This process involves interacting with the [`RegistryModuleOwnerCustom`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/tokenAdminRegistry/RegistryModuleOwnerCustom.sol) contract to set up your EOA as the admin.
+
+<Aside type="note" title="Supported admin patterns">
+  The task auto-detects how your token exposes its admin and uses the appropriate registration method:
+  <ol>
+    <li>
+      If your token implements <code>getCCIPAdmin()</code>, the task calls <code>registerAdminViaGetCCIPAdmin()</code>.
+    </li>
+    <li>
+      If your token uses OpenZeppelin's <code>Ownable</code> pattern (<code>owner()</code>), the task calls{" "}
+      <code>registerAdminViaOwner()</code> instead.
+    </li>
+  </ol>
+  No extra configuration is needed: both patterns are fully supported.
+</Aside>
+
+<GitHubCard
+  title="claimAdmin.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/setup/claimAdmin.ts"
+  iconName="github-svg-card"
+>
+  View the admin claim task on GitHub.
+</GitHubCard>
+
+1. Claim the Admin role for the token on Ethereum Sepolia:
+
+<Aside type="note" title="Note">
+  If you don't pass <code>--ccipadmin</code>, the task defaults to the address of the account broadcasting the
+  transaction.
+</Aside>
+
+```bash filename="Terminal"
+npx hardhat claimAdmin --network sepolia --ccipadmin <your_desired_address>
+```
+
+Your output should look something like this:
+
+```
+========================================
+👑 Claim Token Admin
+========================================
+Chain:        Ethereum Sepolia
+Action:       Claim token admin
+========================================
+
+Claim Admin Parameters:
+  Token:           0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+  Current Admin:   0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+  Expected Admin:  0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+  Registry Module: 0xa3c796d480638d7476792230da1E2ADa86e031b0
+  Admin Method:    getCCIPAdmin()
+
+[Step 1] Claiming admin via getCCIPAdmin() on Ethereum Sepolia
+⏳ Tx: https://sepolia.etherscan.io/tx/0x1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f809
+
+========================================
+✅ Admin Claim Complete on Ethereum Sepolia!
+========================================
+Token:         https://sepolia.etherscan.io/address/0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+Transaction:   https://sepolia.etherscan.io/tx/0x1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f809
+Admin Address: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+========================================
+```
+
+2. Claim the Admin role for the token on Arbitrum Sepolia:
+
+```bash filename="Terminal"
+npx hardhat claimAdmin --network arbitrumSepolia --ccipadmin <your_desired_address>
+```
+
+Your output should look something like this:
+
+```
+========================================
+👑 Claim Token Admin
+========================================
+Chain:        Arbitrum Sepolia
+Action:       Claim token admin
+========================================
+
+Claim Admin Parameters:
+  Token:           0x5B3c8F2a9D4e7A1c6F0b3E8d5C9a2F4b7D1e6A3c
+  Current Admin:   0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+  Expected Admin:  0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+  Registry Module: 0xaD417c0611dBD225471D31F056b8B6beC1CBC153
+  Admin Method:    getCCIPAdmin()
+
+[Step 1] Claiming admin via getCCIPAdmin() on Arbitrum Sepolia
+⏳ Tx: https://sepolia.arbiscan.io/tx/0x9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8
+
+========================================
+✅ Admin Claim Complete on Arbitrum Sepolia!
+========================================
+Token:         https://sepolia.arbiscan.io/address/0x5B3c8F2a9D4e7A1c6F0b3E8d5C9a2F4b7D1e6A3c
+Transaction:   https://sepolia.arbiscan.io/tx/0x9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8
+Admin Address: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+========================================
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Accept Admin Role" number={2} depth={4}>
+
+Use the `acceptAdminRole` task to accept the admin role for the deployed tokens on both chains.
+Once you have claimed the role, accepting the role finalizes your control over the token administration via the [`TokenAdminRegistry`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/tokenAdminRegistry/TokenAdminRegistry.sol).
+
+<GitHubCard
+  title="acceptAdminRole.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/setup/acceptAdminRole.ts"
+  iconName="github-svg-card"
+>
+  View the admin acceptance task on GitHub.
+</GitHubCard>
+
+1. Accept the admin role for the token on Ethereum Sepolia:
+
+```bash filename="Terminal"
+npx hardhat acceptAdminRole --network sepolia
+```
+
+Your output should look something like this:
+
+```
+========================================
+👑 Accept Admin Role
+========================================
+Chain:        Ethereum Sepolia
+Action:       Accept admin role
+========================================
+
+Accept Admin Role Parameters:
+  Token:                 0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+  Token Admin Registry:  0x95F29FEE11c5C55d26cCcf1DB6772DE953B37B82
+  Pending Administrator: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+  Signer:                0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+
+[Step 1] Accepting admin role for token on Ethereum Sepolia
+⏳ Tx: https://sepolia.etherscan.io/tx/0x0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c4b5a69788796a5b4c3d2e1f0
+
+========================================
+✅ Admin Role Accepted on Ethereum Sepolia!
+========================================
+Token:            https://sepolia.etherscan.io/address/0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+Transaction:      https://sepolia.etherscan.io/tx/0x0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c4b5a69788796a5b4c3d2e1f0
+New Administrator: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+========================================
+```
+
+2. Accept the admin role for the token on Arbitrum Sepolia:
+
+```bash filename="Terminal"
+npx hardhat acceptAdminRole --network arbitrumSepolia
+```
+
+Your output should look something like this:
+
+```
+========================================
+👑 Accept Admin Role
+========================================
+Chain:        Arbitrum Sepolia
+Action:       Accept admin role
+========================================
+
+Accept Admin Role Parameters:
+  Token:                 0x5B3c8F2a9D4e7A1c6F0b3E8d5C9a2F4b7D1e6A3c
+  Token Admin Registry:  0x8126bE56454B628a88C17849B9ED99dd5a11Bd2f
+  Pending Administrator: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+  Signer:                0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+
+[Step 1] Accepting admin role for token on Arbitrum Sepolia
+⏳ Tx: https://sepolia.arbiscan.io/tx/0xa0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5
+
+========================================
+✅ Admin Role Accepted on Arbitrum Sepolia!
+========================================
+Token:            https://sepolia.arbiscan.io/address/0x5B3c8F2a9D4e7A1c6F0b3E8d5C9a2F4b7D1e6A3c
+Transaction:      https://sepolia.arbiscan.io/tx/0xa0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5
+New Administrator: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+========================================
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Configure Token Pools" number={3} depth={4}>
+
+Use the `applyChainUpdates` task to initialize the token pool configuration on each blockchain to enable cross-chain transfers between the two chains. \
+This involves linking the token pool on one blockchain to its corresponding pool on the other blockchain, allowing cross-chain token transfers.\
+You will interact with the [`TokenPool`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/TokenPool.sol) contract by calling the `applyChainUpdates()` function to set up cross-chain parameters and rate limits.
+
+`applyChainUpdates()` registers the destination chain and the destination pool on the local pool by recording:
+
+- The remote chain selector (to identify the exact chain),
+- The remote pool address (to identify the exact pool on that exact chain),
+- The remote token address (to identify the exact token on the remote pool),
+- And per-direction rate limit buckets (outbound and inbound).
+
+You must run it on **both** pools so each side knows its counterpart.
+
+<GitHubCard
+  title="applyChainUpdates.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/setup/applyChainUpdates.ts"
+  iconName="github-svg-card"
+>
+  View the pool configuration task on GitHub.
+</GitHubCard>
+
+<Aside type="caution" title="Rate Limiting">
+  <ol>
+    <li>
+      Rate limiting is disabled by default (`isEnabled: false`). With rate limiting disabled, there are **no
+      restrictions** on the volume of tokens that can be transferred through the pool in any direction.
+    </li>
+    <li>
+      To protect against large, unexpected outflows, set `isEnabled` to `true` and configure `capacity` (maximum bucket
+      size) and `rate` (tokens refilled per second).
+    </li>
+    <li>
+      See the [Update Rate Limiters](/ccip/evm/tutorials/cross-chain-tokens/update-rate-limiters-hardhat) tutorial for
+      more details.
+    </li>
+  </ol>
+</Aside>
+
+| Flag                              | Required | Description                                                         |
+| --------------------------------- | -------- | ------------------------------------------------------------------- |
+| <nobr>`--destchain`</nobr>        | Yes      | Destination chain name (e.g. `arbitrumSepolia`, `ARBITRUM_SEPOLIA`) |
+| <nobr>`--outboundcapacity`</nobr> | No       | Token bucket capacity for outbound transfers                        |
+| <nobr>`--outboundrate`</nobr>     | No       | Token bucket refill rate (tokens/second) for outbound transfers     |
+| <nobr>`--inboundcapacity`</nobr>  | No       | Token bucket capacity for inbound transfers                         |
+| <nobr>`--inboundrate`</nobr>      | No       | Token bucket refill rate (tokens/second) for inbound transfers      |
+
+1. Configure the token pool on Ethereum Sepolia:
+
+```bash filename="Terminal"
+# Configure Ethereum Sepolia → Arbitrum Sepolia with rate limits
+npx hardhat applyChainUpdates \
+  --destchain arbitrumSepolia \
+  --outboundcapacity 1000000000000000000000 \
+  --outboundrate 100000000000000000 \
+  --inboundcapacity 1000000000000000000000 \
+  --inboundrate 100000000000000000 \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```
+========================================
+🔗 Apply Chain Updates
+========================================
+Chain:        Ethereum Sepolia
+Remote Chain: Arbitrum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       Configure cross-chain lane
+========================================
+
+Chain Update Parameters:
+  Source Pool:                  0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+  Destination Chain Selector:   3478487238524512106
+  Destination Chain Family:     evm
+  Destination Pool:             0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+  Destination Token:            0x5B3c8F2a9D4e7A1c6F0b3E8d5C9a2F4b7D1e6A3c
+  Outbound Rate Limit Enabled:  true
+  Outbound Rate Limit Capacity: 1000000000000000000000
+  Outbound Rate Limit Rate:     100000000000000000
+  Inbound Rate Limit Enabled:   true
+  Inbound Rate Limit Capacity:  1000000000000000000000
+  Inbound Rate Limit Rate:      100000000000000000
+
+⚠️  Existing config detected for destination chain selector; replacing it.
+[Step 1] Applying chain updates to pool on Ethereum Sepolia
+⏳ Tx: https://sepolia.etherscan.io/tx/0x6cf4ac6987c82c018b3ea8e39f133cdc736e8e85a14669c765fe99e8ebdfbaf9
+
+========================================
+✅ Chain Updates Complete on Ethereum Sepolia!
+========================================
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Explorer:     https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Transaction:  https://sepolia.etherscan.io/tx/0x6cf4ac6987c82c018b3ea8e39f133cdc736e8e85a14669c765fe99e8ebdfbaf9
+Remote Chain: Arbitrum Sepolia (Selector: 3478487238524512106)
+Remote Pool:  0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+========================================
+```
+
+2. Configure the token pool on Arbitrum Sepolia:
+
+```bash filename="Terminal"
+# Configure Arbitrum Sepolia → Ethereum Sepolia with rate limits
+npx hardhat applyChainUpdates \
+  --destchain sepolia \
+  --outboundcapacity 1000000000000000000000 \
+  --outboundrate 100000000000000000 \
+  --inboundcapacity 1000000000000000000000 \
+  --inboundrate 100000000000000000 \
+  --network arbitrumSepolia
+```
+
+Your output should look something like this:
+
+```
+========================================
+🔗 Apply Chain Updates
+========================================
+Chain:        Arbitrum Sepolia
+Remote Chain: Ethereum Sepolia
+Token Pool:   0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+Action:       Configure cross-chain lane
+========================================
+
+Chain Update Parameters:
+  Source Pool:                  0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+  Destination Chain Selector:   16015286601757825753
+  Destination Chain Family:     evm
+  Destination Pool:             0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+  Destination Token:            0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+  Outbound Rate Limit Enabled:  true
+  Outbound Rate Limit Capacity: 1000000000000000000000
+  Outbound Rate Limit Rate:     100000000000000000
+  Inbound Rate Limit Enabled:   true
+  Inbound Rate Limit Capacity:  1000000000000000000000
+  Inbound Rate Limit Rate:      100000000000000000
+
+⚠️  Existing config detected for destination chain selector; replacing it.
+[Step 1] Applying chain updates to pool on Arbitrum Sepolia
+⏳ Tx: https://sepolia.arbiscan.io/tx/0x7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6
+
+========================================
+✅ Chain Updates Complete on Arbitrum Sepolia!
+========================================
+Token Pool:   0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+Explorer:     https://sepolia.arbiscan.io/address/0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+Transaction:  https://sepolia.arbiscan.io/tx/0x7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6
+Remote Chain: Ethereum Sepolia (Selector: 16015286601757825753)
+Remote Pool:  0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+========================================
+```
+
+3. (Optional) Read the list of supported chains and currently configured remote pools:
+
+```bash filename="Terminal"
+npx hardhat getSupportedChains --network sepolia
+npx hardhat getSupportedChains --network arbitrumSepolia
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="(Optional) Configure Faster Than Finality for the Token Pool" number={4} depth={4}>
+
+1. CCIP 2.0 supports **faster than finality** as an opt-in feature, letting token issuers control the speed vs. security
+   tradeoff for cross-chain transfers of their token.
+
+2. By default, a newly deployed token pool only allows transfers at default finality (equivalent to omitting `finality`
+   or using `finality=finalized`).
+
+3. To enable faster than finality, the pool owner must configure which faster than finality modes are allowed. Senders then request
+   one mode per transfer using `finality` (either `finality=finalized` or `finality=<N>` for block-depth faster than finality).
+
+> This section applies only to [**token pools with versions ≥ 2.0**](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/TokenPool.sol). Existing v1 pools do not support fast
+> finality.
+
+<Aside type="note" title="Pool-level finality vs. transaction-level finality">
+  <ol>
+    <li>
+      <strong>Pool-level finality</strong> (allowed finality config): A setting the pool owner configures via{" "}
+      <code>setAllowedFinalityConfig(bytes4)</code>.
+      <ul>
+        <li>
+          Default = faster than finality is <strong>disabled</strong>. The pool only allows transfers that use default
+          finality (omit <code>finality</code> or use <code>finality=finalized</code>).
+        </li>
+        <li>
+          The pool can opt in to faster than finality by allowing a minimum block depth (<code>finality=&lt;N&gt;</code>
+          ).
+        </li>
+      </ul>
+    </li>
+    <li>
+      <strong>Transaction-level finality</strong> (<code>finality</code>): A per-transfer setting the sender specifies
+      via extra args when sending a CCIP message.
+      <ul>
+        <li>
+          <code>finality=finalized</code> (or omit <code>finality</code>) = default finality. This is always allowed.
+        </li>
+        <li>
+          <code>finality=&lt;N&gt;</code> = faster than finality using block depth (block confirmations). Only succeeds
+          if the pool allows block-depth mode and the requested <code>N</code> is &ge; the pool's configured minimum.
+        </li>
+      </ul>
+      Each transfer requests exactly <strong>one</strong> finality mode.
+    </li>
+  </ol>
+  Faster Than Finality transfers use the <strong>faster than finality</strong> rate limit bucket when configured. If the
+  faster than finality bucket isn’t configured for a lane, the pool falls back to the standard rate limit bucket.
+</Aside>
+
+<GitHubCard
+  title="setFinalityConfig.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/finality-config/setFinalityConfig.ts"
+  iconName="github-svg-card"
+>
+  View the pool configuration task on GitHub.
+</GitHubCard>
+
+1. Set the allowed finality config for the token pool on Ethereum Sepolia:
+
+```bash filename="Terminal"
+# Allow block-depth faster than finality and optionally configure the faster than finality rate limit bucket
+npx hardhat setFinalityConfig \
+  --blockdepth 32 \
+  --destchain arbitrumSepolia \
+  --outboundcapacity 1000000000000000000000 \
+  --outboundrate 100000000000000000 \
+  --inboundcapacity 1000000000000000000000 \
+  --inboundrate 100000000000000000 \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```
+========================================
+⏱️  Set Finality Config
+========================================
+Chain:        Ethereum Sepolia
+Remote Chain: Arbitrum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       Set finality config
+========================================
+
+  Current Finality Config: 0x00000014
+  New Finality Config:     0x00000020
+  Mode:                    BLOCK_DEPTH (32 blocks)
+
+----------------------------------------
+📊 Current Rate Limits (faster than finality where enabled, standard otherwise):
+----------------------------------------
+  Outbound [standard fallback]:
+    Enabled:  true
+    Capacity: 1000000000000000000000
+    Rate:     100000000000000000
+    Tokens:   1000000000000000000000
+  Inbound [standard fallback]:
+    Enabled:  true
+    Capacity: 1000000000000000000000
+    Rate:     100000000000000000
+    Tokens:   1000000000000000000000
+
+[Step 1] Setting finality config on Ethereum Sepolia
+⏳ Tx: https://sepolia.etherscan.io/tx/0x280399cd3dce1815a30ca3763736c7cbc4a8018bdb3ba1b650e728479640f5b6
+✅ Finality config set successfully!
+
+[Step 2] Updating rate limits (faster than finality bucket) on Ethereum Sepolia → Arbitrum Sepolia
+New Configuration:
+  Outbound Enabled:  true
+  Outbound Capacity: 1000000000000000000000
+  Outbound Rate:     100000000000000000
+  Inbound Enabled:   true
+  Inbound Capacity:  1000000000000000000000
+  Inbound Rate:      100000000000000000
+
+⏳ Tx: https://sepolia.etherscan.io/tx/0xa69245f229f41313d597ea452fa7c9d8ead9e05bfe36aad5a997a6850d198ac5
+✅ Rate limits updated successfully!
+
+----------------------------------------
+📊 Updated Rate Limits (faster than finality where enabled, standard otherwise):
+----------------------------------------
+  Outbound [faster than finality]:
+    Enabled:  true
+    Capacity: 1000000000000000000000
+    Rate:     100000000000000000
+    Tokens:   1000000000000000000000
+  Inbound [faster than finality]:
+    Enabled:  true
+    Capacity: 1000000000000000000000
+    Rate:     100000000000000000
+    Tokens:   1000000000000000000000
+
+========================================
+✅ Configuration Complete on Ethereum Sepolia!
+========================================
+Token Pool:      https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Finality Config: 0x00000020
+Mode:            BLOCK_DEPTH (32 blocks)
+========================================
+```
+
+2. Set the allowed finality config for the token pool on Arbitrum Sepolia:
+
+```bash filename="Terminal"
+# Allow block-depth faster than finality and optionally configure the faster than finality rate limit bucket
+npx hardhat setFinalityConfig \
+  --blockdepth 32 \
+  --destchain sepolia \
+  --outboundcapacity 1000000000000000000000 \
+  --outboundrate 100000000000000000 \
+  --inboundcapacity 1000000000000000000000 \
+  --inboundrate 100000000000000000 \
+  --network arbitrumSepolia
+```
+
+Your output should look something like this:
+
+```
+========================================
+⏱️  Set Finality Config
+========================================
+Chain:        Arbitrum Sepolia
+Remote Chain: Ethereum Sepolia
+Token Pool:   0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+Action:       Set finality config
+========================================
+
+  Current Finality Config: 0x00000014
+  New Finality Config:     0x00000020
+  Mode:                    BLOCK_DEPTH (32 blocks)
+
+----------------------------------------
+📊 Current Rate Limits (faster than finality where enabled, standard otherwise):
+----------------------------------------
+  Outbound [standard fallback]:
+    Enabled:  true
+    Capacity: 1000000000000000000000
+    Rate:     100000000000000000
+    Tokens:   1000000000000000000000
+  Inbound [standard fallback]:
+    Enabled:  true
+    Capacity: 1000000000000000000000
+    Rate:     100000000000000000
+    Tokens:   1000000000000000000000
+
+[Step 1] Setting finality config on Arbitrum Sepolia
+⏳ Tx: https://sepolia.arbiscan.io/tx/0xb1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6
+✅ Finality config set successfully!
+
+[Step 2] Updating rate limits (faster than finality bucket) on Arbitrum Sepolia → Ethereum Sepolia
+New Configuration:
+  Outbound Enabled:  true
+  Outbound Capacity: 1000000000000000000000
+  Outbound Rate:     100000000000000000
+  Inbound Enabled:   true
+  Inbound Capacity:  1000000000000000000000
+  Inbound Rate:      100000000000000000
+
+⏳ Tx: https://sepolia.arbiscan.io/tx/0x8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7
+✅ Rate limits updated successfully!
+
+----------------------------------------
+📊 Updated Rate Limits (faster than finality where enabled, standard otherwise):
+----------------------------------------
+  Outbound [faster than finality]:
+    Enabled:  true
+    Capacity: 1000000000000000000000
+    Rate:     100000000000000000
+    Tokens:   1000000000000000000000
+  Inbound [faster than finality]:
+    Enabled:  true
+    Capacity: 1000000000000000000000
+    Rate:     100000000000000000
+    Tokens:   1000000000000000000000
+
+========================================
+✅ Configuration Complete on Arbitrum Sepolia!
+========================================
+Token Pool:      https://sepolia.arbiscan.io/address/0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+Finality Config: 0x00000020
+Mode:            BLOCK_DEPTH (32 blocks)
+========================================
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Activate the Token Pool" number={5} depth={4}>
+
+Use the `setPool` task to register each token pool in the CCIP [`TokenAdminRegistry`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/tokenAdminRegistry/TokenAdminRegistry.sol), making it the official pool for your token. This is the step that activates the pool in the CCIP protocol.
+
+<GitHubCard
+  title="setPool.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/setup/setPool.ts"
+  iconName="github-svg-card"
+>
+  View the pool linking task on GitHub.
+</GitHubCard>
+
+1. Link the token to its respective token pool on Ethereum Sepolia:
+
+```bash filename="Terminal"
+npx hardhat setPool --network sepolia
+```
+
+Your output should look something like this:
+
+```
+========================================
+🏊 Set Token Pool
+========================================
+Chain:        Ethereum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       Set token pool
+========================================
+
+Set Pool Parameters:
+  Token:                0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+  Pool:                 0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+  Token Admin Registry: 0x95F29FEE11c5C55d26cCcf1DB6772DE953B37B82
+  Token Administrator:  0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+
+[Step 1] Setting pool for token on Ethereum Sepolia
+⏳ Tx: https://sepolia.etherscan.io/tx/0x4abdea890bd094239b3931134e8001511f82fcadfc7554b7facd98987c0e55c5
+
+========================================
+✅ Pool Set Complete on Ethereum Sepolia!
+========================================
+Token Address: https://sepolia.etherscan.io/address/0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+Pool Address:  https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Transaction:   https://sepolia.etherscan.io/tx/0x4abdea890bd094239b3931134e8001511f82fcadfc7554b7facd98987c0e55c5
+========================================
+```
+
+2. Link the token to its respective token pool on Arbitrum Sepolia:
+
+```bash filename="Terminal"
+npx hardhat setPool --network arbitrumSepolia
+```
+
+Your output should look something like this:
+
+```
+========================================
+🏊 Set Token Pool
+========================================
+Chain:        Arbitrum Sepolia
+Token Pool:   0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+Action:       Set token pool
+========================================
+
+Set Pool Parameters:
+  Token:                0x5B3c8F2a9D4e7A1c6F0b3E8d5C9a2F4b7D1e6A3c
+  Pool:                 0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+  Token Admin Registry: 0x8126bE56454B628a88C17849B9ED99dd5a11Bd2f
+  Token Administrator:  0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+
+[Step 1] Setting pool for token on Arbitrum Sepolia
+⏳ Tx: https://sepolia.arbiscan.io/tx/0x6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5
+
+========================================
+✅ Pool Set Complete on Arbitrum Sepolia!
+========================================
+Token Address: https://sepolia.arbiscan.io/address/0x5B3c8F2a9D4e7A1c6F0b3E8d5C9a2F4b7D1e6A3c
+Pool Address:  https://sepolia.arbiscan.io/address/0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+Transaction:   https://sepolia.arbiscan.io/tx/0x6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5
+========================================
+```
+
+</AnchoredAccordion>
+
+### Cross-chain Token Operations
+
+If all the previous steps were successful, your CCT token is now fully registered and activated under the CCIP protocol.
+Use these next steps to mint and transfer your tokens across networks.
+
+<AnchoredAccordion title="Mint Tokens" number={1} depth={4}>
+
+Use the `mintTokens` task to mint tokens to your Externally Owned Account (EOA) on Ethereum Sepolia. \
+Since you granted mint and burn privileges to your EOA during the token deployment in the first step, you are authorized to mint tokens for testing purposes. \
+This ensures that your EOA has sufficient tokens to perform cross-chain transfers in the next step.
+
+<GitHubCard
+  title="mintTokens.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/operations/mintTokens.ts"
+  iconName="github-svg-card"
+>
+  View the minting task on GitHub.
+</GitHubCard>
+
+1. Mint tokens for your EOA on Ethereum Sepolia:
+
+<Aside type="note" title="Note">
+  <ol>
+    <li>
+      If you don't pass <code>--amount</code>, the task will use the amount from the <code>tokenAmountToMint</code>
+      field in your <code>input/token.json</code> file.
+    </li>
+    <li>
+      Pass <code>--receiver 0x...</code> to mint to a different address (defaults to the deployer).
+    </li>
+  </ol>
+</Aside>
+
+```bash filename="Terminal"
+npx hardhat mintTokens --amount 1000000000000000000000 --network sepolia
+```
+
+Your output should look something like this:
+
+```
+========================================
+💰 Mint Tokens
+========================================
+Chain:        Ethereum Sepolia
+Action:       Mint tokens
+========================================
+
+Mint Parameters:
+  Token:    0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+  Symbol:   BnM-T
+  Amount:   1000000000000000000000
+  Receiver: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+
+[Step 1] Minting 1000000000000000000000 BnM-T to 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+⏳ Tx: https://sepolia.etherscan.io/tx/0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+✅ Tokens minted successfully!
+
+========================================
+✅ Minting Complete on Ethereum Sepolia!
+========================================
+Receiver Address: https://sepolia.etherscan.io/address/0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+New Balance:      1000000000000000000000 BnM-T
+========================================
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Transfer Tokens Across Networks" number={2} depth={4}>
+
+Use the `ccip-cli` command to securely transfer tokens across networks from your terminal.
+Tokens will be:
+
+1. **burned** on the source chain (Ethereum Sepolia), and,
+2. **minted** on the destination chain (Arbitrum Sepolia). \
+
+You can choose to pay CCIP fees using LINK tokens or the native gas token.
+
+> **Note:**
+>
+> 1. Add `--fee-token LINK` to pay CCIP fees in LINK. If you omit this flag, fees are paid in the native gas token.
+> 2. Use `--receiver <address>` for a custom recipient. If omitted on EVM-to-EVM, the receiver defaults to the sender.
+
+The CLI command expects the router address to be set in the environment variables. You can set it using the following command:
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_ROUTER=0x...
+```
+
+<Aside type="note" title="Router address">
+  You can find the router address for your chain in the [CCIP
+  Directory](https://docs.chain.link/ccip/directory/testnet).
+</Aside>
+
+1. Transfer tokens from Ethereum Sepolia to Arbitrum Sepolia on **default finality**:
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+  --receiver 0xYourReceiverAddress \
+  --wallet hardhat:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+```
+
+Your output should look something like this:
+
+```
+Fee: 130129888907619n = 0.000130129888907619 ETH
+✔ Enter password for Hardhat keystore 'PRIVATE_KEY'
+🚀 Sending message to 0xE23Fc63F47F08F58B9d7448d4CCE0bCDcc96d7F3 @ ethereum-testnet-sepolia-arbitrum-1 , tx => 0x3dc40bea29f3e3fc93ff8fce0dda45fd7f55a07ace5089646e018874c8b6745e , messageId => 0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+CCIP Explorer: https://ccip.chain.link/msg/0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+```
+
+<Aside type="note" title="chainId vs. chainSelector">
+  The <code>chainId</code> column shows the EVM chain ID (for example, <code>11155111</code> for Sepolia). The{" "}
+  <code>chainSelector</code> is CCIP's own chain identifier used internally by the protocol. You do not need to set
+  chain selectors yourself; the CLI and tasks resolve them automatically from the chain name.
+</Aside>
+
+2. Transfer tokens from Ethereum Sepolia to Arbitrum Sepolia using **faster than finality**:
+
+This assumes you enabled faster than finality on the pool in the optional finality configuration accordion above.
+When you pass <code>--extra finality=...</code>, <code>ccip-cli</code> encodes it into the CCIP message extra args.
+
+Transfer with explicit finalized finality (`finality=finalized`):
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+  --receiver 0xYourReceiverAddress \
+  --extra finality=finalized \
+  --wallet hardhat:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+```
+
+Your output should look something like this:
+
+```
+Fee: 130129888907619n = 0.000130129888907619 ETH
+✔ Enter password for Hardhat keystore 'PRIVATE_KEY'
+🚀 Sending message to 0xE23Fc63F47F08F58B9d7448d4CCE0bCDcc96d7F3 @ ethereum-testnet-sepolia-arbitrum-1 , tx => 0xeee045c912703291e6d6166e4ef8bfb0a7fb9035af1a41ac00b65c58ad868a94 , messageId => 0x1dd7414db95d6c0f81e15780b93e3cda6df0c58fb32ff81a2c0468e952929264
+CCIP Explorer: https://ccip.chain.link/msg/0x1dd7414db95d6c0f81e15780b93e3cda6df0c58fb32ff81a2c0468e952929264
+```
+
+Faster Than Finality using numeric block depth (`finality=<N>`):
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+  --receiver 0xYourReceiverAddress \
+  --extra finality=7 \
+  --wallet hardhat:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+```
+
+Your output should look something like this:
+
+```
+Fee: 130129888907619n = 0.000130129888907619 ETH
+✔ Enter password for Hardhat keystore 'PRIVATE_KEY'
+error: Failed to call "ccipSend"
+Error = execution reverted: InvalidRequestedFinality(requestedFinality, allowedFinality)
+Revert.error = InvalidRequestedFinality(uint32 requestedFinality, uint32 allowedFinality)
+Revert.requestedFinality = 7n
+Revert.allowedFinality = 32n
+```
+
+<Aside type="note" title="Understand Minimum Block Depth Requirements 🧑‍🏫">
+  <ol>
+    <li>
+      The last command failed because the pool's <strong>allowed finality config</strong> requires a larger block depth
+      for numeric faster than finality (for example, if you configured <code>--blockdepth 32</code>) but we requested{" "}
+      <code>finality=7</code>.
+    </li>
+    <li>
+      Try running the command again with an appropriate value for <code>finality</code> (for example,{" "}
+      <code>--extra finality=20</code>), or omit <code>finality</code> to use default finality (
+      <code>finality=finalized</code>).
+    </li>
+    <li>
+      If you see a revert like <code>InvalidRequestedFinality(requestedFinality, allowedFinality)</code>, it means the
+      requested mode (or depth) is not permitted by the pool.
+    </li>
+  </ol>
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="(Optional) Hand Off Token Administration After Enablement" number={3} depth={4}>
+
+1. The process to set up your tokens for cross-chain transfers is complete. At this stage, you might want to hand off token administration to a different address, for example, transferring control to a multisig or a dedicated operations wallet
+   This new admin will be able to mint and transfer tokens as needed.
+2. Use the `transferTokenAdminRole` task to achieve this.
+   This is a **two-step process**: the current admin initiates the transfer, and the new admin must run `AcceptAdminRole` task to complete it. Until the new admin accepts, the current admin retains full control.
+
+<GitHubCard
+  title="transferTokenAdminRole.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/setup/transferTokenAdminRole.ts"
+  iconName="github-svg-card"
+>
+  View the transfer admin role task on GitHub.
+</GitHubCard>
+
+1. Initiate the transfer on Ethereum Sepolia:
+
+```bash filename="Terminal"
+npx hardhat transferTokenAdminRole --newadmin new_admin_address --network sepolia
+```
+
+Your output should look something like this:
+
+```
+========================================
+🔄 Transfer Token Admin Role
+========================================
+Chain:        Ethereum Sepolia
+Action:       Transfer admin role
+========================================
+
+Transfer Admin Role Parameters:
+  Token:                 0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+  Token Admin Registry:  0x95F29FEE11c5C55d26cCcf1DB6772DE953B37B82
+  Current Administrator: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+  Pending Administrator: 0x0000000000000000000000000000000000000000
+  New Admin:             0xE23Fc63F47F08F58B9d7448d4CCE0bCDcc96d7F3
+  Signer:                0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+
+[Step 1] Transferring admin role for token on Ethereum Sepolia
+⏳ Tx: https://sepolia.etherscan.io/tx/0xabcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789
+
+========================================
+✅ Admin Role Transfer Initiated on Ethereum Sepolia!
+========================================
+Token:            https://sepolia.etherscan.io/address/0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+Transaction:      https://sepolia.etherscan.io/tx/0xabcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789
+New Admin:        0xE23Fc63F47F08F58B9d7448d4CCE0bCDcc96d7F3
+========================================
+
+ℹ️  The new admin (0xE23Fc63F47F08F58B9d7448d4CCE0bCDcc96d7F3) must call acceptAdminRole to complete the transfer.
+```
+
+<Aside type="note" title="Note">
+  <ol>
+    <li>
+      Pass <code>--tokenaddress 0x...</code> to specify the token explicitly. If omitted, the task reads the deployed
+      token address from the environment variable for the current chain.
+    </li>
+    <li>
+      Only the current admin can initiate this transfer. If the signer is not the admin, the task will fail with an
+      error.
+    </li>
+  </ol>
+</Aside>
+
+2. Repeat the same command on Arbitrum Sepolia if you also want to transfer admin rights on the destination chain:
+
+```bash filename="Terminal"
+npx hardhat transferTokenAdminRole --newadmin new_admin_address --network arbitrumSepolia
+```
+
+3. The new admin completes the transfer by calling `acceptAdminRole`:
+
+```bash filename="Terminal"
+npx hardhat acceptAdminRole --network sepolia
+npx hardhat acceptAdminRole --network arbitrumSepolia
+```
+
+</AnchoredAccordion>
+
+<CcipCommon callout="educationalDisclaimer" />

@@ -1,0 +1,203 @@
+---
+section: ccip
+date: Last Modified
+title: "AuthorizedCallers API Reference"
+metadata:
+  description: "Owner-managed access control primitive maintaining an allowlist of authorized caller addresses."
+  version: "2.0.0"
+---
+
+## Summary
+
+`AuthorizedCallers` is an owner-managed access control helper contract.
+
+It maintains a storage-backed allowlist of authorized addresses and provides:
+
+1. Owner-controlled updates to the allowlist.
+2. A reusable internal validation helper (`_validateCaller`).
+3. A modifier (`onlyAuthorizedCallers`) to restrict functions to authorized callers.
+
+This contract is designed to be inherited by other contracts requiring restricted execution paths.
+
+---
+
+## Contract
+
+`@chainlink/contracts/src/v0.8/shared/access/AuthorizedCallers.sol`
+
+---
+
+## Import
+
+```solidity
+import {AuthorizedCallers} from "@chainlink/contracts/src/v0.8/shared/access/AuthorizedCallers.sol";
+```
+
+---
+
+## Inheritance
+
+- `Ownable2StepMsgSender`
+
+---
+
+## State
+
+### Storage
+
+```solidity
+EnumerableSet.AddressSet internal s_authorizedCallers;
+```
+
+Maintains the set of authorized caller addresses.
+
+---
+
+## External API
+
+### Constructor
+
+```solidity
+constructor(address[] memory authorizedCallers)
+```
+
+Initializes the authorized caller set by internally applying:
+
+```solidity
+AuthorizedCallerArgs({
+  addedCallers: authorizedCallers,
+  removedCallers: new address
+})
+```
+
+---
+
+### getAllAuthorizedCallers
+
+```solidity
+function getAllAuthorizedCallers()
+  external
+  view
+  returns (address[] memory)
+```
+
+Returns the full set of authorized callers.
+
+---
+
+### applyAuthorizedCallerUpdates
+
+```solidity
+function applyAuthorizedCallerUpdates(
+  AuthorizedCallerArgs memory authorizedCallerArgs
+) external virtual onlyOwner
+```
+
+Owner-only update function.
+
+Processing order:
+
+1. Removals (`removedCallers`)
+2. Additions (`addedCallers`)
+
+Internally calls `_applyAuthorizedCallerUpdates`.
+
+---
+
+### onlyAuthorizedCallers (modifier)
+
+```solidity
+modifier onlyAuthorizedCallers()
+```
+
+Restricts function execution to addresses in `s_authorizedCallers`.
+
+Internally calls `_validateCaller()`.
+
+---
+
+## Events
+
+```solidity
+event AuthorizedCallerAdded(address caller);
+event AuthorizedCallerRemoved(address caller);
+```
+
+---
+
+## Errors
+
+```solidity
+error UnauthorizedCaller(address caller);
+error ZeroAddressNotAllowed();
+```
+
+---
+
+## Structs
+
+### AuthorizedCallerArgs
+
+```solidity
+struct AuthorizedCallerArgs {
+  address[] addedCallers;
+  address[] removedCallers;
+}
+```
+
+Used when updating the allowlist.
+
+---
+
+## Internal Functions
+
+### `_applyAuthorizedCallerUpdates`
+
+```solidity
+function _applyAuthorizedCallerUpdates(
+  AuthorizedCallerArgs memory authorizedCallerArgs
+) internal
+```
+
+Behavior:
+
+1. Iterates over `removedCallers`:
+   - If removal succeeds, emits `AuthorizedCallerRemoved`.
+
+2. Iterates over `addedCallers`:
+   - Reverts `ZeroAddressNotAllowed()` if `caller == address(0)`.
+   - Adds to set and emits `AuthorizedCallerAdded`.
+
+---
+
+### `_validateCaller`
+
+```solidity
+function _validateCaller() internal view
+```
+
+Reverts:
+
+```solidity
+UnauthorizedCaller(msg.sender)
+```
+
+If `msg.sender` is not present in `s_authorizedCallers`.
+
+---
+
+## Security model
+
+- Owner controls allowlist membership.
+- Removals are processed before additions to avoid accidental overlap issues.
+- Zero address cannot be added.
+- Modifier-based enforcement prevents unauthorized execution.
+- Designed for inheritance — does not perform business logic itself.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`Ownable2Step`](/ccip/evm/api-reference/v2.0.0/ownable-2-step)
+- [`Ownable2StepMsgSender`](/ccip/evm/api-reference/v2.0.0/ownable-2-step-msg-sender)
+- [`OwnerIsCreator`](/ccip/evm/api-reference/v2.0.0/owner-is-creator)

@@ -1,13 +1,17 @@
 import Address from "~/components/AddressReact.tsx"
 import "./Table.css"
-import { drawerContentStore } from "../Drawer/drawerStore.ts"
-import { Environment, SupportedTokenConfig, tokenPoolDisplay, PoolType } from "~/config/data/ccip/index.ts"
+import { drawerContentStore, DrawerWidth, drawerWidthStore } from "../Drawer/drawerStore.ts"
+import { Environment, SupportedTokenConfig, PoolType } from "~/config/data/ccip/index.ts"
 import { areAllLanesPaused } from "~/config/data/ccip/utils.ts"
 import { ChainType, ExplorerInfo } from "~/config/types.ts"
 import TableSearchInput from "./TableSearchInput.tsx"
 import { useState } from "react"
 import { getContractExplorerUrl, fallbackTokenIconUrl, isCantonNativeFeeToken } from "~/features/utils/index.ts"
 import TokenDrawer from "../Drawer/TokenDrawer.tsx"
+import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
+import { useTokenFinality } from "~/hooks/useTokenFinality.ts"
+import { formatPoolTypeForDisplay } from "~/lib/ccip/graphql/utils/type-version-parser.ts"
+import { formatCcvThreshold } from "~/lib/ccip/utils/ccv-formatter.ts"
 
 interface TableProps {
   networks: {
@@ -22,6 +26,7 @@ interface TableProps {
     tokenDecimals: number
     tokenAddress: string
     tokenPoolType: PoolType
+    tokenPoolRawType: string
     tokenPoolAddress: string
     tokenPoolVersion: string
     explorer: ExplorerInfo
@@ -42,6 +47,16 @@ interface TableProps {
 
 function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
   const [search, setSearch] = useState("")
+
+  // Build pool type map from GraphQL-enriched networks data for use in TokenDrawer
+  const poolTypesByChain = networks.reduce<Record<string, PoolType>>((acc, n) => {
+    if (n.tokenPoolType) acc[n.key] = n.tokenPoolType
+    return acc
+  }, {})
+
+  // Fetch finality and pool details using custom hook
+  const { finalityData, poolDetails, isLoading: loading } = useTokenFinality(token.id, environment, "internalId")
+
   return (
     <>
       <div className="ccip-table__filters">
@@ -51,7 +66,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
         <TableSearchInput search={search} setSearch={setSearch} />
       </div>
       <div className="ccip-table__wrapper">
-        <table className="ccip-table">
+        <table className="ccip-table ccip-table--token-networks">
           <thead>
             <tr>
               <th>Network</th>
@@ -61,6 +76,9 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
               <th>Token address</th>
               <th>Token pool type</th>
               <th>Token pool address</th>
+              <th>Pool version</th>
+              <th>FTF enabled</th>
+              <th>Finality depth</th>
             </tr>
           </thead>
           <tbody>
@@ -71,22 +89,33 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                 const allLanesPaused = areAllLanesPaused(lanes[network.key] || {})
 
                 return (
-                  <tr key={index} className={allLanesPaused ? "ccip-table__row--paused" : ""}>
+                  <tr
+                    key={index}
+                    className={`ccip-table__row--clickable ${allLanesPaused ? "ccip-table__row--paused" : ""}`}
+                    onClick={() => {
+                      drawerWidthStore.set(DrawerWidth.Wide)
+                      drawerContentStore.set(() => (
+                        <TokenDrawer
+                          token={token}
+                          network={network}
+                          environment={environment}
+                          poolTypesByChain={poolTypesByChain}
+                        />
+                      ))
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`View ${network.name} token details`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault()
+                        e.currentTarget.click()
+                      }
+                    }}
+                  >
                     <td>
-                      <button
-                        type="button"
+                      <span
                         className={`ccip-table__network-name ${allLanesPaused ? "ccip-table__network-name--paused" : ""}`}
-                        onClick={() => {
-                          drawerContentStore.set(() => (
-                            <TokenDrawer
-                              token={token}
-                              network={network}
-                              destinationLanes={lanes[network.key]}
-                              environment={environment}
-                            />
-                          ))
-                        }}
-                        aria-label={`View ${network.name} token details`}
                       >
                         <span className="ccip-table__logoContainer">
                           <img
@@ -117,7 +146,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                             ⏸️
                           </span>
                         )}
-                      </button>
+                      </span>
                     </td>
                     <td>{network.tokenName}</td>
                     <td>{network.tokenSymbol}</td>
@@ -130,10 +159,10 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                             : getContractExplorerUrl(network.explorer, network.chainType)(network.tokenAddress)
                         }
                         address={network.tokenAddress}
-                        endLength={6}
+                        endLength={3}
                       />
                     </td>
-                    <td>{tokenPoolDisplay(network.tokenPoolType)}</td>
+                    <td>{network.tokenPoolRawType ? formatPoolTypeForDisplay(network.tokenPoolRawType) : "—"}</td>
                     <td data-clipboard-type="token-pool">
                       <Address
                         contractUrl={getContractExplorerUrl(
@@ -141,9 +170,29 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                           network.chainType
                         )(network.tokenPoolAddress)}
                         address={network.tokenPoolAddress}
-                        endLength={6}
+                        endLength={4}
                       />
                     </td>
+                    <td>{network.tokenPoolVersion}</td>
+                    <td>
+                      {loading ? (
+                        "-"
+                      ) : finalityData[network.key] ? (
+                        finalityData[network.key].finalitySafe ? (
+                          "Yes"
+                        ) : (
+                          "No"
+                        )
+                      ) : (
+                        <Tooltip
+                          label="N/A"
+                          tip="Not applicable: This pool version does not support custom finality, or custom finality is not configured. Verify on-chain by reading the Token Pool contract."
+                          labelStyle={{ marginRight: "5px" }}
+                          style={{ display: "inline-block", verticalAlign: "middle" }}
+                        />
+                      )}
+                    </td>
+                    <td>{loading ? "-" : finalityData[network.key] ? finalityData[network.key].finalityDepth : "-"}</td>
                   </tr>
                 )
               })}

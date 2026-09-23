@@ -1,0 +1,139 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IRMNRemote API Reference"
+metadata:
+  description: "Interface for the remote Risk Management Network (RMN) contract responsible for signature verification and curse state management."
+  version: "2.0.0"
+---
+
+## Summary
+
+`IRMNRemote` defines the interface for the remote Risk Management Network (RMN) contract.
+
+It is used by CCIP components to:
+
+- Verify RMN node signatures over commit reports.
+- Query global and per-subject curse state.
+- Retrieve currently cursed subjects.
+
+The interface extends `[IRMN](/ccip/evm/api-reference/v2.0.0/i-rmn)`.
+
+---
+
+## Contract
+
+`chains/evm/contracts/interfaces/IRMNRemote.sol`
+
+---
+
+## Import
+
+```solidity
+import {IRMNRemote} from "chainlink-ccip/chains/evm/contracts/interfaces/IRMNRemote.sol";
+```
+
+---
+
+## Interface surface
+
+```solidity id="z2d4wq"
+interface IRMNRemote is IRMN {
+```
+
+---
+
+### Struct: Signature
+
+```solidity id="l8b5mn"
+struct Signature {
+  bytes32 r;
+  bytes32 s;
+}
+```
+
+---
+
+### verify
+
+```solidity id="f2c7jy"
+function verify(
+  address offRampAddress,
+  Internal.MerkleRoot[] calldata merkleRoots,
+  Signature[] calldata signatures
+) external view;
+```
+
+Verifies RMN node signatures over a commit report.
+
+Reverts on failure.
+
+---
+
+### getCursedSubjects
+
+```solidity id="r1j5ko"
+function getCursedSubjects()
+  external
+  view
+  returns (bytes16[] memory subjects);
+```
+
+Returns the list of currently cursed subjects.
+
+---
+
+### isCursed()
+
+```solidity id="u4p7xm"
+function isCursed()
+  external
+  view
+  override
+  returns (bool);
+```
+
+Returns `true` if a global curse is active.
+
+---
+
+### isCursed(bytes16)
+
+```solidity id="m9k2td"
+function isCursed(
+  bytes16 subject
+)
+  external
+  view
+  override
+  returns (bool);
+```
+
+Returns `true` if:
+
+- A global curse is active, or
+- The specified subject is cursed.
+
+---
+
+```solidity id="8yt7qv"
+}
+```
+
+---
+
+## Integration notes / expectations
+
+- `verify` must revert if quorum or signature validation fails.
+- `offRampAddress` is passed explicitly and must be incorporated into verification logic.
+- Curse checks should be performed by calling contracts before sensitive operations.
+- Implementations must ensure deterministic behavior for signature verification.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`IRMN`](/ccip/evm/api-reference/v2.0.0/i-rmn)
+- [`OffRamp`](/ccip/evm/api-reference/v2.0.0/offramp)
+- [`RMNRemote`](/ccip/evm/api-reference/v2.0.0/rmn-remote)
+- [`Internal`](/ccip/evm/api-reference/v2.0.0/internal)

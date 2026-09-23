@@ -1,6 +1,13 @@
 import { SupportedChain } from "~/config/types.ts"
 import { chainToTechnology } from "~/config/chains.ts"
-import { NetworkFeeStructure, PoolType, TokenMechanism, LaneSpecificFeeKey, RateLimiterConfig } from "./types.ts"
+import {
+  NetworkFeeStructure,
+  PoolType,
+  TokenMechanism,
+  LaneSpecificFeeKey,
+  RateLimiterConfig,
+  SupportedTokensConfig,
+} from "./types.ts"
 import { networkFees } from "./data.ts"
 import { commify } from "~/utils/number.ts"
 import { formatUnits } from "ethers"
@@ -16,6 +23,14 @@ const POOL_MECHANISM_MAP: Record<string, TokenMechanism> = {
   "burnMint:usdc": TokenMechanism.BurnAndMint,
 } as const
 
+// Some v2.0 pool types are not distinct mechanisms for the directory's purposes.
+// LombardTokenPool uses burn/mint semantics, so it is classified as burnMint here
+// (the raw pool type is still shown separately via tokenPoolRawType).
+const normalizeMechanismPoolType = (poolType: PoolType): PoolType => {
+  if (String(poolType).toLowerCase().includes("lombard")) return "burnMint" as PoolType
+  return poolType
+}
+
 export const determineTokenMechanism = (
   sourcePoolType: PoolType | undefined,
   destinationPoolType: PoolType | undefined
@@ -27,19 +42,8 @@ export const determineTokenMechanism = (
   }
 
   // Look up the mechanism based on pool type combination
-  const key = `${sourcePoolType}:${destinationPoolType}`
+  const key = `${normalizeMechanismPoolType(sourcePoolType)}:${normalizeMechanismPoolType(destinationPoolType)}`
   return POOL_MECHANISM_MAP[key] ?? TokenMechanism.Unsupported
-}
-
-export const tokenPoolDisplay = (poolType?: PoolType) => {
-  const poolTypeMapping: Record<PoolType, string> = {
-    lockRelease: "Lock/Release",
-    burnMint: "Burn/Mint",
-    usdc: "Burn/Mint",
-    feeTokenOnly: "Fee Token Only",
-  }
-
-  return poolType ? (poolTypeMapping[poolType] ?? "Unsupported") : "Unsupported"
 }
 
 export const calculateNetworkFeesForTokenMechanismDirect = (
@@ -256,4 +260,14 @@ export const areAllLanesPaused = (destinationLanes: {
     const outboundConfig = destinationLanes[destinationChain]?.rateLimiterConfig?.out
     return isTokenPaused(outboundConfig)
   })
+}
+
+/**
+ * Extracts token symbol keys from a lane's supportedTokens field.
+ * Canonical lanes.json uses an object keyed by token symbol; legacy git snapshots used string[].
+ */
+export function getSupportedTokenKeys(supportedTokens: SupportedTokensConfig | string[] | undefined | null): string[] {
+  if (!supportedTokens) return []
+  if (Array.isArray(supportedTokens)) return supportedTokens
+  return Object.keys(supportedTokens)
 }

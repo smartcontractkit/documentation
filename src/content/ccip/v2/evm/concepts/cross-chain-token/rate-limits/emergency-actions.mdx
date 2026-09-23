@@ -1,0 +1,158 @@
+---
+section: ccip
+date: Last Modified
+title: "Emergency Actions"
+metadata:
+  description: "Emergency containment for CCIP token pool rate limits: throttle-to-zero lockdown, minimal non-zero values, owner-only lane removal via applyChainUpdates, disabling fast-finality, and restoring normal operation."
+  excerpt: "CCIP rate limits emergency actions incident response lockdown throttle to zero capacity 0 rate 0 applyChainUpdates setAllowedFinalityConfig owner only v2.0 v1.x restore"
+  datePublished: "2025-06-09"
+  lastModified: "2025-06-09"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+This page describes emergency containment using `TokenPool` v2.0 pools. **v1.x pools** differences are noted inline.
+
+This page describes emergency actions that can be taken to contain or halt cross-chain transfers on a specific CCIP lane using rate limit configuration and related pool controls.
+
+These actions are intended for incident response, maintenance, or risk containment scenarios. They should not be used for routine configuration.
+
+## When to use emergency actions
+
+You may need to take emergency action if:
+
+- abnormal or unexpected transfer activity is detected
+- a misconfiguration or incident is under investigation
+- maintenance requires temporarily stopping transfers on a lane
+
+Emergency actions are scoped to a specific token pool and lane. They do not pause CCIP globally.
+
+## Rate-limit-based lockdown (rateLimitAdmin or owner)
+
+### Preferred: throttle to zero
+
+To block transfers while keeping the limiter enabled, set **both inbound and outbound** for the affected bucket(s):
+
+```solidity
+Config memory lockdown = Config({
+  isEnabled: true,
+  capacity: 0,
+  rate: 0
+});
+```
+
+Submit via `setRateLimitConfig` (v2.0) or `setChainRateLimiterConfig` (v1.x). Any positive transfer amount fails because no capacity is available.
+
+### Alternative: minimal non-zero values
+
+Because enabled limiters require `rate ≤ capacity`, you can also use very small non-zero values:
+
+```solidity
+Config memory lockdown = Config({
+  isEnabled: true,
+  capacity: 1,
+  rate: 1
+});
+```
+
+This allows at most one base unit of transfer before the bucket is depleted. For 18-decimal tokens, one base unit is negligible; for low-decimal tokens, consider the throttle-to-zero pattern instead.
+
+### Update all relevant buckets
+
+For full lane containment, update **both directions on both chains** and **both bucket types** if fast-finality is in use:
+
+| Chain       | Pool       | Direction | Buckets to lock                              |
+| ----------- | ---------- | --------- | -------------------------------------------- |
+| Source      | Token pool | Outbound  | Default (+ fast-finality on v2.0 if enabled) |
+| Destination | Token pool | Inbound   | Default (+ fast-finality on v2.0 if enabled) |
+
+<Aside type="note" title="v1.x pools">
+  Only one bucket per direction per chain — no fast-finality buckets to lock separately.
+</Aside>
+
+<Aside type="note" title="v2.0 only">
+  If you lock only the default bucket, fast-finality transfers may continue through the fast-finality bucket or fall
+  back to default.
+</Aside>
+
+### Example: v2.0 pool single-bucket lockdown
+
+```solidity
+RateLimitConfigArgs[] memory args = new RateLimitConfigArgs[](1);
+
+args[0] = RateLimitConfigArgs({
+  remoteChainSelector: REMOTE_SELECTOR,
+  fastFinality: false,
+  outboundRateLimiterConfig: Config(true, 0, 0),
+  inboundRateLimiterConfig: Config(true, 0, 0)
+});
+
+tokenPool.setRateLimitConfig(args);
+```
+
+### Example: v1.x pool single-lane lockdown
+
+```solidity
+tokenPool.setChainRateLimiterConfig(
+  REMOTE_SELECTOR,
+  Config(true, 0, 0),  // outbound
+  Config(true, 0, 0)   // inbound
+);
+```
+
+Repeat on the counterpart chain with directions reversed. On v2.0, repeat with `fastFinality: true` if needed.
+
+## Owner-only emergency actions
+
+These options require the pool **owner**, not just `rateLimitAdmin`.
+
+### Remove the lane entirely
+
+```solidity
+function applyChainUpdates(
+  uint64[] calldata remoteChainSelectorsToRemove,
+  ChainUpdate[] calldata chainsToAdd
+) external;
+```
+
+Calling `applyChainUpdates` with a remote selector in the remove array deletes all configuration for that chain, including default and fast-finality rate limit state. This is stronger than throttling and prevents all transfers on the lane until the chain is re-added.
+
+### Disable fast-finality transfers
+
+```solidity
+function setAllowedFinalityConfig(bytes4 allowedFinality) external;
+```
+
+The owner can restrict which finality modes the pool accepts. This blocks the fast-finality code path without changing default bucket limits.
+
+## Important considerations
+
+When locking down a lane:
+
+- partial lockdown (one direction, one chain, or one bucket type) may still allow some traffic
+- config changes take effect immediately and refill buckets to full capacity — for lockdown configs with `capacity = 0`, that means zero tokens are available — transfers remain blocked.
+- behavior depends on the token's smallest unit when using minimal non-zero values
+
+This approach is intended to contain activity, not to permanently disable rate limits.
+
+## Restoring normal operation
+
+To resume normal transfers:
+
+1. Update inbound and outbound configurations with appropriate capacity and refill values on **both chains**
+2. Update **both default and fast-finality buckets** if you locked both
+3. Revalidate token units and inspect on-chain state before restoring service
+4. If you removed the lane via `applyChainUpdates`, re-add the chain with appropriate initial limits
+
+Always revalidate token units and existing configuration before restoring service.
+
+## What this page does not cover
+
+This page does not cover:
+
+- routine rate limit tuning — see [Common Scenarios](/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios)
+- worked examples for different token decimals — see [Common Scenarios](/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios)
+- fully removing rate limits (`isEnabled = false`) — see [Common Scenarios](/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios)
+
+<CcipCommon callout="conceptualDisclaimer" />

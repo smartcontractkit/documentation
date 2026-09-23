@@ -1,0 +1,94 @@
+---
+section: ccip
+date: Last Modified
+title: "OwnerIsCreator API Reference"
+metadata:
+  description: "Ownership helper that sets the initial owner to the deploying address."
+  version: "2.0.0"
+---
+
+## Summary
+
+`[OwnerIsCreator](/ccip/evm/api-reference/v2.0.0/owner-is-creator)` is a minimal ownership helper contract that initializes ownership to the deploying address (`msg.sender`).
+
+It inherits `ConfirmedOwner` and passes `msg.sender` into its constructor.
+
+No additional functionality, storage, events, or errors are introduced beyond what is inherited.
+
+---
+
+## Contract
+
+`@chainlink/contracts/src/v0.8/shared/access/OwnerIsCreator.sol`
+
+---
+
+## Import
+
+```solidity
+import {OwnerIsCreator} from "@chainlink/contracts/src/v0.8/shared/access/OwnerIsCreator.sol";
+```
+
+---
+
+## Inheritance
+
+```solidity
+contract OwnerIsCreator is ConfirmedOwner
+```
+
+---
+
+## External API
+
+### constructor
+
+```solidity
+constructor()
+  ConfirmedOwner(msg.sender)
+{}
+```
+
+Behavior:
+
+- Sets initial owner to `msg.sender`.
+
+No additional public or external functions are declared in this contract.
+
+All ownership management functions are inherited from `ConfirmedOwner`.
+
+---
+
+## Events
+
+No events are declared in this contract.
+
+Events inherited from `ConfirmedOwner` include:
+
+- `OwnershipTransferRequested`
+- `OwnershipTransferred`
+
+---
+
+## Errors
+
+No errors are declared in this contract.
+
+Errors inherited from `ConfirmedOwner` may surface during ownership operations.
+
+---
+
+## Security model
+
+- Ownership is established at deployment time.
+- No mechanism exists to override initial owner during construction.
+- Two-step ownership transfer mechanics are inherited from `ConfirmedOwner`.
+- No additional permissions or logic introduced.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`ConfirmedOwner`](https://github.com/smartcontractkit/chainlink-evm/tree/develop/contracts/src/v0.8/shared/access/ConfirmedOwner.sol)
+- [`Ownable2Step`](/ccip/evm/api-reference/v2.0.0/ownable-2-step)
+- [`Ownable2StepMsgSender`](/ccip/evm/api-reference/v2.0.0/ownable-2-step-msg-sender)

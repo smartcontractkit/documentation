@@ -1,0 +1,66 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IPoolV1V2 API Reference"
+metadata:
+  description: "Composite interface combining IPoolV1 and IPoolV2."
+  version: "2.0.0"
+---
+
+`IPoolV1V2` combines the `IPoolV1` and `IPoolV2` interfaces into a single interface.
+
+If you implement this interface, your contract supports both V1 and V2 pool interactions.
+
+Use this interface when building pools or adapters that must remain compatible with both CCIP V1 and V2 routing flows.
+
+> This interface defines functions implemented by protocol contracts and is not typically used directly by applications.
+
+## Usage Boundary
+
+**You typically do not use this interface directly.**
+
+- This interface is implemented by pools that support both V1 and V2 interactions.
+- OnRamp and OffRamp components may call either V1 or V2 methods depending on the execution context.
+- You implement this interface only if you need compatibility across multiple CCIP versions.
+- You are responsible for ensuring V1 and V2 methods produce equivalent token transfer outcomes.
+
+## Contract
+
+`interfaces/IPoolV1V2.sol`
+
+## Import
+
+```solidity
+import {IPoolV1V2} from "chainlink-ccip/interfaces/IPoolV1V2.sol";
+```
+
+If you have not installed the package:
+
+```bash id="u4cbaf"
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## Inheritance
+
+- `IPoolV1`
+- `IPoolV2`
+
+## External API
+
+No new public or external functions are declared.
+
+All callable interfaces are inherited from `IPoolV1` and `IPoolV2`.
+
+## Notes
+
+- This interface does not introduce new functionality.
+- It exists to unify V1 and V2 pool interfaces for compatibility.
+- Implementations must ensure V1 and V2 methods produce equivalent token transfer outcomes.
+- If V1 and V2 implementations diverge, cross-chain token handling may become inconsistent.
+- This interface is typically used in compatibility or migration scenarios between CCIP versions.
+
+## Related Interfaces & Contracts
+
+- [`IPoolV1`](/ccip/evm/api-reference/v2.0.0/i-pool-v1)
+- [`IPoolV2`](/ccip/evm/api-reference/v2.0.0/i-pool-v2)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)

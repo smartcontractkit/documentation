@@ -1,0 +1,187 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 CCTPMessageTransmitterProxy API Reference"
+metadata:
+  description: "Authorized-callers proxy that forwards CCTP receiveMessage calls to a Circle MessageTransmitter."
+  version: "2.0.0"
+---
+
+## Summary
+
+`CCTPMessageTransmitterProxy` is a forwarding proxy that restricts access to Circle’s `IMessageTransmitter.receiveMessage` while keeping a stable onchain address.
+
+It:
+
+- Resolves and stores the local `MessageTransmitter` at construction time.
+- Restricts `receiveMessage` calls using `[AuthorizedCallers](/ccip/evm/api-reference/v2.0.0/authorized-callers)`.
+- Forwards calls using `call`.
+- Does not use `delegatecall`.
+
+This proxy is used to stabilize the caller address required by CCTP integrations while allowing outer systems to upgrade independently.
+
+---
+
+## Contract
+
+`chains/evm/contracts/pools/USDC/CCTPMessageTransmitterProxy.sol`
+
+---
+
+## Import
+
+```solidity
+import {CCTPMessageTransmitterProxy} from "chainlink-ccip/chains/evm/contracts/pools/USDC/CCTPMessageTransmitterProxy.sol";
+```
+
+---
+
+## Target + upgrade model
+
+- The underlying transmitter address is resolved once in the constructor via:
+
+  ```solidity
+  tokenMessenger.localMessageTransmitter()
+  ```
+
+- The resolved transmitter is stored as an immutable.
+- No `delegatecall` is used.
+- Calls are forwarded via standard `call`.
+- Only authorized callers may invoke `receiveMessage`.
+
+This is not an upgradeable storage proxy.
+
+---
+
+## Inheritance
+
+- `AuthorizedCallers`
+- `ITypeAndVersion`
+
+---
+
+## typeAndVersion
+
+```solidity
+string public constant override typeAndVersion =
+  "CCTPMessageTransmitterProxy 2.0.0-dev";
+```
+
+---
+
+## State
+
+### Constants
+
+None declared.
+
+---
+
+### Immutables
+
+```solidity
+IMessageTransmitter public immutable i_cctpTransmitter;
+```
+
+Resolved at construction time.
+
+---
+
+### Storage
+
+No additional storage declared.
+
+Allowlist state is inherited from `AuthorizedCallers`.
+
+---
+
+## Constructor
+
+```solidity
+constructor(
+  ITokenMessenger tokenMessenger
+)
+  AuthorizedCallers(new address)
+```
+
+Behavior:
+
+1. Resolves transmitter:
+
+   ```solidity
+   tokenMessenger.localMessageTransmitter()
+   ```
+
+2. Reverts with:
+
+   ```solidity
+   error TransmitterCannotBeZero();
+   ```
+
+   if the resolved transmitter is `address(0)`.
+
+3. Stores the transmitter in `i_cctpTransmitter`.
+
+---
+
+## External API (forwarded surface)
+
+### receiveMessage
+
+```solidity
+function receiveMessage(
+  bytes calldata message,
+  bytes calldata attestation
+)
+  external
+  onlyAuthorizedCallers
+  returns (bool success)
+```
+
+Behavior:
+
+- Enforces `onlyAuthorizedCallers`.
+- Forwards call to:
+
+  ```solidity
+  i_cctpTransmitter.receiveMessage(message, attestation);
+  ```
+
+- Returns the boolean result from the underlying transmitter.
+
+---
+
+## Events
+
+No events declared in this contract.
+
+Events from `AuthorizedCallers` may be emitted during allowlist updates.
+
+---
+
+## Errors
+
+```solidity
+error TransmitterCannotBeZero();
+```
+
+Inherited errors from `AuthorizedCallers` may also surface.
+
+---
+
+## Security model
+
+- Only allowlisted addresses may call `receiveMessage`.
+- Underlying transmitter is immutable and cannot be changed post-deployment.
+- No delegatecall; no storage collision risk.
+- If allowlist is misconfigured, legitimate CCTP flows will fail.
+- Transmitter resolution is validated at deployment.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`AuthorizedCallers`](/ccip/evm/api-reference/v2.0.0/authorized-callers)
+- [`IMessageTransmitter`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/USDC/interfaces/IMessageTransmitter.sol)
+- [`ITokenMessenger`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/USDC/interfaces/ITokenMessenger.sol)
+- [`CCTPVerifier`](/ccip/evm/api-reference/v2.0.0/cctp-verifier)

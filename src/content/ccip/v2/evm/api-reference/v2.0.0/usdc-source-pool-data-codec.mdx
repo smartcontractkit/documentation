@@ -1,0 +1,65 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 USDCSourcePoolDataCodec API Reference"
+metadata:
+  description: "Library defining version tags embedded in sourcePoolData for USDC pool routing."
+  version: "2.0.0"
+---
+
+`USDCSourcePoolDataCodec` defines version tags embedded in `sourcePoolData` for USDC transfers.
+
+These tags determine how the destination pool interprets and processes incoming transfers, enabling different routing and execution behaviors.
+
+The first 4 bytes of `sourcePoolData` encode the version tag used to select the correct decoding and execution logic.
+
+> This library provides reusable helper functions and is not deployed as a standalone application-facing contract.
+
+## Usage Boundary
+
+**You do not call this library directly.**
+
+- USDC pool implementations use these tags to encode routing behavior into `sourcePoolData`.
+- Destination-side contracts read these tags to determine how to process incoming transfers.
+- You are responsible for ensuring that `sourcePoolData` is encoded with the correct version tag.
+
+## Contract
+
+`libraries/USDCSourcePoolDataCodec.sol`
+
+## Import
+
+```solidity
+import {USDCSourcePoolDataCodec} from "chainlink-ccip/libraries/USDCSourcePoolDataCodec.sol";
+```
+
+## Constants
+
+Version tags used to identify routing behavior in `sourcePoolData`.
+
+_(Refer to source for exact tag values.)_
+
+## Errors
+
+No new custom errors declared.
+
+## Notes
+
+- `sourcePoolData` is an encoded payload attached to token transfers for destination-side processing.
+- The first 4 bytes of `sourcePoolData` must match a supported version tag.
+- Version tags allow different pool implementations to interpret the same data differently.
+- Unknown or invalid version tags may cause decoding or execution to revert.
+
+## Usage context
+
+Used by:
+
+- [`USDCTokenPoolProxy`](/ccip/evm/api-reference/v2.0.0/usdc-token-pool-proxy)
+- USDC pool implementations
+- Routing logic that interprets `sourcePoolData`
+
+## Related Interfaces & Contracts
+
+- [`USDCTokenPoolProxy`](/ccip/evm/api-reference/v2.0.0/usdc-token-pool-proxy)
+- [`LockReleaseTokenPool`](/ccip/evm/api-reference/v2.0.0/lock-release-token-pool)
+- [`BurnMintWithLockReleaseFlagTokenPool`](/ccip/evm/api-reference/v2.0.0/burn-mint-with-lock-release-flag-token-pool)

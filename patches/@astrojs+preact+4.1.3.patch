@@ -1,0 +1,13 @@
+diff --git a/node_modules/@astrojs/preact/dist/server.js b/node_modules/@astrojs/preact/dist/server.js
+index 1cb9c4f..167464c 100644
+--- a/node_modules/@astrojs/preact/dist/server.js
++++ b/node_modules/@astrojs/preact/dist/server.js
+@@ -69,7 +69,7 @@ function finishUsingConsoleFilter() {
+ }
+ function filteredConsoleError(msg, ...rest) {
+   if (consoleFilterRefs > 0 && typeof msg === "string") {
+-    const isKnownReactHookError = msg.includes("Warning: Invalid hook call.") && msg.includes("https://reactjs.org/link/invalid-hook-call");
++    const isKnownReactHookError = msg.includes("Invalid hook call.") && (msg.includes("https://reactjs.org/link/invalid-hook-call") || msg.includes("https://react.dev/link/invalid-hook-call"));
+     if (isKnownReactHookError) return;
+   }
+   originalConsoleError(msg, ...rest);

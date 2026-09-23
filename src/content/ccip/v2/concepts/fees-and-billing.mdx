@@ -1,0 +1,164 @@
+---
+section: ccip
+date: Last Modified
+title: "Fees & Billing"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+Using CCIP incurs fees that reflect the resources required for both offchain verification and onchain execution.
+
+## Fee Model
+
+A CCIP message may include multiple fee components. The total fee is the sum of all applicable components and is calculated at send time.
+
+The final quoted fee depends on the specific message configuration, including:
+
+- Source and destination chain
+- Destination chain gas price environment
+- Configured receiver gas limit
+- Payload size
+- Selected speed (finality configuration)
+- Security or compliance requirements
+
+### Fee Components
+
+| Fee Type                        | What It Covers                                               | Who Charges      | Type of Fee                                               | Payment Token                       |
+| :------------------------------ | :----------------------------------------------------------- | :--------------- | :-------------------------------------------------------- | :---------------------------------- |
+| Executor Fee                    | Destination-chain execution gas + optional executor flat fee | Executor         | Variable (gas-based) + optional flat USD fee              | Selected `feeToken`                 |
+| Cross-Chain Verifier (CCV) Fee  | Message verification and proof generation                    | CCVs             | USD flat fee (+ gas/bytes overhead in execution estimate) | Selected `feeToken`                 |
+| Token Pool Fee                  | Token-specific transfer costs and risk adjustments           | Token Pool Owner | USD flat fee and/or basis points of transferred amount    | `feeToken` and/or transferred token |
+| CCIP Network Fee (protocol fee) | Protocol-level service fee for the lane                      | CCIP             | USD flat fee                                              | Selected `feeToken`                 |
+
+Each component reflects a distinct part of the cross-chain lifecycle.
+
+Fee components are applied in two ways:
+
+- **Additive** fees are paid in the **feeToken** on top of the transfer amount
+- **Subtractive** fees (if configured by the token pool owner) are deducted from the **transferred** token amount
+
+## Executor Fee
+
+The Executor Fee represents the cost of delivering and executing the message on the destination chain. This fee is estimated upfront and charged on the source chain.
+
+It is calculated as:
+
+**Executor Fee = Destination Gas Fee + (Optional) Flat Fee**
+
+The **Destination Gas Fee** is the variable part. It is estimated in gas units on the destination chain, then converted to the selected `feeToken`:
+
+**Destination Gas Fee (in feeToken) = Total destination gas × Destination gas price**
+
+Where total destination gas is:
+
+**Total destination gas = User gas limit (extra args) + Destination gas overhead + Gas for verification + Gas for token transfers + (Destination gas per payload byte × Payload size)**
+
+### Destination Gas Components
+
+- **Destination gas price** — CCIP maintains a cache of the destination chain's gas price on the source blockchain (in USD per gas unit). At quote time, this is converted into the selected `feeToken`.
+- **Gas limit (user-specified, extra args)** — The `gasLimit` set by the user in the message extra args. This is the maximum gas CCIP can use to call `ccipReceive()` on the receiver contract on the destination chain. Set to 0 for token-only transfers with no callback. The user is billed for the gas specified, not the gas actually used; unused gas is not refunded.
+- **Destination gas overhead** — Fixed base gas CCIP adds on top of the user-specified gas limit to run delivery on the destination chain.
+- **Gas for verification** — Gas required by any Cross-Chain Verifiers (CCVs) attached to the message. If no CCVs are used, this term is 0.
+- **Gas for token transfers** — Additional gas to deliver tokens on the destination chain. The value is set by the Token Transfer Fee config (per destination chain default / token-specific value on the FeeQuoter), or returned by the token pool when a V2 pool has custom fee config enabled. If there are no token transfers, this term is 0.
+- **Destination gas per payload byte** — A per-byte rate applied to the total payload size. Payload size includes the message `data` field plus message-encoding overhead (and any CCV or pool byte contributions). If there is no `data` (token-only), the data portion is 0 — but a small encoding overhead may still apply.
+
+### Optional flat fee
+
+If the executor is not `NO_EXECUTION_ADDRESS`, the executor may also charge a flat USD fee via `getFee()`. That flat fee is paid in `feeToken` on top of the Destination Gas Fee.
+
+### Important notes
+
+- **Gas limits** — The user-specified `gasLimit` in extra args controls the `ccipReceive()` budget. If set too low, execution may fail. If set too high, unused gas is not refunded.
+- **Execution constraints** — Gas limits and execution behavior may also be affected by [service limits](/ccip/evm/service-limits) and token pool configuration.
+- **Custom executors** — May charge an additional flat premium via `getFee()`. The default Chainlink-operated executor typically charges **no flat premium**, but destination execution gas cost still applies.
+- **No execution option** — If `NO_EXECUTION_ADDRESS` is specified, the executor flat fee is zero **and** execution gas cost is not added.
+
+## CCV Fee
+
+Cross-Chain Verifiers (CCVs) may charge a fee for validating messages and generating verification data.
+
+- The default Chainlink-operated CCV does not currently charge a flat fee.
+- When a CCV does charge, the flat fee is paid in `feeToken`.
+- CCV `getFee()` also returns `gasForVerification` and `ccvPayloadSizeBytes`, which feed into the **executor execution gas estimate** above (not billed separately).
+
+Example: Fast Transfer of USDC may route through Circle's CCV, which can apply its own fee schedule.
+
+## Token Pool Fee
+
+Token issuers may configure fees for transferring their tokens across chains.
+
+These fees may vary based on:
+
+- Source/destination chain
+- Finality configuration (for example, faster-than-finality vs full finality)
+
+Token pool fees can be:
+
+- USD-denominated and paid in the feeToken
+- A percentage (bps) deducted from the transferred amount
+
+## CCIP Fee
+
+The CCIP Fee is a protocol-level fee charged for using the CCIP system.
+
+This fee compensates the infrastructure and services involved in message delivery.
+
+| Transfer type                                   | Source chain           | Destination chain      | Fee (LINK) | Fee (other) |
+| :---------------------------------------------- | :--------------------- | :--------------------- | :--------- | :---------- |
+| Token transfers or programmable token transfers | Ethereum               | Not Ethereum or Solana | $0.45      | $0.50       |
+| Token transfers or programmable token transfers | Ethereum               | Solana                 | $0.54      | $0.60       |
+| Token transfers or programmable token transfers | Not Ethereum           | Solana                 | $0.315     | $0.35       |
+| Token transfers or programmable token transfers | Not Ethereum or Solana | Ethereum               | $1.35      | $1.50       |
+| Token transfers or programmable token transfers | Not Ethereum           | Not Ethereum or Solana | $0.225     | $0.25       |
+| Arbitrary messaging                             | Ethereum               | Not Ethereum           | $0.45      | $0.50       |
+| Arbitrary messaging                             | Not Ethereum           | Ethereum               | $0.45      | $0.50       |
+| Arbitrary messaging                             | Not Ethereum           | Not Ethereum           | $0.09      | $0.10       |
+
+<Aside type="note">The table above reflects the current fee setting and is subject to change.</Aside>
+
+## Fee Tokens
+
+CCIP supports fee payments in LINK and in alternative assets, including blockchain-native gas tokens and their ERC-20 wrapped versions. The payment model for CCIP is designed to significantly reduce friction for users and quickly scale CCIP to more blockchains by supporting fee payments that originate across a multitude of blockchains over time.
+
+Fees collected in the `feeToken` are incremental to the amount being transferred.
+
+Example: If the fee is $0.50 and the transfer is $100, the user will pay $100.50 and receive $100.
+
+You can see the fee tokens available for any chain:
+
+- In the [CCIP Directory](/ccip/directory)
+- By using the `getFeeTokens()` method of the CCIP SDK
+
+## Fee Quotation and Payment
+
+Fees are calculated and paid at message submission (`ccipSend()`).
+
+Developers can estimate fees before sending a message using:
+
+- `getFee()` — returns total estimated fee
+
+This allows applications to preview costs and adjust parameters before execution.
+
+## Fee Breakdown and Observability
+
+After sending a message, fee details can be observed through:
+
+- Onchain events (for example, `CCIPMessageSent`)
+- CCIP APIs
+- CCIP Explorer
+
+These surfaces provide visibility into how fees are distributed across components.
+
+## Designing for Cost Efficiency
+
+To reduce fee exposure:
+
+- Minimize payload size
+- Keep receiver logic simple and bounded
+- Avoid unnecessary token transfers
+- Set appropriate gas limits without excessive over-provisioning
+
+Fee predictability improves when execution complexity is controlled.
+
+<CcipCommon callout="conceptualDisclaimer" />

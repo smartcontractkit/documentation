@@ -287,6 +287,12 @@ async function main() {
   }
 
   // 3) Serve the static build in the background
+  console.log("Freeing port 4321 if in use...")
+  try {
+    execSync("lsof -ti:4321 | xargs kill -9 2>/dev/null || true", { stdio: "inherit" })
+  } catch {
+    // Ignore errors - port may already be free
+  }
   console.log("Starting production server in background...")
   execSync("nohup npx serve .vercel/output/static --listen 4321 > server.log 2>&1 &", { stdio: "inherit" })
 

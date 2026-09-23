@@ -1,0 +1,485 @@
+---
+section: ccip
+date: Last Modified
+title: "Token Issuer Guide"
+metadata:
+  description: "Operational guide for teams enabling an ERC-20 token for cross-chain transfers on CCIP v2 using the Cross-Chain Token (CCT) standard: pool deployment, configuration, testing, and security."
+  excerpt: "CCT token issuer guide token pool BurnMint LockRelease finality FTF fast finality rate limits fees pool hooks CCV V2"
+  datePublished: "2026-07-21"
+  lastModified: "2026-07-21"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Overview
+
+This guide is for teams that want to enable their ERC-20 token for cross-chain transfers using CCIP's Cross-Chain Token (CCT) standard.
+
+As a reminder, a Cross-Chain Token (CCT) is any ERC-20 token that has been registered and configured for cross-chain transfers via CCIP.
+
+The CCT standard is self-service for tokens that support one of the recognized administrator registration patterns. Token developers deploy, configure, and manage their own token pools without intervention from CCIP.
+
+The core components are:
+
+- The token contract (ERC-20)
+- A token pool on each chain where the token is enabled
+- The Token Admin Registry
+- The Registry Module that bootstraps administration
+
+For the full conceptual model, see: [Cross-Chain Token — overview](/ccip/concepts/cross-chain-token/overview).
+
+V2 pools are recommended for all new deployments. V1 pools remain fully compatible on V2 lanes; see [V1 Compatibility](#v1-compatibility) at the bottom of this page.
+
+### Before you start
+
+- Choose the transfer model you need: Burn and Mint, Lock and Mint, or Lock and Unlock.
+- Determine whether your token contract is compatible.
+- Decide whether standard pools are sufficient or whether your token requires a custom pool.
+- Identify who will act as token administrator and pool owner on each chain.
+- Plan testnet deployment before any mainnet registration or configuration.
+
+### Default behavior (no configuration)
+
+- Full source-chain finality is used.
+- No pool-level fees override FeeQuoter defaults.
+- No rate limits are enforced unless you configure them (see [Step 5](#step-5-configure-the-pool)).
+- Default behavior remains compatible with CCIP v1.x unless optional v2 features are configured.
+
+The transfer pattern you choose determines which pool type you deploy on each chain and whether liquidity management is required.
+
+### Key roles
+
+The Token Admin Registry distinguishes between the token's **administrator** (the address authorized to set the pool and manage CCIP configuration) and the **pool owner** (the address that owns the deployed pool contract). These can be the same address or different. The administrator is registered through the Registry Module, which validates that the caller has authority over the token.
+
+## Implementation (Standard Pools)
+
+This section covers the full end-to-end process for enabling a token in CCIP using the standard pool contracts provided by Chainlink: `BurnMintTokenPool` (and its variants) and `LockReleaseTokenPool`.
+
+Use this section to execute the standard pool workflow after selecting your transfer model and governance setup.
+
+### Step 1: Determine transfer mechanism
+
+The transfer pattern you choose determines which pool type you deploy on each chain and whether liquidity management is required.
+
+| Use Case                                                                                                                          | Pattern                                                                       | Source Pool                        | Destination Pool                             | Source Pool Type       | Destination Pool Type  |
+| :-------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- | :--------------------------------- | :------------------------------------------- | :--------------------- | :--------------------- |
+| Maintaining fixed total supply across chains (most common)                                                                        | **Burn and Mint** (Any direction)                                             | Burns tokens                       | Mints tokens                                 | `BurnMintTokenPool`    | `BurnMintTokenPool`    |
+| Native chain locks, remote chains mint synthetic representations; returning tokens to the native chain (inverse of Lock and Mint) | **Lock and Mint** (From native chain) + **Burn and Unlock** (To native chain) | Locks tokens; burns wrapped tokens | Mints wrapped tokens; releases native tokens | `LockReleaseTokenPool` | `BurnMintTokenPool`    |
+| Requires liquidity provisioned on both chains and active rebalancing by the token issuer                                          | **Lock and Unlock**                                                           | Locks tokens                       | Releases tokens                              | `LockReleaseTokenPool` | `LockReleaseTokenPool` |
+
+### Step 2: Check token compatibility
+
+Before beginning, verify that the token meets CCIP's requirements. The checks differ by the type of pool you are deploying.
+
+**All tokens.** The token must be an ERC-20 (for EVM).
+
+**Permissionless registration requirement.** The token contract should expose ONE of the following functions to enable **permissionless** administrator registration:
+
+| Function                           | Purpose                                                                                                                                       |
+| :--------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------- |
+| `owner()`                          | Returns the token contract owner. The most common path for existing tokens.                                                                   |
+| `AccessControl.DEFAULT_ADMIN_ROLE` | An address holding the default admin role via OpenZeppelin AccessControl.                                                                     |
+| `getCCIPAdmin()`                   | Returns the CCIP administrator address. Applicable to new tokens that may want to separate CCIP administration from token contract ownership. |
+
+If the token does not implement any of these, it cannot be self-registered and requires manual registration assistance.
+
+**On the chain where the token is burned/minted**, in addition to the above, the token must implement:
+
+- `mint(address account, uint256 amount)` — mints tokens to a given account.
+- One of the following burn functions. The exact function determines which BurnMint pool variant can be used:
+  - `burn(uint256 amount)`
+  - `burnFrom(address account, uint256 amount)`
+  - `burn(address from, uint256 amount)`
+
+**Roles**: the token pool (once deployed and registered) must be granted minter and burner roles on the token contract.
+
+**On the chain where the token is locked**, no special token interface is required beyond standard ERC-20. The token must support `transfer`, `transferFrom`, and `approve`.
+
+<Aside type="caution" title="Decimal misconfiguration is permanent">
+  The pool constructor validates `localTokenDecimals` against `token.decimals()` if the function exists. If `decimals()`
+  is not implemented (it is optional in the ERC-20 spec), the constructor accepts the supplied value without validation.
+  Ensure the supplied decimals match the token's actual precision. Incorrect decimal configuration will result in
+  permanently incorrect cross-chain amounts and cannot be corrected after deployment.
+</Aside>
+
+### Step 3: Register the token administrator
+
+Registration follows a two-step propose-then-accept pattern via the `RegistryModuleOwnerCustom` and `TokenAdminRegistry` contracts.
+
+1. **Propose.** Call one of the three registration methods on `RegistryModuleOwnerCustom`. Each verifies the caller's authority and then calls `TokenAdminRegistry.proposeAdministrator()`:
+
+   | Method                                     | Verification                                                                           |
+   | :----------------------------------------- | :------------------------------------------------------------------------------------- |
+   | `registerAdminViaOwner(token)`             | Calls `token.owner()` and requires `msg.sender` equals the returned address.           |
+   | `registerAdminViaGetCCIPAdmin(token)`      | Calls `token.getCCIPAdmin()` and requires `msg.sender` equals the returned address.    |
+   | `registerAccessControlDefaultAdmin(token)` | Checks `token.hasRole(DEFAULT_ADMIN_ROLE, msg.sender)` via OpenZeppelin AccessControl. |
+
+   All three revert with `CanOnlySelfRegister` if the caller does not match the token's authority. A token can only be registered once — subsequent calls revert with `AlreadyRegistered`.
+
+2. **Accept.** The pending administrator calls `TokenAdminRegistry.acceptAdminRole(token)` to become the active administrator. This two-step pattern prevents accidental or malicious transfers.
+
+After this step, the pending administrator has accepted the role and is now the active administrator for the token in the local `TokenAdminRegistry`.
+
+### Step 4: Deploy the token pool
+
+Deploy one pool per chain. The pool type and constructor differ between burn/mint and lock/release.
+
+**Burn/Mint pool deployment.** There are three standard burn/mint pool variants, each targeting a different burn function signature on the token contract:
+
+| Pool Contract               | Burn Method Called                          | When to Use                                                                            |
+| :-------------------------- | :------------------------------------------ | :------------------------------------------------------------------------------------- |
+| `BurnMintTokenPool`         | `burn(uint256 amount)`                      | Token exposes a single-argument burn that burns from the caller's balance.             |
+| `BurnFromMintTokenPool`     | `burnFrom(address account, uint256 amount)` | Token uses OpenZeppelin-style `burnFrom` with allowance.                               |
+| `BurnWithFromMintTokenPool` | `burn(address from, uint256 amount)`        | Token exposes a two-argument `burn(from, amount)` (common in some third-party tokens). |
+
+After deployment, grant the pool `minter` and `burner` roles on the token contract. The specific function depends on the token's access control implementation (e.g. `grantMintAndBurnRoles(address)` for Chainlink's `BurnMintERC677`, or `grantRole(MINTER_ROLE, pool)` for OpenZeppelin AccessControl). Without these roles, cross-chain transfers will revert.
+
+**Lock/Release pool deployment.** Deploy `LockReleaseTokenPool` with an `ILockBox` address. The constructor validates that the lock box supports the token and grants the lock box unlimited approval.
+
+```solidity
+// LockReleaseTokenPool constructor
+constructor(
+    IERC20 token,
+    uint8 localTokenDecimals,
+    address advancedPoolHooks,  // address(0) if not needed
+    address rmnProxy,
+    address router,
+    address lockBox              // must not be address(0)
+)
+```
+
+**Constructor parameters common to all V2 pools:**
+
+| Parameter            | Type                        | Notes                                                                                                                               |
+| :------------------- | :-------------------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
+| `token`              | `IERC20` / `IBurnMintERC20` | Must not be `address(0)`.                                                                                                           |
+| `localTokenDecimals` | `uint8`                     | Validated against `token.decimals()` if available.                                                                                  |
+| `advancedPoolHooks`  | `address`                   | `AdvancedPoolHooks` contract address, or `address(0)` if no hooks are needed. See [Step 5f](#5f-configure-advanced-hooks-optional). |
+| `rmnProxy`           | `address`                   | RMN proxy. See the CCIP Directory for addresses.                                                                                    |
+| `router`             | `address`                   | CCIP Router. See the CCIP Directory for addresses.                                                                                  |
+
+### Step 5: Configure the pool
+
+All configuration functions are `onlyOwner` unless noted. Perform these steps on every chain where a pool is deployed.
+
+In most deployments, configure remote chains first, then delegated admin roles, then optional finality, fee, and hook settings.
+
+#### 5a. Add supported remote chains
+
+Call `applyChainUpdates` to register each remote chain with its remote token address, remote pool address(es), and initial rate limiter configs.
+
+```solidity
+applyChainUpdates(
+    uint64[] remoteChainSelectorsToRemove,  // empty for initial setup
+    ChainUpdate[] chainsToAdd
+)
+```
+
+Each `ChainUpdate` contains:
+
+| Field                       | Type                 | Purpose                                                                   |
+| :-------------------------- | :------------------- | :------------------------------------------------------------------------ |
+| `remoteChainSelector`       | `uint64`             | The CCIP chain selector for the remote chain.                             |
+| `remotePoolAddresses`       | `bytes[]`            | ABI-encoded address(es) of the counterpart pool(s) on the remote chain.   |
+| `remoteTokenAddress`        | `bytes`              | ABI-encoded address of the token on the remote chain. Must not be empty.  |
+| `outboundRateLimiterConfig` | `RateLimiter.Config` | Initial outbound (lock/burn) rate limit for default-finality transfers.   |
+| `inboundRateLimiterConfig`  | `RateLimiter.Config` | Initial inbound (release/mint) rate limit for default-finality transfers. |
+
+Rate limiter config fields:
+
+| Field       | Type      | Meaning                                                             |
+| :---------- | :-------- | :------------------------------------------------------------------ |
+| `isEnabled` | `bool`    | Whether the rate limit is active. When false, no limit is enforced. |
+| `capacity`  | `uint128` | Maximum token bucket size — the burst limit.                        |
+| `rate`      | `uint128` | Tokens per second refill rate.                                      |
+
+<Aside type="tip" title="Best practice">
+  Inbound rate limits should be set 5–10% higher than outbound limits to account for batched finalization on source
+  chains. For full operational guidance on inspecting, updating, and locking down rate limits, see [Rate
+  Limits](/ccip/evm/concepts/cross-chain-token/rate-limits/overview).
+</Aside>
+
+#### 5b. Register additional remote pools (if needed)
+
+If a remote chain has multiple pool addresses (e.g. during a pool upgrade), add them individually:
+
+```solidity
+addRemotePool(uint64 remoteChainSelector, bytes calldata remotePoolAddress)
+```
+
+#### 5c. Set dynamic config
+
+Assign a rate limit admin and/or fee admin if these roles should be delegated beyond the owner:
+
+```solidity
+setDynamicConfig(address router, address rateLimitAdmin, address feeAdmin)
+```
+
+The [rate limit admin](/ccip/evm/concepts/cross-chain-token/rate-limits/prerequisites-and-permissions) can call `setRateLimitConfig`. The fee admin can call `withdrawFeeTokens`. Set either to `address(0)` to restrict the function to owner-only.
+
+#### 5d. Configure fast finality (optional)
+
+To enable Faster-Than-Finality (FTF) transfers with separate rate limit buckets, set the pool's `allowedFinalityConfig`. Fast finality is opt-in per message: the sender specifies the desired finality via `ExtraArgs`, and the pool validates it against `allowedFinalityConfig`.
+
+```solidity
+// Enable fast finality by setting the allowed finality encoding.
+// A value of 0x00000000 (WAIT_FOR_FINALITY_FLAG) means only full-finality transfers
+// are permitted (the default). Any other bytes4 value permits the encoded FTF modes.
+setAllowedFinalityConfig(bytes4 allowedFinality)
+
+// Set rate limits for fast finality transfers.
+setRateLimitConfig(RateLimitConfigArgs[])  // with fastFinality: true
+```
+
+Encoding of `allowedFinality` is defined by the `FinalityCodec` library (block-depth in the lower 16 bits and named-mode flags such as "wait for the safe head" in the upper 16 bits). See [Fast Transfers — Token Issuers](/ccip/concepts/execution-latency/fast-transfers-token-issuers) for the encoding details, examples, and issuer guidance.
+
+An `allowedFinality` of `0x00000000` (`WAIT_FOR_FINALITY_FLAG`, the default) means FTF is disabled. Any sender requesting non-default finality will revert.
+
+#### 5e. Configure pool-level fees (optional)
+
+V2 pools can set pool-specific fee parameters per destination chain. When the pool's `getFee` returns `isEnabled: true`, the OnRamp uses the pool's fee config instead of FeeQuoter defaults. The fee configuration supports two types of fees that work together:
+
+- **Flat fees** (`finalityFeeUSDCents`, `fastFinalityFeeUSDCents`) — fixed USD-cent amounts charged per transfer regardless of transfer size, differentiated by the finality mode requested. The OnRamp includes this fee in the total CCIP message fee paid by the sender (in the feeToken, e.g. LINK or native gas token). The OnRamp then transfers the pool's share of the fee token to the pool contract via `_distributeFees`. These accrue on the token pool as **fee token** balances and can be withdrawn by the Owner.
+- **Percentage-based fees** (`finalityTransferFeeBps`, `fastFinalityTransferFeeBps`) — basis-point denominated fees applied to the transfer amount itself, differentiated by finality mode. The pool receives the full token amount from the Router, deducts the basis points fee, and locks/burns only the remainder. The destination receives the post-fee amount. These accrue on the pool as **transferred token** balances and can be withdrawn by the Owner.
+
+The pool owner or designated fee admin (set via `setDynamicConfig`) can withdraw accrued fees by calling `withdrawFeeTokens(feeTokens[], recipient)`. For lock/release pools, user liquidity resides in the lock box, so any token balance on the pool contract itself represents accrued fees. For burn/mint pools, accrued basis points fees are tokens that were not burned and remain on the pool contract. Learn more on the [Fees & Billing](/ccip/concepts/fees-and-billing) page.
+
+```solidity
+applyTokenTransferFeeConfigUpdates(
+    TokenTransferFeeConfigArgs[] tokenTransferFeeConfigArgs,
+    uint64[] disableTokenTransferFeeConfigs
+)
+```
+
+Each config is per destination chain and contains:
+
+| Field                        | Type     | Meaning                                                                                                                      |
+| :--------------------------- | :------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| `isEnabled`                  | `bool`   | Must be `true`. Use the disable array to remove configs.                                                                     |
+| `finalityFeeUSDCents`        | `uint32` | Flat fee in USD cents for default (wait-for-finality) transfers.                                                             |
+| `fastFinalityFeeUSDCents`    | `uint32` | Flat fee in USD cents for fast finality (FTF) transfers.                                                                     |
+| `finalityTransferFeeBps`     | `uint16` | basis points fee on transfer amount for default finality. Deducted from the locked/burned amount. Must be `< 10_000`.        |
+| `fastFinalityTransferFeeBps` | `uint16` | basis points fee on transfer amount for fast finality transfers. Deducted from the locked/burned amount. Must be `< 10_000`. |
+| `destGasOverhead`            | `uint32` | Destination gas overhead for this token's release/mint. Must be non-zero for proper fee accounting.                          |
+| `destBytesOverhead`          | `uint32` | Destination bytes overhead for this token's release/mint.                                                                    |
+
+If no fee config is set (or `isEnabled` is false), the OnRamp falls back to FeeQuoter defaults for this token.
+
+#### 5f. Configure advanced hooks (optional)
+
+If the pool was deployed with an `AdvancedPoolHooks` contract, configure it separately. The hooks contract is owned independently and can be used to enable the following features:
+
+- Setting an allowlist on the token pool.
+- Configuring and managing Cross-Chain Verifiers (CCVs) as part of your token transfer flow.
+- Configuring policy checks via the Automated Compliance Engine as part of your token transfer flow.
+
+The `AdvancedPoolHooks` contract has its own configuration surface:
+
+| Function                                             | Purpose                                                                                                                     |
+| :--------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------- |
+| `applyAllowListUpdates(removes[], adds[])`           | Manages sender allowlist. Only available if the allowlist was enabled at hooks deployment.                                  |
+| `applyCCVConfigUpdates(ccvConfigArgs[])`             | Sets CCV requirements per remote chain and direction (base CCVs and threshold CCVs).                                        |
+| `setThresholdAmount(thresholdAmount)`                | Sets the amount above which additional threshold CCVs are required. `0` disables.                                           |
+| `setPolicyEngine(newPolicyEngine)`                   | Attaches a policy engine. `address(0)` disables.                                                                            |
+| `applyAuthorizedCallerUpdates(authorizedCallerArgs)` | Manages which pool contracts can invoke hooks. Inherited from `AuthorizedCallers`; the initial set is passed at deployment. |
+
+### Step 6: Link the pool to the token
+
+The token administrator from Step 3 (not the pool owner, unless they are the same address) calls:
+
+```solidity
+TokenAdminRegistry.setPool(address localToken, address pool)
+```
+
+The registry validates that `pool.isSupportedToken(localToken)` returns true. This step must be performed on every chain. Setting the pool to `address(0)` effectively delists the token from CCIP.
+
+## Testing & Troubleshooting
+
+Use this step to confirm that deployment, configuration, permissions, and transfer behavior all match your intended production setup.
+
+**Testnet first.** Deploy and configure the full setup on testnets before mainnet. Use the same chain selectors, pool types, and rate limit parameters that will be used in production.
+
+**Verify configuration.** After deployment, call the following view functions to confirm the setup:
+
+| Function                                                 | What to Verify                                                                                                                                                                                                |
+| :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `getToken()`                                             | Returns the correct token address.                                                                                                                                                                            |
+| `getTokenDecimals()`                                     | Returns the expected decimals.                                                                                                                                                                                |
+| `getSupportedChains()`                                   | Lists all configured remote chain selectors.                                                                                                                                                                  |
+| `getRemotePools(remoteChainSelector)`                    | Returns the registered remote pool addresses for each chain.                                                                                                                                                  |
+| `getRemoteToken(remoteChainSelector)`                    | Returns the remote token address for each chain.                                                                                                                                                              |
+| `getCurrentRateLimiterState(remoteChainSelector, false)` | Returns the default-finality rate limiter state (verify capacity and rate). See [Inspect Current Rate Limits](/ccip/evm/concepts/cross-chain-token/rate-limits/inspect-current-rate-limits).                  |
+| `getCurrentRateLimiterState(remoteChainSelector, true)`  | Returns the fast finality (FTF) rate limiter state (if configured). See [Inspect Current Rate Limits](/ccip/evm/concepts/cross-chain-token/rate-limits/inspect-current-rate-limits).                          |
+| `getDynamicConfig()`                                     | Returns the router, rate limit admin, and fee admin.                                                                                                                                                          |
+| `getAllowedFinalityConfig()`                             | Returns the allowed finality encoding. `0x00000000` (`WAIT_FOR_FINALITY_FLAG`) means FTF is disabled and only full-finality transfers are permitted; any other value permits the encoded fast-finality modes. |
+| `getAdvancedPoolHooks()`                                 | Returns the hooks contract address (or `address(0)`).                                                                                                                                                         |
+
+**For burn/mint pools:** confirm that the pool address has minter and burner roles on the token contract. Attempt a small test transfer and verify that `mint` and `burn`/`burnFrom` execute successfully.
+
+**For lock/release pools:** verify that the pool's approval to the lock box is set (the constructor handles this, but confirm via `token.allowance(pool, lockBox)`). Liquidity in the lock box is only a concern for inbound transfers (releasing tokens). In a Lock and Mint setup, the lock/release pool is on the native chain and only locks tokens on outbound — the act of locking supplies the liquidity that will later be released when tokens return. Pre-provisioning liquidity is only required when both chains use lock/release pools (Lock and Unlock), since the destination lock box must already hold tokens to release them to the receiver.
+
+**Cross-chain test.** Execute a small end-to-end transfer between testnets. Verify that the source pool emits `LockedOrBurned`, the destination pool emits `ReleasedOrMinted`, and the receiver's balance is correct after decimal conversion. Use the CCIP CLI, SDK, or Transporter to construct and send the test message.
+
+**Success looks like:** a test transfer completes end-to-end, the expected source and destination events are emitted, balances reconcile after decimal conversion, and the configured pool behavior matches your intended transfer model.
+
+If a transfer fails, first identify where it failed: before submission, during source-chain execution, or during destination-chain release or mint.
+
+**Common failure cases**
+
+**Transfer fails before submission or reverts immediately**
+
+- **Likely cause:** Sender requested a finality mode not permitted by the pool's `allowedFinalityConfig`.
+- **What to check:**
+  - `requestedFinalityConfig` in message `ExtraArgs` (or the finality argument passed to `getFee`/`ccipSend`).
+  - Pool's `allowedFinalityConfig` via `getAllowedFinalityConfig()`.
+  - Whether FTF is enabled on the pool (a non-`WAIT_FOR_FINALITY_FLAG` value).
+- **Fix:** Send with a finality mode within the pool's allowed set, or adjust `allowedFinalityConfig` on the pool.
+
+**Burn/mint transfer reverts on source or destination**
+
+- **Likely cause:** Pool is missing mint and/or burn permissions.
+- **What to check:**
+  - Token roles granted to the pool.
+  - Token access control configuration.
+- **Fix:** Grant the required roles to the pool contract.
+
+**Inbound release fails**
+
+- **Likely cause:** Remote pool mismatch or missing liquidity for Lock and Unlock.
+- **What to check:**
+  - Remote pool mapping.
+  - Remote token address.
+  - Destination lock box balances.
+- **Fix:** Correct pool configuration or provision destination liquidity.
+
+## Operational Security
+
+**Multisig ownership.** Use a multisig (e.g. Safe) as the pool owner and token administrator for production deployments. Avoid EOA ownership for contracts managing significant value.
+
+**Rate limit sizing.** Set rate limits based on expected transfer volume with headroom for legitimate spikes, not based on total token supply. Overly permissive rate limits reduce their effectiveness as a safety mechanism. Review and adjust rate limits periodically as transfer patterns evolve. For worked configuration examples, see [Common Scenarios](/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios).
+
+**Administrator separation.** Use `getCCIPAdmin()` on the token contract to separate the CCIP administrator role from the token owner role. This limits the blast radius if either key is compromised — the CCIP admin can manage pool configuration but cannot modify the token contract itself.
+
+**Fee admin delegation.** If operational teams need to withdraw accrued fees without full owner access, set a dedicated fee admin via `setDynamicConfig`. The fee admin can only call `withdrawFeeTokens` and cannot modify pool configuration.
+
+**Allowlists.** For tokens with compliance requirements, deploy the `AdvancedPoolHooks` contract with a non-empty allowlist. This restricts which `originalSender` addresses can initiate outbound transfers. The allowlist is enforced immutably (cannot be disabled after deployment) but its entries can be updated by the hooks owner.
+
+**Policy engine.** For tokens requiring programmable compliance (e.g. transfer restrictions, sanctions screening), attach a policy engine to the `AdvancedPoolHooks` contract. The engine is called on every outbound and inbound transfer. Use `setPolicyEngineAllowFailedDetach` as an escape hatch if a policy engine becomes adversarial and blocks its own replacement.
+
+**Pool upgrades.** When upgrading a pool, add the new pool as a remote pool on all counterpart chains before switching the active pool via `TokenAdminRegistry.setPool`. Keep the old pool registered as a remote pool until all inflight messages from it have been executed. Only then remove the old pool via `removeRemotePool`. Premature removal will cause inflight transactions to be rejected.
+
+**Monitoring.** Monitor the following events for operational awareness:
+
+- `LockedOrBurned` / `ReleasedOrMinted` — successful transfers.
+- `OutboundRateLimitConsumed` / `InboundRateLimitConsumed` — rate limit consumption (watch for limits approaching capacity).
+- `ChainAdded` / `ChainRemoved` — configuration changes.
+- `RemotePoolAdded` / `RemotePoolRemoved` — remote pool changes.
+- `DynamicConfigSet` — admin role changes.
+
+## Custom Pools
+
+Standard pools cover most use cases. Build a custom pool only when the token's mechanics are incompatible with the standard implementations. This section covers only the differences from the standard pool workflow described above. All steps not mentioned here (token compatibility checks, administrator registration, configuration, testing, operational security, linking via `TokenAdminRegistry.setPool`) apply identically.
+
+### When to customize
+
+Common reasons to build a custom pool:
+
+- The token has non-standard burn/mint interfaces (e.g. different function signatures, additional parameters, callback patterns).
+- The lock/release flow requires interaction with a protocol-specific contract (staking, vaults, or a third-party bridge like CCTP for USDC) instead of the standard `ILockBox`.
+- The token has transfer fees, rebasing mechanics, or other balance-modifying behavior that requires special accounting.
+- The pool needs chain-specific logic — different behavior depending on which remote chain the transfer targets.
+- The pool needs to encode additional data in `destPoolData` beyond the standard decimals encoding (e.g. metadata for the destination pool to consume).
+
+### Inheritance and imports
+
+A custom V2 pool inherits from `TokenPool` and optionally `ITypeAndVersion`:
+
+```solidity
+import {TokenPool} from "@chainlink/contracts-ccip/contracts/pools/TokenPool.sol";
+import {Pool} from "@chainlink/contracts-ccip/contracts/libraries/Pool.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+contract MyCustomPool is TokenPool, ITypeAndVersion {
+    function typeAndVersion() external pure override returns (string memory) {
+        return "MyCustomPool 1.0.0";
+    }
+    // ...
+}
+```
+
+Additional imports as needed:
+
+| Need                  | Import                                                                                              |
+| :-------------------- | :-------------------------------------------------------------------------------------------------- |
+| Safe ERC-20 transfers | `SafeERC20` from OpenZeppelin                                                                       |
+| Burn/mint interface   | `import {IBurnMintERC20} from "@chainlink/contracts-ccip/contracts/interfaces/IBurnMintERC20.sol";` |
+| Rate limiter types    | `import {RateLimiter} from "@chainlink/contracts-ccip/contracts/libraries/RateLimiter.sol";`        |
+
+The constructor signature matches the standard V2 pool (five parameters: `token`, `localTokenDecimals`, `advancedPoolHooks`, `rmnProxy`, `router`). Add custom parameters for your pool's specific dependencies (e.g. a vault address, a bridge contract).
+
+### Core overrides
+
+The `TokenPool` base exposes two internal virtual methods. Override one or both depending on which side(s) of the transfer the pool serves.
+
+**`_lockOrBurn(uint64 remoteChainSelector, uint256 amount)`** — Called on the source chain after validation and fee deduction. The Router has already transferred the full original amount (including fees) to the pool contract. The `amount` parameter is the post-fee amount. Implement your lock or burn logic:
+
+```solidity
+function _lockOrBurn(uint64 remoteChainSelector, uint256 amount) internal override {
+    // Custom: deposit into a protocol-specific vault
+    IMyVault(vault).deposit(address(i_token), amount, remoteChainSelector);
+}
+```
+
+**`_releaseOrMint(address receiver, uint256 amount, uint64 remoteChainSelector)`** — Called on the destination chain after validation and decimal conversion. The `amount` is in local decimals. Implement your release or mint logic:
+
+```solidity
+function _releaseOrMint(address receiver, uint256 amount, uint64 remoteChainSelector) internal override {
+    // Custom: withdraw from a protocol-specific vault
+    IMyVault(vault).withdraw(address(i_token), amount, receiver);
+}
+```
+
+Both methods receive the `remoteChainSelector`, enabling chain-specific behavior.
+
+### Optional overrides
+
+| Method                        | Default Behavior                                                             | When to Override                                                                                          |
+| :---------------------------- | :--------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
+| `_preflightCheck(...)`        | Delegates to `AdvancedPoolHooks` if configured                               | Add custom outbound validation, or override with empty body to save ~1KB bytecode if hooks are not needed |
+| `_postflightCheck(...)`       | Delegates to `AdvancedPoolHooks` if configured                               | Add custom inbound validation                                                                             |
+| `isSupportedToken(address)`   | Checks against single immutable `i_token`                                    | Multi-token pools or additional validation                                                                |
+| `supportsInterface(bytes4)`   | Returns true for `IPoolV1`, `IPoolV2`, `CCIP_POOL_V1`, `IERC165`             | Pool implements additional interfaces                                                                     |
+| `_encodeLocalDecimals()`      | Returns `abi.encode(i_tokenDecimals)`                                        | Pool needs to encode additional metadata in `destPoolData`                                                |
+| `_parseRemoteDecimals(bytes)` | Decodes `uint8` from `sourcePoolData`, falls back to local decimals if empty | Pool needs to parse additional metadata from `sourcePoolData`                                             |
+
+### Security considerations for custom pools
+
+All security considerations from Standard Pools apply. The following are additional concerns specific to custom implementations:
+
+**Never skip validation.** The public `lockOrBurn` and `releaseOrMint` methods call `_validateLockOrBurn` and `_validateReleaseOrMint` before invoking your overrides. These check token support, RMN curse status, caller authorization (onRamp/offRamp), source pool registration (inbound), and rate limits. Do not override the public methods without calling these validation functions.
+
+**Token approvals.** If your pool transfers tokens to an external contract (vault, bridge, staking contract), set approvals in the constructor. The standard `LockReleaseTokenPool` demonstrates this by granting `type(uint256).max` approval to the lock box at construction.
+
+**Balance accounting.** The OffRamp checks the receiver's token balance before and after `releaseOrMint` to determine the actual received amount. If your token has transfer fees, rebasing mechanics, or other balance-modifying behavior, the OffRamp's balance-diff check may produce a different result than the `amount` parameter. Ensure your implementation accounts for this.
+
+**Reentrancy.** If your `_lockOrBurn` or `_releaseOrMint` interacts with external contracts that may call back into the pool or token, ensure reentrancy protection. The base `TokenPool` does not include a reentrancy guard.
+
+**Decimal encoding compatibility.** If you override `_encodeLocalDecimals` or `_parseRemoteDecimals`, ensure the counterpart pool on the remote chain can parse your encoding. Standard pools expect `abi.encode(uint8)` and treat empty `sourcePoolData` as a fallback to local decimals. Non-standard encoding will break interoperability with standard pools on other chains.
+
+**Audit.** Custom pool contracts exist outside the CCIP protocol and are not covered by Chainlink's audits. Have your custom pool independently audited before deploying to mainnet. Pay particular attention to the interaction between your custom logic and the base contract's validation, rate limiting, and fee deduction flows.
+
+## V1 Compatibility
+
+V2 CCIP lanes are fully backwards compatible with V1 pools. `IPoolV2` extends `IPoolV1`. The V2 `TokenPool` base contract implements both interfaces and signals support for both via `supportsInterface()`. The OnRamp and OffRamp check interface support to determine which calling convention to use.
+
+The V2 base contract exposes V1's single-argument entry points on top of the V2 methods:
+
+- V1 `releaseOrMint(ReleaseOrMintInV1)` delegates to the V2 method with `WAIT_FOR_FINALITY_FLAG`.
+- V1 `lockOrBurn(LockOrBurnInV1)` runs the same validation and lock/burn path directly with `WAIT_FOR_FINALITY_FLAG`, empty `tokenArgs`, and zero fee (no `_getFee` call). No pool-level fee is deducted from V1 sends.
+
+**V1 pools on V2 lanes.** When a V1 pool is deployed on a V2 lane, the OnRamp calls the V1 `lockOrBurn` signature with no pool-level fee deduction (FeeQuoter defaults apply). The OffRamp calls the V1 `releaseOrMint` signature, which routes to the V2 path with default finality. CCV resolution falls back to lane defaults. Allowlists on V1 pools continue to function as before.
+
+**Cross-version interoperability.** A V1 pool on one chain and a V2 pool on another chain can serve opposite ends of the same lane. The compatibility surface is the shared `LockOrBurnInV1` / `ReleaseOrMintInV1` data structures and the `destPoolData` / `sourcePoolData` decimal encoding (both versions use `abi.encode(uint8)` and accept empty `sourcePoolData` as a fallback to local decimals). Pool-level fees deducted by a V2 source reduce the `sourceDenominatedAmount` seen by the V1 destination — no destination-side awareness of V2 fees is needed. Both versions use the same remote pool address registry (`remotePools` as a set of keccak256 hashes), so cross-version remote pool registration works without special handling.
+
+<CcipCommon callout="conceptualDisclaimer" />

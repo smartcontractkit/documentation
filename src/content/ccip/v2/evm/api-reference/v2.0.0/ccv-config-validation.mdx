@@ -1,0 +1,119 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 CCVConfigValidation API Reference"
+metadata:
+  description: "Validation helpers for CCV (Cross-Chain Verifier) configuration arrays."
+  version: "2.0.0"
+---
+
+`CCVConfigValidation` provides validation helpers for CCV (Cross-Chain Verifier) configuration arrays used across CCIP components.
+
+It ensures that CCV sets are:
+
+- non-empty when required
+- free of zero addresses
+- free of duplicates within and across lists
+
+These checks prevent invalid or ambiguous verifier configurations from being used in execution and validation logic.
+
+> This library provides reusable helper functions and is not deployed as a standalone application-facing contract.
+
+## Usage Boundary
+
+**You do not call this library directly.**
+
+- Contracts use these helpers to validate CCV configuration before storing or applying it.
+- Validation is typically performed during configuration updates.
+- You are responsible for providing valid CCV sets when configuring execution or verification behavior.
+
+## Contract
+
+`libraries/CCVConfigValidation.sol`
+
+## Import
+
+```solidity
+import {CCVConfigValidation} from "chainlink-ccip/libraries/CCVConfigValidation.sol";
+```
+
+## Functions
+
+All functions are `internal` and `pure`.
+
+### \_validateDefaultAndMandatedCCVs
+
+```solidity
+function _validateDefaultAndMandatedCCVs(
+  address[] memory defaultCCVs,
+  address[] memory laneMandatedCCVs
+) internal pure
+```
+
+Validates CCV configuration across default and mandated lists.
+
+| Parameter          | Type               | Description                       |
+| ------------------ | ------------------ | --------------------------------- |
+| `defaultCCVs`      | `address[] memory` | Default CCVs applied to messages. |
+| `laneMandatedCCVs` | `address[] memory` | CCVs required for specific lanes. |
+
+Reverts if:
+
+- both lists are empty
+- any address is zero
+- duplicates exist within a list or across lists
+
+---
+
+### \_assertNoDuplicates
+
+```solidity
+function _assertNoDuplicates(address[] memory addresses) internal pure
+```
+
+Ensures a list contains no duplicate addresses.
+
+---
+
+### \_assertNoDuplicatesBetweenLists
+
+```solidity
+function _assertNoDuplicatesBetweenLists(
+  address[] memory listA,
+  address[] memory listB
+) internal pure
+```
+
+Ensures no address appears in both lists.
+
+## Errors
+
+- `error MustSpecifyDefaultOrRequiredCCVs()`
+- `error DuplicateCCVNotAllowed(address ccvAddress)`
+- `error ZeroAddressNotAllowed()`
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Usage context
+
+Used by:
+
+- [`AdvancedPoolHooks`](/ccip/evm/api-reference/v2.0.0/advanced-pool-hooks)
+- [`Executor`](/ccip/evm/api-reference/v2.0.0/executor)
+- [`OffRamp`](/ccip/evm/api-reference/v2.0.0/offramp)
+
+Ensures CCV configuration is valid before being stored or used in verification logic.
+
+## Notes
+
+- At least one CCV must be defined across default and mandated sets.
+- Invalid CCV configuration will revert before being applied to execution or verification logic.
+- Duplicate detection is quadratic in input size but acceptable due to small expected array sizes.
+
+## Related Interfaces & Contracts
+
+- [`AdvancedPoolHooks`](/ccip/evm/api-reference/v2.0.0/advanced-pool-hooks)
+- [`Executor`](/ccip/evm/api-reference/v2.0.0/executor)
+- [`OffRamp`](/ccip/evm/api-reference/v2.0.0/offramp)
+- [`MessageV1Codec`](/ccip/evm/api-reference/v2.0.0/message-v1-codec)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)

@@ -1,0 +1,50 @@
+---
+section: ccip
+date: Last Modified
+title: "Trust & Responsibility Model"
+metadata:
+  description: "Trust boundaries and responsibilities for Cross-Chain Verifiers (CCVs) in CCIP: CCIP defaults, external operators, and integrator risk assessment."
+  excerpt: "ccip ccv trust responsibility model operator accountability custom verifier risk"
+---
+
+Cross-Chain Verifiers (CCVs) introduce a clear trust boundary between CCIP's default verification infrastructure and optional third-party or custom verification.
+
+## Default CCIP Verification
+
+For most integrations, CCIP's **CommitteeVerifier** provides verification without additional operator involvement. CCIP node operators run the offchain verifier network and Aggregator; CCIP governance maintains the onchain contracts.
+
+The default committee verifier includes **reorg quarantine** for faster-than-finality messages: when a source-chain reorg is detected, affected messages are held until the chain reaches finality. Bounded-risk guarantees for FTF transfers rely on this behavior.
+
+## External CCV Operator Responsibilities
+
+Operators of custom or third-party CCVs (outside CCIP's default CommitteeVerifier) are responsible for:
+
+- **Implementation quality:** Ensuring the quality, reliability, and security of both onchain verifier contracts and offchain verifier services. Neither Chainlink Labs nor the Chainlink Foundation is responsible for the development, maintenance, or operation of external CCV contracts or infrastructure.
+- **Specification compliance:** Adhering to the Chainlink-defined VerifierResult API spec and `verifyMessage` function. Non-compliance can result in stuck or failed transactions, incorrect token supply accounting, or potential loss of tokens.
+- **Maintenance:** Keeping implementations compatible with current CCIP design specifications. Failure to maintain compatibility may cause downtime or unreliable verifications.
+- **Reliability:** Building verification endpoints to handle user demand in both transactional capacity and uptime. Unresponsive verifiers can stall execution for all messages that require their attestation.
+
+## Integrator Responsibilities
+
+Application and token developers who specify CCV requirements share accountability:
+
+- **CCV risk assessment:** Evaluate the security model, uptime, and reorg-handling behavior of any CCV you require in messages or token transfers originating from your application or token pool.
+- **Reorg behavior:** Do not assume third-party CCVs provide the same reorg quarantine as CCIP's default committee verifier. A custom CCV without comparable reorg-handling logic may expose receivers to duplicate execution even when finality settings are conservative.
+- **Configuration alignment:** CCV requirements from senders, token pools, and receivers are merged at execution time. A message can pass source-side checks but fail destination-side CCV or finality policy validation if configurations are misaligned.
+
+For the full shared-responsibility model across all CCIP participants, see [Service Responsibility](/ccip/concepts/service-responsibility).
+
+## Trust Boundaries Summary
+
+| Layer                                 | CCIP provides                                                     | Operator / integrator provides                            |
+| :------------------------------------ | :---------------------------------------------------------------- | :-------------------------------------------------------- |
+| Default CommitteeVerifier             | DON verification, Aggregator, onchain contracts, reorg quarantine | Risk assessment when using FTF                            |
+| Third-party CCV (CCTP, Lombard, etc.) | Onchain interface enforcement, indexer integration                | Attestation service uptime, API reliability, reorg policy |
+| Custom CCV                            | Protocol interface spec, ramp caller validation                   | Full onchain/offchain implementation, maintenance, SLA    |
+
+## Learn More
+
+- [Cross-Chain Verifiers Overview](/ccip/concepts/ccvs/overview)
+- [Verification Models](/ccip/concepts/ccvs/verification-models)
+- [CCV Interfaces & Guarantees](/ccip/concepts/ccvs/interface-guarantees)
+- [Service Responsibility](/ccip/concepts/service-responsibility)

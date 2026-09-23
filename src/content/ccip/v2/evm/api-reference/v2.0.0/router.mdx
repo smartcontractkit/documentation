@@ -1,0 +1,425 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 Router API Reference"
+metadata:
+  description: "Builder-facing reference for the CCIP Router on EVM chains. Covers message sending, fee quoting, message routing for authorized OffRamps, configuration, events, and errors."
+  version: "2.0.0"
+---
+
+`Router` is the onchain entry point for sending CCIP messages and token transfers from a source chain.
+
+If you integrate directly with the Router, you construct messages, choose how fees are paid, and initiate cross-chain delivery using `getFee` and `ccipSend`.
+
+The Router also routes inbound messages from authorized [OffRamp](/ccip/evm/api-reference/v2.0.0/offramp) contracts to destination-chain receivers.
+
+`Router` implements [IRouter](/ccip/evm/api-reference/v2.0.0/i-router) and [IRouterClient](/ccip/evm/api-reference/v2.0.0/i-router-client).
+
+> Applications may call this contract directly, but most integrations rely on the Router through the `IRouterClient` interface.
+
+## Usage Boundary
+
+**You use the Router to construct, price, and send CCIP messages.**
+
+- Call `isChainSupported` to confirm the destination chain is available.
+- Construct an `EVM2AnyMessage` with your desired payload, receiver, tokens, and fee token.
+- Call `getFee` to estimate the cost of that message.
+- Call `ccipSend` with sufficient payment to initiate delivery.
+- You are responsible for message correctness and fee sufficiency.
+
+**Do not call internal routing or admin functions.**
+
+- `routeMessage` is invoked by authorized OffRamp contracts during delivery.
+- Configuration functions are restricted to the contract owner.
+
+## Contract
+
+`Router.sol`
+
+## Import
+
+```solidity
+import {Router} from "chainlink-ccip/Router.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## Inheritance
+
+- `IRouter`
+- `IRouterClient`
+- `ITypeAndVersion`
+- `OwnerIsCreator`
+
+## Constructor
+
+```solidity
+constructor( address wrappedNative, address armProxy )
+```
+
+| Parameter       | Type      | Description                                                                   |
+| --------------- | --------- | ----------------------------------------------------------------------------- |
+| `wrappedNative` | `address` | Address of the wrapped native token used when paying fees in native currency. |
+| `armProxy`      | `address` | Address of the RMN proxy used for curse checks (`whenNotCursed`).             |
+
+## External API
+
+### getFee
+
+```solidity
+function getFee(
+  uint64 destinationChainSelector,
+  Client.EVM2AnyMessage memory message
+) external view returns (uint256 fee)
+```
+
+> Returns the fee required to send a message with the specified parameters.
+>
+> You define the message contents and fee token, and use this value to determine how much to pay when calling `ccipSend`.
+
+| Parameter                  | Type                           | Description                                                               |
+| -------------------------- | ------------------------------ | ------------------------------------------------------------------------- |
+| `destinationChainSelector` | `uint64`                       | Identifier of the destination chain.                                      |
+| `message`                  | `Client.EVM2AnyMessage memory` | Message configuration including receiver, payload, tokens, and fee token. |
+
+Returns:
+
+| Type      | Description                       |
+| --------- | --------------------------------- |
+| `uint256` | Fee required to send the message. |
+
+### ccipSend
+
+```solidity
+function ccipSend(
+  uint64 destinationChainSelector,
+  Client.EVM2AnyMessage memory message
+) external payable whenNotCursed returns (bytes32)
+```
+
+> Sends a cross-chain message through the Router.
+>
+> You provide the message configuration and payment, and the Router forwards the request to the configured OnRamp.
+>
+> This call commits the message. If the message is invalid or the fee is insufficient, the transaction reverts.
+
+| Parameter                  | Type                           | Description                                                               |
+| -------------------------- | ------------------------------ | ------------------------------------------------------------------------- |
+| `destinationChainSelector` | `uint64`                       | Identifier of the destination chain.                                      |
+| `message`                  | `Client.EVM2AnyMessage memory` | Message configuration including receiver, payload, tokens, and fee token. |
+
+Returns:
+
+| Type      | Description                                  |
+| --------- | -------------------------------------------- |
+| `bytes32` | Unique identifier for the submitted message. |
+
+### isChainSupported
+
+```solidity
+function isChainSupported( uint64 chainSelector ) public view returns (bool)
+```
+
+> Checks whether the Router supports a destination chain.
+
+| Parameter       | Type     | Description                          |
+| --------------- | -------- | ------------------------------------ |
+| `chainSelector` | `uint64` | Identifier of the destination chain. |
+
+Returns:
+
+| Type   | Description                                 |
+| ------ | ------------------------------------------- |
+| `bool` | True if the destination chain is supported. |
+
+### getSupportedTokens
+
+```solidity
+function getSupportedTokens( uint64 chainSelector ) external view returns (address[] memory)
+```
+
+> Returns the tokens supported for cross-chain transfers to the specified chain.
+
+| Parameter       | Type     | Description                          |
+| --------------- | -------- | ------------------------------------ |
+| `chainSelector` | `uint64` | Identifier of the destination chain. |
+
+Returns:
+
+| Type               | Description                        |
+| ------------------ | ---------------------------------- |
+| `address[] memory` | List of supported token addresses. |
+
+### routeMessage
+
+```solidity
+function routeMessage(
+  Client.Any2EVMMessage calldata message,
+  uint16 gasForCallExactCheck,
+  uint256 gasLimit,
+  address receiver
+) external whenNotCursed returns (bool success, bytes memory retData, uint256 gasUsed)
+```
+
+> Routes an inbound message from an authorized OffRamp to a receiver contract.
+>
+> You do not call this function directly. The protocol calls it during message delivery after validating the OffRamp.
+
+| Parameter              | Type                             | Description                         |
+| ---------------------- | -------------------------------- | ----------------------------------- |
+| `message`              | `Client.Any2EVMMessage calldata` | Delivered message data.             |
+| `gasForCallExactCheck` | `uint16`                         | Gas used for exact-call validation. |
+| `gasLimit`             | `uint256`                        | Gas limit for receiver execution.   |
+| `receiver`             | `address`                        | Destination contract address.       |
+
+Returns:
+
+| Type           | Description                  |
+| -------------- | ---------------------------- |
+| `bool`         | Whether execution succeeded. |
+| `bytes memory` | Return data from receiver.   |
+| `uint256`      | Gas used during execution.   |
+
+### getWrappedNative
+
+```solidity
+function getWrappedNative() external view returns (address)
+```
+
+> Returns the configured wrapped native token address.
+
+Returns:
+
+| Type      | Description                                                       |
+| --------- | ----------------------------------------------------------------- |
+| `address` | Address of the wrapped native token used for native-fee payments. |
+
+### setWrappedNative
+
+```solidity
+function setWrappedNative( address wrappedNative ) external onlyOwner
+```
+
+> Owner-only function that updates the wrapped native token address used for fee payments.
+
+| Parameter       | Type      | Description                       |
+| --------------- | --------- | --------------------------------- |
+| `wrappedNative` | `address` | New wrapped native token address. |
+
+### getArmProxy
+
+```solidity
+function getArmProxy() external view returns (address)
+```
+
+> Returns the RMN proxy address used for curse checks.
+
+Returns:
+
+| Type      | Description                        |
+| --------- | ---------------------------------- |
+| `address` | Address of the RMN proxy contract. |
+
+### getOnRamp
+
+```solidity
+function getOnRamp( uint64 destChainSelector ) external view returns (address)
+```
+
+> Returns the OnRamp configured for a destination chain.
+
+| Parameter           | Type     | Description                          |
+| ------------------- | -------- | ------------------------------------ |
+| `destChainSelector` | `uint64` | Identifier of the destination chain. |
+
+Returns:
+
+| Type      | Description                       |
+| --------- | --------------------------------- |
+| `address` | Address of the configured OnRamp. |
+
+### getOffRamps
+
+```solidity
+function getOffRamps() external view returns (OffRamp[] memory)
+```
+
+> Returns the configured OffRamp contracts.
+
+Returns:
+
+| Type               | Description                         |
+| ------------------ | ----------------------------------- |
+| `OffRamp[] memory` | List of configured OffRamp entries. |
+
+### isOffRamp
+
+```solidity
+function isOffRamp( uint64 sourceChainSelector, address offRamp ) public view returns (bool)
+```
+
+> Checks whether an address is an authorized OffRamp.
+
+| Parameter             | Type      | Description                     |
+| --------------------- | --------- | ------------------------------- |
+| `sourceChainSelector` | `uint64`  | Identifier of the source chain. |
+| `offRamp`             | `address` | Address being checked.          |
+
+Returns:
+
+| Type   | Description                        |
+| ------ | ---------------------------------- |
+| `bool` | True if the address is authorized. |
+
+### applyRampUpdates
+
+```solidity
+function applyRampUpdates(
+  OnRamp[] calldata onRampUpdates,
+  OffRamp[] calldata offRampRemoves,
+  OffRamp[] calldata offRampAdds
+) external onlyOwner
+```
+
+> Owner-only function that updates OnRamp and OffRamp configuration.
+
+| Parameter        | Type                 | Description                          |
+| ---------------- | -------------------- | ------------------------------------ |
+| `onRampUpdates`  | `OnRamp[] calldata`  | OnRamp updates per destination chain |
+| `offRampRemoves` | `OffRamp[] calldata` | OffRamps to remove                   |
+| `offRampAdds`    | `OffRamp[] calldata` | OffRamps to add                      |
+
+### recoverTokens
+
+```solidity
+function recoverTokens( address tokenAddress, address to, uint256 amount ) external onlyOwner
+```
+
+> Owner-only function that recovers tokens held by the Router.
+
+| Parameter      | Type      | Description       |
+| -------------- | --------- | ----------------- |
+| `tokenAddress` | `address` | Token to recover  |
+| `to`           | `address` | Recipient address |
+| `amount`       | `uint256` | Amount to recover |
+
+## Events
+
+- `event OnRampSet(uint64 indexed destChainSelector, address onRamp)`
+- `event OffRampAdded(uint64 indexed sourceChainSelector, address offRamp)`
+- `event OffRampRemoved(uint64 indexed sourceChainSelector, address offRamp)`
+- `event MessageExecuted(bytes32 messageId, uint64 sourceChainSelector, address offRamp, bytes32 calldataHash)`
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+### FailedToSendValue
+
+Thrown when native value transfer fails.
+
+```solidity
+error FailedToSendValue();
+```
+
+### InvalidRecipientAddress
+
+Thrown when the recipient address is invalid.
+
+```solidity
+error InvalidRecipientAddress(address to);
+```
+
+### OffRampMismatch
+
+Thrown when an OffRamp does not match the expected configuration.
+
+```solidity
+error OffRampMismatch(uint64 chainSelector, address offRamp);
+```
+
+### BadARMSignal
+
+Thrown when the RMN proxy indicates the system is cursed.
+
+```solidity
+error BadARMSignal();
+```
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Structs
+
+### OnRamp
+
+```solidity
+struct OnRamp {
+  uint64 destChainSelector;
+  address onRamp;
+}
+```
+
+### OffRamp
+
+```solidity
+struct OffRamp {
+  uint64 sourceChainSelector;
+  address offRamp;
+}
+```
+
+## Internal Functions
+
+### \_mergeChainSelectorAndOffRamp
+
+```solidity
+function _mergeChainSelectorAndOffRamp(
+  uint64 sourceChainSelector,
+  address offRampAddress
+) internal pure returns (uint256)
+```
+
+Encodes `(sourceChainSelector, offRampAddress)` as:
+
+`(uint256(sourceChainSelector) << 160) + uint160(offRampAddress)`
+
+## Security model
+
+### Trust boundaries
+
+1. **Owner-controlled configuration**
+   - Controls OnRamp and OffRamp configuration
+   - Controls wrapped native token
+   - Can recover tokens
+
+2. **OffRamp authorization**
+   - Only allowlisted OffRamps can call `routeMessage`
+
+3. **RMN curse gating**
+   - `whenNotCursed` prevents execution when the system is paused
+
+### Execution containment
+
+- Receiver calls are constrained to `IAny2EVMMessageReceiver.ccipReceive(message)`
+- Calls use exact-gas execution with bounded return data
+
+### Fee and token validation delegation
+
+- The Router relies on the configured OnRamp to calculate fees
+- The Router relies on the configured OnRamp to determine token pool routing
+
+## Notes
+
+- The fee returned by `getFee` is specific to the exact message parameters. If you change the message, you must quote the fee again.
+
+## Related Interfaces & Contracts
+
+- [IRouterClient](/ccip/evm/api-reference/v2.0.0/i-router-client)
+- [IAny2EVMMessageReceiver](/ccip/evm/api-reference/v2.0.0/i-any2-evm-message-receiver)
+- [Client](/ccip/evm/api-reference/v2.0.0/client)
+- [OnRamp](/ccip/evm/api-reference/v2.0.0/onramp)
+- [OffRamp](/ccip/evm/api-reference/v2.0.0/offramp)

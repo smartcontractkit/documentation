@@ -1,0 +1,491 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 RMNRemote API Reference"
+metadata:
+  description: "RMNRemote verifies RMN reports for Any2EVM OffRamps, maintains curse state, and provides a legacy IRMN passthrough."
+  version: "2.0.0"
+---
+
+## Summary
+
+`RMNRemote` verifies RMN reports for Any2EVM OffRamps, maintains curse state used to gate message flows, and provides a legacy `[IRMN](/ccip/evm/api-reference/v2.0.0/i-rmn)` passthrough for `isBlessed`.
+
+It implements both:
+
+- `[IRMNRemote](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)`
+- `IRMN` (legacy interface)
+
+to support migration from pre-1.6 flows.
+
+Core responsibilities:
+
+1. Verify RMN reports via threshold ECDSA signatures.
+2. Maintain per-subject and global curse state.
+3. Expose legacy `isBlessed` passthrough when a legacy RMN is configured.
+
+---
+
+## Contract
+
+`chains/evm/contracts/rmn/RMNRemote.sol`
+
+---
+
+## Import
+
+```solidity
+import {RMNRemote} from "chainlink-ccip/chains/evm/contracts/rmn/RMNRemote.sol";
+```
+
+---
+
+## Inheritance
+
+- `Ownable2StepMsgSender`
+- `ITypeAndVersion`
+- `IRMNRemote`
+- `IRMN`
+
+---
+
+## typeAndVersion
+
+```solidity
+string public constant override typeAndVersion = "RMNRemote 1.6.0";
+```
+
+Returns:
+
+```
+"RMNRemote 1.6.0"
+```
+
+---
+
+## State
+
+### Constants
+
+#### `GLOBAL_CURSE_SUBJECT`
+
+```solidity
+bytes16 constant GLOBAL_CURSE_SUBJECT = 0x01000000000000000000000000000001;
+```
+
+If this subject is cursed, `isCursed()` and `isCursed(bytes16)` return true.
+
+---
+
+#### `RMN_V1_6_ANY2EVM_REPORT`
+
+```solidity
+bytes32 private constant RMN_V1_6_ANY2EVM_REPORT =
+  keccak256("RMN_V1_6_ANY2EVM_REPORT");
+```
+
+Used as the header when computing the report digest.
+
+---
+
+#### `ECDSA_RECOVERY_V`
+
+```solidity
+uint8 private constant ECDSA_RECOVERY_V = 27;
+```
+
+RMN nodes generate signatures with `v = 27`.
+
+---
+
+### Immutables
+
+```solidity
+uint64 internal immutable i_localChainSelector;
+IRMN internal immutable i_legacyRMN;
+```
+
+---
+
+### Storage
+
+```solidity
+Config private s_config;
+uint32 private s_configCount;
+
+EnumerableSet.Bytes16Set private s_cursedSubjects;
+
+mapping(address signer => bool exists) private s_signers;
+```
+
+---
+
+## Constructor
+
+```solidity
+constructor(uint64 localChainSelector, IRMN legacyRMN)
+```
+
+Reverts:
+
+- `ZeroValueNotAllowed()` if `localChainSelector == 0`.
+
+Initializes:
+
+- `i_localChainSelector`
+- `i_legacyRMN`
+
+---
+
+## External API
+
+## Verification
+
+### `verify`
+
+```solidity
+function verify(
+  address offRampAddress,
+  Internal.MerkleRoot[] calldata merkleRoots,
+  Signature[] calldata signatures
+) external view
+```
+
+Verifies an RMN Any2EVM report.
+
+Reverts:
+
+- `ConfigNotSet()` if `s_configCount == 0`
+- `ThresholdNotMet()` if `signatures.length < s_config.fSign + 1`
+- `InvalidSignature()` if `ecrecover(...) == address(0)`
+- `OutOfOrderSignatures()` if recovered signer addresses are not strictly increasing
+- `UnexpectedSigner()` if recovered signer not present in `s_signers`
+
+Digest computation:
+
+```
+digest = keccak256(
+  abi.encode(
+    RMN_V1_6_ANY2EVM_REPORT,
+    Report({
+      destChainId: block.chainid,
+      destChainSelector: i_localChainSelector,
+      rmnRemoteContractAddress: address(this),
+      offrampAddress: offRampAddress,
+      rmnHomeContractConfigDigest: s_config.rmnHomeContractConfigDigest,
+      merkleRoots: merkleRoots
+    })
+  )
+)
+```
+
+---
+
+## Configuration
+
+### `setConfig`
+
+```solidity
+function setConfig(Config calldata newConfig) external onlyOwner
+```
+
+Reverts:
+
+- `ZeroValueNotAllowed()` if `rmnHomeContractConfigDigest == bytes32(0)`
+- `InvalidSignerOrder()` if `nodeIndex` not strictly increasing
+- `NotEnoughSigners()` if `signers.length < 2 * fSign + 1`
+- `DuplicateOnchainPublicKey()` if duplicate signer keys
+
+Effects:
+
+- Clears previous signer set
+- Sets new signer set
+- Stores `s_config = newConfig`
+- Increments `s_configCount`
+- Emits `ConfigSet(version, newConfig)`
+
+---
+
+### `getVersionedConfig`
+
+```solidity
+function getVersionedConfig()
+  external
+  view
+  returns (uint32 version, Config memory config)
+```
+
+Returns:
+
+- `version = s_configCount`
+- `config = s_config`
+
+---
+
+### `getLocalChainSelector`
+
+```solidity
+function getLocalChainSelector()
+  external
+  view
+  returns (uint64)
+```
+
+Returns `i_localChainSelector`.
+
+---
+
+### `getReportDigestHeader`
+
+```solidity
+function getReportDigestHeader()
+  external
+  pure
+  returns (bytes32)
+```
+
+Returns `RMN_V1_6_ANY2EVM_REPORT`.
+
+---
+
+## Cursing
+
+### `curse(bytes16)`
+
+Wrapper that calls `curse(bytes16[] memory)`.
+
+---
+
+### `curse(bytes16[])`
+
+```solidity
+function curse(bytes16[] memory subjects) public onlyOwner
+```
+
+For each subject:
+
+- Reverts `AlreadyCursed(subject)` if already cursed.
+
+Adds to `s_cursedSubjects`.
+
+Emits `Cursed(subjects)`.
+
+---
+
+### `uncurse(bytes16)`
+
+Wrapper that calls `uncurse(bytes16[] memory)`.
+
+---
+
+### `uncurse(bytes16[])`
+
+```solidity
+function uncurse(bytes16[] memory subjects) public onlyOwner
+```
+
+For each subject:
+
+- Reverts `NotCursed(subject)` if not present.
+
+Removes from `s_cursedSubjects`.
+
+Emits `Uncursed(subjects)`.
+
+---
+
+### `getCursedSubjects`
+
+```solidity
+function getCursedSubjects()
+  external
+  view
+  returns (bytes16[] memory)
+```
+
+Returns all cursed subjects.
+
+---
+
+### `isCursed()`
+
+```solidity
+function isCursed()
+  external
+  view
+  override(IRMN, IRMNRemote)
+  returns (bool)
+```
+
+Returns:
+
+- `false` if no subjects cursed
+- otherwise `true` if `GLOBAL_CURSE_SUBJECT` present
+
+---
+
+### `isCursed(bytes16)`
+
+```solidity
+function isCursed(bytes16 subject)
+  external
+  view
+  override(IRMN, IRMNRemote)
+  returns (bool)
+```
+
+Returns:
+
+- `false` if no subjects cursed
+- otherwise `true` if `subject` or `GLOBAL_CURSE_SUBJECT` is present
+
+---
+
+## Legacy passthrough
+
+### `isBlessed`
+
+```solidity
+function isBlessed(TaggedRoot calldata taggedRoot)
+  external
+  view
+  returns (bool)
+```
+
+Reverts:
+
+- `IsBlessedNotAvailable()` if `i_legacyRMN == address(0)`
+
+Otherwise returns:
+
+```
+i_legacyRMN.isBlessed(taggedRoot)
+```
+
+---
+
+## Events
+
+```solidity
+event ConfigSet(uint32 indexed version, Config config);
+event Cursed(bytes16[] subjects);
+event Uncursed(bytes16[] subjects);
+```
+
+---
+
+## Errors
+
+```solidity
+error AlreadyCursed(bytes16 subject);
+error ConfigNotSet();
+error DuplicateOnchainPublicKey();
+error InvalidSignature();
+error InvalidSignerOrder();
+error NotEnoughSigners();
+error NotCursed(bytes16 subject);
+error OutOfOrderSignatures();
+error ThresholdNotMet();
+error UnexpectedSigner();
+error ZeroValueNotAllowed();
+error IsBlessedNotAvailable();
+```
+
+---
+
+## Structs
+
+### `Signer`
+
+```solidity
+struct Signer {
+  address onchainPublicKey;
+  uint64 nodeIndex;
+}
+```
+
+---
+
+### `Config`
+
+```solidity
+struct Config {
+  bytes32 rmnHomeContractConfigDigest;
+  Signer[] signers;
+  uint64 fSign;
+}
+```
+
+`fSign` defines the maximum number of faulty nodes.
+Verification requires at least `fSign + 1` valid signatures.
+Total configured signers must be at least `2 * fSign + 1`.
+
+---
+
+### `Report`
+
+```solidity
+struct Report {
+  uint256 destChainId;
+  uint64 destChainSelector;
+  address rmnRemoteContractAddress;
+  address offrampAddress;
+  bytes32 rmnHomeContractConfigDigest;
+  Internal.MerkleRoot[] merkleRoots;
+}
+```
+
+Used only for hashing and digest computation; not stored.
+
+---
+
+## Internal Functions
+
+No additional internal helper functions are declared beyond those described above.
+
+---
+
+## Security model
+
+### Trust boundaries
+
+Owner:
+
+- Controls RMN configuration.
+- Controls curse state.
+
+Signers:
+
+- Must meet threshold (`fSign + 1`).
+- Must be strictly ordered and unique.
+
+Legacy RMN:
+
+- Used only for `isBlessed` passthrough when configured.
+
+---
+
+### Verification invariants
+
+- Signatures must be strictly increasing by recovered signer address.
+- Signers must match configured set.
+- At least `fSign + 1` valid signatures required.
+- Config must be set before verification.
+
+---
+
+### Curse gating
+
+- Global curse overrides per-subject state.
+- Curse state is independent from configuration.
+- Removing a subject requires explicit `uncurse`.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
+- [`IRMN`](/ccip/evm/api-reference/v2.0.0/i-rmn)
+- [`OffRamp`](/ccip/evm/api-reference/v2.0.0/offramp)
+- [`Internal`](/ccip/evm/api-reference/v2.0.0/internal)
+- [`Ownable2StepMsgSender`](/ccip/evm/api-reference/v2.0.0/ownable-2-step-msg-sender)

@@ -12,6 +12,66 @@ import {
   TokenMechanism,
 } from "../../config/data/ccip/index.js"
 
+function getStringAttribute(node: MdxJsxNode, name: string): string | undefined {
+  const attr = node.attributes?.find((a) => a.name === name)
+  return typeof attr?.value === "string" ? attr.value : undefined
+}
+
+function nodesToPlainText(nodes: Node[] = []): string {
+  return nodes
+    .map((node) => {
+      if ("value" in node && typeof node.value === "string") {
+        return node.type === "inlineCode" ? `\`${node.value}\`` : node.value
+      }
+
+      if ("children" in node && Array.isArray(node.children)) {
+        return nodesToPlainText(node.children as Node[])
+      }
+
+      return ""
+    })
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+function createDocCardListItem(node: MdxJsxNode): Parent | null {
+  const title = getStringAttribute(node, "title")
+  if (!title) return null
+
+  const href = getStringAttribute(node, "href")
+  const body = nodesToPlainText((node as Parent).children as Node[])
+  const paragraphChildren: Node[] = []
+
+  if (href) {
+    paragraphChildren.push({
+      type: "link",
+      url: href,
+      children: [{ type: "text", value: title } as Literal],
+    } as Parent & { url: string })
+  } else {
+    paragraphChildren.push({
+      type: "strong",
+      children: [{ type: "text", value: title } as Literal],
+    } as Parent)
+  }
+
+  if (body) {
+    paragraphChildren.push({ type: "text", value: `: ${body}` } as Literal)
+  }
+
+  return {
+    type: "listItem",
+    spread: false,
+    children: [
+      {
+        type: "paragraph",
+        children: paragraphChildren,
+      } as Parent,
+    ],
+  } as Parent
+}
+
 /**
  * Load CcipCommon callout mapping dynamically from CcipCommon.astro
  * @returns Mapping of callout names to file paths
@@ -282,6 +342,57 @@ export function handleDiv(node: MdxJsxNode, parent: Parent, index: number): numb
     parent.children.splice(index, 1, ...(node as Parent).children)
     return index
   }
+}
+
+/**
+ * Handle DocCards component - convert contained DocCard components to a markdown list.
+ * @param node - AST node
+ * @param parent - Parent node
+ * @param index - Index in parent's children
+ * @returns New index or void
+ */
+export function handleDocCards(node: MdxJsxNode, parent: Parent, index: number): number | void {
+  const cardItems = ((node as Parent).children || [])
+    .filter(
+      (child): child is MdxJsxNode => child.type === "mdxJsxFlowElement" && (child as MdxJsxNode).name === "DocCard"
+    )
+    .map((child) => createDocCardListItem(child))
+    .filter((item): item is Parent => Boolean(item))
+
+  if (cardItems.length === 0) {
+    parent.children.splice(index, 1, ...((node as Parent).children || []))
+    return index
+  }
+
+  parent.children[index] = {
+    type: "list",
+    ordered: false,
+    spread: false,
+    children: cardItems,
+  } as Parent
+}
+
+/**
+ * Handle DocCard component - convert a standalone card to a one-item markdown list.
+ * @param node - AST node
+ * @param parent - Parent node
+ * @param index - Index in parent's children
+ * @returns New index or void
+ */
+export function handleDocCard(node: MdxJsxNode, parent: Parent, index: number): number | void {
+  const item = createDocCardListItem(node)
+
+  if (!item) {
+    parent.children.splice(index, 1, ...((node as Parent).children || []))
+    return index
+  }
+
+  parent.children[index] = {
+    type: "list",
+    ordered: false,
+    spread: false,
+    children: [item],
+  } as Parent
 }
 
 /**

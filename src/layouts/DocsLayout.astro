@@ -8,13 +8,17 @@ import WhatsNext from "~/components/PageContent/WhatsNext.astro"
 import type { MarkdownHeading } from "astro"
 import StickyHeader from "~/components/StickyHeader/StickyHeader"
 import BaseLayout from "./BaseLayout.astro"
-import DocsNavigation from "~/components/DocsNavigation"
 import { VersionSelector } from "~/components/VersionSelector/index.js"
 import { detectApiReference } from "@components/VersionSelector/utils/versions"
+import CardsWrapper from "~/components/Cards/CardsWrapper.astro"
 import { LanguageSwitcherDropdown } from "~/components/LanguageSwitcherDropdown"
 import { ChainTypeSelector } from "~/components/ChainSelector"
+import { CcipVersionToggle, CcipVersionBanner } from "~/components/CcipVersionToggle"
+import { CCIP_VERSION_TOGGLE_ENABLED } from "~/config/ccipVersions"
 import { isChainAwareSection } from "~/config/chainTypes"
 import CLFShutdownCallout from "~/features/chainlink-functions/common/cre-callout.mdx"
+import { toContentEntryId } from "~/lib/ccip/contentPathMapping.js"
+import DocsNavigationMobile from "~/components/DocsNavigation/DocsNavigationMobile/DocsNavigationMobile.tsx"
 
 interface Props {
   frontmatter: BaseFrontmatter
@@ -41,9 +45,15 @@ const fileExtension = frontmatter.fileExtension || "mdx"
 
 const baseDirectory = fileExtension === "astro" ? "src/pages" : "src/content"
 
-const currentFile = `${baseDirectory}${currentPage.replace(/\/$/, "")}${
-  frontmatter.isIndex ? "/index" : ""
-}.${fileExtension}`
+// CCIP latest content lives on disk under /v2 but renders at canonical /ccip/* URLs.
+// Map the canonical URL back to the real content path so the GitHub edit link resolves.
+let contentPagePath = currentPage.replace(/\/$/, "")
+if (baseDirectory === "src/content" && (contentPagePath === "/ccip" || contentPagePath.startsWith("/ccip/"))) {
+  const ccipRel = contentPagePath.replace(/^\/ccip\/?/, "")
+  contentPagePath = `/ccip/${toContentEntryId(ccipRel)}`
+}
+
+const currentFile = `${baseDirectory}${contentPagePath}${frontmatter.isIndex ? "/index" : ""}.${fileExtension}`
 
 const githubEditUrl = CONFIG.GITHUB_EDIT_URL + currentFile
 const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
@@ -71,8 +81,7 @@ const howToSteps = initialHeadings
     first.
   </div>
   <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
-  <DocsNavigation client:load pathname={currentPage} />
-
+  <DocsNavigationMobile client:load pathname={currentPage} hideAtDesktopSidebar />
   <main>
     <div id="left-bg"></div>
     <div class="layout">
@@ -92,7 +101,11 @@ const howToSteps = initialHeadings
         {
           showChainSelector && (
             <div class="chain-selector-mobile">
-              <ChainTypeSelector client:only="react" />
+              <div class="mobile-selector-row">
+                <ChainTypeSelector client:only="react" />
+                {CCIP_VERSION_TOGGLE_ENABLED && <CcipVersionToggle client:only="react" />}
+              </div>
+              {CCIP_VERSION_TOGGLE_ENABLED && <CcipVersionBanner client:only="react" />}
             </div>
           )
         }
@@ -150,11 +163,6 @@ const howToSteps = initialHeadings
         gap: var(--gutter);
         width: 100vw;
         max-width: 1505px;
-      }
-
-      #grid-left,
-      #left-bg {
-        background: #fafbfd;
       }
 
       #grid-left,
@@ -216,6 +224,26 @@ const howToSteps = initialHeadings
     @media (min-width: 50em) {
       .chain-selector-mobile {
         display: none;
+      }
+    }
+
+    /* Chain-family + version controls side by side (mirrors desktop .selectorRow 2fr:1fr); stack below 300px. */
+    .mobile-selector-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: var(--space-2x);
+      align-items: start;
+      min-width: 0;
+    }
+
+    .mobile-selector-row > :global(*) {
+      width: 100%;
+      min-width: 0;
+    }
+
+    @media (max-width: 299.98px) {
+      .mobile-selector-row {
+        grid-template-columns: 1fr;
       }
     }
 

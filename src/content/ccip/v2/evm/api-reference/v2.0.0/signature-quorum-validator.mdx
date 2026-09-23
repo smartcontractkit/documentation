@@ -1,0 +1,223 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 SignatureQuorumValidator API Reference"
+metadata:
+  description: "Owner-managed signer set and threshold enforcement for ordered-signature quorum validation."
+  version: "2.0.0"
+---
+
+## Summary
+
+`SignatureQuorumValidator` maintains per-source-chain signer sets and signature thresholds, and validates ordered ECDSA signatures against a configured quorum.
+
+Key properties:
+
+- Per-chain signer configuration.
+- Threshold-based validation.
+- Strictly ordered and unique signature requirement.
+- Fork replay hardening via cached chain ID.
+
+Designed for CCV verifier components requiring threshold signature validation.
+
+---
+
+## Contract
+
+`chains/evm/contracts/ccvs/components/SignatureQuorumValidator.sol`
+
+---
+
+## Import
+
+```solidity
+import {SignatureQuorumValidator} from "chainlink-ccip/chains/evm/contracts/ccvs/components/SignatureQuorumValidator.sol";
+```
+
+---
+
+## Inheritance
+
+- `Ownable2StepMsgSender`
+
+---
+
+## State
+
+### Constants
+
+```solidity
+uint256 internal constant SIGNATURE_LENGTH = 64;
+uint256 internal constant SIGNATURE_COMPONENT_LENGTH = 32;
+uint8 internal constant V_VALUE = 27;
+```
+
+---
+
+### Immutables
+
+```solidity
+uint256 internal immutable i_chainID;
+```
+
+Captured at deployment to detect forked chains.
+
+---
+
+### Storage
+
+```solidity
+mapping(uint64 => SignerConfig) private s_signerConfigs;
+EnumerableSet.UintSet private s_configuredChains;
+```
+
+---
+
+## Constructor
+
+```solidity
+constructor()
+```
+
+Initializes:
+
+```solidity
+i_chainID = block.chainid;
+```
+
+---
+
+## External API
+
+### getSignatureConfig
+
+```solidity
+function getSignatureConfig(uint64 sourceChainSelector)
+  external
+  view
+  returns (address[] memory, uint8)
+```
+
+Returns signer set and threshold for the specified source chain.
+
+---
+
+### getAllSignatureConfigs
+
+```solidity
+function getAllSignatureConfigs()
+  external
+  view
+  returns (SignatureConfig[] memory configs)
+```
+
+Returns all configured source chain selectors and signer configurations.
+
+---
+
+### applySignatureConfigs
+
+```solidity
+function applySignatureConfigs(
+  uint64[] calldata sourceChainSelectorsToRemove,
+  SignatureConfig[] calldata signatureConfigs
+) external onlyOwner
+```
+
+Removals processed first, then updates.
+
+Validations:
+
+- `threshold != 0`
+- `threshold <= signers.length`
+- No duplicate signer addresses
+- No zero-address signer
+
+Emits `SignatureConfigSet`.
+
+---
+
+## Internal API
+
+### \_validateSignatures
+
+```solidity
+function _validateSignatures(
+  uint64 sourceChainSelector,
+  bytes32 signedHash,
+  bytes calldata signatures
+) internal view
+```
+
+Validation steps:
+
+1. Reverts `SourceNotConfigured` if no active configuration.
+2. Reverts `ForkedChain` if `block.chainid != i_chainID`.
+3. Reverts `WrongNumberOfSignatures` if fewer signatures than threshold.
+4. Parses each 64-byte signature (`r || s` with `v = 27`).
+5. Reverts `UnauthorizedSigner` if recovered signer not configured.
+6. Reverts `NonOrderedOrNonUniqueSignatures` if signer ordering invalid.
+
+Only first `threshold` signatures are checked.
+
+---
+
+## Events
+
+```solidity
+event SignatureConfigSet(
+  uint64 sourceChainSelector,
+  address[] signers,
+  uint8 threshold
+);
+```
+
+---
+
+## Errors
+
+```solidity
+error InvalidSignatureConfig();
+error SourceNotConfigured(uint64 sourceChainSelector);
+error ForkedChain(uint256 expected, uint256 actual);
+error WrongNumberOfSignatures();
+error UnauthorizedSigner();
+error NonOrderedOrNonUniqueSignatures();
+error SignerCannotBeZeroAddress();
+```
+
+---
+
+## Structs
+
+```solidity
+struct SignerConfig {
+  EnumerableSet.AddressSet signers;
+  uint8 threshold;
+}
+
+struct SignatureConfig {
+  uint64 sourceChainSelector;
+  uint8 threshold;
+  address[] signers;
+}
+```
+
+---
+
+## Security model
+
+- Owner controls signer configuration.
+- Threshold must be ≤ signer set size.
+- Strict ordering requirement prevents duplicates.
+- Fork replay protection prevents cross-chain signature reuse.
+- Signature format assumes `r || s` and fixed `v = 27`.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`BaseVerifier`](/ccip/evm/api-reference/v2.0.0/base-verifier)
+- [`CommitteeVerifier`](/ccip/evm/api-reference/v2.0.0/committee-verifier)
+- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
+- [`IRouter`](/ccip/evm/api-reference/v2.0.0/i-router)

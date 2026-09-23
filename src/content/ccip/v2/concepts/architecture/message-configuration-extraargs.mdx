@@ -1,0 +1,186 @@
+---
+section: ccip
+date: Last Modified
+title: "Message Configuration (ExtraArgs)"
+metadata:
+  description: "Learn how CCIP messages can optionally override execution parameters using ExtraArgs, including confirmation depth configuration."
+  excerpt: "ccip extraargs message configuration block confirmations finality execution parameters"
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+CCIP messages support a default execution path that requires no additional configuration.
+
+When a sender submits a message through the Router, CCIP applies a safe default configuration designed to maximize settlement guarantees and maintain compatibility with existing integrations.
+
+Senders may optionally include **ExtraArgs** when sending a message to override specific execution parameters.
+
+If ExtraArgs are not provided, the message follows CCIP’s default behavior.
+
+For a full description of the CCIP message lifecycle and system components, see the [Architecture Overview](/ccip/concepts/architecture/overview).
+
+For details on how confirmation depth influences execution timing and reorganization risk, see [Execution Latency](/ccip/concepts/execution-latency).
+
+## Default Behavior (No ExtraArgs)
+
+If a message is sent without ExtraArgs:
+
+1. **Full source-chain finality** is required before verification begins.
+2. **Default CCIP verification configuration** is applied.
+3. **CCIP’s execution infrastructure attempts execution automatically** on the destination chain.
+4. **Default execution parameters** are used.
+
+This default path provides the strongest safety guarantees and is appropriate for most applications.
+
+ExtraArgs should only be used when an application needs to override specific aspects of message processing.
+
+## What ExtraArgs Do
+
+ExtraArgs allow a sender to request specific execution parameters when submitting a message.
+
+These parameters influence how CCIP processes the message during the verification and execution phases.
+
+ExtraArgs are:
+
+- **Optional**
+- **Explicitly opt-in**
+- **Resolved at send time**
+
+If a field is not specified, the corresponding behavior falls back to the default configuration.
+
+## ExtraArgs Versions and Compatibility
+
+CCIP supports multiple ExtraArgs formats.
+
+Earlier formats remain supported for backwards compatibility. Messages that use legacy formats continue to function on CCIP v2 lanes.
+
+If a legacy format omits fields introduced in newer versions, those fields resolve to the default behavior.
+
+This ensures existing integrations do not require modification when migrating to newer CCIP infrastructure.
+
+## EVMExtraArgsV3
+
+For EVM integrations, **EVMExtraArgsV3** is the latest format used to specify optional message configuration.
+
+It provides a structured way for senders to override selected execution parameters while maintaining backwards compatibility.
+
+At launch scope, the primary configuration exposed to developers is **confirmation depth selection**.
+
+### How ExtraArgs Affect Message Processing
+
+The following diagram shows how ExtraArgs influence message processing without changing the underlying CCIP architecture.
+
+<ClickToZoom
+  src="/images/ccip/extraargs-message-processing.png"
+  alt="Diagram showing ExtraArgs influencing message verification and execution stages"
+  caption="ExtraArgs modify how a message is processed, such as when verification begins or how much gas is available during execution."
+/>
+
+## Confirmation Depth (`blockConfirmations`)
+
+A sender may request a specific confirmation depth for the source-chain transaction that emits a CCIP message.
+
+This parameter determines the minimum number of blocks that must be included after the message transaction before verification begins.
+
+It does not override chain finality or minimum confirmation requirements enforced by token pools.
+
+```solidity
+Client.EVMExtraArgsV3 memory extraArgs =
+  Client.EVMExtraArgsV3({
+    gasLimit: 200000,
+    blockConfirmations: 10
+  });
+```
+
+If a token pool enforces a higher minimum confirmation requirement, requests below that threshold will revert.
+
+Confirmation depth directly affects **execution latency** and **reorganization risk**.
+
+Lower values may reduce latency but increase exposure to chain reorganizations.
+
+Higher values increase safety but delay execution.
+
+For a deeper explanation of this tradeoff, see [Execution Latency](/ccip/concepts/execution-latency).
+
+## Default Confirmation Behavior
+
+If `blockConfirmations` is not specified:
+
+**CCIP waits for full source-chain finality before verification begins.**
+
+This default behavior provides the strongest protection against chain reorganizations and matches the safety model described in the Execution Latency documentation.
+
+## Token Pool Minimum Requirements
+
+Token pools may enforce a **minimum confirmation requirement** for messages that transfer tokens.
+
+If a sender requests a confirmation depth below the configured minimum, the transaction **reverts during message submission**.
+
+This prevents unsafe token transfers that could be affected by source-chain reorganizations.
+
+The effective confirmation requirement becomes the **maximum** of:
+
+1. The sender-requested confirmation depth
+2. The token pool’s minimum confirmation requirement
+3. The lane’s operational finality configuration
+
+## Confirmation Depth and Finality
+
+Different blockchains reach finality using different mechanisms.
+
+Some chains provide **deterministic finality**, while others rely on **probabilistic finality** that strengthens with additional block confirmations.
+
+When deterministic finality is available, CCIP may wait for that signal regardless of the requested confirmation depth.
+
+If the requested `blockConfirmations` value is **greater than or equal to the chain’s effective finality threshold**, CCIP waits for finality.
+
+In this case, specifying `blockConfirmations` does not change execution behavior.
+
+## Interaction with the CCIP Message Lifecycle
+
+Confirmation depth affects the **verification stage** of the CCIP lifecycle.
+
+A typical message lifecycle proceeds as follows:
+
+1. Message submitted on the source chain
+2. Included in a block
+3. Required confirmation depth reached
+4. Offchain verification performed
+5. Message executed on the destination chain
+
+Changing confirmation depth primarily affects **step 3**, which determines when verification begins.
+
+For a full lifecycle walkthrough, see the [Architecture Overview](/ccip/concepts/architecture/overview).
+
+## Verification Components (CCVs)
+
+CCIP’s verification layer may involve one or more verification components known as **Cross-Chain Verifiers (CCVs)**.
+
+CCVs observe source-chain events, validate messages, and produce verification data that enables deterministic execution on the destination chain.
+
+CCVs are part of CCIP’s verification architecture. For default verification behavior, see the [Architecture Overview](/ccip/concepts/architecture/overview). For custom or third-party CCVs, see [Cross-Chain Verifiers](/ccip/concepts/ccvs/overview).
+
+This page focuses on **message configuration parameters available to senders**. Verification infrastructure is managed as part of the CCIP system.
+
+## What Stays the Same
+
+Using ExtraArgs does **not** change the core CCIP architecture.
+
+The following behaviors remain unchanged:
+
+- Messages are sent through the **Router**
+- Verification occurs **offchain**
+- Execution is enforced **onchain by the OffRamp**
+- Token custody transitions occur entirely **onchain**
+
+ExtraArgs only modify optional parameters of message processing.
+
+## Summary
+
+ExtraArgs provide optional configuration for CCIP messages.
+
+If ExtraArgs are omitted, messages follow the safest default path with full finality and standard execution infrastructure.
+
+EVMExtraArgsV3 introduces a structured format for specifying configuration overrides while maintaining backwards compatibility with earlier integrations.
+
+At launch scope, the primary parameter exposed to developers is **confirmation depth (`blockConfirmations`)**, which allows applications to tune the tradeoff between execution latency and reorganization risk.

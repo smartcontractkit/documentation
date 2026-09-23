@@ -1,0 +1,311 @@
+---
+section: ccip
+date: Last Modified
+title: "Fast Transfers - dApps"
+metadata:
+  description: "Learn how dApp integrators configure receiver finality policy, avoid stranded inbound messages, and implement idempotency for FTF traffic."
+  excerpt: "FTF dApp allowedFinalityConfig receiver V2 idempotency stranding"
+  datePublished: "2025-05-19"
+  lastModified: "2025-05-19"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Risk Management for Applications (Data-only / Programmable Token Transfer Integrators)
+
+Applications control finality at **send time** (via `requestedFinalityConfig` in `ExtraArgsV3`) and **receive time** (via `allowedFinalityConfig` on the destination receiver). Token issuers additionally control allowed finality on their pools at send time.
+
+These gates are **not symmetric**:
+
+- **Source rejection** — `ccipSend` / `getFee` reverts; no message is created.
+- **Destination rejection** — message is already committed on the source chain; OffRamp execution reverts, state becomes **FAILURE**, and the message can be re-executed if the finality configuration is modified.
+
+### Destination receivers
+
+- **Legacy receiver** (that implements `IAny2EVMMessageReceiver`):
+  - **Cannot accept FTF traffic under any circumstances.** This is intentional: it prevents any contract that pre-dates CCIP 2.0 from inadvertently being exposed to reorg risk.
+- **V2 receiver** (that implements `IAny2EVMMessageReceiverV2`):
+  - Default: returns full finality from `getCCVsAndFinalityConfig` (cannot accept FTF messages).
+  - To enable receiving FTF messages, use the approach shown below.
+
+{/* TODO: add the destination-receiver finality diagram (docs-conceptuals-2.md line ~1118, "image5" — no asset supplied yet). */}
+
+<ClickToZoom
+  src="/images/ccip/concepts/faster-than-finality/ftf-dapp-destination-receivers.png"
+  alt="Diagram showing how legacy and V2 receivers handle FTF traffic differently. Diagram coming soon."
+/>
+
+## Finality configuration for cross-chain transfers
+
+When you send a cross-chain transfer, you can specify how much finality you want the source chain to reach before the message is acted on. More finality means more security but longer wait times; less finality means faster transfers with more risk of the source block being reorganized.
+
+This setting is encoded as a 4-byte value (`bytes4`).
+
+| Role               | Where                                                   | Rules                            |
+| ------------------ | ------------------------------------------------------- | -------------------------------- |
+| Requested (sender) | `requestedFinalityConfig` in `ExtraArgsV3`              | Exactly one mode                 |
+| Allowed (receiver) | `allowedFinalityConfig` from `getCCVsAndFinalityConfig` | Can be a union of accepted modes |
+
+In Solidity, the `FinalityCodec` encoding helpers build the value for you; offchain, you can write the 4-byte value directly using the mode table above, but understanding the layout makes the behavior predictable. Code reference: [FinalityCodec](https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/libraries/FinalityCodec.sol).
+
+### How the value is structured
+
+The 32 bits are split into two halves:
+
+- **Lower 16 bits — block depth.** A number from 1 to 65,535 meaning "wait this many blocks."
+- **Upper 16 bits — flags.** Named modes such as "wait for the safe head." These are reserved for future use and are not activated in the protocol today.
+
+There are three ways to express what you want:
+
+- **Wait for full finality** — the value `0x00000000`. This is the safest option and the default. Note that this is not "zero blocks"; a value of zero always means full finality.
+- **Wait for N blocks** — a value from `0x00000001` (1 block) up to `0x0000FFFF` (65,535 blocks). For example, `0x00000005` waits for 5 blocks.
+- **Note: Wait for the safe head** — the value `0x00010000` (the safe flag set, no depth) is for _future protocol use, not yet an activated choice_.
+
+### Configuring the Application Sender (via ExtraArgs)
+
+Finality is one of the aspects of the message preferences configured via `extraArgs`. Here you are specifying the **requested** finality.
+
+**Step 1:** Encode the finality. `FinalityCodec` produces a `bytes4`.
+
+**Step 2:** Use the encoded finality in `ExtraArgsV3` — the `bytes4` from Step 1 becomes the `requestedFinalityConfig` field of `GenericExtraArgsV3`. [`ExtraArgsCodec`](https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/libraries/ExtraArgsCodec.sol) serializes the whole struct into the bytes you set as `message.extraArgs`.
+
+Example:
+
+```solidity
+function sendWithBlockDepth(
+    uint64 destChainSelector,
+    address receiverOnDest,
+    bytes memory payload,
+    uint16 blockDepth // supplied by the caller; 0 = full finality, > 1 = chosen block depth
+) external returns (bytes32 messageId) {
+    address[] memory ccvs = new address[](0); // default verifier used
+    bytes[] memory ccvArgs = new bytes[](0); // MUST also be length 0
+
+    ExtraArgsCodec.GenericExtraArgsV3 memory args = ExtraArgsCodec.GenericExtraArgsV3({
+        gasLimit: s_gasLimit,
+        requestedFinalityConfig: FinalityCodec._encodeBlockDepth(blockDepth), // encoded from the param
+        ccvs: ccvs,
+        ccvArgs: ccvArgs,
+        executor: address(0),
+        executorArgs: "",
+        tokenReceiver: "",
+        tokenArgs: ""
+    });
+
+    bytes memory extraArgs = ExtraArgsCodec._encodeGenericExtraArgsV3(args);
+    // ... build EVM2AnyMessage, getFee, ccipSend ...
+}
+```
+
+### Checking the token pool's minimum finality before you send
+
+The source token pool enforces its own minimum finality floor, set by the token issuer. Before you request a block depth in `requestedFinalityConfig`, read the pool's allowed finality so your `getFee` / `ccipSend` call does not revert with `FinalityCodec.InvalidRequestedFinality`. \
+Every V2 token pool exposes `getAllowedFinalityConfig()` as a `view` function returning `bytes4`.
+
+```solidity
+// Minimal interface for the finality read (every V2 pool implements this).
+interface ITokenPoolFinality {
+  function getAllowedFinalityConfig() external view returns (bytes4);
+}
+
+// Read the pool's minimum finality floor (view call, no gas).
+bytes4 poolMinFinality = ITokenPoolFinality(pool).getAllowedFinalityConfig();
+
+// Either request full finality (0x00000000 — always accepted),
+// or request a block depth >= the pool's floor.
+bytes4 requested = blockDepth == 0
+    ? FinalityCodec.WAIT_FOR_FINALITY_FLAG
+    : FinalityCodec._encodeBlockDepth(blockDepth);
+
+// Optional pre-check (same logic the pool runs internally):
+// FinalityCodec._ensureRequestedFinalityAllowed(requested, poolMinFinality);
+```
+
+Admissibility rule (enforced inside `getFee` and `ccipSend`):
+
+| Sender requests              | Accepted?                                                         |
+| ---------------------------- | ----------------------------------------------------------------- |
+| `0x00000000` (full finality) | Yes — always, regardless of the pool's floor                      |
+| `_encodeBlockDepth(N)`       | Yes only if `N >=` the pool's floor                               |
+| `_encodeBlockDepth(N)`       | Reverts with `InvalidRequestedFinality` if `N <` the pool's floor |
+
+Find the token pool address for a given token and chain in the [CCIP Directory](/ccip/directory). See [Fast Transfers - Token Issuers](/ccip/concepts/execution-latency/fast-transfers-token-issuers) for how token issuers configure this floor.
+
+### Configuring the Application Receiver (via enableChain)
+
+Here you are specifying the **allowed** finality on the receiving side of the application per source chain, because you may not want to receive FTF messages from certain chains.
+
+**Step 1:** Encode the finality. `FinalityCodec` produces a `bytes4`. Here, block depth = 1 allows all FTF messages as well as full finality messages.
+
+For a receiver receiving tokens, block depth = 1 allows all FTF messages as well as full finality messages. This is the most flexible, letting the finality setting of token issuers (source chain token pool setting) control the risk setting.
+
+`FinalityCodec._ensureRequestedFinalityAllowed` behaves like this:
+
+1. Full finality (`0x00000000`) is always accepted, regardless of `allowedFinalityConfig`.
+2. Block-depth FTF is accepted when `requestedDepth >= allowedDepth`.
+
+So with `allowed = _encodeBlockDepth(1)`:
+
+| Sender requests              | Accepted?           |
+| ---------------------------- | ------------------- |
+| `0x00000000` (full finality) | Yes — always        |
+| `_encodeBlockDepth(1)`       | Yes — 1 ≥ 1         |
+| `_encodeBlockDepth(5)`       | Yes — 5 ≥ 1         |
+| `_encodeBlockDepth(65535)`   | Yes — max depth ≥ 1 |
+
+**Step 2:** Configure inbound policy per source chain with `enableChain(remoteChainSelector, extraArgs, allowedFinalityConfig)`:
+
+```
+enableChain(remoteChainSelector, extraArgs, allowedFinalityConfig)
+```
+
+| Parameter               | Purpose on receiver                                                                                                                           |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `remoteChainSelector`   | The source chain you are configuring inbound policy for                                                                                       |
+| `extraArgs`             | **Outbound** `ExtraArgs` used when this contract **sends** to that chain — i.e., the receiver is also a sender (this is ignored for inbounds) |
+| `allowedFinalityConfig` | Inbound finality policy for messages arriving from that chain                                                                                 |
+
+**Example 1: Pure Inbound receiver**
+
+In this case, you do not have to set `extraArgs`:
+
+```solidity
+contract InboundOnlyReceiver is CCIPClientExample {
+  constructor(IRouterClient router, IERC20 feeToken)
+    CCIPClientExample(router, feeToken)
+  {}
+
+  /// @notice Configure inbound finality policy for a source chain.
+  /// extraArgs is unused here because this contract never sends outbound.
+  function configureInboundPolicy(
+    uint64 sourceChainSelector,
+    bytes4 allowedFinalityConfig
+  ) external onlyOwner {
+    enableChain(sourceChainSelector, "", allowedFinalityConfig);
+  }
+
+  function _ccipReceive(Client.Any2EVMMessage memory message) internal override {
+    // your inbound logic
+  }
+}
+```
+
+**Example 2: Bidirectional contract (receive + send)**
+
+```solidity
+contract BidirectionalApp is CCIPClientExample {
+  struct LaneConfig {
+    uint32 outboundCallbackGasLimit; // gas billed for callback on the remote chain
+    bytes4 outboundRequestedFinality; // finality you request when sending TO that chain
+    bytes4 inboundAllowedFinality; // finality you accept when receiving FROM that chain
+  }
+
+  constructor(IRouterClient router, IERC20 feeToken)
+    CCIPClientExample(router, feeToken)
+  {}
+
+  function configureLane(
+    uint64 remoteChainSelector,
+    LaneConfig calldata config
+  ) external onlyOwner {
+    bytes memory outboundExtraArgs = ExtraArgsCodec._getBasicEncodedExtraArgsV3(
+      config.outboundCallbackGasLimit,
+      config.outboundRequestedFinality
+    );
+    enableChain(
+      remoteChainSelector,
+      outboundExtraArgs,
+      config.inboundAllowedFinality
+    );
+  }
+}
+```
+
+## Fast USDC transfers
+
+Similar to other FTF messages, fast transfers for USDC can be chosen via `requestedFinalityConfig` in `ExtraArgsV3`. The behavior depends on whether the transfer is a pure token transfer or a token transfer with data and/or a non-zero user gas limit.
+CCIP v2 supports fast USDC transfers on lanes that integrate with Circle's CCTP. Finality for USDC token transfers is therefore governed by [CCTP finality thresholds](https://developers.circle.com/cctp/concepts/finality-and-block-confirmations) per chain. For transfers sent to a smart contract — with a non-zero message gas limit or with data — both CCTP and message finality parameters determine the overall speed.
+
+CCIP's CCTP CCV integrates with CCTP smart contracts and the CCTP attestation service.
+
+### 1. Pure token transfers (no data, 0 user gas limit)
+
+For USDC FTF transfers on lanes that Circle's CCTP supports, for **pure token transfers** (no data, 0 user gas limit), only the CCTP verifier is used and not the Committee Verifier.
+
+Finality is determined in this way:
+
+- `message.finality == 0` (`WAIT_FOR_FINALITY_FLAG`) → CCTP threshold 2000 → standard USDC transfers.
+- `message.finality != 0` → CCTP threshold 1000 → fast USDC transfers.
+
+So `0x00000001`, `0x00000002`, `0x0000000a`, etc. all select the same CCTP fast path. The numeric depth is **not** passed through to Circle as "wait N blocks." Circle has two modes — standard and fast — and the number of block confirmations for fast USDC transfers is determined by Circle: [CCTP block confirmations and fast-transfer attestation times](https://developers.circle.com/cctp/concepts/finality-and-block-confirmations#fast-transfer-attestation-times).
+
+In this case, since the user gas limit is 0, the assumption is that there is no destination receiver, and hence the destination receiver's `allowedFinalityConfig` is irrelevant.
+
+### 2. Token transfers with data and/or non-0 user gas limit
+
+For USDC FTF transfers on lanes that Circle's CCTP supports, for **token transfers** with **data** and/or a **non-0 user gas limit**, both the CCTP verifier **and** the Committee Verifier are used.
+
+Finality is determined in this way:
+
+- `message.finality == 0` (`WAIT_FOR_FINALITY_FLAG`) → CCTP threshold 2000 → standard USDC transfers, **and** the default Committee Verifier waits for full finality to be reached before verifying.
+- `message.finality != 0` → CCTP threshold 1000 → fast USDC transfers.
+  - In this case, the `requestedFinalityConfig` block confirmations value is specifically used to drive the finality requirements for the Committee Verifier. For example, if `blockConfirmations` was set to 10, the Committee Verifier will wait for 10 blocks and not just 1. However, the 10 does not impact the CCTP side of processing, which is binary — standard or fast; only the fact that it is **not** 0 matters.
+  - Since CCIP processing will wait for all CCVs to finish verifying, in the above example, even if CCTP has completed its processing, the 10 blocks chosen by the user/dApp will drive the overall latency.
+
+In this case, the receiver's `allowedFinalityConfig` should be set so that the `requestedFinalityConfig` from the sender can be honoured on the destination. Setting `allowedFinalityConfig = 1` is the most flexible as it allows all USDC FTF transfers (anything `>= 1` in `extraArgs`). If `allowedFinalityConfig` on the receiver is set to `> 1`, the dApp should ensure that the source-side `extraArgs` matches this.
+
+### Delivered amount vs sent amount for fast USDC transfers
+
+For **standard** USDC (`requestedFinalityConfig = 0`), CCTP uses the standard path with **no CCTP fast-transfer fee** — the USDC amount burned on source matches what CCTP mints to the recipient (subject to normal CCIP/pool fees quoted at send time).
+
+For **fast** USDC (any non-zero `requestedFinalityConfig`), Circle [charges a fast-transfer fee](https://developers.circle.com/cctp/concepts/fast-transfer-allowance) on the **destination** when USDC is minted. `CCTPVerifier` passes a `maxFee` into `depositForBurnWithHook` on the source burn; the actual fee deducted at mint time is determined by CCTP (basis points, lane-specific). **The amount delivered on the destination chain can be less than the amount sent.**
+
+Implications for dApps:
+
+- Do not assume `tokenAmounts[0].amount` at send equals USDC received on destination for fast transfers.
+- In `ccipReceive`, use `message.destTokenAmounts[0].amount` — OffRamp sets this from the **actual balance credited** to the token receiver after mint.
+- PTT logic (accounting, minimum deposit checks, share minting) should key off the delivered amount, not the source send amount.
+- The CCTP fee is separate from CCIP protocol fees.
+
+## Avoiding stranded inbound messages
+
+<Aside type="caution" title="Waiting for finality will not rescue a mismatched FTF message">
+  Even after the source chain reaches full finality, an FTF-tagged message whose `requestedFinalityConfig` the
+  receiver's `allowedFinalityConfig` does not admit **remains unexecutable**. The OffRamp checks the `requested` field
+  carried in the message — not whether real finality has since been reached. The message only becomes executable once
+  the receiver's `allowedFinalityConfig` is updated to admit it (or the message is abandoned). There is no automatic
+  downgrade to full finality.
+</Aside>
+
+Since the source-side pool gate and the destination-side receiver gate are evaluated at different points in the message lifecycle, it is important that a sender does not send an FTF message that the receiver will not admit. The source-side check happens synchronously inside `ccipSend`: if the pool's `allowedFinality` does not permit the request, the call reverts and no message is created. The destination-side check happens asynchronously when the OffRamp consults the receiver's `getCCVsAndFinalityConfig` to determine whether to admit the message for execution. If the receiver returns an `allowedFinalityConfig` that does not admit the message's `requestedFinalityConfig`, validation reverts via `_ensureRequestedFinalityAllowed`. There is no automatic downgrade to full finality; the strict admissibility check rejects the message under its declared terms.
+
+When this happens, the OffRamp marks the message's execution state as `FAILURE` and emits an `ExecutionStateChanged` event. The message is not destroyed — it can be retried — but every retry will fail in the same way until the receiver's `allowedFinalityConfig` is updated to admit the message's requested finality. Waiting for the source chain to fully finalize does not unstick the message: the OffRamp's check is on the requested finality field carried in the message itself, not on whether actual finality has since been reached.
+
+A sender can successfully send a message whose `requestedFinalityConfig` the destination receiver rejects. The OffRamp checks the **requested** field in the message — **not** whether the source chain has since finalized.
+
+On failure: execution state **FAILURE** (`ExecutionStateChanged`); retries fail the same way until `allowedFinalityConfig` is loosened or the message is abandoned. Waiting for real finality does **not** auto-unblock the message.
+
+**Coordinate upstream** — receiver `allowedFinalityConfig` must admit what pools, CCVs, and senders set.
+
+1. For transfers that involve tokens, setting it to block depth = 1 allows any FTF transfers to be received (but they have already been gated by the token issuer's finality setting on source).
+2. For transfers that are data-only, receivers should ideally whitelist specific senders and set the `allowedFinalityConfig` to a safe value.
+
+## Best practices (dos and don'ts)
+
+| Do                                                                                            | Don't                                                                                                       |
+| :-------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+| Use a V2 sender/receiver pair for FTF                                                         | Expect V1 receivers to accept FTF (they cannot)                                                             |
+| Coordinate receiver policy with upstream pools/CCVs/senders                                   | Tighten `allowedFinalityConfig` while FTF messages are in flight                                            |
+| Leave `allowedFinalityConfig` at `WAIT_FOR_FINALITY_FLAG` unless FTF is required on that lane | Enable FTF globally by default                                                                              |
+| Gate FTF by sender when only known partners should use fast delivery                          | Assume non-zero `allowedFinalityConfig` per chain limits FTF to allowlisted senders without explicit checks |
+| Authenticate `message.sender` before non-idempotent `ccipReceive` logic on open FTF lanes     | Act on `data` from unknown senders when reorg duplicates would be harmful                                   |
+| Configure finality **per source chain**                                                       | Reuse one policy for all chains                                                                             |
+| Track processed `messageId`s for non-idempotent effects                                       | Assume OffRamp deduplicates reorg retries                                                                   |
+| Implement `IAny2EVMMessageReceiver` **and** ERC-165                                           | Rely on `ccipReceive` alone — without ERC-165, OffRamp may skip callback even with non-empty `data`         |
+| Upgrade to `IAny2EVMMessageReceiverV2` before setting non-zero inbound finality               | Expect custom finality on legacy receivers                                                                  |
+| Plan owner-mediated recovery for stranded messages                                            | Assume source finalization will eventually deliver a mismatched FTF request                                 |
+| Verify third-party CCV reorg behavior                                                         | Assume all CCVs match committee reorg quarantine                                                            |
+| Test FTF scenarios on testnet                                                                 | Ship permissive mainnet config without FTF testing                                                          |
+
+<CcipCommon callout="conceptualDisclaimer" />

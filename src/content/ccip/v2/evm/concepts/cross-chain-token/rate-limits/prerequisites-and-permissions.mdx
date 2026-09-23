@@ -1,0 +1,126 @@
+---
+section: ccip
+date: Last Modified
+title: "Prerequisites and Permissions"
+metadata:
+  description: "Required permissions for managing CCIP rate limits: the owner and rateLimitAdmin roles, how admin access is granted on v2.0 and v1.x pools, and the scope of admin authority."
+  excerpt: "CCIP rate limits permissions owner rateLimitAdmin setDynamicConfig getDynamicConfig setRateLimitAdmin applyChainUpdates v2.0 v1.x multisig"
+  datePublished: "2025-06-09"
+  lastModified: "2025-06-09"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<Aside type="note" title="CCIP v2.0">
+  This page describes permissions on `TokenPool` v2.0 contracts. **v1.x pools** differences are noted inline.
+</Aside>
+
+Managing CCIP rate limits is a privileged, operator-level action. Before attempting to inspect or modify any rate limit configuration, you must meet the prerequisites described on this page.
+
+## Required permissions
+
+To **update** rate limits, the submitting wallet must be either:
+
+- the pool **owner**, or
+- the address returned by `getDynamicConfig()` as `rateLimitAdmin`
+
+The update function is `setRateLimitConfig`. Without one of these roles, you can read on-chain data but cannot make changes.
+
+In most cases, the `rateLimitAdmin` role is assigned to a multisig wallet rather than to an individual externally owned account.
+
+## How rate limit admin access is granted (v2.0 pools)
+
+Admin access is not self-assigned.
+
+### v2.0
+
+The `rateLimitAdmin` is set through `setDynamicConfig`:
+
+```solidity
+function setDynamicConfig(
+  address router,
+  address rateLimitAdmin,
+  address feeAdmin
+) external;
+```
+
+Verify the current configuration:
+
+```solidity
+function getDynamicConfig()
+  external
+  view
+  returns (address router, address rateLimitAdmin, address feeAdmin);
+```
+
+The update function is `setRateLimitConfig`.
+
+### v1.x pools
+
+v1 pools use a standalone admin function:
+
+```solidity
+function getRateLimitAdmin() external view returns (address);
+function setRateLimitAdmin(address rateLimitAdmin) external; // owner only
+```
+
+The update functions are `setChainRateLimiterConfig` (single lane) or `setChainRateLimiterConfigs` (batch).
+
+## Scope of admin authority
+
+### rateLimitAdmin can:
+
+- update inbound and outbound rate limits for configured remote chains
+- on v2.0: update default and fast-finality buckets via `setRateLimitConfig`
+
+### rateLimitAdmin cannot:
+
+- **add or remove remote chains (`applyChainUpdates`) — owner only**
+- **change admin addresses — owner only (`setDynamicConfig` on v2.0; `setRateLimitAdmin` on v1.x)**
+
+### Owner can:
+
+- everything `rateLimitAdmin` can do
+- add or remove lanes via `applyChainUpdates`
+
+<Aside type="note" title="v1.x pools">
+  Removing a chain deletes that lane's inbound/outbound rate limit state. There is no fast-finality state to clean up.
+</Aside>
+
+<Aside type="note" title="v2.0 pools only">
+  Owner can also call `setAllowedFinalityConfig` to control which finality modes the pool accepts, and
+  `setDynamicConfig` to update router, rate limit admin, and fee admin together.
+</Aside>
+
+Authority applies per token pool, per remote chain, and per direction (and per bucket type on v2.0).
+
+## Operational expectations
+
+Before making any changes, you should ensure that:
+
+- you understand the token's decimal precision and smallest unit **on each chain** you configure
+- you have reviewed the current inbound and outbound configurations (and fast-finality buckets on v2.0)
+- you are prepared to validate values carefully before submitting transactions
+- **v2.0 only:** Config changes immediately refill buckets to full capacity.
+- **v1.x pools:** Config changes do **not** immediately refill to full capacity — the bucket continues refilling at the normal rate.
+
+Rate limit changes are applied on-chain and take effect immediately.
+
+## Responsibility boundary
+
+By managing rate limits, you take responsibility for the availability of cross-chain transfers for the affected token and lane.
+
+Incorrect configuration can:
+
+- unintentionally block transfers
+- allow more volume than intended
+- create operational or user-facing disruption
+
+For this reason, rate limit management should follow a deliberate review process and use a multisig workflow where possible.
+
+## What's next
+
+If you meet these prerequisites, the next step is to [inspect the current inbound and outbound rate limit configuration](/ccip/evm/concepts/cross-chain-token/rate-limits/inspect-current-rate-limits) before making any changes.
+
+<CcipCommon callout="conceptualDisclaimer" />

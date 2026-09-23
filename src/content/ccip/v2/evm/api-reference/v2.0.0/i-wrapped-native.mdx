@@ -1,0 +1,83 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IWrappedNative API Reference"
+metadata:
+  description: "Interface for wrapped native tokens exposing deposit and withdraw functions alongside ERC20 behavior."
+  version: "2.0.0"
+---
+
+## Summary
+
+`IWrappedNative` defines the minimal interface for wrapped native tokens (e.g., WETH, WBNB, WMATIC).
+
+It extends `IERC20` and adds methods to:
+
+- Wrap native currency into ERC20 form (`deposit`)
+- Unwrap ERC20 tokens back into native currency (`withdraw`)
+
+---
+
+## Contract
+
+`chains/evm/contracts/interfaces/IWrappedNative.sol`
+
+---
+
+## Import
+
+```solidity
+import {IWrappedNative} from "chainlink-ccip/chains/evm/contracts/interfaces/IWrappedNative.sol";
+```
+
+---
+
+## Interface surface
+
+```solidity
+interface IWrappedNative is IERC20 {
+```
+
+---
+
+### deposit
+
+```solidity
+function deposit() external payable;
+```
+
+Wraps native currency into ERC20 tokens.
+
+---
+
+### withdraw
+
+```solidity
+function withdraw(uint256 wad) external;
+```
+
+Unwraps wrapped tokens into native currency.
+
+---
+
+```solidity
+}
+```
+
+---
+
+## Integration notes / expectations
+
+- `deposit()` must be called with a non-zero `msg.value`.
+- `withdraw(uint256 wad)` burns wrapped tokens and transfers native currency.
+- Implementations must handle native token transfers safely.
+- Consumers treat wrapped native tokens as standard ERC20 tokens with optional wrapping functionality.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`IERC20`](https://github.com/OpenZeppelin/openzeppelin-contracts/tree/v5.4.0/contracts/token/ERC20/IERC20.sol)
+- [`Executor`](/ccip/evm/api-reference/v2.0.0/executor)
+- [`FeeTokenHandler`](/ccip/evm/api-reference/v2.0.0/fee-token-handler)
+- [`Router`](/ccip/evm/api-reference/v2.0.0/router)

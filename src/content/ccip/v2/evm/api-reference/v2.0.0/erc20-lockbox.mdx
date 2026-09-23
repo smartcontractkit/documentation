@@ -1,0 +1,233 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 ERC20LockBox API Reference"
+metadata:
+  description: "Single-token lockbox that custody-holds ERC20 liquidity for lock/release token pools."
+  version: "2.0.0"
+---
+
+## Summary
+
+`ERC20LockBox` is a single-token liquidity vault used by lock/release style token pools.
+
+It:
+
+- Holds custody of exactly one ERC20 token.
+- Restricts deposit and withdrawal operations to an allowlist (`[AuthorizedCallers](/ccip/evm/api-reference/v2.0.0/authorized-callers)`).
+- Emits standardized events for liquidity accounting.
+- Allows full-balance withdrawals via `type(uint256).max`.
+
+---
+
+## Contract
+
+`chains/evm/contracts/pools/ERC20LockBox.sol`
+
+---
+
+## Import
+
+```solidity
+import {ERC20LockBox} from "chainlink-ccip/chains/evm/contracts/pools/ERC20LockBox.sol";
+```
+
+---
+
+## Inheritance
+
+- `ILockBox`
+- `ITypeAndVersion`
+- `AuthorizedCallers`
+
+---
+
+## typeAndVersion
+
+```solidity id="6nsoij"
+string public constant override typeAndVersion =
+  "ERC20LockBox 2.0.0-dev";
+```
+
+---
+
+## State
+
+### Constants
+
+None declared.
+
+---
+
+### Immutables
+
+```solidity id="r7b2ne"
+IERC20 internal immutable i_token;
+```
+
+The only token supported by this lockbox.
+
+---
+
+### Storage
+
+No additional storage declared.
+
+Allowlist state is inherited from `AuthorizedCallers`.
+
+---
+
+## Constructor
+
+```solidity id="r3k2ip"
+constructor(address token)
+  AuthorizedCallers(new address)
+```
+
+Behavior:
+
+- Reverts `ZeroAddressNotAllowed()` if `token == address(0)`.
+- Sets `i_token = IERC20(token)`.
+
+The allowlist is initialized empty and must be configured via `applyAuthorizedCallerUpdates`.
+
+---
+
+## External API
+
+### deposit
+
+```solidity id="m3lg29"
+function deposit(
+  address token,
+  uint64 remoteChainSelector,
+  uint256 amount
+) external
+```
+
+Validations:
+
+- Reverts `TokenAmountCannotBeZero()` if `amount == 0`.
+- Reverts `UnsupportedToken(token)` if `token != address(i_token)`.
+- Reverts `UnauthorizedCaller(msg.sender)` via `_validateCaller()` if caller not allowlisted.
+
+Effects:
+
+- `safeTransferFrom(msg.sender, address(this), amount)`
+- Emits `Deposit(token, msg.sender, amount)`
+
+Note:
+
+- `remoteChainSelector` is required by the `ILockBox` interface but unused.
+
+---
+
+### withdraw
+
+```solidity id="3czd4t"
+function withdraw(
+  address token,
+  uint64 remoteChainSelector,
+  uint256 amount,
+  address recipient
+) external
+```
+
+Validations:
+
+- Reverts `TokenAmountCannotBeZero()` if `amount == 0`.
+- Reverts `UnsupportedToken(token)` if `token != address(i_token)`.
+- Reverts `RecipientCannotBeZeroAddress()` if `recipient == address(0)`.
+- Reverts `UnauthorizedCaller(msg.sender)` via `_validateCaller()` if caller not allowlisted.
+
+Special case:
+
+- If `amount == type(uint256).max`, resolves to full balance.
+
+Balance check:
+
+```solidity id="9q8pvi"
+if (amountResolved > i_token.balanceOf(address(this))) {
+  revert InsufficientBalance(amountResolved, balance);
+}
+```
+
+Effects:
+
+- `safeTransfer(recipient, amountResolved)`
+- Emits `Withdrawal(token, recipient, amountResolved)`
+
+---
+
+### isTokenSupported
+
+```solidity id="twshq8"
+function isTokenSupported(address token)
+  external
+  view
+  returns (bool)
+```
+
+Returns `token == address(i_token)`.
+
+---
+
+## Events
+
+```solidity id="0yew5o"
+event Deposit(address token, address depositor, uint256 amount);
+event Withdrawal(address token, address recipient, uint256 amount);
+```
+
+---
+
+## Errors
+
+```solidity id="z4n4px"
+error InsufficientBalance(uint256 requested, uint256 available);
+error TokenAmountCannotBeZero();
+error RecipientCannotBeZeroAddress();
+error UnsupportedToken(address token);
+```
+
+Inherited from `AuthorizedCallers`:
+
+```solidity
+error UnauthorizedCaller(address caller);
+error ZeroAddressNotAllowed();
+```
+
+---
+
+## Internal Functions
+
+### \_validateDepositWithdraw
+
+```solidity id="nhs7ri"
+function _validateDepositWithdraw(
+  address token,
+  uint256 amount
+) internal view
+```
+
+Shared validation logic for deposit/withdraw.
+
+---
+
+## Security model
+
+- Only allowlisted callers may move funds.
+- Exactly one token supported.
+- Full-balance sentinel (`type(uint256).max`) simplifies migrations.
+- Does not interpret `remoteChainSelector`; per-lane isolation must be handled at pool layer.
+- Lockbox does not enforce per-chain liquidity accounting.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`ILockBox`](/ccip/evm/api-reference/v2.0.0/i-lockbox)
+- [`AuthorizedCallers`](/ccip/evm/api-reference/v2.0.0/authorized-callers)
+- [`LockReleaseTokenPool`](/ccip/evm/api-reference/v2.0.0/lock-release-token-pool)
+- [`SiloedLockReleaseTokenPool`](/ccip/evm/api-reference/v2.0.0/siloed-lock-release-token-pool)
+- [`SiloedUSDCTokenPool`](/ccip/evm/api-reference/v2.0.0/siloed-usdc-token-pool)

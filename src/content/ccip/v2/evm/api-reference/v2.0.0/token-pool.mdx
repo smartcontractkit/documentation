@@ -1,0 +1,278 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 TokenPool API Reference"
+metadata:
+  description: "Abstract base contract for CCIP token pools implementing validation, rate limiting, and remote pool management."
+  version: "2.0.0"
+---
+
+## Summary
+
+`TokenPool` is the abstract base contract for all CCIP EVM token pool implementations.
+
+It centralizes:
+
+- [Router](/ccip/evm/api-reference/v2.0.0/router)-based ramp gating
+- RMN curse enforcement
+- Remote chain and remote pool validation
+- Rate limiting
+- Optional advanced hooks
+- Optional pool-level fee overrides
+- Decimal normalization logic
+
+Concrete pool variants implement token custody semantics.
+
+---
+
+## Contract
+
+`chains/evm/contracts/pools/TokenPool.sol`
+
+---
+
+## Import
+
+```solidity
+import {TokenPool} from "chainlink-ccip/chains/evm/contracts/pools/TokenPool.sol";
+```
+
+---
+
+## Inheritance
+
+```solidity id="zqg6fi"
+abstract contract TokenPool
+  is IPoolV1V2,
+     Ownable2StepMsgSender,
+     IERC165
+```
+
+Implements:
+
+- `IPoolV1`
+- `IPoolV2`
+
+---
+
+## Purpose in system
+
+`TokenPool` defines the canonical CCIP token flow:
+
+- Source chain → `lockOrBurn`
+- Destination chain → `releaseOrMint`
+
+It guarantees:
+
+- Only authorized OnRamp may initiate outbound transfers.
+- Only authorized OffRamp may finalize inbound transfers.
+- RMN curse state halts operations.
+- Per-chain rate limits are enforced.
+- Remote pool addresses are allowlisted.
+- Optional hooks may extend validation.
+
+Concrete pools implement:
+
+- `_lockOrBurn`
+- `_releaseOrMint`
+
+---
+
+## State
+
+### Immutables
+
+```solidity id="6tw2ak"
+IERC20 internal immutable i_token;
+uint8 internal immutable i_tokenDecimals;
+IRMNRemote internal immutable i_rmnProxy;
+```
+
+---
+
+### Storage (selected)
+
+```solidity id="x4jqc2"
+IRouter internal s_router;
+
+mapping(uint64 => ChainConfig) internal s_chainConfigs;
+
+IAdvancedPoolHooks internal s_advancedPoolHooks;
+
+address internal s_rateLimitAdmin;
+address internal s_feeAdmin;
+```
+
+Additional mappings store:
+
+- Remote pools per chain
+- Rate limiter buckets
+- Token transfer fee overrides
+
+---
+
+## Extension points
+
+Concrete pools must override:
+
+```solidity id="f8dqln"
+function _lockOrBurn(
+  uint64 remoteChainSelector,
+  uint256 amount
+) internal virtual;
+
+function _releaseOrMint(
+  address receiver,
+  uint256 amount,
+  uint64 remoteChainSelector
+) internal virtual;
+```
+
+These define custody logic:
+
+- Burn/mint
+- Lock/release
+- Bridge delegation (Lombard, CCTP, etc.)
+
+---
+
+## Key internal flow / invariants
+
+### Outbound: lockOrBurn
+
+1. `_validateLockOrBurn(...)`
+2. Deduct pool-level fee (if configured)
+3. Enforce rate limits
+4. Call `_lockOrBurn`
+5. Emit `LockedOrBurned`
+
+### Inbound: releaseOrMint
+
+1. `_validateReleaseOrMint(...)`
+2. Convert remote amount to local decimals
+3. Enforce rate limits
+4. Call `_releaseOrMint`
+5. Emit `ReleasedOrMinted`
+
+---
+
+### Validation guarantees
+
+Outbound:
+
+- Caller must equal `router.getOnRamp(remoteChainSelector)`
+- Chain must be supported
+- RMN not cursed
+- Token supported
+- Hooks (if configured) must pass
+
+Inbound:
+
+- Caller must equal `router.isOffRamp(...)`
+- Source pool must be allowlisted
+- RMN not cursed
+- Chain supported
+- Hooks (if configured) must pass
+
+---
+
+### Decimal normalization
+
+Functions:
+
+```solidity id="s2l6dc"
+function _encodeLocalDecimals() internal view returns (bytes memory);
+
+function _parseRemoteDecimals(bytes memory sourcePoolData)
+  internal
+  view
+  returns (uint8);
+
+function _calculateLocalAmount(
+  uint256 remoteAmount,
+  uint8 remoteDecimals
+)
+  internal
+  view
+  returns (uint256);
+```
+
+- Rounds down when remoteDecimals > localDecimals.
+- Ensures consistent cross-chain denomination.
+
+---
+
+### Rate limiting
+
+Separate buckets for:
+
+- Default finality
+- Custom block confirmations
+
+Uses `RateLimiter` library.
+
+---
+
+### Fee overrides
+
+Optional pool-level fee configuration:
+
+- `applyTokenTransferFeeConfigUpdates`
+- `getFee`
+
+Fee capped by:
+
+```solidity id="ytn3bq"
+uint16 internal constant BPS_DIVIDER = 10_000;
+```
+
+---
+
+## Events (selected)
+
+```solidity id="e9smal"
+event LockedOrBurned(
+  uint64 indexed remoteChainSelector,
+  address indexed sender,
+  uint256 amount
+);
+
+event ReleasedOrMinted(
+  uint64 indexed remoteChainSelector,
+  address indexed receiver,
+  uint256 amount
+);
+
+event ChainAdded(uint64 remoteChainSelector);
+event ChainRemoved(uint64 remoteChainSelector);
+event RemotePoolAdded(uint64 remoteChainSelector, bytes remotePoolAddress);
+event RemotePoolRemoved(uint64 remoteChainSelector, bytes remotePoolAddress);
+```
+
+Additional events exist for:
+
+- Rate limit consumption
+- Fee configuration updates
+
+---
+
+## Security model
+
+- Router is the only ingress/egress authority.
+- RMN curse halts flows.
+- Remote pools strictly allowlisted.
+- Rate limiting prevents draining.
+- Fee logic isolated from custody logic.
+- Hooks cannot bypass base validation.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`IPoolV1`](/ccip/evm/api-reference/v2.0.0/i-pool-v1)
+- [`IPoolV2`](/ccip/evm/api-reference/v2.0.0/i-pool-v2)
+- [`Router`](/ccip/evm/api-reference/v2.0.0/router)
+- [`OffRamp`](/ccip/evm/api-reference/v2.0.0/offramp)
+- [`OnRamp`](/ccip/evm/api-reference/v2.0.0/onramp)
+- [`RateLimiter`](/ccip/evm/api-reference/v2.0.0/rate-limiter)
+- [`Pool`](/ccip/evm/api-reference/v2.0.0/pool)

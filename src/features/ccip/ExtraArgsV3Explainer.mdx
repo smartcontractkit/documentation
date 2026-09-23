@@ -1,0 +1,17 @@
+import { Aside } from "@components"
+
+<Aside type="note" title="ExtraArgsV3">
+On CCIP 2.0 EVM lanes, the `extraArgs` field of a CCIP message is encoded as **`ExtraArgsV3`**, which allow you to use CCIP 2.0 specific features. The tutorial scripts set two of its fields:
+
+- **`gasLimit`** (`uint32`): the gas made available to the receiver's `ccipReceive` callback on the destination chain. The sender is billed for the gas specified, not the gas actually used, and unspent gas is not refunded. A gas limit of zero combined with no message data skips the callback entirely, which is what you would want for pure token transfers or EOA receivers.
+- **`requestedFinalityConfig`** (`bytes4`): the finality the sender requests for this message, encoded with `FinalityCodec`. `0x00000000` requests `Finalized` (full finality, the default). A numeric block depth instead requests [faster-than-finality](/ccip/concepts/execution-latency/ftf) delivery.
+  These tutorials use a depth of 32, which encodes as `0x00000020`.
+
+For the complete list of supported parameters, see the
+
+1. [`ExtraArgsCodec`](/ccip/evm/api-reference/v2.0.0/extra-args-codec) API reference,
+2. or the [`ExtraArgsCodec.sol`](https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/libraries/ExtraArgsCodec.sol) source in the chainlink-ccip repository.
+
+On pre-2.0 lanes, the scripts fall back to legacy `GenericExtraArgsV2` extraArgs, where only the `gasLimit` field is honored.
+
+</Aside>

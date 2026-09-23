@@ -1,0 +1,297 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 ExtraArgsCodec API Reference"
+metadata:
+  description: "Library providing encoding and decoding utilities for CCIP extraArgs payloads."
+  version: "2.0.0"
+---
+
+`ExtraArgsCodec` provides encoding and decoding utilities for CCIP `extraArgs` payloads.
+
+It supports versioned encoding formats used across different chain families (EVM, SVM, Sui) and execution configurations.
+
+This library ensures that `extraArgs` are encoded in a format compatible with CCIP contracts and correctly interpreted during execution.
+
+> This library provides reusable helper functions and is not deployed as a standalone application-facing contract.
+
+## Usage Boundary
+
+**You do not call this library directly in most cases.**
+
+- CCIP contracts use this library to encode and decode execution parameters.
+- Applications typically use `Client` helpers, which rely on this library internally.
+- You may use this library directly when working with low-level or custom `extraArgs` encoding.
+
+## Contract
+
+`libraries/ExtraArgsCodec.sol`
+
+## Import
+
+```solidity
+import {ExtraArgsCodec} from "chainlink-ccip/libraries/ExtraArgsCodec.sol";
+```
+
+## High-level Encoding Functions
+
+These functions are typically used to construct `extraArgs` payloads.
+
+### \_getBasicEncodedExtraArgsV3
+
+```solidity
+function _getBasicEncodedExtraArgsV3(
+  uint32 gasLimit,
+  bytes4 finalityConfig
+) internal pure returns (bytes memory)
+```
+
+> Encodes basic execution parameters including gas limit and finality configuration.
+
+---
+
+### \_getBasicEncodedExtraArgsV3BlockDepth
+
+```solidity
+function _getBasicEncodedExtraArgsV3BlockDepth(
+  uint32 gasLimit,
+  uint16 blockDepth
+) internal pure returns (bytes memory)
+```
+
+> Encodes execution parameters using block depth-based finality.
+
+---
+
+### \_getBasicEncodedExtraArgsV3FastConfirmationRule
+
+```solidity
+function _getBasicEncodedExtraArgsV3FastConfirmationRule(
+  uint32 gasLimit
+) internal pure returns (bytes memory)
+```
+
+> Encodes execution parameters using fast confirmation rules.
+
+---
+
+### \_encodeGenericExtraArgsV3
+
+```solidity
+function _encodeGenericExtraArgsV3(
+  GenericExtraArgsV3 memory extraArgs
+) internal pure returns (bytes memory encoded)
+```
+
+> Encodes generic extra arguments for EVM-compatible execution.
+
+---
+
+### \_decodeGenericExtraArgsV3
+
+```solidity
+function _decodeGenericExtraArgsV3(
+  bytes calldata encoded
+) internal pure returns (GenericExtraArgsV3 memory extraArgs)
+```
+
+> Decodes generic extra arguments from encoded payload.
+
+---
+
+### \_encodeSVMExecutorArgsV1
+
+```solidity
+function _encodeSVMExecutorArgsV1(
+  SVMExecutorArgsV1 memory executorArgs
+) internal pure returns (bytes memory encoded)
+```
+
+> Encodes SVM-specific execution arguments.
+
+---
+
+### \_decodeSVMExecutorArgsV1
+
+```solidity
+function _decodeSVMExecutorArgsV1(
+  bytes calldata encoded
+) internal pure returns (SVMExecutorArgsV1 memory executorArgs)
+```
+
+> Decodes SVM-specific execution arguments.
+
+---
+
+### \_encodeSuiExecutorArgsV1
+
+```solidity
+function _encodeSuiExecutorArgsV1(
+  SuiExecutorArgsV1 memory executorArgs
+) internal pure returns (bytes memory encoded)
+```
+
+> Encodes Sui-specific execution arguments.
+
+---
+
+### \_decodeSuiExecutorArgsV1
+
+```solidity
+function _decodeSuiExecutorArgsV1(
+  bytes calldata encoded
+) internal pure returns (SuiExecutorArgsV1 memory executorArgs)
+```
+
+> Decodes Sui-specific execution arguments.
+
+---
+
+## Low-level Encoding Helpers
+
+These helpers are used internally for parsing and encoding data structures.
+
+### \_readUint8PrefixedAddress
+
+```solidity
+function _readUint8PrefixedAddress(
+  bytes calldata encoded,
+  uint256 offset
+) private pure returns (address addr, uint256 newOffset)
+```
+
+---
+
+### \_readUint16PrefixedBytes
+
+```solidity
+function _readUint16PrefixedBytes(
+  bytes calldata encoded,
+  uint256 offset
+) private pure returns (bytes calldata data, uint256 newOffset)
+```
+
+---
+
+### \_readUint8PrefixedBytes
+
+```solidity
+function _readUint8PrefixedBytes(
+  bytes calldata encoded,
+  uint256 offset
+) private pure returns (bytes calldata data, uint256 newOffset)
+```
+
+---
+
+### \_writeUint8PrefixedAddress
+
+```solidity
+function _writeUint8PrefixedAddress(
+  uint256 ptr,
+  address addr
+) private pure returns (uint256 newPtr)
+```
+
+---
+
+### \_writeUint16PrefixedBytes
+
+```solidity
+function _writeUint16PrefixedBytes(
+  uint256 ptr,
+  bytes memory data
+) private pure returns (uint256 newPtr)
+```
+
+---
+
+### \_writeUint8PrefixedBytes
+
+```solidity
+function _writeUint8PrefixedBytes(
+  uint256 ptr,
+  bytes memory data
+) private pure returns (uint256 newPtr)
+```
+
+---
+
+## Constants
+
+### GENERIC_EXTRA_ARGS_V3_TAG
+
+```solidity
+bytes4 public constant GENERIC_EXTRA_ARGS_V3_TAG = 0xa69dd4aa;
+```
+
+### SVM_EXECUTOR_ARGS_V1_TAG
+
+```solidity
+bytes4 public constant SVM_EXECUTOR_ARGS_V1_TAG = 0x1a2b3c4d;
+```
+
+### SUI_EXECUTOR_ARGS_V1_TAG
+
+```solidity
+bytes4 public constant SUI_EXECUTOR_ARGS_V1_TAG = 0x5e6f7a8b;
+```
+
+### GENERIC_EXTRA_ARGS_V3_STATIC_LENGTH_SIZE
+
+```solidity
+uint256 public constant GENERIC_EXTRA_ARGS_V3_STATIC_LENGTH_SIZE = 4 + 4 + 4 + 1;
+```
+
+## Structs
+
+### SVMExecutorArgsV1
+
+| Field                     | Type                    |
+| ------------------------- | ----------------------- |
+| `useATA`                  | `SVMTokenReceiverUsage` |
+| `accountIsWritableBitmap` | `uint64`                |
+| `accounts`                | `bytes32[]`             |
+
+---
+
+### SuiExecutorArgsV1
+
+| Field               | Type        |
+| ------------------- | ----------- |
+| `receiverObjectIds` | `bytes32[]` |
+
+---
+
+## Errors
+
+- `error InvalidDataLength(EncodingErrorLocation location, uint256 offset)`
+- `error InvalidExtraArgsTag(bytes4 expected, bytes4 actual)`
+- `error InvalidAddressLength(uint256 length)`
+- `error CCVArrayLengthMismatch(uint256 ccvsLength, uint256 ccvArgsLength)`
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Notes
+
+- Encoded data must include a valid version tag matching the expected format.
+- Version tags distinguish encoding formats and ensure compatibility across contract upgrades.
+- Different chain families use distinct encoding formats (Generic, SVM, Sui).
+- Decoding will revert if the encoding format or data length is invalid.
+- Low-level read/write helpers are used internally and are not intended for direct use.
+
+## Usage context
+
+Used by:
+
+- [`OnRamp`](/ccip/evm/api-reference/v2.0.0/onramp)
+- [`FeeQuoter`](/ccip/evm/api-reference/v2.0.0/fee-quoter)
+- [`Executor`](/ccip/evm/api-reference/v2.0.0/executor)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+
+## Related Interfaces & Contracts
+
+- [`Client`](/ccip/evm/api-reference/v2.0.0/client)
+- [`OnRamp`](/ccip/evm/api-reference/v2.0.0/onramp)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`FeeQuoter`](/ccip/evm/api-reference/v2.0.0/fee-quoter)

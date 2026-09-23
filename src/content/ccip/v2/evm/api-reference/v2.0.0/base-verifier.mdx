@@ -1,0 +1,213 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 BaseVerifier API Reference"
+metadata:
+  description: "Abstract base contract for CCIP Cross-Chain Verifier implementations."
+  version: "2.0.0"
+---
+
+`BaseVerifier` defines the policy and validation layer for CCIP Cross-Chain Verifier (CCV) contracts.
+
+It provides shared logic for:
+
+- validating message origin and sender
+- enforcing chain-specific configuration
+- applying finality and allowlist rules
+- blocking execution under unsafe conditions
+
+All CCV implementations inherit from this contract to ensure consistent validation behavior.
+
+> Applications do not call this contract directly.
+
+## Usage Boundary
+
+**You do not call this contract directly.**
+
+- OffRamp components invoke verifier logic during message validation.
+- Verifier implementations inherit this contract to define validation rules.
+- You interact with this contract when configuring verification behavior for specific chains.
+- You are responsible for ensuring configuration accurately reflects trusted senders and chains.
+
+## Contract
+
+`ccvs/components/BaseVerifier.sol`
+
+## Import
+
+```solidity
+import {BaseVerifier} from "chainlink-ccip/ccvs/components/BaseVerifier.sol";
+```
+
+## Inheritance
+
+- `ICrossChainVerifierV1`
+- `ITypeAndVersion`
+
+## Constructor
+
+```solidity
+constructor(string[] memory storageLocations, address rmnAddress, bytes4 _versionTag)
+```
+
+| Parameter          | Type              | Description                                                  |
+| ------------------ | ----------------- | ------------------------------------------------------------ |
+| `storageLocations` | `string[] memory` | Off-chain storage locations used for verifier data.          |
+| `rmnAddress`       | `address`         | RMN contract used to enforce network-wide safety conditions. |
+| `_versionTag`      | `bytes4`          | Identifier for the verifier implementation version.          |
+
+## External API
+
+### getStorageLocations
+
+```solidity
+function getStorageLocations() public view override returns (string[] memory)
+```
+
+> Returns configured storage locations.
+
+### getAllowedFinalityConfig
+
+```solidity
+function getAllowedFinalityConfig() public view returns (bytes4 allowedFinality)
+```
+
+> Returns the allowed finality configuration.
+
+### getRemoteChainConfig
+
+```solidity
+function getRemoteChainConfig(uint64 remoteChainSelector)
+  external
+  view
+  returns (RemoteChainConfigArgs memory remoteChainConfig, address[] memory allowedSendersList)
+```
+
+> Returns configuration and allowed senders for a remote chain.
+
+### getFee
+
+```solidity
+function getFee(
+  uint64 destChainSelector,
+  Client.EVM2AnyMessage memory message,
+  bytes memory extraArgs,
+  bytes4 requestedFinality
+) external view returns (
+  uint16 feeUSDCents,
+  uint32 gasForVerification,
+  uint32 payloadSizeBytes
+)
+```
+
+> Returns the verification fee and resource requirements for validating a message.
+
+### versionTag
+
+```solidity
+function versionTag() public view returns (bytes4 tag)
+```
+
+> Returns the verifier version identifier.
+
+- Used to distinguish verifier implementations across deployments.
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId) external pure override returns (bool)
+```
+
+> ERC-165 interface support check.
+
+## Events
+
+- `event RemoteChainConfigSet(uint64 indexed remoteChainSelector, address router, bool allowlistEnabled)`
+- `event AllowListSendersAdded(uint64 indexed destChainSelector, address senders)`
+- `event AllowListSendersRemoved(uint64 indexed destChainSelector, address senders)`
+- `event AllowListStateChanged(uint64 indexed destChainSelector, bool allowlistEnabled)`
+- `event StorageLocationsUpdated(string[] oldLocations, string[] newLocations)`
+- `event FinalityConfigSet(bytes4 allowedFinality)`
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+- `error CursedByRMN(uint64 destChainSelector)`
+- `error InvalidRemoteChainConfig(uint64 remoteChainSelector)`
+- `error DestGasCannotBeZero(uint64 destChainSelector)`
+- `error InvalidAllowListRequest(uint64 destChainSelector)`
+- `error SenderNotAllowed(address sender)`
+- `error CallerIsNotARampOnRouter(address caller)`
+- `error RemoteChainNotSupported(uint64 remoteChainSelector)`
+- `error ZeroAddressNotAllowed()`
+- `error VersionTagCannotBeZero()`
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Notes
+
+- Verifiers act as execution gates: messages are only processed if validation conditions are satisfied.
+- Verification succeeds only if both router and sender validation checks pass.
+- Verification requires that the caller matches the router’s configured OnRamp and that the sender is permitted.
+- When allowlisting is enabled, only explicitly configured senders are permitted.
+- A configured router is required for validation; without it, verification for a chain is disabled.
+- Messages will revert if validation fails due to sender mismatch, unsupported chain, or RMN restrictions.
+- Setting a chain’s router to the zero address disables verification for that chain.
+- Chain configuration and allowlists must be set before messages from that chain can be validated.
+
+## Internal Functions
+
+### \_setStorageLocations
+
+Sets storage locations used by off-chain components.
+
+### \_getRemoteChainConfig
+
+Returns stored configuration for a remote chain.
+
+### \_applyRemoteChainConfigUpdates
+
+Applies updates to remote chain configuration.
+
+- Reverts if chain selector is invalid.
+- Reverts if verification gas is zero.
+- A zero router disables support for the chain.
+
+### \_assertSenderIsAllowed
+
+Validates:
+
+- router exists
+- caller is current OnRamp
+- sender is allowlisted if required
+
+### \_onlyOffRamp
+
+Validates that the caller is an authorized OffRamp.
+
+### \_applyAllowlistUpdates
+
+Applies allowlist updates.
+
+- Reverts on invalid configuration or zero addresses.
+
+### \_assertNotCursedByRMN
+
+Reverts if RMN marks the destination chain as unsafe.
+
+## Security model
+
+- Relies on configured routers for ramp validation.
+- Sender validation is enforced via router and optional allowlists.
+- RMN integration blocks execution under unsafe conditions.
+- Misconfiguration may cause verification failures or unintended message rejection.
+
+## Related Interfaces & Contracts
+
+- [`ICrossChainVerifierV1`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-v1)
+- [`ICrossChainVerifierResolver`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-resolver)
+- [`CommitteeVerifier`](/ccip/evm/api-reference/v2.0.0/committee-verifier)
+- [`CCTPVerifier`](/ccip/evm/api-reference/v2.0.0/cctp-verifier)
+- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
+- [`IRouter`](/ccip/evm/api-reference/v2.0.0/i-router)

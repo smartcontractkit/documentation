@@ -1,0 +1,139 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 ITokenAdminRegistry API Reference"
+metadata:
+  description: "Interface for managing token-to-pool mappings and per-token administrators."
+  version: "2.0.0"
+---
+
+`ITokenAdminRegistry` defines the interface for managing token-to-pool mappings and per-token administrative authority.
+
+If you use this interface, it acts as the source of truth for:
+
+- which pool is associated with a given token
+- which address is authorized to manage that token’s CCIP configuration
+
+> This interface defines functions implemented by protocol contracts and is not typically used directly by applications.
+
+## Usage Boundary
+
+**You typically do not use this interface directly.**
+
+- CCIP infrastructure queries this registry to resolve token-to-pool mappings.
+- Token administrators interact with this registry to manage configuration.
+- You interact with this interface when assigning or updating pools and administrators for a token.
+- You are responsible for ensuring correct admin assignment and pool configuration.
+
+## Contract
+
+`interfaces/ITokenAdminRegistry.sol`
+
+## Import
+
+```solidity
+import {ITokenAdminRegistry} from "chainlink-ccip/interfaces/ITokenAdminRegistry.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## External API
+
+### getPool
+
+```solidity
+function getPool(address token) external view returns (address)
+```
+
+> Returns the pool associated with a given token.
+
+| Parameter | Type      | Description             |
+| --------- | --------- | ----------------------- |
+| `token`   | `address` | Token address to query. |
+
+Returns:
+
+| Type      | Description                              |
+| --------- | ---------------------------------------- |
+| `address` | Pool responsible for handling the token. |
+
+- If no pool is configured for a token, the returned address may be zero.
+
+---
+
+### proposeAdministrator
+
+```solidity
+function proposeAdministrator(address localToken, address administrator) external
+```
+
+> Proposes a new administrator for a token. Must be called by an authorized entity (typically the current administrator).
+
+| Parameter       | Type      | Description                     |
+| --------------- | --------- | ------------------------------- |
+| `localToken`    | `address` | Token being configured.         |
+| `administrator` | `address` | Proposed administrator address. |
+
+---
+
+### acceptAdminRole
+
+```solidity
+function acceptAdminRole(address localToken) external
+```
+
+> Accepts the administrator role for a token. Can only be called by the proposed administrator.
+
+| Parameter    | Type      | Description               |
+| ------------ | --------- | ------------------------- |
+| `localToken` | `address` | Token being administered. |
+
+---
+
+### setPool
+
+```solidity
+function setPool(address localToken, address pool) external
+```
+
+> Sets or updates the pool responsible for handling a token. Can only be called by the token’s administrator.
+
+| Parameter    | Type      | Description                  |
+| ------------ | --------- | ---------------------------- |
+| `localToken` | `address` | Token being configured.      |
+| `pool`       | `address` | Pool contract for the token. |
+
+---
+
+### transferAdminRole
+
+```solidity
+function transferAdminRole(address localToken, address newAdmin) external
+```
+
+> Transfers the administrator role to a new address. Can only be called by the current administrator.
+
+| Parameter    | Type      | Description                |
+| ------------ | --------- | -------------------------- |
+| `localToken` | `address` | Token being configured.    |
+| `newAdmin`   | `address` | New administrator address. |
+
+## Notes
+
+- Administrator assignment follows a two-step process: propose → accept.
+- Each token has a single active administrator at any time.
+- This registry defines the source of truth for token-to-pool mappings.
+- CCIP routing depends on correct token-to-pool mappings defined in this registry.
+- Only authorized administrators should modify token configuration.
+- Pool configuration should be updated before initiating transfers that depend on the new mapping.
+- Incorrect pool assignment may route tokens to invalid or incompatible pools.
+- Incorrect administrator assignment may grant control to unintended parties.
+
+## Related Interfaces & Contracts
+
+- [`TokenAdminRegistry`](/ccip/evm/api-reference/v2.0.0/token-admin-registry)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)

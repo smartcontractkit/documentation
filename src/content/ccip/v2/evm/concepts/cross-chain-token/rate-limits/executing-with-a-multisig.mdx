@@ -1,0 +1,255 @@
+---
+section: ccip
+date: Last Modified
+title: "Executing with a Multisig"
+metadata:
+  description: "How to build and submit CCIP rate limit update transactions from a multisig wallet, including the v2.0 setRateLimitConfig and v1.x setChainRateLimiterConfig ABIs for transaction builders."
+  excerpt: "CCIP rate limits multisig Safe transaction builder setRateLimitConfig setChainRateLimiterConfig ABI v2.0 v1.x cross-chain lane outbound inbound tuple"
+  datePublished: "2025-06-09"
+  lastModified: "2025-06-09"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+Rate limit changes are commonly executed from a multisig wallet to reduce operational risk and ensure changes are reviewed before being applied on-chain.
+
+This page describes the high-level execution model for multisig-based updates and points to tooling that can be used to submit transactions safely.
+
+## Why use a multisig
+
+Managing CCIP rate limits directly affects cross-chain transfer availability. Using a multisig helps:
+
+- require multiple reviewers before changes are executed
+- reduce the risk of accidental misconfiguration
+- provide an auditable record of approvals
+
+For this reason, the `rateLimitAdmin` role is typically assigned to a multisig wallet rather than to an individual account.
+
+Confirm which role your multisig holds:
+
+| Version | How to verify                                                          |
+| ------- | ---------------------------------------------------------------------- |
+| v2.0    | `getDynamicConfig()` → check `rateLimitAdmin` (owner may also execute) |
+| v1.x    | `getRateLimitAdmin()`                                                  |
+
+## What the multisig submits
+
+### v2.0
+
+- `setRateLimitConfig` with an array of entries, each containing:
+  - remote chain selector
+  - `fastFinality` flag
+  - outbound configuration tuple `[isEnabled, capacity, rate]`
+  - inbound configuration tuple `[isEnabled, capacity, rate]`
+
+### v1.x pools
+
+- `setChainRateLimiterConfig` with:
+  - remote chain selector
+  - outbound configuration tuple
+  - inbound configuration tuple
+
+Or `setChainRateLimiterConfigs` to batch multiple lanes.
+
+The multisig controls approval and submission only — on-chain rate limit behavior is unchanged.
+
+## Building the transaction
+
+To build a rate limit update transaction using a multisig:
+
+1. Identify the correct **token pool contract address** on the chain you are updating
+2. Confirm the multisig is the pool **owner** or `rateLimitAdmin` (via `getDynamicConfig()` on v2.0, or `getRateLimitAdmin()` on v1.x)
+3. Prepare the version-appropriate function call (see below)
+4. Supply the **remote chain selector** (`uint64`) for each lane you are updating
+5. Enter **inbound and outbound configuration tuples** for each call — even if you only intend to change one direction, the function still requires both structs (set the unchanged direction to its current on-chain values)
+6. Express all numeric values in the token's **local base units** (not whole tokens)
+
+Configuration tuples must be entered as arrays or structs containing:
+
+- `isEnabled` (bool)
+- `capacity` (uint128)
+- `rate` (uint128)
+
+### v2.0: prepare `setRateLimitConfig`
+
+Build an **array** of `RateLimitConfigArgs` entries. For each entry, supply:
+
+- `remoteChainSelector` (`uint64`)
+- `fastFinality` (`bool`) — `false` for default bucket, `true` for fast-finality bucket
+- `outboundRateLimiterConfig` — `[isEnabled, capacity, rate]`
+- `inboundRateLimiterConfig` — `[isEnabled, capacity, rate]`
+
+#### Single lane, default bucket only
+
+One array entry with `fastFinality = false`.
+
+Example tuple values for a lockdown on outbound and inbound:
+
+```
+remoteChainSelector: <uint64>
+fastFinality: false
+outboundRateLimiterConfig: [true, 0, 0]
+inboundRateLimiterConfig: [true, 0, 0]
+```
+
+#### Single lane, default + fast-finality
+
+Two array entries with the same `remoteChainSelector` but different `fastFinality` values — one with `false`, one with `true`. Use this when you need to limit or lock down both bucket types.
+
+#### Multiple remote chains
+
+Add one or more entries per chain (and per bucket type, if updating fast-finality). All entries are submitted in a single `setRateLimitConfig` call.
+
+### v1.x pools: prepare `setChainRateLimiterConfig`
+
+For a single lane, supply three arguments:
+
+- `remoteChainSelector` (`uint64`)
+- `outboundConfig` — `[isEnabled, capacity, rate]`
+- `inboundConfig` — `[isEnabled, capacity, rate]`
+
+There is no `fastFinality` flag and no array wrapper.
+
+Example tuple values for a lockdown:
+
+```
+remoteChainSelector: <uint64>
+outboundConfig: [true, 0, 0]
+inboundConfig:  [true, 0, 0]
+```
+
+To update **multiple lanes** in one transaction, use `setChainRateLimiterConfigs` with parallel arrays of selectors, outbound configs, and inbound configs.
+
+### Cross-chain lane
+
+A lane spans two chains. You typically need **two separate multisig transactions**:
+
+| Transaction | Chain       | Pool                   | Primary update  |
+| ----------- | ----------- | ---------------------- | --------------- |
+| 1           | Source      | Source token pool      | Outbound limits |
+| 2           | Destination | Destination token pool | Inbound limits  |
+
+Unless one multisig controls both pools, these are separate proposals — each signed and executed on its respective chain.
+
+On v2.0, repeat for fast-finality buckets if applicable (either as a second entry in the array on each chain, or as a separate proposal if you update buckets incrementally).
+
+<Aside type="note" title="v1.x pools">
+  One inbound/outbound pair per chain — no fast-finality entries to plan for.
+</Aside>
+
+## Tooling options
+
+Common tooling options for executing multisig transactions include:
+
+- Safe transaction builder
+- custom scripts that submit transactions to the multisig
+- internal operator tooling built on top of web3 libraries
+
+The specific interface used does not affect the on-chain outcome.
+
+## Verification before submission
+
+- confirm token pool address and chain
+- verify remote chain selector
+- recheck inbound vs outbound within each call
+- validate base-unit values
+- on v2.0: confirm `fastFinality` flag per entry
+- on v2.0: remember buckets refill to full capacity immediately
+
+## After execution
+
+Limits apply immediately once confirmed. Re-inspect on-chain state and monitor transfer behavior.
+
+## ABIs for transaction builders
+
+### setRateLimitConfig (v2.0)
+
+```json
+[
+  {
+    "inputs": [
+      {
+        "components": [
+          { "internalType": "uint64", "name": "remoteChainSelector", "type": "uint64" },
+          { "internalType": "bool", "name": "fastFinality", "type": "bool" },
+          {
+            "components": [
+              { "internalType": "bool", "name": "isEnabled", "type": "bool" },
+              { "internalType": "uint128", "name": "capacity", "type": "uint128" },
+              { "internalType": "uint128", "name": "rate", "type": "uint128" }
+            ],
+            "internalType": "struct RateLimiter.Config",
+            "name": "outboundRateLimiterConfig",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              { "internalType": "bool", "name": "isEnabled", "type": "bool" },
+              { "internalType": "uint128", "name": "capacity", "type": "uint128" },
+              { "internalType": "uint128", "name": "rate", "type": "uint128" }
+            ],
+            "internalType": "struct RateLimiter.Config",
+            "name": "inboundRateLimiterConfig",
+            "type": "tuple"
+          }
+        ],
+        "internalType": "struct TokenPool.RateLimitConfigArgs[]",
+        "name": "rateLimitConfigArgs",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "setRateLimitConfig",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
+```
+
+### setChainRateLimiterConfig (v1.x pools)
+
+```json
+[
+  {
+    "inputs": [
+      { "internalType": "uint64", "name": "remoteChainSelector", "type": "uint64" },
+      {
+        "components": [
+          { "internalType": "bool", "name": "isEnabled", "type": "bool" },
+          { "internalType": "uint128", "name": "capacity", "type": "uint128" },
+          { "internalType": "uint128", "name": "rate", "type": "uint128" }
+        ],
+        "internalType": "struct RateLimiter.Config",
+        "name": "outboundConfig",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          { "internalType": "bool", "name": "isEnabled", "type": "bool" },
+          { "internalType": "uint128", "name": "capacity", "type": "uint128" },
+          { "internalType": "uint128", "name": "rate", "type": "uint128" }
+        ],
+        "internalType": "struct RateLimiter.Config",
+        "name": "inboundConfig",
+        "type": "tuple"
+      }
+    ],
+    "name": "setChainRateLimiterConfig",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
+```
+
+## Related references
+
+- [Inspect Current Rate Limits](/ccip/evm/concepts/cross-chain-token/rate-limits/inspect-current-rate-limits)
+- [Update Rate Limits](/ccip/evm/concepts/cross-chain-token/rate-limits/update-rate-limits)
+- [Common Scenarios](/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios)
+- [Emergency Actions](/ccip/evm/concepts/cross-chain-token/rate-limits/emergency-actions)
+
+For tool-specific walkthroughs, refer to the Token Manager and multisig documentation linked from the Tools section.
+
+<CcipCommon callout="conceptualDisclaimer" />

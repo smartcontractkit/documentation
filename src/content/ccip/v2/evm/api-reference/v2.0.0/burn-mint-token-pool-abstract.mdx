@@ -1,0 +1,145 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 BurnMintTokenPoolAbstract API Reference"
+metadata:
+  description: "Abstract base contract for burn/mint token pools implementing shared mint-on-destination behavior."
+  version: "2.0.0"
+---
+
+## Summary
+
+`BurnMintTokenPoolAbstract` is an abstract base contract for burn/mint-style CCIP token pools.
+
+It provides the shared **mint-on-destination** implementation used by burn/mint pool variants.
+
+All validation, rate limiting, fee handling, and routing logic is inherited from `[TokenPool](/ccip/evm/api-reference/v2.0.0/token-pool)`.
+
+Concrete implementations supply the source-chain burn behavior while reusing the shared mint logic implemented here.
+
+---
+
+## Contract
+
+`chains/evm/contracts/pools/BurnMintTokenPoolAbstract.sol`
+
+---
+
+## Import
+
+```solidity
+import {BurnMintTokenPoolAbstract} from "chainlink-ccip/chains/evm/contracts/pools/BurnMintTokenPoolAbstract.sol";
+```
+
+---
+
+## Inheritance
+
+- `TokenPool`
+
+Marked `abstract`.
+
+---
+
+## Purpose in system
+
+Burn/mint pools follow this hierarchy:
+
+```
+TokenPool
+   └─ BurnMintTokenPoolAbstract
+        ├─ BurnMintTokenPool
+        ├─ BurnFromMintTokenPool
+        └─ BurnWithFromMintTokenPool
+```
+
+Responsibility split:
+
+- `TokenPool`
+  - OffRamp validation
+  - RMN checks
+  - Rate limiting
+  - Fee logic
+  - Pool routing
+  - Preflight/postflight hooks
+
+- `BurnMintTokenPoolAbstract`
+  - Shared mint logic on destination chain
+
+- Concrete implementations
+  - Define source-chain burn semantics
+    (`burn`, `burnFrom`, or other variations)
+
+---
+
+## Extension points
+
+Concrete contracts must implement or override:
+
+### `_lockOrBurn`
+
+Defined in `TokenPool` as abstract.
+
+Concrete burn/mint pools implement source-chain burn semantics.
+
+Examples:
+
+- `BurnMintTokenPool`
+- `BurnFromMintTokenPool`
+- `BurnWithFromMintTokenPool`
+
+---
+
+## Key internal flow / invariants
+
+### `_releaseOrMint`
+
+```solidity
+function _releaseOrMint(
+  address receiver,
+  uint256 amount,
+  uint64
+) internal virtual override
+```
+
+Implements mint-on-destination logic:
+
+```solidity
+IBurnMintERC20(address(i_token)).mint(receiver, amount);
+```
+
+Behavior:
+
+- Mints `amount` of the local token to `receiver`.
+- Ignores `remoteChainSelector` (routing handled upstream).
+- Called only after all upstream checks in `TokenPool.releaseOrMint`.
+
+Upstream invariants guaranteed before this function executes:
+
+- OffRamp authenticity validated.
+- RMN checks passed.
+- Source pool address validated.
+- Rate limits enforced.
+- Hooks executed (if configured).
+
+This function assumes all validation is complete.
+
+---
+
+## Security considerations
+
+- The underlying token must implement `IBurnMintERC20.mint`.
+- The pool must have minting privileges on the token.
+- No validation occurs inside `_releaseOrMint`; all checks occur in `TokenPool`.
+- Incorrect token permissions will cause mint to revert.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`BurnMintTokenPool`](/ccip/evm/api-reference/v2.0.0/burn-mint-token-pool)
+- [`BurnFromMintTokenPool`](/ccip/evm/api-reference/v2.0.0/burn-from-mint-token-pool)
+- [`BurnWithFromMintTokenPool`](/ccip/evm/api-reference/v2.0.0/burn-with-from-mint-token-pool)
+- [`IBurnMintERC20`](/ccip/evm/api-reference/v2.0.0/i-burn-mint-erc20)
+- [`TokenPoolFactory`](/ccip/evm/api-reference/v2.0.0/token-pool-factory)

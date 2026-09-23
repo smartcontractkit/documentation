@@ -1,0 +1,98 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 ILockBox API Reference"
+metadata:
+  description: "Interface for lockbox contracts that custody ERC20 liquidity for lock/release style CCIP token pools."
+  version: "2.0.0"
+---
+
+## Summary
+
+`ILockBox` defines the minimal interface for a lockbox contract that custody-holds ERC20 tokens for lock/release style CCIP token pools.
+
+Lockboxes are used to:
+
+- Accept deposits during outbound transfers.
+- Release tokens during inbound transfers.
+- Decouple liquidity custody from pool execution logic.
+
+---
+
+## Contract
+
+`chains/evm/contracts/interfaces/ILockBox.sol`
+
+---
+
+## Import
+
+```solidity
+import {ILockBox} from "chainlink-ccip/chains/evm/contracts/interfaces/ILockBox.sol";
+```
+
+---
+
+## Interface surface
+
+```solidity
+interface ILockBox {
+```
+
+---
+
+### deposit
+
+```solidity
+function deposit(
+  address token,
+  uint64 remoteChainSelector,
+  uint256 amount
+) external;
+```
+
+---
+
+### withdraw
+
+```solidity
+function withdraw(
+  address token,
+  uint64 remoteChainSelector,
+  uint256 amount,
+  address recipient
+) external;
+```
+
+---
+
+### isTokenSupported
+
+```solidity
+function isTokenSupported(
+  address token
+) external view returns (bool);
+```
+
+---
+
+```solidity
+}
+```
+
+---
+
+## Integration notes / expectations
+
+- Implementations should restrict `deposit` and `withdraw` to authorized callers.
+- `token` validation must be enforced by the concrete implementation.
+- `remoteChainSelector` may be used for siloed or per-lane accounting.
+- `withdraw` may treat `type(uint256).max` as a full-balance sentinel depending on implementation.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`ERC20LockBox`](/ccip/evm/api-reference/v2.0.0/erc20-lockbox)
+- [`LockReleaseTokenPool`](/ccip/evm/api-reference/v2.0.0/lock-release-token-pool)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)

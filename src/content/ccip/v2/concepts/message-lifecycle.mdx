@@ -1,0 +1,286 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Message Lifecycle"
+metadata:
+  description: "Follow a single CCIP v2 cross-chain message from send to delivery: source-chain send, offchain verification, indexing, and destination-chain execution."
+  excerpt: "ccip v2 message lifecycle send verify index execute onramp offramp ccv committee verifier attestation messageId"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+This page follows a single cross-chain message from send to delivery, demonstrating how CCIP's secure-by-default message path works. For component descriptions and architecture context, see the [CCIP v2 Architecture](/ccip/concepts/architecture/overview) page.
+
+## Overview
+
+When the application sends a cross-chain message on a lane, four phases run in order:
+
+1. **Send** — on the source chain
+2. **Verify** — offchain attestation
+3. **Index** — collect attestations into one store
+4. **Execute** — on the destination chain
+
+<ClickToZoom
+  src="/images/ccip/concepts/architecture/v2-message-lifecycle-sequence.svg"
+  alt="End-to-end CCIP v2 message lifecycle sequence diagram showing the send, verify, index, and execute phases across source chain, offchain verifiers, and destination chain."
+  caption="End-to-end CCIP v2 message lifecycle."
+/>
+
+## Phase 1 — Source-chain send
+
+### 1.1 Quote the fee
+
+The application calls `Router.getFee(destChainSelector, message)`.
+
+- The Router resolves the active OnRamp for the destination and delegates to `OnRamp.getFee()`.
+- If `feeToken` is empty, the Router treats payment as the native token (internally using the wrapped native address for pricing).
+- `OnRamp.getFee()` builds the same verifier and executor list that send will use, then queries:
+  - Fee Quoter — converts gas and byte overheads into a total fee in the fee token.
+  - Each CCV — `getFee()` per verifier (flat USD cents plus gas/byte components).
+  - Token pool — `getFee()` if the pool implements the V2 interface (skipped if no token transfer).
+  - Executor — `getFee()` unless the no-execution address is selected (zero executor fee).
+- `getFee()` must match the send path — the same logic runs again inside `forwardFromRouter()`, so a mismatch between quote and send causes the send to revert.
+
+If paying in an ERC-20, the application approves the Router for the quoted amount before sending.
+
+### 1.2 Send via the Router
+
+The application calls `Router.ccipSend(destChainSelector, message)` with the payload, tokens (if any), fee token, and `extraArgs` in the message. New integrations should use `ExtraArgsV3` (CCVs, executor, finality, gas limit, token receiver, token/executor args). Existing applications can continue sending legacy extra args on 2.0 rails — the OnRamp normalizes them internally before building the message.
+
+Supported `extraArgs` formats (EVM source → EVM destination):
+
+| Format               | When used                 | What the sender controls                                                 | v2 defaults applied                                                                         |
+| :------------------- | :------------------------ | :----------------------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
+| `ExtraArgsV3`        | New integrations          | CCVs, executor, finality, gas limit, token receiver, token/executor args | Lane default CCVs/executor only when the sender passes zero-value placeholders              |
+| `GenericExtraArgsV2` | Existing v1.x-style apps  | Gas limit (`allowOutOfOrderExecution` was deprecated)                    | Chainlink Committee Verifier; Chainlink executor; messages wait for full finality on source |
+| `EVMExtraArgsV1`     | Existing v1.x-style apps  | Gas limit only                                                           | Same as above                                                                               |
+| Empty `extraArgs`    | Apps that omit extra args | Nothing                                                                  | Same as above                                                                               |
+
+**Router (`ccipSend`):**
+
+- Reverts if the destination lane is not supported (`isChainSupported`) or the RMN contract reports a curse.
+- Re-computes the fee via `OnRamp.getFee()` (validates that the fee token is allowed).
+- Native fee token: wraps `msg.value` and transfers the wrapped native to the OnRamp.
+- ERC-20 fee token: `transferFrom` the application to the OnRamp; `msg.value` must be zero.
+- For each token in the message: `transferFrom` the application to the token pool (pool resolved via `OnRamp.getPoolBySourceToken()`).
+- Calls `OnRamp.forwardFromRouter(destChainSelector, message, feeTokenAmount, msg.sender)` — `msg.sender` becomes the recorded source sender in the message.
+
+### 1.3 OnRamp processing (`forwardFromRouter`)
+
+**1. Parse extra args and apply defaults**
+
+- If `extraArgs` carries the V3 tag (`0xa69dd4aa`), decodes `ExtraArgsV3` directly.
+- Otherwise, calls `FeeQuoter.resolveLegacyArgs()` to extract the gas limit from V1/V2 legacy formats, then applies 2.0 defaults for everything else.
+- Resolves CCVs, executor, finality, gas limit, token receiver, and args into an internal V3-shaped struct.
+- Applies the lane default executor when the sender omits one; applies lane default CCVs, as applicable, when the sender omits a verifier list.
+- Validates the destination receiver address length for the destination chain family.
+
+**2. Merge verifier lists**
+
+Final CCV list = sender preferences + lane defaults (where applicable) + lane-mandated (always) + pool-required (from `getRequiredCCVs()` on V2 pools, or lane defaults for V1 pools).
+
+Computes `ccvAndExecutorHash` from the final CCV list and executor. This hash is embedded in the message for offchain validation.
+
+**3. Compute and distribute fees**
+
+- Calls `getFee()` on each CCV, the pool (if applicable), and the Executor — the same participants as the quote path.
+- Sums `executionGasLimit` from the receipt gas components (CCV verification gas, pool overhead, executor execution cost, user gas limit).
+- Reverts with `InsufficientFeeTokenAmount` if the fee paid is less than computed.
+- `_distributeFees()` transfers fee-token payments to each receipt issuer (CCVs, pool, executor; the network fee is retained on the OnRamp).
+
+**4. Lock or burn tokens**
+
+- At most one token per message.
+- Calls the pool's `lockOrBurn()` with finality and token args; pool output (`destPoolData`) is encoded into the message.
+- Validates that the pool extra data fits within the byte overhead quoted in the fee receipt.
+
+**5. Encode message and compute message ID**
+
+- Assigns the next per-lane `messageNumber` (monotonic, starts at 1).
+- Encodes `MessageV1` and sets `messageId = keccak256(encodedMessage)`.
+
+**6. Register with each CCV (outbound)**
+
+For each CCV in the final list:
+
+- Resolves the outbound implementation via `ICrossChainVerifierResolver.getOutboundImplementation()`.
+- Calls `ICrossChainVerifierV1.forwardToVerifier()` — runs the CCV's outbound send hook and returns a verifier blob: CCV-specific bytes the OnRamp includes in `CCIPMessageSent.verifierBlobs`. Offchain verifier nodes use this blob to match the message and build attestations. Example: the Committee Verifier returns its 4-byte version tag (prepended to the hash nodes sign).
+
+**7. Emit event**
+
+Emits `CCIPMessageSent` with:
+
+- `messageId`, `encodedMessage`, `receipts` (fee breakdown per issuer), and `verifierBlobs` (per-CCV hints).
+- `sender` (original application address), `feeToken`, and the token amount before pool fees.
+
+Curse status is checked at both the Router and the OnRamp — a cursed destination (on send) causes a revert.
+
+## Phase 2 — Offchain verification
+
+### 2.1 Shared verifier pipeline
+
+Each CCV type's offchain service:
+
+1. Monitors the source chain for `CCIPMessageSent`.
+2. Filters events where `receipts` include an entry issued by that CCV's onchain resolver address.
+3. Decodes `encodedMessage` and confirms `messageId` matches `keccak256(encodedMessage)`.
+4. Reads the requested finality from the message and waits until the source chain meets that verifier's onchain policy (full finality by default).
+5. Checks RMN curse status — cursed source/destination subjects are not attested.
+6. Reads `verifierBlobs` from the event — the CCV-specific bytes returned by `forwardToVerifier` on send — and uses them to match the message and build attestations (Committee Verifier: 4-byte version tag prepended to the hash nodes sign).
+
+### 2.2 Committee Verifier (default)
+
+For each message:
+
+- Each committee node independently signs a hash over the verifier version tag and `messageId` (which commits to the full encoded payload).
+- Posts the signature to the Aggregator over an authenticated channel.
+- The Aggregator validates each ECDSA signature, persists it, and checks quorum for the source chain.
+- When quorum is reached, it stores the combined `VerifierResult` and exposes it via a read API.
+
+<Aside type="note">
+  For how faster-than-finality changes the finality wait, see [Fast Transfers -
+  Overview](/ccip/concepts/execution-latency/ftf).
+</Aside>
+
+### 2.3 Additional CCVs
+
+Each additional verifier service operates independently — separate monitoring, finality wait, and publication path. Results are stored in that verifier's own database and exposed via its REST API (not the Aggregator). Some apply only when their specific token is transferred.
+
+Attestations are bound to `messageId` — offchain services do not re-derive a different identity than the onchain message.
+
+## Phase 3 — Indexing
+
+### 3.1 Discovery
+
+- The Indexer polls the Aggregator using a sequence cursor to discover newly verified messages without scanning by message ID.
+- For each discovered message ID, it checks local storage for which CCV attestations are still missing.
+
+### 3.2 Collection
+
+- Committee Verifier results — fetched from the Aggregator (by message ID or via the cursor stream).
+- Additional CCVs — fetched from each configured verifier's API.
+- Missing attestations are retried until present, or until operational timeout policies apply.
+
+### 3.3 Storage
+
+- Attestations are stored keyed by message ID and CCV identity.
+- Only CCV types in the Indexer's configuration are collected — if a message requires an untracked CCV, automated execution may stall until the configuration is updated.
+
+Executor services may bypass the Indexer and query the Aggregator and verifier APIs directly.
+
+## Phase 4 — Destination-chain execution
+
+### 4.1 Prepare submission
+
+Once the required attestations exist:
+
+- The application or any party calls `OffRamp.execute(encodedMessage, ccvs, verifierResults, gasLimitOverride)` on the destination chain.
+- The `ccvs` and `verifierResults` arrays must be the same length — each entry pairs a CCV resolver address with its proof bytes.
+- A `gasLimitOverride` of `0` means use the gas limit from the message; a non-zero override must be ≥ `ccipReceiveGasLimit` in the message. Example: if the message specifies `200_000`, pass `0` to use `200_000`, or `300_000` to grant more headroom; `100_000` reverts.
+
+The executor chosen at send time governs fees — it does not restrict who may call `execute`.
+
+### 4.2 Default executor service (offchain)
+
+The default executor service runs these checks before submitting:
+
+1. Reads `OffRamp.getCCVsForMessage()` (view) — re-derives the required and optional CCVs from the receiver, pool, and lane config for the encoded message (the same logic as onchain execution).
+2. Confirms all required CCVs have attestation results and that the optional quorum is met.
+3. Checks curse status and the `OffRamp` execution state for the message ID (skips if already SUCCESS).
+4. Submits `execute()`; retries on FAILURE within a configured window (currently 8h).
+
+If another party has already reached SUCCESS, the service skips the message.
+
+### 4.3 OffRamp entry checks (`execute`)
+
+Before execution begins, the OffRamp validates:
+
+- The source chain is not cursed and is enabled in lane config.
+- `onRampAddress` in the message matches an allowlisted OnRamp for that source chain.
+- `offRampAddress` in the message matches this OffRamp contract.
+- `destChainSelector` matches the local chain.
+- The message has not already SUCCESSfully executed (allows a retry from FAILURE, or a first attempt from UNTOUCHED).
+
+Sets the execution state to IN_PROGRESS, then calls `executeSingleMessage()` internally (with a gas buffer so state can be updated even if inner execution runs out of gas).
+
+### 4.4 OffRamp message processing (`executeSingleMessage`)
+
+**1. Resolve required CCVs (independent of submitter)**
+
+Re-derives the required set via `_getCCVsForMessage()` from:
+
+- Receiver — `getCCVsAndFinalityConfig(sourceChainSelector, sender)` if the receiver implements the v2 interface (required + optional CCVs with an optional threshold).
+- Token pool — inbound `getRequiredCCVs()` (or lane defaults for V1 pools).
+- Lane configuration — lane-mandated CCVs are always included.
+
+For token-only transfers, receiver CCVs and sender-level defaults are omitted; pool and lane-mandated verifiers still apply.
+
+**2. Verify CCV quorum**
+
+This step runs before token release or receiver delivery. The OffRamp first confirms quorum at the CCV-set level, then calls each CCV's inbound verification.
+
+_CCV-set quorum (OffRamp):_
+
+- Confirms every required CCV resolver address is present in the submitted `ccvs` array — reverts `RequiredCCVMissing` if not.
+- Confirms the optional CCV threshold is met when the receiver specified optional verifiers — reverts `OptionalCCVQuorumNotReached` if not.
+- Extra CCV entries beyond what is required or optional are ignored (not verified).
+- Only CCVs that pass this set-level check proceed to `verifyMessage`.
+
+_Per-CCV verification (resolver → implementation):_
+
+For each CCV to verify:
+
+1. `getInboundImplementation(verifierResults[i])` on the CCV resolver — reads the 4-byte version tag prefix from the proof and returns the inbound implementation address. Reverts `InboundImplementationNotFound` if unregistered.
+2. `verifyMessage(message, messageId, verifierResults[i])` on that implementation — must succeed (not revert) for execution to continue.
+
+The `messageId` passed here is `keccak256(encodedMessage)` — the same ID committee nodes signed offchain and the Aggregator keyed results on.
+
+_Checks inside `CommitteeVerifier.verifyMessage`:_
+
+The Committee Verifier is the baseline CCV on every lane. Its destination-side `verifyMessage` performs onchain checks on the decoded message and the proof bytes. Offchain, each committee node signs `keccak256(versionTag ‖ messageId)` and posts to the Aggregator. When quorum is reached, the Aggregator packs the quorum signatures (sorted by signer address) and exposes them as `CcvData` in the `VerifierResult`. Executors pass this blob as `verifierResults[i]` at execution time.
+
+1. **RMN curse** — reverts if the message's source chain selector is cursed.
+2. **Minimum length** — the proof must contain at least the version tag and signature-length prefix; otherwise `InvalidVerifierResults`.
+3. **Version tag match** — the first 4 bytes must equal this implementation's immutable `versionTag()`; otherwise `InvalidCCVVersion`. This binds the proof to this verifier type and prevents cross-CCV replay.
+4. **Signature length sanity** — the declared signature length must not exceed the bytes available; otherwise `InvalidVerifierResults`.
+5. **ECDSA quorum validation** — recomputes the signed hash as `keccak256(bytes.concat(verifierVersion, messageId))` and validates signatures:
+   - Loads the signer allowlist and threshold configured for this message's source chain selector on the destination Committee Verifier. Reverts `SourceNotConfigured` if none.
+   - Rejects if the chain ID at deployment differs from the current chain ID (`ForkedChain`) — a defense against replay on a forked network.
+   - Requires at least threshold signatures in the blob; otherwise `WrongNumberOfSignatures`.
+   - For the first threshold signatures (in order): recovers the signer with `ecrecover`, checks the signer is in the allowlist (`UnauthorizedSigner`), and enforces strictly increasing signer addresses (`NonOrderedOrNonUniqueSignatures`) to prevent duplicate votes.
+   - Additional signatures beyond the threshold may be present; only the first threshold are validated (a gas optimization).
+
+_What this means:_
+
+- The proof authorizes this exact message ID, which commits to the full encoded payload (receiver, tokens, data, finality, etc.) — not a different message or a partial edit.
+- At least a quorum of independent, allowlisted committee signers attested to that ID for this verifier version.
+- The attestation cannot be applied while the source chain is cursed, or through the wrong CCV implementation.
+
+_Failure behavior:_
+
+Any revert from `verifyMessage` fails the entire `executeSingleMessage` call. No tokens are released and the receiver is not called. The execution state may be recorded as FAILURE (retryable) depending on where the revert occurred.
+
+Additional CCV types use the same resolver routing and OffRamp call pattern, but their `verifyMessage` validates their own proof formats (for example, Circle CCTP attestation bytes or Lombard attestation bytes) instead of committee ECDSA quorum.
+
+**3. Release or mint tokens**
+
+- If the message includes a token transfer: calls the pool's `releaseOrMint()` with the source sender, source chain, and finality from the message.
+- Delivers to `tokenReceiver` from the encoded message (or the message receiver if none is specified).
+- Confirms the delivered amount via balance delta (unless the pool itself is the receiver).
+
+**4. Deliver to receiver (if not token-only)**
+
+- Skipped when `data` is empty, `ccipReceiveGasLimit` is zero, or the receiver does not implement the receiver interface — the pure token-only path.
+- Otherwise calls `Router.routeMessage()` → the receiver's `ccipReceive(Any2EVMMessage)` with exact gas enforcement.
+- The `execute()` caller (executor or manual submitter) never calls the receiver directly — the Router does. In `ccipReceive`, verify that `msg.sender` is the Router. The original source-chain application is `message.sender` in the decoded message.
+
+If `ccipReceive` reverts, the entire execution attempt fails atomically (tokens are not successfully delivered in that attempt).
+
+### 4.5 Execution outcome
+
+- **SUCCESS** — recorded in `s_executionStates[messageId]`; the message cannot be executed again. Emits `ExecutionStateChanged`.
+- **FAILURE** — recorded; the message may be retried. Emits `ExecutionStateChanged` with error data.
+- A retry that fails again leaves the message in `FAILURE`, ready to be retried once the underlying issue is fixed.
+
+<CcipCommon callout="conceptualDisclaimer" />

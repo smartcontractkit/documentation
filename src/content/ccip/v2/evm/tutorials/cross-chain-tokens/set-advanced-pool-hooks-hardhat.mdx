@@ -1,0 +1,874 @@
+---
+section: ccip
+date: Last Modified
+title: "Set advanced pool hooks using Hardhat"
+metadata:
+  description: "Deploy and attach AdvancedPoolHooks to a CCIP v2 token pool using Hardhat. Send a baseline transfer, attach hooks, remove your address from the allowlist to force an expected failure, then detach hooks and send again."
+  image: "/images/ccip/basic-architecture.png"
+  excerpt: "advanced pool hooks, allowlist, authorized callers, Hardhat, token pool, ccip-cli, test transfer, CCIP, cross-chain token"
+  datePublished: "2025-10-30"
+  lastModified: "2026-05-05"
+  estimatedTime: "30 minutes"
+  difficulty: "intermediate"
+whatsnext:
+  "Set Token Pool rate limits using Hardhat": "/ccip/evm/tutorials/cross-chain-tokens/update-rate-limiters-hardhat"
+  "Set token transfer fee configuration using Hardhat": "/ccip/evm/tutorials/cross-chain-tokens/set-transfer-fee-config-hardhat"
+---
+
+import { AnchoredAccordion, Aside, GitHubCard, PageTabs } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<PageTabs
+  pages={[
+    {
+      name: "Foundry",
+      url: "/ccip/evm/tutorials/cross-chain-tokens/set-advanced-pool-hooks-foundry",
+      icon: "/images/tutorial-icons/foundry-icn.png",
+    },
+    {
+      name: "Hardhat",
+      url: "/ccip/evm/tutorials/cross-chain-tokens/set-advanced-pool-hooks-hardhat",
+      icon: "/images/tutorial-icons/hardhat-icn.png",
+    },
+  ]}
+/>
+
+CCIP v2 token pools support an optional [`AdvancedPoolHooks`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/AdvancedPoolHooks.sol) contract being attached to them. \
+This contract can run certain checks :
+
+1. before tokens are locked/burned (source chain)
+2. before tokens are released/minted (destination chain)
+
+If no hooks contract is attached, the token pool keeps its existing behavior.
+
+Hooks are enforced only when **both** of these aspects are configured:
+
+- The token pool points to the `AdvancedPoolHooks` contract.
+- The hooks contract authorizes that token pool as a caller.
+
+Authorize the pool before attaching hooks so the first hook call does not revert. Hooks are configured **per token pool, per chain**, which means that:
+you need to repeat this setup for any other pool where you want hooks enforced.
+
+> **Note:** Remember. Your CCT token can be deployed on multiple chains, with each chain having its own token pool.
+
+In this tutorial you will:
+
+1. Review the current hooks state on your deployed token pool.
+2. Send a baseline transfer (_with no hooks attached_). This should succeed.
+3. Deploy an `AdvancedPoolHooks` contract with your deployer address on the allowlist.
+4. Authorize the pool as a caller on the hooks contract and attach the hooks contract to the token pool.
+5. Verify the hooks attachment, authorized callers, and allowlist state.
+6. Remove your address from the allowlist.
+7. Attempt a transfer (_expected to revert with `SenderNotAllowed(address)`_).
+8. Detach the hooks contract.
+9. Send a transfer again (_expected to succeed_).
+10. Manage the allowlist over time (add, remove, and check addresses).
+
+## Before You Begin
+
+<AnchoredAccordion title="Set up your development environment" number={1} depth={3}>
+
+1. Install Node.js and npm:
+   - Make sure you have `Node.js v22.10.0` or above installed. If not, install **`Node.js v22.10.0`** using their [documentation](https://nodejs.org/en/download/).
+   - `npm` is bundled with Node.js. If `npm` is unavailable, reinstall or update Node.js.
+
+2. Install/Update Chainlink `ccip-cli`:
+
+```bash filename="Terminal"
+npm install -g @chainlink/ccip-cli
+ccip-cli --version
+```
+
+3. **Clone the repository and navigate to the project directory**:
+
+<GitHubCard
+  title="CCIP 2.0 template"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat"
+  iconName="github-svg-card"
+>
+  Clone the CCIP 2.0 Hardhat template for a smoother setup.
+</GitHubCard>
+
+```bash filename="Terminal"
+git clone https://github.com/smartcontractkit/docs-cct-hardhat.git
+cd docs-cct-hardhat
+```
+
+4. Create a `.env` file by copying the `.env.example` file, and fill in the required values:
+
+```bash filename="Terminal"
+cp .env.example .env
+```
+
+```bash filename=".env"
+# Keystore name (created via `npx hardhat keystore set`)
+KEYSTORE_NAME=<your_default_keystore_name>
+
+# RPC URLs (add the ones you need)
+ETHEREUM_SEPOLIA_RPC_URL=your_eth_sepolia_rpc
+ARBITRUM_SEPOLIA_RPC_URL=your_arbitrum_sepolia_rpc
+
+# Etherscan API key (required only if you pass --verify to deployment tasks)
+ETHERSCAN_API_KEY=your_etherscan_api_key
+```
+
+This tutorial uses a single wallet for every deployment, configuration update, and test transfer: the wallet stored in `KEYSTORE_NAME`.
+
+<GitHubCard
+  title="Complete List of Supported Chains"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/helper-config.ts"
+  iconName="github-svg-card"
+>
+  View the complete list of supported chains in the `helper-config.ts` file.
+</GitHubCard>
+
+5. To make sure your terminal has access to these variables, run the following command:
+
+```bash filename="Terminal"
+source .env
+```
+
+6. Build the project:
+
+```bash filename="Terminal"
+npm install && npx hardhat compile
+```
+
+7. Create an encrypted Hardhat keystore, if you haven't already:
+
+```bash filename="Terminal"
+npx hardhat keystore set PRIVATE_KEY
+```
+
+<Aside type="caution" title="Private key format">
+  When prompted for your private key, include the <code>0x</code> prefix.
+</Aside>
+
+<Aside type="note" title="Note">
+  <ol>
+    <li>
+      Hardhat prompts for a keystore password: set it on first use, or enter it to unlock on subsequent uses. Then it
+      asks you to enter your private key as hidden text.
+    </li>
+    <li>
+      The name you choose (e.g. <code>PRIVATE_KEY</code>) is what you set as <code>KEYSTORE_NAME</code> in{" "}
+      <code>.env</code>.
+    </li>
+    <li>
+      Use <code>npx hardhat keystore list</code> to check previously created keystores.
+    </li>
+  </ol>
+</Aside>
+
+</AnchoredAccordion>
+
+## Tutorial
+
+<AnchoredAccordion title="Confirm prerequisites, addresses, and permissions" number={1} depth={3}>
+
+This tutorial assumes you have already deployed tokens and token pools and configured a working lane. If not, complete one of the registration tutorials first:
+
+<ul>
+  <li>
+    <a href="/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat">Burn & Mint (Hardhat)</a>
+  </li>
+  <li>
+    <a href="/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat">Lock & Mint (Hardhat)</a>
+  </li>
+</ul>
+
+Export the addresses for the chain you are configuring:
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_TOKEN=0x...
+export ETHEREUM_SEPOLIA_TOKEN_POOL=0x...
+export ARBITRUM_SEPOLIA_TOKEN=0x...
+export ARBITRUM_SEPOLIA_TOKEN_POOL=0x...
+```
+
+Use these values throughout the tutorial:
+
+- `ETHEREUM_SEPOLIA_TOKEN_POOL` is the [`TokenPool`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/TokenPool.sol) v2 contract being configured.
+- `POOL_HOOKS` is the deployed `AdvancedPoolHooks` contract, exported after deployment.
+- `ETHEREUM_SEPOLIA_TOKEN` is the source-chain token that we will transfer across to the destination chain (Arbitrum Sepolia)
+
+<Aside type="caution" title="Funding requirements">
+  <ul>
+    <li>
+      <strong>Sepolia ETH</strong>: the wallet <code>KEYSTORE_NAME</code> needs ETH on Sepolia to pay gas for
+      transactions.
+    </li>
+    <li>
+      <strong>Your token on Sepolia</strong>: the same wallet needs some <code>ETHEREUM_SEPOLIA_TOKEN</code> to transfer
+      the tokens across to the destination chain (Arbitrum Sepolia).
+    </li>
+  </ul>
+</Aside>
+
+<Aside type="note" title="One-wallet assumption">
+  1. This tutorial assumes the wallet stored in <code>KEYSTORE_NAME</code> is the owner of the token pool and will be
+  the owner of the deployed <code>AdvancedPoolHooks</code> contract. 2. These roles can be distributed across multiple
+  wallets if needed.
+</Aside>
+
+<Aside type="note" title="Target the right contract">
+  <ul>
+    <li>
+      <code>AdvancedPoolHooks</code> attach to a <strong>TokenPool v2</strong> contract. In Lock &amp; Mint, do not
+      confuse the token pool with the <code>ERC20LockBox</code> (this tutorial configures token pool hooks only).
+    </li>
+    <li>
+      Hooks are configured per token pool, per chain. Repeat this setup for any other pool where you want hooks
+      enforced.
+    </li>
+  </ul>
+</Aside>
+
+<Aside type="caution" title="Common failure cases">
+  <ul>
+    <li>
+      <strong>Missing function selector:</strong> the target pool is likely not a TokenPool v2 contract and does not
+      support advanced hooks.
+    </li>
+    <li>
+      <strong>Wrong signer / wrong owner:</strong> if a write task reverts with <code>OnlyCallableByOwner()</code>, the
+      wallet stored in <code>KEYSTORE_NAME</code> is not the current owner of that contract.
+    </li>
+    <li>
+      <strong>AllowListNotEnabled():</strong> the hooks contract was deployed with an empty allowlist, so allowlist mode
+      is disabled for that deployment.
+    </li>
+    <li>
+      <strong>Hook call reverts:</strong> confirm the token pool is listed as an authorized caller on the hooks contract
+      before attaching hooks.
+    </li>
+    <li>
+      <strong>SenderNotAllowed(address):</strong> the transfer sender is not allowlisted as the original outbound
+      sender.
+    </li>
+  </ul>
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Review current pool hooks state" number={2} depth={3}>
+
+Use the `getAdvancedPoolHooks` task to check whether an `AdvancedPoolHooks` contract is currently attached to your token pool.
+
+<GitHubCard
+  title="getAdvancedPoolHooks.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/allowlist/getAdvancedPoolHooks.ts"
+  iconName="github-svg-card"
+>
+  View the hooks query task on GitHub.
+</GitHubCard>
+
+```bash filename="Terminal"
+npx hardhat getAdvancedPoolHooks --network sepolia
+```
+
+Example output (no hooks attached):
+
+```bash filename="Terminal"
+========================================
+🪝 Get Advanced Pool Hooks
+========================================
+Chain:        Ethereum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       View pool hooks
+========================================
+
+No AdvancedPoolHooks contract is attached to this pool.
+   Deploy one with:  npx hardhat deployAdvancedPoolHooks
+   Attach it with:   npx hardhat updateAdvancedPoolHooks --newhook <address>
+
+========================================
+Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+========================================
+```
+
+<Aside type="note">
+  1. <code>getAdvancedPoolHooks()</code> is only available on TokenPool v2.0 and later. 2. If your token pool already
+  has hooks attached, you can detach them by following the 'Detach hooks' section, to follow the tutorial.
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Send a baseline transfer (no hooks attached)" number={3} depth={3}>
+
+This step confirms your lane works before enabling hooks. Make sure the previous step shows no hooks attached.
+
+<Aside type="note" title="Router address">
+  You can find the router address for your chain in the [CCIP
+  Directory](https://docs.chain.link/ccip/directory/testnet).
+</Aside>
+
+Export the Sepolia router address for `ccip-cli`:
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_ROUTER=0x...
+```
+
+<Aside type="note" title="Token amounts in this tutorial">
+  <ol>
+    <li>
+      Earlier Hardhat tasks use smallest-unit amounts (wei-like). In the <code>ccip-cli</code> examples below we use a
+      compact, human-readable token amount (for example, <code>1.23</code>).
+    </li>
+    <li>
+      The wallet stored in <code>KEYSTORE_NAME</code> should have some of your tokens on Sepolia so it can send a
+      cross-chain transfer.
+    </li>
+  </ol>
+</Aside>
+
+Send a baseline transfer to confirm if the cross chain transfer succeeds without any hooks attached.
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+  --receiver 0xreceiveraddress \
+  --wallet hardhat:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+```
+
+Expected output (example):
+
+```bash filename="Terminal"
+Fee: 130129888907619n = 0.000130129888907619 ETH
+✔ Enter password for Hardhat keystore 'PRIVATE_KEY'
+🚀 Sending message to 0xE23Fc63F47F08F58B9d7448d4CCE0bCDcc96d7F3 @ ethereum-testnet-sepolia-arbitrum-1 , tx => 0x3dc40bea29f3e3fc93ff8fce0dda45fd7f55a07ace5089646e018874c8b6745e , messageId => 0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+CCIP Explorer: https://ccip.chain.link/msg/0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Deploy AdvancedPoolHooks" number={4} depth={3}>
+
+Use the `deployAdvancedPoolHooks` task to deploy a new hooks contract.
+
+<GitHubCard
+  title="deployAdvancedPoolHooks.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/allowlist/deployAdvancedPoolHooks.ts"
+  iconName="github-svg-card"
+>
+  View the hooks deployment task on GitHub.
+</GitHubCard>
+
+Deployment flags:
+
+- `--allowlist`: CSV list of original outbound sender addresses allowed to initiate outbound transfers.
+- `--authorizedcallers`: CSV list of token pool addresses permitted to invoke the hooks.
+
+<Aside type="caution" title="Allowlist enablement is permanent">
+  <ol>
+    <li>
+      Allowlist mode is set at deployment time and <strong>cannot be changed later</strong>.
+    </li>
+    <li>
+      If you deploy with a non-empty <code>--allowlist</code>, the allowlist is permanently enabled.
+    </li>
+    <li>
+      If you deploy with an empty allowlist, calling <code>applyAllowListUpdates()</code> later will revert with{" "}
+      <code>AllowListNotEnabled()</code>.
+    </li>
+  </ol>
+</Aside>
+
+In this example, you will deploy hooks on Ethereum Sepolia with your deployer address on the allowlist, and authorize your token pool as a caller:
+
+<Aside type="note" title="Why we start by allowlisting the deployer">
+  1. You will first allowlist your deployer address so you can attach hooks without immediately blocking your own
+  transfers. 2. Later in the tutorial, you will remove your address from the allowlist to demonstrate an enforced
+  failure.
+</Aside>
+
+```bash filename="Terminal"
+npx hardhat deployAdvancedPoolHooks \
+  --allowlist 0xYourDeployerAddress \
+  --authorizedcallers $ETHEREUM_SEPOLIA_TOKEN_POOL \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+🔒 Deploy Advanced Pool Hooks
+========================================
+Chain:        Ethereum Sepolia
+Action:       Deploy pool hooks
+========================================
+
+Advanced Pool Hooks Parameters:
+  Allowlist Enabled:           Yes
+  Allowlist Size:              1
+    [0] 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+  Threshold Amount:            Disabled (0)
+  Policy Engine:               Disabled (0x0)
+  Authorized Callers Enabled:  Yes
+  Authorized Callers Size:     1
+    [0] 0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+
+[Step 1] Deploying AdvancedPoolHooks on Ethereum Sepolia
+⏳ Deployment tx: 0x9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d
+✅ AdvancedPoolHooks deployed successfully!
+
+========================================
+✅ Deployment Complete on Ethereum Sepolia!
+========================================
+AdvancedPoolHooks Address: 0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+
+Deployment saved: deployments/advanced-pool-hooks/ETHEREUM_SEPOLIA/1746652800-AdvancedPoolHooks.json
+
+Configuration Summary:
+  Allowlist:          Enabled
+  Threshold:          Disabled
+  Policy Engine:      Disabled
+  Authorized Callers: Enabled
+
+Next Steps:
+  1. When deploying a TokenPool, pass this hooks address as the 'poolHooks' parameter
+  2. Attach to an existing pool: npx hardhat updateAdvancedPoolHooks --newhook <address> --network <network>
+  3. Manage allowlist: npx hardhat updateAllowList --poolhooks <address> --add "0xAddr" --network <network>
+========================================
+```
+
+Export the hooks address for subsequent commands:
+
+```bash filename="Terminal"
+export POOL_HOOKS=0xHooksAddress
+```
+
+<Aside type="note" title="Deployment address recovery">
+  <ul>
+    <li>
+      Deployment addresses are saved to <code>deployments/advanced-pool-hooks/</code>.
+    </li>
+    <li>
+      If you lose the session export, retrieve the address from the JSON file under the <code>POOL_HOOKS</code> key.
+    </li>
+  </ul>
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Authorize the pool and attach hooks" number={5} depth={3}>
+
+Authorize the token pool as a caller on the hooks contract before attaching hooks so the first hook call does not revert.
+
+<Aside type="note" title="Already authorized at deploy time?">
+  If you passed <code>--authorizedcallers</code> when deploying the hooks contract (as shown in the previous step), your
+  pool is already authorized. You can skip the authorization command and go directly to attaching the hooks.
+</Aside>
+
+**If you need to authorize the pool separately**, use the `updateAuthorizedCallers` task:
+
+<GitHubCard
+  title="updateAuthorizedCallers.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/authorized-callers/updateAuthorizedCallers.ts"
+  iconName="github-svg-card"
+>
+  View the authorized callers task on GitHub.
+</GitHubCard>
+
+```bash filename="Terminal"
+npx hardhat updateAuthorizedCallers \
+  --poolhooks $POOL_HOOKS \
+  --add $ETHEREUM_SEPOLIA_TOKEN_POOL \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+📝 Update Authorized Callers
+========================================
+Chain:        Ethereum Sepolia
+Pool Hooks:   0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+Action:       Update authorized callers
+========================================
+
+Adding 1 caller(s):
+  [0] 0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+
+[Step 1] Applying authorized caller updates on Ethereum Sepolia
+⏳ Tx: 0xaaabbbcccdddeeefff000111222333444555666777888999aaabbbcccdddeeff
+
+========================================
+✅ Authorized callers updated on Ethereum Sepolia!
+========================================
+Pool Hooks:   https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+Transaction:  0xaaabbbcccdddeeefff000111222333444555666777888999aaabbbcccdddeeff
+========================================
+```
+
+**Now attach the hooks** to your token pool using the `updateAdvancedPoolHooks` task:
+
+<GitHubCard
+  title="updateAdvancedPoolHooks.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/allowlist/updateAdvancedPoolHooks.ts"
+  iconName="github-svg-card"
+>
+  View the hooks update task on GitHub.
+</GitHubCard>
+
+| Flag                       | Required | Description                                                   |
+| -------------------------- | -------- | ------------------------------------------------------------- |
+| <nobr>`--tokenpool`</nobr> | No       | Token pool address (defaults to `{CHAIN}_TOKEN_POOL` env var) |
+| <nobr>`--newhook`</nobr>   | Yes      | Address of the deployed `AdvancedPoolHooks` contract          |
+
+```bash filename="Terminal"
+npx hardhat updateAdvancedPoolHooks \
+  --newhook $POOL_HOOKS \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+🔄 Update Advanced Pool Hooks
+========================================
+Chain:        Ethereum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       Update pool hooks
+========================================
+
+New Pool Hooks: 0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+
+[Step 1] Updating AdvancedPoolHooks on Ethereum Sepolia
+⏳ Tx: 0xbbccddeeff00112233445566778899aabbccddeeff00112233445566778899aa
+✅ AdvancedPoolHooks updated successfully!
+
+========================================
+✅ Pool hooks updated on Ethereum Sepolia!
+========================================
+Token Pool:     https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+New Pool Hooks: https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+========================================
+```
+
+<Aside type="note" title="Access control">
+  <ul>
+    <li>
+      Updating authorized callers requires the hooks contract <strong>owner</strong>.
+    </li>
+    <li>
+      Attaching or detaching hooks requires the token pool <strong>owner</strong>.
+    </li>
+    <li>
+      If either command reverts with <code>OnlyCallableByOwner()</code>, the wallet stored in <code>KEYSTORE_NAME</code>{" "}
+      is not the current owner of the target contract.
+    </li>
+  </ul>
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Verify the setup" number={6} depth={3}>
+
+Run the following read-only tasks to verify wiring. These checks confirm configuration state only; the next step attempts a transfer that is expected to revert.
+
+**1. Confirm hooks are attached to the pool:**
+
+```bash filename="Terminal"
+npx hardhat getAdvancedPoolHooks --network sepolia
+```
+
+Expected output should now show your hooks address:
+
+```bash filename="Terminal"
+========================================
+🪝 Get Advanced Pool Hooks
+========================================
+Chain:        Ethereum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       View pool hooks
+========================================
+
+✅ AdvancedPoolHooks:
+   0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+
+========================================
+Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+========================================
+```
+
+**2. Confirm the pool is an authorized caller on the hooks:**
+
+<GitHubCard
+  title="getAuthorizedCallers.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/authorized-callers/getAuthorizedCallers.ts"
+  iconName="github-svg-card"
+>
+  View the authorized callers query task on GitHub.
+</GitHubCard>
+
+```bash filename="Terminal"
+npx hardhat getAuthorizedCallers \
+  --poolhooks $POOL_HOOKS \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+🔎 Get Authorized Callers
+========================================
+Chain:        Ethereum Sepolia
+Pool Hooks:   0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+Action:       View authorized callers
+========================================
+
+Authorized Callers count: 1
+  [0] 0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+
+========================================
+Pool Hooks:   https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+========================================
+```
+
+**3. View the current allowlist:**
+
+<GitHubCard
+  title="getAllowList.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/allowlist/getAllowList.ts"
+  iconName="github-svg-card"
+>
+  View the allowlist query task on GitHub.
+</GitHubCard>
+
+```bash filename="Terminal"
+npx hardhat getAllowList \
+  --poolhooks $POOL_HOOKS \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+🔎 Get AllowList
+========================================
+Chain:        Ethereum Sepolia
+Pool Hooks:   0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+Action:       View allowlist
+========================================
+
+AllowList count: 1
+  0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+========================================
+Pool Hooks:   https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+========================================
+```
+
+**4. (Optional): Check if a particular sender is allowlisted:**
+
+<GitHubCard
+  title="isAllowListed.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/allowlist/isAllowListed.ts"
+  iconName="github-svg-card"
+>
+  View the allowlist check task on GitHub.
+</GitHubCard>
+
+```bash filename="Terminal"
+npx hardhat isAllowListed \
+  --poolhooks $POOL_HOOKS \
+  --checkaddress 0xsenderaddress \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+🔎 Is AllowListed?
+========================================
+Chain:         Ethereum Sepolia
+Pool Hooks:    0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+Check Address: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+Action:        Check allowlist
+========================================
+
+✅ Address IS allowlisted.
+========================================
+Pool Hooks:   https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+========================================
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Remove your address from the allowlist" number={7} depth={3}>
+
+In this step, you remove your own address from the hooks allowlist. This sets up the next transfer to fail.
+
+<Aside type="note" title="Admin access vs transfer permissions">
+  Updating the allowlist is admin-only (<code>onlyOwner</code>) and is not gated by allowlist membership. Even if you
+  are the hooks admin, your transfers will still revert unless your sender address is on the allowlist.
+</Aside>
+
+Remove your deployer address from the allowlist:
+
+```bash filename="Terminal"
+npx hardhat updateAllowList \
+  --poolhooks $POOL_HOOKS \
+  --remove "0xYourDeployerAddress" \
+  --network sepolia
+```
+
+Verify that your address is no longer allowlisted:
+
+```bash filename="Terminal"
+npx hardhat isAllowListed \
+  --poolhooks $POOL_HOOKS \
+  --checkaddress 0xYourDeployerAddress \
+  --network sepolia
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Attempt a transfer (expected failure)" number={8} depth={3}>
+
+This step attempts a token transfer and is expected to fail because you removed your sender address from the allowlist. Hooks are configured per token pool, per chain, although this does not attach hooks on any destination-chain pool.
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+  --receiver 0xYourDeployerAddress \
+  --wallet hardhat:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+```
+
+Expected result: the send transaction reverts. You should see an error that includes `SenderNotAllowed(address)`.
+
+If this step does **not** fail as expected, make sure:
+
+- Hooks are attached (`getAdvancedPoolHooks` shows `POOL_HOOKS`).
+- Your sender address is **NOT** on the allowlist (previous step returns NOT allowlisted).
+- The token pool is an authorized caller on the hooks (`getAuthorizedCallers` includes `ETHEREUM_SEPOLIA_TOKEN_POOL`).
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Detach hooks" number={9} depth={3}>
+
+Detach hooks to disable enforcement. This sets the pool hooks address back to the zero address.
+
+```bash filename="Terminal"
+npx hardhat updateAdvancedPoolHooks \
+  --newhook 0x0000000000000000000000000000000000000000 \
+  --network sepolia
+```
+
+Verify hooks are detached:
+
+```bash filename="Terminal"
+npx hardhat getAdvancedPoolHooks --network sepolia
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Send a transfer again (expected success)" number={10} depth={3}>
+
+With hooks detached, the token pool returns to its default behavior and your transfer should succeed again.
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+  --receiver 0xYourDeployerAddress \
+  --wallet hardhat:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+```
+
+Expected output (example):
+
+```bash filename="Terminal"
+Fee: 130129888907619n = 0.000130129888907619 ETH
+✔ Enter password for Hardhat keystore 'PRIVATE_KEY'
+🚀 Sending message to 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994 @ ethereum-testnet-sepolia-arbitrum-1 , tx => 0x3dc40bea29f3e3fc93ff8fce0dda45fd7f55a07ace5089646e018874c8b6745e , messageId => 0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+CCIP Explorer: https://ccip.chain.link/msg/0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Manage the allowlist" number={11} depth={3}>
+
+Use the `updateAllowList` task to add or remove addresses from the allowlist. Only the hooks contract **owner** can modify the allowlist.
+
+<GitHubCard
+  title="updateAllowList.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/allowlist/updateAllowList.ts"
+  iconName="github-svg-card"
+>
+  View the allowlist update task on GitHub.
+</GitHubCard>
+
+| Flag                       | Required | Description                                            |
+| -------------------------- | -------- | ------------------------------------------------------ |
+| <nobr>`--poolhooks`</nobr> | Yes (v2) | Address of the `AdvancedPoolHooks` contract            |
+| <nobr>`--add`</nobr>       | No       | Comma-separated addresses to add to the allowlist      |
+| <nobr>`--remove`</nobr>    | No       | Comma-separated addresses to remove from the allowlist |
+
+**Add an address:**
+
+```bash filename="Terminal"
+npx hardhat updateAllowList \
+  --poolhooks $POOL_HOOKS \
+  --add "0xYourDeployerAddress" \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+📝 Update AllowList
+========================================
+Chain:        Ethereum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Pool Hooks:   0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+Action:       Update allowlist
+========================================
+
+[Step 1] Updating allowlist on Ethereum Sepolia
+⏳ Tx: 0xccddeeff00112233445566778899aabbccddeeff00112233445566778899aabb
+✅ AllowList updated successfully!
+
+========================================
+✅ Allowlist updated on Ethereum Sepolia!
+========================================
+Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Pool Hooks:   https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+========================================
+```
+
+**Remove an address:**
+
+```bash filename="Terminal"
+npx hardhat updateAllowList \
+  --poolhooks $POOL_HOOKS \
+  --remove "0xYourDeployerAddress" \
+  --network sepolia
+```
+
+**Verify the updated allowlist** by re-running the `getAllowList` or `isAllowListed` tasks from the previous step.
+
+</AnchoredAccordion>
+
+<CcipCommon callout="educationalDisclaimer" />

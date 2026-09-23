@@ -1,0 +1,44 @@
+---
+import { Typography } from "@chainlink/blocks"
+import styles from "./LayoutHero.module.css"
+import { HeroButtons, type HeroButton } from "./HeroButtons.tsx"
+
+interface Props {
+  title: string
+  description: string
+  buttons: HeroButton[]
+  // Optional per-chain override for the button row, keyed by ChainType id (e.g. "canton").
+  // Omit entirely to keep the hero fully static, as v1/index.mdx does.
+  chainOverrides?: Record<string, HeroButton[]>
+  image?: string
+  backgroundImage?: string
+}
+
+const {
+  title,
+  description,
+  buttons = [],
+  chainOverrides,
+  image,
+  backgroundImage = "/images/landing-hero-bg.png",
+} = Astro.props as Props
+---
+
+<section class={styles.layoutHero}>
+  <div class={styles.heroContentWrapper}>
+    <div class={styles.heroContent}>
+      <h2 class={styles.heroTitle}>{title}</h2>
+      <Typography variant="body-s" color="muted">{description}</Typography>
+      <HeroButtons buttons={buttons} chainOverrides={chainOverrides} client:visible />
+    </div>
+    {
+      image && (
+        <div class={styles.heroImage}>
+          <img src={image} alt={title} />
+        </div>
+      )
+    }
+  </div>
+
+  {backgroundImage && <img class={styles.heroBackgroundImg} src={backgroundImage} />}
+</section>

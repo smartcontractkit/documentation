@@ -1,0 +1,206 @@
+/* cards.module.css
+   Use Cases cards:
+   - Header above grid (matches Tutorials)
+   - Cards touch/share borders (no gaps)
+   - Equal heights, CTA bottom-left
+   - Hover = gray background (no lift)
+*/
+
+/* Wrapper and header */
+.cardsWrapper {
+  display: block;
+  margin-top: 32px;
+  margin-bottom: 32px;
+  padding: 0;
+  box-sizing: border-box;
+  background: transparent;
+  border: none;
+}
+
+.header {
+  max-width: 1100px;
+  margin: 0 0 20px 0;
+  padding: 0;
+}
+
+.title {
+  font-size: 32px;
+  line-height: 1.15;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: var(--text-primary, #0f1724);
+}
+
+.subhead {
+  font-size: 16px;
+  margin: 0 0 20px 0;
+  color: var(--text-muted, #6b7280);
+  line-height: 1.4;
+}
+
+/* Grid: cards touch (gap 0) */
+.grid {
+  display: grid;
+  gap: 0; /* ✅ cards share borders */
+  grid-template-columns: repeat(3, 1fr);
+  width: 100%;
+  max-width: 1100px;
+  margin: 0;
+  box-sizing: border-box;
+  align-items: stretch;
+}
+
+/* Card: share borders (avoid double borders) */
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* CTA stays at bottom */
+  height: 100%;
+  box-sizing: border-box;
+
+  background: #fff;
+  padding: 28px;
+
+  /* One border per shared edge */
+  border-right: 1px solid var(--border, #e6e9eb);
+  border-bottom: 1px solid var(--border, #e6e9eb);
+  border-left: 0;
+  border-top: 0;
+
+  border-radius: 0; /* ✅ no rounding between touching cards */
+
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+/* Restore the outer frame: top row gets top border */
+.grid > .card:nth-child(-n + 3) {
+  border-top: 1px solid var(--border, #e6e9eb);
+}
+
+/* Restore the outer frame: first column gets left border */
+.grid > .card:nth-child(3n + 1) {
+  border-left: 1px solid var(--border, #e6e9eb);
+}
+
+/* Hover / focus states — gray background, no lift */
+.card:hover,
+.card:focus-within {
+  background: var(--gray-100);
+}
+
+/* Card content */
+.cardTitle {
+  margin: 0 0 12px 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary, #0f1724);
+}
+
+.cardDescription {
+  margin: 0 0 16px 0;
+  color: var(--text-secondary, #475569);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* CTA / links area — left aligned and at the bottom */
+.links {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* Link visuals */
+.link {
+  color: var(--Color-Primary, #0e1119);
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.link:hover {
+  opacity: 0.92;
+}
+
+/* Responsive breakpoints */
+/* Medium: 2 columns */
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Reset the 3-col border rules */
+  .grid > .card {
+    border-left: 0;
+    border-top: 0;
+  }
+
+  /* Outer frame: top row (2 cols) */
+  .grid > .card:nth-child(-n + 2) {
+    border-top: 1px solid var(--border, #e6e9eb);
+  }
+
+  /* Outer frame: first column (2 cols) */
+  .grid > .card:nth-child(2n + 1) {
+    border-left: 1px solid var(--border, #e6e9eb);
+  }
+}
+
+/* Small: 1 column */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .card {
+    padding: 20px;
+    border-left: 1px solid var(--border, #e6e9eb);
+  }
+
+  /* Only the first card needs the top border (already handled by the rule below) */
+  .grid > .card {
+    border-top: 0;
+  }
+
+  .grid > .card:first-child {
+    border-top: 1px solid var(--border, #e6e9eb);
+  }
+}
+.cardMeta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+/* =========================
+   Persona pill base style
+   (matches CCIP / DATA FEEDS chips)
+   ========================= */
+
+.personaPill {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 var(--space-2x);
+  border-radius: var(--space-2x);
+  background-color: var(--pill);
+  border: 1px solid var(--pill-border);
+
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+
+  pointer-events: none;
+  white-space: nowrap;
+}

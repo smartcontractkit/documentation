@@ -1,0 +1,241 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IPoolV2 API Reference"
+metadata:
+  description: "Interface for CCIP V2 token pools."
+  version: "2.0.0"
+---
+
+`IPoolV2` defines the interface for CCIP V2 token pools.
+
+If you implement this interface, you define how tokens are locked, burned, released, or minted during cross-chain transfers, along with how fees, verification requirements, and finality constraints are applied.
+
+Compared to V1, this interface adds:
+
+- finality configuration (`requestedFinalityConfig`)
+- verifier selection (`getRequiredCCVs`)
+- fee and gas configuration surfaces
+
+`requestedFinalityConfig` specifies the desired finality or confirmation guarantees for the transfer.
+
+> Most applications do not interact with this interface directly. It is implemented by pool contracts used within CCIP infrastructure.
+
+## Usage Boundary
+
+**You typically do not use this interface directly.**
+
+- CCIP pools implement this interface to define token transfer behavior.
+- OnRamp and OffRamp components call these functions during cross-chain execution.
+- You implement this interface only if you are building a custom token pool.
+- You are responsible for validation, authorization, and correct token handling.
+
+## Contract
+
+`interfaces/IPoolV2.sol`
+
+## Import
+
+```solidity
+import {IPoolV2} from "chainlink-ccip/interfaces/IPoolV2.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## Inheritance
+
+- `IERC165`
+
+## External API
+
+### lockOrBurn
+
+```solidity
+function lockOrBurn(
+  Pool.LockOrBurnInV1 calldata lockOrBurnIn,
+  bytes4 requestedFinalityConfig,
+  bytes calldata tokenArgs
+) external returns (
+  Pool.LockOrBurnOutV1 memory lockOrBurnOut,
+  uint256 destTokenAmount
+)
+```
+
+> Locks or burns tokens on the source chain and prepares data for destination execution.
+
+| Parameter                 | Type                           | Description                                |
+| ------------------------- | ------------------------------ | ------------------------------------------ |
+| `lockOrBurnIn`            | `Pool.LockOrBurnInV1 calldata` | Input describing the token transfer.       |
+| `requestedFinalityConfig` | `bytes4`                       | Requested finality level for the transfer. |
+| `tokenArgs`               | `bytes calldata`               | Additional token-specific configuration.   |
+
+Returns:
+
+| Type                          | Description                                |
+| ----------------------------- | ------------------------------------------ |
+| `Pool.LockOrBurnOutV1 memory` | Data required for destination handling.    |
+| `uint256`                     | Destination token amount after processing. |
+
+### releaseOrMint
+
+```solidity
+function releaseOrMint(
+  Pool.ReleaseOrMintInV1 calldata releaseOrMintIn,
+  bytes4 requestedFinalityConfig
+) external returns (
+  Pool.ReleaseOrMintOutV1 memory releaseOrMintOut
+)
+```
+
+> Releases or mints tokens on the destination chain.
+
+| Parameter                 | Type                              | Description                                      |
+| ------------------------- | --------------------------------- | ------------------------------------------------ |
+| `releaseOrMintIn`         | `Pool.ReleaseOrMintInV1 calldata` | Input describing the operation.                  |
+| `requestedFinalityConfig` | `bytes4`                          | Finality configuration applied during execution. |
+
+Returns:
+
+| Type                             | Description              |
+| -------------------------------- | ------------------------ |
+| `Pool.ReleaseOrMintOutV1 memory` | Result of the operation. |
+
+### getRequiredCCVs
+
+```solidity
+function getRequiredCCVs(
+  address localToken,
+  uint64 remoteChainSelector,
+  uint256 sourceAmount,
+  bytes4 requestedFinalityConfig,
+  bytes calldata extraData,
+  MessageDirection direction
+) external view returns (
+  address[] memory requiredCCVs
+)
+```
+
+> Returns the set of verifiers required to validate a transfer based on token, amount, and finality requirements.
+
+| Parameter                 | Type               | Description                               |
+| ------------------------- | ------------------ | ----------------------------------------- |
+| `localToken`              | `address`          | Token being transferred.                  |
+| `remoteChainSelector`     | `uint64`           | Destination or source chain.              |
+| `sourceAmount`            | `uint256`          | Amount being transferred.                 |
+| `requestedFinalityConfig` | `bytes4`           | Requested finality level.                 |
+| `extraData`               | `bytes calldata`   | Additional configuration data.            |
+| `direction`               | `MessageDirection` | Direction of transfer (inbound/outbound). |
+
+Returns:
+
+| Type               | Description                           |
+| ------------------ | ------------------------------------- |
+| `address[] memory` | Required verifier contract addresses. |
+
+### getTokenTransferFeeConfig
+
+```solidity
+function getTokenTransferFeeConfig(
+  address localToken,
+  uint64 destChainSelector,
+  bytes4 requestedFinalityConfig,
+  bytes calldata tokenArgs
+) external view returns (
+  TokenTransferFeeConfig memory feeConfig
+)
+```
+
+> Returns fee configuration for a token transfer.
+
+| Parameter                 | Type             | Description               |
+| ------------------------- | ---------------- | ------------------------- |
+| `localToken`              | `address`        | Token being transferred.  |
+| `destChainSelector`       | `uint64`         | Destination chain.        |
+| `requestedFinalityConfig` | `bytes4`         | Requested finality level. |
+| `tokenArgs`               | `bytes calldata` | Additional configuration. |
+
+Returns:
+
+| Type                     | Description               |
+| ------------------------ | ------------------------- |
+| `TokenTransferFeeConfig` | Fee configuration struct. |
+
+### getFee
+
+```solidity
+function getFee(
+  address localToken,
+  uint64 destChainSelector,
+  uint256 amount,
+  address feeToken,
+  bytes4 requestedFinalityConfig,
+  bytes calldata tokenArgs
+) external view returns (
+  uint256 feeUSDCents,
+  uint32 destGasOverhead,
+  uint32 destBytesOverhead,
+  uint16 tokenFeeBps,
+  bool isEnabled
+)
+```
+
+> Returns detailed fee information for a transfer.
+
+| Parameter                 | Type             | Description               |
+| ------------------------- | ---------------- | ------------------------- |
+| `localToken`              | `address`        | Token being transferred.  |
+| `destChainSelector`       | `uint64`         | Destination chain.        |
+| `amount`                  | `uint256`        | Transfer amount.          |
+| `feeToken`                | `address`        | Token used to pay fees.   |
+| `requestedFinalityConfig` | `bytes4`         | Requested finality level. |
+| `tokenArgs`               | `bytes calldata` | Additional configuration. |
+
+Returns:
+
+| Type      | Description                                                     |
+| --------- | --------------------------------------------------------------- |
+| `uint256` | Fee value denominated in USD cents (used for internal pricing). |
+| `uint32`  | Destination gas overhead.                                       |
+| `uint32`  | Destination calldata overhead.                                  |
+| `uint16`  | Token fee in basis points.                                      |
+| `bool`    | Whether transfers are enabled.                                  |
+
+- If `isEnabled` is false, transfers for the given configuration are not allowed.
+
+### getRemoteToken
+
+```solidity
+function getRemoteToken(uint64 remoteChainSelector) external view returns (bytes memory)
+```
+
+> Returns the representation of the token on the remote chain.
+
+| Parameter             | Type     | Description              |
+| --------------------- | -------- | ------------------------ |
+| `remoteChainSelector` | `uint64` | Remote chain identifier. |
+
+Returns:
+
+| Type           | Description                                              |
+| -------------- | -------------------------------------------------------- |
+| `bytes memory` | Encoded representation of the token on the remote chain. |
+
+## Notes
+
+- This interface does not enforce validation or authorization logic.
+- Implementations define how tokens are locked, burned, released, or minted.
+- Implementations must ensure only authorized CCIP components can trigger token movements.
+- Fee calculations depend on the exact input parameters. Changing the message or token configuration requires re-quoting the fee.
+- V2 interfaces introduce configurable verification and finality, which are not present in V1.
+- Incorrect implementation can result in loss of funds or inconsistent cross-chain state.
+
+## Related Interfaces & Contracts
+
+- [`IPoolV1`](/ccip/evm/api-reference/v2.0.0/i-pool-v1)
+- [`IPoolV1V2`](/ccip/evm/api-reference/v2.0.0/i-pool-v1-v2)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`Pool`](/ccip/evm/api-reference/v2.0.0/pool)

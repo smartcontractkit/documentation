@@ -31,6 +31,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   SCROLL_SEPOLIA: () => new JsonRpcProvider("https://sepolia-rpc.scroll.io"),
   CELO_MAINNET: () => new JsonRpcProvider("https://alfajores-forno.celo-testnet.org"),
   CELO_ALFAJORES: () => new JsonRpcProvider("https://forno.celo.org"),
+  CELO_SEPOLIA: () => new JsonRpcProvider("https://forno.celo-sepolia.celo-testnet.org"),
   LINEA_MAINNET: () => new JsonRpcProvider("https://rpc.linea.build"),
   LINEA_SEPOLIA: () => new JsonRpcProvider("https://linea-sepolia-rpc.publicnode.com"),
   POLYGON_ZKEVM_MAINNET: () => new JsonRpcProvider("https://zkevm-rpc.com"),
@@ -91,6 +92,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   LENS_MAINNET: () => new JsonRpcProvider("https://rpc.lens.xyz"),
   BERACHAIN_MAINNET: () => new JsonRpcProvider("https://rpc.berachain.com"),
   BERACHAIN_BARTIO: () => new JsonRpcProvider("https://bartio.rpc.berachain.com"),
+  BERACHAIN_BEPOLIA: () => new JsonRpcProvider("https://bepolia.rpc.berachain.com"),
   HYPEREVM_MAINNET: () => new JsonRpcProvider("https://rpc.hyperliquid.xyz/evm"),
   HYPEREVM_TESTNET: () => new JsonRpcProvider("https://rpc.hyperliquid-testnet.xyz/evm"),
   MERLIN_TESTNET: () => new JsonRpcProvider("https://testnet-rpc.merlinchain.io/"),
@@ -169,6 +171,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   BITTENSOR_MAINNET: () => new JsonRpcProvider("https://lite.chain.opentensor.ai"),
   EVERCLEAR_MAINNET: () => new JsonRpcProvider("https://rpc.everclear.raas.gelato.cloud"),
   AB_CHAIN_MAINNET: () => new JsonRpcProvider("https://rpc.core.ab.org"),
+  AB_CHAIN_TESTNET: () => new JsonRpcProvider("https://rpc.core.testnet.ab.org"),
   MONAD_MAINNET: () => new JsonRpcProvider("https://rpc3.monad.xyz"),
   NEXON_HENESYS_MAINNET: () => new JsonRpcProvider("https://henesys-rpc.msu.io/"),
   PHAROS_ATLANTIC_TESTNET: () => new JsonRpcProvider("https://atlantic.dplabs-internal.com/"),
@@ -195,6 +198,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   TON_TESTNET: () => new JsonRpcProvider("https://ton-testnet.api.onfinality.io/public"),
   TON_MAINNET: () => new JsonRpcProvider("https://ton.api.onfinality.io/public"),
   CREDITCOIN_MAINNET: () => new JsonRpcProvider("https://mainnet3.creditcoin.network"),
+  CREDITCOIN_TESTNET: () => new JsonRpcProvider("https://rpc.cc3-testnet.creditcoin.network"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {

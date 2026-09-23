@@ -1,0 +1,330 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 AdvancedPoolHooks API Reference"
+metadata:
+  description: "Optional TokenPool extension providing allowlist enforcement, CCV escalation, and policy engine integration."
+  version: "2.0.0"
+---
+
+## Summary
+
+`AdvancedPoolHooks` is an optional extension contract that can be attached to a `[TokenPool](/ccip/evm/api-reference/v2.0.0/token-pool)` to add:
+
+1. Allowlist enforcement for outbound transfers.
+2. Per-lane CCV configuration.
+3. Threshold-based CCV escalation for large transfers.
+4. External policy engine execution hooks.
+
+It is invoked by pools during `preflightCheck` (outbound) and `postflightCheck` (inbound).
+
+This contract is optional and not required for base pool operation.
+
+---
+
+## Contract
+
+`chains/evm/contracts/pools/AdvancedPoolHooks.sol`
+
+---
+
+## Import
+
+```solidity
+import {AdvancedPoolHooks} from "chainlink-ccip/chains/evm/contracts/pools/AdvancedPoolHooks.sol";
+```
+
+---
+
+## Inheritance
+
+- `AuthorizedCallers`
+- `IAdvancedPoolHooks`
+- `ITypeAndVersion`
+
+---
+
+## typeAndVersion
+
+```solidity
+string public constant override typeAndVersion = "AdvancedPoolHooks 1.0.0";
+```
+
+(Returned value must match exact canonical string from source.)
+
+---
+
+## State
+
+### Constants
+
+```solidity
+string public constant override typeAndVersion = "AdvancedPoolHooks 1.0.0";
+```
+
+---
+
+### Immutables
+
+```solidity
+bool internal immutable i_allowlistEnabled;
+```
+
+Indicates whether allowlist enforcement was enabled at deployment. Cannot be changed after construction.
+
+---
+
+### Storage
+
+```solidity
+EnumerableSet.AddressSet internal s_allowlist;
+
+uint256 internal s_thresholdAmountForAdditionalCCVs;
+
+IPolicyEngine internal s_policyEngine;
+
+mapping(uint64 => CCVConfig) internal s_verifierConfig;
+```
+
+---
+
+## Constructor
+
+```solidity
+constructor(
+  address[] memory allowlist,
+  uint256 thresholdAmountForAdditionalCCVs,
+  address policyEngine,
+  address[] memory authorizedCallers
+)
+```
+
+Behavior:
+
+- If `allowlist.length > 0`, allowlist enforcement is permanently enabled.
+- Initializes threshold amount.
+- Sets initial policy engine.
+- Initializes `AuthorizedCallers`.
+
+---
+
+## External API
+
+### Preflight Hook
+
+```solidity
+function preflightCheck(
+  address sender,
+  uint64 remoteChainSelector,
+  uint256 amount,
+  bytes calldata extraData
+) external
+```
+
+Behavior:
+
+- Validates caller via `AuthorizedCallers`.
+- Enforces allowlist if enabled.
+- Executes policy engine if configured.
+- Enforces CCV escalation logic.
+
+---
+
+### Postflight Hook
+
+```solidity
+function postflightCheck(
+  address sender,
+  uint64 remoteChainSelector,
+  uint256 amount,
+  bytes calldata offchainTokenData
+) external
+```
+
+Behavior:
+
+- Validates caller via `AuthorizedCallers`.
+- Executes policy engine if configured.
+
+---
+
+### Allowlist Management
+
+```solidity
+function applyAllowListUpdates(
+  address[] calldata removes,
+  address[] calldata adds
+) external onlyOwner
+```
+
+Reverts `AllowListNotEnabled()` if allowlist not enabled at deployment.
+
+---
+
+```solidity
+function checkAllowList(address sender) external view
+```
+
+Reverts `SenderNotAllowed(sender)` if allowlist enabled and sender not present.
+
+---
+
+### CCV Configuration
+
+```solidity
+function applyCCVConfigUpdates(CCVConfigArg[] calldata ccvConfigArgs)
+  external
+  onlyOwner
+```
+
+Validates:
+
+- No duplicate CCVs.
+- Threshold CCVs cannot exist without base CCVs.
+
+Emits `CCVConfigUpdated`.
+
+---
+
+```solidity
+function getRequiredCCVs(
+  uint64 remoteChainSelector,
+  uint256 amount
+) external view returns (address[] memory)
+```
+
+Returns base CCVs plus threshold CCVs if:
+
+```
+thresholdAmount != 0 && amount >= thresholdAmount
+```
+
+---
+
+### Threshold Control
+
+```solidity
+function setThresholdAmount(uint256 thresholdAmount)
+  external
+  onlyOwner
+```
+
+Emits `ThresholdAmountSet`.
+
+---
+
+```solidity
+function getThresholdAmount()
+  external
+  view
+  returns (uint256)
+```
+
+---
+
+### Policy Engine
+
+```solidity
+function setPolicyEngine(address newPolicyEngine)
+  external
+  onlyOwner
+```
+
+Detaches old engine and attaches new engine.
+Reverts on detach failure.
+
+---
+
+```solidity
+function setPolicyEngineAllowFailedDetach(address newPolicyEngine)
+  external
+  onlyOwner
+```
+
+Allows update even if detach fails.
+
+---
+
+```solidity
+function getPolicyEngine()
+  external
+  view
+  returns (address)
+```
+
+---
+
+## Events
+
+```solidity
+event AllowListAdd(address sender);
+event AllowListRemove(address sender);
+event CCVConfigUpdated(uint64 remoteChainSelector, address[] baseCCVs, address[] thresholdCCVs);
+event ThresholdAmountSet(uint256 thresholdAmount);
+event PolicyEngineAttached(address policyEngine);
+event PolicyEngineDetachFailed(address policyEngine, bytes reason);
+```
+
+---
+
+## Errors
+
+```solidity
+error AllowListNotEnabled();
+error SenderNotAllowed(address sender);
+error MustSpecifyUnderThresholdCCVsForThresholdCCVs();
+error PolicyEngineDetachReverted(address oldPolicyEngine, bytes err);
+```
+
+---
+
+## Structs
+
+```solidity
+struct CCVConfig {
+  address[] baseCCVs;
+  address[] thresholdCCVs;
+}
+```
+
+```solidity
+struct CCVConfigArg {
+  uint64 remoteChainSelector;
+  address[] baseCCVs;
+  address[] thresholdCCVs;
+}
+```
+
+---
+
+## Internal Functions
+
+```solidity
+function _resolveRequiredCCVs(
+  address[] memory baseCCVs,
+  address[] memory thresholdCCVs,
+  uint256 amount
+) internal view returns (address[] memory)
+```
+
+Concatenates base + threshold CCVs when escalation condition met.
+
+---
+
+## Security model
+
+- Allowlist enforcement immutable post-deployment.
+- CCV escalation provides dynamic security scaling.
+- Policy engine detach failures may block upgrades unless force-detach path used.
+- AuthorizedCallers restricts hook invocation to approved pools.
+- Duplicate CCVs prevented at configuration time.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`AuthorizedCallers`](/ccip/evm/api-reference/v2.0.0/authorized-callers)
+- [`IAdvancedPoolHooks`](/ccip/evm/api-reference/v2.0.0/i-advanced-pool-hooks)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`LockReleaseTokenPool`](/ccip/evm/api-reference/v2.0.0/lock-release-token-pool)
+- [`CCVConfigValidation`](/ccip/evm/api-reference/v2.0.0/ccv-config-validation)

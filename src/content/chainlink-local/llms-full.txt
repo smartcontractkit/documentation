@@ -7382,12 +7382,12 @@ contract CCIPv1_5LockReleasePoolFork is Test {
 
 ---
 
-# Using the CCIP Local Simulator to fork mainnets
+# Using the Chainlink Local Simulator to fork mainnets
 Source: https://docs.chain.link/chainlink-local/build/ccip/foundry/forking-mainnets
 
 <Common callout="importPackage" />
 
-This guide explains how to use the CCIP Local Simulator to test cross-chain transactions in forked mainnet environments using Foundry. You'll learn how to leverage the `Register.sol` contract to streamline the simulation process and properly configure mainnet details that aren't included by default.
+This guide explains how to use the Chainlink Local Simulator to test cross-chain transactions in forked mainnet environments using Foundry. You'll learn how to leverage the `Register.sol` contract to streamline the simulation process and properly configure mainnet details that aren't included by default.
 
 ## Understanding Network Registration
 
@@ -7437,7 +7437,7 @@ contract ExampleTest is Test {
 
 ## Working with Mainnet Forks
 
-The CCIP Local Simulator supports any forked environment where CCIP contracts exist. Since mainnet details aren't included in `Register.sol`, you'll need to configure them manually. Let's walk through a complete example that demonstrates how to simulate cross-chain messages between Ethereum and Polygon mainnets. This example shows:
+The Chainlink Local Simulator supports any forked environment where CCIP contracts exist. Since mainnet details aren't included in `Register.sol`, you'll need to configure them manually. Let's walk through a complete example that demonstrates how to simulate cross-chain messages between Ethereum and Polygon mainnets. This example shows:
 
 1. Setting up mainnet forks
 2. Configuring network details
@@ -7547,7 +7547,7 @@ We recommend starting with the first guide (without forking) for initial develop
 
 ## Guides
 
-### Using the CCIP Local Simulator in your Foundry project
+### Using the Chainlink Local Simulator in your Foundry project
 
 This [guide](/chainlink-local/build/ccip/foundry/local-simulator) helps you set up and run CCIP in a localhost environment within your Foundry project. It provides step-by-step instructions on:
 
@@ -7557,9 +7557,9 @@ This [guide](/chainlink-local/build/ccip/foundry/local-simulator) helps you set 
 
 Using the local simulator without forking is ideal for initial development and testing in an isolated environment.
 
-### Using the CCIP Local Simulator in your Foundry project with forked environments
+### Using the Chainlink Local Simulator in your Foundry project with forked environments
 
-This [guide](/chainlink-local/build/ccip/foundry/local-simulator-fork) extends your testing capabilities by demonstrating how to use the CCIP Local Simulator in a forked environment. It includes instructions on:
+This [guide](/chainlink-local/build/ccip/foundry/local-simulator-fork) extends your testing capabilities by demonstrating how to use the Chainlink Local Simulator in a forked environment. It includes instructions on:
 
 - Setting up forks of real blockchain networks (such as Arbitrum Sepolia and Ethereum Sepolia)
 - Writing test cases
@@ -7569,7 +7569,7 @@ Using the local simulator with forked environments is ideal for testing in a mor
 
 ---
 
-# Using the CCIP Local Simulator in your Foundry project with forked environments
+# Using the Chainlink Local Simulator in your Foundry project with forked environments
 Source: https://docs.chain.link/chainlink-local/build/ccip/foundry/local-simulator-fork
 
 <Common callout="importPackage" />
@@ -7583,7 +7583,7 @@ and *Ethereum Sepolia*.
 
 ## Prerequisites
 
-This guide assumes that you are familiar with the guide [Using the CCIP Local Simulator in your Foundry project](/chainlink-local/build/ccip/foundry/local-simulator).
+This guide assumes that you are familiar with the guide [Using the Chainlink Local Simulator in your Foundry project](/chainlink-local/build/ccip/foundry/local-simulator).
 If not, please get familiar with it and run all the prerequisites.
 
 Set up an `.env` file with the following data:
@@ -7660,7 +7660,7 @@ The `setUp()` function is invoked before each test case to reinitialize all the 
    alice = makeAddr("alice");
    ```
 
-3. Initialize the [fork CCIP local simulator](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator-fork#cciplocalsimulatorfork).
+3. Initialize the [fork Chainlink Local simulator](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator-fork#cciplocalsimulatorfork).
 
    **Note**: `vm.makePersistent` is used to make the `ccipLocalSimulatorFork` address persistent across forks:
 
@@ -7712,7 +7712,7 @@ The `prepareScenario()` function is invoked at the beginning of each test case. 
    sourceCCIPBnMToken.approve(address(sourceRouter), amountToSend);
    ```
 
-3. Create an array [Client.EVMTokenAmount](/ccip/api-reference/evm/v1.6.1/client#evmtokenamount)[] to specify the token transfer details. This array and the amount to send
+3. Create an array [Client.EVMTokenAmount](/ccip/v1/evm/api-reference/v1.6.1/client#evmtokenamount)[] to specify the token transfer details. This array and the amount to send
    are returned by the `prepareScenario()` function for use in the calling test case:
 
    ```solidity
@@ -7753,13 +7753,13 @@ Here are the steps involved in this test case:
    uint256 balanceOfAliceBefore = sourceCCIPBnMToken.balanceOf(alice);
    ```
 
-4. Request 10 LINK tokens from the CCIP local simulator faucet for Alice (sender):
+4. Request 10 LINK tokens from the Chainlink Local simulator faucet for Alice (sender):
 
    ```solidity
    ccipLocalSimulatorFork.requestLinkFromFaucet(alice, 10 ether);
    ```
 
-5. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/evm/v1.6.1/client#evm2anymessage) structure with the receiver, token amounts, and other necessary details.
+5. Construct the [Client.EVM2AnyMessage](/ccip/v1/evm/api-reference/v1.6.1/client#evm2anymessage) structure with the receiver, token amounts, and other necessary details.
 
    - Set the `data` parameter to an empty string because you are not sending any arbitrary data, only tokens.
    - In `extraArgs`, set the gas limit to `0`. This gas limit is for execution of receiver logic, which doesn't apply here because you're sending tokens to an EOA.
@@ -7832,7 +7832,7 @@ Here are the steps involved in this test case:
    deal(alice, 5 ether);
    ```
 
-5. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/evm/v1.6.1/client#evm2anymessage) structure. This step is the same as in the previous test case.
+5. Construct the [Client.EVM2AnyMessage](/ccip/v1/evm/api-reference/v1.6.1/client#evm2anymessage) structure. This step is the same as in the previous test case.
    The main difference is that the `feeToken` is set with `address(0)` to indicate that the fees are paid in native gas:
 
    ```solidity
@@ -7863,7 +7863,7 @@ Here are the steps involved in this test case:
 
 ---
 
-# Using CCIP local simulator in your Foundry project
+# Using Chainlink Local simulator in your Foundry project
 Source: https://docs.chain.link/chainlink-local/build/ccip/foundry/local-simulator
 
 <Common callout="importPackage" />
@@ -7946,7 +7946,7 @@ To transfer tokens using CCIP, we need the following:
 
 The `setUp()` function is invoked before each test case to reinitialize all the variables, ensuring a clean state for each test:
 
-1. Initialize the [CCIP local simulator](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#cciplocalsimulator) contract:
+1. Initialize the [Chainlink Local simulator](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#cciplocalsimulator) contract:
 
    ```solidity
    ccipLocalSimulator = new CCIPLocalSimulator();
@@ -7993,7 +7993,7 @@ The `prepareScenario()` function is invoked at the beginning of each test case. 
    ccipBnMToken.approve(address(router), amountToSend);
    ```
 
-3. Create an array [Client.EVMTokenAmount](/ccip/api-reference/evm/v1.6.1/client#evmtokenamount)[] to specify the token transfer details. This array and the amount to send are returned by the prepareScenario() function for use in the calling test case:
+3. Create an array [Client.EVMTokenAmount](/ccip/v1/evm/api-reference/v1.6.1/client#evmtokenamount)[] to specify the token transfer details. This array and the amount to send are returned by the prepareScenario() function for use in the calling test case:
 
    ```solidity
    tokensToSendDetails = new Client.EVMTokenAmount[](1);
@@ -8026,13 +8026,13 @@ Here are the steps involved in this test case:
    vm.startPrank(alice);
    ```
 
-4. Request 5 LINK tokens from the CCIP Local Simulator faucet for Alice (sender):
+4. Request 5 LINK tokens from the Chainlink Local Simulator faucet for Alice (sender):
 
    ```solidity
    ccipLocalSimulator.requestLinkFromFaucet(alice, 5 ether);
    ```
 
-5. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/evm/v1.6.1/client#evm2anymessage) structure with the receiver, token amounts, and other necessary details.
+5. Construct the [Client.EVM2AnyMessage](/ccip/v1/evm/api-reference/v1.6.1/client#evm2anymessage) structure with the receiver, token amounts, and other necessary details.
 
    - Set the `data` parameter to an empty string because you are not sending any arbitrary data, only tokens.
    - In `extraArgs`, set the gas limit to `0`. This gas limit is for execution of receiver logic, which doesn't apply here because you're sending tokens to an EOA.
@@ -8096,7 +8096,7 @@ Here are the steps involved in this test case:
    deal(alice, 5 ether);
    ```
 
-4. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/evm/v1.6.1/client#evm2anymessage) structure. This step is the same as in the previous test case.
+4. Construct the [Client.EVM2AnyMessage](/ccip/v1/evm/api-reference/v1.6.1/client#evm2anymessage) structure. This step is the same as in the previous test case.
    The main difference is that the `feeToken` is set with `address(0)` to indicate that the fees are paid in native gas:
 
    ```solidity
@@ -8121,7 +8121,7 @@ Here are the steps involved in this test case:
 ## Next steps
 
 For more advanced scenarios, please refer to other test files in the `./test/no-fork` directory. To learn how to use Chainlink Local in forked environments, refer to
-the guide on [Using the CCIP Local Simulator in your Foundry project with forked environments](/chainlink-local/build/ccip/foundry/local-simulator-fork).
+the guide on [Using the Chainlink Local Simulator in your Foundry project with forked environments](/chainlink-local/build/ccip/foundry/local-simulator-fork).
 
 ---
 
@@ -8135,7 +8135,7 @@ We recommend starting with the first guide (without forking) for initial develop
 
 ## Guides
 
-### Using CCIP Local Simulator in your Hardhat project
+### Using Chainlink Local Simulator in your Hardhat project
 
 This [guide](/chainlink-local/build/ccip/hardhat/local-simulator) helps you set up and run CCIP in a localhost environment within your Hardhat project. It provides step-by-step instructions on :
 
@@ -8146,9 +8146,9 @@ This [guide](/chainlink-local/build/ccip/hardhat/local-simulator) helps you set 
 
 Using the local simulator without forking is ideal for initial development and testing in an isolated environment.
 
-### Using CCIP Local Simulator in your Hardhat project with forked environments
+### Using Chainlink Local Simulator in your Hardhat project with forked environments
 
-This [guide](/chainlink-local/build/ccip/hardhat/local-simulator-fork) extends your testing capabilities by demonstrating how to use the CCIP Local Simulator in a forked environment. It includes instructions on:
+This [guide](/chainlink-local/build/ccip/hardhat/local-simulator-fork) extends your testing capabilities by demonstrating how to use the Chainlink Local Simulator in a forked environment. It includes instructions on:
 
 - Setting up forks of real blockchain networks (e.g., *Arbitrum Sepolia* and *Ethereum Sepolia*)
 - Writing test cases
@@ -8158,7 +8158,7 @@ Using the local simulator with forked environments is ideal for testing in a mor
 
 ---
 
-# Using CCIP Local Simulator in Your Hardhat Project - Forked Environments
+# Using Chainlink Local Simulator in Your Hardhat Project - Forked Environments
 Source: https://docs.chain.link/chainlink-local/build/ccip/hardhat/local-simulator-fork
 
 <Common callout="importPackage" />
@@ -8170,7 +8170,7 @@ Forked environments allow you to simulate real-world blockchain networks by fork
 
 ## Prerequisites
 
-This guide assumes that you are familiar with the guide [Using CCIP Local Simulator in Your Hardhat Project](/chainlink-local/build/ccip/hardhat/local-simulator).
+This guide assumes that you are familiar with the guide [Using Chainlink Local Simulator in Your Hardhat Project](/chainlink-local/build/ccip/hardhat/local-simulator).
 If not, please get familiar with it and run all the prerequisites.
 
 Set an environment variable file. For higher security, the examples repository imports [@chainlink/env-enc](https://www.npmjs.com/package/@chainlink/env-enc).
@@ -8312,7 +8312,7 @@ The `it("Should transfer CCIP test tokens from EOA to EOA")` function sets up th
 
 ---
 
-# Using CCIP local simulator in your Hardhat project
+# Using Chainlink Local simulator in your Hardhat project
 Source: https://docs.chain.link/chainlink-local/build/ccip/hardhat/local-simulator
 
 <Common callout="importPackage" />
@@ -8384,10 +8384,10 @@ To transfer tokens using CCIP, we need the following:
 - A sender account (Alice)
 - A receiver account (Bob)
 
-The `deployFixture` function is used to set up the initial state for the tests. This function deploys the CCIP local simulator contract and initializes
+The `deployFixture` function is used to set up the initial state for the tests. This function deploys the Chainlink Local simulator contract and initializes
 the sender and receiver accounts.
 
-1. Initialize the [CCIP local simulator](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#cciplocalsimulator) contract:
+1. Initialize the [Chainlink Local simulator](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#cciplocalsimulator) contract:
 
    ```typescript
    const ccipLocalSimulatorFactory = await hre.ethers.getContractFactory("CCIPLocalSimulator")
@@ -8429,7 +8429,7 @@ while paying fees in LINK. Here are the steps involved in this test case:
    ]
    ```
 
-6. Construct the [Client.EVM2AnyMessage](/ccip/api-reference/evm/v1.6.1/client#evm2anymessage) structure with the receiver, token amounts, and other necessary details.
+6. Construct the [Client.EVM2AnyMessage](/ccip/v1/evm/api-reference/v1.6.1/client#evm2anymessage) structure with the receiver, token amounts, and other necessary details.
 
    - Use an empty string for the `data` parameter because you are not sending any arbitrary data (only tokens).
    - Set `gasLimit` to `0` because you are sending tokens to an EOA, which means you do not expect any execution of receiver logic (and therefore do not need gas for that).
@@ -8473,7 +8473,7 @@ while paying fees in LINK. Here are the steps involved in this test case:
 ## Next steps
 
 For more advanced scenarios, please refer to other test files in the `./test/no-fork` directory. To learn how to use Chainlink local in forked environments,
-refer to the guide on [Using CCIP Local Simulator in your Hardhat project with forked environments](/chainlink-local/build/ccip/hardhat/local-simulator-fork).
+refer to the guide on [Using Chainlink Local Simulator in your Hardhat project with forked environments](/chainlink-local/build/ccip/hardhat/local-simulator-fork).
 
 ---
 
@@ -8487,9 +8487,9 @@ currently supported **only** for Foundry and Hardhat.
 
 ## Guides
 
-### Using CCIP Local Simulator in Remix IDE
+### Using Chainlink Local Simulator in Remix IDE
 
-This [guide](/chainlink-local/build/ccip/remix/local-simulator) helps you to test [Chainlink CCIP getting started guide](/ccip/getting-started) locally in Remix IDE. You will:
+This [guide](/chainlink-local/build/ccip/remix/local-simulator) helps you to test [Chainlink CCIP getting started guide](/ccip/evm/getting-started) locally in Remix IDE. You will:
 
 - Deploy a CCIP sender contract
 - Deploy CCIP receiver contract
@@ -8497,12 +8497,12 @@ This [guide](/chainlink-local/build/ccip/remix/local-simulator) helps you to tes
 
 ---
 
-# Using the CCIP local simulator in Remix IDE
+# Using the Chainlink Local simulator in Remix IDE
 Source: https://docs.chain.link/chainlink-local/build/ccip/remix/local-simulator
 
 <Common callout="importPackage" />
 
-In this guide, you will test the [Chainlink CCIP getting started guide](/ccip/getting-started) locally in Remix IDE. You will:
+In this guide, you will test the [Chainlink CCIP getting started guide](/ccip/evm/getting-started) locally in Remix IDE. You will:
 
 - Deploy a CCIP sender contract
 - Deploy a CCIP receiver contract
@@ -8517,7 +8517,7 @@ does not persist the files that you open from an external source. To save files,
 
 2. Create a [new workspace](https://remix-ide.readthedocs.io/en/latest/file_explorer.html#new-workspace).
 
-3. Copy the content of the [Test CCIP Local Simulator contract](https://docs.chain.link/samples/CCIP/TestCCIPLocalSimulator.sol) into a new file in the workspace.
+3. Copy the content of the [Test Chainlink Local Simulator contract](https://docs.chain.link/samples/CCIP/TestCCIPLocalSimulator.sol) into a new file in the workspace.
 
    ```sol
    // SPDX-License-Identifier: MIT
@@ -8534,8 +8534,8 @@ does not persist the files that you open from an external source. To save files,
    pragma solidity 0.8.24;
 
    import {IRouterClient} from "@chainlink/contracts-ccip/contracts/interfaces/IRouterClient.sol";
-
    import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
+   import {ExtraArgsCodec} from "@chainlink/contracts-ccip/contracts/libraries/ExtraArgsCodec.sol";
    import {OwnerIsCreator} from "@chainlink/contracts/src/v0.8/shared/access/OwnerIsCreator.sol";
    import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
 
@@ -8547,17 +8547,9 @@ does not persist the files that you open from an external source. To save files,
 
    /// @title - A simple contract for sending string data across chains.
    contract Sender is OwnerIsCreator {
-     // Custom errors to provide more descriptive revert messages.
-     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough
-     // balance.
+     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees);
 
-     // Event emitted when a message is sent to another chain.
-     // The chain selector of the destination chain.
-     // The address of the receiver on the destination chain.
-     // The text being sent.
-     // the token address used to pay CCIP fees.
-     // The fees paid for sending the CCIP message.
-     event MessageSent( // The unique ID of the CCIP message.
+     event MessageSent(
        bytes32 indexed messageId,
        uint64 indexed destinationChainSelector,
        address receiver,
@@ -8567,12 +8559,11 @@ does not persist the files that you open from an external source. To save files,
      );
 
      IRouterClient private s_router;
-
      LinkTokenInterface private s_linkToken;
 
      /// @notice Constructor initializes the contract with the router address.
      /// @param _router The address of the router contract.
-     /// @param _link The address of the link contract.
+     /// @param _link The address of the LINK token contract.
      constructor(
        address _router,
        address _link
@@ -8582,7 +8573,7 @@ does not persist the files that you open from an external source. To save files,
      }
 
      /// @notice Sends data to receiver on the destination chain.
-     /// @dev Assumes your contract has sufficient LINK.
+     /// @dev Assumes your contract has sufficient LINK to cover fees.
      /// @param destinationChainSelector The identifier (aka selector) for the destination blockchain.
      /// @param receiver The address of the recipient on the destination blockchain.
      /// @param text The string text to be sent.
@@ -8596,22 +8587,12 @@ does not persist the files that you open from an external source. To save files,
        Client.EVM2AnyMessage memory evm2AnyMessage = Client.EVM2AnyMessage({
          receiver: abi.encode(receiver), // ABI-encoded receiver address
          data: abi.encode(text), // ABI-encoded string
-         tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array indicating no tokens are being sent
-         extraArgs: Client._argsToBytes(
-           // Additional arguments, setting gas limit and allowing out-of-order execution.
-           // Best Practice: For simplicity, the values are hardcoded. It is advisable to use a more dynamic approach
-           // where you set the extra arguments off-chain. This allows adaptation depending on the lanes, messages,
-           // and ensures compatibility with future CCIP upgrades. Read more about it here:
-           // https://docs.chain.link/ccip/concepts/best-practices/evm#using-extraargs
-           Client.GenericExtraArgsV2({
-             gasLimit: 200_000, // Gas limit for the callback on the destination chain
-             allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages
-             // from
-             // the same sender
-           })
+         tokenAmounts: new Client.EVMTokenAmount[](0), // Empty array — no tokens are being sent
+         extraArgs: ExtraArgsCodec._getBasicEncodedExtraArgsV3(
+           200_000, // Gas limit for the callback on the destination chain
+           bytes4(0) // Default finality (wait for full finalization)
          ),
-         // Set the feeToken  address, indicating LINK will be used for fees
-         feeToken: address(s_linkToken)
+         feeToken: address(s_linkToken) // Pay CCIP fees in LINK
        });
 
        // Get the fee required to send the message
@@ -8621,7 +8602,7 @@ does not persist the files that you open from an external source. To save files,
          revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
        }
 
-       // approve the Router to transfer LINK tokens on contract's behalf. It will spend the fees in LINK
+       // Approve the Router to transfer LINK tokens on contract's behalf. It will spend the fees in LINK
        s_linkToken.approve(address(s_router), fees);
 
        // Send the message through the router and store the returned message ID
@@ -8644,6 +8625,7 @@ does not persist the files that you open from an external source. To save files,
 
    import {CCIPReceiver} from "@chainlink/contracts-ccip/contracts/applications/CCIPReceiver.sol";
    import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
+   import {FinalityCodec} from "@chainlink/contracts-ccip/contracts/libraries/FinalityCodec.sol";
 
    /**
     * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
@@ -8653,19 +8635,10 @@ does not persist the files that you open from an external source. To save files,
 
    /// @title - A simple contract for receiving string data across chains.
    contract Receiver is CCIPReceiver {
-     // Event emitted when a message is received from another chain.
-     event MessageReceived( // The unique ID of the message.
-       // The chain selector of the source chain.
-       // The address of the sender from the source chain.
-       // The text that was received.
-       bytes32 indexed messageId,
-       uint64 indexed sourceChainSelector,
-       address sender,
-       string text
-     );
+     event MessageReceived(bytes32 indexed messageId, uint64 indexed sourceChainSelector, address sender, string text);
 
-     bytes32 private s_lastReceivedMessageId; // Store the last received messageId.
-     string private s_lastReceivedText; // Store the last received text.
+     bytes32 private s_lastReceivedMessageId;
+     string private s_lastReceivedText;
 
      /// @notice Constructor initializes the contract with the router address.
      /// @param router The address of the router contract.
@@ -8673,19 +8646,38 @@ does not persist the files that you open from an external source. To save files,
        address router
      ) CCIPReceiver(router) {}
 
-     /// handle a received message
+     /// @notice Handle a received message.
      function _ccipReceive(
        Client.Any2EVMMessage memory any2EvmMessage
      ) internal override {
-       s_lastReceivedMessageId = any2EvmMessage.messageId; // fetch the messageId
-       s_lastReceivedText = abi.decode(any2EvmMessage.data, (string)); // abi-decoding of the sent text
+       s_lastReceivedMessageId = any2EvmMessage.messageId;
+       s_lastReceivedText = abi.decode(any2EvmMessage.data, (string));
 
        emit MessageReceived(
          any2EvmMessage.messageId,
-         any2EvmMessage.sourceChainSelector, // fetch the source chain identifier (aka selector)
-         abi.decode(any2EvmMessage.sender, (address)), // abi-decoding of the sender address,
+         any2EvmMessage.sourceChainSelector,
+         abi.decode(any2EvmMessage.sender, (address)),
          abi.decode(any2EvmMessage.data, (string))
        );
+     }
+
+     /// @notice Returns the CCVs and finality config for a given source chain.
+     /// @dev Override to advertise receiver finality policy to the OffRamp.
+     function getCCVsAndFinalityConfig(
+       uint64,
+       bytes calldata
+     )
+       external
+       view
+       override
+       returns (
+         address[] memory requiredCCVs,
+         address[] memory optionalCCVs,
+         uint8 optionalThreshold,
+         bytes4 allowedFinalityConfig
+       )
+     {
+       return (new address[](0), new address[](0), 0, FinalityCodec.WAIT_FOR_FINALITY_FLAG);
      }
 
      /// @notice Fetches the details of the last received message.
@@ -8699,7 +8691,7 @@ does not persist the files that you open from an external source. To save files,
 
 At this point, you should have three files in your workspace:
 
-- **TestCCIPLocalSimulator.sol**: The file imports the Chainlink CCIP local simulator contract.
+- **TestCCIPLocalSimulator.sol**: The file imports the Chainlink Chainlink Local simulator contract.
 
 - **Sender.sol**: The file contains the Sender contract that interacts with CCIP to send data to the Receiver contract.
 
@@ -8712,7 +8704,7 @@ At this point, you should have three files in your workspace:
 2. Under the **Deploy & Run Transactions** tab, make sure *Remix VM* is selected in the **Environment** drop-down list. Remix will use a sandbox blockchain in the
    browser to deploy the contracts.
 
-3. Deploy the [CCIP local simulator](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#cciplocalsimulator):
+3. Deploy the [Chainlink Local simulator](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#cciplocalsimulator):
    1. Select the `TestCCIPLocalSimulator.sol` file in the file explorer.
    2. In the *Contract* drop-down list, select `CCIPLocalSimulator`.
    3. Click the **Deploy** button.

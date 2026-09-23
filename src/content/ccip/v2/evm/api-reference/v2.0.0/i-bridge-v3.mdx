@@ -1,0 +1,105 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IBridgeV3 API Reference"
+metadata:
+  description: "Extension of Lombard Bridge V2 adding optionalMessage support for cross-chain deposits."
+  version: "2.0.0"
+---
+
+## Summary
+
+`IBridgeV3` extends `IBridgeV2` by adding support for an additional `optionalMessage` payload during deposits.
+
+The `optionalMessage`:
+
+- Is forwarded to the destination chain.
+- Becomes part of the bridge message proof.
+- Enables higher-level protocols (such as CCIP) to bind metadata to bridge transfers.
+
+All `IBridgeV2` functionality remains available.
+
+---
+
+## Contract
+
+`chains/evm/contracts/interfaces/lombard/IBridgeV3.sol`
+
+---
+
+## Import
+
+```solidity
+import {IBridgeV3} from "chainlink-ccip/chains/evm/contracts/interfaces/lombard/IBridgeV3.sol";
+```
+
+---
+
+## Interface surface
+
+```solidity
+interface IBridgeV3 is IBridgeV2 {
+```
+
+---
+
+### deposit (V3 overload)
+
+```solidity
+function deposit(
+  bytes32 destinationChain,
+  address token,
+  address sender,
+  bytes32 recipient,
+  uint256 amount,
+  bytes32 destinationCaller,
+  bytes calldata optionalMessage
+) external payable returns (uint256, bytes32);
+```
+
+Extends `IBridgeV2.deposit` by adding:
+
+```solidity
+bytes calldata optionalMessage
+```
+
+Parameters:
+
+- `destinationChain` — Lombard chain identifier.
+- `token` — Source token address.
+- `sender` — Logical sender of the deposit.
+- `recipient` — 32-byte destination recipient identifier.
+- `amount` — Token amount to bridge.
+- `destinationCaller` — Authorized destination handler.
+- `optionalMessage` — Arbitrary payload forwarded and included in proof.
+
+Returns:
+
+- `uint256` — Bridge-defined numeric identifier.
+- `bytes32` — Bridge-defined message or payload hash.
+
+Function is `payable`.
+
+---
+
+```solidity
+}
+```
+
+---
+
+## Integration notes / expectations
+
+- `optionalMessage` becomes part of the bridge proof and must be validated on destination.
+- Consumers should verify `MSG_VERSION()` (inherited from `IBridgeV2`) matches expected version.
+- This interface does not define proof validation semantics; those are bridge-specific.
+- Used by `LombardVerifier` to bind `(versionTag || messageId)` into bridge flows.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`IBridgeV2`](/ccip/evm/api-reference/v2.0.0/i-bridge-v2)
+- [`IMailbox`](/ccip/evm/api-reference/v2.0.0/i-mailbox)
+- [`LombardVerifier`](/ccip/evm/api-reference/v2.0.0/lombard-verifier)
+- [`LombardTokenPool`](/ccip/evm/api-reference/v2.0.0/lombard-token-pool)

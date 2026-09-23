@@ -1,0 +1,176 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 BurnMintWithLockReleaseFlagTokenPool API Reference"
+metadata:
+  description: "Burn/mint pool variant that encodes a lock/release flag in destination pool data."
+  version: "2.0.0"
+---
+
+`BurnMintWithLockReleaseFlagTokenPool` is a `BurnMintTokenPool` variant that encodes a lock/release flag in `destPoolData` for use by the destination pool.
+
+If you use this pool, the source chain encodes additional metadata that the destination pool uses to determine whether tokens should be locked or released during execution.
+
+Use this variant only when the destination pool is explicitly designed to decode and act on this flag.
+
+> This is a specialized pool used in coordinated deployments where both source and destination pools implement compatible logic.
+
+## Usage Boundary
+
+**You do not call this contract directly.**
+
+- The Router and OnRamp/OffRamp contracts invoke this pool during cross-chain token transfers.
+- You choose this pool when configuring how a token is bridged across chains.
+- Use this pool only if the destination pool is explicitly designed to decode and act on the lock/release flag.
+- You are responsible for ensuring source and destination pools are configured consistently.
+
+## Contract
+
+`pools/USDC/BurnMintWithLockReleaseFlagTokenPool.sol`
+
+## Import
+
+```solidity
+import {BurnMintWithLockReleaseFlagTokenPool} from "chainlink-ccip/pools/USDC/BurnMintWithLockReleaseFlagTokenPool.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## Inheritance
+
+- `BurnMintTokenPool`
+
+## Constructor
+
+```solidity
+constructor(
+  IBurnMintERC20 token,
+  uint8 localTokenDecimals,
+  address advancedPoolHooks,
+  address rmnProxy,
+  address router
+) BurnMintTokenPool(
+  token,
+  localTokenDecimals,
+  advancedPoolHooks,
+  rmnProxy,
+  router
+)
+```
+
+| Parameter            | Type             | Description                                               |
+| -------------------- | ---------------- | --------------------------------------------------------- |
+| `token`              | `IBurnMintERC20` | Token that supports burn and mint functionality.          |
+| `localTokenDecimals` | `uint8`          | Number of decimals used by the token on the local chain.  |
+| `advancedPoolHooks`  | `address`        | Optional hook contract for custom pool behavior.          |
+| `rmnProxy`           | `address`        | RMN proxy used for curse checks.                          |
+| `router`             | `address`        | Address of the CCIP Router that interacts with this pool. |
+
+## External API
+
+### lockOrBurn
+
+```solidity
+function lockOrBurn(
+  Pool.LockOrBurnInV1 calldata lockOrBurnIn
+) public override returns (Pool.LockOrBurnOutV1 memory out)
+```
+
+> Processes a burn operation and encodes destination pool data, including the lock/release flag.
+
+| Parameter      | Type                           | Description                                           |
+| -------------- | ------------------------------ | ----------------------------------------------------- |
+| `lockOrBurnIn` | `Pool.LockOrBurnInV1 calldata` | Input describing the token transfer and burn request. |
+
+Returns:
+
+| Type                          | Description                              |
+| ----------------------------- | ---------------------------------------- |
+| `Pool.LockOrBurnOutV1 memory` | Output including encoded `destPoolData`. |
+
+### lockOrBurn (extended)
+
+```solidity
+function lockOrBurn(
+  Pool.LockOrBurnInV1 calldata lockOrBurnIn,
+  bytes4 requestedFinalityConfig,
+  bytes calldata tokenArgs
+) public override returns (
+  Pool.LockOrBurnOutV1 memory out,
+  uint256 destTokenAmount
+)
+```
+
+> Processes a burn with additional parameters and encodes destination pool data, including the lock/release flag.
+
+| Parameter                 | Type                           | Description                                       |
+| ------------------------- | ------------------------------ | ------------------------------------------------- |
+| `lockOrBurnIn`            | `Pool.LockOrBurnInV1 calldata` | Input describing the transfer and burn request.   |
+| `requestedFinalityConfig` | `bytes4`                       | Requested finality configuration for the message. |
+| `tokenArgs`               | `bytes calldata`               | Additional token-specific arguments.              |
+
+Returns:
+
+| Type                          | Description                                |
+| ----------------------------- | ------------------------------------------ |
+| `Pool.LockOrBurnOutV1 memory` | Output including encoded `destPoolData`.   |
+| `uint256`                     | Destination token amount after processing. |
+
+### releaseOrMint
+
+```solidity
+function releaseOrMint(
+  Pool.ReleaseOrMintInV1 calldata releaseOrMintIn,
+  bytes4 requestedFinalityConfig
+) public override returns (Pool.ReleaseOrMintOutV1 memory)
+```
+
+> Processes token release or minting on the destination chain using the encoded pool data.
+
+| Parameter                 | Type                              | Description                                     |
+| ------------------------- | --------------------------------- | ----------------------------------------------- |
+| `releaseOrMintIn`         | `Pool.ReleaseOrMintInV1 calldata` | Input describing the release or mint operation. |
+| `requestedFinalityConfig` | `bytes4`                          | Finality configuration for execution.           |
+
+Returns:
+
+| Type                             | Description                              |
+| -------------------------------- | ---------------------------------------- |
+| `Pool.ReleaseOrMintOutV1 memory` | Result of the release or mint operation. |
+
+## typeAndVersion
+
+```solidity
+function typeAndVersion() external pure override returns (string memory)
+```
+
+Returns:
+
+| Type            | Description                           |
+| --------------- | ------------------------------------- |
+| `string memory` | Contract type and version identifier. |
+
+## Security model
+
+- Relies on inherited burn/mint pool validation and access control.
+- Modifies `destPoolData`, which determines how the destination pool processes the transfer.
+- Correct behavior depends on the destination pool correctly decoding and acting on the encoded flag.
+- Mismatched source and destination pool configurations can result in incorrect token handling or failed execution.
+
+## Notes
+
+- This pool encodes additional metadata that must be interpreted by the destination pool.
+- This pool does not change the burn/mint mechanism, only how the destination pool interprets the transfer.
+- Source and destination pools must be deployed and configured as a compatible pair.
+- If the source and destination pools are not configured consistently, token handling may be incorrect or lead to failed execution.
+
+## Related Interfaces & Contracts
+
+- [`BurnMintTokenPool`](/ccip/evm/api-reference/v2.0.0/burn-mint-token-pool)
+- [`USDCSourcePoolDataCodec`](/ccip/evm/api-reference/v2.0.0/usdc-source-pool-data-codec)
+- [`USDCTokenPoolProxy`](/ccip/evm/api-reference/v2.0.0/usdc-token-pool-proxy)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)

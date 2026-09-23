@@ -1,0 +1,134 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IAdvancedPoolHooks API Reference"
+metadata:
+  description: "Interface for optional AdvancedPoolHooks integrations used by TokenPool implementations."
+  version: "2.0.0"
+---
+
+## Summary
+
+`IAdvancedPoolHooks` defines the optional extension interface that `[TokenPool](/ccip/evm/api-reference/v2.0.0/token-pool)` implementations may use to add:
+
+- Preflight validation (before `_lockOrBurn`)
+- Postflight validation (before `_releaseOrMint`)
+- CCV requirement resolution per token, chain, and direction
+
+Hook implementations may enforce allowlists, integrate policy engines, apply token constraints, or dynamically escalate CCV requirements.
+
+---
+
+## Contract
+
+`chains/evm/contracts/interfaces/IAdvancedPoolHooks.sol`
+
+---
+
+## Import
+
+```solidity
+import {IAdvancedPoolHooks} from "chainlink-ccip/chains/evm/contracts/interfaces/IAdvancedPoolHooks.sol";
+```
+
+---
+
+## Interface surface
+
+```solidity
+interface IAdvancedPoolHooks {
+```
+
+---
+
+### preflightCheck
+
+```solidity
+function preflightCheck(
+  Pool.LockOrBurnInV1 calldata lockOrBurnIn,
+  uint16 blockConfirmationRequested,
+  bytes calldata tokenArgs,
+  uint256 amountPostFee
+) external;
+```
+
+Called before executing `_lockOrBurn` on the source chain.
+
+- May revert to block the transfer.
+- Revert causes the source-chain transaction to revert.
+
+---
+
+### postflightCheck
+
+```solidity
+function postflightCheck(
+  Pool.ReleaseOrMintInV1 calldata releaseOrMintIn,
+  uint256 localAmount,
+  uint16 blockConfirmationRequested
+) external;
+```
+
+Called before executing `_releaseOrMint` on the destination chain.
+
+- May revert to prevent message execution.
+- If it reverts, the message becomes unexecutable until resolved.
+
+---
+
+### getRequiredCCVs
+
+```solidity
+function getRequiredCCVs(
+  address localToken,
+  uint64 remoteChainSelector,
+  uint256 amount,
+  uint16 blockConfirmationRequested,
+  bytes calldata extraData,
+  IPoolV2.MessageDirection direction
+) external view returns (address[] memory requiredCCVs);
+```
+
+Returns the set of CCVs required for the transfer.
+
+Parameters:
+
+- `localToken` — token on this chain.
+- `remoteChainSelector` — remote chain identifier.
+- `amount` — transfer amount.
+- `blockConfirmationRequested` — requested finality depth.
+- `extraData` — direction-specific payload (e.g., tokenArgs or offchainTokenData).
+- `direction` — `IPoolV2.MessageDirection.Inbound` or `Outbound`.
+
+Returns:
+
+- `requiredCCVs` — array of verifier addresses.
+
+---
+
+```solidity
+}
+```
+
+---
+
+## Integration notes / expectations
+
+- `TokenPool` calls:
+  - `preflightCheck` during outbound flow.
+  - `postflightCheck` during inbound flow.
+  - `getRequiredCCVs` during verifier resolution.
+
+- Hooks may be a no-op implementation.
+- Hooks must validate caller authenticity internally (typically via `AuthorizedCallers`).
+- Hooks are trusted components — a malicious hook may block transfers.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`AdvancedPoolHooks`](/ccip/evm/api-reference/v2.0.0/advanced-pool-hooks)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`IPoolV2`](/ccip/evm/api-reference/v2.0.0/i-pool-v2)
+- [`Pool`](/ccip/evm/api-reference/v2.0.0/pool)
+- [`CCVConfigValidation`](/ccip/evm/api-reference/v2.0.0/ccv-config-validation)

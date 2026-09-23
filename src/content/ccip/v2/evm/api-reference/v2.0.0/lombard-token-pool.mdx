@@ -1,0 +1,378 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 LombardTokenPool API Reference"
+metadata:
+  description: "Lombard-specific CCIP token pool that validates flows and delegates burn/mint to Lombard bridge and verifier components."
+  version: "2.0.0"
+---
+
+## Summary
+
+`LombardTokenPool` is a Lombard-specific `[TokenPool](/ccip/evm/api-reference/v2.0.0/token-pool)` implementation.
+
+It:
+
+- Performs pool-level validation, rate limiting, and accounting.
+- Delegates token movement (burn/mint) to Lombard bridge and verifier components.
+- Supports both [IPoolV1](/ccip/evm/api-reference/v2.0.0/i-pool-v1) and [IPoolV2](/ccip/evm/api-reference/v2.0.0/i-pool-v2) flows.
+- Uses a verifier resolver to forward tokens to outbound Lombard verifier implementations.
+
+---
+
+## Contract
+
+`chains/evm/contracts/pools/Lombard/LombardTokenPool.sol`
+
+---
+
+## Import
+
+```solidity
+import {LombardTokenPool} from "chainlink-ccip/chains/evm/contracts/pools/Lombard/LombardTokenPool.sol";
+```
+
+---
+
+## Inheritance
+
+- `TokenPool`
+- `ITypeAndVersion`
+
+---
+
+## typeAndVersion
+
+```solidity
+string public constant override typeAndVersion =
+  "LombardTokenPool 2.0.0-dev";
+```
+
+---
+
+## State
+
+### Constants
+
+```solidity
+uint8 internal constant SUPPORTED_BRIDGE_MSG_VERSION = 1;
+```
+
+---
+
+### Immutables
+
+```solidity
+IBridgeV2 public immutable i_bridge;
+address internal immutable i_lombardVerifierResolver;
+address internal immutable i_tokenAdapter;
+```
+
+---
+
+### Storage
+
+```solidity
+mapping(uint64 => Path) internal s_chainSelectorToPath;
+```
+
+---
+
+## Structs
+
+```solidity
+struct Path {
+  bytes32 allowedCaller;
+  bytes32 lChainId;
+}
+```
+
+---
+
+## Constructor
+
+```solidity
+constructor(
+  IERC20Metadata token,
+  address verifier,
+  IBridgeV2 bridge,
+  address adapter,
+  address advancedPoolHooks,
+  address rmnProxy,
+  address router,
+  uint8 fallbackDecimals
+)
+  TokenPool(
+    token,
+    _getTokenDecimals(token, fallbackDecimals),
+    advancedPoolHooks,
+    rmnProxy,
+    router
+  )
+```
+
+Validations:
+
+- `bridge != address(0)` → else `ZeroBridge()`
+- `verifier != address(0)` → else `ZeroVerifierNotAllowed()`
+- `bridge.MSG_VERSION() == SUPPORTED_BRIDGE_MSG_VERSION` → else `InvalidMessageVersion(expected, received)`
+
+Effects:
+
+- Sets `i_bridge`, `i_lombardVerifierResolver`, `i_tokenAdapter`
+- Approves `adapter` (if set) or `bridge` for unlimited token allowance
+- Emits:
+
+```solidity
+event LombardConfigurationSet(
+  address verifier,
+  address bridge,
+  address tokenAdapter
+);
+```
+
+---
+
+## External API
+
+### lockOrBurn (IPoolV2)
+
+```solidity
+function lockOrBurn(
+  Pool.LockOrBurnInV1 calldata lockOrBurnIn,
+  uint16 blockConfirmationRequested,
+  bytes calldata tokenArgs
+)
+  public
+  override
+  returns (Pool.LockOrBurnOutV1 memory lockOrBurnOut, uint256 destTokenAmount)
+```
+
+Behavior:
+
+1. Resolves outbound verifier via:
+
+```solidity
+ICrossChainVerifierResolver(i_lombardVerifierResolver)
+  .getOutboundImplementation(lockOrBurnIn.remoteChainSelector, "");
+```
+
+2. Reverts `OutboundImplementationNotFoundForVerifier()` if zero.
+3. Transfers full amount to verifier.
+4. Calls `super.lockOrBurn(...)`.
+5. Returns pool accounting results.
+
+---
+
+### lockOrBurn (IPoolV1)
+
+```solidity
+function lockOrBurn(
+  Pool.LockOrBurnInV1 calldata lockOrBurnIn
+)
+  public
+  override(TokenPool)
+  returns (Pool.LockOrBurnOutV1 memory)
+```
+
+Behavior:
+
+- Validates input via `_validateLockOrBurn`
+- Ensures `Path` exists → else `PathNotExist`
+- Resolves adapter or token
+- Verifies remote token via `i_bridge.getAllowedDestinationToken`
+- Requires receiver length == 32 → else `InvalidReceiver`
+- Calls `i_bridge.deposit`
+- Emits `LockedOrBurned`
+- Returns `destPoolData = abi.encode(payloadHash)`
+
+---
+
+### releaseOrMint (IPoolV1)
+
+```solidity
+function releaseOrMint(
+  Pool.ReleaseOrMintInV1 calldata releaseOrMintIn
+)
+  public
+  virtual
+  override
+  returns (Pool.ReleaseOrMintOutV1 memory)
+```
+
+Behavior:
+
+- Validates via `_validateReleaseOrMint`
+- Decodes `(rawPayload, proof)`
+- Calls:
+
+```solidity
+IMailbox(i_bridge.mailbox())
+  .deliverAndHandle(rawPayload, proof);
+```
+
+- Reverts `ExecutionError()` if not executed
+- Reverts `HashMismatch()` if payload hash mismatch
+- Emits `ReleasedOrMinted`
+- Returns `destinationAmount = sourceDenominatedAmount`
+
+---
+
+### getPath
+
+```solidity
+function getPath(uint64 remoteChainSelector)
+  external
+  view
+  returns (Path memory)
+```
+
+---
+
+### setPath
+
+```solidity
+function setPath(
+  uint64 remoteChainSelector,
+  bytes32 lChainId,
+  bytes calldata allowedCaller
+) external onlyOwner
+```
+
+Validations:
+
+- `isSupportedChain(remoteChainSelector)` → else `ChainNotSupported`
+- `lChainId != 0` → else `ZeroLombardChainId`
+- `allowedCaller.length == 32` → else `InvalidAllowedCaller`
+- `isRemotePool(remoteChainSelector, allowedCaller)` must pass
+
+Emits:
+
+```solidity
+event PathSet(
+  uint64 remoteChainSelector,
+  bytes32 lChainId,
+  bytes32 allowedCaller
+);
+```
+
+---
+
+### removePath
+
+```solidity
+function removePath(uint64 remoteChainSelector)
+  external
+  onlyOwner
+```
+
+Reverts `PathNotExist` if unset.
+
+Emits:
+
+```solidity
+event PathRemoved(
+  uint64 remoteChainSelector,
+  bytes32 lChainId,
+  bytes32 allowedCaller
+);
+```
+
+---
+
+### getLombardConfig
+
+```solidity
+function getLombardConfig()
+  external
+  view
+  returns (
+    address verifierResolver,
+    address bridge,
+    address tokenAdapter
+  )
+```
+
+Returns `(i_lombardVerifierResolver, address(i_bridge), i_tokenAdapter)`.
+
+---
+
+## Events
+
+```solidity
+event LombardConfigurationSet(
+  address verifier,
+  address bridge,
+  address tokenAdapter
+);
+
+event PathSet(
+  uint64 remoteChainSelector,
+  bytes32 lChainId,
+  bytes32 allowedCaller
+);
+
+event PathRemoved(
+  uint64 remoteChainSelector,
+  bytes32 lChainId,
+  bytes32 allowedCaller
+);
+```
+
+---
+
+## Errors
+
+```solidity
+error ZeroVerifierNotAllowed();
+error OutboundImplementationNotFoundForVerifier();
+error ZeroBridge();
+error ZeroLombardChainId();
+error PathNotExist(uint64 remoteChainSelector);
+error InvalidMessageVersion(uint8 expected, uint8 received);
+error RemoteTokenMismatch(bytes32 bridge, bytes32 pool);
+error InvalidReceiver(bytes receiver);
+error ChainNotSupported(uint64 remoteChainSelector);
+error InvalidAllowedCaller(bytes allowedCaller);
+error ExecutionError();
+error HashMismatch();
+```
+
+Inherited errors from `TokenPool`.
+
+---
+
+## Internal Functions
+
+### \_getTokenDecimals
+
+```solidity
+function _getTokenDecimals(
+  IERC20Metadata token,
+  uint8 fallbackDecimals
+) internal view returns (uint8)
+```
+
+Uses `try token.decimals()`; falls back to `fallbackDecimals` on failure.
+
+---
+
+## Security model
+
+- RMN curse gating enforced via `TokenPool`.
+- Router ramp gating enforced via `TokenPool`.
+- Verifier resolver indirection isolates pool from verifier upgrades.
+- Path configuration strictly validated.
+- TokenAdapter can override token for bridge interaction.
+- V1 flows manually verify payloadHash binding.
+- V2 flows delegate mint to verifier implementation.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`IBridgeV2`](/ccip/evm/api-reference/v2.0.0/i-bridge-v2)
+- [`ICrossChainVerifierResolver`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-resolver)
+- [`IMailbox`](/ccip/evm/api-reference/v2.0.0/i-mailbox)
+- [`BaseVerifier`](/ccip/evm/api-reference/v2.0.0/base-verifier)

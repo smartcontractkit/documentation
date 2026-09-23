@@ -7,21 +7,22 @@ import {
   validateSearch,
   validateFamily,
   validateSearchParams,
+  validateInternalIdFormat,
   generateChainKey,
   createMetadata,
-  successHeaders,
-  commonHeaders,
   loadChainConfiguration,
   FilterType,
   APIErrorType,
   createErrorResponse,
   CCIPError,
 } from "~/lib/ccip/utils.ts"
+import { jsonHeaders } from "@lib/api/cacheHeaders.ts"
 import { logger } from "@lib/logging/index.js"
 
 import type { ChainDetails, ChainApiResponse, ChainFamily } from "~/lib/ccip/types/index.ts"
 import { ChainDataService, getAllChainsForSearch } from "~/lib/ccip/services/chain-data.ts"
 import { searchChains } from "~/lib/ccip/services/chain-search.ts"
+import { ChainIdentifierService } from "~/lib/ccip/services/chain-identifier.ts"
 
 export const prerender = false
 
@@ -92,6 +93,14 @@ export const GET: APIRoute = async ({ request }) => {
       outputKey,
     })
 
+    // Validate internalIdFormat parameter (only applies when outputKey=internalId)
+    const internalIdFormat = validateInternalIdFormat(params.get("internalIdFormat") || undefined)
+    logger.debug({
+      message: "Internal ID format validated",
+      requestId,
+      internalIdFormat,
+    })
+
     // Validate enrichFeeTokens parameter
     const enrichFeeTokens = validateEnrichFeeTokens(params.get("enrichFeeTokens") || undefined)
     logger.debug({
@@ -99,6 +108,9 @@ export const GET: APIRoute = async ({ request }) => {
       requestId,
       enrichFeeTokens,
     })
+
+    // Initialize chain identifier service for formatting (only used when outputKey=internalId)
+    const chainIdService = new ChainIdentifierService(environment, internalIdFormat)
 
     const config = await loadChainConfiguration(environment)
     logger.debug({
@@ -119,7 +131,7 @@ export const GET: APIRoute = async ({ request }) => {
       const {
         data: supportedData,
         errors: supportedErrors,
-        metadata: serviceMetadata,
+        metadata: _serviceMetadata,
       } = await chainDataService.getFilteredChains(environment, {}, enrichFeeTokens)
 
       // Flatten supported chains from all families
@@ -196,17 +208,31 @@ export const GET: APIRoute = async ({ request }) => {
     }
 
     // Convert each chain family's array to a keyed object structure as required by the API
+    // Always apply internalIdFormat to format the internalId field in each chain object
     const formattedData = Object.entries(data).reduce(
       (acc, [familyKey, chainList]) => {
         acc[familyKey] = chainList.reduce(
           (familyAcc, chain) => {
-            const key =
-              outputKey === "chainId"
-                ? generateChainKey(chain.chainId, chain.chainType, outputKey)
-                : outputKey
-                  ? chain[outputKey].toString()
-                  : chain.internalId
-            familyAcc[key] = chain
+            let key: string
+
+            // Always format the internalId field based on internalIdFormat
+            const resolved = chainIdService.resolve(chain.internalId)
+            const formattedInternalId = resolved
+              ? chainIdService.format(resolved.directoryKey, internalIdFormat)
+              : chain.internalId
+            const formattedChain = { ...chain, internalId: formattedInternalId }
+
+            if (outputKey === "chainId") {
+              key = generateChainKey(chain.chainId, chain.chainType, outputKey)
+            } else if (outputKey === "internalId") {
+              key = formattedInternalId
+            } else if (outputKey) {
+              key = chain[outputKey].toString()
+            } else {
+              key = chain.internalId
+            }
+
+            familyAcc[key] = formattedChain
             return familyAcc
           },
           {} as Record<string, ChainDetails>
@@ -229,7 +255,7 @@ export const GET: APIRoute = async ({ request }) => {
     })
 
     return new Response(JSON.stringify(response), {
-      headers: { ...commonHeaders, ...successHeaders },
+      headers: jsonHeaders,
     })
   } catch (error) {
     logger.error({
@@ -245,7 +271,6 @@ export const GET: APIRoute = async ({ request }) => {
         error.statusCode === 400 ? APIErrorType.VALIDATION_ERROR : APIErrorType.SERVER_ERROR,
         error.message,
         error.statusCode,
-        undefined,
         requestId
       )
     }
@@ -255,7 +280,6 @@ export const GET: APIRoute = async ({ request }) => {
       APIErrorType.SERVER_ERROR,
       "An unexpected error occurred while processing the request.",
       500,
-      undefined,
       requestId
     )
   }

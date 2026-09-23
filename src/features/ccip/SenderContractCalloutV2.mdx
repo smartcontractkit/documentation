@@ -1,0 +1,16 @@
+import { Aside } from "@components"
+
+<Aside type="caution" title="Best Practices">
+This example is simplified for educational purposes. For production code, follow these best practices:
+
+- **Keep extraArgs mutable**: In production, build extraArgs off-chain and pass them into your contract calls, or store them in a storage variable that can be updated. Never hardcode them. This keeps your contract compatible with future extraArgs versions and lets one deployment serve both pre-2.0 and CCIP 2.0 lanes without redeploying. See [Best Practices: Using extraArgs](/ccip/evm/concepts/best-practices#using-extraargs).
+
+- **Validate the destination chain**: Always ensure the destination chain is valid and supported before sending messages. See [Verify destination chain](/ccip/evm/concepts/best-practices#verify-destination-chain).
+
+- **Use ExtraArgsV3 on CCIP 2.0 lanes**: New integrations should encode [ExtraArgsV3](/ccip/evm/api-reference/v2.0.0/extra-args-codec), which carries the gas limit, requested finality, Cross-Chain Verifiers (CCVs), and executor settings (_More on `ExtraArgsV3` below_)
+
+- Legacy [GenericExtraArgsV2](/ccip/evm/api-reference/v2.0.0/client#genericextraargsv2) arguments are still accepted, but only the gasLimit field is honored. allowOutOfOrderExecution is deprecated in v2.0.
+
+- **Understand CCIP Service Limits**: Review the [CCIP Service Limits](/ccip/evm/service-limits) for constraints on message data size, execution gas, and the number of tokens per transaction. If your requirements exceed these limits, you may need to [contact the Chainlink Labs Team](https://chain.link/ccip-contact).
+
+</Aside>

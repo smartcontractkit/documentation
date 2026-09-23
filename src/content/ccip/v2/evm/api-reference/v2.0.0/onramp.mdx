@@ -1,0 +1,339 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 OnRamp API Reference"
+metadata:
+  description: "Processes outbound CCIP messages on the source chain."
+  version: "2.0.0"
+---
+
+`OnRamp` is the source-chain execution engine for CCIP messages.
+
+It is responsible for:
+
+- validating outbound messages
+- computing and collecting fees
+- coordinating token locking or burning via pools
+- generating message payloads for cross-chain delivery
+
+All outbound message processing flows through this contract.
+
+> Applications do not call this contract directly.
+
+## Usage Boundary
+
+**You do not call this contract directly.**
+
+- The Router calls this contract to submit outbound messages.
+- OnRamp validates messages, processes tokens, and emits data for delivery.
+- The owner configures destination chains, fee parameters, and execution behavior.
+- You are responsible for ensuring correct destination chain and token configuration.
+- Fee calculation depends on FeeQuoter (pricing) and Executor (execution policy).
+
+## Contract
+
+`onRamp/OnRamp.sol`
+
+## Import
+
+```solidity
+import {OnRamp} from "chainlink-ccip/onRamp/OnRamp.sol";
+```
+
+## Inheritance
+
+- `IEVM2AnyOnRampClient`
+- `ITypeAndVersion`
+- `Ownable2StepMsgSender`
+
+## Constructor
+
+```solidity id="b6b3w6"
+constructor(StaticConfig memory staticConfig, DynamicConfig memory dynamicConfig)
+```
+
+| Parameter       | Type                   | Description                                   |
+| --------------- | ---------------------- | --------------------------------------------- |
+| `staticConfig`  | `StaticConfig memory`  | Static configuration for execution behavior.  |
+| `dynamicConfig` | `DynamicConfig memory` | Dynamic configuration for fees and execution. |
+
+## Execution Flow
+
+1. The Router calls `forwardFromRouter`.
+2. Message parameters are validated.
+3. Fees are computed and collected.
+4. Tokens are processed via configured pools.
+5. Verifier data is generated.
+6. Message data is emitted for delivery to the destination chain.
+
+## External API
+
+### getExpectedNextMessageNumber
+
+```solidity id="mxwzcp"
+function getExpectedNextMessageNumber(uint64 destChainSelector) external view returns (uint64)
+```
+
+> Returns the next expected message sequence number for a destination chain.
+
+### forwardFromRouter
+
+```solidity id="u5j05r"
+function forwardFromRouter(
+  uint64 destChainSelector,
+  Client.EVM2AnyMessage calldata message,
+  uint256 feeTokenAmount,
+  address originalSender
+) external returns (bytes32 messageId)
+```
+
+> Processes an outbound message submitted by the Router and prepares it for cross-chain delivery.
+
+- Must only be called by the Router.
+- Computes fees, processes tokens, and emits message data.
+
+| Parameter           | Type                             | Description                                             |
+| ------------------- | -------------------------------- | ------------------------------------------------------- |
+| `destChainSelector` | `uint64`                         | Destination chain identifier.                           |
+| `message`           | `Client.EVM2AnyMessage calldata` | Message being processed.                                |
+| `feeTokenAmount`    | `uint256`                        | Fee amount paid for execution.                          |
+| `originalSender`    | `address`                        | Address that initiated the message on the source chain. |
+
+Returns:
+
+| Type      | Description                       |
+| --------- | --------------------------------- |
+| `bytes32` | Deterministic message identifier. |
+
+### getStaticConfig
+
+```solidity id="cb96mj"
+function getStaticConfig() public view returns (StaticConfig memory)
+```
+
+> Returns static configuration.
+
+### getDynamicConfig
+
+```solidity id="sk3xtu"
+function getDynamicConfig() external view returns (DynamicConfig memory dynamicConfig)
+```
+
+> Returns dynamic configuration.
+
+### setDynamicConfig
+
+```solidity id="7m9phv"
+function setDynamicConfig(DynamicConfig memory dynamicConfig) external onlyOwner
+```
+
+> Updates dynamic configuration.
+
+### applyDestChainConfigUpdates
+
+```solidity id="7m0ueu"
+function applyDestChainConfigUpdates(
+  DestChainConfigArgs[] calldata destChainConfigArgs
+) external onlyOwner
+```
+
+> Updates destination chain configuration.
+
+### getDestChainConfig
+
+```solidity id="gntvny"
+function getDestChainConfig(uint64 destChainSelector)
+  external
+  view
+  returns (DestChainConfig memory destChainConfig)
+```
+
+> Returns configuration for a destination chain.
+
+### getAllDestChainConfigs
+
+```solidity id="3s3pg2"
+function getAllDestChainConfigs()
+  external
+  view
+  returns (uint64[] memory, DestChainConfig[] memory)
+```
+
+> Returns all configured destination chains.
+
+### getPoolBySourceToken
+
+```solidity id="o3sw52"
+function getPoolBySourceToken(
+  uint64 destChainSelector,
+  IERC20 sourceToken
+) public view returns (IPoolV1)
+```
+
+> Returns the token pool used for handling a source token.
+
+### getSupportedTokens
+
+```solidity id="u9d38u"
+function getSupportedTokens(uint64 destChainSelector) external pure returns (address[] memory)
+```
+
+> Returns supported tokens (legacy behavior; consult TokenAdminRegistry for canonical data).
+
+### getFee
+
+```solidity id="fpgb9s"
+function getFee(
+  uint64 destChainSelector,
+  Client.EVM2AnyMessage calldata message
+) external view returns (uint256 feeTokenAmount)
+```
+
+> Returns the fee required to send a message through the OnRamp.
+
+### withdrawFeeTokens
+
+```solidity id="cnoyw9"
+function withdrawFeeTokens(address[] calldata feeTokens) external
+```
+
+> Withdraws accumulated fees.
+
+## Events
+
+- `event ConfigSet(StaticConfig staticConfig, DynamicConfig dynamicConfig)`
+- `event DestChainConfigSet(uint64 indexed destChainSelector, uint64 messageNumber, DestChainConfigArgs config)`
+- `event CCIPMessageSent(uint64 indexed destChainSelector, address indexed sender, bytes32 indexed messageId, address feeToken, uint256 tokenAmountBeforeTokenPoolFees, bytes encodedMessage, Receipt[] receipts, bytes[] verifierBlobs)`
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+- `error CannotSendZeroTokens()`
+- `error DestinationChainNotSupportedByCCV(address ccvAddress, uint64 destChainSelector)`
+- `error UnsupportedToken(address token)`
+- `error CanOnlySendOneTokenPerMessage()`
+- `error MustBeCalledByRouter()`
+- `error RouterMustSetOriginalSender()`
+- `error InvalidConfig()`
+- `error CursedByRMN(uint64 destChainSelector)`
+- `error GetSupportedTokensFunctionalityRemovedCheckAdminRegistry()`
+- `error InvalidDestChainConfig(uint64 destChainSelector)`
+- `error ReentrancyGuardReentrantCall()`
+- `error DestinationChainNotSupported(uint64 destChainSelector)`
+- `error InvalidDestChainAddress(bytes destChainAddress)`
+- `error FTFNotSupportedOnPoolV1()`
+- `error TokenArgsNotSupportedOnPoolV1()`
+- `error InsufficientFeeTokenAmount()`
+- `error TokenReceiverNotAllowed(uint64 destChainSelector)`
+- `error SourceTokenDataTooLarge(address token, uint256 actualLength, uint32 maxLength)`
+- `error FeeExceedsMaxAllowed(uint256 feeUSDCents, uint32 maxUSDCentsPerMessage)`
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Notes
+
+- Message numbers are strictly increasing per destination chain.
+- Each messageId is derived deterministically from message parameters and sequence number.
+- Only one token transfer is allowed per message.
+- The Router must supply the correct original sender.
+- Destination chain configuration must be enabled for message submission.
+- Token handling is delegated to configured token pools.
+- Fees returned by `getFee` must match parameters used in `forwardFromRouter`.
+- Message parameters must not change between fee quoting and submission.
+- Message submission will revert if destination chain, token, or CCV configuration is invalid.
+- Message submission will revert if fee payment is insufficient or token pool configuration is invalid.
+- Encoded message format must match MessageV1Codec expectations.
+
+## Structs
+
+### StaticConfig
+
+```solidity id="7pf8p9"
+struct StaticConfig {
+  uint64 localChainSelector;
+  IRMNRemote rmnRemote;
+  uint32 maxUSDCentsPerMessage;
+  address tokenAdminRegistry;
+}
+```
+
+### DynamicConfig
+
+```solidity id="c9yx2i"
+struct DynamicConfig {
+  address feeQuoter;
+  address feeAggregator;
+}
+```
+
+### DestChainConfig
+
+```solidity id="j1l9s2"
+struct DestChainConfig {
+  IRouter router;
+  uint64 messageNumber;
+  uint8 addressBytesLength;
+  bool tokenReceiverAllowed;
+  uint16 messageNetworkFeeUSDCents;
+  uint16 tokenNetworkFeeUSDCents;
+  uint32 baseExecutionGasCost;
+  address defaultExecutor;
+  address[] laneMandatedCCVs;
+  address[] defaultCCVs;
+  address offRamp;
+}
+```
+
+### DestChainConfigArgs
+
+```solidity id="7h4u66"
+struct DestChainConfigArgs {
+  uint64 destChainSelector;
+  IRouter router;
+  uint8 addressBytesLength;
+  bool tokenReceiverAllowed;
+  uint16 messageNetworkFeeUSDCents;
+  uint16 tokenNetworkFeeUSDCents;
+  uint32 baseExecutionGasCost;
+  address[] defaultCCVs;
+  address[] laneMandatedCCVs;
+  address defaultExecutor;
+  address offRamp;
+}
+```
+
+### Receipt
+
+```solidity id="09ex55"
+struct Receipt {
+  address issuer;
+  uint32 destGasLimit;
+  uint32 destBytesOverhead;
+  uint256 feeTokenAmount;
+  bytes extraArgs;
+}
+```
+
+## Internal Functions
+
+Internal helpers implement validation, token handling, and message processing logic.
+
+## Security model
+
+- Router is the only allowed caller for message submission.
+- Owner controls destination chain configuration and fee parameters.
+- RMN can block message processing under unsafe conditions.
+- Reentrancy protection enforces safe execution.
+- Misconfiguration may result in failed message submission or incorrect fee handling.
+
+## Related Interfaces & Contracts
+
+- [`Router`](/ccip/evm/api-reference/v2.0.0/router)
+- [`IEVM2AnyOnRampClient`](/ccip/evm/api-reference/v2.0.0/i-evm-2any-onramp-client)
+- [`IFeeQuoter`](/ccip/evm/api-reference/v2.0.0/i-fee-quoter)
+- [`IExecutor`](/ccip/evm/api-reference/v2.0.0/i-executor)
+- [`ITokenAdminRegistry`](/ccip/evm/api-reference/v2.0.0/i-token-admin-registry)
+- [`Client`](/ccip/evm/api-reference/v2.0.0/client)
+- [`IPoolV1`](/ccip/evm/api-reference/v2.0.0/i-pool-v1)
+- [`IPoolV2`](/ccip/evm/api-reference/v2.0.0/i-pool-v2)

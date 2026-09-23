@@ -1,0 +1,304 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 USDCTokenPoolProxy API Reference"
+metadata:
+  description: "Routing proxy that forwards USDC pool flows to specific child pool implementations."
+  version: "2.0.0"
+---
+
+## Summary
+
+`USDCTokenPoolProxy` is a forwarding pool that routes USDC `lockOrBurn` and `releaseOrMint` flows to specific child pool implementations.
+
+It:
+
+- Implements `[IPoolV1V2](/ccip/evm/api-reference/v2.0.0/i-pool-v1-v2)`
+- Does not inherit `[TokenPool](/ccip/evm/api-reference/v2.0.0/token-pool)`
+- Forwards calls using `call`
+- Selects child pools based on:
+  - `LockOrBurnMechanism`
+  - Version tag prefix embedded in `sourcePoolData`
+
+Supported routing targets:
+
+- CCTP v1 pool
+- CCTP v2 pool
+- CCTP v2 with CCV
+- Siloed lock-release pool
+
+---
+
+## Contract
+
+`chains/evm/contracts/pools/usdc/USDCTokenPoolProxy.sol`
+
+---
+
+## Import
+
+```solidity
+import {USDCTokenPoolProxy} from "chainlink-ccip/chains/evm/contracts/pools/usdc/USDCTokenPoolProxy.sol";
+```
+
+---
+
+## Target + upgrade model
+
+This contract is **not** a storage proxy.
+
+- All calls are forwarded via `call`
+- No `delegatecall` is used
+- State is isolated from child pools
+- Owner can update child pool addresses
+
+---
+
+## Inheritance
+
+```solidity
+contract USDCTokenPoolProxy
+  is IPoolV1V2,
+     Ownable2StepMsgSender,
+     ITypeAndVersion
+```
+
+---
+
+## typeAndVersion
+
+```solidity
+string public constant override typeAndVersion =
+  "USDCTokenPoolProxy 2.0.0-dev";
+```
+
+---
+
+## State
+
+### Constants
+
+```solidity
+uint16 internal constant WAIT_FOR_FINALITY = 0;
+```
+
+---
+
+### Immutables
+
+```solidity
+IERC20 internal immutable i_token;
+IRouter internal immutable i_router;
+ICrossChainVerifierResolver internal immutable i_cctpVerifier;
+```
+
+---
+
+### Storage
+
+```solidity
+mapping(uint64 => LockOrBurnMechanism)
+  internal s_lockOrBurnMechanism;
+
+address internal s_cctpV1Pool;
+address internal s_cctpV2Pool;
+address internal s_cctpV2PoolWithCCV;
+address internal s_siloedLockReleasePool;
+
+address internal s_feeAggregator;
+```
+
+---
+
+## Structs & Enums
+
+### LockOrBurnMechanism
+
+```solidity
+enum LockOrBurnMechanism {
+  NONE,
+  CCTP_V1,
+  CCTP_V2,
+  CCTP_V2_CCV,
+  LOCK_RELEASE
+}
+```
+
+---
+
+### PoolAddresses
+
+```solidity
+struct PoolAddresses {
+  address cctpV1Pool;
+  address cctpV2Pool;
+  address cctpV2PoolWithCCV;
+  address siloedLockReleasePool;
+}
+```
+
+---
+
+## External API (forwarded surface)
+
+### lockOrBurn (V1)
+
+```solidity
+function lockOrBurn(
+  Pool.LockOrBurnInV1 calldata lockOrBurnIn
+)
+  public
+  override
+  returns (Pool.LockOrBurnOutV1 memory)
+```
+
+- Requires caller equals `i_router.getOnRamp(...)`
+- Routes according to `s_lockOrBurnMechanism`
+- Reverts if no mechanism configured
+
+---
+
+### lockOrBurn (V2)
+
+```solidity
+function lockOrBurn(
+  Pool.LockOrBurnInV1 calldata lockOrBurnIn,
+  uint16 blockConfirmationRequested,
+  bytes memory tokenArgs
+)
+  public
+  override
+  returns (Pool.LockOrBurnOutV1 memory, uint256)
+```
+
+- Supports CCV and LOCK_RELEASE mechanisms
+- Resolves outbound verifier via `i_cctpVerifier`
+
+---
+
+### releaseOrMint (V1)
+
+```solidity
+function releaseOrMint(
+  Pool.ReleaseOrMintInV1 calldata releaseOrMintIn
+)
+  public
+  override
+  returns (Pool.ReleaseOrMintOutV1 memory)
+```
+
+- Requires caller equals authorized OffRamp
+- Extracts version tag from `sourcePoolData`
+- Routes accordingly
+
+---
+
+### releaseOrMint (V2)
+
+```solidity
+function releaseOrMint(
+  Pool.ReleaseOrMintInV1 calldata releaseOrMintIn,
+  uint16 blockConfirmationRequested
+)
+  public
+  override
+  returns (Pool.ReleaseOrMintOutV1 memory)
+```
+
+- Supports CCV and LOCK_RELEASE
+- Routes based on version tag
+
+---
+
+### getFee
+
+Delegates to underlying pool supporting V2.
+
+---
+
+### updatePoolAddresses
+
+```solidity
+function updatePoolAddresses(
+  PoolAddresses calldata pools
+)
+  external
+  onlyOwner
+```
+
+---
+
+### updateLockOrBurnMechanisms
+
+```solidity
+function updateLockOrBurnMechanisms(
+  uint64[] calldata chainSelectors,
+  LockOrBurnMechanism[] calldata mechanisms
+)
+  external
+  onlyOwner
+```
+
+---
+
+### withdrawFeeTokens
+
+```solidity
+function withdrawFeeTokens(
+  address[] calldata feeTokens
+) external
+```
+
+Permissionless. Forwards to `FeeTokenHandler`.
+
+---
+
+## Events
+
+```solidity
+event LockOrBurnMechanismUpdated(
+  uint64 indexed remoteChainSelector,
+  LockOrBurnMechanism mechanism
+);
+
+event PoolAddressesUpdated(PoolAddresses pools);
+```
+
+---
+
+## Errors
+
+```solidity
+error AddressCannotBeZero();
+error ChainNotSupportedByVerifier(uint64 remoteChainSelector);
+error InvalidLockOrBurnMechanism(LockOrBurnMechanism mechanism);
+error InvalidMessageVersion(bytes4 version);
+error MismatchedArrayLengths();
+error NoLockOrBurnMechanismSet(uint64 remoteChainSelector);
+error CallerIsNotARampOnRouter(address caller);
+error TokenPoolUnsupported(address pool);
+error MustSetPoolForMechanism(
+  uint64 remoteChainSelector,
+  LockOrBurnMechanism mechanism
+);
+```
+
+---
+
+## Security model
+
+- Owner controls routing configuration.
+- Router enforces ramp authorization.
+- No delegatecall — child pool storage remains isolated.
+- Version tag must match expected child pool semantics.
+- Misconfiguration can halt lane until corrected.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`IPoolV1`](/ccip/evm/api-reference/v2.0.0/i-pool-v1)
+- [`IPoolV2`](/ccip/evm/api-reference/v2.0.0/i-pool-v2)
+- [`ICrossChainVerifierResolver`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-resolver)
+- [`USDCTokenPool`](/ccip/evm/api-reference/v2.0.0/usdc-token-pool)
+- [`SiloedUSDCTokenPool`](/ccip/evm/api-reference/v2.0.0/siloed-usdc-token-pool)

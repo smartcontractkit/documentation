@@ -1,0 +1,190 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Best Practices (EVM)"
+metadata:
+  description: "Security and reliability guide for CCIP v2 on EVM chains: message verification, extraArgs configuration, gas optimization, CCT administration, lockbox liquidity management, and multi-signature protection for cross-chain applications."
+  excerpt: "ccip v2 evm best practices security message verification extraargs gas limit token administration lockbox liquidity multi-signature ccip receiver defensive programming"
+  datePublished: "2025-05-19T11:22:47Z"
+  lastModified: "2026-07-24T00:00:00Z"
+---
+
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+Before you deploy your cross-chain dApps to mainnet, make sure that your dApps follow the best practices in this document. You are responsible for thoroughly reviewing your code and applying best practices to ensure that your cross-chain dApps are secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/ccip-contact) before deploying your application to mainnet.
+
+## Verify destination chain
+
+Before calling the router's `ccipSend` [function](/ccip/evm/api-reference/v2.0.0/i-router-client#ccipsend), ensure that your code allows users to send CCIP messages to trusted destination chains.
+
+**Example**: For an example of how to verify the destination chain, refer to the [Transfer Tokens with Data - Defensive](/ccip/evm/tutorials/application-developers/programmable-token-transfers-defensive#tutorial) example.
+
+## Verify source chain
+
+When implementing the `ccipReceive` [method](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive) in a contract residing on the destination chain, ensure to verify the source chain of the incoming CCIP message. This verification ensures that CCIP messages can only be received from trusted source chains.
+
+**Example**: For an example of how to verify the source chain, refer to the [Transfer Tokens with Data - Defensive](/ccip/evm/tutorials/application-developers/programmable-token-transfers-defensive#tutorial) example.
+
+## Verify sender
+
+When implementing the `ccipReceive` [method](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive) in a contract residing on the destination chain, it's important to validate the sender of the incoming CCIP message. This check ensures that CCIP messages are received only from trusted sender addresses.
+
+**Note**: Depending on your use case, this verification might not always be necessary.
+
+**Example**: For an example of how to verify the sender of the incoming CCIP message, refer to the [Transfer Tokens with Data - Defensive](/ccip/evm/tutorials/application-developers/programmable-token-transfers-defensive#tutorial) example.
+
+## Verify router addresses
+
+When you implement the `ccipReceive` [method](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive) in the contract residing on the destination chain, validate that the `msg.sender` is the correct router address. This verification ensures that only the router contract can call the `ccipReceive` function on the receiver contract and is for developers that want to restrict which accounts are allowed to call `ccipReceive`.
+
+**Example**: For an example of how to verify the router, refer to the [Transfer Tokens with Data - Defensive](/ccip/evm/tutorials/application-developers/programmable-token-transfers-defensive#tutorial) example.
+
+## Using `extraArgs`
+
+`extraArgs` is the CCIP message field that carries destination-side execution configuration.
+Keep it mutable in production deployments so you can build it offchain and update it without redeploying, which lets your application adopt future CCIP upgrades without a contract migration.
+
+CCIP v2 accepts multiple `extraArgs` formats on EVM lanes. New integrations should use `ExtraArgsV3`. Existing v1.x-style applications can continue to send legacy formats: the OnRamp normalizes them internally before building the message.
+
+Supported formats:
+
+- **`ExtraArgsV3`** Recommended for new v2 integrations. Encodes Cross-Chain Verifiers (CCVs), executor, finality configuration, gas limit, token receiver, and token/executor args. See [`ExtraArgsCodec`](/ccip/evm/api-reference/v2.0.0/extra-args-codec) for encoding helpers.
+- **`GenericExtraArgsV2`** legacy. Only the `gasLimit` field is honored; `allowOutOfOrderExecution` is deprecated in v2.0. See [`GenericExtraArgsV2`](/ccip/evm/api-reference/v2.0.0/client#genericextraargsv2).
+
+### Setting `gasLimit`
+
+The `gasLimit` specifies the maximum amount of gas CCIP can consume to execute `ccipReceive()` on the contract located on the destination blockchain. It is the main factor in determining the fee to send a message. Unspent gas is not refunded.
+
+If the destination receiver is an externally owned account (a pure token transfer with no receiver logic), set `gasLimit` to `0` since there is no `ccipReceive()` implementation to call.
+
+To estimate an accurate gas limit for your destination contract, consider the following options:
+
+- Leverage the destination-chain RPC by simulating `receiver.ccipReceive()` with [`eth_estimateGas`](https://ethereum.github.io/execution-apis/api-documentation/). See also the [Alchemy documentation](https://docs.alchemy.com/reference/eth-estimategas).
+- Conduct [Foundry gas tests](https://book.getfoundry.sh/forge/gas-tracking) against your receiver.
+- Use the [Hardhat gas reporter plugin](https://github.com/cgewecke/eth-gas-reporter).
+- Look up gas consumption of a comparable internal transaction using a blockchain explorer.
+
+**Example**: For a worked example, refer to the [Optimizing Gas Limit Settings in CCIP Messages](/ccip/evm/tutorials/ccipreceive-gaslimit) guide.
+
+## Decoupling CCIP Message Reception and Business Logic
+
+As a best practice, separate the reception of CCIP messages from the core business logic of the contract. Implement 'escape hatches' or fallback mechanisms to gracefully manage situations where the business logic encounters issues. To explore this concept further, refer to the [Defensive Example](/ccip/evm/tutorials/application-developers/programmable-token-transfers-defensive) guide.
+
+## Evaluate the security and reliability of the networks that you use
+
+Although CCIP has been thoroughly reviewed and audited, inherent risks might still exist based on your use case, the blockchain networks where you deploy your contracts, and the network conditions on those blockchains.
+
+## Review and audit your code
+
+Before securing value with contracts that implement CCIP interfaces and routers, ensure that your code is secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/ccip-contact) before deploying your application to mainnet.
+
+## Soak test your dApps
+
+Be aware of the [Service Limits and Rate Limits for Supported Networks](/ccip/directory). Before you provide access to end users or secure value, soak test your cross-chain dApps. Ensure that your dApps can operate within these limits and operate correctly during usage spikes or unfavorable network conditions.
+
+## Monitor your dApps
+
+When you build applications that depend on CCIP, include monitoring and safeguards to protect against the negative impact of extreme market events, possible malicious activity on your dApp, potential delays, and outages.
+
+Create your own monitoring alerts based on deviations from normal activity. This will notify you when potential issues occur so you can respond to them.
+
+## Best Practices for Cross-Chain Token (CCT) Administration
+
+When managing your tokens and token pools, it's critical to follow best practices to ensure the security and integrity of your cross-chain operations. This includes proper handling of admin roles and safeguarding against unauthorized access.
+
+### Securely Manage Admin Roles
+
+The **token admin** is responsible for configuring token pools across blockchains and enabling cross-chain operations. This role allows the token admin to set the token pool for a token on each supported CCIP blockchain. To ensure security, follow these guidelines:
+
+- **Understand the Responsibilities of a Token Developer**: Review [Token Developer Responsibilities](/ccip/concepts/service-responsibility#token-developer-responsibilities).
+- **Assign Admin Roles with Caution**: Only trusted EOAs or smart accounts should be assigned the **token admin** role.
+- **Use Multi-Signature Smart Accounts**: For added security, consider assigning the token admin role to a **multi-signature smart account**. This ensures that multiple approvals are required for critical operations.
+
+### Protect Against Unauthorized Admin Actions
+
+- **Monitor Admin Activity**: Implement monitoring systems to track any actions taken by **token admins**, **token pool owners**, and **rate limit admins**. This helps detect unauthorized attempts to modify configurations or execute cross-chain transfers.
+
+- **Limit Admin Privileges When Possible**: For example, instead of giving the full owner access to manage rate limits, consider assigning the **rate limit admin** role, which is specifically responsible for updating rate limits.
+
+- **Leverage Smart Contract Audits**: Ensure your tokens and token pools are audited and follow secure development practices.
+
+### Best Practices for Token Pool Owners and Rate Limit Admins
+
+- **Token Pool Owner Responsibilities**: The **token pool owner** can enable remote chains, set remote pool addresses for a given chain selector, and configure rate limits. Ensure that this role is assigned to a trusted EOA or smart account, and monitor activity regularly.
+
+- **Set Rate Limits Appropriately**: Ensure that you set appropriate rate limits for outbound and inbound token transfers when configuring token pools. See the [Rate Limits overview](/ccip/evm/concepts/cross-chain-token/rate-limits/overview) for guidance on inspecting and updating limits.
+
+- **Delegate the Rate Limit Admin Role**: The rate limit admin is an optional role that the token pool owner can assign to another trusted entity. On v2.0 pools, this address is set through [`setDynamicConfig`](/ccip/evm/concepts/cross-chain-token/rate-limits/prerequisites-and-permissions); on v1.x pools, it is set through the standalone `setRateLimitAdmin()` function. The rate limit admin can only manage rate limits, so this role provides a way to delegate responsibility without giving full access to the token pool configuration.
+
+## Best Practices for Liquidity Management
+
+Effective liquidity management is crucial for ensuring the smooth operation of token pools, especially in [**Lock and Release**](/ccip/evm/api-reference/v2.0.0/lock-release-token-pool) token pools. The most critical aspect is ensuring that the token pool has enough liquidity available when it is acting in **reception mode** (on the destination blockchain), allowing tokens to be released to the receiver. Failure to manage liquidity will result in a degraded user experience and can result in user funds being 'stuck' in transit.
+
+### Ensure Sufficient Liquidity
+
+When a `LockReleaseTokenPool` operates in **reception mode** (on the destination blockchain), it releases tokens held in escrow by its associated [`ERC20LockBox`](/ccip/evm/api-reference/v2.0.0/erc20-lockbox). The lockbox **_must_** hold sufficient liquidity to ensure that tokens can be released to the receiver. If the lockbox lacks liquidity, the release operation will fail and user funds will not be available on the destination blockchain until sufficient liquidity is replenished and manual execution is performed.
+
+- **Best Practice**: Estimate expected volume when preparing to add and manage liquidity to ensure sustainable operations.
+- **Best Practice**: Regularly monitor the liquidity available in your lockbox and ensure that there is always enough liquidity to support the release of tokens to the receiver when the pool acts as the destination.
+
+### Avoid Fragmented Liquidity with Multiple Issuing Blockchains
+
+Using a **Lock and Unlock** mechanism across multiple issuing blockchains can lead to fragmented liquidity, making it more difficult to maintain sufficient liquidity in each pool.
+
+- **Best Practice**: Where possible, avoid using the **Lock and Unlock** mechanism across multiple issuing blockchains. Fragmented liquidity increases operational overhead and complicates liquidity management.
+
+### Monitor Liquidity Health and Automate Alerts
+
+Monitoring the health of your lockbox liquidity is essential for ensuring the liveness of cross-chain transfers. Automated alerts can notify you if liquidity falls below a certain threshold, allowing you to take action before transfers fail.
+
+- **Best Practice**: Calculate the amount of time required to deplete your lockbox to various threshold levels (e.g., Low: 50% [Warning], Very Low [Critical] 30%) and utilize automated alerting and pre-defined operational procedures to ensure adequate preparedness to respond by replenishing the lockbox before users are impacted. For this calculation, be sure to assume users will utilize max capacity transfers paired with the token pool's refill rate.
+
+### Use the Lockbox `deposit` and `withdraw` Functions Properly
+
+In v2.0 lock-and-release setups, liquidity providers add and remove liquidity by calling the [`deposit`](/ccip/evm/api-reference/v2.0.0/erc20-lockbox#deposit) and [`withdraw`](/ccip/evm/api-reference/v2.0.0/erc20-lockbox#withdraw) functions on the [`ERC20LockBox`](/ccip/evm/api-reference/v2.0.0/erc20-lockbox) rather than on the `LockReleaseTokenPool` itself.
+
+- **Best Practice**: Only trusted entities should be permitted to call `deposit` and `withdraw` on the lockbox. Access is enforced through the lockbox's [`AuthorizedCallers`](/ccip/evm/api-reference/v2.0.0/authorized-callers) allowlist. Configure this allowlist securely to prevent unauthorized liquidity manipulation.
+
+### Set and Manage the Liquidity Management Role
+
+A designated entity is responsible for managing the liquidity of the pool and ensuring that there is always sufficient liquidity when needed. They can rebalance liquidity between different pools or pool versions if necessary. In v2.0, this responsibility is expressed by adding the entity's address to the lockbox's [`AuthorizedCallers`](/ccip/evm/api-reference/v2.0.0/authorized-callers) allowlist rather than through a dedicated on-pool role.
+
+- **Best Practice**: Assign this role to a trusted entity and ensure they understand the responsibilities, such as maintaining liquidity in the lockbox to support token releases.
+
+## Multi-Signature Contracts
+
+Multi-signature contracts, such as [Safe Smart Accounts](https://github.com/safe-global/safe-smart-account), enhance security by requiring multiple signatures to authorize transactions.
+
+### Threshold configuration
+
+Set an optimal threshold for signers based on the trust level of participants and the required security.
+
+### Role-based access control
+
+Assign roles with specific permissions to different signers, limiting access to critical operations to trusted individuals.
+
+### Hardware wallet integration
+
+Use hardware-backed keys for signers to safeguard private keys from online vulnerabilities. Ensure that these devices are secure and regularly updated.
+
+### Regular audits and updates
+
+Conduct periodic audits of signer access and contract settings. Update the multisig setup as necessary, especially when personnel changes occur.
+
+### Emergency recovery plans
+
+Implement procedures for recovering from lost keys or compromised accounts, such as a predefined recovery multisig or recovery key holders.
+
+### Transaction review process
+
+Establish a standard process for reviewing and approving transactions, which can include a waiting period for large transfers to mitigate risks and verifying data on a hardware wallet before signing to protect against front-end compromises.
+
+### Security tooling
+
+Tools such as [Tenderly](https://tenderly.co/) or [Hypernative](https://www.hypernative.io/) can provide additional layers of security related to transaction simulation, risk monitoring, and alerting.
+
+### Documentation and training
+
+Maintain thorough documentation of multisig operations and provide training for all signers to ensure familiarity with processes and security protocols.
+
+<CcipCommon callout="conceptualDisclaimer" />

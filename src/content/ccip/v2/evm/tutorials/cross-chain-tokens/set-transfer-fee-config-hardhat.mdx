@@ -1,0 +1,1262 @@
+---
+section: ccip
+date: Last Modified
+title: "Manage Token Transfer Fees Using Hardhat"
+metadata:
+  description: "Configure, test, inspect, withdraw, and disable CCIP v2 token pool fee overrides using Hardhat and ccip-cli."
+  image: "/images/ccip/basic-architecture.png"
+  excerpt: "token transfer fee, fee admin, LINK, withdraw fee tokens, basis points, faster than finality, Hardhat"
+  datePublished: "2025-10-30"
+  lastModified: "2026-05-05"
+  estimatedTime: "30 minutes"
+  difficulty: "intermediate"
+whatsnext:
+  "Set Token Pool Rate Limits Using Hardhat": "/ccip/evm/tutorials/cross-chain-tokens/update-rate-limiters-hardhat"
+---
+
+import { AnchoredAccordion, Aside, GitHubCard, PageTabs } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<PageTabs
+  pages={[
+    {
+      name: "Foundry",
+      url: "/ccip/evm/tutorials/cross-chain-tokens/set-transfer-fee-config-foundry",
+      icon: "/images/tutorial-icons/foundry-icn.png",
+    },
+    {
+      name: "Hardhat",
+      url: "/ccip/evm/tutorials/cross-chain-tokens/set-transfer-fee-config-hardhat",
+      icon: "/images/tutorial-icons/hardhat-icn.png",
+    },
+  ]}
+/>
+
+CCIP v2 token pools let pool owners opt into **pool-level token transfer fee overrides** per destination lane. When an override is disabled, the [OnRamp](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/onRamp/OnRamp.sol) falls back to [`FeeQuoter`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/FeeQuoter.sol) defaults for that lane. In this tutorial you will:
+
+1. Review the current fee configuration for both configured lanes.
+2. Optionally set a fee admin who can withdraw accrued fees.
+3. Configure lane-specific flat fees, transfer fees, destination gas overhead, and destination bytes overhead.
+4. Send a LINK-paid transfer and inspect accrued fees in the source token pool.
+5. Withdraw accrued fee tokens.
+6. Disable the fee configuration on both lanes to return to `FeeQuoter` defaults.
+
+<Aside type="note" title="Defaults apply unless you opt in">
+  <ol>
+    <li>
+      <strong>Fee overrides are per lane:</strong> each direction is configured independently (Ethereum Sepolia →
+      Arbitrum Sepolia vs. Arbitrum Sepolia → Ethereum Sepolia).
+    </li>
+    <li>
+      <strong>FeeQuoter is the default:</strong> when <code>isEnabled: false</code> for a lane, the OnRamp uses
+      FeeQuoter defaults for that lane.
+    </li>
+    <li>
+      <strong>Faster Than Finality fees are opt-in:</strong> the <code>fastFinality*</code> fields only apply when you
+      request block-depth finality (for example, <code>--extra finality=32</code>).
+    </li>
+  </ol>
+</Aside>
+
+## Before You Begin
+
+<AnchoredAccordion title="Set Up Your Development Environment" number={1} depth={3}>
+
+1. Install Node.js and npm:
+   - Make sure you have `Node.js v22.10.0` or above installed. If not, install **`Node.js v22.10.0`** using the [Node.js documentation](https://nodejs.org/en/download/).
+   - `npm` is bundled with Node.js. If you can't run `npm`, reinstall or update Node.js from the official installer.
+
+2. Install/Update Chainlink `ccip-cli`:
+
+```bash filename="Terminal"
+npm install -g @chainlink/ccip-cli
+ccip-cli --version
+```
+
+3. Clone the repository and navigate to the project directory:
+
+<GitHubCard
+  title="CCIP 2.0 template"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat"
+  iconName="github-svg-card"
+>
+  Clone docs-cct-hardhat for the CCT Hardhat scripts used in this tutorial.
+</GitHubCard>
+
+```bash filename="Terminal"
+git clone https://github.com/smartcontractkit/docs-cct-hardhat.git
+cd docs-cct-hardhat
+```
+
+4. Create a `.env` file by copying the `.env.example` file, and fill in the required values:
+
+```bash filename="Terminal"
+cp .env.example .env
+```
+
+```bash filename=".env"
+# Keystore name (created via `npx hardhat keystore set`)
+KEYSTORE_NAME=<your_private_key_name>
+
+# Optional: keystore name for a configured fee admin
+FEE_ADMIN_KEYSTORE_NAME=your_fee_admin_keystore_name
+
+# RPC URLs
+ETHEREUM_SEPOLIA_RPC_URL=your_eth_sepolia_rpc
+ARBITRUM_SEPOLIA_RPC_URL=your_arbitrum_sepolia_rpc
+
+# Etherscan API key (required only if you pass --verify to deployment tasks)
+ETHERSCAN_API_KEY=your_etherscan_api_key
+```
+
+Use the [CCIP Directory](/ccip/directory/testnet) or `helper-config.ts` to confirm the router and LINK addresses for your network.
+
+<Aside type="tip" title="Funding">
+  <ol>
+    <li>Configuration and withdrawal transactions require native gas on the source chain where you broadcast.</li>
+    <li>
+      The <code>ccip-cli --fee-token LINK</code> examples require LINK on the source chain. You can get testnet LINK
+      from the <a href="https://faucets.chain.link/">Chainlink faucet</a>.
+    </li>
+    <li>Token transfer examples require the sender to hold the source-chain token being transferred.</li>
+  </ol>
+</Aside>
+
+<GitHubCard
+  title="Complete List of Supported Chains"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/helper-config.ts"
+  iconName="github-svg-card"
+>
+  View the complete list of supported chains in the `helper-config.ts` file.
+</GitHubCard>
+
+5. Load your environment variables:
+
+```bash filename="Terminal"
+source .env
+```
+
+6. Build the project:
+
+```bash filename="Terminal"
+npm install && npx hardhat compile
+```
+
+7. Create an encrypted Hardhat keystore, if you haven't already:
+
+```bash filename="Terminal"
+npx hardhat keystore set PRIVATE_KEY
+```
+
+Optionally, create an encrypted Hardhat keystore for the fee admin, if you haven't already:
+
+```bash filename="Terminal"
+npx hardhat keystore set FEE_ADMIN_PRIVATE_KEY
+```
+
+<Aside type="caution" title="Private key format">
+  When prompted for your private key, include the <code>0x</code> prefix.
+</Aside>
+
+<Aside type="note" title="Hardhat keystore">
+  <ol>
+    <li>
+      Hardhat prompts for a keystore password: set it on first use, or enter it to unlock on subsequent uses. Then it
+      asks you to enter your private key as hidden text.
+    </li>
+    <li>
+      The name you choose, such as <code>PRIVATE_KEY</code>, is what you set as <code>KEYSTORE_NAME</code> in{" "}
+      <code>.env</code>.
+    </li>
+    <li>
+      Use <code>npx hardhat keystore list</code> to check previously created keystores.
+    </li>
+  </ol>
+</Aside>
+
+</AnchoredAccordion>
+
+## Tutorial
+
+<Aside type="tip" title="Prerequisites">
+  This tutorial assumes you have already deployed tokens and token pools on both chains. If not, complete one of the two
+  tutorials first:
+  <ul>
+    <li>
+      <a href="/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat">Burn & Mint</a>
+    </li>
+    <li>
+      <a href="/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat">Lock & Mint</a>
+    </li>
+  </ul>
+  Use the token pool address for the chain you are configuring. In a Burn & Mint setup, both pools are{" "}
+  <code>BurnMintTokenPool</code> contracts. In a Lock & Mint setup, the source chain can use a{" "}
+  <code>LockReleaseTokenPool</code> backed by an <code>ERC20LockBox</code>, while the destination chain uses a{" "}
+  <code>BurnMintTokenPool</code>. This tutorial configures the token pool, not the lockbox.
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_TOKEN=0x...
+export ARBITRUM_SEPOLIA_TOKEN=0x...
+
+export ETHEREUM_SEPOLIA_TOKEN_POOL=0x...
+export ARBITRUM_SEPOLIA_TOKEN_POOL=0x...
+```
+
+  <ol>
+    <li>
+      <code>KEYSTORE_NAME</code> must resolve to the owner of the source-chain token pool when you set dynamic config or
+      fee config.
+    </li>
+    <li>
+      A configured fee admin can withdraw accrued fee tokens, but cannot set fee config or set another fee admin.
+    </li>
+  </ol>
+</Aside>
+
+<AnchoredAccordion title="Verify and Set Fee Admin" number={1} depth={3}>
+
+The fee admin is part of the token pool dynamic configuration. Use `getDynamicConfig` to inspect the current router, rate limit admin, and fee admin before making any changes.
+
+<GitHubCard
+  title="getDynamicConfig.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/dynamic-config/getDynamicConfig.ts"
+  iconName="github-svg-card"
+>
+  View the dynamic config query task on GitHub.
+</GitHubCard>
+
+```bash filename="Terminal"
+npx hardhat getDynamicConfig \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+⚙️  Get Dynamic Config
+========================================
+Chain:        Ethereum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       View dynamic config
+========================================
+
+Dynamic Configuration:
+  Router:           0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+  Rate Limit Admin: 0xYourAddressForRateLimitAdmin
+  Fee Admin:        0xYourAddressForFeeAdmin
+
+========================================
+Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+========================================
+```
+
+```bash filename="Terminal"
+npx hardhat getDynamicConfig \
+  --network arbitrumSepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+⚙️  Get Dynamic Config
+========================================
+Chain:        Arbitrum Sepolia
+Token Pool:   0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+Action:       View dynamic config
+========================================
+
+Dynamic Configuration:
+  Router:           0x2a9C5afB0d0e4BAb2BCdaE109EC4b0c4Be15a165
+  Rate Limit Admin: 0xYourAddressForRateLimitAdmin
+  Fee Admin:        0xYourAddressForFeeAdmin
+
+========================================
+Token Pool:   https://sepolia.arbiscan.io/address/0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+========================================
+```
+
+Use `setDynamicConfig` to set a fee admin if you want to. This task sets the router, rate limit admin, and fee admin together, so pass the current router and rate limit admin from the previous output unless you intend to change them.
+
+<GitHubCard
+  title="setDynamicConfig.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/dynamic-config/setDynamicConfig.ts"
+  iconName="github-svg-card"
+>
+  View the dynamic config update task on GitHub.
+</GitHubCard>
+
+| Input                           | Required | Description                                                                                                   |
+| ------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------- |
+| <nobr>`--router`</nobr>         | No       | Router to keep or set. Use the current router from `getDynamicConfig` unless intentionally changing it.       |
+| <nobr>`--ratelimitadmin`</nobr> | No       | Rate limit admin to keep or set. Use the current value unless intentionally changing it.                      |
+| <nobr>`--feeadmin`</nobr>       | No       | Address allowed to withdraw accrued fee tokens. Set to `address(0)` to restrict withdrawal to the pool owner. |
+| <nobr>`KEYSTORE_NAME`</nobr>    | Yes      | Hardhat keystore name for the pool owner (set in `.env`).                                                     |
+
+1. Set the fee admin on the Ethereum Sepolia pool:
+
+```bash filename="Terminal"
+npx hardhat setDynamicConfig \
+  --router 0xCurrentRouterFromOutput \
+  --ratelimitadmin 0xYourAddressForRateLimitAdmin \
+  --feeadmin 0xYourFeeAdminAddress \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+⚙️  Set Dynamic Config
+========================================
+Chain:        Ethereum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       Set dynamic config
+========================================
+
+Current Configuration:
+  Router:           0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+  Rate Limit Admin: 0xYourAddressForRateLimitAdmin
+  Fee Admin:        0xYourAddressForFeeAdmin
+
+New Configuration:
+  Router:           0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+  Rate Limit Admin: 0xYourAddressForRateLimitAdmin
+  Fee Admin:        0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+
+[Step 1] Setting dynamic config on Ethereum Sepolia
+⏳ Tx: https://sepolia.etherscan.io/tx/0x0f4fda7e9e39f35d2bb6d6b7967db7f1b8d2d99fc1f7a64dfe8a3f0d8c7a2b31
+✅ Dynamic config updated successfully!
+
+========================================
+✅ Configuration Complete on Ethereum Sepolia!
+========================================
+Token Pool:       https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Router:           0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+Rate Limit Admin: 0xYourAddressForRateLimitAdmin
+Fee Admin:        0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+Transaction:      https://sepolia.etherscan.io/tx/0x0f4fda7e9e39f35d2bb6d6b7967db7f1b8d2d99fc1f7a64dfe8a3f0d8c7a2b31
+========================================
+```
+
+2. Set the fee admin on the Arbitrum Sepolia pool:
+
+```bash filename="Terminal"
+npx hardhat setDynamicConfig \
+  --router 0xCurrentRouterFromOutput \
+  --ratelimitadmin 0xYourAddressForRateLimitAdmin \
+  --feeadmin 0xYourFeeAdminAddress \
+  --network arbitrumSepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+⚙️  Set Dynamic Config
+========================================
+Chain:        Arbitrum Sepolia
+Token Pool:   0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+Action:       Set dynamic config
+========================================
+
+Current Configuration:
+  Router:           0x2a9C5afB0d0e4BAb2BCdaE109EC4b0c4Be15a165
+  Rate Limit Admin: 0xYourAddressForRateLimitAdmin
+  Fee Admin:        0xYourAddressForFeeAdmin
+
+New Configuration:
+  Router:           0x2a9C5afB0d0e4BAb2BCdaE109EC4b0c4Be15a165
+  Rate Limit Admin: 0xYourAddressForRateLimitAdmin
+  Fee Admin:        0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+
+[Step 1] Setting dynamic config on Arbitrum Sepolia
+⏳ Tx: https://sepolia.arbiscan.io/tx/0xe5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4
+✅ Dynamic config updated successfully!
+
+========================================
+✅ Configuration Complete on Arbitrum Sepolia!
+========================================
+Token Pool:       https://sepolia.arbiscan.io/address/0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+Router:           0x2a9C5afB0d0e4BAb2BCdaE109EC4b0c4Be15a165
+Rate Limit Admin: 0xYourAddressForRateLimitAdmin
+Fee Admin:        0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+Transaction:      https://sepolia.arbiscan.io/tx/0xe5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4
+========================================
+```
+
+<Aside type="note" title="Fee admin permissions">
+  <ol>
+    <li>The pool owner can set dynamic config and token transfer fee config.</li>
+    <li>
+      The pool owner (or a configured fee admin) can withdraw accrued fee tokens. Anyone can inspect fee token balances.
+    </li>
+  </ol>
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Review Current Fee Configuration" number={2} depth={3}>
+
+Use `getTokenTransferFeeConfig` to read the current fee configuration for a destination lane from the source-chain token pool.
+
+<GitHubCard
+  title="getTokenTransferFeeConfig.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/fee-config/getTokenTransferFeeConfig.ts"
+  iconName="github-svg-card"
+>
+  View the fee config query task on GitHub.
+</GitHubCard>
+
+| Input                      | Required | Description                                                                                                                               |
+| -------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`--destchain`</nobr> | Yes      | Remote chain whose lane is being queried.                                                                                                 |
+| Source pool env var        | Yes      | `ETHEREUM_SEPOLIA_TOKEN_POOL`, `ARBITRUM_SEPOLIA_TOKEN_POOL`, or the `--tokenpool` override for the source chain selected by `--network`. |
+
+1. Check the Ethereum Sepolia pool for the lane to Arbitrum Sepolia:
+
+```bash filename="Terminal"
+npx hardhat getTokenTransferFeeConfig \
+  --destchain arbitrumSepolia \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+💰 Get Token Transfer Fee Config
+========================================
+Chain:        Ethereum Sepolia
+Remote Chain: Arbitrum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       View fee config
+========================================
+
+Dest Chain Selector: 3478487238524512106
+
+Fee Configuration:
+  isEnabled:                   false
+  destGasOverhead:             0
+  destBytesOverhead:           0
+  finalityFeeUSDCents:         0
+  fastFinalityFeeUSDCents:     0
+  finalityTransferFeeBps:      0
+  fastFinalityTransferFeeBps:  0
+
+⚠️  Fee config is disabled for this lane.
+   The OnRamp will fall back to FeeQuoter defaults for this destination.
+
+========================================
+Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+========================================
+```
+
+2. Check the Arbitrum Sepolia pool for the lane to Ethereum Sepolia:
+
+```bash filename="Terminal"
+npx hardhat getTokenTransferFeeConfig \
+  --destchain sepolia \
+  --network arbitrumSepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+💰 Get Token Transfer Fee Config
+========================================
+Chain:        Arbitrum Sepolia
+Remote Chain: Ethereum Sepolia
+Token Pool:   0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+Action:       View fee config
+========================================
+
+Dest Chain Selector: 16015286601757825753
+
+Fee Configuration:
+  isEnabled:                   false
+  destGasOverhead:             0
+  destBytesOverhead:           0
+  finalityFeeUSDCents:         0
+  fastFinalityFeeUSDCents:     0
+  finalityTransferFeeBps:      0
+  fastFinalityTransferFeeBps:  0
+
+⚠️  Fee config is disabled for this lane.
+   The OnRamp will fall back to FeeQuoter defaults for this destination.
+
+========================================
+Token Pool:   https://sepolia.arbiscan.io/address/0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+========================================
+```
+
+<Aside type="note" title="Fee config disabled by default">
+1. When fee config is disabled, the OnRamp uses FeeQuoter defaults for token transfer fee calculation on that source -> destination lane. 
+2. If you have already configured fees, the task will show non-zero values and `isEnabled: true`.
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Set Token Transfer Fee Configuration" number={3} depth={3}>
+
+Use `updateTokenTransferFeeConfig` to configure fee parameters for a destination lane on the source-chain token pool.
+
+<GitHubCard
+  title="updateTokenTransferFeeConfig.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/fee-config/updateTokenTransferFeeConfig.ts"
+  iconName="github-svg-card"
+>
+  View the fee config update task on GitHub.
+</GitHubCard>
+
+| Input                                       | Required | Description                                                                                                                               |
+| ------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`--destchain`</nobr>                  | Yes      | Remote chain to configure fees for.                                                                                                       |
+| Source pool env var                         | Yes      | `ETHEREUM_SEPOLIA_TOKEN_POOL`, `ARBITRUM_SEPOLIA_TOKEN_POOL`, or the `--tokenpool` override for the source chain selected by `--network`. |
+| <nobr>`KEYSTORE_NAME`</nobr>                | Yes      | Hardhat keystore name for the pool owner (set in `.env`).                                                                                 |
+| <nobr>`--destgasoverhead`</nobr>            | No       | Gas overhead charged in the fee model. Must be greater than `0` when enabled.                                                             |
+| <nobr>`--destbytesoverhead`</nobr>          | No       | Data availability bytes overhead. Use at least `32` for Burn & Mint and Lock & Release pools.                                             |
+| <nobr>`--finalityfeeusdcents`</nobr>        | No       | Flat fee in 0.01 USD units for default-finality transfers.                                                                                |
+| <nobr>`--fastfinalityfeeusdcents`</nobr>    | No       | Flat fee in 0.01 USD units for fast-finality transfers.                                                                                   |
+| <nobr>`--finalitytransferfeebps`</nobr>     | No       | Basis-point fee deducted from the transferred amount for default-finality transfers. Must be below `10000`.                               |
+| <nobr>`--fastfinalitytransferfeebps`</nobr> | No       | Basis-point fee deducted from the transferred amount for fast-finality transfers. Must be below `10000`.                                  |
+| <nobr>`--disable`</nobr>                    | No       | Set to disable the fee config for this lane.                                                                                              |
+| <nobr>`--tokenpool`</nobr>                  | No       | Token pool address. Overrides the `{CHAIN}_TOKEN_POOL` env var.                                                                           |
+
+<Aside type="note" title="Fee units: basis points vs flat fee">
+  <ul>
+    <li>
+      <strong>Flat fee:</strong> values are in <code>0.01 USD (1 cent)</code> units. For example, <code>1</code> means
+      $0.01 and <code>100</code> means $1.00.
+    </li>
+    <li>
+      <strong>Basis points (bps):</strong> <code>1 basis points = 0.01%</code>, <code>100 basis points = 1%</code>, and{" "}
+      <code>10000 basis points = 100%</code>. Values must be below <code>10000</code>.
+    </li>
+  </ul>
+</Aside>
+
+<Aside type="caution" title="Validation rules">
+  <ol>
+    <li>
+      <code>--destgasoverhead</code> must be greater than <code>0</code> when the config is enabled.
+    </li>
+    <li>
+      <code>--destbytesoverhead</code> must be at least <code>32</code> for Burn & Mint and Lock & Release pools.
+    </li>
+    <li>
+      Basis-point fee values must be below <code>10000</code>.
+    </li>
+    <li>
+      First-time setup should pass every fee field shown in this tutorial. Later updates can omit fields you do not want
+      to change because the task defaults omitted fields to the current on-chain values.
+    </li>
+  </ol>
+</Aside>
+
+This section uses a **two-step update demo** for the Ethereum Sepolia → Arbitrum Sepolia lane so you can see that **omitting fields does not reset them**.
+
+- **Step 1** sets a basis-point fee for default-finality transfers.
+- **Step 2** adds a flat fee for fast-finality transfers, while intentionally omitting the basis points flag so it carries forward.
+
+Fee behavior in this tutorial:
+
+- **bps fields** are deducted from the transferred token amount and retained by the source pool as the pool token.
+- **Flat fee fields** are charged in the selected fee token (LINK in this tutorial) and credited to the source pool.
+
+#### Step 1: Configure a basis points fee for default-finality transfers (ETH Sepolia → Arbitrum Sepolia)
+
+```bash filename="Terminal"
+npx hardhat updateTokenTransferFeeConfig \
+  --destchain arbitrumSepolia \
+  --destgasoverhead 50000 \
+  --destbytesoverhead 32 \
+  --finalityfeeusdcents 0 \
+  --finalitytransferfeebps 25 \
+  --fastfinalityfeeusdcents 0 \
+  --fastfinalitytransferfeebps 0 \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+💰 Update Token Transfer Fee Config
+========================================
+Chain:        Ethereum Sepolia
+Remote Chain: Arbitrum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       Set fee config
+========================================
+
+Dest Chain Selector: 3478487238524512106
+
+Current On-Chain Fee Configuration:
+  isEnabled:                   false
+  destGasOverhead:             0
+  destBytesOverhead:           0
+  finalityFeeUSDCents:         0
+  fastFinalityFeeUSDCents:     0
+  finalityTransferFeeBps:      0
+  fastFinalityTransferFeeBps:  0
+
+Fee Configuration to Apply:
+  destGasOverhead:             50000
+  destBytesOverhead:           32
+  finalityFeeUSDCents:         0
+  fastFinalityFeeUSDCents:     0
+  finalityTransferFeeBps:      25
+  fastFinalityTransferFeeBps:  0
+
+[Step 1] Applying fee config for lane to Arbitrum Sepolia
+⏳ Tx: https://sepolia.etherscan.io/tx/0x...
+✅ Fee config applied successfully!
+
+========================================
+✅ Operation Complete!
+========================================
+Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+========================================
+```
+
+#### Step 2: Add a flat fee for fast-finality transfers (ETH Sepolia → Arbitrum Sepolia)
+
+This command intentionally omits `--finalitytransferfeebps`. The task defaults omitted fields to the current on-chain values, so the 25 basis points default-finality fee carries forward.
+
+```bash filename="Terminal"
+npx hardhat updateTokenTransferFeeConfig \
+  --destchain arbitrumSepolia \
+  --fastfinalityfeeusdcents 150 \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+💰 Update Token Transfer Fee Config
+========================================
+Chain:        Ethereum Sepolia
+Remote Chain: Arbitrum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       Set fee config
+========================================
+
+Dest Chain Selector: 3478487238524512106
+
+Current On-Chain Fee Configuration:
+  isEnabled:                   true
+  destGasOverhead:             50000
+  destBytesOverhead:           32
+  finalityFeeUSDCents:         0
+  fastFinalityFeeUSDCents:     0
+  finalityTransferFeeBps:      25
+  fastFinalityTransferFeeBps:  0
+
+Fee Configuration to Apply:
+  destGasOverhead:             50000
+  destBytesOverhead:           32
+  finalityFeeUSDCents:         0
+  fastFinalityFeeUSDCents:     150
+  finalityTransferFeeBps:      25
+  fastFinalityTransferFeeBps:  0
+
+[Step 1] Applying fee config for lane to Arbitrum Sepolia
+⏳ Tx: https://sepolia.etherscan.io/tx/0x...
+✅ Fee config applied successfully!
+
+========================================
+✅ Operation Complete!
+========================================
+Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+========================================
+```
+
+#### Repeat for the reverse lane (Arbitrum Sepolia → Ethereum Sepolia)
+
+Repeat the same two steps on the Arbitrum Sepolia token pool by switching the network and destination chain.
+
+Step 1:
+
+```bash filename="Terminal"
+npx hardhat updateTokenTransferFeeConfig \
+  --destchain sepolia \
+  --destgasoverhead 50000 \
+  --destbytesoverhead 32 \
+  --finalityfeeusdcents 0 \
+  --finalitytransferfeebps 25 \
+  --fastfinalityfeeusdcents 0 \
+  --fastfinalitytransferfeebps 0 \
+  --network arbitrumSepolia
+```
+
+Step 2:
+
+```bash filename="Terminal"
+npx hardhat updateTokenTransferFeeConfig \
+  --destchain sepolia \
+  --fastfinalityfeeusdcents 150 \
+  --network arbitrumSepolia
+```
+
+Both steps should complete successfully and print the token pool address and transaction hash for the update.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Verify the Updated Fee Configuration" number={4} depth={3}>
+
+Re-run `getTokenTransferFeeConfig` to confirm the final (Step 2) configuration for the Ethereum Sepolia → Arbitrum Sepolia lane.
+
+1. Verify the Ethereum Sepolia pool for the lane to Arbitrum Sepolia:
+
+```bash filename="Terminal"
+npx hardhat getTokenTransferFeeConfig \
+  --destchain arbitrumSepolia \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+💰 Get Token Transfer Fee Config
+========================================
+Chain:        Ethereum Sepolia
+Remote Chain: Arbitrum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       View fee config
+========================================
+
+Dest Chain Selector: 3478487238524512106
+
+Fee Configuration:
+  isEnabled:                   true
+  destGasOverhead:             50000
+  destBytesOverhead:           32
+  finalityFeeUSDCents:         0
+  fastFinalityFeeUSDCents:     150
+  finalityTransferFeeBps:      25
+  fastFinalityTransferFeeBps:  0
+
+========================================
+Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+========================================
+```
+
+2. Repeat for the reverse lane (Arbitrum Sepolia → Ethereum Sepolia):
+
+```bash filename="Terminal"
+npx hardhat getTokenTransferFeeConfig \
+  --destchain sepolia \
+  --network arbitrumSepolia
+```
+
+Success criteria:
+
+- Ethereum Sepolia → Arbitrum Sepolia shows `isEnabled: true`.
+- Ethereum Sepolia → Arbitrum Sepolia shows `destGasOverhead: 50000`.
+- Ethereum Sepolia → Arbitrum Sepolia shows `destBytesOverhead: 32`.
+- Ethereum Sepolia → Arbitrum Sepolia shows `finalityFeeUSDCents: 0` and `finalityTransferFeeBps: 25`.
+- Ethereum Sepolia → Arbitrum Sepolia shows `fastFinalityFeeUSDCents: 150` and `fastFinalityTransferFeeBps: 0`.
+- The reverse lane should show the same values after you repeat the two-step update.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Send Transfers That Use the Fee Config" number={5} depth={3}>
+
+This section demonstrates Ethereum Sepolia → Arbitrum Sepolia cross-chain transfers. Repeat the same pattern from Arbitrum Sepolia if you want the Arbitrum Sepolia source pool to accrue fees.
+
+Before sending, inspect the source pool balances for LINK and the source token:
+
+<GitHubCard
+  title="getFeeTokenBalances.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/operations/getFeeTokenBalances.ts"
+  iconName="github-svg-card"
+>
+  View the fee-token balance inspection task on GitHub.
+</GitHubCard>
+
+<Aside type="note" title="Note">
+  <ol>
+    <li>Export the `LINK` token address for the source chain. For example, `export ETHEREUM_SEPOLIA_LINK=0x...`.</li>
+    <li>Export the Router address for the source chain. For example, `export ETHEREUM_SEPOLIA_ROUTER=0x...`.</li>
+    <li>
+      You can find a complete list of all addresses inside the [CCIP
+      Directory](https://docs.chain.link/ccip/directory/testnet).
+    </li>
+  </ol>
+</Aside>
+
+```bash filename="Terminal"
+npx hardhat getFeeTokenBalances \
+  --feetokens "$ETHEREUM_SEPOLIA_LINK,$ETHEREUM_SEPOLIA_TOKEN" \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+🔍 Get Fee Token Balances
+========================================
+Chain:        Ethereum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       Inspect fee token balances
+========================================
+
+Pool Token:   0xD73D06d36cEa36817186779fF877e418Ab759F09 (for reference)
+
+Fee Token Balances:
+  [0] 0x779877A7B0D9E8603169DdbD7836e478b4624789  →  balance: 0 ⚠️  (skipping)
+  [1] 0xD73D06d36cEa36817186779fF877e418Ab759F09  →  balance: 0 ⚠️  (skipping)
+
+ℹ️  No fee tokens have a non-zero balance in the pool. Nothing to withdraw.
+========================================
+```
+
+1. Send a default-finality transfer and pay CCIP fees in LINK:
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+  --receiver 0xYourReceiverAddress \
+  --fee-token LINK \
+  --wallet hardhat:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Fee: 119317588427515265n = 0.119317588427515265 LINK
+Request (source):
+┌────────────────────────────────┬──────────────────────────────────────────────────────────────────────┐
+│ (index)                        │ Values                                                               │
+├────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│ fee                            │ '0.119317588427515265 LINK'                                          │
+│ tokens                         │ '1.226925 BnM-T'                                                     │
+│ tokenAmountBeforeTokenPoolFees │ 1230000000000000000n                                                 │
+│ receipts[1].issuer             │ '0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9'                         │
+│ receipts[1].feeTokenAmount     │ 93786750729051300n                                                   │
+│ finality                       │ 'finalized'                                                          │
+└────────────────────────────────┴──────────────────────────────────────────────────────────────────────┘
+```
+
+This send uses `finalityTransferFeeBps` (25 bps). In this demo, `finalityFeeUSDCents` is `0`.
+
+2. Send a fast-finality transfer with block-depth finality and pay CCIP fees in LINK:
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+  --receiver 0xYourReceiverAddress \
+  --fee-token LINK \
+  --extra finality=32 \
+  --wallet hardhat:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Request (source):
+┌────────────────────────────────┬──────────────────────────────────────────────────────────────────────┐
+│ (index)                        │ Values                                                               │
+├────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│ tokenAmountBeforeTokenPoolFees │ 1230000000000000000n                                                 │
+│ tokens                         │ '1.23 BnM-T'                                                         │
+└────────────────────────────────┴──────────────────────────────────────────────────────────────────────┘
+```
+
+This send uses `fastFinalityFeeUSDCents` (150). In this demo, `fastFinalityTransferFeeBps` is `0`.
+
+<Aside type="caution" title="Faster Than Finality must be allowed">
+1. This send uses `fastFinalityFeeUSDCents` and `fastFinalityTransferFeeBps`. Use `--extra finality=<N>` only when the pool allows block-depth finality.
+2. If the pool does not allow block-depth finality, or if the requested <code>finality=&lt;N&gt;</code> is below the pool minimum, the send reverts.
+</Aside>
+
+#### How to read fees from the `ccip-cli` output
+
+- The top-level `fee: <X> LINK` is the total fee paid by the sender. It is not necessarily the amount credited to the token pool.
+- For the fee-token amount credited to the pool, find the receipt where `receipts[i].issuer` equals the source token pool address. The corresponding `receipts[i].feeTokenAmount` is denominated in the fee token (LINK) in wei.
+- For basis points deductions, compare `tokenAmountBeforeTokenPoolFees` with the `tokens` field. Their difference is the token amount retained by the source pool.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Inspect and Withdraw Accrued Fees" number={6} depth={3}>
+
+After the transfers complete, inspect the source pool balances again:
+
+```bash filename="Terminal"
+npx hardhat getFeeTokenBalances \
+  --feetokens "$ETHEREUM_SEPOLIA_LINK,$ETHEREUM_SEPOLIA_TOKEN" \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+🔍 Get Fee Token Balances
+========================================
+Chain:        Ethereum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       Inspect fee token balances
+========================================
+
+Pool Token:   0xD73D06d36cEa36817186779fF877e418Ab759F09 (for reference)
+
+Fee Token Balances:
+  [0] 0x779877A7B0D9E8603169DdbD7836e478b4624789  →  balance: <LINK_BALANCE_WEI>
+  [1] 0xD73D06d36cEa36817186779fF877e418Ab759F09  →  balance: 3075000000000000
+
+✅ 2 token(s) with non-zero balances are ready for withdrawal.
+
+To withdraw, run:
+  npx hardhat withdrawFeeTokens --feetokens "0x779877A7B0D9E8603169DdbD7836e478b4624789,0xD73D06d36cEa36817186779fF877e418Ab759F09" --network sepolia
+  (Add --recipient 0x... to send to a different address; defaults to the deployer wallet.)
+========================================
+```
+
+Expected balances:
+
+- **Source token (bps fee)**: The default-finality send uses `finalityTransferFeeBps = 25`. With a `1.23` token transfer:
+  - Retained by the pool: \(1.23 \times 25 / 10000 = 0.003075\) tokens
+  - Verify in `ccip-cli` output: `tokenAmountBeforeTokenPoolFees (1.23)` - `tokens received (1.226925)` = `0.003075`
+- **LINK (fee token credited to the pool)**: The fee-token amount credited to the token pool is visible in the send output receipt where `receipts[i].issuer` equals the source token pool address. Sum `receipts[i].feeTokenAmount` across the default-finality and fast-finality sends, then convert from wei to LINK by dividing by \(10^{18}\). Confirm it matches `getFeeTokenBalances` for LINK.
+
+Set a value for the `FEE_ADMIN_KEYSTORE_NAME` variable inside your `.env`, using the instructions covered inside [Set Up Your Development Environment](/ccip/evm/tutorials/cross-chain-tokens/set-transfer-fee-config-hardhat#set-up-your-development-environment).
+
+Use `withdrawFeeTokens` to withdraw accrued fee balances to a recipient. Withdraw as the configured fee admin:
+
+<GitHubCard
+  title="withdrawFeeTokens.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/operations/withdrawFeeTokens.ts"
+  iconName="github-svg-card"
+>
+  View the fee-token withdrawal task on GitHub.
+</GitHubCard>
+
+```bash filename="Terminal"
+KEYSTORE_NAME=$FEE_ADMIN_KEYSTORE_NAME \
+  npx hardhat withdrawFeeTokens \
+  --recipient 0xYourRecipientAddress \
+  --feetokens "$ETHEREUM_SEPOLIA_LINK,$ETHEREUM_SEPOLIA_TOKEN" \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+💸 Withdraw Fee Tokens
+========================================
+Chain:        Ethereum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       Withdraw fee tokens
+========================================
+
+Pool Token:   0xD73D06d36cEa36817186779fF877e418Ab759F09 (for reference)
+Recipient:    0x368b6c4218Cd5B8feF04eFDb207Bd52f0566c411
+
+Tokens to Withdraw:
+  [0] 0x779877A7B0D9E8603169DdbD7836e478b4624789  →  balance: <LINK_BALANCE_WEI>
+  [1] 0xD73D06d36cEa36817186779fF877e418Ab759F09  →  balance: 3075000000000000
+
+[Step 1] Withdrawing fee tokens on Ethereum Sepolia
+⏳ Tx: https://sepolia.etherscan.io/tx/0x5e1c0d9a8b7f6e5d4c3b2a190f1e2d3c4b5a69788796a5b4c3d2e1f0a9b8c7d6
+✅ Fee tokens withdrawn successfully!
+
+========================================
+✅ Withdrawal complete on Ethereum Sepolia!
+========================================
+Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Recipient:    https://sepolia.etherscan.io/address/0x368b6c4218Cd5B8feF04eFDb207Bd52f0566c411
+========================================
+```
+
+Or withdraw as the pool owner:
+
+```bash filename="Terminal"
+npx hardhat withdrawFeeTokens \
+  --recipient 0xYourRecipientAddress \
+  --feetokens "$ETHEREUM_SEPOLIA_LINK,$ETHEREUM_SEPOLIA_TOKEN" \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+💸 Withdraw Fee Tokens
+========================================
+Chain:        Ethereum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       Withdraw fee tokens
+========================================
+
+Pool Token:   0xD73D06d36cEa36817186779fF877e418Ab759F09 (for reference)
+Recipient:    0x368b6c4218Cd5B8feF04eFDb207Bd52f0566c411
+
+Tokens to Withdraw:
+  [0] 0x779877A7B0D9E8603169DdbD7836e478b4624789  →  balance: <LINK_BALANCE_WEI>
+  [1] 0xD73D06d36cEa36817186779fF877e418Ab759F09  →  balance: 3075000000000000
+
+[Step 1] Withdrawing fee tokens on Ethereum Sepolia
+⏳ Tx: https://sepolia.etherscan.io/tx/0x9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d
+✅ Fee tokens withdrawn successfully!
+
+========================================
+✅ Withdrawal complete on Ethereum Sepolia!
+========================================
+Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Recipient:    https://sepolia.etherscan.io/address/0x368b6c4218Cd5B8feF04eFDb207Bd52f0566c411
+========================================
+```
+
+Verify the balances after withdrawal:
+
+```bash filename="Terminal"
+npx hardhat getFeeTokenBalances \
+  --feetokens "$ETHEREUM_SEPOLIA_LINK,$ETHEREUM_SEPOLIA_TOKEN" \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+🔍 Get Fee Token Balances
+========================================
+Chain:        Ethereum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       Inspect fee token balances
+========================================
+
+Pool Token:   0xD73D06d36cEa36817186779fF877e418Ab759F09 (for reference)
+
+Fee Token Balances:
+  [0] 0x779877A7B0D9E8603169DdbD7836e478b4624789  →  balance: 0 ⚠️  (skipping)
+  [1] 0xD73D06d36cEa36817186779fF877e418Ab759F09  →  balance: 0 ⚠️  (skipping)
+
+ℹ️  No fee tokens have a non-zero balance in the pool. Nothing to withdraw.
+========================================
+```
+
+<Aside type="note" title="ERC20 fee tokens only">
+  <ul>
+    <li>`withdrawFeeTokens` accepts ERC20 token addresses. It does not withdraw native gas tokens.</li>
+    <li>
+      This tutorial uses LINK for the fee-token portion so the accrued flat fee component can be inspected and withdrawn
+      with the existing task.
+    </li>
+  </ul>
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Disable the Fee Configuration" number={7} depth={3}>
+
+Disabling fee configuration for a lane removes the lane-specific override and returns that lane to `FeeQuoter` defaults. Disable both lanes that you configured earlier.
+
+1. Disable the fee config on the Ethereum Sepolia pool for the lane to Arbitrum Sepolia:
+
+```bash filename="Terminal"
+npx hardhat updateTokenTransferFeeConfig \
+  --destchain arbitrumSepolia \
+  --disable \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+💰 Update Token Transfer Fee Config
+========================================
+Chain:        Ethereum Sepolia
+Remote Chain: Arbitrum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       Disable fee config
+========================================
+
+Dest Chain Selector: 3478487238524512106
+
+[Step 1] Disabling fee config for lane to Arbitrum Sepolia
+⏳ Tx: https://sepolia.etherscan.io/tx/0x6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b
+✅ Fee config disabled for this lane.
+   The OnRamp will now use FeeQuoter defaults for this destination.
+
+========================================
+✅ Operation Complete!
+========================================
+Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+========================================
+```
+
+2. Verify the Ethereum Sepolia pool for the lane to Arbitrum Sepolia:
+
+```bash filename="Terminal"
+npx hardhat getTokenTransferFeeConfig \
+  --destchain arbitrumSepolia \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+💰 Get Token Transfer Fee Config
+========================================
+Chain:        Ethereum Sepolia
+Remote Chain: Arbitrum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       View fee config
+========================================
+
+Dest Chain Selector: 3478487238524512106
+
+Fee Configuration:
+  isEnabled:                   false
+  destGasOverhead:             0
+  destBytesOverhead:           0
+  finalityFeeUSDCents:         0
+  fastFinalityFeeUSDCents:     0
+  finalityTransferFeeBps:      0
+  fastFinalityTransferFeeBps:  0
+
+⚠️  Fee config is disabled for this lane.
+   The OnRamp will fall back to FeeQuoter defaults for this destination.
+
+========================================
+Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+========================================
+```
+
+3. Disable the fee config on the Arbitrum Sepolia pool for the lane to Ethereum Sepolia:
+
+```bash filename="Terminal"
+npx hardhat updateTokenTransferFeeConfig \
+  --destchain sepolia \
+  --disable \
+  --network arbitrumSepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+💰 Update Token Transfer Fee Config
+========================================
+Chain:        Arbitrum Sepolia
+Remote Chain: Ethereum Sepolia
+Token Pool:   0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+Action:       Disable fee config
+========================================
+
+Dest Chain Selector: 16015286601757825753
+
+[Step 1] Disabling fee config for lane to Ethereum Sepolia
+⏳ Tx: https://sepolia.arbiscan.io/tx/0xf60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5
+✅ Fee config disabled for this lane.
+   The OnRamp will now use FeeQuoter defaults for this destination.
+
+========================================
+✅ Operation Complete!
+========================================
+Token Pool:   https://sepolia.arbiscan.io/address/0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+========================================
+```
+
+4. Verify the Arbitrum Sepolia pool for the lane to Ethereum Sepolia:
+
+```bash filename="Terminal"
+npx hardhat getTokenTransferFeeConfig \
+  --destchain sepolia \
+  --network arbitrumSepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+💰 Get Token Transfer Fee Config
+========================================
+Chain:        Arbitrum Sepolia
+Remote Chain: Ethereum Sepolia
+Token Pool:   0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+Action:       View fee config
+========================================
+
+Dest Chain Selector: 16015286601757825753
+
+Fee Configuration:
+  isEnabled:                   false
+  destGasOverhead:             0
+  destBytesOverhead:           0
+  finalityFeeUSDCents:         0
+  fastFinalityFeeUSDCents:     0
+  finalityTransferFeeBps:      0
+  fastFinalityTransferFeeBps:  0
+
+⚠️  Fee config is disabled for this lane.
+   The OnRamp will fall back to FeeQuoter defaults for this destination.
+
+========================================
+Token Pool:   https://sepolia.arbiscan.io/address/0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+========================================
+```
+
+Both lanes should show `isEnabled: false` and zeroed fee fields. The OnRamp will use `FeeQuoter` defaults for both directions again.
+
+</AnchoredAccordion>
+
+<Aside type="caution" title="Troubleshooting">
+  <ul>
+    <li>
+      <strong>Owner revert:</strong> confirm <code>KEYSTORE_NAME</code> is the owner of the source-chain token pool.
+    </li>
+    <li>
+      <strong>Fee admin withdrawal revert:</strong> confirm the fee admin was set, the correct fee admin keystore is
+      used, and the action is withdrawal rather than owner-only configuration.
+    </li>
+    <li>
+      <strong>Missing gas:</strong> confirm the broadcaster has native gas on the source chain.
+    </li>
+    <li>
+      <strong>Missing LINK:</strong> confirm the sender has source-chain LINK when using <code>--fee-token LINK</code>.
+    </li>
+    <li>
+      <strong>Missing lane:</strong> confirm the pool lane was configured with <code>applyChainUpdates</code>.
+    </li>
+    <li>
+      <strong>Wrong lane or pool:</strong> confirm <code>--network</code>, <code>--destchain</code>, and the source pool
+      env var (or <code>--tokenpool</code>) match the intended source -> destination lane.
+    </li>
+    <li>
+      <strong>Invalid config:</strong> confirm <code>--destgasoverhead</code> is not <code>0</code>,{" "}
+      <code>--destbytesoverhead</code> is at least <code>32</code>, and basis points values are below <code>10000</code>.
+    </li>
+    <li>
+      <strong>Fast-finality revert:</strong> confirm the pool allows block-depth finality and the requested{" "}
+      <code>finality=&lt;N&gt;</code> is not below the pool minimum.
+    </li>
+    <li>
+      <strong>No accrued fees:</strong> confirm <code>--feetokens</code> includes LINK and the source token, the send
+      completed, native fee token was not used, and flat or basis points fee values are non-zero.
+    </li>
+  </ul>
+</Aside>
+
+<CcipCommon callout="educationalDisclaimer" />

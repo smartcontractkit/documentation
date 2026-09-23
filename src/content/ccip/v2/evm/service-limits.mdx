@@ -1,0 +1,52 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Service Limits (EVM)"
+metadata:
+  description: "Explore Chainlink CCIP service limits for EVM mainnet and testnet. Learn about message data length, gas limits, token transfers, execution time, and token pool gas."
+  excerpt: "Chainlink CCIP, EVM service limits, Gas limits, Message data length, Token transfer limits, Ethereum constraints, Mainnet limits, Testnet limits, Token pool execution, CCIP parameters"
+  datePublished: "2025-05-19"
+  lastModified: "2025-05-19"
+---
+
+import { ClickToZoom } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Service Limits
+
+CCIP enforces service limits to maintain reliable and predictable cross-chain execution.
+
+These limits manage operational risk and ensure consistent behavior across supported chains.
+
+## Service Limits by Chain
+
+Limits are enforced during message processing and execution. Values vary by chain and deployment.
+
+### EVM Chains
+
+| Item                            | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Limit                                         |
+| :------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------- |
+| Maximum message **data** length | **data** payload sent within the [CCIP message](https://docs.chain.link/ccip/api-reference/evm/v1.6.1/client#evm2anymessage)                                                                                                                                                                                                                                                                                                                                     | 32 kilobytes                                  |
+| Maximum number of tokens        | Maximum number of distinct tokens a user can transfer in a single transaction.                                                                                                                                                                                                                                                                                                                                                                                   | 1                                             |
+| Token Pool Execution Gas Limit  | Maximum gas for executing the combined steps in token pools during cross-chain transfers, including: (1) **balanceOf** check before minting/releasing, (2) **releaseOrMint** function, and (3) **balanceOf** check after minting/releasing. For more details on building custom token pools and handling gas constraints, refer to the [Token Pools documentation](https://docs.chain.link/ccip/concepts/cross-chain-token/evm/token-pools#common-requirements). | 90,000                                        |
+| Message Execution Gas Limit     | User specified [gas limit](https://docs.chain.link/ccip/api-reference/evm/v1.6.1/client#genericextraargsv2).                                                                                                                                                                                                                                                                                                                                                     | Varies by destination chain — see table below |
+
+#### Message Execution Gas Limit by destination chain
+
+| Destination chain | Gas limit |
+| :---------------- | :-------- |
+| 0G                | 15M       |
+| Arbitrum          | 15M       |
+| Avalanche         | 15M       |
+| Base              | 15M       |
+| BNB Chain         | 15M       |
+| Ethereum          | 15M       |
+| HyperEVM          | 15M       |
+| Ink               | 15M       |
+| Mantle            | 15M       |
+| Plasma            | 15M       |
+| Plume             | 15M       |
+| Polygon           | 15M       |
+| Unichain          | 6M        |
+
+<CcipCommon callout="conceptualDisclaimer" />

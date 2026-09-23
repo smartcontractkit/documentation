@@ -4,6 +4,7 @@
 
 import path from "path"
 import type { Frontmatter } from "./types.js"
+import { canonicalizeCcipUrlPath } from "../ccip/contentPathMapping.js"
 
 /**
  * Extract frontmatter from raw MDX content
@@ -54,6 +55,7 @@ export function toCanonicalUrl(section: string, relFromContent: string, siteBase
   let slug = withoutExt
   if (slug.endsWith("/index")) slug = slug.slice(0, -"/index".length)
   if (!slug.startsWith(section)) slug = `${section}/${slug}`
+  if (section === "ccip") slug = canonicalizeCcipUrlPath(slug)
   if (!slug.startsWith("/")) slug = `/${slug}`
   return `${siteBase}${slug}`
 }

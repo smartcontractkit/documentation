@@ -1,0 +1,166 @@
+---
+section: ccip
+date: Last Modified
+title: "Finality by Chain"
+---
+
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+Different blockchains use different consensus mechanisms, which leads to different models of finality. Even once a transaction is onchain, users may need to wait for it to be considered final, and how long varies by chain.
+
+Blockchain finality falls into two broad categories:
+
+- **Probabilistic finality** — commonly used by Proof-of-Work chains (e.g., Bitcoin). A transaction becomes more difficult to revert as more blocks are built on top of it. Exchanges and cross-chain systems typically handle this type of finality with N-confirmation heuristics. Probabilistic finality is not the focus of this article.
+- **Deterministic finality** — commonly used by Proof-of-Stake chains (e.g., Ethereum) and most smart-contract chains integrated with Chainlink CCIP today. The rest of this article covers the different variants of deterministic finality.
+
+A useful framing for layer 2 chains (L2s) in particular is **soft finality vs. hard finality**: soft finality is what an offchain observer can reasonably trust through self-observation before the chain itself guarantees it; hard finality is the protocol-level guarantee itself.
+
+## Numbers at a Glance
+
+| Blockchain      | Type of Chain                                               | Finality Tag              | Estimated Time for Finality |
+| --------------- | ----------------------------------------------------------- | ------------------------- | --------------------------- |
+| 0G              | Independent L1                                              | Finality tag              | 1 second                    |
+| AB Chain        | Independent L1                                              | Block Depth (20 blocks)   | &lt; 1 min                  |
+| Abstract        | Ethereum L2 — ZK Rollup                                     | Finality tag              | 20 mins                     |
+| ADI             | Ethereum L2 - zk Rollup                                     | Finality tag              | 10-13 mins                  |
+| Apechain        | Ethereum L3 — Optimistic Rollup                             | Finality tag              | 50 minutes                  |
+| Aptos           | Independent L1 — Non-EVM (Move, AptosBFT)                   | Instant finality          | < 1 second                  |
+| Arbitrum        | Ethereum L2 — Optimistic Rollup                             | Finality tag              | 17 minutes                  |
+| Astar           | Independent L1                                              | Finality tag              | 35 seconds                  |
+| Avalanche       | Independent L1                                              | Finality tag              | &lt; 1 second               |
+| Base            | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 18 minutes                  |
+| Berachain       | Independent L1                                              | Block Depth (10 blocks)   | 20 seconds                  |
+| BitLayer        | Bitcoin L2 — ZK Rollup                                      | Block depth (21 blocks)   | 1 minute                    |
+| BitTensor       | Independent L1 — Non-EVM                                    | Finality tag              | 24 seconds                  |
+| Blast           | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 20 minutes                  |
+| BNB Chain       | Independent L1                                              | Finality tag              | 5 seconds                   |
+| Bob             | Hybrid L2 — Optimistic Rollup                               | Finality tag              | 2 hours                     |
+| B²              | Bitcoin L2 — ZK Rollup                                      | Finality tag              | 20 minutes                  |
+| Botanix         | Bitcoin L2                                                  | Finality tag              | 5 seconds                   |
+| Celo            | Ethereum L2 — Optimistic Rollup                             | Finality tag              | &lt; 1 second               |
+| Core            | Independent L1                                              | Block depth (27 blocks)   | 1 minute                    |
+| Corn            | Bitcoin-aligned L2 (BTCN-based)                             | Finality tag              | 12 hours                    |
+| Creditcoin      | Independent L1                                              | Finality tag              |                             |
+| Cronos          | Independent L1                                              | Finality tag              | 1 second                    |
+| Cronos zkEVM    | Ethereum L2 — ZK Rollup (ZK Stack)                          | Finality tag              | 31 hours                    |
+| Edge            | Ethereum L2                                                 | Finality tag              | 18 mins                     |
+| Ethereum        | L1                                                          | Finality tag              | ~12.8 minutes               |
+| Etherlink       | Tezos L2                                                    | Block depth (100)         | 50 sec - 10 mins (variable) |
+| Fraxtal         | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 30 minutes                  |
+| Gnosis          | Independent L1                                              | Finality tag              | 3 minutes                   |
+| Hashkey         | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 1 hour                      |
+| Hedera          | Independent L1 (hashgraph + EVM)                            | Block depth (10 blocks)   |                             |
+| Hemi            | Modular L2                                                  | Finality tag              | 90 mins                     |
+| HyperEVM        | EVM execution layer of Hyperliquid L1                       | Finality tag              | 1 sec                       |
+| Ink             | Ethereum L2 — Optimistic Rollup (OP Stack, Kraken)          | Finality tag              | 2 hours                     |
+| Jovay           | Ethereum L2 — ZK Rollup                                     | Finality tag              | 20-30 mins                  |
+| Kaia            | Independent L1 — EVM-compatible                             | Finality tag              | 1 sec                       |
+| Katana          | Polygon L2                                                  | Finality tag              | &lt; 1 min                  |
+| Linea           | Ethereum L2 — ZK Rollup                                     | Block depth (600 blocks)  | 20 minutes                  |
+| Lens            | Ethereum L2 — ZK Rollup                                     | Finality tag              | 20 minutes                  |
+| Lisk            | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 20 minutes                  |
+| Mantle          | Ethereum L2 — Optimistic Rollup                             | Finality tag              | 28 minutes                  |
+| MegaETH         | Ethereum L2                                                 | Finality tag              | 15 minutes                  |
+| Merlin          | Bitcoin L2 — ZK Rollup                                      | Block depth (1000)        | 50 minutes                  |
+| Mint            | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 25-30 minutes               |
+| Morph           | Ethereum L2                                                 | Block depth (10)          | 30 seconds                  |
+| Metal L2        | Ethereum L2                                                 | Finality tag              |                             |
+| Metis           | Ethereum L2 — Optimistic Rollup                             | Finality tag              | 2 hours                     |
+| Mind Network    | Ethereum L2 — FHE-focused                                   | Finality tag              | 1 hour                      |
+| Mode            | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 37 minutes                  |
+| Monad           | Independent L1                                              | Block depth (120 blocks)  | 48 seconds                  |
+| Neo X           | Independent L1                                              | Block depth (11 blocks)   | < 1 minute                  |
+| Nexon (Henesys) | Independent L1                                              | Finality tag              |                             |
+| OP Mainnet      | Ethereum L2 — Optimistic Rollup                             | Finality tag              | 20 minutes                  |
+| opBNB           | BNB Chain L2 — Optimistic Rollup                            | Finality tag              | 1 minute                    |
+| Pharos          | Independent L1                                              | Finality tag              | 1 second                    |
+| Polygon         | Ethereum sidechain                                          | Block depth (500 blocks)  | 17 minutes                  |
+| Plasma          | Independent L1                                              | Finality tag              | 1 second                    |
+| Plume           | Ethereum L2 — Optimistic Rollup                             | Finality tag              | 25 mins                     |
+| Robinhood       | Ethereum L2 — Optimistic Rollup                             | Finality tag              | 1 second                    |
+| Rootstock       | Bitcoin sidechain                                           | Block depth (20 blocks)   | 5 - 10 mins                 |
+| Ronin           | Independent L1                                              | Finality tag              | 10 seconds                  |
+| Scroll          | Ethereum L2 — ZK Rollup (zkEVM)                             | Finality tag              | 1 hour                      |
+| Sei             | Independent L1                                              | Finality tag              | 1 second                    |
+| Solana          | Independent L1                                              | Finality tag              | &lt; 1 second               |
+| Soneium         | Ethereum L2 — Optimistic Rollup                             | Finality tag              | 27 minutes                  |
+| Sonic           | Independent L1                                              | Block depth (10 blocks)   | 7 seconds                   |
+| Shibarium       | Ethereum sidechain                                          | Finality tag              | 1 minute                    |
+| Stable          | Independent L1                                              | Finality tag (1 block)    | 1 second                    |
+| Superseed       | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 20-30 minutes               |
+| Taiko           | Ethereum L2 — based ZK Rollup                               | Finality tag              | 17 mins                     |
+| Tac             | Independent L1 — EVM-compatible (TON-aligned)               | Block depth (10 blocks)   | 20-30 mins                  |
+| Tempo           | Independent L1                                              | Finality tag (1 block)    | 1 second                    |
+| TON             | Independent L1 — Non-EVM                                    | Instant finality          | Instant finality            |
+| Unichain        | Ethereum L2 — Optimistic Rollup (OP Stack, Uniswap)         | Finality tag              | 24 minutes                  |
+| Wemix           | Independent L1 — EVM-compatible (gaming-focused PoS)        | Finality tag              | &lt; 1 second               |
+| Worldchain      | Ethereum L2 — Optimistic Rollup (OP Stack, Worldcoin)       | Finality tag              | 40 minutes                  |
+| XLayer          | Ethereum L2 — ZK Rollup (OKX, Polygon CDK / zkEVM)          | Finality tag              | 1 hour                      |
+| XDC             | Independent L1 — EVM-compatible (XDPoS 2.0, hybrid)         | Block depth (32 blocks)   | ~ 1 minute                  |
+| Zircuit         | Ethereum L2 — ZK Rollup (zkEVM with sequencer-level checks) | Finality tag              | 21 minutes                  |
+| ZKsync          | Ethereum L2 — ZK Rollup (Era, ZK Stack)                     | Block depth (1200 blocks) | 20 minutes                  |
+| Zora            | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 25-30 minutes               |
+
+## Deterministic Finality on L1 PoA/PoS Chains
+
+Proof of Stake (PoS) and Proof of Authority (PoA) chains typically use Byzantine Fault Tolerant (BFT) consensus. Under the assumption that a sufficient share (usually 67%) of validators or stake is honest, finality guarantees hold.
+
+**Ethereum (Casper FFG).** The first block of each epoch (~6.4 min) is a checkpoint. Validators vote on (source → target) checkpoint pairs. When ≥2/3 of staked ETH votes for a pair, the _target_ becomes _justified_; the _source_ becomes _finalized_ once it has a justified descendant. Under normal conditions, a block is finalized roughly two epochs (~12.8 min) after inclusion. Reverting a finalized checkpoint requires conflicting votes that get slashed, costing attackers at least one-third of total staked ETH.
+
+**CometBFT (Cosmos Hub and others).** A BFT consensus algorithm (the renamed Tendermint Core) providing instant single-slot finality. As long as more than two-thirds of validators are honest, a block is final the moment it is committed.
+
+**Avalanche.** Validators are repeatedly sampled at random and vote on transactions until a confidence threshold is reached. Finality is typically achieved in ~1–2 seconds.
+
+**BNB Chain (post-BEP-126 Fast Finality).** Combines Proof of Staked Authority with a Casper-FFG-style vote mechanism. Validators sign blocks with BLS keys; once a block accumulates ≥2/3 votes it becomes _justified_, and once two consecutive blocks are justified the earlier one is _finalized_. In practice this takes ~2.5 blocks, or about 0.65 seconds.
+
+**Solana.** Uses TowerBFT on top of Proof of History. Blocks reach optimistic confirmation within a couple of slots and are considered finalized once a supermajority root is reached, typically within ~12.8 seconds.
+
+## Deterministic Finality on L2s
+
+L2s post periodic checkpoints to an underlying L1 settlement chain, inheriting (with some lag) the L1's finality guarantees. An L2 transaction therefore has two layers of finality: _soft_ finality once the sequencer's commitment is posted and finalized on L1, and _hard_ finality after any rollup-specific delay (e.g., challenge window or proof safety delay).
+
+### Optimistic Rollups
+
+Most commonly used optimistic rollups (Arbitrum One, Base, OP Mainnet, etc.) currently rely on a centralized sequencer that orders L2 transactions, batches them, and posts them to the L1 (commonly Ethereum). A commitment is valid by default and can be challenged during a challenge window — typically 7 days — if it asserts an invalid state root.
+
+Lifecycle:
+
+1. Transaction is included in an L2 block by the sequencer.
+2. The block is included in a batch posted to L1.
+3. The challenge window begins (~7 days).
+4. After the window, the transaction is finalized on L1 — _hard finality_.
+
+In current implementations, only invalid state roots can be challenged; valid commitments cannot, assuming no implementation bugs. So an offchain observer who has independently verified the L2 state can have high confidence in a commitment as soon as it is posted to L1 and that L1 block is finalized. This is the _soft finality_ most exchanges and cross-chain systems rely on in practice — strictly weaker than the post-challenge-window guarantee, but typically sufficient for non-adversarial flows.
+
+### ZK Rollups
+
+ZK rollups (Starknet, zkSync Era, Linea, etc.) likewise rely on a centralized sequencer today, but accompany each batch with a validity proof that is verified onchain by the L1 (commonly Ethereum). This removes the need for a challenge window.
+
+Lifecycle:
+
+1. Transaction is included in an L2 block by the sequencer.
+2. The block is included in a batch posted to L1.
+3. A validity proof for the batch is posted and verified on L1.
+4. Transaction is finalized on L1, often after an additional rollup-specific safety delay.
+
+The safety delay varies by rollup — historically on the order of hours — and is expected to reduce over time as proof systems mature.
+
+## How CCIP Determines Finality
+
+By default, CCIP v2 waits for full source chain finality before validating messages, producing attestations, and performing execution on the destination chain. Faster-Than-Finality is an opt-in capability that is only available when explicitly chosen. As a result, CCIP message latency depends largely on the source chain's time to finality. CCIP uses one of two methods to determine when a source-chain transaction is final.
+
+#### Finality Tag
+
+Many chains with deterministic finality expose a _finality tag_ — a standardized signal in JSON-RPC calls that indicates which blocks are finalized.
+
+#### Block Depth
+
+When a finality tag isn't usable, CCIP instead waits for a sufficient number of successive blocks before treating a transaction as final. This applies to:
+
+- Chains with probabilistic finality.
+- Chains with deterministic finality that don't expose a finality tag.
+- Chains with deterministic finality slow enough that waiting for it materially harms UX.
+
+**Risks.** Block depth is a heuristic, not a guarantee. Reorgs remain possible, and anyone relying on CCIP (or any cross-chain bridge) on these chains should weigh that risk accordingly.
+
+<CcipCommon callout="conceptualDisclaimer" />

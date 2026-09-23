@@ -20,6 +20,8 @@ import {
   handleClickToZoom,
   handleCodeSample,
   handleBilling,
+  handleDocCards,
+  handleDocCard,
   loadCcipCommonMapping,
 } from "./componentHandlers.js"
 import fs from "fs"
@@ -193,6 +195,16 @@ export async function transformMarkdown(
           return handleBilling(node as MdxJsxNode, parent, index, context)
         }
 
+        // Handle DocCards
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "DocCards") {
+          return handleDocCards(node as MdxJsxNode, parent, index)
+        }
+
+        // Handle DocCard
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "DocCard") {
+          return handleDocCard(node as MdxJsxNode, parent, index)
+        }
+
         // Handle MDX JSX text elements
         if (node.type === "mdxJsxTextElement") {
           const nodeName = (node as MdxJsxNode).name
@@ -215,7 +227,9 @@ export async function transformMarkdown(
             (node as MdxJsxNode).name !== "CcipCommon" &&
             (node as MdxJsxNode).name !== "ClickToZoom" &&
             (node as MdxJsxNode).name !== "CodeSample" &&
-            (node as MdxJsxNode).name !== "Billing") ||
+            (node as MdxJsxNode).name !== "Billing" &&
+            (node as MdxJsxNode).name !== "DocCards" &&
+            (node as MdxJsxNode).name !== "DocCard") ||
           node.type === "mdxjsEsm" ||
           node.type === "import" ||
           node.type === "export"

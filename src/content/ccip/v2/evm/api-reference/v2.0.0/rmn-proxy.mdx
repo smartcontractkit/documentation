@@ -1,0 +1,209 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 RMNProxy API Reference"
+metadata:
+  description: "Forwarding proxy that exposes a stable address for RMN integrations while delegating calls to a configurable implementation."
+  version: "ARMProxy 1.0.0"
+---
+
+## Summary
+
+`RMNProxy` is a lightweight forwarding proxy that provides a stable address for Risk Management Network (RMN, historically ARM) integrations.
+
+Instead of storing an RMN implementation address in every dependent contract, integrations reference `RMNProxy`. The proxy forwards calls to the currently configured RMN implementation.
+
+Key properties:
+
+- Stable integration address
+- Owner-controlled implementation updates
+- Generic forwarding via `fallback`
+- Uses `call` (not `delegatecall`)
+- No implementation storage collision risk
+
+---
+
+## Contract
+
+`chains/evm/contracts/rmn/RMNProxy.sol`
+
+---
+
+## Import
+
+```solidity
+import {RMNProxy} from "chainlink-ccip/chains/evm/contracts/rmn/RMNProxy.sol";
+```
+
+---
+
+## Target + upgrade model
+
+- The proxied implementation address is stored in `s_arm`.
+- The owner may update the implementation via `setARM`.
+- All unknown calls are forwarded using `call`.
+- No `delegatecall` is used.
+- Storage remains in the implementation contract.
+
+---
+
+## Inheritance
+
+- `OwnerIsCreator`
+- `ITypeAndVersion`
+
+---
+
+## typeAndVersion
+
+```solidity id="8qv2az"
+string public constant override typeAndVersion =
+  "ARMProxy 1.0.0";
+```
+
+---
+
+## State
+
+### Constants
+
+```solidity id="m47k9e"
+string public constant override typeAndVersion =
+  "ARMProxy 1.0.0";
+```
+
+---
+
+### Immutables
+
+None declared.
+
+---
+
+### Storage
+
+```solidity id="r83pvo"
+address private s_arm;
+```
+
+Current RMN implementation address.
+
+---
+
+## Constructor
+
+```solidity id="v9k2rm"
+constructor(address arm)
+```
+
+Behavior:
+
+- Calls `setARM(arm)`.
+
+Reverts:
+
+```solidity id="o3f8tm"
+error ZeroAddressNotAllowed();
+```
+
+If `arm == address(0)`.
+
+---
+
+## External API
+
+### setARM
+
+```solidity id="3hxbk9"
+function setARM(address arm)
+  public
+  onlyOwner
+```
+
+Behavior:
+
+- Reverts `ZeroAddressNotAllowed()` if `arm == address(0)`.
+- Sets `s_arm = arm`.
+- Emits:
+
+```solidity id="8g7sh1"
+event ARMSet(address arm);
+```
+
+---
+
+### getARM
+
+```solidity id="rqv68u"
+function getARM()
+  external
+  view
+  returns (address);
+```
+
+Returns `s_arm`.
+
+---
+
+## Fallback
+
+```solidity id="v28xmt"
+fallback() external payable;
+```
+
+Behavior:
+
+1. Loads `arm = s_arm`.
+2. Reverts if `arm` has no code (`extcodesize == 0`).
+3. Copies calldata.
+4. Executes:
+
+```solidity
+call(gas(), arm, 0, calldataPtr, calldataSize, 0, 0)
+```
+
+5. If call fails:
+   - Reverts with returned data.
+
+6. If call succeeds:
+   - Returns returned data.
+
+Notes:
+
+- Ether is not forwarded (`value = 0`).
+- Proxy storage is not modified.
+- No delegatecall.
+
+---
+
+## Events
+
+```solidity id="lyh2nd"
+event ARMSet(address arm);
+```
+
+---
+
+## Errors
+
+```solidity id="b3wq4r"
+error ZeroAddressNotAllowed();
+```
+
+---
+
+## Security model
+
+- Only owner may update the implementation.
+- Zero implementation address is disallowed.
+- Calls to non-contract addresses revert.
+- No delegatecall — eliminates storage collision risk.
+- All RMN state resides in the implementation contract.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`IRMN`](/ccip/evm/api-reference/v2.0.0/i-rmn)
+- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
+- [`OwnerIsCreator`](/ccip/evm/api-reference/v2.0.0/owner-is-creator)

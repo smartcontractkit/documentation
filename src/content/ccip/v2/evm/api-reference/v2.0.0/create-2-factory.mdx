@@ -1,0 +1,272 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 CREATE2Factory API Reference"
+metadata:
+  description: "Factory enabling deterministic CREATE2 deployments with optional post-deployment calls and owner-managed allowlist."
+  version: "2.0.0"
+---
+
+## Summary
+
+`CREATE2Factory` enables deterministic contract deployment using the EVM `CREATE2` opcode.
+
+Capabilities:
+
+1. Deploy contracts at predictable addresses.
+2. Optionally execute post-deployment calls.
+3. Restrict deployment to an owner-managed allowlist.
+4. Compute deterministic addresses prior to deployment.
+
+To preserve cross-chain address parity, this factory must be deployed at identical addresses across chains.
+
+---
+
+## Contract
+
+`chains/evm/contracts/CREATE2Factory.sol`
+
+---
+
+## Import
+
+```solidity
+import {CREATE2Factory} from "chainlink-ccip/chains/evm/contracts/CREATE2Factory.sol";
+```
+
+---
+
+## Inheritance
+
+- `Ownable2StepMsgSender`
+- `ITypeAndVersion`
+
+---
+
+## typeAndVersion
+
+```solidity
+string public constant override typeAndVersion =
+  "CREATE2Factory 2.0.0";
+```
+
+---
+
+## State
+
+### Constants
+
+```solidity
+string public constant override typeAndVersion =
+  "CREATE2Factory 2.0.0";
+```
+
+### Immutables
+
+None declared.
+
+### Storage
+
+```solidity
+EnumerableSet.AddressSet private s_allowList;
+```
+
+Stores addresses permitted to deploy via this factory.
+
+---
+
+## Constructor
+
+```solidity
+constructor(address[] memory allowList)
+```
+
+Behavior:
+
+Calls:
+
+```solidity
+_applyAllowListUpdates(new address, allowList);
+```
+
+Initializes the allowlist with the provided addresses.
+
+---
+
+## Deployment API
+
+### createAndCall
+
+```solidity
+function createAndCall(
+  bytes calldata creationCode,
+  bytes32 salt,
+  bytes[] memory calls
+) external returns (address)
+```
+
+Behavior:
+
+1. Reverts `CallerNotAllowed(msg.sender)` if caller not in `s_allowList`.
+2. Deploys contract:
+
+```solidity
+address contractAddress =
+  Create2.deploy(0, salt, creationCode);
+```
+
+3. Emits:
+
+```solidity
+event ContractDeployed(address indexed contractAddress);
+```
+
+4. Iterates through `calls` and executes:
+
+```solidity
+(bool success, bytes memory result) =
+  contractAddress.call(calls[i]);
+```
+
+5. Reverts:
+
+```solidity
+error CallFailed(uint256 index, bytes result);
+```
+
+If any call fails.
+
+Returns deployed contract address.
+
+---
+
+### createAndTransferOwnership
+
+```solidity
+function createAndTransferOwnership(
+  bytes calldata creationCode,
+  bytes32 salt,
+  address to
+) external returns (address)
+```
+
+Encodes:
+
+```solidity
+abi.encodeWithSelector(
+  IOwnable.transferOwnership.selector,
+  to
+);
+```
+
+Calls `createAndCall` with a single post-deployment call.
+
+Returns deployed address.
+
+---
+
+### computeAddress
+
+```solidity
+function computeAddress(
+  bytes memory creationCode,
+  bytes32 salt
+) external view returns (address)
+```
+
+Returns:
+
+```solidity
+Create2.computeAddress(
+  salt,
+  keccak256(creationCode),
+  address(this)
+);
+```
+
+---
+
+### applyAllowListUpdates
+
+```solidity
+function applyAllowListUpdates(
+  address[] calldata removes,
+  address[] calldata adds
+) external onlyOwner
+```
+
+Calls internal `_applyAllowListUpdates`.
+
+---
+
+### getAllowList
+
+```solidity
+function getAllowList()
+  external
+  view
+  returns (address[] memory)
+```
+
+Returns `s_allowList.values()`.
+
+---
+
+## Internal Functions
+
+### \_applyAllowListUpdates
+
+```solidity
+function _applyAllowListUpdates(
+  address[] memory removes,
+  address[] memory adds
+) internal
+```
+
+Behavior:
+
+1. Iterates `removes`:
+   - If removed, emits `CallerRemoved(address)`.
+
+2. Iterates `adds`:
+   - If added, emits `CallerAdded(address)`.
+
+---
+
+## Events
+
+```solidity
+event CallerAdded(address indexed caller);
+event CallerRemoved(address indexed caller);
+event ContractDeployed(address indexed contractAddress);
+```
+
+---
+
+## Errors
+
+```solidity
+error CallFailed(uint256 index, bytes result);
+error CallerNotAllowed(address caller);
+```
+
+---
+
+## Security model
+
+- Only allowlisted callers may deploy.
+- Owner controls allowlist.
+- Uses `call`, not `delegatecall`, for post-deployment execution.
+- Deploys with zero ETH.
+- Deterministic address derived from:
+  - Factory address
+  - `salt`
+  - `keccak256(creationCode)`
+
+---
+
+## Related Interfaces & Contracts
+
+- [`ITypeAndVersion`](/ccip/evm/api-reference/v2.0.0/i-type-and-version)
+- [`Ownable2StepMsgSender`](/ccip/evm/api-reference/v2.0.0/ownable-2-step-msg-sender)
+- [`IOwnable`](/ccip/evm/api-reference/v2.0.0/i-ownable)

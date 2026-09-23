@@ -1,0 +1,268 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 CCTPVerifier API Reference"
+metadata:
+  description: "Cross-Chain Verifier that bridges USDC using CCTP."
+  version: "2.0.0"
+---
+
+`CCTPVerifier` is a CCIP Cross-Chain Verifier that integrates with Circle CCTP to handle USDC transfers.
+
+On the source chain, it constructs and forwards CCTP burn messages via the configured TokenMessenger.  
+On the destination chain, it verifies attested messages and executes delivery through the configured MessageTransmitter.
+
+This verifier is specific to CCTP V2 and is not backwards compatible with CCTP V1.
+
+> Applications do not call this contract directly.
+
+## Usage Boundary
+
+**You do not call this contract directly.**
+
+- OffRamp components invoke this verifier during message validation and execution.
+- The owner configures domains, verification rules, and allowed senders.
+- Use this verifier only when integrating CCIP with CCTP-based USDC transfers.
+- You are responsible for ensuring domain mappings and CCTP configuration are correct.
+
+## Contract
+
+`ccvs/CCTPVerifier.sol`
+
+## Import
+
+```solidity
+import {CCTPVerifier} from "chainlink-ccip/ccvs/CCTPVerifier.sol";
+```
+
+## Inheritance
+
+- `Ownable2StepMsgSender`
+- `BaseVerifier`
+
+## Constructor
+
+```solidity
+constructor(
+  ITokenMessenger tokenMessenger,
+  CCTPMessageTransmitterProxy messageTransmitterProxy,
+  IERC20 usdcToken,
+  DynamicConfig memory dynamicConfig,
+  BaseVerifierArgs memory baseVerifierArgs
+) BaseVerifier(
+  baseVerifierArgs.storageLocations,
+  baseVerifierArgs.rmn,
+  baseVerifierArgs.versionTag
+)
+```
+
+| Parameter                 | Type                          | Description                                                         |
+| ------------------------- | ----------------------------- | ------------------------------------------------------------------- |
+| `tokenMessenger`          | `ITokenMessenger`             | CCTP token messenger used to initiate burns on the source chain.    |
+| `messageTransmitterProxy` | `CCTPMessageTransmitterProxy` | Proxy used to verify and deliver messages on the destination chain. |
+| `usdcToken`               | `IERC20`                      | USDC token contract used for transfers.                             |
+| `dynamicConfig`           | `DynamicConfig memory`        | Runtime configuration for verification behavior.                    |
+| `baseVerifierArgs`        | `BaseVerifierArgs memory`     | Shared verifier configuration (storage, RMN, version).              |
+
+## External API
+
+### forwardToVerifier
+
+```solidity
+function forwardToVerifier(
+  MessageV1Codec.MessageV1 calldata message,
+  bytes32 messageId,
+  address feeToken,
+  uint256 feeTokenAmount,
+  bytes calldata verifierArgs
+) external returns (bytes memory verifierReturnData)
+```
+
+> Forwards a message to the verifier for processing and returns encoded verifier output.
+
+- Produces verifier output that is later consumed by `verifyMessage`.
+
+---
+
+### verifyMessage
+
+```solidity
+function verifyMessage(
+  MessageV1Codec.MessageV1 memory message,
+  bytes32 messageHash,
+  bytes calldata verifierResults
+) external
+```
+
+> Verifies a CCTP message and attestation and triggers execution on the destination chain.
+
+- `verifierResults` must match the output produced during verification forwarding.
+
+---
+
+### getStaticConfig
+
+```solidity
+function getStaticConfig()
+  external
+  view
+  returns (
+    address tokenMessenger,
+    address messageTransmitterProxy,
+    address usdcToken,
+    uint32 localDomainIdentifier
+  )
+```
+
+> Returns static configuration for CCTP integration.
+
+---
+
+### getDynamicConfig
+
+```solidity
+function getDynamicConfig() external view returns (DynamicConfig memory dynamicConfig)
+```
+
+> Returns runtime configuration.
+
+---
+
+### setDynamicConfig
+
+```solidity
+function setDynamicConfig(DynamicConfig memory dynamicConfig) external onlyOwner
+```
+
+> Updates runtime configuration.
+
+---
+
+### getDomain
+
+```solidity
+function getDomain(uint64 chainSelector) external view returns (Domain memory)
+```
+
+> Returns domain configuration for a chain.
+
+---
+
+### setDomains
+
+```solidity
+function setDomains(SetDomainArgs[] calldata domains) external onlyOwner
+```
+
+> Configures domain mappings.
+
+---
+
+### applyRemoteChainConfigUpdates
+
+```solidity
+function applyRemoteChainConfigUpdates(
+  RemoteChainConfigArgs[] calldata remoteChainConfigArgs
+) external onlyOwner
+```
+
+> Updates remote chain configuration.
+
+---
+
+### applyAllowlistUpdates
+
+```solidity
+function applyAllowlistUpdates(AllowlistConfigArgs[] calldata allowlistConfigArgsItems) external
+```
+
+> Updates allowlist configuration.
+
+---
+
+### setAllowedFinalityConfig
+
+```solidity
+function setAllowedFinalityConfig(bytes4 allowedFinality) external onlyOwner
+```
+
+> Sets allowed finality configuration.
+
+---
+
+### updateStorageLocations
+
+```solidity
+function updateStorageLocations(string[] memory newLocations) external onlyOwner
+```
+
+> Updates storage locations.
+
+---
+
+### withdrawFeeTokens
+
+```solidity
+function withdrawFeeTokens(address[] calldata feeTokens) external
+```
+
+> Withdraws accumulated fee tokens. Restricted to authorized callers.
+
+---
+
+## Events
+
+- `event DomainsSet(SetDomainArgs[] domains)`
+- `event DynamicConfigSet(DynamicConfig dynamicConfig)`
+- `event StaticConfigSet(address tokenMessenger, address messageTransmitterProxy, address usdcToken, uint32 localDomainIdentifier)`
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+- `error InvalidVerifierResults()`
+- `error InvalidCCVVersion(bytes4 expected, bytes4 got)`
+- `error InvalidMessageTransmitterOnProxy(address expected, address got)`
+- `error InvalidMessageTransmitterVersion(uint32 expected, uint32 got)`
+- `error InvalidReceiver(bytes receiver)`
+- `error InvalidTokenMessengerVersion(uint32 expected, uint32 got)`
+- `error InvalidMessageId(bytes32 expected, bytes32 got)`
+- `error InvalidMessageSender(bytes32 expected, bytes32 got)`
+- `error InvalidSourceDomain(uint32 expected, uint32 got)`
+- `error InvalidToken(bytes token)`
+- `error InvalidTokenTransferLength(uint256 length)`
+- `error InvalidVerifierArgsLength(uint256 length)`
+- `error OnlyCallableByOwnerOrAllowlistAdmin()`
+- `error ReceiveMessageCallFailed()`
+- `error InvalidFastFinalityBps(uint16 fastFinalityBps)`
+- `error InvalidSetDomainArgs(SetDomainArgs args)`
+- `error UnknownDomain(uint64 chainSelector)`
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Notes
+
+- Verification requires exact agreement between message data, attestation, and configured domain mappings.
+- The message ID, domain, and sender must match exactly between the source and destination phases.
+- Each message must contain exactly one USDC transfer.
+- Verification forwarding must occur before destination-side verification can succeed.
+- Messages are executed only if both CCTP verification and BaseVerifier checks succeed.
+- Messages will revert if attestation validation fails or if any verification parameter does not match expected values.
+
+## Security model
+
+- Relies on Circle CCTP components for message authenticity and delivery.
+- Relies on `BaseVerifier` for RMN checks, router validation, and sender allowlisting.
+- Owner controls domain mappings, verification rules, and dynamic configuration.
+- Incorrect configuration may result in failed verification or incorrect message execution.
+
+## Related Interfaces & Contracts
+
+- [`BaseVerifier`](/ccip/evm/api-reference/v2.0.0/base-verifier)
+- [`ICrossChainVerifierV1`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-v1)
+- [`CCTPMessageTransmitterProxy`](/ccip/evm/api-reference/v2.0.0/cctp-message-transmitter-proxy)
+- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
+- [`MessageV1Codec`](/ccip/evm/api-reference/v2.0.0/message-v1-codec)
+- [`ITokenMessenger`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/USDC/interfaces/ITokenMessenger.sol)
+- [`IMessageTransmitter`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/USDC/interfaces/IMessageTransmitter.sol)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)

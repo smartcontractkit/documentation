@@ -1,0 +1,421 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 LombardVerifier API Reference"
+metadata:
+  description: "Cross-Chain Verifier integrating Lombard BridgeV3 for token transfer verification."
+  version: "2.0.0"
+---
+
+## Summary
+
+`LombardVerifier` is a Cross-Chain Verifier (CCV) that integrates Lombard BridgeV3 for token-transfer verification.
+
+It:
+
+- Deposits tokens on the source chain via `BridgeV3.deposit`
+- Embeds `(versionTag || messageId)` into `optionalMessage`
+- Verifies delivery on the destination chain via `Mailbox.deliverAndHandle`
+- Validates the delivered message matches `(versionTag || messageId)`
+- Integrates RMN curse checks and router-based ramp gating via `[BaseVerifier](/ccip/evm/api-reference/v2.0.0/base-verifier)`
+
+---
+
+## Contract
+
+`chains/evm/contracts/ccvs/LombardVerifier.sol`
+
+---
+
+## Import
+
+```solidity
+import {LombardVerifier} from "chainlink-ccip/chains/evm/contracts/ccvs/LombardVerifier.sol";
+```
+
+---
+
+## Inheritance
+
+- `BaseVerifier`
+- `Ownable2StepMsgSender`
+
+Implements:
+
+- `ICrossChainVerifierV1`
+- `ITypeAndVersion`
+
+---
+
+## typeAndVersion
+
+```solidity
+string public constant override typeAndVersion =
+  "LombardVerifier 2.0.0-dev";
+```
+
+---
+
+## State
+
+### Constants
+
+```solidity
+bytes4 internal constant VERSION_TAG_V1_7_0 =
+  bytes4(keccak256("LombardVerifier 1.7.0"));
+
+uint8 internal constant SUPPORTED_BRIDGE_MSG_VERSION = 1;
+
+uint256 internal constant VERSION_TAG_SIZE = 4;
+uint256 internal constant BYTES32_SIZE = 32;
+uint256 internal constant BRIDGED_MESSAGE_SIZE = 36;
+
+uint256 internal constant RAW_PAYLOAD_LENGTH_SIZE = 2;
+uint256 internal constant PAYLOAD_START_INDEX =
+  VERSION_TAG_SIZE + RAW_PAYLOAD_LENGTH_SIZE;
+```
+
+---
+
+### Immutables
+
+```solidity
+IBridgeV3 internal immutable i_bridge;
+```
+
+---
+
+### Storage
+
+```solidity
+DynamicConfig private s_dynamicConfig;
+
+EnumerableMap.AddressToAddressMap private s_supportedTokens;
+
+EnumerableSet.UintSet private s_supportedChains;
+
+mapping(uint64 => Path) private s_chainSelectorToPath;
+```
+
+---
+
+## Constructor
+
+```solidity
+constructor(
+  DynamicConfig memory dynamicConfig,
+  IBridgeV3 bridge,
+  string[] memory storageLocation,
+  address rmn
+)
+  BaseVerifier(storageLocation, rmn)
+```
+
+Validations:
+
+- `bridge != address(0)` → else `ZeroBridge()`
+- `bridge.MSG_VERSION() == SUPPORTED_BRIDGE_MSG_VERSION`
+
+Initializes:
+
+- `i_bridge`
+- `s_dynamicConfig`
+
+Emits:
+
+```solidity
+event DynamicConfigSet(DynamicConfig dynamicConfig);
+```
+
+---
+
+## External API
+
+### forwardToVerifier
+
+```solidity
+function forwardToVerifier(
+  MessageV1Codec.MessageV1 calldata message,
+  bytes32 messageId,
+  address,
+  uint256,
+  bytes calldata
+) external returns (bytes memory verifierData)
+```
+
+Source-chain behavior:
+
+- `_assertNotCursedByRMN(message.destChainSelector)`
+- Require `message.tokenTransfer.length > 0`
+- Enforce allowlist via `_assertSenderIsAllowed`
+- Call `_callDepositOnBridge`
+- Return raw `payloadHash` bytes
+
+---
+
+### verifyMessage
+
+```solidity
+function verifyMessage(
+  MessageV1Codec.MessageV1 calldata message,
+  bytes32 messageId,
+  bytes calldata ccvData
+) external
+```
+
+Destination-chain behavior:
+
+- `_assertNotCursedByRMN(message.sourceChainSelector)`
+- `_onlyOffRamp(message.sourceChainSelector)`
+- Parse and validate version prefix
+- Parse `rawPayload` and `proof`
+- Call:
+
+```solidity
+IMailbox(i_bridge.mailbox())
+  .deliverAndHandle(rawPayload, proof);
+```
+
+- Require `executed == true`
+- Validate bridged message equals `(VERSION_TAG_V1_7_0 || messageId)`
+
+---
+
+### versionTag
+
+```solidity
+function versionTag()
+  public
+  pure
+  override
+  returns (bytes4)
+```
+
+Returns `VERSION_TAG_V1_7_0`.
+
+---
+
+### withdrawFeeTokens
+
+```solidity
+function withdrawFeeTokens(address[] calldata feeTokens)
+  external
+```
+
+Transfers balances to `s_dynamicConfig.feeAggregator`.
+
+---
+
+### Token Administration
+
+#### updateSupportedTokens
+
+Owner-only.
+
+```solidity
+function updateSupportedTokens(
+  address[] calldata tokensToRemove,
+  SupportedTokenArgs[] calldata tokensToSet
+) external onlyOwner
+```
+
+Manages supported tokens and optional adapters.
+
+---
+
+#### getSupportedTokens
+
+```solidity
+function getSupportedTokens()
+  external
+  view
+  returns (address[] memory)
+```
+
+---
+
+#### isSupportedToken
+
+```solidity
+function isSupportedToken(address token)
+  external
+  view
+  returns (bool)
+```
+
+---
+
+### Path Administration
+
+#### setPath
+
+```solidity
+function setPath(
+  uint64 remoteChainSelector,
+  bytes32 lChainId,
+  bytes32 allowedCaller
+) external onlyOwner
+```
+
+---
+
+#### removePaths
+
+```solidity
+function removePaths(uint64[] calldata remoteChainSelectors)
+  external
+  onlyOwner
+```
+
+---
+
+#### getPath
+
+```solidity
+function getPath(uint64 remoteChainSelector)
+  external
+  view
+  returns (Path memory)
+```
+
+---
+
+#### getSupportedChains
+
+```solidity
+function getSupportedChains()
+  external
+  view
+  returns (uint64[] memory)
+```
+
+---
+
+### Remote Chain Config
+
+Owner-only passthrough to `BaseVerifier`:
+
+```solidity
+function applyRemoteChainConfigUpdates(
+  RemoteChainConfigArgs[] calldata remoteChainConfigArgs
+) external onlyOwner
+```
+
+---
+
+## Events
+
+```solidity
+event PathSet(
+  uint64 remoteChainSelector,
+  bytes32 lChainId,
+  bytes32 allowedCaller
+);
+
+event PathRemoved(
+  uint64 remoteChainSelector,
+  bytes32 lChainId,
+  bytes32 allowedCaller
+);
+
+event SupportedTokenSet(
+  address localToken,
+  address localAdapter
+);
+
+event SupportedTokenRemoved(address token);
+
+event DynamicConfigSet(DynamicConfig dynamicConfig);
+```
+
+Inherited events from `BaseVerifier`.
+
+---
+
+## Errors
+
+```solidity
+error ZeroBridge();
+error InvalidMessageVersion(uint8 expected, uint8 actual);
+error ZeroLombardChainId();
+error PathNotExist(uint64 remoteChainSelector);
+error TokenNotSupported(address token);
+error MustTransferTokens();
+error InvalidReceiver(bytes receiver);
+error InvalidVerifierResults();
+error InvalidCCVVersion(bytes4 expected, bytes4 actual);
+error InvalidMessageLength(uint256 expected, uint256 actual);
+error InvalidMessageId(bytes32 expected, bytes32 actual);
+error ExecutionError();
+```
+
+Inherited errors from `BaseVerifier`.
+
+---
+
+## Structs
+
+```solidity
+struct DynamicConfig {
+  address feeAggregator;
+}
+
+struct Path {
+  bytes32 allowedCaller;
+  bytes32 lChainId;
+}
+
+struct SupportedTokenArgs {
+  address localToken;
+  address localAdapter;
+}
+```
+
+---
+
+## Internal Functions
+
+### \_callDepositOnBridge
+
+Internal deposit wrapper:
+
+```solidity
+function _callDepositOnBridge(
+  MessageV1Codec.TokenTransferV1 calldata tokenTransfer,
+  uint64 destChainSelector,
+  bytes calldata sender,
+  bytes32 messageId
+) internal returns (bytes memory)
+```
+
+Calls `i_bridge.deposit` with:
+
+```solidity
+optionalMessage =
+  bytes.concat(VERSION_TAG_V1_7_0, messageId);
+```
+
+Returns raw `payloadHash`.
+
+---
+
+## Security model
+
+- RMN curse gating blocks both source and destination flows.
+- Router-based ramp gating enforced via `BaseVerifier`.
+- Token support explicitly allowlisted.
+- Path must exist for destination chain.
+- Receiver limited to ≤ 32 bytes.
+- Message binding enforced via `(versionTag || messageId)`.
+- Bridge proof verification delegated to Lombard Mailbox.
+- No signature quorum used (BridgeV3 handles proof verification).
+
+---
+
+## Related Interfaces & Contracts
+
+- [`BaseVerifier`](/ccip/evm/api-reference/v2.0.0/base-verifier)
+- [`IBridgeV3`](/ccip/evm/api-reference/v2.0.0/i-bridge-v3)
+- [`IMailbox`](/ccip/evm/api-reference/v2.0.0/i-mailbox)
+- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
+- [`MessageV1Codec`](/ccip/evm/api-reference/v2.0.0/message-v1-codec)

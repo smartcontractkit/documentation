@@ -1,8 +1,8 @@
-import { ProductsNav, SubProducts } from "../../Header/Nav/config.tsx"
+import { ProductsNav, ProductItem } from "../../Header/Nav/config.tsx"
 import { Category } from "./Category.tsx"
 
 type Props = {
-  onProductClick: (subProducts: SubProducts) => void
+  onProductClick: (product: ProductItem) => void
   productsNav: ProductsNav
   currentPath: string
 }

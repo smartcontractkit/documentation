@@ -1,0 +1,197 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 VersionedVerifierResolver API Reference"
+metadata:
+  description: "Resolver that selects verifier implementations by destination chain (outbound) or version prefix (inbound)."
+  version: "2.0.0"
+---
+
+`VersionedVerifierResolver` routes messages to specific Cross-Chain Verifier (CCV) implementations based on version and destination chain.
+
+It determines:
+
+- inbound verifier selection using a version prefix encoded in `verifierResults`
+- outbound verifier selection using the destination chain selector
+
+This enables support for multiple verifier versions and strategies within the same system.
+
+> Applications do not call this contract directly.
+
+## Usage Boundary
+
+**You do not call this contract directly.**
+
+- OnRamp and OffRamp components use this resolver to select verifier implementations.
+- The owner configures mappings between versions, chains, and verifier contracts.
+- You use this contract when supporting multiple verifier implementations or versions.
+- You are responsible for ensuring mappings are consistent across chains.
+
+## Contract
+
+`ccvs/VersionedVerifierResolver.sol`
+
+## Import
+
+```solidity
+import {VersionedVerifierResolver} from "chainlink-ccip/ccvs/VersionedVerifierResolver.sol";
+```
+
+## Inheritance
+
+- `ICrossChainVerifierResolver`
+- `ITypeAndVersion`
+- `Ownable2StepMsgSender`
+
+## External API
+
+### getInboundImplementation
+
+```solidity
+function getInboundImplementation(bytes calldata verifierResults) external view returns (address)
+```
+
+> Returns the verifier implementation used to validate an inbound message.
+
+- The verifier is selected using a version prefix extracted from `verifierResults`.
+
+| Parameter         | Type             | Description                                          |
+| ----------------- | ---------------- | ---------------------------------------------------- |
+| `verifierResults` | `bytes calldata` | Encoded verifier output containing a version prefix. |
+
+Returns:
+
+| Type      | Description                                     |
+| --------- | ----------------------------------------------- |
+| `address` | Verifier implementation for inbound validation. |
+
+---
+
+### getAllInboundImplementations
+
+```solidity
+function getAllInboundImplementations() external view returns (InboundImplementationArgs[] memory)
+```
+
+> Returns all inbound verifier mappings.
+
+---
+
+### getOutboundImplementation
+
+```solidity
+function getOutboundImplementation(
+  uint64 destChainSelector,
+  bytes memory extraArgs
+) external view returns (address)
+```
+
+> Returns the verifier implementation used to construct an outbound message.
+
+- The verifier is selected based on the destination chain selector.
+
+---
+
+### getAllOutboundImplementations
+
+```solidity
+function getAllOutboundImplementations() external view returns (OutboundImplementationArgs[] memory)
+```
+
+> Returns all outbound verifier mappings.
+
+---
+
+### applyInboundImplementationUpdates
+
+```solidity
+function applyInboundImplementationUpdates(
+  InboundImplementationArgs[] calldata implementations
+) external onlyOwner
+```
+
+> Updates inbound verifier mappings.
+
+---
+
+### applyOutboundImplementationUpdates
+
+```solidity
+function applyOutboundImplementationUpdates(
+  OutboundImplementationArgs[] calldata implementations
+) external onlyOwner
+```
+
+> Updates outbound verifier mappings.
+
+---
+
+### getFeeAggregator
+
+```solidity
+function getFeeAggregator() external view returns (address)
+```
+
+> Returns the configured fee aggregator.
+
+---
+
+### setFeeAggregator
+
+```solidity
+function setFeeAggregator(address feeAggregator) external onlyOwner
+```
+
+> Updates the fee aggregator.
+
+---
+
+### withdrawFeeTokens
+
+```solidity
+function withdrawFeeTokens(address[] calldata feeTokens) external
+```
+
+> Withdraws accumulated fees to the configured aggregator.
+
+## Events
+
+- `event InboundImplementationRemoved(bytes4 version)`
+- `event OutboundImplementationRemoved(uint64 destChainSelector)`
+- `event InboundImplementationUpdated(bytes4 version, address prevImpl, address newImpl)`
+- `event OutboundImplementationUpdated(uint64 destChainSelector, address prevImpl, address newImpl)`
+- `event FeeAggregatorUpdated(address indexed oldFeeAggregator, address indexed newFeeAggregator)`
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+- `error InvalidVerifierResultsLength()`
+- `error InvalidDestChainSelector(uint64 destChainSelector)`
+- `error InvalidVersion(bytes4 version)`
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Notes
+
+- Inbound resolution must map to the same verifier implementation that produced the original verifier results.
+- Resolver outputs must be deterministic for a given input.
+- Resolver mappings must be consistent across chains to ensure compatible verification behavior.
+- Returning an incorrect implementation may result in message validation failure or execution under the wrong security model.
+- Version-based routing enables safe upgrades and coexistence of multiple verifier implementations.
+
+## Security model
+
+- Owner controls resolver mappings.
+- Incorrect configuration may route messages to incompatible verifier implementations.
+- Fee withdrawals are routed to the configured aggregator.
+
+## Related Interfaces & Contracts
+
+- [`ICrossChainVerifierResolver`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-resolver)
+- [`ICrossChainVerifierV1`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-v1)
+- [`BaseVerifier`](/ccip/evm/api-reference/v2.0.0/base-verifier)
+- [`CommitteeVerifier`](/ccip/evm/api-reference/v2.0.0/committee-verifier)
+- [`CCTPVerifier`](/ccip/evm/api-reference/v2.0.0/cctp-verifier)
+- [`FeeTokenHandler`](/ccip/evm/api-reference/v2.0.0/fee-token-handler)
+- [`Ownable2StepMsgSender`](/ccip/evm/api-reference/v2.0.0/ownable-2-step-msg-sender)

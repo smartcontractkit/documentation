@@ -1,0 +1,176 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 LockReleaseTokenPool API Reference"
+metadata:
+  description: "Concrete TokenPool implementation that locks tokens on source chains and releases escrowed tokens on destination chains."
+  version: "2.0.0"
+---
+
+`LockReleaseTokenPool` is a `TokenPool` implementation that locks tokens on the source chain and releases escrowed tokens on the destination chain.
+
+If you use this pool, tokens are transferred into a lockbox on the source chain and released from escrow on the destination chain.
+
+This approach preserves total token supply and relies on custody and available liquidity rather than mint/burn mechanics.
+
+Use this variant when bridging tokens without modifying total supply (lock-and-release model), rather than burning and minting tokens.
+
+> This contract is not intended to be called directly by applications. It is used by CCIP infrastructure during token transfers.
+
+## Usage Boundary
+
+**You do not call this contract directly.**
+
+- The Router and OnRamp/OffRamp contracts invoke this pool during cross-chain token transfers.
+- You choose this pool when configuring how a token is bridged across chains.
+- Use this pool when you want to preserve total token supply across chains.
+- You are responsible for ensuring the lockbox securely holds and releases tokens.
+- If the lockbox does not hold sufficient tokens to satisfy a release, the transfer will fail.
+
+## Contract
+
+`pools/LockReleaseTokenPool.sol`
+
+## Import
+
+```solidity
+import {LockReleaseTokenPool} from "chainlink-ccip/pools/LockReleaseTokenPool.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## Inheritance
+
+- `TokenPool`
+- `ITypeAndVersion`
+
+## Constructor
+
+```solidity
+constructor(
+  IERC20 token,
+  uint8 localTokenDecimals,
+  address advancedPoolHooks,
+  address rmnProxy,
+  address router,
+  address lockBox
+) TokenPool(
+  token,
+  localTokenDecimals,
+  advancedPoolHooks,
+  rmnProxy,
+  router
+)
+```
+
+| Parameter            | Type      | Description                                               |
+| -------------------- | --------- | --------------------------------------------------------- |
+| `token`              | `IERC20`  | Token being bridged.                                      |
+| `localTokenDecimals` | `uint8`   | Number of decimals used by the token on the local chain.  |
+| `advancedPoolHooks`  | `address` | Optional hook contract for custom pool behavior.          |
+| `rmnProxy`           | `address` | RMN proxy used for curse checks.                          |
+| `router`             | `address` | Address of the CCIP Router that interacts with this pool. |
+| `lockBox`            | `address` | Contract responsible for holding escrowed tokens.         |
+
+## External API
+
+### getLockBox
+
+```solidity
+function getLockBox() external view returns (address)
+```
+
+> Returns the configured lockbox address.
+
+Returns:
+
+| Type      | Description                                     |
+| --------- | ----------------------------------------------- |
+| `address` | Address of the lockbox holding escrowed tokens. |
+
+## typeAndVersion
+
+```solidity
+function typeAndVersion() external pure virtual override returns (string memory)
+```
+
+Returns:
+
+| Type            | Description                           |
+| --------------- | ------------------------------------- |
+| `string memory` | Contract type and version identifier. |
+
+## Events
+
+No new events declared.
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+No new custom errors declared.
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Internal Functions
+
+### \_lockOrBurn
+
+```solidity
+function _lockOrBurn(
+  uint64 remoteChainSelector,
+  uint256 amount
+) internal override
+```
+
+> Locks tokens by transferring them into the configured lockbox.
+
+- Tokens are transferred from the sender into escrow in the lockbox.
+- The lockbox holds tokens until they are released on the destination chain.
+
+### \_releaseOrMint
+
+```solidity
+function _releaseOrMint(
+  address receiver,
+  uint256 amount,
+  uint64 remoteChainSelector
+) internal override
+```
+
+> Transfers tokens from the lockbox to the receiver.
+
+- The lockbox must hold sufficient tokens to fulfill the release.
+- No minting occurs; tokens must already exist in escrow.
+
+## Security model
+
+- The lockbox is the sole custody layer for escrowed tokens.
+- All token accounting depends on the correctness of the lockbox.
+- Only authorized CCIP components (OnRamp and OffRamp) can trigger token movements.
+- If the lockbox is compromised or misconfigured, escrowed tokens may be lost or stolen.
+
+## Notes
+
+- This pool does not change token supply; tokens are locked and later released.
+- This model depends on both secure custody and sufficient escrowed liquidity.
+- Each locked token on the source chain must correspond to an available token in the destination lockbox.
+- The lockbox must be pre-funded with sufficient liquidity to support incoming transfers.
+- Tokens must be available in the lockbox to fulfill release operations.
+- Unlike burn/mint pools, this model requires maintaining liquidity in the lockbox.
+- Unlike burn/mint models, token availability is constrained by lockbox liquidity rather than total supply.
+- If maintaining escrowed liquidity is not feasible, use a burn/mint pool instead.
+- Pool configuration and lockbox selection are fixed at deployment. Changing them requires deploying a new pool.
+
+## Related Interfaces & Contracts
+
+- [`ILockBox`](/ccip/evm/api-reference/v2.0.0/i-lockbox)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`BurnMintTokenPool`](/ccip/evm/api-reference/v2.0.0/burn-mint-token-pool)
+- [`RateLimiter`](/ccip/evm/api-reference/v2.0.0/rate-limiter)
+- [`TokenAdminRegistry`](/ccip/evm/api-reference/v2.0.0/token-admin-registry)
+- [`Router`](/ccip/evm/api-reference/v2.0.0/router)

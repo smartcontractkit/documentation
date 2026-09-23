@@ -1,0 +1,244 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 Internal API Reference"
+metadata:
+  description: "Shared internal constants, structs, enums, and validation helpers used across CCIP contracts."
+  version: "2.0.0"
+---
+
+## Summary
+
+`Internal` is a shared Solidity library containing CCIP-wide:
+
+- Chain family selector constants
+- Shared structs and enums
+- Address validation helpers
+- Safety-oriented constants
+
+The library contains no storage and no external calls.
+
+---
+
+## Library
+
+`chains/evm/contracts/libraries/Internal.sol`
+
+---
+
+## Import
+
+```solidity
+import {Internal} from "chainlink-ccip/chains/evm/contracts/libraries/Internal.sol";
+```
+
+---
+
+## Types
+
+### PriceUpdates
+
+```solidity
+struct PriceUpdates {
+  TokenPriceUpdate[] tokenPriceUpdates;
+  GasPriceUpdate[] gasPriceUpdates;
+}
+```
+
+---
+
+### TokenPriceUpdate
+
+```solidity
+struct TokenPriceUpdate {
+  address sourceToken;
+  uint224 usdPerToken;
+}
+```
+
+---
+
+### GasPriceUpdate
+
+```solidity
+struct GasPriceUpdate {
+  uint64 destChainSelector;
+  uint224 usdPerUnitGas;
+}
+```
+
+---
+
+### TimestampedPackedUint224
+
+```solidity
+struct TimestampedPackedUint224 {
+  uint224 value;
+  uint32 timestamp;
+}
+```
+
+---
+
+### SourceTokenData
+
+```solidity
+struct SourceTokenData {
+  bytes sourcePoolAddress;
+  bytes destTokenAddress;
+  bytes extraData;
+  uint32 destGasAmount;
+}
+```
+
+---
+
+### EVM2AnyTokenTransfer
+
+```solidity
+struct EVM2AnyTokenTransfer {
+  address sourcePoolAddress;
+  bytes destTokenAddress;
+  bytes extraData;
+  uint256 amount;
+  bytes destExecData;
+}
+```
+
+---
+
+### MerkleRoot
+
+```solidity
+struct MerkleRoot {
+  uint64 sourceChainSelector;
+  bytes onRampAddress;
+  uint64 minSeqNr;
+  uint64 maxSeqNr;
+  bytes32 merkleRoot;
+}
+```
+
+---
+
+### MessageExecutionState
+
+```solidity
+enum MessageExecutionState {
+  UNTOUCHED,
+  IN_PROGRESS,
+  SUCCESS,
+  FAILURE
+}
+```
+
+---
+
+## Constants
+
+```solidity
+bytes4 internal constant CHAIN_FAMILY_SELECTOR_EVM = ...;
+bytes4 internal constant CHAIN_FAMILY_SELECTOR_SVM = ...;
+bytes4 internal constant CHAIN_FAMILY_SELECTOR_APTOS = ...;
+bytes4 internal constant CHAIN_FAMILY_SELECTOR_SUI = ...;
+bytes4 internal constant CHAIN_FAMILY_SELECTOR_TVM = ...;
+```
+
+```solidity
+uint16 internal constant MAX_RET_BYTES = 4 + 4 * 32;
+address internal constant GAS_ESTIMATION_SENDER = ...;
+uint8 internal constant GAS_PRICE_BITS = 112;
+uint256 internal constant EVM_PRECOMPILE_SPACE = 1024;
+uint256 internal constant APTOS_PRECOMPILE_SPACE = 0x0b;
+uint256 internal constant SUI_PRECOMPILE_SPACE = 0xdee9;
+```
+
+(All values match canonical source.)
+
+---
+
+## Errors
+
+```solidity
+error InvalidEVMAddress(bytes encodedAddress);
+error Invalid32ByteAddress(bytes encodedAddress);
+error InvalidTVMAddress(bytes encodedAddress);
+```
+
+---
+
+## Functions
+
+All functions are `internal` and `pure`.
+
+---
+
+### \_validateEVMAddress
+
+```solidity
+function _validateEVMAddress(
+  bytes memory encodedAddress
+) internal pure
+```
+
+Validates ABI-encoded EVM address format.
+
+---
+
+### \_leftPadBytesToBytes32
+
+```solidity
+function _leftPadBytesToBytes32(
+  bytes memory data
+) internal pure returns (bytes32)
+```
+
+Left-pads byte array to 32 bytes.
+
+---
+
+### \_validate32ByteAddress
+
+```solidity
+function _validate32ByteAddress(
+  bytes memory encodedAddress,
+  uint256 minValue
+) internal pure
+```
+
+Validates 32-byte ABI encoding and minimum value.
+
+---
+
+### \_validateTVMAddress
+
+```solidity
+function _validateTVMAddress(
+  bytes memory encodedAddress
+) internal pure
+```
+
+Validates TON (TVM) address encoding.
+
+---
+
+## Usage context
+
+Used by:
+
+- `MessageV1Codec`
+- `TokenPool`
+- `Executor`
+- `OffRamp`
+- `FeeQuoter`
+
+Provides canonical shared data structures and address validation logic.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`Client`](/ccip/evm/api-reference/v2.0.0/client)
+- [`MessageV1Codec`](/ccip/evm/api-reference/v2.0.0/message-v1-codec)
+- [`RateLimiter`](/ccip/evm/api-reference/v2.0.0/rate-limiter)
+- [`ExtraArgsCodec`](/ccip/evm/api-reference/v2.0.0/extra-args-codec)

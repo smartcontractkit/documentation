@@ -1,0 +1,69 @@
+---
+section: ccip
+date: Last Modified
+title: "Rate Limits"
+metadata:
+  description: "Operator-level rate limit management for CCIP TokenPool v2.0 contracts: inspect, update, lock down, and execute rate limit changes via multisig."
+  excerpt: "CCIP rate limits token pool capacity buckets refill inspect update emergency lockdown multisig TokenPool v2.0 v1.x fast finality"
+  datePublished: "2025-06-09"
+  lastModified: "2025-06-09"
+isIndex: true
+---
+
+import { DocCards, DocCard } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+This section explains how operators, token issuers, and administrators manage **rate limits** on CCIP `TokenPool` v2.0 contracts (and v1.x pools, with differences noted inline). Rate limits are operator-level controls that bound the volume of tokens that can move across a specific CCIP lane over time, reducing blast radius during incidents and helping manage operational risk.
+
+Changes are applied on-chain, take effect immediately, and directly affect transfer availability. Most integrators do not need to interact with rate limits.
+
+## Pages
+
+<DocCards>
+  <DocCard title="Overview" href="/ccip/evm/concepts/cross-chain-token/rate-limits/overview">
+    How CCIP rate limits work as capacity buckets, why they exist, who should manage them, and the responsibility
+    boundary.
+  </DocCard>
+  <DocCard
+    title="Prerequisites and Permissions"
+    href="/ccip/evm/concepts/cross-chain-token/rate-limits/prerequisites-and-permissions"
+  >
+    Required roles (owner or rateLimitAdmin), how admin access is granted on v2.0 and v1.x pools, and the scope of admin
+    authority.
+  </DocCard>
+  <DocCard
+    title="Inspect Current Rate Limits"
+    href="/ccip/evm/concepts/cross-chain-token/rate-limits/inspect-current-rate-limits"
+  >
+    Read-only inspection of inbound and outbound rate limiter state, including the TokenBucket struct and fast-finality
+    buckets.
+  </DocCard>
+  <DocCard
+    title="Token Units and Decimals"
+    href="/ccip/evm/concepts/cross-chain-token/rate-limits/token-units-and-decimals"
+  >
+    How to convert human-readable token amounts into on-chain base units, with worked examples for 18-decimal and
+    6-decimal tokens.
+  </DocCard>
+  <DocCard title="Update Rate Limits" href="/ccip/evm/concepts/cross-chain-token/rate-limits/update-rate-limits">
+    The setRateLimitConfig (v2.0) and setChainRateLimiterConfig (v1.x) functions, inbound/outbound guidance, and
+    fast-finality bucket updates.
+  </DocCard>
+  <DocCard title="Emergency Actions" href="/ccip/evm/concepts/cross-chain-token/rate-limits/emergency-actions">
+    Incident-response lockdown patterns: throttle to zero, minimal non-zero values, owner-only lane removal, and
+    restoring normal operation.
+  </DocCard>
+  <DocCard title="Common Scenarios" href="/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios">
+    Worked configuration examples for 18-decimal and 6-decimal tokens, fast-finality buckets, batch updates, pausing a
+    lane, and removing rate limits.
+  </DocCard>
+  <DocCard
+    title="Executing with a Multisig"
+    href="/ccip/evm/concepts/cross-chain-token/rate-limits/executing-with-a-multisig"
+  >
+    How to build and submit rate limit update transactions from a multisig wallet, including ABIs for transaction
+    builders.
+  </DocCard>
+</DocCards>
+
+<CcipCommon callout="conceptualDisclaimer" />

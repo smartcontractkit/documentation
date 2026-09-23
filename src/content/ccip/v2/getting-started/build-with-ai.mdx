@@ -1,0 +1,271 @@
+---
+section: ccip
+date: Last Modified
+title: "Build with AI"
+isIndex: true
+metadata:
+  description: "How AI agents validate, prepare, and track cross-chain actions using the Chainlink CCIP skill."
+  product: CCIP
+  skill_slug: chainlink-ccip-skill
+  intended_consumers:
+    - human
+    - ai-agent
+  interaction_model:
+    - validate
+    - prepare
+    - track
+  canonical_repo: https://github.com/smartcontractkit/chainlink-agent-skills
+  spec: https://agentskills.io/specification
+---
+
+Working with CCIP through an AI agent gives you one place to validate a cross-chain action, prepare a user-run artifact, and track its outcome.
+
+The CCIP skill is non-custodial. It can perform live read-only lookups and generate command templates, unsigned transaction data, contracts, and integration code. It never signs or broadcasts a transaction, deploys a contract, transfers tokens, or reads wallet credentials.
+
+For a send or transfer, use this sequence:
+
+1. validate the applicable route, token, recipient, and fee
+2. prepare a preflight package and user-run artifact
+3. review, sign, and broadcast from your own wallet-controlled environment
+4. track the source transaction hash or CCIP message ID
+
+Other requests, such as status checks, route discovery, contract generation, and local simulation, use only the relevant parts of the skill.
+
+Cross-chain actions are asynchronous. A successful source transaction is not final delivery. The CCIP message ID is emitted in transaction logs and can also be resolved from the source transaction hash.
+
+## Before you start
+
+This page assumes you already have an agent that implements the [Agent Skills specification](https://agentskills.io/specification).
+
+**Install the CCIP skill**
+
+```bash
+npx skills add https://github.com/smartcontractkit/chainlink-agent-skills --skill chainlink-ccip-skill -g
+```
+
+The agent should discover the skill when a CCIP task matches its trigger. You can also invoke `chainlink-ccip-skill` explicitly at the start of a CCIP session.
+
+The skill is designed for Agent Skills-compatible tools, including Claude Code, Cursor Composer, and Codex-style workflows.
+
+**Verify setup**
+
+Start with a public, read-only request such as checking a lane or looking up a message. Public CCIP API reads need no wallet, RPC endpoint, API key, or local tooling.
+
+Wallet and RPC configuration belong in your own execution environment when an SDK integration or user-run transaction requires them. The skill must not read private keys, wallet files, keystores, or secret environment variables.
+
+**All write-preparation examples in this guide use testnets.** The skill can perform read-only mainnet lookups, but it refuses mainnet write workflows and never signs or broadcasts transactions on any network.
+
+## What the CCIP skill enables
+
+The skill routes each request to the simplest safe workflow.
+
+| Category    | What the agent can do                                                                                                                                                          |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Discovery   | Check routes, tokens, chains, contracts, and lane connectivity                                                                                                                 |
+| Preparation | Estimate fees when a safe read path is available, or prepare fee-estimation code; generate preflight summaries, command templates, unsigned transactions, and integration code |
+| Tracking    | Look up messages by message ID or source transaction hash and explain current status                                                                                           |
+| Contracts   | Generate sender and receiver logic, local tests, and CCT setup guidance                                                                                                        |
+
+The agent prepares state-changing work for you to execute. It does not perform the state change itself.
+
+## How send and transfer interactions work
+
+**Validate**
+
+For a send or transfer, confirm the inputs that apply before preparing a user-run artifact:
+
+- network environment
+- source and destination chains
+- route support
+- token and amount, when tokens are involved
+- recipient
+- fee estimate with clear units, when a safe estimation path is available
+
+Do not infer a route, network, token, amount, or recipient. If one is missing or ambiguous, the agent should ask one focused question. If live fee estimation is unavailable, it should provide a safe SDK example or command template rather than inventing a value.
+
+---
+
+**Prepare and hand off**
+
+The agent prepares, but does not submit, the state-changing action. Its preflight must identify:
+
+- action and network type
+- source and destination chains
+- route or lane
+- token and amount, when applicable
+- whether the action sends data, tokens, or both
+- involved contracts
+- tool or method
+- expected effect
+- user-run artifact type
+
+The artifact can be a command template, unsigned transaction data, or code for your wallet-controlled environment. Review it, then sign and broadcast outside the agent runtime. Confirmation authorizes preparation only. It never authorizes the agent to sign or broadcast.
+
+After you execute the artifact, retain the source transaction hash. The CCIP message ID is emitted in the transaction logs and can also be found through the CCIP API or Explorer.
+
+---
+
+**Track**
+
+The skill can start from either a CCIP message ID or a source transaction hash. It returns the current lifecycle state and explains what it means.
+
+Intermediate states depend on the deployed lane version. Terminal API states are:
+
+- `SUCCESS`: delivered on the destination chain
+- `FAILED`: destination execution reverted
+
+If a message was sent only moments ago, it might not be indexed yet. The skill retries read-only lookups with backoff before treating a missing result as a problem. Repeated monitoring can continue when requested and supported by the host agent, but a single status request does not imply indefinite polling.
+
+## Interaction boundaries
+
+| Type                   | Actions                                                                 |
+| ---------------------- | ----------------------------------------------------------------------- |
+| Read-only              | Route, token, chain, fee, lane, and message-status lookups              |
+| Write preparation      | Preflight summaries, command templates, unsigned transactions, and code |
+| User-controlled writes | Transaction submission, token transfers, deployment, and CCT changes    |
+
+The agent performs the first category and prepares the second. You perform the third from your own wallet-controlled environment.
+
+## Structured request patterns
+
+**Validate**
+
+```text
+Validate whether a 100 USDC transfer from Ethereum Sepolia (11155111)
+to Base Sepolia (84532) is supported.
+
+- Confirm route and token support
+- Estimate total fees with units if a safe read path is available
+- Identify any unresolved input
+- Do not prepare or execute a transaction
+```
+
+**Prepare**
+
+```text
+Prepare a user-run 100 USDC transfer from Ethereum Sepolia (11155111)
+to Base Sepolia (84532).
+
+Recipient: 0x1234...abcd
+
+- Revalidate the route and token
+- Estimate fees, or provide safe fee-estimation code if a live estimate is unavailable
+- Restate all parameters
+- Return the non-custodial preflight package
+- Return a command template, unsigned transaction, or minimal integration code
+- Do not sign or broadcast
+```
+
+**Track**
+
+```text
+Check the current status of CCIP message ID 0x<message_id>
+or source transaction hash 0x<tx_hash>.
+
+- Return the current lifecycle state
+- Explain what the state means
+- Include the destination receipt transaction when available
+- Clearly indicate whether the message is still in flight, delivered, or failed
+```
+
+## Build with code (TypeScript example)
+
+You can apply the same boundary in code:
+
+1. validate inputs and estimate fees when the required read path is available
+2. generate unsigned transaction data
+3. let the user sign and broadcast outside the agent runtime
+4. track the resulting transaction hash or message ID
+
+Example:
+
+```text
+Create a minimal TypeScript example that validates and prepares a CCIP transfer
+from Ethereum Sepolia (11155111) to Base Sepolia (84532).
+
+Requirements:
+- Show how to estimate fees before execution
+- Generate unsigned transaction data
+- Use current CCIP SDK patterns
+- Keep signing and broadcasting outside the example
+- Keep the example minimal and easy to follow
+```
+
+## What not to do
+
+```text
+Send 100 USDC from Sepolia to Base.
+```
+
+This is incomplete. It omits the network environment, recipient, and validation inputs. The agent should ask one focused question or prepare only the safe portion. It must not execute the transfer.
+
+## Verifying results
+
+After you submit a transfer, keep the source transaction hash. Use it or the CCIP message ID to retrieve the message.
+
+The transfer is delivered when the API reports `SUCCESS`. A destination receipt transaction hash provides the destination-side execution evidence. `FAILED` means destination execution reverted; intermediate states mean the message is still in flight.
+
+## Common failure patterns
+
+Most issues fall into a few predictable categories:
+
+- missing or ambiguous inputs
+- unsupported route or token
+- insufficient balance or gas
+- skipping validation
+- not tracking delivery
+
+When something looks off, return to validation and make the inputs explicit. Do not try to recover by asking the agent to execute a state-changing step.
+
+## Additional context for AI tools
+
+The skill uses the public CCIP API as the default source for current message, lane, chain, and contract data. It uses the CCIP Directory for route token availability and official CCIP documentation for current CLI and SDK behavior.
+
+Public message, lane, chain, and verifier API endpoints require no credentials. Some intent endpoints require an API key; the skill leaves that key in your own environment and never reads or handles it.
+
+## Reference: interaction contract
+
+```json
+{
+  "skill": "chainlink-ccip-skill",
+  "interaction_model": ["validate", "prepare", "user_execute", "track"],
+  "actions": {
+    "validate": {
+      "type": "read-only",
+      "required_inputs": ["source_chain", "destination_chain", "environment"],
+      "conditional_inputs": ["token", "amount", "recipient"],
+      "outputs": [
+        "route_supported",
+        "token_supported_if_applicable",
+        "fee_estimate_or_estimation_artifact",
+        "unresolved_inputs"
+      ],
+      "constraints": ["must_not_execute", "must_not_infer_transfer_inputs"]
+    },
+    "prepare": {
+      "type": "write-preparation",
+      "required_inputs": ["source_chain", "destination_chain", "recipient", "environment"],
+      "conditional_inputs": ["token", "amount", "payload"],
+      "outputs": ["preflight", "command_template_or_unsigned_transaction_or_code"],
+      "constraints": [
+        "must_have_validated_inputs",
+        "agent_must_not_sign",
+        "agent_must_not_broadcast",
+        "user_executes_outside_agent_runtime",
+        "mainnet_write_workflows_refused"
+      ]
+    },
+    "track": {
+      "type": "read-only",
+      "required_inputs_any_of": ["message_id", "source_transaction_hash"],
+      "outputs": ["status", "status_explanation", "destination_receipt_if_available"]
+    }
+  },
+  "rules": [
+    "ask_one_focused_question_when_required_input_is_missing",
+    "never_read_wallet_credentials",
+    "never_sign_or_broadcast",
+    "map_success_to_delivered_and_failed_to_destination_revert"
+  ]
+}
+```

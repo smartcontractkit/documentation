@@ -9,9 +9,9 @@ import {
   ChainFamily,
 } from "@config/index.ts"
 import { CCIP_TOKEN_ICON_MAPPINGS } from "@config/data/ccip/tokenIconMappings.ts"
+import { TOKEN_ICONS_PATH } from "@config/cdn.ts"
 import { toQuantity } from "ethers"
 import referenceChains from "~/scripts/reference/chains.json" with { type: "json" }
-import { c } from "node_modules/vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf.js"
 
 interface AddEthereumChainParameter {
   chainId: string
@@ -231,10 +231,11 @@ export const getTokenIconUrl = (token: string, size = 40) => {
 
   // Request appropriately sized images from CloudFront
   // For 40x40 display, request 80x80 for retina displays (2x)
-  return `https://d2f70xi62kby8n.cloudfront.net/tokens/${transformTokenName(iconIdentifier)}.webp?auto=compress%2Cformat&q=60&w=${size}&h=${size}&fit=cover`
+  return `${TOKEN_ICONS_PATH}/${transformTokenName(iconIdentifier)}.webp?auto=compress%2Cformat&q=60&w=${size}&h=${size}&fit=cover`
 }
 
 export const fallbackTokenIconUrl = "/assets/icons/generic-token.svg"
+export const fallbackVerifierIconUrl = "/assets/icons/generic-verifier.svg"
 
 export const getChainId = (supportedChain: SupportedChain) => {
   const technology = chainToTechnology[supportedChain]
@@ -321,6 +322,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "CELO_MAINNET"
     case "celo-testnet-alfajores":
       return "CELO_ALFAJORES"
+    case "celo-sepolia":
+      return "CELO_SEPOLIA"
     case "ethereum-testnet-sepolia-mode-1":
       return "MODE_SEPOLIA"
     case "ethereum-mainnet-mode-1":
@@ -441,6 +444,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "BERACHAIN_MAINNET"
     case "berachain-testnet-bartio":
       return "BERACHAIN_BARTIO"
+    case "berachain-testnet-bepolia":
+      return "BERACHAIN_BEPOLIA"
     case "hyperliquid-mainnet":
       return "HYPEREVM_MAINNET"
     case "hyperliquid-testnet":
@@ -595,6 +600,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "EVERCLEAR_MAINNET"
     case "ab-mainnet":
       return "AB_CHAIN_MAINNET"
+    case "ab-testnet":
+      return "AB_CHAIN_TESTNET"
     case "monad-mainnet":
       return "MONAD_MAINNET"
     case "nexon-mainnet-henesys":
@@ -652,6 +659,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "CANTON_MAINNET"
     case "creditcoin-mainnet":
       return "CREDITCOIN_MAINNET"
+    case "creditcoin-testnet":
+      return "CREDITCOIN_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -703,6 +712,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "celo-mainnet"
     case "CELO_ALFAJORES":
       return "celo-testnet-alfajores"
+    case "CELO_SEPOLIA":
+      return "celo-sepolia"
     case "MODE_SEPOLIA":
       return "ethereum-testnet-sepolia-mode-1"
     case "MODE_MAINNET":
@@ -819,6 +830,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "berachain-mainnet"
     case "BERACHAIN_BARTIO":
       return "berachain-testnet-bartio"
+    case "BERACHAIN_BEPOLIA":
+      return "berachain-testnet-bepolia"
     case "HYPEREVM_MAINNET":
       return "hyperliquid-mainnet"
     case "HYPEREVM_TESTNET":
@@ -971,6 +984,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "everclear-mainnet"
     case "AB_CHAIN_MAINNET":
       return "ab-mainnet"
+    case "AB_CHAIN_TESTNET":
+      return "ab-testnet"
     case "MONAD_MAINNET":
       return "monad-mainnet"
     case "NEXON_HENESYS_MAINNET":
@@ -1027,6 +1042,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "canton-mainnet"
     case "CREDITCOIN_MAINNET":
       return "creditcoin-mainnet"
+    case "CREDITCOIN_TESTNET":
+      return "creditcoin-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

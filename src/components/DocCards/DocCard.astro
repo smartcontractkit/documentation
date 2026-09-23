@@ -1,0 +1,29 @@
+---
+import styles from "./DocCards.module.css"
+
+interface Props {
+  title: string
+  href?: string
+  icon?: (props: Record<string, unknown>) => unknown
+  class?: string
+  className?: string
+}
+
+const { title, href, icon, class: classAttr, className, ...attrs } = Astro.props
+const Element = href ? "a" : "div"
+const Icon = icon
+---
+
+<Element {...attrs} {...href ? { href } : {}} class:list={[styles.card, href && styles.linkCard, classAttr, className]}>
+  {
+    Icon ? (
+      <span class={styles.icon} aria-hidden="true">
+        <Icon />
+      </span>
+    ) : null
+  }
+  <h3 class={styles.title}>{title}</h3>
+  <div class={styles.body}>
+    <slot />
+  </div>
+</Element>

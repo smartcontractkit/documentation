@@ -1,0 +1,169 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IRouterClient API Reference"
+metadata:
+  description: "Interface for interacting with the CCIP Router to quote fees and send cross-chain messages."
+  version: "2.0.0"
+---
+
+`IRouterClient` defines the core interface for pricing and sending CCIP messages through the [Router](/ccip/evm/api-reference/v2.0.0/router).
+
+If you use this interface, you decide where to send the message, what payload and tokens to include, how fees are paid, and when to initiate delivery.
+
+> Most applications interact with the Router through deployed Router contracts. This interface defines the callable surface but does not implement routing logic.
+
+## Usage Boundary
+
+**You use this interface to construct, price, and send CCIP messages.**
+
+- Call `isChainSupported` to confirm the destination chain is available.
+- Construct an `EVM2AnyMessage` with your desired payload, receiver, tokens, and fee token.
+- Call `getFee` to estimate the cost of that message.
+- Call `ccipSend` with sufficient payment to send the message.
+- You are responsible for message correctness and fee sufficiency.
+
+## Contract
+
+`interfaces/IRouterClient.sol`
+
+## Import
+
+```solidity
+import {IRouterClient} from "chainlink-ccip/interfaces/IRouterClient.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## External API
+
+### isChainSupported
+
+```solidity
+function isChainSupported( uint64 destChainSelector ) external view returns (bool supported)
+```
+
+> Checks whether the Router supports the specified destination chain.
+
+| Parameter           | Type     | Description                          |
+| ------------------- | -------- | ------------------------------------ |
+| `destChainSelector` | `uint64` | Identifier of the destination chain. |
+
+Returns:
+
+| Type   | Description                                 |
+| ------ | ------------------------------------------- |
+| `bool` | True if the destination chain is supported. |
+
+---
+
+### getFee
+
+```solidity
+function getFee(
+  uint64 destinationChainSelector,
+  Client.EVM2AnyMessage memory message
+) external view returns (
+  uint256 fee
+)
+```
+
+> Returns the fee required to send a message with the specified parameters.
+>
+> You define the message contents and fee token, and this function returns the cost based on those inputs. Use this value to determine how much to approve or send when calling `ccipSend`.
+
+| Parameter                  | Type                           | Description                                                                    |
+| -------------------------- | ------------------------------ | ------------------------------------------------------------------------------ |
+| `destinationChainSelector` | `uint64`                       | Identifier of the destination chain.                                           |
+| `message`                  | `Client.EVM2AnyMessage memory` | Message configuration including receiver, data payload, tokens, and fee token. |
+
+Returns:
+
+| Type      | Description                                                                |
+| --------- | -------------------------------------------------------------------------- |
+| `uint256` | Fee required to send the message, denominated in the specified `feeToken`. |
+
+---
+
+### ccipSend
+
+```solidity
+function ccipSend(
+  uint64 destinationChainSelector,
+  Client.EVM2AnyMessage calldata message
+) external payable returns (
+  bytes32
+)
+```
+
+> Sends a cross-chain message through the Router.
+>
+> You provide the message configuration and payment, and the Router initiates delivery to the destination chain.
+>
+> This call commits the message for execution. If the message is invalid or the provided fee is insufficient, the transaction will revert.
+
+| Parameter                  | Type                             | Description                                                                    |
+| -------------------------- | -------------------------------- | ------------------------------------------------------------------------------ |
+| `destinationChainSelector` | `uint64`                         | Identifier of the destination chain.                                           |
+| `message`                  | `Client.EVM2AnyMessage calldata` | Message configuration including receiver, data payload, tokens, and fee token. |
+
+Returns:
+
+| Type      | Description                                  |
+| --------- | -------------------------------------------- |
+| `bytes32` | Unique identifier for the submitted message. |
+
+---
+
+## Events
+
+No new events declared.
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+### UnsupportedDestinationChain
+
+Thrown when you attempt to send a message to a destination chain the Router does not support.
+
+```solidity
+error UnsupportedDestinationChain(uint64 destChainSelector);
+```
+
+### InsufficientFeeTokenAmount
+
+Thrown when the fee token amount provided for the message is insufficient.
+
+```solidity
+error InsufficientFeeTokenAmount();
+```
+
+### InvalidMsgValue
+
+Thrown when `msg.value` does not match the fee payment requirements for the message.
+
+```solidity
+error InvalidMsgValue();
+```
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Notes
+
+- You must construct a valid `EVM2AnyMessage` before calling `getFee` or `ccipSend`.
+- The fee returned by `getFee` depends on the message contents, destination chain, and selected fee token.
+- The fee returned by `getFee` is specific to the exact message parameters. Changing the message requires re-quoting the fee.
+- `ccipSend` reverts if the destination chain is unsupported or if the provided fee is insufficient.
+- When paying fees in native tokens (`feeToken == address(0)`), you must provide sufficient `msg.value`.
+- If you send excess `msg.value`, the Router determines how that excess is handled.
+
+## Related Interfaces & Contracts
+
+- [`IRouter`](/ccip/evm/api-reference/v2.0.0/i-router)
+- [`Router`](/ccip/evm/api-reference/v2.0.0/router)
+- [`Client`](/ccip/evm/api-reference/v2.0.0/client)

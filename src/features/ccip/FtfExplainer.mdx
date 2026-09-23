@@ -1,0 +1,21 @@
+import { Aside } from "@components"
+
+<Aside type="note" title="Faster Than Finality (FTF)">
+By default, CCIP waits for a message's source-chain transaction to reach **full finality** (the point where the chain guarantees it can no longer be reverted) before the message is verified and executed on the destination chain.
+
+CCIP 2.0 lanes also support **Faster-Than-Finality (FTF)**, an opt-in mode where the sender requests that the message be processed once the source chain has reached a chosen level of assurance _short of_ full finality.
+
+The finality setting is expressed in one of two ways, and a sender can choose **exactly one** mode per message:
+
+- **By name (a string):** `Finalized` requests full finality. This is the default. Omit it and CCIP waits for full finality. Other named modes are reserved in the encoding for future protocol use; none are activated on lanes today.
+- **By numeric block depth:** a number from 1 to 65,535 that tells CCIP to wait until N blocks have been built on top of the transaction's block. These tutorials use a minimum block depth of **32**.
+
+Receivers, token pools, and Cross-Chain Verifiers do not request finality; they configure which modes they **allow**. Every gate along the message path must permit the request:
+
+- **Token pool** (token transfers): Validates the request at send time. A request the pool does not permit reverts `ccipSend`, and nothing is sent.
+- **Cross-Chain Verifiers:** Each required verifier attests only messages whose requested finality it permits.
+- **Receiver** (messages that call `ccipReceive`): The receiver's allowed finality is checked at delivery. A mismatch fails execution.
+
+Read more in [Understanding Faster-Than-Finality (FTF) transfers](/ccip/concepts/execution-latency/ftf).
+
+</Aside>

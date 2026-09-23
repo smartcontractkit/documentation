@@ -1,0 +1,74 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 Verifiers"
+metadata:
+  description: "Choose and understand CCIP Cross-Chain Verifiers (CCVs): verifier implementations, resolver/validators, and interfaces."
+  version: "2.0.0"
+---
+
+Verifiers (CCVs) are the onchain components that validate cross-chain proofs or attestations used by CCIP message execution. In practice, you either deploy and configure a verifier implementation, or integrate with an existing verifier selected by configuration.
+
+## Choose what you need
+
+### I need a verifier implementation
+
+Start here if you are selecting or deploying a concrete verifier for your environment.
+
+Common options:
+
+1. **CommitteeVerifier**: Validates proofs based on a configured committee/quorum.
+2. **CCTPVerifier**: Verifies Circle CCTP-related attestations in CCIP flows.
+3. **LombardVerifier**: Verifies Lombard-specific attestations.
+
+Base contract:
+
+1. **BaseVerifier**: Shared base behavior for verifier implementations.
+
+Links:
+
+1. [BaseVerifier](/ccip/evm/api-reference/v2.0.0/base-verifier)
+2. [CommitteeVerifier](/ccip/evm/api-reference/v2.0.0/committee-verifier)
+3. [CCTPVerifier](/ccip/evm/api-reference/v2.0.0/cctp-verifier)
+4. [LombardVerifier](/ccip/evm/api-reference/v2.0.0/lombard-verifier)
+
+### I need to resolve which verifier to use
+
+Start here if you need a contract that maps configuration or message metadata to a verifier implementation.
+
+1. **VersionedVerifierResolver**: Resolves which verifier implementation applies for a given context (for example, per chain selector and/or versioned input formats).
+
+Link:
+
+1. [VersionedVerifierResolver](/ccip/evm/api-reference/v2.0.0/versioned-verifier-resolver)
+
+### I need quorum/threshold validation logic
+
+Start here if you are working with signature sets or quorum checks as a standalone component.
+
+1. **SignatureQuorumValidator**: Validates whether a signature set meets configured quorum requirements.
+
+Link:
+
+1. [SignatureQuorumValidator](/ccip/evm/api-reference/v2.0.0/signature-quorum-validator)
+
+### I need the canonical interface
+
+Start here if you are implementing a new verifier that must match the expected CCIP interface.
+
+1. **ICrossChainVerifierV1**: Interface used by CCIP components that call into a verifier.
+
+Link:
+
+1. [ICrossChainVerifierV1](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-v1)
+
+## How this fits together
+
+Typical wiring looks like:
+
+1. Deploy or select a **verifier implementation** (for example, `CommitteeVerifier`).
+2. Configure a **resolver** (for example, `VersionedVerifierResolver`) to map context to the correct verifier.
+3. Use **validator utilities** (for example, `SignatureQuorumValidator`) where needed by the verifier’s proof format.
+4. Ensure your verifier matches `ICrossChainVerifierV1` so CCIP components can call it consistently.
+
+If you are only integrating with CCIP (not extending verification), start with the implementation pages and use the resolver page to understand how selection is performed.

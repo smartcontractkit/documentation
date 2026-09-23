@@ -1,0 +1,1011 @@
+---
+section: ccip
+date: Last Modified
+title: "Set Token Pool Rate Limits Using Hardhat"
+metadata:
+  description: "Update CCIP token pool rate limiters with Hardhat. Review current configurations, configure outbound and inbound limits, and test enforcement across chains."
+  image: "/images/ccip/basic-architecture.png"
+  excerpt: "rate limiter, Hardhat, ERC-20, ERC20, token pool, limits, secure, CCIP"
+  datePublished: "2024-10-29"
+  lastModified: "2026-04-27"
+  estimatedTime: "30 minutes"
+  difficulty: "intermediate"
+whatsnext:
+  "Enable your tokens in CCIP (Burn & Mint): Register from an EOA using Hardhat": "/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat"
+  "Enable your tokens in CCIP (Lock & Mint): Register from an EOA using Hardhat": "/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat"
+---
+
+import { AnchoredAccordion, Aside, GitHubCard, PageTabs } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<PageTabs
+  pages={[
+    {
+      name: "Foundry",
+      url: "/ccip/evm/tutorials/cross-chain-tokens/update-rate-limiters-foundry",
+      icon: "/images/tutorial-icons/foundry-icn.png",
+    },
+    {
+      name: "Hardhat",
+      url: "/ccip/evm/tutorials/cross-chain-tokens/update-rate-limiters-hardhat",
+      icon: "/images/tutorial-icons/hardhat-icn.png",
+    },
+  ]}
+/>
+
+In this tutorial you will:
+
+1. Review current standard rate limiter configurations for your deployed token pool.
+2. Update outbound and inbound standard rate limiter configurations.
+3. Verify the updated configurations.
+4. Test standard rate limiter enforcement with a cross-chain token transfer.
+5. Optionally configure and test rate limits for faster than finality transfers.
+
+## Before You Begin
+
+<AnchoredAccordion title="Set up your development environment" number={1} depth={3}>
+
+1. Install Node.js and npm:
+   - Make sure you have `Node.js v22.10.0` or above installed. If not, install **`Node.js v22.10.0`** using their [documentation](https://nodejs.org/en/download/).
+   - `npm` is bundled with Node.js. If you can’t run `npm`, reinstall/update Node.js from the official installer.
+
+2. Install/Update [Chainlink CCIP-CLI](https://docs.chain.link/ccip/tools/cli/). You can also find the [GitHub repository here](https://github.com/smartcontractkit/ccip-cli).
+
+```bash filename="Terminal"
+npm install -g @chainlink/ccip-cli
+```
+
+Verify the installation by running the following command:
+
+```bash filename="Terminal"
+ccip-cli --version
+```
+
+3. **Clone the repository and navigate to the project directory**:
+
+<GitHubCard
+  title="CCIP 2.0 template"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat"
+  iconName="github-svg-card"
+>
+  Clone the CCIP 2.0 Hardhat template for a smoother CCT setup.
+</GitHubCard>
+
+```bash filename="Terminal"
+git clone https://github.com/smartcontractkit/docs-cct-hardhat.git
+cd docs-cct-hardhat
+```
+
+4. Create a `.env` file by copying the `.env.example` file, and fill in the required values:
+
+```bash filename="Terminal"
+cp .env.example .env
+```
+
+```bash filename=".env"
+# Keystore name (created via `npx hardhat keystore set`)
+KEYSTORE_NAME=<your_private_key_name>
+
+# RPC URLs (add the ones you need)
+ETHEREUM_SEPOLIA_RPC_URL=your_eth_sepolia_rpc
+ARBITRUM_SEPOLIA_RPC_URL=your_arbitrum_sepolia_rpc
+
+# Etherscan API key (required only if you pass --verify to deployment tasks)
+ETHERSCAN_API_KEY=your_etherscan_api_key
+```
+
+<GitHubCard
+  title="Complete List of Supported Chains"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/helper-config.ts"
+  iconName="github-svg-card"
+>
+  View the complete list of supported chains in the `helper-config.ts` file.
+</GitHubCard>
+
+5. To make sure your terminal has access to these variables, run the following command:
+
+```bash filename="Terminal"
+source .env
+```
+
+6. Build the project:
+
+```bash filename="Terminal"
+npm install && npx hardhat compile
+```
+
+7. Create an encrypted Hardhat keystore, if you haven't already:
+
+```bash filename="Terminal"
+npx hardhat keystore set <your_private_key_name>
+```
+
+<Aside type="caution" title="Private key format">
+  When prompted for your private key, include the <code>0x</code> prefix.
+</Aside>
+
+<Aside type="note" title="Note">
+  <ol>
+    <li>
+      Hardhat prompts for a keystore password: set it on first use, or enter it to unlock on subsequent uses. Then it
+      asks you to enter your private key as hidden text.
+    </li>
+    <li>
+      The name you choose (e.g. <code>&lt;your_private_key_name&gt;</code>) is what you set as{" "}
+      <code>KEYSTORE_NAME</code> in <code>.env</code>.
+    </li>
+    <li>
+      Use <code>npx hardhat keystore list</code> to check previously created keystores.
+    </li>
+  </ol>
+</Aside>
+
+</AnchoredAccordion>
+
+## Tutorial
+
+<br />
+
+<Aside type="tip" title="Prerequisites">
+  This tutorial assumes you have already deployed tokens and token pools on both chains. If not, complete one of the
+  registration tutorials first:
+  <ul>
+    <li>
+      <a href="/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat">Burn & Mint</a>
+    </li>
+    <li>
+      <a href="/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat">Lock & Mint</a>
+    </li>
+  </ul>
+  Make sure your token and token pool addresses are exported as environment variables:
+
+```bash
+# For tokens
+export ETHEREUM_SEPOLIA_TOKEN=0x...
+export ARBITRUM_SEPOLIA_TOKEN=0x...
+
+# For token pools
+export ETHEREUM_SEPOLIA_TOKEN_POOL=0x...
+export ARBITRUM_SEPOLIA_TOKEN_POOL=0x...
+```
+
+<br />
+This tutorial supports both CCT registration models:
+<ul>
+  <li>
+    In the Burn &amp; Mint model, rate limiters are configured on the <code>BurnMintTokenPool</code> on each chain.
+  </li>
+  <li>
+    In the Lock &amp; Mint model, rate limiters are configured on the token pools: the source-chain{" "}
+    <code>LockReleaseTokenPool</code> and the destination-chain <code>BurnMintTokenPool</code>. The{" "}
+    <code>ERC20LockBox</code> is not rate-limited and is not updated by the tasks in this tutorial.
+  </li>
+</ul>
+
+</Aside>
+
+<AnchoredAccordion title="Review Current Rate Limiter Configurations" number={1} depth={3}>
+
+Use the `getCurrentRateLimits` task to read the current rate limiter configuration state for a specific lane from your token pool. The task reports whether rate limiting is enabled, the maximum capacity (bucket size), the refill rate (tokens per second), and the current token count in each bucket.
+
+<GitHubCard
+  title="getCurrentRateLimits.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/rate-limiter/getCurrentRateLimits.ts"
+  iconName="github-svg-card"
+>
+  View the rate limiter query task on GitHub.
+</GitHubCard>
+
+| <nobr>Flag</nobr>             | <nobr>Required</nobr> | <nobr>Description</nobr>                                                                                                                        |
+| ----------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`--destchain`</nobr>    | <nobr>Yes</nobr>      | <nobr>Remote chain whose lane is being queried (e.g. `arbitrumSepolia`)</nobr>                                                                  |
+| <nobr>`--fastfinality`</nobr> | <nobr>No</nobr>       | <nobr>Read the faster than finality bucket instead of the standard finality bucket (v2 pools only; falls back to standard per direction)</nobr> |
+
+1. Check the Ethereum Sepolia pool (lane to Arbitrum Sepolia):
+
+```bash filename="Terminal"
+npx hardhat getCurrentRateLimits \
+  --destchain arbitrumSepolia \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+📊 Get Current Rate Limits
+========================================
+Chain:        Ethereum Sepolia
+Remote Chain: Arbitrum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       View rate limits
+Bucket:       Standard finality
+========================================
+
+Pool Version: v2
+
+  Outbound Enabled:  false
+  Outbound Capacity: 0
+  Outbound Rate:     0
+  Outbound Tokens:   0
+  Inbound  Enabled:  false
+  Inbound  Capacity: 0
+  Inbound  Rate:     0
+  Inbound  Tokens:   0
+
+========================================
+Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+========================================
+```
+
+2. Check the Arbitrum Sepolia pool (lane to Ethereum Sepolia):
+
+```bash filename="Terminal"
+npx hardhat getCurrentRateLimits \
+  --destchain sepolia \
+  --network arbitrumSepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+📊 Get Current Rate Limits
+========================================
+Chain:        Arbitrum Sepolia
+Remote Chain: Ethereum Sepolia
+Token Pool:   0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+Action:       View rate limits
+Bucket:       Standard finality
+========================================
+
+Pool Version: v2
+
+  Outbound Enabled:  false
+  Outbound Capacity: 0
+  Outbound Rate:     0
+  Outbound Tokens:   0
+  Inbound  Enabled:  false
+  Inbound  Capacity: 0
+  Inbound  Rate:     0
+  Inbound  Tokens:   0
+
+========================================
+Token Pool:   https://sepolia.arbiscan.io/address/0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+========================================
+```
+
+<Aside type="note" title="Rate Limiters Disabled">
+  <ol>
+    <li>
+      Rate limiting is disabled by default when no rate-limiting parameters are provided during
+      <code>applyChainUpdates</code>. In that case, both outbound and inbound capacities are <code>0</code>, meaning
+      there are no restrictions on token flow.
+    </li>
+    <li>In the next step you will enable and configure these rate limiters.</li>
+  </ol>
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Update Rate Limiter Configurations" number={2} depth={3}>
+
+Use the `updateRateLimiters` task to update rate limiter configurations for an existing lane in your token pool. The direction to update is inferred automatically from whichever `--outbound*` / `--inbound*` flags you set.
+
+Only the directions you specify are updated; any direction you don't specify is left unchanged. Outbound and inbound are relative to the pool you're configuring:
+
+1. `outbound` is tokens leaving this pool toward the `--destchain` remote chain;
+2. `inbound` is tokens arriving from the `--destchain` remote chain into this pool.
+
+<Aside type="note" title="Lane must exist">
+  <ol>
+    <li>Rate limiters can only be updated for lanes that already exist.</li>
+    <li>
+      If you haven't configured the lane yet, complete one of the two tutorials first:
+      <ul>
+        <li>
+          <a href="/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat">Burn & Mint</a>
+        </li>
+        <li>
+          <a href="/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat">Lock & Mint</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      Run <code>applyChainUpdates</code> to configure the lane.
+    </li>
+  </ol>
+</Aside>
+
+<GitHubCard
+  title="updateRateLimiters.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/rate-limiter/updateRateLimiters.ts"
+  iconName="github-svg-card"
+>
+  View the rate limiter update task on GitHub.
+</GitHubCard>
+
+| <nobr>Flag</nobr>                 | <nobr>Required</nobr>           | <nobr>Description</nobr>                                                                                        |
+| --------------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| <nobr>`--destchain`</nobr>        | <nobr>Yes</nobr>                | <nobr>Remote chain whose lane is being updated</nobr>                                                           |
+| <nobr>`--outboundcapacity`</nobr> | <nobr>To update outbound</nobr> | <nobr>Token bucket capacity for outbound transfers</nobr>                                                       |
+| <nobr>`--outboundrate`</nobr>     | <nobr>To update outbound</nobr> | <nobr>Token bucket refill rate (tokens/second) for outbound transfers</nobr>                                    |
+| <nobr>`--outboundenabled`</nobr>  | <nobr>No</nobr>                 | <nobr>Override `isEnabled` explicitly (`true`/`false`; defaults to `true` when capacity or rate are set)</nobr> |
+| <nobr>`--inboundcapacity`</nobr>  | <nobr>To update inbound</nobr>  | <nobr>Token bucket capacity for inbound transfers</nobr>                                                        |
+| <nobr>`--inboundrate`</nobr>      | <nobr>To update inbound</nobr>  | <nobr>Token bucket refill rate (tokens/second) for inbound transfers</nobr>                                     |
+| <nobr>`--inboundenabled`</nobr>   | <nobr>No</nobr>                 | <nobr>Override `isEnabled` explicitly (`true`/`false`; defaults to `true` when capacity or rate are set)</nobr> |
+| <nobr>`--fastfinality`</nobr>     | <nobr>No</nobr>                 | <nobr>Update the faster than finality bucket instead of the standard finality bucket (v2 only)</nobr>           |
+
+<Aside type="note" title="Access control and compatibility">
+  <ol>
+    <li>
+      The pool owner and the designated <code>rateLimitAdmin</code> can update rate limiters.
+    </li>
+    <li>
+      The <code>rateLimitAdmin</code> is configured via <code>setDynamicConfig</code>.
+    </li>
+    <li>
+      This task supports both v1 and v2 token pools: on v2 pools it calls <code>setRateLimitConfig()</code>; on v1 pools
+      it falls back to <code>setChainRateLimiterConfig()</code>.
+    </li>
+    <li>
+      The <code>--fastfinality</code> flag is v2-only and is ignored on v1 pools.
+    </li>
+  </ol>
+</Aside>
+
+<Aside type="note" title="Configuration best practices">
+  <ol>
+    <li>
+      Set inbound rate limits a bit higher than outbound limits on the same lane. Many chains finalize blocks in
+      batches, so multiple outbound messages may become executable on the destination simultaneously, requiring slightly
+      more inbound capacity.
+    </li>
+    <li>
+      The exact additional capacity required depends on the refill rate and the size of the source chain epochs and CCIP
+      round time. In most cases, a 5-10% buffer should be sufficient.
+    </li>
+    <li>
+      <code>rate</code> must be less than or equal to <code>capacity</code>, and when disabling rate limiting (
+      <code>isEnabled: false</code>), both <code>capacity</code> and <code>rate</code> must be <code>0</code>.
+    </li>
+  </ol>
+</Aside>
+
+In this example, we configure an 18-decimal token with outbound capacity of 10 tokens (refilling at 0.1 tokens/sec) and inbound capacity of 11 tokens (refilling at 0.11 tokens/sec, a 10% buffer):
+
+1. Update the Ethereum Sepolia pool (lane to Arbitrum Sepolia):
+
+```bash filename="Terminal"
+npx hardhat updateRateLimiters \
+  --destchain arbitrumSepolia \
+  --outboundcapacity 10000000000000000000 \
+  --outboundrate 100000000000000000 \
+  --inboundcapacity 11000000000000000000 \
+  --inboundrate 110000000000000000 \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+⚡️ Update Rate Limiters
+========================================
+Chain:        Ethereum Sepolia
+Remote Chain: Arbitrum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       Update rate limits
+Direction:    Both
+Bucket:       Standard finality
+========================================
+
+Pool Version: v2 (setRateLimitConfig)
+
+Current Rate Limiter State:
+  Outbound Enabled:  false
+  Outbound Capacity: 0
+  Outbound Rate:     0
+  Outbound Tokens:   0
+  Inbound  Enabled:  false
+  Inbound  Capacity: 0
+  Inbound  Rate:     0
+  Inbound  Tokens:   0
+
+New Configuration:
+  Outbound Enabled:  true
+  Outbound Capacity: 10000000000000000000
+  Outbound Rate:     100000000000000000
+  Inbound Enabled:   true
+  Inbound Capacity:  11000000000000000000
+  Inbound Rate:      110000000000000000
+
+[Step 1] Applying rate limit update on Ethereum Sepolia
+⏳ Tx: 0xddeeff00112233445566778899aabbccddeeff00112233445566778899aabbcc
+
+========================================
+✅ Rate limiter update complete on Ethereum Sepolia!
+========================================
+Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Transaction:  0xddeeff00112233445566778899aabbccddeeff00112233445566778899aabbcc
+========================================
+```
+
+2. Update the Arbitrum Sepolia pool (lane to Ethereum Sepolia):
+
+```bash filename="Terminal"
+npx hardhat updateRateLimiters \
+  --destchain sepolia \
+  --outboundcapacity 10000000000000000000 \
+  --outboundrate 100000000000000000 \
+  --inboundcapacity 11000000000000000000 \
+  --inboundrate 110000000000000000 \
+  --network arbitrumSepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+⚡️ Update Rate Limiters
+========================================
+Chain:        Arbitrum Sepolia
+Remote Chain: Ethereum Sepolia
+Token Pool:   0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+Action:       Update rate limits
+Direction:    Both
+Bucket:       Standard finality
+========================================
+
+Pool Version: v2 (setRateLimitConfig)
+
+Current Rate Limiter State:
+  Outbound Enabled:  false
+  Outbound Capacity: 0
+  Outbound Rate:     0
+  Outbound Tokens:   0
+  Inbound  Enabled:  false
+  Inbound  Capacity: 0
+  Inbound  Rate:     0
+  Inbound  Tokens:   0
+
+New Configuration:
+  Outbound Enabled:  true
+  Outbound Capacity: 10000000000000000000
+  Outbound Rate:     100000000000000000
+  Inbound Enabled:   true
+  Inbound Capacity:  11000000000000000000
+  Inbound Rate:      110000000000000000
+
+[Step 1] Applying rate limit update on Arbitrum Sepolia
+⏳ Tx: 0x2a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f70812
+
+========================================
+✅ Rate limiter update complete on Arbitrum Sepolia!
+========================================
+Token Pool:   https://sepolia.arbiscan.io/address/0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+Transaction:  0x2a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f70812
+========================================
+```
+
+3. To **disable** rate limiters for a lane, pass `--outboundenabled false` and `--inboundenabled false`:
+
+<Aside type="caution" title="Disabling rate limiters">
+  <ol>
+    <li>
+      We highly recommend that devs have at least some limits set up. We advise against completely disabling rate
+      limiters unless absolutely necessary.
+    </li>
+    <li>
+      <strong>Informational-only for this tutorial:</strong> If you disable rate limiters here, the later{" "}
+      <strong>Test the Rate Limiter Configurations</strong> section will not behave as described (it will not revert
+      with <code>TokenMaxCapacityExceeded</code> / <code>TokenRateLimitReached</code>).
+    </li>
+  </ol>
+</Aside>
+
+```bash filename="Terminal"
+npx hardhat updateRateLimiters \
+  --destchain arbitrumSepolia \
+  --outboundenabled false \
+  --inboundenabled false \
+  --network sepolia
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Verify the Updated Rate Limiter Configurations" number={3} depth={3}>
+
+Re-run the `getCurrentRateLimits` task on both chains to confirm the update was applied correctly.
+
+1. Verify the Ethereum Sepolia pool:
+
+```bash filename="Terminal"
+npx hardhat getCurrentRateLimits \
+  --destchain arbitrumSepolia \
+  --network sepolia
+```
+
+<Aside type="note" title="Note">
+  Your output might differ based on whether or not you disabled rate limiters in the previous step.
+</Aside>
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+📊 Get Current Rate Limits
+========================================
+Chain:        Ethereum Sepolia
+Remote Chain: Arbitrum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       View rate limits
+Bucket:       Standard finality
+========================================
+
+Pool Version: v2
+
+  Outbound Enabled:  true
+  Outbound Capacity: 10000000000000000000
+  Outbound Rate:     100000000000000000
+  Outbound Tokens:   10000000000000000000
+  Inbound  Enabled:  true
+  Inbound  Capacity: 11000000000000000000
+  Inbound  Rate:     110000000000000000
+  Inbound  Tokens:   11000000000000000000
+
+========================================
+Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+========================================
+```
+
+2. Verify the Arbitrum Sepolia pool:
+
+```bash filename="Terminal"
+npx hardhat getCurrentRateLimits \
+  --destchain sepolia \
+  --network arbitrumSepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+📊 Get Current Rate Limits
+========================================
+Chain:        Arbitrum Sepolia
+Remote Chain: Ethereum Sepolia
+Token Pool:   0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+Action:       View rate limits
+Bucket:       Standard finality
+========================================
+
+Pool Version: v2
+
+  Outbound Enabled:  true
+  Outbound Capacity: 10000000000000000000
+  Outbound Rate:     100000000000000000
+  Outbound Tokens:   10000000000000000000
+  Inbound  Enabled:  true
+  Inbound  Capacity: 11000000000000000000
+  Inbound  Rate:     110000000000000000
+  Inbound  Tokens:   11000000000000000000
+
+========================================
+Token Pool:   https://sepolia.arbiscan.io/address/0x7D2f4A6c8E1b3D5a9F0c2E4b6A8d1C3e5F7a9B2d
+========================================
+```
+
+<Aside type="note" title="Token bucket values">
+  The <code>Tokens</code> field shows the current fill level of the bucket. Immediately after an update the bucket
+  resets to full capacity. Over time, as transfers consume tokens, this value decreases and refills at the configured
+  rate.
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Test the Rate Limiter Configurations" number={4} depth={3}>
+
+Initiate a cross-chain transfer to verify that the rate limiter enforces the configured limits.
+
+<Aside type="note" title="Token balance">
+  Ensure your EOA has a sufficient balance of the cross-chain token on the source chain. If you need more tokens, use
+  the <code>mintTokens</code> task or transfer tokens from another account.
+</Aside>
+
+Before testing, export the router and token addresses for the source chain:
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_ROUTER=0x...
+export ETHEREUM_SEPOLIA_TOKEN=0x...
+```
+
+<Aside type="note" title="Router address">
+  You can find the router address for your chain in the [CCIP
+  Directory](https://docs.chain.link/ccip/directory/testnet).
+</Aside>
+
+> **Note:**
+>
+> 1. Add `--fee-token LINK` to pay CCIP fees in LINK. If you omit this flag, fees are paid in the native gas token.
+> 2. Use `--receiver <address>` for a custom recipient. If omitted on EVM-to-EVM, the receiver defaults to the sender.
+
+#### Test 1: Exceed capacity
+
+Transfer one wei more than the outbound capacity (10 tokens + 1 wei). This should fail because the requested amount exceeds the bucket size.
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=10.000000000000000001 \
+  --wallet hardhat:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Fee: 130129888907619n = 0.000130129888907619 ETH
+✔ Enter password for Hardhat keystore 'PRIVATE_KEY'
+error: Failed to call "ccipSend"
+Error = execution reverted: TokenMaxCapacityExceeded(uint256 capacity, uint256 requested, address tokenAddress)
+Revert.error = TokenMaxCapacityExceeded(uint256,uint256,address)
+Revert.capacity = 10000000000000000000n
+Revert.requested = 10000000000000000001n
+Revert.tokenAddress = 0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+```
+
+The transfer should fail with `TokenMaxCapacityExceeded` because the requested amount is larger than the bucket capacity.
+
+<Aside type="note" title="How does the token bucket work?">
+  CCIP rate limiters use a <em>token bucket</em> model. Think of the bucket as a virtual allowance that controls how
+  many tokens can flow through the pool in a given window:
+  <ol>
+    <li>
+      The bucket starts full at its configured <strong>capacity</strong>.
+    </li>
+    <li>
+      Each transfer <strong>consumes</strong> its amount from the bucket.
+    </li>
+    <li>
+      The bucket <strong>refills</strong> continuously at the configured <strong>rate</strong> (tokens per second).
+    </li>
+  </ol>
+  In this tutorial, the outbound bucket has a capacity of 10 tokens and refills at 0.1 tokens/sec. Transferring all 10
+  tokens in one go "drains" the bucket to zero. Any immediate follow-up transfer will fail because the bucket needs 100
+  seconds (10 &divide; 0.1) to fully replenish.
+</Aside>
+
+#### Test 2: Drain the bucket, then hit the rate
+
+1. **First transfer** (succeeds: drains the outbound bucket):
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=10 \
+  --wallet hardhat:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Fee: 130129888907619n = 0.000130129888907619 ETH
+✔ Enter password for Hardhat keystore 'PRIVATE_KEY'
+🚀 Sending message to 0xE23Fc63F47F08F58B9d7448d4CCE0bCDcc96d7F3 @ ethereum-testnet-sepolia-arbitrum-1 , tx => 0x3dc40bea29f3e3fc93ff8fce0dda45fd7f55a07ace5089646e018874c8b6745e , messageId => 0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+CCIP Explorer: https://ccip.chain.link/msg/0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+```
+
+2. **Second transfer** (fails: bucket has not refilled):
+
+Run the same command immediately:
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=10 \
+  --wallet hardhat:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Fee: 130129888907619n = 0.000130129888907619 ETH
+✔ Enter password for Hardhat keystore 'PRIVATE_KEY'
+error: Failed to call "ccipSend"
+Error = execution reverted: TokenRateLimitReached(uint256 minWaitInSeconds, uint256 available, address tokenAddress)
+Revert.error = TokenRateLimitReached(uint256,uint256,address)
+Revert.minWaitInSeconds = 100n
+Revert.available = 0n
+Revert.tokenAddress = 0x9602399103Ff5F87587Ac5A28E1551A0bA0c6C0D
+```
+
+The transfer should fail with `TokenRateLimitReached` because the bucket has not yet refilled. With a capacity of 10 tokens and a rate of 0.1 tokens per second, it takes 100 seconds to fully replenish.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="(Optional) Configure Rate Limits for Faster Than Finality Transfers" number={5} depth={3}>
+
+This section applies to [`TokenPool`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/TokenPool.sol) v2.0 or later only. CCIP 2.0 token pools maintain two independent rate limiter buckets per lane:
+
+- **Standard finality bucket**: Used for standard finality transfers (`finality=finalized`, which is the default when you omit `--extra finality=...`). This is the bucket you configured in the previous steps.
+- **Faster Than Finality bucket**: Used for transfers that request faster than finality with `finality=<N>` (numeric block depth). If this bucket is disabled for a direction, faster than finality transfers for that direction fall back to the standard bucket (enforced on-chain by the token pool).
+
+<Aside type="note" title="Pool type and lockbox scope">
+  Rate limiters are configured on token pools, regardless of whether you registered your token with Burn &amp; Mint or
+  Lock &amp; Mint. In Lock &amp; Mint, the <code>ERC20LockBox</code> is not rate-limited and is not updated by these
+  tasks.
+</Aside>
+
+<Aside type="caution" title="Faster Than Finality must be allowed first">
+  <ol>
+    <li>
+      Updating the faster than finality bucket alone does <strong>not</strong> enable faster than finality transfers.
+      The pool owner must also configure the pool's <strong>allowed finality config</strong> with{" "}
+      <code>setFinalityConfig</code>.
+    </li>
+    <li>
+      Setting the allowed finality config is owner-only. Updating rate limiters can be done by the pool owner or the
+      configured <code>rateLimitAdmin</code>.
+    </li>
+    <li>
+      For the full faster than finality setup flow, see the Configure Faster Than Finality section in either
+      registration tutorial:
+      <ul>
+        <li>
+          <a href="/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat#optional-configure-fast-finality-for-the-token-pool">
+            Burn &amp; Mint
+          </a>
+        </li>
+        <li>
+          <a href="/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat#optional-configure-fast-finality-for-the-token-pool">
+            Lock &amp; Mint
+          </a>
+        </li>
+      </ul>
+    </li>
+  </ol>
+</Aside>
+
+#### Check the pool's allowed finality config
+
+Use `getFinalityConfig` to confirm which faster than finality modes the pool currently allows.
+
+<GitHubCard
+  title="getFinalityConfig.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/finality-config/getFinalityConfig.ts"
+  iconName="github-svg-card"
+>
+  View the finality config query task on GitHub.
+</GitHubCard>
+
+1. Check the Ethereum Sepolia pool:
+
+```bash filename="Terminal"
+npx hardhat getFinalityConfig --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+⏱️  Get Finality Config
+========================================
+Chain:        Ethereum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       View finality config
+========================================
+
+Allowed Finality Config (raw): 0x00000000
+
+Mode: WAIT_FOR_FINALITY (default)
+  Full finality is required. Faster Than Finality transfers are disabled.
+
+========================================
+Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+========================================
+```
+
+`BLOCK_DEPTH (32)` sets a minimum for numeric requests: `--extra finality=32` (or higher) is allowed; `--extra finality=10` reverts with `InvalidRequestedFinality(requestedFinality, allowedFinality)`.
+
+2. Check the Arbitrum Sepolia pool:
+
+```bash filename="Terminal"
+npx hardhat getFinalityConfig --network arbitrumSepolia
+```
+
+<Aside type="note" title="Token pool ABI">
+  The Hardhat task reads shared TokenPool v2 functions, so the same command works for both Burn &amp; Mint pools and
+  Lock &amp; Mint token pools. If you are not using the <code>{"{CHAIN}_TOKEN_POOL"}</code> environment variable, pass{" "}
+  <code>--tokenpool 0xYourPool</code>.
+</Aside>
+
+#### Approach 1: Allow Faster Than Finality and Configure the Faster Than Finality Bucket in One Command
+
+Use `setFinalityConfig` with rate limit flags to allow faster than finality and configure the faster than finality bucket in a single run.
+
+<GitHubCard
+  title="setFinalityConfig.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/finality-config/setFinalityConfig.ts"
+  iconName="github-svg-card"
+>
+  View the finality config update task on GitHub.
+</GitHubCard>
+
+This example configures the Ethereum Sepolia pool for transfers to Arbitrum Sepolia. To configure the reverse direction, run the same task on Arbitrum Sepolia with `--destchain sepolia --network arbitrumSepolia`.
+
+```bash filename="Terminal"
+npx hardhat setFinalityConfig \
+  --blockdepth 32 \
+  --destchain arbitrumSepolia \
+  --outboundcapacity 5000000000000000000 \
+  --outboundrate 50000000000000000 \
+  --inboundcapacity 5500000000000000000 \
+  --inboundrate 55000000000000000 \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+<Aside type="note" title="Output abbreviated">
+  <code>setFinalityConfig</code> also prints the lane's current and updated rate limits (faster than finality where
+  enabled, standard otherwise). Those sections are omitted here for brevity.
+</Aside>
+
+```bash filename="Terminal"
+========================================
+⏱️  Set Finality Config
+========================================
+Chain:        Ethereum Sepolia
+Remote Chain: Arbitrum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       Set finality config
+========================================
+
+  Current Finality Config: 0x00000000
+  New Finality Config:     0x00000020
+  Mode:                    BLOCK_DEPTH (32 blocks)
+
+[Step 1] Setting finality config on Ethereum Sepolia
+⏳ Tx: 0x280399cd3dce1815a30ca3763736c7cbc4a8018bdb3ba1b650e728479640f5b6
+✅ Finality config set successfully!
+
+[Step 2] Updating rate limits (faster than finality bucket) on Ethereum Sepolia → Arbitrum Sepolia
+New Configuration:
+  Outbound Enabled:  true
+  Outbound Capacity: 5000000000000000000
+  Outbound Rate:     50000000000000000
+  Inbound Enabled:   true
+  Inbound Capacity:  5500000000000000000
+  Inbound Rate:      55000000000000000
+
+⏳ Tx: 0xa69245f229f41313d597ea452fa7c9d8ead9e05bfe36aad5a997a6850d198ac5
+✅ Rate limits updated successfully!
+
+========================================
+✅ Configuration Complete on Ethereum Sepolia!
+========================================
+Token Pool:      https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Finality Config: 0x00000020
+Mode:            BLOCK_DEPTH (32 blocks)
+========================================
+```
+
+#### Approach 2: Update the Faster Than Finality Bucket Directly
+
+If the pool already allows faster than finality, you can update the faster than finality bucket directly using `updateRateLimiters` with `--fastfinality`:
+
+```bash filename="Terminal"
+npx hardhat updateRateLimiters \
+  --destchain arbitrumSepolia \
+  --fastfinality \
+  --outboundcapacity 5000000000000000000 \
+  --outboundrate 50000000000000000 \
+  --inboundcapacity 5500000000000000000 \
+  --inboundrate 55000000000000000 \
+  --network sepolia
+```
+
+#### Verify the faster than finality bucket
+
+Pass `--fastfinality` to `getCurrentRateLimits`. Each direction is shown independently: the faster than finality bucket for directions where it is enabled, and the standard bucket fallback for directions where it is not.
+
+```bash filename="Terminal"
+npx hardhat getCurrentRateLimits \
+  --destchain arbitrumSepolia \
+  --fastfinality \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+📊 Get Current Rate Limits
+========================================
+Chain:        Ethereum Sepolia
+Remote Chain: Arbitrum Sepolia
+Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+Action:       View rate limits
+Bucket:       Faster Than Finality (standard finality fallback per direction if not enabled)
+========================================
+
+Pool Version: v2
+
+  Outbound [faster than finality]:
+    Enabled:  true
+    Capacity: 5000000000000000000
+    Rate:     50000000000000000
+    Tokens:   5000000000000000000
+  Inbound [faster than finality]:
+    Enabled:  true
+    Capacity: 5500000000000000000
+    Rate:     55000000000000000
+    Tokens:   5500000000000000000
+
+========================================
+Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+========================================
+```
+
+#### Test a faster than finality transfer
+
+After the pool allows faster than finality and the faster than finality bucket is configured, send a small transfer with numeric block depth (for example `--extra finality=32`):
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1 \
+  --receiver 0xYourReceiverAddress \
+  --extra finality=32 \
+  --wallet hardhat:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Fee: 130129888907619n = 0.000130129888907619 ETH
+✔ Enter password for Hardhat keystore 'PRIVATE_KEY'
+🚀 Sending message to 0xE23Fc63F47F08F58B9d7448d4CCE0bCDcc96d7F3 @ ethereum-testnet-sepolia-arbitrum-1 , tx => 0x5f1c2d3e4b5a69788796a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e , messageId => 0x3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8091a2c4d
+CCIP Explorer: https://ccip.chain.link/msg/0x3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8091a2c4d
+```
+
+Re-run `getCurrentRateLimits` with `--fastfinality` to confirm the outbound faster than finality bucket changed after the transfer:
+
+```bash filename="Terminal"
+npx hardhat getCurrentRateLimits \
+  --destchain arbitrumSepolia \
+  --fastfinality \
+  --network sepolia
+```
+
+<Aside type="note" title="Faster Than Finality troubleshooting">
+  <ol>
+    <li>
+      This test assumes the pool's allowed finality config allows numeric block depth. If the transfer reverts with{" "}
+      <code>InvalidRequestedFinality(requestedFinality, allowedFinality)</code>, run{" "}
+      <code>npx hardhat getFinalityConfig --network sepolia</code> and confirm the configured <code>BLOCK_DEPTH</code>,
+      then retry with <code>--extra finality=32</code> (or higher than the configured minimum).
+    </li>
+    <li>If you request a numeric value lower than the configured minimum block depth, the token pool will revert.</li>
+  </ol>
+</Aside>
+
+</AnchoredAccordion>
+
+<CcipCommon callout="educationalDisclaimer" />

@@ -1,0 +1,154 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 BurnWithFromMintTokenPool API Reference"
+metadata:
+  description: "Burn/mint pool that burns using burn(address, amount) and mints on the destination chain."
+  version: "2.0.0"
+---
+
+`BurnWithFromMintTokenPool` is a `TokenPool` implementation for bridging tokens by burning tokens on the source chain and minting tokens on the destination chain.
+
+If you use this pool, tokens are burned from a specified address using the token’s `burn(address, amount)` function.
+
+This differs from other burn variants:
+
+- `BurnMintTokenPool` uses `burn(amount)` on the sender
+- `BurnFromMintTokenPool` uses `burnFrom(address(this), amount)` on the pool
+- This pool uses `burn(address, amount)` to burn from a specified address
+
+Use this variant when your token exposes a `burn(address, amount)` interface and requires explicit control over which address is burned.
+
+> This contract is not intended to be called directly by applications. It is used by CCIP infrastructure during token transfers.
+
+## Usage Boundary
+
+**You do not call this contract directly.**
+
+- The Router and OnRamp/OffRamp contracts invoke this pool during cross-chain token transfers.
+- You choose this pool when configuring how a token is bridged across chains.
+- Use this pool only if your token implements `burn(address, amount)`.
+- You are responsible for ensuring the pool has permission to burn tokens from the specified address.
+- If the pool does not have permission to burn from the specified address, the transaction will revert.
+
+## Contract
+
+`pools/BurnWithFromMintTokenPool.sol`
+
+## Import
+
+```solidity
+import {BurnWithFromMintTokenPool} from "chainlink-ccip/pools/BurnWithFromMintTokenPool.sol";
+```
+
+If you have not installed the package:
+
+```bash id="4kq2qt"
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## Inheritance
+
+- `BurnMintTokenPoolAbstract`
+- `ITypeAndVersion`
+
+## Constructor
+
+```solidity id="g83o3c"
+constructor(
+  IBurnMintERC20 token,
+  uint8 localTokenDecimals,
+  address advancedPoolHooks,
+  address rmnProxy,
+  address router
+) TokenPool(
+  token,
+  localTokenDecimals,
+  advancedPoolHooks,
+  rmnProxy,
+  router
+)
+```
+
+| Parameter            | Type             | Description                                               |
+| -------------------- | ---------------- | --------------------------------------------------------- |
+| `token`              | `IBurnMintERC20` | Token that supports `burn(address, amount)` and mint.     |
+| `localTokenDecimals` | `uint8`          | Number of decimals used by the token on the local chain.  |
+| `advancedPoolHooks`  | `address`        | Optional hook contract for custom pool behavior.          |
+| `rmnProxy`           | `address`        | RMN proxy used for curse checks.                          |
+| `router`             | `address`        | Address of the CCIP Router that interacts with this pool. |
+
+## External API
+
+No new public or external functions are declared.
+
+All callable interfaces are inherited from `TokenPool`.
+
+## typeAndVersion
+
+```solidity id="a4thp2"
+function typeAndVersion() external pure virtual override returns (string memory)
+```
+
+Returns:
+
+| Type            | Description                           |
+| --------------- | ------------------------------------- |
+| `string memory` | Contract type and version identifier. |
+
+## Events
+
+No new events declared.
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+No new custom errors declared.
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Internal Functions
+
+### \_lockOrBurn
+
+```solidity id="u2f9my"
+function _lockOrBurn(
+  uint64 /* remoteChainSelector */,
+  uint256 amount
+) internal override
+```
+
+> Burns tokens by calling `burn(address, amount)` on the underlying token.
+
+- Tokens are burned from the address specified in the burn request (typically the sender).
+- The pool must have permission to call `burn(address, amount)` or an equivalent function that burns tokens from that address.
+
+### \_releaseOrMint
+
+Inherited from `BurnMintTokenPoolAbstract`.
+
+> Mints tokens to the receiver on the destination chain.
+
+## Security model
+
+- The pool depends on the underlying token correctly implementing `burn(address, amount)` and mint functionality.
+- The pool must have permission to burn tokens from the specified address, including any required allowances or role-based permissions.
+- Only authorized CCIP components (OnRamp and OffRamp) can trigger token movements.
+- If permissions are not correctly configured, burn operations will revert.
+
+## Notes
+
+- This pool burns tokens from a specified address using `burn(address, amount)`.
+- This pool does not require the pool contract to hold tokens before burning.
+- The pool may require allowance or role-based permissions to burn tokens from the specified address.
+- This variant is more flexible than `BurnMintTokenPool` but requires additional permission configuration.
+- If your token does not support `burn(address, amount)`, use another pool variant.
+- Pool configuration and access behavior are fixed at deployment. Changing them requires deploying a new pool.
+
+## Related Interfaces & Contracts
+
+- [`BurnMintTokenPoolAbstract`](/ccip/evm/api-reference/v2.0.0/burn-mint-token-pool-abstract)
+- [`BurnMintTokenPool`](/ccip/evm/api-reference/v2.0.0/burn-mint-token-pool)
+- [`BurnFromMintTokenPool`](/ccip/evm/api-reference/v2.0.0/burn-from-mint-token-pool)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)

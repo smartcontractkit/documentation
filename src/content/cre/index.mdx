@@ -1,163 +1,307 @@
 ---
 section: cre
+date: Last Modified
 title: "Chainlink Runtime Environment (CRE)"
-isIndex: true
 metadata:
-  description: "Discover Chainlink Runtime Environment (CRE): the all-in-one orchestration layer that provides a secure, verifiable environment for your institutional-grade smart contracts."
+  title: "Chainlink Runtime Environment (CRE) | Orchestration Layer for Institutional-Grade Smart Contracts"
+  description: "Build data-connected, compliance-ready, privacy-preserving smart contracts with the Chainlink Runtime Environment: code-first workflows in Go or TypeScript, secured by DON consensus."
+  excerpt: "Chainlink Runtime Environment, CRE, workflows, triggers, capabilities, DON consensus, Go SDK, TypeScript SDK, CRE CLI, confidential workflows, EVM writes, Solana writes, GraphQL API"
   datePublished: "2025-11-04"
-  lastModified: "2026-01-20"
+  lastModified: "2026-09-16"
+isIndex: true
+disableDefaultStyles: true
+hideTitle: true
 ---
 
-import { Aside, CodeHighlightBlockMulti } from "@components"
-import triggerCallbackGo from "./code-snippets/index-trigger-callback-example.go?raw"
-import triggerCallbackTs from "./code-snippets/index-trigger-callback-example.ts?raw"
+import LayoutHero from "@components/LayoutHero/LayoutHero.astro"
+import { TabGrid } from "@components/TabGrid/TabGrid.tsx"
+import ToolsUtilitiesGrid from "@components/ToolsUtilitiesGrid/ToolsUtilitiesGrid.astro"
+import OverviewWrapper from "@components/OverviewWrapper.astro"
+import ChangelogSnippet from "@components/ChangelogSnippet/ChangelogSnippet.astro"
 
-## What is CRE?
+export const getStarted = [
+  {
+    name: "Start Here",
+    links: [
+      {
+        title: "Getting Started Guide",
+        description:
+          "Build your first workflow step by step: run on a schedule, call an API, read a contract, and write the result onchain.",
+        link: "/cre/getting-started/overview",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Install the CLI",
+        description: "Install the `cre` command-line tool on macOS, Linux, or Windows.",
+        link: "/cre/getting-started/cli-installation",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Browse Templates",
+        description:
+          "Start from a working workflow, such as a custom data feed, liquidation protection, or a keeper bot, and adapt it.",
+        link: "/cre-templates",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Run a Demo Workflow",
+        description: "Run the Custom Data Feed template end to end, from API call to onchain write.",
+        link: "/cre/templates/running-demo-workflow",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Build with AI",
+        description:
+          "Use the CRE agent skill for Cursor, Claude Code, and Codex, or prompt LLMs to generate and debug workflows.",
+        link: "/cre/getting-started/build-with-ai",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Create Your Account",
+        description: "Sign up at app.chain.link, create or join an organization, and set up two-factor authentication.",
+        link: "/cre/account/creating-account",
+        personas: ["App Developers"],
+      },
+    ],
+  },
+  {
+    name: "Write Workflows",
+    links: [
+      {
+        title: "Fetch Data from APIs",
+        description: "Make GET requests from every node and reach consensus on the response before using it.",
+        link: "/cre/guides/workflow/using-http-client/get-request",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Read Onchain Data",
+        description: "Call view functions on smart contracts and use the returned state in your workflow.",
+        link: "/cre/guides/workflow/using-evm-client/onchain-read",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Write Onchain Data",
+        description: "Generate a signed report from your workflow's result and submit it to your contract.",
+        link: "/cre/guides/workflow/using-evm-client/onchain-write/overview",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Build Consumer Contracts",
+        description: "Implement the IReceiver interface so your contract can safely accept workflow reports.",
+        link: "/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Manage Secrets",
+        description: "Store API keys and credentials for both simulated and deployed workflows.",
+        link: "/cre/guides/workflow/secrets",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Make a Workflow Confidential",
+        description: "Run workflow logic inside a secure enclave so node operators cannot see your data or secrets.",
+        link: "/cre/guides/workflow/using-confidential-workflows",
+        personas: ["App Developers", "Advanced"],
+      },
+    ],
+  },
+  {
+    name: "Deploy & Monitor",
+    links: [
+      {
+        title: "Simulate Locally",
+        description: "Run a workflow on your machine against live APIs and testnets before deploying it.",
+        link: "/cre/guides/operations/simulating-workflows",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Request Deploy Access",
+        description: "Deploying to a DON requires approval. Check your status and request access from the CLI.",
+        link: "/cre/account/deploy-access",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Deploy Workflows",
+        description: "Register a workflow so it goes live on a DON and starts responding to its triggers.",
+        link: "/cre/guides/operations/deploying-workflows",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Monitor & Debug",
+        description: "Track execution history, view logs, and debug failures in the CRE UI.",
+        link: "/cre/guides/operations/monitoring-workflows",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Update Deployed Workflows",
+        description: "Ship a new version of a live workflow and replace the running one.",
+        link: "/cre/guides/operations/updating-deployed-workflows",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Service Quotas",
+        description: "Execution timeouts, trigger rates, WASM resources, and organization limits.",
+        link: "/cre/service-quotas",
+        personas: ["App Developers"],
+      },
+    ],
+  },
+  {
+    name: "Migrate",
+    links: [
+      {
+        title: "From Chainlink Functions",
+        description: "Map Functions requests, secrets, and onchain callbacks to CRE workflows.",
+        link: "/cre/reference/clf-migration",
+        personas: ["App Developers"],
+      },
+      {
+        title: "From Chainlink Automation",
+        description: "Map Automation upkeeps and triggers to CRE workflows.",
+        link: "/cre/reference/cla-migration",
+        personas: ["App Developers"],
+      },
+      {
+        title: "From Gelato Web3 Functions",
+        description: "Map Gelato Web3 Functions tasks and terminology to CRE workflows.",
+        link: "/cre/reference/gelato-migration",
+        personas: ["App Developers"],
+      },
+    ],
+  },
+]
 
-**Chainlink Runtime Environment (CRE)** is the all-in-one orchestration layer unlocking institutional-grade smart contracts—data-connected, compliance-ready, privacy-preserving, and interoperable across blockchains and existing systems.
+export const capabilities = [
+  {
+    title: "Triggers",
+    description: "Start a workflow on a cron schedule, an HTTP request, or an onchain event.",
+    link: "/cre/capabilities/triggers",
+  },
+  {
+    title: "HTTP",
+    description: "Call any API from every node in the DON and reach consensus on the result.",
+    link: "/cre/capabilities/http",
+  },
+  {
+    title: "Confidential HTTP",
+    description:
+      "Call APIs from inside a secure enclave, keeping credentials and responses hidden from node operators.",
+    link: "/cre/capabilities/confidential-http",
+  },
+  {
+    title: "EVM Read & Write",
+    description: "Read contract state and write consensus-verified results to EVM chains.",
+    link: "/cre/capabilities/evm-read-write",
+  },
+  {
+    title: "Solana Write",
+    description: "Write consensus-verified results to Solana programs.",
+    link: "/cre/capabilities/solana-write",
+  },
+  {
+    title: "Supported Networks",
+    description: "Every EVM and Solana network CRE can read from and write to, with required CLI and SDK versions.",
+    link: "/cre/supported-networks",
+  },
+]
 
-Using the **CRE SDK** (available in Go and TypeScript), you build **Workflows**. Using the CRE CLI, you compile them into binaries and deploy them to production, where CRE runs them across a Decentralized Oracle Network (DON).
+export const keyConcepts = [
+  {
+    title: "Key Terms and Concepts",
+    description: "Workflows, handlers, triggers, callbacks, capabilities, DONs, and consensus defined.",
+    link: "/cre/key-terms",
+  },
+  {
+    title: "Consensus Computing",
+    description: "How Byzantine Fault Tolerance keeps every workflow operation secure and tamper-resistant.",
+    link: "/cre/concepts/consensus-computing",
+  },
+  {
+    title: "Finality and Confidence Levels",
+    description: "Understand finality guarantees and confidence levels for onchain reads and writes.",
+    link: "/cre/concepts/finality",
+  },
+  {
+    title: "Avoiding Non-Determinism",
+    description: "Write deterministic callbacks so all DON nodes reach the same consensus result.",
+    link: "/cre/concepts/non-determinism",
+  },
+  {
+    title: "Confidential Workflows",
+    description: "Run sensitive logic inside a secure enclave (TEE), hidden from node operators.",
+    link: "/cre/concepts/confidential-workflows",
+  },
+  {
+    title: "Organizations",
+    description: "How accounts, members, and linked wallet keys are grouped under an organization.",
+    link: "/cre/organization/understanding-organizations",
+  },
+]
 
-- Each workflow is orchestrated by a **Workflow DON (Decentralized Oracle Network)** that monitors for triggers and coordinates execution.
-- The workflow can then invoke specialized **Capability DONs**—for example, one that fetches offchain data or one that writes to a chain.
-- During execution, each node in a DON performs the requested task independently.
-  - Their results are then cryptographically verified and aggregated via a Byzantine Fault Tolerant (BFT) consensus protocol. This guarantees a single, correct, and consistent outcome.
+export const toolsAndApis = [
+  {
+    image: "/images/card-icons/5f75cc9f74f7124d70ad4f0a_file-code-check.svg",
+    imageAlt: "CRE CLI icon",
+    label: "CRE CLI",
+    link: "/cre/reference/cli",
+    description: "Every CLI command: project setup, workflow deployment, account management, and secrets.",
+  },
+  {
+    image: "/images/card-icons/5f75e7d3f8ef05758ce8c1f5_bulb.svg",
+    imageAlt: "Go SDK icon",
+    label: "Go SDK",
+    link: "/cre/reference/sdk/overview-go",
+    description: "Complete API reference for Go workflows: handlers, triggers, capabilities, and runtime methods.",
+  },
+  {
+    image: "/images/card-icons/5f75b5fde8d4beb3824522bb_lock.svg",
+    imageAlt: "TypeScript SDK icon",
+    label: "TypeScript SDK",
+    link: "/cre/reference/sdk/overview-ts",
+    description: "Type-safe SDK for TypeScript workflows, compiled to WASM with familiar async patterns.",
+  },
+  {
+    image: "/images/card-icons/5f75ccd99b524261854d093d_multiple-users-network.svg",
+    imageAlt: "GraphQL API icon",
+    label: "GraphQL API",
+    link: "/cre/reference/graphql-api",
+    description: "Programmatic access to workflows, deployments, and execution data.",
+  },
+  {
+    image: "/images/card-icons/5f75b5e6e24b376ed9ab5c1e_programming-browser.svg",
+    imageAlt: "CRE platform icon",
+    label: "app.chain.link/cre",
+    link: "https://app.chain.link/cre/discover",
+    description: "Create your account, manage workflows, and access the CRE platform UI.",
+  },
+  {
+    image: "/images/card-icons/5f96ab4b4db522072b7ff30c_book-bookmark.svg",
+    imageAlt: "Project configuration icon",
+    label: "Project Configuration",
+    link: "/cre/reference/project-configuration",
+    description: "Configure project.yaml, workflow.yaml, and targets for each environment you deploy to.",
+  },
+]
 
-## What you can do today
-
-### Build and simulate (available now)
-
-You can start building and [simulating](/cre/guides/operations/simulating-workflows) CRE workflows immediately, without any approval:
-
-- **Create an account** at [app.chain.link/cre/discover](https://app.chain.link/cre/discover) to access the platform
-- **Install the CRE CLI** on your machine
-- **Build workflows** using the Go or TypeScript SDKs
-- **Simulate workflows** to test and debug before deployment
-
-Simulation compiles your workflows into [WebAssembly (WASM)](https://webassembly.org/) and runs them on your machine—but makes **real calls** to live APIs and public EVM blockchains. This gives you confidence your workflow will work as expected when deployed to a DON.
-
-### Deploy your workflows
-
-{/* prettier-ignore */}
-<Aside type="caution" title="Disclaimer">
-Chainlink CRE is provided on an "as is" basis without any representations, warranties, covenants, or conditions of any kind. Use at your own risk. Users remain fully responsible for deployments and that the operation and performance of workflows matches expectations. Please review the Chainlink Foundation <a href="https://chain.link/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> which provides important information and disclosures. By using CRE, you expressly acknowledge and agree to accept these terms.
-</Aside>
-
-Deploying workflows requires approval. Workflow deployment includes:
-
-- **Deploy and run workflows** on a Chainlink DON
-- **Workflow lifecycle management**: Deploy, activate, pause, update, and delete workflows through the CLI
-- **Monitoring and debugging**: Access detailed logs, events, and performance metrics in the CRE UI
-
-To request deploy access, run `cre account access` from the CLI. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
-
-## How CRE runs your workflows
-
-Now that you understand what CRE is, let's explore how it executes your workflows.
-
-### The trigger-and-callback model
-
-Workflows use a **trigger-and-callback model** to provide a code-first developer experience. This model is the primary architectural pattern you will use in your workflows. It consists of three simple parts:
-
-1.  **A Trigger**: An event source that starts a workflow execution (e.g., `cron.Trigger`). This is the "when" of your workflow.
-1.  **A Callback**: A function that contains your business logic. It is inside this function that you will use the SDK's clients to invoke capabilities. This is the "what" of your workflow.
-1.  **The `handler()`**: The glue that connects a single trigger to a single callback.
-
-You can define multiple trigger and callback combinations in your workflow. You can also attach the same callback to multiple triggers for reusability.
-
-Here's what the trigger-and-callback pattern looks like:
-
-<CodeHighlightBlockMulti
-  languages={{
-    go: {
-      code: triggerCallbackGo,
-      title: "Example Handler (Go)",
+<LayoutHero
+  title="Build with CRE"
+  description="CRE is the orchestration layer for onchain applications. You write workflows in Go or TypeScript: code that runs when a trigger fires, such as a schedule, an HTTP request, or an onchain event, and then calls APIs, reads and writes across blockchains, and handles secrets. A decentralized oracle network executes each step and reaches consensus on every result."
+  buttons={[
+    {
+      label: "Overview",
+      link: "/cre/overview",
     },
-    ts: {
-      code: triggerCallbackTs,
-      title: "Example Handler (TypeScript)",
+    {
+      label: "Get Started",
+      link: "/cre/getting-started/overview",
     },
-  }}
+  ]}
 />
 
-{/* prettier-ignore */}
-<Aside type="note" title="Each trigger fire = independent execution">
-  Each time a trigger fires, it starts a **fresh, independent execution** of your callback function. Callbacks are **stateless**—there is no persistent state between executions. The value you return from a callback represents the result of that specific execution, not a stored workflow state.
-</Aside>
-
-### Execution lifecycle
-
-When a trigger fires, the Workflow DON orchestrates the execution of your callback function on every node in the network. **Each execution is independent and stateless**—your callback runs, performs its work, returns a result, and completes. Inside your callback, you create SDK clients and invoke capabilities.
-
-Each capability call is an **asynchronous operation** that returns a `Promise`—a placeholder for a future result. This allows you to pipeline multiple capability calls and run them in parallel.
-
-Your callback typically follows this pattern:
-
-1. Invoke multiple capabilities in parallel (each returns a `Promise` immediately)
-1. Await the consensus-verified results
-1. Use the trusted results in your business logic
-1. Optionally perform final actions like writing back to a blockchain
-
-For every capability you invoke, CRE handles the underlying process of having a dedicated DON execute the task, reach consensus, and return the verified result.
-
-### Built-in consensus for every operation
-
-One of CRE's most powerful features is that **every capability execution automatically includes consensus**. When your workflow invokes a capability (like fetching data from an API or reading from a blockchain), multiple independent nodes perform the operation. Their results are then validated and aggregated through a Byzantine Fault Tolerant (BFT) consensus protocol, ensuring a single, verified outcome.
-
-This means your entire workflow—not just the onchain parts—benefits from the same security and reliability guarantees as blockchain transactions. Unlike traditional applications that rely on a single API provider or RPC endpoint, CRE eliminates single points of failure by having multiple nodes independently verify every operation.
-
-Learn more about [Consensus Computing in CRE](/cre/concepts/consensus-computing).
-
-## Glossary: Building blocks
-
-| Concept            | One-liner                                                        |
-| ------------------ | ---------------------------------------------------------------- |
-| **Workflow**       | Compiled WebAssembly (WASM) binary.                              |
-| **Handler**        | `handler(trigger, callback)` pair; the atom of execution.        |
-| **Trigger**        | Event that starts an execution (cron, HTTP, EVM log, …).         |
-| **Callback**       | Function that runs when its trigger fires; contains your logic.  |
-| **Runtime**        | Object passed to a callback; used to invoke capabilities.        |
-| **Capability**     | Decentralized microservice (chain read/write, HTTP Fetch, ...).  |
-| **Workflow DON**   | Watches triggers and coordinates the workflow.                   |
-| **Capability DON** | Executes a specific capability.                                  |
-| **Consensus**      | BFT protocol that merges node results into one trusted outcome.  |
-| **Report**         | DON-signed package from `runtime.report()` / `GenerateReport()`. |
-
-Full definitions live on **[Key Terms and Concepts](/cre/key-terms)**.
-
-## Why build on CRE?
-
-- **Unified cross-domain orchestration**: Seamlessly combine onchain and offchain operations in a single workflow. Read from multiple blockchains, call authenticated APIs, perform computations, and write results back onchain or offchain—all orchestrated by CRE.
-
-- **Institutional-grade security by default**: Every operation—API calls, blockchain reads, computations—runs across multiple independent nodes with Byzantine Fault Tolerant consensus. Your workflows inherit the same security guarantees as blockchain transactions.
-
-- **One platform, any chain**: Build your logic once and connect to any supported blockchain. No need to deploy separate infrastructure for each chain you support.
-
-- **Code-first developer experience**: Write workflows in Go or TypeScript using familiar patterns. The SDK abstracts away the complexity of distributed systems, letting you focus on your business logic.
-
-## Where to go next?
-
-### New to CRE?
-
-Start here:
-
-1. **[Create Your Account](/cre/account/creating-account)** - Set up your CRE account (required for all CLI commands)
-1. **[Install the CLI](/cre/getting-started/cli-installation)** - Download and install the `cre` command-line tool
-
-Then choose your path:
-
-- **Learn by building:** [Getting Started Guide](/cre/getting-started/overview) - Step-by-step guide where you build your first workflow, learning core concepts along the way
-- **Quick start:** [Run the Custom Data Feed Demo](/cre/templates/running-demo-workflow) - See a production-ready workflow in action. Just follow the steps to run a complete, pre-built example
-
-### Already familiar?
-
-Jump to what you need:
-
-- **[Workflow Guides](/cre/guides/workflow/using-triggers/overview)** - Learn how to use triggers, make API calls, and interact with blockchains
-- **[Workflow Operations](/cre/guides/operations/simulating-workflows)** - Simulate, deploy, and manage your workflows
-- **[SDK Reference](/cre/reference/sdk)** - Detailed API documentation for Go and TypeScript SDKs
-
-{/* prettier-ignore */}
-<Aside type="caution" title="Disclaimer">
-This code represents an example of using a Chainlink product or service. It is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may omit checks or error handling. Each party intending to use this reference implementation must perform its own audits, security and code review, and testing before any production deployment and ensure the operation and performance of such code matches expectations. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for outcomes due to errors in this example or how it is deployed or operated. Use of the Chainlink Network is subject to the Chainlink Foundation <a href="https://chain.link/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>, which provides important information and disclosures. By using this code, you acknowledge and agree to these terms.
-</Aside>
+<OverviewWrapper>
+  <TabGrid header="Get Started" client:visible tabs={getStarted} />
+  <TabGrid header="Capabilities" client:visible tabs={[{ name: "Capabilities", links: capabilities }]} />
+  <TabGrid header="Key Concepts" client:visible tabs={[{ name: "Concepts", links: keyConcepts }]} />
+  <ToolsUtilitiesGrid title="Tools & APIs" links={toolsAndApis} />
+  <ChangelogSnippet query="cre" />
+</OverviewWrapper>

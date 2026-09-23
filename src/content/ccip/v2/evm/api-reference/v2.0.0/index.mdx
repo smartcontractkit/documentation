@@ -1,0 +1,157 @@
+---
+section: ccip
+date: Last Modified
+title: "Chainlink CCIP Solidity Interfaces & Contracts Reference (EVM)"
+metadata:
+  description: "Builder-facing API reference for Chainlink CCIP on EVM chains. Includes core contracts, token pools, verifiers (CCVs), resolvers, and registry components."
+  version: "v2.0.0"
+isIndex: true
+---
+
+import { Aside } from "@components"
+
+## Available Versions
+
+### Latest Release
+
+- **CCIP v2.0.0** (Current Version)
+
+  Major architectural upgrades:
+  - Modular Cross-Chain Verifier (CCV) system
+  - Versioned verifier resolution via `VersionedVerifierResolver`
+  - USDC/CCTP integration via dedicated pool and transmitter proxy contracts
+  - Lombard bridge integration via dedicated verifier and pool
+  - Siloed lock-release liquidity model
+  - AdvancedPoolHooks support for pool policy/allowlist extensions
+  - Signature quorum validation components
+  - RMN safety gating via `RMNRemote` and `RMNProxy`
+  - Unified burn/mint and lock/release abstractions across pools
+
+  Breaking changes from v1.x:
+  - Verifier logic extracted from `OffRamp` into dedicated CCV contracts
+  - Pool extensibility standardized through internal hooks
+  - Cross-chain fee modeling expanded for verifier-specific execution
+
+---
+
+## v2.0.0 Architecture Overview
+
+CCIP v2 introduces a modular architecture composed of the following builder-facing components.
+
+---
+
+### Core Routing
+
+- [Router](/ccip/evm/api-reference/v2.0.0/router)
+- [IRouter](/ccip/evm/api-reference/v2.0.0/i-router)
+- [IRouterClient](/ccip/evm/api-reference/v2.0.0/i-router-client)
+- [OnRamp](/ccip/evm/api-reference/v2.0.0/onramp)
+- [IEVM2AnyOnRampClient](/ccip/evm/api-reference/v2.0.0/i-evm-2any-onramp-client)
+- [OffRamp](/ccip/evm/api-reference/v2.0.0/offramp)
+- [Executor](/ccip/evm/api-reference/v2.0.0/executor)
+- [IExecutor](/ccip/evm/api-reference/v2.0.0/i-executor)
+- [CCIPReceiver](/ccip/evm/api-reference/v2.0.0/ccip-receiver)
+- [IAny2EVMMessageReceiver](/ccip/evm/api-reference/v2.0.0/i-any2-evm-message-receiver)
+- [IAny2EVMMessageReceiverV2](/ccip/evm/api-reference/v2.0.0/i-any2-evm-message-receiver-v2)
+- [Proxy](/ccip/evm/api-reference/v2.0.0/proxy)
+- [CREATE2Factory](/ccip/evm/api-reference/v2.0.0/create-2-factory)
+
+---
+
+### Token Pools
+
+- [Token Pools (Overview)](/ccip/evm/api-reference/v2.0.0/overview)
+- [TokenPool](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [IPoolV1](/ccip/evm/api-reference/v2.0.0/i-pool-v1)
+- [IPoolV2](/ccip/evm/api-reference/v2.0.0/i-pool-v2)
+- [IPoolV1V2](/ccip/evm/api-reference/v2.0.0/i-pool-v1-v2)
+
+#### Lock / Release
+
+- [LockReleaseTokenPool](/ccip/evm/api-reference/v2.0.0/lock-release-token-pool)
+- [SiloedLockReleaseTokenPool](/ccip/evm/api-reference/v2.0.0/siloed-lock-release-token-pool)
+- [ERC20LockBox](/ccip/evm/api-reference/v2.0.0/erc20-lockbox)
+- [ILockBox](/ccip/evm/api-reference/v2.0.0/i-lockbox)
+
+#### Burn / Mint
+
+- [BurnMintTokenPool](/ccip/evm/api-reference/v2.0.0/burn-mint-token-pool)
+- [BurnMintTokenPoolAbstract](/ccip/evm/api-reference/v2.0.0/burn-mint-token-pool-abstract)
+- [BurnFromMintTokenPool](/ccip/evm/api-reference/v2.0.0/burn-from-mint-token-pool)
+- [BurnWithFromMintTokenPool](/ccip/evm/api-reference/v2.0.0/burn-with-from-mint-token-pool)
+- [BurnToAddressMintTokenPool](/ccip/evm/api-reference/v2.0.0/burn-to-address-mint-token-pool)
+- [BurnMintWithLockReleaseFlagTokenPool](/ccip/evm/api-reference/v2.0.0/burn-mint-with-lock-release-flag-token-pool)
+- [IBurnMintERC20](/ccip/evm/api-reference/v2.0.0/i-burn-mint-erc20)
+
+#### USDC
+
+- [USDCTokenPool](/ccip/evm/api-reference/v2.0.0/usdc-token-pool)
+- [USDCTokenPoolProxy](/ccip/evm/api-reference/v2.0.0/usdc-token-pool-proxy)
+- [SiloedUSDCTokenPool](/ccip/evm/api-reference/v2.0.0/siloed-usdc-token-pool)
+- [CCTPThroughCCVTokenPool](/ccip/evm/api-reference/v2.0.0/cctp-through-ccv-token-pool)
+- [CCTPMessageTransmitterProxy](/ccip/evm/api-reference/v2.0.0/cctp-message-transmitter-proxy)
+
+#### Specialized
+
+- [LombardTokenPool](/ccip/evm/api-reference/v2.0.0/lombard-token-pool)
+
+---
+
+### Cross-Chain Verifiers (CCVs)
+
+- [Verifiers (Overview)](/ccip/evm/api-reference/v2.0.0/verifiers-overview)
+- [BaseVerifier](/ccip/evm/api-reference/v2.0.0/base-verifier)
+- [CommitteeVerifier](/ccip/evm/api-reference/v2.0.0/committee-verifier)
+- [CCTPVerifier](/ccip/evm/api-reference/v2.0.0/cctp-verifier)
+- [LombardVerifier](/ccip/evm/api-reference/v2.0.0/lombard-verifier)
+- [VersionedVerifierResolver](/ccip/evm/api-reference/v2.0.0/versioned-verifier-resolver)
+- [SignatureQuorumValidator](/ccip/evm/api-reference/v2.0.0/signature-quorum-validator)
+- [ICrossChainVerifierV1](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-v1)
+- [ICrossChainVerifierResolver](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-resolver)
+
+---
+
+### RMN
+
+- [RMNProxy](/ccip/evm/api-reference/v2.0.0/rmn-proxy)
+- [RMNRemote](/ccip/evm/api-reference/v2.0.0/rmn-remote)
+- [IRMN](/ccip/evm/api-reference/v2.0.0/i-rmn)
+- [IRMNRemote](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
+
+---
+
+### Fee Infrastructure
+
+- [FeeQuoter](/ccip/evm/api-reference/v2.0.0/fee-quoter)
+- [IFeeQuoter](/ccip/evm/api-reference/v2.0.0/i-fee-quoter)
+- [ILegacyFeeQuoter](/ccip/evm/api-reference/v2.0.0/i-legacy-fee-quoter)
+- [FeeTokenHandler](/ccip/evm/api-reference/v2.0.0/fee-token-handler)
+- [USDPriceWith18Decimals](/ccip/evm/api-reference/v2.0.0/usd-price-with-18-decimals)
+
+---
+
+### Libraries
+
+- [Client](/ccip/evm/api-reference/v2.0.0/client)
+- [RateLimiter](/ccip/evm/api-reference/v2.0.0/rate-limiter)
+- [ExtraArgsCodec](/ccip/evm/api-reference/v2.0.0/extra-args-codec)
+- [MessageV1Codec](/ccip/evm/api-reference/v2.0.0/message-v1-codec)
+- [USDCSourcePoolDataCodec](/ccip/evm/api-reference/v2.0.0/usdc-source-pool-data-codec)
+- [Pool](/ccip/evm/api-reference/v2.0.0/pool)
+- [Internal](/ccip/evm/api-reference/v2.0.0/internal)
+- [ERC165CheckerReverting](/ccip/evm/api-reference/v2.0.0/erc165-checker-reverting)
+- [CCVConfigValidation](/ccip/evm/api-reference/v2.0.0/ccv-config-validation)
+
+---
+
+### Shared Primitives
+
+- [Ownable2Step](/ccip/evm/api-reference/v2.0.0/ownable-2-step)
+- [Ownable2StepMsgSender](/ccip/evm/api-reference/v2.0.0/ownable-2-step-msg-sender)
+- [OwnerIsCreator](/ccip/evm/api-reference/v2.0.0/owner-is-creator)
+- [AuthorizedCallers](/ccip/evm/api-reference/v2.0.0/authorized-callers)
+- [ITypeAndVersion](/ccip/evm/api-reference/v2.0.0/i-type-and-version)
+- [IOwnable](/ccip/evm/api-reference/v2.0.0/i-ownable)
+- [IOwner](/ccip/evm/api-reference/v2.0.0/i-owner)
+- [IGetCCIPAdmin](/ccip/evm/api-reference/v2.0.0/i-get-ccip-admin)
+- [IWrappedNative](/ccip/evm/api-reference/v2.0.0/i-wrapped-native)

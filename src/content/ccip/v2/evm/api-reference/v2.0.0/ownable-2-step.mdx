@@ -1,0 +1,164 @@
+---
+section: ccip
+date: Last Modified
+title: "Ownable2Step API Reference"
+metadata:
+  description: "Two-step ownership transfer primitive used across CCIP contracts."
+  version: "2.0.0"
+---
+
+`Ownable2Step` is a reusable ownership primitive that manages contract ownership through a two-step transfer process: propose → accept.
+
+If you implement this contract, ownership is transferred by proposing a new owner and requiring that owner to explicitly accept the role.
+
+## Usage Boundary
+
+**You do not call this contract directly in most cases.**
+
+- Contracts inherit this implementation to manage ownership.
+- Administrators call these functions to transfer ownership.
+- You are responsible for completing the full transfer lifecycle (proposal and acceptance).
+
+## Contract
+
+`@chainlink/contracts/src/v0.8/shared/access/Ownable2Step.sol`
+
+## Import
+
+```solidity
+import {Ownable2Step} from "@chainlink/contracts/src/v0.8/shared/access/Ownable2Step.sol";
+```
+
+## Inheritance
+
+```solidity
+abstract contract Ownable2Step is IOwnable
+```
+
+## State
+
+### Storage
+
+```solidity
+address private s_owner;
+address private s_pendingOwner;
+```
+
+## Constructor
+
+```solidity
+constructor(address newOwner, address pendingOwner)
+```
+
+Initializes ownership and optional pending owner.
+
+Reverts if `newOwner` is the zero address.
+
+- If a pending owner is provided at deployment, ownership can be accepted immediately by that address.
+
+## External API
+
+### owner (public, view)
+
+```solidity
+function owner()
+  public
+  view
+  override
+  returns (address)
+```
+
+> Returns the current owner of the contract.
+
+---
+
+### transferOwnership (public)
+
+```solidity
+function transferOwnership(address to)
+  public
+  override
+```
+
+> Proposes a new owner.
+
+- Only callable by the current owner.
+- Sets the pending owner and replaces any existing pending ownership proposal (previous pending owners can no longer accept ownership).
+- Reverts if the proposed owner is the zero address.
+
+---
+
+### acceptOwnership (external)
+
+```solidity
+function acceptOwnership()
+  external
+  override
+```
+
+> Accepts ownership of the contract.
+
+- Can only be called by the proposed owner.
+- Transfers ownership and clears the pending owner.
+
+## Internal Functions
+
+### \_transferOwnership
+
+```solidity
+function _transferOwnership(address to)
+  internal
+```
+
+Sets the pending owner.
+
+### \_validateOwnership
+
+```solidity
+function _validateOwnership()
+  internal
+  view
+```
+
+- Reverts if the caller is not the current owner.
+
+## Events
+
+```solidity
+event OwnershipTransferRequested(address indexed from, address indexed to);
+event OwnershipTransferred(address indexed from, address indexed to);
+```
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+```solidity
+error OwnerCannotBeZero();
+error MustBeProposedOwner();
+error CannotTransferToSelf();
+error OnlyCallableByOwner();
+```
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors)
+
+## Notes
+
+- Ownership transfer follows a two-step process: propose → accept.
+- Ownership transfer is not complete until the pending owner calls `acceptOwnership`.
+- Ownership transfer is pull-based: the proposed owner must actively accept ownership.
+- While a pending owner is set, the current owner retains full control.
+- A new ownership proposal overwrites any existing pending owner.
+- If the pending owner does not call `acceptOwnership`, ownership remains with the current owner indefinitely.
+
+## Security model
+
+- Ownership cannot be transferred without explicit acceptance by the proposed owner.
+- Only the current owner can initiate ownership transfers.
+- Prevents accidental or unauthorized ownership changes.
+
+## Related Interfaces & Contracts
+
+- [`Ownable2StepMsgSender`](/ccip/evm/api-reference/v2.0.0/ownable-2-step-msg-sender)
+- [`OwnerIsCreator`](/ccip/evm/api-reference/v2.0.0/owner-is-creator)
+- [`IOwnable`](/ccip/evm/api-reference/v2.0.0/i-ownable)

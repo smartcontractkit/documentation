@@ -13,6 +13,7 @@ import { execFileSync } from "child_process"
 import pino from "pino"
 import { TokensConfig, LanesConfig, Environment, Version } from "../../config/data/ccip/types.js"
 import { loadReferenceData } from "../../config/data/ccip/data.js"
+import { getSupportedTokenKeys } from "../../config/data/ccip/utils.ts"
 
 // ==============================
 // CONFIGURATION
@@ -87,8 +88,7 @@ function buildTokenSupportMap(tokensData: TokensConfig, lanesData: LanesConfig):
   Object.keys(lanesData).forEach((sourceChain) => {
     Object.keys(lanesData[sourceChain]).forEach((destChain) => {
       const lane = `${sourceChain}-to-${destChain}`
-      const supportedTokens = lanesData[sourceChain][destChain].supportedTokens || {}
-      Object.keys(supportedTokens).forEach((tokenSymbol) => {
+      getSupportedTokenKeys(lanesData[sourceChain][destChain].supportedTokens).forEach((tokenSymbol) => {
         if (tokenSupport[tokenSymbol]) {
           tokenSupport[tokenSymbol].lanes.push(lane)
         }

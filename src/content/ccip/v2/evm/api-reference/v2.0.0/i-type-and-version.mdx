@@ -1,0 +1,76 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 ITypeAndVersion API Reference"
+metadata:
+  description: "Interface exposing a standardized typeAndVersion identifier for CCIP and shared contracts."
+  version: "2.0.0"
+---
+
+## Summary
+
+`ITypeAndVersion` defines a minimal interface that allows contracts to expose a human-readable identifier describing their type and version.
+
+Many CCIP contracts implement this interface to enable:
+
+- Onchain introspection
+- Version verification by tooling
+- Safer upgrade and deployment checks
+
+---
+
+## Contract
+
+`@chainlink/contracts/src/v0.8/shared/interfaces/ITypeAndVersion.sol`
+
+---
+
+## Import
+
+```solidity
+import {ITypeAndVersion} from "@chainlink/contracts/src/v0.8/shared/interfaces/ITypeAndVersion.sol";
+```
+
+---
+
+## Interface surface
+
+```solidity
+interface ITypeAndVersion {
+```
+
+---
+
+### typeAndVersion
+
+```solidity
+function typeAndVersion()
+  external
+  pure
+  returns (string memory);
+```
+
+Returns a descriptive string identifying the contract type and version.
+
+---
+
+```solidity
+}
+```
+
+---
+
+## Integration notes / expectations
+
+- Implementations must return a deterministic string literal.
+- The returned value must match the exact string declared in the contract (including suffixes such as `-dev`).
+- This interface does not define events, errors, or state.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`Proxy`](/ccip/evm/api-reference/v2.0.0/proxy)
+- [`Router`](/ccip/evm/api-reference/v2.0.0/router)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`Ownable2Step`](/ccip/evm/api-reference/v2.0.0/ownable-2-step)

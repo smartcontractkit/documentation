@@ -6,8 +6,9 @@
 import { Sections } from "../content.config.ts"
 import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
 import { CCIP_SIDEBAR_CONTENT } from "./sidebar/ccip-dynamic.ts"
+import { CCIP_V16_SIDEBAR_CONTENT } from "./sidebar/ccip-v1.ts"
 import { AI_AGENT_RESOURCES_SECTION } from "./sidebar/ai-agent-resources.ts"
-import type { ChainType } from "./types.js"
+import type { ChainType, CcipVersion } from "./types.js"
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
 import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" with { type: "json" }
@@ -22,6 +23,10 @@ import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/
  * @property children - Optional array of nested navigation items
  * @property isCollapsible - Optional flag to control if a section can be collapsed
  * @property chainTypes - Optional array of chain types this item belongs to (for chain-aware sections like CCIP)
+ * @property pageId - Optional identifier linking equivalent pages across versions and chains.
+ *   Items with the same pageId are treated as variants of the same page. Used by navigation
+ *   utilities for deterministic cross-version/chain switching.
+ * @property type - Optional discriminator. "separator" renders as a non-clickable label.
  */
 export type SectionContent = {
   title: string
@@ -30,6 +35,14 @@ export type SectionContent = {
   children?: SectionContent[]
   isCollapsible?: boolean
   chainTypes?: ChainType[]
+  pageId?: string
+  type?: "separator"
+  /**
+   * Optional flag to force the link to open in a new browser tab.
+   * Useful for reference/tool pages (e.g. CCIP Directory) that developers
+   * consult in parallel with the docs. Only affects leaf and parent links
+   * with a URL; ignored for separators.
+   */
   openInNewTab?: boolean
 }
 
@@ -41,6 +54,15 @@ export type SectionEntry = {
   section: string
   contents: SectionContent[]
   parentSection?: string
+}
+
+/**
+ * Map of CCIP version → sidebar configuration.
+ * Used by navigation utilities for cross-version page lookup.
+ */
+export const CCIP_SIDEBARS: Record<CcipVersion, SectionEntry[]> = {
+  "v2.0": CCIP_SIDEBAR_CONTENT,
+  "v1.6": CCIP_V16_SIDEBAR_CONTENT,
 }
 
 /**
@@ -71,7 +93,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Chainlink ACE",
       contents: [
-        { title: "Overview", url: "ace" },
+        { title: "Overview", url: "ace/overview" },
         { title: "Beta Scope", url: "ace/beta-scope" },
         { title: "Supported Networks", url: "ace/supported-networks" },
         { title: "Release Notes", url: "ace/release-notes" },
@@ -288,7 +310,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         {
           title: "About CRE",
-          url: "cre",
+          url: "cre/overview",
         },
         {
           title: "Key Terms and Concepts",
@@ -981,7 +1003,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Chainlink CRE Connect",
       contents: [
-        { title: "Overview", url: "crec" },
+        { title: "Overview", url: "crec/overview" },
         { title: "Private Beta", url: "crec/private-beta" },
         { title: "Supported Networks", url: "crec/supported-networks" },
         { title: "Release Notes", url: "crec/release-notes" },
@@ -1214,7 +1236,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         {
           title: "Overview",
-          url: "data-feeds",
+          url: "data-feeds/overview",
         },
         {
           title: "Getting Started",
@@ -1519,7 +1541,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         {
           title: "Overview",
-          url: "data-streams",
+          url: "data-streams/overview",
         },
         {
           title: "Sign Up for Data Streams",
@@ -2496,7 +2518,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  [SIDEBAR_SECTIONS.CCIP]: CCIP_SIDEBAR_CONTENT,
+  [SIDEBAR_SECTIONS.CCIP]: CCIP_V16_SIDEBAR_CONTENT,
+
   [SIDEBAR_SECTIONS.CHAINLINK_LOCAL]: [
     {
       section: "Chainlink Local",
@@ -2523,15 +2546,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-local/build/ccip/foundry",
           children: [
             {
-              title: "Using the CCIP Local Simulator",
+              title: "Using the Chainlink Local Simulator",
               url: "chainlink-local/build/ccip/foundry/local-simulator",
             },
             {
-              title: "Using the CCIP Local Simulator in forked environments",
+              title: "Using the Chainlink Local Simulator in forked environments",
               url: "chainlink-local/build/ccip/foundry/local-simulator-fork",
             },
             {
-              title: "Using the CCIP Local Simulator to fork mainnets",
+              title: "Using the Chainlink Local Simulator to fork mainnets",
               url: "chainlink-local/build/ccip/foundry/forking-mainnets",
             },
             {
@@ -2549,11 +2572,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-local/build/ccip/hardhat",
           children: [
             {
-              title: "Using the CCIP Local Simulator",
+              title: "Using the Chainlink Local Simulator",
               url: "chainlink-local/build/ccip/hardhat/local-simulator",
             },
             {
-              title: "Using the CCIP Local Simulator in forked environments",
+              title: "Using the Chainlink Local Simulator in forked environments",
               url: "chainlink-local/build/ccip/hardhat/local-simulator-fork",
             },
           ],
@@ -2563,7 +2586,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-local/build/ccip/remix",
           children: [
             {
-              title: "Using the CCIP Local Simulator",
+              title: "Using the Chainlink Local Simulator",
               url: "chainlink-local/build/ccip/remix/local-simulator",
             },
           ],

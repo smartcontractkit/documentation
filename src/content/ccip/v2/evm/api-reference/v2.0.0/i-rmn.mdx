@@ -1,0 +1,115 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IRMN API Reference"
+metadata:
+  description: "Interface for querying Risk Management Network (RMN) blessing and curse state."
+  version: "2.0.0"
+---
+
+## Summary
+
+`IRMN` defines the minimal on-chain interface for interacting with the Risk Management Network (RMN).
+
+It allows CCIP contracts to:
+
+- Check whether a Merkle root is blessed.
+- Check whether the system is globally cursed.
+- Check whether a specific subject is cursed.
+
+All functions are read-only.
+
+---
+
+## Contract
+
+`chains/evm/contracts/interfaces/IRMN.sol`
+
+---
+
+## Import
+
+```solidity
+import {IRMN} from "chainlink-ccip/chains/evm/contracts/interfaces/IRMN.sol";
+```
+
+---
+
+## Interface surface
+
+```solidity id="t8k2dp"
+interface IRMN {
+```
+
+---
+
+### Struct: TaggedRoot
+
+```solidity id="q9l6vf"
+struct TaggedRoot {
+  address commitStore;
+  bytes32 root;
+}
+```
+
+Represents a Merkle root tagged with the address of the commit store contract.
+
+---
+
+### isBlessed
+
+```solidity id="b2j5xn"
+function isBlessed(
+  TaggedRoot calldata taggedRoot
+) external view returns (bool);
+```
+
+Returns whether the specified tagged root is currently blessed.
+
+---
+
+### isCursed()
+
+```solidity id="m4c9rs"
+function isCursed() external view returns (bool);
+```
+
+Returns `true` if a global or legacy curse is active.
+
+---
+
+### isCursed(bytes16)
+
+```solidity id="u7p3lx"
+function isCursed(
+  bytes16 subject
+) external view returns (bool);
+```
+
+Returns `true` if:
+
+- A global curse is active, or
+- The specified subject is cursed.
+
+---
+
+```solidity id="f1k6zw"
+}
+```
+
+---
+
+## Integration notes / expectations
+
+- `isBlessed` results may change over time and must not be cached across transactions.
+- Curse checks should be performed immediately before executing sensitive operations.
+- Subjects (e.g., chain selectors) may be encoded as `bytes16(uint128(chainSelector))` by calling contracts.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
+- [`RMNRemote`](/ccip/evm/api-reference/v2.0.0/rmn-remote)
+- [`OffRamp`](/ccip/evm/api-reference/v2.0.0/offramp)
+- [`OnRamp`](/ccip/evm/api-reference/v2.0.0/onramp)

@@ -1,0 +1,55 @@
+---
+section: ccip
+date: Last Modified
+title: "Cross-Chain Verifiers Overview"
+metadata:
+  description: "Overview of Cross-Chain Verifiers (CCVs) in CCIP: pluggable verification, when to add custom CCVs, and how requirements are resolved."
+  excerpt: "ccip cross-chain verifiers ccv verification models committee verifier custom verification"
+---
+
+Cross-Chain Verifiers (CCVs) are CCIP's pluggable verification layer. Each CCV attests that a source-chain message is valid before the destination chain executes it.
+
+Most integrations use CCIP's default **CommitteeVerifier** without additional configuration. For how verification fits into the end-to-end message lifecycle, see the [Architecture Overview](/ccip/concepts/architecture/overview).
+
+This section explains how verification can be extended with **custom or third-party CCVs**. It does not describe default CCIP behavior in depth or provide production deployment guides.
+
+## What CCVs Do
+
+CCVs bridge source-chain events and destination-chain execution:
+
+1. On the **source chain**, the CCV's outbound handler registers the message and returns attestation hints when the OnRamp emits `CCIPMessageSent`.
+2. **Offchain**, the CCV's verifier service waits for the required confirmation depth, validates the message, and publishes a **VerifierResult** tied to the MessageID.
+3. On the **destination chain**, the CCV's inbound implementation verifies attestation data when the OffRamp calls `execute()`.
+
+Each CCV consists of a stable onchain **resolver** contract and one or more **versioned implementation** contracts. This pattern lets verification logic upgrade without changing the CCV address that token pools and receivers reference.
+
+## When to Add CCVs
+
+Consider additional CCVs when you need:
+
+- **Additive security** — require issuer, institution, or third-party attestation alongside the default verifier
+- **External proof sources** — integrate attestations from systems such as CCTP (USDC) or token-specific verification services
+- **Policy layering** — combine stricter CCV requirements with faster finality on specific lanes
+
+CCV requirements are **additive**. The effective set for a message merges contributions from the sender, token pool, receiver, and lane configuration. All required CCVs must produce valid results before execution proceeds.
+
+## Verification Models
+
+CCIP ships with concrete CCV implementations and supports permissionless custom verifiers:
+
+| Model                 | Operator          | Typical use                                      |
+| :-------------------- | :---------------- | :----------------------------------------------- |
+| **CommitteeVerifier** | CCIP (default)    | Standard DON-based quorum signatures             |
+| **CCTPVerifier**      | Permissionless    | Circle CCTP attestation for USDC transfers       |
+| **LombardVerifier**   | Permissionless    | Token-specific external attestation              |
+| **Custom CCV**        | External operator | Institution or application-specific verification |
+
+See [Verification Models](/ccip/concepts/ccvs/verification-models) for how each model produces attestations.
+
+## Learn More
+
+- [Verification Models](/ccip/concepts/ccvs/verification-models): Committee, CCTP, Lombard, and custom approaches
+- [CCV Interfaces & Guarantees](/ccip/concepts/ccvs/interface-guarantees): Onchain/offchain contracts and protocol requirements
+- [Trust & Responsibility Model](/ccip/concepts/ccvs/trust-responsibility-model): Operator and integrator accountability
+- [Message Configuration (ExtraArgs)](/ccip/concepts/architecture/message-configuration-extraargs): Sender-side confirmation depth and execution parameters
+- [Architecture Overview](/ccip/concepts/architecture/overview): Full message lifecycle and default verification path

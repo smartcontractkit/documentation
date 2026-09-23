@@ -1,16 +1,24 @@
 ---
 import { Sections } from "~/content.config"
-import { SIDEBAR } from "../../config"
+import { SIDEBAR, CCIP_SIDEBARS } from "../../config"
 import type { SectionEntry, SectionContent } from "../../config"
 import { SIDEBAR_SECTIONS } from "../../config/sidebarSections.ts"
 import { AI_AGENT_RESOURCES_SECTION, withParentQuery } from "../../config/sidebar/ai-agent-resources.ts"
 import RecursiveSidebar from "./RecursiveSidebar.astro"
+import DocsHeaderTitle from "../DocsHeaderTitle/DocsHeaderTitle.astro"
 import { LanguageSwitcherDropdown } from "~/components/LanguageSwitcherDropdown"
 import { ChainTypeSelector } from "~/components/ChainSelector"
+import { CcipVersionToggle, CcipVersionBanner } from "~/components/CcipVersionToggle"
 import { isChainAwareSection } from "~/config/chainTypes"
-import { filterContentByChainType } from "~/utils/chainType"
-import type { ChainType } from "~/config/types"
+import {
+  CCIP_VERSION_TOGGLE_ENABLED,
+  LATEST_CCIP_VERSION,
+  CCIP_VERSION_CONFIGS,
+  type CcipVersionConfig,
+} from "~/config/ccipVersions"
+import type { CcipVersion } from "~/config/types"
 import styles from "./leftSidebar.module.css"
+import * as CONFIG from "../../config"
 
 type SectionEntryWithParent = SectionEntry & { parentSection?: string }
 
@@ -26,6 +34,19 @@ const { currentPage, section } = Astro.props
 
 // Check if this section supports chain type filtering
 const showChainSelector = isChainAwareSection(section)
+
+// Detect CCIP version from URL at build time for correct sidebar rendering
+function detectCcipVersionFromPage(page: string): CcipVersion {
+  for (const [versionId, config] of Object.entries(CCIP_VERSION_CONFIGS) as [CcipVersion, CcipVersionConfig][]) {
+    if (
+      config.urlPrefix &&
+      (page.includes(`/ccip/${config.urlPrefix}/`) || page.endsWith(`/ccip/${config.urlPrefix}`))
+    ) {
+      return versionId
+    }
+  }
+  return LATEST_CCIP_VERSION
+}
 
 // Return whichever sections we need
 function getSidebarSections(section?: Sections): SectionEntryWithParent[] {
@@ -45,6 +66,18 @@ function getSidebarSections(section?: Sections): SectionEntryWithParent[] {
 
       return sections
     })
+  }
+
+  // For CCIP: use version-specific sidebar based on the current page URL
+  if (section === "ccip") {
+    const ccipVersion = detectCcipVersionFromPage(currentPage)
+    const ccipSections = CCIP_SIDEBARS[ccipVersion] ?? SIDEBAR[section] ?? []
+
+    if (SECTIONS_WITHOUT_AI_RESOURCES.has(section)) {
+      return ccipSections
+    }
+
+    return [...ccipSections, withParentQuery(AI_AGENT_RESOURCES_SECTION, section)]
   }
 
   const productSections = SIDEBAR[section] ?? []
@@ -104,10 +137,22 @@ const sidebarSections = getSidebarSections(section)
 ---
 
 <nav aria-labelledby="grid-left" class={styles.nav}>
-  <div class={styles.sidebarDropdowns}>
-    {section === "cre" && <LanguageSwitcherDropdown client:only="react" />}
-    {showChainSelector && <ChainTypeSelector client:only="react" />}
-  </div>
+  <DocsHeaderTitle pathname={currentPage} />
+
+  {
+    (showChainSelector || section === "cre") && (
+      <div class={styles.sidebarDropdowns}>
+        {section === "cre" && <LanguageSwitcherDropdown client:only="react" />}
+        {showChainSelector && (
+          <div class={styles.selectorRow}>
+            <ChainTypeSelector client:only="react" />
+            {CCIP_VERSION_TOGGLE_ENABLED && <CcipVersionToggle client:only="react" />}
+          </div>
+        )}
+        {showChainSelector && CCIP_VERSION_TOGGLE_ENABLED && <CcipVersionBanner client:only="react" />}
+      </div>
+    )
+  }
   <ul class={styles.navGroups} data-sticky>
     {
       sidebarSections.map((group) => (
@@ -124,6 +169,39 @@ const sidebarSections = getSidebarSections(section)
         </li>
       ))
     }
+    <div class={styles.quickLinks}>
+      <li class={styles.headerLink}>
+        <a href="/builders-quick-links" target="_blank" id="quick-links-sidebar-link">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M2.5 9.20055L7.18129 2H12.2965L9.62194 5.59959H13.5L5.97787 14H4.50671L7.18135 9.20055H2.5Z"
+              fill="#0D5DFF"></path>
+          </svg>
+          <p>Quick links</p>
+        </a>
+      </li>
+      <li class={styles.headerLink}>
+        <a
+          class={styles.link}
+          href="https://github.com/smartcontractkit/documentation"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img height={16} width={16} src="/assets/icons/github-blue.svg" alt="GitHub repository" />
+          <span>Github</span>
+        </a>
+      </li>
+      {
+        CONFIG.COMMUNITY_INVITE_URL && (
+          <li class={styles.headerLink}>
+            <a href={CONFIG.COMMUNITY_INVITE_URL} target="_blank" rel="noopener noreferrer">
+              <img src="/images/discord.svg" loading="lazy" width="16" height="16" alt="Discord" />
+              <span>Join our community</span>
+            </a>
+          </li>
+        )
+      }
+    </div>
   </ul>
 </nav>
 
@@ -142,18 +220,22 @@ const sidebarSections = getSidebarSections(section)
 
 <script>
   import { initializeChainType } from "~/stores/chainType.js"
+  import { initializeCcipVersion } from "~/stores/ccipVersion.js"
 
   /**
-   * Initialize chain type selection from URL on page load
-   * This detects the chain from the URL path (e.g., /ccip/tutorials/svm/... → solana)
+   * Initialize chain type and CCIP version selection from URL on page load
+   * This detects the chain from the URL path (e.g., /ccip/evm/... → evm)
+   * and the version (e.g., /ccip/v1/... → v1.6, no prefix → latest)
    */
   initializeChainType()
+  initializeCcipVersion()
 
   /**
    * Re-initialize on client-side navigation (Astro view transitions)
    */
   document.addEventListener("astro:after-swap", () => {
     initializeChainType()
+    initializeCcipVersion()
   })
 
   /**
@@ -183,19 +265,22 @@ const sidebarSections = getSidebarSections(section)
    * Filters sidebar items based on selected chain type
    * Triggers the unified filter in RecursiveSidebar that respects BOTH chain type AND language
    */
-  function filterSidebarByChainType() {
-    // trigger a languageChanged event to run the unified filter
+  function runUnifiedSidebarFilter() {
+    // Trigger the unified filter (RecursiveSidebar listens for this)
     window.dispatchEvent(new CustomEvent("languageChanged"))
   }
 
   // Run on initial load
-  filterSidebarByChainType()
+  runUnifiedSidebarFilter()
 
   // Run after view transitions
-  document.addEventListener("astro:after-swap", filterSidebarByChainType)
+  document.addEventListener("astro:after-swap", runUnifiedSidebarFilter)
 
-  // Subscribe to chain type changes
+  // Subscribe to chain type changes (store)
   selectedChainType.subscribe(() => {
-    filterSidebarByChainType()
+    runUnifiedSidebarFilter()
   })
+
+  // Also respond to explicit chain-change events (e.g., from React dropdowns)
+  window.addEventListener("chainTypeChanged", runUnifiedSidebarFilter)
 </script>

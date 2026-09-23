@@ -1,0 +1,272 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 Proxy API Reference"
+metadata:
+  description: "Owner-controlled forwarding proxy that delegates calls to a configurable target."
+  version: "2.0.0"
+---
+
+## Summary
+
+`Proxy` is a minimal call-forwarding contract that:
+
+- Forwards all fallback calls to a configurable target using `call`.
+- Allows the owner to update the target address.
+- Allows withdrawal of accumulated fee tokens to a configurable fee aggregator.
+
+It does **not** use `delegatecall`. Forwarded calls execute in the context of the target contract.
+
+---
+
+## Contract
+
+`chains/evm/contracts/Proxy.sol`
+
+---
+
+## Import
+
+```solidity
+import {Proxy} from "chainlink-ccip/chains/evm/contracts/Proxy.sol";
+```
+
+---
+
+## Target + upgrade model
+
+- The target address is stored in `s_target`.
+- All unknown calls are forwarded via `call`.
+- The owner may update the target via `setTarget`.
+- No storage layout coupling exists (no delegatecall).
+- Ether is not forwarded (value = 0).
+
+This is a forwarding proxy, not an upgradeable storage proxy.
+
+---
+
+## Inheritance
+
+- `Ownable2StepMsgSender`
+- `ITypeAndVersion`
+
+---
+
+## typeAndVersion
+
+```solidity
+string public constant override typeAndVersion =
+  "Proxy 2.0.0-dev";
+```
+
+---
+
+## State
+
+### Constants
+
+None declared beyond `typeAndVersion`.
+
+### Immutables
+
+None declared.
+
+### Storage
+
+```solidity
+address internal s_target;
+address internal s_feeAggregator;
+```
+
+- `s_target` — forwarding destination.
+- `s_feeAggregator` — recipient of withdrawn fee token balances.
+
+---
+
+## External API (forwarded surface)
+
+### getTarget
+
+```solidity
+function getTarget()
+  external
+  view
+  virtual
+  returns (address);
+```
+
+Returns `s_target`.
+
+---
+
+### setTarget
+
+```solidity
+function setTarget(address target)
+  external
+  virtual
+  onlyOwner;
+```
+
+Reverts:
+
+```solidity
+error ZeroAddressNotAllowed();
+```
+
+If `target == address(0)`.
+
+Internally calls `_setTarget`.
+
+---
+
+### getFeeAggregator
+
+```solidity
+function getFeeAggregator()
+  external
+  view
+  virtual
+  returns (address);
+```
+
+Returns `s_feeAggregator`.
+
+---
+
+### setFeeAggregator
+
+```solidity
+function setFeeAggregator(address feeAggregator)
+  external
+  virtual
+  onlyOwner;
+```
+
+Internally calls `_setFeeAggregator`.
+
+Zero address is permitted but may cause downstream withdrawal reverts.
+
+---
+
+### withdrawFeeTokens
+
+```solidity
+function withdrawFeeTokens(
+  address[] calldata feeTokens
+) external virtual;
+```
+
+Calls:
+
+```solidity
+FeeTokenHandler._withdrawFeeTokens(
+  feeTokens,
+  s_feeAggregator
+);
+```
+
+Permissionless.
+
+---
+
+### fallback
+
+```solidity
+fallback() external virtual;
+```
+
+Behavior:
+
+1. Copies calldata.
+2. Executes:
+
+```solidity
+call(gas(), s_target, 0, calldataPtr, calldataSize, 0, 0)
+```
+
+3. Returns or reverts with the returned data.
+
+Notes:
+
+- Uses `call`, not `delegatecall`.
+- Does not forward Ether.
+- Proxy storage is never modified by fallback.
+
+---
+
+## Internal Functions
+
+### \_setTarget
+
+```solidity
+function _setTarget(address target) internal;
+```
+
+Emits:
+
+```solidity
+event TargetUpdated(
+  address indexed oldTarget,
+  address indexed newTarget
+);
+```
+
+---
+
+### \_setFeeAggregator
+
+```solidity
+function _setFeeAggregator(address feeAggregator) internal;
+```
+
+Emits:
+
+```solidity
+event FeeAggregatorUpdated(
+  address indexed oldFeeAggregator,
+  address indexed newFeeAggregator
+);
+```
+
+---
+
+## Events
+
+```solidity
+event TargetUpdated(
+  address indexed oldTarget,
+  address indexed newTarget
+);
+
+event FeeAggregatorUpdated(
+  address indexed oldFeeAggregator,
+  address indexed newFeeAggregator
+);
+```
+
+---
+
+## Errors
+
+```solidity
+error ZeroAddressNotAllowed();
+```
+
+---
+
+## Security model
+
+- Only owner may update target or fee aggregator.
+- No delegatecall prevents storage collision.
+- Calls to non-contract targets revert.
+- Withdrawal is permissionless but funds always go to `s_feeAggregator`.
+- Misconfiguration of `s_target` can halt functionality.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`FeeTokenHandler`](/ccip/evm/api-reference/v2.0.0/fee-token-handler)
+- [`ITypeAndVersion`](/ccip/evm/api-reference/v2.0.0/i-type-and-version)
+- [`Ownable2StepMsgSender`](/ccip/evm/api-reference/v2.0.0/ownable-2-step-msg-sender)

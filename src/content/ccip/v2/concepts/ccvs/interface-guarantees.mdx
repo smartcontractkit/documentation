@@ -1,0 +1,83 @@
+---
+section: ccip
+date: Last Modified
+title: "CCV Interfaces & Guarantees"
+metadata:
+  description: "CCIP Cross-Chain Verifier onchain and offchain interfaces: resolver pattern, VerifierResult, finality policy, and protocol guarantees."
+  excerpt: "ccip ccv interfaces verifyMessage verifier result resolver version tag finality policy"
+---
+
+Cross-Chain Verifiers (CCVs) expose a consistent onchain/offchain interface so CCIP ramps, executors, and indexers can interact with any verifier type uniformly.
+
+This page describes the interface contract and guarantees CCIP enforces. It does not provide deployment instructions.
+
+## Versioned Resolver Pattern
+
+Each CCV uses a stable **resolver** contract with one or more **versioned implementation** contracts behind it:
+
+- **Source chain (outbound):** The resolver routes to the outbound implementation based on the destination chain. The implementation registers the message with the offchain verifier network and returns attestation hints.
+- **Destination chain (inbound):** The resolver reads the version tag embedded in VerifierResults and routes to the correct inbound implementation, which validates attestation data before execution proceeds.
+
+This pattern allows verification logic to upgrade without changing the CCV address referenced by token pools, receivers, or lane configuration.
+
+## Onchain Interface Requirements
+
+All CCVs validate callers through the Router's ramp registry — outbound calls must come from the registered OnRamp, inbound calls from a registered OffRamp. This lets CCVs survive ramp upgrades without reconfiguration.
+
+Each CCV also:
+
+- Maintains **storage location URIs** that point offchain components to required configuration data
+- Quotes a **per-chain fee** (flat USD cents plus gas and payload overheads used during OnRamp fee computation)
+- Enforces a **finality policy** using the same FinalityCodec encoding as the rest of the protocol
+- Checks **RMN curse status** before processing
+
+An immutable **4-byte version tag** acts as a domain separator, preventing attestation data from one verifier type being replayed in another.
+
+### Inbound Verification
+
+On the destination chain, the OffRamp calls each required CCV's inbound handler to validate attestation data against the encoded message. The CCV must implement `verifyMessage` according to the Chainlink-defined specification.
+
+Failure to conform to the VerifierResult API spec or `verifyMessage` interface can cause stuck transactions, incorrect token accounting, or loss of funds.
+
+## Offchain Interface Requirements
+
+Each CCV type has a corresponding offchain verifier component. All types follow the same event-driven pipeline:
+
+1. Monitor the source chain for `CCIPMessageSent` events
+2. Filter for receipts issued by the CCV's resolver contract
+3. Wait until the message meets the CCV's finality requirement
+4. Produce and publish a **VerifierResult** tied to the MessageID
+
+What finality modes a verifier accepts is governed onchain by the CCV's own policy. The CommitteeVerifier can support faster-than-finality (custom block-depth threshold or chain-specific tags). Third-party verifiers poll external APIs and match responses to messages.
+
+### Indexer Integration
+
+The CCIP **Indexer** collects attestations from all configured verifier services into a single queryable store keyed by MessageID. CCVs not known to the indexer's configuration are silently skipped, which can cause execution to stall for messages that require their attestation.
+
+Executors and other parties can also query verifier services directly and submit results to the OffRamp.
+
+## Optional Access Controls
+
+CCVs may configure:
+
+- **Per-destination-chain sender allowlists** — restrict which source senders the CCV will service
+- **Allowed finality configuration** — define which finality levels the CCV accepts for attestation
+
+Receivers and token pools can require specific CCVs and set optional verifier thresholds (quorum). The OffRamp merges requirements from the receiver, token pool, and lane configuration before execution.
+
+## Protocol Guarantees
+
+CCIP guarantees on the destination chain:
+
+- Each VerifierResult is validated against the corresponding onchain CCV contract
+- The MessageID is recomputed from the encoded message bytes — tampering causes verification failure
+- All required CCVs must be present; optional thresholds must be met
+- Successfully executed messages cannot be re-executed
+
+CCIP does **not** guarantee offchain verifier uptime, external API availability, or reorg-handling behavior for third-party CCVs. Operators and integrators are responsible for assessing those risks.
+
+## Learn More
+
+- [Verification Models](/ccip/concepts/ccvs/verification-models)
+- [Trust & Responsibility Model](/ccip/concepts/ccvs/trust-responsibility-model)
+- [Architecture Overview](/ccip/concepts/architecture/overview)

@@ -1,0 +1,102 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IBurnMintERC20 API Reference"
+metadata:
+  description: "Minimal ERC20 interface with mint and burn extensions used by CCIP burn/mint token pools."
+  version: "2.0.0"
+---
+
+## Summary
+
+`IBurnMintERC20` defines the minimal ERC20-compatible interface required by CCIP burn/mint token pools.
+
+It extends `IERC20` and adds minting and burning capabilities used during cross-chain token transfers.
+
+---
+
+## Contract
+
+`chains/evm/contracts/interfaces/IBurnMintERC20.sol`
+
+---
+
+## Import
+
+```solidity
+import {IBurnMintERC20} from "chainlink-ccip/chains/evm/contracts/interfaces/IBurnMintERC20.sol";
+```
+
+---
+
+## Interface surface
+
+```solidity id="m71zaf"
+interface IBurnMintERC20 is IERC20 {
+```
+
+---
+
+### mint
+
+```solidity id="x6tazp"
+function mint(address account, uint256 amount) external;
+```
+
+Mints `amount` tokens to `account`.
+
+---
+
+### burn
+
+```solidity id="c6x4nl"
+function burn(uint256 amount) external;
+```
+
+Burns `amount` tokens from `msg.sender`.
+
+---
+
+### burn (address, amount)
+
+```solidity id="5t4i4o"
+function burn(address account, uint256 amount) external;
+```
+
+Burns `amount` tokens from `account`.
+
+---
+
+### burnFrom
+
+```solidity id="9v3n0r"
+function burnFrom(address account, uint256 amount) external;
+```
+
+Burns `amount` tokens from `account`, typically requiring allowance or role authorization.
+
+---
+
+```solidity id="3hlc4k"
+}
+```
+
+---
+
+## Integration notes / expectations
+
+- Tokens implementing this interface must also implement `IERC20`.
+- Pool contracts must be granted mint and/or burn permissions by the token implementation.
+- Concrete pool variants determine which burn method is used.
+- Incorrect role or allowance configuration will cause pool operations to revert.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`BurnMintTokenPoolAbstract`](/ccip/evm/api-reference/v2.0.0/burn-mint-token-pool-abstract)
+- [`BurnMintTokenPool`](/ccip/evm/api-reference/v2.0.0/burn-mint-token-pool)
+- [`BurnFromMintTokenPool`](/ccip/evm/api-reference/v2.0.0/burn-from-mint-token-pool)
+- [`BurnWithFromMintTokenPool`](/ccip/evm/api-reference/v2.0.0/burn-with-from-mint-token-pool)
+- [`BurnToAddressMintTokenPool`](/ccip/evm/api-reference/v2.0.0/burn-to-address-mint-token-pool)
+- [`TokenPoolFactory`](/ccip/evm/api-reference/v2.0.0/token-pool-factory)

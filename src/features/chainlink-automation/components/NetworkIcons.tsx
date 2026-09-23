@@ -1,6 +1,7 @@
 /** @jsxImportSource preact */
 import { useEffect } from "preact/compat"
 import { normalizeTechnologyName } from "@features/utils/index.ts"
+import { getNetworkIconUrl } from "~/config/data/ccip/data.ts"
 
 // Component to add icons to network headings in the Automation supported-networks page
 export default function NetworkIcons() {
@@ -42,13 +43,13 @@ export default function NetworkIcons() {
 
       // Get the normalized technology name for icon path
       const normalizedTech = normalizeTechnologyName(technology)
-      const iconPath = `/assets/chains/${normalizedTech}.svg`
+      const iconPath = getNetworkIconUrl(normalizedTech)
 
       console.log(`Adding icon for ${technology}, normalized to ${normalizedTech}, path: ${iconPath}`)
 
       // Create the icon element
       const icon = document.createElement("img")
-      icon.src = iconPath
+      icon.src = iconPath || ""
       icon.alt = `${technology} icon`
       icon.style.width = "24px"
       icon.style.height = "24px"

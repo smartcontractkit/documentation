@@ -89,6 +89,16 @@ export const CHAIN_TYPE_CONFIGS: Record<ChainType, ChainTypeConfig> = {
 export const CCIP_SUPPORTED_CHAINS: ChainType[] = ["evm", "solana", "aptos", "ton", "canton"]
 
 /**
+ * Canton docs exist only in v2 (unversioned /ccip/canton/* URLs). When chain/version
+ * navigation cannot resolve an equivalent Canton page from a chain-specific page, land
+ * on the chain-agnostic hub — the same last-resort fallback every other chain family
+ * already gets from findEquivalentPageUrlWithFallback (src/utils/chainNavigation.ts).
+ * The hub is chain-aware content-wise (see the "Canton" tabs in
+ * src/content/ccip/v2/index.mdx), so this is a normal landing, not a dead end.
+ */
+export const CANTON_DOCS_FALLBACK_URL = "ccip"
+
+/**
  * Sections that support chain type filtering (OPT-IN)
  * Add new products here when they support multiple chains
  */

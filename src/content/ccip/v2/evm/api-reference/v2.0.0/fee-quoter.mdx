@@ -1,0 +1,448 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 FeeQuoter API Reference"
+metadata:
+  description: "Stores token and gas prices and provides fee quoting and validation helpers for CCIP."
+  version: "2.0.0"
+---
+
+`FeeQuoter` is the pricing and validation engine for CCIP message execution.
+
+It maintains token and gas prices, computes fees, and enforces constraints on message execution based on configuration and available data.
+
+FeeQuoter is responsible for:
+
+- pricing token and gas usage
+- validating message constraints
+- converting and normalizing message parameters for execution
+
+> Applications do not call this contract directly.
+
+## Usage Boundary
+
+**You do not call this contract directly.**
+
+- CCIP routing components use this contract to compute and validate fees.
+- The Router and OnRamp components call this contract during message submission and validation.
+- Authorized updaters provide price data.
+- The owner configures fee parameters and destination chain settings.
+- You are responsible for ensuring price data and configuration remain accurate.
+
+## Contract
+
+`FeeQuoter.sol`
+
+## Import
+
+```solidity
+import {FeeQuoter} from "chainlink-ccip/FeeQuoter.sol";
+```
+
+## Inheritance
+
+- `AuthorizedCallers`
+- `IFeeQuoter`
+- `ILegacyFeeQuoter`
+- `ITypeAndVersion`
+
+## Constructor
+
+```solidity id="qv9hvw"
+constructor(
+  StaticConfig memory staticConfig,
+  address[] memory priceUpdaters,
+  TokenTransferFeeConfigArgs[] memory tokenTransferFeeConfigArgs,
+  DestChainConfigArgs[] memory destChainConfigArgs
+) AuthorizedCallers(priceUpdaters)
+```
+
+| Parameter                    | Type                                  | Description                                       |
+| ---------------------------- | ------------------------------------- | ------------------------------------------------- |
+| `staticConfig`               | `StaticConfig memory`                 | Static configuration for fee quoting behavior.    |
+| `priceUpdaters`              | `address[] memory`                    | Authorized accounts allowed to update price data. |
+| `tokenTransferFeeConfigArgs` | `TokenTransferFeeConfigArgs[] memory` | Initial token fee configuration.                  |
+| `destChainConfigArgs`        | `DestChainConfigArgs[] memory`        | Initial destination chain configuration.          |
+
+## External API
+
+### getTokenPrice
+
+```solidity
+function getTokenPrice(address token)
+  public
+  view
+  override
+  returns (Internal.TimestampedPackedUint224 memory)
+```
+
+> Returns the stored price for a token along with timestamp metadata.
+
+---
+
+### getTokenPrices
+
+```solidity
+function getTokenPrices(address[] calldata tokens)
+  external
+  view
+  returns (Internal.TimestampedPackedUint224[] memory)
+```
+
+> Returns prices for multiple tokens.
+
+---
+
+### getValidatedTokenPrice
+
+```solidity
+function getValidatedTokenPrice(address token) public view returns (uint224)
+```
+
+> Returns a validated token price suitable for fee calculations.
+
+---
+
+### getDestinationChainGasPrice
+
+```solidity
+function getDestinationChainGasPrice(uint64 destChainSelector)
+  external
+  view
+  returns (Internal.TimestampedPackedUint224 memory)
+```
+
+> Returns gas price data for a destination chain.
+
+---
+
+### getFeeTokens
+
+```solidity
+function getFeeTokens() external view returns (address[] memory)
+```
+
+> Returns supported fee tokens.
+
+---
+
+### removeFeeTokens
+
+```solidity
+function removeFeeTokens(address[] memory feeTokensToRemove) external onlyOwner
+```
+
+> Removes supported fee tokens.
+
+---
+
+### updatePrices
+
+```solidity
+function updatePrices(Internal.PriceUpdates calldata priceUpdates) external override
+```
+
+> Updates token and gas prices. Can only be called by authorized price updaters.
+
+---
+
+### quoteGasForExec
+
+```solidity
+function quoteGasForExec(
+  uint64 destChainSelector,
+  uint32 nonCalldataGas,
+  uint32 calldataSize,
+  address feeToken
+) external view returns (
+  uint32 totalGas,
+  uint256 gasCostInUsdCents,
+  uint256 feeTokenPrice,
+  uint256 premiumPercentMultiplier
+)
+```
+
+> Estimates gas usage and cost for execution.
+
+- `feeTokenPrice` is the price of the fee token expressed in USD-denominated units.
+
+---
+
+### getTokenTransferFeeConfig
+
+```solidity
+function getTokenTransferFeeConfig(
+  uint64 destChainSelector,
+  address token
+) external view returns (TokenTransferFeeConfig memory)
+```
+
+> Returns fee configuration for token transfers.
+
+---
+
+### getTokenTransferFee
+
+```solidity
+function getTokenTransferFee(
+  uint64 destChainSelector,
+  address token
+) external view returns (
+  uint32 feeUSDCents,
+  uint32 destGasOverhead,
+  uint32 destBytesOverhead
+)
+```
+
+> Returns transfer fee components for a token.
+
+- `feeUSDCents` is the base transfer fee denominated in USD cents.
+
+---
+
+### applyTokenTransferFeeConfigUpdates
+
+```solidity
+function applyTokenTransferFeeConfigUpdates(
+  TokenTransferFeeConfigArgs[] memory tokenTransferFeeConfigArgs,
+  TokenTransferFeeConfigRemoveArgs[] memory tokensToUseDefaultFeeConfigs
+) external onlyOwner
+```
+
+> Updates token transfer fee configuration.
+
+---
+
+### resolveLegacyArgs
+
+```solidity
+function resolveLegacyArgs(
+  uint64 destChainSelector,
+  bytes calldata extraArgs
+) external view returns (
+  bytes memory tokenReceiver,
+  uint32 gasLimit,
+  bytes memory executorArgs
+)
+```
+
+> Resolves legacy message arguments into current format.
+
+---
+
+### getDestChainConfig
+
+```solidity
+function getDestChainConfig(uint64 destChainSelector)
+  external
+  view
+  returns (DestChainConfig memory)
+```
+
+> Returns destination chain configuration.
+
+---
+
+### getAllTokenTransferFeeConfigs
+
+```solidity
+function getAllTokenTransferFeeConfigs()
+  external
+  view
+  returns (
+    uint64[] memory,
+    address[][] memory,
+    TokenTransferFeeConfig[][] memory
+  )
+```
+
+> Returns all configured token fee data.
+
+---
+
+### getAllDestChainConfigs
+
+```solidity
+function getAllDestChainConfigs()
+  external
+  view
+  returns (uint64[] memory, DestChainConfig[] memory)
+```
+
+> Returns all destination chain configurations.
+
+---
+
+### applyDestChainConfigUpdates
+
+```solidity
+function applyDestChainConfigUpdates(
+  DestChainConfigArgs[] memory destChainConfigArgs
+) external onlyOwner
+```
+
+> Updates destination chain configuration.
+
+---
+
+### getStaticConfig
+
+```solidity
+function getStaticConfig() external view returns (StaticConfig memory)
+```
+
+> Returns static configuration.
+
+---
+
+### getValidatedFee
+
+```solidity
+function getValidatedFee(
+  uint64 destChainSelector,
+  Client.EVM2AnyMessage calldata message
+) external view returns (uint256 feeTokenAmount)
+```
+
+> Computes and validates the fee for a message based on current pricing and configuration.
+
+---
+
+### getTokenAndGasPrices
+
+```solidity
+function getTokenAndGasPrices(
+  address token,
+  uint64 destChainSelector
+) external view returns (uint224 tokenPrice, uint224 gasPriceValue)
+```
+
+> Returns token and gas prices used in fee calculation.
+
+---
+
+### convertTokenAmount
+
+```solidity
+function convertTokenAmount(
+  address fromToken,
+  uint256 fromTokenAmount,
+  address toToken
+) public view returns (uint256)
+```
+
+> Converts an amount between tokens using stored price data.
+
+---
+
+### processMessageArgs
+
+```solidity
+function processMessageArgs(
+  uint64 destChainSelector,
+  address feeToken,
+  uint256 feeTokenAmount,
+  bytes calldata extraArgs,
+  bytes calldata messageReceiver
+) external view returns (
+  uint256 msgFeeJuels,
+  bool isOutOfOrderExecution,
+  bytes memory convertedExtraArgs,
+  bytes memory tokenReceiver
+)
+```
+
+> Normalizes and validates message arguments and derives execution parameters.
+
+---
+
+### processPoolReturnData
+
+```solidity
+function processPoolReturnData(
+  uint64 destChainSelector,
+  Internal.EVM2AnyTokenTransfer[] calldata onRampTokenTransfers,
+  Client.EVMTokenAmount[] calldata sourceTokenAmounts
+) external view returns (bytes[] memory destExecDataPerToken)
+```
+
+> Processes token transfer data returned from pools.
+
+---
+
+## Events
+
+- `event FeeTokenAdded(address indexed feeToken)`
+- `event FeeTokenRemoved(address indexed feeToken)`
+- `event UsdPerUnitGasUpdated(uint64 indexed destChain, uint256 value, uint256 timestamp)`
+- `event UsdPerTokenUpdated(address indexed token, uint256 value, uint256 timestamp)`
+- `event TokenTransferFeeConfigUpdated(uint64 indexed destChainSelector, address indexed token, TokenTransferFeeConfig tokenTransferFeeConfig)`
+- `event TokenTransferFeeConfigDeleted(uint64 indexed destChainSelector, address indexed token)`
+- `event DestChainConfigUpdated(uint64 indexed destChainSelector, DestChainConfig destChainConfig)`
+- `event DestChainAdded(uint64 indexed destChainSelector, DestChainConfig destChainConfig)`
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+- `error TokenNotSupported(address token)`
+- `error FeeTokenNotSupported(address token)`
+- `error NoGasPriceAvailable(uint64 destChainSelector)`
+- `error InvalidDestBytesOverhead(address token, uint32 destBytesOverhead)`
+- `error MessageGasLimitTooHigh()`
+- `error MessageComputeUnitLimitTooHigh()`
+- `error DestinationChainNotEnabled(uint64 destChainSelector)`
+- `error InvalidExtraArgsTag()`
+- `error InvalidExtraArgsData()`
+- `error SourceTokenDataTooLarge(address token)`
+- `error InvalidDestChainConfig(uint64 destChainSelector)`
+- `error MessageFeeTooHigh(uint256 msgFeeJuels, uint256 maxFeeJuelsPerMsg)`
+- `error InvalidStaticConfig()`
+- `error MessageTooLarge(uint256 maxSize, uint256 actualSize)`
+- `error UnsupportedNumberOfTokens(uint256 numberOfTokens, uint256 maxNumberOfTokensPerMsg)`
+- `error InvalidChainFamilySelector(bytes4 chainFamilySelector)`
+- `error InvalidTokenReceiver()`
+- `error TooManySVMExtraArgsAccounts(uint256 numAccounts, uint256 maxAccounts)`
+- `error InvalidSVMExtraArgsWritableBitmap(uint64 accountIsWritableBitmap, uint256 numAccounts)`
+- `error TooManySuiExtraArgsReceiverObjectIds(uint256 numReceiverObjectIds, uint256 maxReceiverObjectIds)`
+- `error TokenTransferConfigMustBeEnabled(uint64 destChainSelector, address token)`
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Notes
+
+- Prices are represented in USD-denominated units and used internally for consistent fee calculation across tokens and chains.
+- All fee calculations depend on the correctness and freshness of price data.
+- Fee values are derived from message parameters; any change to the message requires re-quoting.
+- FeeQuoter must be queried using the exact message parameters that will be submitted to ensure consistency between quoting and execution.
+- Price updates should occur before quoting fees for new messages to ensure accurate results.
+- Messages that exceed configured limits or violate constraints will revert during validation.
+- Missing or invalid pricing data for a token or chain will cause fee validation to revert.
+- Prices do not expire onchain; correctness depends on timely updates.
+- Authorized price updaters are managed through the `AuthorizedCallers` mechanism.
+- Message processing behavior varies by destination chain family and is normalized through `processMessageArgs`.
+- Key read methods such as `getValidatedFee`, `getTokenTransferFeeConfig`, and `getDestChainConfig` are the primary surfaces used to quote and validate execution.
+
+## Internal Functions
+
+Internal helpers parse and validate destination-specific arguments for different execution environments (EVM, SVM, Sui) and legacy formats.
+
+## Security model
+
+- Price updates are restricted to authorized callers.
+- Owner controls fee configuration and destination chain parameters.
+- FeeQuoter enforces validation constraints and rejects invalid messages.
+- Correct operation depends on accurate configuration and timely price updates.
+- Errors are part of the normal control flow and enforce pricing, configuration, and message validity constraints.
+
+## Related Interfaces & Contracts
+
+- [`IFeeQuoter`](/ccip/evm/api-reference/v2.0.0/i-fee-quoter)
+- [`ILegacyFeeQuoter`](/ccip/evm/api-reference/v2.0.0/i-legacy-fee-quoter)
+- [`AuthorizedCallers`](/ccip/evm/api-reference/v2.0.0/authorized-callers)
+- [`Client`](/ccip/evm/api-reference/v2.0.0/client)
+- [`ExtraArgsCodec`](/ccip/evm/api-reference/v2.0.0/extra-args-codec)
+- [`Internal`](/ccip/evm/api-reference/v2.0.0/internal)
+- [`Pool`](/ccip/evm/api-reference/v2.0.0/pool)
+- [`USDPriceWith18Decimals`](/ccip/evm/api-reference/v2.0.0/usd-price-with-18-decimals)
+- [`ITypeAndVersion`](/ccip/evm/api-reference/v2.0.0/i-type-and-version)

@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Token pool rate limit — interactive bucket</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --text: #1a1a1a;
+        --text-secondary: #5f5e5a;
+        --text-muted: #888780;
+        --border: rgba(0, 0, 0, 0.18);
+        --border-strong: rgba(0, 0, 0, 0.4);
+        --track: rgba(0, 0, 0, 0.12);
+        --liquid: #85b7eb;
+        --liquid-edge: #378add;
+        --ok-bg: #eaf3de;
+        --ok-fg: #3b6d11;
+        --warn-bg: #faeeda;
+        --warn-fg: #854f0b;
+        --err-bg: #fcebeb;
+        --err-fg: #a32d2d;
+        --full-fg: #3b6d11;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1f1e1b;
+          --text: #ececec;
+          --text-secondary: #b4b2a9;
+          --text-muted: #888780;
+          --border: rgba(255, 255, 255, 0.22);
+          --border-strong: rgba(255, 255, 255, 0.45);
+          --track: rgba(255, 255, 255, 0.16);
+          --liquid: #185fa5;
+          --liquid-edge: #378add;
+          --ok-bg: #27500a;
+          --ok-fg: #c0dd97;
+          --warn-bg: #633806;
+          --warn-fg: #fac775;
+          --err-bg: #791f1f;
+          --err-fg: #f7c1c1;
+          --full-fg: #97c459;
+        }
+      }
+      body {
+        background: var(--bg);
+        margin: 0;
+        overflow-x: hidden;
+      }
+      .tprl-widget {
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        color: var(--text);
+        background: var(--bg);
+        max-width: 676px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 220px minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+        padding: 1rem 0.5rem;
+      }
+      @media (max-width: 560px) {
+        .tprl-widget {
+          grid-template-columns: 1fr;
+          justify-items: center;
+        }
+        .tprl-controls {
+          width: 100%;
+        }
+      }
+      .tprl-bucket {
+        text-align: center;
+      }
+      .tprl-level {
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .tprl-caption {
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+      .tprl-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+      .tprl-row label {
+        color: var(--text-secondary);
+      }
+      .tprl-row output {
+        font-weight: 600;
+      }
+      .tprl-hint {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+      .tprl-group {
+        margin-bottom: 1.25rem;
+      }
+      .tprl-transfer {
+        border-top: 1px solid var(--border);
+        padding-top: 1rem;
+      }
+      .tprl-widget input[type="range"] {
+        width: 100%;
+        accent-color: var(--liquid-edge);
+      }
+      .tprl-widget button {
+        margin-top: 10px;
+        width: 100%;
+        font: inherit;
+        font-size: 14px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border-strong);
+        background: transparent;
+        color: var(--text);
+        cursor: pointer;
+      }
+      .tprl-widget button:hover {
+        background: var(--track);
+      }
+      .tprl-widget button:active {
+        transform: scale(0.98);
+      }
+      .tprl-msg {
+        margin-top: 10px;
+        font-size: 13px;
+        line-height: 1.5;
+        border-radius: 8px;
+        padding: 8px 12px;
+        visibility: hidden;
+      }
+      .tprl-msg.ok {
+        background: var(--ok-bg);
+        color: var(--ok-fg);
+        visibility: visible;
+      }
+      .tprl-msg.warn {
+        background: var(--warn-bg);
+        color: var(--warn-fg);
+        visibility: visible;
+      }
+      .tprl-msg.err {
+        background: var(--err-bg);
+        color: var(--err-fg);
+        visibility: visible;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .tprl-widget button:active {
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="tprl-widget" id="tprl">
+      <div class="tprl-bucket">
+        <svg
+          viewBox="0 0 200 260"
+          width="200"
+          height="260"
+          role="img"
+          aria-label="Bucket of tokens that drains on transfers and refills continuously"
+        >
+          <line x1="100" y1="0" x2="100" y2="28" stroke="var(--liquid-edge)" stroke-width="6" stroke-linecap="round" />
+          <circle id="tprl-drip" cx="100" cy="10" r="4" fill="var(--liquid-edge)" />
+          <path
+            d="M40 40 L52 210 Q54 224 68 224 L132 224 Q146 224 148 210 L160 40"
+            fill="none"
+            stroke="var(--border-strong)"
+            stroke-width="3"
+            stroke-linecap="round"
+          />
+          <clipPath id="tprl-clip">
+            <path d="M42 40 L53 210 Q55 222 68 222 L132 222 Q145 222 147 210 L158 40 Z" />
+          </clipPath>
+          <g clip-path="url(#tprl-clip)">
+            <rect id="tprl-liquid" x="30" y="120" width="140" height="200" fill="var(--liquid)" />
+            <rect id="tprl-liquid-top" x="30" y="120" width="140" height="5" fill="var(--liquid-edge)" />
+          </g>
+          <ellipse cx="100" cy="40" rx="60" ry="10" fill="none" stroke="var(--border-strong)" stroke-width="3" />
+          <line
+            x1="168"
+            y1="40"
+            x2="180"
+            y2="40"
+            stroke="var(--text-muted)"
+            stroke-width="1.5"
+            stroke-dasharray="3 3"
+          />
+          <text x="184" y="44" font-size="11" fill="var(--text-muted)">max</text>
+        </svg>
+        <div class="tprl-level" id="tprl-level-out">50,000</div>
+        <div class="tprl-caption">tokens available now</div>
+      </div>
+
+      <div class="tprl-controls">
+        <div class="tprl-group">
+          <div class="tprl-row">
+            <label for="tprl-cap">Max capacity</label>
+            <output id="tprl-cap-out">100,000</output>
+          </div>
+          <input type="range" id="tprl-cap" min="20000" max="200000" step="10000" value="100000" />
+          <div class="tprl-hint">Largest possible single transfer</div>
+        </div>
+
+        <div class="tprl-group">
+          <div class="tprl-row">
+            <label for="tprl-rate">Refill rate</label>
+            <span><output id="tprl-rate-out">1,000</output> <span style="font-weight: 400">tokens/sec</span></span>
+          </div>
+          <input type="range" id="tprl-rate" min="100" max="10000" step="100" value="1000" />
+          <div class="tprl-hint">Speed at which capacity is restored</div>
+        </div>
+
+        <div class="tprl-transfer">
+          <div class="tprl-row">
+            <label for="tprl-amt">Transfer amount</label>
+            <output id="tprl-amt-out">30,000</output>
+          </div>
+          <input type="range" id="tprl-amt" min="5000" max="200000" step="5000" value="30000" />
+          <button type="button" id="tprl-send">Attempt transfer</button>
+          <div class="tprl-msg" id="tprl-msg" role="status" aria-live="polite">&ndash;</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      ;(function () {
+        var $ = function (id) {
+          return document.getElementById(id)
+        }
+        var capEl = $("tprl-cap"),
+          rateEl = $("tprl-rate"),
+          amtEl = $("tprl-amt")
+        var capOut = $("tprl-cap-out"),
+          rateOut = $("tprl-rate-out"),
+          amtOut = $("tprl-amt-out")
+        var levelOut = $("tprl-level-out"),
+          msg = $("tprl-msg"),
+          btn = $("tprl-send")
+        var liquid = $("tprl-liquid"),
+          liquidTop = $("tprl-liquid-top"),
+          drip = $("tprl-drip")
+
+        var fmt = function (n) {
+          return Math.round(n).toLocaleString()
+        }
+        var cap = 100000,
+          rate = 1000,
+          level = 50000
+        var last = performance.now(),
+          dripY = 0
+        var TOP = 42,
+          BOT = 222
+        var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+
+        function draw() {
+          var frac = Math.max(0, Math.min(1, level / cap))
+          var y = BOT - (BOT - TOP) * frac
+          liquid.setAttribute("y", y)
+          liquid.setAttribute("height", BOT - y + 4)
+          liquidTop.setAttribute("y", y)
+          levelOut.textContent = fmt(level)
+          levelOut.style.color = frac >= 0.999 ? "var(--full-fg)" : "var(--text)"
+        }
+
+        function tick(now) {
+          var dt = (now - last) / 1000
+          last = now
+          if (level < cap) {
+            level = Math.min(cap, level + rate * dt)
+            if (!reducedMotion) {
+              dripY = (dripY + dt * 90) % 34
+              drip.setAttribute("cy", 4 + dripY)
+            }
+            drip.style.opacity = 1
+          } else {
+            drip.style.opacity = 0
+          }
+          draw()
+          requestAnimationFrame(tick)
+        }
+
+        capEl.addEventListener("input", function () {
+          cap = +capEl.value
+          capOut.textContent = fmt(cap)
+          level = Math.min(level, cap)
+          draw()
+        })
+        rateEl.addEventListener("input", function () {
+          rate = +rateEl.value
+          rateOut.textContent = fmt(rate)
+        })
+        amtEl.addEventListener("input", function () {
+          amtOut.textContent = fmt(+amtEl.value)
+        })
+
+        btn.addEventListener("click", function () {
+          var amt = +amtEl.value
+          msg.className = "tprl-msg"
+          if (amt > cap) {
+            msg.classList.add("err")
+            msg.textContent =
+              "\u2717 Rejected \u2014 " +
+              fmt(amt) +
+              " exceeds the max capacity of " +
+              fmt(cap) +
+              ". This transfer can never succeed until the max capacity setting is raised."
+          } else if (amt > level) {
+            var wait = Math.ceil((amt - level) / rate)
+            msg.classList.add("warn")
+            msg.textContent =
+              "\u23F1 Rejected \u2014 only " +
+              fmt(level) +
+              " tokens available right now. At " +
+              fmt(rate) +
+              " tokens/sec, enough capacity refills in about " +
+              wait +
+              "s."
+          } else {
+            level -= amt
+            msg.classList.add("ok")
+            msg.textContent =
+              "\u2713 Transferred " +
+              fmt(amt) +
+              " tokens. The bucket drained and is now refilling at " +
+              fmt(rate) +
+              " tokens/sec."
+          }
+          draw()
+        })
+
+        draw()
+        requestAnimationFrame(tick)
+      })()
+    </script>
+  </body>
+</html>

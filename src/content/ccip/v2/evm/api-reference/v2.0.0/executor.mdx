@@ -1,0 +1,274 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 Executor API Reference"
+metadata:
+  description: "Configures supported destination chains and CCV limits and provides executor fee quotes."
+  version: "2.0.0"
+---
+
+`Executor` defines execution policy and fee logic for CCIP message delivery.
+
+It determines:
+
+- which destination chains are supported
+- which CCVs (verifiers) are allowed
+- the constraints applied to execution (finality, CCV count)
+- the fee required for execution based on these parameters
+
+Unlike `FeeQuoter`, which prices message execution, `Executor` applies execution policy and computes fees based on selected CCVs and constraints.
+
+> Applications do not call this contract directly.
+
+## Usage Boundary
+
+**You do not call this contract directly.**
+
+- CCIP routing components use this contract to validate execution constraints and compute execution fees.
+- The Router and OffRamp components rely on this contract during message processing.
+- The owner configures supported chains, allowed CCVs, and execution policy.
+- You interact with this contract when configuring execution rules for CCV-based validation.
+- Execution flow typically follows: FeeQuoter (pricing) → Executor (policy + execution fee) → Verifier (validation).
+- You are responsible for ensuring chain configuration and CCV allowlists are correct.
+
+## Contract
+
+`executor/Executor.sol`
+
+## Import
+
+```solidity
+import {Executor} from "chainlink-ccip/executor/Executor.sol";
+```
+
+## Inheritance
+
+- `IExecutor`
+- `Ownable2StepMsgSender`
+
+## Constructor
+
+```solidity
+constructor(uint8 maxCCVsPerMsg, DynamicConfig memory dynamicConfig)
+```
+
+| Parameter       | Type                   | Description                                                             |
+| --------------- | ---------------------- | ----------------------------------------------------------------------- |
+| `maxCCVsPerMsg` | `uint8`                | Maximum number of CCVs allowed per message.                             |
+| `dynamicConfig` | `DynamicConfig memory` | Initial execution configuration (aggregator, confirmations, allowlist). |
+
+## External API
+
+### getMaxCCVsPerMessage
+
+```solidity
+function getMaxCCVsPerMessage() external view returns (uint8 maxCCVsPerMsg)
+```
+
+> Returns the maximum number of CCVs allowed per message.
+
+---
+
+### getDestChains
+
+```solidity
+function getDestChains() external view returns (RemoteChainConfigArgs[] memory)
+```
+
+> Returns all configured destination chains.
+
+---
+
+### applyDestChainUpdates
+
+```solidity
+function applyDestChainUpdates(
+  uint64[] calldata destChainSelectorsToRemove,
+  RemoteChainConfigArgs[] calldata destChainSelectorsToAdd
+) external onlyOwner
+```
+
+> Updates supported destination chains.
+
+---
+
+### getDynamicConfig
+
+```solidity
+function getDynamicConfig() external view returns (DynamicConfig memory)
+```
+
+> Returns execution configuration.
+
+---
+
+### setDynamicConfig
+
+```solidity
+function setDynamicConfig(DynamicConfig memory dynamicConfig) external onlyOwner
+```
+
+> Updates execution configuration.
+
+---
+
+### getAllowedFinalityConfig
+
+```solidity
+function getAllowedFinalityConfig() external view returns (bytes4)
+```
+
+> Returns allowed finality configuration.
+
+---
+
+### getAllowedCCVs
+
+```solidity
+function getAllowedCCVs() external view returns (address[] memory)
+```
+
+> Returns allowed CCV contracts.
+
+---
+
+### applyAllowedCCVUpdates
+
+```solidity
+function applyAllowedCCVUpdates(
+  address[] calldata ccvsToRemove,
+  address[] calldata ccvsToAdd,
+  bool ccvAllowlistEnabled
+) external onlyOwner
+```
+
+> Updates allowed CCVs and allowlist behavior.
+
+---
+
+### getFee
+
+```solidity
+function getFee(
+  uint64 destChainSelector,
+  bytes4 requestedFinality,
+  address[] calldata ccvs,
+  bytes calldata extraArgs,
+  address feeToken
+) external view returns (uint16 usdCentsFee)
+```
+
+> Returns the execution fee based on destination chain, selected CCVs, and execution constraints.
+
+| Parameter           | Type                 | Description                                    |
+| ------------------- | -------------------- | ---------------------------------------------- |
+| `destChainSelector` | `uint64`             | Destination chain identifier.                  |
+| `requestedFinality` | `bytes4`             | Desired finality configuration for execution.  |
+| `ccvs`              | `address[] calldata` | List of CCV contracts selected for validation. |
+| `extraArgs`         | `bytes calldata`     | Additional execution parameters.               |
+| `feeToken`          | `address`            | Token used to pay execution fees.              |
+
+Returns:
+
+| Type     | Description                             |
+| -------- | --------------------------------------- |
+| `uint16` | Execution fee denominated in USD cents. |
+
+- `usdCentsFee` is the execution fee denominated in USD cents.
+
+---
+
+### withdrawFeeTokens
+
+```solidity
+function withdrawFeeTokens(address[] calldata feeTokens) external
+```
+
+> Withdraws accumulated execution fees to the configured aggregator.
+
+---
+
+## Events
+
+- `event CCVAllowlistUpdated(bool enabled)`
+- `event CCVAdded(address indexed ccv)`
+- `event CCVRemoved(address indexed ccv)`
+- `event DestChainAdded(uint64 indexed destChainSelector, RemoteChainConfig config)`
+- `event DestChainRemoved(uint64 indexed destChainSelector)`
+- `event ConfigSet(DynamicConfig dynamicConfig)`
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+- `error ExceedsMaxCCVs(uint256 provided, uint256 max)`
+- `error InvalidCCV(address ccv)`
+- `error InvalidDestChain(uint64 destChainSelector)`
+- `error InvalidMaxPossibleCCVsPerMsg(uint256 maxPossibleCCVsPerMsg)`
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Notes
+
+- Execution requires that all selected CCVs are valid and within configured limits.
+- The selected CCVs must be both allowlisted (if enabled) and within the configured maximum.
+- The number of CCVs per message must not exceed `maxCCVsPerMsg`.
+- When CCV allowlisting is enabled, only configured CCVs may be used.
+- The order of CCVs does not affect validation but must match expected input format.
+- Destination chain and CCV configuration must be set before execution fees can be computed correctly.
+- Fee calculation or execution will revert if the destination chain is disabled or invalid.
+- Execution will revert if provided CCVs are not allowed or exceed configured limits.
+- Execution will revert if no CCVs are provided when validation requires them.
+
+## Structs
+
+### RemoteChainConfig
+
+```solidity
+struct RemoteChainConfig {
+  uint16 usdCentsFee;
+  bool enabled;
+}
+```
+
+### RemoteChainConfigArgs
+
+```solidity
+struct RemoteChainConfigArgs {
+  uint64 destChainSelector;
+  RemoteChainConfig config;
+}
+```
+
+### DynamicConfig
+
+```solidity
+struct DynamicConfig {
+  address feeAggregator;
+  uint16 minBlockConfirmations;
+  bool ccvAllowlistEnabled;
+}
+```
+
+## Internal Functions
+
+### \_setDynamicConfig
+
+```solidity
+function _setDynamicConfig(DynamicConfig memory dynamicConfig) internal
+```
+
+> Updates dynamic configuration.
+
+## Security model
+
+- Owner controls destination chain configuration and CCV policies.
+- Execution constraints enforce allowed chains and CCV limits.
+- Fee withdrawals are routed to a configured aggregator.
+- Misconfiguration may result in incorrect fee calculation or rejected execution.
+
+## Related Interfaces & Contracts
+
+- [`IExecutor`](/ccip/evm/api-reference/v2.0.0/i-executor)
+- [`FeeTokenHandler`](/ccip/evm/api-reference/v2.0.0/fee-token-handler)
+- [`Ownable2StepMsgSender`](/ccip/evm/api-reference/v2.0.0/ownable-2-step-msg-sender)

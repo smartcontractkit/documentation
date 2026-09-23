@@ -8,6 +8,8 @@ import fs from "fs/promises"
 import path from "path"
 import { transformPageToMarkdown } from "@lib/markdown/transformMarkdown.js"
 import { extractFrontmatter, toCanonicalUrl, toContentRelative, getIsoStringOrUndefined } from "@lib/markdown/utils.js"
+import { toContentEntryId } from "@lib/ccip/contentPathMapping.js"
+import { LATEST_CCIP_CONTENT_DIR } from "@config/ccipVersions.js"
 import { textPlainHeaders } from "@lib/api/cacheHeaders.js"
 
 const SITE_BASE = "https://docs.chain.link"
@@ -52,11 +54,25 @@ export const GET: APIRoute = async ({ request }) => {
     // Convert URL path to file path
     // e.g., "/ccip/getting-started" -> "src/content/ccip/getting-started.mdx"
     const cleanPath = requestedPath.startsWith("/") ? requestedPath.slice(1) : requestedPath
+
+    // Direct /ccip/v2/* paths are not canonical (the page route 301s them); reject here too.
+    if (cleanPath === `ccip/${LATEST_CCIP_CONTENT_DIR}` || cleanPath.startsWith(`ccip/${LATEST_CCIP_CONTENT_DIR}/`)) {
+      return new Response(JSON.stringify({ error: `Page not found: ${requestedPath}` }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      })
+    }
+
+    // CCIP latest content lives on disk under /v2; map canonical "ccip/x" -> "ccip/v2/x" (v1 unchanged).
+    let lookupPath = cleanPath
+    if (cleanPath === "ccip" || cleanPath.startsWith("ccip/")) {
+      lookupPath = `ccip/${toContentEntryId(cleanPath.replace(/^ccip\/?/, ""))}`
+    }
     const possiblePaths = [
-      path.resolve(`src/content/${cleanPath}.mdx`),
-      path.resolve(`src/content/${cleanPath}/index.mdx`),
-      path.resolve(`src/content/${cleanPath}.md`),
-      path.resolve(`src/content/${cleanPath}/index.md`),
+      path.resolve(`src/content/${lookupPath}.mdx`),
+      path.resolve(`src/content/${lookupPath}/index.mdx`),
+      path.resolve(`src/content/${lookupPath}.md`),
+      path.resolve(`src/content/${lookupPath}/index.md`),
     ]
 
     let mdxAbsPath: string | null = null

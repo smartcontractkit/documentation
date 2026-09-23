@@ -1,0 +1,120 @@
+.card {
+  display: flex;
+  background: var(--color-background);
+  padding: var(--space-6x);
+  align-items: start;
+  gap: var(--space-6x);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  flex-direction: column;
+}
+
+[data-columns="1"] > .card:nth-child(1) {
+  border-top: 1px solid var(--border);
+}
+
+[data-columns="2"] > .card:nth-child(-n + 2) {
+  border-top: 1px solid var(--border);
+}
+
+[data-columns="3"] > .card:nth-child(-n + 3) {
+  border-top: 1px solid var(--border);
+}
+
+[data-columns="4"] > .card:nth-child(-n + 4) {
+  border-top: 1px solid var(--border);
+}
+
+/* Tablet: adjust border-top for 2-column layouts */
+@media (max-width: 1024px) {
+  [data-columns="3"] > .card:nth-child(-n + 3),
+  [data-columns="4"] > .card:nth-child(-n + 4) {
+    border-top: none;
+  }
+
+  [data-columns="3"] > .card:nth-child(-n + 2),
+  [data-columns="4"] > .card:nth-child(-n + 2) {
+    border-top: 1px solid var(--border);
+  }
+}
+
+/* Mobile: single column - only first card has border-top */
+@media (max-width: 768px) {
+  [data-columns] > .card:nth-child(n) {
+    border-top: none;
+  }
+
+  [data-columns] > .card:nth-child(1) {
+    border-top: 1px solid var(--border);
+  }
+}
+
+.card:hover {
+  background-color: var(--muted);
+}
+
+/* Footer is always visible */
+.cardFooter {
+  margin-top: auto;
+  min-width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Badge + persona pills container */
+.footerBadges {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Arrow: hidden by default, fades in on hover/focus */
+.cardFooter img {
+  width: 10px;
+  height: 10px;
+  opacity: 0;
+  transform: translateY(2px);
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+.card:hover .cardFooter img,
+.card:focus-visible .cardFooter img {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 525;
+  color: var(--foreground);
+  margin-bottom: var(--space-2x);
+}
+
+/* =========================
+   Persona pill base style
+   (matches CCIP / DATA FEEDS chips)
+   ========================= */
+
+.personaPill {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 var(--space-2x);
+  border-radius: var(--space-2x);
+  background-color: var(--pill);
+  border: 1px solid var(--pill-border);
+
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+
+  pointer-events: none;
+  white-space: nowrap;
+}

@@ -1,0 +1,91 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 FeeTokenHandler API Reference"
+metadata:
+  description: "Utility library for withdrawing ERC20 fee balances from CCIP contracts."
+  version: "2.0.0"
+---
+
+`FeeTokenHandler` provides utilities for transferring accumulated ERC20 fee balances from CCIP contracts to a designated fee aggregator.
+
+It handles safe token withdrawals but does not enforce access control.
+
+Calling contracts must ensure only authorized parties can trigger withdrawals.
+
+> This library provides reusable helper functions and is not deployed as a standalone application-facing contract.
+
+## Usage Boundary
+
+**You do not call this library directly.**
+
+- Contracts use this helper to sweep accumulated fees to a configured aggregator.
+- The calling contract must enforce access control on withdrawal functions.
+- You are responsible for ensuring the fee aggregator address is correctly configured.
+
+## Contract
+
+`libraries/FeeTokenHandler.sol`
+
+## Import
+
+```solidity
+import {FeeTokenHandler} from "chainlink-ccip/libraries/FeeTokenHandler.sol";
+```
+
+## Functions
+
+### \_withdrawFeeTokens
+
+```solidity
+function _withdrawFeeTokens(address[] calldata feeTokens, address feeAggregator) internal
+```
+
+> Transfers the full balances of specified fee tokens to the configured fee aggregator.
+
+| Parameter       | Type                 | Description                             |
+| --------------- | -------------------- | --------------------------------------- |
+| `feeTokens`     | `address[] calldata` | List of ERC20 tokens to withdraw.       |
+| `feeAggregator` | `address`            | Destination address for withdrawn fees. |
+
+## Errors
+
+- `error ZeroAddressNotAllowed()`
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Notes
+
+- All token balances for the specified tokens are transferred to the fee aggregator.
+- Reverts if `feeAggregator` is the zero address.
+- All transfers are atomic; if any transfer fails, no tokens are withdrawn.
+- Transfers will revert if any token transfer fails.
+- Assumes tokens conform to standard ERC20 transfer behavior.
+- Contracts should ensure that `feeTokens` only includes tokens with non-zero balances to avoid unnecessary calls.
+- The fee aggregator is a trusted address that receives all withdrawn funds.
+- Gas cost scales linearly with the number of tokens provided.
+
+## Usage context
+
+Used by:
+
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`USDCTokenPoolProxy`](/ccip/evm/api-reference/v2.0.0/usdc-token-pool-proxy)
+- [`Executor`](/ccip/evm/api-reference/v2.0.0/executor)
+- [`TokenPoolFactory`](/ccip/evm/api-reference/v2.0.0/token-pool-factory)
+
+Used to sweep accumulated fee balances to a configured aggregator.
+
+## Security model
+
+- This library does not enforce access control.
+- Calling contracts must restrict who can trigger withdrawals.
+- Funds are transferred to a single configured aggregator address.
+- Incorrect configuration may result in loss or misdirection of funds.
+
+## Related Interfaces & Contracts
+
+- [`Executor`](/ccip/evm/api-reference/v2.0.0/executor)
+- [`TokenPoolFactory`](/ccip/evm/api-reference/v2.0.0/token-pool-factory)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`USDCTokenPoolProxy`](/ccip/evm/api-reference/v2.0.0/usdc-token-pool-proxy)

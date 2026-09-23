@@ -1,0 +1,179 @@
+---
+section: ccip
+date: Last Modified
+title: "Common Scenarios"
+metadata:
+  description: "Worked configuration examples for CCIP token pool rate limits: 18-decimal and 6-decimal tokens, fast-finality buckets, batch updates, pausing a lane, and removing rate limits."
+  excerpt: "CCIP rate limits common scenarios 18 decimals LINK ETH 6 decimals USDC fast finality bucket batch update pausing lane removing rate limits v2.0 v1.x"
+  datePublished: "2025-06-09"
+  lastModified: "2025-06-09"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+Worked examples for `TokenPool` v2.0 contracts. **v1.x pools** differences are noted inline.
+
+Worked configuration scenarios for common rate limit use cases. Examples illustrate capacity and refill calculations — recalculate for your token, lane, and risk tolerance.
+
+All scenarios assume you are pool **owner** or `rateLimitAdmin`, have inspected current configuration, and validated decimals on each chain.
+
+## Scenario: 18-decimal tokens (default bucket)
+
+Tokens with 18 decimals (LINK, ETH) on the default bucket.
+
+**Source chain** — outbound capacity 10 tokens, refill 0.1 tokens/sec:
+
+```
+outbound capacity: 10 × 10^18  = 10000000000000000000
+outbound rate:     0.1 × 10^18 = 100000000000000000
+```
+
+**Destination chain** — inbound capacity 11 tokens (10% headroom), refill 0.11 tokens/sec:
+
+```
+inbound capacity: 11 × 10^18   = 11000000000000000000
+inbound rate:     0.11 × 10^18 = 110000000000000000
+```
+
+Submit outbound on the source pool and inbound on the destination pool.
+
+<Aside type="note" title="v1.x pools">
+  Use `setChainRateLimiterConfig(remoteSelector, outboundConfig, inboundConfig)` on each chain. Each call must include
+  both outbound and inbound structs — set the direction you are not changing to its current on-chain values.
+</Aside>
+
+<Aside type="note" title="v2.0">
+  Use `setRateLimitConfig` with `fastFinality: false`.
+</Aside>
+
+## Scenario: 6-decimal tokens (default bucket)
+
+Stablecoins or other 6-decimal tokens.
+
+**Source chain:**
+
+```
+outbound capacity: 1000 × 10^6 = 1000000000
+outbound rate:     5 × 10^6    = 5000000
+```
+
+**Destination chain:**
+
+```
+inbound capacity: 1100 × 10^6 = 1100000000
+inbound rate:     5.5 × 10^6  = 5500000
+```
+
+Ensure fractional rates produce integer base-unit values.
+
+## Scenario: fast-finality bucket (v2.0 pools only)
+
+Fast-finality buckets are optional and often configured with **tighter limits** than default buckets because fast-finality transfers have a different risk profile.
+
+### When to use this
+
+Use this when your pool accepts fast-finality transfers (`setAllowedFinalityConfig` permits them) and you want separate limits for that traffic.
+
+### Example configuration
+
+Assume default buckets are configured as in the 18-decimal scenario above. On the source chain, add a fast-finality outbound limit at 50% of default:
+
+```
+fastFinality: true
+outbound capacity: 5 × 10^18  = 5000000000000000000
+outbound rate:     0.05 × 10^18 = 50000000000000000
+```
+
+On the destination chain, configure the fast-finality inbound bucket with 10% headroom:
+
+```
+fastFinality: true
+inbound capacity: 5.5 × 10^18 = 5500000000000000000
+inbound rate:     0.055 × 10^18 = 550000000000000000
+```
+
+If the fast-finality bucket is not enabled (`isEnabled = false`), fast-finality transfers use the default bucket instead.
+
+## Scenario: batch update - default + fast-finality (v2.0 pools only)
+
+Update both bucket types in one transaction on a single pool:
+
+```solidity
+RateLimitConfigArgs[] memory args = new RateLimitConfigArgs[](2);
+
+args[0] = RateLimitConfigArgs({
+  remoteChainSelector: REMOTE_SELECTOR,
+  fastFinality: false,
+  outboundRateLimiterConfig: Config(true, 10000000000000000000, 100000000000000000),
+  inboundRateLimiterConfig: Config(true, 11000000000000000000, 110000000000000000)
+});
+
+args[1] = RateLimitConfigArgs({
+  remoteChainSelector: REMOTE_SELECTOR,
+  fastFinality: true,
+  outboundRateLimiterConfig: Config(true, 5000000000000000000, 50000000000000000),
+  inboundRateLimiterConfig: Config(true, 5500000000000000000, 550000000000000000)
+});
+
+tokenPool.setRateLimitConfig(args);
+```
+
+## Scenario: pausing a lane
+
+This scenario demonstrates how to effectively pause transfers on a specific lane using rate limits.
+
+### When to use this
+
+Use this pattern during incidents, investigations, or maintenance when transfers must be temporarily halted.
+
+### Configuration pattern
+
+On **both chains**, for **both bucket types** (if FTF is enabled), set:
+
+```
+isEnabled = true
+capacity  = 0
+rate      = 0
+```
+
+for the relevant direction (outbound on source, inbound on destination).
+
+This blocks all transfers for that direction without disabling the limiter entirely.
+
+See [Emergency Actions](/ccip/evm/concepts/cross-chain-token/rate-limits/emergency-actions) for owner-only alternatives such as lane config removal for the token pool.
+
+## Scenario: removing rate limits
+
+<Aside type="caution" title="Not recommended">
+  Removing rate limits entirely removes a defensive safety mechanism. Use this pattern only when you intentionally want
+  transfers to be unconstrained by rate limits for that bucket.
+</Aside>
+
+This scenario demonstrates how to remove rate limits entirely for a bucket.
+
+### When to use this
+
+Use this pattern only when you intentionally want transfers to be **unconstrained** by rate limits for that bucket.
+
+### Configuration pattern
+
+To remove rate limits for a bucket:
+
+```
+isEnabled = false
+capacity  = 0
+rate      = 0
+```
+
+Apply to both inbound and outbound if you want both directions unconstrained. Apply to both default and fast-finality entries if both were previously enabled.
+
+## Important notes
+
+- Scenario values must always be recalculated for the specific token, lane, and chain decimals
+- Do not copy example values without adjusting for decimals and desired behavior
+- Changes take effect immediately and refill buckets to full capacity in v2.0
+- A lane requires coordinated configuration on **both** source and destination pools
+- When fast-finality is enabled, configure or lock down **both** bucket types
+
+<CcipCommon callout="conceptualDisclaimer" />

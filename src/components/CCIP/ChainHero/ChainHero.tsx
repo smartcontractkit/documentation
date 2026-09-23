@@ -25,6 +25,7 @@ interface ChainHeroProps {
     totalTokens: number
     logo: string
     chain: string
+    chainSelector: string
   }[]
   tokens: {
     id: string
@@ -47,6 +48,13 @@ interface ChainHeroProps {
     }
     lane: LaneConfig
   }[]
+  verifiers?: {
+    id: string
+    name: string
+    type: string
+    logo: string
+    totalNetworks: number
+  }[]
   network?: Network
   token?: {
     id: string
@@ -55,12 +63,26 @@ interface ChainHeroProps {
     symbol: string
   }
   environment: Environment
+  breadcrumbItems?: Array<{
+    name: string
+    url: string
+  }>
   isDecommissioned?: boolean
 }
 
 const CCIP_EXPLORER_URL = "https://ccip.chain.link/"
 
-function ChainHero({ chains, tokens, network, token, environment, lanes, isDecommissioned = false }: ChainHeroProps) {
+function ChainHero({
+  chains,
+  tokens,
+  network,
+  token,
+  environment,
+  lanes,
+  verifiers = [],
+  breadcrumbItems,
+  isDecommissioned = false,
+}: ChainHeroProps) {
   // Get chain-specific tooltip configuration
   const chainTooltipConfig = network?.chain && !isDecommissioned ? getChainTooltip(network.chain) : null
   const hasFullNetworkDetails = Boolean(network?.router?.address)
@@ -111,21 +133,30 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
       <div className="ccip-chain-hero__content">
         <div className="ccip-chain-hero__top">
           <Breadcrumb
-            items={[
-              {
-                name: "CCIP Directory",
-                url: `/ccip/directory/${environment}`,
-              },
-              {
-                name: network?.name || token?.id || "Current",
-                url: network
-                  ? `/ccip/directory/${environment}/chain/${network.chain}`
-                  : `/ccip/directory/${environment}/token/${token?.id}`,
-              },
-            ]}
+            items={
+              breadcrumbItems || [
+                {
+                  name: "CCIP Directory",
+                  url: `/ccip/directory/${environment}`,
+                },
+                {
+                  name: network?.name || token?.id || "Current",
+                  url: network
+                    ? `/ccip/directory/${environment}/chain/${network.chain}`
+                    : `/ccip/directory/${environment}/token/${token?.id}`,
+                },
+              ]
+            }
           />
           <div className="ccip-chain-hero__chainSearch">
-            <Search chains={chains} tokens={tokens} small environment={environment} lanes={lanes} />
+            <Search
+              chains={chains}
+              tokens={tokens}
+              small
+              environment={environment}
+              lanes={lanes}
+              verifiers={verifiers}
+            />
           </div>
         </div>
 
@@ -144,42 +175,46 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
           </aside>
         )}
 
-        <div className="ccip-chain-hero__heading">
-          <img
-            src={network?.logo || token?.logo}
-            alt=""
-            className={token?.logo ? "ccip-chain-hero__token-logo" : ""}
-            onError={({ currentTarget }) => {
-              currentTarget.onerror = null // prevents looping
-              currentTarget.src = fallbackTokenIconUrl
-            }}
-          />
-          <div className="ccip-chain-hero__title-group">
-            <h1
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                position: "relative",
-                overflow: "visible",
-              }}
-            >
-              {network?.name || token?.id}
-              <span className="ccip-chain-hero__token-logo__symbol">
-                {token?.id === "USDC" ? "USD Coin" : token?.name}
-              </span>
+        {(network || token) && (
+          <div className="ccip-chain-hero__heading">
+            {(network?.logo || token?.logo) && (
+              <img
+                src={network?.logo || token?.logo}
+                alt=""
+                className={token?.logo ? "ccip-chain-hero__token-logo" : ""}
+                onError={({ currentTarget }) => {
+                  currentTarget.onerror = null // prevents looping
+                  currentTarget.src = fallbackTokenIconUrl
+                }}
+              />
+            )}
+            <div className="ccip-chain-hero__title-group">
+              <h1
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  position: "relative",
+                  overflow: "visible",
+                }}
+              >
+                {network?.name || token?.id}
+                <span className="ccip-chain-hero__token-logo__symbol">
+                  {token?.id === "USDC" ? "USD Coin" : token?.name}
+                </span>
 
-              {chainTooltipConfig && (
-                <Tooltip
-                  tip={chainTooltipConfig.content}
-                  hoverable={chainTooltipConfig.hoverable}
-                  hideDelay={chainTooltipConfig.hideDelay}
-                />
-              )}
-            </h1>
-            {isDecommissioned && network && <span className="ccip-chain-hero__decom-subtitle">Inactive</span>}
+                {chainTooltipConfig && (
+                  <Tooltip
+                    tip={chainTooltipConfig.content}
+                    hoverable={chainTooltipConfig.hoverable}
+                    hideDelay={chainTooltipConfig.hideDelay}
+                  />
+                )}
+              </h1>
+              {isDecommissioned && network && <span className="ccip-chain-hero__decom-subtitle">Inactive</span>}
+            </div>
           </div>
-        </div>
+        )}
 
         {isCanton && (
           <aside className="ccip-chain-hero__decom-banner" aria-label="Canton address caution">
@@ -199,7 +234,6 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, isDecom
             </div>
           </aside>
         )}
-
         {network && (
           <div className={`ccip-chain-hero__details${isCanton ? " ccip-chain-hero__details--canton" : ""}`}>
             {showNetworkConfiguration && (

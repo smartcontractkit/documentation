@@ -1,5 +1,6 @@
 import type { ChainType } from "~/config/types.js"
 import type { SectionEntry, SectionContent } from "~/config/sidebar.js"
+import { detectChainFromPath } from "~/stores/chainType.js"
 
 /**
  * Normalizes a URL by removing leading/trailing slashes and query parameters
@@ -13,19 +14,49 @@ function normalizeUrl(url: string): string {
   return normalized
 }
 
+type UrlMatch =
+  | {
+      item: SectionContent
+      matchedType: "url"
+      matchedIndex: -1
+    }
+  | {
+      item: SectionContent
+      matchedType: "highlight"
+      matchedIndex: number
+    }
+
 /**
- * Recursively searches sidebar content for an item matching the given URL
+ * Recursively searches sidebar content for an item matching the given URL.
+ * Supports both canonical `url` and `highlightAsCurrent` variants.
+ *
  * @param items - Sidebar content items to search
  * @param targetUrl - Normalized URL to find
- * @returns The matching SectionContent item or null
+ * @returns Match metadata or null
  */
-function findItemByUrl(items: SectionContent[], targetUrl: string): SectionContent | null {
+function findItemMatchByUrl(items: SectionContent[], targetUrl: string): UrlMatch | null {
   for (const item of items) {
     if (item.url && normalizeUrl(item.url) === targetUrl) {
-      return item
+      return {
+        item,
+        matchedType: "url",
+        matchedIndex: -1,
+      }
     }
+
+    if (item.highlightAsCurrent?.length) {
+      const index = item.highlightAsCurrent.findIndex((url) => normalizeUrl(url) === targetUrl)
+      if (index >= 0) {
+        return {
+          item,
+          matchedType: "highlight",
+          matchedIndex: index,
+        }
+      }
+    }
+
     if (item.children) {
-      const found = findItemByUrl(item.children, targetUrl)
+      const found = findItemMatchByUrl(item.children, targetUrl)
       if (found) return found
     }
   }
@@ -33,7 +64,50 @@ function findItemByUrl(items: SectionContent[], targetUrl: string): SectionConte
 }
 
 /**
- * Recursively searches sidebar content for an item with the given title and chainType
+ * Recursively searches sidebar content for an item matching the given URL
+ * @param items - Sidebar content items to search
+ * @param targetUrl - Normalized URL to find
+ * @returns The matching SectionContent item or null
+ */
+function findItemByUrl(items: SectionContent[], targetUrl: string): SectionContent | null {
+  return findItemMatchByUrl(items, targetUrl)?.item || null
+}
+
+/**
+ * Recursively searches sidebar content for an item with the given pageId and chainType.
+ * pageId provides deterministic cross-version/chain navigation (replaces title matching).
+ *
+ * @param items - Sidebar content items to search
+ * @param pageId - pageId to match
+ * @param targetChain - ChainType to match
+ * @returns The matching SectionContent item or null
+ */
+function findItemByPageIdAndChain(
+  items: SectionContent[],
+  pageId: string,
+  targetChain: ChainType
+): SectionContent | null {
+  for (const item of items) {
+    // Chain-specific match
+    if (item.pageId === pageId && item.chainTypes?.includes(targetChain)) {
+      return item
+    }
+    // Universal items (no chainTypes) match any chain
+    if (item.pageId === pageId && !item.chainTypes) {
+      return item
+    }
+    if (item.children) {
+      const found = findItemByPageIdAndChain(item.children, pageId, targetChain)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+/**
+ * Recursively searches sidebar content for an item with the given title and chainType.
+ * Used as a fallback when pageId is not available on an item.
+ *
  * @param items - Sidebar content items to search
  * @param title - Title to match
  * @param targetChain - ChainType to match
@@ -45,11 +119,9 @@ function findItemByTitleAndChain(
   targetChain: ChainType
 ): SectionContent | null {
   for (const item of items) {
-    // Check if this item matches
     if (item.title === title && item.chainTypes?.includes(targetChain)) {
       return item
     }
-    // Search children recursively
     if (item.children) {
       const found = findItemByTitleAndChain(item.children, title, targetChain)
       if (found) return found
@@ -73,11 +145,13 @@ function findParentOfUrl(
   parent: SectionContent | null = null
 ): SectionContent | null {
   for (const item of items) {
-    // Check if this item's URL matches
-    if (item.url && normalizeUrl(item.url) === targetUrl) {
+    const directUrlMatch = item.url && normalizeUrl(item.url) === targetUrl
+    const highlightMatch = item.highlightAsCurrent?.some((url) => normalizeUrl(url) === targetUrl) ?? false
+
+    if (directUrlMatch || highlightMatch) {
       return parent
     }
-    // Search children recursively with current item as parent
+
     if (item.children) {
       const foundParent = findParentOfUrl(targetUrl, item.children, item)
       if (foundParent) return foundParent
@@ -89,12 +163,13 @@ function findParentOfUrl(
 /**
  * Finds which section contains a given URL
  * Uses sidebar structure as source of truth
+ * Exported so chain switching can tell whether the current page is in the sidebar at all.
  *
  * @param targetUrl - Normalized URL to find section for
  * @param sidebarConfig - Sidebar configuration
  * @returns The section containing the URL, or null if not found
  */
-function findSectionForUrl(targetUrl: string, sidebarConfig: SectionEntry[]): SectionEntry | null {
+export function findSectionForUrl(targetUrl: string, sidebarConfig: SectionEntry[]): SectionEntry | null {
   for (const section of sidebarConfig) {
     if (findItemByUrl(section.contents, targetUrl)) {
       return section
@@ -113,7 +188,6 @@ function findSectionForUrl(targetUrl: string, sidebarConfig: SectionEntry[]): Se
 function getFirstUrlFromSection(section: SectionEntry): string | null {
   for (const item of section.contents) {
     if (item.url) return item.url
-    // Check children if parent has no URL
     if (item.children) {
       for (const child of item.children) {
         if (child.url) return child.url
@@ -124,136 +198,151 @@ function getFirstUrlFromSection(section: SectionEntry): string | null {
 }
 
 /**
- * Finds the equivalent page URL for a different chain type
- * Uses sidebar configuration as the source of truth
+ * Resolves the equivalent target URL for a matched source item,
+ * preserving highlightAsCurrent variant when applicable.
  *
- * Algorithm:
- * 1. Find current page in sidebar by matching URL
- * 2. Extract the title of the current page
- * 3. Search sidebar for item with same title but different chainType
- * 4. Return the URL of the matching item
+ * @param targetItem - Equivalent item in the target sidebar
+ * @param sourceMatch - Source URL match metadata
+ * @returns Target URL or null
+ */
+function resolveMatchedTargetUrl(targetItem: SectionContent, sourceMatch: UrlMatch): string | null {
+  if (sourceMatch.matchedType === "url") {
+    return targetItem.url || null
+  }
+
+  const highlightUrl = targetItem.highlightAsCurrent?.[sourceMatch.matchedIndex]
+  return highlightUrl || targetItem.url || null
+}
+
+/**
+ * Finds the equivalent page URL for a different chain type (and optionally version).
+ * Uses pageId for deterministic matching, with title matching as fallback.
  *
- * @param currentUrl - Current page URL pathname
- * @param targetChain - Target chain type to navigate to
- * @param sidebarConfig - Sidebar configuration (source of truth)
+ * @param currentUrl        - Current page URL pathname
+ * @param targetChain       - Target chain type to navigate to
+ * @param targetSidebarConfig - Sidebar to search for the equivalent page
+ * @param sourceSidebarConfig - Sidebar containing the current page (optional;
+ *                              defaults to targetSidebarConfig for same-version switching)
  * @returns URL of equivalent page for target chain, or null if no equivalent exists
- *
- * @example
- * // User is on /ccip/getting-started/aptos and selects Solana
- * findEquivalentPageUrl("/ccip/getting-started/aptos", "solana", CCIP_SIDEBAR_CONTENT)
- * // Returns: "ccip/getting-started/svm"
  */
 export function findEquivalentPageUrl(
   currentUrl: string,
   targetChain: ChainType,
-  sidebarConfig: SectionEntry[]
+  targetSidebarConfig: SectionEntry[],
+  sourceSidebarConfig?: SectionEntry[]
 ): string | null {
   const normalizedCurrentUrl = normalizeUrl(currentUrl)
+  const sourceConfig = sourceSidebarConfig || targetSidebarConfig
 
-  // Find current page, its parent, and section
-  let currentItem: SectionContent | null = null
+  // Find current page in the SOURCE sidebar (where the current URL exists)
+  let currentMatch: UrlMatch | null = null
   let currentParent: SectionContent | null = null
   let currentSection: SectionEntry | null = null
 
-  for (const section of sidebarConfig) {
-    currentItem = findItemByUrl(section.contents, normalizedCurrentUrl)
-    if (currentItem) {
+  for (const section of sourceConfig) {
+    currentMatch = findItemMatchByUrl(section.contents, normalizedCurrentUrl)
+    if (currentMatch) {
       currentSection = section
       currentParent = findParentOfUrl(normalizedCurrentUrl, section.contents)
       break
     }
   }
 
-  if (!currentItem || !currentSection) return null
+  if (!currentMatch || !currentSection) return null
 
-  // If current page is universal, it works for all chains
+  const currentItem = currentMatch.item
+
+  // If current page is universal (no chainTypes), it works for all chains.
   // Check both item and parent: if item has no chainTypes BUT parent has chainTypes,
-  // then item is chain-specific (inherits from parent)
+  // then item is chain-specific (inherits from parent).
   const isUniversal =
     (!currentItem.chainTypes || currentItem.chainTypes.length === 0) &&
     (!currentParent?.chainTypes || currentParent.chainTypes.length === 0)
 
-  if (isUniversal) {
+  // For same-version chain switching, universal pages stay at the same URL.
+  // For cross-version switching (sourceSidebarConfig provided), we must NOT
+  // short-circuit — we need the pageId lookup to find the version-specific
+  // equivalent (e.g., "ccip" → "ccip/v1" or "ccip/billing" → "ccip/v1/billing").
+  if (isUniversal && !sourceSidebarConfig) {
     return normalizedCurrentUrl
   }
 
-  // If we have a parent, find the equivalent parent in the target chain first
-  // Then search within THAT parent's children (not the current parent's children)
+  // --- Primary: pageId-based matching (deterministic) ---
+  if (currentItem.pageId) {
+    for (const section of targetSidebarConfig) {
+      const match = findItemByPageIdAndChain(section.contents, currentItem.pageId, targetChain)
+      if (match) return resolveMatchedTargetUrl(match, currentMatch)
+    }
+    return null
+  }
+
+  // --- Fallback: title-based matching (backward compatibility for items without pageId) ---
   if (currentParent) {
     const equivalentParent = findItemByTitleAndChain(currentSection.contents, currentParent.title, targetChain)
     if (equivalentParent?.children) {
       const equivalentItem = findItemByTitleAndChain(equivalentParent.children, currentItem.title, targetChain)
-      if (equivalentItem?.url) return equivalentItem.url
+      if (equivalentItem) return resolveMatchedTargetUrl(equivalentItem, currentMatch)
     }
   }
 
-  // Fallback: search the entire section if parent approach didn't work
   const equivalentItem = findItemByTitleAndChain(currentSection.contents, currentItem.title, targetChain)
-  return equivalentItem?.url || null
+  return equivalentItem ? resolveMatchedTargetUrl(equivalentItem, currentMatch) : null
 }
 
 /**
- * Finds the equivalent page URL with intelligent fallback
- * Implements graceful degradation: exact match → parent → section root
- *
- * This ensures users always land somewhere meaningful when switching chains,
- * even if the exact page doesn't exist for the target chain.
- *
- * Fallback chain:
- * 1. Try to find exact equivalent page (same title + target chain)
- * 2. If not found, try parent's equivalent page
- * 3. If still not found, fallback to section root
+ * Finds the equivalent page URL with intelligent fallback.
+ * Implements graceful degradation: exact match → section root → current page (chainless) or version root
  *
  * @param currentUrl - Current page URL pathname
  * @param targetChain - Target chain type to navigate to
- * @param sidebarConfig - Sidebar configuration (source of truth)
+ * @param targetSidebarConfig - Sidebar configuration to search (target version)
+ * @param sourceSidebarConfig - Optional. Pass when switching versions (source ≠ target).
+ *                              Omit when switching chains within the same version.
  * @returns URL to navigate to (never returns null - always finds something)
- *
- * @example
- * // Scenario 1: Exact match exists
- * // /ccip/concepts/cross-chain-token/svm/tokens → EVM
- * // Returns: "ccip/concepts/cross-chain-token/evm/tokens" ✅
- *
- * // Scenario 2: No exact match, fallback to parent
- * // /ccip/concepts/cross-chain-token/svm/integration-guide → EVM (doesn't have integration-guide)
- * // Returns: "ccip/concepts/cross-chain-token" (parent) ✅
- *
- * // Scenario 3: Parent doesn't exist either, fallback to section
- * // /ccip/some-solana-only-nested-page → EVM
- * // Returns: "ccip/concepts" (section root) ✅
  */
 export function findEquivalentPageUrlWithFallback(
   currentUrl: string,
   targetChain: ChainType,
-  sidebarConfig: SectionEntry[]
+  targetSidebarConfig: SectionEntry[],
+  sourceSidebarConfig?: SectionEntry[]
 ): string {
   const normalizedCurrentUrl = normalizeUrl(currentUrl)
 
-  // 1. Try exact match
-  const exactMatch = findEquivalentPageUrl(currentUrl, targetChain, sidebarConfig)
+  // 1. Try exact equivalent (pageId + chain match, with title fallback)
+  const exactMatch = findEquivalentPageUrl(currentUrl, targetChain, targetSidebarConfig, sourceSidebarConfig)
   if (exactMatch) return exactMatch
 
-  // 2. Find which section this page belongs to (single traversal)
-  const section = findSectionForUrl(normalizedCurrentUrl, sidebarConfig)
-
+  // 2. Try section root in the TARGET sidebar
+  const section = findSectionForUrl(normalizedCurrentUrl, targetSidebarConfig)
   if (section) {
-    // 3. Try parent equivalent
     const parent = findParentOfUrl(normalizedCurrentUrl, section.contents)
     if (parent?.url) {
-      const parentEquivalent = findEquivalentPageUrl(parent.url, targetChain, sidebarConfig)
+      const parentEquivalent = findEquivalentPageUrl(parent.url, targetChain, targetSidebarConfig, sourceSidebarConfig)
       if (parentEquivalent) return parentEquivalent
 
-      // If parent has no equivalent, return the parent itself
-      // (it's likely a universal page that works for all chains)
       return parent.url
     }
 
-    // 4. Fallback to first item in section
     const sectionFirstUrl = getFirstUrlFromSection(section)
     if (sectionFirstUrl) return sectionFirstUrl
   }
 
-  // 5. Ultimate fallback: stay on current page
-  // This should rarely happen, but prevents navigation to nowhere
-  return normalizedCurrentUrl
+  // 3. For cross-version fallback: if the URL isn't in the target sidebar,
+  // try to find the first section root in the target version.
+  if (sourceSidebarConfig && targetSidebarConfig.length > 0) {
+    const firstSection = targetSidebarConfig[0]
+    const sectionFirstUrl = getFirstUrlFromSection(firstSection)
+    if (sectionFirstUrl) return sectionFirstUrl
+  }
+
+  // 4. Ultimate fallback (same-version switching).
+  // Production parity: a page with no explicit chain segment (the landing, hub index pages)
+  // stays where it is; the stored selection drives the sidebar on reload. A chain-specific URL
+  // would re-detect its own chain on load and silently discard the selection, so those go to
+  // the version root instead (v1 context preserved).
+  if (!sourceSidebarConfig) {
+    if (detectChainFromPath(`/${normalizedCurrentUrl}`) === null) return normalizedCurrentUrl
+    if (normalizedCurrentUrl === "ccip/v1" || normalizedCurrentUrl.startsWith("ccip/v1/")) return "ccip/v1"
+  }
+  return "ccip"
 }

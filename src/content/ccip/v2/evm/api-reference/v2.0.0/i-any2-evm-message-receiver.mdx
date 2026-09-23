@@ -1,0 +1,80 @@
+---
+section: ccip
+date: Last Modified
+metadata:
+  description: "Base interface for CCIP receiver contracts that accept Any2EVM messages from the Router."
+  version: "2.0.0"
+title: "CCIP v2.0.0 IAny2EVMMessageReceiver API Reference"
+---
+
+`IAny2EVMMessageReceiver` defines the interface for contracts that receive CCIP messages from the [Router](/ccip/evm/api-reference/v2.0.0/router).
+
+If you implement this interface, you define how your contract validates and processes inbound CCIP messages.
+
+> Most applications should not implement this interface directly. Use `CCIPReceiver`, which provides a validated entrypoint and default behavior.
+
+## Usage Boundary
+
+**You typically should not implement this interface directly.**
+
+- Use `CCIPReceiver` for standard message handling.
+- Implement this interface only if you need full control over message validation and execution.
+- If you implement it, you are responsible for validating the caller and safely handling all message data.
+
+## Contract
+
+`interfaces/IAny2EVMMessageReceiver.sol`
+
+## Import
+
+```solidity
+import {IAny2EVMMessageReceiver} from "chainlink-ccip/interfaces/IAny2EVMMessageReceiver.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## External API
+
+### ccipReceive
+
+```solidity
+function ccipReceive( Client.Any2EVMMessage calldata message ) external
+```
+
+> Entry point for inbound CCIP messages.
+>
+> If you implement this function, you define how your contract processes incoming messages delivered by the Router.
+>
+> You must validate the caller and handle the message safely. Failing to do so can allow unauthorized message execution.
+
+| Parameter | Type                             | Description                                                             |
+| --------- | -------------------------------- | ----------------------------------------------------------------------- |
+| `message` | `Client.Any2EVMMessage calldata` | The decoded CCIP message containing sender, data, tokens, and metadata. |
+
+## Events
+
+No new events declared.
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+No new custom errors declared.
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Notes
+
+- If you implement this interface, you must restrict access to a trusted Router (for example, using an `onlyRouter` modifier).
+- This interface does not enforce validation or execution behavior. You are responsible for implementing both correctly.
+
+## Related Interfaces & Contracts
+
+- [`CCIPReceiver`](/ccip/evm/api-reference/v2.0.0/ccip-receiver)
+- [`Client`](/ccip/evm/api-reference/v2.0.0/client)
+- [`IAny2EVMMessageReceiverV2`](/ccip/evm/api-reference/v2.0.0/i-any2-evm-message-receiver-v2)
+- [`Router`](/ccip/evm/api-reference/v2.0.0/router)

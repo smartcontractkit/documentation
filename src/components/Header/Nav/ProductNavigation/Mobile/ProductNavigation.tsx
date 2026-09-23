@@ -6,7 +6,7 @@ import styles from "./productNavigation.module.css"
 import { MenuIcon } from "./MenuIcon.tsx"
 import { BackArrowIcon } from "./BackArrowIcon.tsx"
 import { CaretRightIcon } from "./CaretRightIcon.tsx"
-import MegaMenu from "./MegaMenu.tsx"
+import MegaMenu from "../Desktop/MegaMenu.tsx"
 
 const Trigger = extendRadixComponent(Dialog.Trigger)
 const Close = extendRadixComponent(Dialog.Close)
@@ -29,16 +29,24 @@ export function ProductNavigation() {
 
   return (
     <Root open={open} onOpenChange={handleOpenChange}>
-      <Trigger data-testid="product-navigation-trigger-mobile" className={styles.trigger}>
-        <img
-          alt="Documentation Home"
-          title="Documentation Home"
-          style={{ display: "flex" }}
-          src="/chainlink-docs.svg"
-          height={32}
-        />
-        <MenuIcon />
-      </Trigger>
+      <div className={styles.trigger}>
+        <a href="/" className={styles.logo}>
+          <img
+            alt="Documentation Home"
+            title="Documentation Home"
+            style={{ display: "flex" }}
+            src="/chainlink-docs.svg"
+            height={32}
+          />
+        </a>
+        <Trigger
+          data-testid="product-navigation-trigger-mobile"
+          className={styles.menuButton}
+          aria-label="Open navigation menu"
+        >
+          <MenuIcon />
+        </Trigger>
+      </div>
 
       <Portal>
         <Dialog.Overlay />
@@ -71,24 +79,22 @@ export function ProductNavigation() {
                       className={styles.productContentLink}
                       onClick={() => setProductsSlidePosition("submenu")}
                       data-testid="sub-product-navigation-trigger-mobile"
-                      aria-label="Open Resources submenu"
+                      aria-label="Open Docs submenu"
                     >
-                      Resources
+                      Docs
                       <CaretRightIcon />
                     </button>
-                    <a href="/" className={styles.productContentLink}>
-                      Docs
-                    </a>
+
                     <a href="https://dev.chain.link/demos" className={styles.productContentLink}>
                       Demos
                     </a>
                     <a href="https://dev.chain.link/tools" className={styles.productContentLink}>
                       Tools
                     </a>
-                    <a href="https://dev.chain.link/changelog" className={styles.productContentLink}>
+                    <a href="/changelog" className={styles.productContentLink}>
                       Changelog
                     </a>
-                    <a href="https://dev.chain.link/certification" className={styles.productContentLink}>
+                    <a href="/certification" className={styles.productContentLink}>
                       Get Certified
                     </a>
                   </ul>
@@ -103,11 +109,11 @@ export function ProductNavigation() {
                     >
                       <BackArrowIcon />
                     </button>
-                    <span className={styles.subProductContentTitle}>Resources</span>
+                    <span className={styles.subProductContentTitle}>Docs</span>
                     <span></span> {/* Spacer */}
                   </div>
                   <div className={styles.subProductContent}>
-                    <MegaMenu />
+                    <MegaMenu isMobile />
                   </div>
                 </div>
               </div>

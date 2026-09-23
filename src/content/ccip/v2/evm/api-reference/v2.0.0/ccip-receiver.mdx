@@ -1,0 +1,212 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 CCIPReceiver API Reference"
+metadata:
+  description: "Base contract for receiving CCIP messages on the destination chain."
+  version: "2.0.0"
+---
+
+`CCIPReceiver` is an abstract base contract that defines the validated entrypoint for inbound CCIP messages on the destination chain.
+
+The CCIP Router calls `ccipReceive`, which enforces that only the configured Router can deliver messages, then delegates execution to `_ccipReceive`.
+
+Contracts inherit `CCIPReceiver` and implement `_ccipReceive` to handle decoded messages, token transfers, and application-specific logic.
+
+This contract separates **protocol-level validation (Router enforcement)** from **application-level execution (message handling)**.
+
+This contract provides:
+
+- validated message delivery via Router enforcement
+- ERC-165 interface detection
+- customizable message handling via `_ccipReceive`
+
+> **You implement:** `_ccipReceive`  
+> **System calls:** `ccipReceive`
+
+## Usage Boundary
+
+**Do not call this contract directly.**
+
+- `ccipReceive` is invoked only by the CCIP Router during message delivery.
+- This contract is not an integration surface; it is a **hook** for receiving messages.
+- To use CCIP, inherit `CCIPReceiver` and implement `_ccipReceive`.
+- Place all application logic in `_ccipReceive`. Do not modify or rely on `ccipReceive`.
+
+## Contract
+
+`applications/CCIPReceiver.sol`
+
+## Import
+
+```solidity
+import {CCIPReceiver} from "chainlink-ccip/applications/CCIPReceiver.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## Inheritance
+
+- `IAny2EVMMessageReceiverV2`
+- `IERC165`
+
+## Constructor
+
+```solidity
+constructor( address router )
+```
+
+| Parameter | Type      | Description                                                                                         |
+| --------- | --------- | --------------------------------------------------------------------------------------------------- |
+| `router`  | `address` | Address of the CCIP Router contract authorized to call `ccipReceive`. Must not be the zero address. |
+
+## External API
+
+### supportsInterface
+
+```solidity
+function supportsInterface( bytes4 interfaceId ) public pure virtual override returns (bool)
+```
+
+> ERC-165 interface detection used by CCIP to determine whether `ccipReceive` should be invoked during message execution.
+>
+> - If the receiver contract has no code, only token transfers occur.
+> - If this returns false or reverts, only token transfers occur.
+> - If true, tokens are transferred and `ccipReceive` is executed atomically.
+
+| Parameter     | Type     | Description                    |
+| ------------- | -------- | ------------------------------ |
+| `interfaceId` | `bytes4` | Interface identifier to check. |
+
+Returns:
+
+| Type   | Description                         |
+| ------ | ----------------------------------- |
+| `bool` | True if the interface is supported. |
+
+---
+
+### ccipReceive
+
+```solidity
+function ccipReceive( Client.Any2EVMMessage calldata message ) external virtual override onlyRouter
+```
+
+> Entry point for inbound CCIP messages invoked by the Router.
+>
+> This function enforces that only the configured Router can deliver messages, then forwards the decoded message to `_ccipReceive` for application-defined handling.
+>
+> You do not call or override this function. Your control over message handling is implemented in `_ccipReceive`.
+
+| Parameter | Type                             | Description                                                             |
+| --------- | -------------------------------- | ----------------------------------------------------------------------- |
+| `message` | `Client.Any2EVMMessage calldata` | The decoded CCIP message containing sender, data, tokens, and metadata. |
+
+---
+
+### getRouter
+
+```solidity
+function getRouter() public view virtual returns (address)
+```
+
+> Returns the configured CCIP Router address used to validate message delivery.
+
+Returns:
+
+| Type      | Description                       |
+| --------- | --------------------------------- |
+| `address` | Address of the configured Router. |
+
+---
+
+### getCCVsAndFinalityConfig
+
+```solidity
+function getCCVsAndFinalityConfig(
+  uint64 destChainSelector,
+  bytes calldata extraData
+) external view virtual returns (
+  address[] memory requiredCCVs,
+  address[] memory optionalCCVs,
+  uint8 optionalThreshold,
+  bytes4 allowedFinalityConfig
+)
+```
+
+> Returns the Cross-Chain Verifier (CCV) set and finality requirements used to validate and execute incoming messages.
+>
+> Override this function to customize how messages are verified before execution, such as requiring specific verifiers or stricter finality guarantees.
+>
+> Most applications do not need to override this unless they require custom verification or security assumptions.
+
+| Parameter           | Type             | Description                                                          |
+| ------------------- | ---------------- | -------------------------------------------------------------------- |
+| `destChainSelector` | `uint64`         | Destination chain identifier for the message.                        |
+| `extraData`         | `bytes calldata` | Additional data used to determine verification or finality behavior. |
+
+Returns:
+
+| Type               | Description                                              |
+| ------------------ | -------------------------------------------------------- |
+| `address[] memory` | CCVs that must validate the message.                     |
+| `address[] memory` | Additional CCVs that may contribute to validation.       |
+| `uint8`            | Minimum number of optional CCVs required.                |
+| `bytes4`           | Encoded finality configuration accepted by the receiver. |
+
+## Events
+
+No new events declared.
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+```solidity
+error InvalidRouter(address router);
+```
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Notes / Security
+
+**Router Enforcement**
+
+`ccipReceive` can only be called by the configured Router. The Router address is set at construction and serves as the sole authority for message delivery. Any other caller will revert.
+
+**Execution Responsibility**
+
+`_ccipReceive` executes application-defined logic on cross-chain input. Risks include:
+
+- processing messages from untrusted or unexpected senders
+- incorrect handling of token transfers included in the message
+- assumptions about message ordering or uniqueness
+- reentrancy if external calls are made during execution
+
+**Message Validation**
+
+Applications are responsible for:
+
+- validating the source chain and sender
+- decoding and verifying payload data
+- preventing replay or duplicate message handling (if required)
+- safely handling any transferred tokens
+- explicitly validating that the sender is trusted before acting on the message
+
+**Idempotency**
+
+CCIP does not enforce application-level idempotency. If your use case requires replay protection or exactly-once execution semantics, implement message tracking (for example, messageId checks) inside `_ccipReceive`.
+
+**Failure Behavior**
+
+If `_ccipReceive` reverts, message execution fails and any associated token transfers also revert. Failed messages may enter a recoverable state depending on the CCIP execution flow (for example, manual execution).
+
+## Related Interfaces & Contracts
+
+- [`Client`](/ccip/evm/api-reference/v2.0.0/client)
+- [`IRouter`](/ccip/evm/api-reference/v2.0.0/i-router)
+- [`IAny2EVMMessageReceiverV2`](/ccip/evm/api-reference/v2.0.0/i-any2-evm-message-receiver-v2)

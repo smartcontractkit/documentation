@@ -4,8 +4,9 @@ interface Props {
   number?: number
   contentReference?: string
   depth?: 3 | 4
+  startOpen?: boolean
 }
-const { title, number, contentReference, depth = 3 } = Astro.props
+const { title, number, contentReference, depth = 3, startOpen = true } = Astro.props
 const id = title.toLowerCase().split(" ").join("-")
 const wrapperClass = `header-wrapper-${depth}`
 ---
@@ -13,8 +14,8 @@ const wrapperClass = `header-wrapper-${depth}`
 <astro-accordion {...contentReference && { contentReference }}>
   <div class={wrapperClass} id={id} title={title}>
     <details
-      open
-      {...{ expanded: "" }}
+      {...startOpen ? { open: true } : {}}
+      {...startOpen ? { expanded: "" } : {}}
       style={number === 1 || !number ? { borderTop: "1px solid var(--gray-300, #ced0d5)" } : {}}
     >
       <summary id={id} data-id={`${number}-${id}`}>

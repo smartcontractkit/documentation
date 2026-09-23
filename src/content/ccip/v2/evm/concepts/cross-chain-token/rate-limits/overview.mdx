@@ -1,0 +1,133 @@
+---
+section: ccip
+date: Last Modified
+title: "Rate Limits - Overview"
+metadata:
+  description: "How CCIP rate limits work as capacity buckets that refill over time, why they exist, who should manage them, and the responsibility boundary for operators and token issuers."
+  excerpt: "CCIP rate limits capacity buckets refill isEnabled capacity rate outbound inbound fast finality TokenPool v2.0 v1.x operator responsibility"
+  datePublished: "2025-06-09"
+  lastModified: "2025-06-09"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<Aside type="note" title="CCIP v2.0">
+  <ol>
+    <li>
+      This section is written for `TokenPool` v2.0 contracts and their variants (for example, `BurnMintTokenPool`,
+      `LockReleaseTokenPool`).
+    </li>
+    <li>
+      The same operational concepts apply to **v1.x token pools**; differences are called out inline as **v1.x pools**
+      notes.
+    </li>
+  </ol>
+</Aside>
+
+CCIP rate limits are an operator-level control on token pools. They limit how much of a token can move across a specific CCIP lane over time, reducing blast radius during incidents and helping manage operational risk.
+
+This documentation is for operators, token issuers, and administrators who manage rate limits on token pool contracts. Most integrators do not need to interact with rate limits. Changes are applied on-chain, take effect immediately, and directly affect transfer availability.
+
+<Aside type="note" title="Private/Permissioned Networks">
+  It is strongly recommended to configure Token Pool Rate Limits (TPRLs) for CCTs on all lanes. Private / permissioned
+  networks carry increased risk for token developers — ensure you understand the implications before proceeding. [Learn
+  More](https://docs.chain.link/ccip/concepts/cct).
+</Aside>
+
+## How rate limits work
+
+Rate limits are **capacity buckets** that refill over time. Each bucket has three parameters:
+
+- **isEnabled** — whether the limit is active
+- **capacity** — maximum tokens before the bucket is depleted
+- **rate** — refill speed in tokens per second
+
+Transfers consume capacity; if enough is not available, the transfer is rejected until the bucket refills. All values use the token's **local smallest unit** on the chain where the pool is deployed. When enabled, rate must be ≤ capacity.
+
+{/* Add dynamic diagram here */}
+
+<div style="display:flex;justify-content:center;margin:1.5rem 0;">
+  <iframe
+    src="/images/ccip/concepts/cross-chain-token/token-pool-rate-limit-dynamic-diagram.html"
+    title="Interactive token pool rate limit bucket visualization"
+    style="width:100%;max-width:680px;height:560px;border:1px solid #e5e5e5;border-radius:8px;box-sizing:border-box;"
+    loading="lazy"
+  />
+</div>
+
+Each token pool maintains up to **four limiters per remote chain (v2.0)**:
+
+| Bucket        | Direction          | Used for                           |
+| ------------- | ------------------ | ---------------------------------- |
+| Default       | Outbound / Inbound | Wait-for-finality transfers        |
+| Fast-finality | Outbound / Inbound | Fast-finality transfers (optional) |
+
+Fast-finality buckets are optional. If one is not enabled, fast-finality traffic falls back to the default bucket. Whether fast-finality is permitted at all is controlled by the pool owner via `setAllowedFinalityConfig`.
+
+<Aside type="note" title="v1.x pools">
+  EVM v1 pools have **two limiters per remote chain** — one inbound and one outbound. There are no separate
+  fast-finality buckets and no `setAllowedFinalityConfig`.
+</Aside>
+
+- Outbound limits apply to sends from the local chain.
+- Inbound limits apply to receives on the local chain.
+
+Outbound is configured on the source pool; inbound on the destination pool. Both sides of a lane must be configured for limits to behave as intended.
+
+Because CCIP commits messages in batches and chains finalize in epochs, destination inbound limits should be ~5–10% higher than source outbound limits (deployment tooling typically uses 10% headroom).
+
+| State     | Config                                | Effect                                          |
+| --------- | ------------------------------------- | ----------------------------------------------- |
+| Active    | `isEnabled=true`, capacity > 0        | Transfers consume capacity and refill over time |
+| Disabled  | `isEnabled=false`, capacity=0, rate=0 | No volume limit for that bucket                 |
+| Throttled | `isEnabled=true`, capacity=0, rate=0  | All transfers blocked                           |
+
+Rate limits are scoped per token pool, remote chain, bucket type, and direction — they do not pause CCIP globally.
+
+<Aside type="note" title="Config changes and bucket refill">
+  <ol>
+    <li>
+      <strong>v2.0 pools:</strong> Config changes immediately set available tokens to the new capacity (a full refill).
+    </li>
+    <li>
+      <strong>v1.x pools:</strong> After a config change, the bucket continues refilling at the **normal rate** rather
+      than jumping to full capacity — account for this when tuning limits during live traffic or when restoring service
+      after a lockdown.
+    </li>
+  </ol>
+</Aside>
+
+## Why rate limits exist
+
+Rate limits are a defensive mechanism. They help:
+
+- prevent large, single transfers from draining liquidity unexpectedly
+- limit exposure during misconfiguration, incidents, or active investigations
+- give operators time to react if abnormal activity is detected
+
+## Who should manage rate limits
+
+Interact with rate limits only if you:
+
+- operate or administer a CCIP token pool (v2.0 or v1.x)
+- hold the pool **owner** role or `rateLimitAdmin`
+- understand token decimals on each chain you configure
+- accept responsibility for the operational impact of changes
+
+| Role               | Update limits | Add/remove lanes |
+| ------------------ | ------------- | ---------------- |
+| **Owner**          | Yes           | Yes              |
+| **rateLimitAdmin** | Yes           | No               |
+
+## Responsibility and risk
+
+Managing rate limits directly affects the availability of cross-chain transfers for a token. Incorrect configuration can:
+
+- unintentionally halt bridging
+- allow more volume than intended
+- create congestion or stuck transfers
+
+Changes are applied on-chain and take effect immediately. Always review parameters carefully, verify units, and use a multisig workflow where possible.
+
+<CcipCommon callout="conceptualDisclaimer" />

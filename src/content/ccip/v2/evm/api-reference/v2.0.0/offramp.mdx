@@ -1,0 +1,283 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 OffRamp API Reference"
+metadata:
+  description: "Processes delivered CCIP messages on the destination chain."
+  version: "2.0.0"
+---
+
+`OffRamp` is the destination-chain execution engine for CCIP messages.
+
+It is responsible for:
+
+- validating delivered messages using CCVs (verifiers)
+- coordinating token delivery through pools
+- executing receiver contract logic
+- tracking execution state to prevent duplicate processing
+
+All inbound message execution flows through this contract.
+
+> Applications do not call this contract directly.
+
+## Usage Boundary
+
+**You do not call this contract directly.**
+
+- OffRamp is invoked when messages are delivered to the destination chain.
+- It coordinates validation, token handling, and receiver execution.
+- The owner configures supported source chains and execution policy.
+- `execute` may be called by permissionless executors or relayers, depending on deployment configuration.
+- You are responsible for ensuring correct source chain and CCV configuration.
+
+## Contract
+
+`offRamp/OffRamp.sol`
+
+## Import
+
+```solidity
+import {OffRamp} from "chainlink-ccip/offRamp/OffRamp.sol";
+```
+
+## Inheritance
+
+- `ITypeAndVersion`
+- `Ownable2StepMsgSender`
+
+## Constructor
+
+```solidity
+constructor(StaticConfig memory staticConfig)
+```
+
+| Parameter      | Type                  | Description                                  |
+| -------------- | --------------------- | -------------------------------------------- |
+| `staticConfig` | `StaticConfig memory` | Static configuration for execution behavior. |
+
+## Execution Flow
+
+1. A message is delivered to the destination chain.
+2. `execute` or `executeSingleMessage` is called.
+3. CCVs validate the message using provided `verifierResults`.
+4. Token transfers are processed via configured pools.
+5. The receiver contract is called.
+6. Execution state is updated to prevent replay.
+
+## External API
+
+### getExecutionState
+
+```solidity
+function getExecutionState(bytes32 messageId)
+  public
+  view
+  returns (Internal.MessageExecutionState)
+```
+
+> Returns the execution state of a message, including whether it has been processed.
+
+### execute
+
+```solidity
+function execute(
+  bytes calldata encodedMessage,
+  address[] calldata ccvs,
+  bytes[] calldata verifierResults,
+  uint32 gasLimitOverride
+) external
+```
+
+> Executes one or more messages by validating them and triggering token delivery and receiver execution.
+
+| Parameter          | Type                 | Description                                          |
+| ------------------ | -------------------- | ---------------------------------------------------- |
+| `encodedMessage`   | `bytes calldata`     | Encoded message payload.                             |
+| `ccvs`             | `address[] calldata` | Verifier contracts used to validate the message.     |
+| `verifierResults`  | `bytes[] calldata`   | Verifier-specific data produced on the source chain. |
+| `gasLimitOverride` | `uint32`             | Optional override for receiver execution gas limit.  |
+
+### executeSingleMessage
+
+```solidity
+function executeSingleMessage(
+  MessageV1Codec.MessageV1 calldata message,
+  bytes32 messageId,
+  address[] calldata ccvs,
+  bytes[] calldata verifierResults,
+  uint32 gasLimitOverride
+) external
+```
+
+> Executes a single message with explicit parameters.
+
+| Parameter          | Type                                | Description                                         |
+| ------------------ | ----------------------------------- | --------------------------------------------------- |
+| `message`          | `MessageV1Codec.MessageV1 calldata` | Message being executed.                             |
+| `messageId`        | `bytes32`                           | Unique message identifier.                          |
+| `ccvs`             | `address[] calldata`                | Verifier contracts used for validation.             |
+| `verifierResults`  | `bytes[] calldata`                  | Verifier-specific data for validation.              |
+| `gasLimitOverride` | `uint32`                            | Optional override for receiver execution gas limit. |
+
+### getCCVsForMessage
+
+```solidity
+function getCCVsForMessage(bytes calldata encodedMessage)
+  external
+  view
+  returns (
+    address[] memory requiredCCVs,
+    address[] memory optionalCCVs,
+    uint8 threshold
+  )
+```
+
+> Returns the required and optional CCVs and threshold for validating a message.
+
+### getStaticConfig
+
+```solidity
+function getStaticConfig() external view returns (StaticConfig memory)
+```
+
+> Returns static configuration.
+
+### getSourceChainConfig
+
+```solidity
+function getSourceChainConfig(uint64 sourceChainSelector)
+  external
+  view
+  returns (SourceChainConfig memory)
+```
+
+> Returns configuration for a source chain.
+
+### getAllSourceChainConfigs
+
+```solidity
+function getAllSourceChainConfigs()
+  external
+  view
+  returns (
+    uint64[] memory sourceChainSelectors,
+    SourceChainConfig[] memory sourceChainConfigs
+  )
+```
+
+> Returns all configured source chains.
+
+### applySourceChainConfigUpdates
+
+```solidity
+function applySourceChainConfigUpdates(
+  SourceChainConfigArgs[] calldata sourceChainConfigUpdates
+) external onlyOwner
+```
+
+> Updates source chain configuration.
+
+## Events
+
+- `event ExecutionStateChanged(uint64 indexed sourceChainSelector, uint64 indexed messageNumber, bytes32 indexed messageId, Internal.MessageExecutionState state, bytes returnData)`
+- `event SourceChainConfigSet(uint64 indexed sourceChainSelector, SourceChainConfigArgs sourceConfig)`
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+- `error ZeroChainSelectorNotAllowed()`
+- `error NoStateProgressMade(bytes32 messageId, bytes err)`
+- `error OptionalCCVQuorumNotReached(uint256 wanted, uint256 got)`
+- `error SourceChainNotEnabled(uint64 sourceChainSelector)`
+- `error CanOnlySelfCall()`
+- `error ReceiverError(bytes err)`
+- `error TokenHandlingError(address target, bytes err)`
+- `error CursedByRMN(uint64 sourceChainSelector)`
+- `error NotACompatiblePool(address notPool)`
+- `error InvalidVerifierResultsLength(uint256 expected, uint256 got)`
+- `error ZeroAddressNotAllowed()`
+- `error InvalidMessageDestChainSelector(uint64 messageDestChainSelector)`
+- `error InsufficientGasToCompleteTx(bytes4 err)`
+- `error SkippedAlreadyExecutedMessage(bytes32 messageId, uint64 sourceChainSelector, uint64 messageNumber)`
+- `error ReentrancyGuardReentrantCall()`
+- `error RequiredCCVMissing(address requiredCCV)`
+- `error InvalidNumberOfTokens(uint256 numTokens)`
+- `error InvalidOnRamp(bytes got)`
+- `error InvalidOffRamp(address expected, bytes got)`
+- `error InboundImplementationNotFound(address ccvAddress, bytes verifierResults)`
+- `error InvalidGasLimitOverride(uint32 messageGasLimit, uint32 gasLimitOverride)`
+- `error InvalidOptionalThreshold(uint8 wanted, uint256 got)`
+- `error GasCannotBeZero()`
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Notes
+
+- Execution succeeds only if all required CCVs validate the message.
+- Optional CCVs must meet the configured threshold for execution to proceed.
+- Each entry in `verifierResults` must correspond to the CCV at the same index in `ccvs`.
+- CCV ordering does not affect validation but must align with provided verifier results.
+- Each message can only be executed once.
+- `gasLimitOverride` must not exceed the message-defined gas limit.
+- Messages from chains not explicitly enabled in source chain configuration will be rejected.
+- Execution will revert if validation fails, gas limits are insufficient, or token handling fails.
+- Receiver execution failures are captured and emitted but still update execution state.
+
+## Structs
+
+### StaticConfig
+
+```solidity
+struct StaticConfig {
+  uint64 localChainSelector;
+  uint16 gasForCallExactCheck;
+  IRMNRemote rmnRemote;
+  address tokenAdminRegistry;
+  uint32 maxGasBufferToUpdateState;
+}
+```
+
+### SourceChainConfig
+
+```solidity
+struct SourceChainConfig {
+  IRouter router;
+  bool isEnabled;
+  address[] onRamps;
+  address[] defaultCCVs;
+  address[] laneMandatedCCVs;
+}
+```
+
+### SourceChainConfigArgs
+
+```solidity
+struct SourceChainConfigArgs {
+  IRouter router;
+  uint64 sourceChainSelector;
+  bool isEnabled;
+  address[] onRamps;
+  address[] defaultCCVs;
+  address[] laneMandatedCCVs;
+}
+```
+
+## Internal Functions
+
+Internal helpers coordinate validation, token handling, and receiver execution.
+
+## Security model
+
+- Execution is gated by CCV validation and RMN safety checks.
+- Owner controls source chain configuration and CCV policies.
+- Reentrancy protection enforces safe execution.
+- Execution state tracking prevents replay of messages.
+- Misconfiguration may result in failed execution or rejected messages.
+
+## Related Interfaces & Contracts
+
+- [`IRouter`](/ccip/evm/api-reference/v2.0.0/i-router)
+- [`ICrossChainVerifierV1`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-v1)
+- [`Client`](/ccip/evm/api-reference/v2.0.0/client)
+- [`Pool`](/ccip/evm/api-reference/v2.0.0/pool)

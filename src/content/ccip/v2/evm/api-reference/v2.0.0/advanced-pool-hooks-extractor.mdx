@@ -1,0 +1,232 @@
+---
+section: ccip
+date: Last Modified
+title: "AdvancedPoolHooksExtractor API Reference"
+metadata:
+  description: "Extractor that decodes AdvancedPoolHooks preflight/postflight calldata into ACE policy engine parameters."
+  version: "2.0.0"
+---
+
+## Summary
+
+`AdvancedPoolHooksExtractor` implements `IExtractor` and transforms `AdvancedPoolHooks` calldata into a canonical list of `IPolicyEngine.Parameter` entries.
+
+It is:
+
+- Deterministic
+- Pure
+- Read-only
+- Stateless
+
+This contract does not modify state and is safe for on-chain policy evaluation paths.
+
+---
+
+## Contract
+
+`chains/evm/contracts/pools/extractors/AdvancedPoolHooksExtractor.sol`
+
+---
+
+## Import
+
+```solidity
+import {AdvancedPoolHooksExtractor} from "chainlink-ccip/chains/evm/contracts/pools/extractors/AdvancedPoolHooksExtractor.sol";
+```
+
+---
+
+## Inheritance
+
+- `IExtractor`
+- `ITypeAndVersion`
+
+---
+
+## typeAndVersion
+
+```solidity
+string public constant override typeAndVersion =
+  "AdvancedPoolHooksExtractor 2.0.0-dev";
+```
+
+---
+
+## State
+
+### Constants
+
+```solidity
+string public constant override typeAndVersion =
+  "AdvancedPoolHooksExtractor 2.0.0-dev";
+```
+
+Parameter key constants:
+
+```solidity
+bytes32 public constant PARAM_FROM =
+  keccak256("PARAM_FROM");
+
+bytes32 public constant PARAM_TO =
+  keccak256("PARAM_TO");
+
+bytes32 public constant PARAM_AMOUNT =
+  keccak256("PARAM_AMOUNT");
+
+bytes32 public constant PARAM_AMOUNT_POST_FEE =
+  keccak256("PARAM_AMOUNT_POST_FEE");
+
+bytes32 public constant PARAM_REMOTE_CHAIN_SELECTOR =
+  keccak256("PARAM_REMOTE_CHAIN_SELECTOR");
+
+bytes32 public constant PARAM_TOKEN =
+  keccak256("PARAM_TOKEN");
+
+bytes32 public constant PARAM_BLOCK_CONFIRMATION_REQUESTED =
+  keccak256("PARAM_BLOCK_CONFIRMATION_REQUESTED");
+
+bytes32 public constant PARAM_SOURCE_POOL_ADDRESS =
+  keccak256("PARAM_SOURCE_POOL_ADDRESS");
+
+bytes32 public constant PARAM_SOURCE_POOL_DATA =
+  keccak256("PARAM_SOURCE_POOL_DATA");
+
+bytes32 public constant PARAM_SOURCE_DENOMINATED_AMOUNT =
+  keccak256("PARAM_SOURCE_DENOMINATED_AMOUNT");
+```
+
+No storage variables.
+
+---
+
+## Constructor
+
+None.
+
+---
+
+## External API
+
+### `extract`
+
+```solidity
+function extract(IPolicyEngine.Payload calldata payload)
+  public
+  pure
+  virtual
+  returns (IPolicyEngine.Parameter[] memory)
+```
+
+Behavior:
+
+- Routes based on `payload.selector`:
+  - If equal to `IAdvancedPoolHooks.preflightCheck.selector`
+    → calls `_extractPreflightCheck`.
+
+  - If equal to `IAdvancedPoolHooks.postflightCheck.selector`
+    → calls `_extractPostflightCheck`.
+
+  - Otherwise reverts:
+
+```solidity
+IPolicyEngine.UnsupportedSelector(payload.selector)
+```
+
+Returns an array of extracted `IPolicyEngine.Parameter`.
+
+---
+
+## Internal Functions
+
+### `_extractPreflightCheck`
+
+```solidity
+function _extractPreflightCheck(IPolicyEngine.Payload calldata payload)
+  internal
+  pure
+  returns (IPolicyEngine.Parameter[] memory)
+```
+
+Decodes `payload.data` as:
+
+```solidity
+(Pool.LockOrBurnInV1, uint16 blockConfirmationRequested, bytes tokenArgs, uint256 amountPostFee)
+```
+
+Builds and returns 7 parameters:
+
+- `PARAM_FROM` → original sender
+- `PARAM_TO` → receiver (raw bytes)
+- `PARAM_AMOUNT` → amount
+- `PARAM_AMOUNT_POST_FEE` → amountPostFee
+- `PARAM_REMOTE_CHAIN_SELECTOR` → remoteChainSelector
+- `PARAM_TOKEN` → localToken
+- `PARAM_BLOCK_CONFIRMATION_REQUESTED` → blockConfirmationRequested
+
+`tokenArgs` is intentionally skipped.
+
+---
+
+### `_extractPostflightCheck`
+
+```solidity
+function _extractPostflightCheck(IPolicyEngine.Payload calldata payload)
+  internal
+  pure
+  returns (IPolicyEngine.Parameter[] memory)
+```
+
+Decodes `payload.data` as:
+
+```solidity
+(Pool.ReleaseOrMintInV1, uint256 localAmount, uint16 blockConfirmationRequested)
+```
+
+Builds and returns 9 parameters:
+
+- `PARAM_FROM` → original sender
+- `PARAM_TO` → encoded receiver
+- `PARAM_AMOUNT` → localAmount
+- `PARAM_REMOTE_CHAIN_SELECTOR` → remoteChainSelector
+- `PARAM_TOKEN` → localToken
+- `PARAM_BLOCK_CONFIRMATION_REQUESTED` → blockConfirmationRequested
+- `PARAM_SOURCE_POOL_ADDRESS` → sourcePoolAddress
+- `PARAM_SOURCE_POOL_DATA` → sourcePoolData
+- `PARAM_SOURCE_DENOMINATED_AMOUNT` → sourceDenominatedAmount
+
+`offchainTokenData` is treated as contextual input and skipped.
+
+---
+
+## Events
+
+None.
+
+---
+
+## Errors
+
+None declared in this contract.
+
+Reverts via:
+
+```solidity
+IPolicyEngine.UnsupportedSelector(bytes4 selector)
+```
+
+---
+
+## Security model
+
+- Pure deterministic transformer.
+- No storage writes.
+- No external calls.
+- Safe to invoke from policy evaluation paths.
+- Selector-based routing prevents accidental mis-decoding.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`IAdvancedPoolHooks`](/ccip/evm/api-reference/v2.0.0/i-advanced-pool-hooks)
+- [`Pool`](/ccip/evm/api-reference/v2.0.0/pool)

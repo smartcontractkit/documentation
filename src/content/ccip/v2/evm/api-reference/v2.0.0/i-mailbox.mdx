@@ -1,0 +1,90 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IMailbox API Reference"
+metadata:
+  description: "Interface for Lombard Mailbox contract used to verify proofs and deliver bridged messages."
+  version: "2.0.0"
+---
+
+## Summary
+
+`IMailbox` defines the minimal interface for the Lombard Mailbox contract.
+
+The Mailbox is responsible for:
+
+- Verifying bridge proofs
+- Executing the bridged message
+- Returning execution status and optional payload data
+
+It is used by CCIP verifiers such as `[LombardVerifier](/ccip/evm/api-reference/v2.0.0/lombard-verifier)` during destination-side verification.
+
+---
+
+## Contract
+
+`chains/evm/contracts/interfaces/lombard/IMailbox.sol`
+
+---
+
+## Import
+
+```solidity
+import {IMailbox} from "chainlink-ccip/chains/evm/contracts/interfaces/lombard/IMailbox.sol";
+```
+
+---
+
+## Interface surface
+
+```solidity
+interface IMailbox {
+```
+
+---
+
+### deliverAndHandle
+
+```solidity
+function deliverAndHandle(
+  bytes calldata rawPayload,
+  bytes calldata proof
+)
+  external
+  returns (
+    bytes32,
+    bool executed,
+    bytes memory optionalMessage
+  );
+```
+
+Verifies and executes a bridged message.
+
+Returns:
+
+- `bytes32` — Bridge-defined identifier (e.g., payload hash)
+- `bool executed` — Whether execution succeeded
+- `bytes optionalMessage` — Optional payload forwarded from source chain
+
+---
+
+```solidity
+}
+```
+
+---
+
+## Integration notes / expectations
+
+- Implementations must ensure proof verification correctness.
+- Consumers should validate `executed == true` before trusting returned data.
+- `optionalMessage` may contain verifier-specific metadata and must be validated by the calling contract.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`IBridgeV3`](/ccip/evm/api-reference/v2.0.0/i-bridge-v3)
+- [`LombardVerifier`](/ccip/evm/api-reference/v2.0.0/lombard-verifier)
+- [`BaseVerifier`](/ccip/evm/api-reference/v2.0.0/base-verifier)
+- [`MessageV1Codec`](/ccip/evm/api-reference/v2.0.0/message-v1-codec)

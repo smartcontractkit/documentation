@@ -1,0 +1,288 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 USDCTokenPool API Reference"
+metadata:
+  description: "USDC token pool implementation that mints/burns via Circle CCTP (V1 message format)."
+  version: "2.0.0"
+---
+
+## Summary
+
+`USDCTokenPool` is a USDC-specific `[TokenPool](/ccip/evm/api-reference/v2.0.0/token-pool)` implementation that uses Circle’s Cross Chain Transfer Protocol (CCTP) to burn USDC on the source chain and mint USDC on the destination chain.
+
+It is the **CCTP V1** pool variant. A separate contract, `USDCTokenPoolCCTPV2`, inherits from this pool and overrides only the functionality needed for CCTP V2.
+
+## Contract
+
+`chains/evm/contracts/pools/USDC/USDCTokenPool.sol`
+
+## Import
+
+```solidity
+import {USDCTokenPool} from "chainlink-ccip/chains/evm/contracts/pools/USDC/USDCTokenPool.sol";
+```
+
+## Inheritance
+
+- `TokenPool`
+- `ITypeAndVersion`
+- `AuthorizedCallers` ([GitHub][1])
+
+## typeAndVersion
+
+```solidity
+function typeAndVersion() external pure virtual override returns (string memory);
+```
+
+Returns:
+
+- `"USDCTokenPool 1.6.5-dev"` ([GitHub][1])
+
+## State
+
+### Constants
+
+```solidity
+uint256 internal constant SOURCE_POOL_DATA_LENGTH = 64;
+```
+
+`releaseOrMint` expects `sourcePoolData` to be ABI-decoded into a payload occupying two 32-byte words (64 bytes total). ([GitHub][1])
+
+### Immutables
+
+```solidity
+uint32 public immutable i_supportedUSDCVersion;
+ITokenMessenger public immutable i_tokenMessenger;
+CCTPMessageTransmitterProxy public immutable i_messageTransmitterProxy;
+uint32 public immutable i_localDomainIdentifier;
+```
+
+- `i_supportedUSDCVersion` is the supported CCTP message format version (V1 uses `0`). ([GitHub][1])
+
+### Storage
+
+```solidity
+mapping(uint64 chainSelector => Domain CCTPDomain) internal s_chainToDomain;
+```
+
+Maps a CCIP `chainSelector` to the destination CCTP `Domain` config. ([GitHub][1])
+
+## Constructor
+
+```solidity
+constructor(
+  ITokenMessenger tokenMessenger,
+  CCTPMessageTransmitterProxy cctpMessageTransmitterProxy,
+  IERC20 token,
+  address[] memory allowlist,
+  address rmnProxy,
+  address router,
+  uint32 supportedUSDCVersion
+)
+  TokenPool(token, 6, allowlist, rmnProxy, router)
+  AuthorizedCallers(new address)
+```
+
+Key behaviors:
+
+- Validates non-zero `tokenMessenger`.
+- Reads the local message transmitter from the token messenger and validates:
+  - message transmitter `version()` matches `supportedUSDCVersion`
+  - token messenger `messageBodyVersion()` matches `supportedUSDCVersion`
+
+- Validates the transmitter proxy is configured with the expected transmitter.
+- Sets `i_localDomainIdentifier = transmitter.localDomain()`.
+- Grants `tokenMessenger` max allowance to burn tokens from this pool.
+- Emits `ConfigSet(tokenMessenger)`. ([GitHub][1])
+
+## External API
+
+### lockOrBurn
+
+```solidity
+function lockOrBurn(
+  Pool.LockOrBurnInV1 calldata lockOrBurnIn
+) public virtual override returns (Pool.LockOrBurnOutV1 memory);
+```
+
+Burns USDC via `i_tokenMessenger.depositForBurnWithCaller` and returns `destPoolData` containing:
+
+- `nonce` (returned by CCTP V1)
+- `sourceDomain` (`i_localDomainIdentifier`)
+
+Emits `LockedOrBurned`. ([GitHub][1])
+
+Reverts (selection):
+
+- `UnknownDomain(uint64 domain)` if destination domain not enabled.
+- `InvalidReceiver(bytes receiver)` if `receiver.length != 32`. ([GitHub][1])
+
+---
+
+### releaseOrMint
+
+```solidity
+function releaseOrMint(
+  Pool.ReleaseOrMintInV1 calldata releaseOrMintIn
+) public virtual override returns (Pool.ReleaseOrMintOutV1 memory);
+```
+
+Mints USDC on destination by forwarding the offchain-provided `(message, attestation)` to `i_messageTransmitterProxy.receiveMessage(...)`.
+
+Flow:
+
+- Validates `sourcePoolData.length == SOURCE_POOL_DATA_LENGTH`.
+- Decodes `sourcePoolData` as `USDCSourcePoolDataCodec.SourceTokenDataPayloadV1`.
+- Decodes `offchainTokenData` as `MessageAndAttestation`.
+- Validates the USDC message against the expected payload (domain, nonce, version).
+- Calls `receiveMessage` via the transmitter proxy.
+- Emits `ReleasedOrMinted`.
+- Returns `destinationAmount = sourceDenominatedAmount`. ([GitHub][1])
+
+Reverts (selection):
+
+- `InvalidSourcePoolDataLength(uint256 length)`
+- `InvalidMessageLength(uint256 length)`
+- `InvalidMessageVersion(uint32 expected, uint32 got)`
+- `InvalidSourceDomain(uint32 expected, uint32 got)`
+- `InvalidDestinationDomain(uint32 expected, uint32 got)`
+- `InvalidNonce(uint64 expected, uint64 got)`
+- `UnlockingUSDCFailed()` if `receiveMessage` returns false. ([GitHub][1])
+
+---
+
+### getDomain
+
+```solidity
+function getDomain(
+  uint64 chainSelector
+) external view returns (Domain memory);
+```
+
+Returns the configured destination `Domain` for `chainSelector`. ([GitHub][1])
+
+---
+
+### setDomains
+
+```solidity
+function setDomains(
+  DomainUpdate[] calldata domains
+) external onlyOwner;
+```
+
+Sets `s_chainToDomain[destChainSelector]` for each entry and emits `DomainsSet(domains)`.
+
+Reverts:
+
+- `InvalidDomain(DomainUpdate domain)` if `allowedCaller == bytes32(0)` or `destChainSelector == 0`. ([GitHub][1])
+
+## Events
+
+```solidity
+event DomainsSet(DomainUpdate[]);
+event ConfigSet(address tokenMessenger);
+```
+
+(Also emits inherited `TokenPool` events such as `LockedOrBurned` and `ReleasedOrMinted`.) ([GitHub][1])
+
+## Errors
+
+```solidity
+error UnknownDomain(uint64 domain);
+error UnlockingUSDCFailed();
+error InvalidConfig();
+error InvalidDomain(DomainUpdate domain);
+error InvalidMessageVersion(uint32 expected, uint32 got);
+error InvalidTokenMessengerVersion(uint32 expected, uint32 got);
+error InvalidNonce(uint64 expected, uint64 got);
+error InvalidSourceDomain(uint32 expected, uint32 got);
+error InvalidDestinationDomain(uint32 expected, uint32 got);
+error InvalidReceiver(bytes receiver);
+error InvalidTransmitterInProxy();
+error InvalidSourcePoolDataLength(uint256 length);
+error InvalidMessageLength(uint256 length);
+```
+
+Additional errors can surface from inherited `TokenPool` validation (chain allowlist, ramps, RMN, etc.). ([GitHub][1])
+
+## Structs
+
+### MessageAndAttestation
+
+```solidity
+struct MessageAndAttestation {
+  bytes message;
+  bytes attestation;
+}
+```
+
+Offchain-supplied CCTP message + attestation pair. ([GitHub][1])
+
+### DomainUpdate
+
+```solidity
+struct DomainUpdate {
+  bytes32 allowedCaller;
+  bytes32 mintRecipient;
+  uint32 domainIdentifier;
+  uint64 destChainSelector;
+  bool enabled;
+}
+```
+
+Used by `setDomains`. ([GitHub][1])
+
+### Domain
+
+```solidity
+struct Domain {
+  bytes32 allowedCaller;
+  bytes32 mintRecipient;
+  uint32 domainIdentifier;
+  bool enabled;
+}
+```
+
+Stored per destination chain selector. ([GitHub][1])
+
+## Internal Functions
+
+### \_onlyOnRamp
+
+Overrides on-ramp caller validation to allow proxy-mediated invocation:
+
+- requires supported chain
+- then validates caller via `AuthorizedCallers` (`_validateCaller()`). ([GitHub][1])
+
+### \_onlyOffRamp
+
+Same pattern as `_onlyOnRamp` for off-ramp paths. ([GitHub][1])
+
+### \_validateMessage
+
+Parses the CCTP V1 message header fields and validates:
+
+- `version == i_supportedUSDCVersion`
+- `sourceDomain == payload.sourceDomain`
+- `destinationDomain == i_localDomainIdentifier`
+- `nonce == payload.nonce` ([GitHub][1])
+
+## Security model
+
+- Owner controls domain routing (`setDomains`).
+- Only authorized callers can invoke ramp entrypoints (proxy-safe via `AuthorizedCallers`).
+- `releaseOrMint` is fail-closed on malformed `sourcePoolData` or invalid message fields.
+- Minting depends on Circle’s message transmitter acceptance; false return reverts.
+- Unlimited allowance is granted to `tokenMessenger` to burn USDC from the pool. ([GitHub][1])
+
+## Related Interfaces & Contracts
+
+- [`USDCTokenPoolProxy`](/ccip/evm/api-reference/v2.0.0/usdc-token-pool-proxy)
+- [`CCTPThroughCCVTokenPool`](/ccip/evm/api-reference/v2.0.0/cctp-through-ccv-token-pool)
+- [`CCTPMessageTransmitterProxy`](/ccip/evm/api-reference/v2.0.0/cctp-message-transmitter-proxy)
+- [`USDCSourcePoolDataCodec`](/ccip/evm/api-reference/v2.0.0/usdc-source-pool-data-codec)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`ITokenMessenger`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/USDC/interfaces/ITokenMessenger.sol)
+- [`IMessageTransmitter`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/USDC/interfaces/IMessageTransmitter.sol)

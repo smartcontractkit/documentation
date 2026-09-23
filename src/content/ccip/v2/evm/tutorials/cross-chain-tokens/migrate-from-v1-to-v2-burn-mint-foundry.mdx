@@ -1,0 +1,991 @@
+---
+section: ccip
+date: Last Modified
+title: "Migrate your CCT token pools from CCIP v1 to v2 (Burn & Mint) using Foundry"
+metadata:
+  description: "Migrate an existing Burn & Mint Cross-Chain Token (CCT) deployment from CCIP v1 (1.5/1.6) to CCIP v2 using Foundry. Deploy v2 pools, configure remote pools, cut over with setPool, validate, and clean up."
+  image: "/images/ccip/CCIP_enabled_tokens_flowchart.jpg"
+  excerpt: "migration, v1 to v2, burn & mint, CCT, token pools, TokenAdminRegistry, Foundry, forge script, applyChainUpdates, setPool"
+  datePublished: "2026-06-11"
+  lastModified: "2026-06-11"
+  estimatedTime: "45 minutes"
+  difficulty: "advanced"
+whatsnext:
+  "Migrate your CCT token pools from CCIP v1 to v2 (Lock & Mint) using Foundry": "/ccip/evm/tutorials/cross-chain-tokens/migrate-from-v1-to-v2-lock-mint-foundry"
+  "Set Token Pool Rate Limits using Foundry": "/ccip/evm/tutorials/cross-chain-tokens/update-rate-limiters-foundry"
+  "Set Token Transfer Fee Config using Foundry": "/ccip/evm/tutorials/cross-chain-tokens/set-transfer-fee-config-foundry"
+---
+
+import { AnchoredAccordion, Aside, GitHubCard, PageTabs } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<PageTabs
+  pages={[
+    {
+      name: "Foundry (Burn & Mint migration)",
+      url: "/ccip/evm/tutorials/cross-chain-tokens/migrate-from-v1-to-v2-burn-mint-foundry",
+      icon: "/images/tutorial-icons/foundry-icn.png",
+    },
+    {
+      name: "Hardhat (Burn & Mint migration)",
+      url: "/ccip/evm/tutorials/cross-chain-tokens/migrate-from-v1-to-v2-burn-mint-hardhat",
+      icon: "/images/tutorial-icons/hardhat-icn.png",
+    },
+  ]}
+/>
+
+This migration guide helps you upgrade a deployed **Burn & Mint** Cross-Chain Token (CCT) setup from **CCIP v1 (1.5.x / 1.6.x)** to **CCIP v2**, while keeping your existing token addresses and minimizing disruption.
+
+This guide uses Foundry scripts inside our [docs-cct-foundry](https://github.com/smartcontractkit/docs-cct-foundry) repository.
+
+<Aside type="note" title="Finality and v2 features are optional">
+  <ol>
+    <li>
+      <strong>Default finality:</strong> Transfers use the chain’s native finality unless you explicitly opt into
+      block-depth faster than finality.
+    </li>
+    <li>
+      <strong>Opt-in changes:</strong> Pool-level fees, faster than finality, and hooks only apply if you configure
+      them. This guide focuses on a safe pool migration first.
+    </li>
+  </ol>
+</Aside>
+
+In this guide you will:
+
+1. Confirm prerequisites and record your existing CCIP v1 deployment details.
+2. Deploy new CCIP v2 `Burn Mint` token pools on each chain.
+3. Configure the v2 pools to accept messages from **both** the old v1 pools and the new v2 pools.
+4. Cut over CCIP routing by calling [`TokenAdminRegistry`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/tokenAdminRegistry/TokenAdminRegistry.sol).setPool on each chain.
+5. Validate transfers end-to-end, then optionally clean up legacy configuration.
+
+## Before You Begin
+
+<AnchoredAccordion title="Set up your development environment" number={1} depth={3}>
+
+1. Install Node.js and npm:
+   - Make sure you have `Node.js v22.10.0` or above installed. If not, install **`Node.js v22.10.0`** using their
+     [documentation](https://nodejs.org/en/download/).
+   - `npm` is bundled with Node.js. If you can’t run `npm`, reinstall/update Node.js from the official installer.
+
+2. Install/Update [Chainlink CCIP-CLI](https://docs.chain.link/ccip/tools/cli/). You can also find the [GitHub repository here](https://github.com/smartcontractkit/ccip-cli).
+
+```bash filename="Terminal"
+npm install -g @chainlink/ccip-cli
+```
+
+Verify the installation by running the following command:
+
+```bash filename="Terminal"
+ccip-cli --version
+```
+
+3. **Install Foundry**:
+   If you haven't already, follow the instructions in the [Foundry documentation](https://book.getfoundry.sh/getting-started/installation) to install Foundry. \
+   Verify the installation by running the following command:
+
+```bash filename="Terminal"
+forge --version
+```
+
+4. **Clone the repository and navigate to the project directory**:
+
+<GitHubCard
+  title="CCIP 2.0 Foundry template"
+  href="https://github.com/smartcontractkit/docs-cct-foundry"
+  iconName="github-svg-card"
+>
+  Clone the CCIP 2.0 Foundry template for a smoother CCT setup.
+</GitHubCard>
+
+```bash filename="Terminal"
+git clone https://github.com/smartcontractkit/docs-cct-foundry.git
+cd docs-cct-foundry
+```
+
+5. Create an encrypted Foundry keystore, if you haven't already:
+
+```bash filename="Terminal"
+cast wallet import your_keystore_name --interactive
+```
+
+6. Create a `.env` file by copying the `.env.example` file, and fill in the required values:
+
+```bash filename="Terminal"
+cp .env.example .env
+```
+
+```bash filename=".env"
+# Keystore name (created via `cast wallet import`)
+KEYSTORE_NAME=your_keystore_name
+
+# RPC URLs (lane used in this guide)
+ETHEREUM_SEPOLIA_RPC_URL=your_eth_sepolia_rpc
+ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL=your_arbitrum_sepolia_rpc
+
+# Etherscan API key (required only if you pass --verify to deployment scripts)
+ETHERSCAN_API_KEY=your_etherscan_api_key
+```
+
+<GitHubCard
+  title="Complete List of Supported Chains"
+  href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/HelperConfig.s.sol"
+  iconName="github-svg-card"
+>
+  View the complete list of supported chains in the <code>HelperConfig.s.sol</code> file.
+</GitHubCard>
+
+7. To make sure your terminal has access to these variables, run the following command:
+
+```bash filename="Terminal"
+source .env
+```
+
+8. Install dependencies and build the project:
+
+```bash filename="Terminal"
+npm install && forge build
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="What this guide assumes" number={2} depth={3}>
+  - **EVM-to-EVM only**: this page is strictly for **Ethereum Sepolia ↔ Arbitrum Sepolia**. - **Burn & Mint pools
+  only**: standard
+  [`BurnMintTokenPool`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/BurnMintTokenPool.sol)
+  migrations (no custom pools). - You control the `TokenAdminRegistry` **administrator** role for the token **on both
+  chains**. - You can grant the required **mint/burn** permissions to the new v2 pools on each chain. - You can execute
+  **pool-owner** actions on both chains (for example, `applyChainUpdates`, `removeRemotePool`). - You are migrating an
+  already-live CCIP v1 setup (1.5.x or 1.6.x), not doing a new registration.
+</AnchoredAccordion>
+
+## Migration Guide
+
+<br />
+
+<Aside type="tip" title="Set these variables once for cleaner copy/paste">
+  This guide uses explicit addresses so you don’t need local <code>script/deployments/</code> files. Start by exporting
+  your token addresses, then we’ll export the v1/v2 pool addresses as we discover them.
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_TOKEN=0x...
+export ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_TOKEN=0x...
+```
+
+</Aside>
+
+<AnchoredAccordion title="Step 1: Confirm the live CCIP v1 pool (and record v1 addresses)" number={1} depth={3}>
+
+This step answers two questions, on **both chains**:
+
+1. **Which pool is currently live for your token?** (read from `TokenAdminRegistry.getTokenConfig`)
+2. **Is that pool a v1.5/v1.6 pool?** (read `typeAndVersion()` from the pool)
+
+<GitHubCard
+  title="GetTokenConfig.s.sol"
+  href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/setup/GetTokenConfig.s.sol"
+  iconName="github-svg-card"
+>
+  View the token config query script on GitHub.
+</GitHubCard>
+
+1. Read the token config on **Ethereum Sepolia**:
+
+```bash filename="Terminal"
+TOKEN=$ETHEREUM_SEPOLIA_TOKEN forge script \
+  script/setup/GetTokenConfig.s.sol \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Token Config:
+  administrator:        0xYourAdminAddress
+  pendingAdministrator: 0x0000000000000000000000000000000000000000
+  tokenPool:            0xOldSepoliaV1PoolAddress
+```
+
+Export the v1 pool address:
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_V1_POOL=0xOldSepoliaV1PoolAddress
+```
+
+2. Repeat on **Arbitrum Sepolia**:
+
+```bash filename="Terminal"
+TOKEN=$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_TOKEN forge script \
+  script/setup/GetTokenConfig.s.sol \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Token Config:
+  administrator:        0xYourAdminAddress
+  pendingAdministrator: 0x0000000000000000000000000000000000000000
+  tokenPool:            0xOldArbitrumV1PoolAddress
+```
+
+Export the v1 pool address:
+
+```bash filename="Terminal"
+export ARBITRUM_SEPOLIA_V1_POOL=0xOldArbitrumV1PoolAddress
+```
+
+<GitHubCard
+  title="GetTypeAndVersion.s.sol"
+  href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/setup/GetTypeAndVersion.s.sol"
+  iconName="github-svg-card"
+>
+  View the type/version query script on GitHub.
+</GitHubCard>
+
+3. Confirm the v1 pool version on **Ethereum Sepolia**:
+
+```bash filename="Terminal"
+ADDRESS=$ETHEREUM_SEPOLIA_V1_POOL forge script \
+  script/setup/GetTypeAndVersion.s.sol \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+typeAndVersion: BurnMintTokenPool 1.6.1
+```
+
+4. Confirm the v1 pool version on **Arbitrum Sepolia**:
+
+```bash filename="Terminal"
+ADDRESS=$ARBITRUM_SEPOLIA_V1_POOL forge script \
+  script/setup/GetTypeAndVersion.s.sol \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+typeAndVersion: BurnMintTokenPool 1.6.1
+```
+
+<Aside type="note" title="What to check before continuing">
+  <ul>
+    <li>
+      <strong>administrator</strong> should match the account/multisig you control (this account must execute{" "}
+      <code>setPool</code> during cutover).
+    </li>
+    <li>
+      <strong>pendingAdministrator</strong> should typically be <code>0x0</code>. If it’s set, resolve it before
+      migrating to avoid confusion.
+    </li>
+    <li>
+      <strong>typeAndVersion</strong> should indicate a v1.5.x or v1.6.x <code>BurnMintTokenPool</code>.
+    </li>
+  </ul>
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Step 2: Record your v1 lane configuration (remote pools + rate limits)"
+  number={2}
+  depth={3}
+>
+
+Before deploying anything, snapshot your current v1 configuration so you can keep behavior consistent after migration.
+
+<GitHubCard
+  title="GetSupportedChains.s.sol"
+  href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/setup/GetSupportedChains.s.sol"
+  iconName="github-svg-card"
+>
+  View the supported-chains query script on GitHub.
+</GitHubCard>
+
+1. List configured remote chains on the **Sepolia v1 pool**:
+
+```bash filename="Terminal"
+TOKEN_POOL=$ETHEREUM_SEPOLIA_V1_POOL forge script \
+  script/setup/GetSupportedChains.s.sol \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Supported Remote Chains: 1
+
+  [0] Arbitrum Sepolia (3478487238524512106)
+       Remote Pools: 1
+         [0] 0xOldArbitrumV1PoolAddress
+```
+
+2. List configured remote chains on the **Arbitrum v1 pool**:
+
+```bash filename="Terminal"
+TOKEN_POOL=$ARBITRUM_SEPOLIA_V1_POOL forge script \
+  script/setup/GetSupportedChains.s.sol \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Supported Remote Chains: 1
+
+  [0] Ethereum Sepolia (16015286601757825753)
+       Remote Pools: 1
+         [0] 0xOldSepoliaV1PoolAddress
+```
+
+<GitHubCard
+  title="GetCurrentRateLimits.s.sol"
+  href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/rate-limiter/GetCurrentRateLimits.s.sol"
+  iconName="github-svg-card"
+>
+  View the rate limiter query script on GitHub.
+</GitHubCard>
+
+3. Snapshot current v1 rate limits on the **Sepolia → Arbitrum** lane:
+
+```bash filename="Terminal"
+TOKEN_POOL=$ETHEREUM_SEPOLIA_V1_POOL DEST_CHAIN=ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1 forge script \
+  script/configure/rate-limiter/GetCurrentRateLimits.s.sol \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Pool Version: v1
+
+  Outbound Enabled:  true
+  Outbound Capacity: 1000000000000000000000
+  Outbound Rate:     100000000000000000
+  Inbound  Enabled:  true
+  Inbound  Capacity: 1000000000000000000000
+  Inbound  Rate:     100000000000000000
+```
+
+4. Snapshot current v1 rate limits on the **Arbitrum → Sepolia** lane:
+
+```bash filename="Terminal"
+TOKEN_POOL=$ARBITRUM_SEPOLIA_V1_POOL DEST_CHAIN=ETHEREUM_SEPOLIA forge script \
+  script/configure/rate-limiter/GetCurrentRateLimits.s.sol \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Pool Version: v1
+
+  Outbound Enabled:  true
+  Outbound Capacity: 1000000000000000000000
+  Outbound Rate:     100000000000000000
+  Inbound  Enabled:  true
+  Inbound  Capacity: 1000000000000000000000
+  Inbound  Rate:     100000000000000000
+```
+
+Record these values since you'll reuse them when configuring the v2 pools in Step 5.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Step 3: Deploy new v2 pools (per chain)" number={3} depth={3}>
+
+Deploy a **new v2 `BurnMintTokenPool`** on each chain, pointing to your existing token address on that chain.
+
+<GitHubCard
+  title="DeployBurnMintTokenPool.s.sol"
+  href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/deploy/DeployBurnMintTokenPool.s.sol"
+  iconName="github-svg-card"
+>
+  View the Burn &amp; Mint pool deployment script on GitHub.
+</GitHubCard>
+
+1. Deploy the v2 pool on **Ethereum Sepolia**:
+
+```bash filename="Terminal"
+TOKEN=$ETHEREUM_SEPOLIA_TOKEN forge script \
+  script/deploy/DeployBurnMintTokenPool.s.sol \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Token Pool deployed at: 0xNewSepoliaV2PoolAddress
+✅ Roles granted successfully!
+```
+
+Export the new v2 pool address:
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_V2_POOL=0xNewSepoliaV2PoolAddress
+```
+
+2. Deploy the v2 pool on **Arbitrum Sepolia**:
+
+```bash filename="Terminal"
+TOKEN=$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_TOKEN forge script \
+  script/deploy/DeployBurnMintTokenPool.s.sol \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Token Pool deployed at: 0xNewArbitrumV2PoolAddress
+✅ Roles granted successfully!
+```
+
+Export the new v2 pool address:
+
+```bash filename="Terminal"
+export ARBITRUM_SEPOLIA_V2_POOL=0xNewArbitrumV2PoolAddress
+```
+
+<Aside type="note" title="Dual mint/burn window">
+  Until post-migration cleanup, <strong>both</strong> v1 and v2 pools may hold mint/burn roles on your tokens. Your CCIP
+  routing still points to the v1 pool until Step 7.
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Step 4 (Recommended): Pause outbound transfers on the v1 pools"
+  number={4}
+  depth={3}
+>
+
+This recommended step throttles new outbound traffic on v1 while you cut over. Use **capacity = 2** and **rate = 1**
+as the most restrictive (near-zero) configuration we document for v1 pools while keeping the lane configured.
+
+<Aside type="caution" title="Run Step 2 first if you want the original rate limits">
+  Step 4 overwrites the v1 pool’s <strong>outbound</strong> rate limits. If you want to carry your original v1 rate
+  limits over to v2, make sure you record them in Step 2 before pausing outbound.
+</Aside>
+
+<GitHubCard
+  title="UpdateRateLimiters.s.sol"
+  href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/rate-limiter/UpdateRateLimiters.s.sol"
+  iconName="github-svg-card"
+>
+  View the rate limiter update script on GitHub.
+</GitHubCard>
+
+1. Pause outbound on the **Sepolia v1 pool** (lane to Arbitrum Sepolia):
+
+```bash filename="Terminal"
+TOKEN_POOL=$ETHEREUM_SEPOLIA_V1_POOL \
+  DEST_CHAIN=ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1 \
+  OUTBOUND_RATE_LIMIT_CAPACITY=2 \
+  OUTBOUND_RATE_LIMIT_RATE=1 \
+  forge script \
+  script/configure/rate-limiter/UpdateRateLimiters.s.sol \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Pool Version: v1 (setChainRateLimiterConfig)
+
+New Configuration:
+  Outbound Enabled:  true
+  Outbound Capacity: 2
+  Outbound Rate:     1
+```
+
+2. Pause outbound on the **Arbitrum v1 pool** (lane to Ethereum Sepolia):
+
+```bash filename="Terminal"
+TOKEN_POOL=$ARBITRUM_SEPOLIA_V1_POOL \
+  DEST_CHAIN=ETHEREUM_SEPOLIA \
+  OUTBOUND_RATE_LIMIT_CAPACITY=2 \
+  OUTBOUND_RATE_LIMIT_RATE=1 \
+  forge script \
+  script/configure/rate-limiter/UpdateRateLimiters.s.sol \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Step 5: Configure the v2 pools (applyChainUpdates)" number={5} depth={3}>
+
+On **each chain**, configure the v2 pool to recognize the lane to the remote chain.
+
+**Critical migration rule:** the `destPools` list must include **both** the old v1 remote pool address **and** the new
+v2 remote pool address. This allows in-flight messages sent via v1 (before cutover) to still validate after you cut
+over to v2.
+
+<GitHubCard
+  title="ApplyChainUpdates.s.sol"
+  href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/setup/ApplyChainUpdates.s.sol"
+  iconName="github-svg-card"
+>
+  View the applyChainUpdates script (JSON mode recommended) on GitHub.
+</GitHubCard>
+
+<GitHubCard
+  title="apply-chain-updates.json"
+  href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/input/apply-chain-updates.json"
+  iconName="github-svg-card"
+>
+  View the JSON input file used for applyChainUpdates on GitHub.
+</GitHubCard>
+
+1. Configure the **Sepolia v2 pool** (remote chain: Arbitrum Sepolia)
+
+Update `script/input/apply-chain-updates.json`:
+
+```json filename="script/input/apply-chain-updates.json"
+{
+  "_comment": "Configure Sepolia v2 pool → Arbitrum Sepolia. Replace 0x... placeholders with your real addresses.",
+  "sourcePool": "0xNewSepoliaV2PoolAddress",
+  "remoteChains": [
+    {
+      "destChain": "ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1",
+      "destPools": ["0xOldArbitrumV1PoolAddress", "0xNewArbitrumV2PoolAddress"],
+      "destToken": "0x...",
+      "outboundRateLimit": {
+        "enabled": true,
+        "capacity": 1000000000000000000000,
+        "rate": 100000000000000000
+      },
+      "inboundRateLimit": {
+        "enabled": true,
+        "capacity": 1000000000000000000000,
+        "rate": 100000000000000000
+      }
+    }
+  ]
+}
+```
+
+Copy your v1 lane rate limits from Step 2 into `outboundRateLimit` and `inboundRateLimit`. If you don’t have existing
+values, you can use the baseline values shown above. Setting `"enabled": false` disables rate limiting (unlimited
+transfers).
+
+Run the script on **Ethereum Sepolia**:
+
+```bash filename="Terminal"
+VIA_JSON_FILE=true forge script \
+  script/setup/ApplyChainUpdates.s.sol \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Remote Chains: 1
+
+  [0] Arbitrum Sepolia
+      Pools: 2
+        [0] 0xOldArbitrumV1PoolAddress
+        [1] 0xNewArbitrumV2PoolAddress
+
+✅ Chain updates applied successfully!
+```
+
+2. Configure the **Arbitrum v2 pool** (remote chain: Ethereum Sepolia)
+
+Update `script/input/apply-chain-updates.json`:
+
+```json filename="script/input/apply-chain-updates.json"
+{
+  "_comment": "Configure Arbitrum v2 pool → Ethereum Sepolia. Replace 0x... placeholders with your real addresses.",
+  "sourcePool": "0xNewArbitrumV2PoolAddress",
+  "remoteChains": [
+    {
+      "destChain": "ETHEREUM_SEPOLIA",
+      "destPools": ["0xOldSepoliaV1PoolAddress", "0xNewSepoliaV2PoolAddress"],
+      "destToken": "0x...",
+      "outboundRateLimit": {
+        "enabled": true,
+        "capacity": 1000000000000000000000,
+        "rate": 100000000000000000
+      },
+      "inboundRateLimit": {
+        "enabled": true,
+        "capacity": 1000000000000000000000,
+        "rate": 100000000000000000
+      }
+    }
+  ]
+}
+```
+
+Run the script on **Arbitrum Sepolia**:
+
+```bash filename="Terminal"
+VIA_JSON_FILE=true forge script \
+  script/setup/ApplyChainUpdates.s.sol \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Remote Chains: 1
+
+  [0] Ethereum Sepolia
+      Pools: 2
+        [0] 0xOldSepoliaV1PoolAddress
+        [1] 0xNewSepoliaV2PoolAddress
+
+✅ Chain updates applied successfully!
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Step 6: Verify v2 configuration (before cutover)" number={6} depth={3}>
+
+Verify that each v2 pool has **two** remote pools configured for the lane: `[remoteV1Pool, remoteV2Pool]`.
+
+<GitHubCard
+  title="GetRemotePools.s.sol"
+  href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/remote-pools/GetRemotePools.s.sol"
+  iconName="github-svg-card"
+>
+  View the remote pool query script on GitHub.
+</GitHubCard>
+
+1. Check remote pools on the **Sepolia v2 pool**:
+
+```bash filename="Terminal"
+TOKEN_POOL=$ETHEREUM_SEPOLIA_V2_POOL DEST_CHAIN=ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1 forge script \
+  script/configure/remote-pools/GetRemotePools.s.sol \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Chain Supported: Yes
+Remote Pools:    2
+  [0] 0xOldArbitrumV1PoolAddress
+  [1] 0xNewArbitrumV2PoolAddress
+```
+
+2. Check remote pools on the **Arbitrum v2 pool**:
+
+```bash filename="Terminal"
+TOKEN_POOL=$ARBITRUM_SEPOLIA_V2_POOL DEST_CHAIN=ETHEREUM_SEPOLIA forge script \
+  script/configure/remote-pools/GetRemotePools.s.sol \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Chain Supported: Yes
+Remote Pools:    2
+  [0] 0xOldSepoliaV1PoolAddress
+  [1] 0xNewSepoliaV2PoolAddress
+```
+
+<GitHubCard
+  title="GetCurrentRateLimits.s.sol"
+  href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/rate-limiter/GetCurrentRateLimits.s.sol"
+  iconName="github-svg-card"
+>
+  View the rate limiter query script on GitHub.
+</GitHubCard>
+
+3. Re-check rate limits on the v2 pools (optional but recommended)
+
+Sepolia v2 pool (lane to Arbitrum):
+
+```bash filename="Terminal"
+TOKEN_POOL=$ETHEREUM_SEPOLIA_V2_POOL DEST_CHAIN=ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1 forge script \
+  script/configure/rate-limiter/GetCurrentRateLimits.s.sol \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+Arbitrum v2 pool (lane to Sepolia):
+
+```bash filename="Terminal"
+TOKEN_POOL=$ARBITRUM_SEPOLIA_V2_POOL DEST_CHAIN=ETHEREUM_SEPOLIA forge script \
+  script/configure/rate-limiter/GetCurrentRateLimits.s.sol \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Step 7: Cut over routing (TokenAdminRegistry.setPool)" number={7} depth={3}>
+
+This is the migration cutover step. On each chain, update `TokenAdminRegistry` so your token routes through the new v2
+pool.
+
+<Aside type="note" title="Who must run this step">
+  The signer running <code>setPool</code> must be the token’s <code>TokenAdminRegistry</code>{" "}
+  <strong>administrator</strong> on that chain (as shown by <code>getTokenConfig</code> in Step 1).
+</Aside>
+
+<GitHubCard
+  title="SetPool.s.sol"
+  href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/setup/SetPool.s.sol"
+  iconName="github-svg-card"
+>
+  View the setPool script on GitHub.
+</GitHubCard>
+
+1. Cut over on **Ethereum Sepolia**:
+
+```bash filename="Terminal"
+TOKEN=$ETHEREUM_SEPOLIA_TOKEN TOKEN_POOL=$ETHEREUM_SEPOLIA_V2_POOL forge script \
+  script/setup/SetPool.s.sol \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+✅ Pool set successfully!
+```
+
+2. Cut over on **Arbitrum Sepolia**:
+
+```bash filename="Terminal"
+TOKEN=$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_TOKEN TOKEN_POOL=$ARBITRUM_SEPOLIA_V2_POOL forge script \
+  script/setup/SetPool.s.sol \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast
+```
+
+<Aside type="note" title="Rollback">
+  If you discover an issue immediately after cutover, you can roll back by calling <code>setPool</code> again and
+  pointing back to your v1 pool on that chain. Keep the dual-remote-pool configuration in place until you’re stable.
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Step 8: Validate end-to-end (Sepolia → Arbitrum) with ccip-cli" number={8} depth={3}>
+
+Send a small test transfer from **Ethereum Sepolia → Arbitrum Sepolia** and confirm it succeeds.
+
+<Aside type="note" title="Prerequisites for the send">
+  <ol>
+    <li>You need some of your token on Ethereum Sepolia to send.</li>
+    <li>You need Sepolia ETH for gas and fees.</li>
+    <li>You need Arbitrum Sepolia ETH for gas.</li>
+  </ol>
+</Aside>
+
+Set the router address for Ethereum Sepolia (from the [CCIP Directory](https://docs.chain.link/ccip/directory/testnet) or `HelperConfig.s.sol` in the template):
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_ROUTER=0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+```
+
+1. Send a transfer on **default finality**:
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+  --receiver 0xYourReceiverAddress \
+  --wallet foundry:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL"
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+🚀 Sending message ... messageId => 0x...
+CCIP Explorer: https://ccip.chain.link/msg/0x...
+```
+
+2. (Optional) Enable and request **block-depth faster than finality** with depth 32
+
+First, allow block-depth finality on your v2 pools:
+
+<GitHubCard
+  title="SetFinalityConfig.s.sol"
+  href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/finality-config/SetFinalityConfig.s.sol"
+  iconName="github-svg-card"
+>
+  View the finality configuration script on GitHub.
+</GitHubCard>
+
+```bash filename="Terminal"
+BLOCK_DEPTH=32 TOKEN_POOL=$ETHEREUM_SEPOLIA_V2_POOL forge script \
+  script/configure/finality-config/SetFinalityConfig.s.sol \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast
+
+BLOCK_DEPTH=32 TOKEN_POOL=$ARBITRUM_SEPOLIA_V2_POOL forge script \
+  script/configure/finality-config/SetFinalityConfig.s.sol \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast
+```
+
+Then send using `--extra finality=32`:
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+  --receiver 0xYourReceiverAddress \
+  --extra finality=32 \
+  --wallet foundry:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL"
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Step 9: Confirm your token now routes through v2 pools" number={9} depth={3}>
+
+Re-run the Step 1 checks. You should now see the **v2 pool addresses** as the live `tokenPool` on both chains, and
+`typeAndVersion` should report v2.
+
+1. Ethereum Sepolia:
+
+```bash filename="Terminal"
+TOKEN=$ETHEREUM_SEPOLIA_TOKEN forge script script/setup/GetTokenConfig.s.sol --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+ADDRESS=$ETHEREUM_SEPOLIA_V2_POOL forge script script/setup/GetTypeAndVersion.s.sol --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Token Config:
+  tokenPool:            0xNewSepoliaV2PoolAddress
+
+typeAndVersion: BurnMintTokenPool 2.0.0
+```
+
+2. Arbitrum Sepolia:
+
+```bash filename="Terminal"
+TOKEN=$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_TOKEN forge script script/setup/GetTokenConfig.s.sol --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL
+ADDRESS=$ARBITRUM_SEPOLIA_V2_POOL forge script script/setup/GetTypeAndVersion.s.sol --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Token Config:
+  tokenPool:            0xNewArbitrumV2PoolAddress
+
+typeAndVersion: BurnMintTokenPool 2.0.0
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Step 10: Safety checks and cleanup (after v1 inflight settles)" number={10} depth={3}>
+
+After cutover, keep the v1 remote pool addresses configured on the v2 pools until you are confident there are no more
+in-flight v1 messages. There is no cost to waiting longer.
+
+Once you’re ready, remove the **old v1 remote pool addresses** from the v2 pools.
+
+<GitHubCard
+  title="RemoveRemotePool.s.sol"
+  href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/remote-pools/RemoveRemotePool.s.sol"
+  iconName="github-svg-card"
+>
+  View the remote pool removal script on GitHub.
+</GitHubCard>
+
+1. On the **Sepolia v2 pool**, remove the old Arbitrum v1 pool address:
+
+```bash filename="Terminal"
+TOKEN_POOL=$ETHEREUM_SEPOLIA_V2_POOL \
+  DEST_CHAIN=ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1 \
+  REMOTE_POOL_ADDRESS=$ARBITRUM_SEPOLIA_V1_POOL \
+  forge script \
+  script/configure/remote-pools/RemoveRemotePool.s.sol \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+⚠️  WARNING: All inflight transactions from this pool will be rejected after removal.
+
+Current Remote Pools: 2
+  [0] 0xOldArbitrumV1PoolAddress
+  [1] 0xNewArbitrumV2PoolAddress
+
+✅ Remote pool removed successfully!
+```
+
+2. On the **Arbitrum v2 pool**, remove the old Sepolia v1 pool address:
+
+```bash filename="Terminal"
+TOKEN_POOL=$ARBITRUM_SEPOLIA_V2_POOL \
+  DEST_CHAIN=ETHEREUM_SEPOLIA \
+  REMOTE_POOL_ADDRESS=$ETHEREUM_SEPOLIA_V1_POOL \
+  forge script \
+  script/configure/remote-pools/RemoveRemotePool.s.sol \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast
+```
+
+<Aside type="caution" title="If you removed too early">
+  If a v1-sent message is still in-flight and you removed its source pool address, it can fail validation on the
+  destination. You can recover by adding the pool address back with <code>AddRemotePool</code>, then retry cleanup
+  later.
+</Aside>
+
+<GitHubCard
+  title="AddRemotePool.s.sol"
+  href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/remote-pools/AddRemotePool.s.sol"
+  iconName="github-svg-card"
+>
+  View the remote pool add script on GitHub (recovery).
+</GitHubCard>
+
+Recovery example (re-add the old pool address, then retry cleanup later):
+
+```bash filename="Terminal"
+TOKEN_POOL=$ETHEREUM_SEPOLIA_V2_POOL \
+  DEST_CHAIN=ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1 \
+  REMOTE_POOL_ADDRESS=$ARBITRUM_SEPOLIA_V1_POOL \
+  forge script \
+  script/configure/remote-pools/AddRemotePool.s.sol \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast
+```
+
+<Aside type="note" title="Optional hardening">
+  After migration and cleanup, you can also revoke mint/burn roles from the old v1 pools (if your token’s access control
+  allows it). This is token-specific and may require calling role revocation functions directly on your token contract.
+</Aside>
+
+</AnchoredAccordion>
+
+<CcipCommon callout="educationalDisclaimer" />

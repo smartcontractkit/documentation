@@ -1,0 +1,377 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 FactoryBurnMintERC20 API Reference"
+metadata:
+  description: "ERC20 implementation with configurable decimals, optional max supply, and owner-managed mint/burn roles."
+  version: "2.0.0"
+---
+
+## Summary
+
+`FactoryBurnMintERC20` is a factory-deployable ERC20 implementation designed for CCIP token workflows.
+
+It provides:
+
+- Separate allowlists for minters and burners.
+- Optional maximum total supply.
+- Configurable decimals.
+- Owner-managed CCIP admin pointer.
+
+---
+
+## Contract
+
+`chains/evm/contracts/tokenAdminRegistry/TokenPoolFactory/FactoryBurnMintERC20.sol`
+
+---
+
+## Import
+
+```solidity
+import {FactoryBurnMintERC20} from "chainlink-ccip/chains/evm/contracts/tokenAdminRegistry/TokenPoolFactory/FactoryBurnMintERC20.sol";
+```
+
+---
+
+## Inheritance
+
+- `IBurnMintERC20`
+- `IGetCCIPAdmin`
+- `IERC165`
+- `ERC20Burnable`
+- `Ownable2StepMsgSender`
+- `ITypeAndVersion`
+
+---
+
+## typeAndVersion
+
+```solidity
+function typeAndVersion()
+  external
+  pure
+  returns (string memory)
+```
+
+Returns canonical type string:
+
+```solidity
+"FactoryBurnMintERC20 1.5.0"
+```
+
+---
+
+## State
+
+### Constants
+
+None declared.
+
+---
+
+### Immutables
+
+```solidity
+uint8 internal immutable i_decimals;
+uint256 internal immutable i_maxSupply;
+```
+
+---
+
+### Storage
+
+```solidity
+address internal s_ccipAdmin;
+EnumerableSet.AddressSet internal s_minters;
+EnumerableSet.AddressSet internal s_burners;
+```
+
+---
+
+## Constructor
+
+```solidity
+constructor(
+  string memory name,
+  string memory symbol,
+  uint8 decimals_,
+  uint256 maxSupply_,
+  uint256 preMint,
+  address newOwner
+)
+```
+
+Behavior:
+
+- Sets `i_decimals = decimals_`.
+- Sets `i_maxSupply = maxSupply_`.
+- Sets `s_ccipAdmin = newOwner`.
+- If `maxSupply_ != 0` and `preMint > maxSupply_`, reverts:
+
+```solidity
+error MaxSupplyExceeded(uint256 supplyAfterMint);
+```
+
+- If `preMint != 0`, mints `preMint` to `newOwner`.
+
+---
+
+## External API
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId)
+  public
+  pure
+  returns (bool)
+```
+
+Supports:
+
+- `IERC20`
+- `IBurnMintERC20`
+- `IERC165`
+- `IOwnable`
+- `IGetCCIPAdmin`
+
+---
+
+### decimals
+
+```solidity
+function decimals()
+  public
+  view
+  returns (uint8)
+```
+
+Returns `i_decimals`.
+
+---
+
+### maxSupply
+
+```solidity
+function maxSupply()
+  public
+  view
+  returns (uint256)
+```
+
+Returns `i_maxSupply`.
+
+---
+
+### mint
+
+```solidity
+function mint(address account, uint256 amount)
+  external
+  onlyMinter
+  validAddress(account)
+```
+
+Reverts `MaxSupplyExceeded(totalSupply() + amount)` if exceeding max supply.
+
+---
+
+### burn(uint256)
+
+```solidity
+function burn(uint256 amount)
+  public
+  onlyBurner
+```
+
+Burns from `msg.sender`.
+
+---
+
+### burn(address,uint256)
+
+```solidity
+function burn(address account, uint256 amount)
+  public
+  onlyBurner
+```
+
+Aliases to `burnFrom`.
+
+---
+
+### burnFrom
+
+```solidity
+function burnFrom(address account, uint256 amount)
+  public
+  onlyBurner
+```
+
+Consumes allowance and burns tokens.
+
+---
+
+### grantMintRole
+
+```solidity
+function grantMintRole(address minter)
+  public
+  onlyOwner
+```
+
+Emits `MintAccessGranted(minter)`.
+
+---
+
+### grantBurnRole
+
+```solidity
+function grantBurnRole(address burner)
+  public
+  onlyOwner
+```
+
+Emits `BurnAccessGranted(burner)`.
+
+---
+
+### revokeMintRole
+
+```solidity
+function revokeMintRole(address minter)
+  external
+  onlyOwner
+```
+
+Emits `MintAccessRevoked(minter)`.
+
+---
+
+### revokeBurnRole
+
+```solidity
+function revokeBurnRole(address burner)
+  external
+  onlyOwner
+```
+
+Emits `BurnAccessRevoked(burner)`.
+
+---
+
+### grantMintAndBurnRoles
+
+```solidity
+function grantMintAndBurnRoles(address burnAndMinter)
+  external
+```
+
+Calls `grantMintRole` and `grantBurnRole`.
+
+---
+
+### getMinters
+
+```solidity
+function getMinters()
+  external
+  view
+  returns (address[] memory)
+```
+
+---
+
+### getBurners
+
+```solidity
+function getBurners()
+  external
+  view
+  returns (address[] memory)
+```
+
+---
+
+### getCCIPAdmin
+
+```solidity
+function getCCIPAdmin()
+  external
+  view
+  returns (address)
+```
+
+---
+
+### setCCIPAdmin
+
+```solidity
+function setCCIPAdmin(address newAdmin)
+  public
+  onlyOwner
+```
+
+Emits:
+
+```solidity
+event CCIPAdminTransferred(
+  address indexed previousAdmin,
+  address indexed newAdmin
+);
+```
+
+---
+
+## Events
+
+```solidity
+event MintAccessGranted(address minter);
+event BurnAccessGranted(address burner);
+event MintAccessRevoked(address minter);
+event BurnAccessRevoked(address burner);
+event CCIPAdminTransferred(
+  address indexed previousAdmin,
+  address indexed newAdmin
+);
+```
+
+---
+
+## Errors
+
+```solidity
+error SenderNotMinter(address sender);
+error SenderNotBurner(address sender);
+error MaxSupplyExceeded(uint256 supplyAfterMint);
+```
+
+---
+
+## Modifiers
+
+```solidity
+modifier onlyMinter();
+modifier onlyBurner();
+modifier validAddress(address recipient);
+```
+
+---
+
+## Security model
+
+- Owner controls mint and burn role assignments.
+- Separate allowlists reduce blast radius.
+- Optional hard max supply enforced on mint.
+- `validAddress` prevents minting/transferring to token contract itself.
+- `s_ccipAdmin` has no privileged execution rights; it is a registry pointer.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`IBurnMintERC20`](/ccip/evm/api-reference/v2.0.0/i-burn-mint-erc20)
+- [`BurnMintTokenPool`](/ccip/evm/api-reference/v2.0.0/burn-mint-token-pool)
+- [`TokenPoolFactory`](/ccip/evm/api-reference/v2.0.0/token-pool-factory)
+- [`TokenAdminRegistry`](/ccip/evm/api-reference/v2.0.0/token-admin-registry)

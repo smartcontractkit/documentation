@@ -1,0 +1,164 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 TokenPoolFactory API Reference"
+metadata:
+  description: "Factory contract that deploys TokenPool instances and registers them in TokenAdminRegistry."
+  version: "2.0.0"
+---
+
+## Summary
+
+`TokenPoolFactory` deploys new `[TokenPool](/ccip/evm/api-reference/v2.0.0/token-pool)` contracts and registers them with `[TokenAdminRegistry](/ccip/evm/api-reference/v2.0.0/token-admin-registry)`.
+
+It standardizes pool provisioning and ensures that deployed pools are correctly registered for their corresponding tokens.
+
+---
+
+## Contract
+
+`chains/evm/contracts/tokenAdminRegistry/TokenPoolFactory/TokenPoolFactory.sol`
+
+---
+
+## Import
+
+```solidity
+import {TokenPoolFactory} from "chainlink-ccip/chains/evm/contracts/tokenAdminRegistry/TokenPoolFactory/TokenPoolFactory.sol";
+```
+
+---
+
+## Inheritance
+
+- `Ownable2StepMsgSender`
+- `ITypeAndVersion`
+
+---
+
+## typeAndVersion
+
+```solidity
+string public constant override typeAndVersion =
+  "TokenPoolFactory 1.5.0";
+```
+
+---
+
+## Constructor
+
+```solidity
+constructor(ITokenAdminRegistry tokenAdminRegistry)
+```
+
+Reverts:
+
+```solidity
+error ZeroAddress();
+```
+
+If:
+
+```solidity
+address(tokenAdminRegistry) == address(0)
+```
+
+Initializes:
+
+```solidity
+i_tokenAdminRegistry = tokenAdminRegistry;
+```
+
+---
+
+## Deployment API
+
+### createTokenPool
+
+```solidity
+function createTokenPool(
+  address token,
+  address administrator,
+  bytes calldata constructorArgs
+) external onlyOwner returns (address pool)
+```
+
+Behavior:
+
+1. Validates `token != address(0)`.
+2. Deploys a new pool contract using the provided `constructorArgs`.
+3. Registers the deployed pool with:
+
+```solidity
+i_tokenAdminRegistry.setPool(token, pool);
+```
+
+4. Emits:
+
+```solidity
+event TokenPoolDeployed(
+  address indexed token,
+  address indexed pool,
+  address indexed administrator
+);
+```
+
+Returns the deployed pool address.
+
+Note: The factory delegates constructor argument encoding responsibility to the caller via `constructorArgs`.
+
+---
+
+### getRegistry
+
+```solidity
+function getRegistry() external view returns (address)
+```
+
+Returns:
+
+```solidity
+address(i_tokenAdminRegistry);
+```
+
+---
+
+## Events
+
+```solidity
+event TokenPoolDeployed(
+  address indexed token,
+  address indexed pool,
+  address indexed administrator
+);
+```
+
+---
+
+## Errors
+
+```solidity
+error ZeroAddress();
+```
+
+No additional custom errors are declared in this contract.
+
+---
+
+## Security model
+
+- Only the contract owner may deploy pools.
+- The registry address is immutable.
+- Registration occurs immediately after deployment.
+- If deployment fails, the transaction reverts atomically.
+- The factory itself does not enforce pool-type validation — constructor argument correctness is the caller’s responsibility.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`ITokenAdminRegistry`](/ccip/evm/api-reference/v2.0.0/i-token-admin-registry)
+- [`TokenAdminRegistry`](/ccip/evm/api-reference/v2.0.0/token-admin-registry)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`Ownable2StepMsgSender`](/ccip/evm/api-reference/v2.0.0/ownable-2-step-msg-sender)
+- [`ITypeAndVersion`](/ccip/evm/api-reference/v2.0.0/i-type-and-version)

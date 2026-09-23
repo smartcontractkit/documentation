@@ -1,0 +1,98 @@
+---
+const NOTE_ID = "ccip-canonical-landing-version-note"
+---
+
+<div id={NOTE_ID} class="ccipVersionNote" hidden>
+  <strong>Note:</strong>
+  <span>
+    Some sections on this page are documented only in the latest CCIP docs (v 2) and are not available in this version.
+  </span>
+</div>
+
+<style>
+  .ccipVersionNote {
+    margin: 12px 0 22px;
+    padding: 12px 14px;
+    border: 1px solid rgba(229, 231, 235, 1);
+    border-radius: 12px;
+    background: rgba(249, 250, 251, 1);
+    font-size: 14px;
+    line-height: 20px;
+    color: rgba(55, 65, 81, 1);
+    max-width: 100%;
+  }
+
+  .ccipVersionNote strong {
+    font-weight: 600;
+    margin-right: 6px;
+  }
+</style>
+
+<script>
+  // Old (legacy) wiring
+  const LEGACY_KEY = "devhub:selectedVersion:ccip"
+  const LEGACY_EVENT = "devhub:versionChange"
+  const LATEST = "v1.7"
+
+  // New wiring (current toggle)
+  const NEW_KEY = "ccip_version" // sessionStorage: "v1.6" | "canonical"
+  const NEW_EVENT = "ccip:version-change"
+
+  const el = document.getElementById("ccip-canonical-landing-version-note")
+
+  function readLegacySelected() {
+    try {
+      return window.localStorage.getItem(LEGACY_KEY) || LATEST // "v1.6" | "v1.7"
+    } catch {
+      return LATEST
+    }
+  }
+
+  function readNewSelected() {
+    try {
+      // "v1.6" or "canonical"
+      const v = window.sessionStorage.getItem(NEW_KEY)
+      return v === "v1.6" ? "v1.6" : "v1.7"
+    } catch {
+      return null
+    }
+  }
+
+  function getEffectiveSelected() {
+    // URL wins if explicitly versioned
+    if (/^\/ccip\/v1\.6(\/|$)/.test(location.pathname)) return "v1.6"
+
+    // Prefer new session storage if present (current toggle source of truth)
+    const fromNew = readNewSelected()
+    if (fromNew) return fromNew
+
+    // Fall back to legacy localStorage
+    return readLegacySelected()
+  }
+
+  function sync() {
+    if (!el) return
+    const selected = getEffectiveSelected()
+    // Show note only when NOT latest (i.e. when v1.6 active)
+    el.hidden = selected === LATEST
+  }
+
+  // Initial sync
+  sync()
+
+  // Listen to NEW event
+  window.addEventListener(NEW_EVENT, () => sync())
+
+  // Listen to LEGACY event
+  window.addEventListener(LEGACY_EVENT, (e) => {
+    if (e?.detail?.product === "ccip") sync()
+  })
+
+  // Also resync on Astro view transitions if they occur on landing
+  document.addEventListener("astro:after-swap", sync)
+
+  // Cross-tab (mostly for legacy localStorage changes)
+  window.addEventListener("storage", (e) => {
+    if (e.key === LEGACY_KEY) sync()
+  })
+</script>

@@ -1,0 +1,148 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 ILegacyFeeQuoter API Reference"
+metadata:
+  description: "Legacy-compatible fee quoting and argument normalization interface for EVM2Any message flows."
+  version: "2.0.0"
+---
+
+## Summary
+
+`ILegacyFeeQuoter` defines a legacy-compatible interface used for:
+
+- ExtraArgs normalization across chain families
+- Message fee validation and quoting
+- Token-to-token conversion via USD price feeds
+- [Pool](/ccip/evm/api-reference/v2.0.0/pool) return-data validation and execution payload derivation
+
+It exists to support compatibility paths for older EVM2Any flows and pre-1.7 lanes.
+
+---
+
+## Contract
+
+`chains/evm/contracts/interfaces/ILegacyFeeQuoter.sol`
+
+---
+
+## Import
+
+```solidity
+import {ILegacyFeeQuoter} from "chainlink-ccip/chains/evm/contracts/interfaces/ILegacyFeeQuoter.sol";
+```
+
+---
+
+## Interface surface
+
+```solidity id="2hz6tu"
+interface ILegacyFeeQuoter {
+```
+
+---
+
+### processMessageArgs
+
+```solidity id="d2xkz8"
+function processMessageArgs(
+  uint64 destChainSelector,
+  address feeToken,
+  uint256 feeTokenAmount,
+  bytes calldata extraArgs,
+  bytes calldata messageReceiver
+)
+  external
+  view
+  returns (
+    uint256 msgFeeJuels,
+    bool isOutOfOrderExecution,
+    bytes memory convertedExtraArgs,
+    bytes memory tokenReceiver
+  );
+```
+
+---
+
+### getValidatedFee
+
+```solidity id="4xwrng"
+function getValidatedFee(
+  uint64 destChainSelector,
+  Client.EVM2AnyMessage calldata message
+)
+  external
+  view
+  returns (uint256 feeTokenAmount);
+```
+
+---
+
+### convertTokenAmount
+
+```solidity id="8mz8ev"
+function convertTokenAmount(
+  address fromToken,
+  uint256 fromTokenAmount,
+  address toToken
+)
+  external
+  view
+  returns (uint256 toTokenAmount);
+```
+
+---
+
+### getTokenAndGasPrices
+
+```solidity id="c0v6wk"
+function getTokenAndGasPrices(
+  address token,
+  uint64 destChainSelector
+)
+  external
+  view
+  returns (uint224 tokenPrice, uint224 gasPrice);
+```
+
+---
+
+### processPoolReturnData
+
+```solidity id="k5y9o2"
+function processPoolReturnData(
+  uint64 destChainSelector,
+  Internal.EVM2AnyTokenTransfer[] calldata onRampTokenTransfers,
+  Client.EVMTokenAmount[] calldata sourceTokenAmounts
+)
+  external
+  view
+  returns (bytes[] memory destExecDataPerToken);
+```
+
+---
+
+```solidity id="vt9x2j"
+}
+```
+
+---
+
+## Integration notes / expectations
+
+- `processMessageArgs` is the primary legacy normalization entrypoint.
+- `getValidatedFee` performs deterministic message validation and fee calculation.
+- `convertTokenAmount` converts via USD-denominated pricing.
+- `getTokenAndGasPrices` exposes raw pricing inputs.
+- `processPoolReturnData` validates pool-returned data before execution planning.
+- Implementations must revert on unsupported chains, tokens, or malformed inputs.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`IFeeQuoter`](/ccip/evm/api-reference/v2.0.0/i-fee-quoter)
+- [`Client`](/ccip/evm/api-reference/v2.0.0/client)
+- [`Internal`](/ccip/evm/api-reference/v2.0.0/internal)
+- [`IPoolV2`](/ccip/evm/api-reference/v2.0.0/i-pool-v2)
+- [`USDPriceWith18Decimals`](/ccip/evm/api-reference/v2.0.0/usd-price-with-18-decimals)

@@ -1,31 +1,38 @@
 ---
 import CcipDirectoryLayout from "~/layouts/CcipDirectoryLayout.astro"
 import { getEntry, render } from "astro:content"
+import { LATEST_CCIP_CONTENT_DIR } from "~/config/ccipVersions.js"
 import {
   Environment,
   Network,
   getAllNetworkLanes,
   getAllNetworks,
+  getAllUniqueVerifiers,
   getSearchLanes,
   getTokensOfChain,
   Version,
-} from "~/config/data/ccip"
-import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
-import ChainTable from "~/components/CCIP/Tables/ChainTable"
-import { getTokenIconUrl } from "~/features/utils"
-import ChainTokenGrid from "./ChainTokenGrid"
-import { generateChainStructuredData } from "~/utils/ccipStructuredData"
+} from "~/config/data/ccip/index.ts"
+import ChainHero from "~/components/CCIP/ChainHero/ChainHero.tsx"
+import ChainTable from "~/components/CCIP/Tables/ChainTable.tsx"
+import { getTokenIconUrl } from "~/features/utils/index.ts"
+import ChainTokenGrid from "./ChainTokenGrid.tsx"
+import { fetchAllPoolData } from "~/lib/ccip/graphql/services/enrichment-data-service.ts"
+import { generateChainStructuredData } from "~/utils/ccipStructuredData.ts"
 import StructuredData from "~/components/StructuredData.astro"
-import { DOCS_BASE_URL } from "~/utils/structuredData"
+import { DOCS_BASE_URL } from "~/utils/structuredData.ts"
+import AddButton from "~/components/CCIP/AddButton/AddButton.astro"
+
 interface Props {
   environment: Environment
   network: Network
 }
 const { environment, network } = Astro.props as Props
 
-const entry = await getEntry("ccip", "index")
+const entry = await getEntry("ccip", LATEST_CCIP_CONTENT_DIR)
 if (!entry) {
-  throw new Error('Could not find "ccip/index" doc. Check src/content/ccip/index.mdx!')
+  throw new Error(
+    `Could not find the CCIP landing doc (id "${LATEST_CCIP_CONTENT_DIR}"). Check src/content/ccip/${LATEST_CCIP_CONTENT_DIR}/index.mdx!`
+  )
 }
 
 const { headings } = await render(entry)
@@ -46,6 +53,19 @@ const lanes = await getAllNetworkLanes({
 })
 
 const searchLanes = getSearchLanes({ environment })
+
+const allPoolData = await fetchAllPoolData(environment)
+const poolDataByToken: Record<string, { address: string; rawType: string; type: string; version: string }> = {}
+for (const [tokenId, chainPoolData] of Object.entries(allPoolData)) {
+  if (chainPoolData[network.chain]) {
+    poolDataByToken[tokenId] = chainPoolData[network.chain]
+  }
+}
+
+const allVerifiers = getAllUniqueVerifiers({
+  environment,
+  version: Version.V1_2_0,
+})
 
 // Generate dynamic metadata for this specific chain
 const environmentText = environment === Environment.Mainnet ? "Mainnet" : "Testnet"
@@ -105,6 +125,7 @@ const chainStructuredData = generateChainStructuredData(
     network={network}
     environment={environment}
     lanes={searchLanes}
+    verifiers={allVerifiers}
     client:load
   />
   <section class="layout">
@@ -130,18 +151,21 @@ const chainStructuredData = generateChainStructuredData(
             network.chainType !== "aptos" &&
             network.chainType !== "ton" &&
             network.chainType !== "canton" && (
-              <a class="button secondary" href="/ccip/tutorials/evm/token-manager#verifying-your-token">
-                <img
-                  src="/assets/icons/plus.svg"
-                  alt="Add"
-                  style={{ width: "1em", height: "1em", marginRight: "0.5em", verticalAlign: "middle" }}
-                />
-                Add my token
-              </a>
+              <AddButton
+                href="/ccip/evm/tutorials/token-manager#verifying-your-token"
+                text="List my token"
+                urlClass="chain-add-button"
+              />
             )
         }
       </div>
-      <ChainTokenGrid tokens={allTokens} network={network} client:only="react" environment={environment} />
+      <ChainTokenGrid
+        tokens={allTokens}
+        network={network}
+        client:only="react"
+        environment={environment}
+        poolDataByToken={poolDataByToken}
+      />
     </div>
   </section>
 </CcipDirectoryLayout>
@@ -182,6 +206,14 @@ const chainStructuredData = generateChainStructuredData(
     grid-template-columns: 1fr;
     gap: var(--space-2x);
   }
+  :global(.chain-add-button) {
+    border-color: var(--blue-600) !important;
+    color: var(--blue-600) !important;
+  }
+
+  :global(.chain-add-button:hover) {
+    background-color: var(--blue-100) !important;
+  }
 
   @media (min-width: 50em) {
     .layout {
@@ -195,8 +227,12 @@ const chainStructuredData = generateChainStructuredData(
       display: grid;
       --doc-padding: var(--space-10x);
       padding: var(--doc-padding) var(--space-8x);
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-24x);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: var(--space-8x);
+    }
+
+    .layout > div {
+      min-width: 0;
     }
 
     .networks__grid {

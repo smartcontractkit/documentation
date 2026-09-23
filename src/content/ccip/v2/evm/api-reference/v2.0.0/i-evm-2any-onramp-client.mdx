@@ -1,0 +1,146 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IEVM2AnyOnRampClient API Reference"
+metadata:
+  description: "Interface for on-ramp contracts that quote fees and forward outbound CCIP messages."
+  version: "2.0.0"
+---
+
+`IEVM2AnyOnRampClient` defines the interface for outbound message routing from the Router to OnRamp contracts.
+
+It is responsible for:
+
+- quoting fees for outbound messages
+- resolving token pools for transfers
+- forwarding validated messages from the Router for execution
+
+This interface represents the boundary between routing logic and outbound execution.
+
+> This interface defines functions implemented by protocol contracts and is not typically used directly by applications.
+
+## Usage Boundary
+
+**You do not call this interface directly.**
+
+- The Router calls this interface to process outbound messages.
+- OnRamp implementations execute message forwarding and token handling.
+- You implement this interface when building custom OnRamp logic.
+- You are responsible for ensuring fee calculation and token support are correctly configured.
+- Execution flow typically follows: FeeQuoter (pricing) → Executor (policy + execution fee) → Verifier (validation).
+
+## Contract
+
+`interfaces/IEVM2AnyOnRampClient.sol`
+
+## Import
+
+```solidity
+import {IEVM2AnyOnRampClient} from "chainlink-ccip/interfaces/IEVM2AnyOnRampClient.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## External API
+
+### getFee
+
+```solidity
+function getFee(
+  uint64 destChainSelector,
+  Client.EVM2AnyMessage calldata message
+) external view returns (uint256 fee)
+```
+
+> Returns the fee required to process an outbound message through the OnRamp.
+
+| Parameter           | Type                             | Description                   |
+| ------------------- | -------------------------------- | ----------------------------- |
+| `destChainSelector` | `uint64`                         | Destination chain identifier. |
+| `message`           | `Client.EVM2AnyMessage calldata` | Message being evaluated.      |
+
+Returns:
+
+| Type      | Description          |
+| --------- | -------------------- |
+| `uint256` | Required fee amount. |
+
+---
+
+### getPoolBySourceToken
+
+```solidity
+function getPoolBySourceToken(
+  uint64 destChainSelector,
+  IERC20 sourceToken
+) external view returns (IPoolV1)
+```
+
+> Returns the token pool used to handle transfers for a given source token and destination chain.
+
+---
+
+### getSupportedTokens
+
+```solidity
+function getSupportedTokens(
+  uint64 destChainSelector
+) external view returns (address[] memory tokens)
+```
+
+> Returns tokens supported for transfer to the specified destination chain.
+
+---
+
+### forwardFromRouter
+
+```solidity
+function forwardFromRouter(
+  uint64 destChainSelector,
+  Client.EVM2AnyMessage memory message,
+  uint256 feeTokenAmount,
+  address originalSender
+) external returns (bytes32)
+```
+
+> Forwards a validated message from the Router to the OnRamp for execution.
+
+- Called only by the Router.
+- Must only be called by the Router; implementations should enforce this.
+- Initiates outbound processing and token handling.
+
+| Parameter           | Type                           | Description                                             |
+| ------------------- | ------------------------------ | ------------------------------------------------------- |
+| `destChainSelector` | `uint64`                       | Destination chain identifier.                           |
+| `message`           | `Client.EVM2AnyMessage memory` | Message being processed.                                |
+| `feeTokenAmount`    | `uint256`                      | Fee amount paid for execution.                          |
+| `originalSender`    | `address`                      | Address that initiated the message on the source chain. |
+
+Returns:
+
+| Type      | Description         |
+| --------- | ------------------- |
+| `bytes32` | Message identifier. |
+
+---
+
+## Notes
+
+- Messages forwarded through this interface must already be validated by the Router.
+- Fees returned by `getFee` must correspond to the exact message parameters passed to `forwardFromRouter`.
+- `getPoolBySourceToken` must return a valid pool for supported tokens and chains.
+- The set of supported tokens and pools must remain consistent with Router and TokenAdminRegistry configuration.
+- Execution will revert if the destination chain or token is not supported.
+- `forwardFromRouter` will revert if fee payment is insufficient or message parameters are invalid.
+- The message passed to `forwardFromRouter` should not be modified between fee quoting and execution.
+
+## Related Interfaces & Contracts
+
+- [`Client`](/ccip/evm/api-reference/v2.0.0/client)
+- [`IPoolV1`](/ccip/evm/api-reference/v2.0.0/i-pool-v1)
+- [`OnRamp`](/ccip/evm/api-reference/v2.0.0/onramp)
+- [`Router`](/ccip/evm/api-reference/v2.0.0/router)
