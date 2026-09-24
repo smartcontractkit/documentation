@@ -6,11 +6,16 @@ import "../styles/migrated.css"
 import "../styles/prism-darcula.css"
 import "@chainlink/design-system/global-styles.css"
 import "@chainlink/blocks/src/theme/globals.css"
+import CcipVersionGuard from "./CcipVersionToggle/CcipVersionGuard.astro"
+import { getCcipChainVersionRedirects } from "~/utils/ccipVersionRouting.js"
 
 export interface Props {
   title: string
 }
 const { title } = Astro.props
+
+// Only CCIP pages without a chain segment in their URL can need one (null everywhere else)
+const ccipChainVersionRedirects = getCcipChainVersionRedirects(Astro.url.pathname)
 ---
 
 <title>{title}</title>
@@ -18,6 +23,9 @@ const { title } = Astro.props
 <!-- Global Metadata -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<!-- Before any stylesheet: redirects CCIP pages whose stored chain family has no docs in this version -->
+{ccipChainVersionRedirects && <CcipVersionGuard redirects={ccipChainVersionRedirects} />}
 
 <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 <link href="/images/logo.png" rel="apple-touch-icon" />
