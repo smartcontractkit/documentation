@@ -10,6 +10,7 @@ metadata:
 
 import { ClickToZoom } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
+import RateLimitBucket from "@features/ccip/components/rate-limit-bucket/RateLimitBucket.astro"
 
 A Cross-Chain Token (CCT) is any ERC-20 token that has been registered and configured for cross-chain transfers via CCIP. The Cross-Chain Token (CCT) standard offers a streamlined approach to enable token transfers across blockchains using Chainlink's Cross-Chain Interoperability Protocol (CCIP).
 
@@ -122,6 +123,8 @@ Each transfer drains the bucket by exactly the amount transferred. Meanwhile, ev
 The key consequence: a transfer succeeds only if its amount fits within what's _currently_ in the bucket, not the bucket's total size. Right after a large transfer, the available capacity is low, and a second large transfer will be rejected even though it's below the max — users have to wait for the refill. And a transfer larger than the max capacity itself can never succeed, no matter how long you wait.
 
 The bucket gives you two independent risk management dials. Max capacity caps a single transaction. Refill rate caps sustained throughput (no one can drain it with many rapid transactions either — after a burst, a user is throttled to the refill rate). Together they mean that a sender can only move tokens as fast as the bucket allows, buying time to detect and respond.
+
+<RateLimitBucket />
 
 **Notes:**
 
