@@ -165,7 +165,7 @@ Create a project with the following options:
 2. Install the additional dependencies required by this tutorial:
 
 ```bash filename="Terminal"
-npm install @chainlink/contracts-ccip @chainlink/contracts viem
+npm install @chainlink/contracts-ccip@1.6.1 @chainlink/contracts@1.4.0 viem
 npm install --save-dev @nomicfoundation/hardhat-viem @nomicfoundation/hardhat-keystore
 ```
 
@@ -220,6 +220,12 @@ The output of `npx hardhat keystore list ` should look like this:
         src="/images/ccip/tutorials/ccip-getting-started-evm-1.png"
         alt="Hardhat keystore list command output"
       />
+
+5. Create a file named `remappings.txt` at the root of your project and add this line:
+
+```
+@chainlink/contracts@1.4.0/=node_modules/@chainlink/contracts/
+```
 
 </Accordion>
 
@@ -415,10 +421,22 @@ Best for **Solidity-native** workflows that prefer a modular, powerful scripting
 forge init
 ```
 
-2. Install the required dependencies:
+<Aside type="caution" title="Foundry uses git refs instead of tags">
+
+Foundry uses git refs instead of tags for versioning. The git refs are the commit hashes of the corresponding tags.
+You can verify the same from the following links:
+
+1. [chainlink-ccip](https://github.com/smartcontractkit/chainlink-ccip/releases/tag/contracts-ccip-v1.6.1)
+2. [chainlink-evm](https://github.com/smartcontractkit/chainlink-evm/releases/tag/contracts-v1.4.0)
+
+</Aside>
+
+3. Install the required dependencies:
 
 ```bash filename="Terminal"
-forge install smartcontractkit/chainlink-ccip smartcontractkit/chainlink-evm
+forge install \
+  smartcontractkit/chainlink-ccip@bbab0601244ce58e2ffac0dbc178a80aab1fa4a3 \
+  smartcontractkit/chainlink-evm@e06cc226086ad91cfede63e96c63e5b3440c9801
 ```
 
 <Aside type="note" title="Note">
@@ -457,6 +475,7 @@ libs = ["lib"]
 remappings = [
   "forge-std/=lib/forge-std/src/",
   "@chainlink/contracts-ccip/contracts/=lib/chainlink-ccip/chains/evm/contracts/",
+  "@chainlink/contracts@1.4.0/=lib/chainlink-evm/contracts/",
   "@chainlink/contracts/=lib/chainlink-evm/contracts/",
   "@openzeppelin/contracts@5.0.2/utils/introspection/=lib/forge-std/src/interfaces/"
 ]
