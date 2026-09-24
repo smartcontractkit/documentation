@@ -1,9 +1,17 @@
 .nav {
   /* existing */
   width: 100%;
-  height: calc(100vh - var(--space-16x));
+  /* Sit directly below the fixed header AND the sticky docs navigation bar (DocsNavigation).
+     --docs-sticky-top is set on <html> by src/components/Header/NavBar.tsx (onHideChange):
+     120px (64px header + 56px docs bar) while the header is shown, 56px while it is hidden on scroll.
+     120px is the fallback used until NavBar hydrates. */
+  height: calc(100vh - var(--docs-sticky-top, 120px));
   position: sticky;
-  top: var(--space-16x);
+  top: var(--docs-sticky-top, 120px);
+  /* Same duration and easing as the docs navigation bars' own `top` transition, so both move together. */
+  transition:
+    top 0.5s ease,
+    height 0.5s ease;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -145,18 +153,6 @@ details[open] > .navGroupTitle {
   color: hsla(var(--color-base-white), 100%, 1);
 }
 
-.link {
-  display: flex;
-  align-items: center;
-  padding: var(--space-3x) var(--space-2x);
-  gap: var(--space-2x);
-  margin-right: var(--space-2x);
-
-  color: var(--gray-900, #141921);
-  font-weight: 600;
-  line-height: 24px; /* 150% */
-}
-
 .quickLinks {
   margin-top: 60px;
   display: flex;
@@ -215,10 +211,4 @@ details[open] > .navGroupTitle {
   .languageSwitcherTablet {
     display: block;
   }
-}
-/* DocsHeaderTitle wrapper is an <a> with aria-label="CCIP home" */
-.nav :global(a[aria-label$=" home"]) {
-  padding-left: 0;
-  padding-right: 0;
-  margin-right: 0; /* remove the extra shift */
 }
