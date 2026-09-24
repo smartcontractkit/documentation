@@ -135,7 +135,11 @@ This page lists the [operator factory](/chainlink-nodes/contracts/operatorfactor
 
 ### Mainnet
 
+[0x3E64Cd889482443324F91bFA9c84fE72A511f48A](https://etherscan.io/address/0x3E64Cd889482443324F91bFA9c84fE72A511f48A)
+
 ### Sepolia
+
+[0x447Fd5eC2D383091C22B8549cb231a3bAD6d3fAf](https://sepolia.etherscan.io/address/0x447Fd5eC2D383091C22B8549cb231a3bAD6d3fAf)
 
 ---
 
@@ -247,9 +251,9 @@ Oracles must deploy an onchain contract to handle requests made through the LINK
 
 When the *Basic Request* model was introduced, node operators had to deploy the legacy [Oracle contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.4/Oracle.sol). However, these come with some limitations, and soon, we introduced [operator contracts](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/operatorforwarder/Operator.sol).
 
-<Aside type="note">
-  <p>Node operators must use *Operator.sol* instead of *Oracle.sol*.</p>
-</Aside>
+> **NOTE**
+>
+> Node operators must use *Operator.sol* instead of *Oracle.sol*.
 
 In addition to replacing oracle contracts, operator contracts come with additional features that add more security and flexibility for node operators.
 
@@ -275,9 +279,9 @@ A common pain point of node operators is keeping their addresses funded. *Operat
 
 By using multiple externally-owned accounts (EOAs) on Chainlink nodes and [forwarder](/chainlink-nodes/contracts/forwarder) contracts, node operators can set up different transaction-sending strategies.
 
-<Aside type="note">
-  <p>Read more about [forwarders](/chainlink-nodes/contracts/forwarder).</p>
-</Aside>
+> **NOTE**
+>
+> Read more about [forwarders](/chainlink-nodes/contracts/forwarder).
 
 As discussed in the [forwarder](/chainlink-nodes/contracts/forwarder) contracts page:
 
@@ -293,9 +297,9 @@ The operator contract inherits [AuthorizedReceiver](https://github.com/smartcont
 
 #### oracleRequest
 
-<Aside type="note" title="Legacy">
-  Use `operatorRequest` [function](#operatorrequest) instead.
-</Aside>
+> **NOTE: Legacy**
+>
+> Use `operatorRequest` [function](#operatorrequest) instead.
 
 ```solidity
 function oracleRequest(address sender, uint256 payment, bytes32 specId, address callbackAddress, bytes4 callbackFunctionId, uint256 nonce, uint256 dataVersion, bytes data) external
@@ -338,9 +342,9 @@ Creates the Chainlink request. Stores the hash of the params as the onchain comm
 
 #### fulfillOracleRequest
 
-<Aside type="note" title="Legacy">
-  Use `fulfillOracleRequest2` [function](#fulfilloraclerequest2) instead.
-</Aside>
+> **NOTE: Legacy**
+>
+> Use `fulfillOracleRequest2` [function](#fulfilloraclerequest2) instead.
 
 ```solidity
 function fulfillOracleRequest(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes32 data) external returns (bool)
@@ -761,12 +765,12 @@ Source: https://docs.chain.link/chainlink-nodes/contracts/receiver
 
 [AuthorizedReceiver](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/operatorforwarder/AuthorizedReceiver.sol) is an abstract contract inherited by [operator](/chainlink-nodes/contracts/operator) and [forwarder](/chainlink-nodes/contracts/forwarder) contracts.
 
-<Aside type="note">
-  Calling [setAuthorizedSenders](#setauthorizedsenders) has a different effect depending if it is called from an [operator](/chainlink-nodes/contracts/operator) or a [forwarder](/chainlink-nodes/contracts/forwarder) contract:
-
-  - Owners of forwarder contracts allow authorized senders to call [forward](/chainlink-nodes/contracts/forwarder#forward).
-  - Owners of operator contracts allow authorized senders to call the [fulfillOracleRequest](/chainlink-nodes/contracts/operator#fulfilloraclerequest) and [fulfillOracleRequest2](/chainlink-nodes/contracts/operator#fulfilloraclerequest2) methods.
-</Aside>
+> **NOTE**
+>
+> Calling [setAuthorizedSenders](#setauthorizedsenders) has a different effect depending if it is called from an [operator](/chainlink-nodes/contracts/operator) or a [forwarder](/chainlink-nodes/contracts/forwarder) contract:
+>
+> - Owners of forwarder contracts allow authorized senders to call [forward](/chainlink-nodes/contracts/forwarder#forward).
+> - Owners of operator contracts allow authorized senders to call the [fulfillOracleRequest](/chainlink-nodes/contracts/operator#fulfilloraclerequest) and [fulfillOracleRequest2](/chainlink-nodes/contracts/operator#fulfilloraclerequest2) methods.
 
 ## API reference
 
@@ -849,14 +853,14 @@ You will need to specify two headers:
 
 ## JSON jobs (REMOVED)
 
-<Aside type="caution" title="v1 Jobs are removed">
-  The initiators for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job
-  types](/chainlink-nodes/oracle-jobs/jobs) instead.
+> **CAUTION: v1 Jobs are removed**
+>
+> The initiators for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job
+> types](/chainlink-nodes/oracle-jobs/jobs) instead.
+>
+> See the [v2 jobs migration page](/chainlink-nodes/oracle-jobs/migration-v1-v2) to learn how to migrate to v2 jobs.
 
-  See the [v2 jobs migration page](/chainlink-nodes/oracle-jobs/migration-v1-v2) to learn how to migrate to v2 jobs.
-</Aside>
-
-We will be using the <a href="https://github.com/smartcontractkit/external-initiator">Chainlink external initiator</a> repo for reference. You can see some examples of existing initiators in the <a href="https://github.com/smartcontractkit/external-initiator/tree/master/blockchain">blockchain</a> folder.
+We will be using the [Chainlink external initiator](https://github.com/smartcontractkit/external-initiator) repo for reference. You can see some examples of existing initiators in the [blockchain](https://github.com/smartcontractkit/external-initiator/tree/master/blockchain) folder.
 
 External initiators are simple web initiators that can be activated by any job instead of just one. To set one up, you need to have a service similar to an external adapter that sends an `HTTPPost` message runs API call to your chainlink node service. Here is a sample URL for a web job could look like:
 
@@ -888,22 +892,20 @@ And have this job run on the same machine as your node.
 # Adding External Initiators to Nodes
 Source: https://docs.chain.link/chainlink-nodes/external-initiators/external-initiators-in-nodes
 
-<Aside type="note">
-  External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_INITIATORS=true` [configuration
-  variable](/chainlink-nodes/v1/configuration) to enable this feature.
-</Aside>
+> **NOTE**
+>
+> External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_INITIATORS=true` [configuration
+> variable](/chainlink-nodes/v1/configuration) to enable this feature.
 
 ## Creating an external initiator
 
 To create an external initiator you must use the remote API. You can do this yourself, like so:
-
 
 ```text
 POST http://<your chainlink node>/v2/external_initiators -d <PAYLOAD>
 ```
 
 where payload is a JSON blob that contains:
-
 
 ```json
 {
@@ -916,13 +918,11 @@ If a URL is provided, Chainlink will notify this URL of added and deleted jobs t
 
 On creation:
 
-
 ```text
 POST <URL> -d {"jobId": <job external UUID>, "type": <name of external initiator>, "params": <optional arbitrary JSON specified at job creation time>}
 ```
 
 On deletion:
-
 
 ```text
 DELETE <URL>/<job external UUID>
@@ -931,7 +931,6 @@ DELETE <URL>/<job external UUID>
 You can use the chainlink client for convenience to access this API.
 
 Enter the [Chainlink nodes CLI](/chainlink-nodes/resources/miscellaneous/#execute-commands-running-docker) and run the following command
-
 
 ```shell
 chainlink initiators create <NAME> <URL>
@@ -965,16 +964,18 @@ At the time of writing, the output should be in order. For example, in from the 
 
 Start your EI.
 
-Whatever code you used to run your external initiator, pass it the new headers created for the access headers, and then start your service. An easy way to do this is by having it read from the `.env` file you just created. Check out the <a href="https://github.com/Conflux-Network-Global/demo-cfx-chainlink" target="_blank">Conflux External initiator</a> for an example.
+Whatever code you used to run your external initiator, pass it the new headers created for the access headers, and then start your service. An easy way to do this is by having it read from the `.env` file you just created. Check out the [Conflux External initiator](https://github.com/Conflux-Network-Global/demo-cfx-chainlink) for an example.
 
 You'll want to test that your job is running properly. Meeting the criteria of your EI and then checking to see if a sample job kicks off is the best way to test this.
 
-To try a real-life example, feel free to follow along with the <a href="https://www.youtube.com/watch?v=J8oJEp4qz5w">Conflux EI demo</a>.
+To try a real-life example, feel free to follow along with the [Conflux EI demo](https://www.youtube.com/watch?v=J8oJEp4qz5w).
 
-<Aside type="note">
-  The External Initiator can only initiate [webhook jobs](/chainlink-nodes/oracle-jobs/job-types/webhook) that have been
-  linked to it. Trying to initiate a job that is not linked will give an unauthorised error.
-</Aside>
+[Additional external initiator reference](https://github.com/smartcontractkit/chainlink/wiki/External-Initiators)
+
+> **NOTE**
+>
+> The External Initiator can only initiate [webhook jobs](/chainlink-nodes/oracle-jobs/job-types/webhook) that have been
+> linked to it. Trying to initiate a job that is not linked will give an unauthorised error.
 
 ## Deleting an external initiator
 
@@ -1011,15 +1012,15 @@ Source: https://docs.chain.link/chainlink-nodes/external-initiators/external-ini
 
 External initiators allow jobs in a node to be initiated depending on some external condition. The ability to create and add external initiators to Chainlink nodes enables blockchain agnostic cross-chain compatibility.
 
-<Aside type="note">
-  At this time of writing, external initiators do not show up in the bridges tab. However, they act exactly the same as
-  if they did.
-</Aside>
+> **NOTE**
+>
+> At this time of writing, external initiators do not show up in the bridges tab. However, they act exactly the same as
+> if they did.
 
-<Aside type="note">
-  External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_INITIATORS=true` [configuration
-  variable](/chainlink-nodes/v1/configuration) to enable this feature.
-</Aside>
+> **NOTE**
+>
+> External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_INITIATORS=true` [configuration
+> variable](/chainlink-nodes/v1/configuration) to enable this feature.
 
 Initiator Bridges handle the authentication to and from the External Initiator and where to send the messages. When creating a Bridge two parameters are required:
 
@@ -1250,7 +1251,6 @@ Source: https://docs.chain.link/chainlink-nodes/job-specs/direct-request-get-str
 This is an example v2 (TOML) job spec for returning a *string* in one Chainlink API Call. Note that the job calls the `fulfillOracleRequest2` function. If you are a node operator, use an [Operator contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/operatorforwarder/Operator.sol) with this job.
 To test it from a smart contract, see this [Example](/any-api/get-request/examples/array-response).
 
-
 ```toml
 # THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
 # THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
@@ -1385,12 +1385,12 @@ This guide outlines different job types.
 
 ## Solidity cron jobs
 
-<Aside type="note" title="Chainlink Job Scheduler">
-  If you need to schedule a contract function call, use the [Chainlink Job
-  Scheduler](https://automation.chain.link/new). The Job Scheduler uses the [Chainlink
-  Automation](/chainlink-automation) network to execute deployed contract calls on a cron schedule that you define, such
-  as an Ethereum cron job for your dApp.
-</Aside>
+> **NOTE: Chainlink Job Scheduler**
+>
+> If you need to schedule a contract function call, use the [Chainlink Job
+> Scheduler](https://automation.chain.link/new). The Job Scheduler uses the [Chainlink
+> Automation](/chainlink-automation) network to execute deployed contract calls on a cron schedule that you define, such
+> as an Ethereum cron job for your dApp.
 
 Executes a job on a schedule. Does not rely on any kind of external trigger.
 
@@ -1432,14 +1432,14 @@ For all supported schedules, please refer to the [cron library documentation](ht
 
 ## Direct request jobs
 
-<Aside type="caution" title="Deprecation">
-  After Chainlink Node version 2.47, Chainlink is deprecating support for the legacy Direct Request and Run Log job
-  types. These job types will no longer be supported in Chainlink node releases. Node operators and developers that
-  continue to rely on them can choose to remain on the last compatible release, but should not expect ongoing
-  development support, including maintenance, bug fixes, security patches, or compatibility with future releases. Teams
-  using these legacy job types should begin planning to upgrade to the [Chainlink Runtime Environment (CRE)](/cre) as an
-  alternative.
-</Aside>
+> **CAUTION: Deprecation**
+>
+> After Chainlink Node version 2.47, Chainlink is deprecating support for the legacy Direct Request and Run Log job
+> types. These job types will no longer be supported in Chainlink node releases. Node operators and developers that
+> continue to rely on them can choose to remain on the last compatible release, but should not expect ongoing
+> development support, including maintenance, bug fixes, security patches, or compatibility with future releases. Teams
+> using these legacy job types should begin planning to upgrade to the [Chainlink Runtime Environment (CRE)](/cre) as an
+> alternative.
 
 Executes a job upon receipt of an explicit request made by a user. The request is detected via a log emitted by an Oracle or Operator contract. This is similar to the legacy ethlog/runlog style of jobs.
 
@@ -1548,14 +1548,14 @@ Using an *existing* Oracle Job makes your smart contract code more succinct. Let
 
 ## Flux Monitor Jobs
 
-<Aside type="caution" title="Deprecation">
-  After Chainlink Node version 2.47, Chainlink is deprecating support for the legacy Flux Monitor, Direct Request, and
-  Run Log job types. These job types will no longer be supported in Chainlink node releases. Node operators and
-  developers that continue to rely on them can choose to remain on the last compatible release, but should not expect
-  ongoing development support, including maintenance, bug fixes, security patches, or compatibility with future
-  releases. Teams using these legacy job types should begin planning to upgrade to the [Chainlink Runtime Environment
-  (CRE)](/cre) as an alternative.
-</Aside>
+> **CAUTION: Deprecation**
+>
+> After Chainlink Node version 2.47, Chainlink is deprecating support for the legacy Flux Monitor, Direct Request, and
+> Run Log job types. These job types will no longer be supported in Chainlink node releases. Node operators and
+> developers that continue to rely on them can choose to remain on the last compatible release, but should not expect
+> ongoing development support, including maintenance, bug fixes, security patches, or compatibility with future
+> releases. Teams using these legacy job types should begin planning to upgrade to the [Chainlink Runtime Environment
+> (CRE)](/cre) as an alternative.
 
 The Flux Monitor job type is for continually-updating data feeds that aggregate responses from multiple oracles. The oracles servicing the feed submit rounds based on several triggers:
 
@@ -1804,17 +1804,21 @@ See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
 
 ## Webhook Jobs
 
-<Aside type="caution" title="Deprecation">
-  After Chainlink Node version 2.49, Chainlink is deprecating support for the legacy Webhook job type. This job type
-  will no longer be supported in Chainlink node releases. Node operators and developers that continue to rely on it can
-  choose to remain on the last compatible release, but should not expect ongoing development support, including
-  maintenance, bug fixes, security patches, or compatibility with future releases. Teams using this legacy job type
-  should begin planning to upgrade to the [Chainlink Runtime Environment (CRE)](/cre) as an alternative.
-</Aside>
+> **CAUTION: Deprecation**
+>
+> After Chainlink Node version 2.49, Chainlink is deprecating support for the legacy Webhook job type. This job type
+> will no longer be supported in Chainlink node releases. Node operators and developers that continue to rely on it can
+> choose to remain on the last compatible release, but should not expect ongoing development support, including
+> maintenance, bug fixes, security patches, or compatibility with future releases. Teams using this legacy job type
+> should begin planning to upgrade to the [Chainlink Runtime Environment (CRE)](/cre) as an alternative.
 
 Webhook jobs can be initiated by HTTP request, either by a user or external initiator.
 
-<Aside type="note" />
+> **NOTE**
+>
+> You must have `ExternalInitiatorsEnabled = true` in your config to enable these jobs. See&#x20;
+> [ExternalInitiatorsEnabled](/chainlink-nodes/v1/node-config#externalinitiatorsenabled) in the config
+> reference for details.
 
 This is an example webhook job:
 
@@ -2051,7 +2055,6 @@ A map containing the decoded values.
 
 **Example**
 
-
 ```toml
 decode [type="ethabidecodelog"
         abi="NewRound(uint256 indexed roundId, address indexed startedBy, uint256 startedAt)"
@@ -2060,7 +2063,6 @@ decode [type="ethabidecodelog"
 ```
 
 This task will return a map with the following schema:
-
 
 ```json
 {
@@ -2089,7 +2091,6 @@ A map containing the decoded values.
 
 **Example**
 
-
 ```toml
 decode [type="ethabidecode"
         abi="bytes32 requestID, uint256 price, address[] oracles"
@@ -2097,7 +2098,6 @@ decode [type="ethabidecode"
 ```
 
 This task will return a map with the following schema:
-
 
 ```json
 {
@@ -2490,7 +2490,6 @@ Accepts multiple numerical inputs and returns the mode (most common) of them. If
 
 A map containing two keys:
 
-
 ```json
 {
     "results": [ ... ], // An array containing all of the values that occurred the maximum number of times
@@ -2500,7 +2499,6 @@ A map containing two keys:
 
 **Example**
 
-
 ```toml
 my_mode_task [type="mode"
                 values=<[ $(fetch1), $(fetch2), $(fetch3), $(fetch4), $(fetch5), $(fetch6), $(fetch7), $(fetch8) ]>
@@ -2508,7 +2506,6 @@ my_mode_task [type="mode"
 ```
 
 This task can handle arrays with mixed types. For example, given a `values` array containing both strings and ints like `[ 2, 5, 2, "foo", "foo" "bar", "foo", 2 ]`, the task returns the following JSON:
-
 
 ```json
 {
@@ -2519,7 +2516,6 @@ This task can handle arrays with mixed types. For example, given a `values` arra
 
 To encode the results array into the `ethabiencode` task, specify that the data is an array in the `abi` and point the data parameter to the results from your mode task. Because [argument encoding](https://docs.soliditylang.org/en/develop/abi-spec.html#argument-encoding) enforces types, all of the values in the array must be of the same type. As an example, you can encode the results of a `mode` task with an array of integers:
 
-
 ```toml
 mode_task [type="mode" values=<[ 1, 2, 2, 3, 1 ]>]
 
@@ -2527,7 +2523,6 @@ encode_mode_task [type="ethabiencode" abi="(bytes32 requestId, uint64 occurrence
 ```
 
 In this example, the `mode` task returns the following result:
-
 
 ```json
 {
@@ -2615,12 +2610,12 @@ Given the input `Hello World!`, the task will return `HELLO WORLD!`.
 # v2 Jobs
 Source: https://docs.chain.link/chainlink-nodes/oracle-jobs/jobs
 
-<Aside type="note" title="Chainlink v2 jobs">
-  This page describes Chainlink v2 jobs. In the Operator UI interface, these are called TOML jobs. The v1 jobs are
-  removed in Chainlink nodes versioned 1.0.0 and later. To learn how to migrate your v1 jobs to v2 jobs, see [Migrating
-  to v2 Jobs](/chainlink-nodes/oracle-jobs/migration-v1-v2). If you still need to use v1 jobs on older versions of
-  Chainlink nodes, see the [v1 Jobs](/chainlink-nodes/oracle-jobs/v1/job-specifications) documentation.
-</Aside>
+> **NOTE: Chainlink v2 jobs**
+>
+> This page describes Chainlink v2 jobs. In the Operator UI interface, these are called TOML jobs. The v1 jobs are
+> removed in Chainlink nodes versioned 1.0.0 and later. To learn how to migrate your v1 jobs to v2 jobs, see [Migrating
+> to v2 Jobs](/chainlink-nodes/oracle-jobs/migration-v1-v2). If you still need to use v1 jobs on older versions of
+> Chainlink nodes, see the [v1 Jobs](/chainlink-nodes/oracle-jobs/v1/job-specifications) documentation.
 
 ## What is a Job?
 
@@ -2998,9 +2993,9 @@ Source: https://docs.chain.link/chainlink-nodes/oracle-jobs/tasks
 
 ## What is a Task?
 
-<Aside type="note" title="Tasks">
-  Tasks replace the [core adapters](/chainlink-nodes/oracle-jobs/v1/adapters) from v1 jobs.
-</Aside>
+> **NOTE: Tasks**
+>
+> Tasks replace the [core adapters](/chainlink-nodes/oracle-jobs/v1/adapters) from v1 jobs.
 
 Tasks are a replacement for core adapters that is more flexible. Tasks can be composed in arbitrary order into [pipelines](#writing-pipelines). Pipelines consist of one or more threads of execution where tasks are executed in a well-defined order.
 
@@ -3046,7 +3041,7 @@ data_source_2 -> medianize_data
 medianize_data -> submit_to_ea
 ```
 
-(Image: DAG Example)
+![DAG Example](/images/dag_example.png)
 
 ---
 
@@ -3193,17 +3188,45 @@ Change the following placeholders to their real values:
 # Enabling HTTPS Connections
 Source: https://docs.chain.link/chainlink-nodes/resources/enabling-https-connections
 
-This guide will walk you through how to generate your own self-signed certificates for use by the Chainlink node. You can also substitute self-signed certificates with certificates of your own, like those created by <a href="https://letsencrypt.org/" target="_blank">Let's Encrypt</a>.
+This guide will walk you through how to generate your own self-signed certificates for use by the Chainlink node. You can also substitute self-signed certificates with certificates of your own, like those created by [Let's Encrypt](https://letsencrypt.org/).
 
-<Aside type="tip" title="TLS">
-  You will need [OpenSSL](https://www.openssl.org) in order to generate your own self-signed certificates.
-</Aside>
+> **TIP: TLS**
+>
+> You will need [OpenSSL](https://www.openssl.org) in order to generate your own self-signed certificates.
 
 Create a directory `tls/` within your local Chainlink directory:
 
+### Sepolia
+
+```text Sepolia
+mkdir ~/.chainlink-sepolia/tls
+```
+
+### Mainnet
+
+```text Mainnet
+mkdir ~/.chainlink/tls
+```
 
 Run this command to create a `server.crt` and `server.key` file in the previously created directory:
 
+### Sepolia
+
+```shell Sepolia
+openssl req -x509 -out  ~/.chainlink-sepolia/tls/server.crt  -keyout ~/.chainlink-sepolia/tls/server.key \
+  -newkey rsa:2048 -nodes -sha256 -days 365 \
+  -subj '/CN=localhost' -extensions EXT -config <( \
+   printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
+```
+
+### Mainnet
+
+```shell Mainnet
+openssl req -x509 -out  ~/.chainlink/tls/server.crt  -keyout ~/.chainlink/tls/server.key \
+  -newkey rsa:2048 -nodes -sha256 -days 365 \
+  -subj '/CN=localhost' -extensions EXT -config <( \
+   printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
+```
 
 Next, add the `TLS_CERT_PATH` and `TLS_KEY_PATH` environment variables to your `.env` file.
 
@@ -3226,6 +3249,19 @@ code": "sed -i '/SECURE_COOKIES=false/d' .env
 
 Finally, update your run command to forward port 6689 to the container instead of 6688:
 
+### Sepolia
+
+```shell Sepolia
+cd ~/.chainlink-sepolia && docker run -p 6689:6689 -v ~/.chainlink-sepolia:/chainlink -it
+--env-file=.env smartcontract/chainlink local n
+```
+
+### Mainnet
+
+```shell Mainnet
+cd ~/.chainlink && docker run -p 6689:6689 -v ~/.chainlink:/chainlink -it --env-file=.env
+smartcontract/chainlink local n
+```
 
 Now when running the node, you can access it by navigating to [https://localhost:6689](https://localhost:6689) if running on the same machine or with a ssh tunnel.
 
@@ -3236,16 +3272,16 @@ Source: https://docs.chain.link/chainlink-nodes/resources/evm-performance-config
 
 The most basic Chainlink node deployment uses the default configuration on only a single primary node with a websocket URL. This configuration is appropriate for small or simple workloads with only a few jobs that execute infrequently. If you need to run hundreds of jobs and thousands of transactions per hour, your Chainlink and RPC nodes will require a more advanced configuration. This guide explains how to configure Chainlink and your EVM nodes for high reliability and throughput.
 
-<Aside type="note" title="Note on Ethereum clients">
-  Ethereum clients have bugs. Much work is done on the Chainlink node software to mitigate bugs in various different RPC
-  implementations. This guide helps you understand how to mitigate and work around these bugs.
-</Aside>
+> **NOTE: Note on Ethereum clients**
+>
+> Ethereum clients have bugs. Much work is done on the Chainlink node software to mitigate bugs in various different RPC
+> implementations. This guide helps you understand how to mitigate and work around these bugs.
 
 ## Using multiple nodes
 
-<Aside type="note" title="Use multiple nodes">
-  Providing multiple primary nodes can improve performance and reliability.
-</Aside>
+> **NOTE: Use multiple nodes**
+>
+> Providing multiple primary nodes can improve performance and reliability.
 
 Chainlink node version 1.3.0 and later support configurations with multiple primary nodes and send-only nodes with automatic liveness detection and failover. It is no longer necessary to run a load balancing failover RPC proxy between Chainlink and its EVM RPC nodes.
 
@@ -3255,10 +3291,10 @@ You can have as many primary nodes as you want. Requests are evenly distributed 
 
 You can configure as many send-only nodes as you want. Send-only nodes only broadcast transactions and do not process regular RPC calls. Specifying additional send-only nodes uses a minimum number of RPC calls and can help to include transactions faster. Send-only nodes also act as backup if your primary node starts to blackhole transactions.
 
-<Aside type="note" title="Transaction broadcasts">
-  Transaction broadcasts are always sent to every primary node and send-only node. It is redundant to specify the same
-  URL for a send-only node as an existing primary node, and it has no effect.
-</Aside>
+> **NOTE: Transaction broadcasts**
+>
+> Transaction broadcasts are always sent to every primary node and send-only node. It is redundant to specify the same
+> URL for a send-only node as an existing primary node, and it has no effect.
 
 Here is an example for how to specify the [`EVM_NODES` environment variable](/chainlink-nodes/v1/configuration):
 
@@ -3310,10 +3346,10 @@ Send-only nodes are used for broadcasting transactions only, and must support th
 
 ## Automatic load balancing and failover
 
-<Aside type="caution" title="Do not use load balancers for RPCs">
-  Our recommendation is that node operators should **not** use load-balancers for RPCs. If you do use them, the load
-  balancers must provide finality guarantees.
-</Aside>
+> **CAUTION: Do not use load balancers for RPCs**
+>
+> Our recommendation is that node operators should **not** use load-balancers for RPCs. If you do use them, the load
+> balancers must provide finality guarantees.
 
 Chainlink node version 1.3.0 and above has built in failover and load balancing for primary nodes. Chainlink always uses round-robin requests across all primary nodes. Chainlink monitors when nodes go offline and stops routing requests to those nodes. If you don't want to use Chainlink's built-in failover, or you want to use an external proxy instead, you can disable failover completely using the following environment variables:
 
@@ -3337,9 +3373,9 @@ NODE_POLL_INTERVAL="10s"
 
 ## Configuring websocket and HTTP URLs
 
-<Aside type="note" title="Note on URLs">
-  Ideally, every primary node specifies an HTTP URL in addition to the websocket URL.
-</Aside>
+> **NOTE: Note on URLs**
+>
+> Ideally, every primary node specifies an HTTP URL in addition to the websocket URL.
 
 It is not recommended to configure primary nodes with *only* a websocket URL. Routing all traffic over only a websocket can cause problems. As a best practices, every primary node must have both websocket and HTTP URLs specified. This allows Chainlink to route almost all RPC calls over HTTP, which tends to be more robust and reliable. The websocket URL is used only for subscriptions. Both URLs must point to the same node because they are bundled together and have the same liveness state.
 
@@ -3357,9 +3393,9 @@ BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE=100
 ETH_LOG_BACKFILL_BATCH_SIZE=1000
 ```
 
-<Aside type="caution">
-  <p>Do not modify these values unless *all* primary nodes are configured with HTTP URLs.</p>
-</Aside>
+> **CAUTION**
+>
+> Do not modify these values unless *all* primary nodes are configured with HTTP URLs.
 
 ## Increasing transaction throughput
 
@@ -3367,14 +3403,14 @@ By default, Chainlink has conservative limits because it must be compliant with 
 
 Before you make any changes to your Chainlink configuration, you must ensure that *all* of your primary and send-only nodes are configured to handle the increased throughput.
 
-<Aside type="note" title="Transaction throughput">
-  The best way to improve transaction throughput is to keep the default configuration and use multiple keys to transmit.
-  Chainlink supports an arbitrary number of keys for any given chain. By default, tasks will round-robin through keys,
-  but you can assign them individually to keys as well. Assigning tasks to keys is the preferred way to improve
-  throughput because increasing the max number of in-flight requests can have complicated effects based on the mempool
-  configurations of other RPC nodes. If you are unable to distribute transmission load across multiple keys, try the
-  following options to increase throughput.
-</Aside>
+> **NOTE: Transaction throughput**
+>
+> The best way to improve transaction throughput is to keep the default configuration and use multiple keys to transmit.
+> Chainlink supports an arbitrary number of keys for any given chain. By default, tasks will round-robin through keys,
+> but you can assign them individually to keys as well. Assigning tasks to keys is the preferred way to improve
+> throughput because increasing the max number of in-flight requests can have complicated effects based on the mempool
+> configurations of other RPC nodes. If you are unable to distribute transmission load across multiple keys, try the
+> following options to increase throughput.
 
 ### Increase `ETH_MAX_QUEUED_TRANSACTIONS`
 
@@ -3394,10 +3430,10 @@ Do not set `ETH_MAX_QUEUED_TRANSACTIONS` too high. It acts as a sanity limit and
 
 The default is set conservatively at `16` because this is a pessimistic minimum that go-ethereum will hold without evicting local transactions. If your node is falling behind and not able to get transactions in as fast as they are created, you can increase this setting.
 
-<Aside type="caution">
-  If you increase `ETH_MAX_IN_FLIGHT_TRANSACTIONS` you must make sure that your ETH node is configured properly
-  otherwise you can get nonce-gapped and your node will get stuck.
-</Aside>
+> **CAUTION**
+>
+> If you increase `ETH_MAX_IN_FLIGHT_TRANSACTIONS` you must make sure that your ETH node is configured properly
+> otherwise you can get nonce-gapped and your node will get stuck.
 
 ## Optimizing RPC nodes
 
@@ -3449,11 +3485,11 @@ Set the task label similarly to the following example:
 
 Note that this only affects the presentation of jobs, and whether they are marked as errored or not. It has no effect on inclusion of the transaction, which is handled with separate logic.
 
-<Aside type="caution">
-  Do not confuse `minConfirmations` set on the task with transaction inclusion. The transaction manager always attempts
-  to get every transaction mined up to `EVMFinalityDepth`. `minConfirmations` on the task is a task-specific view of
-  when the transaction that can be considered final, which might be fewer blocks than `EVMFinalityDepth`.
-</Aside>
+> **CAUTION**
+>
+> Do not confuse `minConfirmations` set on the task with transaction inclusion. The transaction manager always attempts
+> to get every transaction mined up to `EVMFinalityDepth`. `minConfirmations` on the task is a task-specific view of
+> when the transaction that can be considered final, which might be fewer blocks than `EVMFinalityDepth`.
 
 ## Increase `ORM_MAX_OPEN_CONNS` and `ORM_MAX_IDLE_CONNS`
 
@@ -3521,10 +3557,10 @@ If no jobs have been added, you will receive the following output, otherwise, th
 
 ## Transfer funds from node wallet.
 
-<Aside type="note" title="Note for Docker">
-  If using Docker, you will first need to follow the [Execute Commands Running Docker](#execute-commands-running-docker)
-  guide to enter the running container.
-</Aside>
+> **NOTE: Note for Docker**
+>
+> If using Docker, you will first need to follow the [Execute Commands Running Docker](#execute-commands-running-docker)
+> guide to enter the running container.
 
 To transfer funds from the node wallet to another address, use the following CLI command:
 
@@ -3536,10 +3572,10 @@ This method is the preferred way to interact with your node wallet. Using other 
 
 ## Change your API password
 
-<Aside type="note" title="Note for Docker">
-  If using Docker, you will first need to follow the [Execute Commands Running Docker](#execute-commands-running-docker)
-  guide to enter the running container.
-</Aside>
+> **NOTE: Note for Docker**
+>
+> If using Docker, you will first need to follow the [Execute Commands Running Docker](#execute-commands-running-docker)
+> guide to enter the running container.
 
 In order to change your password, you first need to log into the CLI by running:
 
@@ -3716,10 +3752,10 @@ You might occasionally need to restart the system that the Chainlink node runs o
 
 ## Maintenance and image update example
 
-<Aside type="note" title="Docker">
-  This example uses Docker to run the Chainlink node, see the [Running a Chainlink
-  Node](/chainlink-nodes/v1/running-a-chainlink-node) page for instructions on how to set it up.
-</Aside>
+> **NOTE: Docker**
+>
+> This example uses Docker to run the Chainlink node, see the [Running a Chainlink
+> Node](/chainlink-nodes/v1/running-a-chainlink-node) page for instructions on how to set it up.
 
 First, find the most recent Chainlink image on [Docker Hub](https://hub.docker.com/r/smartcontract/chainlink/) and pull that Docker image. For version 1.11.0:
 
@@ -3744,6 +3780,19 @@ Look under the PORTS label to see the ports in use by the running container, in 
 
 Now start the second instance of the node. The local port option has been modified so that both containers run simultaneously.
 
+### Sepolia
+
+```shell Sepolia
+cd ~/.chainlink-sepolia && docker run -p 6687:6688 -v ~/.chainlink-sepolia:/chainlink -it
+--env-file=.env smartcontract/chainlink local n
+```
+
+### Mainnet
+
+```shell Mainnet
+cd ~/.chainlink && docker run -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env
+smartcontract/chainlink local n
+```
 
 The log messages on the second node instance inform you that it is waiting for the database lock.
 
@@ -3759,15 +3808,28 @@ At this point, you're now running the latest image on your secondary container. 
 
 Next, run the container again with the local port 6688 in order to go back to normal operations.
 
+### Sepolia
+
+```shell Sepolia
+cd ~/.chainlink-sepolia && docker run -p 6688:6688 -v ~/.chainlink-sepolia:/chainlink -it
+--env-file=.env smartcontract/chainlink local n
+```
+
+### Mainnet
+
+```shell Mainnet
+cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env
+smartcontract/chainlink local n
+```
 
 When the log messages on the first node indicate that it is waiting for the database lock, shut down the second instance of the node. The original instance automatically obtains a lock and resumes normal operation.
 
 ## Failover node example
 
-<Aside type="note" title="Docker">
-  This example uses Docker to run the Chainlink node, see the [Running a Chainlink
-  Node](/chainlink-nodes/v1/running-a-chainlink-node) page for instructions on how to set it up.
-</Aside>
+> **NOTE: Docker**
+>
+> This example uses Docker to run the Chainlink node, see the [Running a Chainlink
+> Node](/chainlink-nodes/v1/running-a-chainlink-node) page for instructions on how to set it up.
 
 You might want to run multiple instances of the Chainlink node on the same machine. If one instance goes down, the second instance can automatically pick up requests. Building off the concepts in the previous example, use Docker to have primary and a secondary containers referencing the same database URL.
 
@@ -3775,6 +3837,19 @@ Use the default `DATABASE_LOCKING_MODE=advisorylock` setting unless you want to 
 
 Run the Chainlink node with a name option specified:
 
+### Sepolia
+
+```shell Sepolia
+cd ~/.chainlink-sepolia && docker run --name chainlink -p 6688:6688 -v
+~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
+```
+
+### Mainnet
+
+```shell Mainnet
+cd ~/.chainlink && docker run --name chainlink -p 6688:6688 -v ~/.chainlink:/chainlink -it
+--env-file=.env smartcontract/chainlink local n
+```
 
 You will now notice that you no longer receive a randomly generated name from Docker:
 
@@ -3791,6 +3866,19 @@ Output (truncated):
 
 This will remain your primary Chainlink container, and should always use port 6688 (unless configured otherwise). For the secondary instance, you will run the container in the same way, but with a different name and a different local port:
 
+### Sepolia
+
+```shell Sepolia
+cd ~/.chainlink-sepolia && docker run --name secondary -p 6687:6688 -v
+~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
+```
+
+### Mainnet
+
+```shell Mainnet
+cd ~/.chainlink && docker run --name secondary -p 6687:6688 -v ~/.chainlink:/chainlink -it
+--env-file=.env smartcontract/chainlink local n
+```
 
 Notice the `--name secondary` was used for this container and the local port is 6687. Be sure to add this port to your SSH tunnel as well so that you can access the secondary node's GUI if it has become active (it will not function until the primary container goes down).
 
@@ -3870,10 +3958,10 @@ Source: https://docs.chain.link/chainlink-nodes/resources/run-an-ethereum-client
 
 Chainlink nodes must be able to connect to an Ethereum client with an active websocket connection. This is accomplished by running both an execution client and a consensus client. You can run these clients yourself, but running Ethereum clients requires significant storage and network resources. Optionally, you can use [External Services](#external-services) that manage these clients for you.
 
-<Aside type="note" title="Enable the Websockets API">
-  If you run these clients yourself, you must enable the websockets API. The websockets API is required for the
-  Chainlink node to communicate with the Ethereum blockchain.
-</Aside>
+> **NOTE: Enable the Websockets API**
+>
+> If you run these clients yourself, you must enable the websockets API. The websockets API is required for the
+> Chainlink node to communicate with the Ethereum blockchain.
 
 ## Geth
 
@@ -3887,9 +3975,35 @@ docker pull ethereum/client-go:latest
 
 Create a local directory to persist the data:
 
+### Sepolia
+
+```shell Sepolia
+mkdir ~/.geth-sepolia
+```
+
+### Mainnet
+
+```shell Mainnet
+mkdir ~/.geth 
+```
 
 Run the container:
 
+### Sepolia
+
+```shell Sepolia
+docker run --name eth -p 8546:8546 -v ~/.geth-sepolia:/geth -it \
+ethereum/client-go --sepolia --ws --ipcdisable \
+--ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
+```
+
+### Mainnet
+
+```shell Mainnet
+docker run --name eth -p 8546:8546 -v ~/.geth:/geth -it \
+ethereum/client-go --ws --ipcdisable \
+--ws.addr 0.0.0.0 --ws.origins="*" --datadir /geth
+```
 
 Once the Ethereum client is running, you can use `Ctrl + P, Ctrl + Q` to detach from the container without stopping it. You will need to leave the container running for the Chainlink node to connect to it.
 
@@ -3915,9 +4029,41 @@ docker pull nethermind/nethermind:latest
 
 Create a local directory to persist the data:
 
+### Sepolia
+
+```shell Sepolia
+mkdir ~/.nethermind-sepolia
+```
+
+### Mainnet
+
+```shell Mainnet
+mkdir ~/.nethermind
+```
 
 Run the container:
 
+### Sepolia
+
+```shell Sepolia
+docker run --name eth -p 8545:8545 \
+-v ~/.nethermind-sepolia/:/nethermind/data \
+-it nethermind/nethermind:latest --config sepolia \
+--Init.WebSocketsEnabled true --JsonRpc.Enabled true \
+--JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
+--datadir data
+```
+
+### Mainnet
+
+```shell Mainnet
+docker run --name eth -p 8545:8545 \
+-v ~/.nethermind/:/nethermind/data \
+-it nethermind/nethermind:latest --Sync.FastSync true \
+--Init.WebSocketsEnabled true --JsonRpc.Enabled true \
+--JsonRpc.Host 0.0.0.0 --NoCategory.CorsOrigins * \
+--datadir data
+```
 
 After the Ethereum client is running, you can use `Ctrl + P, Ctrl + Q` to detach from the container without stopping it. You will need to leave the container running for the Chainlink node to connect to it.
 
@@ -3939,6 +4085,17 @@ The following services offer Ethereum clients with websockets connectivity known
 
 Example connection setting:
 
+### Sepolia
+
+```text Sepolia
+ETH_URL=wss://eth-sepolia.alchemyapi.io/v2/YOUR_PROJECT_ID
+```
+
+### Mainnet
+
+```text Mainnet
+ETH_URL=wss://eth-mainnet.alchemyapi.io/v2/YOUR_PROJECT_ID
+```
 
 ## [Chainstack](https://support.chainstack.com/hc/en-us/articles/900001664463-Setting-up-a-Chainlink-node-with-an-Ethereum-node-provided-by-Chainstack)
 
@@ -3960,11 +4117,33 @@ ETH_URL=wss://cl-main.fiews.io/v2/YOUR_API_KEY
 
 Example connection setting:
 
+### Sepolia
+
+```text Sepolia
+ETH_URL=wss://eth.getblock.io/sepolia/?api_key=YOUR_API_KEY
+```
+
+### Mainnet
+
+```text Mainnet
+ETH_URL=wss://eth.getblock.io/mainnet/?api_key=YOUR_API_KEY
+```
 
 ## [Infura](https://infura.io/docs/ethereum/wss/introduction.md)
 
 Example connection setting. Replace YOUR_PROJECT_ID with the ID Infura provides you on your project settings page.
 
+### Sepolia
+
+```text Sepolia
+ETH_URL=wss://sepolia.infura.io/ws/v3/YOUR_PROJECT_ID
+```
+
+### Mainnet
+
+```text Mainnet
+ETH_URL=wss://mainnet.infura.io/ws/v3/YOUR_PROJECT_ID
+```
 
 ## [LinkPool](https://docs.linkpool.io/docs/general_public_rpc_nodes)
 
@@ -3978,13 +4157,24 @@ ETH_URL=wss://main-rpc.linkpool.io/ws
 
 Example connection setting:
 
+### Sepolia
+
+```text Sepolia
+ETH_URL=wss://your-node-name.sepolia.quiknode.pro/security-hash/
+```
+
+### Mainnet
+
+```text Mainnet
+ETH_URL=wss://your-node-name.quiknode.pro/security-hash/
+```
 
 ## Configuring your ETH node
 
-<Aside type="caution" title="RPC gas/txfee caps">
-  By default, go-ethereum rejects transactions that exceed the built-in RPC gas/txfee caps. The node will fatally error
-  transactions if this happens. If you ever exceed the caps, the node will miss transactions.
-</Aside>
+> **CAUTION: RPC gas/txfee caps**
+>
+> By default, go-ethereum rejects transactions that exceed the built-in RPC gas/txfee caps. The node will fatally error
+> transactions if this happens. If you ever exceed the caps, the node will miss transactions.
 
 At a minimum, disable the default RPC gas and txfee caps on your ETH node. This can be done in the TOML file as seen below, or by running go-ethereum with the command line arguments: `--rpc.gascap=0 --rpc.txfeecap=0`.
 
@@ -3999,10 +4189,10 @@ To learn more about configuring ETH nodes, see the [configuration page](/chainli
 # Fulfilling Requests
 Source: https://docs.chain.link/chainlink-nodes/v1/fulfilling-requests
 
-<Aside type="note" title="Run a Chainlink node">
-  This guide assumes you have a running Chainlink node. To learn how to run a node, see the [Running a Chainlink Node
-  locally](/chainlink-nodes/v1/running-a-chainlink-node) guide.
-</Aside>
+> **NOTE: Run a Chainlink node**
+>
+> This guide assumes you have a running Chainlink node. To learn how to run a node, see the [Running a Chainlink Node
+> locally](/chainlink-nodes/v1/running-a-chainlink-node) guide.
 
 You can use your Chainlink nodes to fulfill requests. This guide shows you how to deploy your own operator contract and add jobs to your node so that it can provide data to smart contracts.
 
@@ -4018,7 +4208,7 @@ Before you begin this guide, complete the following tasks to make sure you have 
 - [Run a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-node).
 - Fund the Ethereum address that your Chainlink node uses. You can find the address in the node Operator GUI under the **Key Management** configuration. The address of the node is the `Regular` type. You can obtain test ETH from several [faucets](/resources/link-token-contracts). For this tutorial to work, you will have to fund the node's Ethereum address with Sepolia ETH. Here is an example:
 
-  (Image: chainlink node fund address)
+  ![chainlink node fund address](/images/chainlink-nodes/node-operators/key-management.jpg)
 
 ## Address types
 
@@ -4050,22 +4240,22 @@ Your node works with several different types of addresses. Each address type has
 
    - Copy the *Admin wallet address* into the `OWNER` field.
 
-   (Image: The Deploy & Run transaction window showing Injected Web 3 selected and the address for your MetaMask wallet.)
+   ![The Deploy & Run transaction window showing Injected Web 3 selected and the address for your MetaMask wallet.](/images/chainlink-nodes/node-operators/deploy-operator.jpg)
 
 4. Click **transact**. MetaMask prompts you to confirm the transaction.
 
-   <Aside type="note" title="MetaMask doesn't pop up?">
-     If MetaMask does not prompt you and instead displays the error below, disable "Privacy Mode" in MetaMask. You can
-     do this by clicking on your unique account icon at the top-right, then go to the Settings. Privacy Mode will be a
-     switch near the bottom.
-
-     Error: **Send transaction failed: Invalid address. If you use an injected provider, please check it is properly
-     unlocked.**
-   </Aside>
+   > **NOTE: MetaMask doesn't pop up?**
+   >
+   > If MetaMask does not prompt you and instead displays the error below, disable "Privacy Mode" in MetaMask. You can
+   > do this by clicking on your unique account icon at the top-right, then go to the Settings. Privacy Mode will be a
+   > switch near the bottom.
+   >
+   > Error: **Send transaction failed: Invalid address. If you use an injected provider, please check it is properly
+   > unlocked.**
 
 5. If the transaction is successful, a new address displays in the **Deployed Contracts** section.
 
-   (Image: Screenshot showing the newly deployed contract.)
+   ![Screenshot showing the newly deployed contract.](/images/chainlink-nodes/node-operators/operator-deployed.jpg)
 
 6. Keep note of the Operator contract address. You need it later for your consuming contract.
 
@@ -4075,13 +4265,13 @@ Your node works with several different types of addresses. Each address type has
 
 2. In Remix, call the `setAuthorizedSenders` function with the address of your node. Note the function expects an array.
 
-   (Image: A screenshot showing all of the fields for the deployed contract in Remix.)
+   ![A screenshot showing all of the fields for the deployed contract in Remix.](/images/chainlink-nodes/node-operators/operator-authorizedsenders.jpg)
 
 3. Click the `transact` function to run it. Approve the transaction in MetaMask and wait for it to confirm on the blockchain.
 
 4. Call `isAuthorizedSender` function with the address of your node to verify that your chainlink node address can call the operator contract. The function must return `true`.
 
-   (Image: A screenshot showing Chainlink node whitelisted in Remix.)
+   ![A screenshot showing Chainlink node whitelisted in Remix.](/images/chainlink-nodes/node-operators/operator-isauthorizedsender.jpg)
 
 ## Add a job to the node
 
@@ -4089,10 +4279,9 @@ You will create a job that calls an OpenAPI , parses the response and then retur
 
 1. In the Chainlink Operator UI on the **Jobs** tab, click **New Job**.
 
-   (Image: The new job button.)
+   ![The new job button.](/images/chainlink-nodes/node-operators/new-job-button.png)
 
 2. Paste the job specification from above into the text field.
-
 
    ```toml
    # THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
@@ -4136,11 +4325,11 @@ You will create a job that calls an OpenAPI , parses the response and then retur
 
 4. Click **Create Job**. If the node creates the job successfully, a notice with the job number appears.
 
-   (Image: A screenshot showing that the job is created successfully.)
+   ![A screenshot showing that the job is created successfully.](/images/chainlink-nodes/node-operators/job-created.jpg)
 
 5. Click the job number to view the job details. You can also find the job listed on the **Jobs** tab in the Node Operators UI. Save the `externalJobID` value because you will need it later to tell your consumer contract what job ID to request from your node.
 
-   (Image: A screenshot showing the External Job ID.)
+   ![A screenshot showing the External Job ID.](/images/chainlink-nodes/node-operators/job-id.jpg)
 
 ## Create a request to your node
 
@@ -4162,23 +4351,23 @@ After you add jobs to your node, you can use the node to fulfill requests. This 
 
 7. After you fund the contract, create a request. Input your operator contract address and the job ID for the `Get > Uint256` job into the `requestEthereumPrice` request method **without dashes**. The job ID is the `externalJobID` parameter, which you can find on your job's definition page in the Node Operators UI.
 
-   (Image: Screenshot of the requestEthereumPrice function with the oracle address and job ID specified.)
+   ![Screenshot of the requestEthereumPrice function with the oracle address and job ID specified.](/images/chainlink-nodes/node-operators/requestEthereumPrice.jpg)
 
 8. Click the **transact** button for the `requestEthereumPrice` function and approve the transaction in Metamask. The `requestEthereumPrice` function asks the node to retrieve `uint256` data specifically from [https://min-api.cryptocompare.com/data/price?fsym=ETH\&tsyms=USD](https://min-api.cryptocompare.com/data/price?fsym=ETH\&tsyms=USD).
 
 9. After the transaction processes, you can see the details for the complete the job run the **Runs** page in the Node Operators UI.
 
-   (Image: A screenshot of the task link)
+   ![A screenshot of the task link](/images/chainlink-nodes/node-operators/taskList.jpg)
 
 10. In Remix, click the `currentPrice` variable to see the current price updated on your consumer contract.
 
-    (Image: A screenshot of the currentPrice button)
+    ![A screenshot of the currentPrice button](/images/chainlink-nodes/node-operators/currentPrice.jpg)
 
 ## Withdrawing LINK
 
 You can withdraw LINK from the operator contract. In Remix under the list of deployed contracts, click on your Operator contract and find the `withdraw` function in the function list. Note that only the admin (see [Admin wallet address](#address-types)) can withdraw LINK.
 
-(Image: Remix Click Withdraw Button)
+![Remix Click Withdraw Button](/images/chainlink-nodes/node-operators/operator-withdraw-link.jpg)
 
 Paste the address you want to withdraw to, and specify the amount of LINK that you want to withdraw. Then, click `withdraw`. Confirm the transaction in MetaMask when the popup appears.
 
@@ -24540,19 +24729,19 @@ Source: https://docs.chain.link/chainlink-nodes/v1/running-a-chainlink-node
 
 This guide will teach you how to run a Chainlink node locally using [Docker](#using-docker). The Chainlink node will be configured to connect to the Ethereum Sepolia.
 
-<Aside type="note" title="Running from source">
-  To run a Chainlink node from source, use the [following
-  instructions](https://github.com/smartcontractkit/chainlink#install). However, it's recommended to run the Chainlink
-  node with Docker. This is because we continuously build and deploy the code from our repository on Github, which means
-  you don't need a complete development environment to run a node.
-</Aside>
+> **NOTE: Running from source**
+>
+> To run a Chainlink node from source, use the [following
+> instructions](https://github.com/smartcontractkit/chainlink#install). However, it's recommended to run the Chainlink
+> node with Docker. This is because we continuously build and deploy the code from our repository on Github, which means
+> you don't need a complete development environment to run a node.
 
-<Aside type="note" title="Supported networks">
-  Chainlink is a blockchain agnostic technology. The [LINK Token Contracts](/resources/link-token-contracts) page details networks which support the LINK token. You can set up your node to provide data to any of these blockchains.
-
-  Ganache is a mock testnet. Although you can run nodes on Ganache, it is not officially supported. Most node operators
-  should use one of the supported [testnets](/resources/link-token-contracts) for development and testing.
-</Aside>
+> **NOTE: Supported networks**
+>
+> Chainlink is a blockchain agnostic technology. The [LINK Token Contracts](/resources/link-token-contracts) page details networks which support the LINK token. You can set up your node to provide data to any of these blockchains.
+>
+> Ganache is a mock testnet. Although you can run nodes on Ganache, it is not officially supported. Most node operators
+> should use one of the supported [testnets](/resources/link-token-contracts) for development and testing.
 
 ## Requirements
 
@@ -24589,23 +24778,66 @@ This guide will teach you how to run a Chainlink node locally using [Docker](#us
 
 1. Create a local directory to hold the Chainlink data:
 
+   ### Sepolia
+
+   ```shell Sepolia
+   mkdir ~/.chainlink-sepolia
+   ```
 
 2. Run the following as a command to create a `config.toml` file and populate with variables specific to the network you're running on. For a full list of available configuration variables, see the [Node Config](/chainlink-nodes/v1/node-config) page.
    Be sure to update the value for `CHANGEME` to the value given by your [external Ethereum provider](/chainlink-nodes/resources/run-an-ethereum-client/#external-services).
 
+   ### Sepolia
+
+   ```shell Sepolia
+   echo "[Log]
+   Level = 'warn'
+
+   [WebServer]
+   AllowOrigins = '\*'
+   SecureCookies = false
+
+   [WebServer.TLS]
+   HTTPSPort = 0
+
+   [[EVM]]
+   ChainID = '11155111'
+
+   [[EVM.Nodes]]
+   Name = 'Sepolia'
+   WSURL = 'wss://CHANGE_ME'
+   HTTPURL = 'https://CHANGE_ME'
+   " > ~/.chainlink-sepolia/config.toml
+   ```
 
 3. Create a `secrets.toml` file with a keystore password and the URL to your database. Update the value for `mysecretpassword` to the chosen password in [Run PostgreSQL](#run-postgresql). Specify a complex keystore password. This will be your wallet password that you can use to unlock the keystore file generated for you.
 
+   ### Sepolia
 
-   <Aside type="tip" title="Important">
-     Because you are testing locally, add `?sslmode=disable` to the end of your `DATABASE_URL`. However you should *never*
-     do this on a production node.
-   </Aside>
+   ```shell Sepolia
+   echo "[Password]
+   Keystore = 'mysecretkeystorepassword'
+   [Database]
+   URL = 'postgresql://postgres:mysecretpassword@host.docker.internal:5432/postgres?sslmode=disable'
+   " > ~/.chainlink-sepolia/secrets.toml
+   ```
+
+   > **TIP: Important**
+   >
+   > Because you are testing locally, add `?sslmode=disable` to the end of your `DATABASE_URL`. However you should *never*
+   > do this on a production node.
 
 4. Optionally, you can create an `.api` file with the credentials for the node's API and Operator Interface. The node stores the credentials from the `.api` file in the database only the first time you run the container using the database. The `.api` file cannot override credentials for an existing user in the database.
 
    Create the file in the same directory as your TOML config files and list your API credentials. Change the values for API email and password. The user must be an email address with an `@` character and the password must be 16-50 characters in length.
 
+   ### Sepolia
+
+   ```shell Sepolia
+   echo "CHANGE_THIS_EXAMPLE_EMAIL
+   CHANGE_THIS_EXAMPLE_PASSWORD
+   " > ~/.chainlink-sepolia/.api
+   ```
 
 5. Start the Chainlink Node by running the Docker image.
 
@@ -24615,6 +24847,11 @@ This guide will teach you how to run a Chainlink node locally using [Docker](#us
 
    If you created an `.api` file with your API and Operator UI login credentials, add `-a /chainlink/.api` to the end of the `docker run` command. Otherwise, the node will ask you for these credentials when you start it for the first time. These credentials are stored in the database only when you run a container for the first time against that database. If you need to remove the `.api` file, delete the container, and start it again without `-a /chainlink/.api`.
 
+   ### Sepolia
+
+   ```shell Sepolia
+   cd ~/.chainlink-sepolia && docker run --platform linux/x86_64/v8 --name chainlink -v ~/.chainlink-sepolia:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:2.26.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
+   ```
 
 6. Detach from the container by pressing the Ctrl+P command and then the Ctrl-Q command.
 
@@ -24954,15 +25191,17 @@ When non-empty, overrides are used as fallback when Vault calls fail.
 # Forwarder tutorial
 Source: https://docs.chain.link/chainlink-nodes/v1/using-forwarder
 
-<Aside type="note" title="Prerequisites">
-  This guide assumes you have a running Chainlink node. See the [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide to learn how to run a Chainlink node. **Note**: For this example to work, you must use Chainlink node version *1.12.0* or above.
+> **NOTE: Prerequisites**
+>
+> This guide assumes you have a running Chainlink node. See the [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide to learn how to run a Chainlink node. **Note**: For this example to work, you must use Chainlink node version *1.12.0* or above.
+>
+> Also, you must be familiar with these concepts:
+>
+> - [Forwarder](/chainlink-nodes/contracts/forwarder) contracts.
+> - [Operator](/chainlink-nodes/contracts/operator) contracts.
+> - [OperatorFactory](/chainlink-nodes/contracts/operatorfactory) contracts.
 
-  Also, you must be familiar with these concepts:
-
-  - [Forwarder](/chainlink-nodes/contracts/forwarder) contracts.
-  - [Operator](/chainlink-nodes/contracts/operator) contracts.
-  - [OperatorFactory](/chainlink-nodes/contracts/operatorfactory) contracts.
-</Aside>
+![Image](/images/chainlink-nodes/node-operators/forwarder/forwarder-directrequest-example.webp)
 
 In this tutorial, you will configure your Chainlink node with a simple transaction-sending strategy on the Sepolia testnet:
 
@@ -24971,12 +25210,12 @@ In this tutorial, you will configure your Chainlink node with a simple transacti
 - Each job uses a different EOA.
 - You use a [forwarder](/chainlink-nodes/contracts/forwarder) contract to fulfill requests with two EOAs that look like a single address.
 
-<Aside type="note">
-  Here you are using a forwarder contract and two EOAs for two [direct
-  request](/chainlink-nodes/oracle-jobs/job-types/direct_request) jobs. You can use the same strategy for different job
-  types, VRF and OCR. Supporting different job types on the same Chainlink node reduces your infrastructure and
-  maintenance costs.
-</Aside>
+> **NOTE**
+>
+> Here you are using a forwarder contract and two EOAs for two [direct
+> request](/chainlink-nodes/oracle-jobs/job-types/direct_request) jobs. You can use the same strategy for different job
+> types, VRF and OCR. Supporting different job types on the same Chainlink node reduces your infrastructure and
+> maintenance costs.
 
 ## Check your Chainlink node is running
 
@@ -25099,21 +25338,31 @@ Use the [operator factory](/chainlink-nodes/contracts/operatorfactory) to deploy
 
 2. Click the *Contract* tab. Then, click *Write Contract* to display the *write* transactions on the factory.
 
+   ![Image](/images/chainlink-nodes/node-operators/forwarder/factorytransactions.jpg)
+
 3. Click the *Connect to Web3* button to connect your wallet.
+
+   ![Image](/images/chainlink-nodes/node-operators/forwarder/factorytransactionsconnected.jpg)
 
 4. Click the `deployNewOperatorAndForwarder` function to expand it and then click the *Write* button to run the function. Metamask prompts you to confirm the transaction.
 
 5. Click *View your transaction*. *Etherscan* will open a new tab. Wait for the transaction to be successful.
 
-   {" "}
+   ![Image](/images/chainlink-nodes/node-operators/forwarder/factoryviewtransaction.jpg)
+
+   ![Image](/images/chainlink-nodes/node-operators/forwarder/deployfromfactorysuccess.jpg)
 
 6. On the *Transaction Details* page, click *Logs* to display the list of transaction events. Notice the `OperatorCreated` and `AuthorizedForwarderCreated` events.
+
+   ![Image](/images/chainlink-nodes/node-operators/forwarder/factorycreatetransactions.jpg)
 
 7. Right-click on each contract address and open it in a new tab.
 
 8. At this point, you should have one tab displaying the operator contract and one tab displaying the forwarder contract.
 
-   <ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/forwarder.jpg" />
+   ![Image](/images/chainlink-nodes/node-operators/forwarder/operator.jpg)
+
+   ![Image](/images/chainlink-nodes/node-operators/forwarder/forwarder.jpg)
 
 9. Record the operator and forwarder addresses. You will need them later.
 
@@ -25133,6 +25382,8 @@ For this example to run, you will have to:
 
 In the blockchain explorer, view the operator contract and call the `setAuthorizedSenders` method with the address of your forwarder contract. The parameter is an array. For example, `["0xA3f07D6773514480b918C2742b027b3acD9E44fA"]`. Metamask prompts you to confirm the transaction.
 
+![Image](/images/chainlink-nodes/node-operators/forwarder/operatorsetauthorizedsenders.jpg)
+
 ### Whitelist the Chainlink node EOAs
 
 In the blockchain explorer, view the operator contract and call the `acceptAuthorizedReceivers` method with the following parameters:
@@ -25141,6 +25392,8 @@ In the blockchain explorer, view the operator contract and call the `acceptAutho
 - `sender`: Specify an array with the two Chainlink node EOAs. For example, `["0x259c49E65644a020C2A642260a4ffB0CD862cb24","0x71a1Eb6534054E75F0D6fD0A3B0A336228DD5cFc"]`.
 
 MetaMask prompts you to confirm the transaction.
+
+![Image](/images/chainlink-nodes/node-operators/forwarder/acceptAuthorizedReceivers.jpg)
 
 ## Activate the forwarder
 
@@ -25293,11 +25546,11 @@ This section is similar to the [Fulfilling Requests](/chainlink-nodes/v1/fulfill
 
 5. After you create the jobs, record the two job IDs.
 
-<Aside type="note">
-  Note that both jobs have the attribute `forwardingAllowed = true`. This attribute will make the jobs attempt to run
-  through the forwarder before falling back to default mode. For example, if the Chainlink node tracks no forwarder, the
-  job falls back to the default mode.
-</Aside>
+> **NOTE**
+>
+> Note that both jobs have the attribute `forwardingAllowed = true`. This attribute will make the jobs attempt to run
+> through the forwarder before falling back to default mode. For example, if the Chainlink node tracks no forwarder, the
+> job falls back to the default mode.
 
 ## Test the transaction-sending strategy
 
@@ -25343,10 +25596,16 @@ Confirm the following information:
 
 Open your forwarder contract in the block explorer. Two [forward](/chainlink-nodes/contracts/forwarder#forward) transactions exist.
 
+![Image](/images/chainlink-nodes/node-operators/forwarder/forward-transactions.jpg)
+
 Click on both transaction hashes and note that the `From` addresses differ. In this example, `0x259c49E65644a020C2A642260a4ffB0CD862cb24` is the EOA used in the `uint256` job, and `0x71a1Eb6534054E75F0D6fD0A3B0A336228DD5cFc` is the EOA used in the `string` job:
 
-<ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/forward2.jpg" />
+![Image](/images/chainlink-nodes/node-operators/forwarder/forward1.jpg)
+
+![Image](/images/chainlink-nodes/node-operators/forwarder/forward2.jpg)
 
 Then click on the `Logs` tab to display the list of events. Notice the [OracleResponse](/chainlink-nodes/contracts/operator#oracleresponse) events. The operator contract emitted them when the Forward contract called it
 
-<ClickToZoom src="/images/chainlink-nodes/node-operators/forwarder/forward2-logs.jpg" />
+![Image](/images/chainlink-nodes/node-operators/forwarder/forward1-logs.jpg)
+
+![Image](/images/chainlink-nodes/node-operators/forwarder/forward2-logs.jpg)

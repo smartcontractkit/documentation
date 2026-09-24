@@ -9,6 +9,8 @@ Each data feed is updated by multiple, independent Chainlink oracle operators. T
 
 Offchain Reporting (OCR) further enhances the aggregation process. To learn more about OCR and how it works, see the [Offchain Reporting](/architecture-overview/off-chain-reporting) page.
 
+![Image](/images/contract-devs/price-aggr.png)
+
 ## Shared data resource
 
 Each data feed is built and funded by the community of users who rely on accurate, up-to-date data in their smart contracts. As more users rely on and contribute to a data feed, the quality of the data feed improves. For this reason, each data feed has its own properties depending on the needs of its community of users.
@@ -32,7 +34,6 @@ To learn how to create a consumer contract that uses an existing data feed, read
 ### Consumer
 
 A Consumer contract is any contract that uses Chainlink Data Feeds to consume aggregated data. Consumer contracts must reference the correct [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol) contract and call one of the exposed functions.
-
 
 ```solidity
 ...
@@ -93,6 +94,8 @@ Source: https://docs.chain.link/architecture-overview/architecture-request-model
 
 All source code is open source and available in the [Chainlink Github repository](https://github.com/smartcontractkit/chainlink).
 
+![Image](/files/881ade6-Simple_Architecture_Diagram_1_V1.png)
+
 ### ChainlinkClient
 
 [`ChainlinkClient`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/ChainlinkClient.sol) is a parent contract that enables smart contracts to consume data from oracles. It's available in the Chainlink smart contract library which can be [installed using the latest package managers](/resources/create-a-chainlinked-project).
@@ -121,7 +124,7 @@ The client contract that initiates this cycle must create a request with the fol
 
 To learn about how to find oracles to suit your needs, see [Find Existing Jobs](/any-api/find-oracle).
 
-Operator contracts are responsible for handling onchain requests made through the LINK token, by implementing `onTokenTransfer` as a <a href="https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/operatorforwarder/LinkTokenReceiver.sol">`LinkTokenReceiver`</a>. Upon execution of this function, the operator contract **emits an `OracleRequest` event** containing information about the request. This event is crucial, as it is monitored by the offchain oracle node which acts upon it.
+Operator contracts are responsible for handling onchain requests made through the LINK token, by implementing `onTokenTransfer` as a [`LinkTokenReceiver`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/operatorforwarder/LinkTokenReceiver.sol). Upon execution of this function, the operator contract **emits an `OracleRequest` event** containing information about the request. This event is crucial, as it is monitored by the offchain oracle node which acts upon it.
 
 #### Fulfillment
 
@@ -139,6 +142,8 @@ For more information on how to become a node operator, learn how to [run a Chain
 
 Below is a UML diagram describing the contract structure of `ATestnetConsumer`, a deployed example contract implementing `ChainlinkClient`.
 
+![Image](/files/8ac3fc1-69a048b-Consumer_UML.svg)
+
 ---
 
 # Offchain Reporting
@@ -152,13 +157,13 @@ The report contained in the aggregate transaction is signed by a quorum of oracl
 
 ## What is OCR?
 
-<Aside type="note" title="A simple analogy">
-  Imagine ordering 10 items from an online store. Each item is packaged separately and posted separately, meaning
-  postage and packaging costs must be applied to each one, and the carrier has to transport 10 different boxes.
-
-  OCR, on the other hand, packages all of these items into a single box and posts that. This saves postage and packaging
-  fees and all effort the carrier associates with transporting 9 fewer boxes.
-</Aside>
+> **NOTE: A simple analogy**
+>
+> Imagine ordering 10 items from an online store. Each item is packaged separately and posted separately, meaning
+> postage and packaging costs must be applied to each one, and the carrier has to transport 10 different boxes.
+>
+> OCR, on the other hand, packages all of these items into a single box and posts that. This saves postage and packaging
+> fees and all effort the carrier associates with transporting 9 fewer boxes.
 
 The OCR protocol allows nodes to aggregate their observations into a single report offchain using a secure P2P network. A single node then submits a transaction with the aggregated report to the chain. Each report consists of many nodes' observations and has to be signed by a quorum of nodes. These signatures are verified onchain.
 

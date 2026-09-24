@@ -1,17 +1,15 @@
 # FunctionsClient API Reference
 Source: https://docs.chain.link/chainlink-functions/api-reference/functions-client
 
-<ChainlinkFunctions callout="shutdown" />
-
-<Aside type="note" title="Add Chainlink to your project">
-  If you need to integrate Chainlink into your project, install the [@chainlink/contracts NPM package](https://www.npmjs.com/package/@chainlink/contracts).
-
-  - If you use [NPM](https://www.npmjs.com/): npm install @chainlink/contracts --save
-
-  - If you use [Yarn](https://yarnpkg.com/): yarn add @chainlink/contracts
-
-  Functions contracts are available starting from version *0.7.1*.
-</Aside>
+> **NOTE: Add Chainlink to your project**
+>
+> If you need to integrate Chainlink into your project, install the [@chainlink/contracts NPM package](https://www.npmjs.com/package/@chainlink/contracts).
+>
+> - If you use [NPM](https://www.npmjs.com/): npm install @chainlink/contracts --save
+>
+> - If you use [Yarn](https://yarnpkg.com/): yarn add @chainlink/contracts
+>
+> Functions contracts are available starting from version *0.7.1*.
 
 Consumer contract developers inherit [FunctionsClient](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol) to create Chainlink Functions requests.
 
@@ -109,17 +107,15 @@ Chainlink Functions response handler called by the Functions Router during fulfi
 # FunctionsRequest library API Reference
 Source: https://docs.chain.link/chainlink-functions/api-reference/functions-request
 
-<ChainlinkFunctions callout="shutdown" />
-
-<Aside type="note" title="Add Chainlink to your project">
-  If you need to integrate Chainlink into your project, install the [@chainlink/contracts NPM package](https://www.npmjs.com/package/@chainlink/contracts).
-
-  - If you use [NPM](https://www.npmjs.com/): npm install @chainlink/contracts --save
-
-  - If you use [Yarn](https://yarnpkg.com/): yarn add @chainlink/contracts
-
-  Functions contracts are available starting from version *0.7.1*.
-</Aside>
+> **NOTE: Add Chainlink to your project**
+>
+> If you need to integrate Chainlink into your project, install the [@chainlink/contracts NPM package](https://www.npmjs.com/package/@chainlink/contracts).
+>
+> - If you use [NPM](https://www.npmjs.com/): npm install @chainlink/contracts --save
+>
+> - If you use [Yarn](https://yarnpkg.com/): yarn add @chainlink/contracts
+>
+> Functions contracts are available starting from version *0.7.1*.
 
 Consumer contract developers use the [FunctionsRequest library](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol) to build their [requests](#request).
 
@@ -335,8 +331,6 @@ Sets bytes args for the user run function
 # JavaScript code API Reference
 Source: https://docs.chain.link/chainlink-functions/api-reference/javascript-source
 
-<ChainlinkFunctions callout="shutdown" />
-
 JavaScript source code for a Functions request should comply with certain restrictions:
 
 - **Allowed Modules**: Vanilla [Deno](https://deno.land/) and module [imports](/chainlink-functions/tutorials/importing-packages).
@@ -403,8 +397,6 @@ const myArr = new Uint8Array(ARRAY_LENGTH)
 # Getting Started
 Source: https://docs.chain.link/chainlink-functions/getting-started
 
-<ChainlinkFunctions callout="shutdown" />
-
 Learn how to make requests to the Chainlink Functions Decentralized Oracle Network (DON) and make any computation or API calls offchain. Chainlink Functions is available on several blockchains (see the [supported networks page](/chainlink-functions/supported-networks)), but this guide uses Sepolia to simplify access to testnet funds. Complete the following tasks to get started with Chainlink Functions:
 
 - Set up your web3 wallet and fund it with testnet tokens.
@@ -421,7 +413,7 @@ Before making a Chainlink Functions request from your smart contract, it is alwa
 
 2. Copy and paste the following source code into the playground's code block.
 
-   ```javascript
+   ```js
    const characterId = args[0];
    const apiResponse = await Functions.makeHttpRequest({
      url: `https://swapi.info/api/people/${characterId}/`,
@@ -437,6 +429,8 @@ Before making a Chainlink Functions request from your smart contract, it is alwa
 
 4. Click on *Run code*. Under *Output*, you should see *Luke Skywalker*.
 
+   ![Image](/images/chainlink-functions/getting-started/simulation.jpg)
+
 ## Configure your resources
 
 ### Configure your wallet
@@ -446,7 +440,7 @@ You will test on Sepolia, so you must have an Ethereum web3 wallet with enough t
 1. [Install the MetaMask wallet](/quickstarts/deploy-your-first-contract#install-and-fund-your-metamask-wallet) or other Ethereum web3 wallet.
 
 2. Set the network for your wallet to the Sepolia testnet. If you need to add Sepolia to your wallet, you can find the chain ID and the LINK token contract address on the [LINK Token Contracts](/resources/link-token-contracts#sepolia-testnet) page.
-   -
+   - [Sepolia testnet and LINK token contract](/resources/link-token-contracts#sepolia-testnet)
 
 3. Request testnet LINK and ETH from [faucets.chain.link/sepolia](https://faucets.chain.link/sepolia).
 
@@ -454,111 +448,7 @@ You will test on Sepolia, so you must have an Ethereum web3 wallet with enough t
 
 1. Open the [GettingStartedFunctionsConsumer.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/GettingStartedFunctionsConsumer.sol) contract in Remix.
 
-   ```sol
-   // SPDX-License-Identifier: MIT
-   pragma solidity ^0.8.20;
-
-   import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
-
-   import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
-   import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
-
-   /**
-    * Request testnet LINK and ETH here: https://faucets.chain.link/
-    * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
-    * https://docs.chain.link/resources/link-token-contracts/
-    */
-
-   /**
-    * @title GettingStartedFunctionsConsumer
-    * @notice This is an example contract to show how to make HTTP requests using Chainlink
-    * @dev This contract uses hardcoded values and should not be used in production.
-    */
-   contract GettingStartedFunctionsConsumer is FunctionsClient, ConfirmedOwner {
-     using FunctionsRequest for FunctionsRequest.Request;
-
-     // State variables to store the last request ID, response, and error
-     bytes32 public s_lastRequestId;
-     bytes public s_lastResponse;
-     bytes public s_lastError;
-
-     // Custom error type
-     error UnexpectedRequestID(bytes32 requestId);
-
-     // Event to log responses
-     event Response(bytes32 indexed requestId, string character, bytes response, bytes err);
-
-     // Router address - Hardcoded for Sepolia
-     // Check to get the router address for your supported network
-     // https://docs.chain.link/chainlink-functions/supported-networks
-     address router = 0xb83E47C2bC239B3bf370bc41e1459A34b41238D0;
-
-     // JavaScript source code
-     // Fetch character name from the Star Wars API.
-     // Documentation: https://swapi.info/people
-     string source = "const characterId = args[0];" "const apiResponse = await Functions.makeHttpRequest({"
-       "url: `https://swapi.info/api/people/${characterId}/`" "});" "if (apiResponse.error) {"
-       "throw Error('Request failed');" "}" "const { data } = apiResponse;" "return Functions.encodeString(data.name);";
-
-     //Callback gas limit
-     uint32 gasLimit = 300_000;
-
-     // donID - Hardcoded for Sepolia
-     // Check to get the donID for your supported network https://docs.chain.link/chainlink-functions/supported-networks
-     bytes32 donID = 0x66756e2d657468657265756d2d7365706f6c69612d3100000000000000000000;
-
-     // State variable to store the returned character information
-     string public character;
-
-     /**
-      * @notice Initializes the contract with the Chainlink router address and sets the contract owner
-      */
-     constructor() FunctionsClient(router) ConfirmedOwner(msg.sender) {}
-
-     /**
-      * @notice Sends an HTTP request for character information
-      * @param subscriptionId The ID for the Chainlink subscription
-      * @param args The arguments to pass to the HTTP request
-      * @return requestId The ID of the request
-      */
-     function sendRequest(
-       uint64 subscriptionId,
-       string[] calldata args
-     ) external onlyOwner returns (bytes32 requestId) {
-       FunctionsRequest.Request memory req;
-       req.initializeRequestForInlineJavaScript(source); // Initialize the request with JS code
-       if (args.length > 0) req.setArgs(args); // Set the arguments for the request
-
-       // Send the request and store the request ID
-       s_lastRequestId = _sendRequest(req.encodeCBOR(), subscriptionId, gasLimit, donID);
-
-       return s_lastRequestId;
-     }
-
-     /**
-      * @notice Callback function for fulfilling a request
-      * @param requestId The ID of the request to fulfill
-      * @param response The HTTP response data
-      * @param err Any errors from the Functions request
-      */
-     function fulfillRequest(
-       bytes32 requestId,
-       bytes memory response,
-       bytes memory err
-     ) internal override {
-       if (s_lastRequestId != requestId) {
-         revert UnexpectedRequestID(requestId); // Check if request IDs match
-       }
-       // Update the contract's state variables with the response and any errors
-       s_lastResponse = response;
-       character = string(response);
-       s_lastError = err;
-
-       // Emit an event to log the response
-       emit Response(requestId, character, s_lastResponse, s_lastError);
-     }
-   }
-   ```
+   [Open GettingStartedFunctionsConsumer.sol in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/GettingStartedFunctionsConsumer.sol)
 
 2. Compile the contract.
 
@@ -566,9 +456,15 @@ You will test on Sepolia, so you must have an Ethereum web3 wallet with enough t
 
 4. In Remix under the **Deploy & Run Transactions** tab, select *Injected Provider - MetaMask* in the **Environment** list. Remix will use the MetaMask wallet to communicate with *Sepolia*.
 
+   ![Image](/images/chainlink-functions/getting-started/injected-provider.jpg)
+
 5. Click the **Deploy** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to *Sepolia*.
 
+   ![Image](/images/chainlink-functions/getting-started/deploy.jpg)
+
 6. After you confirm the transaction, the contract address appears in the **Deployed Contracts** list. Copy the contract address and save it for later. You will use this address with a Functions Subscription.
+
+   ![Image](/images/chainlink-functions/getting-started/deployed-contracts.jpg)
 
 ### Create a subscription
 
@@ -578,35 +474,59 @@ You use a Chainlink Functions subscription to pay for, manage, and track Functio
 
 2. Click **Connect wallet**:
 
+   ![Chainlink Functions subscription landing page](/images/chainlink-functions/tutorials/subscription/frontend-landing.jpg)
+
 3. Read and accept the Chainlink Foundation Terms of Service. Then click **MetaMask**.
+
+   ![Chainlink Functions accept ToS](/images/chainlink-functions/tutorials/subscription/accept-CL-foundation-tos.jpg)
 
 4. Make sure your wallet is connected to the *Sepolia* testnet. If not, click the network name in the top right corner of the page and select *Sepolia*.
 
+   ![Chainlink Functions subscription landing page](/images/chainlink-functions/tutorials/subscription/wallet-connected-ethereum-sepolia.webp)
+
 5. Click **Create Subscription**:
+
+   ![Chainlink Functions subscription landing page](/images/chainlink-functions/tutorials/subscription/frontend-landing-wallet-connected.jpg)
 
 6. Provide an email address and an optional subscription name:
 
+   ![Chainlink Functions create subscription](/images/chainlink-functions/tutorials/subscription/create-subscription.jpg)
+
 7. The first time you interact with the Subscription Manager using your EOA, you must accept the Terms of Service (ToS). A MetaMask popup appears and you are asked to accept the ToS:
+
+   ![Chainlink Functions accept ToS](/images/chainlink-functions/tutorials/subscription/acceptTos.jpg)
 
 8. After you approve the ToS, another MetaMask popup appears, and you are asked to approve the subscription creation:
 
+   ![Chainlink Functions approve subscriptions creation](/images/chainlink-functions/tutorials/subscription/approve-create-subscription.jpg)
+
 9. After the subscription is created, MetaMask prompts you to sign a message that links the subscription name and email address to your subscription:
 
-   <ClickToZoom src="/images/chainlink-functions/tutorials/subscription/sign-message-tos-metamask.jpg" alt="Chainlink Functions sign message ToS MetaMask" style="max-width: 70%;" />
+   ![Chainlink Functions sign message ToS](/images/chainlink-functions/tutorials/subscription/sign-message-tos.jpg)
+
+   ![Chainlink Functions sign message ToS MetaMask](/images/chainlink-functions/tutorials/subscription/sign-message-tos-metamask.jpg)
 
 ### Fund your subscription
 
 1. After the subscription is created, the Functions UI prompts you to fund your subscription. Click **Add funds**:
 
+   ![Chainlink Functions subscription created](/images/chainlink-functions/tutorials/subscription/subscription-created.jpg)
+
 2. For this example, add 2 LINK and click **Add funds**:
+
+   ![Chainlink Functions subscription add funds](/images/chainlink-functions/tutorials/subscription/subscription-created-add-funds.jpg)
 
 ### Add a consumer to your subscription
 
 1. After you fund your subscription, add your consumer to it. Specify the address for the consumer contract that you deployed earlier and click **Add consumer**. MetaMask prompts you to confirm the transaction.
 
-   <ClickToZoom src="/images/chainlink-functions/tutorials/subscription/subscription-created-add-consumer-2.jpg" alt="Chainlink Functions subscription add consumer" style="max-width: 70%;" />
+   ![Chainlink Functions subscription add consumer](/images/chainlink-functions/tutorials/subscription/subscription-created-add-consumer.jpg)
+
+   ![Chainlink Functions subscription add consumer](/images/chainlink-functions/tutorials/subscription/subscription-created-add-consumer-2.jpg)
 
 2. Subscription creation and configuration is complete. You can always see the details of your subscription again at [functions.chain.link](https://functions.chain.link):
+
+   ![Chainlink Functions subscription details](/images/chainlink-functions/tutorials/subscription/subscription-details-after-creation.jpg)
 
 ## Run the example
 
@@ -620,11 +540,17 @@ The example is hardcoded to communicate with Chainlink Functions on Sepolia. Aft
 
 4. Click the **transact** button.
 
+   ![Image](/images/chainlink-functions/getting-started/send-request.jpg)
+
 5. Wait for the request to be fulfilled. You can monitor the status of your request on the Chainlink Functions Subscription Manager.
+
+   ![Image](/images/chainlink-functions/getting-started/request-fulfilled.png)
 
 6. Refresh the Functions UI to get the latest request status.
 
 7. After the status is *Success*, check the character name. In Remix, under the **Deploy & Run Transactions** tab, click the `character` function. If the transaction and request ran correctly, you will see the name of your character in the response.
+
+   ![Image](/images/chainlink-functions/getting-started/character.jpg)
 
 Chainlink Functions is capable of much more than just retrieving data. Try one of the [Tutorials](/chainlink-functions/tutorials) to see examples that can GET and POST to public APIs, securely handle API secrets, handle custom responses, and query multiple APIs.
 
@@ -814,7 +740,7 @@ contract GettingStartedFunctionsConsumer is FunctionsClient, ConfirmedOwner {
 
 ### JavaScript code
 
-```javascript
+```js
 const characterId = args[0];
 const apiResponse = await Functions.makeHttpRequest({
   url: `https://swapi.info/api/people/${characterId}/`,
@@ -882,8 +808,6 @@ Now that you understand the structure of the API. Let's delve into the JavaScrip
 # Cancel a Subscription and Withdraw Funds
 Source: https://docs.chain.link/chainlink-functions/guides/cancel-subscription
 
-<ChainlinkFunctions callout="shutdown" />
-
 Cancelling a Chainlink Functions subscription and withdrawing its remaining LINK balance is a single onchain transaction: calling `cancelSubscription` deletes the subscription, removes all associated consumers, and transfers the remaining balance in one call. Only the subscription owner can perform this action.
 
 ## Prerequisites
@@ -922,11 +846,11 @@ Where:
 - `TO_ADDRESS` is the wallet address that should receive the withdrawn LINK.
 - `CHAIN_RPC_URL` is the HTTP RPC URL for your network.
 
-<Aside type="note" title="Cancellation fee">
-  If your subscription has not spent enough in fees to clear the request threshold for your network, a cancellation fee
-  is deducted from its balance before the remainder is sent to `TO_ADDRESS`. See [Supported
-  Networks](/chainlink-functions/supported-networks) for the cancellation fee on each network.
-</Aside>
+> **NOTE: Cancellation fee**
+>
+> If your subscription has not spent enough in fees to clear the request threshold for your network, a cancellation fee
+> is deducted from its balance before the remainder is sent to `TO_ADDRESS`. See [Supported
+> Networks](/chainlink-functions/supported-networks) for the cancellation fee on each network.
 
 Once this transaction confirms, the Subscription ID is deleted, all consumers are removed, and the remaining LINK balance is transferred to `TO_ADDRESS`.
 
@@ -934,8 +858,6 @@ Once this transaction confirms, the Subscription ID is deleted, all consumers ar
 
 # Chainlink Functions
 Source: https://docs.chain.link/chainlink-functions
-
-<ChainlinkFunctions callout="shutdown" />
 
 Chainlink Functions provides your smart contracts access to trust-minimized compute infrastructure, allowing you to fetch data from APIs and perform custom computation. Your smart contract sends source code in a request to a [Decentralized Oracle Network (DON)](/chainlink-functions/resources/concepts), and each node in the DON executes the code in a serverless environment. The DON then aggregates all the independent return values from each execution and sends the final result back to your smart contract.
 
@@ -951,11 +873,11 @@ See the [Tutorials](/chainlink-functions/tutorials) page for simple tutorials sh
 
 ## When to use Chainlink Functions
 
-<Aside type="note">
-  Chainlink Functions is a self-service solution. You are responsible for independently reviewing any code and API dependencies that you submit in a request. Community-created code examples might not be audited, so you must independently review this code before you use it.
-
-  Chainlink Functions is offered "as is" and "as available" without conditions or warranties of any kind. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs from Functions due to issues in your code or downstream issues with API dependencies. You must ensure that the data sources or APIs specified in requests are of sufficient quality and have the proper availability for your use case. Users are responsible for complying with the licensing agreements for all data providers that they connect with through Chainlink Functions. Violations of data provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your Chainlink Functions account or subscription.
-</Aside>
+> **NOTE**
+>
+> Chainlink Functions is a self-service solution. You are responsible for independently reviewing any code and API dependencies that you submit in a request. Community-created code examples might not be audited, so you must independently review this code before you use it.
+>
+> Chainlink Functions is offered "as is" and "as available" without conditions or warranties of any kind. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs from Functions due to issues in your code or downstream issues with API dependencies. You must ensure that the data sources or APIs specified in requests are of sufficient quality and have the proper availability for your use case. Users are responsible for complying with the licensing agreements for all data providers that they connect with through Chainlink Functions. Violations of data provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your Chainlink Functions account or subscription.
 
 Chainlink Functions enables a variety of use cases. Use Chainlink Functions to:
 
@@ -977,16 +899,16 @@ See the [Supported Networks](/chainlink-functions/supported-networks) page to fi
 # Chainlink Functions Architecture
 Source: https://docs.chain.link/chainlink-functions/resources/architecture
 
-<ChainlinkFunctions callout="shutdown" />
-
-<Aside type="note" title="Prerequisites">
-  Read the Chainlink Functions [introduction](/chainlink-functions) to understand all the concepts discussed on this
-  page.
-</Aside>
+> **NOTE: Prerequisites**
+>
+> Read the Chainlink Functions [introduction](/chainlink-functions) to understand all the concepts discussed on this
+> page.
 
 ## Request and Receive Data
 
 This model is similar to the [Basic Request Model](/architecture-overview/architecture-request-model): The consumer contract initiates the cycle by sending a request to the [FunctionsRouter contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_0_0/FunctionsRouter.sol). Oracle nodes watch for events emitted by the [FunctionsCoordinator contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_1_0/FunctionsCoordinator.sol) and run the computation offchain. Finally, oracle nodes use the [Chainlink OCR](/architecture-overview/off-chain-reporting) protocol to aggregate all the returned before passing the single aggregated response back to the consumer contract via a callback function.
+
+![Chainlink Functions request and receive diagram](/images/chainlink-functions/requestAndReceive.png)
 
 The main actors and components are:
 
@@ -1032,15 +954,21 @@ Chainlink Functions do not require your consumer contracts to hold LINK tokens a
 
 To ensure compliance and governance, Chainlink Functions mandates that any account that manages a subscription must first accept the platform's Terms of Service (ToS). The acceptance is verified by cross-referencing the account with the `allowedSenders` registry contained within the [TermsOfServiceAllowList contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_0_0/accessControl/TermsOfServiceAllowList.sol).
 
+![Image](/images/chainlink-functions/subscription/acceptToSEOA.png)
+
 The acceptance process is initiated via the Chainlink Functions Subscription Manager. After a user accepts the ToS by generating the required signature with their externally owned account (EOA), they transmit proof of acceptance to the [TermsOfServiceAllowList contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_0_0/accessControl/TermsOfServiceAllowList.sol). Upon successful validation of the proof, the EOA is added to the `allowedSenders` registry, permitting it to manage subscriptions.
 
 ### Create subscription
+
+![Image](/images/chainlink-functions/subscription/createSubscription.png)
 
 After the ToS is accepted, EOAs can create subscriptions. Upon creation, the [FunctionsRouter](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_0_0/FunctionsRouter.sol) assigns a unique identifier, *Subscription ID*.
 
 **Note**: EOAs can directly interact with the FunctionsRouter contract using their preferred web3 library, such as web3.js or ethers.js.
 
 ### Fund subscription
+
+![Image](/images/chainlink-functions/subscription/fundSubscription.png)
 
 You must fund your subscription accounts with enough LINK tokens:
 
@@ -1053,6 +981,8 @@ You must fund your subscription accounts with enough LINK tokens:
 
 ### Add consumer
 
+![Image](/images/chainlink-functions/subscription/addConsumer.png)
+
 You must allowlist your consumers' contracts on your subscription account before they can make Chainlink Functions requests:
 
 1. Connect your EOA to the Chainlink Functions Subscription Manager.
@@ -1062,6 +992,8 @@ You must allowlist your consumers' contracts on your subscription account before
 **Note**: EOAs can directly interact with the FunctionsRouter contract using a web3 library, such as web3.js or ethers.js.
 
 ### Remove consumer
+
+![Image](/images/chainlink-functions/subscription/removeConsumer.png)
 
 To prevent further Chainlink Functions requests from a given consumer contract, you must remove it from your subscription account:
 
@@ -1074,6 +1006,8 @@ To prevent further Chainlink Functions requests from a given consumer contract, 
 **Note**: EOAs can directly interact with the FunctionsRouter contract using a web3 library, such as web3.js or ethers.js.
 
 ### Cancel subscription
+
+![Image](/images/chainlink-functions/subscription/cancelSubscription.png)
 
 To cancel a subscription:
 
@@ -1100,8 +1034,6 @@ Transferring ownership is currently only supported using the [Functions Hardhat 
 
 # Chainlink Functions Billing
 Source: https://docs.chain.link/chainlink-functions/resources/billing
-
-<ChainlinkFunctions callout="shutdown" />
 
 ## Request costs
 
@@ -1273,8 +1205,6 @@ To withdraw your LINK balance, you must first cancel your subscription. To preve
 # Chainlink Functions Resources
 Source: https://docs.chain.link/chainlink-functions/resources
 
-<ChainlinkFunctions callout="shutdown" />
-
 ## Topics
 
 - [Architecture](/chainlink-functions/resources/architecture)
@@ -1287,8 +1217,6 @@ Source: https://docs.chain.link/chainlink-functions/resources
 
 # Secrets Management
 Source: https://docs.chain.link/chainlink-functions/resources/secrets
-
-<ChainlinkFunctions callout="shutdown" />
 
 Chainlink Functions enables users to fetch data from HTTP(s) APIs and perform custom computation. To enable access to APIs that require authentication credentials, Chainlink Functions allows users to provide encrypted secret values, which can be used when the DON executes a Functions request. These values can only be decrypted via a multi-party decryption process called threshold decryption. This means that every node can only decrypt the secrets with participation from other DON nodes.
 
@@ -1330,41 +1258,37 @@ There are two methods for sharing encrypted secrets with the DON:
 # Chainlink Functions Service Limits
 Source: https://docs.chain.link/chainlink-functions/resources/service-limits
 
-<ChainlinkFunctions callout="shutdown" />
+> **NOTE: Increase the limits**
+>
+> [Contact us](https://chain.link/contact?v=Integrate%20Functions) to increase the limits for your Chainlink
+> Function.
 
-<Aside type="note" title="Increase the limits">
-  <a href="https://chain.link/contact?v=Integrate%20Functions">Contact us</a> to increase the limits for your Chainlink
-  Function.
-</Aside>
-
-| Item                                                             | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Limits                                                                                                  |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
-| Supported languages                                              | Supported language of the Source code that is submitted in the Chainlink Functions request                                                                                                                                                                                                                                                                                                                                                                                     | JavaScript compatible with [Deno](https://deno.land/) runtime and module imports                        |
-| Maximum requests in flight                                       | The maximum number of simultaneous Chainlink Functions requests that are not fulfilled yet by the DON                                                                                                                                                                                                                                                                                                                                                                          | Limited by the [effective balance](/chainlink-functions/resources/architecture#subscription-management) |
-| Maximum callback gas limit                                       | The maximum amount of gas that you can set for Chainlink Functions to fulfill your callback function                                                                                                                                                                                                                                                                                                                                                                           | 300,000                                                                                                 |
-| Maximum subscriptions                                            | Maximum subscriptions that you can create                                                                                                                                                                                                                                                                                                                                                                                                                                      | unbounded                                                                                               |
-| Maximum consumer contracts per subscription                      | The maximum number of consumer contracts that you can add to a subscription                                                                                                                                                                                                                                                                                                                                                                                                    | 100                                                                                                     |
-| Maximum duration of a request<br />(Request fulfillment timeout) | The maximum duration of a request is the time allowed for processing a Chainlink Functions request from start to finish, covering all steps such as reading from the chain, executing code, and posting back on chain. If processing takes longer, the request times out, and no charges are applied to your subscription for that request. In such cases, the initially locked estimated request costs must be manually requested to be returned to your subscription balance | 5 minutes                                                                                               |
-| Maximum request size                                             | The maximum size of a Chainlink Request. This includes the source code, arguments, and secrets                                                                                                                                                                                                                                                                                                                                                                                 | 30 kilobytes                                                                                            |
-| Maximum returned value size                                      | The maximum size of the value that your Function can return                                                                                                                                                                                                                                                                                                                                                                                                                    | 256 bytes                                                                                               |
-| Maximum source code execution time                               | The maximum amount of time that a source code can run                                                                                                                                                                                                                                                                                                                                                                                                                          | 10 seconds                                                                                              |
-| Maximum memory allocated to the source code                      | The maximum amount of memory allocated to your source code during execution                                                                                                                                                                                                                                                                                                                                                                                                    | 128 megabytes                                                                                           |
-| HTTP - Maximum queries                                           | The maximum number of HTTP requests that your source code can make                                                                                                                                                                                                                                                                                                                                                                                                             | 5                                                                                                       |
-| HTTP - query timeout                                             | The maximum duration of an HTTP request before it times out                                                                                                                                                                                                                                                                                                                                                                                                                    | 9 seconds                                                                                               |
-| HTTP - Maximum URL length                                        | Length of the HTTP URL                                                                                                                                                                                                                                                                                                                                                                                                                                                         | 2048 characters                                                                                         |
-| HTTP - Maximum request length                                    | The maximum size of an HTTP request, including the request body and HTTP headers                                                                                                                                                                                                                                                                                                                                                                                               | 30 kilobytes                                                                                            |
-| HTTP - Maximum response length                                   | The maximum size of an HTTP response                                                                                                                                                                                                                                                                                                                                                                                                                                           | 2 megabytes                                                                                             |
-| Max size of request payload CBOR                                 | The maximum size of an encoded request                                                                                                                                                                                                                                                                                                                                                                                                                                         | 30 kilobytes                                                                                            |
-| Don-hosted secrets - Maximum Time to live (TTL)                  | The maximum duration for which a secret hosted on a DON remains valid before it gets deleted                                                                                                                                                                                                                                                                                                                                                                                   | <ul><li>Mainnets: 3 months (2160 hours)</li><li>Testnets: 3 days (72 hours)</li></ul>                   |
-| External module imports - Maximum size                           | The maximum size in MB that each imported module can be                                                                                                                                                                                                                                                                                                                                                                                                                        | 10 MB                                                                                                   |
-| External module imports - Number of imports                      | The maximum number of external module imports allowed in each request                                                                                                                                                                                                                                                                                                                                                                                                          | 100 imports                                                                                             |
+| Item                                                       | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Limits                                                                                                  |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| Supported languages                                        | Supported language of the Source code that is submitted in the Chainlink Functions request                                                                                                                                                                                                                                                                                                                                                                                     | JavaScript compatible with [Deno](https://deno.land/) runtime and module imports                        |
+| Maximum requests in flight                                 | The maximum number of simultaneous Chainlink Functions requests that are not fulfilled yet by the DON                                                                                                                                                                                                                                                                                                                                                                          | Limited by the [effective balance](/chainlink-functions/resources/architecture#subscription-management) |
+| Maximum callback gas limit                                 | The maximum amount of gas that you can set for Chainlink Functions to fulfill your callback function                                                                                                                                                                                                                                                                                                                                                                           | 300,000                                                                                                 |
+| Maximum subscriptions                                      | Maximum subscriptions that you can create                                                                                                                                                                                                                                                                                                                                                                                                                                      | unbounded                                                                                               |
+| Maximum consumer contracts per subscription                | The maximum number of consumer contracts that you can add to a subscription                                                                                                                                                                                                                                                                                                                                                                                                    | 100                                                                                                     |
+| Maximum duration of a request(Request fulfillment timeout) | The maximum duration of a request is the time allowed for processing a Chainlink Functions request from start to finish, covering all steps such as reading from the chain, executing code, and posting back on chain. If processing takes longer, the request times out, and no charges are applied to your subscription for that request. In such cases, the initially locked estimated request costs must be manually requested to be returned to your subscription balance | 5 minutes                                                                                               |
+| Maximum request size                                       | The maximum size of a Chainlink Request. This includes the source code, arguments, and secrets                                                                                                                                                                                                                                                                                                                                                                                 | 30 kilobytes                                                                                            |
+| Maximum returned value size                                | The maximum size of the value that your Function can return                                                                                                                                                                                                                                                                                                                                                                                                                    | 256 bytes                                                                                               |
+| Maximum source code execution time                         | The maximum amount of time that a source code can run                                                                                                                                                                                                                                                                                                                                                                                                                          | 10 seconds                                                                                              |
+| Maximum memory allocated to the source code                | The maximum amount of memory allocated to your source code during execution                                                                                                                                                                                                                                                                                                                                                                                                    | 128 megabytes                                                                                           |
+| HTTP - Maximum queries                                     | The maximum number of HTTP requests that your source code can make                                                                                                                                                                                                                                                                                                                                                                                                             | 5                                                                                                       |
+| HTTP - query timeout                                       | The maximum duration of an HTTP request before it times out                                                                                                                                                                                                                                                                                                                                                                                                                    | 9 seconds                                                                                               |
+| HTTP - Maximum URL length                                  | Length of the HTTP URL                                                                                                                                                                                                                                                                                                                                                                                                                                                         | 2048 characters                                                                                         |
+| HTTP - Maximum request length                              | The maximum size of an HTTP request, including the request body and HTTP headers                                                                                                                                                                                                                                                                                                                                                                                               | 30 kilobytes                                                                                            |
+| HTTP - Maximum response length                             | The maximum size of an HTTP response                                                                                                                                                                                                                                                                                                                                                                                                                                           | 2 megabytes                                                                                             |
+| Max size of request payload CBOR                           | The maximum size of an encoded request                                                                                                                                                                                                                                                                                                                                                                                                                                         | 30 kilobytes                                                                                            |
+| Don-hosted secrets - Maximum Time to live (TTL)            | The maximum duration for which a secret hosted on a DON remains valid before it gets deleted                                                                                                                                                                                                                                                                                                                                                                                   | Mainnets: 3 months (2160 hours); Testnets: 3 days (72 hours)                                            |
+| External module imports - Maximum size                     | The maximum size in MB that each imported module can be                                                                                                                                                                                                                                                                                                                                                                                                                        | 10 MB                                                                                                   |
+| External module imports - Number of imports                | The maximum number of external module imports allowed in each request                                                                                                                                                                                                                                                                                                                                                                                                          | 100 imports                                                                                             |
 
 ---
 
 # Simulate your Functions
 Source: https://docs.chain.link/chainlink-functions/resources/simulation
-
-<ChainlinkFunctions callout="shutdown" />
 
 Before making a Chainlink Functions request from your smart contract, it is always a good practice to simulate the source code off-chain to make any adjustments or corrections.
 
@@ -1378,16 +1302,18 @@ Currently, there are several options for simulating a request:
 
 ## Chainlink Functions playground
 
-<Aside type="caution">
-  The Chainlink Functions playground can simulate Chainlink Functions within the browser. There may be differences to
-  the real Chainlink Functions environment. For instance, you are limited to vanilla JavaScript and cannot use all the
-  features of Chainlink Functions, such as imports of external modules. To access all the features, use the [Chainlink
-  Functions Hardhat Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) or [Chainlink
-  Functions Toolkit NPM package](https://github.com/smartcontractkit/functions-toolkit).
-</Aside>
+> **CAUTION**
+>
+> The Chainlink Functions playground can simulate Chainlink Functions within the browser. There may be differences to
+> the real Chainlink Functions environment. For instance, you are limited to vanilla JavaScript and cannot use all the
+> features of Chainlink Functions, such as imports of external modules. To access all the features, use the [Chainlink
+> Functions Hardhat Starter Kit](https://github.com/smartcontractkit/functions-hardhat-starter-kit) or [Chainlink
+> Functions Toolkit NPM package](https://github.com/smartcontractkit/functions-toolkit).
 
 To use the [Chainlink Functions
 Playground](https://functions.chain.link/playground), enter any source code, arguments, and secrets you would like to use. Click the **Run code** button to view the output.
+
+![Image](/images/chainlink-functions/functions-playground.png)
 
 ## Chainlink Functions Hardhat Starter Kit
 
@@ -1423,12 +1349,12 @@ To simulate:
    Response returned by script during local simulation: 1003757
    ```
 
-<Aside type="note">
-  The JavaScript source code is set up in the
-  [Functions-request-config.js](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/Functions-request-config.js)
-  file. To simulate your own JavaScript source code, modify `source` to replace `./calculation-example.js` with the
-  relative path to your file.
-</Aside>
+> **NOTE**
+>
+> The JavaScript source code is set up in the
+> [Functions-request-config.js](https://github.com/smartcontractkit/functions-hardhat-starter-kit/blob/main/Functions-request-config.js)
+> file. To simulate your own JavaScript source code, modify `source` to replace `./calculation-example.js` with the
+> relative path to your file.
 
 ## Chainlink Functions Toolkit NPM package
 
@@ -1442,13 +1368,11 @@ You can read the [Examine the code section](/chainlink-functions/tutorials/simpl
 # Managing CL Functions Subscriptions
 Source: https://docs.chain.link/chainlink-functions/resources/subscriptions
 
-<ChainlinkFunctions callout="shutdown" />
-
-<Aside type="note">
-  Chainlink Functions is a self-service solution. You are responsible for independently reviewing any code and API dependencies that you submit in a request. Community-created code examples might not be audited, so you must independently review this code before you use it.
-
-  Chainlink Functions is offered "as is" and "as available" without conditions or warranties of any kind. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs from Functions due to issues in your code or downstream issues with API dependencies. You must ensure that the data sources or APIs specified in requests are of sufficient quality and have the proper availability for your use case. Users are responsible for complying with the licensing agreements for all data providers that they connect with through Chainlink Functions. Violations of data provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your Chainlink Functions account or subscription.
-</Aside>
+> **NOTE**
+>
+> Chainlink Functions is a self-service solution. You are responsible for independently reviewing any code and API dependencies that you submit in a request. Community-created code examples might not be audited, so you must independently review this code before you use it.
+>
+> Chainlink Functions is offered "as is" and "as available" without conditions or warranties of any kind. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs from Functions due to issues in your code or downstream issues with API dependencies. You must ensure that the data sources or APIs specified in requests are of sufficient quality and have the proper availability for your use case. Users are responsible for complying with the licensing agreements for all data providers that they connect with through Chainlink Functions. Violations of data provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your Chainlink Functions account or subscription.
 
 The Chainlink Functions Subscription Manager is available [here](https://functions.chain.link/). The Functions Subscription Manager lets you create a subscription, add consumers to it, remove consumers from it, fund it with LINK, and delete it.
 
@@ -1462,55 +1386,83 @@ You use a Chainlink Functions subscription to pay for, manage, and track Functio
 
 1. Open [functions.chain.link](https://functions.chain.link/) and click *Create Subscription*:
 
+   ![Chainlink Functions subscription landing page](/images/chainlink-functions/tutorials/subscription/frontend-landing-wallet-connected.jpg)
+
 2. Provide an email address and an optional subscription name:
+
+   ![Chainlink Functions create subscription](/images/chainlink-functions/tutorials/subscription/create-subscription.jpg)
 
 3. The first time that you interact with the Subscription Manager using your EOA, you have to approve the Terms of Service (ToS):
 
+   ![Chainlink Functions accept ToS](/images/chainlink-functions/tutorials/subscription/acceptTos.jpg)
+
 4. When you approve the ToS, a MetaMask popup appears that asks you to approve the subscription creation:
+
+   ![Chainlink Functions approve subscriptions creation](/images/chainlink-functions/tutorials/subscription/approve-create-subscription.jpg)
 
 5. After the subscription is created, you are asked to sign a message in MetaMask to link the subscription name and email address to your subscription:
 
-{" "}
+![Chainlink Functions sign message ToS](/images/chainlink-functions/tutorials/subscription/sign-message-tos.jpg)
+
+![Chainlink Functions sign message ToS MetaMask](/images/chainlink-functions/tutorials/subscription/sign-message-tos-metamask.jpg)
 
 1. After the subscription is created, fund it with LINK:
 
-   <ClickToZoom src="/images/chainlink-functions/tutorials/subscription/subscription-created-add-funds.jpg" alt="Chainlink Functions subscription add funds" />
+   ![Chainlink Functions subscription add funds](/images/chainlink-functions/tutorials/subscription/subscription-created-add-funds.jpg)
 
 2. After funding, you can add a consumer to it:
 
-   <ClickToZoom src="/images/chainlink-functions/tutorials/subscription/subscription-created-add-consumer.jpg" alt="Chainlink Functions subscription add consumer" />
+   ![Chainlink Functions subscription add consumer](/images/chainlink-functions/tutorials/subscription/subscription-created-add-consumer.jpg)
 
-   <ClickToZoom src="/images/chainlink-functions/tutorials/subscription/subscription-created-add-consumer-2.jpg" alt="Chainlink Functions subscription add consumer" />
+   ![Chainlink Functions subscription add consumer](/images/chainlink-functions/tutorials/subscription/subscription-created-add-consumer-2.jpg)
 
 3. After creation, you can fetch the details of your subscription:
 
-   <ClickToZoom src="/images/chainlink-functions/tutorials/subscription/subscription-details-after-creation.jpg" alt="Chainlink Functions subscription details" />
+   ![Chainlink Functions subscription details](/images/chainlink-functions/tutorials/subscription/subscription-details-after-creation.jpg)
 
 ### Fund a subscription
 
 1. Open your subscription details and click *Actions* then click *Fund subscription*:
 
+   ![Chainlink Functions click fund](/images/chainlink-functions/tutorials/subscription/your-subscription-click-fund.jpg)
+
 2. Fund your subscription. For instance, *0.1 LINK*:
 
+   ![Chainlink Functions add fund to your subscription](/images/chainlink-functions/tutorials/subscription/your-subscription-add-fund.jpg)
+
 3. A MetaMask popup appears, and you are asked to confirm the transaction. After you confirm the transaction, a confirmation screen appears:
+
+   ![Chainlink Functions subscription funded](/images/chainlink-functions/tutorials/subscription/your-subscription-funded.jpg)
 
 ### Add a consumer contract to a subscription
 
 1. Open your subscription details and click *Add Consumer*:
 
+   ![Chainlink Functions add consumer](/images/chainlink-functions/tutorials/subscription/your-subscription-add-consumer.jpg)
+
 2. Fill in the consumer address:
 
+   ![Chainlink Functions provider consumer address](/images/chainlink-functions/tutorials/subscription/your-subscription-fill-consumer.jpg)
+
 3. A MetaMask popup appears, and you are asked to confirm the transaction. After you confirm the transaction, a confirmation screen appears:
+
+   ![Chainlink Functions consumer added](/images/chainlink-functions/tutorials/subscription/your-subscription-consumer-added.jpg)
 
 ### Remove a consumer contract from a subscription
 
 1. Open your subscription details and click the consumer you want to remove, then *Remove Consumer*:
 
+   ![Chainlink Functions remove consumer](/images/chainlink-functions/tutorials/subscription/your-subscription-remove-consumer.jpg)
+
 2. A MetaMask popup appears, and you are asked to confirm the transaction.
 
-   <ClickToZoom src="/images/chainlink-functions/tutorials/subscription/your-subscription-remove-consumer-confirm2.jpg" alt="Chainlink Functions confirm the removal of the consumer in MetaMask" />
+   ![Chainlink Functions confirm the removal of the consumer](/images/chainlink-functions/tutorials/subscription/your-subscription-remove-consumer-confirm.jpg)
+
+   ![Chainlink Functions confirm the removal of the consumer in MetaMask](/images/chainlink-functions/tutorials/subscription/your-subscription-remove-consumer-confirm2.jpg)
 
 3. After you confirm the transaction, a confirmation screen appears:
+
+   ![Chainlink Functions consumer removed](/images/chainlink-functions/tutorials/subscription/your-subscription-consumer-removed.jpg)
 
 ### Cancel a subscription
 
@@ -1518,13 +1470,21 @@ You use a Chainlink Functions subscription to pay for, manage, and track Functio
 
 1. Open your subscription details, click *Actions*, then *Cancel subscription*:
 
+   ![Chainlink Functions cancel subscription](/images/chainlink-functions/tutorials/subscription/your-subscription-cancel.jpg)
+
 2. Fill in the receiver address of the remaining funds:
+
+   ![Chainlink Functions cancel subscription](/images/chainlink-functions/tutorials/subscription/your-subscription-cancel2.jpg)
 
 3. A MetaMask popup appears, and you are asked to confirm the transaction.
 
-   <ClickToZoom src="/images/chainlink-functions/tutorials/subscription/your-subscription-cancel-confirm2.jpg" alt="Chainlink Functions confirm the removal of the subscription in MetaMask" />
+   ![Chainlink Functions confirm the removal of the subscription](/images/chainlink-functions/tutorials/subscription/your-subscription-cancel-confirm.jpg)
+
+   ![Chainlink Functions confirm the removal of the subscription in MetaMask](/images/chainlink-functions/tutorials/subscription/your-subscription-cancel-confirm2.jpg)
 
 4. After you confirm the transaction, a confirmation screen appears:
+
+   ![Chainlink Functions subscription canceled](/images/chainlink-functions/tutorials/subscription/your-subscription-cancelled.jpg)
 
 For step-by-step instructions, including how to cancel and withdraw directly on the FunctionsRouter contract if you don't have access to the Subscription Manager, see [Cancel a Subscription and Withdraw Funds](/chainlink-functions/guides/cancel-subscription).
 
@@ -1534,26 +1494,34 @@ The Subscription Manager provides the option to time out requests manually. You 
 
 1. Open your subscription details and scroll to the **Pending** section. If a request has been pending longer than five minutes, its status displays as *Time out required*. Click the link within the red banner that says **Time out request**:
 
+   ![Pending Functions request eligible for timeout](/images/chainlink-functions/tutorials/request-timeout/1-request-eligible-for-timeout.png)
+
    If you have multiple requests that are eligible for timeout, the **Time out request** link in the red banner times out all the requests at once.
 
    Alternatively, you can time out an individual request. Open the **Actions** menu for that request, and click **Time out request**:
 
-   {" "}
+   ![Individual request timeout](/images/chainlink-functions/tutorials/request-timeout/individual-request-timeout.png)
 
 2. A MetaMask popup appears, and you are asked to confirm the transaction:
 
+   ![Prompt to approve timeout transaction](/images/chainlink-functions/tutorials/request-timeout/2-approve-timeout-transaction.png)
+
 3. After you confirm the transaction, a confirmation screen appears:
+
+   ![Timeout transaction confirmation](/images/chainlink-functions/tutorials/request-timeout/3-timeout-successful-confirmation.png)
 
 4. The subscription details page displays another confirmation in the upper right corner showing that the request has been timed out successfully:
 
+   ![Request timed out dialog](/images/chainlink-functions/tutorials/request-timeout/4-subscription-page-updates.png)
+
 5. The timed out request appears in the **Failed fulfillments** tab of the **History** section:
+
+   ![Chainlink Functions subscription canceled](/images/chainlink-functions/tutorials/request-timeout/5-failed-fulfillments.png)
 
 ---
 
 # Chainlink Functions Service Responsibility
 Source: https://docs.chain.link/chainlink-functions/service-responsibility
-
-<ChainlinkFunctions callout="shutdown" />
 
 Chainlink Functions provides access to trust-minimized compute infrastructure that allows you to retrieve data and run computation. Because the service is highly-flexible and runs offchain, both developers and Chainlink service providers share responsibility in ensuring that operation and performance match expectations.
 
@@ -1601,44 +1569,36 @@ High-quality node operators participate in the Functions DONs using a configurat
 # Supported Networks
 Source: https://docs.chain.link/chainlink-functions/supported-networks
 
-<ChainlinkFunctions callout="shutdown" />
-
-{/* Static anchor points for link checker */}
-
-<span id="avalanche" style="display: none" />
-
-<span id="celo" style="display: none" />
-
-<span id="op" style="display: none" />
-
-<span id="soneium" style="display: none" />
-
 Read the [LINK Token Contracts](/resources/link-token-contracts) page to learn where to get testnet LINK and ETH.
 
 To use Chainlink Functions on certain networks, you may need to conduct token transfers. You can transfer tokens by using [Chainlink CCIP](/ccip/tutorials/evm/transfer-tokens-from-contract), [Transporter](https://www.transporter.io/) or third-party applications such as [XSwap](https://xswap.link/).
 
-<Aside type="note" title="Interfaces and Applications">
-  Chainlink CCIP is a messaging protocol. Third parties may build user interfaces or other applications on top of CCIP.
-  Neither Chainlink Labs nor the Chainlink Foundation owns, controls, endorses, or assumes any responsibility for any
-  such interfaces or applications. You are solely responsible for your use of such interfaces or applications. Please
-  visit the Chainlink Foundation [Terms of Service](https://chain.link/terms) for more information.
-</Aside>
+> **NOTE: Interfaces and Applications**
+>
+> Chainlink CCIP is a messaging protocol. Third parties may build user interfaces or other applications on top of CCIP.
+> Neither Chainlink Labs nor the Chainlink Foundation owns, controls, endorses, or assumes any responsibility for any
+> such interfaces or applications. You are solely responsible for your use of such interfaces or applications. Please
+> visit the Chainlink Foundation [Terms of Service](https://chain.link/terms) for more information.
+
+> **CAUTION: Understand Risks associated with Bridges**
+>
+> If you are using a cross-chain bridge to transfer your LINK tokens, read the [Bridges and Associated Risks](/resources/bridge-risks) guide to understand what cross-chain bridges are and the risks associated with using them.
 
 ## Arbitrum
 
-<Aside type="note" title="USD-denominated premium fees">
-  The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
-  request time, and then deducted from your subscription in LINK at response time. See the [example cost
-  calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
-</Aside>
+> **NOTE: USD-denominated premium fees**
+>
+> The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
+> request time, and then deducted from your subscription in LINK at response time. See the [example cost
+> calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
 
 ### Arbitrum Mainnet
 
-| Item                               | Value                                                                                                                                                                                                                                          |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functions router                   | <Address contractUrl="https://arbiscan.io/address/0x97083e831f8f0638855e2a515c90edcf158df238" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "Arbitrum Mainnet"}} /> |
-| <DonId client:load />              | fun-arbitrum-mainnet-1 / 0x66756e2d617262697472756d2d6d61696e6e65742d3100000000000000000000                                                                                                                                                    |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.chain.link/</li><li>https\://02.functions-gateway.chain.link/</li></ul>                                                                                                                                  |
+| Item                               | Value                                                                                                                |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Functions router                   | [0x97083e831f8f0638855e2a515c90edcf158df238](https://arbiscan.io/address/0x97083e831f8f0638855e2a515c90edcf158df238) |
+|                                    | fun-arbitrum-mainnet-1 / 0x66756e2d617262697472756d2d6d61696e6e65742d3100000000000000000000                          |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.chain.link/; https\://02.functions-gateway.chain.link/                                 |
 
 | Billing Item                                    | Value       |
 | ----------------------------------------------- | ----------- |
@@ -1649,11 +1609,11 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 
 ### Arbitrum Sepolia Testnet
 
-| Item                               | Value                                                                                                                                                                                                                                                          |
-| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functions router                   | <Address contractUrl="https://sepolia.arbiscan.io/address/0x234a5fb5Bd614a7AA2FfAB244D603abFA0Ac5C5C" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "Arbitrum Sepolia Testnet"}} /> |
-| <DonId client:load />              | fun-arbitrum-sepolia-1 / 0x66756e2d617262697472756d2d7365706f6c69612d3100000000000000000000                                                                                                                                                                    |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.testnet.chain.link/</li><li>https\://02.functions-gateway.testnet.chain.link/</li></ul>                                                                                                                                  |
+| Item                               | Value                                                                                                                        |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Functions router                   | [0x234a5fb5Bd614a7AA2FfAB244D603abFA0Ac5C5C](https://sepolia.arbiscan.io/address/0x234a5fb5Bd614a7AA2FfAB244D603abFA0Ac5C5C) |
+|                                    | fun-arbitrum-sepolia-1 / 0x66756e2d617262697472756d2d7365706f6c69612d3100000000000000000000                                  |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.testnet.chain.link/; https\://02.functions-gateway.testnet.chain.link/                         |
 
 | Billing Item                                    | Value         |
 | ----------------------------------------------- | ------------- |
@@ -1664,19 +1624,19 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 
 ## Avalanche
 
-<Aside type="note" title="USD-denominated premium fees">
-  The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
-  request time, and then deducted from your subscription in LINK at response time. See the [example cost
-  calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
-</Aside>
+> **NOTE: USD-denominated premium fees**
+>
+> The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
+> request time, and then deducted from your subscription in LINK at response time. See the [example cost
+> calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
 
 ### Avalanche Mainnet
 
-| Item                               | Value                                                                                                                                                                                                                                            |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Functions router                   | <Address contractUrl="https://snowtrace.io/address/0x9f82a6A0758517FD0AfA463820F586999AF314a0" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "Avalanche Mainnet"}} /> |
-| <DonId client:load />              | fun-avalanche-mainnet-1 / 0x66756e2d6176616c616e6368652d6d61696e6e65742d31000000000000000000                                                                                                                                                     |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.chain.link/</li><li>https\://02.functions-gateway.chain.link/</li></ul>                                                                                                                                    |
+| Item                               | Value                                                                                                                 |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Functions router                   | [0x9f82a6A0758517FD0AfA463820F586999AF314a0](https://snowtrace.io/address/0x9f82a6A0758517FD0AfA463820F586999AF314a0) |
+|                                    | fun-avalanche-mainnet-1 / 0x66756e2d6176616c616e6368652d6d61696e6e65742d31000000000000000000                          |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.chain.link/; https\://02.functions-gateway.chain.link/                                  |
 
 | Billing Item                                    | Value       |
 | ----------------------------------------------- | ----------- |
@@ -1687,11 +1647,11 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 
 ### Avalanche Fuji Testnet
 
-| Item                               | Value                                                                                                                                                                                                                                                         |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functions router                   | <Address contractUrl="https://testnet.snowtrace.io/address/0xA9d587a00A31A52Ed70D6026794a8FC5E2F5dCb0" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "Avalanche Fuji Testnet"}} /> |
-| <DonId client:load />              | fun-avalanche-fuji-1 / 0x66756e2d6176616c616e6368652d66756a692d31000000000000000000000000                                                                                                                                                                     |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.testnet.chain.link/</li><li>https\://02.functions-gateway.testnet.chain.link/</li></ul>                                                                                                                                 |
+| Item                               | Value                                                                                                                         |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Functions router                   | [0xA9d587a00A31A52Ed70D6026794a8FC5E2F5dCb0](https://testnet.snowtrace.io/address/0xA9d587a00A31A52Ed70D6026794a8FC5E2F5dCb0) |
+|                                    | fun-avalanche-fuji-1 / 0x66756e2d6176616c616e6368652d66756a692d31000000000000000000000000                                     |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.testnet.chain.link/; https\://02.functions-gateway.testnet.chain.link/                          |
 
 | Billing Item                                    | Value         |
 | ----------------------------------------------- | ------------- |
@@ -1702,19 +1662,19 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 
 ## BASE
 
-<Aside type="note" title="USD-denominated premium fees">
-  The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
-  request time, and then deducted from your subscription in LINK at response time. See the [example cost
-  calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
-</Aside>
+> **NOTE: USD-denominated premium fees**
+>
+> The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
+> request time, and then deducted from your subscription in LINK at response time. See the [example cost
+> calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
 
 ### BASE Mainnet
 
-| Item                               | Value                                                                                                                                                                                                                                       |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functions router                   | <Address contractUrl="https://basescan.org/address/0xf9b8fc078197181c841c296c876945aaa425b278" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "Base Mainnet"}} /> |
-| <DonId client:load />              | fun-base-mainnet-1 / 0x66756e2d626173652d6d61696e6e65742d310000000000000000000000000000                                                                                                                                                     |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.chain.link/</li><li>https\://02.functions-gateway.chain.link/</li></ul>                                                                                                                               |
+| Item                               | Value                                                                                                                 |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Functions router                   | [0xf9b8fc078197181c841c296c876945aaa425b278](https://basescan.org/address/0xf9b8fc078197181c841c296c876945aaa425b278) |
+|                                    | fun-base-mainnet-1 / 0x66756e2d626173652d6d61696e6e65742d310000000000000000000000000000                               |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.chain.link/; https\://02.functions-gateway.chain.link/                                  |
 
 | Billing Item                                     | Value       |
 | ------------------------------------------------ | ----------- |
@@ -1725,11 +1685,11 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 
 ### BASE Sepolia Testnet
 
-| Item                               | Value                                                                                                                                                                                                                                                       |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functions router                   | <Address contractUrl="https://sepolia.basescan.org/address/0xf9B8fc078197181C841c296C876945aaa425B278" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "Base Sepolia Testnet"}} /> |
-| <DonId client:load />              | fun-base-sepolia-1 / 0x66756e2d626173652d7365706f6c69612d310000000000000000000000000000                                                                                                                                                                     |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.testnet.chain.link/</li><li>https\://02.functions-gateway.testnet.chain.link/</li></ul>                                                                                                                               |
+| Item                               | Value                                                                                                                         |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Functions router                   | [0xf9B8fc078197181C841c296C876945aaa425B278](https://sepolia.basescan.org/address/0xf9B8fc078197181C841c296C876945aaa425B278) |
+|                                    | fun-base-sepolia-1 / 0x66756e2d626173652d7365706f6c69612d310000000000000000000000000000                                       |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.testnet.chain.link/; https\://02.functions-gateway.testnet.chain.link/                          |
 
 | Billing Item                                     | Value         |
 | ------------------------------------------------ | ------------- |
@@ -1740,19 +1700,19 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 
 ## Celo
 
-<Aside type="note" title="USD-denominated premium fees">
-  The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
-  request time, and then deducted from your subscription in LINK at response time. See the [example cost
-  calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
-</Aside>
+> **NOTE: USD-denominated premium fees**
+>
+> The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
+> request time, and then deducted from your subscription in LINK at response time. See the [example cost
+> calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
 
 ### Celo Mainnet
 
-| Item                               | Value                                                                                                                                                                                                                                                    |
-| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functions router                   | <Address contractUrl="https://explorer.celo.org/mainnet/address/0xd74646C75163f9dA0F3666C3BE8A9C42F4b3b261" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "Celo Mainnet"}} /> |
-| <DonId client:load />              | fun-celo-mainnet-1 / 0x66756e2d63656c6f2d6d61696e6e65742d310000000000000000000000000000                                                                                                                                                                  |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.chain.link/</li><li>https\://02.functions-gateway.chain.link/</li></ul>                                                                                                                                            |
+| Item                               | Value                                                                                                                              |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Functions router                   | [0xd74646C75163f9dA0F3666C3BE8A9C42F4b3b261](https://explorer.celo.org/mainnet/address/0xd74646C75163f9dA0F3666C3BE8A9C42F4b3b261) |
+|                                    | fun-celo-mainnet-1 / 0x66756e2d63656c6f2d6d61696e6e65742d310000000000000000000000000000                                            |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.chain.link/; https\://02.functions-gateway.chain.link/                                               |
 
 | Billing Item                                     | Value       |
 | ------------------------------------------------ | ----------- |
@@ -1763,11 +1723,11 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 
 ### Celo Alfajores Testnet
 
-| Item                               | Value                                                                                                                                                                                                                                                                |
-| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functions router                   | <Address contractUrl="https://explorer.celo.org/alfajores/address/0x53BA5D8E5aab0cf9589aCE139666Be2b9Fd268e2" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "Celo Alfajores Testnet"}} /> |
-| <DonId client:load />              | fun-celo-alfajores-1 / 0x66756e2d63656c6f2d616c66616a6f7265732d31000000000000000000000000                                                                                                                                                                            |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.testnet.chain.link/</li><li>https\://02.functions-gateway.testnet.chain.link/</li></ul>                                                                                                                                        |
+| Item                               | Value                                                                                                                                |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Functions router                   | [0x53BA5D8E5aab0cf9589aCE139666Be2b9Fd268e2](https://explorer.celo.org/alfajores/address/0x53BA5D8E5aab0cf9589aCE139666Be2b9Fd268e2) |
+|                                    | fun-celo-alfajores-1 / 0x66756e2d63656c6f2d616c66616a6f7265732d31000000000000000000000000                                            |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.testnet.chain.link/; https\://02.functions-gateway.testnet.chain.link/                                 |
 
 | Billing Item                                     | Value         |
 | ------------------------------------------------ | ------------- |
@@ -1778,19 +1738,19 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 
 ## Ethereum
 
-<Aside type="note" title="USD-denominated premium fees">
-  The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
-  request time, and then deducted from your subscription in LINK at response time. See the [example cost
-  calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
-</Aside>
+> **NOTE: USD-denominated premium fees**
+>
+> The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
+> request time, and then deducted from your subscription in LINK at response time. See the [example cost
+> calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
 
 ### Ethereum Mainnet
 
-| Item                               | Value                                                                                                                                                                                                                                           |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functions router                   | <Address contractUrl="https://etherscan.io/address/0x65Dcc24F8ff9e51F10DCc7Ed1e4e2A61e6E14bd6" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "Ethereum Mainnet"}} /> |
-| <DonId client:load />              | fun-ethereum-mainnet-1 / 0x66756e2d657468657265756d2d6d61696e6e65742d3100000000000000000000                                                                                                                                                     |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.chain.link/</li><li>https\://02.functions-gateway.chain.link/</li></ul>                                                                                                                                   |
+| Item                               | Value                                                                                                                 |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Functions router                   | [0x65Dcc24F8ff9e51F10DCc7Ed1e4e2A61e6E14bd6](https://etherscan.io/address/0x65Dcc24F8ff9e51F10DCc7Ed1e4e2A61e6E14bd6) |
+|                                    | fun-ethereum-mainnet-1 / 0x66756e2d657468657265756d2d6d61696e6e65742d3100000000000000000000                           |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.chain.link/; https\://02.functions-gateway.chain.link/                                  |
 
 | Billing Item                                    | Value         |
 | ----------------------------------------------- | ------------- |
@@ -1801,11 +1761,11 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 
 ### Sepolia Testnet
 
-| Item                               | Value                                                                                                                                                                                                                                                  |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Functions router                   | <Address contractUrl="https://sepolia.etherscan.io/address/0xb83E47C2bC239B3bf370bc41e1459A34b41238D0" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "Sepolia Testnet"}} /> |
-| <DonId client:load />              | fun-ethereum-sepolia-1 / 0x66756e2d657468657265756d2d7365706f6c69612d3100000000000000000000                                                                                                                                                            |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.testnet.chain.link/</li><li>https\://02.functions-gateway.testnet.chain.link/</li></ul>                                                                                                                          |
+| Item                               | Value                                                                                                                         |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Functions router                   | [0xb83E47C2bC239B3bf370bc41e1459A34b41238D0](https://sepolia.etherscan.io/address/0xb83E47C2bC239B3bf370bc41e1459A34b41238D0) |
+|                                    | fun-ethereum-sepolia-1 / 0x66756e2d657468657265756d2d7365706f6c69612d3100000000000000000000                                   |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.testnet.chain.link/; https\://02.functions-gateway.testnet.chain.link/                          |
 
 | Billing Item                                    | Value         |
 | ----------------------------------------------- | ------------- |
@@ -1816,19 +1776,19 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 
 ## OP
 
-<Aside type="note" title="USD-denominated premium fees">
-  The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
-  request time, and then deducted from your subscription in LINK at response time. See the [example cost
-  calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
-</Aside>
+> **NOTE: USD-denominated premium fees**
+>
+> The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
+> request time, and then deducted from your subscription in LINK at response time. See the [example cost
+> calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
 
 ### OP Mainnet
 
-| Item                               | Value                                                                                                                                                                                                                                                |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functions router                   | <Address contractUrl="https://optimistic.etherscan.io/address/0xaA8AaA682C9eF150C0C8E96a8D60945BCB21faad" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "OP Mainnet"}} /> |
-| <DonId client:load />              | fun-optimism-mainnet-1 / 0x66756e2d6f7074696d69736d2d6d61696e6e65742d310a000000000000000000                                                                                                                                                          |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.chain.link/</li><li>https\://02.functions-gateway.chain.link/</li></ul>                                                                                                                                        |
+| Item                               | Value                                                                                                                            |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Functions router                   | [0xaA8AaA682C9eF150C0C8E96a8D60945BCB21faad](https://optimistic.etherscan.io/address/0xaA8AaA682C9eF150C0C8E96a8D60945BCB21faad) |
+|                                    | fun-optimism-mainnet-1 / 0x66756e2d6f7074696d69736d2d6d61696e6e65742d310a000000000000000000                                      |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.chain.link/; https\://02.functions-gateway.chain.link/                                             |
 
 | Billing Item                                     | Value       |
 | ------------------------------------------------ | ----------- |
@@ -1839,11 +1799,11 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 
 ### OP Sepolia
 
-| Item                               | Value                                                                                                                                                                                                                                                                    |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Functions router                   | <Address contractUrl="https://sepolia-optimism.etherscan.io/address/0xC17094E3A1348E5C7544D4fF8A36c28f2C6AAE28" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "Optimism Sepolia Testnet"}} /> |
-| <DonId client:load />              | fun-optimism-sepolia-1 / 0x66756e2d6f7074696d69736d2d7365706f6c69612d3100000000000000000000                                                                                                                                                                              |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.testnet.chain.link/</li><li>https\://02.functions-gateway.testnet.chain.link/</li></ul>                                                                                                                                            |
+| Item                               | Value                                                                                                                                  |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Functions router                   | [0xC17094E3A1348E5C7544D4fF8A36c28f2C6AAE28](https://sepolia-optimism.etherscan.io/address/0xC17094E3A1348E5C7544D4fF8A36c28f2C6AAE28) |
+|                                    | fun-optimism-sepolia-1 / 0x66756e2d6f7074696d69736d2d7365706f6c69612d3100000000000000000000                                            |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.testnet.chain.link/; https\://02.functions-gateway.testnet.chain.link/                                   |
 
 | Billing Item                                     | Value         |
 | ------------------------------------------------ | ------------- |
@@ -1854,19 +1814,19 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 
 ## Polygon
 
-<Aside type="note" title="USD-denominated premium fees">
-  The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
-  request time, and then deducted from your subscription in LINK at response time. See the [example cost
-  calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
-</Aside>
+> **NOTE: USD-denominated premium fees**
+>
+> The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
+> request time, and then deducted from your subscription in LINK at response time. See the [example cost
+> calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
 
 ### Polygon Mainnet
 
-| Item                               | Value                                                                                                                                                                                                                                             |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functions router                   | <Address contractUrl="https://polygonscan.com/address/0xdc2AAF042Aeff2E68B3e8E33F19e4B9fA7C73F10" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "Polygon Mainnet"}} /> |
-| <DonId client:load />              | fun-polygon-mainnet-1 / 0x66756e2d706f6c79676f6e2d6d61696e6e65742d310000000000000000000000                                                                                                                                                        |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.chain.link/</li><li>https\://02.functions-gateway.chain.link/</li></ul>                                                                                                                                     |
+| Item                               | Value                                                                                                                    |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Functions router                   | [0xdc2AAF042Aeff2E68B3e8E33F19e4B9fA7C73F10](https://polygonscan.com/address/0xdc2AAF042Aeff2E68B3e8E33F19e4B9fA7C73F10) |
+|                                    | fun-polygon-mainnet-1 / 0x66756e2d706f6c79676f6e2d6d61696e6e65742d310000000000000000000000                               |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.chain.link/; https\://02.functions-gateway.chain.link/                                     |
 
 | Billing Item                                    | Value       |
 | ----------------------------------------------- | ----------- |
@@ -1877,11 +1837,11 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 
 ### Polygon Amoy Testnet
 
-| Item                               | Value                                                                                                                                                                                                                                                       |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functions router                   | <Address contractUrl="https://amoy.polygonscan.com/address/0xC22a79eBA640940ABB6dF0f7982cc119578E11De" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "Polygon Amoy Testnet"}} /> |
-| <DonId client:load />              | fun-polygon-amoy-1 / 0x66756e2d706f6c79676f6e2d616d6f792d310000000000000000000000000000                                                                                                                                                                     |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.testnet.chain.link/</li><li>https\://02.functions-gateway.testnet.chain.link/</li></ul>                                                                                                                               |
+| Item                               | Value                                                                                                                         |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Functions router                   | [0xC22a79eBA640940ABB6dF0f7982cc119578E11De](https://amoy.polygonscan.com/address/0xC22a79eBA640940ABB6dF0f7982cc119578E11De) |
+|                                    | fun-polygon-amoy-1 / 0x66756e2d706f6c79676f6e2d616d6f792d310000000000000000000000000000                                       |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.testnet.chain.link/; https\://02.functions-gateway.testnet.chain.link/                          |
 
 | Billing Item                                     | Value         |
 | ------------------------------------------------ | ------------- |
@@ -1892,19 +1852,19 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 
 ## Soneium
 
-<Aside type="note" title="USD-denominated premium fees">
-  The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
-  request time, and then deducted from your subscription in LINK at response time. See the [example cost
-  calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
-</Aside>
+> **NOTE: USD-denominated premium fees**
+>
+> The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
+> request time, and then deducted from your subscription in LINK at response time. See the [example cost
+> calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
 
 ### Soneium Mainnet
 
-| Item                               | Value                                                                                                                                                                                                                                                    |
-| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functions router                   | <Address contractUrl="https://soneium.blockscout.com/address/0x20fef1B12FA78fAc8CFB8a7ac1bf032Bd8DcAdDa" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "Soneium Mainnet"}} /> |
-| <DonId client:load />              | fun-soneium-mainnet-1 / 0x66756e2d736f6e6569756d2d6d61696e6e65742d310000000000000000000000                                                                                                                                                               |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.chain.link/</li><li>https\://02.functions-gateway.chain.link/</li></ul>                                                                                                                                            |
+| Item                               | Value                                                                                                                           |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Functions router                   | [0x20fef1B12FA78fAc8CFB8a7ac1bf032Bd8DcAdDa](https://soneium.blockscout.com/address/0x20fef1B12FA78fAc8CFB8a7ac1bf032Bd8DcAdDa) |
+|                                    | fun-soneium-mainnet-1 / 0x66756e2d736f6e6569756d2d6d61696e6e65742d310000000000000000000000                                      |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.chain.link/; https\://02.functions-gateway.chain.link/                                            |
 
 | Billing Item                                     | Value       |
 | ------------------------------------------------ | ----------- |
@@ -1915,11 +1875,11 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 
 ### Soneium Minato Testnet
 
-| Item                               | Value                                                                                                                                                                                                                                                                  |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functions router                   | <Address contractUrl="https://soneium-minato.blockscout.com/address/0x3704dc1eefCDCE04C58813836AEcfdBC8e7cB3D8" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "Soneium Minato Testnet"}} /> |
-| <DonId client:load />              | fun-soneium-sepolia-1 / 0x66756e2d736f6e6569756d2d7365706f6c69612d310000000000000000000000                                                                                                                                                                             |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.testnet.chain.link/</li><li>https\://02.functions-gateway.testnet.chain.link/</li></ul>                                                                                                                                          |
+| Item                               | Value                                                                                                                                  |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Functions router                   | [0x3704dc1eefCDCE04C58813836AEcfdBC8e7cB3D8](https://soneium-minato.blockscout.com/address/0x3704dc1eefCDCE04C58813836AEcfdBC8e7cB3D8) |
+|                                    | fun-soneium-sepolia-1 / 0x66756e2d736f6e6569756d2d7365706f6c69612d310000000000000000000000                                             |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.testnet.chain.link/; https\://02.functions-gateway.testnet.chain.link/                                   |
 
 | Billing Item                                     | Value         |
 | ------------------------------------------------ | ------------- |
@@ -1930,19 +1890,19 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 
 ## ZKSync
 
-<Aside type="note" title="USD-denominated premium fees">
-  The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
-  request time, and then deducted from your subscription in LINK at response time. See the [example cost
-  calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
-</Aside>
+> **NOTE: USD-denominated premium fees**
+>
+> The fixed premium fee is denominated in USD but no USD is ever used. The LINK equivalent of the fee is calculated at
+> request time, and then deducted from your subscription in LINK at response time. See the [example cost
+> calculation](/chainlink-functions/resources/billing#cost-calculation-example) for more information.
 
 ### ZKSync Mainnet
 
-| Item                               | Value                                                                                                                                                                                                                                               |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functions router                   | <Address contractUrl="https://explorer.zksync.io/address/0x70eb02f47e7F492e57A9D05578f275Cdde0b3d4c" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "ZKSync Mainnet"}} /> |
-| <DonId client:load />              | fun-zksync-mainnet-1 / 0x66756e2d7a6b73796e632d6d61696e6e65742d31000000000000000000000000                                                                                                                                                           |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.chain.link/</li><li>https\://02.functions-gateway.chain.link/</li></ul>                                                                                                                                       |
+| Item                               | Value                                                                                                                       |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Functions router                   | [0x70eb02f47e7F492e57A9D05578f275Cdde0b3d4c](https://explorer.zksync.io/address/0x70eb02f47e7F492e57A9D05578f275Cdde0b3d4c) |
+|                                    | fun-zksync-mainnet-1 / 0x66756e2d7a6b73796e632d6d61696e6e65742d31000000000000000000000000                                   |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.chain.link/; https\://02.functions-gateway.chain.link/                                        |
 
 | Billing Item                                     | Value       |
 | ------------------------------------------------ | ----------- |
@@ -1953,11 +1913,11 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 
 ### ZKSync Sepolia Testnet
 
-| Item                               | Value                                                                                                                                                                                                                                                               |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functions router                   | <Address contractUrl="https://sepolia.explorer.zksync.io/address/0x2053f087Df166772423Aeb8d270d64fD71f303E9" eventName="docs_product_interaction" additionalInfo={{ product: "FUNCTIONS", action: "routerAddress_copied", extraInfo1: "ZKSync Sepolia Testnet"}} /> |
-| <DonId client:load />              | fun-zksync-sepolia-1 / 0x66756e2d7a6b73796e632d7365706f6c69612d31000000000000000000000000                                                                                                                                                                           |
-| Encrypted secrets upload endpoints | <ul><li>https\://01.functions-gateway.testnet.chain.link/</li><li>https\://02.functions-gateway.testnet.chain.link/</li></ul>                                                                                                                                       |
+| Item                               | Value                                                                                                                               |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Functions router                   | [0x2053f087Df166772423Aeb8d270d64fD71f303E9](https://sepolia.explorer.zksync.io/address/0x2053f087Df166772423Aeb8d270d64fD71f303E9) |
+|                                    | fun-zksync-sepolia-1 / 0x66756e2d7a6b73796e632d7365706f6c69612d31000000000000000000000000                                           |
+| Encrypted secrets upload endpoints | https\://01.functions-gateway.testnet.chain.link/; https\://02.functions-gateway.testnet.chain.link/                                |
 
 | Billing Item                                     | Value         |
 | ------------------------------------------------ | ------------- |
@@ -1971,17 +1931,15 @@ To use Chainlink Functions on certain networks, you may need to conduct token tr
 # Return multiple responses and decode them in your smart contract
 Source: https://docs.chain.link/chainlink-functions/tutorials/abi-decoding
 
-<ChainlinkFunctions callout="shutdown" />
-
 In the [Using Imports with Functions](/chainlink-functions/tutorials/importing-packages) tutorial, we explored the fundamentals of module imports. This tutorial will teach you how to use the Ethers library [encode](https://docs.ethers.org/v6/api/abi/abi-coder/#AbiCoder-encode) function to perform ABI encoding of several responses. Then, you will use the [ABI specifications](https://docs.soliditylang.org/en/v0.8.24/abi-spec.html) in Solidity to decode the responses in your smart contract.
 
-<Aside type="caution">
-  Users are fully responsible for any dependencies their JavaScript source code imports. Chainlink is not responsible
-  for any imported dependencies and provides no guarantees of the validity, availability or security of any libraries a
-  user chooses to import or the repositories from which these dependencies are downloaded. Developers are advised to
-  fully vet any imported dependencies or avoid dependencies altogether to avoid any risks associated with a compromised
-  library or a compromised repository from which the dependency is downloaded.
-</Aside>
+> **CAUTION**
+>
+> Users are fully responsible for any dependencies their JavaScript source code imports. Chainlink is not responsible
+> for any imported dependencies and provides no guarantees of the validity, availability or security of any libraries a
+> user chooses to import or the repositories from which these dependencies are downloaded. Developers are advised to
+> fully vet any imported dependencies or avoid dependencies altogether to avoid any risks associated with a compromised
+> library or a compromised repository from which the dependency is downloaded.
 
 ## Prerequisites
 
@@ -1994,146 +1952,7 @@ In this tutorial, you will use a different Chainlink Functions consumer contract
 
 1. [Open the FunctionsConsumerDecoder.sol contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/FunctionsConsumerDecoder.sol) in Remix.
 
-   ```sol
-   // SPDX-License-Identifier: MIT
-   pragma solidity ^0.8.20;
-
-   import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
-
-   import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
-   import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
-
-   /**
-    * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
-    * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
-    * DO NOT USE THIS CODE IN PRODUCTION.
-    */
-   contract FunctionsConsumerDecoder is FunctionsClient, ConfirmedOwner {
-     using FunctionsRequest for FunctionsRequest.Request;
-
-     bytes32 public s_lastRequestId;
-     bytes public s_lastResponse;
-     bytes public s_lastError;
-
-     uint256 public s_answer;
-     uint256 public s_updatedAt;
-     uint8 public s_decimals;
-     string public s_description;
-
-     error UnexpectedRequestID(bytes32 requestId);
-
-     event Response(bytes32 indexed requestId, bytes response, bytes err);
-
-     event DecodedResponse(
-       bytes32 indexed requestId, uint256 answer, uint256 updatedAt, uint8 decimals, string description
-     );
-
-     constructor(
-       address router
-     ) FunctionsClient(router) ConfirmedOwner(msg.sender) {}
-
-     /**
-      * @notice Send a simple request
-      * @param source JavaScript source code
-      * @param encryptedSecretsUrls Encrypted URLs where to fetch user secrets
-      * @param donHostedSecretsSlotID Don hosted secrets slotId
-      * @param donHostedSecretsVersion Don hosted secrets version
-      * @param args List of arguments accessible from within the source code
-      * @param bytesArgs Array of bytes arguments, represented as hex strings
-      * @param subscriptionId Billing ID
-      */
-     function sendRequest(
-       string memory source,
-       bytes memory encryptedSecretsUrls,
-       uint8 donHostedSecretsSlotID,
-       uint64 donHostedSecretsVersion,
-       string[] memory args,
-       bytes[] memory bytesArgs,
-       uint64 subscriptionId,
-       uint32 gasLimit,
-       bytes32 donID
-     ) external onlyOwner returns (bytes32 requestId) {
-       FunctionsRequest.Request memory req;
-       req.initializeRequestForInlineJavaScript(source);
-       if (encryptedSecretsUrls.length > 0) {
-         req.addSecretsReference(encryptedSecretsUrls);
-       } else if (donHostedSecretsVersion > 0) {
-         req.addDONHostedSecrets(donHostedSecretsSlotID, donHostedSecretsVersion);
-       }
-       if (args.length > 0) req.setArgs(args);
-       if (bytesArgs.length > 0) req.setBytesArgs(bytesArgs);
-       s_lastRequestId = _sendRequest(req.encodeCBOR(), subscriptionId, gasLimit, donID);
-       return s_lastRequestId;
-     }
-
-     /**
-      * @notice Send a pre-encoded CBOR request
-      * @param request CBOR-encoded request data
-      * @param subscriptionId Billing ID
-      * @param gasLimit The maximum amount of gas the request can consume
-      * @param donID ID of the job to be invoked
-      * @return requestId The ID of the sent request
-      */
-     function sendRequestCBOR(
-       bytes memory request,
-       uint64 subscriptionId,
-       uint32 gasLimit,
-       bytes32 donID
-     ) external onlyOwner returns (bytes32 requestId) {
-       s_lastRequestId = _sendRequest(request, subscriptionId, gasLimit, donID);
-       return s_lastRequestId;
-     }
-
-     /**
-      * @dev Internal function to process the outcome of a data request. It stores the latest response or error and updates
-      * the contract state accordingly. This function is designed to handle only one of `response` or `err` at a time, not
-      * both. It decodes the response if present and emits events to log both raw and decoded data.
-      *
-      * @param requestId The unique identifier of the request, originally returned by `sendRequest`. Used to match
-      * responses with requests.
-      * @param response The raw aggregated response data from the external source. This data is ABI-encoded and is expected
-      * to contain specific information (e.g., answer, updatedAt) if no error occurred. The function attempts to decode
-      * this data if `response` is not empty.
-      * @param err The raw aggregated error information, indicating an issue either from the user's code or within the
-      * execution of the user Chainlink Function.
-      *
-      * Emits a `DecodedResponse` event if the `response` is successfully decoded, providing detailed information about the
-      * data received.
-      * Emits a `Response` event for every call to log the raw response and error data.
-      *
-      * Requirements:
-      * - The `requestId` must match the last stored request ID to ensure the response corresponds to the latest request
-      * sent.
-      * - Only one of `response` or `err` should contain data for a given call; the other should be empty.
-      */
-     function fulfillRequest(
-       bytes32 requestId,
-       bytes memory response,
-       bytes memory err
-     ) internal override {
-       if (s_lastRequestId != requestId) {
-         revert UnexpectedRequestID(requestId);
-       }
-
-       s_lastError = err;
-       s_lastResponse = response;
-
-       if (response.length > 0) {
-         (uint256 answer, uint256 updatedAt, uint8 decimals, string memory description) =
-           abi.decode(response, (uint256, uint256, uint8, string));
-
-         s_answer = answer;
-         s_updatedAt = updatedAt;
-         s_decimals = decimals;
-         s_description = description;
-
-         emit DecodedResponse(requestId, answer, updatedAt, decimals, description);
-       }
-
-       emit Response(requestId, response, err);
-     }
-   }
-   ```
+   [Open FunctionsConsumerDecoder.sol in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/FunctionsConsumerDecoder.sol)
 
 2. Compile the contract.
 
@@ -2560,8 +2379,6 @@ contract DataDecoder {
 # Call Multiple Data Sources
 Source: https://docs.chain.link/chainlink-functions/tutorials/api-multiple-calls
 
-<ChainlinkFunctions callout="shutdown" />
-
 This tutorial shows you how make multiple API calls from your smart contract to a Decentralized Oracle Network. After [OCR](/chainlink-functions/resources/architecture) completes offchain computation and aggregation, the DON returns the asset price to your smart contract. This example returns the `BTC/USD` price.
 
 This guide assumes that you know how to build HTTP requests and how to use secrets. Read the [API query parameters](/chainlink-functions/tutorials/api-query-parameters) and [API use secrets](/chainlink-functions/tutorials/api-use-secrets) guides before you follow the example in this document.
@@ -2571,13 +2388,13 @@ To build a decentralized asset price, send a request to the DON to fetch the pri
 - [CoinGecko](https://www.coingecko.com/en/api/documentation)
 - [CoinPaprika](https://api.coinpaprika.com/)
 
-<Aside type="note">
-  Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
-  are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
-  the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
-  provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
-  Chainlink Functions account.
-</Aside>
+> **NOTE**
+>
+> Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
+> are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
+> the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
+> provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
+> Chainlink Functions account.
 
 ## Tutorial
 
@@ -2768,30 +2585,28 @@ The primary function that the script executes is `makeRequestSepolia`. This func
 # POST Data to an API
 Source: https://docs.chain.link/chainlink-functions/tutorials/api-post-data
 
-<ChainlinkFunctions callout="shutdown" />
-
 This tutorial shows you how to send a request to a Decentralized Oracle Network to call the [Countries information GraphQL API](https://trevorblades.github.io/countries/queries/continent). After [OCR](/chainlink-functions/resources/architecture) completes offchain computation and aggregation, it returns the name, capital, and currency for the specified country to your smart contract. Because the endpoint is a GraphQL API, write a function that sends a GraphQL query in a [POST HTTP method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST).
 
-<Aside type="note">
-  Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
-  are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
-  the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
-  provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
-  Chainlink Functions account.
-</Aside>
+> **NOTE**
+>
+> Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
+> are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
+> the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
+> provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
+> Chainlink Functions account.
 
-<Aside type="note" title="Maximum response size">
-  You can return any number of responses as long as they are encoded in a `bytes` response. The maximum response size
-  that you can return is 256 bytes.
-</Aside>
+> **NOTE: Maximum response size**
+>
+> You can return any number of responses as long as they are encoded in a `bytes` response. The maximum response size
+> that you can return is 256 bytes.
 
-<Aside type="caution" title="Side effects">
-  Building non-idempotent requests, such as sending an email or storing data on the cloud, is currently not recommended.
-  An HTTP method is idempotent if the intended effect on the server when you make a single request is the same as the
-  effect when you make several identical requests. Each oracle node runs the same computation in the [Offchain Reporting
-  protocol](/architecture-overview/off-chain-reporting). If your Chainlink Function makes non-idempotent requests, it
-  will cause redundant requests such as sending multiple emails or storing the same data multiple times.
-</Aside>
+> **CAUTION: Side effects**
+>
+> Building non-idempotent requests, such as sending an email or storing data on the cloud, is currently not recommended.
+> An HTTP method is idempotent if the intended effect on the server when you make a single request is the same as the
+> effect when you make several identical requests. Each oracle node runs the same computation in the [Offchain Reporting
+> protocol](/architecture-overview/off-chain-reporting). If your Chainlink Function makes non-idempotent requests, it
+> will cause redundant requests such as sending multiple emails or storing the same data multiple times.
 
 ## Tutorial
 
@@ -2993,17 +2808,15 @@ The primary function that the script executes is `makeRequestSepolia`. This func
 # Call an API with HTTP Query Parameters
 Source: https://docs.chain.link/chainlink-functions/tutorials/api-query-parameters
 
-<ChainlinkFunctions callout="shutdown" />
-
 This tutorial shows you how to send a request to a Decentralized Oracle Network to call the [Cryptocompare GET /data/pricemultifull API](https://min-api.cryptocompare.com/documentation?key=Price\&cat=multipleSymbolsFullPriceEndpoint). After [OCR](/chainlink-functions/resources/architecture) completes offchain computation and aggregation, it returns the asset price for ETH/USD to your smart contract. This guide also shows you how to configure HTTP query parameters to request different asset prices.
 
-<Aside type="note">
-  Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
-  are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
-  the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
-  provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
-  Chainlink Functions account.
-</Aside>
+> **NOTE**
+>
+> Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
+> are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
+> the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
+> provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
+> Chainlink Functions account.
 
 ## Tutorial
 
@@ -3106,7 +2919,6 @@ curl -X 'GET' \
 
 The response should be similar to the following example:
 
-
 ```json
 {
   "RAW": {
@@ -3191,8 +3003,6 @@ The primary function that the script executes is `makeRequestSepolia`. This func
 # Using User-hosted (gist) Secrets in Requests
 Source: https://docs.chain.link/chainlink-functions/tutorials/api-use-secrets-gist
 
-<ChainlinkFunctions callout="shutdown" />
-
 This tutorial shows you how to send a request to a Decentralized Oracle Network to call the [Coinmarketcap API](https://coinmarketcap.com/api/documentation/v1/). After [OCR](/chainlink-functions/resources/architecture) completes offchain computation and aggregation, it returns the `BTC/USD` asset price to your smart contract. Because the API requires you to provide an API key, this guide will also show you how to encrypt, sign your API key, and share the encrypted secret offchain with a Decentralized Oracle Network (DON).
 
 The encrypted secrets are never stored onchain. This tutorial uses the threshold encryption feature. The encrypted secrets are stored by the user as [gists](https://docs.github.com/en/get-started/writing-on-github/editing-and-sharing-content-with-gists/creating-gists). Read the [Secrets Management page](/chainlink-functions/resources/secrets) to learn more.
@@ -3203,13 +3013,13 @@ Read the [Using Secrets in Requests](/chainlink-functions/tutorials/api-use-secr
 2. Encrypt the gist URL.
 3. Include the encrypted gist URL in your Chainlink Functions request.
 
-<Aside type="note">
-  Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
-  are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
-  the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
-  provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
-  Chainlink Functions account.
-</Aside>
+> **NOTE**
+>
+> Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
+> are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
+> the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
+> provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
+> Chainlink Functions account.
 
 ## Tutorial
 
@@ -3374,8 +3184,6 @@ The primary function that the script executes is `makeRequestSepolia`. This func
 # Using User-hosted Secrets in Requests
 Source: https://docs.chain.link/chainlink-functions/tutorials/api-use-secrets-offchain
 
-<ChainlinkFunctions callout="shutdown" />
-
 This tutorial shows you how to send a request to a Decentralized Oracle Network to call the [Coinmarketcap API](https://coinmarketcap.com/api/documentation/v1/). After [OCR](/chainlink-functions/resources/architecture) completes offchain computation and aggregation, it returns the `BTC/USD` asset price to your smart contract. Because the API requires you to provide an API key, this guide will also show you how to encrypt, sign your API key, and share the encrypted secret offchain with a Decentralized Oracle Network (DON).
 
 The encrypted secrets are never stored onchain. This tutorial uses the threshold decryption feature. This tutorial shows you how to share encrypted secrets offchain with a Decentralized Oracle Network (DON) using a storage platform such as AWS S3, Google Drive, IPFS, or any other service where the DON can fetch secrets via HTTP. Read the [Secrets Management page](/chainlink-functions/resources/secrets) to learn more.
@@ -3388,13 +3196,13 @@ Read the [Using User-hosted (gist) Secrets in Requests](/chainlink-functions/tut
 4. Encrypt the S3 HTTPs URL .
 5. Include the encrypted URL in your Chainlink Functions request.
 
-<Aside type="note">
-  Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
-  are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
-  the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
-  provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
-  Chainlink Functions account.
-</Aside>
+> **NOTE**
+>
+> Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
+> are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
+> the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
+> provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
+> Chainlink Functions account.
 
 ## Tutorial
 
@@ -3614,19 +3422,17 @@ The primary function that the script executes is `makeRequestSepolia`. This func
 # Using DON-hosted Secrets in Requests
 Source: https://docs.chain.link/chainlink-functions/tutorials/api-use-secrets
 
-<ChainlinkFunctions callout="shutdown" />
-
 This tutorial shows you how to send a request to a Decentralized Oracle Network to call the [Coinmarketcap API](https://coinmarketcap.com/api/documentation/v1/). After [OCR](/chainlink-functions/resources/architecture) completes offchain computation and aggregation, it returns the `BTC/USD` asset price to your smart contract. Because the API requires you to provide an API key, this guide will also show you how to encrypt, sign your API key, and share the encrypted secret with a Decentralized Oracle Network (DON).
 
 The encrypted secrets are never stored onchain. This tutorial uses the threshold encryption feature. The encrypted secrets are stored with the DON. Read the [Secrets Management page](/chainlink-functions/resources/secrets) to learn more.
 
-<Aside type="note">
-  Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
-  are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
-  the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
-  provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
-  Chainlink Functions account.
-</Aside>
+> **NOTE**
+>
+> Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
+> are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
+> the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
+> provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
+> Chainlink Functions account.
 
 ## Tutorial
 
@@ -3745,7 +3551,6 @@ curl -X 'GET' \
 
 The response should be similar to the following example:
 
-
 ```json
 {
   ...,
@@ -3848,21 +3653,19 @@ The primary function that the script executes is `makeRequestSepolia`. This func
 # Automate your Functions (Custom Logic Automation)
 Source: https://docs.chain.link/chainlink-functions/tutorials/automate-functions-custom-logic
 
-<ChainlinkFunctions callout="shutdown" />
-
 This tutorial shows you how to use [Chainlink Automation](/chainlink-automation) to automate your Chainlink Functions. Automation is essential when you want to trigger the same function regularly, such as fetching weather data daily or fetching an asset price on every block.
 
 Read the [Automate your Functions (Time-based Automation)](/chainlink-functions/tutorials/automate-functions) tutorial before you follow the steps in this example. This tutorial explains how to trigger your functions using an [Automation compatible contract](/chainlink-automation/guides/compatible-contracts).
 
 After you deploy and set up your contract, Chainlink Automation triggers your function on every block.
 
-<Aside type="note">
-  Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
-  are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
-  the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
-  provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
-  Chainlink Functions account.
-</Aside>
+> **NOTE**
+>
+> Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
+> are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
+> the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
+> provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
+> Chainlink Functions account.
 
 ## Tutorial
 
@@ -3884,139 +3687,17 @@ You can locate the scripts used in this tutorial in the [*examples/10-automate-f
 
 ### Deploy a Custom Automated Functions Consumer contract
 
-<Aside type="caution">
-  When using Chainlink Automation, developers should be mindful of the risks of Automation attempting to perform upkeeps
-  indefinitely if a previous upkeep fails to update due to reversion. To learn more, read the [Automation best
-  practices](/chainlink-automation/concepts/best-practice).
-</Aside>
+> **CAUTION**
+>
+> When using Chainlink Automation, developers should be mindful of the risks of Automation attempting to perform upkeeps
+> indefinitely if a previous upkeep fails to update due to reversion. To learn more, read the [Automation best
+> practices](/chainlink-automation/concepts/best-practice).
 
 The consumer contract for Custom Automated Functions is different from the consumer in other tutorials. Deploy the `CustomAutomatedFunctionsConsumerExample` contract on *Ethereum Sepolia*:
 
 1. Open the [CustomAutomatedFunctionsConsumerExample.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/CustomAutomatedFunctionsConsumerExample.sol) in Remix.
 
-   ```sol
-   // SPDX-License-Identifier: MIT
-   pragma solidity ^0.8.20;
-
-   import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
-   import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
-
-   import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
-   import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
-
-   /**
-    * @title Functions contract used for Automation.
-    * @notice This contract is a demonstration of using Functions and Automation.
-    * @notice NOT FOR PRODUCTION USE
-    */
-   contract CustomAutomatedFunctionsConsumerExample is FunctionsClient, AutomationCompatibleInterface, ConfirmedOwner {
-     uint256 public lastBlockNumber;
-     bytes public request;
-     uint64 public subscriptionId;
-     uint32 public gasLimit;
-     bytes32 public donID;
-     bytes32 public s_lastRequestId;
-     bytes public s_lastResponse;
-     bytes public s_lastError;
-     uint256 public s_upkeepCounter;
-     uint256 public s_requestCounter;
-     uint256 public s_responseCounter;
-
-     error UnexpectedRequestID(bytes32 requestId);
-
-     event Response(bytes32 indexed requestId, bytes response, bytes err);
-     event RequestRevertedWithErrorMsg(string reason);
-     event RequestRevertedWithoutErrorMsg(bytes data);
-
-     constructor(
-       address router
-     ) FunctionsClient(router) ConfirmedOwner(msg.sender) {}
-
-     /**
-      * @notice Checks if upkeep is needed based on the difference between the current and the last block number.
-      * @dev This function checks if the current block number has incremented since the last recorded block number and
-      * returns a boolean indicating if upkeep is needed.
-      * @return upkeepNeeded A boolean indicating if upkeep is needed (true if the current block number has incremented
-      * since the last recorded block number).
-      * @return performData An empty bytes value since no additional data is needed for the upkeep in this implementation.
-      */
-     function checkUpkeep(
-       bytes calldata /* checkData */
-     ) external view override returns (bool upkeepNeeded, bytes memory performData) {
-       upkeepNeeded = block.number - lastBlockNumber > 0; // Check if the current block number has incremented since the
-       // last recorded block number
-       // We don't use the checkData in this example. The checkData is defined when the Upkeep was registered.
-       return (upkeepNeeded, ""); // Return an empty bytes value for performData
-     }
-
-     /**
-      * @notice Send a pre-encoded CBOR request if the current block number has incremented since the last recorded block
-      * number.
-      */
-     function performUpkeep(
-       bytes calldata /* performData */
-     ) external override {
-       if (block.number - lastBlockNumber > 0) {
-         lastBlockNumber = block.number;
-         s_upkeepCounter = s_upkeepCounter + 1;
-         try i_router.sendRequest(
-           subscriptionId, request, FunctionsRequest.REQUEST_DATA_VERSION, gasLimit, donID
-         ) returns (
-           bytes32 requestId
-         ) {
-           s_lastRequestId = requestId;
-           s_requestCounter = s_requestCounter + 1;
-           emit RequestSent(requestId);
-         } catch Error(string memory reason) {
-           emit RequestRevertedWithErrorMsg(reason);
-         } catch (bytes memory data) {
-           emit RequestRevertedWithoutErrorMsg(data);
-         }
-       }
-       // We don't use the performData in this example. The performData is generated by the Automation Node's call to your
-       // checkUpkeep function
-     }
-
-     /// @notice Update the request settings
-     /// @dev Only callable by the owner of the contract
-     /// @param _request The new encoded CBOR request to be set. The request is encoded offchain
-     /// @param _subscriptionId The new subscription ID to be set
-     /// @param _gasLimit The new gas limit to be set
-     /// @param _donID The new job ID to be set
-     function updateRequest(
-       bytes memory _request,
-       uint64 _subscriptionId,
-       uint32 _gasLimit,
-       bytes32 _donID
-     ) external onlyOwner {
-       request = _request;
-       subscriptionId = _subscriptionId;
-       gasLimit = _gasLimit;
-       donID = _donID;
-     }
-
-     /**
-      * @notice Store latest result/error
-      * @param requestId The request ID, returned by sendRequest()
-      * @param response Aggregated response from the user code
-      * @param err Aggregated error from the user code or from the execution pipeline
-      * Either response or error parameter will be set, but never both
-      */
-     function fulfillRequest(
-       bytes32 requestId,
-       bytes memory response,
-       bytes memory err
-     ) internal override {
-       if (s_lastRequestId != requestId) {
-         revert UnexpectedRequestID(requestId);
-       }
-       s_lastResponse = response;
-       s_lastError = err;
-       s_responseCounter = s_responseCounter + 1;
-       emit Response(requestId, s_lastResponse, s_lastError);
-     }
-   }
-   ```
+   [Open CustomAutomatedFunctionsConsumerExample.sol in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/CustomAutomatedFunctionsConsumerExample.sol)
 
 2. Compile the contract.
 
@@ -4064,18 +3745,22 @@ You can leave the other settings at their default values for the example in this
 
 At this stage, your Functions consumer contract is configured to get the median Bitcoin price on every block.
 
-<Aside type="note" title="Monitor your balances">
-  There are two balances that you must monitor:
-
-  - Your subscription balance: Your balance will be charged each time your Chainlink Functions is fulfilled. If your balance is insufficient, your contract cannot send requests. Automating your Chainlink Functions means they will be regularly triggered, so monitor and fund your subscription account regularly. You can check your subscription details (including the balance in LINK) in the [Chainlink Functions Subscription Manager](/chainlink-functions/resources/subscriptions).
-  - Your upkeep balance: You can check this balance on the [Chainlink Automation App](https://automation.chain.link/). The upkeep balance pays Chainlink Automation Network to send your requests according to your provided time interval. Chainlink Automation will not trigger your requests if your upkeep balance runs low.
-</Aside>
+> **NOTE: Monitor your balances**
+>
+> There are two balances that you must monitor:
+>
+> - Your subscription balance: Your balance will be charged each time your Chainlink Functions is fulfilled. If your balance is insufficient, your contract cannot send requests. Automating your Chainlink Functions means they will be regularly triggered, so monitor and fund your subscription account regularly. You can check your subscription details (including the balance in LINK) in the [Chainlink Functions Subscription Manager](/chainlink-functions/resources/subscriptions).
+> - Your upkeep balance: You can check this balance on the [Chainlink Automation App](https://automation.chain.link/). The upkeep balance pays Chainlink Automation Network to send your requests according to your provided time interval. Chainlink Automation will not trigger your requests if your upkeep balance runs low.
 
 ### Check Result
 
 Go to the [Chainlink Automation App](https://automation.chain.link/) and connect to the Sepolia testnet. Your upkeep will be listed under *My upkeeps*:
 
+![Image](/images/chainlink-functions/tutorials/automation/cl-automation-custom-home.jpg)
+
 Click on your upkeep to fetch de details:
+
+![Image](/images/chainlink-functions/tutorials/automation/myupkeep-details-custom.jpg)
 
 On your terminal, run the [readLatest](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/readLatest.js) to read the latest received response:
 
@@ -4125,8 +3810,6 @@ The JavaScript code is similar to the one used in the [Automate your Functions (
 # Automate your Functions (Time-based Automation)
 Source: https://docs.chain.link/chainlink-functions/tutorials/automate-functions
 
-<ChainlinkFunctions callout="shutdown" />
-
 This tutorial shows you how to use [Chainlink Automation](/chainlink-automation) to automate your Chainlink Functions. Automation is essential when you want to trigger the same function regularly, such as fetching weather data daily or fetching an asset price on every block.
 
 Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls) tutorial before you follow the steps in this example. This tutorial uses the same example but with an important difference:
@@ -4135,13 +3818,13 @@ Read the [API multiple calls](/chainlink-functions/tutorials/api-multiple-calls)
 
   After you deploy and set up your contract, Chainlink Automation triggers your function according to a time schedule.
 
-<Aside type="note">
-  Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
-  are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
-  the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
-  provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
-  Chainlink Functions account.
-</Aside>
+> **NOTE**
+>
+> Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
+> are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
+> the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
+> provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
+> Chainlink Functions account.
 
 ## Tutorial
 
@@ -4167,102 +3850,7 @@ The consumer contract for Automated Functions is different from the consumer in 
 
 1. Open the [AutomatedFunctionsConsumerExample.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/AutomatedFunctionsConsumerExample.sol) in Remix.
 
-   ```sol
-   // SPDX-License-Identifier: MIT
-   pragma solidity ^0.8.20;
-
-   import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
-   import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
-
-   /**
-    * @title Functions contract used for Automation.
-    * @notice This contract is a demonstration of using Functions and Automation.
-    * @notice You may need to add a Forwarder for additional security.
-    * @notice NOT FOR PRODUCTION USE
-    */
-   contract AutomatedFunctionsConsumerExample is FunctionsClient, ConfirmedOwner {
-     address public upkeepContract;
-     bytes public request;
-     uint64 public subscriptionId;
-     uint32 public gasLimit;
-     bytes32 public donID;
-     bytes32 public s_lastRequestId;
-     bytes public s_lastResponse;
-     bytes public s_lastError;
-
-     error NotAllowedCaller(address caller, address owner, address automationRegistry);
-     error UnexpectedRequestID(bytes32 requestId);
-
-     event Response(bytes32 indexed requestId, bytes response, bytes err);
-
-     constructor(
-       address router
-     ) FunctionsClient(router) ConfirmedOwner(msg.sender) {}
-
-     /**
-      * @notice Reverts if called by anyone other than the contract owner or automation registry.
-      */
-     modifier onlyAllowed() {
-       if (msg.sender != owner() && msg.sender != upkeepContract) {
-         revert NotAllowedCaller(msg.sender, owner(), upkeepContract);
-       }
-       _;
-     }
-
-     function setAutomationCronContract(
-       address _upkeepContract
-     ) external onlyOwner {
-       upkeepContract = _upkeepContract;
-     }
-
-     /// @notice Update the request settings
-     /// @dev Only callable by the owner of the contract
-     /// @param _request The new encoded CBOR request to be set. The request is encoded offchain
-     /// @param _subscriptionId The new subscription ID to be set
-     /// @param _gasLimit The new gas limit to be set
-     /// @param _donID The new job ID to be set
-     function updateRequest(
-       bytes memory _request,
-       uint64 _subscriptionId,
-       uint32 _gasLimit,
-       bytes32 _donID
-     ) external onlyOwner {
-       request = _request;
-       subscriptionId = _subscriptionId;
-       gasLimit = _gasLimit;
-       donID = _donID;
-     }
-
-     /**
-      * @notice Send a pre-encoded CBOR request
-      * @return requestId The ID of the sent request
-      */
-     function sendRequestCBOR() external onlyAllowed returns (bytes32 requestId) {
-       s_lastRequestId = _sendRequest(request, subscriptionId, gasLimit, donID);
-       return s_lastRequestId;
-     }
-
-     /**
-      * @notice Store latest result/error
-      * @param requestId The request ID, returned by sendRequest()
-      * @param response Aggregated response from the user code
-      * @param err Aggregated error from the user code or from the execution pipeline
-      * Either response or error parameter will be set, but never both
-      */
-     function fulfillRequest(
-       bytes32 requestId,
-       bytes memory response,
-       bytes memory err
-     ) internal override {
-       if (s_lastRequestId != requestId) {
-         revert UnexpectedRequestID(requestId);
-       }
-       s_lastResponse = response;
-       s_lastError = err;
-       emit Response(requestId, s_lastResponse, s_lastError);
-     }
-   }
-   ```
+   [Open AutomatedFunctionsConsumerExample.sol in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/AutomatedFunctionsConsumerExample.sol)
 
 2. Compile the contract.
 
@@ -4296,12 +3884,14 @@ The consumer contract that you deployed is designed to be used with a **time-bas
 You can leave the other settings at their default values for the example in this tutorial.
 **Note**: After creation, check your upkeep details and note the address of the upkeep contract. The upkeep contract is responsible for calling your Functions consumer contract at regular times intervals.
 
-<Aside type="note" title="Monitor your balances">
-  There are two balances that you must monitor:
+![Register Functions consumer with automation scheduler](/images/chainlink-functions/tutorials/automation/automation-register-scheduler.jpg)
 
-  - Your subscription balance: Your balance will be charged each time your Chainlink Functions is fulfilled. If your balance is insufficient, your contract cannot send requests. Automating your Chainlink Functions means they will be regularly triggered, so monitor and fund your subscription account regularly. You can check your subscription details (including the balance in LINK) in the [Chainlink Functions Subscription Manager](/chainlink-functions/resources/subscriptions).
-  - Your upkeep balance: You can check this balance on the [Chainlink Automation App](https://automation.chain.link/). The upkeep balance pays Chainlink Automation Network to send your requests according to your provided time interval. Chainlink Automation will not trigger your requests if your upkeep balance runs low.
-</Aside>
+> **NOTE: Monitor your balances**
+>
+> There are two balances that you must monitor:
+>
+> - Your subscription balance: Your balance will be charged each time your Chainlink Functions is fulfilled. If your balance is insufficient, your contract cannot send requests. Automating your Chainlink Functions means they will be regularly triggered, so monitor and fund your subscription account regularly. You can check your subscription details (including the balance in LINK) in the [Chainlink Functions Subscription Manager](/chainlink-functions/resources/subscriptions).
+> - Your upkeep balance: You can check this balance on the [Chainlink Automation App](https://automation.chain.link/). The upkeep balance pays Chainlink Automation Network to send your requests according to your provided time interval. Chainlink Automation will not trigger your requests if your upkeep balance runs low.
 
 ### Configure your Consumer contract
 
@@ -4362,7 +3952,11 @@ At this stage, your Functions consumer contract is configured to get the median 
 
 Go to the [Chainlink Automation App](https://automation.chain.link/) and connect to the Sepolia testnet. Your upkeep will be listed under *My upkeeps*:
 
+![Image](/images/chainlink-functions/tutorials/automation/cl-automation-home.jpg)
+
 Click on your upkeep to fetch de details:
+
+![Image](/images/chainlink-functions/tutorials/automation/myupkeep-details.jpg)
 
 As you can see in the *History* table, the upkeep is running every 15 minutes.
 On your terminal, run the [readLatest](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/readLatest.js) script to read the latest received response:
@@ -4474,8 +4068,6 @@ The primary function that the script executes is `readLatest`. This function can
 # Encode request data offchain
 Source: https://docs.chain.link/chainlink-functions/tutorials/encode-request-offchain
 
-<ChainlinkFunctions callout="shutdown" />
-
 This tutorial shows you how make multiple API calls from your smart contract to a Decentralized Oracle Network. After [OCR](/chainlink-functions/resources/architecture) completes offchain computation and aggregation, the DON returns the asset price to your smart contract. This example returns the `BTC/USD` price.
 
 This guide assumes that you know how to build HTTP requests and how to use secrets. Read the [API query parameters](/chainlink-functions/tutorials/api-query-parameters) and [API use secrets](/chainlink-functions/tutorials/api-use-secrets) guides before you follow the example in this document.
@@ -4489,13 +4081,13 @@ Read the [Call Multiple Data Sources](/chainlink-functions/tutorials/api-multipl
 
 - Instead of sending the request data (source code, encrypted secrets reference, and arguments) in the request, you will first encode it offchain and then send the encoded request. Encoding the request offchain from your front end or a server rather than onchain from your smart contract. This helps save gas.
 
-<Aside type="note">
-  Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
-  are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
-  the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
-  provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
-  Chainlink Functions account.
-</Aside>
+> **NOTE**
+>
+> Chainlink Functions is a self-service solution. You must ensure that the data sources or APIs specified in requests
+> are of sufficient quality and have the proper availability for your use case. You are responsible for complying with
+> the licensing agreements for all data providers that you connect with through Chainlink Functions. Violations of data
+> provider licensing agreements or the [terms](https://chain.link/terms) can result in suspension or termination of your
+> Chainlink Functions account.
 
 ## Tutorial
 
@@ -4653,8 +4245,6 @@ The primary function that the script executes is `makeRequestSepolia`. This func
 # Using Imports with Functions
 Source: https://docs.chain.link/chainlink-functions/tutorials/importing-packages
 
-<ChainlinkFunctions callout="shutdown" />
-
 This tutorial demonstrates how to import modules and use them with your Functions source code. Modules that are imported into Functions source code must meet the following requirements:
 
 - Each import must be 10 MB or less in size.
@@ -4690,13 +4280,13 @@ This tutorial demonstrates how to import modules and use them with your Function
 
 - Imported modules abide by all sandbox restrictions and do not have access to the file system, environment variables, or any other Deno permissions.
 
-<Aside type="caution">
-  Users are fully responsible for any dependencies their JavaScript source code imports. Chainlink is not responsible
-  for any imported dependencies and provides no guarantees of the validity, availability or security of any libraries a
-  user chooses to import or the repositories from which these dependencies are downloaded. Developers are advised to
-  fully vet any imported dependencies or avoid dependencies altogether to avoid any risks associated with a compromised
-  library or a compromised repository from which the dependency is downloaded.
-</Aside>
+> **CAUTION**
+>
+> Users are fully responsible for any dependencies their JavaScript source code imports. Chainlink is not responsible
+> for any imported dependencies and provides no guarantees of the validity, availability or security of any libraries a
+> user chooses to import or the repositories from which these dependencies are downloaded. Developers are advised to
+> fully vet any imported dependencies or avoid dependencies altogether to avoid any risks associated with a compromised
+> library or a compromised repository from which the dependency is downloaded.
 
 ## Tutorial
 
@@ -4864,13 +4454,11 @@ The primary function that the script executes is `makeRequestSepolia`. This func
 # Chainlink Functions Tutorials
 Source: https://docs.chain.link/chainlink-functions/tutorials
 
-<ChainlinkFunctions callout="shutdown" />
-
-<Aside type="note" title="Explore Chainlink Functions Playground">
-  Start exploring Chainlink Functions in your browser using the [Chainlink Functions
-  Playground](https://functions.chain.link/playground). You can use the playground to simulate Chainlink Functions, call
-  APIs, and execute demo requests.
-</Aside>
+> **NOTE: Explore Chainlink Functions Playground**
+>
+> Start exploring Chainlink Functions in your browser using the [Chainlink Functions
+> Playground](https://functions.chain.link/playground). You can use the playground to simulate Chainlink Functions, call
+> APIs, and execute demo requests.
 
 ## Topics
 
@@ -4891,8 +4479,6 @@ Source: https://docs.chain.link/chainlink-functions/tutorials
 
 # Request Computation
 Source: https://docs.chain.link/chainlink-functions/tutorials/simple-computation
-
-<ChainlinkFunctions callout="shutdown" />
 
 This tutorial shows you how to run computations on the Chainlink Functions Decentralized Oracle Network (DON). The example code computes the [geometric mean](https://www.mathsisfun.com/numbers/geometric-mean.html) of numbers in a list. After [OCR](/chainlink-functions/resources/concepts) completes offchain computation and aggregation, it returns the result to your smart contract.
 
