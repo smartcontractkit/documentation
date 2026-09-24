@@ -21,28 +21,31 @@ interface JourneyTabGridProps {
 }
 
 // Product filter options
+// "All Products" stays first; products are sorted alphabetically by label
 const PRODUCT_FILTERS = [
   { label: "All Products", value: "all" },
-  { label: "Automation", value: "automation" },
-  { label: "CCIP", value: "ccip" },
-  { label: "CRE", value: "cre" },
-  { label: "DataLink", value: "datalink" },
-  { label: "Data Feeds", value: "data feeds" },
-  { label: "Data Streams", value: "data streams" },
-  { label: "DTA", value: "dta" },
-  { label: "VRF", value: "vrf" },
+  ...[
+    { label: "ACE", value: "ace" },
+    { label: "CCIP", value: "ccip" },
+    { label: "CRE", value: "cre" },
+    { label: "CRE Connect", value: "cre connect" },
+    { label: "Data Feeds", value: "data feeds" },
+    { label: "Data Streams", value: "data streams" },
+    { label: "DataLink", value: "datalink" },
+    { label: "DTA", value: "dta" },
+  ].sort((a, b) => a.label.localeCompare(b.label, "en", { sensitivity: "base" })),
 ]
 
 // Validate badge values against expected product types
 const VALID_BADGE_VALUES = new Set([
-  "automation",
+  "ace",
   "ccip",
   "cre",
+  "cre connect",
   "datalink",
   "data feeds",
   "data streams",
   "dta",
-  "vrf",
 ])
 
 function validateBadge(badge: string): boolean {
