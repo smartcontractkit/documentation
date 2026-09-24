@@ -95,7 +95,9 @@ Each guide lists the tools and requirements you need to complete it.
 
 ## Answer precision
 
-All feeds are stored at `18` decimal places and are typically returned at `18` decimal places. In some instances, Chainlink approves the serving of a reduced precision for certain feeds. In this case, you can pass the precision as a parameter when requesting a feed from the proxy.
+All feeds are stored at `18` decimal places and are typically returned at `18` decimal places. The `decimals` parameter is required when you call `latest_round` or `get_round` on the proxy. You should pass `18` unless a feed is explicitly served at a reduced precision.
+
+In some instances, Chainlink approves the serving of a reduced precision for certain feeds. In this case, you can pass that reduced precision as the `decimals` parameter when requesting a feed from the proxy.
 
 The precision is truncated, so if an `18`-decimal feed is requested at `8` decimal places, the answer is truncated (rounded down). Factor this into your calculations. If you need to control the precision yourself, request the feed at `18` decimal places and override the precision in your application.
 
