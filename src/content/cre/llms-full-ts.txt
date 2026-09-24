@@ -299,7 +299,7 @@ The mechanism by which a DON comes to a single, reliable, and tamper-proof resul
 
 # Service Quotas
 Source: https://docs.chain.link/cre/service-quotas
-Last Updated: 2026-05-26
+Last Updated: 2026-09-16
 
 This page documents the service quotas for Chainlink Runtime Environment (CRE) workflows.
 
@@ -338,7 +338,7 @@ These quotas apply to each workflow owner (user account) within an organization.
 
 | Quota Key                                                                                                                                              | Description                                                 | Value |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- | ----- |
-| <a href="#perowner-workflowexecutionconcurrencylimit" id="perowner-workflowexecutionconcurrencylimit">`PerOwner.WorkflowExecutionConcurrencyLimit`</a> | Maximum number of workflows that can execute simultaneously | 5     |
+| <a href="#perowner-workflowexecutionconcurrencylimit" id="perowner-workflowexecutionconcurrencylimit">`PerOwner.WorkflowExecutionConcurrencyLimit`</a> | Maximum number of workflows that can execute simultaneously | 200   |
 | <a href="#perowner-vaultsecretslimit" id="perowner-vaultsecretslimit">`PerOwner.VaultSecretsLimit`</a>                                                 | Maximum number of secrets that can be stored per owner      | 100   |
 
 <Aside type="note" title="Quota enforcement">
@@ -368,7 +368,7 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                               | Description                                                     | Value     |
 | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | --------- |
-| <a href="#perworkflow-executionconcurrencylimit" id="perworkflow-executionconcurrencylimit">`PerWorkflow.ExecutionConcurrencyLimit`</a> | Maximum number of concurrent executions for a specific workflow | 10        |
+| <a href="#perworkflow-executionconcurrencylimit" id="perworkflow-executionconcurrencylimit">`PerWorkflow.ExecutionConcurrencyLimit`</a> | Maximum number of concurrent executions for a specific workflow | 50        |
 | <a href="#perworkflow-executiontimeout" id="perworkflow-executiontimeout">`PerWorkflow.ExecutionTimeout`</a>                            | Maximum total execution time for a single workflow run          | 5 minutes |
 | <a href="#perworkflow-wasmmemorylimit" id="perworkflow-wasmmemorylimit">`PerWorkflow.WASMMemoryLimit`</a>                               | Maximum memory allocated to a workflow                          | 100 MB    |
 | <a href="#perworkflow-executionresponselimit" id="perworkflow-executionresponselimit">`PerWorkflow.ExecutionResponseLimit`</a>          | Maximum size of the data a workflow can return                  | 100 KB    |
@@ -394,7 +394,7 @@ These quotas apply to each individual workflow.
 | Quota Key                                                                                                                                              | Description                                                      | Value |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- | ----- |
 | <a href="#perworkflow-consensus-observationsizelimit" id="perworkflow-consensus-observationsizelimit">`PerWorkflow.Consensus.ObservationSizeLimit`</a> | Maximum size of data that can be passed to consensus aggregation | 25 KB |
-| <a href="#perworkflow-consensus-calllimit" id="perworkflow-consensus-calllimit">`PerWorkflow.Consensus.CallLimit`</a>                                  | Maximum number of consensus calls per workflow execution         | 20    |
+| <a href="#perworkflow-consensus-calllimit" id="perworkflow-consensus-calllimit">`PerWorkflow.Consensus.CallLimit`</a>                                  | Maximum number of consensus calls per workflow execution         | 50    |
 
 ### Logging quotas
 
@@ -420,7 +420,7 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                   | Description                                    | Value                                  |
 | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------------- |
-| <a href="#perworkflow-httptrigger-ratelimit" id="perworkflow-httptrigger-ratelimit">`PerWorkflow.HTTPTrigger.RateLimit`</a> | Maximum rate at which an HTTP trigger can fire | Rate: 1 per 60 seconds <br /> Burst: 1 |
+| <a href="#perworkflow-httptrigger-ratelimit" id="perworkflow-httptrigger-ratelimit">`PerWorkflow.HTTPTrigger.RateLimit`</a> | Maximum rate at which an HTTP trigger can fire | Rate: 1 per 30 seconds <br /> Burst: 1 |
 
 ### EVM log trigger
 
@@ -435,11 +435,11 @@ These quotas apply to each individual workflow.
 
 ### EVM write capability
 
-| Quota Key                                                                                                                                                          | Description                                               | Value     |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- | --------- |
-| <a href="#perworkflow-chainwrite-targetslimit" id="perworkflow-chainwrite-targetslimit">`PerWorkflow.ChainWrite.TargetsLimit`</a>                                  | Maximum number of destination chains for write operations | 10        |
-| <a href="#perworkflow-chainwrite-reportsizelimit" id="perworkflow-chainwrite-reportsizelimit">`PerWorkflow.ChainWrite.ReportSizeLimit`</a>                         | Maximum size of a report payload                          | 5 KB      |
-| <a href="#perworkflow-chainwrite-evm-transactiongaslimit" id="perworkflow-chainwrite-evm-transactiongaslimit">`PerWorkflow.ChainWrite.EVM.TransactionGasLimit`</a> | Gas quota per EVM transaction                             | 5,000,000 |
+| Quota Key                                                                                                                                                          | Description                                               | Value      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- | ---------- |
+| <a href="#perworkflow-chainwrite-targetslimit" id="perworkflow-chainwrite-targetslimit">`PerWorkflow.ChainWrite.TargetsLimit`</a>                                  | Maximum number of destination chains for write operations | 10         |
+| <a href="#perworkflow-chainwrite-reportsizelimit" id="perworkflow-chainwrite-reportsizelimit">`PerWorkflow.ChainWrite.ReportSizeLimit`</a>                         | Maximum size of a report payload                          | 50 KB      |
+| <a href="#perworkflow-chainwrite-evm-transactiongaslimit" id="perworkflow-chainwrite-evm-transactiongaslimit">`PerWorkflow.ChainWrite.EVM.TransactionGasLimit`</a> | Gas quota per EVM transaction                             | 10,000,000 |
 
 ### EVM read capability
 
@@ -453,20 +453,20 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                                        | Description                                            | Value      |
 | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ | ---------- |
-| <a href="#perworkflow-httpaction-calllimit" id="perworkflow-httpaction-calllimit">`PerWorkflow.HTTPAction.CallLimit`</a>                         | Maximum number of HTTP requests per workflow execution | 5          |
-| <a href="#perworkflow-httpaction-responsesizelimit" id="perworkflow-httpaction-responsesizelimit">`PerWorkflow.HTTPAction.ResponseSizeLimit`</a> | Maximum size of an HTTP response                       | 100 KB     |
+| <a href="#perworkflow-httpaction-calllimit" id="perworkflow-httpaction-calllimit">`PerWorkflow.HTTPAction.CallLimit`</a>                         | Maximum number of HTTP requests per workflow execution | 15         |
+| <a href="#perworkflow-httpaction-responsesizelimit" id="perworkflow-httpaction-responsesizelimit">`PerWorkflow.HTTPAction.ResponseSizeLimit`</a> | Maximum size of an HTTP response                       | 250 KB     |
 | <a href="#perworkflow-httpaction-connectiontimeout" id="perworkflow-httpaction-connectiontimeout">`PerWorkflow.HTTPAction.ConnectionTimeout`</a> | Maximum time to establish an HTTP connection           | 10 seconds |
-| <a href="#perworkflow-httpaction-requestsizelimit" id="perworkflow-httpaction-requestsizelimit">`PerWorkflow.HTTPAction.RequestSizeLimit`</a>    | Maximum size of an HTTP request payload                | 10 KB      |
+| <a href="#perworkflow-httpaction-requestsizelimit" id="perworkflow-httpaction-requestsizelimit">`PerWorkflow.HTTPAction.RequestSizeLimit`</a>    | Maximum size of an HTTP request payload                | 120 KB     |
 | <a href="#perworkflow-httpaction-cacheagelimit" id="perworkflow-httpaction-cacheagelimit">`PerWorkflow.HTTPAction.CacheAgeLimit`</a>             | Maximum time HTTP responses can be cached              | 10 minutes |
 
 ### Confidential HTTP capability
 
 | Quota Key                                                                                                                                                          | Description                                                         | Value      |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- | ---------- |
-| <a href="#perworkflow-confidentialhttp-calllimit" id="perworkflow-confidentialhttp-calllimit">`PerWorkflow.ConfidentialHTTP.CallLimit`</a>                         | Maximum number of confidential HTTP requests per workflow execution | 5          |
-| <a href="#perworkflow-confidentialhttp-requestsizelimit" id="perworkflow-confidentialhttp-requestsizelimit">`PerWorkflow.ConfidentialHTTP.RequestSizeLimit`</a>    | Maximum size of a confidential HTTP request payload                 | 10 KB      |
-| <a href="#perworkflow-confidentialhttp-responsesizelimit" id="perworkflow-confidentialhttp-responsesizelimit">`PerWorkflow.ConfidentialHTTP.ResponseSizeLimit`</a> | Maximum size of a confidential HTTP response                        | 100 KB     |
-| <a href="#perworkflow-confidentialhttp-timeout" id="perworkflow-confidentialhttp-timeout">`PerWorkflow.ConfidentialHTTP.TimeOut`</a>                               | Maximum time for a confidential HTTP request to complete            | 10 seconds |
+| <a href="#perworkflow-confidentialhttp-calllimit" id="perworkflow-confidentialhttp-calllimit">`PerWorkflow.ConfidentialHTTP.CallLimit`</a>                         | Maximum number of confidential HTTP requests per workflow execution | 15         |
+| <a href="#perworkflow-confidentialhttp-requestsizelimit" id="perworkflow-confidentialhttp-requestsizelimit">`PerWorkflow.ConfidentialHTTP.RequestSizeLimit`</a>    | Maximum size of a confidential HTTP request payload                 | 125 KB     |
+| <a href="#perworkflow-confidentialhttp-responsesizelimit" id="perworkflow-confidentialhttp-responsesizelimit">`PerWorkflow.ConfidentialHTTP.ResponseSizeLimit`</a> | Maximum size of a confidential HTTP response                        | 500 KB     |
+| <a href="#perworkflow-confidentialhttp-timeout" id="perworkflow-confidentialhttp-timeout">`PerWorkflow.ConfidentialHTTP.TimeOut`</a>                               | Maximum time for a confidential HTTP request to complete            | 90 seconds |
 
 ## Quota increases
 
@@ -534,9 +534,64 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-09-03
+Last Updated: 2026-09-18
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.35.0 - September 18, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.35.0" target="_blank">CRE CLI version 1.35.0</a> is now available.**
+
+- **Ethereum Hoodi Testnet support**: Ethereum Hoodi Testnet is now supported for local simulation via `cre workflow simulate` and for production onchain writes. See [Supported Networks](/cre/supported-networks).
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.34.0...v1.35.0)
+
+## Go SDK v1.21.0 - September 18, 2026
+
+**Go SDK version 1.21.0** adds a chain constant for the newly supported testnet.
+
+- **New testnet chain constant**: Added `evm.EthereumHoodiTestnet` constant for use in your workflow code. See [Supported Networks](/cre/supported-networks).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.20.0...v1.21.0)
+
+## TS SDK v1.22.0 - September 18, 2026
+
+**TypeScript SDK version 1.22.0** adds a chain constant for the newly supported testnet.
+
+- **New testnet chain constant**: Added `EthereumHoodiTestnet` constant for use in your workflow code. See [Supported Networks](/cre/supported-networks).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.21.0...v1.22.0)
+
+## CLI v1.34.0 - September 17, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.34.0" target="_blank">CRE CLI version 1.34.0</a> is now available.**
+
+- **Updated SDK versions**: This release updates the bundled SDK dependencies to Go SDK v1.20.0 and TypeScript SDK v1.21.1.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.33.0...v1.34.0)
+
+## CLI v1.33.0 - September 10, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.33.0" target="_blank">CRE CLI version 1.33.0</a> is now available.**
+
+- **Solana workflow updates**: This release includes updates to Solana workflow support.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.32.0...v1.33.0)
 
 ## CLI v1.32.0 - September 3, 2026
 
@@ -2238,19 +2293,20 @@ Details:
 3. In the **Overview** section, find the **Workflow ID** field
 4. Click the copy button to copy it to your clipboard
 
+## Gateway URLs
+
+Find your production HTTP trigger endpoint in the UI under [Endpoints](https://app.chain.link/organization?otab=configuration). To see your environment, run `cre whoami` in the CLI.
+
+Here are the trigger endpoints per environment:
+
+| Environment    | Trigger endpoint                                       |
+| -------------- | ------------------------------------------------------ |
+| CRE Public     | `https://01.gateway.zone-a.cre.chain.link`             |
+| CRE Enterprise | `https://01.enterprise-gateway.zone-a.cre.chain.link/` |
+
 ## Request format
 
 All workflow executions use JSON-RPC 2.0 format:
-
-
-<Aside type="note" title="Gateway URL depends on your registry">
-  The gateway URL differs based on how your workflow is deployed:
-
-  - **Public (onchain) registry**: `https://01.gateway.zone-a.cre.chain.link`
-  - **Private registry** (`deployment-registry: "private"`): `https://01.enterprise-gateway.zone-a.cre.chain.link/`
-
-  Use the URL that matches the registry your workflow is deployed to. Run `cre registry list` or check your `workflow.yaml` if you're unsure.
-</Aside>
 
 ```http
 POST https://01.gateway.zone-a.cre.chain.link
@@ -2414,7 +2470,7 @@ If you're testing deployed workflows during development, use the [Local Testing 
 
 ## Example request (conceptual)
 
-Here's what a complete curl request looks like (using the public registry gateway — substitute `https://01.enterprise-gateway.zone-a.cre.chain.link/` if your workflow is deployed to the private registry):
+Here's what a complete curl request looks like (using the public DON gateway — see [Gateway URLs](#gateway-urls) to pick the right endpoint for your workflow's execution environment):
 
 ```bash
 curl -X POST https://01.gateway.zone-a.cre.chain.link \
@@ -2606,14 +2662,11 @@ GATEWAY_URL=https://01.gateway.zone-a.cre.chain.link
 Replace `0xYourPrivateKeyHere` with your EVM private key.
 
 
-<Aside type="note" title="Private registry gateway URL">
-  If your workflow is deployed to the **private registry** (`deployment-registry: "private"`), set `GATEWAY_URL` to:
-
-  ```
-  GATEWAY_URL=https://01.enterprise-gateway.zone-a.cre.chain.link/
-  ```
-
-  Use `https://01.gateway.zone-a.cre.chain.link` for workflows deployed to the public onchain registry.
+<Aside type="note" title="Gateway URL depends on your execution environment">
+  The `GATEWAY_URL` depends on the execution environment (DON) your workflow runs on, not on which registry it was
+  deployed to. A workflow deployed to the private registry still runs on the public DON, so it uses the public gateway.
+  See [Gateway URLs](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#gateway-urls) to
+  pick the right endpoint for your workflow.
 </Aside>
 
 <Aside type="caution" title="Keep your .env file secure">
@@ -4262,6 +4315,7 @@ import {
   hexToBase64,
   bytesToHex,
   TxStatus,
+  handler,
   type Runtime,
   Runner,
 } from "@chainlink/cre-sdk"
@@ -4336,7 +4390,7 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
 const initWorkflow = (config: Config) => {
   const cron = new CronCapability()
   return [
-    cron.handler(
+    handler(
       cron.trigger({
         schedule: config.schedule,
       }),
@@ -16038,14 +16092,9 @@ See [Using Secrets with Deployed Workflows](/cre/guides/workflow/secrets/using-s
 
 ## HTTP triggers with the private registry
 
-If your private registry workflow uses an HTTP trigger, note that the gateway endpoint is different from the public registry:
+If your private registry workflow uses an HTTP trigger, note that the gateway endpoint depends on the execution environment (DON) your workflow runs on, not on which registry it was deployed to. A workflow deployed to the private registry still runs on the public DON, so it uses the same public gateway as onchain deployments.
 
-| Registry         | HTTP trigger gateway URL                               |
-| ---------------- | ------------------------------------------------------ |
-| Public (onchain) | `https://01.gateway.zone-a.cre.chain.link`             |
-| **Private**      | `https://01.enterprise-gateway.zone-a.cre.chain.link/` |
-
-Update your `GATEWAY_URL` (or equivalent configuration) wherever you send trigger requests — in local testing, CI scripts, or backend integrations — to use the enterprise gateway URL when targeting private registry workflows.
+Update your `GATEWAY_URL` (or equivalent configuration) wherever you send trigger requests — in local testing, CI scripts, or backend integrations — to use the gateway that matches your workflow's execution environment. See [Gateway URLs](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#gateway-urls) to pick the right endpoint.
 
 See [Triggering Deployed Workflows](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows) for the full HTTP trigger request format and authentication details.
 
@@ -17417,7 +17466,7 @@ For the full list of types and methods available on [`TeeRuntime`](/cre/referenc
 
 # Forwarder Directory
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-ts
-Last Updated: 2026-08-26
+Last Updated: 2026-09-18
 
 <Aside type="note" title="Looking for supported networks?">
   For a complete list of supported networks and version requirements, see [Supported Networks](/cre/supported-networks).
@@ -17505,6 +17554,7 @@ The tables below reflect chains commonly enabled for simulation. Your tenant may
 | BSC Testnet                 | binance_smart_chain-testnet         | 0xa238e42cb8782808dbb2f37e19859244ec4779b0 |
 | Celo Sepolia                | celo-sepolia                          | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | Cronos Testnet              | cronos-testnet                        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Ethereum Hoodi Testnet      | ethereum-hoodi-testnet                | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | Ethereum Sepolia            | ethereum-testnet-sepolia              | 0x15fC6ae953E024d975e77382eEeC56A9101f9F88 |
 | Gnosis Chiado               | gnosis_chain-testnet-chiado          | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | Hyperliquid Testnet         | hyperliquid-testnet                   | 0xB27fA1c28288c50542527F64BCda22C9FbAc24CB |
@@ -17575,6 +17625,7 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 | <a href="https://testnet.bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">BSC Testnet</a>                        | binance_smart_chain-testnet         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://celo-sepolia.blockscout.com/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Celo Sepolia</a>               | celo-sepolia                          | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | <a href="https://explorer.cronos.org/testnet/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Cronos Testnet</a>             | cronos-testnet                        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| <a href="https://hoodi.etherscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Ethereum Hoodi Testnet</a>              | ethereum-hoodi-testnet                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://sepolia.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>                  | ethereum-testnet-sepolia              | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
 | <a href="https://gnosis-chiado.blockscout.com/address/0x0b93082D9b3C7C97fAcd250082899BAcf3af3885" target="_blank" rel="noopener noreferrer">Gnosis Chiado</a>             | gnosis_chain-testnet-chiado          | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
 | <a href="https://explore-testnet.hyperpc.app/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Hyperliquid Testnet</a>        | hyperliquid-testnet                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
@@ -18103,6 +18154,7 @@ import {
   getNetwork,
   encodeCallMsg,
   bytesToHex,
+  handler,
   LAST_FINALIZED_BLOCK_NUMBER,
   type Runtime,
   Runner,
@@ -18168,7 +18220,7 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 const initWorkflow = (config: Config) => {
   const cron = new CronCapability()
   return [
-    cron.handler(
+    handler(
       cron.trigger({
         schedule: "*/10 * * * * *", // Every 10 seconds
       }),
@@ -18354,6 +18406,7 @@ import {
   getNetwork,
   encodeCallMsg,
   bytesToHex,
+  handler,
   LAST_FINALIZED_BLOCK_NUMBER,
   type Runtime,
   Runner,
@@ -18412,7 +18465,7 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 const initWorkflow = (config: Config) => {
   const cron = new CronCapability()
   return [
-    cron.handler(
+    handler(
       cron.trigger({
         schedule: "*/10 * * * * *",
       }),
@@ -18484,7 +18537,7 @@ This pattern provides better organization, reusability, and type safety across y
 
 # Onchain Write
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/overview-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-09-18
 
 This overview explains how writing data onchain works in CRE and how the TypeScript SDK handles it.
 
@@ -18572,6 +18625,163 @@ Use `evmClient.writeReport()` to submit the signed report to your consumer contr
 <Aside type="note" title="Already familiar with the Getting Started tutorial?">
   The approach covered in [Part 4: Writing Onchain](/cre/getting-started/part-4-writing-onchain) uses this same two-step
   pattern. This section provides the conceptual foundation for that tutorial.
+</Aside>
+
+## Inspecting onchain transactions
+
+When your workflow submits a report onchain, the transaction can fail in two distinct ways: the **transaction itself** can revert (for example, out of gas or an invalid receiver), or the transaction can succeed but your consumer contract's `onReport()` function can **revert during execution**. You should inspect both outcomes and decide how to respond.
+
+### Understanding the response
+
+`evmClient.writeReport()` returns a [`WriteReportReply`](/cre/reference/sdk/evm-client-ts#writereportreply) with two status fields you should check:
+
+| Field                             | Type                              | Meaning                                                                                                  |
+| --------------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `txStatus`                        | `TxStatus`                        | Whether the transaction itself succeeded: `SUCCESS`, `REVERTED`, or `FATAL`.                             |
+| `receiverContractExecutionStatus` | `ReceiverContractExecutionStatus` | Whether your consumer contract's `onReport()` executed successfully: `SUCCESS` or `REVERTED` (optional). |
+| `txHash`                          | `Uint8Array`                      | The 32-byte transaction hash, useful for looking up the transaction on a block explorer.                 |
+| `errorMessage`                    | `string`                          | An error message if the transaction failed.                                                              |
+
+**Important**: `txStatus` and `receiverContractExecutionStatus` are independent. A transaction can succeed (`txStatus === TxStatus.SUCCESS`) while the consumer contract's `onReport()` reverts (`receiverContractExecutionStatus === ReceiverContractExecutionStatus.REVERTED`). Always check both.
+
+### How to know if `onReport()` succeeded
+
+The `receiverContractExecutionStatus` field tells you whether your consumer contract's `onReport()` function executed successfully. Check it after every write and log the result so you can monitor and troubleshoot deliveries:
+
+```typescript
+import { EVMClient, TxStatus, bytesToHex, type Runtime } from "@chainlink/cre-sdk"
+import { EVM_PB } from "@chainlink/cre-sdk/pb"
+
+const writeResult = evmClient
+  .writeReport(runtime, {
+    receiver: config.consumerAddress,
+    report: reportResponse,
+    gasConfig: {
+      gasLimit: config.gasLimit,
+    },
+  })
+  .result()
+
+// Always log the transaction hash and both statuses
+const txHash = bytesToHex(writeResult.txHash || new Uint8Array(32))
+runtime.log(
+  `Write report response: txHash=${txHash} txStatus=${writeResult.txStatus} ` +
+    `receiverStatus=${writeResult.receiverContractExecutionStatus}`
+)
+
+// Check the transaction status first
+if (writeResult.txStatus !== TxStatus.SUCCESS) {
+  throw new Error(`Transaction failed with status ${writeResult.txStatus}: ${writeResult.errorMessage}`)
+}
+
+// Then check whether onReport() executed successfully
+if (writeResult.receiverContractExecutionStatus === EVM_PB.ReceiverContractExecutionStatus.REVERTED) {
+  throw new Error(`onReport() reverted with status ${writeResult.receiverContractExecutionStatus}`)
+}
+```
+
+### Retry and reporting example
+
+The following example shows a complete pattern for inspecting a write, logging the outcome, and retrying when the transaction or the consumer contract execution fails:
+
+```typescript
+import { EVMClient, TxStatus, Report, bytesToHex, type Runtime } from "@chainlink/cre-sdk"
+import { EVM_PB } from "@chainlink/cre-sdk/pb"
+
+const MAX_RETRIES = 3
+
+function submitReport(runtime: Runtime<unknown>, evmClient: EVMClient, report: Report, attempt = 0): void {
+  const writeResult = evmClient
+    .writeReport(runtime, {
+      receiver: config.consumerAddress,
+      report,
+      gasConfig: {
+        gasLimit: config.gasLimit,
+      },
+    })
+    .result()
+
+  const txHash = bytesToHex(writeResult.txHash || new Uint8Array(32))
+  runtime.log(
+    `Write report response: txHash=${txHash} txStatus=${writeResult.txStatus} ` +
+      `receiverStatus=${writeResult.receiverContractExecutionStatus}`
+  )
+
+  // Retry on transaction failure
+  if (writeResult.txStatus !== TxStatus.SUCCESS) {
+    runtime.log(`Transaction failed, retrying: ${writeResult.errorMessage}`)
+    retrySubmit(runtime, evmClient, report, attempt)
+    return
+  }
+
+  // Retry if onReport() reverted even though the transaction succeeded
+  if (writeResult.receiverContractExecutionStatus === EVM_PB.ReceiverContractExecutionStatus.REVERTED) {
+    runtime.log(`onReport() reverted, retrying`)
+    retrySubmit(runtime, evmClient, report, attempt)
+    return
+  }
+
+  runtime.log(`Report delivered successfully: ${txHash}`)
+}
+
+function retrySubmit(runtime: Runtime<unknown>, evmClient: EVMClient, report: Report, attempt: number): void {
+  if (attempt >= MAX_RETRIES) {
+    throw new Error(`Report delivery failed after ${MAX_RETRIES} attempts`)
+  }
+  runtime.log(`Retrying submission (attempt ${attempt + 1}/${MAX_RETRIES})...`)
+  // Add a delay here if your runtime supports it. Be careful about replay attacks — see below.
+  submitReport(runtime, evmClient, report, attempt + 1)
+}
+```
+
+
+<Aside type="caution" title="Replay attacks on retry">
+  A reverted report is **not** marked as used by the forwarder, so retrying (or anyone else) can resubmit the same signed report once conditions change. If your workflow takes corrective action after a failure, embed a monotonic execution timestamp in the report payload and reject stale reports in your consumer contract. See [Same-chain replay on failure](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#same-chain-replay-on-failure).
+</Aside>
+
+### Inspecting executions with the CLI
+
+Once your workflow is deployed, you can inspect its executions programmatically with the CRE CLI. All commands support `--output json` for scripting. You can also view the same information in the [CRE Workflows dashboard](https://app.chain.link/cre/workflows).
+
+**Workflow-level inspection:**
+
+```bash
+# List all workflows for your organization
+cre workflow list
+
+# Deployment health + most recent execution for a workflow
+cre workflow get ./my-workflow --target production-settings
+```
+
+**Execution-level inspection:**
+
+```bash
+# List executions (optionally filtered by workflow, status, or time range)
+cre execution list evm-write-inspection
+cre execution list evm-write-inspection --status FAILURE
+cre execution list evm-write-inspection --limit 50 --output json
+
+# Detailed status of a single execution (incl. top-level errors)
+cre execution status <execution-uuid>
+
+# Capability event timeline (per-event status, method, duration, errors)
+cre execution events <execution-uuid>
+
+# User-emitted log lines (e.g. your "Write report response" logs)
+cre execution logs <execution-uuid>
+```
+
+**Control commands:**
+
+```bash
+# Pause / resume a workflow to stop or start trigger execution
+cre workflow pause ./my-workflow --target production-settings --yes
+cre workflow activate ./my-workflow --target production-settings --yes
+```
+
+
+<Aside type="note" title="Simulation vs production">
+  `cre workflow simulate` uses a **MockForwarder** that records the report but does **not** call your consumer contract's `onReport()`. As a result, `receiverContractExecutionStatus` is always `SUCCESS` in simulation. To observe real `onReport()` reverts (and the retry behavior above), deploy the workflow with `cre workflow deploy` and inspect its executions with the CLI commands above.
 </Aside>
 
 ## Next steps
@@ -20508,7 +20718,7 @@ Use this path if you want the receiver itself to be a CRE workflow with an HTTP 
 
 
 <Aside type="note" title="Using the private registry?">
-  This guide uses the **Capability Registry** (DON signers), not the **workflow registry** where you deploy. [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) works the same way regardless of which registry you deployed with. For HTTP-triggered receivers, use the [enterprise gateway URL](/cre/guides/operations/deploying-to-private-registry-ts#http-triggers-with-the-private-registry). Local simulation may need an `ethereum-mainnet` RPC in `project.yaml` for registry reads.
+  This guide uses the **Capability Registry** (DON signers), not the **workflow registry** where you deploy. [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) works the same way regardless of which registry you deployed with. For HTTP-triggered receivers, the gateway URL depends on the workflow's [execution environment](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#gateway-urls), not the registry. Local simulation may need an `ethereum-mainnet` RPC in `project.yaml` for registry reads.
 </Aside>
 
 ### Testing with simulation
@@ -22742,12 +22952,12 @@ This section provides everything you need to work with HTTP triggers:
 
 ## Quick comparison: Simulation vs Production
 
-| Aspect             | Simulation                      | Production                                                                                                                                           |
-| ------------------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Authorization**  | Optional (can use empty config) | Required (`authorizedKeys` must be configured)                                                                                                       |
-| **Trigger method** | CLI with `--input` flag         | HTTP POST to gateway endpoint with JWT                                                                                                               |
-| **Endpoint**       | Local simulator                 | CRE gateway — public registry: `https://01.gateway.zone-a.cre.chain.link` / private registry: `https://01.enterprise-gateway.zone-a.cre.chain.link/` |
-| **Use case**       | Development, testing, debugging | Live integrations, webhooks, production APIs                                                                                                         |
+| Aspect             | Simulation                      | Production                                                                                                                    |
+| ------------------ | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **Authorization**  | Optional (can use empty config) | Required (`authorizedKeys` must be configured)                                                                                |
+| **Trigger method** | CLI with `--input` flag         | HTTP POST to gateway endpoint with JWT                                                                                        |
+| **Endpoint**       | Local simulator                 | CRE gateway (see [Gateway URLs](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#gateway-urls)) |
+| **Use case**       | Development, testing, debugging | Live integrations, webhooks, production APIs                                                                                  |
 
 ## Key concepts
 
@@ -25336,7 +25546,7 @@ function zoneFromEnvironment(environment: Environment, donID: number): Zone
 
 # SDK Reference: EVM Client
 Source: https://docs.chain.link/cre/reference/sdk/evm-client-ts
-Last Updated: 2026-02-16
+Last Updated: 2026-09-18
 
 This page provides a reference for the `EVMClient`, the low-level tool for all interactions with EVM-compatible blockchains. The client includes a comprehensive set of read, write, and utility methods for building chain-aware workflows.
 
@@ -26232,6 +26442,7 @@ This table shows the chain selector names and their numeric IDs. In your configu
 | BNB Chain Mainnet       | binance_smart_chain-mainnet         | 11344663589394136015 |
 | BNB Chain Testnet       | binance_smart_chain-testnet         | 13264668187771770619 |
 | Ethereum Mainnet        | ethereum-mainnet                      | 5009297550715157269  |
+| Ethereum Hoodi Testnet  | ethereum-hoodi-testnet                | 10380998176179737091 |
 | Ethereum Sepolia        | ethereum-testnet-sepolia              | 16015286601757825753 |
 | Hyperliquid Testnet     | hyperliquid-testnet                   | 4286062357653186312  |
 | Ink Sepolia             | ink-testnet-sepolia                   | 9763904284804119144  |
@@ -28066,7 +28277,7 @@ This section provides a reference for the built-in trigger capabilities of the C
 
 # Supported Networks
 Source: https://docs.chain.link/cre/supported-networks-ts
-Last Updated: 2026-08-26
+Last Updated: 2026-09-18
 
 This page lists networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network. CRE supports two [chain families](/cre/capabilities#chain-families): EVM-compatible chains and Solana.
 
@@ -28126,6 +28337,7 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 | BNB Chain Testnet           | v1.0.0+  | v1.0.0+  | v1.0.1+  |
 | Celo Sepolia                | v1.15.0+ | v1.9.0+  | v1.7.0+  |
 | Cronos Testnet              | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Ethereum Hoodi Testnet      | v1.35.0+ | v1.21.0+ | v1.22.0+ |
 | Ethereum Sepolia            | v1.0.0+  | v1.0.0+  | v1.0.1+  |
 | Gnosis Chiado               | v1.7.0+  | v1.7.0+  | v1.4.0+  |
 | Hyperliquid Testnet         | v1.0.7+  | v1.1.4+  | v1.0.7+  |
