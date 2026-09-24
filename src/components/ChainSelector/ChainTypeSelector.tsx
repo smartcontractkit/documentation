@@ -1,14 +1,14 @@
 /** @jsxImportSource react */
 import { useStore } from "@nanostores/react"
 import { selectedChainType, setChainType, detectChainFromPath } from "~/stores/chainType.js"
-import { selectedCcipVersion } from "~/stores/ccipVersion.js"
+import { selectedCcipVersion, detectVersionFromPath } from "~/stores/ccipVersion.js"
 import { CHAIN_TYPE_CONFIGS, CCIP_SUPPORTED_CHAINS, CANTON_DOCS_FALLBACK_URL } from "~/config/chainTypes.js"
 import { CCIP_SIDEBARS } from "~/config/sidebar.js"
-import { LATEST_CCIP_VERSION } from "~/config/ccipVersions.js"
+import { LATEST_CCIP_VERSION, getLatestCcipVersionForChain, isChainInCcipVersion } from "~/config/ccipVersions.js"
 import { findEquivalentPageUrl, findEquivalentPageUrlWithFallback, findSectionForUrl } from "~/utils/chainNavigation.js"
+import { resolveCcipVersionSwitchUrl } from "~/utils/ccipVersionRouting.js"
 import type { ChainType } from "~/config/types.js"
 import { SidebarDropdown, type DropdownItem } from "../SidebarDropdown/index.js"
-import ccipV1Sidebar from "~/generated/ccipV1Sidebar.json" with { type: "json" }
 
 /**
  * Chain Type Dropdown Selector Component
@@ -47,9 +47,21 @@ export function ChainTypeSelector() {
     const isOnV2CcipRoute = pathname === "/ccip" || (pathname.startsWith("/ccip/") && !pathname.startsWith("/ccip/v1"))
 
     /**
-     * Canton is v2-only (its docs were ported out of v1 entirely), so Canton
-     * selections always resolve against the v2 sidebar, whether the user is on
-     * a v1 or a v2 route.
+     * The chosen family has no docs in this page's version (Solana/Aptos/TON on a v2 page, Canton
+     * on a v1 page): move to the newest version that documents it, landing on this page's 1:1
+     * counterpart there, otherwise on that version's root. Same resolver as the version toggle
+     * and the page-load guard, so the three always agree.
+     */
+    const pageVersion = detectVersionFromPath(pathname)
+    const chainVersion = getLatestCcipVersionForChain(chainType)
+    if (pageVersion && chainVersion && !isChainInCcipVersion(chainType, pageVersion)) {
+      window.location.href = `/${resolveCcipVersionSwitchUrl(pathname, chainType, pageVersion, chainVersion)}`
+      return
+    }
+
+    /**
+     * Canton within v2. Canton is v2-only (its docs were ported out of v1 entirely); selecting it on
+     * a v1 page is handled by the cross-version branch above.
      *
      * Resolution order:
      *   1. Exact equivalent in the v2 sidebar: universal pages and Canton pages
@@ -57,8 +69,8 @@ export function ChainTypeSelector() {
      *   2. On a v2 route, a page that is not in the sidebar at all and is either
      *      chainless (the /ccip landing, hub index pages) or already a Canton page
      *      stays put; the stored selection drives the sidebar, as on production.
-     *   3. Otherwise (chain-specific page with no Canton counterpart, or any v1 page)
-     *      land on Canton's getting-started page.
+     *   3. Otherwise (chain-specific page with no Canton counterpart) land on the
+     *      CANTON_DOCS_FALLBACK_URL hub.
      */
     if (chainType === "canton") {
       const v2Sidebar = CCIP_SIDEBARS[LATEST_CCIP_VERSION]
@@ -80,71 +92,6 @@ export function ChainTypeSelector() {
       const target = exact ?? (staysOnUnlistedPage ? canonicalRel : CANTON_DOCS_FALLBACK_URL)
 
       window.location.href = `/${target}`
-      return
-    }
-
-    /**
-     * ─────────────────────────────────────────────────────────────────────────────
-     * TEMP: v2 Solana/Aptos Routing Bridge (REMOVE WHEN v2 SUPPORTS NON-EVM)
-     *
-     * NOTE: Canton never reaches this block — it is v2-only and handled by the
-     * early return above.
-     *
-     * Purpose:
-     * v2 currently supports EVM and Canton only. When a user selects Solana or
-     * Aptos (or TON) while on a v2 (/ccip) route, we:
-     *   1. Persist chainType
-     *   2. Resolve the equivalent page using a frozen v1 sidebar snapshot
-     *   3. Hard-redirect to the v1 path
-     *
-     * This preserves equivalent-page behavior without coupling to the dynamic
-     * v1 sidebar runtime.
-     *
-     * Removal Checklist (when v2 adds Solana/Aptos):
-     *   1. Delete this entire conditional block.
-     *   2. Remove:
-     *        import ccipV1Sidebar from "~/generated/ccipV1Sidebar.json"
-     *   3. Delete file:
-     *        src/generated/ccipV1Sidebar.json
-     *   4. Re-enable version toggle switching logic if previously restricted.
-     *   5. Remove Solana/Aptos banner conditionals that mention v1-only support.
-     *
-     * After removal, default resolver behavior will work across versions.
-     * ─────────────────────────────────────────────────────────────────────────────
-     */
-    if (isOnV2CcipRoute && chainType !== "evm") {
-      const sourceSidebar = CCIP_SIDEBARS[activeVersion]
-
-      const resolvedRaw = findEquivalentPageUrlWithFallback(
-        window.location.pathname,
-        chainType,
-        ccipV1Sidebar as any,
-        sourceSidebar
-      )
-
-      const resolvedStr = String(resolvedRaw || "")
-
-      // If resolver falls back to generic v1 overview, treat it as "no equivalent"
-      // and send to the v1 landing instead.
-      const resolved =
-        resolvedStr === "ccip/v1/overview" || resolvedStr === "/ccip/v1/overview" ? "ccip/v1" : resolvedStr || "ccip/v1"
-
-      const normalized = String(resolved)
-        .replace(/^https?:\/\/[^/]+/i, "")
-        .split("#")[0]
-        .split("?")[0]
-        .replace(/^\/+/, "")
-        .replace(/\/+$/, "")
-
-      // If resolver already returned a v1 path, keep it.
-      // If it returned canonical ccip/... (no v1), add the v1 prefix.
-      const v1Path = normalized.startsWith("ccip/v1")
-        ? normalized
-        : normalized.startsWith("ccip/")
-          ? normalized.replace(/^ccip\//, "ccip/v1/")
-          : "ccip/v1"
-
-      window.location.href = `/${v1Path}`
       return
     }
 

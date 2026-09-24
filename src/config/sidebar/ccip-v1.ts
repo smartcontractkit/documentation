@@ -32,7 +32,8 @@ export const CCIP_V16_SIDEBAR_CONTENT: SectionEntry[] = [
     contents: [
       {
         title: "Overview",
-        url: "ccip",
+        url: "ccip/v1/overview",
+        pageId: "what-is-ccip",
         chainTypes: ["evm", "solana", "aptos"],
       },
       {
@@ -71,19 +72,19 @@ export const CCIP_V16_SIDEBAR_CONTENT: SectionEntry[] = [
       {
         title: "Service Limits",
         url: "ccip/v1/evm/service-limits",
-        pageId: "ccip-service-limits-overview",
+        pageId: "ccip-service-limits",
         chainTypes: ["evm"],
       },
       {
         title: "Service Limits",
         url: "ccip/v1/svm/service-limits",
-        pageId: "ccip-service-limits-overview",
+        pageId: "ccip-service-limits",
         chainTypes: ["solana"],
       },
       {
         title: "Service Limits",
         url: "ccip/v1/aptos/service-limits",
-        pageId: "ccip-service-limits-overview",
+        pageId: "ccip-service-limits",
         chainTypes: ["aptos"],
       },
       {
@@ -94,18 +95,18 @@ export const CCIP_V16_SIDEBAR_CONTENT: SectionEntry[] = [
       {
         title: "Service Responsibility",
         url: "ccip/v1/service-responsibility",
-        pageId: "ccip-service-responsibility-overview",
+        pageId: "ccip-service-responsibility",
       },
       {
         title: "Execution Latency",
         url: "ccip/v1/ccip-execution-latency",
-        pageId: "ccip-execution-latency-overview",
+        pageId: "ccip-execution-latency",
         chainTypes: ["evm", "solana", "aptos", "ton"],
       },
       {
         title: "Billing",
         url: "ccip/v1/billing",
-        pageId: "ccip-fees-billing-overview",
+        pageId: "ccip-fees-billing",
       },
       {
         title: "Release Notes",
@@ -339,13 +340,13 @@ export const CCIP_V16_SIDEBAR_CONTENT: SectionEntry[] = [
       {
         title: "Manual execution",
         url: "ccip/v1/concepts/manual-execution",
-        pageId: "concepts-manual-execution",
+        pageId: "ccip-manual-execution",
         chainTypes: ["evm", "solana", "aptos"],
       },
       {
         title: "Manual execution",
         url: "ccip/v1/ton/concepts/manual-execution",
-        pageId: "concepts-manual-execution",
+        pageId: "ccip-manual-execution",
         chainTypes: ["ton"],
       },
       // Rate Limit Management folder + children. Gated to EVM/Solana/Aptos to match
@@ -354,10 +355,12 @@ export const CCIP_V16_SIDEBAR_CONTENT: SectionEntry[] = [
         title: "Rate Limit Management",
         chainTypes: ["evm", "solana", "aptos"],
         children: [
+          // pageIds shared with the v2 EVM pages under cross-chain-token/rate-limits, so the version
+          // toggle lands on the same page. How Rate Limits Work has no v2 counterpart.
           {
             title: "Overview",
             url: "ccip/v1/concepts/rate-limit-management/overview",
-            pageId: "ccip-rlm-overview",
+            pageId: "ccip-cct-rate-limits-overview",
             chainTypes: ["evm", "solana", "aptos"],
           },
           {
@@ -369,43 +372,43 @@ export const CCIP_V16_SIDEBAR_CONTENT: SectionEntry[] = [
           {
             title: "Prerequisites and Permissions",
             url: "ccip/v1/concepts/rate-limit-management/prerequisites-and-permissions",
-            pageId: "ccip-rlm-prerequisites",
+            pageId: "ccip-cct-rate-limits-prerequisites-and-permissions",
             chainTypes: ["evm", "solana", "aptos"],
           },
           {
             title: "Inspect Current Rate Limits",
             url: "ccip/v1/concepts/rate-limit-management/inspect-current-rate-limits",
-            pageId: "ccip-rlm-inspect",
+            pageId: "ccip-cct-rate-limits-inspect-current-rate-limits",
             chainTypes: ["evm", "solana", "aptos"],
           },
           {
             title: "Token Units and Decimals",
             url: "ccip/v1/concepts/rate-limit-management/token-units-and-decimals",
-            pageId: "ccip-rlm-token-units",
+            pageId: "ccip-cct-rate-limits-token-units-and-decimals",
             chainTypes: ["evm", "solana", "aptos"],
           },
           {
             title: "Update Rate Limits",
             url: "ccip/v1/concepts/rate-limit-management/update-rate-limits",
-            pageId: "ccip-rlm-update",
+            pageId: "ccip-cct-rate-limits-update-rate-limits",
             chainTypes: ["evm", "solana", "aptos"],
           },
           {
             title: "Emergency Actions",
             url: "ccip/v1/concepts/rate-limit-management/emergency-actions",
-            pageId: "ccip-rlm-emergency",
+            pageId: "ccip-cct-rate-limits-emergency-actions",
             chainTypes: ["evm", "solana", "aptos"],
           },
           {
             title: "Common Scenarios",
             url: "ccip/v1/concepts/rate-limit-management/common-scenarios",
-            pageId: "ccip-rlm-scenarios",
+            pageId: "ccip-cct-rate-limits-common-scenarios",
             chainTypes: ["evm", "solana", "aptos"],
           },
           {
             title: "Executing with a Multisig",
             url: "ccip/v1/concepts/rate-limit-management/executing-with-a-multisig",
-            pageId: "ccip-rlm-multisig",
+            pageId: "ccip-cct-rate-limits-executing-with-a-multisig",
             chainTypes: ["evm", "solana", "aptos"],
           },
         ],

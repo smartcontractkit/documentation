@@ -35,9 +35,13 @@ export const NavBar = ({
       / - if the page has been scrolled down and the header is hidden
       / - if the page is a inner doc page or part of the "pathWithoutDocNav" or not
       */
-      const height = (navRef.current as HTMLElement).clientHeight
-      const baseHeightNoNav = 0
-
+      const innerDocNavHeight = 56
+      let height = (navRef.current as HTMLElement).clientHeight
+      let baseHeightNoNav = 0
+      if (doubleNavbar()) {
+        height += innerDocNavHeight
+        baseHeightNoNav += innerDocNavHeight
+      }
       const elements = document.body.querySelectorAll("[data-sticky]")
       elements.forEach((e: HTMLElement) => {
         if (!e.classList.contains(styles.animateTop)) {
@@ -45,6 +49,9 @@ export const NavBar = ({
         }
         e.style.top = `${hidden ? baseHeightNoNav : height}px`
       })
+      // Expose the same offset as a CSS variable. The left sidebar (src/components/LeftSidebar/leftSidebar.module.css)
+      // uses it to sit directly below the docs navigation bar: 120px when the header is shown, 56px when it is hidden.
+      document.documentElement.style.setProperty("--docs-sticky-top", `${hidden ? baseHeightNoNav : height}px`)
       setNavBarInfo({ hidden, height })
     }
   }

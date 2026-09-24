@@ -121,7 +121,9 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
       {
         title: "Architecture",
         url: "ccip/concepts/architecture/overview",
-        pageId: "ccip-architecture",
+        // Same page as v1 Concepts > Overview (ccip/v1/concepts/architecture/overview).
+        // Not "ccip-architecture": v1 uses that id for the per-chain Onchain Architecture pages.
+        pageId: "ccip-concepts-overview",
         // Hidden for Canton to match production: Canton has its own Overview/Key Concepts pages
         chainTypes: ["evm", "solana", "aptos", "ton"],
       },

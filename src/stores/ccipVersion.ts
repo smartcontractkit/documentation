@@ -31,7 +31,11 @@ export function setCcipVersion(version: CcipVersion): void {
   }
 }
 
-function detectVersionFromPath(pathname: string): CcipVersion | null {
+/**
+ * Version a CCIP URL belongs to, or null for versionless shared routes (and non-CCIP URLs).
+ * Exported so version routing (src/utils/ccipVersionRouting.ts) uses the same rule as the store.
+ */
+export function detectVersionFromPath(pathname: string): CcipVersion | null {
   // URL is the source of truth for CCIP version/chain routing.
   //
   // Canonical rule:

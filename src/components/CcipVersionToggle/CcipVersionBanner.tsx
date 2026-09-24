@@ -2,9 +2,8 @@
 import { useStore } from "@nanostores/react"
 import { selectedCcipVersion, setCcipVersion } from "~/stores/ccipVersion.js"
 import { selectedChainType } from "~/stores/chainType.js"
-import { LATEST_CCIP_VERSION, CCIP_VERSION_CONFIGS } from "~/config/ccipVersions.js"
-import { CCIP_SIDEBARS } from "~/config/sidebar.js"
-import { findEquivalentPageUrlWithFallback } from "~/utils/chainNavigation.js"
+import { LATEST_CCIP_VERSION, CCIP_VERSION_CONFIGS, isChainInCcipVersion } from "~/config/ccipVersions.js"
+import { resolveCcipVersionSwitchUrl } from "~/utils/ccipVersionRouting.js"
 import styles from "./CcipVersionBanner.module.css"
 
 export function CcipVersionBanner() {
@@ -13,41 +12,27 @@ export function CcipVersionBanner() {
   const latestConfig = CCIP_VERSION_CONFIGS[LATEST_CCIP_VERSION]
 
   const isLatest = activeVersion === LATEST_CCIP_VERSION
-  const isEvm = activeChain === "evm"
 
   // If you're on the latest, no banner.
   if (isLatest) return null
 
-  // Only EVM surfaces a "switch to latest" CTA. Other chain families (Solana/Aptos/TON/etc.)
-  // previously rendered a version warning banner here; that banner has been removed per product
-  // feedback, so those families render nothing.
-  const showSwitchCta = isEvm
+  // Only chain families documented in the latest version get a "switch to latest" CTA (today: EVM;
+  // Canton never renders on v1). Solana/Aptos/TON previously rendered a version warning banner
+  // here; that banner has been removed per product feedback, so those families render nothing.
+  const showSwitchCta = isChainInCcipVersion(activeChain, LATEST_CCIP_VERSION)
   if (!showSwitchCta) return null
 
+  // Same destination as the version toggle's latest button: 1:1 counterpart, otherwise the root.
   const handleSwitchToLatest = () => {
-    const rawPath = window.location.pathname
-    const path = rawPath.replace(/\/+$/, "") // normalize
-
-    const ccipIdx = path.indexOf("/ccip")
-    const prefix = ccipIdx > 0 ? path.slice(0, ccipIdx) : ""
-
-    // Match CCIP landing variants (root, index, overview, versioned root)
-    const isCcipLanding = /\/ccip(\/(v1|v2))?(\/(index|overview))?$/.test(path)
-
-    if (isCcipLanding) {
-      setCcipVersion(LATEST_CCIP_VERSION)
-      window.location.href = `${prefix}/ccip`
-      return
-    }
+    const target = resolveCcipVersionSwitchUrl(
+      window.location.pathname,
+      activeChain,
+      activeVersion,
+      LATEST_CCIP_VERSION
+    )
 
     setCcipVersion(LATEST_CCIP_VERSION)
-
-    const sourceSidebar = CCIP_SIDEBARS[activeVersion]
-    const targetSidebar = CCIP_SIDEBARS[LATEST_CCIP_VERSION]
-
-    const targetUrl = findEquivalentPageUrlWithFallback(rawPath, activeChain, targetSidebar, sourceSidebar)
-
-    window.location.href = `/${targetUrl.replace(/\/+$/, "")}`
+    window.location.href = `/${target}`
   }
 
   return (

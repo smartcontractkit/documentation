@@ -1,6 +1,7 @@
 import type { ChainType } from "~/config/types.js"
 import type { SectionEntry, SectionContent } from "~/config/sidebar.js"
 import { detectChainFromPath } from "~/stores/chainType.js"
+import { isChainVisible } from "~/utils/ccipSidebarChainFilter.js"
 
 /**
  * Normalizes a URL by removing leading/trailing slashes and query parameters
@@ -26,6 +27,30 @@ type UrlMatch =
       matchedIndex: number
     }
 
+/** Whether a single item (not its children) matches `targetUrl` via `url` or a `highlightAsCurrent` variant. */
+function matchItemUrl(item: SectionContent, targetUrl: string): UrlMatch | null {
+  if (item.url && normalizeUrl(item.url) === targetUrl) {
+    return {
+      item,
+      matchedType: "url",
+      matchedIndex: -1,
+    }
+  }
+
+  if (item.highlightAsCurrent?.length) {
+    const index = item.highlightAsCurrent.findIndex((url) => normalizeUrl(url) === targetUrl)
+    if (index >= 0) {
+      return {
+        item,
+        matchedType: "highlight",
+        matchedIndex: index,
+      }
+    }
+  }
+
+  return null
+}
+
 /**
  * Recursively searches sidebar content for an item matching the given URL.
  * Supports both canonical `url` and `highlightAsCurrent` variants.
@@ -36,24 +61,8 @@ type UrlMatch =
  */
 function findItemMatchByUrl(items: SectionContent[], targetUrl: string): UrlMatch | null {
   for (const item of items) {
-    if (item.url && normalizeUrl(item.url) === targetUrl) {
-      return {
-        item,
-        matchedType: "url",
-        matchedIndex: -1,
-      }
-    }
-
-    if (item.highlightAsCurrent?.length) {
-      const index = item.highlightAsCurrent.findIndex((url) => normalizeUrl(url) === targetUrl)
-      if (index >= 0) {
-        return {
-          item,
-          matchedType: "highlight",
-          matchedIndex: index,
-        }
-      }
-    }
+    const match = matchItemUrl(item, targetUrl)
+    if (match) return match
 
     if (item.children) {
       const found = findItemMatchByUrl(item.children, targetUrl)
@@ -345,4 +354,78 @@ export function findEquivalentPageUrlWithFallback(
     if (normalizedCurrentUrl === "ccip/v1" || normalizedCurrentUrl.startsWith("ccip/v1/")) return "ccip/v1"
   }
   return "ccip"
+}
+
+type VisibleUrlMatch = { match: UrlMatch; visible: boolean }
+
+/** Every sidebar item matching `targetUrl`, with whether it (and all its ancestors) render for `chain`. */
+function collectUrlMatches(
+  items: SectionContent[],
+  targetUrl: string,
+  chain: ChainType,
+  ancestorsVisible = true,
+  out: VisibleUrlMatch[] = []
+): VisibleUrlMatch[] {
+  for (const item of items) {
+    const visible = ancestorsVisible && isChainVisible(item.chainTypes, chain)
+    const match = matchItemUrl(item, targetUrl)
+    if (match) out.push({ match, visible })
+    if (item.children) collectUrlMatches(item.children, targetUrl, chain, visible, out)
+  }
+  return out
+}
+
+/** First item with `pageId` that renders for `chain` (a child renders only if all its ancestors do). */
+function findVisibleItemByPageId(
+  items: SectionContent[],
+  pageId: string,
+  chain: ChainType,
+  ancestorsVisible = true
+): SectionContent | null {
+  for (const item of items) {
+    const visible = ancestorsVisible && isChainVisible(item.chainTypes, chain)
+    if (visible && item.pageId === pageId) return item
+    if (item.children) {
+      const found = findVisibleItemByPageId(item.children, pageId, chain, visible)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+/**
+ * Cross-version counterpart of a page for a chain family: the item in the target version's sidebar
+ * that shares the current page's `pageId` and renders for `chain`.
+ *
+ * Deliberately stricter than findEquivalentPageUrl, which is tuned for same-version chain switching:
+ * - pageId only. Title matching is ambiguous across versions ("Overview" names six different pages)
+ *   and, because it searches the source sidebar, returns a URL of the wrong version.
+ * - Visibility honours ancestors, exactly as the sidebar renders.
+ * - External targets (e.g. the Explorer app) are not pages of the other version.
+ *
+ * @returns Target URL without a leading slash, or null when the page has no 1:1 counterpart
+ */
+export function findCrossVersionEquivalentUrl(
+  currentUrl: string,
+  chain: ChainType,
+  sourceSidebarConfig: SectionEntry[],
+  targetSidebarConfig: SectionEntry[]
+): string | null {
+  const normalizedCurrentUrl = normalizeUrl(currentUrl)
+
+  const matches = sourceSidebarConfig.flatMap((section) =>
+    collectUrlMatches(section.contents, normalizedCurrentUrl, chain)
+  )
+  const source =
+    matches.find(({ match, visible }) => visible && match.item.pageId) ?? matches.find(({ match }) => match.item.pageId)
+  const pageId = source?.match.item.pageId
+  if (!source || !pageId) return null
+
+  for (const section of targetSidebarConfig) {
+    const target = findVisibleItemByPageId(section.contents, pageId, chain)
+    if (!target) continue
+    const url = resolveMatchedTargetUrl(target, source.match)
+    return url && !/^https?:\/\//i.test(url) ? normalizeUrl(url) : null
+  }
+  return null
 }
