@@ -37,11 +37,11 @@ const toolsAndUtilities = [
     description: "An API for message retrieval and lane latency information.",
   },
   {
-    image: "/images/js-logo.svg",
-    imageAlt: "JavaScript SDK icon",
-    label: "Javascript SDK",
-    link: "https://github.com/smartcontractkit/ccip-javascript-sdk",
-    description: "Integrate CCIP functionality directly into your web applications for EVM-compatible chains.",
+    image: "/images/ts-logo.svg",
+    imageAlt: "TypeScript SDK icon",
+    label: "TypeScript SDK",
+    link: "https://docs.chain.link/ccip/tools/sdk/",
+    description: "Client library for interacting with CCIP from applications and backend services.",
   },
   {
     image: "/images/hardhat-logo.svg",
