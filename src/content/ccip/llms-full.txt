@@ -75254,10 +75254,11 @@ contract BidirectionalApp is CCIPClientExample {
 }
 ```
 
-## Fast USDC transfers
+## Faster-Than-Finality (FTF) USDC transfers
 
-Similar to other FTF messages, FTF transfers for USDC can be chosen via `requestedFinalityConfig` in `ExtraArgsV3`. The behavior depends on whether the transfer is a pure token transfer or a token transfer with data and/or a non-zero user gas limit.
-CCIP v2 supports fast USDC transfers on lanes that integrate with Circle's CCTP. Finality for USDC token transfers is therefore governed by [CCTP finality thresholds](https://developers.circle.com/cctp/concepts/finality-and-block-confirmations) per chain. For transfers sent to a smart contract — with a non-zero message gas limit or with data — both CCTP and message finality parameters determine the overall speed.
+Like other FTF messages, USDC transfers can request FTF via `requestedFinalityConfig` in `ExtraArgsV3`. The behavior depends on whether the transfer is a pure token transfer or a token transfer with data and/or a non-zero user gas limit.
+
+CCIP v2 supports FTF USDC transfers on lanes that integrate with Circle's CCTP. Finality for USDC token transfers is therefore governed by [CCTP finality thresholds](https://developers.circle.com/cctp/concepts/finality-and-block-confirmations) per chain. For transfers sent to a smart contract — with a non-zero message gas limit or with data — both CCTP and message finality parameters determine the overall speed.
 
 CCIP's CCTP CCV integrates with CCTP smart contracts and the CCTP attestation service.
 
@@ -75268,9 +75269,9 @@ For USDC FTF transfers on lanes that Circle's CCTP supports, for **pure token tr
 Finality is determined in this way:
 
 - `message.finality == 0` (`WAIT_FOR_FINALITY_FLAG`) → CCTP threshold 2000 → standard USDC transfers.
-- `message.finality != 0` → CCTP threshold 1000 → fast USDC transfers.
+- `message.finality != 0` → CCTP threshold 1000 → CCTP fast transfers.
 
-So `0x00000001`, `0x00000002`, `0x0000000a`, etc. all select the same CCTP fast path. The numeric depth is **not** passed through to Circle as "wait N blocks." Circle has two modes — standard and fast — and the number of block confirmations for fast USDC transfers is determined by Circle: [CCTP block confirmations and fast-transfer attestation times](https://developers.circle.com/cctp/concepts/finality-and-block-confirmations#fast-transfer-attestation-times).
+So `0x00000001`, `0x00000002`, `0x0000000a`, etc. all select the same CCTP fast path. The numeric depth is **not** passed through to Circle as "wait N blocks." Circle has two modes — standard and fast — and the number of block confirmations for CCTP fast transfers is determined by Circle: [CCTP block confirmations and fast-transfer attestation times](https://developers.circle.com/cctp/concepts/finality-and-block-confirmations#fast-transfer-attestation-times).
 
 In this case, since the user gas limit is 0, the assumption is that there is no destination receiver, and hence the destination receiver's `allowedFinalityConfig` is irrelevant.
 
@@ -75281,21 +75282,21 @@ For USDC FTF transfers on lanes that Circle's CCTP supports, for **token transfe
 Finality is determined in this way:
 
 - `message.finality == 0` (`WAIT_FOR_FINALITY_FLAG`) → CCTP threshold 2000 → standard USDC transfers, **and** the default Committee Verifier waits for full finality to be reached before verifying.
-- `message.finality != 0` → CCTP threshold 1000 → fast USDC transfers.
+- `message.finality != 0` → CCTP threshold 1000 → CCTP fast transfers.
   - In this case, the `requestedFinalityConfig` block confirmations value is specifically used to drive the finality requirements for the Committee Verifier. For example, if `blockConfirmations` was set to 10, the Committee Verifier will wait for 10 blocks and not just 1. However, the 10 does not impact the CCTP side of processing, which is binary — standard or fast; only the fact that it is **not** 0 matters.
   - Since CCIP processing will wait for all CCVs to finish verifying, in the above example, even if CCTP has completed its processing, the 10 blocks chosen by the user/dApp will drive the overall latency.
 
 In this case, the receiver's `allowedFinalityConfig` should be set so that the `requestedFinalityConfig` from the sender can be honoured on the destination. Setting `allowedFinalityConfig = 1` is the most flexible as it allows all USDC FTF transfers (anything `>= 1` in `extraArgs`). If `allowedFinalityConfig` on the receiver is set to `> 1`, the dApp should ensure that the source-side `extraArgs` matches this.
 
-### Delivered amount vs sent amount for fast USDC transfers
+### Delivered amount vs sent amount for FTF USDC transfers
 
 For **standard** USDC (`requestedFinalityConfig = 0`), CCTP uses the standard path with **no CCTP fast-transfer fee** — the USDC amount burned on source matches what CCTP mints to the recipient (subject to normal CCIP/pool fees quoted at send time).
 
-For **fast** USDC (any non-zero `requestedFinalityConfig`), Circle [charges a fast-transfer fee](https://developers.circle.com/cctp/concepts/fast-transfer-allowance) on the **destination** when USDC is minted. `CCTPVerifier` passes a `maxFee` into `depositForBurnWithHook` on the source burn; the actual fee deducted at mint time is determined by CCTP (basis points, lane-specific). **The amount delivered on the destination chain can be less than the amount sent.**
+For **FTF** USDC (any non-zero `requestedFinalityConfig`), Circle [charges a fast-transfer fee](https://developers.circle.com/cctp/concepts/fast-transfer-allowance) on the **destination** when USDC is minted. `CCTPVerifier` passes a `maxFee` into `depositForBurnWithHook` on the source burn; the actual fee deducted at mint time is determined by CCTP (basis points, lane-specific). **The amount delivered on the destination chain can be less than the amount sent.**
 
 Implications for dApps:
 
-- Do not assume `tokenAmounts[0].amount` at send equals USDC received on destination for fast transfers.
+- Do not assume `tokenAmounts[0].amount` at send equals USDC received on destination for FTF transfers.
 - In `ccipReceive`, use `message.destTokenAmounts[0].amount` — OffRamp sets this from the **actual balance credited** to the token receiver after mint.
 - PTT logic (accounting, minimum deposit checks, share minting) should key off the delivered amount, not the source send amount.
 - The CCTP fee is separate from CCIP protocol fees.
