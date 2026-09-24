@@ -11,6 +11,7 @@ metadata:
 
 import { Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
+import RateLimitBucket from "@features/ccip/components/rate-limit-bucket/RateLimitBucket.astro"
 
 <Aside type="note" title="CCIP v2.0">
   <ol>
@@ -45,16 +46,7 @@ Rate limits are **capacity buckets** that refill over time. Each bucket has thre
 
 Transfers consume capacity; if enough is not available, the transfer is rejected until the bucket refills. All values use the token's **local smallest unit** on the chain where the pool is deployed. When enabled, rate must be ≤ capacity.
 
-{/* Add dynamic diagram here */}
-
-<div style="display:flex;justify-content:center;margin:1.5rem 0;">
-  <iframe
-    src="/images/ccip/concepts/cross-chain-token/token-pool-rate-limit-dynamic-diagram.html"
-    title="Interactive token pool rate limit bucket visualization"
-    style="width:100%;max-width:680px;height:560px;border:1px solid #e5e5e5;border-radius:8px;box-sizing:border-box;"
-    loading="lazy"
-  />
-</div>
+<RateLimitBucket />
 
 Each token pool maintains up to **four limiters per remote chain (v2.0)**:
 
