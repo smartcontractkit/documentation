@@ -32,7 +32,7 @@ export const CCIP_V16_SIDEBAR_CONTENT: SectionEntry[] = [
     contents: [
       {
         title: "Overview",
-        url: "ccip",
+        url: "ccip/v1/overview",
         chainTypes: ["evm", "solana", "aptos"],
       },
       {
