@@ -32,7 +32,7 @@ relevant steps for each remote chain — see [Multi-chain considerations](#multi
 **Definitions**
 
 - **v1 pool**: Any pool version 1.5.x or 1.6.x (`LockReleaseTokenPool 1.5.1`, `BurnMintTokenPool 1.6.0`, etc.)
-- **v2 pool**: Pool version 2.0.0 (`LockReleaseTokenPool 2.0.0` on Chain A, `BurnMintTokenPool 2.0.0` on Chain B) that
+- **v2 pool**: Pool version2.0 (`LockReleaseTokenPool2.0` on Chain A, `BurnMintTokenPool2.0` on Chain B) that
   you want to upgrade to.
 - **ERC20LockBox**: A v2 contract that holds locked token liquidity on behalf of the Lock & Release pool. Constructor:
   `(address token)`. In v1, liquidity was held directly in the pool contract. In v2, it's held in the lockbox. The
@@ -195,7 +195,7 @@ constructor(address token)  // The ERC20 token address — must not be address(0
 
 #### 1b. Deploy LockReleaseTokenPool
 
-- Deploy a `LockReleaseTokenPool 2.0.0` on Chain A.
+- Deploy a `LockReleaseTokenPool2.0` on Chain A.
 - **Constructor**:
 
 ```
@@ -232,7 +232,7 @@ struct AuthorizedCallerArgs {
 
 ### Chain B: BurnMintTokenPool
 
-- Deploy a `BurnMintTokenPool 2.0.0` on Chain B.
+- Deploy a `BurnMintTokenPool2.0` on Chain B.
 - **Constructor**: `(IBurnMintERC20 token, uint8 localTokenDecimals, address advancedPoolHooks, address rmnProxy, address router)`
 - Grant mint and burn roles to the new v2 pool on the Chain B token contract.
 - Record the new v2 pool address.
