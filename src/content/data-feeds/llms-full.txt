@@ -28,16 +28,16 @@ Find these feeds on the [Price Feed Addresses](/data-feeds/price-feeds/addresses
 
 ### Risks
 
-<Aside type="note" title="24/7 blended precious metals feed risks">
-  These feeds use a custom methodology and are not equivalent to a continuously open physical precious metals spot
-  market. Outside regular precious metals market hours, the answer depends on tokenized precious metals markets, their
-  liquidity, their premium or discount to the underlying spot price, and the availability of the configured tokenized
-  streams. Users should monitor each feed against independent references, enforce freshness checks and value bounds
-  appropriate for their use case, and define pause or fallback behavior before using the feed to secure value, support
-  minting or redemption, trigger liquidations, or automate other protocol actions. If the tokenized inputs stop updating
-  or are unavailable, the adapter can continue from its most recent cached EMA state until valid inputs resume or the
-  precious metals market reopens. Contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) with questions.
-</Aside>
+> **NOTE: 24/7 blended precious metals feed risks**
+>
+> These feeds use a custom methodology and are not equivalent to a continuously open physical precious metals spot
+> market. Outside regular precious metals market hours, the answer depends on tokenized precious metals markets, their
+> liquidity, their premium or discount to the underlying spot price, and the availability of the configured tokenized
+> streams. Users should monitor each feed against independent references, enforce freshness checks and value bounds
+> appropriate for their use case, and define pause or fallback behavior before using the feed to secure value, support
+> minting or redemption, trigger liquidations, or automate other protocol actions. If the tokenized inputs stop updating
+> or are unavailable, the adapter can continue from its most recent cached EMA state until valid inputs resume or the
+> precious metals market reopens. Contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) with questions.
 
 ## Forex
 
@@ -55,17 +55,17 @@ The following table shows the available 24/7 forex feeds.
 
 ### Risks
 
-<Aside type="caution" title="24/7 forex feed risks: single data provider">
-  24/7 forex feeds currently rely on a single underlying data provider for their crypto-derived rate. Review the [Single
-  Source Data Providers](/data-feeds/selecting-data-feeds#single-source-data-providers) section before using one of
-  these feeds. In addition to the general single-source risks described there, be aware that a crypto-derived rate can
-  persistently and materially diverge from official, interbank, or institutional reference rates for the same currency
-  pair, and that this divergence is not static: it can widen or compress quickly around local political, regulatory, or
-  central bank events. Confirm that this rate construction matches your use case's definition of the currency pair, and
-  implement value bounds, freshness checks, monitoring against independent references, and pause or fallback behavior
-  before using one of these feeds to secure value, support minting or redemption, trigger liquidations, or automate
-  other protocol actions. Contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) with questions.
-</Aside>
+> **CAUTION: 24/7 forex feed risks: single data provider**
+>
+> 24/7 forex feeds currently rely on a single underlying data provider for their crypto-derived rate. Review the [Single
+> Source Data Providers](/data-feeds/selecting-data-feeds#single-source-data-providers) section before using one of
+> these feeds. In addition to the general single-source risks described there, be aware that a crypto-derived rate can
+> persistently and materially diverge from official, interbank, or institutional reference rates for the same currency
+> pair, and that this divergence is not static: it can widen or compress quickly around local political, regulatory, or
+> central bank events. Confirm that this rate construction matches your use case's definition of the currency pair, and
+> implement value bounds, freshness checks, monitoring against independent references, and pause or fallback behavior
+> before using one of these feeds to secure value, support minting or redemption, trigger liquidations, or automate
+> other protocol actions. Contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) with questions.
 
 ---
 
@@ -77,7 +77,6 @@ When you use data feeds, retrieve the feeds through the `AggregatorV3Interface` 
 ## AggregatorV3Interface
 
 Import this interface to your contract and use it to run functions in the proxy contract. Create the interface object by pointing to the proxy address. For example, on Sepolia you could create the interface object in the constructor of your contract using the following example:
-
 
 ```solidity
 /**
@@ -109,7 +108,6 @@ You can see the code for the [`AggregatorV3Interface` contract](https://github.c
 
 Get the number of decimals present in the response value.
 
-
 ```solidity
 function decimals() external view returns (uint8);
 ```
@@ -120,7 +118,6 @@ function decimals() external view returns (uint8);
 
 Get the description of the underlying aggregator that the proxy points to.
 
-
 ```solidity
 function description() external view returns (string memory);
 ```
@@ -130,7 +127,6 @@ function description() external view returns (string memory);
 #### getRoundData
 
 Get data about a specific round, using the `roundId`.
-
 
 ```solidity
 function getRoundData(
@@ -148,12 +144,11 @@ function getRoundData(
 - `answer`: The answer for this round
 - `startedAt`: Timestamp of when the round started
 - `updatedAt`: Timestamp of when the round was updated
-- `answeredInRound`: <Icon type="deprecated" /> Deprecated - Previously used when answers could take multiple rounds to be computed
+- `answeredInRound`:  Deprecated - Previously used when answers could take multiple rounds to be computed
 
 #### latestRoundData
 
 Get the data from the latest round.
-
 
 ```solidity
 function latestRoundData() external view
@@ -172,12 +167,11 @@ function latestRoundData() external view
 - `answer`: The data that this specific feed provides. Depending on the feed you selected, this answer provides asset prices, reserves, and other types of data.
 - `startedAt`: Timestamp of when the round started.
 - `updatedAt`: Timestamp of when the round was updated.
-- `answeredInRound`: <Icon type="deprecated" /> Deprecated - Previously used when answers could take multiple rounds to be computed
+- `answeredInRound`:  Deprecated - Previously used when answers could take multiple rounds to be computed
 
 #### version
 
 The version representing the type of aggregator the proxy points to.
-
 
 ```solidity
 function version() external view returns (uint256)
@@ -218,16 +212,16 @@ A simple way to read the variables or functions is to get the ABI from a blockch
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [decimals](#decimals-1)                                 | Return the number of digits of precision for the stored answer. Answers are stored in fixed-point format.                                                                                                                                   |
 | [description](#description-1)                           | Return a description for this data feed. This is different depending on which feed you select.                                                                                                                                              |
-| [getAnswer](#getanswer)                                 | <Icon type="deprecated" /> Deprecated - Do not use this function.                                                                                                                                                                           |
+| [getAnswer](#getanswer)                                 |  Deprecated - Do not use this function.                                                                                                                                                                                                     |
 | [getBilling](#getbilling)                               | Retrieve the current billing configuration.                                                                                                                                                                                                 |
 | [getRoundData](#getrounddata-1)                         | Get the full information for a specific aggregator round including the answer and update timestamps. Use this to get the full historical data for a round.                                                                                  |
-| [getTimestamp](#gettimestamp)                           | <Icon type="deprecated" /> Deprecated - Do not use this function.                                                                                                                                                                           |
+| [getTimestamp](#gettimestamp)                           |  Deprecated - Do not use this function.                                                                                                                                                                                                     |
 | [hasAccess](#hasaccess)                                 | Check if an address has internal access.                                                                                                                                                                                                    |
 | [latestAnswer](#latestanswer)                           | Return the latest answer for this data feed. No timestamp is included to check data freshness.                                                                                                                                              |
 | [latestConfigDetails](#latestconfigdetails)             | Return information about the current offchain reporting protocol configuration.                                                                                                                                                             |
-| [latestRound](#latestround)                             | <Icon type="deprecated" /> Deprecated - Do not use this function.                                                                                                                                                                           |
+| [latestRound](#latestround)                             |  Deprecated - Do not use this function.                                                                                                                                                                                                     |
 | [latestRoundData](#latestrounddata-1)                   | Get the full information for the most recent round including the answer and update timestamps.                                                                                                                                              |
-| [latestTimestamp](#latesttimestamp)                     | <Icon type="deprecated" /> Deprecated - Do not use this function.                                                                                                                                                                           |
+| [latestTimestamp](#latesttimestamp)                     |  Deprecated - Do not use this function.                                                                                                                                                                                                     |
 | [latestTransmissionDetails](#latesttransmissiondetails) | Get information about the most recent answer.                                                                                                                                                                                               |
 | [linkAvailableForPayment](#linkavailableforpayment)     | Get the amount of LINK on this contract that is available to make payments to oracles. This value can be negative if there are outstanding payment obligations.                                                                             |
 | [oracleObservationCount](#oracleobservationcount)       | Returns the number of observations that oracle is due to be reimbursed for.                                                                                                                                                                 |
@@ -242,7 +236,6 @@ A simple way to read the variables or functions is to get the ABI from a blockch
 
 Return the number of digits of precision for the stored answer. Answers are stored in fixed-point format.
 
-
 ```solidity
 function decimals() external view returns (uint8 decimalPlaces);
 
@@ -251,7 +244,6 @@ function decimals() external view returns (uint8 decimalPlaces);
 #### description
 
 Return a description for this data feed. Usually this is an asset pair for a price feed.
-
 
 ```solidity
 function description() public view override checkAccess returns (string memory) {
@@ -262,12 +254,11 @@ function description() public view override checkAccess returns (string memory) 
 
 #### getAnswer
 
-<Aside type="caution" title="This function is deprecated. Do not use this function." />
+> **CAUTION: This function is deprecated. Do not use this function.**
 
 #### getBilling
 
 Retrieve the current billing configuration.
-
 
 ```solidity
 function getBilling()
@@ -297,7 +288,6 @@ function getBilling()
 
 Get the full information for a specific aggregator round including the answer and update timestamps. Use this to get the full historical data for a round.
 
-
 ```solidity
 function getRoundData(
   uint80 _roundId
@@ -315,12 +305,11 @@ function getRoundData(
 
 #### getTimestamp
 
-<Aside type="caution" title="This function is deprecated. Do not use this function." />
+> **CAUTION: This function is deprecated. Do not use this function.**
 
 #### hasAccess
 
 Check if an address has internal access.
-
 
 ```solidity
 function hasAccess(address _user, bytes memory _calldata) public view virtual override returns (bool) {
@@ -337,7 +326,6 @@ Return the latest answer for this data feed. No timestamp is included to check d
 
 Return information about the current offchain reporting protocol configuration.
 
-
 ```solidity
 function latestConfigDetails() external view returns (uint32 configCount, uint32 blockNumber, bytes16 configDigest) {
   return (s_configCount, s_latestConfigBlockNumber, s_hotVars.latestConfigDigest);
@@ -347,12 +335,11 @@ function latestConfigDetails() external view returns (uint32 configCount, uint32
 
 #### latestRound
 
-<Aside type="caution" title="This function is deprecated. Do not use this function." />
+> **CAUTION: This function is deprecated. Do not use this function.**
 
 #### latestRoundData
 
 Get the full information for the most recent round including the answer and update timestamps.
-
 
 ```solidity
 function latestRoundData()
@@ -369,12 +356,11 @@ function latestRoundData()
 
 #### latestTimestamp
 
-<Aside type="caution" title="This function is deprecated. Do not use this function." />
+> **CAUTION: This function is deprecated. Do not use this function.**
 
 #### latestTransmissionDetails
 
 Get information about the most recent answer.
-
 
 ```solidity
 function latestTransmissionDetails()
@@ -398,7 +384,6 @@ function latestTransmissionDetails()
 
 Get the amount of LINK on this contract that is available to make payments to oracles. This value can be negative if there are outstanding payment obligations.
 
-
 ```solidity
 function linkAvailableForPayment() external view returns (int256 availableBalance) {
   // there are at most one billion LINK, so this cast is safe
@@ -416,7 +401,6 @@ function linkAvailableForPayment() external view returns (int256 availableBalanc
 
 Returns the number of observations that oracle is due to be reimbursed for.
 
-
 ```solidity
 function oracleObservationCount(address _signerOrTransmitter) external view returns (uint16) {
   Oracle memory oracle = s_oracles[_signerOrTransmitter];
@@ -431,7 +415,6 @@ function oracleObservationCount(address _signerOrTransmitter) external view retu
 #### owedPayment
 
 Returns how much LINK an oracle is owed for its observations.
-
 
 ```solidity
 function owedPayment(address _transmitter) public view returns (uint256) {
@@ -453,7 +436,6 @@ function owedPayment(address _transmitter) public view returns (uint256) {
 
 Returns the address for the access controller contract.
 
-
 ```solidity
 function requesterAccessController() external view returns (AccessControllerInterface) {
   return s_requesterAccessController;
@@ -464,7 +446,6 @@ function requesterAccessController() external view returns (AccessControllerInte
 #### transmitters
 
 The oracle addresses that can report answers to this aggregator.
-
 
 ```solidity
 function transmitters() external view returns (address[] memory) {
@@ -477,7 +458,6 @@ function transmitters() external view returns (address[] memory) {
 
 Returns the aggregator type and version. Many aggregators are `AccessControlledOffchainAggregator 2.0.0`, but there are other variants in production. The version is for the type of aggregator, and different from the contract `version`.
 
-
 ```solidity
 function typeAndVersion() external pure virtual override returns (string memory) {
   return "AccessControlledOffchainAggregator 2.0.0";
@@ -488,7 +468,6 @@ function typeAndVersion() external pure virtual override returns (string memory)
 #### validatorConfig
 
 Returns the address and the gas limit for the validator contract.
-
 
 ```solidity
 function validatorConfig() external view returns (AggregatorValidatorInterface validator, uint32 gasLimit) {
@@ -501,7 +480,6 @@ function validatorConfig() external view returns (AggregatorValidatorInterface v
 #### version
 
 Returns the contract version. This is different from the `typeAndVersion` for the aggregator.
-
 
 ```solidity
 function version() external view returns (uint256);
@@ -882,37 +860,37 @@ contract Example {
 
 ## Flags Contract Addresses
 
-<Aside type="note" title="This list isn't exhaustive">
-  Not every chain where Chainlink Data Feeds are live has a Flags contract. If your chain is missing from the table
-  below, reach out to [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to confirm
-  feed status.
-</Aside>
+> **NOTE: This list isn't exhaustive**
+>
+> Not every chain where Chainlink Data Feeds are live has a Flags contract. If your chain is missing from the table
+> below, reach out to [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to confirm
+> feed status.
 
 Below is a list of all available Flags contracts on the supported networks:
 
-|                                                                                                          | Chain               | ChainFlag Contract Address                                                                                                                              |
-| -------------------------------------------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <img src="/assets/chains/arbitrum.svg" style="height: 24px; width: auto; vertical-align: middle;" />     | Arbitrum            | <Address contractUrl="https://arbiscan.io/address/0x20551B03c092D998b1410c47BD54004D7C3106D0" eventName="docs_product_interaction" />                   |
-| <img src="/assets/chains/avalanche.svg" style="height: 24px; width: auto; vertical-align: middle;" />    | Avalanche           | <Address contractUrl="https://snowtrace.io/address/0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd" eventName="docs_product_interaction" />                  |
-| <img src="/assets/chains/base.svg" style="height: 24px; width: auto; vertical-align: middle;" />         | Base                | <Address contractUrl="https://basescan.org/address/0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd" eventName="docs_product_interaction" />                  |
-| <img src="/assets/chains/bob.svg" style="height: 24px; width: auto; vertical-align: middle;" />          | Bob                 | <Address contractUrl="https://explorer.gobob.xyz/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />            |
-| <img src="/assets/chains/bnb-chain.svg" style="height: 24px; width: auto; vertical-align: middle;" />    | BNB Chain (BSC)     | <Address contractUrl="https://bscscan.com/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0" eventName="docs_product_interaction" />                   |
-| <img src="/assets/chains/celo.svg" style="height: 24px; width: auto; vertical-align: middle;" />         | Celo                | <Address contractUrl="https://celo.blockscout.com/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />           |
-| <img src="/assets/chains/ethereum.svg" style="height: 24px; width: auto; vertical-align: middle;" />     | Ethereum            | <Address contractUrl="https://etherscan.io/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />                  |
-| <img src="/assets/chains/gnosis-chain.svg" style="height: 24px; width: auto; vertical-align: middle;" /> | Gnosis Chain (xDai) | <Address contractUrl="https://gnosisscan.io/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />                 |
-| <img src="/assets/chains/ink.svg" style="height: 24px; width: auto; vertical-align: middle;" />          | Ink                 | <Address contractUrl="https://explorer.inkonchain.com/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />       |
-| <img src="/assets/chains/linea.svg" style="height: 24px; width: auto; vertical-align: middle;" />        | Linea               | <Address contractUrl="https://lineascan.build/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />               |
-| <img src="/assets/chains/mantle.svg" style="height: 24px; width: auto; vertical-align: middle;" />       | Mantle              | <Address contractUrl="https://mantlescan.xyz/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0" eventName="docs_product_interaction" />                |
-| <img src="/assets/chains/monad.svg" style="height: 24px; width: auto; vertical-align: middle;" />        | Monad               | <Address contractUrl="https://monadvision.com/address/0x2C4936af7C8867e62DAF9874519239dBE6b6DfFD" eventName="docs_product_interaction" />               |
-| <img src="/assets/chains/optimism.svg" style="height: 24px; width: auto; vertical-align: middle;" />     | Optimism            | <Address contractUrl="https://optimistic.etherscan.io/address/0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd" eventName="docs_product_interaction" />       |
-| <img src="/assets/chains/polygon.svg" style="height: 24px; width: auto; vertical-align: middle;" />      | Polygon             | <Address contractUrl="https://polygonscan.com/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />               |
-| <img src="/assets/chains/robinhood.svg" style="height: 24px; width: auto; vertical-align: middle;" />    | Robinhood           | <Address contractUrl="https://robinhoodchain.blockscout.com/address/0xbb601D8e5e568e6464D6D34feE489AA61b8d035A" eventName="docs_product_interaction" /> |
-| <img src="/assets/chains/scroll.svg" style="height: 24px; width: auto; vertical-align: middle;" />       | Scroll              | <Address contractUrl="https://scrollscan.com/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0" eventName="docs_product_interaction" />                |
-| <img src="/assets/chains/soneium.svg" style="height: 24px; width: auto; vertical-align: middle;" />      | Soneium             | <Address contractUrl="https://soneium.blockscout.com/address/0x3DE960FE090BFec72F585347fa0a27CF96a83b36" eventName="docs_product_interaction" />        |
-| <img src="/assets/chains/sonic.svg" style="height: 24px; width: auto; vertical-align: middle;" />        | Sonic               | <Address contractUrl="https://sonicscan.org/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0" eventName="docs_product_interaction" />                 |
-| <img src="/assets/chains/tempo.svg" style="height: 24px; width: auto; vertical-align: middle;" />        | Tempo               | <Address contractUrl="https://explore.tempo.xyz/address/0xae22AF6B02A4E7CCc535D1670442B29a3ef69a88" eventName="docs_product_interaction" />             |
-| <img src="/assets/chains/unichain.svg" style="height: 24px; width: auto; vertical-align: middle;" />     | UniChain            | <Address contractUrl="https://uniscan.xyz/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e" eventName="docs_product_interaction" />                   |
-| <img src="/assets/chains/zksync.svg" style="height: 24px; width: auto; vertical-align: middle;" />       | zkSync              | <Address contractUrl="https://explorer.zksync.io/address/0xC370405879C1ab0470604679E3275a02bCb89C91" eventName="docs_product_interaction" />            |
+|   | Chain               | ChainFlag Contract Address                                                                                                             |
+| - | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+|   | Arbitrum            | [0x20551B03c092D998b1410c47BD54004D7C3106D0](https://arbiscan.io/address/0x20551B03c092D998b1410c47BD54004D7C3106D0)                   |
+|   | Avalanche           | [0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd](https://snowtrace.io/address/0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd)                  |
+|   | Base                | [0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd](https://basescan.org/address/0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd)                  |
+|   | Bob                 | [0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e](https://explorer.gobob.xyz/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e)            |
+|   | BNB Chain (BSC)     | [0x141f4278A5D71070Dc09CA276b72809b80F20eF0](https://bscscan.com/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0)                   |
+|   | Celo                | [0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e](https://celo.blockscout.com/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e)           |
+|   | Ethereum            | [0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e](https://etherscan.io/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e)                  |
+|   | Gnosis Chain (xDai) | [0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e](https://gnosisscan.io/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e)                 |
+|   | Ink                 | [0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e](https://explorer.inkonchain.com/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e)       |
+|   | Linea               | [0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e](https://lineascan.build/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e)               |
+|   | Mantle              | [0x141f4278A5D71070Dc09CA276b72809b80F20eF0](https://mantlescan.xyz/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0)                |
+|   | Monad               | [0x2C4936af7C8867e62DAF9874519239dBE6b6DfFD](https://monadvision.com/address/0x2C4936af7C8867e62DAF9874519239dBE6b6DfFD)               |
+|   | Optimism            | [0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd](https://optimistic.etherscan.io/address/0x71c5CC2aEB9Fa812CA360E9bAC7108FC23312cdd)       |
+|   | Polygon             | [0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e](https://polygonscan.com/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e)               |
+|   | Robinhood           | [0xbb601D8e5e568e6464D6D34feE489AA61b8d035A](https://robinhoodchain.blockscout.com/address/0xbb601D8e5e568e6464D6D34feE489AA61b8d035A) |
+|   | Scroll              | [0x141f4278A5D71070Dc09CA276b72809b80F20eF0](https://scrollscan.com/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0)                |
+|   | Soneium             | [0x3DE960FE090BFec72F585347fa0a27CF96a83b36](https://soneium.blockscout.com/address/0x3DE960FE090BFec72F585347fa0a27CF96a83b36)        |
+|   | Sonic               | [0x141f4278A5D71070Dc09CA276b72809b80F20eF0](https://sonicscan.org/address/0x141f4278A5D71070Dc09CA276b72809b80F20eF0)                 |
+|   | Tempo               | [0xae22AF6B02A4E7CCc535D1670442B29a3ef69a88](https://explore.tempo.xyz/address/0xae22AF6B02A4E7CCc535D1670442B29a3ef69a88)             |
+|   | UniChain            | [0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e](https://uniscan.xyz/address/0xaB93491064aEE774BE4b8a1cFFe4421F5B124F4e)                   |
+|   | zkSync              | [0xC370405879C1ab0470604679E3275a02bCb89C91](https://explorer.zksync.io/address/0xC370405879C1ab0470604679E3275a02bCb89C91)            |
 
 ---
 
@@ -946,17 +924,22 @@ For more information about evaluating data quality, assessing liquidity and dist
 | Precious Metals             | 3+ market data vendors                                                                                                                                     |
 | US Equities                 | 3+ market data vendors                                                                                                                                     |
 
-<Aside type="note" title="Need more details?">
-  For additional information about data sourcing, please{" "}
-  <a href="https://chain.link/contact?ref_id=pricefeeds">contact us</a>.
-</Aside>
+> **NOTE: Need more details?**
+>
+> For additional information about data sourcing, please&#x20;
+> [contact us](https://chain.link/contact?ref_id=pricefeeds).
 
 ---
 
 # Deprecation of Chainlink Data Feeds
 Source: https://docs.chain.link/data-feeds/deprecating-feeds
 
-<FeedPage ecosystem="deprecating" />
+## Deprecated Feeds
+
+This page contains dynamically generated or component-heavy content.
+
+For the full and most up-to-date information, see:
+https://docs.chain.link/data-feeds/deprecating-feeds
 
 ---
 
@@ -999,6 +982,8 @@ Developers implementing Chainlink Data Feeds are solely responsible for institut
 - **Code and application audits:** Developers are responsible for auditing their code and applications before deploying to production. Developers must determine the quality of any audits and ensure that they meet the requirements for their application.
 
 - **Code dependencies and imports:** Developers are responsible for ensuring the quality, reliability, and security of any dependencies or imported packages that they use with Chainlink Data Feeds, and review and audit these dependencies and packages.
+
+![Image](/images/developer-responsibilities.webp)
 
 ---
 
@@ -1047,9 +1032,9 @@ When a new aggregator is deployed for a specific feed, it is first proposed, and
 
 ## Obtaining addresses
 
-<Aside type="caution" title="Reverse Lookup">
-  Reverse lookup is not supported.
-</Aside>
+> **CAUTION: Reverse Lookup**
+>
+> Reverse lookup is not supported.
 
 ### Javascript
 
@@ -1149,12 +1134,12 @@ This guide shows you how to read Data Feeds and store the value onchain using So
 
 The code for reading Data Feeds on Ethereum or other EVM-compatible blockchains is the same for each chain and each Data Feed types. You choose different types of feeds for different uses, but the request and response format are the same. The answer decimal length and expected value ranges might change depending on what feed you use.
 
-<Aside type="caution" title="Using Data Feeds on L2 networks">
-  If you are using Chainlink Data Feeds on L2 networks like Arbitrum, OP, and Metis, you must also check the latest
-  answer from the L2 Sequencer Uptime Feed to ensure that the data is accurate in the event of an L2 sequencer outage.
-  See the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) page to learn how to use Data Feeds on L2
-  networks.
-</Aside>
+> **CAUTION: Using Data Feeds on L2 networks**
+>
+> If you are using Chainlink Data Feeds on L2 networks like Arbitrum, OP, and Metis, you must also check the latest
+> answer from the L2 Sequencer Uptime Feed to ensure that the data is accurate in the event of an L2 sequencer outage.
+> See the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) page to learn how to use Data Feeds on L2
+> networks.
 
 ## Before you begin
 
@@ -1227,46 +1212,47 @@ The contract has the following components:
 
 ## Compile, deploy, and run the contract
 
-<Aside type="caution" title="Configure and fund your wallet">
-  If you have not already configured your MetaMask wallet and funded it with testnet ETH, follow the instructions in [Deploy Your First Smart Contract](/quickstarts/deploy-your-first-contract#install-and-fund-your-metamask-wallet) to set that up. You can get testnet ETH at one of the available [Sepolia faucets](/resources/link-token-contracts/#sepolia-testnet).
-</Aside>
+> **CAUTION: Configure and fund your wallet**
+>
+> If you have not already configured your MetaMask wallet and funded it with testnet ETH, follow the instructions in [Deploy Your First Smart Contract](/quickstarts/deploy-your-first-contract#install-and-fund-your-metamask-wallet) to set that up. You can get testnet ETH at one of the available [Sepolia faucets](/resources/link-token-contracts/#sepolia-testnet).
 
 Deploy the `DataConsumerV3` smart contract on the Sepolia testnet.
 
 1. [Open the example contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataFeeds/DataConsumerV3.sol) in Remix. Remix opens and shows the contents of the smart contract.
 
+   [Open the contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataFeeds/DataConsumerV3.sol)
 
 2. Because the code is already written, you can start the compile step. On the left side of Remix, click the **Solidity Compiler** tab to view the compiler settings.
 
-   (Image: Screenshot showing the Compiler tab and its settings.)
+   ![Screenshot showing the Compiler tab and its settings.](/images/getting-started/selectSolidityCompiler.png)
 
 3. Use the default compiler settings. Click the **Compile DataConsumerV3.sol** button to compile the contract. Remix automatically detects the correct compiler version depending on the `pragma` that you specify in the contract. You can ignore warnings about unused local variables in this example.
 
-   (Image: Screenshot of the Compile button.)
+   ![Screenshot of the Compile button.](/images/getting-started/compileDataConsumerV3.png)
 
 4. On the **Deploy** tab, select the **Injected Provider** environment. This contract specifically requires Web3 because it connects with another contract on the blockchain. Running in a JavaScript VM will not work.
 
-   (Image: Screenshot showing the Injected Provider environment selected.)
+   ![Screenshot showing the Injected Provider environment selected.](/images/getting-started/selectWeb3.png)
 
 5. Because the example contract has several imports, Remix might select another contract to deploy by default. In the **Contract** section, select the `DataConsumerV3` contract to make sure that Remix deploys the correct contract.
 
-   (Image: Screenshot showing DataConsumerV3 as the contract to deploy.)
+   ![Screenshot showing DataConsumerV3 as the contract to deploy.](/images/getting-started/selectDataConsumerV3.png)
 
 6. Click **Deploy** to deploy the contract to the Sepolia testnet. MetaMask opens and asks you to confirm payment for deploying the contract. Make sure MetaMask is set to the Sepolia network before you accept the transaction. Because these transactions are on the blockchain, they are not reversible.
 
-   (Image: Screenshot of the Deploy button for DataConsumerV3.)
+   ![Screenshot of the Deploy button for DataConsumerV3.](/images/getting-started/deployDataConsumerV3.png)
 
 7. In the MetaMask prompt, click **Confirm** to approve the transaction and spend your testnet ETH required to deploy the contract.
 
-   (Image: Screenshot showing Metamask asking you to confirm the transaction.)
+   ![Screenshot showing Metamask asking you to confirm the transaction.](/images/getting-started/confirmTransaction.png)
 
 8. After a few seconds, the transaction completes and your contract appears under the **Deployed Contracts** list in Remix. Click the contract dropdown to view its variables and functions.
 
-   (Image: Remix Deployed Contracts Section)
+   ![Remix Deployed Contracts Section](/images/getting-started/deployedContractDataConsumerV3.png)
 
 9. Click **getChainlinkDataFeedLatestAnswer** to show the latest answer from the aggregator contract. In this example, the answer is the latest price, which appears just below the button. The returned answer is an integer, so it is missing its decimal point. You can find the correct number of decimal places for this answer on the [Price Feed addresses](/data-feeds/price-feeds/addresses) page by clicking the **Show more details** checkbox. The answer on the BTC / USD feed uses 8 decimal places, so an answer of `3030914000000` indicates a BTC / USD price of `30309.14`. Each feed uses a different number of decimal places for answers.
 
-   (Image: A screenshot showing the deployed contract and the latest answer.)
+   ![A screenshot showing the deployed contract and the latest answer.](/images/getting-started/getLatestPrice.png)
 
 ---
 
@@ -1292,6 +1278,8 @@ As shown in the [decentralized model](/architecture-overview/architecture-decent
 
 As shown in the following sequence diagram, to get historical data, call the `getRoundData` [function](/data-feeds/api-reference/#getrounddata) and provide `roundId` as a parameter.
 
+![Image](/images/data-feed/getRoundData-sequence.png)
+
 Note that roundIds have different meanings in proxy contracts and in aggregator contracts.
 
 ### `roundId` in Aggregator (aggregatorRoundId)
@@ -1304,7 +1292,6 @@ The examples in this document name the aggregator `roundId` as `aggregatorRoundI
 
 Because a proxy has references to current and all previous underlying aggregators, it needs a way to fetch data from the correct aggregator. The `roundId` is computed in the [proxy contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.6/AggregatorProxy.sol) as shown in the following example:
 
-
 ```solidity
 return uint80(uint256(_phase) << PHASE_OFFSET | _originalId);
 ```
@@ -1316,10 +1303,10 @@ where:
 
 From the above formula, you can think of it as returning a large number containing the `phase` and the aggregator `roundId`.
 
-<Aside type="note" title="Note">
-  The example formula above ensures that no matter how many times the underlying aggregator changes, the proxy `roundId`
-  will always increase.
-</Aside>
+> **NOTE: Note**
+>
+> The example formula above ensures that no matter how many times the underlying aggregator changes, the proxy `roundId`
+> will always increase.
 
 **Example:**
 
@@ -1353,11 +1340,11 @@ roundId = (phaseId << 64n) | aggregatorRoundId // returns 73786976294838206465n
 
 Loop over the [`getRoundData` function](/data-feeds/api-reference/#getrounddata). Start at *73786976294838206465* and increment it until you get a revert. This means that you reached the last round for the underlying aggregator. The same process could be repeated for previous `phaseIds` (3,2,1).
 
-<Aside type="caution" title="Looping onchain">
-  The examples showed how to loop offchain to fetch all historical data from a given proxy. You could also write a
-  similar code onchain, but be aware that this could cause **very high gas prices** if a state is changed within the
-  same function.
-</Aside>
+> **CAUTION: Looping onchain**
+>
+> The examples showed how to loop offchain to fetch all historical data from a given proxy. You could also write a
+> similar code onchain, but be aware that this could cause **very high gas prices** if a state is changed within the
+> same function.
 
 ### `getRoundData` return values
 
@@ -1365,7 +1352,7 @@ The [`getRoundData` function](/data-feeds/api-reference/#getrounddata) returns t
 
 - `roundId`: The round in which the answer was updated
 - `answer`: The answer reflects the data recorded for the specified round
-- `answeredInRound`: <Icon type="deprecated" /> Deprecated - Previously used when answers could take multiple rounds to be computed
+- `answeredInRound`:  Deprecated - Previously used when answers could take multiple rounds to be computed
 - `startedAt`: The timestamp when the round started
 - `updatedAt`: The timestamp when the answer was computed
 
@@ -1530,10 +1517,10 @@ print(historicalData)
 # Chainlink Data Feeds
 Source: https://docs.chain.link/data-feeds
 
-<Aside type="note" title="Talk to an expert">
-  <a href="https://chain.link/contact?ref_id=pricefeeds">Contact us</a> to talk to an expert about integrating Chainlink
-  Data Feeds with your applications.
-</Aside>
+> **NOTE: Talk to an expert**
+>
+> [Contact us](https://chain.link/contact?ref_id=pricefeeds) to talk to an expert about integrating Chainlink
+> Data Feeds with your applications.
 
 Chainlink Data Feeds are the quickest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health.
 
@@ -1688,10 +1675,10 @@ To learn more about the heartbeat and deviation threshold, read the [Decentraliz
 # L2 Sequencer Uptime Feeds
 Source: https://docs.chain.link/data-feeds/l2-sequencer-feeds
 
-<Aside type="caution" title="Availability notice">
-  Chainlink is no longer expanding L2 Sequencer Uptime Feeds to additional networks. Existing feeds on the supported
-  networks listed below will continue to operate and be supported.
-</Aside>
+> **CAUTION: Availability notice**
+>
+> Chainlink is no longer expanding L2 Sequencer Uptime Feeds to additional networks. Existing feeds on the supported
+> networks listed below will continue to operate and be supported.
 
 Optimistic rollups (e.g., Arbitrum, Optimism) and many ZK-rollups rely on sequencers to efficiently manage transaction ordering, execution, and batching before submitting them to Layer 1 (L1) blockchains like Ethereum. The sequencer plays a crucial role in optimizing transaction throughput, reducing fees, and ensuring fast transaction confirmations on L2 networks, making it a key component of their scalability and performance.
 
@@ -1709,47 +1696,47 @@ This proactive approach enhances the resilience and fairness of applications ope
 
 You can find proxy addresses for the L2 sequencer feeds at the following addresses:
 
-### <img src="/assets/chains/arbitrum.svg" style="height: 20px; width: auto; margin-right: 8px;" />Arbitrum
+### Arbitrum
 
 Arbitrum Mainnet: [0xFdB631F5EE196F0ed6FAa767959853A9F217697D](https://arbiscan.io/address/0xFdB631F5EE196F0ed6FAa767959853A9F217697D)
 
-### <img src="/assets/chains/base.svg" style="height: 20px; width: auto; margin-right: 8px;" />BASE
+### BASE
 
 BASE Mainnet: [0xBCF85224fc0756B9Fa45aA7892530B47e10b6433](https://basescan.org/address/0xBCF85224fc0756B9Fa45aA7892530B47e10b6433)
 
-### <img src="/assets/chains/celo.svg" style="height: 20px; width: auto; margin-right: 8px;" />Celo
+### Celo
 
 Celo Mainnet: [0x4CD491Dc27C8B0BbD10D516A502856B786939d18](https://celoscan.io/address/0x4CD491Dc27C8B0BbD10D516A502856B786939d18)
 
-### <img src="/assets/chains/mantle.svg" style="height: 20px; width: auto; margin-right: 8px;" />Mantle
+### Mantle
 
 Mantle Mainnet: [0xaDE1b9AbB98c6A542E4B49db2588a3Ec4bF7Cdf0](https://mantlescan.xyz/address/0xaDE1b9AbB98c6A542E4B49db2588a3Ec4bF7Cdf0)
 
-### <img src="/assets/chains/megaeth.svg" style="height: 20px; width: auto; margin-right: 8px;" />MegaETH
+### MegaETH
 
 MegaETH Mainnet: [0x78B2195A21B8BBe82acaB43F90F9180E9513FD0C](https://mega.etherscan.io/address/0x78B2195A21B8BBe82acaB43F90F9180E9513FD0C)
 
-### <img src="/assets/chains/metis.svg" style="height: 20px; width: auto; margin-right: 8px;" />Metis
+### Metis
 
 Andromeda Mainnet: [0x58218ea7422255EBE94e56b504035a784b7AA204](https://andromeda-explorer.metis.io/address/0x58218ea7422255EBE94e56b504035a784b7AA204)
 
-### <img src="/assets/chains/optimism.svg" style="height: 20px; width: auto; margin-right: 8px;" />OP
+### OP
 
 OP Mainnet: [0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389](https://optimistic.etherscan.io/address/0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389)
 
-### <img src="/assets/chains/scroll.svg" style="height: 20px; width: auto; margin-right: 8px;" />Scroll
+### Scroll
 
 Scroll Mainnet: [0x45c2b8C204568A03Dc7A2E32B71D67Fe97F908A9](https://scrollscan.com/address/0x45c2b8C204568A03Dc7A2E32B71D67Fe97F908A9)
 
-### <img src="/assets/chains/soneium.svg" style="height: 20px; width: auto; margin-right: 8px;" />Soneium
+### Soneium
 
 Soneium Mainnet: [0xaDE1b9AbB98c6A542E4B49db2588a3Ec4bF7Cdf0](https://soneium.blockscout.com/address/0xaDE1b9AbB98c6A542E4B49db2588a3Ec4bF7Cdf0)
 
-### <img src="/assets/chains/xlayer.svg" style="height: 20px; width: auto; margin-right: 8px;" />X Layer
+### X Layer
 
 X Layer Mainnet: [0x45c2b8C204568A03Dc7A2E32B71D67Fe97F908A9](https://www.okx.com/web3/explorer/xlayer/address/0x45c2b8C204568A03Dc7A2E32B71D67Fe97F908A9)
 
-### <img src="/assets/chains/zksync.svg" style="height: 20px; width: auto; margin-right: 8px;" />ZKsync
+### ZKsync
 
 zkSync Mainnet: [0x0E6AC8B967393dcD3D36677c126976157F993940](https://explorer.zksync.io/address/0x0E6AC8B967393dcD3D36677c126976157F993940)
 
@@ -1758,6 +1745,8 @@ zkSync Mainnet: [0x0E6AC8B967393dcD3D36677c126976157F993940](https://explorer.zk
 ### Arbitrum
 
 The diagram below shows how these feeds update and how a consumer retrieves the status of the Arbitrum sequencer.
+
+![Image](/images/data-feed/l2-diagram-arbitrum.webp)
 
 1. Chainlink nodes trigger an OCR round every 30s and update the sequencer status by calling the `validate` function in the [`ArbitrumValidator` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/l2ep/dev/arbitrum/ArbitrumValidator.sol) by calling it through the [`ValidatorProxy` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.8/ValidatorProxy.sol).
 2. The `ArbitrumValidator` checks to see if the latest update is different from the previous update. If it detects a difference, it places a message in the [Arbitrum inbox contract](https://docs.arbitrum.io/how-arbitrum-works/inside-arbitrum-nitro).
@@ -1771,6 +1760,8 @@ If the Arbitrum network becomes unavailable, the `ArbitrumValidator` contract co
 ### Other Supported Networks
 
 On BASE, Celo, Mantle, Metis, OP, Scroll, Soneium and zkSync, the sequencer's status is relayed from L1 to L2 where the consumer can retrieve it.
+
+![Image](/images/data-feed/l2-diagram-optimism-metis.webp)
 
 **On the L1 network:**
 
@@ -1801,10 +1792,14 @@ When the Sequencer is down, all L2 transactions sent from the L1 network wait in
 1. **Transaction 3** contains Chainlink's transaction to set the status of the sequencer as being down on L2.
 2. **Transaction 4** is a transaction made by a consumer that is dependent on the sequencer status.
 
+![Image](/images/data-feed/seq-down-1.webp)
+
 After the sequencer comes back up, it moves all transactions in the pending queue to the processed queue.
 
 1. Transactions are processed in the order they arrived so **Transaction 3** is processed before **Transaction 4**.
 2. Because **Transaction 3** happens before **Transaction 4**, **Transaction 4** will read the status of the Sequencer as being down and responds accordingly.
+
+![Image](/images/data-feed/seq-down-2.webp)
 
 ## Example Consumer Contract
 
@@ -2101,15 +2096,15 @@ MVR feeds store multiple data points in a single byte array onchain. To consume 
 5. **Apply decimals**: Scale numeric values to their true decimal representation for accurate calculations and display.
 6. **Use in your application**: Process or display the decoded values.
 
-<Aside type="caution" title="Disclaimer">
-  This guide represents an example of using a Chainlink product or service and is provided to help you understand how to
-  interact with Chainlink's systems and services so that you can integrate them into your own. This template is provided
-  "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key checks or
-  error handling to make the usage of the product more clear. Do not use the code in this example in a production
-  environment without completing your own audits and application of best practices. Neither Chainlink Labs, the
-  Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to
-  errors in code.
-</Aside>
+> **CAUTION: Disclaimer**
+>
+> This guide represents an example of using a Chainlink product or service and is provided to help you understand how to
+> interact with Chainlink's systems and services so that you can integrate them into your own. This template is provided
+> "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key checks or
+> error handling to make the usage of the product more clear. Do not use the code in this example in a production
+> environment without completing your own audits and application of best practices. Neither Chainlink Labs, the
+> Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to
+> errors in code.
 
 ## Prerequisites
 
@@ -2231,11 +2226,11 @@ async function checkDataStaleness() {
 
 ### 4. Fetch and Decode the Bundle Data
 
-<Aside type="note" title="MVR Feed-Specific Data Structure">
-  Find the exact data structure for your specific MVR feed on the [SmartData
-  Addresses](/data-feeds/smartdata/addresses?page=1#networks) page. Click on the feed entry and expand the "MVR Bundle
-  Info" section to see all fields, their types, and decimals.
-</Aside>
+> **NOTE: MVR Feed-Specific Data Structure**
+>
+> Find the exact data structure for your specific MVR feed on the [SmartData
+> Addresses](/data-feeds/smartdata/addresses?page=1#networks) page. Click on the feed entry and expand the "MVR Bundle
+> Info" section to see all fields, their types, and decimals.
 
 MVR feeds encode multiple data points in a single bytes array. You need to know the structure to properly decode it:
 
@@ -2292,11 +2287,11 @@ async function getRawData() {
 
 ### 5. Apply Decimal Scaling Factors
 
-<Aside type="note" title="Robust Decimal Handling">
-  Different RPC providers might return decimals in varying formats. The robust implementation shown here handles
-  different possible return types, including arrays of BigNumber objects, plain arrays, or objects with numeric
-  properties.
-</Aside>
+> **NOTE: Robust Decimal Handling**
+>
+> Different RPC providers might return decimals in varying formats. The robust implementation shown here handles
+> different possible return types, including arrays of BigNumber objects, plain arrays, or objects with numeric
+> properties.
 
 You need to apply the appropriate decimals to convert the raw fixed-point integers to their true numerical values:
 
@@ -2666,27 +2661,17 @@ MVR feeds store multiple data points in a single byte array onchain. To consume 
 5. **Apply decimals** (if needed): For numeric fields, scale the raw values by dividing by `10^decimals[i]` to get the true numerical values.
 6. **Use in your dApp**: Store or process the decoded values as required by your application.
 
-<Aside type="caution" title="Disclaimer">
-  This guide represents an example of using a Chainlink product or service and is provided to help you understand how to
-  interact with Chainlink's systems and services so that you can integrate them into your own. This template is provided
-  "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key checks or
-  error handling to make the usage of the product more clear. Do not use the code in this example in a production
-  environment without completing your own audits and application of best practices. Neither Chainlink Labs, the
-  Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to
-  errors in code.
-</Aside>
-
 ## Step-by-Step Example
 
 Below is a step-by-step explanation, followed by a full example contract that ties everything together.
 
 ### 1. Define a Data Structure
 
-<Aside type="note" title="Data Structure">
-  Find the exact data structure for your specific MVR feed on the [SmartData
-  Addresses](/data-feeds/smartdata/addresses?page=1#networks) page. Click on the feed entry and expand the "MVR Bundle
-  Info" section to see all fields, their types, and decimals.
-</Aside>
+> **NOTE: Data Structure**
+>
+> Find the exact data structure for your specific MVR feed on the [SmartData
+> Addresses](/data-feeds/smartdata/addresses?page=1#networks) page. Click on the feed entry and expand the "MVR Bundle
+> Info" section to see all fields, their types, and decimals.
 
 Each MVR feed publishes data in a specific layout. For example, imagine an investment feed that reports:
 
@@ -2831,15 +2816,15 @@ Below is a full example that demonstrates how to:
 - Adjust numeric fields by the correct decimal factor
 - Store both the raw onchain values and the scaled values
 
-<Aside type="note" title="Adapt the Data Structure">
-  The example below uses a generic Data struct for demonstration. You **must** modify this structure to match the exact fields, types, and order of your specific MVR feed:
-
-  1. Navigate to the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page
-  2. Find and click on your specific MVR feed
-  3. Expand the "MVR Bundle Info" section to see all fields and their types
-  4. Create your Data struct with exactly the same fields, types, and order
-  5. Update the field names in `consumeData()` to match your struct
-</Aside>
+> **NOTE: Adapt the Data Structure**
+>
+> The example below uses a generic Data struct for demonstration. You **must** modify this structure to match the exact fields, types, and order of your specific MVR feed:
+>
+> 1. Navigate to the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page
+> 2. Find and click on your specific MVR feed
+> 3. Expand the "MVR Bundle Info" section to see all fields and their types
+> 4. Create your Data struct with exactly the same fields, types, and order
+> 5. Update the field names in `consumeData()` to match your struct
 
 ```sol
 // SPDX-License-Identifier: MIT
@@ -3034,16 +3019,6 @@ MVR feeds store multiple data points in a single byte array onchain. To consume 
 5. **Apply decimals**: Scale numeric values to their true decimal representation for accurate calculations and display.
 6. **Use in your application**: Process or display the decoded values.
 
-<Aside type="caution" title="Disclaimer">
-  This guide represents an example of using a Chainlink product or service and is provided to help you understand how to
-  interact with Chainlink's systems and services so that you can integrate them into your own. This template is provided
-  "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key checks or
-  error handling to make the usage of the product more clear. Do not use the code in this example in a production
-  environment without completing your own audits and application of best practices. Neither Chainlink Labs, the
-  Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to
-  errors in code.
-</Aside>
-
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/en/download/) environment (Node.js >=16.x recommended)
@@ -3108,10 +3083,10 @@ const bundleAggregatorProxyABI = [
 
 ### 2. Set Up the Client and Contract
 
-<Aside type="note" title="Viem Supported Chains">
-  For a complete list of supported chains in Viem, refer to the [Viem Chains
-  Reference](https://github.com/wevm/viem/blob/main/src/chains/index.ts) on GitHub.
-</Aside>
+> **NOTE: Viem Supported Chains**
+>
+> For a complete list of supported chains in Viem, refer to the [Viem Chains
+> Reference](https://github.com/wevm/viem/blob/main/src/chains/index.ts) on GitHub.
 
 Connect to a blockchain provider and create the contract instance:
 
@@ -3145,11 +3120,11 @@ MVR_FEED_ADDRESS=<your-feed-address>
 
 ### 3. Define Type-Safe Data Structures
 
-<Aside type="note" title="MVR Feed-Specific Data Structure">
-  Find the exact data structure for your specific MVR feed on the [SmartData
-  Addresses](/data-feeds/smartdata/addresses?page=1#networks) page. Click on the feed entry and expand the "MVR Bundle
-  Info" section to see all fields, their types, and decimals.
-</Aside>
+> **NOTE: MVR Feed-Specific Data Structure**
+>
+> Find the exact data structure for your specific MVR feed on the [SmartData
+> Addresses](/data-feeds/smartdata/addresses?page=1#networks) page. Click on the feed entry and expand the "MVR Bundle
+> Info" section to see all fields, their types, and decimals.
 
 Define a TypeScript interface that corresponds to your feed's data structure:
 
@@ -3206,11 +3181,11 @@ async function checkDataStaleness(
 
 ### 5. Fetch and Decode the Bundle Data
 
-<Aside type="note" title="MVR Feed-Specific Data Structure">
-  Find the exact data structure for your specific MVR feed on the [SmartData
-  Addresses](/data-feeds/smartdata/addresses?page=1#networks) page. Click on the feed entry and expand the "MVR Bundle
-  Info" section to see all fields, their types, and decimals.
-</Aside>
+> **NOTE: MVR Feed-Specific Data Structure**
+>
+> Find the exact data structure for your specific MVR feed on the [SmartData
+> Addresses](/data-feeds/smartdata/addresses?page=1#networks) page. Click on the feed entry and expand the "MVR Bundle
+> Info" section to see all fields, their types, and decimals.
 
 ```typescript
 // Define types array for decoding
@@ -3268,10 +3243,10 @@ async function getRawData(
 
 ### 6. Apply Decimal Scaling Factors
 
-<Aside type="note" title="Handling Decimals in TypeScript">
-  Viem uses bigint for all numeric values to safely handle the large numbers common in blockchain applications. When
-  formatting these values for display or calculations, we need to apply the appropriate decimal scaling.
-</Aside>
+> **NOTE: Handling Decimals in TypeScript**
+>
+> Viem uses bigint for all numeric values to safely handle the large numbers common in blockchain applications. When
+> formatting these values for display or calculations, we need to apply the appropriate decimal scaling.
 
 ```typescript
 import { formatUnits } from "viem"
@@ -3643,7 +3618,7 @@ Check our [implementation guides](/data-feeds/mvr-feeds/guides) for detailed ins
 # Price Feed Contract Addresses
 Source: https://docs.chain.link/data-feeds/price-feeds/addresses
 
-<FeedPage />
+Live values such as feed contract addresses are not inlined here. Wait for the official API to obtain current data.
 
 ---
 
@@ -3657,7 +3632,7 @@ Chainlink Data Feeds provide data that is aggregated from many data sources by a
 # Rate and Volatility Feed Addresses
 Source: https://docs.chain.link/data-feeds/rates-feeds/addresses
 
-<FeedPage dataFeedType="rates" />
+Live values such as feed contract addresses are not inlined here. Wait for the official API to obtain current data.
 
 ---
 
@@ -3684,6 +3659,8 @@ See the [Rate and Volatility Feed Addresses](/data-feeds/rates-feeds/addresses) 
 
 The ETH Staking APR feeds provide a trust-minimized and tamper-proof source of truth for the global rate of return from staking as a validator to secure the Ethereum network. The annualized rate of return is calculated over 30-day and 90-day rolling windows. Data providers use offchain computation to calculate returns at an epoch level, reach consensus on the APR, and then write the results onchain to be used by decentralized protocols and Web 3 applications. Feeds are currently configured to update at a minimum of once per day.
 
+![A diagram showing how Staking data is obtained and annualized rate of return is confirmed onchain](/images/data-feed/eth-staking-apr-feed-V3.webp)
+
 See the [Rate and Volatility Feed Addresses](/data-feeds/rates-feeds/addresses) page to find the ETH Staking APR feeds that are currently available. If you have questions or would like to request an enhancement to ETH Staking APR feeds, contact us using [this form](https://forms.gle/Jc1MGY5ry1ceYH1X6).
 
 ## Realized volatility
@@ -3693,6 +3670,8 @@ Realized volatility measures asset price movement over a specific time interval.
 Each data feed reflects the volatility of an asset over a specific rolling window of time. For example, some data feeds provide volatility data for the last 24 hours, 7 days, and 30 days of time. You can compare the data across these windows to infer whether the volatility of an asset is trending up or down. For example, if realized volatility for the 24-hour window is higher than the 7-day window, volatility might increase.
 
 The same high-quality data providers used in Chainlink's price feeds sample price data every 10 minutes to refresh volatility estimates. onchain values are updated when the feed heartbeat or deviation threshold is met.
+
+![A diagram showing how volatility data is obtained and answers for different volatility windows is confirmed onchain](/images/data-feed/realised-volatility-feed-V3.webp)
 
 See the [Rate and Volatility Feed Addresses](/data-feeds/rates-feeds/addresses) page to find heartbeat and deviation information for each feed. If you have questions or would like to request an enhancement to Realized Volatility Feeds, contact us using [this form](https://forms.gle/Jc1MGY5ry1ceYH1X6).
 
@@ -3722,11 +3701,11 @@ Data feeds are grouped into the following categories based on the level of marke
 
 If a feed does not display one of these categories, it has not yet been evaluated for market pricing risk. Treat it as unevaluated and use it at your own risk.
 
-<Aside type="note">
-  For important updates regarding the use of Chainlink Data Feeds, users should join the official Chainlink Discord and
-  subscribe to the [#data-feeds channel](https://discord.gg/Dqy5N9UbsR) and regularly check the [Chainlink
-  Changelog](https://dev.chain.link/changelog?product=Data+Feeds).
-</Aside>
+> **NOTE**
+>
+> For important updates regarding the use of Chainlink Data Feeds, users should join the official Chainlink Discord and
+> subscribe to the [#data-feeds channel](https://discord.gg/Dqy5N9UbsR) and regularly check the [Chainlink
+> Changelog](https://dev.chain.link/changelog?product=Data+Feeds).
 
 ## Market pricing risk by category
 
@@ -3809,13 +3788,12 @@ Data feeds managed by Chainlink Labs will be considered for deprecation if they 
 
 Known users of these feeds will be contacted directly about the feeds' deprecation whenever possible. Notifications will also be posted on the [Feeds Scheduled For Deprecation](/data-feeds/deprecating-feeds) page and on our [Discord channel](https://discord.com/channels/592041321326182401/991444378335838318) with two weeks of notice before they are shut down except where conditions require an accelerated deprecation.
 
-
-<Aside type="note" title="Data Feed Shutdown Behavior">
-  Once a feed is shutdown, calls to the feed will behave as follows:
-
-  - `latestAnswer` will return `0`
-  - `latestRoundData` will revert with no data available
-</Aside>
+> **NOTE: Data Feed Shutdown Behavior**
+>
+> Once a feed is shutdown, calls to the feed will behave as follows:
+>
+> - `latestAnswer` will return `0`
+> - `latestRoundData` will revert with no data available
 
 ### ⚪ Unrated
 
@@ -3825,19 +3803,19 @@ These feeds have not yet been evaluated for market pricing risk. Treat them as u
 
 In addition to categories, be aware that markets for several assets are actively traded only during certain hours. Listed data feeds include an attribute describing their market hours. Chainlink Labs recommends using these feeds only during their specified hours:
 
-| Feed                            | Hours                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Crypto**                      | 24/7/365 - No market close.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| **US_Equities**                | Standard US equity market hours: 09:30 - 16:00 ET M-F excluding US equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| **US_Equities_24/5**          | 24 hours a day, 5 days a week: 18:00 ET Sunday to 17:00 ET Friday. These feeds aggregate data across regular, pre-market, post-market, and overnight equity trading sessions. Used by [tokenized equity feeds](/data-feeds/tokenized-equity-feeds) that require continuous equity pricing outside of standard market hours. Feeds are not updated on weekends or US equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| **UK_ETF**                     | Standard UK equity market hours: 08:00 - 16:30 UK time M-F excluding UK equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| **Forex**                       | 18:00 ET Sunday to 17:00 ET Friday. <br /> The feeds also follow the global Forex market Christmas and New Year's Day holiday schedule. Many non-G12 currencies primarily trade during local market hours. It is recommended to use those feeds only during local trading hours. We generally observe normal trading within these hours. Prices outside of these hours may be subject to volatility and users are advised to implement additional controls. In addition, local holidays, natural disasters, political unrest or other exogenous shocks are liable to interrupt normal trading in less-liquid currencies. Some currency pairs are instead offered as [24/7 forex feeds](/data-feeds/24-7-extended-hours-data-feeds#forex), which source a crypto-derived rate and publish continuously; review that page's risk considerations before using one. |
-| **Precious_Metals**            | 18:00 ET Sunday to 17:00 ET Friday with a one-hour break Monday through Thursday from 17:00 to 18:00. <br /> The feeds also follow the global Forex market holiday schedule for Christmas and New Year's Day. Some [24/7 blended precious metals feeds](/data-feeds/24-7-extended-hours-data-feeds#precious-metals) publish outside these hours using a custom methodology.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| **NYMEX** (US OIL)              | 18:00 ET Sunday to 17:00 ET Friday, with a one-hour break Monday through Thursday from 17:00 to 18:00. <br /> The feed also follows the NYMEX market holiday schedule.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| **COMEX** (Non precious metals) | 18:00 ET Sunday to 17:00 ET Friday with a one-hour break Monday through Thursday from 17:00 to 18:00. <br /> The feed also follows the COMEX market holiday schedule.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| **CBOT** (Agricultural)         | Monday - Thursday 00:00-08:45, 09:30-00:00 and Friday 00:00-08:45, 09:30-14:00 ET, excluding CBOT market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| **MI_ETF**                     | Standard Milan equity market hours. 09:00-17:30 CET time M-F, excluding Milan equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| **XETRA_ETF**                  | Deutsche Börse Xetra equity market hours. 09:00-17:30 CET time M-F, excluding Xetra equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Feed                            | Hours                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Crypto**                      | 24/7/365 - No market close.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| **US_Equities**                | Standard US equity market hours: 09:30 - 16:00 ET M-F excluding US equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| **US_Equities_24/5**          | 24 hours a day, 5 days a week: 18:00 ET Sunday to 17:00 ET Friday. These feeds aggregate data across regular, pre-market, post-market, and overnight equity trading sessions. Used by [tokenized equity feeds](/data-feeds/tokenized-equity-feeds) that require continuous equity pricing outside of standard market hours. Feeds are not updated on weekends or US equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| **UK_ETF**                     | Standard UK equity market hours: 08:00 - 16:30 UK time M-F excluding UK equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **Forex**                       | 18:00 ET Sunday to 17:00 ET Friday.  The feeds also follow the global Forex market Christmas and New Year's Day holiday schedule. Many non-G12 currencies primarily trade during local market hours. It is recommended to use those feeds only during local trading hours. We generally observe normal trading within these hours. Prices outside of these hours may be subject to volatility and users are advised to implement additional controls. In addition, local holidays, natural disasters, political unrest or other exogenous shocks are liable to interrupt normal trading in less-liquid currencies. Some currency pairs are instead offered as [24/7 forex feeds](/data-feeds/24-7-extended-hours-data-feeds#forex), which source a crypto-derived rate and publish continuously; review that page's risk considerations before using one. |
+| **Precious_Metals**            | 18:00 ET Sunday to 17:00 ET Friday with a one-hour break Monday through Thursday from 17:00 to 18:00.  The feeds also follow the global Forex market holiday schedule for Christmas and New Year's Day. Some [24/7 blended precious metals feeds](/data-feeds/24-7-extended-hours-data-feeds#precious-metals) publish outside these hours using a custom methodology.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| **NYMEX** (US OIL)              | 18:00 ET Sunday to 17:00 ET Friday, with a one-hour break Monday through Thursday from 17:00 to 18:00.  The feed also follows the NYMEX market holiday schedule.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| **COMEX** (Non precious metals) | 18:00 ET Sunday to 17:00 ET Friday with a one-hour break Monday through Thursday from 17:00 to 18:00.  The feed also follows the COMEX market holiday schedule.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **CBOT** (Agricultural)         | Monday - Thursday 00:00-08:45, 09:30-00:00 and Friday 00:00-08:45, 09:30-14:00 ET, excluding CBOT market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| **MI_ETF**                     | Standard Milan equity market hours. 09:00-17:30 CET time M-F, excluding Milan equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| **XETRA_ETF**                  | Deutsche Börse Xetra equity market hours. 09:00-17:30 CET time M-F, excluding Xetra equity market holidays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
 ## Risk Mitigation
 
@@ -3990,12 +3968,12 @@ Exchange rate feeds are useful in circumstances such as:
 - **Enabling cross-chain staking:** For example, liquid staking tokens (LSTs) or liquid restaking tokens (LRTs) can be minted at the exchange rate on a layer 2, while Chainlink CCIP transfers the underlying asset to a layer 1 for staking.
 - **Improving liquidity pool performance for yield-bearing assets:** Exchange rate feeds can be utilized to programmatically adjust swap curves to maximize liquidity efficiency.
 
-<Aside type="note">
-  Users must be aware that both market price and exchange rate pricing methodologies have unique risk considerations and
-  risk mitigation strategies that vary based on an asset's type and liquidity profile. Users are responsible for
-  decisions relating to feed selection. To learn more about how best to leverage Chainlink Data Feeds for your project,
-  contact us [here](https://chain.link/contact).
-</Aside>
+> **NOTE**
+>
+> Users must be aware that both market price and exchange rate pricing methodologies have unique risk considerations and
+> risk mitigation strategies that vary based on an asset's type and liquidity profile. Users are responsible for
+> decisions relating to feed selection. To learn more about how best to leverage Chainlink Data Feeds for your project,
+> contact us [here](https://chain.link/contact).
 
 ## ETF and Forex feeds
 
@@ -4005,24 +3983,24 @@ When you use Data Feeds for ETFs or Foreign Exchange (Forex) data, be aware of t
 - Assets on the Forex (Foreign Exchange) markets are traded only during [defined market hours](/data-feeds/selecting-data-feeds#market-hours). Additionally, some currencies might trade only during local banking hours. Do not use Forex feeds outside market hours for the specific currency.
 - UK ETF price feed answers are 15 minutes delayed from their original published source. Assets are traded only during [standard market hours](/data-feeds/selecting-data-feeds#market-hours). Do not use these feeds outside their specified hours.
 
-<Aside type="note" title="Disclaimer">
-  Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and that the
-  operation and performance of a Chainlink Data Feed matches expectations. The performance of a Chainlink Data Feed may
-  be affected by the availability or performance of a data provider. The composition or availability of a Chainlink Data
-  Feed may change over time. Please review this webpage in its entirety and review the [Chainlink Terms of
-  Service](https://chain.link/terms) for important information and disclosures. By using Chainlink Data Feeds, you
-  acknowledge and agree to these terms.
-</Aside>
+> **NOTE: Disclaimer**
+>
+> Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and that the
+> operation and performance of a Chainlink Data Feed matches expectations. The performance of a Chainlink Data Feed may
+> be affected by the availability or performance of a data provider. The composition or availability of a Chainlink Data
+> Feed may change over time. Please review this webpage in its entirety and review the [Chainlink Terms of
+> Service](https://chain.link/terms) for important information and disclosures. By using Chainlink Data Feeds, you
+> acknowledge and agree to these terms.
 
 ---
 
 # Self-Managed Feeds
 Source: https://docs.chain.link/data-feeds/self-managed-feeds
 
-<Aside type="note" title="Contact us">
-  Chains and operators interested in deploying self-managed feeds can reach the Data Feeds team at
-  [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
-</Aside>
+> **NOTE: Contact us**
+>
+> Chains and operators interested in deploying self-managed feeds can reach the Data Feeds team at
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
 
 **Self-managed feeds** are Data Feeds where values are written onchain by a **third party** (typically the chain or its designated operator), not by Chainlink node operators publishing through Chainlink Labs–managed oracle infrastructure.
 
@@ -4060,7 +4038,7 @@ Specifically:
 # SmartData Feed Addresses
 Source: https://docs.chain.link/data-feeds/smartdata/addresses
 
-<FeedPage dataFeedType="smartdata" />
+Live values such as feed contract addresses are not inlined here. Wait for the official API to obtain current data.
 
 ---
 
@@ -4097,6 +4075,8 @@ Reserves are available for both offchain assets and cross-chain assets. This cat
 
 Offchain reserves are sourced from APIs through an [external adapter](/chainlink-nodes/external-adapters/external-adapters).
 
+![Image](/images/data-feed/off-chain-reserves.webp)
+
 Offchain reserves provide their data using the following methods:
 
 - Third-party: An auditor, accounting firm, or other third party audits and verifies reserves. This is done by combining both fiat and investment assets into a numeric value that is reported against the token.
@@ -4107,12 +4087,21 @@ Offchain reserves provide their data using the following methods:
 
 Cross-chain reserves are sourced from the network where the reserves are held. Chainlink node operators can report cross-chain reserves by running an [external adapter](/chainlink-nodes/external-adapters/external-adapters) and querying the source-chain client directly. In some instances, the reserves are composed of a dynamic list of IDs or addresses using a composite adapter.
 
+![Image](/images/data-feed/cross-chain-reserves.webp)
+
 Cross-chain reserves provide their data using the following methods:
 
 - Wallet address manager: The project uses the [IPoRAddressList](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/interfaces/PoRAddressList.sol) wallet address manager contract and self-reports which addresses they own. Reserve data reported by an asset issuer's self-reported addresses carries additional risks. Chainlink Labs is not responsible for the accuracy of self-reported reserves data. Users must do their own risk assessment for asset issuer risk.
 - Wallet address: The project reports which addresses they own through a self-hosted API. Reserve data reported by an asset issuer's self-reported addresses carries additional risks. Chainlink Labs is not responsible for the accuracy of self-reported reserves data. Users must do their own risk assessment for asset issuer risk.
 
-<Aside title="Disclaimer" type="caution" />
+> **CAUTION: Disclaimer**
+>
+> Proof of Reserve feeds can vary in their configurations. Please be careful with the configuration of the feeds used
+> by your smart contracts. You are solely responsible for reviewing the quality of the data (e.g., a Proof of Reserve
+> feed) that you integrate into your smart contracts and assume full responsibility for any damage, injury, or any
+> other loss caused by your use of the feeds used by your smart contracts.
+>
+> [Learn more about making responsible data quality decisions.](/data-feeds/selecting-data-feeds#risk-mitigation)
 
 ### NAVLink Feeds
 
@@ -4204,11 +4193,11 @@ Chainlink provides data feeds on the [Solana](https://solana.com/) network. Chai
 
 Solana programs are stateless, so you don't always need to deploy your program to the network to test it. You can deploy and test your programs on a [Solana Test Validator](https://docs.solana.com/developing/test-validator). However, to use Chainlink products on Solana, you must deploy your contract onchain to one of the [supported Solana clusters](#chainlink-products-and-solana-clusters).
 
-<Aside type="note" title="Note">
-  Please note that Price Feeds performance relies on the chains they are deployed on. Periods of high network congestion
-  may impact the frequency of Chainlink Price Feeds. Subscribe to [Solana status](https://status.solana.com/)
-  notifications to stay updated on system performance.
-</Aside>
+> **NOTE: Note**
+>
+> Please note that Price Feeds performance relies on the chains they are deployed on. Periods of high network congestion
+> may impact the frequency of Chainlink Price Feeds. Subscribe to [Solana status](https://status.solana.com/)
+> notifications to stay updated on system performance.
 
 To learn how to mitigate risk to your applications, read the [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) page.
 
@@ -4284,9 +4273,9 @@ programs, see the [Using Data Feeds onchain](/data-feeds/solana/using-data-feeds
 
 To get the full list of Chainlink Data Feeds on Solana, see the [Solana Feeds](/data-feeds/price-feeds/addresses?network=solana) page.
 
-<Aside type="danger" title="Select quality data feeds">
-  Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds).
-</Aside>
+> **DANGER: Select quality data feeds**
+>
+> Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds).
 
 ## The Chainlink Data Feeds Store Program
 
@@ -4298,9 +4287,9 @@ You can [add data feeds to an existing offchain project](#adding-data-feeds-to-a
 
 You can read Chainlink Data Feeds offchain in your existing project by using the [Chainlink Solana NPM library](https://www.npmjs.com/package/@chainlink/solana-sdk).
 
-<Aside type="caution" title="Reading feed data">
-  Although you can directly query the data feed accounts, you should not rely on the memory layout always being the same as it currently is. Based on this, the recommendation is to always use the consumer library.
-</Aside>
+> **CAUTION: Reading feed data**
+>
+> Although you can directly query the data feed accounts, you should not rely on the memory layout always being the same as it currently is. Based on this, the recommendation is to always use the consumer library.
 
 Install the necessary components and include the example code in your project. Optionally, you can run the example code by itself to learn how it works before you integrate it with your project.
 
@@ -4337,9 +4326,31 @@ Install the necessary components and include the example code in your project. O
 
 5. Add the [Anchor library](https://www.npmjs.com/package/@project-serum/anchor) to your project:
 
+   ### npm
+
+   ```shell npm
+   npm i @project-serum/anchor
+   ```
+
+   ### yarn
+
+   ```shell yarn
+   yarn add @project-serum/anchor
+   ```
 
 6. Add the [Chainlink Solana NPM library](https://www.npmjs.com/package/@chainlink/solana-sdk) to your project:
 
+   ### npm
+
+   ```shell npm
+   npm i -g @chainlink/solana-sdk
+   ```
+
+   ### yarn
+
+   ```shell yarn
+   yarn add @chainlink/solana-sdk
+   ```
 
 7. [Create a temporary Solana wallet](https://solana.com/docs/intro/installation#create-wallet) to use for this example. Alternatively, if you have an existing wallet that you want to use, locate the path to your keypair file and use it as the keypair for the rest of this guide.
 
@@ -4438,6 +4449,17 @@ Install the necessary components and include the example code in your project. O
 
    You can run these examples using the following commands:
 
+   ### Javascript
+
+   ```shell javascript
+   node javascript-example.js
+   ```
+
+   ### Typescript
+
+   ```shell typescript
+   yarn add ts-node typescript && yarn ts-node typescript-example.ts
+   ```
 
 To learn more about Solana and Anchor, see the [Solana Documentation](https://docs.solana.com/) and the [Anchor Documentation](https://book.anchor-lang.com/).
 
@@ -4512,6 +4534,17 @@ After you install the required tools, clone the example code from the [solana-st
 
 5. Run the example:
 
+   ### Javascript
+
+   ```shell JavaScript
+   node read-data.js
+   ```
+
+   ### Typescript
+
+   ```shell TypeScript
+   yarn run read-data
+   ```
 
    The example code retrieves and prints the current price feed data until you close the application:
 
@@ -4529,17 +4562,17 @@ To learn more about Solana and Anchor, see the [Solana Documentation](https://do
 # Using Data Feeds Onchain (Solana)
 Source: https://docs.chain.link/data-feeds/solana/using-data-feeds-solana
 
-<Aside type="note" title="SDK v2 is now available">
-  The Chainlink [Solana SDK v2 is now available](https://crates.io/crates/chainlink_solana/), offering improved performance with lower compute unit usage through direct account reads instead of Cross-Program Invocation (CPI). This guide demonstrates the v2 SDK pattern. If you're using the v1 SDK, see the [migration guide below](#migrating-from-v1-to-v2) to upgrade.
-</Aside>
+> **NOTE: SDK v2 is now available**
+>
+> The Chainlink [Solana SDK v2 is now available](https://crates.io/crates/chainlink_solana/), offering improved performance with lower compute unit usage through direct account reads instead of Cross-Program Invocation (CPI). This guide demonstrates the v2 SDK pattern. If you're using the v1 SDK, see the [migration guide below](#migrating-from-v1-to-v2) to upgrade.
 
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. This guide demonstrates how to deploy a program to the Solana Devnet cluster and access Data Feeds onchain using the [Chainlink Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit). To learn how to read price feed data using offchain applications, see the [Using Data Feeds Offchain](/solana/using-data-feeds-off-chain) guide.
 
 To get the full list of available Chainlink Data Feeds on Solana, see the [Solana Feeds](/data-feeds/price-feeds/addresses?network=solana) page. View the program that owns the Chainlink Data Feeds in the [Solana Devnet Explorer](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny?cluster=devnet), or the [Solana Mainnet Explorer](https://solscan.io/account/HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny).
 
-<Aside type="danger" title="Select quality data feeds">
-  Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds).
-</Aside>
+> **DANGER: Select quality data feeds**
+>
+> Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds).
 
 ## The Chainlink Data Feeds OCR2 program
 
@@ -4551,9 +4584,9 @@ You can [add data feeds to an existing project](#adding-data-feeds-onchain-in-an
 
 You can read Chainlink Data Feed data onchain in your existing project using the [Chainlink Solana Crate](https://crates.io/crates/chainlink_solana). SDK v2 uses direct account reads for improved performance and lower compute unit usage compared to the deprecated v1 SDK which used Cross-Program Invocation (CPI).
 
-<Aside type="caution" title="Reading feed data">
-  Although you can directly query the data feed accounts, you should not rely on the memory layout always being the same as it currently is. Based on this, the recommendation is to always use the consumer library queries below.
-</Aside>
+> **CAUTION: Reading feed data**
+>
+> Although you can directly query the data feed accounts, you should not rely on the memory layout always being the same as it currently is. Based on this, the recommendation is to always use the consumer library queries below.
 
 Import the Chainlink Solana Crate into your project and use the code sample to make function calls.
 
@@ -4585,9 +4618,204 @@ Import the Chainlink Solana Crate into your project and use the code sample to m
    - `decimals`: Returns the precision of the price, as in how many numbers the price is padded out to
    - `Display`: A helper function that formats the padded out price data into a human-readable price
 
+### Rust (Anchor)
+
+```rs
+/**
+ * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+use anchor_lang::prelude::*;
+use chainlink_solana::v2::read_feed_v2;
+
+//Program ID required by Anchor. Replace with your unique program ID once you build your project
+declare_id!("HPuUpM1bKbaqx7yY2EJ4hGBaA3QsfP5cofHHK99daz85");
+
+#[account]
+pub struct Decimal {
+    pub value: i128,
+    pub decimals: u32,
+}
+
+impl Decimal {
+    pub fn new(value: i128, decimals: u32) -> Self {
+        Decimal { value, decimals }
+    }
+}
+
+impl std::fmt::Display for Decimal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut scaled_val = self.value.to_string();
+        if scaled_val.len() <= self.decimals as usize {
+            scaled_val.insert_str(
+                0,
+                &vec!["0"; self.decimals as usize - scaled_val.len()].join(""),
+            );
+            scaled_val.insert_str(0, "0.");
+        } else {
+            scaled_val.insert(scaled_val.len() - self.decimals as usize, '.');
+        }
+        f.write_str(&scaled_val)
+    }
+}
+
+#[program]
+pub mod chainlink_solana_demo {
+    use super::*;
+    pub fn execute(ctx: Context<Execute>) -> Result<()> {
+        let feed = &ctx.accounts.chainlink_feed;
+        
+        // Read the feed data directly from the account (v2 SDK)
+        let result = read_feed_v2(
+            feed.try_borrow_data()?,
+            feed.owner.to_bytes(),
+        )
+        .map_err(|_| DemoError::ReadError)?;
+
+        // Get the latest round data
+        let round = result
+            .latest_round_data()
+            .ok_or(DemoError::RoundDataMissing)?;
+
+        let description = result.description();
+        let decimals = result.decimals();
+
+        // Convert description bytes to string
+        let description_str = std::str::from_utf8(&description)
+            .unwrap_or("Unknown")
+            .trim_end_matches('\0');
+
+        // write the latest price to the program output
+        let decimal_print = Decimal::new(round.answer, u32::from(decimals));
+        msg!("{} price is {}", description_str, decimal_print);
+        Ok(())
+    }
+}
+
+#[derive(Accounts)]
+pub struct Execute<'info> {
+    /// CHECK: We're reading data from this chainlink feed account
+    pub chainlink_feed: AccountInfo<'info>,
+}
+
+#[error_code]
+pub enum DemoError {
+    #[msg("read error")]
+    ReadError,
+    #[msg("no round data")]
+    RoundDataMissing,
+}
+```
+
+### Rust (Vanilla)
+
+```rs
+/**
+ * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+use chainlink_solana::v2::read_feed_v2;
+
+use solana_program::{
+    account_info::{next_account_info, AccountInfo},
+    entrypoint,
+    entrypoint::ProgramResult,
+    msg,
+    pubkey::Pubkey,
+};
+
+struct Decimal {
+    pub value: i128,
+    pub decimals: u32,
+}
+
+impl Decimal {
+    pub fn new(value: i128, decimals: u32) -> Self {
+        Decimal { value, decimals }
+    }
+}
+
+impl std::fmt::Display for Decimal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut scaled_val = self.value.to_string();
+        if scaled_val.len() <= self.decimals as usize {
+            scaled_val.insert_str(
+                0,
+                &vec!["0"; self.decimals as usize - scaled_val.len()].join(""),
+            );
+            scaled_val.insert_str(0, "0.");
+        } else {
+            scaled_val.insert(scaled_val.len() - self.decimals as usize, '.');
+        }
+        f.write_str(&scaled_val)
+    }
+}
+
+// Declare and export the program's entrypoint
+entrypoint!(process_instruction);
+
+// Program entrypoint's implementation
+pub fn process_instruction(
+    _program_id: &Pubkey, // Ignored
+    accounts: &[AccountInfo],
+    _instruction_data: &[u8], // Ignored
+) -> ProgramResult {
+    msg!("Chainlink Price Feed Consumer entrypoint");
+
+    let accounts_iter = &mut accounts.iter();
+
+    // This is the account of the price feed data to read from
+    let feed_account = next_account_info(accounts_iter)?;
+
+    // Read the feed data directly from the account (v2 SDK)
+    let result = read_feed_v2(
+        feed_account.try_borrow_data()?,
+        feed_account.owner.to_bytes(),
+    )
+    .map_err(|_| solana_program::program_error::ProgramError::InvalidAccountData)?;
+
+    // Get the latest round data
+    let round = result
+        .latest_round_data()
+        .ok_or(solana_program::program_error::ProgramError::InvalidAccountData)?;
+
+    let description = result.description();
+    let decimals = result.decimals();
+
+    // Convert description bytes to string
+    let description_str = std::str::from_utf8(&description)
+        .unwrap_or("Unknown")
+        .trim_end_matches('\0');
+
+    let decimal_print = Decimal::new(round.answer, u32::from(decimals));
+    msg!("{} price is {}", description_str, decimal_print);
+
+    Ok(())
+}
+```
 
 Program Transaction logs:
 
+### Rust (Anchor)
+
+```shell Rust with Anchor
+Fetching transaction logs... [ 'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny
+consumed 1826 of 1306895 compute units', 'Program return: HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny CA==',
+'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny success', 'Program log: SOL / USD price is 93.76988029', ]
+```
+
+### Rust (Vanilla)
+
+```shell Rust
+> Program logged: "Chainlink Price Feed Consumer entrypoint" > Program logged: "SOL / USD price is
+83.99000000"
+> Program consumed: 95953 of 1400000 compute units > Program return:
+HNYSbr77Jc9LhHeb9tx53SrWbWfNBnQzQrM4b3BB3PCR CA==
+```
 
 To learn more about Solana and Anchor, see the [Solana Documentation](https://docs.solana.com/) and the [Anchor Documentation](https://www.anchor-lang.com/).
 
@@ -4884,6 +5112,33 @@ SDK v2 uses direct account reads instead of Cross-Program Invocation (CPI), resu
 
 4. Replace multiple CPI calls with a single read:
 
+   ### v1 Pattern
+
+   ```rust
+   // Multiple CPI calls
+   let round = chainlink::latest_round_data(
+      ctx.accounts.chainlink_program.to_account_info(),
+      ctx.accounts.chainlink_feed.to_account_info(),
+   )?;
+   let description = chainlink::description(/* ... */)?;
+   let decimals = chainlink::decimals(/* ... */)?;
+   ```
+
+   ### v2 Pattern
+
+   ```rust
+   // Single read operation
+   let feed = &ctx.accounts.chainlink_feed;
+   let result = read_feed_v2(
+      feed.try_borrow_data()?,
+      feed.owner.to_bytes(),
+   ).map_err(|_| MyError::ReadError)?;
+
+      let round = result.latest_round_data()
+         .ok_or(MyError::RoundDataMissing)?;
+      let description = result.description();
+      let decimals = result.decimals();
+   ```
 
 5. Add error types (v2 requires explicit error handling):
 
@@ -4906,6 +5161,69 @@ SDK v2 uses direct account reads instead of Cross-Program Invocation (CPI), resu
    ```
 
 ### Complete example
+
+### v1 (Deprecated)
+
+```rust
+use anchor_lang::prelude::*;
+use chainlink_solana as chainlink;
+
+#[program]
+pub mod my_program {
+    use super::*;
+    pub fn execute(ctx: Context<Execute>) -> Result<()> {
+        let round = chainlink::latest_round_data(
+            ctx.accounts.chainlink_program.to_account_info(),
+            ctx.accounts.chainlink_feed.to_account_info(),
+        )?;
+        msg!("Price: {}", round.answer);
+        Ok(())
+    }
+}
+
+#[derive(Accounts)]
+pub struct Execute<'info> {
+    pub chainlink_feed: AccountInfo<'info>,
+    pub chainlink_program: AccountInfo<'info>,
+}
+```
+
+### v2 (Recommended)
+
+```rust
+use anchor_lang::prelude::*;
+use chainlink_solana::v2::read_feed_v2;
+
+#[program]
+pub mod my_program {
+    use super::*;
+    pub fn execute(ctx: Context<Execute>) -> Result<()> {
+        let feed = &ctx.accounts.chainlink_feed;
+        let result = read_feed_v2(
+            feed.try_borrow_data()?,
+            feed.owner.to_bytes(),
+        ).map_err(|_| MyError::ReadError)?;
+
+        let round = result.latest_round_data()
+            .ok_or(MyError::RoundDataMissing)?;
+        msg!("Price: {}", round.answer);
+        Ok(())
+    }
+}
+
+#[derive(Accounts)]
+pub struct Execute<'info> {
+    pub chainlink_feed: AccountInfo<'info>,
+}
+
+#[error_code]
+pub enum MyError {
+    #[msg("read error")]
+    ReadError,
+    #[msg("no round data")]
+    RoundDataMissing,
+}
+```
 
 ---
 
@@ -5270,13 +5588,13 @@ The contracts should compile successfully and the tests should pass.
 
 ## Tutorial
 
-<Aside type="note" title="Contract addresses for Starknet Devnet RS">
-  If you followed the [onchain](/data-feeds/starknet/tutorials/snfoundry/consumer-contract) guide, [clone the
-  chainlink-starknet
-  repository](/data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs#clone-and-configure-the-code-examples-repository)
-  again to make sure you start from a clean state. By default, some addresses used in this guide are hardcoded to work
-  with the Starknet Devnet RS environment.
-</Aside>
+> **NOTE: Contract addresses for Starknet Devnet RS**
+>
+> If you followed the [onchain](/data-feeds/starknet/tutorials/snfoundry/consumer-contract) guide, [clone the
+> chainlink-starknet
+> repository](/data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs#clone-and-configure-the-code-examples-repository)
+> again to make sure you start from a clean state. By default, some addresses used in this guide are hardcoded to work
+> with the Starknet Devnet RS environment.
 
 ### Run Starknet Devnet RS and add a prefunded account
 
@@ -5451,30 +5769,37 @@ make ma-set-latest-round NETWORK=devnet && make ac-set-answer NETWORK=devnet && 
 # Smart Value Recapture (SVR) Feeds
 Source: https://docs.chain.link/data-feeds/svr-feeds
 
-<Aside type="note" title="SVR integrated with Titan OFA">
-  <p>
-    SVR now supports multiple orderflow auctions in parallel on Ethereum mainnet, including Flashbots and Titan.
-    Searchers participating in SVR should integrate with all supported orderflow auction providers to maximize their
-    competitiveness.
-  </p>
+> **NOTE: SVR integrated with Titan OFA**
+>
+> SVR now supports multiple orderflow auctions in parallel on Ethereum mainnet, including Flashbots and Titan.
+> Searchers participating in SVR should integrate with all supported orderflow auction providers to maximize their
+> competitiveness.
+>
+> Reach out to [[devrel@smartcontract.com](mailto:devrel@smartcontract.com)](mailto:devrel@smartcontract.com) for assistance getting
+> onboarded. Searchers can [subscribe here](https://chainlinkcommunity.typeform.com/to/s55Hu2tK) to receive timely
+> Chainlink SVR updates.
 
-  <p>
-    Reach out to <a href="mailto:devrel@smartcontract.com">[devrel@smartcontract.com](mailto:devrel@smartcontract.com)</a> for assistance getting
-    onboarded. Searchers can [subscribe here](https://chainlinkcommunity.typeform.com/to/s55Hu2tK) to receive timely
-    Chainlink SVR updates.
-  </p>
-</Aside>
-
-<Aside type="tip" title="SVR Now Available on Base, Arbitrum, and BNB Chain" />
+> **TIP: SVR Now Available on Base, Arbitrum, and BNB Chain**
+>
+> Chainlink SVR has expanded beyond Ethereum Mainnet and is now available on Base, Arbitrum, and BNB Chain via the
+> Atlas auction system. See the&#x20;
+> [Atlas searcher onboarding guide](/data-feeds/svr-feeds/searcher-onboarding-atlas) for integration
+> details.
 
 [Chainlink Smart Value Recapture](https://blog.chain.link/chainlink-smart-value-recapture-svr/) (SVR) Feeds introduce a novel and secure way to recapture Oracle Extractable Value (OEV)—a subset of non-toxic Maximal Extractable Value (MEV) associated with oracle updates that is most commonly observed during the liquidation process of lending protocols. The value recaptured by SVR provides DeFi protocols with an additional revenue stream while also supporting the economic sustainability of Chainlink oracle. SVR Feeds are read in the same manner as standard Chainlink Data Feeds (see [Using Data Feeds](/data-feeds/using-data-feeds)), and simply require that users specify an SVR-enabled feed address.
 
-<Aside type="note" title="Talk to an expert">
-  [Contact us](https://chain.link/contact?ref_id=pricefeeds) to talk to an expert about integrating Chainlink SVR with
-  your applications.
-</Aside>
+> **NOTE: Talk to an expert**
+>
+> [Contact us](https://chain.link/contact?ref_id=pricefeeds) to talk to an expert about integrating Chainlink SVR with
+> your applications.
 
-<Aside title="Notice" type="caution" />
+> **CAUTION: Notice**
+>
+> Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and that the
+> operation and performance of Chainlink SVR matches expectations. Chainlink SVR operates on the same underlying
+> architecture as Chainlink Data Feeds. Please review the Chainlink Data Feeds [Developer
+> Responsibilities](/data-feeds/developer-responsibilities) and Chainlink [Terms of Service](https://chain.link/terms)
+> for important information and disclosures. By using Chainlink SVR, you acknowledge and agree to these terms.
 
 ## Understanding MEV and OEV
 
@@ -5508,6 +5833,8 @@ Chainlink Smart Value Recapture (SVR) extends standard Chainlink Price Feeds wit
   Chainlink SVR is built on the **Chainlink Decentralized Oracle Network (DON)** infrastructure that has already helped secure tens of billions in DeFi TVL and underpins existing Chainlink Data Feeds.
 
 ### How SVR Works
+
+![Image](/images/data-feed/svr/svr-integration-flow.webp)
 
 1. **Dual Transmission**
    - **(1a) Standard Feed (Public Route)**: The Chainlink Data DON (triggered by a heartbeat or deviation threshold) sends a price report to the **Standard Aggregator** via the public mempool—this is the traditional Chainlink flow. If anything goes wrong with the private route, the system can still rely on the standard aggregator's updates.
@@ -5609,44 +5936,30 @@ This split provides DeFi protocols with an additional revenue stream while also 
 - **MEV Does Not Disappear**: SVR recaptures only the oracle-related portion of MEV. Protocol builders should remain MEV-aware when designing their applications.
 - **Dynamic Recapture Rates**: SVR aims to recapture as high a portion of oracle-update-related MEV as possible. Actual results depend on market conditions, competition among searchers, and factors such as protocol design.
 
-<Aside title="Notice" type="caution" />
+> **CAUTION: Notice**
+>
+> Chainlink SVR Feeds recapture oracle-initiated liquidation-related MEV (OEV), but they do not eliminate other forms
+> of MEV such as sandwich or frontrunning attacks. Developers remain responsible for ensuring that protocol risk
+> parameters are configured appropriately and that the operation and performance of Chainlink SVR matches
+> expectations.
 
 ---
 
 # SVR Searcher Onboarding: Atlas
 Source: https://docs.chain.link/data-feeds/svr-feeds/searcher-onboarding-atlas
 
-export const contracts = {
-  base: {
-    atlas: "0x583dcFef0D240DC80753F0F0B26513feE27D9B77",
-    dappControl: "0xa5E1a36938769cbd5a26f5e19D8FCB379f597c83",
-  },
-  arbitrum: {
-    atlas: "0x8ad1aE9D97C79aA68A0a151E83ff3942f68F86C1",
-    dappControl: "0xe15BBa987C002ecc3586e81244517877D294d291",
-  },
-  bnb: {
-    atlas: "0x21B7d28B882772A1Cfe633Daee6f42ebb95DeC4E",
-    dappControl: "0x7D50b32444609A9B53BcF208c159C8d0d0767835",
-  },
-  monad: {
-    atlas: "0x006DD7813C90CaB67c1Dc185c21Abb2C7414b061",
-    dappControl: "0xa40d9f38621b4ffb2181508b973519e8133951c0",
-  },
-}
-
-<Aside type="note" title="Searcher Onboarding">
-  SVR on Atlas (every chain outside of ETH mainnet) uses a reputation system with **two groups**. Unless otherwise specified for a chain, Atlas includes up to **2 searcher bids** per transaction for on-chain settlement:
-
-  - One slot is always reserved for the high-reputation set
-  - The second slot is open to both high- and low-reputation searchers
-
-  Final winner ordering is determined by bid competitiveness, not reputation. If a low-reputation searcher submits the highest valid bid, that searcher can win.
-
-  Onboarding and access to the high-reputation set is permissionless and does not require communication with Chainlink Labs. For any questions or comments about SVR, email [devrel@smartcontract.com](mailto:devrel@smartcontract.com)
-
-  Searchers can [subscribe here](https://chainlinkcommunity.typeform.com/to/s55Hu2tK) to receive timely Chainlink SVR updates.
-</Aside>
+> **NOTE: Searcher Onboarding**
+>
+> SVR on Atlas (every chain outside of ETH mainnet) uses a reputation system with **two groups**. Unless otherwise specified for a chain, Atlas includes up to **2 searcher bids** per transaction for on-chain settlement:
+>
+> - One slot is always reserved for the high-reputation set
+> - The second slot is open to both high- and low-reputation searchers
+>
+> Final winner ordering is determined by bid competitiveness, not reputation. If a low-reputation searcher submits the highest valid bid, that searcher can win.
+>
+> Onboarding and access to the high-reputation set is permissionless and does not require communication with Chainlink Labs. For any questions or comments about SVR, email [devrel@smartcontract.com](mailto:devrel@smartcontract.com)
+>
+> Searchers can [subscribe here](https://chainlinkcommunity.typeform.com/to/s55Hu2tK) to receive timely Chainlink SVR updates.
 
 [Chainlink Smart Value Recapture (SVR)](/data-feeds/svr-feeds) has expanded to Base, Arbitrum, BNB Chain, and Monad with a new auction system, **Atlas**. This guide provides existing Chainlink SVR searchers with the technical specifications and integration requirements for participating in all non-ETH mainnet SVR auctions.
 
@@ -5677,9 +5990,51 @@ Recommended native token amounts for bonding:
 
 The following contracts are deployed at version **v1.6.4**.
 
+### Base
+
+Contract
+Address
+
+Atlas (v1.6.4)
+
+DappControl
+
+### Arbitrum
+
+Contract
+Address
+
+Atlas (v1.6.4)
+
+DappControl
+
+### BNB Chain
+
+Contract
+Address
+
+Atlas (v1.6.4)
+
+DappControl
+
+### Monad
+
+Contract
+Address
+
+Atlas (v1.6.4)
+
+DappControl
+
 ## Feed Aggregator Addresses
 
-<Aside type="note" />
+> **NOTE**
+>
+> Searchers need to listen to the **Aggregator address** for price reports, not the proxy address. You can find the
+> aggregator address by reading `aggregator` in the proxy contract. For convenience, we've included the aggregator
+> address in the table below. Use **Aave-SVR** type feeds for Aave, **SVR** type feeds for other protocols, and
+> **SVR-Backup** for the legacy shared feeds. For the full list of SVR feeds, see the [SVR Feeds
+> page](/data-feeds/svr-feeds).
 
 ## Guide
 
@@ -5689,7 +6044,30 @@ Atlas is conceptually similar to MEV-Share, built to work on any EVM chain witho
 
 Instead of relying on block builders to bundle together the oracle update and the liquidation transaction, the oracle update and the liquidation are both represented as [EIP-712](https://eips.ethereum.org/EIPS/eip-712) messages and are bundled together into a single atomic EVM transaction similar to multi-call or [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337).
 
-<Aside title="Important" type="caution" />
+> **CAUTION: Important**
+>
+> The final bundled transaction is **not submitted by the searcher**. It is submitted by the Chainlink oracle
+> network.
+>
+> Searchers must have **bonded native tokens** with the Atlas smart contracts in order to reimburse the Chainlink
+> oracle for the gas costs of both the **searcher operation** and the **oracle update**.
+>
+> Gas prices for these transactions are chosen by the Chainlink oracle. The selected gas price is provided to the
+> searcher at the start of the auction.
+>
+> Searchers must sign for a `gasPrice` that is **exactly equal** to the gas price specified by the
+> Chainlink oracle.
+>
+> Searchers must not attempt to use a gas limit for their operation that is greater than the allowed&#x20;
+> `SolverGasLimit`. Query this value by calling `getSolverGasLimit` on the&#x20;
+> `DappControl`
+> contract. Sending `SolverOps` with a higher gas limit will not work.
+>
+> Since auction and `auctionSolution` payloads can exceed default read/write buffer sizes in popular
+> WebSocket libraries, explicitly configure read and write buffers to greater than **10 KB**.
+>
+> Solvers should expect that their long-lived connections to the SVR endpoint will be disconnected, and should
+> implement **auto-reconnect** functionality.
 
 ### Endpoints
 
@@ -5841,7 +6219,10 @@ The amount of gas repaid by a searcher depends on the outcome of the searcher op
 
 The account (EOA) bonding ETH must be the same account that will sign the searcher operations (defined in the `from` field of the operation).
 
-<Aside type="note" />
+> **NOTE**
+>
+> A searcher is limited to one auction per block. If a searcher needs to participate in more than one auction in a
+> block, they will need as many accounts (EOA) with bonded ETH as needed.
 
 #### 2. Deposit and Bond
 
@@ -5858,7 +6239,9 @@ uint256 amountToBond = 1e18;
 IAtlas(atlasAddress).depositAndBond{ value: amountToBond }(amountToBond);
 ```
 
-<Aside type="caution" />
+> **CAUTION**
+>
+> **The bonded amount is credited to the function caller.**  Ensure you are calling with the proper account.
 
 #### 3. Unbonding
 
@@ -5926,7 +6309,10 @@ Before the end of `atlasSolverCall` execution, the solver **must**:
 
 Solvers can inherit their contract from the official `SolverBase` contract. This contract defines the `atlasSolverCall` function, handles safety checks, bid payments, and gas liability payments, so the solver can focus on its custom execution logic only.
 
-<Aside type="note" />
+> **NOTE**
+>
+> Atlas must be imported in your project before inheriting from `SolverBase`. The Atlas source code is
+> available at the [Atlas GitHub repository](https://github.com/FastLane-Labs/atlas).
 
 Inheriting from `SolverBase`:
 
@@ -5984,7 +6370,12 @@ Both auctions represent the exact same liquidation opportunity, but:
 
 If you only bid on one auction, you have roughly a 50% chance of winning even if your bid is the highest. To guarantee coverage, you must bid on both auctions using the same strategy.
 
-<Aside type="caution" title="Required: Bid on Both Parallel Auctions" />
+> **CAUTION: Required: Bid on Both Parallel Auctions**
+>
+> Always submit bids to **both** auctions when two are created for the same liquidation opportunity.
+>
+> Avoid logic that limits bidding to a single auction per price update.
+> Latency and timing differences between parallel auctions are expected and unavoidable.
 
 Duplicate auctions were introduced to improve landing guarantees by increasing the probability that at least one auction succeeds onchain.
 
@@ -6314,12 +6705,12 @@ FastLane provides a query API for solvers to trace what happened to their solver
 
 **URL:** `https://solver-query-api-fra.fastlane-labs.xyz/`
 
-<Aside type="caution" title="Use EIP-55 checksummed addresses">
-  All addresses passed to this API (e.g. `solverOperationFrom`) **must be in
-  [EIP-55](https://eips.ethereum.org/EIPS/eip-55) checksum format**. Lowercased or otherwise non-checksummed addresses
-  will not match the cached entry and the API will return `"solver operation not found"`, even if your solver operation
-  was actually submitted successfully.
-</Aside>
+> **CAUTION: Use EIP-55 checksummed addresses**
+>
+> All addresses passed to this API (e.g. `solverOperationFrom`) **must be in
+> [EIP-55](https://eips.ethereum.org/EIPS/eip-55) checksum format**. Lowercased or otherwise non-checksummed addresses
+> will not match the cached entry and the API will return `"solver operation not found"`, even if your solver operation
+> was actually submitted successfully.
 
 **Example request:**
 
@@ -6403,10 +6794,10 @@ If the solver operation reverts for any reason, the query API will communicate e
 # SVR Searcher Onboarding: Ethereum Mainnet
 Source: https://docs.chain.link/data-feeds/svr-feeds/searcher-onboarding-ethereum
 
-<Aside type="note" title="Searcher Onboarding">
-  To onboard as a searcher to SVR, reach out to [devrel@smartcontract.com](mailto:devrel@smartcontract.com). Searchers
-  can [subscribe here](https://chainlinkcommunity.typeform.com/to/s55Hu2tK) to receive timely Chainlink SVR updates.
-</Aside>
+> **NOTE: Searcher Onboarding**
+>
+> To onboard as a searcher to SVR, reach out to [devrel@smartcontract.com](mailto:devrel@smartcontract.com). Searchers
+> can [subscribe here](https://chainlinkcommunity.typeform.com/to/s55Hu2tK) to receive timely Chainlink SVR updates.
 
 This guide explains how to identify and bid on **Chainlink SVR** liquidation opportunities on **Ethereum Mainnet**
 through **Flashbots MEV-Share**. SVR Feeds support a private transmission channel for oracle price updates, enabling
@@ -6426,9 +6817,17 @@ For more background on how Aave liquidations work, see [Aave Documentation](http
 
 ### Price Update, Auction, and Liquidation Execution Flow
 
+![Image](/images/data-feed/svr/svr-price-update-auction-liquidation-flow.webp)
+
 ## Feed Aggregator Addresses
 
-<Aside type="note" />
+> **NOTE**
+>
+> Searchers need to listen to the **Aggregator address** for price reports, not the proxy address. You can find the
+> aggregator address by reading `aggregator` in the proxy contract. For convenience, we've included the aggregator
+> address in the table below. Use **Aave-SVR** type feeds for Aave, **SVR** type feeds for other protocols, and
+> **SVR-Backup** for the legacy shared feeds. For the full list of SVR feeds, see the [SVR Feeds
+> page](/data-feeds/svr-feeds).
 
 ## How to Participate as a Searcher
 
@@ -6468,6 +6867,50 @@ Here's an example of a single transaction event:
 ```
 
 Below are code examples for setting up a listener that monitors the MEV-Share event stream for SVR feed updates. These examples show how to connect to the stream, filter for relevant transactions with the `6fadcf72` function selector, and process incoming events:
+
+### TS
+
+```ts
+import MevShareClient, { IPendingBundle, IPendingTransaction } from "@flashbots/mev-share-client"
+
+const mevShareClient = MevShareClient.useEthereumMainnet(authSigner)
+
+const txHandler = mevShareClient.on("transaction", async (tx: IPendingTransaction) => {
+  if (tx.functionSelector === "6fadc72") {
+    // Do something with the pending tx here.
+  }
+})
+
+// call before your program terminates:
+txHandler.close()
+bundleHandler.close()
+```
+
+### Go
+
+```go
+import "github.com/flashbots/mev-share-node/mevshare"
+
+req, err := http.NewRequestWithContext(
+  ctx,
+  "GET",
+  "https://mev-share.flashbots.net",
+  nil,
+)
+
+// ... read the event data from the response
+
+var event mevshare.Hint
+err := json.Unmarshal(responseData, &event)
+
+// ... check if tx is calling the forward method
+if strings.Compare(
+  strings.ToLower(tx.FunctionSelector.String()),
+  "0x6fadcf72",
+) != 0 {
+	continue
+}
+```
 
 The event stream is also expected to occasionally transmit transaction bundles. The bundle event has a similar format to the single transaction event, but with more than one transactions. Transactions will be bundled in nonce ascending order, meaning txs[0] has the lowest nonce and txs[len(txs)] has the highest. Below is an example of a bundle:
 
@@ -6564,6 +7007,104 @@ The following code samples demonstrate the complete decoding process, including 
 3. Parse the report bytes using the `Report` struct
 4. Access the median observation (the updated price)
 
+### TS
+
+```ts
+const decodeInterface = new ethers.Interface(EXAMPLE_ABI)
+
+function decodeForwarderCall(callData: string) {
+  const decodedForward = decodeInterface.decodeFunctionData("forward", callData)
+  return { to: decodedForward[0], callData: decodedForward[1] }
+}
+
+function decodeTransmitSecondary(callData: string) {
+  try {
+    const decodedTransmitSecondary = decodeInterface.decodeFunctionData("transmitSecondary", callData)
+    return { report: decodedTransmitSecondary[1] }
+  } catch (error) {
+    console.error("not transmit secondary call", error)
+    return {}
+  }
+}
+
+function decodeReport(reportRaw: string) {
+  const decodedReport = ethers.AbiCoder.defaultAbiCoder().decode(["uint32", "bytes32", "int192[]", "int192"], reportRaw)
+
+  return { observations: decodedReport[2] }
+}
+
+function updatedPrice(observations: bigint[]) {
+  const medianObservation = observations[Math.floor(observations.length / 2)]
+  return medianObservation
+}
+
+async function processTransaction(pendingTx: IPendingTransaction) {
+  if (pendingTx.functionSelector !== CHAINLINK_PRICE_FEED_FUNCTION_SELECTOR) {
+    return null
+  }
+
+  const { to, callData } = decodeForwarderCall(pendingTx.callData)
+  const { report } = decodeTransmitSecondary(callData)
+  if (report) {
+    const { observations } = decodeReport(report)
+    const newPrice = updatedPrice(observations)
+  }
+
+  // calculate health factors for affected users ...
+}
+```
+
+### Go
+
+```go
+decoded, err := hex.DecodeString(strings.TrimPrefix(strings.ToLower(tx.CallData.String()), "0x"))
+contractAddress := "0x" + strings.ToLower(strings.TrimLeft(hex.EncodeToString(decoded[4:36]), "0"))
+
+ff := strings.ToLower(strings.TrimLeft(hex.EncodeToString(decoded[100:104]), "0"))
+if strings.Compare(ff, "ba0cb29e") != 0 {
+return nil, fmt.Errorf("event doesn't invoke svr method: ba0cb29e, instead: %s", ff)
+}
+
+transmitSecondaryElems := make(map[string]interface{})
+err := getTransmissionTypes().UnpackIntoMap(transmitSecondaryElems, decoded[104:])
+
+report, exists := transmitSecondaryElems["report"]
+return MedianFromReport(report.([]byte))
+
+func MedianFromReport(report []byte) (*big.Int, error) {
+	reportElems := map[string]interface{}{}
+	err := getReportTypes().UnpackIntoMap(reportElems, report)
+	observationsIface, ok := reportElems["observations"]
+	observations, ok := observationsIface.([]*big.Int)
+	median := observations[len(observations)/2]
+	return median, nil
+}
+
+func getReportTypes() abi.Arguments {
+	return abi.Arguments([]abi.Argument{
+		{Name: "observationsTimestamp", Type: mustNewType("uint32")},
+		{Name: "rawObservers", Type: mustNewType("bytes32")},
+		{Name: "observations", Type: mustNewType("int192[]")},
+		{Name: "juelsPerFeeCoin", Type: mustNewType("int192")},
+	})
+}
+
+func getTransmissionTypes() abi.Arguments {
+	return abi.Arguments([]abi.Argument{
+		{Name: "reportContext", Type: mustNewType("bytes32[3]")},
+		{Name: "report", Type: mustNewType("bytes")},
+		{Name: "rs", Type: mustNewType("bytes32[]")},
+		{Name: "ss", Type: mustNewType("bytes32[]")},
+		{Name: "rawVs", Type: mustNewType("bytes32")},
+	})
+}
+
+func mustNewType(t string) abi.Type {
+	result, err := abi.NewType(t, "", nil)
+	return result
+}
+```
+
 ### 4. Detect SVR-enabled Feeds
 
 When processing forward calls, verify that the `to` address from the code sample above (the destination of the forward call) matches one of the SVR feed aggregator addresses listed in the [Feed Aggregator Addresses](#feed-aggregator-addresses) section above.
@@ -6611,6 +7152,67 @@ Once you've detected an SVR update and identified a profitable liquidation oppor
 - **Authentication**: All Flashbots bundles require cryptographic signing with your wallet
 
 Below are code examples demonstrating how to construct and submit bundles to the Flashbots relay:
+
+### TS
+
+```ts
+async function sendBackrunBundle(pendingTx: IPendingTransaction) {
+  const currentBlock = await provider.getBlockNumber()
+  const signedBackrunTx = await buildDummyBackrunTx(pendingTx)
+  const bundleParams: BundleParams = {
+    inclusion: {
+      block: currentBlock + 1,
+      maxBlock: currentBlock + TARGET_BUNDLE_BLOCK_DELAY,
+    },
+    body: [{ hash: pendingTx.hash }, { tx: signedBackrunTx, canRevert: false }],
+  }
+
+  const sendBundleResult = await mevShareClient.sendBundle(bundleParams)
+  return sendBundleResult
+}
+
+async function buildDummyBackrunTx(pendingTx: IPendingTransaction) {
+  const backrunTx = { data: {}, maxFeePerGas: 22000, maxPriorityFeePerGas: 22000 }
+  const signedBackrunTx = await executorWallet.signTransaction(backrunTx)
+  return signedBackrunTx
+}
+```
+
+### Go
+
+```go
+import "github.com/flashbots/mev-share-node/mevshare"
+
+// ... create and sign your transaction
+tx := types.NewTransaction(...)
+signedTx, err := types.SignTx(tx, ...)
+txBytes := signedTx.MarshalBinary()
+
+bundle := []mevshare.MevBundleBody {
+    {
+        Hash: &event.EventHash,
+    },
+    {
+        Tx:        &txBytes,
+        CanRevert: false,
+    },
+}
+
+params := mevshare.SendMevBundleArgs {
+    Body:      bundle,
+    Inclusion: mevshare.MevBundleInclusion{blockNumber, blockNumber+1},
+}
+
+byteParams, err := json.Marshal(params)
+body := []byte(fmt.Sprintf(`{"jsonrpc":"2.0","method":"mev_sendBundle","params":["%s"], "id":1}`, string(byteParams)))
+bodyReader := bytes.NewReader(body)
+postReq, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://relay.flashbots.net/", bodyReader)
+
+hashedBody := crypto.Keccak256Hash(body).Hex()
+signedMessage, err := crypto.Sign(accounts.TextHash([]byte(hashedBody)), privKey)
+postReq.Header.Add("X-Flashbots-signature", address.String()+":"+hexutil.Encode(signedMessage))
+resp, err := http.DefaultClient.Do(postReq)
+```
 
 For gas management, simulations, and other advanced usage, see the official [Flashbots documentation](https://docs.flashbots.net/).
 
@@ -6667,8 +7269,6 @@ Bidding for bundle events is very similar to single transaction events. As a sea
 # Base Tokenized Equities (Coinbase B20)
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/coinbase
 
-<TokenizedEquityFeeds section="tokenizedEquityNote" />
-
 Chainlink provides tokenized equity feeds for Coinbase tokenized stocks on Base. Each tokenized stock is a B20 token, Base's native token standard for real-world assets, an extension of ERC-20, identified by its contract address rather than its ticker. The corresponding Chainlink feed reports the Total Return Value of the token by combining the underlying equity's market price with a multiplier read from Coinbase's on-chain oracle registry.
 
 These feeds use the standard Chainlink V3 aggregator interface (`latestRoundData()`), so any consumer reads the published price through the proxy in the same way as a crypto price feed. They are push-based oracles intended for compliance reference pricing, protocol integration, and similar use cases.
@@ -6712,8 +7312,6 @@ Key behaviors of the B20 multiplier model:
 - **Cash dividends are converted to shares** of the underlying equity and reflected as a multiplier increase, rather than distributed as cash to the token holder. For example, after a dividend the multiplier may increase from 1.00 to 1.02, representing that 1 token is redeemable for 1.02 shares.
 - **Holder balances never change**. Corporate actions update the multiplier — there is no rebasing and there are no airdrops. A holder's raw token balance stays constant while its redemption value adjusts.
 - **Multiplier changes are observable on-chain**. `MultiplierUpdated` events record every change, and sensitive operations are wrapped in human-readable announcement events (`Announcement` / `EndAnnouncement`) that can be atomically bundled with the multiplier update they describe.
-
-{/* TODO: Add coinbase's staged-update mechanism. Include whether multiplier changes are staged in advance or applied atomically alongside announcement events. This section will be updated before publication. */}
 
 ## Corporate action handling and oracle pause
 
@@ -6793,8 +7391,6 @@ See [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds) for the shared 
 # Tokenized Equity Feeds
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds
 
-<TokenizedEquityFeeds section="tokenizedEquityNote" />
-
 ## What are tokenized equities?
 
 Tokenized equities are blockchain tokens that represent ownership or economic exposure to traditional stocks and ETFs. These tokens are distinct financial instruments issued by token issuers, not the underlying equities themselves. Tokenized equity feeds deliver the **primary market price representing the intrinsic value of the equity token** – this is the calculated theoretical token value and may account for long-term total return adjustments such as dividends or corporate actions.
@@ -6806,6 +7402,8 @@ Chainlink Tokenized Equity Feeds provide continuous 24/5 pricing for tokenized r
 Tokenized equity feeds behave differently from standard crypto price feeds due to structural connections with underlying traditional equity markets affecting asset liquidity and pricing. Given the specialized nature of these feeds, all developers must reach out to Chainlink Labs prior to integrating these feeds and also review the [key differences](#key-differences-from-standard-feeds) and [risks](#risks) sections to understand how these characteristics may affect your application.
 
 See the [Provider Catalog](/data-feeds/tokenized-equity-feeds/providers) to view available feeds and issuer-specific implementations.
+
+![Image](/images/data-feed/tokenized-equity/tokenized-equity-diagram.png)
 
 ## Why use tokenized equity feeds?
 
@@ -7085,8 +7683,6 @@ These values are sourced from the asset issuer. Learn more in the [Provider Cata
 # Ondo Finance Global Markets (GM)
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/ondo
 
-<TokenizedEquityFeeds section="tokenizedEquityNote" />
-
 Chainlink provides tokenized equity feeds for Ondo Finance Global Markets (GM) tokenized equities. These feeds differ from standard market-rate feeds in that they report **Total Return Values** rather than raw equity prices.
 
 ## Available Ondo tokenized equity feeds
@@ -7138,6 +7734,8 @@ Large corporate actions require special handling to maintain price continuity. T
 4. After the corporate action takes effect and Ondo confirms that both the stock price and `sValue` reflect the new values correctly, the system is manually unpaused
 5. The new `sValue` takes effect, and normal operation resumes
 
+![Image](/images/data-feed/tokenized-equity/ondo-tokenized-equity-pause-behavior.png)
+
 This pause mechanism ensures price continuity during corporate actions. For example, during a 10:1 stock split:
 
 | Stage         | Stock Price | `sValue`      | Token Price   |
@@ -7148,14 +7746,14 @@ This pause mechanism ensures price continuity during corporate actions. For exam
 
 The token price remains continuous at $200 throughout the event, even though the underlying equity market price dropped from $200 to $20.
 
-<Aside type="note">
-  When the `SyntheticSharesOracle` contract returns `paused = true`, the Chainlink feed freezes at the last known good
-  price. Integrators should be aware that during pause windows:
-
-  - The feed will not update until manually unpaused
-  - The pause duration depends on when Ondo confirms the corporate action has been correctly applied
-  - A minimum pause duration (at least 10 minutes) is enforced to prevent premature unpausing
-</Aside>
+> **NOTE**
+>
+> When the `SyntheticSharesOracle` contract returns `paused = true`, the Chainlink feed freezes at the last known good
+> price. Integrators should be aware that during pause windows:
+>
+> - The feed will not update until manually unpaused
+> - The pause duration depends on when Ondo confirms the corporate action has been correctly applied
+> - A minimum pause duration (at least 10 minutes) is enforced to prevent premature unpausing
 
 ## Example scenarios
 
@@ -7208,8 +7806,6 @@ For Oracle Extractable Value (OEV) and how SVR relates to standard feeds, use [S
 # Asset Issuer Catalog
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/providers
 
-<TokenizedEquityFeeds section="tokenizedEquityNote" />
-
 Tokenized equity feeds have issuer-specific implementations that affect pricing methodology, data handling, and operational behavior. This page catalogs the available issuers and their key characteristics.
 
 ## Available providers
@@ -7228,8 +7824,6 @@ Each provider may implement tokenized equity feeds differently based on their to
 
 # Robinhood Tokenized Equities
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/robinhood
-
-<TokenizedEquityFeeds section="tokenizedEquityNote" />
 
 Chainlink provides tokenized equity feeds for Robinhood tokenized stocks. Each Robinhood tokenized stock is represented by its own ERC-20 token contract, deployed on Robinhood Chain (one contract per ticker). The corresponding Chainlink feed reports the Total Return Value of the token by combining the underlying equity's market price with a multiplier read directly from the Robinhood token contract, rather than the raw equity price.
 
@@ -7411,10 +8005,10 @@ Before you begin, ensure you have:
    - Enter your password
    - Copy your private key
 
-<Aside type="caution" title="Private Key Security">
-  Never share your private key or commit it to version control. Store it securely and only use testnet accounts for
-  development.
-</Aside>
+> **CAUTION: Private Key Security**
+>
+> Never share your private key or commit it to version control. Store it securely and only use testnet accounts for
+> development.
 
 ### Getting Test Tokens
 
@@ -7476,10 +8070,10 @@ This tutorial uses the following price feeds on TRON Nile Testnet:
 | BTC/USD    | `TD3hrfAtPcnkLSsRh4UTgjXBo6KyRfT1AR` |
 | ETH/USD    | `TYaLVmqGzz33ghKEMTdC64dUnde5LZc6Y3` |
 
-<Aside type="note" title="More Price Feeds Available">
-  These are just two examples for the tutorial. For a complete list of all available price feeds on TRON, visit the
-  [Price Feed Addresses](/data-feeds/price-feeds/addresses?network=tron) page.
-</Aside>
+> **NOTE: More Price Feeds Available**
+>
+> These are just two examples for the tutorial. For a complete list of all available price feeds on TRON, visit the
+> [Price Feed Addresses](/data-feeds/price-feeds/addresses?network=tron) page.
 
 ### Compile the Contract
 
@@ -7503,9 +8097,9 @@ Deploying 'DataFeedReader'
 DataFeedReader: TTZEzaRUfrSm2ENfkhrPzk5mMEkZVwS3eD
 ```
 
-<Aside type="note" title="Save Your Contract Address">
-  Copy the deployed contract address - you will need it for the offchain interaction in Part 2.
-</Aside>
+> **NOTE: Save Your Contract Address**
+>
+> Copy the deployed contract address - you will need it for the offchain interaction in Part 2.
 
 ## Part 2: Offchain Interaction with TronWeb
 
@@ -7595,7 +8189,7 @@ Now that you have successfully deployed and interacted with Chainlink Data Feeds
 # U.S. Government Macroeconomic Data Feeds
 Source: https://docs.chain.link/data-feeds/us-government-macroeconomic/addresses
 
-<FeedPage dataFeedType="usGovernmentMacroeconomicData" />
+Live values such as feed contract addresses are not inlined here. Wait for the official API to obtain current data.
 
 ---
 
@@ -7698,7 +8292,144 @@ These code examples demonstrate how to read data feeds directly off chain using 
 
 This example uses [web3.js](https://web3js.readthedocs.io/) to retrieve feed data from the [BTC / USD feed](https://sepolia.etherscan.io/address/0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43) on the Sepolia testnet.
 
-<LatestPrice client:idle feedAddress={priceFeedAddresses.btc.usd.sepolia.address} supportedChain="ETHEREUM_SEPOLIA" />
+### web3.js
+
+```js
+/**
+ * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+const Web3 = require("web3") // for nodejs only
+const web3 = new Web3("https://rpc.ankr.com/eth_sepolia")
+const aggregatorV3InterfaceABI = [
+  {
+    inputs: [],
+    name: "decimals",
+    outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "description",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint80", name: "_roundId", type: "uint80" }],
+    name: "getRoundData",
+    outputs: [
+      { internalType: "uint80", name: "roundId", type: "uint80" },
+      { internalType: "int256", name: "answer", type: "int256" },
+      { internalType: "uint256", name: "startedAt", type: "uint256" },
+      { internalType: "uint256", name: "updatedAt", type: "uint256" },
+      { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "latestRoundData",
+    outputs: [
+      { internalType: "uint80", name: "roundId", type: "uint80" },
+      { internalType: "int256", name: "answer", type: "int256" },
+      { internalType: "uint256", name: "startedAt", type: "uint256" },
+      { internalType: "uint256", name: "updatedAt", type: "uint256" },
+      { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "version",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+]
+const addr = "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43"
+const priceFeed = new web3.eth.Contract(aggregatorV3InterfaceABI, addr)
+priceFeed.methods
+  .latestRoundData()
+  .call()
+  .then((roundData) => {
+    // Do something with roundData
+    console.log("Latest Round Data", roundData)
+  })
+```
+
+### ethers.js
+
+```js
+/**
+ * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+const { ethers } = require("ethers") // for nodejs only
+const provider = new ethers.providers.JsonRpcProvider("https://rpc.ankr.com/eth_sepolia")
+const aggregatorV3InterfaceABI = [
+  {
+    inputs: [],
+    name: "decimals",
+    outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "description",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint80", name: "_roundId", type: "uint80" }],
+    name: "getRoundData",
+    outputs: [
+      { internalType: "uint80", name: "roundId", type: "uint80" },
+      { internalType: "int256", name: "answer", type: "int256" },
+      { internalType: "uint256", name: "startedAt", type: "uint256" },
+      { internalType: "uint256", name: "updatedAt", type: "uint256" },
+      { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "latestRoundData",
+    outputs: [
+      { internalType: "uint80", name: "roundId", type: "uint80" },
+      { internalType: "int256", name: "answer", type: "int256" },
+      { internalType: "uint256", name: "startedAt", type: "uint256" },
+      { internalType: "uint256", name: "updatedAt", type: "uint256" },
+      { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "version",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+]
+const addr = "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43"
+const priceFeed = new ethers.Contract(addr, aggregatorV3InterfaceABI, provider)
+priceFeed.latestRoundData().then((roundData) => {
+  // Do something with roundData
+  console.log("Latest Round Data", roundData)
+})
+```
 
 ### Python
 
@@ -7736,11 +8467,11 @@ Chainlink Data Feeds can be used in combination to derive denominated price pair
 
 If you require a denomination other than what is provided, you can use two data feeds to derive the pair that you need. For example, if you needed a BTC / EUR price, you could take the BTC / USD feed and the EUR / USD feed and derive BTC / EUR using division.
 
-(Image: Request Model Diagram)
+![Request Model Diagram](/images/price-feed-conversion-equation.gif)
 
-<Aside type="caution" title="Important">
-  If your contracts require Solidity versions that are `>=0.6.0 <0.8.0`, use [OpenZeppelin's SafeMath version 3.4](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/math/SafeMath.sol).
-</Aside>
+> **CAUTION: Important**
+>
+> If your contracts require Solidity versions that are `>=0.6.0 <0.8.0`, use [OpenZeppelin's SafeMath version 3.4](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/math/SafeMath.sol).
 
 ```sol
 // SPDX-License-Identifier: MIT

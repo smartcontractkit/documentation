@@ -2,8 +2,6 @@
 Source: https://docs.chain.link/ace
 Last Updated: 2026-07-17
 
-<AceCallout callout="privateBeta" />
-
 **Chainlink Automated Compliance Engine (ACE)** is a compliance layer for EVM smart contracts. It enforces rules — transfer limits, identity checks, sanctions screening, and more — at transaction time, without embedding compliance logic in your application code. Rules can be added, updated, or removed through the ACE Platform — your application contract doesn't need to change.
 
 ## What problems does ACE solve?
@@ -61,6 +59,8 @@ ACE is currently in Beta. See [Beta Scope](/ace/beta-scope) for the current scop
 
 Here's how ACE components work together. Imagine **Emma** (an institutional investor) wants to buy **$50,000** of a **tokenized bond** on a DEX.
 
+![Image](/images/ace/overview-example.png)
+
 ### The compliance journey, step by step
 
 1. **Transaction initiated** — Emma submits her buy order on the DEX. Before executing, the DEX's smart contract calls the **PolicyEngine** to validate the transaction.
@@ -96,8 +96,6 @@ Start here regardless of your role:
 # Beta Scope
 Source: https://docs.chain.link/ace/beta-scope
 Last Updated: 2026-09-23
-
-<AceCallout callout="privateBeta" />
 
 ACE Beta is an early-access release for testing and integration on supported mainnet and testnet networks. The limitations listed below are all areas of active development. Each will be addressed as ACE progresses toward general availability.
 
@@ -141,10 +139,10 @@ In both models, you retain full ownership of your contracts through the [CRE Con
 
 ACE Beta provides a managed `wallet_risk_scoring` policy that screens transaction participants with TRM Wallet Screening and delivers approved permits onchain through a managed CRE workflow.
 
-<Aside type="caution" title="MVP feature">
-  Managed offchain risk policies and the Evaluation API are an MVP. Their interfaces and capabilities can change during
-  Beta. Contact your Chainlink representative before using this feature and for help with setup.
-</Aside>
+> **CAUTION: MVP feature**
+>
+> Managed offchain risk policies and the Evaluation API are an MVP. Their interfaces and capabilities can change during
+> Beta. Contact your Chainlink representative before using this feature and for help with setup.
 
 The following limitations apply:
 
@@ -164,32 +162,96 @@ See [Offchain Policies](/ace/guides/policy-manager/offchain-policies) for an ove
 Source: https://docs.chain.link/ace/supported-networks
 Last Updated: 2026-05-26
 
-<AceCallout callout="privateBeta" />
-
 ACE Beta is available on the following networks.
 
-<Aside type="note" title="Mainnet access">
-  Mainnet networks are not enabled for all ACE Beta organizations by default. Contact your Chainlink contact to request
-  mainnet access. Testnet networks are available once ACE is enabled for your organization.
-</Aside>
+> **NOTE: Mainnet access**
+>
+> Mainnet networks are not enabled for all ACE Beta organizations by default. Contact your Chainlink contact to request
+> mainnet access. Testnet networks are available once ACE is enabled for your organization.
 
 ## Mainnet networks
 
+Network
+Chain ID
+Chain Selector
+
+Ethereum Mainnet
+
+`1`
+
+`5009297550715157269`
+
+Arbitrum Mainnet
+
+`42161`
+
+`4949039107694359620`
+
+Avalanche Mainnet
+
+`43114`
+
+`6433500567565415381`
+
+Base Mainnet
+
+`8453`
+
+`15971525489660198786`
+
+Polygon Mainnet
+
+`137`
+
+`4051577828743386545`
+
 ## Testnet networks
 
-<Aside type="note" title="About chain selectors">
-  A **chain selector** is Chainlink's unique numeric identifier for each blockchain network. Unlike chain IDs, chain
-  selectors are globally unique across all supported networks. The Coordinator API uses chain selectors — not chain IDs
-  — in all multi-chain operations such as creating policy engines, registering targets, or deploying protections.
-</Aside>
+Network
+Chain ID
+Chain Selector
+
+Ethereum Sepolia
+
+`11155111`
+
+`16015286601757825753`
+
+Arbitrum Sepolia
+
+`421614`
+
+`3478487238524512106`
+
+Avalanche Fuji
+
+`43113`
+
+`14767482510784806043`
+
+Base Sepolia
+
+`84532`
+
+`10344971235874465080`
+
+Polygon Amoy
+
+`80002`
+
+`16281711391670634445`
+
+> **NOTE: About chain selectors**
+>
+> A **chain selector** is Chainlink's unique numeric identifier for each blockchain network. Unlike chain IDs, chain
+> selectors are globally unique across all supported networks. The Coordinator API uses chain selectors — not chain IDs
+> — in all multi-chain operations such as creating policy engines, registering targets, or deploying protections.
 
 ---
 
 # Release Notes
 Source: https://docs.chain.link/ace/release-notes
 Last Updated: 2026-09-23
-
-<AceCallout callout="privateBeta" />
 
 ## September 14, 2026 — Custom contracts
 
@@ -249,13 +311,13 @@ This is a testnet-only release. For full details on what is supported, known con
 Source: https://docs.chain.link/ace/concepts/architecture
 Last Updated: 2026-03-31
 
-<AceCallout callout="privateBeta" />
-
 ACE has two layers: **onchain smart contracts** that enforce compliance rules on the blockchain, and the **[ACE Platform](/ace/concepts/key-terms#ace-platform)** (UI and APIs) that lets you manage them. Under the hood, Chainlink infrastructure connects the two — routing your platform actions to the blockchain and indexing onchain events back into the Reporting API. This page gives a bird's-eye view of how all the pieces fit together.
 
 ## System overview
 
 The following diagram shows the complete ACE architecture, from the ACE Platform down to the onchain contracts.
+
+![Image](/images/ace/architecture-system-overview.png)
 
 The **ACE Platform** is everything you interact with: the **Platform UI**, the **Coordinator API** (to manage ACE resources), and the **Reporting API** (to query what happened onchain). The UI calls the Coordinator API under the hood, so both paths converge.
 
@@ -287,10 +349,10 @@ The Reporting Manager gives you read-only access to onchain state and transactio
 
 The Reporting Manager exposes data through the **Reporting API**. Under the hood, Chainlink's indexing infrastructure monitors onchain events (such as `PolicyRunComplete`) emitted by your PolicyEngines and indexes the data so it can be queried through the API. See the [API Overview](/ace/reference/apis) for available endpoints.
 
-<Aside type="note" title="UI and API">
-  Everything you can do in the Policy Manager and Identity Manager UIs is also available through the Coordinator API.
-  The Reporting Manager is currently API-only.
-</Aside>
+> **NOTE: UI and API**
+>
+> Everything you can do in the Policy Manager and Identity Manager UIs is also available through the Coordinator API.
+> The Reporting Manager is currently API-only.
 
 ## Onchain contracts
 
@@ -352,6 +414,8 @@ How the transaction gets signed depends on your organization's signing model: wi
 
 When a policy runs onchain, the PolicyEngine emits a `PolicyRunComplete` event. Chainlink's indexing infrastructure continuously monitors these events across all managed PolicyEngines and indexes the data. The **Reporting API** then serves this indexed data, giving you a queryable view of all policy run activity.
 
+![Image](/images/ace/architecture-onchain-activity.png)
+
 This means you can query transaction history and policy run results through the Reporting Manager without running your own blockchain indexer — Chainlink handles the event monitoring and indexing automatically.
 
 ---
@@ -359,8 +423,6 @@ This means you can query transaction history and policy run results through the 
 # Key Terms and Concepts
 Source: https://docs.chain.link/ace/concepts/key-terms
 Last Updated: 2026-07-17
-
-<AceCallout callout="privateBeta" />
 
 This glossary defines the key terms used throughout the ACE documentation. Use it as a quick reference when reading other pages.
 
@@ -618,6 +680,8 @@ When your organization is onboarded onto ACE:
 
 Once setup is complete, the permission boundaries described above take effect: only you can change ownership or manage authorized signers. Chainlink can only execute operations.
 
+![Image](/images/ace/signing-model-sva-setup.png)
+
 ### What happens during operations
 
 When you trigger an action — whether from the ACE platform UI or the API:
@@ -629,6 +693,8 @@ When you trigger an action — whether from the ACE platform UI or the API:
 5. If authorized, the CRE Connect Wallet executes the operation on the target contract.
 
 During day-to-day operations, you never interact with a blockchain wallet or sign a transaction. ACE handles the signing and execution, while your CRE Connect Wallet enforces that only authorized operators can act.
+
+![Image](/images/ace/signing-model-sva-operations.png)
 
 ### Your safety net
 
@@ -747,18 +813,20 @@ This separation provides:
 
 When a user calls a protected function, the `runPolicy` modifier intercepts the call and hands control to the PolicyEngine. The engine runs each attached policy in order — a chain of responsibility where each policy's result determines what happens next.
 
+![Image](/images/ace/policy-management-policy-chains.png)
+
 In this diagram, the user calls a protected function on your contract. The `runPolicy` modifier forwards the call to the PolicyEngine, which begins executing the policy chain. Policy 1 runs first and returns **Continue** — its check passed, but the decision is deferred. The engine moves to Policy 2, which can produce one of three outcomes:
 
 - **Reject** — The policy reverts with `PolicyRejected` and a reason. The entire transaction reverts immediately.
 - **Allow** — The policy approves the transaction. Execution succeeds without checking any further policies.
 - **Continue** — The check passed but no final decision was made. If no policies remain, the engine applies its configurable **default result** (allow or reject).
 
-<Aside type="note" title="Any policy can short-circuit the chain">
-  The diagram above shows Policy 1 returning Continue, but any policy in the chain can also return Reject or Allow. If
-  Policy 1 had rejected, the transaction would revert immediately and Policy 2 would never run. If Policy 1 had returned
-  Allow, the transaction would succeed immediately and Policy 2 would also be skipped. This is why policy ordering is
-  critical — a policy that makes a final decision prevents all subsequent policies from executing.
-</Aside>
+> **NOTE: Any policy can short-circuit the chain**
+>
+> The diagram above shows Policy 1 returning Continue, but any policy in the chain can also return Reject or Allow. If
+> Policy 1 had rejected, the transaction would revert immediately and Policy 2 would never run. If Policy 1 had returned
+> Allow, the transaction would succeed immediately and Policy 2 would also be skipped. This is why policy ordering is
+> critical — a policy that makes a final decision prevents all subsequent policies from executing.
 
 ## The policy execution flow
 
@@ -769,6 +837,8 @@ The overview above shows the decision logic. Under the hood, the PolicyEngine do
 3. **Parameter mapping** — For each policy in the chain, the engine maps the extracted parameters to the subset that policy needs. This mapping works by name: when a policy is added to a function selector, you specify which parameter names it requires (for example, a sanctions policy might need `from` and `to`, while a volume limit needs only `amount`). The engine provides only those parameters to each policy. See [Worked example: ERC-20 transfer](#worked-example-erc-20-transfer) for a concrete walkthrough.
 4. **Policy execution** — The engine calls each policy's `run()` function in order, passing the mapped parameters and context.
 5. **Result processing** — Based on each policy's response, the engine decides whether to continue, allow, or reject.
+
+![Image](/images/ace/policy-management-execution-flow.png)
 
 ### Post-run hooks
 
@@ -792,10 +862,10 @@ The policy returns `Allowed`. This is also a **final** decision: all subsequent 
 
 Use Allow sparingly — it acts as a bypass. A common pattern is a BypassPolicy at the start of the chain that allows admin addresses to skip all subsequent checks.
 
-<Aside type="caution" title="Allow bypasses everything after it">
-  Because Allow skips all subsequent policies, place permissive policies (like admin bypass) with extreme care. A
-  misplaced Allow can inadvertently bypass critical security checks.
-</Aside>
+> **CAUTION: Allow bypasses everything after it**
+>
+> Because Allow skips all subsequent policies, place permissive policies (like admin bypass) with extreme care. A
+> misplaced Allow can inadvertently bypass critical security checks.
 
 ### Continue
 
@@ -834,17 +904,19 @@ For most use cases, the process is straightforward:
 
 For example, an ERC-20 transfer might have an Extractor that produces `to` and `value`. A sanctions policy might only need `to`, while a volume limit policy only needs `value`. Each gets exactly what it asks for.
 
-<Aside type="note" title="Extractors: pre-built and custom">
-  The platform provides pre-built extractors for ERC-20, ERC-3643, and `CCIP-AdvancedPoolHooks` function signatures. See
-  [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools) for the CCIP integration. For other
-  contract types, write and deploy your own extractor contract (implementing `IExtractor`) and register it through the
-  Coordinator API. See [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types)
-  for details.
-</Aside>
+> **NOTE: Extractors: pre-built and custom**
+>
+> The platform provides pre-built extractors for ERC-20, ERC-3643, and `CCIP-AdvancedPoolHooks` function signatures. See
+> [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools) for the CCIP integration. For other
+> contract types, write and deploy your own extractor contract (implementing `IExtractor`) and register it through the
+> Coordinator API. See [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types)
+> for details.
 
 ### Worked example: ERC-20 transfer
 
 Consider a protected `transfer(address from, address to, uint256 amount)` function with two policies attached: a [RejectPolicy](/ace/reference/policy-library/reject-policy) for sanctions screening and a [VolumeRatePolicy](/ace/reference/policy-library/volume-rate-policy) for daily transfer limits.
+
+![Image](/images/ace/policy-management-extractor-mapper-example.png)
 
 Here is what happens step by step:
 
@@ -855,11 +927,11 @@ Here is what happens step by step:
 
 The parameters a policy receives are determined by the mapper configuration — not by the policy itself. A RejectPolicy configured to receive only `to` would check only the recipient; configured to receive both `from` and `to`, it checks both.
 
-<Aside type="tip" title="Why check all mapped addresses?">
-  Checking every address delivered by the mapper is a deliberate security choice. If a sanctions policy only checked the
-  recipient but not the sender, a sanctioned address could still initiate transfers freely. By mapping both `from` and
-  `to` to the policy, you ensure neither participant can be a sanctioned entity.
-</Aside>
+> **TIP: Why check all mapped addresses?**
+>
+> Checking every address delivered by the mapper is a deliberate security choice. If a sanctions policy only checked the
+> recipient but not the sender, a sanctioned address could still initiate transfers freely. By mapping both `from` and
+> `to` to the policy, you ensure neither participant can be a sanctioned entity.
 
 ### Custom Mappers
 
@@ -871,11 +943,11 @@ For example, a policy that enforces a USD volume limit might need a `usdValue` p
 
 Mappers are set per policy using `setPolicyMapper` and override the default name-based mapping for that policy only.
 
-<Aside type="note" title="Custom mappers are not available">
-  Custom Mappers are not available through the ACE Platform during Beta. The platform uses the default name-based
-  parameter mapping for all policies. See [Beta
-  Scope](/ace/beta-scope#custom-extractors-are-registered-by-you-custom-mappers-are-not-available) for details.
-</Aside>
+> **NOTE: Custom mappers are not available**
+>
+> Custom Mappers are not available through the ACE Platform during Beta. The platform uses the default name-based
+> parameter mapping for all policies. See [Beta
+> Scope](/ace/beta-scope#custom-extractors-are-registered-by-you-custom-mappers-are-not-available) for details.
 
 ## The context parameter
 
@@ -887,10 +959,10 @@ Throughout the policy execution flow, a `bytes` field called **context** is pass
 - **Merkle proofs** — To check membership in a large offchain allowlist, the caller provides a Merkle proof in the context. The policy verifies it against a stored root.
 - **Dynamic risk parameters** — An integrator passes in offchain risk scores or session data, allowing policies to make context-aware decisions.
 
-<Aside type="note" title="Context is a developer-level feature">
-  The context parameter is handled entirely in your contract's Solidity code. It is not configurable or visible in the
-  ACE Platform UI or API.
-</Aside>
+> **NOTE: Context is a developer-level feature**
+>
+> The context parameter is handled entirely in your contract's Solidity code. It is not configurable or visible in the
+> ACE Platform UI or API.
 
 ### Two methods for passing context
 
@@ -900,10 +972,10 @@ The `PolicyProtected` contract supports two approaches:
 
 **Two-step method (for standard interfaces)** — When protecting a function with a fixed signature (like an ERC-20 `transfer`), the caller first calls `setContext(bytes)` on your contract and then calls the protected function in the same transaction. The `runPolicy` modifier retrieves and clears the stored context automatically.
 
-<Aside type="caution" title="Context must be consumed atomically">
-  When using the two-step method, always set and consume the context in the same atomic transaction. Context is stored
-  per sender — if it isn't consumed immediately, stale context could be reused by a subsequent call.
-</Aside>
+> **CAUTION: Context must be consumed atomically**
+>
+> When using the two-step method, always set and consume the context in the same atomic transaction. Context is stored
+> per sender — if it isn't consumed immediately, stale context could be reused by a subsequent call.
 
 ---
 
@@ -931,13 +1003,19 @@ Consider three policies attached to a token's `transfer` function: a [Credential
 
 **Ordering A — BypassPolicy first:**
 
+![Image](/images/ace/policy-ordering-example1.png)
+
 **Ordering B — Restrictive checks first:**
+
+![Image](/images/ace/policy-ordering-example2.png)
 
 In **Ordering A**, an admin skips both the credential check and the transfer cap. In **Ordering B**, every address — including admins — must pass the credential and transfer-limit checks first. The BypassPolicy only applies after the critical checks have passed, so admins are still subject to the same compliance and risk controls as everyone else.
 
 ### How the engine evaluates a chain
 
 This sequence diagram shows the full evaluation flow when the PolicyEngine processes a chain of policies:
+
+![Image](/images/ace/policy-ordering-policy-engine.png)
 
 ## The default result
 
@@ -948,10 +1026,10 @@ If every policy in the chain returns Continue and none makes a final Allow or Re
 
 This matters when all your policies use the Continue pattern (which is the most common approach for composable policy chains). If the default is set to reject but you intended all-Continue to mean "all checks passed," your transactions will revert unexpectedly.
 
-<Aside type="caution" title="Verify your default result">
-  When using policies that return Continue, make sure the default result is configured correctly for each target
-  contract. A mismatch between your policy design and the default result can silently block or allow transactions.
-</Aside>
+> **CAUTION: Verify your default result**
+>
+> When using policies that return Continue, make sure the default result is configured correctly for each target
+> contract. A mismatch between your policy design and the default result can silently block or allow transactions.
 
 To view or change the default result for a target contract, see [Managing Targets — Default allow behavior](/ace/guides/policy-manager/manage-targets#default-allow-behavior).
 
@@ -1014,6 +1092,8 @@ Cross-Chain Identity solves this with a single framework: a universal identifier
 ## The Cross-Chain Identifier (CCID)
 
 A **CCID** is a `bytes32` value that represents a single identity across all EVM blockchains. Each chain maintains a local mapping between wallet addresses and CCIDs through an IdentityRegistry. One CCID can be linked to multiple addresses, even across different chains.
+
+![Image](/images/ace/ccid-overview.png)
 
 This means a credential attached to a CCID (for example, a KYC verification) is valid for all of that user's addresses on all chains — without re-issuance.
 
@@ -1096,11 +1176,15 @@ There are two ways to use multiple sources, and they can be combined:
 
 A protocol might trust KYC credentials from Provider A and AML credentials from Provider B, each with their own registries. Each credential type points to the source that handles it.
 
+![Image](/images/ace/ccid-credential-sources.png)
+
 ### Multiple sources for the same credential type
 
 Applications can also register several sources for the **same** credential type — for example, trusting KYC credentials from Provider A, Provider B, and Provider C. When defining a credential requirement, the application specifies how many sources must successfully validate the credential before the requirement passes.
 
 If only one successful validation is needed, any single trusted provider is sufficient. If two or more are required, the user must hold valid credentials from multiple independent providers. This is useful for higher-assurance scenarios where corroboration from several IDV providers is desired.
+
+![Image](/images/ace/ccid-multiple-sources-same-credential.png)
 
 For the full configuration details — including how to set the number of required validations per requirement — see the [CredentialRegistryIdentityValidatorPolicy reference](/ace/reference/policy-library/credential-registry-identity-validator-policy).
 
@@ -1108,11 +1192,11 @@ For the full configuration details — including how to set the number of requir
 
 A credential in the CredentialRegistry can optionally include associated `bytes` of data. This data is meant to be minimal — a hash, an offchain reference, or a non-sensitive classification code. It must never contain personally identifiable information (PII).
 
-<Aside type="caution" title="Never store PII onchain">
-  Credential data stored onchain should be a hash or minimal reference to offchain data, not the underlying personal
-  information. Without proper hashing, it may be possible to infer sensitive information, such as correlating onchain
-  credential expirations with real-world document expiration dates.
-</Aside>
+> **CAUTION: Never store PII onchain**
+>
+> Credential data stored onchain should be a hash or minimal reference to offchain data, not the underlying personal
+> information. Without proper hashing, it may be possible to infer sensitive information, such as correlating onchain
+> credential expirations with real-world document expiration dates.
 
 ### Attestation-only vs. Credential Data Validator
 
@@ -1134,14 +1218,14 @@ This enables decisions based on *what's inside* the credential, not just whether
 | **`credentialData` usage** | Ignored                      | Read and validated by a custom contract                          |
 | **Use cases**              | KYC yes/no, sanctions yes/no | Investor tiers, jurisdiction codes, risk scores                  |
 
-<Aside type="note" title="Configuring data validation">
-  Credential Data Validators are configurable through the ACE Platform. To issue credentials that carry data, link a
-  data schema to your credential type (see [Managing Credential
-  Types](/ace/guides/identity-manager/manage-credential-types#typed-credentials-with-data-schemas)); to enforce rules on
-  that data at transaction time, attach a Data Validator to your policy's credential source (see [Managing Data
-  Validators](/ace/guides/policy-manager/manage-data-validators)). Attestation-only remains the default when no data
-  validator is configured.
-</Aside>
+> **NOTE: Configuring data validation**
+>
+> Credential Data Validators are configurable through the ACE Platform. To issue credentials that carry data, link a
+> data schema to your credential type (see [Managing Credential
+> Types](/ace/guides/identity-manager/manage-credential-types#typed-credentials-with-data-schemas)); to enforce rules on
+> that data at transaction time, attach a Data Validator to your policy's credential source (see [Managing Data
+> Validators](/ace/guides/policy-manager/manage-data-validators)). Attestation-only remains the default when no data
+> validator is configured.
 
 ## Credential lifecycle
 
@@ -1171,6 +1255,8 @@ When the user calls a protected function on an application contract, the PolicyE
 2. Checks whether the CCID holds the required credentials from trusted sources via the CredentialRegistry.
 3. Optionally validates credential data through a Credential Data Validator.
 4. Returns the result to the PolicyEngine, which allows or rejects the transaction.
+
+![Image](/images/ace/ccid-runtime-validation.png)
 
 After initial issuance, the Credential Issuer is no longer involved in day-to-day validation. The onchain registries and policy handle everything at runtime.
 
@@ -1288,17 +1374,17 @@ The pipeline works as follows:
 
 This happens automatically for all contracts deployed through the ACE Platform. You do not need to run your own indexer, event listener, or database.
 
-<Aside type="note" title="Managed contracts only">
-  The Reporting Manager only tracks contracts deployed through the ACE Platform (UI or Coordinator API). Self-deployed
-  PolicyEngines and policies function onchain but do not appear in Reporting API responses. See [Beta
-  Scope](/ace/beta-scope) for details.
-</Aside>
+> **NOTE: Managed contracts only**
+>
+> The Reporting Manager only tracks contracts deployed through the ACE Platform (UI or Coordinator API). Self-deployed
+> PolicyEngines and policies function onchain but do not appear in Reporting API responses. See [Beta
+> Scope](/ace/beta-scope) for details.
 
 ## Beta scope
 
 During Beta, the Reporting Manager is **API-only** — there is no reporting UI. You interact with it exclusively through the Reporting API.
 
-The API provides read-only access. All compliance configuration changes (deploying policies, registering identities, issuing credentials) are done through the <a href="/api/ace/coordinator/docs" target="_blank">Coordinator API</a> or <a href="https://app.chain.link" target="_blank">Platform UI</a>.
+The API provides read-only access. All compliance configuration changes (deploying policies, registering identities, issuing credentials) are done through the [Coordinator API](/api/ace/coordinator/docs) or [Platform UI](https://app.chain.link).
 
 ## Next steps
 
@@ -1318,16 +1404,16 @@ ACE provides two ways to use offchain policies:
 - **Managed wallet risk screening (MVP)** — An out-of-the-box policy that screens wallet addresses with TRM Wallet Screening. You configure the risk thresholds and call the ACE Evaluation API; Chainlink manages the CRE workflow and onchain permit delivery.
 - **Custom offchain integrations** — An advanced model for internal compliance systems, custom policy endpoints, and other business logic. These integrations require infrastructure hosted by your organization and assistance from Chainlink during Beta.
 
-<Aside type="tip" title="Start with managed wallet screening">
-  To configure the managed TRM policy, see [Managing Offchain Risk Policies
-  (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies). To request permits from an application,
-  see [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits).
-</Aside>
+> **TIP: Start with managed wallet screening**
+>
+> To configure the managed TRM policy, see [Managing Offchain Risk Policies
+> (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies). To request permits from an application,
+> see [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits).
 
-<Aside type="caution" title="Managed service is an MVP">
-  Managed offchain risk policies and the Evaluation API are an MVP. Their interfaces and capabilities can change during
-  Beta. Contact your Chainlink representative before using the managed service and for help with setup.
-</Aside>
+> **CAUTION: Managed service is an MVP**
+>
+> Managed offchain risk policies and the Evaluation API are an MVP. Their interfaces and capabilities can change during
+> Beta. Contact your Chainlink representative before using the managed service and for help with setup.
 
 ## Why off-chain policies?
 
@@ -1343,6 +1429,8 @@ Off-chain policy execution bridges this gap by running these checks through the 
 
 A protected function that requires off-chain verification will revert if the caller does not have a valid permit. Your application must obtain a permit from the Chainlink DON before the user can call the function.
 
+![Managed offchain risk screening flow: an application requests an evaluation from ACE, a managed CRE workflow screens addresses with TRM, an approved permit is stored by the CADV contract, and the protected transaction consumes it.](/images/ace/offchain-risk-screening-flow.svg)
+
 1. Your application calls the ACE Evaluation API with the transaction's caller, target, function, chain, and permit parameters.
 2. ACE triggers a managed CRE workflow. The workflow selects the configured addresses and calls TRM Wallet Screening using the credential your organization stores in Vault DON.
 3. The workflow compares TRM's results with the policy's global risk threshold, unknown-risk setting, and category-specific thresholds.
@@ -1356,6 +1444,8 @@ Each managed permit is scoped to a specific caller, target, function, and set of
 ## Custom offchain integrations
 
 The custom model supports compliance requirements beyond the managed TRM policy. A Chainlink DON workflow can call a policy endpoint hosted by your organization, which can query internal systems or other external services and return an Allow or Deny decision.
+
+![Custom offchain policy execution flow: an application requests an evaluation from the Chainlink DON, which calls a policy endpoint hosted by the user before delivering an approved permit onchain.](/images/ace/offchain-engine/simplified-offchain-engine-permit.png)
 
 Your application and policy endpoint can be the same server — they represent different roles in the flow, not necessarily separate deployments.
 
@@ -1399,15 +1489,13 @@ From the policy engine's perspective, the CertifiedActionDONValidatorPolicy is j
 Source: https://docs.chain.link/ace/getting-started
 Last Updated: 2026-04-15
 
-<AceCallout callout="privateBeta" />
-
 ACE offers three managers. Choose the path that matches what you need to do:
 
-| Manager               | What it does                                                                                                                                       | Get started                                                                                                         |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| **Policy Manager**    | Attach and configure compliance policies on smart contracts — volume limits, allowlists, RBAC, identity-based checks, and more                     | [Policy Manager Quick Start](/ace/getting-started/policy-manager)                                                   |
-| **Identity Manager**  | Manage identity registries, register cross-chain identities (CCIDs), and issue credentials such as Proof of Identity or accreditation attestations | [Identity Manager Quick Start](/ace/getting-started/identity-manager)                                               |
-| **Reporting Manager** | Query on-chain transaction history, policy configurations, and identity states via a read-only API for compliance verification                     | [Reporting concepts](/ace/concepts/reporting) — <a href="/api/ace/reporting/docs" target="_blank">API Reference</a> |
+| Manager               | What it does                                                                                                                                       | Get started                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **Policy Manager**    | Attach and configure compliance policies on smart contracts — volume limits, allowlists, RBAC, identity-based checks, and more                     | [Policy Manager Quick Start](/ace/getting-started/policy-manager)                        |
+| **Identity Manager**  | Manage identity registries, register cross-chain identities (CCIDs), and issue credentials such as Proof of Identity or accreditation attestations | [Identity Manager Quick Start](/ace/getting-started/identity-manager)                    |
+| **Reporting Manager** | Query on-chain transaction history, policy configurations, and identity states via a read-only API for compliance verification                     | [Reporting concepts](/ace/concepts/reporting) — [API Reference](/api/ace/reporting/docs) |
 
 ### Shared first step
 
@@ -1436,8 +1524,6 @@ Before diving in, these pages provide essential context:
 Source: https://docs.chain.link/ace/getting-started/account-setup
 Last Updated: 2026-04-15
 
-<AceCallout callout="privateBeta" />
-
 This page walks through the shared setup steps for all ACE users. Whether you use the [Policy Manager](/ace/getting-started/policy-manager) to enforce compliance on smart contracts or the [Identity Manager](/ace/getting-started/identity-manager) to manage cross-chain identities and credentials, complete these steps first.
 
 ## 1. Create your organization
@@ -1446,33 +1532,39 @@ Go to [app.chain.link](https://app.chain.link) and create an account or sign in.
 
 Once signed in, click **"My Org"** in the bottom-left corner of the sidebar to open the Organization page. Your **Organization ID** is displayed in the page header — copy it.
 
+![Image](/images/ace/account-setup/organization-id.webp)
+
 ## 2. Share your Organization ID
 
 Share your Organization ID with your Chainlink contact so they can enable the ACE service for your organization. You cannot create API keys or use ACE until this step is complete.
 
-<Aside type="note" title="Beta onboarding">
-  During Beta, ACE enablement requires Chainlink to provision the service for your organization. This will become
-  self-service in a future release.
-</Aside>
+> **NOTE: Beta onboarding**
+>
+> During Beta, ACE enablement requires Chainlink to provision the service for your organization. This will become
+> self-service in a future release.
 
 ## 3. Create an API key
 
-<Aside type="caution" title="Wait for ACE enablement">
-  Do not create an API key until your Chainlink contact confirms that ACE has been enabled for your organization. API
-  keys created before enablement will not have access to ACE endpoints.
-</Aside>
+> **CAUTION: Wait for ACE enablement**
+>
+> Do not create an API key until your Chainlink contact confirms that ACE has been enabled for your organization. API
+> keys created before enablement will not have access to ACE endpoints.
 
 Once your account has been provisioned for the ACE service, create an API key for authentication:
 
 1. Log in to the [Chainlink App](https://app.chain.link), click **"My Org"** at the bottom of the left sidebar, then select the **"APIs"** tab.
 2. Click **"+ Organization API"**.
+
+   ![Image](/images/ace/account-setup/api-key-1.webp)
 3. Enter a name for the key and select an expiration period (1 day, 1 month, or 1 year).
+
+   ![Image](/images/ace/account-setup/api-key-2.webp)
 4. Click **"Generate"**. The API key is displayed once — copy it immediately.
 
-<Aside type="caution" title="Save your API key">
-  The API key is only shown once at creation time. Copy it immediately — if you lose it, you will need to generate a new
-  one. Never share your API key. Each user in your organization should create and manage their own key.
-</Aside>
+> **CAUTION: Save your API key**
+>
+> The API key is only shown once at creation time. Copy it immediately — if you lose it, you will need to generate a new
+> one. Never share your API key. Each user in your organization should create and manage their own key.
 
 You will use this key in the `Authorization` header for all [Coordinator API](/api/ace/coordinator/docs) and [Reporting API](/api/ace/reporting/docs) calls:
 
@@ -1511,8 +1603,6 @@ Many organizations do both. Start with whichever is most relevant to your first 
 Source: https://docs.chain.link/ace/getting-started/policy-manager
 Last Updated: 2026-09-23
 
-<AceCallout callout="privateBeta" />
-
 This guide walks you through the **Policy Manager** — the ACE component for attaching and configuring compliance policies on smart contracts. By the end you will have a policy-protected contract running on a supported network.
 
 ### 1. Prerequisites
@@ -1544,10 +1634,10 @@ Check two things in the response:
 
 In the Platform UI, confirm the engine status is **Active** and extractors appear in the engine settings page.
 
-<Aside type="caution" title="Deployment failure">
-  If any chain shows `"status": "creation_failed"`, the onchain deployment did not succeed. Create a new PolicyEngine
-  and retry. Contact your Chainlink representative if the issue persists.
-</Aside>
+> **CAUTION: Deployment failure**
+>
+> If any chain shows `"status": "creation_failed"`, the onchain deployment did not succeed. Create a new PolicyEngine
+> and retry. Contact your Chainlink representative if the issue persists.
 
 #### Save the PolicyEngine addresses
 
@@ -1555,11 +1645,11 @@ Copy the `address` value from each entry in `onchain_policy_engines` — or from
 
 ### 4. Integrate your contract
 
-<Aside type="note" title="CCIP Token Pools use a dedicated integration">
-  To enforce ACE policies through `AdvancedPoolHooks`, follow [Protect CCIP Token Pools with
-  ACE](/ace/guides/policy-manager/ccip-token-pools). The hook calls the Policy Engine directly, so it does not use the
-  generic `PolicyProtected` integration below.
-</Aside>
+> **NOTE: CCIP Token Pools use a dedicated integration**
+>
+> To enforce ACE policies through `AdvancedPoolHooks`, follow [Protect CCIP Token Pools with
+> ACE](/ace/guides/policy-manager/ccip-token-pools). The hook calls the Policy Engine directly, so it does not use the
+> generic `PolicyProtected` integration below.
 
 See [Making Your Contract ACE-Compatible](/ace/guides/policy-manager/contracts/ace-compatible) for a full overview of what your contract needs. In short:
 
@@ -1645,8 +1735,6 @@ Make a transaction against your protected contract, verify the policy enforces c
 Source: https://docs.chain.link/ace/getting-started/identity-manager
 Last Updated: 2026-05-26
 
-<AceCallout callout="privateBeta" />
-
 This guide walks you through the **Identity Manager** — the ACE component for managing identity registries, registering cross-chain identities (CCIDs), and issuing credentials such as Proof of Identity, accreditation proofs, or sanctions clearance. By the end you will have identities registered and credentials issued on a supported network.
 
 ### 1. Prerequisites
@@ -1683,7 +1771,7 @@ Credentials are attestations linked to a registered identity. During Beta, ACE u
 
 After issuing credentials, confirm they are visible and queryable through the **Reporting Manager**. The Reporting Manager provides a read-only view of all identities and credentials across your registries, which Policy Managers rely on when evaluating identity-based policies at transaction time.
 
-- Open the <a href="/api/ace/reporting/docs" target="_blank">Reporting API</a> to query credentials by identity, entity, or registry
+- Open the [Reporting API](/api/ace/reporting/docs) to query credentials by identity, entity, or registry
 - See [Reporting](/ace/concepts/reporting) for details on how reporting data flows into policy evaluation
 
 Once credentials appear in reporting, Policy Managers can reference them in identity-based policies such as the [Credential Registry Identity Validator](/ace/reference/policy-library/credential-registry-identity-validator-policy).
@@ -1705,14 +1793,16 @@ Last Updated: 2026-09-23
 
 These guides cover the day-to-day operations of a Policy Manager — from integrating your smart contracts with ACE to configuring and managing compliance policies.
 
-<Aside type="note">
-  New to ACE? Start with the [Policy Manager Quick Start](/ace/getting-started/policy-manager) for a step-by-step
-  onboarding walkthrough.
-</Aside>
+> **NOTE**
+>
+> New to ACE? Start with the [Policy Manager Quick Start](/ace/getting-started/policy-manager) for a step-by-step
+> onboarding walkthrough.
 
 ## How it all fits together
 
 The Policy Manager revolves around a handful of entities that work together to enforce compliance on your smart contracts. Understanding how they relate to each other makes the individual guides much easier to follow.
+
+![Image](/images/ace/policy-management-overall.png)
 
 - **PolicyEngine** — The on-chain orchestrator that evaluates policies. Everything — targets, policy instances, and extractors — is scoped to a single engine.
 - **Extractors** — Modules that decode transaction calldata into named parameters (sender, amount, etc.) so policies can evaluate them. Attached to the engine at creation time.
@@ -1749,10 +1839,10 @@ The Policy Manager revolves around a handful of entities that work together to e
 - [Managing Data Validators](/ace/guides/policy-manager/manage-data-validators) — enforce rules on credential contents (e.g., jurisdiction allow/deny lists) by attaching Data Validators to identity policies
 - [Custom Policies](/ace/guides/policy-manager/custom-policies) — write, deploy, and register your own policy contract, then use it like a library policy
 
-<Aside type="caution" title="Offchain risk policies are an MVP">
-  Managed offchain risk policies are an MVP. Their interfaces and capabilities can change during Beta. Contact your
-  Chainlink representative before using this feature and for help with setup.
-</Aside>
+> **CAUTION: Offchain risk policies are an MVP**
+>
+> Managed offchain risk policies are an MVP. Their interfaces and capabilities can change during Beta. Contact your
+> Chainlink representative before using this feature and for help with setup.
 
 - [Offchain Policies](/ace/guides/policy-manager/offchain-policies) — understand the managed and custom models, configure the managed wallet screening MVP, and integrate offchain permits
 
@@ -1768,10 +1858,10 @@ This page explains the `PolicyProtected` integration path. For the direct CCIP i
 
 For background on how these components interact, see the [Architecture page](/ace/concepts/architecture#policy-management-contracts) and the [Policy Management](/ace/concepts/policy-management) concepts page.
 
-<Aside type="note" title="Building for production">
-  Many teams start on testnets to experiment with ACE during Beta, then move to mainnet when ready. The upgrade guide is
-  here so you can plan ahead — upgrading production contracts is straightforward with multiple well-defined paths.
-</Aside>
+> **NOTE: Building for production**
+>
+> Many teams start on testnets to experiment with ACE during Beta, then move to mainnet when ready. The upgrade guide is
+> here so you can plan ahead — upgrading production contracts is straightforward with multiple well-defined paths.
 
 ## What a PolicyProtected integration needs
 
@@ -1811,14 +1901,14 @@ Your contract must be connected to a [PolicyEngine](/ace/guides/policy-manager/m
 
 One extractor is registered per function signature. To bind policies to specific functions, see [Protecting Target Functions](/ace/guides/policy-manager/manage-protections).
 
-<Aside type="note" title="Extractors: pre-built and custom">
-  The platform provides pre-built extractors for **ERC-20 and ERC-3643 function signatures**, attached automatically for
-  those contract types. The built-in `CCIP-AdvancedPoolHooks` type covers CCIP Token Pool hook functions; see [Protect
-  CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools). For other function signatures, you write and
-  deploy your own extractor contract (implementing `IExtractor`) and register it through the Coordinator API. See
-  [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types) for the complete
-  flow.
-</Aside>
+> **NOTE: Extractors: pre-built and custom**
+>
+> The platform provides pre-built extractors for **ERC-20 and ERC-3643 function signatures**, attached automatically for
+> those contract types. The built-in `CCIP-AdvancedPoolHooks` type covers CCIP Token Pool hook functions; see [Protect
+> CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools). For other function signatures, you write and
+> deploy your own extractor contract (implementing `IExtractor`) and register it through the Coordinator API. See
+> [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types) for the complete
+> flow.
 
 ## Integration paths
 
@@ -1892,14 +1982,14 @@ The most significant difference between the two implementations is how frozen to
 - **[Building an ERC-20 Compliance Token](/ace/guides/policy-manager/contracts/erc20-token)** — Detailed guide for deploying and configuring the ERC-20 reference implementation.
 - **[Building an ERC-3643 Compliance Token](/ace/guides/policy-manager/contracts/erc3643-token)** — Detailed guide for deploying and configuring the ERC-3643 reference implementation.
 
-<Aside type="note" title="Not building a token?">
-  The reference implementations above are specifically for tokens. If you are building a different type of contract
-  (vault, DEX, lending protocol, etc.), you can make any contract ACE-compatible by following the [integration
-  requirements](/ace/guides/policy-manager/contracts/ace-compatible) — inherit from `PolicyProtected`, add `runPolicy`
-  to your functions, and connect to a PolicyEngine. For function signatures beyond ERC-20 and ERC-3643, you write and
-  register your own extractors. See [Custom Contract Types &
-  Extractors](/ace/guides/policy-manager/contracts/custom-contract-types).
-</Aside>
+> **NOTE: Not building a token?**
+>
+> The reference implementations above are specifically for tokens. If you are building a different type of contract
+> (vault, DEX, lending protocol, etc.), you can make any contract ACE-compatible by following the [integration
+> requirements](/ace/guides/policy-manager/contracts/ace-compatible) — inherit from `PolicyProtected`, add `runPolicy`
+> to your functions, and connect to a PolicyEngine. For function signatures beyond ERC-20 and ERC-3643, you write and
+> register your own extractors. See [Custom Contract Types &
+> Extractors](/ace/guides/policy-manager/contracts/custom-contract-types).
 
 ---
 
@@ -1947,12 +2037,12 @@ Every state-changing function on the token is policy-protected. The [`runPolicy`
 | `unfreeze(account, amount, context)`       | `runPolicyWithContext` | Unfreeze a previously frozen amount on an account.                                               |
 | `forceTransfer(from, to, amount, context)` | `runPolicyWithContext` | Administratively move tokens between accounts, subject to frozen balance checks.                 |
 
-<Aside type="note" title="Context parameter">
-  Functions that accept a `bytes context` parameter use `runPolicyWithContext`, which forwards the context to the
-  PolicyEngine. Policies can use this context for additional validation — for example, verifying an offchain signature
-  or passing metadata about the operation. See [The context
-  parameter](/ace/concepts/policy-management#the-context-parameter) for details on both methods of passing context.
-</Aside>
+> **NOTE: Context parameter**
+>
+> Functions that accept a `bytes context` parameter use `runPolicyWithContext`, which forwards the context to the
+> PolicyEngine. Policies can use this context for additional validation — for example, verifying an offchain signature
+> or passing metadata about the operation. See [The context
+> parameter](/ace/concepts/policy-management#the-context-parameter) for details on both methods of passing context.
 
 ## Frozen token behavior
 
@@ -1964,13 +2054,13 @@ Every state-changing function on the token is policy-protected. The [`runPolicy`
 
 This model provides maximum compliance control: every change to frozen status is an explicit, auditable administrative action.
 
-<Aside type="tip" title="ERC-3643 handles this differently">
-  The [ERC-3643 compliance token](/ace/guides/policy-manager/contracts/erc3643-token) uses automatic unfreezing — burns
-  and force transfers can proceed even if the unfrozen balance is insufficient, because the contract automatically
-  reduces the frozen amount. See [Building a New
-  Contract](/ace/guides/policy-manager/contracts/new-contract#frozen-token-behavior-explained) for a detailed
-  comparison.
-</Aside>
+> **TIP: ERC-3643 handles this differently**
+>
+> The [ERC-3643 compliance token](/ace/guides/policy-manager/contracts/erc3643-token) uses automatic unfreezing — burns
+> and force transfers can proceed even if the unfrozen balance is insufficient, because the contract automatically
+> reduces the frozen amount. See [Building a New
+> Contract](/ace/guides/policy-manager/contracts/new-contract#frozen-token-behavior-explained) for a detailed
+> comparison.
 
 ## Storage layout
 
@@ -2097,13 +2187,13 @@ Regular transfers check both: the wallet must not be address-frozen, and the tra
 
 **Administrative operations auto-unfreeze.** When `forcedTransfer` or `burn` is called and the unfrozen balance is insufficient, the contract automatically reduces `frozenTokens` by the shortfall and emits a `TokensUnfrozen` event. This means administrative actions are never blocked by partial frozen status — the admin has already decided the operation is necessary.
 
-<Aside type="tip" title="ERC-20 handles this differently">
-  The [ERC-20 compliance token](/ace/guides/policy-manager/contracts/erc20-token) uses strict preservation — frozen
-  tokens remain frozen during all operations, and an admin must explicitly unfreeze before burning or
-  force-transferring. See [Building a New
-  Contract](/ace/guides/policy-manager/contracts/new-contract#frozen-token-behavior-explained) for a detailed
-  comparison.
-</Aside>
+> **TIP: ERC-20 handles this differently**
+>
+> The [ERC-20 compliance token](/ace/guides/policy-manager/contracts/erc20-token) uses strict preservation — frozen
+> tokens remain frozen during all operations, and an admin must explicitly unfreeze before burning or
+> force-transferring. See [Building a New
+> Contract](/ace/guides/policy-manager/contracts/new-contract#frozen-token-behavior-explained) for a detailed
+> comparison.
 
 ## Built-in pause
 
@@ -2111,10 +2201,10 @@ The token includes a built-in `pause`/`unpause` mechanism. Both functions are po
 
 Administrative functions (`mint`, `burn`, `forcedTransfer`, freeze operations) do **not** carry `whenNotPaused` and remain callable while the token is paused.
 
-<Aside type="note" title="ERC-20 uses a PausePolicy instead">
-  The ERC-20 compliance token does not have a built-in pause mechanism. To add pause functionality to an ERC-20 token,
-  attach a PausePolicy to the relevant functions through the PolicyEngine.
-</Aside>
+> **NOTE: ERC-20 uses a PausePolicy instead**
+>
+> The ERC-20 compliance token does not have a built-in pause mechanism. To add pause functionality to an ERC-20 token,
+> attach a PausePolicy to the relevant functions through the PolicyEngine.
 
 ## Batch operations
 
@@ -2161,18 +2251,18 @@ Last Updated: 2026-05-26
 
 This guide explains how to add ACE compliance to a contract that is already deployed. The process is a standard proxy upgrade — your existing state (balances, allowances, mappings) is fully preserved, your contract address stays the same, and all existing integrations continue to work.
 
-<Aside type="note" title="Plan ahead for production">
-  ACE Beta is available on [supported mainnet and testnet networks](/ace/supported-networks), so most teams will [build
-  new contracts](/ace/guides/policy-manager/contracts/new-contract) to experiment before upgrading existing production
-  contracts. This guide helps you plan ahead: upgrading production contracts is straightforward with multiple paths
-  depending on your constraints.
-</Aside>
+> **NOTE: Plan ahead for production**
+>
+> ACE Beta is available on [supported mainnet and testnet networks](/ace/supported-networks), so most teams will [build
+> new contracts](/ace/guides/policy-manager/contracts/new-contract) to experiment before upgrading existing production
+> contracts. This guide helps you plan ahead: upgrading production contracts is straightforward with multiple paths
+> depending on your constraints.
 
-<Aside type="note" title="Supported contract types">
-  The platform provides pre-built extractors for ERC-20 and ERC-3643 function signatures. If you are upgrading a
-  contract with different function signatures, you write and deploy your own extractor contract and register it via the
-  Coordinator API. See [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types).
-</Aside>
+> **NOTE: Supported contract types**
+>
+> The platform provides pre-built extractors for ERC-20 and ERC-3643 function signatures. If you are upgrading a
+> contract with different function signatures, you write and deploy your own extractor contract and register it via the
+> Coordinator API. See [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types).
 
 ## Prerequisites
 
@@ -2244,11 +2334,11 @@ contract MyToken is PolicyProtectedUpgradeable, ERC20Upgradeable, UUPSUpgradeabl
 }
 ```
 
-<Aside type="caution" title="Inheritance conflict">
-  `PolicyProtectedUpgradeable` already inherits from `Initializable` and `OwnableUpgradeable`. If your contract
-  explicitly lists these, remove them from your inheritance to avoid a "Linearization of inheritance graph impossible"
-  error.
-</Aside>
+> **CAUTION: Inheritance conflict**
+>
+> `PolicyProtectedUpgradeable` already inherits from `Initializable` and `OwnableUpgradeable`. If your contract
+> explicitly lists these, remove them from your inheritance to avoid a "Linearization of inheritance graph impossible"
+> error.
 
 ### Step 2: Add a migration function
 
@@ -2264,10 +2354,10 @@ function migrateToACE(address policyEngine) public reinitializer(2) onlyOwner {
 
 `__PolicyProtected_init_unchained()` stores the PolicyEngine address in namespaced storage and registers your contract with the PolicyEngine.
 
-<Aside type="note" title="Where does the PolicyEngine address come from?">
-  During ACE Beta, you receive the PolicyEngine address from the ACE Platform after Chainlink deploys your
-  infrastructure. Use this address as the `policyEngine` argument when calling `migrateToACE()`.
-</Aside>
+> **NOTE: Where does the PolicyEngine address come from?**
+>
+> During ACE Beta, you receive the PolicyEngine address from the ACE Platform after Chainlink deploys your
+> infrastructure. Use this address as the `policyEngine` argument when calling `migrateToACE()`.
 
 If you need to switch to a different PolicyEngine later, call `attachPolicyEngine(newAddress)` (owner-only).
 
@@ -2539,12 +2629,12 @@ contract MyToken is ERC20Upgradeable, OwnableUpgradeable, UUPSUpgradeable, IPoli
 }
 ```
 
-<Aside type="note" title="ERC-7201 storage location">
-  To calculate your storage slot, choose a unique namespace string (e.g., `"mycompany.mytoken.ace.storage"`) and apply
-  the ERC-7201 formula: `keccak256(abi.encode(uint256(keccak256("your.namespace")) - 1)) & ~bytes32(uint256(0xff))`. See
-  `PolicyProtectedUpgradeable.sol` in the [chainlink-ace repository](https://github.com/smartcontractkit/chainlink-ace)
-  for a working reference.
-</Aside>
+> **NOTE: ERC-7201 storage location**
+>
+> To calculate your storage slot, choose a unique namespace string (e.g., `"mycompany.mytoken.ace.storage"`) and apply
+> the ERC-7201 formula: `keccak256(abi.encode(uint256(keccak256("your.namespace")) - 1)) & ~bytes32(uint256(0xff))`. See
+> `PolicyProtectedUpgradeable.sol` in the [chainlink-ace repository](https://github.com/smartcontractkit/chainlink-ace)
+> for a working reference.
 
 ## Execute the upgrade
 
@@ -2643,11 +2733,11 @@ Instead of modifying your contract, apply ACE policies at the integration points
 - Only covers the specific integration points where ACE is applied. Comprehensive coverage requires wrapping all relevant entry points.
 - The original contract's functionality is unchanged, which may be a regulatory concern if direct access remains open.
 
-<Aside type="note" title="Need guidance?">
-  Each of these approaches involves architectural decisions specific to your contract, user base, and regulatory
-  requirements. [Contact the Chainlink team](https://chain.link/ace-early-access) to discuss which option fits your
-  situation.
-</Aside>
+> **NOTE: Need guidance?**
+>
+> Each of these approaches involves architectural decisions specific to your contract, user base, and regulatory
+> requirements. [Contact the Chainlink team](https://chain.link/ace-early-access) to discuss which option fits your
+> situation.
 
 ## FAQ
 
@@ -2696,13 +2786,13 @@ For function signatures beyond the pre-built set, you combine two building block
 - A **custom contract type**: a declaration of your contract's functions (their ABIs) that you register with the Coordinator API.
 - A **custom extractor**: a contract you write and deploy that parses your function calldata into named parameters for policies.
 
-<Aside type="note" title="When you need this">
-  If your contract is a standard ERC-20, ERC-3643, or `AdvancedPoolHooks` contract, use its built-in type and pre-built
-  extractor. See the [Policy Manager Quick Start](/ace/getting-started/policy-manager#extractor-ids-for-api-creation)
-  for ERC-20 and ERC-3643, or [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools) for
-  `AdvancedPoolHooks`. Custom contract types are for contracts with additional or different function signatures, such as
-  a vault, lending pool, or token with a custom `mint` variant.
-</Aside>
+> **NOTE: When you need this**
+>
+> If your contract is a standard ERC-20, ERC-3643, or `AdvancedPoolHooks` contract, use its built-in type and pre-built
+> extractor. See the [Policy Manager Quick Start](/ace/getting-started/policy-manager#extractor-ids-for-api-creation)
+> for ERC-20 and ERC-3643, or [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools) for
+> `AdvancedPoolHooks`. Custom contract types are for contracts with additional or different function signatures, such as
+> a vault, lending pool, or token with a custom `mint` variant.
 
 ## Prerequisites
 
@@ -2767,13 +2857,13 @@ struct Parameter {
 }
 ```
 
-<Aside type="caution" title="Parameter names must match your policy">
-  Policies receive parameters by name. When you attach a policy to a protected function, the parameter names your
-  extractor produces must match the names that policy expects (for example, a volume limit policy reads `amount`). See
-  [Policy Management — the extractor and mapper
-  pattern](/ace/concepts/policy-management#the-extractor-and-mapper-pattern) and [Custom
-  Policies](/ace/guides/policy-manager/custom-policies) for how policies declare their expected parameters.
-</Aside>
+> **CAUTION: Parameter names must match your policy**
+>
+> Policies receive parameters by name. When you attach a policy to a protected function, the parameter names your
+> extractor produces must match the names that policy expects (for example, a volume limit policy reads `amount`). See
+> [Policy Management — the extractor and mapper
+> pattern](/ace/concepts/policy-management#the-extractor-and-mapper-pattern) and [Custom
+> Policies](/ace/guides/policy-manager/custom-policies) for how policies declare their expected parameters.
 
 For reference implementations, see the [pre-built extractors](https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/policy-management/src/extractors) in the chainlink-ace repository. [`ERC20TransferExtractor`](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/extractors/ERC20TransferExtractor.sol) decodes `transfer` and `transferFrom` calldata into `from`, `to`, and `amount` parameters.
 
@@ -2855,10 +2945,10 @@ curl -X POST https://ace.api.chain.link/v1/extractors \
 | `outputs`                       | Yes      | Named outputs the extractor produces, in order            |
 | `onchain_extractors`            | No       | Per-chain deployment addresses of your extractor contract |
 
-<Aside type="note" title="Extractor names are unique per organization">
-  An active extractor name must be unique within your organization. If you re-register an updated version, archive the
-  old extractor first (`PATCH /extractors/{id}` with `{"status": "archived"}`) or use a new name.
-</Aside>
+> **NOTE: Extractor names are unique per organization**
+>
+> An active extractor name must be unique within your organization. If you re-register an updated version, archive the
+> old extractor first (`PATCH /extractors/{id}` with `{"status": "archived"}`) or use a new name.
 
 The `outputs` you declare must match what your contract's `extract()` returns: same names, same order.
 
@@ -2991,11 +3081,11 @@ Last Updated: 2026-09-23
 
 A **policy engine** is the on-chain orchestrator that evaluates policies whenever a protected function is called. Each policy engine is deployed as a smart contract on one or more chains, and all your targets, policies, and protections are scoped to a specific engine. For a deeper explanation of how policy engines fit into the architecture, see [Architecture](/ace/concepts/architecture) and [Policy Management](/ace/concepts/policy-management).
 
-<Aside type="note">
-  Before creating a policy engine, make sure you have completed [Account Setup](/ace/getting-started/account-setup) and
-  have a [CRE Connect Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) deployed on each chain
-  where you want the engine to operate.
-</Aside>
+> **NOTE**
+>
+> Before creating a policy engine, make sure you have completed [Account Setup](/ace/getting-started/account-setup) and
+> have a [CRE Connect Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) deployed on each chain
+> where you want the engine to operate.
 
 ## Create a policy engine
 
@@ -3009,10 +3099,10 @@ You can update a policy engine's name, description, and extractor associations.
 
 Extractors decode transaction calldata into named parameters (sender, recipient, amount, etc.) so policies can evaluate them. If you forgot to attach an extractor during engine creation or need to remove one, use the `PUT /policy-engines/{id}` endpoint.
 
-<Aside type="caution" title="Full replacement">
-  The `extractor_ids` field in a PUT request **replaces all current extractors** — it is not additive. Always include
-  every extractor you want to keep. Omitting an extractor from the list detaches it from the engine.
-</Aside>
+> **CAUTION: Full replacement**
+>
+> The `extractor_ids` field in a PUT request **replaces all current extractors** — it is not additive. Always include
+> every extractor you want to keep. Omitting an extractor from the list detaches it from the engine.
 
 ### Add a missing extractor
 
@@ -3072,21 +3162,21 @@ curl -X PUT https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
   }'
 ```
 
-<Aside type="tip" title="Available extractors">
-  See the [Policy Manager Quick Start](/ace/getting-started/policy-manager#extractor-ids-for-api-creation) for ERC-20
-  and ERC-3643 extractor IDs. For `CCIP-AdvancedPoolHooks`, see [Protect CCIP Token Pools with
-  ACE](/ace/guides/policy-manager/ccip-token-pools). You can retrieve every available extractor with `GET
-    https://ace.api.chain.link/v1/extractors`.
-</Aside>
+> **TIP: Available extractors**
+>
+> See the [Policy Manager Quick Start](/ace/getting-started/policy-manager#extractor-ids-for-api-creation) for ERC-20
+> and ERC-3643 extractor IDs. For `CCIP-AdvancedPoolHooks`, see [Protect CCIP Token Pools with
+> ACE](/ace/guides/policy-manager/ccip-token-pools). You can retrieve every available extractor with `GET
+>   https://ace.api.chain.link/v1/extractors`.
 
 ## Archive a policy engine
 
 Archiving a policy engine deactivates it and prevents any further operations. All policy instances associated with the engine must be archived first.
 
-<Aside type="caution">
-  All policy instances must be archived before the engine itself can be archived. Attempting to archive an engine with
-  active policies returns an error.
-</Aside>
+> **CAUTION**
+>
+> All policy instances must be archived before the engine itself can be archived. Attempting to archive an engine with
+> active policies returns an error.
 
 ## Related pages
 
@@ -3105,12 +3195,12 @@ Last Updated: 2026-09-23
 
 A **target** is a smart contract protected by ACE and associated with a Policy Engine. ACE can detect a target from its onchain attachment to the engine, or you can register it through the Coordinator API. Once the target appears under the engine, you can configure its [default policy result](#default-allow-behavior) and attach [policy instances](/ace/guides/policy-manager/manage-policies) to its functions through [protections](/ace/guides/policy-manager/manage-protections).
 
-<Aside type="note">
-  Before adding a target, connect the contract to a [deployed Policy Engine](/ace/guides/policy-manager/manage-engines).
-  Most contracts inherit `PolicyProtected` and use the `runPolicy` modifier. A contract can also call the Policy Engine
-  directly and call `attach()` when it connects, as `AdvancedPoolHooks` does. See [Making Your Contract
-  ACE-Compatible](/ace/guides/policy-manager/contracts/ace-compatible) for both integration paths.
-</Aside>
+> **NOTE**
+>
+> Before adding a target, connect the contract to a [deployed Policy Engine](/ace/guides/policy-manager/manage-engines).
+> Most contracts inherit `PolicyProtected` and use the `runPolicy` modifier. A contract can also call the Policy Engine
+> directly and call `attach()` when it connects, as `AdvancedPoolHooks` does. See [Making Your Contract
+> ACE-Compatible](/ace/guides/policy-manager/contracts/ace-compatible) for both integration paths.
 
 ## Register a target
 
@@ -3175,11 +3265,11 @@ For more on how policy evaluation ordering works, see [Policy Ordering & Composi
 
 You can update a target's name, description, contract type, protected methods, default allow behavior, and on-chain addresses.
 
-<Aside type="caution" title="PUT is a full replacement">
-  The `PUT /targets/{id}` endpoint **replaces the entire resource** — any field you omit is reset to its default (empty
-  string, empty array, or `true` for `desired_default_allow`). Always include every field you want to keep, not just the
-  ones you are changing.
-</Aside>
+> **CAUTION: PUT is a full replacement**
+>
+> The `PUT /targets/{id}` endpoint **replaces the entire resource** — any field you omit is reset to its default (empty
+> string, empty array, or `true` for `desired_default_allow`). Always include every field you want to keep, not just the
+> ones you are changing.
 
 ## Link targets
 
@@ -3199,19 +3289,19 @@ If no valid destination exists, the detected target cannot be merged — you can
 
 Merging transfers the on-chain addresses from the source target(s) to the destination target, then archives the sources. After the merge, the destination target contains all chain deployments and any protections remain on the destination.
 
-<Aside type="caution">
-  Merging is irreversible. The source targets are archived and their on-chain addresses become part of the destination
-  target. Make sure you select the correct destination before confirming.
-</Aside>
+> **CAUTION**
+>
+> Merging is irreversible. The source targets are archived and their on-chain addresses become part of the destination
+> target. Make sure you select the correct destination before confirming.
 
 ## Archive a target
 
 Archiving a target removes it from active use. All target protections associated with the target must be archived first.
 
-<Aside type="caution">
-  All target protections must be archived before the target itself can be archived. See [Protecting Target
-  Functions](/ace/guides/policy-manager/manage-protections) for how to archive protections.
-</Aside>
+> **CAUTION**
+>
+> All target protections must be archived before the target itself can be archived. See [Protecting Target
+> Functions](/ace/guides/policy-manager/manage-protections) for how to archive protections.
 
 ## Related pages
 
@@ -3254,10 +3344,10 @@ After deploying a policy instance, you can update its on-chain configuration par
 
 Archiving a policy instance removes it from active use. All target protections that reference this policy must be archived first.
 
-<Aside type="caution">
-  All target protections referencing this policy must be archived before the policy itself can be archived. See
-  [Protecting Target Functions](/ace/guides/policy-manager/manage-protections) for how to archive protections.
-</Aside>
+> **CAUTION**
+>
+> All target protections referencing this policy must be archived before the policy itself can be archived. See
+> [Protecting Target Functions](/ace/guides/policy-manager/manage-protections) for how to archive protections.
 
 ## Related pages
 
@@ -3316,11 +3406,11 @@ If you created a protection on one chain and later want it to apply on additiona
 
 Archiving a protection unbinds the policy from the function. Once archived, the policy no longer evaluates transactions on that function.
 
-<Aside type="note">
-  Protections must be archived before their parent [policy](/ace/guides/policy-manager/manage-policies#archive-a-policy)
-  or [target](/ace/guides/policy-manager/manage-targets#archive-a-target) can be archived. Always archive protections
-  first in the dependency chain.
-</Aside>
+> **NOTE**
+>
+> Protections must be archived before their parent [policy](/ace/guides/policy-manager/manage-policies#archive-a-policy)
+> or [target](/ace/guides/policy-manager/manage-targets#archive-a-target) can be archived. Always archive protections
+> first in the dependency chain.
 
 ## Archival dependency chain
 
@@ -3349,11 +3439,11 @@ A **Data Validator** is an on-chain contract that inspects the **contents** of a
 
 This guide covers creating, configuring, and attaching Data Validators. For the credential side of the workflow — linking a data schema to a credential type and issuing credentials with data — see [Managing Credential Types](/ace/guides/identity-manager/manage-credential-types#typed-credentials-with-data-schemas) and [Managing Credentials](/ace/guides/identity-manager/manage-credentials#issue-a-credential-with-data).
 
-<Aside type="note" title="Two halves of one feature">
-  Credential data has a **producer** and a **consumer**. The credential issuer produces the data (Identity Manager:
-  attach a data schema to a credential type, issue credentials with values). The application consumes it (Policy
-  Manager: attach a Data Validator to a policy's credential source). This page covers the consumer side.
-</Aside>
+> **NOTE: Two halves of one feature**
+>
+> Credential data has a **producer** and a **consumer**. The credential issuer produces the data (Identity Manager:
+> attach a data schema to a credential type, issue credentials with values). The application consumes it (Policy
+> Manager: attach a Data Validator to a policy's credential source). This page covers the consumer side.
 
 ## How Data Validators fit in
 
@@ -3367,12 +3457,12 @@ When a credential source has a Data Validator configured, the policy performs an
 
 The credential passes only if **both** the attestation check and the data check succeed. Without a Data Validator, the source is attestation-only — it confirms the credential exists but ignores its contents.
 
-<Aside type="note" title="Data Validator vs. data routing">
-  A Data Validator checks whether a credential's contents are acceptable for a **requirement**. This is different from
-  the [GroupedIdentityValidatorPolicy](/ace/reference/policy-library/grouped-identity-validator-policy)'s **data
-  routing**, which uses credential contents to decide **which group** an account belongs to. Both read `credentialData`,
-  but they serve different purposes and can be combined.
-</Aside>
+> **NOTE: Data Validator vs. data routing**
+>
+> A Data Validator checks whether a credential's contents are acceptable for a **requirement**. This is different from
+> the [GroupedIdentityValidatorPolicy](/ace/reference/policy-library/grouped-identity-validator-policy)'s **data
+> routing**, which uses credential contents to decide **which group** an account belongs to. Both read `credentialData`,
+> but they serve different purposes and can be combined.
 
 ## The AllowDenyList Data Validator
 
@@ -3384,10 +3474,10 @@ ACE provides a pre-built, audited Data Validator implementation: the **AllowDeny
 
 The first use case shipped on top of this implementation is **jurisdiction control** using [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes (e.g., `US`, `CA`, `GB`). The country codes are the values checked against the allow and deny lists.
 
-<Aside type="tip" title="Generic building block">
-  The AllowDenyList Data Validator works with any `bytes32` values, not only country codes. The jurisdiction use case is
-  a convention layered on top: country codes are encoded as `bytes32` and matched against the lists.
-</Aside>
+> **TIP: Generic building block**
+>
+> The AllowDenyList Data Validator works with any `bytes32` values, not only country codes. The jurisdiction use case is
+> a convention layered on top: country codes are encoded as `bytes32` and matched against the lists.
 
 ## Prerequisites
 
@@ -3439,11 +3529,11 @@ curl -X POST https://ace.api.chain.link/v1/data-validators \
 
 Each on-chain Data Validator starts in `creation_pending` status until deployment completes. The response includes the instance `id` and the on-chain addresses per chain.
 
-<Aside type="note" title="Config fields">
-  `allowlist` and `denylist` are country codes. `supportedDataTypes` optionally restricts the validator to specific
-  credential type hashes — when non-empty, the validator returns `false` for any other credential type. Leave it empty
-  to accept any credential type routed to it.
-</Aside>
+> **NOTE: Config fields**
+>
+> `allowlist` and `denylist` are country codes. `supportedDataTypes` optionally restricts the validator to specific
+> credential type hashes — when non-empty, the validator returns `false` for any other credential type. Leave it empty
+> to accept any credential type routed to it.
 
 ## Update a Data Validator configuration
 
@@ -3476,10 +3566,10 @@ A Data Validator takes effect only when it is referenced by a **credential sourc
 
 Set the `dataValidator` field to your deployed Data Validator address when configuring the credential source on your [CredentialRegistryIdentityValidatorPolicy](/ace/reference/policy-library/credential-registry-identity-validator-policy) or [GroupedIdentityValidatorPolicy](/ace/reference/policy-library/grouped-identity-validator-policy) instance. See [Managing Policies — Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration) for how to change a policy instance's configuration.
 
-<Aside type="caution" title="Match the validator to the credential's chain">
-  Credential sources are configured per network with on-chain addresses. Use the Data Validator address deployed on the
-  same chain as the credential source's identity and credential registries.
-</Aside>
+> **CAUTION: Match the validator to the credential's chain**
+>
+> Credential sources are configured per network with on-chain addresses. Use the Data Validator address deployed on the
+> same chain as the credential source's identity and credential registries.
 
 ## View Data Validators
 
@@ -3541,10 +3631,10 @@ Use the built-in `CCIP-AdvancedPoolHooks` contract type to apply ACE policies to
 
 The built-in contract type defines the two supported hook functions and includes a pre-built extractor for their calldata. You do not need to create a custom contract type or extractor. It does not deploy or configure `AdvancedPoolHooks` for you.
 
-<Aside type="note" title="EVM support">
-  ACE currently supports EVM chains. This integration applies ACE policies to `AdvancedPoolHooks` and Token Pool
-  deployments on EVM chains.
-</Aside>
+> **NOTE: EVM support**
+>
+> ACE currently supports EVM chains. This integration applies ACE policies to `AdvancedPoolHooks` and Token Pool
+> deployments on EVM chains.
 
 ## Before you begin
 
@@ -3676,11 +3766,11 @@ The built-in extractor exposes a separate set of outputs for each hook. When you
 
 CCIP transports remote addresses as `bytes` because the protocol supports different address formats. For this EVM-only ACE integration, the built-in contract type exposes `from`, `to`, and `source_pool_address` as `address` outputs so you can map them directly to address-based policy parameters.
 
-<Aside type="caution" title="Map the transfer sender from the extractor">
-  The hook sets the ACE payload sender to `msg.sender`. Because the Token Pool calls the hook, this value identifies the
-  Token Pool, not the user who initiated the transfer. To evaluate the user, map the extracted `from` output to the
-  policy parameter. A policy that relies only on payload sender semantics evaluates the Token Pool instead.
-</Aside>
+> **CAUTION: Map the transfer sender from the extractor**
+>
+> The hook sets the ACE payload sender to `msg.sender`. Because the Token Pool calls the hook, this value identifies the
+> Token Pool, not the user who initiated the transfer. To evaluate the user, map the extracted `from` output to the
+> policy parameter. A policy that relies only on payload sender semantics evaluates the Token Pool instead.
 
 ## Example policy mappings
 
@@ -3712,10 +3802,10 @@ Use `postflightCheck` when the destination must enforce its own recipient policy
 
 If `to` appears in the destination Reject policy instance's denylist, destination execution fails before the Token Pool releases or mints tokens. After resolving the restriction, you must retry the failed message through the standard CCIP recovery process. Use this postflight check as an independently governed destination control or as defense in depth, not as a substitute for preflight rejection when your goal is to stop the transfer at its source.
 
-<Aside type="caution" title="Use outputs from the selected hook">
-  `source_pool_address` is available only for `postflightCheck`. Do not map it to a policy on `preflightCheck`, even if
-  the current Platform menu displays it. Use the preflight and postflight tables above as the source of truth.
-</Aside>
+> **CAUTION: Use outputs from the selected hook**
+>
+> `source_pool_address` is available only for `postflightCheck`. Do not map it to a policy on `preflightCheck`, even if
+> the current Platform menu displays it. Use the preflight and postflight tables above as the source of truth.
 
 ## Verify the integration
 
@@ -3753,11 +3843,11 @@ In addition to the [pre-built Policy Library](/ace/reference/policy-library), yo
 
 A custom policy implementation is **private to your organization**: it appears in your Policy Manager alongside the global library, but other organizations do not see it.
 
-<Aside type="note" title="You own the contract">
-  With a custom policy, your organization writes, deploys, and owns the policy contract. The ACE Platform references and
-  orchestrates it, but the security of the policy is your responsibility. Read [Security
-  Considerations](/ace/guides/policy-manager/contracts/security-considerations) before deploying one.
-</Aside>
+> **NOTE: You own the contract**
+>
+> With a custom policy, your organization writes, deploys, and owns the policy contract. The ACE Platform references and
+> orchestrates it, but the security of the policy is your responsibility. Read [Security
+> Considerations](/ace/guides/policy-manager/contracts/security-considerations) before deploying one.
 
 ## How it fits together
 
@@ -3830,22 +3920,22 @@ Key pieces:
 - **Configuration setters + `authorizeConfigSelector`** — expose owner-callable setters (like `setLockout`) to reconfigure the policy after deployment, and override `authorizeConfigSelector` to return `true` for those selectors so the PolicyEngine is allowed to call them. Selectors you do not authorize can only be called by the owner directly, not through the platform.
 - **`typeAndVersion`** — a human-readable identifier, e.g. `"LockoutPolicy 1.0.0"`.
 
-<Aside type="tip" title="Start from the boilerplate">
-  The Chainlink ACE repository includes a full walkthrough and a copy-pasteable template — the [Custom Policies
-  Tutorial](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/docs/CUSTOM_POLICIES_TUTORIAL.md).
-  The pre-built policies in the [policy-management
-  package](https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/policy-management/src/policies) are also
-  good references.
-</Aside>
+> **TIP: Start from the boilerplate**
+>
+> The Chainlink ACE repository includes a full walkthrough and a copy-pasteable template — the [Custom Policies
+> Tutorial](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/docs/CUSTOM_POLICIES_TUTORIAL.md).
+> The pre-built policies in the [policy-management
+> package](https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/policy-management/src/policies) are also
+> good references.
 
 ## Step 2: Deploy the implementation
 
 Deploy your policy contract on each chain where you intend to use it. This deployed contract is the **implementation** — ACE clones it into instances; you do not attach the implementation to functions directly. Record the deployed address per chain; you need them in the next step.
 
-<Aside type="caution" title="ERC-165 is required">
-  Your implementation must return `true` from `supportsInterface(type(IPolicy).interfaceId)`. Inheriting from the base
-  `Policy` contract handles this. If it does not, instance creation reverts.
-</Aside>
+> **CAUTION: ERC-165 is required**
+>
+> Your implementation must return `true` from `supportsInterface(type(IPolicy).interfaceId)`. Inheriting from the base
+> `Policy` contract handles this. If it does not, instance creation reverts.
 
 ## Step 3: Register the implementation
 
@@ -3986,10 +4076,10 @@ ACE supports two offchain policy models:
 - **Managed offchain policies** provide an out-of-the-box workflow. You configure the risk rules and protections, while Chainlink manages the CRE workflow, external provider call, onchain validator deployment, and permit delivery. The current implementation supports wallet risk screening with TRM Wallet Screening.
 - **Custom offchain policies** support bespoke compliance logic and providers. You host the policy endpoint and work with Chainlink to configure and operate the integration.
 
-<Aside type="caution" title="Managed offchain policies are an MVP">
-  Managed offchain policies and the Evaluation API are an MVP. Their interfaces and capabilities can change during Beta.
-  Contact your Chainlink representative before using this feature and for help with setup.
-</Aside>
+> **CAUTION: Managed offchain policies are an MVP**
+>
+> Managed offchain policies and the Evaluation API are an MVP. Their interfaces and capabilities can change during Beta.
+> Contact your Chainlink representative before using this feature and for help with setup.
 
 ## Managed offchain policy guides
 
@@ -4011,11 +4101,11 @@ ACE managed offchain risk policies screen wallet addresses with [TRM Wallet Scre
 
 This guide covers policy setup. To integrate permit requests into your application, see [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits).
 
-<Aside type="caution" title="MVP feature">
-  Managed offchain risk policies are an MVP. Their interfaces and capabilities can change during Beta. Contact your
-  Chainlink representative before using this feature and for help with setup. This guide does not cover custom offchain
-  policy integrations, where you host your own policy endpoint and work with Chainlink to configure a custom workflow.
-</Aside>
+> **CAUTION: MVP feature**
+>
+> Managed offchain risk policies are an MVP. Their interfaces and capabilities can change during Beta. Contact your
+> Chainlink representative before using this feature and for help with setup. This guide does not cover custom offchain
+> policy integrations, where you host your own policy endpoint and work with Chainlink to configure a custom workflow.
 
 ## How the managed policy works
 
@@ -4068,10 +4158,10 @@ The identifier under `secretsNames` is the value to use for `secret_name` when y
 
 For prerequisites, authentication options, secret lifecycle operations, and troubleshooting, see [Using Secrets with Deployed Workflows](https://docs.chain.link/cre/guides/workflow/secrets/using-secrets-deployed).
 
-<Aside type="caution" title="Keep the TRM API key private">
-  Do not put the raw TRM API key or its Base64-encoded credential in the policy configuration, source control, or
-  client-side code. The policy configuration contains only the Vault DON secret identifier.
-</Aside>
+> **CAUTION: Keep the TRM API key private**
+>
+> Do not put the raw TRM API key or its Base64-encoded credential in the policy configuration, source control, or
+> client-side code. The policy configuration contains only the Vault DON secret identifier.
 
 ## Configure the risk policy
 
@@ -4129,12 +4219,12 @@ You can also apply different thresholds to individual TRM risk categories. The f
 
 Category names are matched case-insensitively against the categories returned by TRM. Consult your TRM Wallet Screening account for the categories available to your organization.
 
-<Aside type="caution" title="Choose fail mode deliberately">
-  `OPEN` can produce a permit when TRM returns an unsuccessful HTTP response. Use it only when allowing the action is
-  preferable to blocking it during a provider error. For example, an invalid Vault DON credential can cause TRM to
-  return `401`; with `OPEN`, that response does not block the permit. `OPEN` applies to unsuccessful TRM HTTP responses,
-  but other workflow or transport failures can still produce an `error`. `CLOSED` is the default.
-</Aside>
+> **CAUTION: Choose fail mode deliberately**
+>
+> `OPEN` can produce a permit when TRM returns an unsuccessful HTTP response. Use it only when allowing the action is
+> preferable to blocking it during a provider error. For example, an invalid Vault DON credential can cause TRM to
+> return `401`; with `OPEN`, that response does not block the permit. `OPEN` applies to unsuccessful TRM HTTP responses,
+> but other workflow or transport failures can still produce an `error`. `CLOSED` is the default.
 
 ## Create the offchain policy
 
@@ -4177,10 +4267,10 @@ curl https://ace.api.chain.link/v1/policies/<POLICY_ID> \
 
 ACE creates a managed CRE workflow and deploys one CADV contract per selected chain. When the policy becomes active, `action_validators` contains each chain selector and CADV address.
 
-<Aside type="note">
-  Deployment can take several minutes. Do not attach protections or request evaluations until `deployment_status` is
-  `active`.
-</Aside>
+> **NOTE**
+>
+> Deployment can take several minutes. Do not attach protections or request evaluations until `deployment_status` is
+> `active`.
 
 ## Attach the policy to a target function
 
@@ -4294,10 +4384,10 @@ After a managed offchain risk policy protects a function, the function rejects c
 
 This guide uses an ERC-20 `transfer(address,uint256)` as the example. For policy and protection setup, see [Managing Offchain Policies (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies).
 
-<Aside type="caution" title="MVP feature">
-  Managed offchain risk policies and the Evaluation API are an MVP. Their interfaces and capabilities can change during
-  Beta. Contact your Chainlink representative before integrating this feature and for help with setup.
-</Aside>
+> **CAUTION: MVP feature**
+>
+> Managed offchain risk policies and the Evaluation API are an MVP. Their interfaces and capabilities can change during
+> Beta. Contact your Chainlink representative before integrating this feature and for help with setup.
 
 ## Evaluation flow
 
@@ -4334,9 +4424,9 @@ It uses the same ACE API key as the Coordinator API:
 Authorization: Apikey <API_KEY>
 ```
 
-<Aside type="caution">
-  Call the Evaluation API from a trusted backend. Do not expose your ACE API key in browser or mobile application code.
-</Aside>
+> **CAUTION**
+>
+> Call the Evaluation API from a trusted backend. Do not expose your ACE API key in browser or mobile application code.
 
 ## Construct the evaluation request
 
@@ -4401,11 +4491,11 @@ const permitParameters = [
 ]
 ```
 
-<Aside type="caution" title="The permit must match the eventual transaction">
-  A permit can become `ready` but still fail to authorize the transaction if `caller_address`, `subject`, the function
-  selector, or any extracted parameter differs. Construct the evaluation and transaction from the same immutable intent
-  in your application.
-</Aside>
+> **CAUTION: The permit must match the eventual transaction**
+>
+> A permit can become `ready` but still fail to authorize the transaction if `caller_address`, `subject`, the function
+> selector, or any extracted parameter differs. Construct the evaluation and transaction from the same immutable intent
+> in your application.
 
 ### Choose a unique evaluation ID
 
@@ -4485,10 +4575,10 @@ No permit bytes are added to the transaction. The CADV already stores the permit
 
 After the protected call succeeds, the CADV increments the permit's usage counter. Managed risk policy permits have `maxUses = 1`, so another transaction with the same intent requires a new evaluation and permit.
 
-<Aside type="caution" title="Request permits shortly before use">
-  Managed risk policy permits do not expire in the current release. Request an evaluation only when the application is
-  ready to submit the corresponding transaction, and do not treat the passage of time as invalidating an unused permit.
-</Aside>
+> **CAUTION: Request permits shortly before use**
+>
+> Managed risk policy permits do not expire in the current release. Request an evaluation only when the application is
+> ready to submit the corresponding transaction, and do not treat the passage of time as invalidating an unused permit.
 
 ## Troubleshooting
 
@@ -4538,19 +4628,19 @@ By default, only the organization that owns a target contract can request offcha
 
 When you grant evaluation access, the grantee organization can call the Evaluation API for the specified target and offchain policy. The evaluation runs against **your** managed CRE workflow and risk configuration — the grantee does not need its own offchain policy or TRM credential.
 
-<Aside type="caution" title="MVP feature">
-  Managed offchain risk policies and the Evaluation API are an MVP. Their interfaces and capabilities can change during
-  Beta. Contact your Chainlink representative before using this feature and for help with setup.
-</Aside>
+> **CAUTION: MVP feature**
+>
+> Managed offchain risk policies and the Evaluation API are an MVP. Their interfaces and capabilities can change during
+> Beta. Contact your Chainlink representative before using this feature and for help with setup.
 
 ## Roles and concepts
 
-| Term             | Meaning                                                                                                                                                                                                                                               |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Grantor**      | The organization that **owns** the target contract and the offchain policy, and grants evaluation access.                                                                                                                                             |
-| **Grantee**      | The organization that **receives** evaluation access. It can call the Evaluation API for the specified target and policy.                                                                                                                             |
-| **Access grant** | The link between an offchain policy–target pair and a grantee organization. It is either `active` or `revoked`.                                                                                                                                       |
-| **Org ID**       | The identifier of an organization. The grantee shares theirs with the grantor so the grantor can create the grant. Retrieve it with `GET /organizations/me` (<a href="/api/ace/coordinator/docs#/Organizations" target="_blank">Coordinator API</a>). |
+| Term             | Meaning                                                                                                                                                                                                                    |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Grantor**      | The organization that **owns** the target contract and the offchain policy, and grants evaluation access.                                                                                                                  |
+| **Grantee**      | The organization that **receives** evaluation access. It can call the Evaluation API for the specified target and policy.                                                                                                  |
+| **Access grant** | The link between an offchain policy–target pair and a grantee organization. It is either `active` or `revoked`.                                                                                                            |
+| **Org ID**       | The identifier of an organization. The grantee shares theirs with the grantor so the grantor can create the grant. Retrieve it with `GET /organizations/me` ([Coordinator API](/api/ace/coordinator/docs#/Organizations)). |
 
 ## What the grantee can and cannot do
 
@@ -4566,10 +4656,10 @@ The grantee **cannot**:
 - Manage the target contract, its policy engine, or any other resource owned by the grantor.
 - Re-share evaluation access with a third organization.
 
-<Aside type="note" title="Only the owner manages grants">
-  Creating, listing, and revoking evaluation access grants requires **ownership** of both the offchain policy and the
-  target. A grantee cannot re-share access that was shared with it.
-</Aside>
+> **NOTE: Only the owner manages grants**
+>
+> Creating, listing, and revoking evaluation access grants requires **ownership** of both the offchain policy and the
+> target. A grantee cannot re-share access that was shared with it.
 
 ## Prerequisites
 
@@ -4664,10 +4754,10 @@ Last Updated: 2026-04-06
 
 These guides cover the day-to-day operations of an Identity Manager — from setting up registries to issuing and managing credentials across chains.
 
-<Aside type="note">
-  New to ACE? Start with the [Identity Manager Quick Start](/ace/getting-started/identity-manager) for a step-by-step
-  onboarding walkthrough.
-</Aside>
+> **NOTE**
+>
+> New to ACE? Start with the [Identity Manager Quick Start](/ace/getting-started/identity-manager) for a step-by-step
+> onboarding walkthrough.
 
 ## Available guides
 
@@ -4707,10 +4797,10 @@ A typical multi-chain configuration:
 
 Because CCIDs are chain-agnostic identifiers, a credential issued on one chain's CredentialRegistry is logically valid across all chains. The multi-chain deployment ensures that each chain has a local copy of the registry contracts for low-latency, on-chain lookups. For more on how this model works, see [Cross-Chain Identity](/ace/concepts/cross-chain-identity).
 
-<Aside type="note">
-  You must have a [CRE Connect Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) deployed on each
-  chain before ACE can deploy managed registry contracts there.
-</Aside>
+> **NOTE**
+>
+> You must have a [CRE Connect Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) deployed on each
+> chain before ACE can deploy managed registry contracts there.
 
 ## Update a registry
 
@@ -4724,10 +4814,10 @@ You can grant another organization read access to a registry you own, so it can 
 
 Archiving a registry deactivates it and prevents any further operations. Before archiving, all identities associated with the registry must be removed or archived first.
 
-<Aside type="note">
-  All identities in the registry must be archived or removed before the registry itself can be archived. Attempting to
-  archive a registry with active identities returns an error.
-</Aside>
+> **NOTE**
+>
+> All identities in the registry must be archived or removed before the registry itself can be archived. Attempting to
+> archive a registry with active identities returns an error.
 
 ## Related pages
 
@@ -4744,12 +4834,12 @@ Last Updated: 2026-04-06
 
 This guide covers how to register, view, update, and archive cross-chain identities (CCIDs) using the ACE Platform UI or the Coordinator API. Identities are the foundation of ACE's credential system — every credential is issued against an identity.
 
-<Aside type="note">
-  This page focuses on identity management. For related workflows, see [Managing
-  Registries](/ace/guides/identity-manager/manage-registries), [Managing Credential
-  Types](/ace/guides/identity-manager/manage-credential-types), and [Managing
-  Credentials](/ace/guides/identity-manager/manage-credentials).
-</Aside>
+> **NOTE**
+>
+> This page focuses on identity management. For related workflows, see [Managing
+> Registries](/ace/guides/identity-manager/manage-registries), [Managing Credential
+> Types](/ace/guides/identity-manager/manage-credential-types), and [Managing
+> Credentials](/ace/guides/identity-manager/manage-credentials).
 
 ## What are identities (CCIDs)?
 
@@ -4818,10 +4908,10 @@ curl -X POST "https://ace.api.chain.link/v1/identities/batch" \
 
 The `credentials` array is optional on each identity. The second identity in this example is created without credentials.
 
-<Aside type="caution" title="Atomic operation">
-  Batch creation is all-or-nothing. If any identity in the batch fails validation, the entire request is rejected and no
-  identities are created. Verify each entry before submitting.
-</Aside>
+> **CAUTION: Atomic operation**
+>
+> Batch creation is all-or-nothing. If any identity in the batch fails validation, the entire request is rejected and no
+> identities are created. Verify each entry before submitting.
 
 ## View and search identities
 
@@ -4874,11 +4964,11 @@ To add or remove chains later, use the [full update (PUT)](#full-update-put) end
 
 Archiving marks an identity as inactive. Archived identities are retained for audit purposes but are no longer considered active.
 
-<Aside type="caution" title="Archive credentials first">
-  Before archiving an identity, archive or revoke any active credentials associated with it. Credentials linked to an
-  archived identity may no longer be evaluated correctly by policies. See [Managing
-  Credentials](/ace/guides/identity-manager/manage-credentials) for credential lifecycle management.
-</Aside>
+> **CAUTION: Archive credentials first**
+>
+> Before archiving an identity, archive or revoke any active credentials associated with it. Credentials linked to an
+> archived identity may no longer be evaluated correctly by policies. See [Managing
+> Credentials](/ace/guides/identity-manager/manage-credentials) for credential lifecycle management.
 
 ---
 
@@ -4933,10 +5023,10 @@ credential_type string    →    credential_type_hash         →    on-chain re
 
 Because the hash is derived from the string, choosing your `credential_type` strings carefully matters — they cannot be changed after creation. Policy contracts such as the [Credential Registry Identity Validator](/ace/reference/policy-library/credential-registry-identity-validator-policy) reference credentials by their `credential_type_hash` when checking whether an identity holds a required attestation.
 
-<Aside type="caution">
-  The `credential_type` string and its hash are immutable once the credential type is created. Choose your naming
-  convention before issuing credentials against a type.
-</Aside>
+> **CAUTION**
+>
+> The `credential_type` string and its hash are immutable once the credential type is created. Choose your naming
+> convention before issuing credentials against a type.
 
 ## Typed credentials with data schemas
 
@@ -4965,10 +5055,10 @@ curl -X POST "https://ace.api.chain.link/v1/credential-types" \
 
 Once a credential type is linked to a data schema, every credential you issue against it **must** include `credential_data` matching that schema — see [Issue a credential with data](/ace/guides/identity-manager/manage-credentials#issue-a-credential-with-data).
 
-<Aside type="note" title="Attestation-only stays the default">
-  Linking a data schema is optional. Omit `data_schema_id` for a plain attestation credential type — the common case for
-  yes/no checks like KYC or AML.
-</Aside>
+> **NOTE: Attestation-only stays the default**
+>
+> Linking a data schema is optional. Omit `data_schema_id` for a plain attestation credential type — the common case for
+> yes/no checks like KYC or AML.
 
 ## View credential types
 
@@ -5017,10 +5107,10 @@ curl -X PATCH "https://ace.api.chain.link/v1/credential-types/<CREDENTIAL_TYPE_I
 
 Archiving a credential type prevents new credentials of that type from being issued. Existing credentials remain valid until they are individually archived or expire.
 
-<Aside type="caution">
-  All credentials issued under a credential type must be archived before the credential type itself can be archived. See
-  [Managing Credentials](/ace/guides/identity-manager/manage-credentials) for how to archive individual credentials.
-</Aside>
+> **CAUTION**
+>
+> All credentials issued under a credential type must be archived before the credential type itself can be archived. See
+> [Managing Credentials](/ace/guides/identity-manager/manage-credentials) for how to archive individual credentials.
 
 Archive a credential type with a `PATCH` request:
 
@@ -5065,9 +5155,9 @@ In both cases, no PII should be stored on-chain — credential data must be a mi
 
 To issue a credential, you need a registered [identity](/ace/guides/identity-manager/manage-identities) and at least one [credential type](/ace/guides/identity-manager/manage-credential-types) defined in your registry.
 
-<Aside type="caution">
-  Each identity can hold only **one credential per credential type**. Attempting to issue a duplicate returns an error.
-</Aside>
+> **CAUTION**
+>
+> Each identity can hold only **one credential per credential type**. Attempting to issue a duplicate returns an error.
 
 Issue a credential with a `POST` request:
 
@@ -5107,11 +5197,11 @@ curl -X POST "https://ace.api.chain.link/v1/credentials" \
   }'
 ```
 
-<Aside type="caution" title="Data is required for typed credential types">
-  If the credential type is linked to a data schema, `credential_data` is **required** and must satisfy the schema.
-  Conversely, do not send `credential_data` for an attestation-only credential type. Keep the value minimal and
-  non-sensitive — never store PII on-chain.
-</Aside>
+> **CAUTION: Data is required for typed credential types**
+>
+> If the credential type is linked to a data schema, `credential_data` is **required** and must satisfy the schema.
+> Conversely, do not send `credential_data` for an attestation-only credential type. Keep the value minimal and
+> non-sensitive — never store PII on-chain.
 
 Once issued, the credential data can be enforced at transaction time by attaching a [Data Validator](/ace/guides/policy-manager/manage-data-validators) to the credential source of an identity-validation policy.
 
@@ -5183,10 +5273,10 @@ The `expires_at` field controls whether a credential has a limited validity peri
 
 To **renew** an expiring credential, update it with a new `expires_at` value (see the next section). Alternatively, you can archive the expired credential and issue a new one.
 
-<Aside type="tip">
-  Set `expires_at` to align with your compliance review cycle. For example, if KYC reviews happen annually, set
-  expiration to one year from issuance and update upon re-verification.
-</Aside>
+> **TIP**
+>
+> Set `expires_at` to align with your compliance review cycle. For example, if KYC reviews happen annually, set
+> expiration to one year from issuance and update upon re-verification.
 
 ## Update a credential
 
@@ -5242,10 +5332,10 @@ curl -X PATCH "https://ace.api.chain.link/v1/credentials/<CREDENTIAL_ID>" \
   }'
 ```
 
-<Aside type="caution">
-  Archiving triggers on-chain removal. The credential cannot be un-archived — to restore the attestation, issue a new
-  credential of the same type to the same identity.
-</Aside>
+> **CAUTION**
+>
+> Archiving triggers on-chain removal. The credential cannot be un-archived — to restore the attestation, issue a new
+> credential of the same type to the same identity.
 
 ## Related resources
 
@@ -5268,13 +5358,13 @@ Access is granted per registry, is **read-only** for the recipient, and can be r
 
 ## Roles and concepts
 
-| Term              | Meaning                                                                                                                                                                                                                                           |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Grantor**       | The organization that **owns** the registry and grants access to it.                                                                                                                                                                              |
-| **Grantee**       | The organization that **receives** read access to the registry.                                                                                                                                                                                   |
-| **Access grant**  | The link between a registry and a grantee organization. It is either `active` or `revoked`.                                                                                                                                                       |
-| **Org ID**        | The identifier of an organization. The grantee shares theirs with the grantor so the grantor can grant access. Retrieve it with `GET /organizations/me` (<a href="/api/ace/coordinator/docs#/Organizations" target="_blank">Coordinator API</a>). |
-| **`access_type`** | A field on a registry indicating whether the caller `owned` it or was `granted` access to it.                                                                                                                                                     |
+| Term              | Meaning                                                                                                                                                                                                                |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Grantor**       | The organization that **owns** the registry and grants access to it.                                                                                                                                                   |
+| **Grantee**       | The organization that **receives** read access to the registry.                                                                                                                                                        |
+| **Access grant**  | The link between a registry and a grantee organization. It is either `active` or `revoked`.                                                                                                                            |
+| **Org ID**        | The identifier of an organization. The grantee shares theirs with the grantor so the grantor can grant access. Retrieve it with `GET /organizations/me` ([Coordinator API](/api/ace/coordinator/docs#/Organizations)). |
+| **`access_type`** | A field on a registry indicating whether the caller `owned` it or was `granted` access to it.                                                                                                                          |
 
 ## What the grantee can and cannot do
 
@@ -5284,10 +5374,10 @@ An active grant gives the grantee **read access** to the registry:
 - **Can** reference the registry's on-chain contracts as a credential source in its own [identity-validation policies](/ace/reference/policy-library/credential-registry-identity-validator-policy).
 - **Cannot** write to the registry — registering identities, issuing credentials, or changing configuration remains exclusive to the grantor.
 
-<Aside type="note" title="Only the owner manages grants">
-  Creating, listing, and revoking access grants requires **ownership** of the registry. A grantee cannot re-share a
-  registry that was shared with it.
-</Aside>
+> **NOTE: Only the owner manages grants**
+>
+> Creating, listing, and revoking access grants requires **ownership** of the registry. A grantee cannot re-share a
+> registry that was shared with it.
 
 ## Grant access to another organization
 
@@ -5355,10 +5445,10 @@ Once you can see a granted registry, you use it the same way you would reference
 
 Your policy then validates credentials issued by the other organization at transaction time. Because the grant is read-only, you rely on the grantor to keep the credentials current; if they revoke a credential, your policy sees the change immediately.
 
-<Aside type="caution" title="Access can be revoked">
-  A granted registry remains usable only while the grant is active. If the grantor revokes access, your organization
-  loses read access to the registry and its sub-resources.
-</Aside>
+> **CAUTION: Access can be revoked**
+>
+> A granted registry remains usable only while the grant is active. If the grantor revokes access, your organization
+> loses read access to the registry and its sub-resources.
 
 ## Revoke access
 
@@ -5391,10 +5481,10 @@ Revoking a registry access grant is a **platform-level action only** — it remo
 - You cannot edit the revoked source — you can only remove it.
 - You cannot reference the revoked registry in new policy configurations.
 
-<Aside type="caution" title="Remove revoked sources to stay compliant">
-  Revoking access does not reconfigure the grantee's policies onchain. The grantee must remove the revoked credential
-  source from their policy configuration. The ACE Platform warns you when a policy references a revoked source.
-</Aside>
+> **CAUTION: Remove revoked sources to stay compliant**
+>
+> Revoking access does not reconfigure the grantee's policies onchain. The grantee must remove the revoked credential
+> source from their policy configuration. The ACE Platform warns you when a policy references a revoked source.
 
 ## Related pages
 
@@ -5410,14 +5500,14 @@ Revoking a registry access grant is a **platform-level action only** — it remo
 Source: https://docs.chain.link/ace/reference/policy-management-contracts
 Last Updated: 2026-04-15
 
-<Aside type="note" title="On-chain contracts vs. ACE Platform">
-  The contracts on this page are the **on-chain foundation** of ACE — smart contracts deployed on EVM chains that
-  enforce policies at transaction time. The **ACE Platform** (Policy Manager, Identity Manager, Reporting Manager) is a
-  separate set of off-chain services built on top of these contracts, providing a managed experience through the
-  Platform UI and APIs. See [Beta Scope](/ace/beta-scope) for current platform limitations.
-</Aside>
+> **NOTE: On-chain contracts vs. ACE Platform**
+>
+> The contracts on this page are the **on-chain foundation** of ACE — smart contracts deployed on EVM chains that
+> enforce policies at transaction time. The **ACE Platform** (Policy Manager, Identity Manager, Reporting Manager) is a
+> separate set of off-chain services built on top of these contracts, providing a managed experience through the
+> Platform UI and APIs. See [Beta Scope](/ace/beta-scope) for current platform limitations.
 
-The Policy Management contracts handle on-chain policy enforcement for ACE-compatible contracts. The source code and full documentation are available in the <a href="https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/policy-management" target="_blank">policy-management package</a> of the <a href="https://github.com/smartcontractkit/chainlink-ace" target="_blank">chainlink-ace repository</a> (Business Source License 1.1).
+The Policy Management contracts handle on-chain policy enforcement for ACE-compatible contracts. The source code and full documentation are available in the [policy-management package](https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/policy-management) of the [chainlink-ace repository](https://github.com/smartcontractkit/chainlink-ace) (Business Source License 1.1).
 
 ## Core interfaces
 
@@ -5431,7 +5521,7 @@ The Policy Management contracts handle on-chain policy enforcement for ACE-compa
 
 ## Pre-built policies
 
-ACE provides a library of audited, ready-to-use policy implementations covering common compliance scenarios — allowlists, volume limits, role-based access, pause controls, and more. See the <a href="https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/policy-management/src/policies" target="_blank">policies source code</a> for implementation details, or the [Policy Library](/ace/reference/policy-library) page for configuration and usage.
+ACE provides a library of audited, ready-to-use policy implementations covering common compliance scenarios — allowlists, volume limits, role-based access, pause controls, and more. See the [policies source code](https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/policy-management/src/policies) for implementation details, or the [Policy Library](/ace/reference/policy-library) page for configuration and usage.
 
 ## Reference token implementations
 
@@ -5444,7 +5534,7 @@ The repository includes reference token contracts that demonstrate full ACE inte
 
 ## Repository documentation
 
-The <a href="https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/policy-management/docs" target="_blank">policy-management docs</a> folder contains detailed guides:
+The [policy-management docs](https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/policy-management/docs) folder contains detailed guides:
 
 - [Concepts](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/docs/CONCEPTS.md)
   — Architecture, policy flow, extractors, mappers, and context handling
@@ -5548,11 +5638,11 @@ The BypassPolicy gives privileged addresses a fast path through the policy chain
 
 This is the only built-in policy that returns `Allowed`.
 
-<Aside type="tip" title="Place this policy first">
-  Because the BypassPolicy short-circuits the entire chain when it matches, place it at the beginning of your policy
-  chain. This way, privileged addresses skip volume limits, identity checks, and all other restrictions in a single
-  step.
-</Aside>
+> **TIP: Place this policy first**
+>
+> Because the BypassPolicy short-circuits the entire chain when it matches, place it at the beginning of your policy
+> chain. This way, privileged addresses skip volume limits, identity checks, and all other restrictions in a single
+> step.
 
 ## Configuration
 
@@ -5599,13 +5689,13 @@ The CertifiedActionDONValidatorPolicy (CADV) is the onchain contract that valida
 
 For a full explanation of how off-chain policies work, what you can connect to, and how the permit flow operates, see [Off-Chain Policy Execution](/ace/concepts/off-chain-policies).
 
-<Aside type="caution" title="MVP managed service">
-  Managed offchain risk policies are an MVP. Contact your Chainlink representative before using the service and for help
-  with setup. When you create a [managed offchain risk
-  policy](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies), ACE deploys and configures one CADV
-  per selected chain and authorizes the managed workflow to publish permits. You do not deploy or configure the CADV
-  directly.
-</Aside>
+> **CAUTION: MVP managed service**
+>
+> Managed offchain risk policies are an MVP. Contact your Chainlink representative before using the service and for help
+> with setup. When you create a [managed offchain risk
+> policy](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies), ACE deploys and configures one CADV
+> per selected chain and authorizes the managed workflow to publish permits. You do not deploy or configure the CADV
+> directly.
 
 ## Permit lifecycle
 
@@ -5655,12 +5745,12 @@ The CredentialRegistryIdentityValidatorPolicy validates that accounts involved i
 
 This is the primary policy for enforcing identity-based compliance such as KYC, accreditation, or sanctions screening.
 
-<Aside type="note" title="Attestation and data validation">
-  A credential source checks that a credential exists (attestation). It can optionally also validate the credential's
-  contents by referencing a **Data Validator** — for example, to enforce a jurisdiction allow/deny list. See [Managing
-  Data Validators](/ace/guides/policy-manager/manage-data-validators) and [Credential data and
-  privacy](/ace/concepts/cross-chain-identity#credential-data-and-privacy).
-</Aside>
+> **NOTE: Attestation and data validation**
+>
+> A credential source checks that a credential exists (attestation). It can optionally also validate the credential's
+> contents by referencing a **Data Validator** — for example, to enforce a jurisdiction allow/deny list. See [Managing
+> Data Validators](/ace/guides/policy-manager/manage-data-validators) and [Credential data and
+> privacy](/ace/concepts/cross-chain-identity#credential-data-and-privacy).
 
 ## Configuration
 
@@ -5749,13 +5839,13 @@ The GroupedIdentityValidatorPolicy validates transaction participants against **
 
 It is built on ACE's [Cross-Chain Identity](/ace/concepts/cross-chain-identity) infrastructure and, like the flat validator, resolves each account's address to a CCID and checks credentials from configured sources (IdentityRegistry + CredentialRegistry pairs).
 
-<Aside type="note" title="When to use this policy">
-  Use the
-  [CredentialRegistryIdentityValidatorPolicy](/ace/reference/policy-library/credential-registry-identity-validator-policy)
-  when every account must satisfy the **same** credential requirements. Use the GroupedIdentityValidatorPolicy when
-  requirements **differ by segment** (individual vs. business, jurisdiction, tier) and each account should be matched to
-  exactly one segment.
-</Aside>
+> **NOTE: When to use this policy**
+>
+> Use the
+> [CredentialRegistryIdentityValidatorPolicy](/ace/reference/policy-library/credential-registry-identity-validator-policy)
+> when every account must satisfy the **same** credential requirements. Use the GroupedIdentityValidatorPolicy when
+> requirements **differ by segment** (individual vs. business, jurisdiction, tier) and each account should be matched to
+> exactly one segment.
 
 ## How it works
 
@@ -5795,19 +5885,19 @@ There are two routing kinds:
 
 **Data routing** matches an account only if the **contents** of its routing credential match one of the configured criteria. For example, "route accounts whose `country` credential data is `US` into the US group". The policy fetches the stored credential data, hashes it, and compares it against the group's criteria.
 
-<Aside type="note" title="Data routing granularity">
-  Data routing matches on the stored credential payload, so its granularity is bounded by the credential schema chosen
-  by the issuer. A broad `country`-only credential cannot distinguish a sub-country region from the rest of the country.
-  For geography-sensitive use cases where future jurisdiction carve-outs may matter, issue credentials with granular
-  schemas (for example, separate region or territory identifiers) rather than a single broad field. See [Credential data
-  and privacy](/ace/concepts/cross-chain-identity#credential-data-and-privacy).
-</Aside>
+> **NOTE: Data routing granularity**
+>
+> Data routing matches on the stored credential payload, so its granularity is bounded by the credential schema chosen
+> by the issuer. A broad `country`-only credential cannot distinguish a sub-country region from the rest of the country.
+> For geography-sensitive use cases where future jurisdiction carve-outs may matter, issue credentials with granular
+> schemas (for example, separate region or territory identifiers) rather than a single broad field. See [Credential data
+> and privacy](/ace/concepts/cross-chain-identity#credential-data-and-privacy).
 
-<Aside type="caution" title="Routing must be unambiguous">
-  A given routing target — the combination of a credential type and (for data routing) a criterion — can belong to only
-  **one** group. Attempting to configure the same routing target on two groups reverts with `RoutingOverlap`. This
-  guarantees every account routes to at most one group deterministically.
-</Aside>
+> **CAUTION: Routing must be unambiguous**
+>
+> A given routing target — the combination of a credential type and (for data routing) a criterion — can belong to only
+> **one** group. Attempting to configure the same routing target on two groups reverts with `RoutingOverlap`. This
+> guarantees every account routes to at most one group deterministically.
 
 For data routing, a routing credential type may have **at most one source per group**. Configuring more than one source for a data-routing credential type reverts with `MultipleSourcesForDataRouting`.
 
@@ -5822,11 +5912,11 @@ A requirement defines what a routed account must hold to pass. Each requirement 
 
 An account passes a requirement when it accumulates at least `minValidations` successful validations across the listed credential types and configured sources. An account passes the group only when it satisfies **every** requirement in that group. A group with no requirements passes any account that routes to it.
 
-<Aside type="note" title="Inverted requirements and missing identities">
-  For an inverted requirement, an account with **no identity** in the source's IdentityRegistry counts as a successful
-  validation — the account provably does not hold the credential. This matches the behavior of the
-  [CredentialRegistryIdentityValidatorPolicy](/ace/reference/policy-library/credential-registry-identity-validator-policy).
-</Aside>
+> **NOTE: Inverted requirements and missing identities**
+>
+> For an inverted requirement, an account with **no identity** in the source's IdentityRegistry counts as a successful
+> validation — the account provably does not hold the credential. This matches the behavior of the
+> [CredentialRegistryIdentityValidatorPolicy](/ace/reference/policy-library/credential-registry-identity-validator-policy).
 
 ### Credential sources
 
@@ -6056,12 +6146,12 @@ The authorized sender list defines which addresses can call the protected functi
 
 Each address is added or removed individually.
 
-<Aside type="note" title="Sender vs. extracted addresses">
-  This policy ignores the addresses extracted by the extractor. It checks only the `msg.sender` of the transaction. If
-  you need to validate addresses from the transaction parameters (such as a transfer recipient), use the
-  [AllowPolicy](/ace/reference/policy-library/allow-policy) or
-  [RejectPolicy](/ace/reference/policy-library/reject-policy) instead.
-</Aside>
+> **NOTE: Sender vs. extracted addresses**
+>
+> This policy ignores the addresses extracted by the extractor. It checks only the `msg.sender` of the transaction. If
+> you need to validate addresses from the transaction parameters (such as a transfer recipient), use the
+> [AllowPolicy](/ace/reference/policy-library/allow-policy) or
+> [RejectPolicy](/ace/reference/policy-library/reject-policy) instead.
 
 ## Runtime behavior
 
@@ -6259,12 +6349,12 @@ Provide the address of the token this policy protects and its number of decimals
 - **Token address** — At runtime, the policy calls `totalSupply()` on the protected contract to determine the current supply. The token address you provide here is used during configuration to validate the decimals value against the token's on-chain metadata.
 - **Token decimals** — The policy uses the decimals to scale the reserve feed's value so the comparison is accurate. If the token exposes a `decimals()` function on-chain, the policy validates your input against it automatically. If the token does not expose `decimals()`, the value you provide is used as-is — make sure it is correct.
 
-<Aside type="caution" title="Decimal scaling">
-  The policy scales between the feed's decimals and the token's decimals automatically. However, if you provide an
-  incorrect decimal value for a token that does not expose `decimals()` on-chain, the reserve calculation will be wrong
-  — potentially allowing over-minting or blocking valid mints. Always verify the token's actual decimals before
-  configuring this policy.
-</Aside>
+> **CAUTION: Decimal scaling**
+>
+> The policy scales between the feed's decimals and the token's decimals automatically. However, if you provide an
+> incorrect decimal value for a token that does not expose `decimals()` on-chain, the reserve calculation will be wrong
+> — potentially allowing over-minting or blocking valid mints. Always verify the token's actual decimals before
+> configuring this policy.
 
 ### Reserve margin
 
@@ -6349,11 +6439,11 @@ The maximum defines the highest acceptable value for the extracted parameter. An
 
 Setting the maximum to `0` disables the upper bound — there will be no ceiling on the value.
 
-<Aside type="note" title="Relationship between minimum and maximum">
-  The minimum must be strictly less than the maximum, unless one of them is `0`. For example, you cannot set a minimum
-  of 100 and a maximum of 50. You can set a minimum of 100 and a maximum of `0` (no upper limit), or a minimum of `0`
-  and a maximum of 50 (no lower limit).
-</Aside>
+> **NOTE: Relationship between minimum and maximum**
+>
+> The minimum must be strictly less than the maximum, unless one of them is `0`. For example, you cannot set a minimum
+> of 100 and a maximum of 50. You can set a minimum of 100 and a maximum of `0` (no upper limit), or a minimum of `0`
+> and a maximum of 50 (no lower limit).
 
 ## Runtime behavior
 
@@ -6415,9 +6505,9 @@ Common values:
 - `86400` — 1 day
 - `604800` — 1 week
 
-<Aside type="caution" title="Time period must be greater than zero">
-  Setting the time period duration to `0` is not allowed and will cause the configuration to revert.
-</Aside>
+> **CAUTION: Time period must be greater than zero**
+>
+> Setting the time period duration to `0` is not allowed and will cause the configuration to revert.
 
 ## Runtime behavior
 
@@ -6438,10 +6528,10 @@ The policy expects exactly two parameters from the extractor:
 - **`setMaxAmount(uint256 maxAmount)`** — Updates the maximum volume per period. Reverts if the new value is the same as the current one.
 - **`setTimePeriodDuration(uint256 timePeriodDuration)`** — Updates the time period length in seconds. Must be greater than zero. Reverts if the new value is the same as the current one.
 
-<Aside type="caution" title="Changing the duration resets all tracking">
-  Updating the time period duration effectively resets all volume tracking for all accounts. Any cumulative volume
-  recorded under the previous duration is discarded, and every account starts with a clean counter.
-</Aside>
+> **CAUTION: Changing the duration resets all tracking**
+>
+> Updating the time period duration effectively resets all volume tracking for all accounts. Any cumulative volume
+> recorded under the previous duration is discarded, and every account starts with a clean counter.
 
 ### View functions
 
@@ -6464,15 +6554,15 @@ The policy expects exactly two parameters from the extractor:
 Source: https://docs.chain.link/ace/reference/cross-chain-identity-contracts
 Last Updated: 2026-07-17
 
-<Aside type="note" title="On-chain contracts vs. ACE Platform">
-  The contracts on this page are the **on-chain foundation** of ACE — smart contracts deployed on EVM chains that manage
-  identities and credentials. The **ACE Platform** (Policy Manager, Identity Manager, Reporting Manager) is a separate
-  set of off-chain services built on top of these contracts, providing a managed experience through the Platform UI and
-  Coordinator API. You can use the platform to manage these contracts, or interact with them directly. See [Beta
-  Scope](/ace/beta-scope) for current platform limitations.
-</Aside>
+> **NOTE: On-chain contracts vs. ACE Platform**
+>
+> The contracts on this page are the **on-chain foundation** of ACE — smart contracts deployed on EVM chains that manage
+> identities and credentials. The **ACE Platform** (Policy Manager, Identity Manager, Reporting Manager) is a separate
+> set of off-chain services built on top of these contracts, providing a managed experience through the Platform UI and
+> Coordinator API. You can use the platform to manage these contracts, or interact with them directly. See [Beta
+> Scope](/ace/beta-scope) for current platform limitations.
 
-The Cross-Chain Identity contracts manage identity registries and credential lifecycles for ACE. They depend on the [Policy Management contracts](/ace/reference/policy-management-contracts) — registries are owned and governed by a PolicyEngine. The source code and full documentation are available in the <a href="https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/cross-chain-identity" target="_blank">cross-chain-identity package</a> of the <a href="https://github.com/smartcontractkit/chainlink-ace" target="_blank">chainlink-ace repository</a> (Business Source License 1.1).
+The Cross-Chain Identity contracts manage identity registries and credential lifecycles for ACE. They depend on the [Policy Management contracts](/ace/reference/policy-management-contracts) — registries are owned and governed by a PolicyEngine. The source code and full documentation are available in the [cross-chain-identity package](https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/cross-chain-identity) of the [chainlink-ace repository](https://github.com/smartcontractkit/chainlink-ace) (Business Source License 1.1).
 
 ## Core interfaces
 
@@ -6524,15 +6614,13 @@ The [cross-chain-identity docs](https://github.com/smartcontractkit/chainlink-ac
 Source: https://docs.chain.link/ace/reference/apis
 Last Updated: 2026-07-17
 
-<AceCallout callout="privateBeta" />
-
 ACE exposes three APIs. They share the same host and authentication model, but serve different purposes and use different base paths.
 
-| API                  | Purpose                                                | Access     | Reference                                                                         |
-| -------------------- | ------------------------------------------------------ | ---------- | --------------------------------------------------------------------------------- |
-| Coordinator API      | Create, update, and delete ACE resources.              | Read-write | <a href="/api/ace/coordinator/docs" target="_blank">Coordinator API Reference</a> |
-| Evaluation API (MVP) | Start and monitor managed offchain policy evaluations. | Read-write | <a href="/api/ace/evaluation/docs" target="_blank">Evaluation API Reference</a>   |
-| Reporting API        | Query onchain state and transaction history.           | Read-only  | <a href="/api/ace/reporting/docs" target="_blank">Reporting API Reference</a>     |
+| API                  | Purpose                                                | Access     | Reference                                              |
+| -------------------- | ------------------------------------------------------ | ---------- | ------------------------------------------------------ |
+| Coordinator API      | Create, update, and delete ACE resources.              | Read-write | [Coordinator API Reference](/api/ace/coordinator/docs) |
+| Evaluation API (MVP) | Start and monitor managed offchain policy evaluations. | Read-write | [Evaluation API Reference](/api/ace/evaluation/docs)   |
+| Reporting API        | Query onchain state and transaction history.           | Read-only  | [Reporting API Reference](/api/ace/reporting/docs)     |
 
 ## Authentication
 
@@ -6543,10 +6631,10 @@ curl https://ace.api.chain.link/v1/<endpoint> \
   -H "Authorization: Apikey <API_KEY>"
 ```
 
-<Aside type="caution" title="API key security">
-  Your API key grants full read-write access to your organization's ACE resources. Never share it, commit it to source
-  control, or expose it in client-side code.
-</Aside>
+> **CAUTION: API key security**
+>
+> Your API key grants full read-write access to your organization's ACE resources. Never share it, commit it to source
+> control, or expose it in client-side code.
 
 ## Base URLs
 
@@ -6577,23 +6665,23 @@ The Coordinator API is the management interface for all ACE resources. Everythin
 - Register cross-chain identities (CCIDs) and map wallet addresses
 - Define credential types (optionally typed with data schemas) and issue credentials
 
-The Coordinator API also exposes cross-organization access grants (sharing registries and policies), organization settings, and off-chain policy management. For the full schema, parameters, and request/response examples, see the <a href="/api/ace/coordinator/docs" target="_blank">Coordinator API Reference</a>.
+The Coordinator API also exposes cross-organization access grants (sharing registries and policies), organization settings, and off-chain policy management. For the full schema, parameters, and request/response examples, see the [Coordinator API Reference](/api/ace/coordinator/docs).
 
 ## Evaluation API (MVP)
 
 The Evaluation API is the runtime interface for [managed offchain risk policies](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies). An application uses it to:
 
-<Aside type="caution" title="MVP API">
-  The Evaluation API and managed offchain risk policies are an MVP. Their interfaces and capabilities can change during
-  Beta. Contact your Chainlink representative before integrating this API and for help with setup.
-</Aside>
+> **CAUTION: MVP API**
+>
+> The Evaluation API and managed offchain risk policies are an MVP. Their interfaces and capabilities can change during
+> Beta. Contact your Chainlink representative before integrating this API and for help with setup.
 
 - Request a TRM wallet risk evaluation for a specific caller, target, function, chain, and set of permit parameters.
 - Receive the deterministic permit ID for that evaluation.
 - Poll the evaluation through `evaluating`, `approving`, and a terminal status.
 - Submit the protected transaction after the status becomes `ready` and the permit is stored onchain.
 
-For the integration flow, ABI encoding requirements, idempotency, and retry guidance, see [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits). For the full schema, see the <a href="/api/ace/evaluation/docs" target="_blank">Evaluation API Reference</a>.
+For the integration flow, ABI encoding requirements, idempotency, and retry guidance, see [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits). For the full schema, see the [Evaluation API Reference](/api/ace/evaluation/docs).
 
 ## Reporting API
 
@@ -6610,8 +6698,8 @@ The Reporting API provides read-only access to onchain state indexed by Chainlin
 
 The Policies, Targets, and Identities endpoints accept an `as_of` timestamp for point-in-time historical queries. The Transactions endpoint uses `from`/`to` time range filters.
 
-<Aside type="note" title="API-only reporting">
-  The Reporting Manager is API-only — there is no reporting UI. See [Beta Scope](/ace/beta-scope) for details.
-</Aside>
+> **NOTE: API-only reporting**
+>
+> The Reporting Manager is API-only — there is no reporting UI. See [Beta Scope](/ace/beta-scope) for details.
 
-For the full schema, parameters, and request/response examples, see the <a href="/api/ace/reporting/docs" target="_blank">Reporting API Reference</a>.
+For the full schema, parameters, and request/response examples, see the [Reporting API Reference](/api/ace/reporting/docs).

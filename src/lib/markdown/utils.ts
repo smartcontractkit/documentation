@@ -125,30 +125,3 @@ export function getIsoStringOrUndefined(val: unknown): string | undefined {
   const d = new Date(val)
   return isNaN(d.getTime()) ? undefined : d.toISOString().slice(0, 10)
 }
-
-/**
- * Unescape markdown for plain text output
- * @param s - Markdown string
- * @returns Unescaped string
- */
-export function unescapeForPlainText(s: string): string {
-  let inFence = false
-  return s
-    .split("\n")
-    .map((line) => {
-      const trimmed = line.trim()
-      if (trimmed.startsWith("```") || trimmed.startsWith("~~~")) {
-        inFence = !inFence
-        return line
-      }
-      if (inFence) return line
-      return line
-        .replace(/\\_/g, "_")
-        .replace(/\\\[/g, "[")
-        .replace(/\\\]/g, "]")
-        .replace(/\\\(/g, "(")
-        .replace(/\\\)/g, ")")
-    })
-    .filter((line) => line.trim() !== "{/* prettier-ignore */}")
-    .join("\n")
-}
