@@ -283,6 +283,42 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
       },
 
       // ---------------------------------------------
+      // Cross-Chain Verifiers (CCVs)
+      // ---------------------------------------------
+      {
+        title: "Cross-Chain Verifiers",
+        url: "ccip/concepts/ccvs",
+        pageId: "ccip-ccvs",
+        chainTypes: ["evm"],
+        children: [
+          {
+            title: "Overview",
+            url: "ccip/concepts/ccvs/overview",
+            pageId: "ccip-ccvs-overview",
+            chainTypes: ["evm"],
+          },
+          {
+            title: "Verification Models",
+            url: "ccip/concepts/ccvs/verification-models",
+            pageId: "ccip-ccvs-verification-models",
+            chainTypes: ["evm"],
+          },
+          {
+            title: "CCV Interfaces & Guarantees",
+            url: "ccip/concepts/ccvs/interface-guarantees",
+            pageId: "ccip-ccvs-interface-guarantees",
+            chainTypes: ["evm"],
+          },
+          {
+            title: "Trust & Responsibility Model",
+            url: "ccip/concepts/ccvs/trust-responsibility-model",
+            pageId: "ccip-ccvs-trust-responsibility-model",
+            chainTypes: ["evm"],
+          },
+        ],
+      },
+
+      // ---------------------------------------------
       // Fees & Billing
       // ---------------------------------------------
       {
