@@ -37,6 +37,7 @@ export function getSchemaVersion(feed: FeedMetadata): string | undefined {
   if (match[1] === "04" || match[1] === "08") return "v8"
   if (match[1] === "09") return "v9"
   if (match[1] === "11") return "v11"
+  if (match[1] === "14") return "v14"
 
   return undefined
 }
@@ -167,6 +168,17 @@ export function matchesApacEquitiesStreamFilter(
   return isApacEquitiesStreamFeed(metadata)
 }
 
+/** Futures streams use the v14 schema. */
+export function isFuturesStreamFeed(metadata: FeedMetadata): boolean {
+  return getSchemaVersion(metadata) === "v14"
+}
+
+/** Futures stream filter used by FeedList and feed tables. */
+export function matchesFuturesStreamFilter(metadata: FeedMetadata, showFuturesFeeds: boolean | undefined): boolean {
+  if (!showFuturesFeeds) return true
+  return isFuturesStreamFeed(metadata)
+}
+
 /** Doc links for marketStatus and trading hours, resolved per feed in the stream table schema expander. */
 export function getMarketStatusDocLink(
   metadata: FeedMetadata,
@@ -190,6 +202,10 @@ export function getMarketStatusDocLink(
     return { label: "Status values", href: "/data-streams/reference/report-schema-v11#market-status-values" }
   }
 
+  if (schemaKey === "v14") {
+    return { label: "Status values", href: "/data-streams/reference/report-schema-v14#market-status-values" }
+  }
+
   return undefined
 }
 
@@ -197,7 +213,7 @@ export function getTradingHoursDocLink(
   metadata: FeedMetadata,
   schemaKey: string
 ): { label: string; href: string } | undefined {
-  if (schemaKey !== "v8" && schemaKey !== "v11" && schemaKey !== "v10") return undefined
+  if (schemaKey !== "v8" && schemaKey !== "v11" && schemaKey !== "v10" && schemaKey !== "v14") return undefined
 
   if (isApacEquitiesStreamFeed(metadata)) {
     return { label: "Trading hours", href: "/data-streams/market-hours#apac-equities" }
@@ -205,6 +221,10 @@ export function getTradingHoursDocLink(
 
   if (schemaKey === "v11" && isV1124x5SessionFeed(metadata)) {
     return { label: "Trading hours", href: "/data-streams/market-hours#rwa-market-hours" }
+  }
+
+  if (schemaKey === "v14") {
+    return { label: "Trading hours", href: "/data-streams/rwa-streams/futures#trading-hours" }
   }
 
   return { label: "Trading hours", href: "/data-streams/market-hours" }

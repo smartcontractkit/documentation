@@ -254,4 +254,53 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
       },
     ],
   },
+  v14: {
+    label: "Report Schema v14 (Futures)",
+    shortLabel: "v14",
+    url: "/data-streams/reference/report-schema-v14",
+    fields: [
+      ...COMMON_FIELDS,
+      { field: "midPrice", type: "int192", description: "DON consensus mid price" },
+      { field: "bidPrice", type: "int192", description: "DON consensus bid price" },
+      { field: "askPrice", type: "int192", description: "DON consensus ask price" },
+      { field: "expiryTime", type: "uint64", description: "Contract expiration time (Unix seconds)" },
+      {
+        field: "firstDayOfNotice",
+        type: "uint64",
+        description: "First day of notice for the tracked contract (Unix seconds)",
+      },
+      {
+        field: "lastSeenTimestampNs",
+        type: "uint64",
+        description: "Timestamp of the last update received from the data provider (nanoseconds)",
+      },
+      {
+        field: "marketStatus",
+        type: "uint32",
+        description: "Market status. Mapping varies by feed; see schema docs.",
+        link: { label: "Status values", href: "/data-streams/reference/report-schema-v14#market-status-values" },
+      },
+      {
+        field: "contractMonth",
+        type: "uint32",
+        description:
+          "Standard futures month code (F=Jan, G=Feb, H=Mar, J=Apr, K=May, M=Jun, N=Jul, Q=Aug, U=Sep, V=Oct, X=Nov, Z=Dec)",
+      },
+      {
+        field: "goldmanRollPrice",
+        type: "int192",
+        description: "Continuous price using the Goldman Roll (GSCI) methodology",
+      },
+      {
+        field: "currentBusinessDay",
+        type: "uint32",
+        description: "Current business day count within the active roll window",
+      },
+      {
+        field: "interpolatedGoldmanRollPrice",
+        type: "int192",
+        description: "Interpolated Goldman Roll price (0 when not in an active roll window)",
+      },
+    ],
+  },
 }
