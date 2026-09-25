@@ -15,7 +15,7 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 CCIP enforces service limits to maintain reliable and predictable cross-chain execution.
 Limits are enforced during message processing and execution. Values vary by chain and deployment.
 
-### EVM Chains
+## EVM Chains
 
 | Item                            | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Limit                                         |
 | :------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------- |
@@ -24,7 +24,9 @@ Limits are enforced during message processing and execution. Values vary by chai
 | Token Pool Execution Gas Limit  | Maximum gas for executing the combined steps in token pools during cross-chain transfers, including: (1) **balanceOf** check before minting/releasing, (2) **releaseOrMint** function, and (3) **balanceOf** check after minting/releasing. For more details on building custom token pools and handling gas constraints, refer to the [Token Pools documentation](https://docs.chain.link/ccip/concepts/cross-chain-token/evm/token-pools#common-requirements). | 90,000                                        |
 | Message Execution Gas Limit     | User specified [gas limit](https://docs.chain.link/ccip/api-reference/evm/v1.6.1/client#genericextraargsv2).                                                                                                                                                                                                                                                                                                                                                     | Varies by destination chain — see table below |
 
-#### Message Execution Gas Limit by destination chain
+### Message Execution Gas Limit by destination chain
+
+> These limits are for CCIP 2.0 lanes. For CCIP V1 lanes, refer to the[ V1 section of the docs](/ccip/v1/evm/service-limits).
 
 | Destination chain | Gas limit |
 | :---------------- | :-------- |
@@ -41,5 +43,23 @@ Limits are enforced during message processing and execution. Values vary by chai
 | Plume             | 15M       |
 | Polygon           | 15M       |
 | Unichain          | 6M        |
+
+## Network-Specific Limitations
+
+Some EVM networks have additional constraints beyond the standard limits above:
+
+| Network  | Special Considerations                            | Documentation                                                   |
+| -------- | ------------------------------------------------- | --------------------------------------------------------------- |
+| HyperEVM | Data availability limitations during RPC downtime | [HyperEVM Service Limits](/ccip/v1/evm/service-limits/hyperevm) |
+
+## Private / Permissioned Network Limitations
+
+Some CCIP integrations are with private / permissioned networks (see list below). CCIP's integration with these networks depends on a single centralized RPC provider rather than a distinct set of local nodes or RPCs utilized by node operators. As a result:
+
+- Transaction data sourced from these networks cannot be independently verified across multiple nodes in the same way as public chains.
+- A compromised RPC provider could manipulate transaction data, up to and including theft of bridged funds.
+- Anomalous or malicious activity on these networks may be harder to detect and alert on, as monitoring infrastructure relies on the same private RPC layer.
+
+Developers and integrators building CCIP integrations on private / permissioned networks should review these constraints carefully and implement additional safeguards appropriate to their application's use case. These include, but are not limited to: more conservative token pool rate limits, monitoring of messages and token transfers, and emergency preparedness.
 
 <CcipCommon callout="conceptualDisclaimer" />
