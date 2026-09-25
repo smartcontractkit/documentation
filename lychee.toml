@@ -1,44 +1,68 @@
 # Lychee Link Checker Configuration
 # https://lychee.cli.rs/
 
-# Only check local files (no network requests)
+# Check only local build files; never make network requests.
 offline = true
 
-# Check links in code blocks
-include_verbatim = true
+# Ignore illustrative URLs inside <code>, <pre>, and Markdown code blocks.
+# These are examples, not navigational links that users can click.
+include_verbatim = false
 
-# Don't show progress bar (better for CI)
+# Validate standard anchors such as /page#section.
+# Text fragments such as #:~:text=... remain out of scope.
+include_fragments = "anchor-only"
+
+# Resolve Astro pretty URLs to their generated index.html file.
+# Do not add "." as a fallback: directories without index.html must remain errors.
+index_files = ["index.html"]
+
+# Disable the interactive progress bar in CI logs.
 no_progress = true
 
-# Patterns to exclude from link checking
+# URLs matching these patterns are not checked.
 exclude = [
-    # Markdown alternates emitted into built HTML
+    # Markdown alternatives emitted into built HTML are not part of the static site.
     '.*\.md$',
 
-    # CSS files
+    # Generated CSS assets are outside the scope of the internal navigation check.
     'assets/.*\.css$',
     '_astro/.*\.css$',
 
-    # Dynamic pages with query params
-    '/ccip/directory/.*',
+    # Astro handles this exact route as a redirect to /ccip/directory/mainnet,
+    # so no local index.html is generated for it.
+    '/ccip/directory/?(?:[?#].*)?$',
+
+    # CCIP Directory pages reuse headings that are not rendered on those pages.
+    # Ignore only their fragments; the existence of each target page is still checked.
+    '/ccip/directory/.*#.*$',
+
+    # Ignore only query-dependent CCIP Directory URLs.
+    # Child pages without query parameters remain fully checked.
+    '/ccip/directory/.+\?.*',
+
+    # Dynamic pages whose query parameters cannot be reproduced by the static build.
     '/data-feeds/price-feeds/addresses\?.*',
     '/data-feeds/smartdata/addresses\?.*',
 
-    # Other files
+    # Swagger UI creates this deep-link target client-side.
+    '/api/ace/coordinator/docs#/Organizations$',
+
+    # In offline mode, href="/" can resolve to file:/// even though the root page
+    # exists in the deployed site. Match only this exact local URL.
+    '^file:///$',
+
+    # Build/runtime references that are not navigational pages.
     'sitemap-index\.xml',
     '@vite/client',
 
-    # Database connection strings
+    # Connection strings found in documentation examples.
     'postgresql:',
     'mysql:',
 ]
 
-# Paths to exclude from scanning (won't check links on these pages)
+# Input HTML files matching these patterns are not scanned.
+# Use this only when the entire generated page is intentionally out of scope.
 exclude_path = [
     'ccip/api-reference/evm/v162/.*',
     'ccip/api-reference/evm/v163/.*',
 ]
-
-# TODO: Re-enable fragment checking once Astro slug generation compatibility is resolved
-# include_fragments = true
-# Astro's heading ID generation and lychee's GitHub-style kebab-case expectations

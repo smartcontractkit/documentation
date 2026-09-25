@@ -144,7 +144,7 @@ Jump to what you need:
 
 - **[Workflow Guides](/cre/guides/workflow/using-triggers/overview)** - Learn how to use triggers, make API calls, and interact with blockchains
 - **[Workflow Operations](/cre/guides/operations/simulating-workflows)** - Simulate, deploy, and manage your workflows
-- **[SDK Reference](/cre/reference/sdk)** - Detailed API documentation for Go and TypeScript SDKs
+- **[SDK Reference](/cre/reference/sdk/overview)** - Detailed API documentation for Go and TypeScript SDKs
 
 
 <Aside type="caution" title="Disclaimer">
@@ -2927,7 +2927,7 @@ This tool is **not intended for production use**. For production integrations:
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts
 Last Updated: 2026-05-08
 
-When your workflow [writes data to the blockchain](/cre/guides/workflow/using-evm-client/onchain-write), it doesn't call your contract directly. Instead, it submits a signed report to a Chainlink `KeystoneForwarder` contract, which then calls your contract.
+When your workflow [writes data to the blockchain](/cre/guides/workflow/using-evm-client/onchain-write/overview), it doesn't call your contract directly. Instead, it submits a signed report to a Chainlink `KeystoneForwarder` contract, which then calls your contract.
 
 This guide explains how to build a consumer contract that can securely receive and process data from a CRE workflow.
 
@@ -4237,7 +4237,7 @@ writePromise := reserveManager.WriteReportFromUpdateReserves(runtime, updateData
 
 ## Learn more
 
-- **[Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write)**: Understand all onchain write approaches
+- **[Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write/overview)**: Understand all onchain write approaches
 - **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)**: Create secure consumer contracts
 - **[Generating Bindings](/cre/guides/workflow/using-evm-client/generating-bindings)**: Generate type-safe contract bindings
 - **[EVM Client Reference](/cre/reference/sdk/evm-client)**: Complete API documentation
@@ -4261,7 +4261,7 @@ This guide covers **creating** the signed report ([`runtime.GenerateReport()`](/
 
 ## Prerequisites
 
-- Familiarity with [Working with Solidity input types](/cre/guides/workflow/using-evm-client/onchain-write#working-with-solidity-input-types)
+- Familiarity with [Working with Solidity input types](/cre/guides/workflow/using-evm-client/onchain-write/overview-go#working-with-solidity-input-types)
 
 ## What this guide covers
 
@@ -4492,7 +4492,7 @@ func main() {
 
 **"failed to encode value" error**
 
-- Ensure your Go value matches the Solidity type (e.g., `*big.Int` for `uint256`, `common.Address` for `address`). Find a list of mappings [here](/cre/guides/workflow/using-evm-client/onchain-read#solidity-to-go-type-mappings).
+- Ensure your Go value matches the Solidity type (e.g., `*big.Int` for `uint256`, `common.Address` for `address`). Find a list of mappings [here](/cre/guides/workflow/using-evm-client/onchain-read-go#solidity-to-go-type-mappings).
 - For integers, use `big.NewInt()` for values that fit in `int64`, or `new(big.Int).SetString()` for larger values.
 - Verify you're packing the value with `args.Pack(myValue)`, not passing it directly.
 
@@ -4525,9 +4525,9 @@ Use this table to determine which method applies to your situation:
 | Situation                                                                                        | Binding Helper Available?                      | Recommended Approach              | Section                                         |
 | ------------------------------------------------------------------------------------------------ | ---------------------------------------------- | --------------------------------- | ----------------------------------------------- |
 | Struct appears in a `public` or `external` function's signature (as a parameter or return value) | Yes, `Codec.Encode<StructName>Struct()` exists | Use the binding's encoding helper | [Using Binding Helpers](#using-binding-helpers) |
-| Struct is NOT in the ABI                                                                         | No helper available                            | Manual tuple encoding             | [Manual Encoding](#manual-encoding-advanced)    |
+| Struct is NOT in the ABI                                                                         | No helper available                            | Manual tuple encoding             | [Manual Encoding](#manual-encoding)             |
 
-**Don't meet these requirements?** If you're sending a single value instead of a struct, see [Generating Reports: Single Values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values). For other approaches, see the [Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write#choosing-your-approach-which-guide-should-you-follow) hub page.
+**Don't meet these requirements?** If you're sending a single value instead of a struct, see [Generating Reports: Single Values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values). For other approaches, see the [Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write/overview-go#choosing-your-approach-which-guide-should-you-follow) hub page.
 
 <Aside type="note" title="Going onchain? Use the all-in-one helper instead">
   If you're sending your struct **onchain** (not via HTTP) and it's in your contract's ABI, use the `WriteReportFrom<StructName>()` helper instead. It handles encoding, report generation, AND submission in a single call—much simpler than this guide's multi-step approach. See [Using WriteReportFrom Helpers](/cre/guides/workflow/using-evm-client/onchain-write/using-write-report-helpers).
@@ -4864,7 +4864,7 @@ func main() {
 **"failed to encode struct" error**
 
 - Verify your Go struct fields match the Solidity struct in order and type
-- Ensure you're using the correct Go types (e.g., `*big.Int` for `uint256`, `common.Address` for `address`). A list of mappings can be found [here](/cre/guides/workflow/using-evm-client/onchain-read#solidity-to-go-type-mappings).
+- Ensure you're using the correct Go types (e.g., `*big.Int` for `uint256`, `common.Address` for `address`). A list of mappings can be found [here](/cre/guides/workflow/using-evm-client/onchain-read-go#solidity-to-go-type-mappings).
 - Check that all fields are populated (Go's zero values might not match what you expect)
 
 **Binding helper not found**
@@ -4879,7 +4879,7 @@ func main() {
 
 ## Learn more
 
-- **[Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write)**: Understand all onchain write approaches
+- **[Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write/overview)**: Understand all onchain write approaches
 - **[Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain)**: Submit your generated report to the blockchain
 - **[Generating Reports: Single Values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values)**: Generate reports for single primitive values
 - **[Using WriteReportFrom Helpers](/cre/guides/workflow/using-evm-client/onchain-write/using-write-report-helpers)**: Use the all-in-one helper that handles encoding, generation, and submission
@@ -5188,7 +5188,7 @@ See the [CLI Reference](/cre/reference/cli/workflow#cre-workflow-simulate) for m
 
 ## Learn more
 
-- **[Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write)**: Understand all onchain write approaches
+- **[Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write/overview)**: Understand all onchain write approaches
 - **[Using WriteReportFrom Helpers](/cre/guides/workflow/using-evm-client/onchain-write/using-write-report-helpers)**: Use the simpler all-in-one helper for struct submission
 - **[Generating Reports: Single Values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values)**: Generate reports for single primitive values
 - **[Generating Reports: Structs](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-structs)**: Generate reports for struct data
@@ -5392,7 +5392,7 @@ Before managing secrets for deployed workflows, ensure you have:
 
 ## Auth modes: web3 key vs. browser auth
 
-`cre secrets` supports two ways to authorize Vault operations, mirroring the [private vs. public workflow management split](/cre/guides/operations/deploying-workflows#private-vs-public-workflow-management) used for workflow deployment:
+`cre secrets` supports two ways to authorize Vault operations, mirroring the [private vs. public workflow management split](/cre/guides/operations/deploying-workflows#comparing-registries) used for workflow deployment:
 
 - **Web3-keyed.** Each operation submits an onchain authorization tied to your linked workflow owner address (`workflow-owner-address`). Use this when your workflow is deployed to the onchain registry (`deployment-registry: "onchain:ethereum-mainnet"`).
 - **Browser auth (`--secrets-auth=browser`).** The CLI opens a browser-based OAuth (PKCE) flow against the Vault DON gateway and authorizes the operation against your CRE organization. No wallet, no gas, no `workflow-owner-address` needed. Use this when your workflow is deployed to the `private` registry, or when your team manages secrets at the organization level rather than per-wallet.
@@ -8981,7 +8981,7 @@ The typical workflow development process uses these commands in sequence:
 ## Learn more
 
 - **[CLI Installation](/cre/getting-started/cli-installation)** — How to install and set up the CRE CLI
-- **[Getting Started](/cre/getting-started)** — Step-by-step tutorials using the CLI
+- **[Getting Started](/cre/getting-started/overview)** — Step-by-step tutorials using the CLI
 - **[Project Configuration](/cre/reference/project-configuration)** — Understanding project structure and configuration files
 
 ---
@@ -10260,7 +10260,7 @@ The `cre secrets` commands manage secrets stored in the Vault DON (Decentralized
 
 ## Auth modes
 
-`cre secrets` supports two authorization modes, mirroring the [private vs. public workflow management split](/cre/guides/operations/deploying-workflows#private-vs-public-workflow-management) used for workflow deployment:
+`cre secrets` supports two authorization modes, mirroring the [private vs. public workflow management split](/cre/guides/operations/deploying-workflows#comparing-registries) used for workflow deployment:
 
 - **Web3-keyed.** Each operation is tied to your linked `workflow-owner-address`. Use this when your workflow is deployed to the onchain registry (`deployment-registry: "onchain:ethereum-mainnet"`).
 - **Browser auth (`--secrets-auth=browser`).** Each operation is authorized through a browser-based OAuth (PKCE) flow against the Vault DON gateway, using your CRE login session. No wallet or `workflow-owner-address` required. Use this when your workflow is deployed to the `private` registry, or when secrets are owned at the organization level.
@@ -10704,7 +10704,7 @@ cre update
 
 
 <Aside type="note" title="Updating existing projects">
-  Running `cre update` updates the CLI itself. For existing projects, you may also need to update your SDK dependency to access new features. See [Updating Dependencies](/cre/reference/project-configuration#updating-dependencies) for instructions.
+  Running `cre update` updates the CLI itself. For existing projects, you may also need to update your SDK dependency to access new features. See [Updating Dependencies](/cre/reference/project-configuration#5-updating-dependencies) for instructions.
 </Aside>
 
 ## `cre version`
@@ -17457,7 +17457,7 @@ This reference provides three key pieces of information for each network:
 
 Forwarder addresses identify the trusted Chainlink Forwarder contract that delivers verified workflow reports to your consumer contract. Your workflow code does not interact with forwarders directly—the EVM capability handles report delivery automatically. Learn more: [Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write/overview-go).
 
-**Using the [ReceiverTemplate](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#3-using-receivertemplate) (recommended)**: If you use the [`ReceiverTemplate`](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#receivertemplate), the forwarder address is **required** in the constructor. This ensures your contract only accepts reports from the trusted Chainlink Forwarder.
+**Using the [ReceiverTemplate](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#3-using-receivertemplate) (recommended)**: If you use the [`ReceiverTemplate`](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#3-using-receivertemplate), the forwarder address is **required** in the constructor. This ensures your contract only accepts reports from the trusted Chainlink Forwarder.
 
 **Custom implementations**: If you implement the `IReceiver` interface directly without using `ReceiverTemplate`, you control your own security checks. See [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts) for details.
 
@@ -18134,7 +18134,7 @@ Reading from a contract follows a simple pattern:
 
 1. **Prerequisite - Generate bindings**: You must first [generate Go bindings](/cre/guides/workflow/using-evm-client/generating-bindings) for your smart contracts using the CRE CLI. This creates type-safe Go methods that correspond to your contract's `view` and `pure` functions.
 2. **Instantiate the binding**: In your workflow logic, create an instance of your generated binding.
-3. **Call a read method**: Call the desired function on the binding instance, specifying a block number. This is an asynchronous call that immediately returns a [`Promise`](/cre/reference/sdk/core/#promise).
+3. **Call a read method**: Call the desired function on the binding instance, specifying a block number. This is an asynchronous call that immediately returns a [`Promise`](/cre/reference/sdk/core-go#promise).
 4. **Await the result**: Call `.Await()` on the returned promise to pause execution and wait for the consensus-verified result from the DON.
 
 ## Step-by-step example
@@ -19110,7 +19110,7 @@ This guide explains how to use the HTTP Client to send data to an external API u
 All HTTP requests are wrapped in a consensus mechanism. The SDK provides two ways to do this:
 
 - **[`http.SendRequest`](#1-the-httpsendrequest-pattern-recommended):** A high-level helper function that simplifies making requests. This is the recommended approach for most use cases.
-- **[`cre.RunInNodeMode`](#2-the-cre-runinnodemode-pattern-low-level):** The lower-level pattern for more complex scenarios.
+- **[`cre.RunInNodeMode`](#2-the-creruninnodemode-pattern-alternative):** The lower-level pattern for more complex scenarios.
 
 
 <Aside type="caution" title="Using timestamps in requests">
@@ -20253,7 +20253,7 @@ func main() {
    ```bash
    cre workflow simulate my-workflow --target staging-settings
    ```
-4. On webhook.site, open **Content** and confirm JSON with `report`, `context`, and `signatures` (hex). Use that JSON to test a receiver workflow in [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go#testing-locally-with-simulation).
+4. On webhook.site, open **Content** and confirm JSON with `report`, `context`, and `signatures` (hex). Use that JSON to test a receiver workflow in [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go#testing-with-simulation).
 
 ## Next step: verify on the receiver
 
@@ -22054,7 +22054,7 @@ The Cron trigger fires based on a time-based schedule, defined by a standard cro
 
 ## Configuration and handler
 
-You create a Cron trigger by calling the [`cron.Trigger`](/cre/reference/sdk/triggers#crontrigger) function and register it with a handler inside your `InitWorkflow` function.
+You create a Cron trigger by calling the [`cron.Trigger`](/cre/reference/sdk/triggers/cron-trigger-go#crontrigger) function and register it with a handler inside your `InitWorkflow` function.
 
 When you configure a Cron trigger, you must provide a `Schedule` using a standard cron expression. The expression can contain 5 or 6 fields, where the optional 6th field represents seconds.
 
@@ -22590,7 +22590,7 @@ The HTTP trigger fires when an external system makes an HTTP request to the trig
 
 ## Configuration and handler
 
-You create an HTTP trigger by calling the [`http.Trigger`](/cre/reference/sdk/triggers#httptrigger) function. Its configuration ([`http.Config`](/cre/reference/sdk/triggers#httpconfig)) requires a set of authorized public keys to validate incoming request signatures.
+You create an HTTP trigger by calling the [`http.Trigger`](/cre/reference/sdk/triggers/http-trigger-go#httptrigger) function. Its configuration ([`http.Config`](/cre/reference/sdk/triggers/http-trigger-go#httpconfig)) requires a set of authorized public keys to validate incoming request signatures.
 
 
 <Aside type="note" title="Authorization required for deployment">
@@ -22650,7 +22650,7 @@ When an HTTP request is made to trigger your workflow, CRE verifies that the req
 
 ## Callback and payload
 
-The HTTP trigger passes a [`*http.Payload`](/cre/reference/sdk/triggers/http-trigger#httppayload) to your callback. This object contains the request body (`Input`) and the signing key (`Key`) from the incoming HTTP request.
+The HTTP trigger passes a [`*http.Payload`](/cre/reference/sdk/triggers/http-trigger-go#httppayload) to your callback. This object contains the request body (`Input`) and the signing key (`Key`) from the incoming HTTP request.
 
 For the full type definition and all available fields, see the [HTTP Trigger SDK Reference](/cre/reference/sdk/triggers/http-trigger).
 
@@ -24491,7 +24491,7 @@ confHttpClient.SendRequest(runtime, &confidentialhttp.ConfidentialHTTPRequest{ /
 Source: https://docs.chain.link/cre/reference/sdk/consensus-go
 Last Updated: 2025-11-04
 
-Aggregation is the process of taking many results from individual nodes and reducing them to a single, reliable value. This aggregated value is what the DON reaches consensus on. When you run code on individual nodes using [`cre.RunInNodeMode`](/cre/reference/sdk/core/#creruninnodemode), you must provide an aggregation strategy to tell the DON how to produce this single, trustworthy outcome. This is achieved using a `ConsensusAggregation`.
+Aggregation is the process of taking many results from individual nodes and reducing them to a single, reliable value. This aggregated value is what the DON reaches consensus on. When you run code on individual nodes using [`cre.RunInNodeMode`](/cre/reference/sdk/core-go#creruninnodemode), you must provide an aggregation strategy to tell the DON how to produce this single, trustworthy outcome. This is achieved using a `ConsensusAggregation`.
 
 ## `ConsensusAggregation[T]`
 
@@ -24642,12 +24642,12 @@ workflow := cre.Workflow[*Config]{
 }
 ```
 
-- **The Trigger**: An instance of a trigger capability (e.g., `cron.Trigger(...)`). This defines the event that will start your workflow. See the [Triggers reference](/cre/reference/sdk/triggers) for details.
+- **The Trigger**: An instance of a trigger capability (e.g., `cron.Trigger(...)`). This defines the event that will start your workflow. See the [Triggers reference](/cre/reference/sdk/triggers/overview-go) for details.
 - **The Callback**: The function to be executed when the trigger fires. The signature of your callback function must match the output type of the trigger you are using.
 
 <Aside type="note" title="Callback Function Signatures">
-  Each trigger type requires a specific callback signature. See the [Triggers reference](/cre/reference/sdk/triggers)
-  for the exact signature required for each trigger type.
+  Each trigger type requires a specific callback signature. See the [Triggers
+  reference](/cre/reference/sdk/triggers/overview-go) for the exact signature required for each trigger type.
 </Aside>
 
 ### `Runtime` and `NodeRuntime`
@@ -25523,7 +25523,7 @@ The HTTP Client lets you make requests to external APIs from your workflow. Each
 | Method                                                              | Use When                                  | Guide                                                                                                                   |
 | ------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | [`http.SendRequest`](#httpsendrequest)                              | Making HTTP calls (recommended)           | [GET](/cre/guides/workflow/using-http-client/get-request) / [POST](/cre/guides/workflow/using-http-client/post-request) |
-| [`client.SendRequest`](#clientsendrequest)                          | Complex scenarios requiring fine control  | [GET](/cre/guides/workflow/using-http-client/get-request#2-the-creruninnodemode-pattern-low-level)                      |
+| [`client.SendRequest`](#clientsendrequest)                          | Complex scenarios requiring fine control  | [GET](/cre/guides/workflow/using-http-client/get-request-go#2-the-creruninnodemode-pattern-low-level)                   |
 | [`sendRequester.SendReport`](#sendrequestersendreport)              | Submitting reports via HTTP (recommended) | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http)                                     |
 | [`client.SendReport`](#clientsendreport)                            | Complex report submission scenarios       | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http#advanced-low-level-pattern)          |
 | [`cre.ParseReport`](/cre/reference/sdk/core-go#report-verification) | Verifying received reports (receiver)     | [Report verification](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go)                             |
@@ -25539,15 +25539,15 @@ Defines the parameters for an outgoing HTTP request.
   HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
 </Aside>
 
-| Field           | Type                       | Description                                                                                                                    |
-| --------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `Url`           | `string`                   | The URL of the API endpoint.                                                                                                   |
-| `Method`        | `string`                   | The HTTP method (e.g., `"GET"`, `"POST"`).                                                                                     |
-| `MultiHeaders`  | `map[string]*HeaderValues` | Optional HTTP headers (recommended). Supports multiple values per header name. See [`HeaderValues`](#http-headervalues) below. |
-| `Headers`       | `map[string]string`        | **Deprecated.** Use `MultiHeaders` instead. Single-value headers only.                                                         |
-| `Body`          | `[]byte`                   | Optional raw request body.                                                                                                     |
-| `Timeout`       | `*durationpb.Duration`     | Optional request timeout. See [Request Timeout](#request-timeout) below for usage, defaults, and limits.                       |
-| `CacheSettings` | `*CacheSettings`           | Optional caching behavior for the request.                                                                                     |
+| Field           | Type                       | Description                                                                                                                   |
+| --------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `Url`           | `string`                   | The URL of the API endpoint.                                                                                                  |
+| `Method`        | `string`                   | The HTTP method (e.g., `"GET"`, `"POST"`).                                                                                    |
+| `MultiHeaders`  | `map[string]*HeaderValues` | Optional HTTP headers (recommended). Supports multiple values per header name. See [`HeaderValues`](#httpheadervalues) below. |
+| `Headers`       | `map[string]string`        | **Deprecated.** Use `MultiHeaders` instead. Single-value headers only.                                                        |
+| `Body`          | `[]byte`                   | Optional raw request body.                                                                                                    |
+| `Timeout`       | `*durationpb.Duration`     | Optional request timeout. See [Request Timeout](#request-timeout) below for usage, defaults, and limits.                      |
+| `CacheSettings` | `*CacheSettings`           | Optional caching behavior for the request.                                                                                    |
 
 ### Request Timeout
 
@@ -25749,8 +25749,8 @@ result, err := http.SendRequest(config, runtime, client,
 
 **Guides:**
 
-- [GET Requests](/cre/guides/workflow/using-http-client/get-request#1-the-httpsendrequest-pattern-recommended)
-- [POST Requests](/cre/guides/workflow/using-http-client/post-request#1-the-httpsendrequest-pattern-recommended)
+- [GET Requests](/cre/guides/workflow/using-http-client/get-request-go#1-the-httpsendrequest-pattern-recommended)
+- [POST Requests](/cre/guides/workflow/using-http-client/post-request-go#1-the-httpsendrequest-pattern-recommended)
 
 ### `client.SendRequest`
 
@@ -25773,7 +25773,7 @@ func (c *Client) SendRequest(runtime cre.NodeRuntime, input *http.Request) cre.P
 
 **Guide:**
 
-- [Using `cre.RunInNodeMode`](/cre/guides/workflow/using-http-client/get-request#2-the-creruninnodemode-pattern-low-level)
+- [Using `cre.RunInNodeMode`](/cre/guides/workflow/using-http-client/get-request-go#2-the-creruninnodemode-pattern-low-level)
 
 ## Submitting reports via HTTP
 
@@ -25939,7 +25939,7 @@ This section provides a detailed technical reference for the public interfaces o
 The SDK Reference is broken down into several pages, each corresponding to a core part of the SDK's functionality:
 
 - **[Core SDK](/cre/reference/sdk/core)**: Covers the fundamental building blocks of any workflow, including `cre.Handler`, `cre.Runtime`, `cre.Promise`, report verification (`cre.ParseReport`), and map iteration helpers `cre.OrderedEntries` / `cre.OrderedEntriesFunc`.
-- **[Triggers](/cre/reference/sdk/triggers)**: Details the configuration and payload structures for all available trigger types (`Cron`, `HTTP`, `EVM Log`).
+- **[Triggers](/cre/reference/sdk/triggers/overview-go)**: Details the configuration and payload structures for all available trigger types (`Cron`, `HTTP`, `EVM Log`).
 - **[EVM Client](/cre/reference/sdk/evm-client)**: Provides a reference for the `evm.Client`, the primary tool for all EVM interactions, including reads and writes.
 - **[HTTP Client](/cre/reference/sdk/http-client)**: Provides a reference for the `http.Client`, used for making offchain API requests from individual nodes.
 - **[Confidential HTTP Client](/cre/reference/sdk/confidential-http-client)**: Provides a reference for the `confidentialhttp.Client`, used for privacy-preserving API requests with enclave execution and optional response encryption.
