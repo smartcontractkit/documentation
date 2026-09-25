@@ -1,0 +1,110 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Using Data Feeds on Stellar"
+isIndex: true
+whatsnext:
+  {
+    "Use Data Feeds onchain": "/data-feeds/stellar/using-data-feeds-on-chain",
+    "Use Data Feeds offchain": "/data-feeds/stellar/using-data-feeds-off-chain",
+    "See the available data feeds on Stellar": "/data-feeds/price-feeds/addresses?network=stellar",
+  }
+metadata:
+  description: "Explore how to use Chainlink Data Feeds on Stellar to power your applications with data."
+---
+
+import { Aside, CopyText } from "@components"
+import { FeedList } from "@features/feeds"
+
+[Stellar](https://stellar.org/) is a Layer 1 blockchain that uses [Soroban](https://soroban.stellar.org/) smart contracts written in [Rust](https://www.rust-lang.org/). Chainlink Data Feeds on Stellar use a single proxy contract that serves every feed. Instead of a per-feed contract address, you select a feed by its 32-byte `data_id`.
+
+A `data_id` is a 32-byte identifier for a feed, similar to how a contract address identifies a feed on EVM chains. It is the same value as the **Feed ID** shown in the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) table. You pass the `data_id` to the proxy contract to read that feed's data.
+
+## How Stellar Data Feeds work
+
+Data Feeds on Stellar use a single proxy contract that serves every feed. Consumers read feeds from the proxy by passing a 32-byte `data_id`:
+
+- **Proxy contract**: A single proxy contract serves every feed. Consumers read feed data from the proxy by passing the `data_id` for the feed they need.
+
+Consumers select a feed by passing its 32-byte `data_id` to the proxy. You can find the `data_id` for each feed on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+
+## Supported networks
+
+Chainlink Data Feeds are available on the following Stellar networks:
+
+- [Stellar Testnet](https://stellar.org/developers/guides/concepts/networks#testnet)
+- [Stellar Mainnet (Pubnet)](https://stellar.org/developers/guides/concepts/networks#public-network)
+
+## Available data feeds on Stellar
+
+The following table shows all available data feeds on Stellar. Each feed is identified by its `data_id` (the Feed ID), which you pass to the proxy contract to read that feed's data.
+
+<FeedList client:idle initialNetwork="stellar" lockedNetwork="stellar" />
+
+## Proxy contract addresses
+
+The proxy contract address is the same for every feed on a given network. You only ever interact with the proxy.
+
+- **Stellar Testnet**: <CopyText text="CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4" code />
+- **Stellar Mainnet (Pubnet)**: <CopyText text="CDQBHEUGLDHMSUHG4IH33RJBUTMNCZOT4JIAQR4WZFRDZW6DR6S32ZLZ" code />
+
+## Reader interface
+
+Consumers call the following functions on the proxy contract. The interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_proxy.rs) repository.
+
+| Function                                 | Returns                                                          |
+| ---------------------------------------- | ---------------------------------------------------------------- |
+| `latest_round(data_id, decimals)`        | The most recent round for that feed, at the requested `decimals` |
+| `get_round(data_id, round_id, decimals)` | A specific historical round, at the requested `decimals`         |
+| `decimals(data_id)`                      | Decimal places for the answer                                    |
+| `description(data_id)`                   | Human-readable pair name                                         |
+| `get_min_decimals(data_id)`              | The minimum decimal places the feed can be served at             |
+
+### Round structure
+
+A round returned by the proxy carries the following fields:
+
+| Field       | Description                                                            |
+| ----------- | ---------------------------------------------------------------------- |
+| `round_id`  | The unique identifier of the round                                     |
+| `answer`    | The answer for the feed, represented as an `I256`                      |
+| `timestamp` | The observation timestamp in Unix seconds when the answer was produced |
+
+## Error handling
+
+When you call the proxy, the contract can return a `ProxyReadError`. The following cases describe what each error means for a consumer:
+
+| Error             | Meaning                                                                                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NoDataPresent`   | No round is available for the requested `data_id` or `round_id`. This can happen if the feed has not been written yet or the round has expired. |
+| `InvalidDecimals` | The `decimals` you requested is outside the supported range for the feed.                                                                       |
+| `RoundsToZero`    | A non-zero answer would truncate to zero at the requested `decimals`. Request fewer decimal places.                                             |
+| `FeedFrozen`      | The feed is frozen and cannot be read.                                                                                                          |
+
+## How long a round is available
+
+A round is available for a retention period of `3,110,400` ledgers. After this period, a round can no longer be read from the proxy.
+
+## Getting started
+
+You can read Chainlink Data Feeds on Stellar either offchain or onchain. Both methods read the same data from the proxy contract, differing only in where the read happens.
+
+- **[Using Data Feeds Offchain](/data-feeds/stellar/using-data-feeds-off-chain)**: Read a feed via Soroban RPC simulation using `stellar-cli` and the Stellar JavaScript SDK. This method is for applications that need to read feed data without deploying a contract.
+
+- **[Using Data Feeds Onchain](/data-feeds/stellar/using-data-feeds-on-chain)**: Deploy a Soroban contract in Rust that calls the proxy and reads a price. This method is for applications that need to read feed data directly within a smart contract.
+
+Each guide lists the tools and requirements you need to complete it.
+
+## Answer precision
+
+All feeds are stored at `18` decimal places and are typically returned at `18` decimal places. The `decimals` parameter is required when you call `latest_round` or `get_round` on the proxy. You should pass `18` unless a feed is explicitly served at a reduced precision.
+
+In some instances, Chainlink approves the serving of a reduced precision for certain feeds. In this case, you can pass that reduced precision as the `decimals` parameter when requesting a feed from the proxy.
+
+The precision is truncated, so if an `18`-decimal feed is requested at `8` decimal places, the answer is truncated (rounded down). Factor this into your calculations. If you need to control the precision yourself, request the feed at `18` decimal places and override the precision in your application.
+
+<Aside type="danger" title="Select quality data feeds">
+
+Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds).
+
+</Aside>

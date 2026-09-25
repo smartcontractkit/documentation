@@ -34,6 +34,7 @@ import {
   isApacEquitiesStreamFeed,
   getTwapWindowSeconds,
 } from "~/features/feeds/utils/feedMetadata.ts"
+import { isFeedIdAddressedNetwork } from "~/features/feeds/utils/feedIdAddressedNetworks.ts"
 import { getFeedTypeFlags, type SchemaFilterValue } from "~/features/feeds/types.ts"
 import { useFilteredFeedMetadata } from "~/features/feeds/hooks/useFilteredFeedMetadata.ts"
 
@@ -462,7 +463,7 @@ const DefaultTHead = ({
   showRiskColumn?: boolean
   isSvr?: boolean
 }) => {
-  const isAptosNetwork = networkName === "Aptos Mainnet" || networkName === "Aptos Testnet"
+  const isAptosNetwork = isFeedIdAddressedNetwork(networkName)
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
 
   return (
