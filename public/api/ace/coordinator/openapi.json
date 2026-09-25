@@ -115,6 +115,220 @@
         "additionalProperties": {},
         "description": "JSON Schema draft-07 document defining configurable parameters for an on-chain contract\nimplementation.\n"
       },
+      "ContractTypeSummary": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable name of the contract type"
+          }
+        }
+      },
+      "ContractType": {
+        "type": "object",
+        "required": ["id", "name", "contract_type_functions", "created_at", "updated_at"],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable name of the contract type"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional description of the contract type"
+          },
+          "org_id": {
+            "$ref": "#/components/schemas/OrgId"
+          },
+          "contract_type_functions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContractTypeFunction"
+            }
+          },
+          "extractors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Extractor"
+            }
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/CreatedAt"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/UpdatedAt"
+          },
+          "archived_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unix timestamp when archived (null if not archived)",
+            "nullable": true
+          }
+        }
+      },
+      "ContractTypeFunctionType": {
+        "type": "string",
+        "description": "Whether the function is a view/pure read or a state-changing write",
+        "enum": ["view", "write"]
+      },
+      "ContractTypeFunction": {
+        "type": "object",
+        "required": ["id", "function_signature", "type", "function_abi", "created_at", "updated_at"],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "function_signature": {
+            "type": "string",
+            "description": "Canonical function signature, e.g. \"mint(address,uint256)\""
+          },
+          "type": {
+            "$ref": "#/components/schemas/ContractTypeFunctionType"
+          },
+          "function_abi": {
+            "$ref": "#/components/schemas/FunctionABI"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/CreatedAt"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/UpdatedAt"
+          }
+        }
+      },
+      "FunctionABI": {
+        "type": "object",
+        "required": ["type", "name", "inputs", "outputs", "state_mutability"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "ABI fragment type, e.g. \"function\""
+          },
+          "name": {
+            "type": "string",
+            "description": "Function name"
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FunctionParameter"
+            }
+          },
+          "outputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FunctionParameter"
+            }
+          },
+          "state_mutability": {
+            "type": "string",
+            "description": "Function state mutability",
+            "enum": ["pure", "view", "nonpayable", "payable"]
+          }
+        }
+      },
+      "FunctionParameter": {
+        "type": "object",
+        "required": ["name", "type"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Parameter name"
+          },
+          "type": {
+            "type": "string",
+            "description": "Solidity type, e.g. \"address\", \"uint256\", \"tuple\", \"tuple[]\""
+          },
+          "internal_type": {
+            "type": "string",
+            "description": "Solidity ABI internalType"
+          },
+          "components": {
+            "type": "array",
+            "description": "For tuple and tuple array types, the ABI definition of each field, in order.",
+            "items": {
+              "$ref": "#/components/schemas/FunctionParameter"
+            }
+          }
+        }
+      },
+      "ContractTypePatchStatus": {
+        "type": "string",
+        "description": "Status for contract type PATCH (archive only)",
+        "enum": ["archived"]
+      },
+      "PatchContractTypeRequest": {
+        "type": "object",
+        "required": ["status"],
+        "description": "Set status to \"archived\" to archive the contract type.",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ContractTypePatchStatus",
+            "description": "Set to \"archived\" to archive."
+          }
+        }
+      },
+      "CreateContractTypeFunctionsRequest": {
+        "type": "object",
+        "required": ["function_abis"],
+        "properties": {
+          "function_abis": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FunctionABI"
+            }
+          }
+        }
+      },
+      "CreateContractTypeRequest": {
+        "type": "object",
+        "required": ["name", "contract_type_functions"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Human-readable name of the contract type"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description of the contract type"
+          },
+          "contract_type_functions": {
+            "$ref": "#/components/schemas/CreateContractTypeFunctionsRequest"
+          },
+          "extractor_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        }
+      },
+      "ListContractTypesResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ListResponseData"
+          },
+          {
+            "type": "object",
+            "required": ["contract_types"],
+            "properties": {
+              "contract_types": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ContractType"
+                }
+              }
+            }
+          }
+        ]
+      },
       "CreateAnyPolicyRequest": {
         "oneOf": [
           {
@@ -412,6 +626,13 @@
             "items": {
               "$ref": "#/components/schemas/Id"
             }
+          },
+          "contract_type_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Id"
+            },
+            "description": "Contract Types to register on this engine."
           },
           "onchain_policy_engines": {
             "type": "array",
@@ -864,6 +1085,7 @@
           "supported_function_signatures",
           "chain_selectors",
           "outputs",
+          "assigned_contract_types",
           "created_at",
           "updated_at"
         ],
@@ -902,6 +1124,13 @@
             "items": {
               "$ref": "#/components/schemas/ChainSelector"
             }
+          },
+          "assigned_contract_types": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContractTypeSummary"
+            },
+            "description": "Contract types that use this extractor"
           },
           "created_at": {
             "$ref": "#/components/schemas/CreatedAt"
@@ -2266,6 +2495,12 @@
               "$ref": "#/components/schemas/ExtractorRegistration"
             }
           },
+          "contract_types": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContractTypeSummary"
+            }
+          },
           "archived_at": {
             "type": "integer",
             "format": "int64",
@@ -2537,6 +2772,12 @@
             },
             "description": "Protected methods of the target"
           },
+          "contract_type_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Id"
+            }
+          },
           "onchain_targets": {
             "type": "array",
             "items": {
@@ -2690,6 +2931,12 @@
               "type": "string"
             },
             "description": "Protected methods of the target"
+          },
+          "contract_types": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContractType"
+            }
           },
           "onchain_targets": {
             "type": "array",
@@ -2957,6 +3204,13 @@
               "$ref": "#/components/schemas/Id"
             }
           },
+          "contract_type_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Id"
+            },
+            "description": "Contract Types to register on this engine."
+          },
           "onchain_policy_engines": {
             "type": "array",
             "items": {
@@ -3067,6 +3321,12 @@
               "type": "string"
             },
             "description": "Protected methods of the target"
+          },
+          "contract_type_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Id"
+            }
           },
           "onchain_targets": {
             "type": "array",
@@ -3257,6 +3517,9 @@
     },
     {
       "name": "Extractors"
+    },
+    {
+      "name": "Contract Types"
     },
     {
       "name": "Policy Implementations"
@@ -4280,6 +4543,217 @@
           },
           "404": {
             "description": "Extractor not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                },
+                "example": {
+                  "error": "Not found",
+                  "message": "Resource not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contract-types": {
+      "get": {
+        "tags": ["Contract Types"],
+        "summary": "Lists the org's custom contract types plus all built-in types.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/page_size"
+          },
+          {
+            "in": "query",
+            "name": "policy_engine_id",
+            "description": "Policy Engine ID",
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListContractTypesResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Contract Types"],
+        "summary": "Creates a custom contract type for the org.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateContractTypeRequest"
+              },
+              "example": {
+                "name": "ERC-20 Custom",
+                "description": "Custom ERC-20 variant",
+                "contract_type_functions": {
+                  "function_abis": [
+                    {
+                      "type": "function",
+                      "name": "mint",
+                      "inputs": [
+                        {
+                          "name": "account",
+                          "type": "address"
+                        },
+                        {
+                          "name": "amount",
+                          "type": "uint256"
+                        }
+                      ],
+                      "outputs": [],
+                      "state_mutability": "nonpayable"
+                    }
+                  ]
+                },
+                "extractor_ids": ["3fa85f64-5717-4562-b3fc-2c963f66afa6"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractType"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                },
+                "example": {
+                  "error": "Bad request",
+                  "message": "Invalid request parameters"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contract-types/{contract_type_id}": {
+      "get": {
+        "tags": ["Contract Types"],
+        "summary": "Gets a contract type by ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "contract_type_id",
+            "description": "Contract Type ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractType"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Contract type not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                },
+                "example": {
+                  "error": "Not found",
+                  "message": "Resource not found"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Contract Types"],
+        "summary": "Archives a custom contract type.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "contract_type_id",
+            "description": "Contract Type ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchContractTypeRequest"
+              },
+              "example": {
+                "status": "archived"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Request accepted. Returns contract type when archived.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractType"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                },
+                "example": {
+                  "error": "Bad request",
+                  "message": "Invalid request parameters"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Contract type not found",
             "content": {
               "application/json": {
                 "schema": {

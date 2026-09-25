@@ -95,7 +95,7 @@ Start here regardless of your role:
 
 # Beta Scope
 Source: https://docs.chain.link/ace/beta-scope
-Last Updated: 2026-07-17
+Last Updated: 2026-09-23
 
 <AceCallout callout="privateBeta" />
 
@@ -105,16 +105,15 @@ ACE Beta is an early-access release for testing and integration on supported mai
 
 ACE Beta is available on selected [mainnet and testnet networks](/ace/supported-networks). Additional networks may be added before general availability (GA).
 
-## No custom extractors or mappers
+## Custom extractors are registered by you, custom mappers are not available
 
-ACE Beta provides a library of [pre-built, audited policies](/ace/reference/policy-library) (allowlists, volume limits, role-based access control, pause controls, and more). You can also register your own [custom policies](/ace/guides/policy-manager/custom-policies). The following customizations are **not available** through the platform during Beta:
+ACE Beta provides a library of [pre-built, audited policies](/ace/reference/policy-library) (allowlists, volume limits, role-based access control, pause controls, and more) and pre-built extractors for **ERC-20**, **ERC-3643**, and **CCIP-AdvancedPoolHooks** function signatures. You can also register your own [custom policies](/ace/guides/policy-manager/custom-policies) and [custom extractors](/ace/guides/policy-manager/contracts/custom-contract-types):
 
-- **Custom extractors** — Writing extractors for function signatures beyond the pre-built ERC-20 and ERC-3643 set.
-- **Custom mappers** — Deploying mapper contracts that transform or combine extracted parameters before they reach a policy.
+- **Custom contract types**: You can declare contract types with your own function ABIs via the Coordinator API, so contracts beyond ERC-20 and ERC-3643 (vaults, lending pools, custom token variants) are first-class citizens in the platform.
+- **Custom extractors**: You write and deploy your own extractor contract (implementing `IExtractor`), then register it via the Coordinator API with its supported function signatures and per-chain deployment addresses. The platform does not write extractors for you: pre-built extractors cover ERC-20, ERC-3643, and CCIP-AdvancedPoolHooks signatures.
+- **Custom mappers**: Deploying mapper contracts that transform or combine extracted parameters before they reach a policy is **not available** through the platform during Beta.
 
-Because custom extractors are not available, the platform supports **ERC-20 and ERC-3643** function signatures only. These are the only contract types that get the full managed experience — policy configuration, reporting, and monitoring — through the Platform UI and Coordinator API. If you are building a different type of contract (vault, DEX, lending protocol), making it ACE-compatible could require custom extractors. Support for additional contract types and custom extractors is on the roadmap.
-
-Users can deploy custom extractors or mappers onchain directly, but these fall under the [self-deployed contracts limitation](#self-deployed-contracts-are-not-visible-in-the-platform) below — they will not be visible or manageable through the platform.
+The built-in ERC-20 and ERC-3643 contract types get the full managed experience (policy configuration, reporting, and monitoring) through the Platform UI and Coordinator API, with extractors attached automatically. The built-in `CCIP-AdvancedPoolHooks` type covers the `preflightCheck` and `postflightCheck` hook functions; see [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools). Custom contract types and extractors are managed through the Coordinator API. See [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types) for the custom flow.
 
 ## Self-deployed contracts are not visible in the platform
 
@@ -188,9 +187,20 @@ ACE Beta is available on the following networks.
 
 # Release Notes
 Source: https://docs.chain.link/ace/release-notes
-Last Updated: 2026-07-17
+Last Updated: 2026-09-23
 
 <AceCallout callout="privateBeta" />
+
+## September 14, 2026 — Custom contracts
+
+This release makes any ACE-compatible contract a first-class citizen in the platform, not just ERC-20 and ERC-3643 tokens.
+
+### What's new
+
+- **Custom contract types**: Declare contract types with your own function ABIs via the new `/contract-types` Coordinator API endpoints. Custom types appear alongside the built-in contract types (ERC-20, ERC-3643, and [CCIP-AdvancedPoolHooks](/ace/guides/policy-manager/ccip-token-pools)) and can be attached to policy engines and targets with `contract_type_ids`. See [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types).
+- **Custom extractors**: Write and deploy your own extractor contract (implementing `IExtractor` from the [chainlink-ace](https://github.com/smartcontractkit/chainlink-ace) repository) and register it via `POST /extractors` with its supported function signatures and per-chain deployment addresses. Pre-built extractors cover ERC-20, ERC-3643, and CCIP-AdvancedPoolHooks signatures; custom extractors extend coverage to any other function signature.
+- **Contract types on engines and targets**: `POST/PUT /policy-engines` and `POST/PUT /targets` accept `contract_type_ids`, and engine, target, and extractor responses now include their associated contract types (`contract_types`, `assigned_contract_types`).
+- **ERC-3643 extractor coverage fix**: `ERC3643MintBurnExtractor` now covers `burn(address,uint256)` only; `mint(address,uint256)` is covered by `ComplianceTokenMintBurnExtractor`. If you protect `mint` on an ERC-3643 token, attach `ComplianceTokenMintBurnExtractor`.
 
 ## July 17, 2026 — ACE Beta+
 
@@ -716,7 +726,7 @@ ACE is designed so that no personally identifiable information (PII) is stored o
 
 # Policy Management
 Source: https://docs.chain.link/ace/concepts/policy-management
-Last Updated: 2026-03-31
+Last Updated: 2026-09-23
 
 This page explains in depth how ACE's Policy Management system works — the design rationale, the execution model, and how the components interact. For a high-level overview of the components themselves (PolicyProtected, PolicyEngine, Policies, Extractors), see the [Architecture page](/ace/concepts/architecture#policy-management-contracts).
 
@@ -824,10 +834,12 @@ For most use cases, the process is straightforward:
 
 For example, an ERC-20 transfer might have an Extractor that produces `to` and `value`. A sanctions policy might only need `to`, while a volume limit policy only needs `value`. Each gets exactly what it asks for.
 
-<Aside type="note" title="ACE Beta: pre-built extractors only">
-  During ACE Beta, the platform provides pre-built extractors for ERC-20 and ERC-3643 function signatures only. Custom
-  extractors for other contract types are not available through the platform. See [Beta
-  Scope](/ace/beta-scope#no-custom-extractors-or-mappers) for details.
+<Aside type="note" title="Extractors: pre-built and custom">
+  The platform provides pre-built extractors for ERC-20, ERC-3643, and `CCIP-AdvancedPoolHooks` function signatures. See
+  [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools) for the CCIP integration. For other
+  contract types, write and deploy your own extractor contract (implementing `IExtractor`) and register it through the
+  Coordinator API. See [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types)
+  for details.
 </Aside>
 
 ### Worked example: ERC-20 transfer
@@ -859,9 +871,10 @@ For example, a policy that enforces a USD volume limit might need a `usdValue` p
 
 Mappers are set per policy using `setPolicyMapper` and override the default name-based mapping for that policy only.
 
-<Aside type="note" title="ACE Beta: custom mappers not available">
+<Aside type="note" title="Custom mappers are not available">
   Custom Mappers are not available through the ACE Platform during Beta. The platform uses the default name-based
-  parameter mapping for all policies. See [Beta Scope](/ace/beta-scope#no-custom-extractors-or-mappers) for details.
+  parameter mapping for all policies. See [Beta
+  Scope](/ace/beta-scope#custom-extractors-are-registered-by-you-custom-mappers-are-not-available) for details.
 </Aside>
 
 ## The context parameter
@@ -1496,7 +1509,7 @@ Many organizations do both. Start with whichever is most relevant to your first 
 
 # Policy Manager Quick Start
 Source: https://docs.chain.link/ace/getting-started/policy-manager
-Last Updated: 2026-05-26
+Last Updated: 2026-09-23
 
 <AceCallout callout="privateBeta" />
 
@@ -1542,6 +1555,12 @@ Copy the `address` value from each entry in `onchain_policy_engines` — or from
 
 ### 4. Integrate your contract
 
+<Aside type="note" title="CCIP Token Pools use a dedicated integration">
+  To enforce ACE policies through `AdvancedPoolHooks`, follow [Protect CCIP Token Pools with
+  ACE](/ace/guides/policy-manager/ccip-token-pools). The hook calls the Policy Engine directly, so it does not use the
+  generic `PolicyProtected` integration below.
+</Aside>
+
 See [Making Your Contract ACE-Compatible](/ace/guides/policy-manager/contracts/ace-compatible) for a full overview of what your contract needs. In short:
 
 - Inherit from `PolicyProtected` (or `PolicyProtectedUpgradeable` for upgradeable contracts)
@@ -1566,7 +1585,7 @@ If you have an already-deployed contract you want to add ACE compliance to, this
 
 ### 5. Register your contract as a target
 
-After deploying your contract, register it as a target under your PolicyEngine. Provide the contract name, type, protected methods, and on-chain addresses for each chain where the contract is deployed.
+After deploying your contract, make sure it appears as a target under your Policy Engine. ACE detects contracts that call `PolicyEngine.attach()` automatically. If ACE does not detect your integration, register the target manually with the request below and provide its name, type, protected methods, and onchain addresses.
 
 ```bash
 curl -X POST https://ace.api.chain.link/v1/targets \
@@ -1682,7 +1701,7 @@ Explore the detailed guides for each Identity Manager workflow:
 
 # Policy Manager Guides
 Source: https://docs.chain.link/ace/guides/policy-manager
-Last Updated: 2026-07-17
+Last Updated: 2026-09-23
 
 These guides cover the day-to-day operations of a Policy Manager — from integrating your smart contracts with ACE to configuring and managing compliance policies.
 
@@ -1697,24 +1716,25 @@ The Policy Manager revolves around a handful of entities that work together to e
 
 - **PolicyEngine** — The on-chain orchestrator that evaluates policies. Everything — targets, policy instances, and extractors — is scoped to a single engine.
 - **Extractors** — Modules that decode transaction calldata into named parameters (sender, amount, etc.) so policies can evaluate them. Attached to the engine at creation time.
-- **Target** — A smart contract registered under an engine via the API or UI.
-- **Policy Implementation** — A reusable compliance rule from the [Policy Library](/ace/reference/policy-library) (e.g., allowlist, volume limit, pause toggle).
-- **Policy Instance** — A deployed copy of an implementation, configured with your specific parameters and scoped to an engine.
+- **Target** — A smart contract associated with an engine through automatic onchain detection or manual API registration.
+- **Policy Type** — A reusable compliance rule from the [Policy Library](/ace/reference/policy-library) (e.g., allowlist, volume limit, pause toggle).
+- **Policy Instance** — A deployed policy contract created from a policy type, configured with your parameters, and scoped to an engine.
 - **Protection** — The binding between a policy instance and a specific function on a target contract. This is what makes a function "policy-protected."
 - **Data Validator** — An optional contract attached to an identity policy's credential source that validates the *contents* of a credential (e.g., a jurisdiction allow/deny list), not just its existence.
 - **Managed offchain policy (MVP)** — A CRE workflow and onchain validator managed by Chainlink that evaluate external risk data before issuing a permit for a specific transaction intent.
 
 ### Typical setup flow
 
-1. [Create a PolicyEngine](/ace/guides/policy-manager/manage-engines) with extractors for your contract type (ERC-20 or ERC-3643).
-2. [Integrate your contract](/ace/guides/policy-manager/contracts/ace-compatible) by inheriting `PolicyProtected` and adding the `runPolicy` modifier.
-3. Deploy or upgrade your contract — it [appears as a target](/ace/guides/policy-manager/manage-targets) automatically.
+1. [Create a PolicyEngine](/ace/guides/policy-manager/manage-engines) with extractors for your contract type: built-in ERC-20 or ERC-3643, built-in [`CCIP-AdvancedPoolHooks`](/ace/guides/policy-manager/ccip-token-pools), or [your own type](/ace/guides/policy-manager/contracts/custom-contract-types).
+2. [Integrate your contract](/ace/guides/policy-manager/contracts/ace-compatible) through `PolicyProtected` or a direct Policy Engine call.
+3. Deploy and connect your contract. ACE can [detect its onchain attachment or accept manual registration](/ace/guides/policy-manager/manage-targets).
 4. [Create policy instances](/ace/guides/policy-manager/manage-policies) from the Policy Library with your configuration.
 5. [Attach policies to functions](/ace/guides/policy-manager/manage-protections) by creating protections.
 
 ## Smart contract integration
 
 - [Making Your Contract ACE-Compatible](/ace/guides/policy-manager/contracts/ace-compatible) — what your contract needs to work with ACE (inheriting `PolicyProtected`, adding the `runPolicy` modifier)
+- [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools) — connect CCIP AdvancedPoolHooks and enforce policies on cross-chain token transfers
 - [Building a New ERC-20 Token](/ace/guides/policy-manager/contracts/erc20-token) — reference implementation for a compliance-ready ERC-20 token
 - [Building a New ERC-3643 Token](/ace/guides/policy-manager/contracts/erc3643-token) — reference implementation for an ERC-3643 security token
 - [Upgrading Existing Contracts](/ace/guides/policy-manager/contracts/upgrade-existing) — how to add ACE compliance to an already-deployed upgradeable contract
@@ -1723,8 +1743,8 @@ The Policy Manager revolves around a handful of entities that work together to e
 ## Policy engine and policy management
 
 - [Managing Policy Engines](/ace/guides/policy-manager/manage-engines) — create, view, update, and archive policy engines
-- [Managing Targets](/ace/guides/policy-manager/manage-targets) — register your deployed contracts as targets under a policy engine
-- [Managing Policies](/ace/guides/policy-manager/manage-policies) — browse policy implementations, create and configure policy instances
+- [Managing Targets](/ace/guides/policy-manager/manage-targets) — detect or register deployed contracts as targets under a policy engine
+- [Managing Policies](/ace/guides/policy-manager/manage-policies) — browse policy types, create and configure policy instances
 - [Protecting Target Functions](/ace/guides/policy-manager/manage-protections) — bind policy instances to specific functions on your target contracts
 - [Managing Data Validators](/ace/guides/policy-manager/manage-data-validators) — enforce rules on credential contents (e.g., jurisdiction allow/deny lists) by attaching Data Validators to identity policies
 - [Custom Policies](/ace/guides/policy-manager/custom-policies) — write, deploy, and register your own policy contract, then use it like a library policy
@@ -1740,9 +1760,11 @@ The Policy Manager revolves around a handful of entities that work together to e
 
 # Making Your Contract ACE-Compatible
 Source: https://docs.chain.link/ace/guides/policy-manager/contracts/ace-compatible
-Last Updated: 2026-05-26
+Last Updated: 2026-09-23
 
-A contract is ACE-compatible when it can route function calls through a PolicyEngine for compliance checks before execution. This requires four things: inheriting a base contract, marking functions for protection, connecting to a PolicyEngine, and registering extractors. This page explains what each requirement means at a high level — the sub-pages linked below walk through the implementation in detail.
+A contract is ACE-compatible when it routes function calls through a Policy Engine for compliance checks before execution. Most contracts inherit `PolicyProtected` and add the `runPolicy` modifier. A contract can also construct the ACE payload and call the Policy Engine directly, as `AdvancedPoolHooks` does.
+
+This page explains the `PolicyProtected` integration path. For the direct CCIP integration, see [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools).
 
 For background on how these components interact, see the [Architecture page](/ace/concepts/architecture#policy-management-contracts) and the [Policy Management](/ace/concepts/policy-management) concepts page.
 
@@ -1751,7 +1773,7 @@ For background on how these components interact, see the [Architecture page](/ac
   here so you can plan ahead — upgrading production contracts is straightforward with multiple well-defined paths.
 </Aside>
 
-## What your contract needs
+## What a PolicyProtected integration needs
 
 ### 1. Inherit from PolicyProtected
 
@@ -1785,15 +1807,17 @@ Your contract must be connected to a [PolicyEngine](/ace/guides/policy-manager/m
 
 ### 4. Register extractors for protected functions
 
-[Extractors](/ace/guides/policy-manager/manage-policies#managing-extractors) are helper contracts that parse the calldata of your protected functions into named parameters (for example, `to` and `value` for an ERC-20 `transfer`). Policies use these named parameters to make their decisions — a volume limit policy reads `value`, a sanctions check reads `to`.
+[Extractors](/ace/concepts/policy-management#the-extractor-and-mapper-pattern) are helper contracts that parse the calldata of your protected functions into named parameters (for example, `to` and `value` for an ERC-20 `transfer`). Policies use these named parameters to make their decisions — a volume limit policy reads `value`, a sanctions check reads `to`.
 
 One extractor is registered per function signature. To bind policies to specific functions, see [Protecting Target Functions](/ace/guides/policy-manager/manage-protections).
 
-<Aside type="note" title="ACE Beta: pre-built extractors only">
-  During ACE Beta, the platform provides pre-built extractors for **ERC-20 and ERC-3643 function signatures only**.
-  Chainlink registers these extractors for your protected functions when setting up your infrastructure. Custom
-  extractors for other contract types are not available through the platform in Beta — see [Beta
-  Scope](/ace/beta-scope#no-custom-extractors-or-mappers) for details.
+<Aside type="note" title="Extractors: pre-built and custom">
+  The platform provides pre-built extractors for **ERC-20 and ERC-3643 function signatures**, attached automatically for
+  those contract types. The built-in `CCIP-AdvancedPoolHooks` type covers CCIP Token Pool hook functions; see [Protect
+  CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools). For other function signatures, you write and
+  deploy your own extractor contract (implementing `IExtractor`) and register it through the Coordinator API. See
+  [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types) for the complete
+  flow.
 </Aside>
 
 ## Integration paths
@@ -1872,9 +1896,9 @@ The most significant difference between the two implementations is how frozen to
   The reference implementations above are specifically for tokens. If you are building a different type of contract
   (vault, DEX, lending protocol, etc.), you can make any contract ACE-compatible by following the [integration
   requirements](/ace/guides/policy-manager/contracts/ace-compatible) — inherit from `PolicyProtected`, add `runPolicy`
-  to your functions, and connect to a PolicyEngine. During ACE Beta, the platform provides extractors for ERC-20 and
-  ERC-3643 function signatures only — other contract types require custom extractors, which are [not available through
-  the platform in Beta](/ace/beta-scope#no-custom-extractors-or-mappers).
+  to your functions, and connect to a PolicyEngine. For function signatures beyond ERC-20 and ERC-3643, you write and
+  register your own extractors. See [Custom Contract Types &
+  Extractors](/ace/guides/policy-manager/contracts/custom-contract-types).
 </Aside>
 
 ---
@@ -2144,10 +2168,10 @@ This guide explains how to add ACE compliance to a contract that is already depl
   depending on your constraints.
 </Aside>
 
-<Aside type="note" title="ACE Beta: supported contract types">
-  During Beta, the platform provides pre-built extractors for ERC-20 and ERC-3643 function signatures only. If you are
-  upgrading a contract with different function signatures, custom extractors are required but [not available through the
-  platform in Beta](/ace/beta-scope#no-custom-extractors-or-mappers).
+<Aside type="note" title="Supported contract types">
+  The platform provides pre-built extractors for ERC-20 and ERC-3643 function signatures. If you are upgrading a
+  contract with different function signatures, you write and deploy your own extractor contract and register it via the
+  Coordinator API. See [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types).
 </Aside>
 
 ## Prerequisites
@@ -2661,6 +2685,245 @@ Use [Approach 2](#approach-2-implement-ipolicyprotected-advanced), which adds on
 
 ---
 
+# Custom Contract Types & Extractors
+Source: https://docs.chain.link/ace/guides/policy-manager/contracts/custom-contract-types
+Last Updated: 2026-09-23
+
+Any contract that routes calls through a Policy Engine can use ACE policy enforcement. Most custom integrations inherit `PolicyProtected`, mark protected functions with the `runPolicy` modifier, and connect to a Policy Engine. The platform ships built-in ERC-20, ERC-3643, and `CCIP-AdvancedPoolHooks` contract types with pre-built, audited extractors.
+
+For function signatures beyond the pre-built set, you combine two building blocks:
+
+- A **custom contract type**: a declaration of your contract's functions (their ABIs) that you register with the Coordinator API.
+- A **custom extractor**: a contract you write and deploy that parses your function calldata into named parameters for policies.
+
+<Aside type="note" title="When you need this">
+  If your contract is a standard ERC-20, ERC-3643, or `AdvancedPoolHooks` contract, use its built-in type and pre-built
+  extractor. See the [Policy Manager Quick Start](/ace/getting-started/policy-manager#extractor-ids-for-api-creation)
+  for ERC-20 and ERC-3643, or [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools) for
+  `AdvancedPoolHooks`. Custom contract types are for contracts with additional or different function signatures, such as
+  a vault, lending pool, or token with a custom `mint` variant.
+</Aside>
+
+## Prerequisites
+
+- An [API key](/ace/getting-started/account-setup#3-create-an-api-key) for the Coordinator API.
+- An ACE-compatible contract with the functions you want to protect.
+- A development environment for compiling and deploying Solidity contracts (for example, Foundry or Hardhat).
+
+## How it works
+
+A **contract type** describes what functions a contract has. An **extractor** parses those functions' calldata. When a protected function is called, the PolicyEngine looks up the extractor registered for that function's selector, calls `extract()`, and passes the named parameters to each attached policy.
+
+1. You declare a custom contract type with your function ABIs (`POST /contract-types`).
+2. You write an extractor contract implementing `IExtractor` and deploy it onchain.
+3. You register the extractor with the Coordinator API (`POST /extractors`), pointing to the deployed contract address.
+4. You attach the contract type and extractors to your [policy engine](/ace/guides/policy-manager/manage-engines) and [target](/ace/guides/policy-manager/manage-targets).
+
+## The IExtractor interface
+
+Your extractor contract must implement [`IExtractor`](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/interfaces/IExtractor.sol) from the [chainlink-ace](https://github.com/smartcontractkit/chainlink-ace) repository:
+
+```solidity
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.20;
+
+import {IExtractor} from "@chainlink/policy-management/interfaces/IExtractor.sol";
+import {IPolicyEngine} from "@chainlink/policy-management/interfaces/IPolicyEngine.sol";
+
+contract MyVaultExtractor is IExtractor {
+  string public constant override typeAndVersion = "MyVaultExtractor 1.0.0";
+
+  function extract(IPolicyEngine.Payload calldata payload)
+    external
+    pure
+    returns (IPolicyEngine.Parameter[] memory)
+  {
+    // payload.selector: the function selector of the protected call
+    // payload.sender:  the transaction sender
+    // payload.data:    the raw calldata after the selector
+    (address depositor, uint256 amount) = abi.decode(payload.data, (address, uint256));
+
+    IPolicyEngine.Parameter[] memory result = new IPolicyEngine.Parameter[](2);
+    result[0] = IPolicyEngine.Parameter(keccak256("account"), abi.encode(depositor));
+    result[1] = IPolicyEngine.Parameter(keccak256("amount"), abi.encode(amount));
+    return result;
+  }
+}
+```
+
+The `Payload` struct contains the raw call context, and `Parameter` is a named `bytes32`/`bytes` pair:
+
+```solidity
+struct Payload {
+  bytes4 selector;  // function selector of the protected call
+  address sender;   // transaction sender
+  bytes data;       // calldata after the selector
+  bytes context;    // additional context (e.g., offchain signatures)
+}
+
+struct Parameter {
+  bytes32 name;     // parameter name (keccak256 hash)
+  bytes value;      // ABI-encoded value
+}
+```
+
+<Aside type="caution" title="Parameter names must match your policy">
+  Policies receive parameters by name. When you attach a policy to a protected function, the parameter names your
+  extractor produces must match the names that policy expects (for example, a volume limit policy reads `amount`). See
+  [Policy Management — the extractor and mapper
+  pattern](/ace/concepts/policy-management#the-extractor-and-mapper-pattern) and [Custom
+  Policies](/ace/guides/policy-manager/custom-policies) for how policies declare their expected parameters.
+</Aside>
+
+For reference implementations, see the [pre-built extractors](https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/policy-management/src/extractors) in the chainlink-ace repository. [`ERC20TransferExtractor`](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/extractors/ERC20TransferExtractor.sol) decodes `transfer` and `transferFrom` calldata into `from`, `to`, and `amount` parameters.
+
+## Create a custom contract type
+
+Register your contract type with its function ABIs:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/contract-types \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Vault",
+    "description": "Vault with deposit/withdraw compliance checks",
+    "contract_type_functions": {
+      "function_abis": [
+        {
+          "type": "function",
+          "name": "deposit",
+          "inputs": [
+            { "name": "depositor", "type": "address" },
+            { "name": "amount", "type": "uint256" }
+          ],
+          "outputs": [],
+          "state_mutability": "nonpayable"
+        }
+      ]
+    },
+    "extractor_ids": ["<EXTRACTOR_ID>"]
+  }'
+```
+
+| Field                                   | Required | Description                                     |
+| --------------------------------------- | -------- | ----------------------------------------------- |
+| `name`                                  | Yes      | Human-readable name of the contract type        |
+| `description`                           | No       | Optional description                            |
+| `contract_type_functions.function_abis` | Yes      | Array of function ABIs the contract type covers |
+| `extractor_ids`                         | No       | Extractors to associate with the contract type  |
+
+Function ABIs support tuple types: use `type: "tuple"` or `"tuple[]"` with a `components` array describing each field, and `internal_type` for the Solidity internal type.
+
+To list contract types (yours plus the built-ins) or fetch one by ID:
+
+```bash
+curl https://ace.api.chain.link/v1/contract-types \
+  -H "Authorization: Apikey <API_KEY>"
+
+curl https://ace.api.chain.link/v1/contract-types/<CONTRACT_TYPE_ID> \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+`GET /contract-types` accepts a `policy_engine_id` filter to list only the types registered on a given engine.
+
+## Register your extractor
+
+After deploying your extractor contract onchain, register it with the Coordinator API. The `onchain_extractors` array maps each deployment chain to the deployed contract address:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/extractors \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "MyVaultExtractor",
+    "supported_function_signatures": ["deposit(address,uint256)"],
+    "outputs": [
+      { "name": "account", "type": "address" },
+      { "name": "amount", "type": "uint256" }
+    ],
+    "onchain_extractors": [
+      { "chain_selector": "16015286601757825753", "address": "0xYourExtractorAddress" }
+    ]
+  }'
+```
+
+| Field                           | Required | Description                                               |
+| ------------------------------- | -------- | --------------------------------------------------------- |
+| `name`                          | Yes      | Human-readable name, unique per organization              |
+| `supported_function_signatures` | Yes      | Function signatures the extractor parses                  |
+| `outputs`                       | Yes      | Named outputs the extractor produces, in order            |
+| `onchain_extractors`            | No       | Per-chain deployment addresses of your extractor contract |
+
+<Aside type="note" title="Extractor names are unique per organization">
+  An active extractor name must be unique within your organization. If you re-register an updated version, archive the
+  old extractor first (`PATCH /extractors/{id}` with `{"status": "archived"}`) or use a new name.
+</Aside>
+
+The `outputs` you declare must match what your contract's `extract()` returns: same names, same order.
+
+## Attach the contract type to your engine and target
+
+When creating (or updating) your [policy engine](/ace/guides/policy-manager/manage-engines), pass `contract_type_ids` alongside `extractor_ids`:
+
+```bash
+curl -X PUT https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Policy Engine",
+    "contract_type_ids": ["<CONTRACT_TYPE_ID>"],
+    "extractor_ids": ["<EXTRACTOR_ID>"],
+    "onchain_policy_engines": [{ "chain_selector": "16015286601757825753" }]
+  }'
+```
+
+When registering your [target](/ace/guides/policy-manager/manage-targets), pass `contract_type_ids` so the platform knows which contract type the target implements:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/targets \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "My Vault",
+    "policy_engine_id": "<POLICY_ENGINE_ID>",
+    "contract_type_ids": ["<CONTRACT_TYPE_ID>"],
+    "protected_methods": ["deposit(address,uint256)"],
+    "onchain_targets": [
+      { "chain_selector": "16015286601757825753", "address": "0xYourVaultAddress" }
+    ]
+  }'
+```
+
+From there, the flow is the same as for built-in types: [create policy instances](/ace/guides/policy-manager/manage-policies) and [attach them to your protected functions](/ace/guides/policy-manager/manage-protections) with `extractor_output_ids` mapping your extractor's outputs to the policy's parameters.
+
+## Verify your setup
+
+- `GET /contract-types`: lists your custom types plus the built-ins; each type shows its functions and associated extractors.
+- `GET /extractors`: your registered extractor appears with its `assigned_contract_types`.
+- `GET /policy-engines/<ID>`: the engine response includes its `contract_types` and `extractor_registrations`.
+
+## Archive a custom contract type
+
+Archive a contract type you no longer need with a PATCH request:
+
+```bash
+curl -X PATCH https://ace.api.chain.link/v1/contract-types/<CONTRACT_TYPE_ID> \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{ "status": "archived" }'
+```
+
+Chainlink maintains the built-in contract types (ERC-20, ERC-3643, and `CCIP-AdvancedPoolHooks`); you cannot archive them.
+
+## Use the built-in CCIP type
+
+`CCIP-AdvancedPoolHooks` is a built-in contract type with a pre-built extractor for `preflightCheck` and `postflightCheck`. Do not register it as a custom contract type or create your own extractor for these functions.
+
+See [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools) to configure the type, connect `AdvancedPoolHooks`, use its automatically detected target, and map hook parameters to policies.
+
+---
+
 # Security Considerations
 Source: https://docs.chain.link/ace/guides/policy-manager/contracts/security-considerations
 Last Updated: 2026-03-31
@@ -2724,7 +2987,7 @@ This guarantees that the policy chain always completes and returns a definitive 
 
 # Managing Policy Engines
 Source: https://docs.chain.link/ace/guides/policy-manager/manage-engines
-Last Updated: 2026-05-26
+Last Updated: 2026-09-23
 
 A **policy engine** is the on-chain orchestrator that evaluates policies whenever a protected function is called. Each policy engine is deployed as a smart contract on one or more chains, and all your targets, policies, and protections are scoped to a specific engine. For a deeper explanation of how policy engines fit into the architecture, see [Architecture](/ace/concepts/architecture) and [Policy Management](/ace/concepts/policy-management).
 
@@ -2810,8 +3073,9 @@ curl -X PUT https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
 ```
 
 <Aside type="tip" title="Available extractors">
-  See the [Policy Manager Quick Start](/ace/getting-started/policy-manager#extractor-ids-for-api-creation) for the full
-  list of pre-deployed extractor IDs for ERC-20 and ERC-3643 contracts, or retrieve them at any time with `GET
+  See the [Policy Manager Quick Start](/ace/getting-started/policy-manager#extractor-ids-for-api-creation) for ERC-20
+  and ERC-3643 extractor IDs. For `CCIP-AdvancedPoolHooks`, see [Protect CCIP Token Pools with
+  ACE](/ace/guides/policy-manager/ccip-token-pools). You can retrieve every available extractor with `GET
     https://ace.api.chain.link/v1/extractors`.
 </Aside>
 
@@ -2828,28 +3092,31 @@ Archiving a policy engine deactivates it and prevents any further operations. Al
 
 - [Architecture](/ace/concepts/architecture) — how PolicyEngine contracts fit into the ACE system
 - [Policy Management](/ace/concepts/policy-management) — how policy chains and evaluation work
-- [Managing Targets](/ace/guides/policy-manager/manage-targets) — register contracts to protect under an engine
+- [Managing Targets](/ace/guides/policy-manager/manage-targets) — detect or register contracts to protect under an engine
 - [Managing Policies](/ace/guides/policy-manager/manage-policies) — create and configure policy instances
+- [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools) — configure a policy engine for CCIP AdvancedPoolHooks
 - [Coordinator API Reference](/api/ace/coordinator/docs) — full API schema
 
 ---
 
 # Managing Targets
 Source: https://docs.chain.link/ace/guides/policy-manager/manage-targets
-Last Updated: 2026-04-06
+Last Updated: 2026-09-23
 
-A **target** is a smart contract protected by ACE. After deploying your [ACE-compatible contract](/ace/guides/policy-manager/contracts/ace-compatible), you register it as a target under a PolicyEngine. Once registered, you can configure the [default policy result](#default-allow-behavior) and attach [policies](/ace/guides/policy-manager/manage-policies) to its functions via [protections](/ace/guides/policy-manager/manage-protections).
+A **target** is a smart contract protected by ACE and associated with a Policy Engine. ACE can detect a target from its onchain attachment to the engine, or you can register it through the Coordinator API. Once the target appears under the engine, you can configure its [default policy result](#default-allow-behavior) and attach [policy instances](/ace/guides/policy-manager/manage-policies) to its functions through [protections](/ace/guides/policy-manager/manage-protections).
 
 <Aside type="note">
-  Before registering a target, your contract must be
-  [ACE-compatible](/ace/guides/policy-manager/contracts/ace-compatible) — it needs to inherit `PolicyProtected` and use
-  the `runPolicy` modifier on the functions you want to protect. You also need a [deployed
-  PolicyEngine](/ace/guides/policy-manager/manage-engines).
+  Before adding a target, connect the contract to a [deployed Policy Engine](/ace/guides/policy-manager/manage-engines).
+  Most contracts inherit `PolicyProtected` and use the `runPolicy` modifier. A contract can also call the Policy Engine
+  directly and call `attach()` when it connects, as `AdvancedPoolHooks` does. See [Making Your Contract
+  ACE-Compatible](/ace/guides/policy-manager/contracts/ace-compatible) for both integration paths.
 </Aside>
 
 ## Register a target
 
-After deploying your contract, register it as a target with a `POST` request. Provide the contract name, type, protected methods, and on-chain addresses:
+When a contract calls `PolicyEngine.attach()`, ACE detects the onchain attachment and creates a target automatically.
+
+If ACE does not detect your integration, register the target with a `POST` request. Provide the contract name, type, protected methods, and onchain addresses:
 
 ```bash
 curl -X POST https://ace.api.chain.link/v1/targets \
@@ -2886,6 +3153,7 @@ curl -X POST https://ace.api.chain.link/v1/targets \
 | `description`           | No       | Description of the contract                                   |
 | `policy_engine_id`      | Yes      | UUID of the policy engine to associate with                   |
 | `protected_methods`     | No       | Array of function signatures that can be protected            |
+| `contract_type_ids`     | No       | Array of contract type UUIDs the target implements            |
 | `desired_default_allow` | No       | Whether to allow transactions by default (default: `true`)    |
 | `onchain_targets`       | No       | Array of objects with `chain_selector` and contract `address` |
 | `metadata`              | No       | Arbitrary JSON metadata (e.g., `{"contract_type": "ERC-20"}`) |
@@ -2915,7 +3183,7 @@ You can update a target's name, description, contract type, protected methods, d
 
 ## Link targets
 
-When you deploy your ACE-compatible contract on a new chain, the control plane detects it automatically and creates a separate **detected target** (titled "unknown target"). Rather than managing each chain deployment as its own target, you can **merge** detected targets into an existing target to keep a single multi-chain target with all its on-chain addresses in one place.
+When a contract attaches to a Policy Engine on a new chain, the control plane creates a separate **detected target** (titled "unknown target"). Rather than managing each chain deployment as its own target, you can **merge** detected targets into an existing target to keep a single multi-chain target with all its onchain addresses in one place.
 
 ### Conditions
 
@@ -3004,7 +3272,7 @@ Archiving a policy instance removes it from active use. All target protections t
 
 # Protecting Target Functions
 Source: https://docs.chain.link/ace/guides/policy-manager/manage-protections
-Last Updated: 2026-05-26
+Last Updated: 2026-09-23
 
 A **target protection** is the link between a [policy instance](/ace/guides/policy-manager/manage-policies) and a specific function on a [target contract](/ace/guides/policy-manager/manage-targets). When a user calls the protected function, the policy engine evaluates the bound policies in order and decides whether to allow or reject the transaction. Target protections are the final step in setting up on-chain compliance enforcement.
 
@@ -3013,8 +3281,8 @@ A **target protection** is the link between a [policy instance](/ace/guides/poli
 Before creating a target protection, you need:
 
 1. A [policy engine](/ace/guides/policy-manager/manage-engines) deployed on your target chains.
-2. A [target contract](/ace/guides/policy-manager/manage-targets) registered under that engine.
-3. A [policy instance](/ace/guides/policy-manager/manage-policies) created from a policy implementation and associated with the same engine.
+2. A [target contract](/ace/guides/policy-manager/manage-targets) detected or registered under that engine.
+3. A [policy instance](/ace/guides/policy-manager/manage-policies) created from a policy type and associated with the same engine.
 4. Extractors attached to the engine that support the function signatures you want to protect (see the [Policy Manager Quick Start](/ace/getting-started/policy-manager#extractor-ids-for-api-creation) for the full list).
 
 ## Create a target protection
@@ -3067,7 +3335,7 @@ ACE enforces an ordered archival flow. You must archive resources from the outsi
 
 - [Policy Ordering & Composition](/ace/concepts/policy-ordering) — how evaluation order affects transaction outcomes
 - [Managing Policy Engines](/ace/guides/policy-manager/manage-engines) — create the engine that manages policies
-- [Managing Targets](/ace/guides/policy-manager/manage-targets) — register contracts to protect
+- [Managing Targets](/ace/guides/policy-manager/manage-targets) — detect or register contracts to protect
 - [Managing Policies](/ace/guides/policy-manager/manage-policies) — create and configure policy instances
 - [Coordinator API Reference](/api/ace/coordinator/docs) — full API schema
 
@@ -3262,6 +3530,218 @@ curl -X PATCH https://ace.api.chain.link/v1/data-validators/<DATA_VALIDATOR_ID> 
 - [CredentialRegistryIdentityValidatorPolicy](/ace/reference/policy-library/credential-registry-identity-validator-policy) — the policy that consumes Data Validators via credential sources
 - [GroupedIdentityValidatorPolicy](/ace/reference/policy-library/grouped-identity-validator-policy) — grouped identity validation with routing and Data Validators
 - [Coordinator API Reference](/api/ace/coordinator/docs) — full API schema
+
+---
+
+# Protect CCIP Token Pools with ACE
+Source: https://docs.chain.link/ace/guides/policy-manager/ccip-token-pools
+Last Updated: 2026-09-23
+
+Use the built-in `CCIP-AdvancedPoolHooks` contract type to apply ACE policies to cross-chain token transfers. You can evaluate a transfer before the source Token Pool locks or burns tokens and before the destination Token Pool releases or mints tokens.
+
+The built-in contract type defines the two supported hook functions and includes a pre-built extractor for their calldata. You do not need to create a custom contract type or extractor. It does not deploy or configure `AdvancedPoolHooks` for you.
+
+<Aside type="note" title="EVM support">
+  ACE currently supports EVM chains. This integration applies ACE policies to `AdvancedPoolHooks` and Token Pool
+  deployments on EVM chains.
+</Aside>
+
+## Before you begin
+
+If you are new to ACE Policy Manager, start with the [Policy Manager Quick Start](/ace/getting-started/policy-manager). It introduces Policy Engines, targets, policy types, policy instances, and protections. To understand how extractors convert calldata into named parameters for policies, read [Policy Management Concepts](/ace/concepts/policy-management#the-extractor-and-mapper-pattern).
+
+You should also understand how [CCIP Token Pools](/ccip/concepts/cross-chain-token/evm/token-pools) lock or burn tokens on the source chain and release or mint tokens on the destination chain.
+
+For each EVM chain where you want to enforce policies, you need:
+
+- Access to the [Chainlink Platform](https://app.chain.link) and a completed [ACE account setup](/ace/getting-started/account-setup).
+- A Policy Engine deployed on the chain.
+- An `AdvancedPoolHooks` contract deployed on the chain.
+- The Token Pool on that chain configured to use the hook and included in the hook's authorized callers.
+- The onchain Policy Engine address for that chain.
+
+For source-chain enforcement, complete these prerequisites on the source chain. For destination-chain enforcement, complete them on the destination chain. Complete them on both chains if you want both checks.
+
+## How the integration works
+
+At runtime, each cross-chain token transfer follows this call path:
+
+`TokenPool` → `AdvancedPoolHooks` → `PolicyEngine` → extractor and policies
+
+1. The source or destination Token Pool calls `preflightCheck` or `postflightCheck` on its configured `AdvancedPoolHooks` contract.
+2. `AdvancedPoolHooks` sends the call data to the Policy Engine deployed on the same chain.
+3. The pre-built extractor converts the hook calldata into named parameters such as `from`, `to`, `amount`, and `remote_chain_selector`.
+4. The Policy Engine maps the required parameters to each policy and evaluates the policies in their configured order.
+5. If a policy rejects the call, the hook reverts and prevents the Token Pool from completing that operation.
+
+The ACE target is the `AdvancedPoolHooks` contract, not the Token Pool. The Token Pool is an authorized caller of the hook. When `AdvancedPoolHooks` connects to a Policy Engine, it calls `attach()` on that engine. ACE detects this onchain attachment and automatically adds the hook contract as a target under the engine.
+
+Configure the integration separately on each EVM chain. Deploy an `AdvancedPoolHooks` contract and a Policy Engine on each source or destination chain where you want to enforce policies. You can apply different policies in each direction.
+
+## Choose where to enforce policies
+
+| Hook              | Direction | Enforcement chain | Runs                                           | Result when a policy rejects                                                |
+| ----------------- | --------- | ----------------- | ---------------------------------------------- | --------------------------------------------------------------------------- |
+| `preflightCheck`  | Outbound  | Source            | Before the Token Pool locks or burns tokens    | The source transaction reverts, so the cross-chain transfer does not start. |
+| `postflightCheck` | Inbound   | Destination       | Before the Token Pool releases or mints tokens | Destination execution fails before the recipient receives the tokens.       |
+
+### Source-chain enforcement
+
+Use `preflightCheck` to reject a transfer before it leaves the source chain. This avoids starting a transfer that already violates sender, token, amount, or destination-chain requirements.
+
+### Destination-chain enforcement
+
+Use `postflightCheck` to enforce recipient or destination-specific requirements before tokens reach the recipient. If a policy rejects the call, the tokens remain unreleased or unminted. After resolving the rejection condition, use the standard CCIP recovery process to retry the message.
+
+You can protect either hook or both. Protecting both provides independent enforcement at the source and destination.
+
+## Configure ACE
+
+### Create a policy engine
+
+Follow [Create a policy engine](/ace/guides/policy-manager/manage-engines#create-a-policy-engine) for the complete Platform UI and API procedures. For this integration:
+
+1. Include every EVM chain where you want to enforce a hook policy.
+2. Wait until the engine is **Active**, then copy its onchain address for each chain.
+
+A Policy Engine can manage targets of different contract types. You assign the `CCIP-AdvancedPoolHooks` type to the detected hook target later in this workflow, not to the Policy Engine itself.
+
+### Connect AdvancedPoolHooks to the policy engine
+
+Configure each `AdvancedPoolHooks` deployment with the Policy Engine address from the same chain. You can set the address when you deploy the hook or the hook owner can call `setPolicyEngine` afterward.
+
+When the hook connects to the engine, it calls `PolicyEngine.attach()`. This onchain attachment starts ACE target detection. Do not register the hook manually as a second target.
+
+### Verify the detected target
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager** and open the Policy Engine.
+2. In the **Contracts** tab, find the target whose address matches your `AdvancedPoolHooks` deployment.
+3. Open the target and assign the built-in `CCIP-AdvancedPoolHooks` contract type. This type provides the supported hook functions and their pre-built extractor.
+4. Verify that:
+   - **Type** is `CCIP-AdvancedPoolHooks`.
+   - **Functions** lists `preflightCheck` and `postflightCheck`.
+   - The onchain address and network match the hook deployment you configured.
+
+ACE can detect separate targets for hook deployments on different chains. Use [Managing Targets](/ace/guides/policy-manager/manage-targets) only when you need to view, rename, or link those detected targets.
+
+### Create a policy instance
+
+Follow [Create a policy instance](/ace/guides/policy-manager/manage-policies#create-a-policy-instance). Create the instance under the same Policy Engine and on the same chain as the hook function you want to protect.
+
+The examples below use the `reject` policy type. Configure the policy instance with the EVM address you want to deny.
+
+### Protect a hook function
+
+Follow [Create a target protection](/ace/guides/policy-manager/manage-protections#create-a-target-protection) for the generic attachment procedure. On the detected `AdvancedPoolHooks` target, select the hook function for the direction you want to protect and map the policy parameter to an output available for that function.
+
+The Platform creates the protection only on chains where the target and policy instance are both deployed. Confirm that the selected chain matches the hook deployment.
+
+## Extracted parameters
+
+The built-in extractor exposes a separate set of outputs for each hook. When you protect a function, map only outputs listed for that function to the policy parameters.
+
+### Preflight parameters
+
+`preflightCheck` exposes these seven outputs for outbound transfers:
+
+| Output                  | Type      | Value                                                                |
+| ----------------------- | --------- | -------------------------------------------------------------------- |
+| `from`                  | `address` | Original sender that initiated the transfer                          |
+| `to`                    | `address` | Recipient on the destination chain                                   |
+| `amount`                | `uint256` | Transfer amount in the source token denomination, before pool fees   |
+| `amount_post_fee`       | `uint256` | Transfer amount after the source Token Pool deducts its transfer fee |
+| `remote_chain_selector` | `uint64`  | Destination chain selector                                           |
+| `token`                 | `address` | Token address on the source chain                                    |
+| `requested_finality`    | `bytes4`  | Requested finality configuration                                     |
+
+### Postflight parameters
+
+`postflightCheck` exposes these nine outputs for inbound transfers:
+
+| Output                      | Type      | Value                                                           |
+| --------------------------- | --------- | --------------------------------------------------------------- |
+| `from`                      | `address` | Original sender on the source chain                             |
+| `to`                        | `address` | Recipient on the destination chain                              |
+| `amount`                    | `uint256` | Amount to release or mint in the destination token denomination |
+| `remote_chain_selector`     | `uint64`  | Source chain selector                                           |
+| `token`                     | `address` | Token address on the destination chain                          |
+| `requested_finality`        | `bytes4`  | Requested finality configuration                                |
+| `source_pool_address`       | `address` | Token Pool address on the source chain                          |
+| `source_pool_data`          | `bytes`   | Data supplied by the source Token Pool                          |
+| `source_denominated_amount` | `uint256` | Transfer amount in the source token denomination                |
+
+`remote_chain_selector` identifies the destination chain during preflight and the source chain during postflight. Similarly, `amount` uses the source token denomination during preflight and the destination token denomination during postflight.
+
+`amount_post_fee` exists only during preflight. `source_pool_address`, `source_pool_data`, and `source_denominated_amount` exist only during postflight.
+
+CCIP transports remote addresses as `bytes` because the protocol supports different address formats. For this EVM-only ACE integration, the built-in contract type exposes `from`, `to`, and `source_pool_address` as `address` outputs so you can map them directly to address-based policy parameters.
+
+<Aside type="caution" title="Map the transfer sender from the extractor">
+  The hook sets the ACE payload sender to `msg.sender`. Because the Token Pool calls the hook, this value identifies the
+  Token Pool, not the user who initiated the transfer. To evaluate the user, map the extracted `from` output to the
+  policy parameter. A policy that relies only on payload sender semantics evaluates the Token Pool instead.
+</Aside>
+
+## Example policy mappings
+
+### Restrict source senders
+
+To reject a specific address before its transfer leaves the source chain, configure this protection:
+
+| Setting          | Selection                                               |
+| ---------------- | ------------------------------------------------------- |
+| Policy type      | [`reject`](/ace/reference/policy-library/reject-policy) |
+| Function         | `preflightCheck`                                        |
+| Policy parameter | `Account (address)`                                     |
+| Extractor output | `from`                                                  |
+
+If `from` appears in the [Reject policy](/ace/reference/policy-library/reject-policy) instance's denylist, the source transaction reverts before the Token Pool locks or burns tokens. A sender that does not appear in the denylist proceeds unless another policy rejects the transfer.
+
+### Enforce destination-controlled recipient restrictions
+
+Both hooks expose `to`. If you control the source-chain policy and want to reject a recipient as early as possible, map `to` to a Reject policy on `preflightCheck`. This prevents the transfer from starting and avoids sending a CCIP message that will fail at the destination.
+
+Use `postflightCheck` when the destination must enforce its own recipient policy independently of its source chains. For example, one destination policy can protect transfers from multiple source chains or apply a denylist update to a message that is already in transit. To enforce that destination-controlled check, configure this protection:
+
+| Setting          | Selection           |
+| ---------------- | ------------------- |
+| Policy type      | `reject`            |
+| Function         | `postflightCheck`   |
+| Policy parameter | `Account (address)` |
+| Extractor output | `to`                |
+
+If `to` appears in the destination Reject policy instance's denylist, destination execution fails before the Token Pool releases or mints tokens. After resolving the restriction, you must retry the failed message through the standard CCIP recovery process. Use this postflight check as an independently governed destination control or as defense in depth, not as a substitute for preflight rejection when your goal is to stop the transfer at its source.
+
+<Aside type="caution" title="Use outputs from the selected hook">
+  `source_pool_address` is available only for `postflightCheck`. Do not map it to a policy on `preflightCheck`, even if
+  the current Platform menu displays it. Use the preflight and postflight tables above as the source of truth.
+</Aside>
+
+## Verify the integration
+
+- The Policy Engine is **Active** on every chain where you want enforcement.
+- Each source or destination Token Pool points to the expected hook and appears in that hook's authorized callers.
+- Each hook points to the Policy Engine deployed on the same chain.
+- The engine's **Contracts** tab shows the hook address as a detected target.
+- The detected target uses the `CCIP-AdvancedPoolHooks` contract type and its pre-built extractor.
+- The target lists both hook functions.
+- Each policy instance and protection uses the intended chain, function, and extractor output, and its onchain status is active.
+- A transfer involving the restricted address fails at the intended enforcement point.
+- A comparable transfer involving an unrestricted address succeeds.
+
+## Security considerations
+
+- Authorize only the Token Pool contracts that should call each hook. Otherwise, an unexpected contract could invoke policy evaluation with fabricated hook calldata.
+- Protect the Token Pool owner and hook owner accounts. The Token Pool owner can replace or remove the hook, and the hook owner can replace the Policy Engine.
+- Do not set the hook's Policy Engine to the zero address unless you intend to disable ACE policy evaluation.
+- Test source and destination protections independently. A successful preflight check does not guarantee that the destination policy will accept the transfer.
+
+## Next steps
+
+- [Manage policy instances](/ace/guides/policy-manager/manage-policies)
+- [Review or update target protections](/ace/guides/policy-manager/manage-protections)
+- [Plan policy ordering and composition](/ace/concepts/policy-ordering)
+- [Review smart contract integration security](/ace/guides/policy-manager/contracts/security-considerations)
 
 ---
 

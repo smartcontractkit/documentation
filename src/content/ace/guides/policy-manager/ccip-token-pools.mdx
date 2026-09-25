@@ -1,0 +1,217 @@
+---
+section: ace
+title: "Protect CCIP Token Pools with ACE"
+date: Last Modified
+metadata:
+  description: "Use Chainlink ACE policies with CCIP AdvancedPoolHooks to enforce rules before cross-chain tokens leave the source chain or reach recipients on the destination chain."
+  datePublished: "2026-09-23"
+  lastModified: "2026-09-23"
+---
+
+import { Aside } from "@components"
+
+Use the built-in `CCIP-AdvancedPoolHooks` contract type to apply ACE policies to cross-chain token transfers. You can evaluate a transfer before the source Token Pool locks or burns tokens and before the destination Token Pool releases or mints tokens.
+
+The built-in contract type defines the two supported hook functions and includes a pre-built extractor for their calldata. You do not need to create a custom contract type or extractor. It does not deploy or configure `AdvancedPoolHooks` for you.
+
+<Aside type="note" title="EVM support">
+  ACE currently supports EVM chains. This integration applies ACE policies to `AdvancedPoolHooks` and Token Pool
+  deployments on EVM chains.
+</Aside>
+
+## Before you begin
+
+If you are new to ACE Policy Manager, start with the [Policy Manager Quick Start](/ace/getting-started/policy-manager). It introduces Policy Engines, targets, policy types, policy instances, and protections. To understand how extractors convert calldata into named parameters for policies, read [Policy Management Concepts](/ace/concepts/policy-management#the-extractor-and-mapper-pattern).
+
+You should also understand how [CCIP Token Pools](/ccip/concepts/cross-chain-token/evm/token-pools) lock or burn tokens on the source chain and release or mint tokens on the destination chain.
+
+For each EVM chain where you want to enforce policies, you need:
+
+- Access to the [Chainlink Platform](https://app.chain.link) and a completed [ACE account setup](/ace/getting-started/account-setup).
+- A Policy Engine deployed on the chain.
+- An `AdvancedPoolHooks` contract deployed on the chain.
+- The Token Pool on that chain configured to use the hook and included in the hook's authorized callers.
+- The onchain Policy Engine address for that chain.
+
+For source-chain enforcement, complete these prerequisites on the source chain. For destination-chain enforcement, complete them on the destination chain. Complete them on both chains if you want both checks.
+
+## How the integration works
+
+At runtime, each cross-chain token transfer follows this call path:
+
+`TokenPool` → `AdvancedPoolHooks` → `PolicyEngine` → extractor and policies
+
+1. The source or destination Token Pool calls `preflightCheck` or `postflightCheck` on its configured `AdvancedPoolHooks` contract.
+1. `AdvancedPoolHooks` sends the call data to the Policy Engine deployed on the same chain.
+1. The pre-built extractor converts the hook calldata into named parameters such as `from`, `to`, `amount`, and `remote_chain_selector`.
+1. The Policy Engine maps the required parameters to each policy and evaluates the policies in their configured order.
+1. If a policy rejects the call, the hook reverts and prevents the Token Pool from completing that operation.
+
+The ACE target is the `AdvancedPoolHooks` contract, not the Token Pool. The Token Pool is an authorized caller of the hook. When `AdvancedPoolHooks` connects to a Policy Engine, it calls `attach()` on that engine. ACE detects this onchain attachment and automatically adds the hook contract as a target under the engine.
+
+Configure the integration separately on each EVM chain. Deploy an `AdvancedPoolHooks` contract and a Policy Engine on each source or destination chain where you want to enforce policies. You can apply different policies in each direction.
+
+## Choose where to enforce policies
+
+| Hook              | Direction | Enforcement chain | Runs                                           | Result when a policy rejects                                                |
+| ----------------- | --------- | ----------------- | ---------------------------------------------- | --------------------------------------------------------------------------- |
+| `preflightCheck`  | Outbound  | Source            | Before the Token Pool locks or burns tokens    | The source transaction reverts, so the cross-chain transfer does not start. |
+| `postflightCheck` | Inbound   | Destination       | Before the Token Pool releases or mints tokens | Destination execution fails before the recipient receives the tokens.       |
+
+### Source-chain enforcement
+
+Use `preflightCheck` to reject a transfer before it leaves the source chain. This avoids starting a transfer that already violates sender, token, amount, or destination-chain requirements.
+
+### Destination-chain enforcement
+
+Use `postflightCheck` to enforce recipient or destination-specific requirements before tokens reach the recipient. If a policy rejects the call, the tokens remain unreleased or unminted. After resolving the rejection condition, use the standard CCIP recovery process to retry the message.
+
+You can protect either hook or both. Protecting both provides independent enforcement at the source and destination.
+
+## Configure ACE
+
+### Create a policy engine
+
+Follow [Create a policy engine](/ace/guides/policy-manager/manage-engines#create-a-policy-engine) for the complete Platform UI and API procedures. For this integration:
+
+1. Include every EVM chain where you want to enforce a hook policy.
+1. Wait until the engine is **Active**, then copy its onchain address for each chain.
+
+A Policy Engine can manage targets of different contract types. You assign the `CCIP-AdvancedPoolHooks` type to the detected hook target later in this workflow, not to the Policy Engine itself.
+
+### Connect AdvancedPoolHooks to the policy engine
+
+Configure each `AdvancedPoolHooks` deployment with the Policy Engine address from the same chain. You can set the address when you deploy the hook or the hook owner can call `setPolicyEngine` afterward.
+
+When the hook connects to the engine, it calls `PolicyEngine.attach()`. This onchain attachment starts ACE target detection. Do not register the hook manually as a second target.
+
+### Verify the detected target
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager** and open the Policy Engine.
+1. In the **Contracts** tab, find the target whose address matches your `AdvancedPoolHooks` deployment.
+1. Open the target and assign the built-in `CCIP-AdvancedPoolHooks` contract type. This type provides the supported hook functions and their pre-built extractor.
+1. Verify that:
+   - **Type** is `CCIP-AdvancedPoolHooks`.
+   - **Functions** lists `preflightCheck` and `postflightCheck`.
+   - The onchain address and network match the hook deployment you configured.
+
+ACE can detect separate targets for hook deployments on different chains. Use [Managing Targets](/ace/guides/policy-manager/manage-targets) only when you need to view, rename, or link those detected targets.
+
+### Create a policy instance
+
+Follow [Create a policy instance](/ace/guides/policy-manager/manage-policies#create-a-policy-instance). Create the instance under the same Policy Engine and on the same chain as the hook function you want to protect.
+
+The examples below use the `reject` policy type. Configure the policy instance with the EVM address you want to deny.
+
+### Protect a hook function
+
+Follow [Create a target protection](/ace/guides/policy-manager/manage-protections#create-a-target-protection) for the generic attachment procedure. On the detected `AdvancedPoolHooks` target, select the hook function for the direction you want to protect and map the policy parameter to an output available for that function.
+
+The Platform creates the protection only on chains where the target and policy instance are both deployed. Confirm that the selected chain matches the hook deployment.
+
+## Extracted parameters
+
+The built-in extractor exposes a separate set of outputs for each hook. When you protect a function, map only outputs listed for that function to the policy parameters.
+
+### Preflight parameters
+
+`preflightCheck` exposes these seven outputs for outbound transfers:
+
+| Output                  | Type      | Value                                                                |
+| ----------------------- | --------- | -------------------------------------------------------------------- |
+| `from`                  | `address` | Original sender that initiated the transfer                          |
+| `to`                    | `address` | Recipient on the destination chain                                   |
+| `amount`                | `uint256` | Transfer amount in the source token denomination, before pool fees   |
+| `amount_post_fee`       | `uint256` | Transfer amount after the source Token Pool deducts its transfer fee |
+| `remote_chain_selector` | `uint64`  | Destination chain selector                                           |
+| `token`                 | `address` | Token address on the source chain                                    |
+| `requested_finality`    | `bytes4`  | Requested finality configuration                                     |
+
+### Postflight parameters
+
+`postflightCheck` exposes these nine outputs for inbound transfers:
+
+| Output                      | Type      | Value                                                           |
+| --------------------------- | --------- | --------------------------------------------------------------- |
+| `from`                      | `address` | Original sender on the source chain                             |
+| `to`                        | `address` | Recipient on the destination chain                              |
+| `amount`                    | `uint256` | Amount to release or mint in the destination token denomination |
+| `remote_chain_selector`     | `uint64`  | Source chain selector                                           |
+| `token`                     | `address` | Token address on the destination chain                          |
+| `requested_finality`        | `bytes4`  | Requested finality configuration                                |
+| `source_pool_address`       | `address` | Token Pool address on the source chain                          |
+| `source_pool_data`          | `bytes`   | Data supplied by the source Token Pool                          |
+| `source_denominated_amount` | `uint256` | Transfer amount in the source token denomination                |
+
+`remote_chain_selector` identifies the destination chain during preflight and the source chain during postflight. Similarly, `amount` uses the source token denomination during preflight and the destination token denomination during postflight.
+
+`amount_post_fee` exists only during preflight. `source_pool_address`, `source_pool_data`, and `source_denominated_amount` exist only during postflight.
+
+CCIP transports remote addresses as `bytes` because the protocol supports different address formats. For this EVM-only ACE integration, the built-in contract type exposes `from`, `to`, and `source_pool_address` as `address` outputs so you can map them directly to address-based policy parameters.
+
+<Aside type="caution" title="Map the transfer sender from the extractor">
+  The hook sets the ACE payload sender to `msg.sender`. Because the Token Pool calls the hook, this value identifies the
+  Token Pool, not the user who initiated the transfer. To evaluate the user, map the extracted `from` output to the
+  policy parameter. A policy that relies only on payload sender semantics evaluates the Token Pool instead.
+</Aside>
+
+## Example policy mappings
+
+### Restrict source senders
+
+To reject a specific address before its transfer leaves the source chain, configure this protection:
+
+| Setting          | Selection                                               |
+| ---------------- | ------------------------------------------------------- |
+| Policy type      | [`reject`](/ace/reference/policy-library/reject-policy) |
+| Function         | `preflightCheck`                                        |
+| Policy parameter | `Account (address)`                                     |
+| Extractor output | `from`                                                  |
+
+If `from` appears in the [Reject policy](/ace/reference/policy-library/reject-policy) instance's denylist, the source transaction reverts before the Token Pool locks or burns tokens. A sender that does not appear in the denylist proceeds unless another policy rejects the transfer.
+
+### Enforce destination-controlled recipient restrictions
+
+Both hooks expose `to`. If you control the source-chain policy and want to reject a recipient as early as possible, map `to` to a Reject policy on `preflightCheck`. This prevents the transfer from starting and avoids sending a CCIP message that will fail at the destination.
+
+Use `postflightCheck` when the destination must enforce its own recipient policy independently of its source chains. For example, one destination policy can protect transfers from multiple source chains or apply a denylist update to a message that is already in transit. To enforce that destination-controlled check, configure this protection:
+
+| Setting          | Selection           |
+| ---------------- | ------------------- |
+| Policy type      | `reject`            |
+| Function         | `postflightCheck`   |
+| Policy parameter | `Account (address)` |
+| Extractor output | `to`                |
+
+If `to` appears in the destination Reject policy instance's denylist, destination execution fails before the Token Pool releases or mints tokens. After resolving the restriction, you must retry the failed message through the standard CCIP recovery process. Use this postflight check as an independently governed destination control or as defense in depth, not as a substitute for preflight rejection when your goal is to stop the transfer at its source.
+
+<Aside type="caution" title="Use outputs from the selected hook">
+  `source_pool_address` is available only for `postflightCheck`. Do not map it to a policy on `preflightCheck`, even if
+  the current Platform menu displays it. Use the preflight and postflight tables above as the source of truth.
+</Aside>
+
+## Verify the integration
+
+- The Policy Engine is **Active** on every chain where you want enforcement.
+- Each source or destination Token Pool points to the expected hook and appears in that hook's authorized callers.
+- Each hook points to the Policy Engine deployed on the same chain.
+- The engine's **Contracts** tab shows the hook address as a detected target.
+- The detected target uses the `CCIP-AdvancedPoolHooks` contract type and its pre-built extractor.
+- The target lists both hook functions.
+- Each policy instance and protection uses the intended chain, function, and extractor output, and its onchain status is active.
+- A transfer involving the restricted address fails at the intended enforcement point.
+- A comparable transfer involving an unrestricted address succeeds.
+
+## Security considerations
+
+- Authorize only the Token Pool contracts that should call each hook. Otherwise, an unexpected contract could invoke policy evaluation with fabricated hook calldata.
+- Protect the Token Pool owner and hook owner accounts. The Token Pool owner can replace or remove the hook, and the hook owner can replace the Policy Engine.
+- Do not set the hook's Policy Engine to the zero address unless you intend to disable ACE policy evaluation.
+- Test source and destination protections independently. A successful preflight check does not guarantee that the destination policy will accept the transfer.
+
+## Next steps
+
+- [Manage policy instances](/ace/guides/policy-manager/manage-policies)
+- [Review or update target protections](/ace/guides/policy-manager/manage-protections)
+- [Plan policy ordering and composition](/ace/concepts/policy-ordering)
+- [Review smart contract integration security](/ace/guides/policy-manager/contracts/security-considerations)

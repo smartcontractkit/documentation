@@ -1,0 +1,244 @@
+---
+section: ace
+title: "Custom Contract Types & Extractors"
+date: Last Modified
+metadata:
+  description: "Declare contract types with your own function ABIs, write an IExtractor contract, and register it with the Coordinator API to protect any ACE-compatible contract."
+  datePublished: "2026-09-21"
+  lastModified: "2026-09-23"
+---
+
+import { Aside } from "@components"
+
+Any contract that routes calls through a Policy Engine can use ACE policy enforcement. Most custom integrations inherit `PolicyProtected`, mark protected functions with the `runPolicy` modifier, and connect to a Policy Engine. The platform ships built-in ERC-20, ERC-3643, and `CCIP-AdvancedPoolHooks` contract types with pre-built, audited extractors.
+
+For function signatures beyond the pre-built set, you combine two building blocks:
+
+- A **custom contract type**: a declaration of your contract's functions (their ABIs) that you register with the Coordinator API.
+- A **custom extractor**: a contract you write and deploy that parses your function calldata into named parameters for policies.
+
+<Aside type="note" title="When you need this">
+  If your contract is a standard ERC-20, ERC-3643, or `AdvancedPoolHooks` contract, use its built-in type and pre-built
+  extractor. See the [Policy Manager Quick Start](/ace/getting-started/policy-manager#extractor-ids-for-api-creation)
+  for ERC-20 and ERC-3643, or [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools) for
+  `AdvancedPoolHooks`. Custom contract types are for contracts with additional or different function signatures, such as
+  a vault, lending pool, or token with a custom `mint` variant.
+</Aside>
+
+## Prerequisites
+
+- An [API key](/ace/getting-started/account-setup#3-create-an-api-key) for the Coordinator API.
+- An ACE-compatible contract with the functions you want to protect.
+- A development environment for compiling and deploying Solidity contracts (for example, Foundry or Hardhat).
+
+## How it works
+
+A **contract type** describes what functions a contract has. An **extractor** parses those functions' calldata. When a protected function is called, the PolicyEngine looks up the extractor registered for that function's selector, calls `extract()`, and passes the named parameters to each attached policy.
+
+1. You declare a custom contract type with your function ABIs (`POST /contract-types`).
+2. You write an extractor contract implementing `IExtractor` and deploy it onchain.
+3. You register the extractor with the Coordinator API (`POST /extractors`), pointing to the deployed contract address.
+4. You attach the contract type and extractors to your [policy engine](/ace/guides/policy-manager/manage-engines) and [target](/ace/guides/policy-manager/manage-targets).
+
+## The IExtractor interface
+
+Your extractor contract must implement [`IExtractor`](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/interfaces/IExtractor.sol) from the [chainlink-ace](https://github.com/smartcontractkit/chainlink-ace) repository:
+
+```solidity
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.20;
+
+import {IExtractor} from "@chainlink/policy-management/interfaces/IExtractor.sol";
+import {IPolicyEngine} from "@chainlink/policy-management/interfaces/IPolicyEngine.sol";
+
+contract MyVaultExtractor is IExtractor {
+  string public constant override typeAndVersion = "MyVaultExtractor 1.0.0";
+
+  function extract(IPolicyEngine.Payload calldata payload)
+    external
+    pure
+    returns (IPolicyEngine.Parameter[] memory)
+  {
+    // payload.selector: the function selector of the protected call
+    // payload.sender:  the transaction sender
+    // payload.data:    the raw calldata after the selector
+    (address depositor, uint256 amount) = abi.decode(payload.data, (address, uint256));
+
+    IPolicyEngine.Parameter[] memory result = new IPolicyEngine.Parameter[](2);
+    result[0] = IPolicyEngine.Parameter(keccak256("account"), abi.encode(depositor));
+    result[1] = IPolicyEngine.Parameter(keccak256("amount"), abi.encode(amount));
+    return result;
+  }
+}
+```
+
+The `Payload` struct contains the raw call context, and `Parameter` is a named `bytes32`/`bytes` pair:
+
+```solidity
+struct Payload {
+  bytes4 selector;  // function selector of the protected call
+  address sender;   // transaction sender
+  bytes data;       // calldata after the selector
+  bytes context;    // additional context (e.g., offchain signatures)
+}
+
+struct Parameter {
+  bytes32 name;     // parameter name (keccak256 hash)
+  bytes value;      // ABI-encoded value
+}
+```
+
+<Aside type="caution" title="Parameter names must match your policy">
+  Policies receive parameters by name. When you attach a policy to a protected function, the parameter names your
+  extractor produces must match the names that policy expects (for example, a volume limit policy reads `amount`). See
+  [Policy Management — the extractor and mapper
+  pattern](/ace/concepts/policy-management#the-extractor-and-mapper-pattern) and [Custom
+  Policies](/ace/guides/policy-manager/custom-policies) for how policies declare their expected parameters.
+</Aside>
+
+For reference implementations, see the [pre-built extractors](https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/policy-management/src/extractors) in the chainlink-ace repository. [`ERC20TransferExtractor`](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/extractors/ERC20TransferExtractor.sol) decodes `transfer` and `transferFrom` calldata into `from`, `to`, and `amount` parameters.
+
+## Create a custom contract type
+
+Register your contract type with its function ABIs:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/contract-types \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Vault",
+    "description": "Vault with deposit/withdraw compliance checks",
+    "contract_type_functions": {
+      "function_abis": [
+        {
+          "type": "function",
+          "name": "deposit",
+          "inputs": [
+            { "name": "depositor", "type": "address" },
+            { "name": "amount", "type": "uint256" }
+          ],
+          "outputs": [],
+          "state_mutability": "nonpayable"
+        }
+      ]
+    },
+    "extractor_ids": ["<EXTRACTOR_ID>"]
+  }'
+```
+
+| Field                                   | Required | Description                                     |
+| --------------------------------------- | -------- | ----------------------------------------------- |
+| `name`                                  | Yes      | Human-readable name of the contract type        |
+| `description`                           | No       | Optional description                            |
+| `contract_type_functions.function_abis` | Yes      | Array of function ABIs the contract type covers |
+| `extractor_ids`                         | No       | Extractors to associate with the contract type  |
+
+Function ABIs support tuple types: use `type: "tuple"` or `"tuple[]"` with a `components` array describing each field, and `internal_type` for the Solidity internal type.
+
+To list contract types (yours plus the built-ins) or fetch one by ID:
+
+```bash
+curl https://ace.api.chain.link/v1/contract-types \
+  -H "Authorization: Apikey <API_KEY>"
+
+curl https://ace.api.chain.link/v1/contract-types/<CONTRACT_TYPE_ID> \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+`GET /contract-types` accepts a `policy_engine_id` filter to list only the types registered on a given engine.
+
+## Register your extractor
+
+After deploying your extractor contract onchain, register it with the Coordinator API. The `onchain_extractors` array maps each deployment chain to the deployed contract address:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/extractors \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "MyVaultExtractor",
+    "supported_function_signatures": ["deposit(address,uint256)"],
+    "outputs": [
+      { "name": "account", "type": "address" },
+      { "name": "amount", "type": "uint256" }
+    ],
+    "onchain_extractors": [
+      { "chain_selector": "16015286601757825753", "address": "0xYourExtractorAddress" }
+    ]
+  }'
+```
+
+| Field                           | Required | Description                                               |
+| ------------------------------- | -------- | --------------------------------------------------------- |
+| `name`                          | Yes      | Human-readable name, unique per organization              |
+| `supported_function_signatures` | Yes      | Function signatures the extractor parses                  |
+| `outputs`                       | Yes      | Named outputs the extractor produces, in order            |
+| `onchain_extractors`            | No       | Per-chain deployment addresses of your extractor contract |
+
+<Aside type="note" title="Extractor names are unique per organization">
+  An active extractor name must be unique within your organization. If you re-register an updated version, archive the
+  old extractor first (`PATCH /extractors/{id}` with `{"status": "archived"}`) or use a new name.
+</Aside>
+
+The `outputs` you declare must match what your contract's `extract()` returns: same names, same order.
+
+## Attach the contract type to your engine and target
+
+When creating (or updating) your [policy engine](/ace/guides/policy-manager/manage-engines), pass `contract_type_ids` alongside `extractor_ids`:
+
+```bash
+curl -X PUT https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Policy Engine",
+    "contract_type_ids": ["<CONTRACT_TYPE_ID>"],
+    "extractor_ids": ["<EXTRACTOR_ID>"],
+    "onchain_policy_engines": [{ "chain_selector": "16015286601757825753" }]
+  }'
+```
+
+When registering your [target](/ace/guides/policy-manager/manage-targets), pass `contract_type_ids` so the platform knows which contract type the target implements:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/targets \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "My Vault",
+    "policy_engine_id": "<POLICY_ENGINE_ID>",
+    "contract_type_ids": ["<CONTRACT_TYPE_ID>"],
+    "protected_methods": ["deposit(address,uint256)"],
+    "onchain_targets": [
+      { "chain_selector": "16015286601757825753", "address": "0xYourVaultAddress" }
+    ]
+  }'
+```
+
+From there, the flow is the same as for built-in types: [create policy instances](/ace/guides/policy-manager/manage-policies) and [attach them to your protected functions](/ace/guides/policy-manager/manage-protections) with `extractor_output_ids` mapping your extractor's outputs to the policy's parameters.
+
+## Verify your setup
+
+- `GET /contract-types`: lists your custom types plus the built-ins; each type shows its functions and associated extractors.
+- `GET /extractors`: your registered extractor appears with its `assigned_contract_types`.
+- `GET /policy-engines/<ID>`: the engine response includes its `contract_types` and `extractor_registrations`.
+
+## Archive a custom contract type
+
+Archive a contract type you no longer need with a PATCH request:
+
+```bash
+curl -X PATCH https://ace.api.chain.link/v1/contract-types/<CONTRACT_TYPE_ID> \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{ "status": "archived" }'
+```
+
+Chainlink maintains the built-in contract types (ERC-20, ERC-3643, and `CCIP-AdvancedPoolHooks`); you cannot archive them.
+
+## Use the built-in CCIP type
+
+`CCIP-AdvancedPoolHooks` is a built-in contract type with a pre-built extractor for `preflightCheck` and `postflightCheck`. Do not register it as a custom contract type or create your own extractor for these functions.
+
+See [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools) to configure the type, connect `AdvancedPoolHooks`, use its automatically detected target, and map hook parameters to policies.

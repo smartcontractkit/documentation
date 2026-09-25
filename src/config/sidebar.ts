@@ -155,6 +155,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   url: "ace/guides/policy-manager/contracts/upgrade-existing",
                 },
                 {
+                  title: "Custom Contract Types & Extractors",
+                  url: "ace/guides/policy-manager/contracts/custom-contract-types",
+                },
+                {
                   title: "Security Considerations",
                   url: "ace/guides/policy-manager/contracts/security-considerations",
                 },
@@ -179,6 +183,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Managing Data Validators",
               url: "ace/guides/policy-manager/manage-data-validators",
+            },
+            {
+              title: "Protect CCIP Token Pools with ACE",
+              url: "ace/guides/policy-manager/ccip-token-pools",
             },
             {
               title: "Custom Policies",
