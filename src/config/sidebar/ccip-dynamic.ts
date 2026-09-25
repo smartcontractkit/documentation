@@ -707,13 +707,6 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         pageId: "ui-explorer",
       },
       {
-        title: "Token Manager",
-        url: "https://tokenmanager.chain.link",
-        pageId: "ui-token-manager",
-        // Hidden for Canton to match production (Token Manager is EVM-only)
-        chainTypes: ["evm"],
-      },
-      {
         title: "Transporter",
         url: "https://www.transporter.io/",
         pageId: "ui-transporter",
