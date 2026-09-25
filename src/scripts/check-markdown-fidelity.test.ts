@@ -648,10 +648,10 @@ describe("semantic fact boundaries and identities", () => {
 
 describe("final projection and envelope regressions", () => {
   test("checks imported CodeHighlightBlockMulti branches on a current production page", async () => {
-    const findings = (await checkPath("cre")).filter(
+    const findings = (await checkPath("cre/overview")).filter(
       (candidate) =>
-        candidate.sourcePath === "src/content/cre/index.mdx" &&
-        candidate.sourceLine === 70 &&
+        candidate.sourcePath === "src/content/cre/overview.mdx" &&
+        candidate.sourceLine === 71 &&
         candidate.occurrence.includes('"kind":"code"')
     )
 
