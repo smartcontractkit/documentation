@@ -4,7 +4,7 @@ date: Last Modified
 title: "Understanding Faster-Than-Finality (FTF) Transfers in CCIP v2"
 metadata:
   description: "Understand Faster-Than-Finality (FTF) transfers in CCIP v2, including reorg risk, message-ID-based execution, and bounded-risk guarantees."
-  excerpt: "FTF faster-than-finality CCIP v2 reorg risk block confirmations finality"
+  excerpt: "FTF faster-than-finality CCIP 2.0reorg risk block confirmations finality"
   datePublished: "2025-05-19"
   lastModified: "2025-05-19"
 ---
@@ -60,9 +60,9 @@ Because execution is keyed by message ID, not by "Alice's transfer" or by `messa
 
 If the Committee Verifier detects the reorg before attesting (via its reorg tracker), it ignores the FTF depth for that sequence number and waits for full source finality before attesting. That reduces — but does not eliminate — the double-execution window. Double execution remains possible when attestation and execution already occurred before the reorg was detected.
 
-## How CCIP v2 Handles Reorgs
+## How CCIP 2.0Handles Reorgs
 
-CCIP v2 uses a message-ID-based execution model with reorg tracking and reorg quarantining in the default Committee Verifier to minimize risk during FTF transfers.
+CCIP 2.0uses a message-ID-based execution model with reorg tracking and reorg quarantining in the default Committee Verifier to minimize risk during FTF transfers.
 
 - **Message ID keying:** Each message's execution on the destination chain is tracked by a unique message ID (`messageId = keccak256(encodedMessage)` — a hash of the full encoded payload, which commits to `messageNumber`, source/destination, receiver, token data including pool-returned fields, finality preference, and user data). Two different payloads always produce different IDs and are tracked independently in `s_executionStates[messageId]`. After a reorg, logically the "same" transfer can hash to a new ID if its assigned `messageNumber` differs (because other non-reorged sends on the canonical fork advanced the OnRamp counter) or if committed pool/token fields differ on re-send.
 - **Reorg tracking (Committee Verifier, offchain):** When CCIP's default Committee Verifier detects that a source chain reorg has occurred, all affected message numbers are quarantined — meaning the Committee Verifier pauses new attestations for those messages until the source chain reaches finality. When the Committee Verifier's source reader detects that a previously seen message disappeared from the canonical chain (indicating a reorg), it tracks that message's sequence number for the affected destination lane. While tracked, the verifier ignores the sender's FTF confirmation depth and waits for full source-chain finalization before producing an attestation. Tracking is per (source chain, destination chain) lane — not a global pause on all messages. Once the message block is finalized, the sequence number is removed from tracking and normal processing resumes. This behavior is specific to the default Committee Verifier offchain service.

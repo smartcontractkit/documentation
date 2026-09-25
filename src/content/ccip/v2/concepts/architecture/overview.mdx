@@ -3,14 +3,14 @@ section: ccip
 date: Last Modified
 title: "CCIP Architecture Overview"
 metadata:
-  description: "Comprehensive overview of Chainlink CCIP v2 architecture: the secure-by-default Committee Verifier, pluggable Cross-Chain Verifiers (CCVs), onchain and offchain components, and the end-to-end message path."
-  excerpt: "ccip v2 architecture cross-chain messaging protocol committee verifier ccv onramp offramp router token pool executor aggregator indexer"
+  description: "Comprehensive overview of Chainlink CCIP 2.0architecture: the secure-by-default Committee Verifier, pluggable Cross-Chain Verifiers (CCVs), onchain and offchain components, and the end-to-end message path."
+  excerpt: "CCIP 2.0architecture cross-chain messaging protocol committee verifier ccv onramp offramp router token pool executor aggregator indexer"
 ---
 
 import { ClickToZoom } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-The Chainlink Cross-Chain Interoperability Protocol (CCIP) lets users and applications securely send data and tokens from one blockchain to another. CCIP v2 features an upgraded architecture, designed to provide secure-by-default, institutional-grade cross-chain security by combining audited onchain smart contracts, a default Committee Verifier network composed of 16 independent node operators on every lane, and optional Cross-Chain Verifiers (CCVs) for additive verification where required. Together, these security measures enable messages to be proven on the source chain and delivered on the destination chain without relying on a single trusted party.
+The Chainlink Cross-Chain Interoperability Protocol (CCIP) lets users and applications securely send data and tokens from one blockchain to another. CCIP 2.0features an upgraded architecture, designed to provide secure-by-default, institutional-grade cross-chain security by combining audited onchain smart contracts, a default Committee Verifier network composed of 16 independent node operators on every lane, and optional Cross-Chain Verifiers (CCVs) for additive verification where required. Together, these security measures enable messages to be proven on the source chain and delivered on the destination chain without relying on a single trusted party.
 
 This page begins with an overview of CCIP v2, before explaining each component and providing an end-to-end example of a cross-chain message.
 
@@ -35,7 +35,7 @@ These terms appear throughout CCIP v2.
 | **Attestation**                | A CCV's cryptographically signed proof that a specific message ID is valid. The OffRamp contract routes to the CCV's destination-chain contract to check the attestation before further processing.                                                                                                                                                                                                                                                                                            |
 | **Executor**                   | The entity that pays gas on the destination chain to complete message delivery. Senders choose (or default to) an executor at send time; execution itself remains permissionless. The Chainlink executor is offered as the default, convenient option, but any executor can be used for destination-chain delivery.                                                                                                                                                                            |
 | **Finality**                   | The level of assurance that past transactions processed by a blockchain are extremely difficult or impossible to revert. By default, messages sent over CCIP wait for full source-chain finality before a verifier will attest, with the threshold defined by a finality tag or block depth depending on the blockchain's finality properties.                                                                                                                                                 |
-| **Faster than Finality (FTF)** | CCIP v2 lanes can support faster-than-finality (FTF) transactions. FTF is an explicit opt-in feature chosen by the sender (for all messages) and the token issuer (for token transfers).                                                                                                                                                                                                                                                                                                       |
+| **Faster than Finality (FTF)** | CCIP 2.0lanes can support faster-than-finality (FTF) transactions. FTF is an explicit opt-in feature chosen by the sender (for all messages) and the token issuer (for token transfers).                                                                                                                                                                                                                                                                                                       |
 | **Token pool**                 | The contract used for token-specific operations on a token, per chain. Pools lock or burn on the source side and release or mint on the destination side.                                                                                                                                                                                                                                                                                                                                      |
 | **Curse**                      | A manual onchain safety flag set via the RMN contract. When a chain or lane is cursed, sends and executions involving it revert until the curse is lifted.                                                                                                                                                                                                                                                                                                                                     |
 
@@ -43,10 +43,10 @@ These terms appear throughout CCIP v2.
 
 <ClickToZoom
   src="/images/ccip/concepts/architecture/ccip-message-flow-basic-token-transfer-2.png"
-  alt="CCIP v2 message flow for a basic token transfer, showing source-chain sending, offchain verification, and destination-chain processing."
+  alt="CCIP 2.0message flow for a basic token transfer, showing source-chain sending, offchain verification, and destination-chain processing."
 />
 
-CCIP v2 splits work across three layers. Each has a distinct role; none alone is unilaterally trusted to deliver a message.
+CCIP 2.0splits work across three layers. Each has a distinct role; none alone is unilaterally trusted to deliver a message.
 
 ### Source chain (outbound)
 
@@ -139,13 +139,13 @@ Token pools are the custody layer for cross-chain token movement.
 
 Each token has at most one pool per chain. Pools validate callers against the Router's registered ramp addresses, so they remain compatible with ramp upgrades. Both directions check curse status and enforce per-chain rate limits.
 
-CCIP v2 pools can declare required verifiers, custom fee configurations, and finality policies for their token; V1 pools fall back to lane defaults. V2 pools also maintain separate rate-limit buckets for faster-than-finality transfers. Cross-chain decimal differences are handled automatically, though rounding may leave the recipient with slightly less than was sent.
+CCIP 2.0pools can declare required verifiers, custom fee configurations, and finality policies for their token; V1 pools fall back to lane defaults. V2 pools also maintain separate rate-limit buckets for faster-than-finality transfers. Cross-chain decimal differences are handled automatically, though rounding may leave the recipient with slightly less than was sent.
 
 An optional advanced hooks contract can add sender allowlists, verifier management, or external policy integration.
 
 ### Security
 
-CCIP's security layer combines Cross-Chain Verifiers (CCVs) for message attestation with the **RMN contract** as an onchain emergency safeguard. Every CCIP v2 lane includes a default, decentralized Committee Verifier network as the baseline verification layer. The Committee Verifier is composed of 16 independent node operators to provide a strong security floor by default. **Additive verification** is available by configuring additional CCVs, layered on by lane, token pool, or receiver requirements when extra attestation is required.
+CCIP's security layer combines Cross-Chain Verifiers (CCVs) for message attestation with the **RMN contract** as an onchain emergency safeguard. Every CCIP 2.0lane includes a default, decentralized Committee Verifier network as the baseline verification layer. The Committee Verifier is composed of 16 independent node operators to provide a strong security floor by default. **Additive verification** is available by configuring additional CCVs, layered on by lane, token pool, or receiver requirements when extra attestation is required.
 
 #### Cross-Chain Verifiers (CCVs)
 

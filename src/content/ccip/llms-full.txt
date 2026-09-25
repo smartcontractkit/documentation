@@ -73449,7 +73449,7 @@ If a field is not specified, the corresponding behavior falls back to the defaul
 
 CCIP supports multiple ExtraArgs formats.
 
-Earlier formats remain supported for backwards compatibility. Messages that use legacy formats continue to function on CCIP v2 lanes.
+Earlier formats remain supported for backwards compatibility. Messages that use legacy formats continue to function on CCIP 2.0lanes.
 
 If a legacy format omits fields introduced in newer versions, those fields resolve to the default behavior.
 
@@ -73581,7 +73581,7 @@ At launch scope, the primary parameter exposed to developers is **confirmation d
 # CCIP Architecture Overview
 Source: https://docs.chain.link/ccip/v2/concepts/architecture/overview
 
-The Chainlink Cross-Chain Interoperability Protocol (CCIP) lets users and applications securely send data and tokens from one blockchain to another. CCIP v2 features an upgraded architecture, designed to provide secure-by-default, institutional-grade cross-chain security by combining audited onchain smart contracts, a default Committee Verifier network composed of 16 independent node operators on every lane, and optional Cross-Chain Verifiers (CCVs) for additive verification where required. Together, these security measures enable messages to be proven on the source chain and delivered on the destination chain without relying on a single trusted party.
+The Chainlink Cross-Chain Interoperability Protocol (CCIP) lets users and applications securely send data and tokens from one blockchain to another. CCIP 2.0features an upgraded architecture, designed to provide secure-by-default, institutional-grade cross-chain security by combining audited onchain smart contracts, a default Committee Verifier network composed of 16 independent node operators on every lane, and optional Cross-Chain Verifiers (CCVs) for additive verification where required. Together, these security measures enable messages to be proven on the source chain and delivered on the destination chain without relying on a single trusted party.
 
 This page begins with an overview of CCIP v2, before explaining each component and providing an end-to-end example of a cross-chain message.
 
@@ -73606,13 +73606,13 @@ These terms appear throughout CCIP v2.
 | **Attestation**                | A CCV's cryptographically signed proof that a specific message ID is valid. The OffRamp contract routes to the CCV's destination-chain contract to check the attestation before further processing.                                                                                                                                                                                                                                                                                            |
 | **Executor**                   | The entity that pays gas on the destination chain to complete message delivery. Senders choose (or default to) an executor at send time; execution itself remains permissionless. The Chainlink executor is offered as the default, convenient option, but any executor can be used for destination-chain delivery.                                                                                                                                                                            |
 | **Finality**                   | The level of assurance that past transactions processed by a blockchain are extremely difficult or impossible to revert. By default, messages sent over CCIP wait for full source-chain finality before a verifier will attest, with the threshold defined by a finality tag or block depth depending on the blockchain's finality properties.                                                                                                                                                 |
-| **Faster than Finality (FTF)** | CCIP v2 lanes can support faster-than-finality (FTF) transactions. FTF is an explicit opt-in feature chosen by the sender (for all messages) and the token issuer (for token transfers).                                                                                                                                                                                                                                                                                                       |
+| **Faster than Finality (FTF)** | CCIP 2.0lanes can support faster-than-finality (FTF) transactions. FTF is an explicit opt-in feature chosen by the sender (for all messages) and the token issuer (for token transfers).                                                                                                                                                                                                                                                                                                       |
 | **Token pool**                 | The contract used for token-specific operations on a token, per chain. Pools lock or burn on the source side and release or mint on the destination side.                                                                                                                                                                                                                                                                                                                                      |
 | **Curse**                      | A manual onchain safety flag set via the RMN contract. When a chain or lane is cursed, sends and executions involving it revert until the curse is lifted.                                                                                                                                                                                                                                                                                                                                     |
 
 ## How the pieces fit together
 
-CCIP v2 splits work across three layers. Each has a distinct role; none alone is unilaterally trusted to deliver a message.
+CCIP 2.0splits work across three layers. Each has a distinct role; none alone is unilaterally trusted to deliver a message.
 
 ### Source chain (outbound)
 
@@ -73705,13 +73705,13 @@ Token pools are the custody layer for cross-chain token movement.
 
 Each token has at most one pool per chain. Pools validate callers against the Router's registered ramp addresses, so they remain compatible with ramp upgrades. Both directions check curse status and enforce per-chain rate limits.
 
-CCIP v2 pools can declare required verifiers, custom fee configurations, and finality policies for their token; V1 pools fall back to lane defaults. V2 pools also maintain separate rate-limit buckets for faster-than-finality transfers. Cross-chain decimal differences are handled automatically, though rounding may leave the recipient with slightly less than was sent.
+CCIP 2.0pools can declare required verifiers, custom fee configurations, and finality policies for their token; V1 pools fall back to lane defaults. V2 pools also maintain separate rate-limit buckets for faster-than-finality transfers. Cross-chain decimal differences are handled automatically, though rounding may leave the recipient with slightly less than was sent.
 
 An optional advanced hooks contract can add sender allowlists, verifier management, or external policy integration.
 
 ### Security
 
-CCIP's security layer combines Cross-Chain Verifiers (CCVs) for message attestation with the **RMN contract** as an onchain emergency safeguard. Every CCIP v2 lane includes a default, decentralized Committee Verifier network as the baseline verification layer. The Committee Verifier is composed of 16 independent node operators to provide a strong security floor by default. **Additive verification** is available by configuring additional CCVs, layered on by lane, token pool, or receiver requirements when extra attestation is required.
+CCIP's security layer combines Cross-Chain Verifiers (CCVs) for message attestation with the **RMN contract** as an onchain emergency safeguard. Every CCIP 2.0lane includes a default, decentralized Committee Verifier network as the baseline verification layer. The Committee Verifier is composed of 16 independent node operators to provide a strong security floor by default. **Additive verification** is available by configuring additional CCVs, layered on by lane, token pool, or receiver requirements when extra attestation is required.
 
 #### Cross-Chain Verifiers (CCVs)
 
@@ -75006,7 +75006,7 @@ The safety delay varies by rollup — historically on the order of hours — and
 
 ## How CCIP Determines Finality
 
-By default, CCIP v2 waits for full source chain finality before validating messages, producing attestations, and performing execution on the destination chain. Faster-Than-Finality is an opt-in capability that is only available when explicitly chosen. As a result, CCIP message latency depends largely on the source chain's time to finality. CCIP uses one of two methods to determine when a source-chain transaction is final.
+By default, CCIP 2.0waits for full source chain finality before validating messages, producing attestations, and performing execution on the destination chain. Faster-Than-Finality is an opt-in capability that is only available when explicitly chosen. As a result, CCIP message latency depends largely on the source chain's time to finality. CCIP uses one of two methods to determine when a source-chain transaction is final.
 
 #### Finality Tag
 
@@ -75258,7 +75258,7 @@ contract BidirectionalApp is CCIPClientExample {
 
 Like other FTF messages, USDC transfers can request FTF via `requestedFinalityConfig` in `ExtraArgsV3`. The behavior depends on whether the transfer is a pure token transfer or a token transfer with data and/or a non-zero user gas limit.
 
-CCIP v2 supports FTF USDC transfers on lanes that integrate with Circle's CCTP. Finality for USDC token transfers is therefore governed by [CCTP finality thresholds](https://developers.circle.com/cctp/concepts/finality-and-block-confirmations) per chain. For transfers sent to a smart contract — with a non-zero message gas limit or with data — both CCTP and message finality parameters determine the overall speed.
+CCIP 2.0supports FTF USDC transfers on lanes that integrate with Circle's CCTP. Finality for USDC token transfers is therefore governed by [CCTP finality thresholds](https://developers.circle.com/cctp/concepts/finality-and-block-confirmations) per chain. For transfers sent to a smart contract — with a non-zero message gas limit or with data — both CCTP and message finality parameters determine the overall speed.
 
 CCIP's CCTP CCV integrates with CCTP smart contracts and the CCTP attestation service.
 
@@ -75405,7 +75405,7 @@ Token issuers retain complete control over whether and how FTF (Faster-Than-Fina
 
 **Existing token pools are unaffected.** Pools deployed under the current version of CCIP use the V1 pool interface, which does not accept block confirmation parameters. These pools continue to function exactly as they do today — all transfers through them wait for full finality, with no code changes or redeployment required. FTF is only available through the V2 pool interface, and only when the token issuer has explicitly configured it. Token issuers who are satisfied with full-finality behavior have no action to take.
 
-Only when a token issuer explicitly configures a V2 pool to allow FTF does the feature become available. Even then, the issuer controls configurable parameters of the risk profile: the minimum confirmation depth, the rate limits, and the fees. CCIP v2 provides the tools; the token issuer decides if and how to use them.
+Only when a token issuer explicitly configures a V2 pool to allow FTF does the feature become available. Even then, the issuer controls configurable parameters of the risk profile: the minimum confirmation depth, the rate limits, and the fees. CCIP 2.0provides the tools; the token issuer decides if and how to use them.
 
 These tools are organized into three areas: confirmation floors, separate rate limits, and differentiated fees.
 
@@ -75428,7 +75428,7 @@ For step-by-step configuration details, see the [Token Issuer Guide](/ccip/conce
 
 ## Managing Exposure with Separate Rate Limits
 
-Because FTF transfers carry a different risk profile than standard finality transfers, CCIP v2 token pools maintain dedicated rate limit buckets for each:
+Because FTF transfers carry a different risk profile than standard finality transfers, CCIP 2.0token pools maintain dedicated rate limit buckets for each:
 
 - **Default rate limits** apply to standard (wait-for-finality) transfers. These are configured per remote chain when the chain is added to the pool.
 - **Custom block confirmation rate limits** are separate, isolated buckets that apply only to FTF transfers (any transfer specifying a block confirmation count). These are configured independently via the `setRateLimitConfig` function.
@@ -75550,9 +75550,9 @@ Because execution is keyed by message ID, not by "Alice's transfer" or by `messa
 
 If the Committee Verifier detects the reorg before attesting (via its reorg tracker), it ignores the FTF depth for that sequence number and waits for full source finality before attesting. That reduces — but does not eliminate — the double-execution window. Double execution remains possible when attestation and execution already occurred before the reorg was detected.
 
-## How CCIP v2 Handles Reorgs
+## How CCIP 2.0Handles Reorgs
 
-CCIP v2 uses a message-ID-based execution model with reorg tracking and reorg quarantining in the default Committee Verifier to minimize risk during FTF transfers.
+CCIP 2.0uses a message-ID-based execution model with reorg tracking and reorg quarantining in the default Committee Verifier to minimize risk during FTF transfers.
 
 - **Message ID keying:** Each message's execution on the destination chain is tracked by a unique message ID (`messageId = keccak256(encodedMessage)` — a hash of the full encoded payload, which commits to `messageNumber`, source/destination, receiver, token data including pool-returned fields, finality preference, and user data). Two different payloads always produce different IDs and are tracked independently in `s_executionStates[messageId]`. After a reorg, logically the "same" transfer can hash to a new ID if its assigned `messageNumber` differs (because other non-reorged sends on the canonical fork advanced the OnRamp counter) or if committed pool/token fields differ on re-send.
 - **Reorg tracking (Committee Verifier, offchain):** When CCIP's default Committee Verifier detects that a source chain reorg has occurred, all affected message numbers are quarantined — meaning the Committee Verifier pauses new attestations for those messages until the source chain reaches finality. When the Committee Verifier's source reader detects that a previously seen message disappeared from the canonical chain (indicating a reorg), it tracks that message's sequence number for the affected destination lane. While tracked, the verifier ignores the sender's FTF confirmation depth and waits for full source-chain finalization before producing an attestation. Tracking is per (source chain, destination chain) lane — not a global pause on all messages. Once the message block is finalized, the sequence number is removed from tracking and normal processing resumes. This behavior is specific to the default Committee Verifier offchain service.
@@ -75863,7 +75863,7 @@ The default executor applies to every message, unless:
 This page focuses on `OffRamp.execute` for EVM destination chains in CCIP v2. Other destination-chain families are documented separately when their execution path differs.
 
 <Aside type="note">
-  Read the [CCIP v2 Architecture](/ccip/concepts/architecture/overview), [Cross-Chain
+  Read the [CCIP 2.0Architecture](/ccip/concepts/architecture/overview), [Cross-Chain
   Verifiers](/ccip/concepts/ccvs/overview), and [Message Lifecycle](/ccip/concepts/message-lifecycle) pages for the
   components used here.
 </Aside>
@@ -75953,7 +75953,7 @@ function execute(
 
 | Parameter          | Description                                                                                                                                                                                                                                                       |
 | :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `encodedMessage`   | The serialized CCIP v2 message. The message ID is `keccak256(encodedMessage)`.                                                                                                                                                                                    |
+| `encodedMessage`   | The serialized CCIP 2.0message. The message ID is `keccak256(encodedMessage)`.                                                                                                                                                                                    |
 | `ccvs`             | CCV resolver addresses that correspond to the submitted verifier results. Use [`getCCVsForMessage(encodedMessage)`](/ccip/evm/api-reference/v2.0.0/offramp#getccvsformessage) to inspect the required set before submitting.                                      |
 | `verifierResults`  | CCV-specific proof bytes, one entry per CCV. The array length must match `ccvs`. For the Committee Verifier, this is the packed quorum signature result. Additional CCVs define their own proof format.                                                           |
 | `gasLimitOverride` | `0` uses the message's original receiver callback gas limit. A non-zero value must be greater than or equal to the message's `ccipReceiveGasLimit`. The override applies only to the receiver callback, not to token handling or the outer transaction gas limit. |
@@ -76065,7 +76065,7 @@ Useful flags:
 - `--tx-gas-limit` raises the outer transaction gas limit.
 - `--only-estimate --estimate-gas-limit <margin%>` estimates receiver gas without submitting a transaction. This requires a source RPC and conflicts with `--gas-limit`.
 - `--log-index` selects a specific CCIP message when one source transaction emitted multiple messages.
-- `--indexer` adds CCIP v2 Indexer base URLs for verifier data.
+- `--indexer` adds CCIP 2.0Indexer base URLs for verifier data.
 
 Use a Foundry keystore, Hardhat keystore, or hardware wallet when possible. Passing a private key directly is supported by the tool but is not recommended.
 
@@ -76224,7 +76224,7 @@ You can still execute directly with the SDK, CLI, or `OffRamp.execute` if the me
 # CCIP Message Lifecycle
 Source: https://docs.chain.link/ccip/v2/concepts/message-lifecycle
 
-This page follows a single cross-chain message from send to delivery, demonstrating how CCIP's secure-by-default message path works. For component descriptions and architecture context, see the [CCIP v2 Architecture](/ccip/concepts/architecture/overview) page.
+This page follows a single cross-chain message from send to delivery, demonstrating how CCIP's secure-by-default message path works. For component descriptions and architecture context, see the [CCIP 2.0Architecture](/ccip/concepts/architecture/overview) page.
 
 ## Overview
 
@@ -84595,7 +84595,7 @@ Returns:
 # CCIP v2.0.0 IPoolV2 API Reference
 Source: https://docs.chain.link/ccip/v2/evm/api-reference/v2.0.0/i-pool-v2
 
-`IPoolV2` defines the interface for CCIP V2 token pools.
+`IPoolV2` defines the interface for CCIP 2.0token pools.
 
 If you implement this interface, you define how tokens are locked, burned, released, or minted during cross-chain transfers, along with how fees, verification requirements, and finality constraints are applied.
 
@@ -85673,7 +85673,7 @@ Source: https://docs.chain.link/ccip/v2/evm/api-reference/v2.0.0
 
 ## v2.0.0 Architecture Overview
 
-CCIP v2 introduces a modular architecture composed of the following builder-facing components.
+CCIP 2.0introduces a modular architecture composed of the following builder-facing components.
 
 ***
 
@@ -92596,7 +92596,7 @@ When you implement the `ccipReceive` [method](/ccip/evm/api-reference/v2.0.0/cci
 `extraArgs` is the CCIP message field that carries destination-side execution configuration.
 Keep it mutable in production deployments so you can build it offchain and update it without redeploying, which lets your application adopt future CCIP upgrades without a contract migration.
 
-CCIP v2 accepts multiple `extraArgs` formats on EVM lanes. New integrations should use `ExtraArgsV3`. Existing v1.x-style applications can continue to send legacy formats: the OnRamp normalizes them internally before building the message.
+CCIP 2.0accepts multiple `extraArgs` formats on EVM lanes. New integrations should use `ExtraArgsV3`. Existing v1.x-style applications can continue to send legacy formats: the OnRamp normalizes them internally before building the message.
 
 Supported formats:
 
@@ -93276,7 +93276,7 @@ How you do this depends on which token contract you're using, as each has its ow
 - `BurnMintERC20` — uses OpenZeppelin AccessControl with `DEFAULT_ADMIN_ROLE` as the role admin for `MINTER_ROLE` and
   `BURNER_ROLE`. Call `revokeRole(MINTER_ROLE, oldV1PoolAddress)` and `revokeRole(BURNER_ROLE, oldV1PoolAddress)`. Caller
   must hold `DEFAULT_ADMIN_ROLE`.
-- `CrossChainToken` (the chainlink-ccip v2 token standard) — also uses AccessControl, but explicitly sets
+- `CrossChainToken` (the chainlink-CCIP 2.0token standard) — also uses AccessControl, but explicitly sets
   `BURN_MINT_ADMIN_ROLE` (`keccak256("BURN_MINT_ADMIN_ROLE")`) as the role admin for both roles. Same `revokeRole` calls
   as above, but caller must hold `BURN_MINT_ADMIN_ROLE` instead.
 
@@ -95731,7 +95731,7 @@ You can use our Token Manager and Transporter UIs to conveniently transfer token
 
 ## Solidity Reference
 
-Onchain Solidity interfaces and contracts for integrating CCIP v2 directly from your smart contracts.
+Onchain Solidity interfaces and contracts for integrating CCIP 2.0directly from your smart contracts.
 
 ## REST API
 
@@ -100320,7 +100320,7 @@ This guide uses Foundry scripts inside our [docs-cct-foundry](https://github.com
 In this guide you will:
 
 1. Confirm prerequisites and record your existing CCIP v1 deployment details.
-2. Deploy new CCIP v2 `Burn Mint` token pools on each chain.
+2. Deploy new CCIP 2.0`Burn Mint` token pools on each chain.
 3. Configure the v2 pools to accept messages from **both** the old v1 pools and the new v2 pools.
 4. Cut over CCIP routing by calling [`TokenAdminRegistry`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/tokenAdminRegistry/TokenAdminRegistry.sol).setPool on each chain.
 5. Validate transfers end-to-end, then optionally clean up legacy configuration.
@@ -100749,7 +100749,7 @@ This migration guide helps you upgrade a deployed Burn & Mint Cross-Chain Token 
 In this guide you will:
 
 1. Confirm prerequisites and record your existing CCIP v1 deployment details.
-2. Deploy new CCIP v2 `Burn Mint` token pools on each chain.
+2. Deploy new CCIP 2.0`Burn Mint` token pools on each chain.
 3. Configure the v2 pools to accept messages from both the old v1 pools and the new v2 pools.
 4. Cut over CCIP routing by calling [`TokenAdminRegistry`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/tokenAdminRegistry/TokenAdminRegistry.sol).setPool on each chain.
 5. Validate transfers end-to-end, then optionally clean up legacy configuration.
@@ -101147,7 +101147,7 @@ This guide uses Foundry scripts inside our [docs-cct-foundry](https://github.com
 In this guide you will:
 
 1. Confirm prerequisites and record your existing CCIP v1 deployment details, including the locked liquidity on the canonical chain.
-2. Deploy the new CCIP v2 pools: an [`ERC20LockBox`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/ERC20LockBox.sol) + [`LockReleaseTokenPool`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/LockReleaseTokenPool.sol) on the canonical chain, and a [`BurnMintTokenPool`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/BurnMintTokenPool.sol) on the destination chain.
+2. Deploy the new CCIP 2.0pools: an [`ERC20LockBox`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/ERC20LockBox.sol) + [`LockReleaseTokenPool`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/LockReleaseTokenPool.sol) on the canonical chain, and a [`BurnMintTokenPool`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/BurnMintTokenPool.sol) on the destination chain.
 3. Pause the old v1 pools and migrate the locked liquidity from the v1 Lock & Release pool into the new lockbox.
 4. Configure the v2 pools to accept messages from **both** the old v1 pools and the new v2 pools.
 5. Cut over CCIP routing by calling [`TokenAdminRegistry`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/tokenAdminRegistry/TokenAdminRegistry.sol).setPool on each chain, validate transfers end-to-end, then optionally clean up legacy configuration.
@@ -104525,7 +104525,7 @@ Last Updated: 2026-05-05
 ]}
 />
 
-CCIP v2 token pools support an optional [`AdvancedPoolHooks`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/AdvancedPoolHooks.sol) contract being attached to them. \
+CCIP 2.0token pools support an optional [`AdvancedPoolHooks`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/AdvancedPoolHooks.sol) contract being attached to them. \
 This contract can run certain checks :
 
 1. before tokens are locked/burned (source chain)
@@ -104926,7 +104926,7 @@ Last Updated: 2026-05-05
 ]}
 />
 
-CCIP v2 token pools support an optional [`AdvancedPoolHooks`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/AdvancedPoolHooks.sol) contract being attached to them. \
+CCIP 2.0token pools support an optional [`AdvancedPoolHooks`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/AdvancedPoolHooks.sol) contract being attached to them. \
 This contract can run certain checks :
 
 1. before tokens are locked/burned (source chain)
@@ -105307,7 +105307,7 @@ Last Updated: 2026-05-05
 ]}
 />
 
-CCIP v2 token pools let pool owners opt into **pool-level token transfer fee overrides** per destination lane. When an override is disabled, the [OnRamp](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/onRamp/OnRamp.sol) falls back to [`FeeQuoter`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/FeeQuoter.sol) defaults for that lane. In this tutorial you will:
+CCIP 2.0token pools let pool owners opt into **pool-level token transfer fee overrides** per destination lane. When an override is disabled, the [OnRamp](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/onRamp/OnRamp.sol) falls back to [`FeeQuoter`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/FeeQuoter.sol) defaults for that lane. In this tutorial you will:
 
 1. Review the current fee configuration for both configured lanes.
 2. Optionally set a fee admin who can withdraw accrued fees.
@@ -105740,7 +105740,7 @@ Last Updated: 2026-05-05
 ]}
 />
 
-CCIP v2 token pools let pool owners opt into **pool-level token transfer fee overrides** per destination lane. When an override is disabled, the [OnRamp](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/onRamp/OnRamp.sol) falls back to [`FeeQuoter`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/FeeQuoter.sol) defaults for that lane. In this tutorial you will:
+CCIP 2.0token pools let pool owners opt into **pool-level token transfer fee overrides** per destination lane. When an override is disabled, the [OnRamp](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/onRamp/OnRamp.sol) falls back to [`FeeQuoter`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/FeeQuoter.sol) defaults for that lane. In this tutorial you will:
 
 1. Review the current fee configuration for both configured lanes.
 2. Optionally set a fee admin who can withdraw accrued fees.
@@ -108307,7 +108307,7 @@ CCIP supports three core capabilities:
 
 ## What's new in CCIP v2
 
-CCIP v2 introduces key new features
+CCIP 2.0introduces key new features
 
 1. **Additive Security:** Add issuer, third-party, or institution-operated Cross-Chain Verifiers (CCVs) where required for additional verification and control:
    - **Asset specific verifications:**
@@ -108323,7 +108323,7 @@ CCIP v2 introduces key new features
 
 All of these are opt-in features.
 
-## CCIP v2 Defaults
+## CCIP 2.0Defaults
 
 Just as in previous versions, in CCIP v2, by default:
 

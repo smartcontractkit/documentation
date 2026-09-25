@@ -3,9 +3,9 @@ section: ccip
 date: Last Modified
 title: "CCIP Manual Execution"
 metadata:
-  description: "Learn why CCIP v2 messages might require manual execution, how to diagnose execution state, and how to trigger execution by fetching execution inputs from CCVs or the CCIP API and calling OffRamp.execute."
+  description: "Learn why CCIP 2.0messages might require manual execution, how to diagnose execution state, and how to trigger execution by fetching execution inputs from CCVs or the CCIP API and calling OffRamp.execute."
   image: "/images/ccip/manual-execution.png"
-  excerpt: "ccip v2 manual execution cross-chain message failure execution state untouched failure ccv attestation execution inputs offramp execute permissionless execution ccip api ccip sdk ccip cli error reference troubleshooting failed transactions"
+  excerpt: "CCIP 2.0manual execution cross-chain message failure execution state untouched failure ccv attestation execution inputs offramp execute permissionless execution ccip api ccip sdk ccip cli error reference troubleshooting failed transactions"
   datePublished: "2024-02-19T07:34:46Z"
   lastModified: "2026-07-29T09:01:19Z"
   difficulty: "intermediate"
@@ -31,7 +31,7 @@ The default executor applies to every message, unless:
 This page focuses on `OffRamp.execute` for EVM destination chains in CCIP v2. Other destination-chain families are documented separately when their execution path differs.
 
 <Aside type="note">
-  Read the [CCIP v2 Architecture](/ccip/concepts/architecture/overview), [Cross-Chain
+  Read the [CCIP 2.0Architecture](/ccip/concepts/architecture/overview), [Cross-Chain
   Verifiers](/ccip/concepts/ccvs/overview), and [Message Lifecycle](/ccip/concepts/message-lifecycle) pages for the
   components used here.
 </Aside>
@@ -125,7 +125,7 @@ function execute(
 
 | Parameter          | Description                                                                                                                                                                                                                                                       |
 | :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `encodedMessage`   | The serialized CCIP v2 message. The message ID is `keccak256(encodedMessage)`.                                                                                                                                                                                    |
+| `encodedMessage`   | The serialized CCIP 2.0message. The message ID is `keccak256(encodedMessage)`.                                                                                                                                                                                    |
 | `ccvs`             | CCV resolver addresses that correspond to the submitted verifier results. Use [`getCCVsForMessage(encodedMessage)`](/ccip/evm/api-reference/v2.0.0/offramp#getccvsformessage) to inspect the required set before submitting.                                      |
 | `verifierResults`  | CCV-specific proof bytes, one entry per CCV. The array length must match `ccvs`. For the Committee Verifier, this is the packed quorum signature result. Additional CCVs define their own proof format.                                                           |
 | `gasLimitOverride` | `0` uses the message's original receiver callback gas limit. A non-zero value must be greater than or equal to the message's `ccipReceiveGasLimit`. The override applies only to the receiver callback, not to token handling or the outer transaction gas limit. |
@@ -241,7 +241,7 @@ Useful flags:
 - `--tx-gas-limit` raises the outer transaction gas limit.
 - `--only-estimate --estimate-gas-limit <margin%>` estimates receiver gas without submitting a transaction. This requires a source RPC and conflicts with `--gas-limit`.
 - `--log-index` selects a specific CCIP message when one source transaction emitted multiple messages.
-- `--indexer` adds CCIP v2 Indexer base URLs for verifier data.
+- `--indexer` adds CCIP 2.0Indexer base URLs for verifier data.
 
 Use a Foundry keystore, Hardhat keystore, or hardware wallet when possible. Passing a private key directly is supported by the tool but is not recommended.
 
