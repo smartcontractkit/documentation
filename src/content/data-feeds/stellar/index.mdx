@@ -58,6 +58,7 @@ Consumers call the following functions on the proxy contract. The interface is d
 | `get_round(data_id, round_id, decimals)` | A specific historical round, at the requested `decimals`         |
 | `decimals(data_id)`                      | Decimal places for the answer                                    |
 | `description(data_id)`                   | Human-readable pair name                                         |
+| `get_min_decimals(data_id)`              | The minimum decimal places the feed can be served at             |
 
 ### Round structure
 
@@ -78,6 +79,7 @@ When you call the proxy, the contract can return a `ProxyReadError`. The followi
 | `NoDataPresent`   | No round is available for the requested `data_id` or `round_id`. This can happen if the feed has not been written yet or the round has expired. |
 | `InvalidDecimals` | The `decimals` you requested is outside the supported range for the feed.                                                                       |
 | `RoundsToZero`    | A non-zero answer would truncate to zero at the requested `decimals`. Request fewer decimal places.                                             |
+| `FeedFrozen`      | The feed is frozen and cannot be read.                                                                                                          |
 
 ## How long a round is available
 
