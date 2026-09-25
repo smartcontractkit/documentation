@@ -400,6 +400,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "XLAYER_MAINNET"
     case "ethereum-testnet-sepolia-xlayer-1":
       return "XLAYER_TESTNET"
+    case "xlayer-testnet":
+      return "XLAYER_TESTNET"
     case "bitcoin-mainnet-bitlayer-1":
       return "BITLAYER_MAINNET"
     case "bitcoin-testnet-bitlayer-1":
