@@ -74202,6 +74202,174 @@ CCVs are an advanced extension point and are not required for most CCIP integrat
 
 ---
 
+# Advanced Pool Hooks
+Source: https://docs.chain.link/ccip/v2/concepts/cross-chain-token/advanced-pool-hooks
+Last Updated: 2026-09-26
+
+`AdvancedPoolHooks` is an optional contract that adds transfer controls to a CCIP v2 Token Pool on EVM chains, without writing a custom pool. A Token Pool is the per-chain contract that locks or burns tokens on the source chain and releases or mints them on the destination chain. For the full pool model, see the [Cross-Chain Token standard](/ccip/concepts/cross-chain-token/overview).
+
+One hook deployment can carry any combination of:
+
+- A sender allowlist that restricts which addresses can initiate outbound transfers.
+- [Chainlink ACE](/ace) policies evaluated on the source chain, the destination chain, or both.
+- Additional [Cross-Chain Verifiers (CCVs)](/ccip/concepts/ccvs/overview) required by lane, direction, or transfer amount.
+
+If you need none of these, deploy your pools with `address(0)` as the hook address and skip the contract entirely.
+
+This page covers how the hook attaches to a pool, when each check runs, and which capability fits which requirement, so you can decide what to configure before following a tutorial. For the complete function surface, see the [`AdvancedPoolHooks` API reference](/ccip/evm/api-reference/v2.0.0/advanced-pool-hooks).
+
+## How the hook attaches to a Token Pool
+
+Deploy the hook as a standalone contract, then point a pool at it. A pool takes the hook address in its `advancedPoolHooks` constructor parameter, or the pool owner can set or replace it later with `updateAdvancedPoolHooks`. Setting the hook to `address(0)` detaches it and stops all hook behavior for that pool.
+
+The connection works in both directions. The pool calls the hook at defined points in a transfer, and the hook accepts calls only from pools in its `authorizedCallers` list. If a pool calls a hook that has not authorized it, the hook reverts and every transfer through that pool fails. Authorize the pool before attaching the hook.
+
+Because the pool needs the hook address in its constructor and the hook needs the pool as an authorized caller, deploy in this order:
+
+1. Deploy the hook with an empty `authorizedCallers` array.
+2. Deploy the pool with the hook address.
+3. Add the pool with `applyAuthorizedCallerUpdates` on the hook.
+
+<Aside type="note" title="Attaching hooks to an existing pool">
+  If the pool is already deployed without a hook (`address(0)`), the pool address is known up front: deploy the hook
+  with the pool in its `authorizedCallers` array, then have the pool owner call `updateAdvancedPoolHooks` with the hook
+  address.
+</Aside>
+
+One hook can serve multiple pools, but those pools share its allowlist, CCV configuration, threshold, and policy engine. Deploy separate hooks when pools need different settings.
+
+The constructor takes four parameters:
+
+| Parameter                          | Purpose                                                                                                              |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `allowlist`                        | Initial allowed senders. A nonempty array enables the allowlist permanently; an empty array disables it permanently. |
+| `thresholdAmountForAdditionalCCVs` | Amount at or above which the threshold CCV lists apply. `0` disables them. Updatable with `setThresholdAmount`.      |
+| `policyEngine`                     | ACE Policy Engine on the same chain. `address(0)` leaves ACE unconfigured. Updatable with `setPolicyEngine`.         |
+| `authorizedCallers`                | Pools allowed to call the hook. Updatable with `applyAuthorizedCallerUpdates`.                                       |
+
+The allowlist array does double duty: it supplies the initial entries and decides whether the feature exists at all. That decision is permanent for the deployment. An empty array cannot be enabled later; you would deploy a new hook.
+
+Ownership is split between two roles:
+
+| Role       | Controls                                                                           |
+| ---------- | ---------------------------------------------------------------------------------- |
+| Pool owner | Which hook address the pool calls                                                  |
+| Hook owner | Allowlist entries, CCV configuration, threshold, policy engine, authorized callers |
+
+Coordinate both roles when you deploy, rotate, or detach a hook. Each chain is configured independently: a source-chain hook and a destination-chain hook are separate deployments with separate settings.
+
+## When the hook runs
+
+The pool calls the hook at two points in a transfer. CCIP consults it in a third, separate flow.
+
+| Flow              | Chain       | Runs                                                                       | Controls available                              |
+| ----------------- | ----------- | -------------------------------------------------------------------------- | ----------------------------------------------- |
+| `preflightCheck`  | Source      | After the pool's standard validation, before tokens are locked or burned   | Sender allowlist, ACE policies                  |
+| `postflightCheck` | Destination | After the pool's standard validation, before tokens are released or minted | ACE policies                                    |
+| `getRequiredCCVs` | Either      | When CCIP resolves which verifiers a transfer requires                     | CCV requirements by lane, direction, and amount |
+
+`getRequiredCCVs` is not a pass or fail check. It is a view call: the pool delegates its verifier resolution to the hook, and the returned addresses merge with the sender's choices, the lane defaults, and any lane-mandated verifiers to form the final set for the message. Every CCV in that set must attest before the message can execute. See [Cross-Chain Verifiers](/ccip/concepts/ccvs/overview).
+
+The two checks fail differently:
+
+- If `preflightCheck` rejects a transfer, the source transaction reverts. No CCIP message is sent, and no tokens are locked or burned.
+- If `postflightCheck` rejects a transfer, destination execution fails before tokens are released or minted. The message stays unexecuted until the condition is resolved, and any party can then complete it through [manual execution](/ccip/concepts/manual-execution).
+
+Source and destination checks solve different problems. A source check stops an invalid transfer before it starts, which avoids paying to send a message that will fail. A destination check enforces the destination deployment's own rules, including rules that differ by direction or that changed while the message was in transit.
+
+## Choose a capability
+
+| You need to                                                                      | Use              | Where it applies             |
+| -------------------------------------------------------------------------------- | ---------------- | ---------------------------- |
+| Restrict which addresses can initiate transfers                                  | Sender allowlist | Source chain only            |
+| Enforce recipient, amount, or identity rules, or rules that differ per direction | ACE policies     | Source, destination, or both |
+| Add verification requirements by lane, direction, or amount                      | Additional CCVs  | Verifier resolution          |
+
+### Restrict senders with an allowlist
+
+The allowlist checks `originalSender`, the address that initiated the transfer, during `preflightCheck`. A sender not on the list reverts the source transaction with `SenderNotAllowed`. The allowlist does not restrict the destination recipient and does not run during `postflightCheck`.
+
+Use the allowlist when the requirement is simple: only approved addresses may move the token cross-chain, outbound, on every lane. Once enabled, the hook owner adds and removes entries at any time with [`applyAllowListUpdates`](/ccip/evm/api-reference/v2.0.0/advanced-pool-hooks#allowlist-management). Remove every entry and the check stays enabled: every outbound transfer reverts with `SenderNotAllowed`, which works as an emergency stop on outbound flow for every pool using the hook.
+
+For recipient restrictions, lane-specific rules, or anything the allowlist cannot express, connect a policy engine instead.
+
+### Enforce ACE policies
+
+A [Chainlink ACE](/ace) Policy Engine adds programmable compliance rules to `preflightCheck` and `postflightCheck`. The hook forwards each call to the engine, which evaluates the policies attached to that function and reverts on rejection.
+
+Use ACE when the rules go beyond an allowlist: recipient restrictions, amount limits, identity or credential checks, or different rules per direction. You can protect `preflightCheck`, `postflightCheck`, or both, with a different policy set on each.
+
+The engine must be deployed on the same chain as the hook. Pass its address in the constructor or call `setPolicyEngine` later. When the hook connects, it calls `attach()` on the engine, and ACE detects the hook as a target automatically. Assign the built-in `CCIP-AdvancedPoolHooks` contract type to that target: it ships with both hook functions and a pre-built extractor, so no custom contract type is needed. For the Platform workflow, see [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools).
+
+`setPolicyEngine(address(0))` disconnects the engine and stops policy checks. When you replace an engine, [`setPolicyEngine`](/ccip/evm/api-reference/v2.0.0/advanced-pool-hooks#policy-engine) detaches the old one first and reverts if the detach call reverts. `setPolicyEngineAllowFailedDetach` is the recovery path when an old engine blocks its own replacement.
+
+### Require additional CCVs
+
+CCV requirements are stored per remote chain and direction. Each remote chain has four lists:
+
+| List                    | Required for                                        |
+| ----------------------- | --------------------------------------------------- |
+| `outboundCCVs`          | Every outbound transfer to that chain               |
+| `thresholdOutboundCCVs` | Outbound transfers at or above the threshold amount |
+| `inboundCCVs`           | Every inbound transfer from that chain              |
+| `thresholdInboundCCVs`  | Inbound transfers at or above the threshold amount  |
+
+Below the threshold, a transfer requires the base list. At or above it, the base and threshold lists combine. The threshold is one amount shared by every remote chain; `setThresholdAmount` changes it, and `0` disables the threshold lists entirely.
+
+Use base lists when a whole lane or direction needs extra verification, such as a stricter verifier set on one high-risk chain. Use threshold lists when only large transfers need extra verification, keeping the base list at the default verifier for routine transfers.
+
+The amount the hook sees is the post-fee amount. For inbound transfers, the pool first converts the source-denominated amount into the destination token's denomination. When the two chains use different decimals, configure and test the threshold on each chain separately.
+
+[`applyCCVConfigUpdates`](/ccip/evm/api-reference/v2.0.0/advanced-pool-hooks#ccv-configuration) enforces these rules:
+
+- No address may repeat within a list or between a base list and its threshold list.
+- Threshold CCVs require a nonempty base list for the same direction.
+- Include `address(0)` in a base list to require the default CCV. When you want the default verifier below the threshold and extra verifiers only at or above it, set the base list to `[address(0)]` and put the extra verifiers in the threshold list.
+- Empty lists remove the requirements for that chain.
+
+Inspect the active configuration with `getCCVConfig`, `getAllCCVConfigs`, and `getThresholdAmount`.
+
+### Authorized callers
+
+Authorized callers are not a capability you choose. Every deployment needs them: the hook reverts on any call from a pool outside its `authorizedCallers` list, before the allowlist or any policy runs. The list starts in the constructor, and the hook owner maintains it with `applyAuthorizedCallerUpdates`.
+
+Authorize only the pools that need the hook, and remove a pool from the list when you replace or retire it.
+
+## Combine capabilities
+
+The capabilities are independent and can all be active on one hook. The allowlist and policy engine run inside `preflightCheck`, the policy engine also runs inside `postflightCheck`, and CCV requirements apply through `getRequiredCCVs` regardless of what the checks do.
+
+A common production combination is an allowlist for senders, ACE policies on both chains, and threshold CCVs so large transfers collect an extra attestation.
+
+Each piece can be stopped separately, except the allowlist:
+
+| To stop                      | Do this                                           | Reversible            |
+| ---------------------------- | ------------------------------------------------- | --------------------- |
+| All hook behavior for a pool | `updateAdvancedPoolHooks(address(0))` on the pool | Yes, reattach anytime |
+| Policy checks                | `setPolicyEngine(address(0))`                     | Yes                   |
+| Threshold CCV lists          | `setThresholdAmount(0)`                           | Yes                   |
+| Allowlist checking           | Nothing. Enabled permanently at deployment        | No, deploy a new hook |
+
+The allowlist's on/off state is immutable, but its entries are not: `applyAllowListUpdates` adds and removes senders at any time. Emptying the list freezes outbound transfers instead of disabling the check.
+
+<Aside type="caution" title="Custom pools can skip hook calls">
+  The standard CCIP v2 `TokenPool` calls the hook at both points, but a custom pool can override `_preflightCheck` and
+  `_postflightCheck` with empty implementations to save bytecode. Review a custom pool before relying on the hook
+  address for enforcement.
+</Aside>
+
+Hook checks run inside the pool's execution path, so they add gas to each transfer they gate. Destination execution is bounded by the [token pool execution gas limit](/ccip/evm/service-limits) of 90,000 gas, so measure transfers on testnet with the complete policy path before mainnet.
+
+## Next steps
+
+- [Configure a sender allowlist with AdvancedPoolHooks using Foundry](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-foundry) or [Hardhat](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-hardhat): deploy a hook, authorize a pool, attach it, and exercise the allowlist with live transfers.
+- [Enforce ACE policies on CCIP token transfers using Foundry](/ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-foundry) or [Hardhat](/ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-hardhat): connect hooks to Policy Engines and exercise preflight and postflight rejections with live transfers.
+- [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools): attach policies to `preflightCheck` and `postflightCheck`.
+- [`AdvancedPoolHooks` API reference](/ccip/evm/api-reference/v2.0.0/advanced-pool-hooks): the complete function, event, and error surface.
+- [Token issuer guide](/ccip/concepts/cross-chain-token/token-issuer-guide): the full pool deployment and configuration workflow, including hooks at step 5f.
+
+---
+
 # Cross-Chain Token Standard
 Source: https://docs.chain.link/ccip/v2/concepts/cross-chain-token
 Last Updated: 2025-06-09
@@ -74642,6 +74810,8 @@ If the pool was deployed with an `AdvancedPoolHooks` contract, configure it sepa
 - Setting an allowlist on the token pool.
 - Configuring and managing Cross-Chain Verifiers (CCVs) as part of your token transfer flow.
 - Configuring policy checks via the Automated Compliance Engine as part of your token transfer flow.
+
+For how the hook attaches to a pool, when each check runs, and which capability fits which requirement, see [Advanced Pool Hooks](/ccip/concepts/cross-chain-token/advanced-pool-hooks).
 
 The `AdvancedPoolHooks` contract has its own configuration surface:
 
@@ -76712,7 +76882,6 @@ import {AdvancedPoolHooksExtractor} from "chainlink-ccip/chains/evm/contracts/po
 ## Inheritance
 
 - `IExtractor`
-- `ITypeAndVersion`
 
 ***
 
@@ -76720,7 +76889,7 @@ import {AdvancedPoolHooksExtractor} from "chainlink-ccip/chains/evm/contracts/po
 
 ```solidity
 string public constant override typeAndVersion =
-  "AdvancedPoolHooksExtractor 2.0.0-dev";
+  "AdvancedPoolHooksExtractor 2.0.0";
 ```
 
 ***
@@ -76729,43 +76898,38 @@ string public constant override typeAndVersion =
 
 ### Constants
 
-```solidity
-string public constant override typeAndVersion =
-  "AdvancedPoolHooksExtractor 2.0.0-dev";
-```
-
 Parameter key constants:
 
 ```solidity
 bytes32 public constant PARAM_FROM =
-  keccak256("PARAM_FROM");
+  keccak256("from");
 
 bytes32 public constant PARAM_TO =
-  keccak256("PARAM_TO");
+  keccak256("to");
 
 bytes32 public constant PARAM_AMOUNT =
-  keccak256("PARAM_AMOUNT");
+  keccak256("amount");
 
 bytes32 public constant PARAM_AMOUNT_POST_FEE =
-  keccak256("PARAM_AMOUNT_POST_FEE");
+  keccak256("amount_post_fee");
 
 bytes32 public constant PARAM_REMOTE_CHAIN_SELECTOR =
-  keccak256("PARAM_REMOTE_CHAIN_SELECTOR");
+  keccak256("remote_chain_selector");
 
 bytes32 public constant PARAM_TOKEN =
-  keccak256("PARAM_TOKEN");
+  keccak256("token");
 
-bytes32 public constant PARAM_BLOCK_CONFIRMATION_REQUESTED =
-  keccak256("PARAM_BLOCK_CONFIRMATION_REQUESTED");
+bytes32 public constant PARAM_REQUESTED_FINALITY =
+  keccak256("requested_finality");
 
 bytes32 public constant PARAM_SOURCE_POOL_ADDRESS =
-  keccak256("PARAM_SOURCE_POOL_ADDRESS");
+  keccak256("source_pool_address");
 
 bytes32 public constant PARAM_SOURCE_POOL_DATA =
-  keccak256("PARAM_SOURCE_POOL_DATA");
+  keccak256("source_pool_data");
 
 bytes32 public constant PARAM_SOURCE_DENOMINATED_AMOUNT =
-  keccak256("PARAM_SOURCE_DENOMINATED_AMOUNT");
+  keccak256("source_denominated_amount");
 ```
 
 No storage variables.
@@ -76823,7 +76987,7 @@ function _extractPreflightCheck(IPolicyEngine.Payload calldata payload)
 Decodes `payload.data` as:
 
 ```solidity
-(Pool.LockOrBurnInV1, uint16 blockConfirmationRequested, bytes tokenArgs, uint256 amountPostFee)
+(Pool.LockOrBurnInV1, bytes4 requestedFinalityConfig, bytes tokenArgs, uint256 amountPostFee)
 ```
 
 Builds and returns 7 parameters:
@@ -76834,7 +76998,7 @@ Builds and returns 7 parameters:
 - `PARAM_AMOUNT_POST_FEE` → amountPostFee
 - `PARAM_REMOTE_CHAIN_SELECTOR` → remoteChainSelector
 - `PARAM_TOKEN` → localToken
-- `PARAM_BLOCK_CONFIRMATION_REQUESTED` → blockConfirmationRequested
+- `PARAM_REQUESTED_FINALITY` → requestedFinalityConfig
 
 `tokenArgs` is intentionally skipped.
 
@@ -76852,7 +77016,7 @@ function _extractPostflightCheck(IPolicyEngine.Payload calldata payload)
 Decodes `payload.data` as:
 
 ```solidity
-(Pool.ReleaseOrMintInV1, uint256 localAmount, uint16 blockConfirmationRequested)
+(Pool.ReleaseOrMintInV1, uint256 localAmount, bytes4 requestedFinalityConfig)
 ```
 
 Builds and returns 9 parameters:
@@ -76862,7 +77026,7 @@ Builds and returns 9 parameters:
 - `PARAM_AMOUNT` → localAmount
 - `PARAM_REMOTE_CHAIN_SELECTOR` → remoteChainSelector
 - `PARAM_TOKEN` → localToken
-- `PARAM_BLOCK_CONFIRMATION_REQUESTED` → blockConfirmationRequested
+- `PARAM_REQUESTED_FINALITY` → requestedFinalityConfig
 - `PARAM_SOURCE_POOL_ADDRESS` → sourcePoolAddress
 - `PARAM_SOURCE_POOL_DATA` → sourcePoolData
 - `PARAM_SOURCE_DENOMINATED_AMOUNT` → sourceDenominatedAmount
@@ -76914,11 +77078,11 @@ Source: https://docs.chain.link/ccip/v2/evm/api-reference/v2.0.0/advanced-pool-h
 `AdvancedPoolHooks` is an optional extension contract that can be attached to a `[TokenPool](/ccip/evm/api-reference/v2.0.0/token-pool)` to add:
 
 1. Allowlist enforcement for outbound transfers.
-2. Per-lane CCV configuration.
+2. Per-lane, per-direction CCV configuration.
 3. Threshold-based CCV escalation for large transfers.
 4. External policy engine execution hooks.
 
-It is invoked by pools during `preflightCheck` (outbound) and `postflightCheck` (inbound).
+Token pools invoke it during `preflightCheck` (outbound), `postflightCheck` (inbound), and `getRequiredCCVs` (verifier resolution).
 
 This contract is optional and not required for base pool operation.
 
@@ -76949,22 +77113,14 @@ import {AdvancedPoolHooks} from "chainlink-ccip/chains/evm/contracts/pools/Advan
 ## typeAndVersion
 
 ```solidity
-string public constant override typeAndVersion = "AdvancedPoolHooks 1.0.0";
+function typeAndVersion() external pure virtual override returns (string memory)
 ```
 
-(Returned value must match exact canonical string from source.)
+Returns `"AdvancedPoolHooks 2.0.0"`.
 
 ***
 
 ## State
-
-### Constants
-
-```solidity
-string public constant override typeAndVersion = "AdvancedPoolHooks 1.0.0";
-```
-
-***
 
 ### Immutables
 
@@ -76972,7 +77128,7 @@ string public constant override typeAndVersion = "AdvancedPoolHooks 1.0.0";
 bool internal immutable i_allowlistEnabled;
 ```
 
-Indicates whether allowlist enforcement was enabled at deployment. Cannot be changed after construction.
+Whether allowlist enforcement was enabled at deployment. Set from `allowlist.length > 0` in the constructor and cannot change afterward.
 
 ***
 
@@ -76985,8 +77141,12 @@ uint256 internal s_thresholdAmountForAdditionalCCVs;
 
 IPolicyEngine internal s_policyEngine;
 
-mapping(uint64 => CCVConfig) internal s_verifierConfig;
+mapping(uint64 remoteChainSelector => CCVConfig ccvConfig) internal s_verifierConfig;
+
+EnumerableSet.UintSet internal s_configuredChainSelectors;
 ```
+
+`s_configuredChainSelectors` tracks every remote chain selector that has a nonempty outbound or inbound CCV list.
 
 ***
 
@@ -77003,10 +77163,11 @@ constructor(
 
 Behavior:
 
-- If `allowlist.length > 0`, allowlist enforcement is permanently enabled.
-- Initializes threshold amount.
-- Sets initial policy engine.
-- Initializes `AuthorizedCallers`.
+- Passes `authorizedCallers` to `AuthorizedCallers`, initializing the authorized caller set.
+- If `allowlist.length > 0`, allowlist enforcement is permanently enabled and the initial entries are applied.
+- If `allowlist.length == 0`, allowlist enforcement is permanently disabled. `applyAllowListUpdates` reverts with `AllowListNotEnabled` for the life of the deployment.
+- Initializes the threshold amount. `0` disables threshold escalation.
+- Sets the initial policy engine. A nonzero address is attached immediately; `address(0)` leaves policy checks disabled.
 
 ***
 
@@ -77016,19 +77177,22 @@ Behavior:
 
 ```solidity
 function preflightCheck(
-  address sender,
-  uint64 remoteChainSelector,
-  uint256 amount,
-  bytes calldata extraData
+  Pool.LockOrBurnInV1 calldata lockOrBurnIn,
+  bytes4 requestedFinalityConfig,
+  bytes calldata tokenArgs,
+  uint256 amountPostFee
 ) external
 ```
 
+Called by the Token Pool before locking or burning tokens on the source chain.
+
 Behavior:
 
-- Validates caller via `AuthorizedCallers`.
-- Enforces allowlist if enabled.
-- Executes policy engine if configured.
-- Enforces CCV escalation logic.
+- Validates the caller via `AuthorizedCallers`.
+- Checks `lockOrBurnIn.originalSender` against the allowlist, if enabled. Reverts with `SenderNotAllowed` on failure.
+- Runs the policy engine with `tokenArgs` as context, if configured.
+
+This implementation ignores `requestedFinalityConfig` and `amountPostFee`. CCV requirements are resolved separately through `getRequiredCCVs`, not in this function.
 
 ***
 
@@ -77036,17 +77200,20 @@ Behavior:
 
 ```solidity
 function postflightCheck(
-  address sender,
-  uint64 remoteChainSelector,
-  uint256 amount,
-  bytes calldata offchainTokenData
+  Pool.ReleaseOrMintInV1 calldata releaseOrMintIn,
+  uint256 localAmount,
+  bytes4 requestedFinalityConfig
 ) external
 ```
 
+Called by the Token Pool before releasing or minting tokens on the destination chain.
+
 Behavior:
 
-- Validates caller via `AuthorizedCallers`.
-- Executes policy engine if configured.
+- Validates the caller via `AuthorizedCallers`.
+- Runs the policy engine with `releaseOrMintIn.offchainTokenData` as context, if configured.
+
+This implementation ignores `localAmount` and `requestedFinalityConfig`. The allowlist does not run during postflight.
 
 ***
 
@@ -77059,7 +77226,9 @@ function applyAllowListUpdates(
 ) external onlyOwner
 ```
 
-Reverts `AllowListNotEnabled()` if allowlist not enabled at deployment.
+Updates the allowlist entries. Removals are processed first, then additions. `address(0)` entries in `adds` are skipped. Emits `AllowListRemove` and `AllowListAdd` for each applied change.
+
+Reverts `AllowListNotEnabled()` if the allowlist was not enabled at deployment.
 
 ***
 
@@ -77067,92 +77236,136 @@ Reverts `AllowListNotEnabled()` if allowlist not enabled at deployment.
 function checkAllowList(address sender) external view
 ```
 
-Reverts `SenderNotAllowed(sender)` if allowlist enabled and sender not present.
+Reverts `SenderNotAllowed(sender)` if the allowlist is enabled and `sender` is not present. Does not revert when the allowlist is disabled or the sender is present.
+
+***
+
+```solidity
+function getAllowListEnabled() external view returns (bool)
+```
+
+Returns whether allowlist enforcement was enabled at deployment.
+
+***
+
+```solidity
+function getAllowList() external view returns (address[] memory)
+```
+
+Returns the current allowlist entries.
 
 ***
 
 ### CCV Configuration
 
 ```solidity
-function applyCCVConfigUpdates(CCVConfigArg[] calldata ccvConfigArgs)
-  external
-  onlyOwner
+function applyCCVConfigUpdates(
+  CCVConfigArg[] calldata ccvConfigArgs
+) external onlyOwner
 ```
 
-Validates:
+Sets the CCV configuration for each remote chain in the array, replacing any existing configuration for that chain.
 
-- No duplicate CCVs.
-- Threshold CCVs cannot exist without base CCVs.
+Validation:
 
-Emits `CCVConfigUpdated`.
+- No duplicate addresses within `outboundCCVs` or within `inboundCCVs`.
+- Threshold CCVs require a nonempty base list for the same direction, otherwise `MustSpecifyUnderThresholdCCVsForThresholdCCVs`.
+- No duplicate addresses within each threshold list, or between a base list and its threshold list.
+- `address(0)` in a base list requires the default CCV alongside any other listed CCVs.
+
+A chain with empty outbound and inbound lists is removed from the configured set, clearing its requirements.
+
+Emits `CCVConfigUpdated` per chain.
+
+***
+
+```solidity
+function getCCVConfig(
+  uint64 remoteChainSelector
+) external view returns (CCVConfig memory)
+```
+
+Returns the CCV configuration for a remote chain. Returns empty lists for an unconfigured chain.
+
+***
+
+```solidity
+function getAllCCVConfigs() external view returns (CCVConfigArg[] memory)
+```
+
+Returns one `CCVConfigArg` per configured remote chain selector.
 
 ***
 
 ```solidity
 function getRequiredCCVs(
+  address localToken,
   uint64 remoteChainSelector,
-  uint256 amount
-) external view returns (address[] memory)
+  uint256 amount,
+  bytes4 requestedFinalityConfig,
+  bytes calldata extraData,
+  IPoolV2.MessageDirection direction
+) external view returns (address[] memory requiredCCVs)
 ```
 
-Returns base CCVs plus threshold CCVs if:
+Returns the CCVs required for a transfer to or from a remote chain:
 
-```
-thresholdAmount != 0 && amount >= thresholdAmount
-```
+- `Inbound` direction resolves `inboundCCVs` and `thresholdInboundCCVs`.
+- `Outbound` direction resolves `outboundCCVs` and `thresholdOutboundCCVs`.
+
+Base CCVs are always returned. Threshold CCVs are appended when `thresholdAmount != 0 && amount >= thresholdAmount` and the threshold list is nonempty.
+
+This implementation ignores `localToken`, `requestedFinalityConfig`, and `extraData`.
 
 ***
 
 ### Threshold Control
 
 ```solidity
-function setThresholdAmount(uint256 thresholdAmount)
-  external
-  onlyOwner
+function setThresholdAmount(uint256 thresholdAmount) external onlyOwner
 ```
 
-Emits `ThresholdAmountSet`.
+Sets the amount at or above which threshold CCVs are required. `0` disables threshold escalation for every remote chain. Emits `ThresholdAmountSet`.
 
 ***
 
 ```solidity
-function getThresholdAmount()
-  external
-  view
-  returns (uint256)
+function getThresholdAmount() external view returns (uint256)
 ```
+
+Returns the current threshold amount.
 
 ***
 
 ### Policy Engine
 
 ```solidity
-function setPolicyEngine(address newPolicyEngine)
-  external
-  onlyOwner
+function setPolicyEngine(address newPolicyEngine) external onlyOwner
 ```
 
-Detaches old engine and attaches new engine.
-Reverts on detach failure.
+Replaces the current policy engine:
+
+- No-op if `newPolicyEngine` equals the current engine.
+- Calls `detach()` on the old engine. If the call reverts, the update reverts with `PolicyEngineDetachReverted`.
+- Stores the new engine and calls `attach()` on it when nonzero.
+
+`address(0)` disconnects the current engine and disables policy checks. `PolicyEngineAttached` is emitted with the new address, including `address(0)` on disconnect.
 
 ***
 
 ```solidity
-function setPolicyEngineAllowFailedDetach(address newPolicyEngine)
-  external
-  onlyOwner
+function setPolicyEngineAllowFailedDetach(address newPolicyEngine) external onlyOwner
 ```
 
-Allows update even if detach fails.
+Same as `setPolicyEngine`, except a reverting `detach()` on the old engine emits `PolicyEngineDetachFailed` and the update proceeds. Use this when an old engine blocks its own replacement.
 
 ***
 
 ```solidity
-function getPolicyEngine()
-  external
-  view
-  returns (address)
+function getPolicyEngine() external view returns (address)
 ```
+
+Returns the current policy engine address, or `address(0)` when policy checks are disabled.
 
 ***
 
@@ -77161,10 +77374,16 @@ function getPolicyEngine()
 ```solidity
 event AllowListAdd(address sender);
 event AllowListRemove(address sender);
-event CCVConfigUpdated(uint64 remoteChainSelector, address[] baseCCVs, address[] thresholdCCVs);
+event CCVConfigUpdated(
+  uint64 indexed remoteChainSelector,
+  address[] outboundCCVs,
+  address[] thresholdOutboundCCVs,
+  address[] inboundCCVs,
+  address[] thresholdInboundCCVs
+);
 event ThresholdAmountSet(uint256 thresholdAmount);
-event PolicyEngineAttached(address policyEngine);
-event PolicyEngineDetachFailed(address policyEngine, bytes reason);
+event PolicyEngineAttached(address indexed policyEngine);
+event PolicyEngineDetachFailed(address indexed policyEngine, bytes reason);
 ```
 
 ***
@@ -77184,16 +77403,20 @@ error PolicyEngineDetachReverted(address oldPolicyEngine, bytes err);
 
 ```solidity
 struct CCVConfig {
-  address[] baseCCVs;
-  address[] thresholdCCVs;
+  address[] outboundCCVs;
+  address[] thresholdOutboundCCVs;
+  address[] inboundCCVs;
+  address[] thresholdInboundCCVs;
 }
 ```
 
 ```solidity
 struct CCVConfigArg {
   uint64 remoteChainSelector;
-  address[] baseCCVs;
-  address[] thresholdCCVs;
+  address[] outboundCCVs;
+  address[] thresholdOutboundCCVs;
+  address[] inboundCCVs;
+  address[] thresholdInboundCCVs;
 }
 ```
 
@@ -77204,22 +77427,48 @@ struct CCVConfigArg {
 ```solidity
 function _resolveRequiredCCVs(
   address[] memory baseCCVs,
-  address[] memory thresholdCCVs,
+  address[] storage requiredCCVsAboveThresholdStorage,
   uint256 amount
-) internal view returns (address[] memory)
+) internal view returns (address[] memory requiredCCVs)
 ```
 
-Concatenates base + threshold CCVs when escalation condition met.
+Returns `baseCCVs` unless the threshold is nonzero, `amount >= threshold`, and the threshold list is nonempty, in which case returns the base and threshold lists concatenated.
 
 ***
 
-## Security model
+```solidity
+function _setPolicyEngine(
+  address newPolicyEngine,
+  bool allowFailedDetach
+) internal virtual
+```
 
-- Allowlist enforcement immutable post-deployment.
-- CCV escalation provides dynamic security scaling.
-- Policy engine detach failures may block upgrades unless force-detach path used.
-- AuthorizedCallers restricts hook invocation to approved pools.
-- Duplicate CCVs prevented at configuration time.
+Implements the detach and attach sequence shared by `setPolicyEngine` and `setPolicyEngineAllowFailedDetach`.
+
+***
+
+```solidity
+function _applyAllowListUpdates(
+  address[] memory removes,
+  address[] memory adds
+) internal virtual
+```
+
+Implements the allowlist update loop, reused by the constructor and `applyAllowListUpdates`.
+
+***
+
+## Inherited from AuthorizedCallers
+
+See the [`AuthorizedCallers`](/ccip/evm/api-reference/v2.0.0/authorized-callers) reference for the full surface:
+
+- `getAllAuthorizedCallers()`
+- `applyAuthorizedCallerUpdates(AuthorizedCallerArgs)`
+- `onlyAuthorizedCallers` modifier
+- Events `AuthorizedCallerAdded` / `AuthorizedCallerRemoved`
+- Errors `UnauthorizedCaller` / `ZeroAddressNotAllowed`
+
+Ownership follows `Ownable2StepMsgSender` through the same inheritance chain.
 
 ***
 
@@ -77229,6 +77478,7 @@ Concatenates base + threshold CCVs when escalation condition met.
 - [`IAdvancedPoolHooks`](/ccip/evm/api-reference/v2.0.0/i-advanced-pool-hooks)
 - [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
 - [`LockReleaseTokenPool`](/ccip/evm/api-reference/v2.0.0/lock-release-token-pool)
+- [`Pool`](/ccip/evm/api-reference/v2.0.0/pool) (defines `LockOrBurnInV1` and `ReleaseOrMintInV1`)
 - [`CCVConfigValidation`](/ccip/evm/api-reference/v2.0.0/ccv-config-validation)
 
 ---
@@ -82519,7 +82769,7 @@ interface IAdvancedPoolHooks {
 ```solidity
 function preflightCheck(
   Pool.LockOrBurnInV1 calldata lockOrBurnIn,
-  uint16 blockConfirmationRequested,
+  bytes4 requestedFinalityConfig,
   bytes calldata tokenArgs,
   uint256 amountPostFee
 ) external;
@@ -82538,7 +82788,7 @@ Called before executing `_lockOrBurn` on the source chain.
 function postflightCheck(
   Pool.ReleaseOrMintInV1 calldata releaseOrMintIn,
   uint256 localAmount,
-  uint16 blockConfirmationRequested
+  bytes4 requestedFinalityConfig
 ) external;
 ```
 
@@ -82556,7 +82806,7 @@ function getRequiredCCVs(
   address localToken,
   uint64 remoteChainSelector,
   uint256 amount,
-  uint16 blockConfirmationRequested,
+  bytes4 requestedFinalityConfig,
   bytes calldata extraData,
   IPoolV2.MessageDirection direction
 ) external view returns (address[] memory requiredCCVs);
@@ -82569,7 +82819,7 @@ Parameters:
 - `localToken` — token on this chain.
 - `remoteChainSelector` — remote chain identifier.
 - `amount` — transfer amount.
-- `blockConfirmationRequested` — requested finality depth.
+- `requestedFinalityConfig` — requested finality encoding (see `FinalityCodec`).
 - `extraData` — direction-specific payload (e.g., tokenArgs or offchainTokenData).
 - `direction` — `IPoolV2.MessageDirection.Inbound` or `Outbound`.
 
@@ -82596,7 +82846,7 @@ Returns:
 
 - Hooks must validate caller authenticity internally (typically via `AuthorizedCallers`).
 
-- Hooks are trusted components — a malicious hook may block transfers.
+- Hooks are trusted components: a malicious hook may block transfers.
 
 ***
 
@@ -100285,6 +100535,1206 @@ As we have explored various methods for estimating gas for the `ccipReceive` fun
 
 ---
 
+# Configure a sender allowlist with AdvancedPoolHooks using Foundry
+Source: https://docs.chain.link/ccip/v2/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-foundry
+Last Updated: 2026-05-05
+
+<PageTabs
+  pages={[
+  {
+    name: "Foundry",
+    url: "/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-foundry",
+    icon: "/images/tutorial-icons/foundry-icn.png",
+  },
+  {
+    name: "Hardhat",
+    url: "/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-hardhat",
+    icon: "/images/tutorial-icons/hardhat-icn.png",
+  },
+]}
+/>
+
+CCIP 2.0token pools support an optional [`AdvancedPoolHooks`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/AdvancedPoolHooks.sol) contract being attached to them.
+
+This contract can run certain checks:
+
+1. before tokens are locked/burned (source chain)
+2. before tokens are released/minted (destination chain)
+
+If no hooks contract is attached, the token pool keeps its existing behavior.
+
+This tutorial covers the **sender allowlist** use case: only approved addresses may initiate outbound transfers on the source chain. A sender not on the list reverts the source transaction with `SenderNotAllowed`. For the other capabilities, see the [AdvancedPoolHooks concept page](/ccip/concepts/cross-chain-token/advanced-pool-hooks) or [Enforce ACE policies on CCIP token transfers](/ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-foundry).
+
+Hooks are enforced only when **both** of these aspects are configured:
+
+- The token pool points to the `AdvancedPoolHooks` contract.
+- The hooks contract authorizes that token pool as a caller.
+
+Authorize the pool before attaching hooks so the first hook call does not revert. Hooks are configured **per token pool, per chain**, which means that:
+you need to repeat this setup for any other pool where you want hooks enforced.
+
+> **Note:** Remember. Your CCT token can be deployed on multiple chains, with each chain having its own token pool.
+
+In this tutorial you will:
+
+1. Review the current hooks state on your deployed token pool.
+2. Send a baseline transfer (*with no hooks attached*). This should succeed.
+3. Deploy an `AdvancedPoolHooks` contract with your deployer address on the allowlist.
+4. Authorize the pool as a caller on the hooks contract and attach the hooks contract to the token pool.
+5. Verify the hooks attachment, authorized callers, and allowlist state.
+6. Remove your address from the allowlist.
+7. Attempt a transfer (*expected to revert with `SenderNotAllowed(address)`*).
+8. Detach the hooks contract.
+9. Send a transfer again (*expected to succeed*).
+10. Manage the allowlist over time (add, remove, and check addresses).
+
+## Before You Begin
+
+## Tutorial
+
+<AnchoredAccordion title="Review current pool hooks state" number={2} depth={3}>
+  Use the `GetAdvancedPoolHooks.s.sol` script to check whether an `AdvancedPoolHooks` contract is currently attached to your token pool.
+
+  <GitHubCard title="GetAdvancedPoolHooks.s.sol" href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/allowlist/GetAdvancedPoolHooks.s.sol" iconName="github-svg-card">
+    View the hooks query script on GitHub.
+  </GitHubCard>
+
+  ```bash filename="Terminal"
+  forge script \
+    script/configure/allowlist/GetAdvancedPoolHooks.s.sol \
+    --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+  ```
+
+  Example output (no hooks attached):
+
+  ```bash filename="Terminal"
+  ========================================
+  🪝 Get Advanced Pool Hooks
+  ========================================
+  Chain:        Ethereum Sepolia
+  Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+  Action:       View pool hooks
+  ========================================
+
+  No AdvancedPoolHooks contract is attached to this pool.
+  Deploy one with DeployAdvancedPoolHooks.s.sol and attach it via UpdateAdvancedPoolHooks.s.sol.
+
+  ========================================
+  Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+  ========================================
+  ```
+
+  <Aside type="note">
+    1. <code>getAdvancedPoolHooks()</code> is only available on TokenPool v2.0 and later. If the script reverts with a
+       missing function selector, the pool is a v1 contract and does not support hooks. 2. If your token pool already has
+       hooks attached, you can detach them by following the 'Detach hooks' section, to follow the tutorial.
+  </Aside>
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Deploy AdvancedPoolHooks" number={4} depth={3}>
+  Use the `DeployAdvancedPoolHooks.s.sol` script to deploy a new hooks contract.
+
+  <Aside type="note" title="Inspect script/input/advanced-pool-hooks.json before deployment">
+    The <code>DeployAdvancedPoolHooks.s.sol</code> script reads <code>script/input/advanced-pool-hooks.json</code> when
+    environment variables are omitted. Inspect the file and clear any stale addresses you do not intend to use. Because
+    allowlist enablement is permanent, prefer setting <code>ALLOWLIST</code> and <code>AUTHORIZED_CALLERS</code>{" "}
+    explicitly.
+  </Aside>
+
+  <GitHubCard title="DeployAdvancedPoolHooks.s.sol" href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/allowlist/DeployAdvancedPoolHooks.s.sol" iconName="github-svg-card">
+    View the hooks deployment script on GitHub.
+  </GitHubCard>
+
+  Deployment inputs:
+
+  - `ALLOWLIST`: CSV or JSON array of original outbound sender addresses allowed to initiate outbound transfers.
+  - `AUTHORIZED_CALLERS`: CSV or JSON array of token pool addresses permitted to invoke the hooks.
+
+  <Aside type="caution" title="Allowlist enablement is permanent">
+    <ol>
+      <li>
+        Allowlist mode is set at deployment time and <strong>cannot be changed later</strong>.
+      </li>
+
+      <li>
+        If you deploy with a non-empty <code>ALLOWLIST</code>, the allowlist is permanently enabled.
+      </li>
+
+      <li>
+        If you deploy with an empty allowlist, calling <code>applyAllowListUpdates()</code> later will revert with{" "}
+        <code>AllowListNotEnabled()</code>.
+      </li>
+    </ol>
+  </Aside>
+
+  In this example, you will deploy hooks on Ethereum Sepolia with your deployer address on the allowlist, and authorize your token pool as a caller:
+
+  <Aside type="note" title="Why we start by allowlisting the deployer">
+    1. You will first allowlist your deployer address so you can attach hooks without immediately blocking your own
+       transfers. 2. Later in the tutorial, you will remove your address from the allowlist to demonstrate an enforced
+       failure.
+  </Aside>
+
+  ```bash filename="Terminal"
+  ALLOWLIST=0xYourDeployerAddress \
+  AUTHORIZED_CALLERS=$ETHEREUM_SEPOLIA_TOKEN_POOL \
+  forge script \
+  script/configure/allowlist/DeployAdvancedPoolHooks.s.sol \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast \
+  --verify
+  ```
+
+  Your output should look something like this:
+
+  ```bash filename="Terminal"
+  ========================================
+  🔒 Deploy Advanced Pool Hooks
+  ========================================
+  Chain:        Ethereum Sepolia
+  Action:       Deploy pool hooks
+  ========================================
+
+  Advanced Pool Hooks Parameters:
+  Allowlist Enabled:            Yes
+  Allowlist Size:               1
+  [0] 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+  Threshold Amount:             Disabled (0)
+  Policy Engine:                Disabled (0x0)
+  Authorized Callers Enabled:   Yes
+  Authorized Callers Size:      1
+  [0] 0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+
+  [Step 1] Deploying AdvancedPoolHooks on Ethereum Sepolia
+  AdvancedPoolHooks deployed at: 0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+  https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+  ✅ AdvancedPoolHooks deployed successfully!
+
+  ========================================
+  ✅ Deployment Complete on Ethereum Sepolia!
+  ========================================
+  AdvancedPoolHooks Address: 0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+  https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+
+  Deployment saved: history/advanced-pool-hooks/ethereum-testnet-sepolia/1746652800-BnM-T-BurnMint-AdvancedPoolHooks.json
+
+  Configuration Summary:
+  Allowlist:                    Enabled
+  Threshold:                    Disabled
+  Policy Engine:                Disabled
+  Authorized Callers:           Enabled
+
+  Next Steps:
+  1. When deploying a TokenPool, pass this hooks address as the 'poolHooks' parameter
+  2. Attach to an existing pool: TOKEN_POOL=<address> NEW_HOOK=<address> forge script script/configure/allowlist/UpdateAdvancedPoolHooks.s.sol --rpc-url $RPC_URL --account $KEYSTORE_NAME --broadcast
+  3. Manage allowlist: POOL_HOOKS=<address> ADD_ADDRESSES="0xAddr" forge script script/configure/allowlist/UpdateAllowList.s.sol --rpc-url $RPC_URL --account $KEYSTORE_NAME --broadcast
+  ========================================
+  ```
+
+  Export the hooks address for subsequent commands:
+
+  ```bash filename="Terminal"
+  export POOL_HOOKS=0xHooksAddress
+  ```
+
+  <Aside type="note" title="Deployment address recovery">
+    <ul>
+      <li>
+        A broadcast deploy records the hooks address in the project store (<code>project/\<selectorName>.json</code>,
+        under <code>addresses.active.poolHooks</code> and the <code>deployments</code> entry), so later scripts resolve it
+        automatically with no manual export.
+      </li>
+
+      <li>
+        If you lose the session export, read the address from the project store, or from the append-only history ledger at{" "}
+        <code>history/advanced-pool-hooks/\<selectorName>/</code> (the <code>POOL_HOOKS</code> key in the JSON file).
+      </li>
+
+      <li>
+        For a pool or token deployed outside this repository, run <code>make adopt-token</code> to record it in the same
+        registry. Environment variable exports still work as temporary overrides, but they are not saved.
+      </li>
+    </ul>
+  </Aside>
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Verify the setup" number={6} depth={3}>
+  Run the following read-only scripts to verify wiring. These checks confirm configuration state only;the next step attempts a transfer that is expected to revert.
+
+  **1. Confirm hooks are attached to the pool:**
+
+  ```bash filename="Terminal"
+  forge script \
+    script/configure/allowlist/GetAdvancedPoolHooks.s.sol \
+    --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+  ```
+
+  Expected output should now show your hooks address:
+
+  ```bash filename="Terminal"
+  ========================================
+  🪝 Get Advanced Pool Hooks
+  ========================================
+  Chain:        Ethereum Sepolia
+  Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+  Action:       View pool hooks
+  ========================================
+
+  ✅ AdvancedPoolHooks:
+     0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+
+  ========================================
+  Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+  ========================================
+  ```
+
+  **2. Confirm the pool is an authorized caller on the hooks:**
+
+  <GitHubCard title="GetAuthorizedCallers.s.sol" href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/authorized-callers/GetAuthorizedCallers.s.sol" iconName="github-svg-card">
+    View the authorized callers query script on GitHub.
+  </GitHubCard>
+
+  ```bash filename="Terminal"
+  POOL_HOOKS=$POOL_HOOKS \
+    forge script \
+    script/configure/authorized-callers/GetAuthorizedCallers.s.sol \
+    --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+    --account $KEYSTORE_NAME
+  ```
+
+  Your output should look something like this:
+
+  ```bash filename="Terminal"
+  ========================================
+  🔎 Get Authorized Callers
+  ========================================
+  Chain:        Ethereum Sepolia
+  Pool Hooks:   0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+  Action:       View authorized callers
+  ========================================
+
+  Authorized Callers count: 1
+  [0] 0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+  ========================================
+  Pool Hooks:   https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+  ========================================
+  ```
+
+  **3. View the current allowlist:**
+
+  <GitHubCard title="GetAllowList.s.sol" href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/allowlist/GetAllowList.s.sol" iconName="github-svg-card">
+    View the allowlist query script on GitHub.
+  </GitHubCard>
+
+  ```bash filename="Terminal"
+  POOL_HOOKS=$POOL_HOOKS \
+    forge script \
+    script/configure/allowlist/GetAllowList.s.sol \
+    --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+    --account $KEYSTORE_NAME
+  ```
+
+  Your output should look something like this:
+
+  ```bash filename="Terminal"
+  ========================================
+  🔎 Get AllowList
+  ========================================
+  Chain:        Ethereum Sepolia
+  Pool Hooks:   0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+  Action:       View allowlist
+  ========================================
+
+  AllowList count: 1
+  0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+  ========================================
+  Pool Hooks:   https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+  ========================================
+  ```
+
+  **4. (Optional): Check if a particular sender is allowlisted:**
+
+  <GitHubCard title="IsAllowListed.s.sol" href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/allowlist/IsAllowListed.s.sol" iconName="github-svg-card">
+    View the allowlist check script on GitHub.
+  </GitHubCard>
+
+  ```bash filename="Terminal"
+  POOL_HOOKS=$POOL_HOOKS \
+  CHECK_ADDRESS=0xsenderaddress \
+  forge script \
+  script/configure/allowlist/IsAllowListed.s.sol \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+  ```
+
+  Your output should look something like this:
+
+  ```bash filename="Terminal"
+  ========================================
+  🔎 Is AllowListed?
+  ========================================
+  Chain:        Ethereum Sepolia
+  Pool Hooks:   0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+  Check Address: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+  Action:       Check allowlist
+  ========================================
+
+  ✅ Address IS allowlisted.
+  ========================================
+  Pool Hooks:   https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+  ========================================
+  ```
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Attempt a transfer (expected failure)" number={8} depth={3}>
+  This step attempts a token transfer and is expected to fail because you removed your sender address from the allowlist. Hooks are configured per token pool, per chain, although this does not attach hooks on any destination-chain pool.
+
+  ```bash filename="Terminal"
+  ccip-cli send \
+    --source ethereum-testnet-sepolia \
+    --router $ETHEREUM_SEPOLIA_ROUTER \
+    --dest ethereum-testnet-sepolia-arbitrum-1 \
+    --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+    --receiver 0xYourDeployerAddress \
+    --wallet foundry:$KEYSTORE_NAME \
+    --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+    --rpc "$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL"
+  ```
+
+  Expected result: the send transaction reverts. You should see an error that includes `SenderNotAllowed(address)`.
+
+  If this step does **not** fail as expected, make sure:
+
+  - Hooks are attached (`GetAdvancedPoolHooks.s.sol` shows `POOL_HOOKS`).
+  - Your sender address is **NOT** on the allowlist (previous step returns NOT allowlisted).
+  - The token pool is an authorized caller on the hooks (`GetAuthorizedCallers.s.sol` includes `ETHEREUM_SEPOLIA_TOKEN_POOL`).
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Send a transfer again (expected success)" number={10} depth={3}>
+  With hooks detached, the token pool returns to its default behavior and your transfer should succeed again.
+
+  ```bash filename="Terminal"
+  ccip-cli send \
+    --source ethereum-testnet-sepolia \
+    --router $ETHEREUM_SEPOLIA_ROUTER \
+    --dest ethereum-testnet-sepolia-arbitrum-1 \
+    --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+    --receiver 0xYourDeployerAddress \
+    --wallet foundry:$KEYSTORE_NAME \
+    --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+    --rpc "$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL"
+  ```
+
+  Expected output (example):
+
+  ```bash filename="Terminal"
+  Fee: 130129888907619n = 0.000130129888907619 ETH
+  ✔ Enter password for Foundry keystore 'PRIVATE_KEY'
+  🚀 Sending message to 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994 @ ethereum-testnet-sepolia-arbitrum-1 , tx => 0x3dc40bea29f3e3fc93ff8fce0dda45fd7f55a07ace5089646e018874c8b6745e , messageId => 0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+  CCIP Explorer: https://ccip.chain.link/msg/0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+  ```
+</AnchoredAccordion>
+
+<Aside type="caution" title="Educational Example Disclaimer">
+  This page includes an educational example to use a Chainlink system, product, or service and is provided to
+  demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
+  template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may be
+  missing key checks or error handling to make the usage of the system, product or service more clear. Do not use the
+  code in this example in a production environment without completing your own audits and application of best practices.
+  Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
+  that are generated due to errors in code.
+</Aside>
+
+---
+
+# Configure a sender allowlist with AdvancedPoolHooks using Hardhat
+Source: https://docs.chain.link/ccip/v2/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-hardhat
+Last Updated: 2026-05-05
+
+<PageTabs
+  pages={[
+  {
+    name: "Foundry",
+    url: "/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-foundry",
+    icon: "/images/tutorial-icons/foundry-icn.png",
+  },
+  {
+    name: "Hardhat",
+    url: "/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-hardhat",
+    icon: "/images/tutorial-icons/hardhat-icn.png",
+  },
+]}
+/>
+
+CCIP 2.0 token pools support an optional [`AdvancedPoolHooks`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/AdvancedPoolHooks.sol) contract being attached to them.
+
+This contract can run certain checks:
+
+1. before tokens are locked/burned (source chain)
+2. before tokens are released/minted (destination chain)
+
+If no hooks contract is attached, the token pool keeps its existing behavior.
+
+This tutorial covers the **sender allowlist** use case: only approved addresses may initiate outbound transfers on the source chain. A sender not on the list reverts the source transaction with `SenderNotAllowed`. For the other capabilities, see the [AdvancedPoolHooks concept page](/ccip/concepts/cross-chain-token/advanced-pool-hooks) or [Enforce ACE policies on CCIP token transfers](/ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-hardhat).
+
+Hooks are enforced only when **both** of these aspects are configured:
+
+- The token pool points to the `AdvancedPoolHooks` contract.
+- The hooks contract authorizes that token pool as a caller.
+
+Authorize the pool before attaching hooks so the first hook call does not revert. Hooks are configured **per token pool, per chain**, which means that:
+you need to repeat this setup for any other pool where you want hooks enforced.
+
+> **Note:** Remember. Your CCT token can be deployed on multiple chains, with each chain having its own token pool.
+
+In this tutorial you will:
+
+1. Review the current hooks state on your deployed token pool.
+2. Send a baseline transfer (*with no hooks attached*). This should succeed.
+3. Deploy an `AdvancedPoolHooks` contract with your deployer address on the allowlist.
+4. Authorize the pool as a caller on the hooks contract and attach the hooks contract to the token pool.
+5. Verify the hooks attachment, authorized callers, and allowlist state.
+6. Remove your address from the allowlist.
+7. Attempt a transfer (*expected to revert with `SenderNotAllowed(address)`*).
+8. Detach the hooks contract.
+9. Send a transfer again (*expected to succeed*).
+10. Manage the allowlist over time (add, remove, and check addresses).
+
+## Before You Begin
+
+## Tutorial
+
+<AnchoredAccordion title="Review current pool hooks state" number={2} depth={3}>
+  Use the `getAdvancedPoolHooks` task to check whether an `AdvancedPoolHooks` contract is currently attached to your token pool.
+
+  <GitHubCard title="getAdvancedPoolHooks.ts" href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/allowlist/getAdvancedPoolHooks.ts" iconName="github-svg-card">
+    View the hooks query task on GitHub.
+  </GitHubCard>
+
+  ```bash filename="Terminal"
+  npx hardhat getAdvancedPoolHooks --network sepolia
+  ```
+
+  Example output (no hooks attached):
+
+  ```bash filename="Terminal"
+  ========================================
+  🪝 Get Advanced Pool Hooks
+  ========================================
+  Chain:        Ethereum Sepolia
+  Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+  Action:       View pool hooks
+  ========================================
+
+  No AdvancedPoolHooks contract is attached to this pool.
+     Deploy one with:  npx hardhat deployAdvancedPoolHooks
+     Attach it with:   npx hardhat updateAdvancedPoolHooks --newhook <address>
+
+  ========================================
+  Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+  ========================================
+  ```
+
+  <Aside type="note">
+    1. <code>getAdvancedPoolHooks()</code> is only available on TokenPool v2.0 and later. 2. If your token pool already
+       has hooks attached, you can detach them by following the 'Detach hooks' section, to follow the tutorial.
+  </Aside>
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Deploy AdvancedPoolHooks" number={4} depth={3}>
+  Use the `deployAdvancedPoolHooks` task to deploy a new hooks contract.
+
+  <GitHubCard title="deployAdvancedPoolHooks.ts" href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/allowlist/deployAdvancedPoolHooks.ts" iconName="github-svg-card">
+    View the hooks deployment task on GitHub.
+  </GitHubCard>
+
+  Deployment flags:
+
+  - `--allowlist`: CSV list of original outbound sender addresses allowed to initiate outbound transfers.
+  - `--authorizedcallers`: CSV list of token pool addresses permitted to invoke the hooks.
+
+  <Aside type="caution" title="Allowlist enablement is permanent">
+    <ol>
+      <li>
+        Allowlist mode is set at deployment time and <strong>cannot be changed later</strong>.
+      </li>
+
+      <li>
+        If you deploy with a non-empty <code>--allowlist</code>, the allowlist is permanently enabled.
+      </li>
+
+      <li>
+        If you deploy with an empty allowlist, calling <code>applyAllowListUpdates()</code> later will revert with{" "}
+        <code>AllowListNotEnabled()</code>.
+      </li>
+    </ol>
+  </Aside>
+
+  In this example, you will deploy hooks on Ethereum Sepolia with your deployer address on the allowlist, and authorize your token pool as a caller:
+
+  <Aside type="note" title="Why we start by allowlisting the deployer">
+    1. You will first allowlist your deployer address so you can attach hooks without immediately blocking your own
+       transfers. 2. Later in the tutorial, you will remove your address from the allowlist to demonstrate an enforced
+       failure.
+  </Aside>
+
+  ```bash filename="Terminal"
+  npx hardhat deployAdvancedPoolHooks \
+    --allowlist 0xYourDeployerAddress \
+    --authorizedcallers $ETHEREUM_SEPOLIA_TOKEN_POOL \
+    --network sepolia
+  ```
+
+  Your output should look something like this:
+
+  ```bash filename="Terminal"
+  ========================================
+  🔒 Deploy Advanced Pool Hooks
+  ========================================
+  Chain:        Ethereum Sepolia
+  Action:       Deploy pool hooks
+  ========================================
+
+  Advanced Pool Hooks Parameters:
+    Allowlist Enabled:           Yes
+    Allowlist Size:              1
+      [0] 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+    Threshold Amount:            Disabled (0)
+    Policy Engine:               Disabled (0x0)
+    Authorized Callers Enabled:  Yes
+    Authorized Callers Size:     1
+      [0] 0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+
+  [Step 1] Deploying AdvancedPoolHooks on Ethereum Sepolia
+  ⏳ Deployment tx: 0x9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d
+  ✅ AdvancedPoolHooks deployed successfully!
+
+  ========================================
+  ✅ Deployment Complete on Ethereum Sepolia!
+  ========================================
+  AdvancedPoolHooks Address: 0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+  https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+
+  Deployment saved: deployments/advanced-pool-hooks/ETHEREUM_SEPOLIA/1746652800-AdvancedPoolHooks.json
+
+  Configuration Summary:
+    Allowlist:          Enabled
+    Threshold:          Disabled
+    Policy Engine:      Disabled
+    Authorized Callers: Enabled
+
+  Next Steps:
+    1. When deploying a TokenPool, pass this hooks address as the 'poolHooks' parameter
+    2. Attach to an existing pool: npx hardhat updateAdvancedPoolHooks --newhook <address> --network <network>
+    3. Manage allowlist: npx hardhat updateAllowList --poolhooks <address> --add "0xAddr" --network <network>
+  ========================================
+  ```
+
+  Export the hooks address for subsequent commands:
+
+  ```bash filename="Terminal"
+  export POOL_HOOKS=0xHooksAddress
+  ```
+
+  <Aside type="note" title="Deployment address recovery">
+    <ul>
+      <li>
+        Deployment addresses are saved to <code>deployments/advanced-pool-hooks/</code>.
+      </li>
+
+      <li>
+        If you lose the session export, retrieve the address from the JSON file under the <code>POOL_HOOKS</code> key.
+      </li>
+    </ul>
+  </Aside>
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Verify the setup" number={6} depth={3}>
+  Run the following read-only tasks to verify wiring. These checks confirm configuration state only; the next step attempts a transfer that is expected to revert.
+
+  **1. Confirm hooks are attached to the pool:**
+
+  ```bash filename="Terminal"
+  npx hardhat getAdvancedPoolHooks --network sepolia
+  ```
+
+  Expected output should now show your hooks address:
+
+  ```bash filename="Terminal"
+  ========================================
+  🪝 Get Advanced Pool Hooks
+  ========================================
+  Chain:        Ethereum Sepolia
+  Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+  Action:       View pool hooks
+  ========================================
+
+  ✅ AdvancedPoolHooks:
+     0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+
+  ========================================
+  Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+  ========================================
+  ```
+
+  **2. Confirm the pool is an authorized caller on the hooks:**
+
+  <GitHubCard title="getAuthorizedCallers.ts" href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/authorized-callers/getAuthorizedCallers.ts" iconName="github-svg-card">
+    View the authorized callers query task on GitHub.
+  </GitHubCard>
+
+  ```bash filename="Terminal"
+  npx hardhat getAuthorizedCallers \
+    --poolhooks $POOL_HOOKS \
+    --network sepolia
+  ```
+
+  Your output should look something like this:
+
+  ```bash filename="Terminal"
+  ========================================
+  🔎 Get Authorized Callers
+  ========================================
+  Chain:        Ethereum Sepolia
+  Pool Hooks:   0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+  Action:       View authorized callers
+  ========================================
+
+  Authorized Callers count: 1
+    [0] 0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
+
+  ========================================
+  Pool Hooks:   https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+  ========================================
+  ```
+
+  **3. View the current allowlist:**
+
+  <GitHubCard title="getAllowList.ts" href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/allowlist/getAllowList.ts" iconName="github-svg-card">
+    View the allowlist query task on GitHub.
+  </GitHubCard>
+
+  ```bash filename="Terminal"
+  npx hardhat getAllowList \
+    --poolhooks $POOL_HOOKS \
+    --network sepolia
+  ```
+
+  Your output should look something like this:
+
+  ```bash filename="Terminal"
+  ========================================
+  🔎 Get AllowList
+  ========================================
+  Chain:        Ethereum Sepolia
+  Pool Hooks:   0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+  Action:       View allowlist
+  ========================================
+
+  AllowList count: 1
+    0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+  ========================================
+  Pool Hooks:   https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+  ========================================
+  ```
+
+  **4. (Optional): Check if a particular sender is allowlisted:**
+
+  <GitHubCard title="isAllowListed.ts" href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/allowlist/isAllowListed.ts" iconName="github-svg-card">
+    View the allowlist check task on GitHub.
+  </GitHubCard>
+
+  ```bash filename="Terminal"
+  npx hardhat isAllowListed \
+    --poolhooks $POOL_HOOKS \
+    --checkaddress 0xsenderaddress \
+    --network sepolia
+  ```
+
+  Your output should look something like this:
+
+  ```bash filename="Terminal"
+  ========================================
+  🔎 Is AllowListed?
+  ========================================
+  Chain:         Ethereum Sepolia
+  Pool Hooks:    0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+  Check Address: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+  Action:        Check allowlist
+  ========================================
+
+  ✅ Address IS allowlisted.
+  ========================================
+  Pool Hooks:   https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+  ========================================
+  ```
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Attempt a transfer (expected failure)" number={8} depth={3}>
+  This step attempts a token transfer and is expected to fail because you removed your sender address from the allowlist. Hooks are configured per token pool, per chain, although this does not attach hooks on any destination-chain pool.
+
+  ```bash filename="Terminal"
+  ccip-cli send \
+    --source ethereum-testnet-sepolia \
+    --router $ETHEREUM_SEPOLIA_ROUTER \
+    --dest ethereum-testnet-sepolia-arbitrum-1 \
+    --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+    --receiver 0xYourDeployerAddress \
+    --wallet hardhat:$KEYSTORE_NAME \
+    --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+    --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+  ```
+
+  Expected result: the send transaction reverts. You should see an error that includes `SenderNotAllowed(address)`.
+
+  If this step does **not** fail as expected, make sure:
+
+  - Hooks are attached (`getAdvancedPoolHooks` shows `POOL_HOOKS`).
+  - Your sender address is **NOT** on the allowlist (previous step returns NOT allowlisted).
+  - The token pool is an authorized caller on the hooks (`getAuthorizedCallers` includes `ETHEREUM_SEPOLIA_TOKEN_POOL`).
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Send a transfer again (expected success)" number={10} depth={3}>
+  With hooks detached, the token pool returns to its default behavior and your transfer should succeed again.
+
+  ```bash filename="Terminal"
+  ccip-cli send \
+    --source ethereum-testnet-sepolia \
+    --router $ETHEREUM_SEPOLIA_ROUTER \
+    --dest ethereum-testnet-sepolia-arbitrum-1 \
+    --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+    --receiver 0xYourDeployerAddress \
+    --wallet hardhat:$KEYSTORE_NAME \
+    --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+    --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+  ```
+
+  Expected output (example):
+
+  ```bash filename="Terminal"
+  Fee: 130129888907619n = 0.000130129888907619 ETH
+  ✔ Enter password for Hardhat keystore 'PRIVATE_KEY'
+  🚀 Sending message to 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994 @ ethereum-testnet-sepolia-arbitrum-1 , tx => 0x3dc40bea29f3e3fc93ff8fce0dda45fd7f55a07ace5089646e018874c8b6745e , messageId => 0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+  CCIP Explorer: https://ccip.chain.link/msg/0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+  ```
+</AnchoredAccordion>
+
+<Aside type="caution" title="Educational Example Disclaimer">
+  This page includes an educational example to use a Chainlink system, product, or service and is provided to
+  demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
+  template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may be
+  missing key checks or error handling to make the usage of the system, product or service more clear. Do not use the
+  code in this example in a production environment without completing your own audits and application of best practices.
+  Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
+  that are generated due to errors in code.
+</Aside>
+
+---
+
+# Enforce ACE policies on CCIP token transfers using Foundry
+Source: https://docs.chain.link/ccip/v2/evm/tutorials/cross-chain-tokens/enforce-ace-policies-foundry
+Last Updated: 2026-09-26
+
+<PageTabs
+  pages={[
+  {
+    name: "Foundry",
+    url: "/ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-foundry",
+    icon: "/images/tutorial-icons/foundry-icn.png",
+  },
+  {
+    name: "Hardhat",
+    url: "/ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-hardhat",
+    icon: "/images/tutorial-icons/hardhat-icn.png",
+  },
+]}
+/>
+
+[`AdvancedPoolHooks`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/AdvancedPoolHooks.sol) can forward each transfer to a [Chainlink ACE](/ace) Policy Engine for evaluation before the source token pool locks or burns tokens (`preflightCheck`) and before the destination token pool releases or mints tokens (`postflightCheck`). If a policy rejects the call, the hook reverts and the transfer does not proceed.
+
+This tutorial covers the **ACE policy enforcement** use case on a working CCT lane. For the sender allowlist use case instead, see [Configure a sender allowlist with AdvancedPoolHooks](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-foundry). For how the hook, engine, extractor, and policies fit together, read the [AdvancedPoolHooks concept page](/ccip/concepts/cross-chain-token/advanced-pool-hooks).
+
+In this tutorial you will:
+
+1. Reuse an existing working CCT lane between Ethereum Sepolia and Arbitrum Sepolia.
+2. Deploy `AdvancedPoolHooks` on both chains with their Policy Engine addresses set, and attach them to both token pools.
+3. Point the hooks at their Policy Engines with `setPolicyEngine` when the engine was not set at deployment or needs to change.
+4. Complete the ACE Platform setup: target detection, contract-type assignment, policy creation, and extractor mappings.
+5. Demonstrate a source `preflightCheck` rejection using the `from` parameter.
+6. Demonstrate a successful unrestricted transfer.
+7. Demonstrate a destination `postflightCheck` rejection using the `to` parameter.
+8. Update the destination policy and manually execute the failed message.
+
+<Aside type="note" title="What this tutorial does not repeat" />
+
+## Before You Begin
+
+## Tutorial
+
+<AnchoredAccordion title="Deploy hooks on both chains and attach them" number={2} depth={3}>
+  Deploy an `AdvancedPoolHooks` contract on each chain, then attach it to that chain's token pool. The allowlist stays empty in this tutorial: policy enforcement comes from ACE, not the allowlist. Pass the engine address at deploy time so the hooks connect to it in the same transaction: the constructor calls `attach()` on the engine, which starts ACE target detection.
+
+  <GitHubCard title="DeployAdvancedPoolHooks.s.sol" href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/allowlist/DeployAdvancedPoolHooks.s.sol" iconName="github-svg-card">
+    View the hooks deployment script on GitHub.
+  </GitHubCard>
+
+  **1. Deploy hooks on Ethereum Sepolia (source chain):**
+
+  ```bash filename="Terminal"
+  AUTHORIZED_CALLERS=$ETHEREUM_SEPOLIA_TOKEN_POOL \
+  POLICY_ENGINE=0xYourSepoliaEngineAddress \
+  forge script \
+  script/configure/allowlist/DeployAdvancedPoolHooks.s.sol \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast \
+  --verify
+  ```
+
+  Export the source hooks address:
+
+  ```bash filename="Terminal"
+  export SOURCE_POOL_HOOKS=0xSourceHooksAddress
+  ```
+
+  **2. Deploy hooks on Arbitrum Sepolia (destination chain):**
+
+  ```bash filename="Terminal"
+  AUTHORIZED_CALLERS=$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_TOKEN_POOL \
+  POLICY_ENGINE=0xYourArbitrumSepoliaEngineAddress \
+  forge script \
+  script/configure/allowlist/DeployAdvancedPoolHooks.s.sol \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast \
+  --verify
+  ```
+
+  Export the destination hooks address:
+
+  ```bash filename="Terminal"
+  export DEST_POOL_HOOKS=0xDestinationHooksAddress
+  ```
+
+  <Aside type="note" title="Deployment address recovery">
+    <ul>
+      <li>
+        A broadcast deploy records the hooks address in the project store (<code>project/\<selectorName>.json</code>,
+        under <code>addresses.active.poolHooks</code> and the <code>deployments</code> entry), so later scripts resolve it
+        automatically with no manual export.
+      </li>
+
+      <li>
+        If you lose the session export, read the address from the project store, or from the append-only history ledger at{" "}
+        <code>history/advanced-pool-hooks/\<selectorName>/</code> (the <code>POOL_HOOKS</code> key in the JSON file).
+      </li>
+
+      <li>
+        For a pool or token deployed outside this repository, run <code>make adopt-token</code> to record it in the same
+        registry. Environment variable exports still work as temporary overrides, but they are not saved.
+      </li>
+    </ul>
+  </Aside>
+
+  **3. Attach the source hooks to the source pool:**
+
+  ```bash filename="Terminal"
+  NEW_HOOK=$SOURCE_POOL_HOOKS \
+  forge script \
+  script/configure/allowlist/UpdateAdvancedPoolHooks.s.sol \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast
+  ```
+
+  **4. Attach the destination hooks to the destination pool:**
+
+  ```bash filename="Terminal"
+  NEW_HOOK=$DEST_POOL_HOOKS \
+  forge script \
+  script/configure/allowlist/UpdateAdvancedPoolHooks.s.sol \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast
+  ```
+
+  <Aside type="note" title="Why AUTHORIZED_CALLERS at deploy time">
+    Passing the pool as an authorized caller at deploy time authorizes it in the same transaction the hooks are created
+    in, so the first hook call cannot revert for a missing caller. If you deployed without it, add the pool with{" "}
+    <code>UpdateAuthorizedCallers.s.sol</code> (<code>POOL_HOOKS=\<hooks> ADD_ADDRESSES=\<pool></code>) before
+    attaching.
+  </Aside>
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Complete the ACE Platform setup" number={4} depth={3}>
+  The hook is now attached to the engine onchain. Complete the Platform-side configuration once per engine by following [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools). This tutorial does not repeat those steps; it links the exact section for each task:
+
+  1. **Verify the detected targets**: each hooks address appears as a detected target under its engine. Assign the built-in `CCIP-AdvancedPoolHooks` contract type to each target. See [Verify the detected target](/ace/guides/policy-manager/ccip-token-pools#verify-the-detected-target).
+  2. **Create a policy instance on each chain**: use the `reject` policy type. On the source engine, configure the instance's denylist with the address you will send from. On the destination engine, configure the instance's denylist with the recipient address you will send to. See [Create a policy instance](/ace/guides/policy-manager/ccip-token-pools#create-a-policy-instance).
+  3. **Protect the hook functions**: on the source target, protect `preflightCheck` and map the policy parameter `Account (address)` to the extractor output `from`. On the destination target, protect `postflightCheck` and map `Account (address)` to `to`. Read [Restrict source senders](/ace/guides/policy-manager/ccip-token-pools#restrict-source-senders) first: the payload sender is the token pool, not the user, so the `from` output is what evaluates the transfer sender. See [Protect a hook function](/ace/guides/policy-manager/ccip-token-pools#protect-a-hook-function).
+
+  <Aside type="note" title="Confirm the chain on every protection">
+    The Platform creates a protection only on chains where the target and policy instance are both deployed. Confirm the
+    selected chain matches the hook deployment: Ethereum Sepolia for the source protection, Arbitrum Sepolia for the
+    destination protection.
+  </Aside>
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Send an unrestricted transfer (expected success)" number={6} depth={3}>
+  Remove the sending address from the source policy's denylist (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)), then send the same transfer again. With no policy rejecting it, the transfer executes end to end.
+
+  ```bash filename="Terminal"
+  ccip-cli send \
+    --source ethereum-testnet-sepolia \
+    --router $ETHEREUM_SEPOLIA_ROUTER \
+    --dest ethereum-testnet-sepolia-arbitrum-1 \
+    --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+    --receiver 0xYourReceiverAddress \
+    --wallet foundry:$KEYSTORE_NAME \
+    --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+    --rpc "$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL"
+  ```
+
+  Expected output (example):
+
+  ```bash filename="Terminal"
+  Fee: 130129888907619n = 0.000130129888907619 ETH
+  ✔ Enter password for Foundry keystore 'PRIVATE_KEY'
+  🚀 Sending message to 0xE23Fc63F47F08F58B9d7448d4CCE0bCDcc96d7F3 @ ethereum-testnet-sepolia-arbitrum-1 , tx => 0x3dc40bea29f3e3fc93ff8fce0dda45fd7f55a07ace5089646e018874c8b6745e , messageId => 0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+  CCIP Explorer: https://ccip.chain.link/msg/0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+  ```
+
+  This confirms the lane and both hooks work when no policy rejects the transfer.
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Update the destination policy and manually execute" number={8} depth={3}>
+  Resolve the rejection condition, then complete the message through manual execution.
+
+  **1. Remove the recipient from the destination policy's denylist** (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)). The next evaluation of `postflightCheck` passes.
+
+  **2. Confirm the message is ready for manual execution:**
+
+  ```bash filename="Terminal"
+  ccip-cli show <messageId> \
+    --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+    --rpc "$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL"
+  ```
+
+  Use the bare `0x...` message ID (or the source transaction hash) as the argument, not the full CCIP Explorer URL. The status shows the failure state and `readyForManualExecution`.
+
+  **3. Manually execute the message on Arbitrum Sepolia:**
+
+  ```bash filename="Terminal"
+  ccip-cli manual-exec <messageId> \
+    --wallet foundry:$KEYSTORE_NAME \
+    --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+    --rpc "$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL"
+  ```
+
+  Manual execution is a destination-chain transaction: the wallet needs Arbitrum Sepolia ETH for gas. After the transaction confirms, the recipient receives the tokens and the message status becomes **Success**.
+
+  For the full recovery flow, including gas overrides and diagnosing other failure causes, read [CCIP Manual Execution](/ccip/concepts/manual-execution).
+</AnchoredAccordion>
+
+<Aside type="caution" title="Educational Example Disclaimer">
+  This page includes an educational example to use a Chainlink system, product, or service and is provided to
+  demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
+  template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may be
+  missing key checks or error handling to make the usage of the system, product or service more clear. Do not use the
+  code in this example in a production environment without completing your own audits and application of best practices.
+  Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
+  that are generated due to errors in code.
+</Aside>
+
+---
+
+# Enforce ACE policies on CCIP token transfers using Hardhat
+Source: https://docs.chain.link/ccip/v2/evm/tutorials/cross-chain-tokens/enforce-ace-policies-hardhat
+Last Updated: 2026-09-26
+
+<PageTabs
+  pages={[
+  {
+    name: "Foundry",
+    url: "/ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-foundry",
+    icon: "/images/tutorial-icons/foundry-icn.png",
+  },
+  {
+    name: "Hardhat",
+    url: "/ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-hardhat",
+    icon: "/images/tutorial-icons/hardhat-icn.png",
+  },
+]}
+/>
+
+[`AdvancedPoolHooks`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/AdvancedPoolHooks.sol) can forward each transfer to a [Chainlink ACE](/ace) Policy Engine for evaluation before the source token pool locks or burns tokens (`preflightCheck`) and before the destination token pool releases or mints tokens (`postflightCheck`). If a policy rejects the call, the hook reverts and the transfer does not proceed.
+
+This tutorial covers the **ACE policy enforcement** use case on a working CCT lane. For the sender allowlist use case instead, see [Configure a sender allowlist with AdvancedPoolHooks](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-hardhat). For how the hook, engine, extractor, and policies fit together, read the [AdvancedPoolHooks concept page](/ccip/concepts/cross-chain-token/advanced-pool-hooks).
+
+In this tutorial you will:
+
+1. Reuse an existing working CCT lane between Ethereum Sepolia and Arbitrum Sepolia.
+2. Deploy `AdvancedPoolHooks` on both chains with their Policy Engine addresses set, and attach them to both token pools.
+3. Point the hooks at their Policy Engines with `setPolicyEngine` when the engine was not set at deployment or needs to change.
+4. Complete the ACE Platform setup: target detection, contract-type assignment, policy creation, and extractor mappings.
+5. Demonstrate a source `preflightCheck` rejection using the `from` parameter.
+6. Demonstrate a successful unrestricted transfer.
+7. Demonstrate a destination `postflightCheck` rejection using the `to` parameter.
+8. Update the destination policy and manually execute the failed message.
+
+<Aside type="note" title="What this tutorial does not repeat" />
+
+## Before You Begin
+
+## Tutorial
+
+<AnchoredAccordion title="Deploy hooks on both chains and attach them" number={2} depth={3}>
+  Deploy an `AdvancedPoolHooks` contract on each chain, then attach it to that chain's token pool. The allowlist stays empty in this tutorial: policy enforcement comes from ACE, not the allowlist. Pass the engine address at deploy time so the hooks connect to it in the same transaction: the constructor calls `attach()` on the engine, which starts ACE target detection.
+
+  <GitHubCard title="deployAdvancedPoolHooks.ts" href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/allowlist/deployAdvancedPoolHooks.ts" iconName="github-svg-card">
+    View the hooks deployment task on GitHub.
+  </GitHubCard>
+
+  **1. Deploy hooks on Ethereum Sepolia (source chain):**
+
+  ```bash filename="Terminal"
+  npx hardhat deployAdvancedPoolHooks \
+    --authorizedcallers $ETHEREUM_SEPOLIA_TOKEN_POOL \
+    --policyengine 0xYourSepoliaEngineAddress \
+    --network sepolia
+  ```
+
+  Export the source hooks address:
+
+  ```bash filename="Terminal"
+  export SOURCE_POOL_HOOKS=0xSourceHooksAddress
+  ```
+
+  **2. Deploy hooks on Arbitrum Sepolia (destination chain):**
+
+  ```bash filename="Terminal"
+  npx hardhat deployAdvancedPoolHooks \
+    --authorizedcallers $ARBITRUM_SEPOLIA_TOKEN_POOL \
+    --policyengine 0xYourArbitrumSepoliaEngineAddress \
+    --network arbitrumSepolia
+  ```
+
+  Export the destination hooks address:
+
+  ```bash filename="Terminal"
+  export DEST_POOL_HOOKS=0xDestinationHooksAddress
+  ```
+
+  <Aside type="note" title="Deployment address recovery">
+    Deployment addresses are saved to <code>deployments/advanced-pool-hooks/</code> per chain. If you lose the session
+    export, retrieve the address from the JSON file under the <code>POOL_HOOKS</code> key.
+  </Aside>
+
+  **3. Attach the source hooks to the source pool:**
+
+  ```bash filename="Terminal"
+  npx hardhat updateAdvancedPoolHooks \
+    --newhook $SOURCE_POOL_HOOKS \
+    --network sepolia
+  ```
+
+  **4. Attach the destination hooks to the destination pool:**
+
+  ```bash filename="Terminal"
+  npx hardhat updateAdvancedPoolHooks \
+    --newhook $DEST_POOL_HOOKS \
+    --network arbitrumSepolia
+  ```
+
+  <Aside type="note" title="Why --authorizedcallers at deploy time">
+    Passing the pool as an authorized caller at deploy time authorizes it in the same transaction the hooks are created
+    in, so the first hook call cannot revert for a missing caller. If you deployed without it, add the pool with{" "}
+    <code>updateAuthorizedCallers</code> (<code>--poolhooks \<hooks> --add \<pool></code>) before attaching.
+  </Aside>
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Complete the ACE Platform setup" number={4} depth={3}>
+  The hook is now attached to the engine onchain. Complete the Platform-side configuration once per engine by following [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools). This tutorial does not repeat those steps; it links the exact section for each task:
+
+  1. **Verify the detected targets**: each hooks address appears as a detected target under its engine. Assign the built-in `CCIP-AdvancedPoolHooks` contract type to each target. See [Verify the detected target](/ace/guides/policy-manager/ccip-token-pools#verify-the-detected-target).
+  2. **Create a policy instance on each chain**: use the `reject` policy type. On the source engine, configure the instance's denylist with the address you will send from. On the destination engine, configure the instance's denylist with the recipient address you will send to. See [Create a policy instance](/ace/guides/policy-manager/ccip-token-pools#create-a-policy-instance).
+  3. **Protect the hook functions**: on the source target, protect `preflightCheck` and map the policy parameter `Account (address)` to the extractor output `from`. On the destination target, protect `postflightCheck` and map `Account (address)` to `to`. Read [Restrict source senders](/ace/guides/policy-manager/ccip-token-pools#restrict-source-senders) first: the payload sender is the token pool, not the user, so the `from` output is what evaluates the transfer sender. See [Protect a hook function](/ace/guides/policy-manager/ccip-token-pools#protect-a-hook-function).
+
+  <Aside type="note" title="Confirm the chain on every protection">
+    The Platform creates a protection only on chains where the target and policy instance are both deployed. Confirm the
+    selected chain matches the hook deployment: Ethereum Sepolia for the source protection, Arbitrum Sepolia for the
+    destination protection.
+  </Aside>
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Send an unrestricted transfer (expected success)" number={6} depth={3}>
+  Remove the sending address from the source policy's denylist (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)), then send the same transfer again. With no policy rejecting it, the transfer executes end to end.
+
+  ```bash filename="Terminal"
+  ccip-cli send \
+    --source ethereum-testnet-sepolia \
+    --router $ETHEREUM_SEPOLIA_ROUTER \
+    --dest ethereum-testnet-sepolia-arbitrum-1 \
+    --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+    --receiver 0xYourReceiverAddress \
+    --wallet hardhat:$KEYSTORE_NAME \
+    --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+    --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+  ```
+
+  Expected output (example):
+
+  ```bash filename="Terminal"
+  Fee: 130129888907619n = 0.000130129888907619 ETH
+  ✔ Enter password for Hardhat keystore 'PRIVATE_KEY'
+  🚀 Sending message to 0xE23Fc63F47F08F58B9d7448d4CCE0bCDcc96d7F3 @ ethereum-testnet-sepolia-arbitrum-1 , tx => 0x3dc40bea29f3e3fc93ff8fce0dda45fd7f55a07ace5089646e018874c8b6745e , messageId => 0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+  CCIP Explorer: https://ccip.chain.link/msg/0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+  ```
+
+  This confirms the lane and both hooks work when no policy rejects the transfer.
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Update the destination policy and manually execute" number={8} depth={3}>
+  Resolve the rejection condition, then complete the message through manual execution.
+
+  **1. Remove the recipient from the destination policy's denylist** (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)). The next evaluation of `postflightCheck` passes.
+
+  **2. Confirm the message is ready for manual execution:**
+
+  ```bash filename="Terminal"
+  ccip-cli show <messageId> \
+    --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+    --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+  ```
+
+  Use the bare `0x...` message ID (or the source transaction hash) as the argument, not the full CCIP Explorer URL. The status shows the failure state and `readyForManualExecution`.
+
+  **3. Manually execute the message on Arbitrum Sepolia:**
+
+  ```bash filename="Terminal"
+  ccip-cli manual-exec <messageId> \
+    --wallet hardhat:$KEYSTORE_NAME \
+    --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+    --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+  ```
+
+  Manual execution is a destination-chain transaction: the wallet needs Arbitrum Sepolia ETH for gas. After the transaction confirms, the recipient receives the tokens and the message status becomes **Success**.
+
+  For the full recovery flow, including gas overrides and diagnosing other failure causes, read [CCIP Manual Execution](/ccip/concepts/manual-execution).
+</AnchoredAccordion>
+
+<Aside type="caution" title="Educational Example Disclaimer">
+  This page includes an educational example to use a Chainlink system, product, or service and is provided to
+  demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
+  template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may be
+  missing key checks or error handling to make the usage of the system, product or service more clear. Do not use the
+  code in this example in a production environment without completing your own audits and application of best practices.
+  Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
+  that are generated due to errors in code.
+</Aside>
+
+---
+
 # Cross-Chain Token (CCT) Tutorials
 Source: https://docs.chain.link/ccip/v2/evm/tutorials/cross-chain-tokens
 Last Updated: 2025-05-19
@@ -101649,7 +103099,7 @@ In this tutorial you will:
   | `POLICY_ENGINE`      | `.policyEngine`                        | Yes      | Policy engine contract address                                                           |
   | `AUTHORIZED_CALLERS` | `.authorizedCallers`                   | Yes      | Addresses authorized to call the hooks (CSV or JSON array)                               |
 
-  > **Note:** A complete tutorial on setting up Advanced Pool Hooks can be found in our docs here: [Set advanced pool hooks using Foundry](/ccip/evm/tutorials/cross-chain-tokens/set-advanced-pool-hooks-foundry)
+  > **Note:** A complete tutorial on setting up Advanced Pool Hooks can be found in our docs here: [Configure a sender allowlist with AdvancedPoolHooks using Foundry](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-foundry)
 </AnchoredAccordion>
 
 ## Tutorial
@@ -102379,7 +103829,7 @@ In this tutorial you will:
   | `--policyengine`      | `.policyEngine`                        | Policy engine contract address                                                           |
   | `--authorizedcallers` | `.authorizedCallers`                   | Addresses authorized to call the hooks (comma-separated)                                 |
 
-  > **Note:** A complete tutorial on setting up Advanced Pool Hooks can be found in our docs here: [Set advanced pool hooks using Hardhat](/ccip/evm/tutorials/cross-chain-tokens/set-advanced-pool-hooks-hardhat)
+  > **Note:** A complete tutorial on setting up Advanced Pool Hooks can be found in our docs here: [Configure a sender allowlist with AdvancedPoolHooks using Hardhat](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-hardhat)
 </AnchoredAccordion>
 
 ## Tutorial
@@ -103098,7 +104548,7 @@ In this tutorial you will:
   | <nobr>`POLICY_ENGINE`</nobr>      | `.policyEngine`                        | Yes      | Policy engine contract address                                                           |
   | <nobr>`AUTHORIZED_CALLERS`</nobr> | `.authorizedCallers`                   | Yes      | Addresses authorized to call the hooks (CSV or JSON array)                               |
 
-  > **Note:** A complete tutorial on setting up Advanced Pool Hooks can be found in our docs here: [Set advanced pool hooks using Foundry](/ccip/evm/tutorials/cross-chain-tokens/set-advanced-pool-hooks-foundry)
+  > **Note:** A complete tutorial on setting up Advanced Pool Hooks can be found in our docs here: [Configure a sender allowlist with AdvancedPoolHooks using Foundry](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-foundry)
 </AnchoredAccordion>
 
 ## Tutorial
@@ -103886,7 +105336,7 @@ In this tutorial you will:
   | <nobr>`--policyengine`</nobr>      | `.policyEngine`                        | Policy engine contract address                                                           |
   | <nobr>`--authorizedcallers`</nobr> | `.authorizedCallers`                   | Addresses authorized to call the hooks (comma-separated)                                 |
 
-  > **Note:** A complete tutorial on setting up Advanced Pool Hooks can be found in our docs here: [Set advanced pool hooks using Hardhat](/ccip/evm/tutorials/cross-chain-tokens/set-advanced-pool-hooks-hardhat)
+  > **Note:** A complete tutorial on setting up Advanced Pool Hooks can be found in our docs here: [Configure a sender allowlist with AdvancedPoolHooks using Hardhat](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-hardhat)
 </AnchoredAccordion>
 
 ## Tutorial
@@ -104524,788 +105974,6 @@ Use these next steps to mint and transfer your tokens across networks.
       <li>Other reverts may indicate the requested depth (or mode) is not permitted by the pool.</li>
     </ol>
   </Aside>
-</AnchoredAccordion>
-
-<Aside type="caution" title="Educational Example Disclaimer">
-  This page includes an educational example to use a Chainlink system, product, or service and is provided to
-  demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
-  template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may be
-  missing key checks or error handling to make the usage of the system, product or service more clear. Do not use the
-  code in this example in a production environment without completing your own audits and application of best practices.
-  Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
-  that are generated due to errors in code.
-</Aside>
-
----
-
-# Set advanced pool hooks using Foundry
-Source: https://docs.chain.link/ccip/v2/evm/tutorials/cross-chain-tokens/set-advanced-pool-hooks-foundry
-Last Updated: 2026-05-05
-
-<PageTabs
-  pages={[
-  {
-    name: "Foundry",
-    url: "/ccip/evm/tutorials/cross-chain-tokens/set-advanced-pool-hooks-foundry",
-    icon: "/images/tutorial-icons/foundry-icn.png",
-  },
-  {
-    name: "Hardhat",
-    url: "/ccip/evm/tutorials/cross-chain-tokens/set-advanced-pool-hooks-hardhat",
-    icon: "/images/tutorial-icons/hardhat-icn.png",
-  },
-]}
-/>
-
-CCIP 2.0token pools support an optional [`AdvancedPoolHooks`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/AdvancedPoolHooks.sol) contract being attached to them. \
-This contract can run certain checks :
-
-1. before tokens are locked/burned (source chain)
-2. before tokens are released/minted (destination chain)
-
-If no hooks contract is attached, the token pool keeps its existing behavior.
-
-Hooks are enforced only when **both** of these aspects are configured:
-
-- The token pool points to the `AdvancedPoolHooks` contract.
-- The hooks contract authorizes that token pool as a caller.
-
-Authorize the pool before attaching hooks so the first hook call does not revert. Hooks are configured **per token pool, per chain**, which means that:
-you need to repeat this setup for any other pool where you want hooks enforced.
-
-> **Note:** Remember. Your CCT token can be deployed on multiple chains, with each chain having its own token pool.
-
-In this tutorial you will:
-
-1. Review the current hooks state on your deployed token pool.
-2. Send a baseline transfer (*with no hooks attached*). This should succeed.
-3. Deploy an `AdvancedPoolHooks` contract with your deployer address on the allowlist.
-4. Authorize the pool as a caller on the hooks contract and attach the hooks contract to the token pool.
-5. Verify the hooks attachment, authorized callers, and allowlist state.
-6. Remove your address from the allowlist.
-7. Attempt a transfer (*expected to revert with `SenderNotAllowed(address)`*).
-8. Detach the hooks contract.
-9. Send a transfer again (*expected to succeed*).
-10. Manage the allowlist over time (add, remove, and check addresses).
-
-## Before You Begin
-
-## Tutorial
-
-<AnchoredAccordion title="Review current pool hooks state" number={2} depth={3}>
-  Use the `GetAdvancedPoolHooks.s.sol` script to check whether an `AdvancedPoolHooks` contract is currently attached to your token pool.
-
-  <GitHubCard title="GetAdvancedPoolHooks.s.sol" href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/allowlist/GetAdvancedPoolHooks.s.sol" iconName="github-svg-card">
-    View the hooks query script on GitHub.
-  </GitHubCard>
-
-  ```bash filename="Terminal"
-  forge script \
-    script/configure/allowlist/GetAdvancedPoolHooks.s.sol \
-    --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
-  ```
-
-  Example output (no hooks attached):
-
-  ```bash filename="Terminal"
-  ========================================
-  🪝 Get Advanced Pool Hooks
-  ========================================
-  Chain:        Ethereum Sepolia
-  Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
-  Action:       View pool hooks
-  ========================================
-
-  No AdvancedPoolHooks contract is attached to this pool.
-  Deploy one with DeployAdvancedPoolHooks.s.sol and attach it via UpdateAdvancedPoolHooks.s.sol.
-
-  ========================================
-  Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
-  ========================================
-  ```
-
-  <Aside type="note">
-    1. <code>getAdvancedPoolHooks()</code> is only available on TokenPool v2.0 and later. If the script reverts with a
-       missing function selector, the pool is a v1 contract and does not support hooks. 2. If your token pool already has
-       hooks attached, you can detach them by following the 'Detach hooks' section, to follow the tutorial.
-  </Aside>
-</AnchoredAccordion>
-
-<AnchoredAccordion title="Deploy AdvancedPoolHooks" number={4} depth={3}>
-  Use the `DeployAdvancedPoolHooks.s.sol` script to deploy a new hooks contract.
-
-  <Aside type="note" title="Inspect script/input/advanced-pool-hooks.json before deployment">
-    The <code>DeployAdvancedPoolHooks.s.sol</code> script reads <code>script/input/advanced-pool-hooks.json</code> when
-    environment variables are omitted. Inspect the file and clear any stale addresses you do not intend to use. Because
-    allowlist enablement is permanent, prefer setting <code>ALLOWLIST</code> and <code>AUTHORIZED_CALLERS</code>{" "}
-    explicitly.
-  </Aside>
-
-  <GitHubCard title="DeployAdvancedPoolHooks.s.sol" href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/allowlist/DeployAdvancedPoolHooks.s.sol" iconName="github-svg-card">
-    View the hooks deployment script on GitHub.
-  </GitHubCard>
-
-  Deployment inputs:
-
-  - `ALLOWLIST`: CSV or JSON array of original outbound sender addresses allowed to initiate outbound transfers.
-  - `AUTHORIZED_CALLERS`: CSV or JSON array of token pool addresses permitted to invoke the hooks.
-
-  <Aside type="caution" title="Allowlist enablement is permanent">
-    <ol>
-      <li>
-        Allowlist mode is set at deployment time and <strong>cannot be changed later</strong>.
-      </li>
-
-      <li>
-        If you deploy with a non-empty <code>ALLOWLIST</code>, the allowlist is permanently enabled.
-      </li>
-
-      <li>
-        If you deploy with an empty allowlist, calling <code>applyAllowListUpdates()</code> later will revert with{" "}
-        <code>AllowListNotEnabled()</code>.
-      </li>
-    </ol>
-  </Aside>
-
-  In this example, you will deploy hooks on Ethereum Sepolia with your deployer address on the allowlist, and authorize your token pool as a caller:
-
-  <Aside type="note" title="Why we start by allowlisting the deployer">
-    1. You will first allowlist your deployer address so you can attach hooks without immediately blocking your own
-       transfers. 2. Later in the tutorial, you will remove your address from the allowlist to demonstrate an enforced
-       failure.
-  </Aside>
-
-  ```bash filename="Terminal"
-  ALLOWLIST=0xYourDeployerAddress \
-  AUTHORIZED_CALLERS=$ETHEREUM_SEPOLIA_TOKEN_POOL \
-  forge script \
-  script/configure/allowlist/DeployAdvancedPoolHooks.s.sol \
-  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
-  --account $KEYSTORE_NAME \
-  --broadcast \
-  --verify
-  ```
-
-  Your output should look something like this:
-
-  ```bash filename="Terminal"
-  ========================================
-  🔒 Deploy Advanced Pool Hooks
-  ========================================
-  Chain:        Ethereum Sepolia
-  Action:       Deploy pool hooks
-  ========================================
-
-  Advanced Pool Hooks Parameters:
-  Allowlist Enabled:            Yes
-  Allowlist Size:               1
-  [0] 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
-  Threshold Amount:             Disabled (0)
-  Policy Engine:                Disabled (0x0)
-  Authorized Callers Enabled:   Yes
-  Authorized Callers Size:      1
-  [0] 0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
-
-  [Step 1] Deploying AdvancedPoolHooks on Ethereum Sepolia
-  AdvancedPoolHooks deployed at: 0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-  https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-  ✅ AdvancedPoolHooks deployed successfully!
-
-  ========================================
-  ✅ Deployment Complete on Ethereum Sepolia!
-  ========================================
-  AdvancedPoolHooks Address: 0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-  https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-
-  Deployment saved: script/deployments/advanced-pool-hooks/ETHEREUM_SEPOLIA/1746652800-AdvancedPoolHooks.json
-
-  Configuration Summary:
-  Allowlist:                    Enabled
-  Threshold:                    Disabled
-  Policy Engine:                Disabled
-  Authorized Callers:           Enabled
-
-  Next Steps:
-  1. When deploying a TokenPool, pass this hooks address as the 'poolHooks' parameter
-  2. Attach to an existing pool: TOKEN_POOL=<address> NEW_HOOK=<address> forge script script/configure/allowlist/UpdateAdvancedPoolHooks.s.sol --rpc-url $RPC_URL --account $KEYSTORE_NAME --broadcast
-  3. Manage allowlist: POOL_HOOKS=<address> ADD_ADDRESSES="0xAddr" forge script script/configure/allowlist/UpdateAllowList.s.sol --rpc-url $RPC_URL --account $KEYSTORE_NAME --broadcast
-  ========================================
-  ```
-
-  Export the hooks address for subsequent commands:
-
-  ```bash filename="Terminal"
-  export POOL_HOOKS=0xHooksAddress
-  ```
-
-  <Aside type="note" title="Deployment address recovery">
-    <ul>
-      <li>
-        Deployment addresses are saved to <code>script/deployments/advanced-pool-hooks/</code>.
-      </li>
-
-      <li>
-        If you lose the session export, retrieve the address from the JSON file under the <code>POOL_HOOKS</code> key.
-      </li>
-    </ul>
-  </Aside>
-</AnchoredAccordion>
-
-<AnchoredAccordion title="Verify the setup" number={6} depth={3}>
-  Run the following read-only scripts to verify wiring. These checks confirm configuration state only;the next step attempts a transfer that is expected to revert.
-
-  **1. Confirm hooks are attached to the pool:**
-
-  ```bash filename="Terminal"
-  forge script \
-    script/configure/allowlist/GetAdvancedPoolHooks.s.sol \
-    --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
-  ```
-
-  Expected output should now show your hooks address:
-
-  ```bash filename="Terminal"
-  ========================================
-  🪝 Get Advanced Pool Hooks
-  ========================================
-  Chain:        Ethereum Sepolia
-  Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
-  Action:       View pool hooks
-  ========================================
-
-  ✅ AdvancedPoolHooks:
-     0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-
-  ========================================
-  Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
-  ========================================
-  ```
-
-  **2. Confirm the pool is an authorized caller on the hooks:**
-
-  <GitHubCard title="GetAuthorizedCallers.s.sol" href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/authorized-callers/GetAuthorizedCallers.s.sol" iconName="github-svg-card">
-    View the authorized callers query script on GitHub.
-  </GitHubCard>
-
-  ```bash filename="Terminal"
-  POOL_HOOKS=$POOL_HOOKS \
-    forge script \
-    script/configure/authorized-callers/GetAuthorizedCallers.s.sol \
-    --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
-    --account $KEYSTORE_NAME
-  ```
-
-  Your output should look something like this:
-
-  ```bash filename="Terminal"
-  ========================================
-  🔎 Get Authorized Callers
-  ========================================
-  Chain:        Ethereum Sepolia
-  Pool Hooks:   0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-  Action:       View authorized callers
-  ========================================
-
-  Authorized Callers count: 1
-  [0] 0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
-  ========================================
-  Pool Hooks:   https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-  ========================================
-  ```
-
-  **3. View the current allowlist:**
-
-  <GitHubCard title="GetAllowList.s.sol" href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/allowlist/GetAllowList.s.sol" iconName="github-svg-card">
-    View the allowlist query script on GitHub.
-  </GitHubCard>
-
-  ```bash filename="Terminal"
-  POOL_HOOKS=$POOL_HOOKS \
-    forge script \
-    script/configure/allowlist/GetAllowList.s.sol \
-    --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
-    --account $KEYSTORE_NAME
-  ```
-
-  Your output should look something like this:
-
-  ```bash filename="Terminal"
-  ========================================
-  🔎 Get AllowList
-  ========================================
-  Chain:        Ethereum Sepolia
-  Pool Hooks:   0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-  Action:       View allowlist
-  ========================================
-
-  AllowList count: 1
-  0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
-  ========================================
-  Pool Hooks:   https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-  ========================================
-  ```
-
-  **4. (Optional): Check if a particular sender is allowlisted:**
-
-  <GitHubCard title="IsAllowListed.s.sol" href="https://github.com/smartcontractkit/docs-cct-foundry/blob/main/script/configure/allowlist/IsAllowListed.s.sol" iconName="github-svg-card">
-    View the allowlist check script on GitHub.
-  </GitHubCard>
-
-  ```bash filename="Terminal"
-  POOL_HOOKS=$POOL_HOOKS \
-  CHECK_ADDRESS=0xsenderaddress \
-  forge script \
-  script/configure/allowlist/IsAllowListed.s.sol \
-  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
-  ```
-
-  Your output should look something like this:
-
-  ```bash filename="Terminal"
-  ========================================
-  🔎 Is AllowListed?
-  ========================================
-  Chain:        Ethereum Sepolia
-  Pool Hooks:   0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-  Check Address: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
-  Action:       Check allowlist
-  ========================================
-
-  ✅ Address IS allowlisted.
-  ========================================
-  Pool Hooks:   https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-  ========================================
-  ```
-</AnchoredAccordion>
-
-<AnchoredAccordion title="Attempt a transfer (expected failure)" number={8} depth={3}>
-  This step attempts a token transfer and is expected to fail because you removed your sender address from the allowlist. Hooks are configured per token pool, per chain, although this does not attach hooks on any destination-chain pool.
-
-  ```bash filename="Terminal"
-  ccip-cli send \
-    --source ethereum-testnet-sepolia \
-    --router $ETHEREUM_SEPOLIA_ROUTER \
-    --dest ethereum-testnet-sepolia-arbitrum-1 \
-    --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
-    --receiver 0xYourDeployerAddress \
-    --wallet foundry:$KEYSTORE_NAME \
-    --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
-    --rpc "$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL"
-  ```
-
-  Expected result: the send transaction reverts. You should see an error that includes `SenderNotAllowed(address)`.
-
-  If this step does **not** fail as expected, make sure:
-
-  - Hooks are attached (`GetAdvancedPoolHooks.s.sol` shows `POOL_HOOKS`).
-  - Your sender address is **NOT** on the allowlist (previous step returns NOT allowlisted).
-  - The token pool is an authorized caller on the hooks (`GetAuthorizedCallers.s.sol` includes `ETHEREUM_SEPOLIA_TOKEN_POOL`).
-</AnchoredAccordion>
-
-<AnchoredAccordion title="Send a transfer again (expected success)" number={10} depth={3}>
-  With hooks detached, the token pool returns to its default behavior and your transfer should succeed again.
-
-  ```bash filename="Terminal"
-  ccip-cli send \
-    --source ethereum-testnet-sepolia \
-    --router $ETHEREUM_SEPOLIA_ROUTER \
-    --dest ethereum-testnet-sepolia-arbitrum-1 \
-    --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
-    --receiver 0xYourDeployerAddress \
-    --wallet foundry:$KEYSTORE_NAME \
-    --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
-    --rpc "$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL"
-  ```
-
-  Expected output (example):
-
-  ```bash filename="Terminal"
-  Fee: 130129888907619n = 0.000130129888907619 ETH
-  ✔ Enter password for Foundry keystore 'PRIVATE_KEY'
-  🚀 Sending message to 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994 @ ethereum-testnet-sepolia-arbitrum-1 , tx => 0x3dc40bea29f3e3fc93ff8fce0dda45fd7f55a07ace5089646e018874c8b6745e , messageId => 0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
-  CCIP Explorer: https://ccip.chain.link/msg/0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
-  ```
-</AnchoredAccordion>
-
-<Aside type="caution" title="Educational Example Disclaimer">
-  This page includes an educational example to use a Chainlink system, product, or service and is provided to
-  demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
-  template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may be
-  missing key checks or error handling to make the usage of the system, product or service more clear. Do not use the
-  code in this example in a production environment without completing your own audits and application of best practices.
-  Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
-  that are generated due to errors in code.
-</Aside>
-
----
-
-# Set advanced pool hooks using Hardhat
-Source: https://docs.chain.link/ccip/v2/evm/tutorials/cross-chain-tokens/set-advanced-pool-hooks-hardhat
-Last Updated: 2026-05-05
-
-<PageTabs
-  pages={[
-  {
-    name: "Foundry",
-    url: "/ccip/evm/tutorials/cross-chain-tokens/set-advanced-pool-hooks-foundry",
-    icon: "/images/tutorial-icons/foundry-icn.png",
-  },
-  {
-    name: "Hardhat",
-    url: "/ccip/evm/tutorials/cross-chain-tokens/set-advanced-pool-hooks-hardhat",
-    icon: "/images/tutorial-icons/hardhat-icn.png",
-  },
-]}
-/>
-
-CCIP 2.0token pools support an optional [`AdvancedPoolHooks`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/AdvancedPoolHooks.sol) contract being attached to them. \
-This contract can run certain checks :
-
-1. before tokens are locked/burned (source chain)
-2. before tokens are released/minted (destination chain)
-
-If no hooks contract is attached, the token pool keeps its existing behavior.
-
-Hooks are enforced only when **both** of these aspects are configured:
-
-- The token pool points to the `AdvancedPoolHooks` contract.
-- The hooks contract authorizes that token pool as a caller.
-
-Authorize the pool before attaching hooks so the first hook call does not revert. Hooks are configured **per token pool, per chain**, which means that:
-you need to repeat this setup for any other pool where you want hooks enforced.
-
-> **Note:** Remember. Your CCT token can be deployed on multiple chains, with each chain having its own token pool.
-
-In this tutorial you will:
-
-1. Review the current hooks state on your deployed token pool.
-2. Send a baseline transfer (*with no hooks attached*). This should succeed.
-3. Deploy an `AdvancedPoolHooks` contract with your deployer address on the allowlist.
-4. Authorize the pool as a caller on the hooks contract and attach the hooks contract to the token pool.
-5. Verify the hooks attachment, authorized callers, and allowlist state.
-6. Remove your address from the allowlist.
-7. Attempt a transfer (*expected to revert with `SenderNotAllowed(address)`*).
-8. Detach the hooks contract.
-9. Send a transfer again (*expected to succeed*).
-10. Manage the allowlist over time (add, remove, and check addresses).
-
-## Before You Begin
-
-## Tutorial
-
-<AnchoredAccordion title="Review current pool hooks state" number={2} depth={3}>
-  Use the `getAdvancedPoolHooks` task to check whether an `AdvancedPoolHooks` contract is currently attached to your token pool.
-
-  <GitHubCard title="getAdvancedPoolHooks.ts" href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/allowlist/getAdvancedPoolHooks.ts" iconName="github-svg-card">
-    View the hooks query task on GitHub.
-  </GitHubCard>
-
-  ```bash filename="Terminal"
-  npx hardhat getAdvancedPoolHooks --network sepolia
-  ```
-
-  Example output (no hooks attached):
-
-  ```bash filename="Terminal"
-  ========================================
-  🪝 Get Advanced Pool Hooks
-  ========================================
-  Chain:        Ethereum Sepolia
-  Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
-  Action:       View pool hooks
-  ========================================
-
-  No AdvancedPoolHooks contract is attached to this pool.
-     Deploy one with:  npx hardhat deployAdvancedPoolHooks
-     Attach it with:   npx hardhat updateAdvancedPoolHooks --newhook <address>
-
-  ========================================
-  Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
-  ========================================
-  ```
-
-  <Aside type="note">
-    1. <code>getAdvancedPoolHooks()</code> is only available on TokenPool v2.0 and later. 2. If your token pool already
-       has hooks attached, you can detach them by following the 'Detach hooks' section, to follow the tutorial.
-  </Aside>
-</AnchoredAccordion>
-
-<AnchoredAccordion title="Deploy AdvancedPoolHooks" number={4} depth={3}>
-  Use the `deployAdvancedPoolHooks` task to deploy a new hooks contract.
-
-  <GitHubCard title="deployAdvancedPoolHooks.ts" href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/allowlist/deployAdvancedPoolHooks.ts" iconName="github-svg-card">
-    View the hooks deployment task on GitHub.
-  </GitHubCard>
-
-  Deployment flags:
-
-  - `--allowlist`: CSV list of original outbound sender addresses allowed to initiate outbound transfers.
-  - `--authorizedcallers`: CSV list of token pool addresses permitted to invoke the hooks.
-
-  <Aside type="caution" title="Allowlist enablement is permanent">
-    <ol>
-      <li>
-        Allowlist mode is set at deployment time and <strong>cannot be changed later</strong>.
-      </li>
-
-      <li>
-        If you deploy with a non-empty <code>--allowlist</code>, the allowlist is permanently enabled.
-      </li>
-
-      <li>
-        If you deploy with an empty allowlist, calling <code>applyAllowListUpdates()</code> later will revert with{" "}
-        <code>AllowListNotEnabled()</code>.
-      </li>
-    </ol>
-  </Aside>
-
-  In this example, you will deploy hooks on Ethereum Sepolia with your deployer address on the allowlist, and authorize your token pool as a caller:
-
-  <Aside type="note" title="Why we start by allowlisting the deployer">
-    1. You will first allowlist your deployer address so you can attach hooks without immediately blocking your own
-       transfers. 2. Later in the tutorial, you will remove your address from the allowlist to demonstrate an enforced
-       failure.
-  </Aside>
-
-  ```bash filename="Terminal"
-  npx hardhat deployAdvancedPoolHooks \
-    --allowlist 0xYourDeployerAddress \
-    --authorizedcallers $ETHEREUM_SEPOLIA_TOKEN_POOL \
-    --network sepolia
-  ```
-
-  Your output should look something like this:
-
-  ```bash filename="Terminal"
-  ========================================
-  🔒 Deploy Advanced Pool Hooks
-  ========================================
-  Chain:        Ethereum Sepolia
-  Action:       Deploy pool hooks
-  ========================================
-
-  Advanced Pool Hooks Parameters:
-    Allowlist Enabled:           Yes
-    Allowlist Size:              1
-      [0] 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
-    Threshold Amount:            Disabled (0)
-    Policy Engine:               Disabled (0x0)
-    Authorized Callers Enabled:  Yes
-    Authorized Callers Size:     1
-      [0] 0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
-
-  [Step 1] Deploying AdvancedPoolHooks on Ethereum Sepolia
-  ⏳ Deployment tx: 0x9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d
-  ✅ AdvancedPoolHooks deployed successfully!
-
-  ========================================
-  ✅ Deployment Complete on Ethereum Sepolia!
-  ========================================
-  AdvancedPoolHooks Address: 0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-  https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-
-  Deployment saved: deployments/advanced-pool-hooks/ETHEREUM_SEPOLIA/1746652800-AdvancedPoolHooks.json
-
-  Configuration Summary:
-    Allowlist:          Enabled
-    Threshold:          Disabled
-    Policy Engine:      Disabled
-    Authorized Callers: Enabled
-
-  Next Steps:
-    1. When deploying a TokenPool, pass this hooks address as the 'poolHooks' parameter
-    2. Attach to an existing pool: npx hardhat updateAdvancedPoolHooks --newhook <address> --network <network>
-    3. Manage allowlist: npx hardhat updateAllowList --poolhooks <address> --add "0xAddr" --network <network>
-  ========================================
-  ```
-
-  Export the hooks address for subsequent commands:
-
-  ```bash filename="Terminal"
-  export POOL_HOOKS=0xHooksAddress
-  ```
-
-  <Aside type="note" title="Deployment address recovery">
-    <ul>
-      <li>
-        Deployment addresses are saved to <code>deployments/advanced-pool-hooks/</code>.
-      </li>
-
-      <li>
-        If you lose the session export, retrieve the address from the JSON file under the <code>POOL_HOOKS</code> key.
-      </li>
-    </ul>
-  </Aside>
-</AnchoredAccordion>
-
-<AnchoredAccordion title="Verify the setup" number={6} depth={3}>
-  Run the following read-only tasks to verify wiring. These checks confirm configuration state only; the next step attempts a transfer that is expected to revert.
-
-  **1. Confirm hooks are attached to the pool:**
-
-  ```bash filename="Terminal"
-  npx hardhat getAdvancedPoolHooks --network sepolia
-  ```
-
-  Expected output should now show your hooks address:
-
-  ```bash filename="Terminal"
-  ========================================
-  🪝 Get Advanced Pool Hooks
-  ========================================
-  Chain:        Ethereum Sepolia
-  Token Pool:   0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
-  Action:       View pool hooks
-  ========================================
-
-  ✅ AdvancedPoolHooks:
-     0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-
-  ========================================
-  Token Pool:   https://sepolia.etherscan.io/address/0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
-  ========================================
-  ```
-
-  **2. Confirm the pool is an authorized caller on the hooks:**
-
-  <GitHubCard title="getAuthorizedCallers.ts" href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/authorized-callers/getAuthorizedCallers.ts" iconName="github-svg-card">
-    View the authorized callers query task on GitHub.
-  </GitHubCard>
-
-  ```bash filename="Terminal"
-  npx hardhat getAuthorizedCallers \
-    --poolhooks $POOL_HOOKS \
-    --network sepolia
-  ```
-
-  Your output should look something like this:
-
-  ```bash filename="Terminal"
-  ========================================
-  🔎 Get Authorized Callers
-  ========================================
-  Chain:        Ethereum Sepolia
-  Pool Hooks:   0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-  Action:       View authorized callers
-  ========================================
-
-  Authorized Callers count: 1
-    [0] 0x147D4625b71f58D7CFA54BB705DC7741B94e0CE9
-
-  ========================================
-  Pool Hooks:   https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-  ========================================
-  ```
-
-  **3. View the current allowlist:**
-
-  <GitHubCard title="getAllowList.ts" href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/allowlist/getAllowList.ts" iconName="github-svg-card">
-    View the allowlist query task on GitHub.
-  </GitHubCard>
-
-  ```bash filename="Terminal"
-  npx hardhat getAllowList \
-    --poolhooks $POOL_HOOKS \
-    --network sepolia
-  ```
-
-  Your output should look something like this:
-
-  ```bash filename="Terminal"
-  ========================================
-  🔎 Get AllowList
-  ========================================
-  Chain:        Ethereum Sepolia
-  Pool Hooks:   0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-  Action:       View allowlist
-  ========================================
-
-  AllowList count: 1
-    0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
-  ========================================
-  Pool Hooks:   https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-  ========================================
-  ```
-
-  **4. (Optional): Check if a particular sender is allowlisted:**
-
-  <GitHubCard title="isAllowListed.ts" href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/allowlist/isAllowListed.ts" iconName="github-svg-card">
-    View the allowlist check task on GitHub.
-  </GitHubCard>
-
-  ```bash filename="Terminal"
-  npx hardhat isAllowListed \
-    --poolhooks $POOL_HOOKS \
-    --checkaddress 0xsenderaddress \
-    --network sepolia
-  ```
-
-  Your output should look something like this:
-
-  ```bash filename="Terminal"
-  ========================================
-  🔎 Is AllowListed?
-  ========================================
-  Chain:         Ethereum Sepolia
-  Pool Hooks:    0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-  Check Address: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
-  Action:        Check allowlist
-  ========================================
-
-  ✅ Address IS allowlisted.
-  ========================================
-  Pool Hooks:   https://sepolia.etherscan.io/address/0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
-  ========================================
-  ```
-</AnchoredAccordion>
-
-<AnchoredAccordion title="Attempt a transfer (expected failure)" number={8} depth={3}>
-  This step attempts a token transfer and is expected to fail because you removed your sender address from the allowlist. Hooks are configured per token pool, per chain, although this does not attach hooks on any destination-chain pool.
-
-  ```bash filename="Terminal"
-  ccip-cli send \
-    --source ethereum-testnet-sepolia \
-    --router $ETHEREUM_SEPOLIA_ROUTER \
-    --dest ethereum-testnet-sepolia-arbitrum-1 \
-    --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
-    --receiver 0xYourDeployerAddress \
-    --wallet hardhat:$KEYSTORE_NAME \
-    --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
-    --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
-  ```
-
-  Expected result: the send transaction reverts. You should see an error that includes `SenderNotAllowed(address)`.
-
-  If this step does **not** fail as expected, make sure:
-
-  - Hooks are attached (`getAdvancedPoolHooks` shows `POOL_HOOKS`).
-  - Your sender address is **NOT** on the allowlist (previous step returns NOT allowlisted).
-  - The token pool is an authorized caller on the hooks (`getAuthorizedCallers` includes `ETHEREUM_SEPOLIA_TOKEN_POOL`).
-</AnchoredAccordion>
-
-<AnchoredAccordion title="Send a transfer again (expected success)" number={10} depth={3}>
-  With hooks detached, the token pool returns to its default behavior and your transfer should succeed again.
-
-  ```bash filename="Terminal"
-  ccip-cli send \
-    --source ethereum-testnet-sepolia \
-    --router $ETHEREUM_SEPOLIA_ROUTER \
-    --dest ethereum-testnet-sepolia-arbitrum-1 \
-    --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
-    --receiver 0xYourDeployerAddress \
-    --wallet hardhat:$KEYSTORE_NAME \
-    --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
-    --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
-  ```
-
-  Expected output (example):
-
-  ```bash filename="Terminal"
-  Fee: 130129888907619n = 0.000130129888907619 ETH
-  ✔ Enter password for Hardhat keystore 'PRIVATE_KEY'
-  🚀 Sending message to 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994 @ ethereum-testnet-sepolia-arbitrum-1 , tx => 0x3dc40bea29f3e3fc93ff8fce0dda45fd7f55a07ace5089646e018874c8b6745e , messageId => 0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
-  CCIP Explorer: https://ccip.chain.link/msg/0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
-  ```
 </AnchoredAccordion>
 
 <Aside type="caution" title="Educational Example Disclaimer">

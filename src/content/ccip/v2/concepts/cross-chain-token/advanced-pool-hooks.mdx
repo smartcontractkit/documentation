@@ -1,0 +1,174 @@
+---
+section: ccip
+date: Last Modified
+title: "Advanced Pool Hooks"
+metadata:
+  description: "How AdvancedPoolHooks extends CCIP v2 Token Pools with sender allowlists, ACE policy checks, and additional CCV requirements, and when to use each capability."
+  excerpt: "AdvancedPoolHooks token pool hooks allowlist ACE policy engine cross-chain verifiers CCVs threshold preflightCheck postflightCheck getRequiredCCVs CCIP v2"
+  datePublished: "2026-09-26"
+  lastModified: "2026-09-26"
+---
+
+import { Aside } from "@components"
+
+`AdvancedPoolHooks` is an optional contract that adds transfer controls to a CCIP v2 Token Pool on EVM chains, without writing a custom pool. A Token Pool is the per-chain contract that locks or burns tokens on the source chain and releases or mints them on the destination chain. For the full pool model, see the [Cross-Chain Token standard](/ccip/concepts/cross-chain-token/overview).
+
+One hook deployment can carry any combination of:
+
+- A sender allowlist that restricts which addresses can initiate outbound transfers.
+- [Chainlink ACE](/ace) policies evaluated on the source chain, the destination chain, or both.
+- Additional [Cross-Chain Verifiers (CCVs)](/ccip/concepts/ccvs/overview) required by lane, direction, or transfer amount.
+
+If you need none of these, deploy your pools with `address(0)` as the hook address and skip the contract entirely.
+
+This page covers how the hook attaches to a pool, when each check runs, and which capability fits which requirement, so you can decide what to configure before following a tutorial. For the complete function surface, see the [`AdvancedPoolHooks` API reference](/ccip/evm/api-reference/v2.0.0/advanced-pool-hooks).
+
+## How the hook attaches to a Token Pool
+
+Deploy the hook as a standalone contract, then point a pool at it. A pool takes the hook address in its `advancedPoolHooks` constructor parameter, or the pool owner can set or replace it later with `updateAdvancedPoolHooks`. Setting the hook to `address(0)` detaches it and stops all hook behavior for that pool.
+
+The connection works in both directions. The pool calls the hook at defined points in a transfer, and the hook accepts calls only from pools in its `authorizedCallers` list. If a pool calls a hook that has not authorized it, the hook reverts and every transfer through that pool fails. Authorize the pool before attaching the hook.
+
+Because the pool needs the hook address in its constructor and the hook needs the pool as an authorized caller, deploy in this order:
+
+1. Deploy the hook with an empty `authorizedCallers` array.
+1. Deploy the pool with the hook address.
+1. Add the pool with `applyAuthorizedCallerUpdates` on the hook.
+
+<Aside type="note" title="Attaching hooks to an existing pool">
+  If the pool is already deployed without a hook (`address(0)`), the pool address is known up front: deploy the hook
+  with the pool in its `authorizedCallers` array, then have the pool owner call `updateAdvancedPoolHooks` with the hook
+  address.
+</Aside>
+
+One hook can serve multiple pools, but those pools share its allowlist, CCV configuration, threshold, and policy engine. Deploy separate hooks when pools need different settings.
+
+The constructor takes four parameters:
+
+| Parameter                          | Purpose                                                                                                              |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `allowlist`                        | Initial allowed senders. A nonempty array enables the allowlist permanently; an empty array disables it permanently. |
+| `thresholdAmountForAdditionalCCVs` | Amount at or above which the threshold CCV lists apply. `0` disables them. Updatable with `setThresholdAmount`.      |
+| `policyEngine`                     | ACE Policy Engine on the same chain. `address(0)` leaves ACE unconfigured. Updatable with `setPolicyEngine`.         |
+| `authorizedCallers`                | Pools allowed to call the hook. Updatable with `applyAuthorizedCallerUpdates`.                                       |
+
+The allowlist array does double duty: it supplies the initial entries and decides whether the feature exists at all. That decision is permanent for the deployment. An empty array cannot be enabled later; you would deploy a new hook.
+
+Ownership is split between two roles:
+
+| Role       | Controls                                                                           |
+| ---------- | ---------------------------------------------------------------------------------- |
+| Pool owner | Which hook address the pool calls                                                  |
+| Hook owner | Allowlist entries, CCV configuration, threshold, policy engine, authorized callers |
+
+Coordinate both roles when you deploy, rotate, or detach a hook. Each chain is configured independently: a source-chain hook and a destination-chain hook are separate deployments with separate settings.
+
+## When the hook runs
+
+The pool calls the hook at two points in a transfer. CCIP consults it in a third, separate flow.
+
+| Flow              | Chain       | Runs                                                                       | Controls available                              |
+| ----------------- | ----------- | -------------------------------------------------------------------------- | ----------------------------------------------- |
+| `preflightCheck`  | Source      | After the pool's standard validation, before tokens are locked or burned   | Sender allowlist, ACE policies                  |
+| `postflightCheck` | Destination | After the pool's standard validation, before tokens are released or minted | ACE policies                                    |
+| `getRequiredCCVs` | Either      | When CCIP resolves which verifiers a transfer requires                     | CCV requirements by lane, direction, and amount |
+
+`getRequiredCCVs` is not a pass or fail check. It is a view call: the pool delegates its verifier resolution to the hook, and the returned addresses merge with the sender's choices, the lane defaults, and any lane-mandated verifiers to form the final set for the message. Every CCV in that set must attest before the message can execute. See [Cross-Chain Verifiers](/ccip/concepts/ccvs/overview).
+
+The two checks fail differently:
+
+- If `preflightCheck` rejects a transfer, the source transaction reverts. No CCIP message is sent, and no tokens are locked or burned.
+- If `postflightCheck` rejects a transfer, destination execution fails before tokens are released or minted. The message stays unexecuted until the condition is resolved, and any party can then complete it through [manual execution](/ccip/concepts/manual-execution).
+
+Source and destination checks solve different problems. A source check stops an invalid transfer before it starts, which avoids paying to send a message that will fail. A destination check enforces the destination deployment's own rules, including rules that differ by direction or that changed while the message was in transit.
+
+## Choose a capability
+
+| You need to                                                                      | Use              | Where it applies             |
+| -------------------------------------------------------------------------------- | ---------------- | ---------------------------- |
+| Restrict which addresses can initiate transfers                                  | Sender allowlist | Source chain only            |
+| Enforce recipient, amount, or identity rules, or rules that differ per direction | ACE policies     | Source, destination, or both |
+| Add verification requirements by lane, direction, or amount                      | Additional CCVs  | Verifier resolution          |
+
+### Restrict senders with an allowlist
+
+The allowlist checks `originalSender`, the address that initiated the transfer, during `preflightCheck`. A sender not on the list reverts the source transaction with `SenderNotAllowed`. The allowlist does not restrict the destination recipient and does not run during `postflightCheck`.
+
+Use the allowlist when the requirement is simple: only approved addresses may move the token cross-chain, outbound, on every lane. Once enabled, the hook owner adds and removes entries at any time with [`applyAllowListUpdates`](/ccip/evm/api-reference/v2.0.0/advanced-pool-hooks#allowlist-management). Remove every entry and the check stays enabled: every outbound transfer reverts with `SenderNotAllowed`, which works as an emergency stop on outbound flow for every pool using the hook.
+
+For recipient restrictions, lane-specific rules, or anything the allowlist cannot express, connect a policy engine instead.
+
+### Enforce ACE policies
+
+A [Chainlink ACE](/ace) Policy Engine adds programmable compliance rules to `preflightCheck` and `postflightCheck`. The hook forwards each call to the engine, which evaluates the policies attached to that function and reverts on rejection.
+
+Use ACE when the rules go beyond an allowlist: recipient restrictions, amount limits, identity or credential checks, or different rules per direction. You can protect `preflightCheck`, `postflightCheck`, or both, with a different policy set on each.
+
+The engine must be deployed on the same chain as the hook. Pass its address in the constructor or call `setPolicyEngine` later. When the hook connects, it calls `attach()` on the engine, and ACE detects the hook as a target automatically. Assign the built-in `CCIP-AdvancedPoolHooks` contract type to that target: it ships with both hook functions and a pre-built extractor, so no custom contract type is needed. For the Platform workflow, see [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools).
+
+`setPolicyEngine(address(0))` disconnects the engine and stops policy checks. When you replace an engine, [`setPolicyEngine`](/ccip/evm/api-reference/v2.0.0/advanced-pool-hooks#policy-engine) detaches the old one first and reverts if the detach call reverts. `setPolicyEngineAllowFailedDetach` is the recovery path when an old engine blocks its own replacement.
+
+### Require additional CCVs
+
+CCV requirements are stored per remote chain and direction. Each remote chain has four lists:
+
+| List                    | Required for                                        |
+| ----------------------- | --------------------------------------------------- |
+| `outboundCCVs`          | Every outbound transfer to that chain               |
+| `thresholdOutboundCCVs` | Outbound transfers at or above the threshold amount |
+| `inboundCCVs`           | Every inbound transfer from that chain              |
+| `thresholdInboundCCVs`  | Inbound transfers at or above the threshold amount  |
+
+Below the threshold, a transfer requires the base list. At or above it, the base and threshold lists combine. The threshold is one amount shared by every remote chain; `setThresholdAmount` changes it, and `0` disables the threshold lists entirely.
+
+Use base lists when a whole lane or direction needs extra verification, such as a stricter verifier set on one high-risk chain. Use threshold lists when only large transfers need extra verification, keeping the base list at the default verifier for routine transfers.
+
+The amount the hook sees is the post-fee amount. For inbound transfers, the pool first converts the source-denominated amount into the destination token's denomination. When the two chains use different decimals, configure and test the threshold on each chain separately.
+
+[`applyCCVConfigUpdates`](/ccip/evm/api-reference/v2.0.0/advanced-pool-hooks#ccv-configuration) enforces these rules:
+
+- No address may repeat within a list or between a base list and its threshold list.
+- Threshold CCVs require a nonempty base list for the same direction.
+- Include `address(0)` in a base list to require the default CCV. When you want the default verifier below the threshold and extra verifiers only at or above it, set the base list to `[address(0)]` and put the extra verifiers in the threshold list.
+- Empty lists remove the requirements for that chain.
+
+Inspect the active configuration with `getCCVConfig`, `getAllCCVConfigs`, and `getThresholdAmount`.
+
+### Authorized callers
+
+Authorized callers are not a capability you choose. Every deployment needs them: the hook reverts on any call from a pool outside its `authorizedCallers` list, before the allowlist or any policy runs. The list starts in the constructor, and the hook owner maintains it with `applyAuthorizedCallerUpdates`.
+
+Authorize only the pools that need the hook, and remove a pool from the list when you replace or retire it.
+
+## Combine capabilities
+
+The capabilities are independent and can all be active on one hook. The allowlist and policy engine run inside `preflightCheck`, the policy engine also runs inside `postflightCheck`, and CCV requirements apply through `getRequiredCCVs` regardless of what the checks do.
+
+A common production combination is an allowlist for senders, ACE policies on both chains, and threshold CCVs so large transfers collect an extra attestation.
+
+Each piece can be stopped separately, except the allowlist:
+
+| To stop                      | Do this                                           | Reversible            |
+| ---------------------------- | ------------------------------------------------- | --------------------- |
+| All hook behavior for a pool | `updateAdvancedPoolHooks(address(0))` on the pool | Yes, reattach anytime |
+| Policy checks                | `setPolicyEngine(address(0))`                     | Yes                   |
+| Threshold CCV lists          | `setThresholdAmount(0)`                           | Yes                   |
+| Allowlist checking           | Nothing. Enabled permanently at deployment        | No, deploy a new hook |
+
+The allowlist's on/off state is immutable, but its entries are not: `applyAllowListUpdates` adds and removes senders at any time. Emptying the list freezes outbound transfers instead of disabling the check.
+
+<Aside type="caution" title="Custom pools can skip hook calls">
+  The standard CCIP v2 `TokenPool` calls the hook at both points, but a custom pool can override `_preflightCheck` and
+  `_postflightCheck` with empty implementations to save bytecode. Review a custom pool before relying on the hook
+  address for enforcement.
+</Aside>
+
+Hook checks run inside the pool's execution path, so they add gas to each transfer they gate. Destination execution is bounded by the [token pool execution gas limit](/ccip/evm/service-limits) of 90,000 gas, so measure transfers on testnet with the complete policy path before mainnet.
+
+## Next steps
+
+- [Configure a sender allowlist with AdvancedPoolHooks using Foundry](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-foundry) or [Hardhat](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-hardhat): deploy a hook, authorize a pool, attach it, and exercise the allowlist with live transfers.
+- [Enforce ACE policies on CCIP token transfers using Foundry](/ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-foundry) or [Hardhat](/ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-hardhat): connect hooks to Policy Engines and exercise preflight and postflight rejections with live transfers.
+- [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools): attach policies to `preflightCheck` and `postflightCheck`.
+- [`AdvancedPoolHooks` API reference](/ccip/evm/api-reference/v2.0.0/advanced-pool-hooks): the complete function, event, and error surface.
+- [Token issuer guide](/ccip/concepts/cross-chain-token/token-issuer-guide): the full pool deployment and configuration workflow, including hooks at step 5f.

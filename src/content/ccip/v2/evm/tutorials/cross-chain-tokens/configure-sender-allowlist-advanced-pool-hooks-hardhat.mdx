@@ -1,9 +1,9 @@
 ---
 section: ccip
 date: Last Modified
-title: "Set advanced pool hooks using Hardhat"
+title: "Configure a sender allowlist with AdvancedPoolHooks using Hardhat"
 metadata:
-  description: "Deploy and attach AdvancedPoolHooks to a CCIP 2.0token pool using Hardhat. Send a baseline transfer, attach hooks, remove your address from the allowlist to force an expected failure, then detach hooks and send again."
+  description: "Deploy and attach AdvancedPoolHooks to a CCIP 2.0token pool to enforce a sender allowlist using Hardhat. Send a baseline transfer, attach hooks, remove your address from the allowlist to force an expected failure, then detach hooks and send again."
   image: "/images/ccip/basic-architecture.png"
   excerpt: "advanced pool hooks, allowlist, authorized callers, Hardhat, token pool, ccip-cli, test transfer, CCIP, cross-chain token"
   datePublished: "2025-10-30"
@@ -11,8 +11,8 @@ metadata:
   estimatedTime: "30 minutes"
   difficulty: "intermediate"
 whatsnext:
+  "Enforce ACE policies on CCIP token transfers using Hardhat": "/ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-hardhat"
   "Set Token Pool rate limits using Hardhat": "/ccip/evm/tutorials/cross-chain-tokens/update-rate-limiters-hardhat"
-  "Set token transfer fee configuration using Hardhat": "/ccip/evm/tutorials/cross-chain-tokens/set-transfer-fee-config-hardhat"
 ---
 
 import { AnchoredAccordion, Aside, GitHubCard, PageTabs } from "@components"
@@ -22,24 +22,27 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
   pages={[
     {
       name: "Foundry",
-      url: "/ccip/evm/tutorials/cross-chain-tokens/set-advanced-pool-hooks-foundry",
+      url: "/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-foundry",
       icon: "/images/tutorial-icons/foundry-icn.png",
     },
     {
       name: "Hardhat",
-      url: "/ccip/evm/tutorials/cross-chain-tokens/set-advanced-pool-hooks-hardhat",
+      url: "/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-hardhat",
       icon: "/images/tutorial-icons/hardhat-icn.png",
     },
   ]}
 />
 
-CCIP 2.0token pools support an optional [`AdvancedPoolHooks`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/AdvancedPoolHooks.sol) contract being attached to them. \
-This contract can run certain checks :
+CCIP 2.0 token pools support an optional [`AdvancedPoolHooks`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/AdvancedPoolHooks.sol) contract being attached to them.
+
+This contract can run certain checks:
 
 1. before tokens are locked/burned (source chain)
 2. before tokens are released/minted (destination chain)
 
 If no hooks contract is attached, the token pool keeps its existing behavior.
+
+This tutorial covers the **sender allowlist** use case: only approved addresses may initiate outbound transfers on the source chain. A sender not on the list reverts the source transaction with `SenderNotAllowed`. For the other capabilities, see the [AdvancedPoolHooks concept page](/ccip/concepts/cross-chain-token/advanced-pool-hooks) or [Enforce ACE policies on CCIP token transfers](/ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-hardhat).
 
 Hooks are enforced only when **both** of these aspects are configured:
 
