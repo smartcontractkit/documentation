@@ -175,7 +175,12 @@ export ETHEREUM_SEPOLIA_TOKEN_POOL=0x...
 export ARBITRUM_SEPOLIA_TOKEN=0x...
 export ARBITRUM_SEPOLIA_TOKEN_POOL=0x...
 export ETHEREUM_SEPOLIA_ROUTER=0x...
+export UNRESTRICTED_RECEIVER=0x...
+export DENIED_RECEIVER=0x...
 ```
+
+Use two different recipient addresses. The destination policy will deny only `DENIED_RECEIVER`; you will use
+`UNRESTRICTED_RECEIVER` to confirm that transfers to other recipients still succeed.
 
 You also need an ACE account and a Policy Engine on each chain. Complete the [ACE account setup](/ace/getting-started/account-setup) and [Create a policy engine](/ace/guides/policy-manager/manage-engines#create-a-policy-engine) first: include Ethereum Sepolia and Arbitrum Sepolia in the engine, wait until it is **Active**, and copy its onchain address for each chain.
 
@@ -381,7 +386,7 @@ Action:       View policy engine
 The hook is now attached to the engine onchain. Complete the Platform-side configuration once per engine by following [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools). This tutorial does not repeat those steps; it links the exact section for each task:
 
 1. **Verify the detected targets**: each hooks address appears as a detected target under its engine. Assign the built-in `CCIP-AdvancedPoolHooks` contract type to each target. See [Verify the detected target](/ace/guides/policy-manager/ccip-token-pools#verify-the-detected-target).
-2. **Create a policy instance on each chain**: use the `reject` policy type. On the source engine, configure the instance's denylist with the address you will send from. On the destination engine, configure the instance's denylist with the recipient address you will send to. See [Create a policy instance](/ace/guides/policy-manager/ccip-token-pools#create-a-policy-instance).
+2. **Create a policy instance on each chain**: use the `reject` policy type. On the source engine, configure the instance's denylist with the address you will send from. On the destination engine, configure the instance's denylist with `$DENIED_RECEIVER`. See [Create a policy instance](/ace/guides/policy-manager/ccip-token-pools#create-a-policy-instance).
 3. **Protect the hook functions**: on the source target, protect `preflightCheck` and map the policy parameter `Account (address)` to the extractor output `from`. On the destination target, protect `postflightCheck` and map `Account (address)` to `to`. Read [Restrict source senders](/ace/guides/policy-manager/ccip-token-pools#restrict-source-senders) first: the payload sender is the token pool, not the user, so the `from` output is what evaluates the transfer sender. See [Protect a hook function](/ace/guides/policy-manager/ccip-token-pools#protect-a-hook-function).
 
 <Aside type="note" title="Confirm the chain on every protection">
@@ -402,13 +407,13 @@ ccip-cli send \
   --router $ETHEREUM_SEPOLIA_ROUTER \
   --dest ethereum-testnet-sepolia-arbitrum-1 \
   --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
-  --receiver 0xYourReceiverAddress \
+  --receiver $UNRESTRICTED_RECEIVER \
   --wallet hardhat:$KEYSTORE_NAME \
   --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
   --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
 ```
 
-Expected result: the send transaction reverts. The error includes the rejecting policy, for example `PolicyRunRejected` or `PolicyRejected` from the engine, wrapped by the hook call.
+Expected result: the send transaction reverts. The Policy Engine returns `PolicyRunRejected`; its reject reason identifies the underlying policy rejection, and the hook call propagates that revert.
 
 If this step does **not** fail as expected, check:
 
@@ -421,7 +426,7 @@ If this step does **not** fail as expected, check:
 
 <AnchoredAccordion title="Send an unrestricted transfer (expected success)" number={6} depth={3}>
 
-Remove the sending address from the source policy's denylist (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)), then send the same transfer again. With no policy rejecting it, the transfer executes end to end.
+Remove the sending address from the source policy's denylist (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)). Wait for the configuration transaction to confirm on Ethereum Sepolia, then send the same transfer again. With no policy rejecting it, the transfer executes end to end.
 
 ```bash filename="Terminal"
 ccip-cli send \
@@ -429,7 +434,7 @@ ccip-cli send \
   --router $ETHEREUM_SEPOLIA_ROUTER \
   --dest ethereum-testnet-sepolia-arbitrum-1 \
   --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
-  --receiver 0xYourReceiverAddress \
+  --receiver $UNRESTRICTED_RECEIVER \
   --wallet hardhat:$KEYSTORE_NAME \
   --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
   --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
@@ -458,7 +463,7 @@ ccip-cli send \
   --router $ETHEREUM_SEPOLIA_ROUTER \
   --dest ethereum-testnet-sepolia-arbitrum-1 \
   --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
-  --receiver 0xYourDeniedRecipientAddress \
+  --receiver $DENIED_RECEIVER \
   --wallet hardhat:$KEYSTORE_NAME \
   --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
   --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
@@ -479,7 +484,7 @@ The send transaction succeeds on Sepolia. On Arbitrum Sepolia, execution fails: 
 
 Resolve the rejection condition, then complete the message through manual execution.
 
-**1. Remove the recipient from the destination policy's denylist** (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)). The next evaluation of `postflightCheck` passes.
+**1. Remove `$DENIED_RECEIVER` from the destination policy's denylist** (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)). Wait for the configuration transaction to confirm on Arbitrum Sepolia before continuing. The next evaluation of `postflightCheck` passes.
 
 **2. Confirm the message is ready for manual execution:**
 

@@ -100554,7 +100554,7 @@ Last Updated: 2026-05-05
 ]}
 />
 
-CCIP 2.0token pools support an optional [`AdvancedPoolHooks`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/AdvancedPoolHooks.sol) contract being attached to them.
+CCIP 2.0 token pools support an optional [`AdvancedPoolHooks`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/AdvancedPoolHooks.sol) contract being attached to them.
 
 This contract can run certain checks:
 
@@ -101470,7 +101470,7 @@ In this tutorial you will:
   The hook is now attached to the engine onchain. Complete the Platform-side configuration once per engine by following [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools). This tutorial does not repeat those steps; it links the exact section for each task:
 
   1. **Verify the detected targets**: each hooks address appears as a detected target under its engine. Assign the built-in `CCIP-AdvancedPoolHooks` contract type to each target. See [Verify the detected target](/ace/guides/policy-manager/ccip-token-pools#verify-the-detected-target).
-  2. **Create a policy instance on each chain**: use the `reject` policy type. On the source engine, configure the instance's denylist with the address you will send from. On the destination engine, configure the instance's denylist with the recipient address you will send to. See [Create a policy instance](/ace/guides/policy-manager/ccip-token-pools#create-a-policy-instance).
+  2. **Create a policy instance on each chain**: use the `reject` policy type. On the source engine, configure the instance's denylist with the address you will send from. On the destination engine, configure the instance's denylist with `$DENIED_RECEIVER`. See [Create a policy instance](/ace/guides/policy-manager/ccip-token-pools#create-a-policy-instance).
   3. **Protect the hook functions**: on the source target, protect `preflightCheck` and map the policy parameter `Account (address)` to the extractor output `from`. On the destination target, protect `postflightCheck` and map `Account (address)` to `to`. Read [Restrict source senders](/ace/guides/policy-manager/ccip-token-pools#restrict-source-senders) first: the payload sender is the token pool, not the user, so the `from` output is what evaluates the transfer sender. See [Protect a hook function](/ace/guides/policy-manager/ccip-token-pools#protect-a-hook-function).
 
   <Aside type="note" title="Confirm the chain on every protection">
@@ -101481,7 +101481,7 @@ In this tutorial you will:
 </AnchoredAccordion>
 
 <AnchoredAccordion title="Send an unrestricted transfer (expected success)" number={6} depth={3}>
-  Remove the sending address from the source policy's denylist (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)), then send the same transfer again. With no policy rejecting it, the transfer executes end to end.
+  Remove the sending address from the source policy's denylist (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)). Wait for the configuration transaction to confirm on Ethereum Sepolia, then send the same transfer again. With no policy rejecting it, the transfer executes end to end.
 
   ```bash filename="Terminal"
   ccip-cli send \
@@ -101489,7 +101489,7 @@ In this tutorial you will:
     --router $ETHEREUM_SEPOLIA_ROUTER \
     --dest ethereum-testnet-sepolia-arbitrum-1 \
     --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
-    --receiver 0xYourReceiverAddress \
+    --receiver $UNRESTRICTED_RECEIVER \
     --wallet foundry:$KEYSTORE_NAME \
     --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
     --rpc "$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL"
@@ -101510,7 +101510,7 @@ In this tutorial you will:
 <AnchoredAccordion title="Update the destination policy and manually execute" number={8} depth={3}>
   Resolve the rejection condition, then complete the message through manual execution.
 
-  **1. Remove the recipient from the destination policy's denylist** (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)). The next evaluation of `postflightCheck` passes.
+  **1. Remove `$DENIED_RECEIVER` from the destination policy's denylist** (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)). Wait for the configuration transaction to confirm on Arbitrum Sepolia before continuing. The next evaluation of `postflightCheck` passes.
 
   **2. Confirm the message is ready for manual execution:**
 
@@ -101657,7 +101657,7 @@ In this tutorial you will:
   The hook is now attached to the engine onchain. Complete the Platform-side configuration once per engine by following [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools). This tutorial does not repeat those steps; it links the exact section for each task:
 
   1. **Verify the detected targets**: each hooks address appears as a detected target under its engine. Assign the built-in `CCIP-AdvancedPoolHooks` contract type to each target. See [Verify the detected target](/ace/guides/policy-manager/ccip-token-pools#verify-the-detected-target).
-  2. **Create a policy instance on each chain**: use the `reject` policy type. On the source engine, configure the instance's denylist with the address you will send from. On the destination engine, configure the instance's denylist with the recipient address you will send to. See [Create a policy instance](/ace/guides/policy-manager/ccip-token-pools#create-a-policy-instance).
+  2. **Create a policy instance on each chain**: use the `reject` policy type. On the source engine, configure the instance's denylist with the address you will send from. On the destination engine, configure the instance's denylist with `$DENIED_RECEIVER`. See [Create a policy instance](/ace/guides/policy-manager/ccip-token-pools#create-a-policy-instance).
   3. **Protect the hook functions**: on the source target, protect `preflightCheck` and map the policy parameter `Account (address)` to the extractor output `from`. On the destination target, protect `postflightCheck` and map `Account (address)` to `to`. Read [Restrict source senders](/ace/guides/policy-manager/ccip-token-pools#restrict-source-senders) first: the payload sender is the token pool, not the user, so the `from` output is what evaluates the transfer sender. See [Protect a hook function](/ace/guides/policy-manager/ccip-token-pools#protect-a-hook-function).
 
   <Aside type="note" title="Confirm the chain on every protection">
@@ -101668,7 +101668,7 @@ In this tutorial you will:
 </AnchoredAccordion>
 
 <AnchoredAccordion title="Send an unrestricted transfer (expected success)" number={6} depth={3}>
-  Remove the sending address from the source policy's denylist (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)), then send the same transfer again. With no policy rejecting it, the transfer executes end to end.
+  Remove the sending address from the source policy's denylist (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)). Wait for the configuration transaction to confirm on Ethereum Sepolia, then send the same transfer again. With no policy rejecting it, the transfer executes end to end.
 
   ```bash filename="Terminal"
   ccip-cli send \
@@ -101676,7 +101676,7 @@ In this tutorial you will:
     --router $ETHEREUM_SEPOLIA_ROUTER \
     --dest ethereum-testnet-sepolia-arbitrum-1 \
     --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
-    --receiver 0xYourReceiverAddress \
+    --receiver $UNRESTRICTED_RECEIVER \
     --wallet hardhat:$KEYSTORE_NAME \
     --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
     --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
@@ -101697,7 +101697,7 @@ In this tutorial you will:
 <AnchoredAccordion title="Update the destination policy and manually execute" number={8} depth={3}>
   Resolve the rejection condition, then complete the message through manual execution.
 
-  **1. Remove the recipient from the destination policy's denylist** (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)). The next evaluation of `postflightCheck` passes.
+  **1. Remove `$DENIED_RECEIVER` from the destination policy's denylist** (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)). Wait for the configuration transaction to confirm on Arbitrum Sepolia before continuing. The next evaluation of `postflightCheck` passes.
 
   **2. Confirm the message is ready for manual execution:**
 
@@ -103099,7 +103099,7 @@ In this tutorial you will:
   | `POLICY_ENGINE`      | `.policyEngine`                        | Yes      | Policy engine contract address                                                           |
   | `AUTHORIZED_CALLERS` | `.authorizedCallers`                   | Yes      | Addresses authorized to call the hooks (CSV or JSON array)                               |
 
-  > **Note:** A complete tutorial on setting up Advanced Pool Hooks can be found in our docs here: [Configure a sender allowlist with AdvancedPoolHooks using Foundry](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-foundry)
+  > **Note:** To configure an `AdvancedPoolHooks` sender allowlist, follow [Configure a sender allowlist with AdvancedPoolHooks using Foundry](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-foundry). For an overview of the other hook capabilities, read [Advanced Pool Hooks](/ccip/concepts/cross-chain-token/advanced-pool-hooks).
 </AnchoredAccordion>
 
 ## Tutorial
@@ -103829,7 +103829,7 @@ In this tutorial you will:
   | `--policyengine`      | `.policyEngine`                        | Policy engine contract address                                                           |
   | `--authorizedcallers` | `.authorizedCallers`                   | Addresses authorized to call the hooks (comma-separated)                                 |
 
-  > **Note:** A complete tutorial on setting up Advanced Pool Hooks can be found in our docs here: [Configure a sender allowlist with AdvancedPoolHooks using Hardhat](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-hardhat)
+  > **Note:** To configure an `AdvancedPoolHooks` sender allowlist, follow [Configure a sender allowlist with AdvancedPoolHooks using Hardhat](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-hardhat). For an overview of the other hook capabilities, read [Advanced Pool Hooks](/ccip/concepts/cross-chain-token/advanced-pool-hooks).
 </AnchoredAccordion>
 
 ## Tutorial
@@ -104548,7 +104548,7 @@ In this tutorial you will:
   | <nobr>`POLICY_ENGINE`</nobr>      | `.policyEngine`                        | Yes      | Policy engine contract address                                                           |
   | <nobr>`AUTHORIZED_CALLERS`</nobr> | `.authorizedCallers`                   | Yes      | Addresses authorized to call the hooks (CSV or JSON array)                               |
 
-  > **Note:** A complete tutorial on setting up Advanced Pool Hooks can be found in our docs here: [Configure a sender allowlist with AdvancedPoolHooks using Foundry](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-foundry)
+  > **Note:** To configure an `AdvancedPoolHooks` sender allowlist, follow [Configure a sender allowlist with AdvancedPoolHooks using Foundry](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-foundry). For an overview of the other hook capabilities, read [Advanced Pool Hooks](/ccip/concepts/cross-chain-token/advanced-pool-hooks).
 </AnchoredAccordion>
 
 ## Tutorial
@@ -105336,7 +105336,7 @@ In this tutorial you will:
   | <nobr>`--policyengine`</nobr>      | `.policyEngine`                        | Policy engine contract address                                                           |
   | <nobr>`--authorizedcallers`</nobr> | `.authorizedCallers`                   | Addresses authorized to call the hooks (comma-separated)                                 |
 
-  > **Note:** A complete tutorial on setting up Advanced Pool Hooks can be found in our docs here: [Configure a sender allowlist with AdvancedPoolHooks using Hardhat](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-hardhat)
+  > **Note:** To configure an `AdvancedPoolHooks` sender allowlist, follow [Configure a sender allowlist with AdvancedPoolHooks using Hardhat](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-hardhat). For an overview of the other hook capabilities, read [Advanced Pool Hooks](/ccip/concepts/cross-chain-token/advanced-pool-hooks).
 </AnchoredAccordion>
 
 ## Tutorial
