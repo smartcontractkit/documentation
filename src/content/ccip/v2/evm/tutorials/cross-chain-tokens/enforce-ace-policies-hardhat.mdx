@@ -1,0 +1,514 @@
+---
+section: ccip
+date: Last Modified
+title: "Enforce ACE policies on CCIP token transfers using Hardhat"
+metadata:
+  description: "Connect AdvancedPoolHooks to Chainlink ACE Policy Engines on the source and destination chains of a working CCT lane. Demonstrate a preflight rejection, an unrestricted success, a postflight rejection, then update the destination policy and manually execute the failed message."
+  image: "/images/ccip/basic-architecture.png"
+  excerpt: "advanced pool hooks, ACE, policy engine, preflightCheck, postflightCheck, reject policy, manual execution, Hardhat, token pool, ccip-cli, CCIP, cross-chain token"
+  datePublished: "2026-09-26"
+  lastModified: "2026-09-26"
+  estimatedTime: "45 minutes"
+  difficulty: "advanced"
+whatsnext:
+  "CCIP Manual Execution": "/ccip/concepts/manual-execution"
+  "Set Token Pool rate limits using Hardhat": "/ccip/evm/tutorials/cross-chain-tokens/update-rate-limiters-hardhat"
+---
+
+import { AnchoredAccordion, Aside, GitHubCard, PageTabs } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<PageTabs
+  pages={[
+    {
+      name: "Foundry",
+      url: "/ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-foundry",
+      icon: "/images/tutorial-icons/foundry-icn.png",
+    },
+    {
+      name: "Hardhat",
+      url: "/ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-hardhat",
+      icon: "/images/tutorial-icons/hardhat-icn.png",
+    },
+  ]}
+/>
+
+[`AdvancedPoolHooks`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/AdvancedPoolHooks.sol) can forward each transfer to a [Chainlink ACE](/ace) Policy Engine for evaluation before the source token pool locks or burns tokens (`preflightCheck`) and before the destination token pool releases or mints tokens (`postflightCheck`). If a policy rejects the call, the hook reverts and the transfer does not proceed.
+
+This tutorial covers the **ACE policy enforcement** use case on a working CCT lane. For the sender allowlist use case instead, see [Configure a sender allowlist with AdvancedPoolHooks](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-hardhat). For how the hook, engine, extractor, and policies fit together, read the [AdvancedPoolHooks concept page](/ccip/concepts/cross-chain-token/advanced-pool-hooks).
+
+In this tutorial you will:
+
+1. Reuse an existing working CCT lane between Ethereum Sepolia and Arbitrum Sepolia.
+2. Deploy `AdvancedPoolHooks` on both chains with their Policy Engine addresses set, and attach them to both token pools.
+3. Point the hooks at their Policy Engines with `setPolicyEngine` when the engine was not set at deployment or needs to change.
+4. Complete the ACE Platform setup: target detection, contract-type assignment, policy creation, and extractor mappings.
+5. Demonstrate a source `preflightCheck` rejection using the `from` parameter.
+6. Demonstrate a successful unrestricted transfer.
+7. Demonstrate a destination `postflightCheck` rejection using the `to` parameter.
+8. Update the destination policy and manually execute the failed message.
+
+<Aside type="note" title="What this tutorial does not repeat">
+  <ul>
+    <li>
+      Token and pool deployment, admin registration, and lane configuration: complete a registration tutorial first (see{" "}
+      <a href="#confirm-prerequisites-addresses-and-permissions">Confirm prerequisites</a>).
+    </li>
+    <li>
+      The ACE Platform workflow (engine creation, target detection, contract-type assignment, policy instances,
+      protections, extractor mappings): follow{" "}
+      <a href="/ace/guides/policy-manager/ccip-token-pools">Protect CCIP Token Pools with ACE</a> for each step.
+    </li>
+  </ul>
+</Aside>
+
+## Before You Begin
+
+<AnchoredAccordion title="Set up your development environment" number={1} depth={3}>
+
+1. Install Node.js and npm:
+   - Make sure you have `Node.js v22.10.0` or above installed. If not, install **`Node.js v22.10.0`** using their [documentation](https://nodejs.org/en/download/).
+   - `npm` is bundled with Node.js. If `npm` is unavailable, reinstall or update Node.js.
+
+2. Install/Update Chainlink `ccip-cli`:
+
+```bash filename="Terminal"
+npm install -g @chainlink/ccip-cli
+ccip-cli --version
+```
+
+3. **Clone the repository and navigate to the project directory**:
+
+<GitHubCard
+  title="CCIP 2.0 template"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat"
+  iconName="github-svg-card"
+>
+  Clone the CCIP 2.0 Hardhat template for a smoother setup.
+</GitHubCard>
+
+```bash filename="Terminal"
+git clone https://github.com/smartcontractkit/docs-cct-hardhat.git
+cd docs-cct-hardhat
+```
+
+4. Create a `.env` file by copying the `.env.example` file, and fill in the required values:
+
+```bash filename="Terminal"
+cp .env.example .env
+```
+
+```bash filename=".env"
+# Keystore name (created via `npx hardhat keystore set`)
+KEYSTORE_NAME=<your_default_keystore_name>
+
+# RPC URLs (add the ones you need)
+ETHEREUM_SEPOLIA_RPC_URL=your_eth_sepolia_rpc
+ARBITRUM_SEPOLIA_RPC_URL=your_arbitrum_sepolia_rpc
+
+# Etherscan API key (required only if you pass --verify to deployment tasks)
+ETHERSCAN_API_KEY=your_etherscan_api_key
+```
+
+This tutorial uses a single wallet for every deployment, configuration update, and test transfer: the wallet stored in `KEYSTORE_NAME`.
+
+5. To make sure your terminal has access to these variables, run the following command:
+
+```bash filename="Terminal"
+source .env
+```
+
+6. Build the project:
+
+```bash filename="Terminal"
+npm install && npx hardhat compile
+```
+
+7. Create an encrypted Hardhat keystore, if you haven't already:
+
+```bash filename="Terminal"
+npx hardhat keystore set PRIVATE_KEY
+```
+
+<Aside type="caution" title="Private key format">
+  When prompted for your private key, include the <code>0x</code> prefix.
+</Aside>
+
+<Aside type="note" title="Note">
+  <ol>
+    <li>
+      Hardhat prompts for a keystore password: set it on first use, or enter it to unlock on subsequent uses. Then it
+      asks you to enter your private key as hidden text.
+    </li>
+    <li>
+      The name you choose (e.g. <code>PRIVATE_KEY</code>) is what you set as <code>KEYSTORE_NAME</code> in{" "}
+      <code>.env</code>.
+    </li>
+    <li>
+      Use <code>npx hardhat keystore list</code> to check previously created keystores.
+    </li>
+  </ol>
+</Aside>
+
+</AnchoredAccordion>
+
+## Tutorial
+
+<AnchoredAccordion title="Confirm prerequisites, addresses, and permissions" number={1} depth={3}>
+
+This tutorial assumes you have already deployed tokens and token pools and configured a working lane between Ethereum Sepolia and Arbitrum Sepolia. If not, complete one of the registration tutorials first:
+
+<ul>
+  <li>
+    <a href="/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-hardhat">Burn & Mint (Hardhat)</a>
+  </li>
+  <li>
+    <a href="/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-hardhat">Lock & Mint (Hardhat)</a>
+  </li>
+</ul>
+
+Export the addresses for both chains:
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_TOKEN=0x...
+export ETHEREUM_SEPOLIA_TOKEN_POOL=0x...
+export ARBITRUM_SEPOLIA_TOKEN=0x...
+export ARBITRUM_SEPOLIA_TOKEN_POOL=0x...
+export ETHEREUM_SEPOLIA_ROUTER=0x...
+export UNRESTRICTED_RECEIVER=0x...
+export DENIED_RECEIVER=0x...
+```
+
+Use two different recipient addresses. The destination policy will deny only `DENIED_RECEIVER`; you will use
+`UNRESTRICTED_RECEIVER` to confirm that transfers to other recipients still succeed.
+
+You also need an ACE account and a Policy Engine on each chain. Complete the [ACE account setup](/ace/getting-started/account-setup) and [Create a policy engine](/ace/guides/policy-manager/manage-engines#create-a-policy-engine) first: include Ethereum Sepolia and Arbitrum Sepolia in the engine, wait until it is **Active**, and copy its onchain address for each chain.
+
+<Aside type="caution" title="Funding requirements">
+  <ul>
+    <li>
+      <strong>Sepolia ETH</strong>: the wallet <code>KEYSTORE_NAME</code> needs ETH on Sepolia to pay gas for hook
+      deployment and configuration.
+    </li>
+    <li>
+      <strong>Arbitrum Sepolia ETH</strong>: the same wallet needs ETH on Arbitrum Sepolia for the destination hook
+      deployment, configuration, and the manual execution transaction.
+    </li>
+    <li>
+      <strong>Your token on Sepolia</strong>: the same wallet needs some <code>ETHEREUM_SEPOLIA_TOKEN</code> to send the
+      test transfers.
+    </li>
+  </ul>
+</Aside>
+
+<Aside type="note" title="One-wallet assumption">
+  This tutorial assumes the wallet stored in <code>KEYSTORE_NAME</code> is the owner of both token pools and will be the
+  owner of both deployed <code>AdvancedPoolHooks</code> contracts. These roles can be distributed across multiple
+  wallets if needed.
+</Aside>
+
+<Aside type="note" title="The engine must be on the same chain as the hook">
+  ACE evaluates policies onchain. The source hook must point at the engine deployed on Ethereum Sepolia, and the
+  destination hook at the engine deployed on Arbitrum Sepolia. A single Policy Engine can cover both chains if you
+  included both when creating it; in that case use the engine's per-chain onchain addresses.
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Deploy hooks on both chains and attach them" number={2} depth={3}>
+
+Deploy an `AdvancedPoolHooks` contract on each chain, then attach it to that chain's token pool. The allowlist stays empty in this tutorial: policy enforcement comes from ACE, not the allowlist. Pass the engine address at deploy time so the hooks connect to it in the same transaction: the constructor calls `attach()` on the engine, which starts ACE target detection.
+
+<GitHubCard
+  title="deployAdvancedPoolHooks.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/allowlist/deployAdvancedPoolHooks.ts"
+  iconName="github-svg-card"
+>
+  View the hooks deployment task on GitHub.
+</GitHubCard>
+
+**1. Deploy hooks on Ethereum Sepolia (source chain):**
+
+```bash filename="Terminal"
+npx hardhat deployAdvancedPoolHooks \
+  --authorizedcallers $ETHEREUM_SEPOLIA_TOKEN_POOL \
+  --policyengine 0xYourSepoliaEngineAddress \
+  --network sepolia
+```
+
+Export the source hooks address:
+
+```bash filename="Terminal"
+export SOURCE_POOL_HOOKS=0xSourceHooksAddress
+```
+
+**2. Deploy hooks on Arbitrum Sepolia (destination chain):**
+
+```bash filename="Terminal"
+npx hardhat deployAdvancedPoolHooks \
+  --authorizedcallers $ARBITRUM_SEPOLIA_TOKEN_POOL \
+  --policyengine 0xYourArbitrumSepoliaEngineAddress \
+  --network arbitrumSepolia
+```
+
+Export the destination hooks address:
+
+```bash filename="Terminal"
+export DEST_POOL_HOOKS=0xDestinationHooksAddress
+```
+
+<Aside type="note" title="Deployment address recovery">
+  Deployment addresses are saved to <code>deployments/advanced-pool-hooks/</code> per chain. If you lose the session
+  export, retrieve the address from the JSON file under the <code>POOL_HOOKS</code> key.
+</Aside>
+
+**3. Attach the source hooks to the source pool:**
+
+```bash filename="Terminal"
+npx hardhat updateAdvancedPoolHooks \
+  --newhook $SOURCE_POOL_HOOKS \
+  --network sepolia
+```
+
+**4. Attach the destination hooks to the destination pool:**
+
+```bash filename="Terminal"
+npx hardhat updateAdvancedPoolHooks \
+  --newhook $DEST_POOL_HOOKS \
+  --network arbitrumSepolia
+```
+
+<Aside type="note" title="Why --authorizedcallers at deploy time">
+  Passing the pool as an authorized caller at deploy time authorizes it in the same transaction the hooks are created
+  in, so the first hook call cannot revert for a missing caller. If you deployed without it, add the pool with{" "}
+  <code>updateAuthorizedCallers</code> (<code>--poolhooks &lt;hooks&gt; --add &lt;pool&gt;</code>) before attaching.
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Set or update the policy engine" number={3} depth={3}>
+
+If you passed `--policyengine` when deploying the hooks, they are already connected to the engine and ACE target detection has started. Skip the commands below and verify the connections with the read task. To connect hooks deployed without an engine, or to point them at a different engine, use the `setPolicyEngine` task.
+
+<GitHubCard
+  title="setPolicyEngine.ts"
+  href="https://github.com/smartcontractkit/docs-cct-hardhat/blob/main/tasks/configure/policy-engine/setPolicyEngine.ts"
+  iconName="github-svg-card"
+>
+  View the policy engine task on GitHub.
+</GitHubCard>
+
+**1. Set the engine on the source hooks (Ethereum Sepolia):**
+
+```bash filename="Terminal"
+npx hardhat setPolicyEngine \
+  --poolhooks $SOURCE_POOL_HOOKS \
+  --policyengine 0xYourSepoliaEngineAddress \
+  --network sepolia
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+========================================
+🔗 Set Policy Engine
+========================================
+Chain:        Ethereum Sepolia
+Pool Hooks:   0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+Action:       Set policy engine
+========================================
+
+Current Policy Engine: 0x0000000000000000000000000000000000000000
+New Policy Engine:     0x5991A2dF15A8F6A256D3Ec51E99254Cd3fb576A9
+
+[Step 1] Setting policy engine on Ethereum Sepolia
+⏳ Tx: 0xaaabbbcccdddeeefff000111222333444555666777888999aaabbbcccdddeeff
+✅ Policy engine set successfully!
+========================================
+```
+
+**2. Set the engine on the destination hooks (Arbitrum Sepolia):**
+
+```bash filename="Terminal"
+npx hardhat setPolicyEngine \
+  --poolhooks $DEST_POOL_HOOKS \
+  --policyengine 0xYourArbitrumSepoliaEngineAddress \
+  --network arbitrumSepolia
+```
+
+**3. Verify both connections with the read task:**
+
+```bash filename="Terminal"
+npx hardhat getPolicyEngine \
+  --poolhooks $SOURCE_POOL_HOOKS \
+  --network sepolia
+
+npx hardhat getPolicyEngine \
+  --poolhooks $DEST_POOL_HOOKS \
+  --network arbitrumSepolia
+```
+
+Expected output for each chain:
+
+```bash filename="Terminal"
+========================================
+🔎 Get Policy Engine
+========================================
+Chain:        Ethereum Sepolia
+Pool Hooks:   0xA11c0FFeE0bAdA55CAfEBaBeDeaDBeEfF00DBABE
+Action:       View policy engine
+========================================
+
+✅ Policy Engine:
+   0x5991A2dF15A8F6A256D3Ec51E99254Cd3fb576A9
+========================================
+```
+
+<Aside type="note" title="Replacing or disconnecting an engine">
+  <ul>
+    <li>
+      <code>setPolicyEngine</code> detaches the old engine first and reverts <code>PolicyEngineDetachReverted</code> if
+      the old engine's <code>detach()</code> reverts. The on-chain recovery path is
+      [`setPolicyEngineAllowFailedDetach`](/ccip/evm/api-reference/v2.0.0/advanced-pool-hooks#policy-engine) on the hook
+      itself.
+    </li>
+    <li>
+      <code>--policyengine 0x0000000000000000000000000000000000000000</code> disconnects the engine and stops policy
+      checks.
+    </li>
+  </ul>
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Complete the ACE Platform setup" number={4} depth={3}>
+
+The hook is now attached to the engine onchain. Complete the Platform-side configuration once per engine by following [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools). This tutorial does not repeat those steps; it links the exact section for each task:
+
+1. **Verify the detected targets**: each hooks address appears as a detected target under its engine. Assign the built-in `CCIP-AdvancedPoolHooks` contract type to each target. See [Verify the detected target](/ace/guides/policy-manager/ccip-token-pools#verify-the-detected-target).
+2. **Create a policy instance on each chain**: use the `reject` policy type. On the source engine, configure the instance's denylist with the address you will send from. On the destination engine, configure the instance's denylist with `$DENIED_RECEIVER`. See [Create a policy instance](/ace/guides/policy-manager/ccip-token-pools#create-a-policy-instance).
+3. **Protect the hook functions**: on the source target, protect `preflightCheck` and map the policy parameter `Account (address)` to the extractor output `from`. On the destination target, protect `postflightCheck` and map `Account (address)` to `to`. Read [Restrict source senders](/ace/guides/policy-manager/ccip-token-pools#restrict-source-senders) first: the payload sender is the token pool, not the user, so the `from` output is what evaluates the transfer sender. See [Protect a hook function](/ace/guides/policy-manager/ccip-token-pools#protect-a-hook-function).
+
+<Aside type="note" title="Confirm the chain on every protection">
+  The Platform creates a protection only on chains where the target and policy instance are both deployed. Confirm the
+  selected chain matches the hook deployment: Ethereum Sepolia for the source protection, Arbitrum Sepolia for the
+  destination protection.
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Demonstrate a preflight rejection (from)" number={5} depth={3}>
+
+Send a transfer from the address on the source denylist. The source `preflightCheck` runs before the token pool locks or burns tokens, so the source transaction reverts and the transfer never starts.
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+  --receiver $UNRESTRICTED_RECEIVER \
+  --wallet hardhat:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+```
+
+Expected result: the send transaction reverts. The Policy Engine returns `PolicyRunRejected`; its reject reason identifies the underlying policy rejection, and the hook call propagates that revert.
+
+If this step does **not** fail as expected, check:
+
+- The source hooks point at the engine (`getPolicyEngine` shows the engine address).
+- The source target uses the `CCIP-AdvancedPoolHooks` contract type.
+- The protection maps `Account (address)` to the `from` output on `preflightCheck`.
+- The denylisted address is the one sending the transfer.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Send an unrestricted transfer (expected success)" number={6} depth={3}>
+
+Remove the sending address from the source policy's denylist (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)). Wait for the configuration transaction to confirm on Ethereum Sepolia, then send the same transfer again. With no policy rejecting it, the transfer executes end to end.
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+  --receiver $UNRESTRICTED_RECEIVER \
+  --wallet hardhat:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+```
+
+Expected output (example):
+
+```bash filename="Terminal"
+Fee: 130129888907619n = 0.000130129888907619 ETH
+✔ Enter password for Hardhat keystore 'PRIVATE_KEY'
+🚀 Sending message to 0xE23Fc63F47F08F58B9d7448d4CCE0bCDcc96d7F3 @ ethereum-testnet-sepolia-arbitrum-1 , tx => 0x3dc40bea29f3e3fc93ff8fce0dda45fd7f55a07ace5089646e018874c8b6745e , messageId => 0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+CCIP Explorer: https://ccip.chain.link/msg/0x4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293
+```
+
+This confirms the lane and both hooks work when no policy rejects the transfer.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Demonstrate a postflight rejection (to)" number={7} depth={3}>
+
+Send a transfer whose **recipient** is on the destination denylist. The source `preflightCheck` passes (the sender is not denied), the message travels to Arbitrum Sepolia, and the destination `postflightCheck` rejects before the token pool releases or mints tokens. The tokens remain unreleased, and the message stays unexecuted.
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $ETHEREUM_SEPOLIA_TOKEN=1.23 \
+  --receiver $DENIED_RECEIVER \
+  --wallet hardhat:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+```
+
+The send transaction succeeds on Sepolia. On Arbitrum Sepolia, execution fails: the CCIP Explorer shows the message in a failure state with the rejecting policy in the error data.
+
+<Aside type="note" title="Why the source transaction succeeds">
+  <code>postflightCheck</code> runs on the destination chain, after the source transaction has already committed. A
+  destination rejection cannot roll the source back; it leaves the message unexecuted until the condition is resolved.
+  This is the difference between the two hooks: preflight stops the transfer at its source, postflight enforces the
+  destination's own policy.
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Update the destination policy and manually execute" number={8} depth={3}>
+
+Resolve the rejection condition, then complete the message through manual execution.
+
+**1. Remove `$DENIED_RECEIVER` from the destination policy's denylist** (see [Update policy configuration](/ace/guides/policy-manager/manage-policies#update-policy-configuration)). Wait for the configuration transaction to confirm on Arbitrum Sepolia before continuing. The next evaluation of `postflightCheck` passes.
+
+**2. Confirm the message is ready for manual execution:**
+
+```bash filename="Terminal"
+ccip-cli show <messageId> \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+```
+
+Use the bare `0x...` message ID (or the source transaction hash) as the argument, not the full CCIP Explorer URL. The status shows the failure state and `readyForManualExecution`.
+
+**3. Manually execute the message on Arbitrum Sepolia:**
+
+```bash filename="Terminal"
+ccip-cli manual-exec <messageId> \
+  --wallet hardhat:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ARBITRUM_SEPOLIA_RPC_URL"
+```
+
+Manual execution is a destination-chain transaction: the wallet needs Arbitrum Sepolia ETH for gas. After the transaction confirms, the recipient receives the tokens and the message status becomes **Success**.
+
+For the full recovery flow, including gas overrides and diagnosing other failure causes, read [CCIP Manual Execution](/ccip/concepts/manual-execution).
+
+</AnchoredAccordion>
+
+<CcipCommon callout="educationalDisclaimer" />
