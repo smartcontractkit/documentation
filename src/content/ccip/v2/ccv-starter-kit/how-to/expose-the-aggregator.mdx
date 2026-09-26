@@ -1,0 +1,77 @@
+---
+section: ccip
+date: Last Modified
+title: "Expose the aggregator"
+metadata:
+  description: "Expose the CCV aggregator over gRPC: pick the route type your cluster's APIs support, and point every managed load balancer's health check at the readiness path."
+  excerpt: "CCV aggregator ingress, gRPC route, GKE Gateway HTTPRoute, GRPCRoute, health check, readiness, HealthCheckPolicy, HTTP/2"
+  datePublished: "2026-09-25"
+  lastModified: "2026-09-27"
+whatsnext:
+  "Add a custom policy hook": "/ccip/ccv-starter-kit/how-to/add-a-custom-policy-hook"
+  "Onboard to the CCIP indexer": "/ccip/ccv-starter-kit/onboard-to-the-indexer"
+---
+
+import { Aside } from "@components"
+
+The aggregator is the only component you expose to the internet; the verifier and everything else in the cell
+stay private. It serves gRPC, which runs over HTTP/2, so the connection must stay HTTP/2 from the internet all
+the way to the pod, and the load balancer terminates TLS with your
+[publicly trusted certificate](/ccip/ccv-starter-kit/prerequisites#certificate-use-a-publicly-trusted-ca). Give
+it a stable public hostname, because changing the hostname later means updating every peer cell and the indexer.
+The off-chain kit's
+[Ingress](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#ingress)
+documentation has the route value blocks. This page helps you pick one and avoid a health-check failure that
+`kubectl` does not show.
+
+## Choose how to route traffic to the aggregator
+
+The chart offers three ways to route external traffic to the aggregator, and you enable exactly one in your
+values: `aggregator.grpcRoute` and `aggregator.httpRoute` (both use the Kubernetes Gateway API), or
+`aggregator.ingress` (the older Ingress API). All three default to `enabled: false`. Which one fits depends on
+the APIs your cluster has installed, not on which cloud it runs on.
+
+First, list the Gateway API resources your cluster supports:
+
+```bash
+kubectl api-resources --api-group=gateway.networking.k8s.io
+```
+
+Then enable the matching route:
+
+- A `grpcroutes` row in the output: enable `aggregator.grpcRoute`. This is the preferred route for gRPC, and
+  controllers such as Envoy Gateway, Istio, and Contour support it.
+- Gateway API present but no `grpcroutes` row: enable `aggregator.httpRoute`, the fallback for gRPC when the
+  controller does not yet support `GRPCRoute` (for example, the GKE managed Gateway).
+- No `gateway.networking.k8s.io` resources at all: your cluster has no Gateway API, so enable
+  `aggregator.ingress` and set its `className` to your ingress controller.
+
+For `grpcRoute` or `httpRoute`, attach the route to your Gateway's HTTPS listener: set `parentRefs` to the
+Gateway (its `name` and `namespace`) with `sectionName: https`, and set `hostnames` to the aggregator's public
+hostname. If you are not sure which Gateway or listener to use, your cluster administrator can point you to it.
+
+## Point the load balancer health check at the readiness path
+
+A managed load balancer adds its own health check to the backend. By default it sends an HTTP `GET /` on the
+port the aggregator serves on, but the aggregator serves gRPC there and does not answer that request, so the
+load balancer marks the backend unhealthy and every request returns `503`. Point the health check at the
+aggregator's readiness endpoint instead, `/health/ready` on port 8080:
+
+- GKE (HTTPRoute): apply a
+  [`networking.gke.io/v1 HealthCheckPolicy`](https://cloud.google.com/kubernetes-engine/docs/how-to/configure-gateway-resources#healthcheckpolicy)
+  (port 8080, `requestPath /health/ready`) after the release, since it targets the Service.
+- EKS: set the
+  [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/)
+  target-group health check to the readiness path.
+- AKS: set the
+  [Application Gateway for Containers](https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/overview)
+  health probe to the readiness path.
+- On-premise: configure your ingress controller's health check to the readiness path.
+
+<Aside type="caution" title="A 503 when the cluster looks healthy">
+  On GKE, if you skip the `HealthCheckPolicy` above, every request returns `503` even though the cluster shows no
+  problem: the Gateway reports `PROGRAMMED: True`, the route is `Accepted`, and both pods are `1/1`. Nothing in
+  `kubectl` points at the cause, because the failure is in the load balancer's health check rather than in Kubernetes.
+  The load balancer is still probing the default `GET /` against the gRPC port and marking the backend unhealthy.
+  Applying the `HealthCheckPolicy` clears it.
+</Aside>

@@ -73403,6 +73403,1038 @@ Or inspect the receiver address on [Sepolia Etherscan](https://sepolia.etherscan
 
 ---
 
+# Deploy your first cell
+Source: https://docs.chain.link/ccip/v2/ccv-starter-kit/evm/deploy-your-first-cell
+Last Updated: 2026-09-26
+
+This page stands up an EVM CCV in order, using the project's two starter kits: the
+[on-chain contracts kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts) for the
+verifier contracts, and the [off-chain kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit) for
+the cell, one verifier and one aggregator with the aggregator exposed publicly. Each step names what you do,
+says which kit it uses, and links that kit's documentation for the exact commands.
+
+<Aside type="caution" title="A single cell is for learning, not production">
+  This page deploys one cell. A production deployment runs a properly sized committee of independent cells; see [Scale
+  to a committee](/ccip/ccv-starter-kit/how-to/scale-to-a-committee).
+</Aside>
+
+<Aside type="note" title="Build order: on-chain first, in two passes">
+  You cannot register a signer on-chain until the verifier has generated its key, so with the Postgres keystore the
+  on-chain config happens in two passes around the cell deploy: deploy the contracts, deploy the verifier and
+  aggregator, then register the generated signer. On the KMS path the key exists first, so you derive the signer address
+  up front and finish the on-chain signature config in step 1, with no second pass.
+</Aside>
+
+## Step 1: Deploy the on-chain contracts
+
+Start by choosing the source and destination chains you want to connect and collecting their identifiers from
+the [CCIP directory](/ccip/directory): each chain's selector, its Router (the on-chain lane config needs it),
+and, for every source chain, its OnRamp (the cell needs it as `on_ramp_addresses`). These are existing CCIP
+network contracts that the kit does not deploy, so you look them up here.
+
+Then use the
+[on-chain contracts kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts) to deploy the
+verifier's on-chain contracts on both the source and destination chains. It sets up four things per chain:
+
+- The CREATE2 factory: a deployer that produces deterministic contract addresses, so the resolver lands at the
+  same address on every chain. That cross-chain address parity is what lets pools and receivers reference your
+  CCV by one address regardless of chain.
+- The resolver (`VersionedVerifierResolver`): the stable address that token pools and receivers name as your
+  CCV. It stays constant even when you upgrade the verifier implementation behind it, so it is the address you
+  carry everywhere else.
+- The committee verifier: the verifier implementation that the resolver points at, and the contract that
+  checks the committee's signatures on chain.
+- The lane config: wires each source and destination together, so the verifier knows which directed lanes it
+  serves.
+
+The kit is driven by `make` targets, with `OUTPUT_MODE=EOA` to broadcast directly or `OUTPUT_MODE=SAFE` to
+emit Safe Transaction Builder calldata for governance (see
+[Operate: day 2](/ccip/ccv-starter-kit/operate-day-2)). Follow the on-chain contracts kit's stepped guides for
+the exact commands:
+[Getting started](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/getting-started.md)
+covers install, build, and how the `make` targets take `CHAIN`, `TAG`, `RPC_URL`, and `OUTPUT_MODE`; the
+[full flow](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/full-flow.md)
+walks the deploy-then-configure sequence end to end, in the fixed per-chain order (factory, resolver,
+verifier). The
+[deploy](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/deploy.md)
+and
+[configure](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/configure.md)
+pages have the per-target detail.
+
+Carry two things from this step into the cell config: the resolver address (the same on every chain, via
+CREATE2) and the source and destination chain selectors.
+
+Custody note: with KMS, derive the signer address and register the committee's signer set on both chains'
+verifiers now. With the Postgres keystore, you come back to this in step 4. See
+[Signer key custody and KMS](/ccip/ccv-starter-kit/how-to/signer-key-custody-and-kms).
+
+Checkpoint: on both chains you have deployed the CREATE2 factory, the resolver, and the committee verifier, and
+applied the lane config. The resolver reads back the same address on both chains (`make deployments-check`
+asserts the parity). On the KMS path the on-chain signature config is set too; on the Postgres keystore path it
+is still pending step 4.
+
+## Step 2: Configure the cell values
+
+The cell is the verifier and aggregator you run from the
+[off-chain kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit)'s `ccv-cell` Helm chart. Create
+one `my-values.yaml` for that chart and override only what you need. The
+[chart values reference](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/charts/ccv-cell/README.md)
+and the off-chain kit's
+[Configure](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#2-configure-the-values)
+documentation are the field reference.
+
+The most common mistake is putting the CommitteeVerifier implementation address where the resolver belongs.
+`sourceVerifierAddress`, every `destinationVerifiers` entry, and every `committee_verifier_addresses` entry take
+the `VersionedVerifierResolver` from step 1, on every selector. The implementation address matches no message,
+so the cell looks healthy but never attests: green pods and no errors in the logs.
+
+For the secret backend, the secrets the cell needs, and where RPC URLs that carry an API key go, see
+[Choose a secret backend](/ccip/ccv-starter-kit/how-to/choose-a-secret-backend). For the keystore choice and
+the KMS signer, see [Signer key custody and KMS](/ccip/ccv-starter-kit/how-to/signer-key-custody-and-kms).
+
+Checkpoint: your `my-values.yaml` for the verifier and aggregator renders with `helm template` and no schema
+error, with the resolver address and selectors from step 1 in place.
+
+## Step 3: Deploy the verifier and aggregator
+
+Deploy the cell with the [off-chain kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit)'s Helm
+chart. The chart renders StatefulSets with `replicas: 1` by design, so use `statefulset/...` in `kubectl`
+commands. The order matters because the secret
+grant uses ServiceAccount names that only exist once the chart is rendered:
+
+1. Run `helm template` and read the generated `ServiceAccount` names.
+2. Grant those ServiceAccounts access to each secret they read. On GKE the direct workload-identity principal
+   (`principal://.../sa/<KSA>`) needs no Google service account and no annotation; the annotation-plus-GSA
+   pattern also works. Skip this and the pods sit in `ContainerCreating` with `PermissionDenied` on
+   `secretmanager.versions.access`, visible only in `kubectl describe`.
+3. Run `helm upgrade --install`.
+
+<Aside type="note" />
+
+Checkpoint: both the verifier and aggregator pods report 1/1, and the verifier log is clean after the startup
+window.
+
+## Step 4: Expose the aggregator and register the signer
+
+Expose the aggregator (TLS-terminated, HTTP/2 and gRPC end to end, a stable public hostname). The route type
+depends on what your cluster supports rather than which cloud it runs on, and every managed load balancer needs
+its health check pointed at the readiness path. The full procedure, with per-cloud health-check settings, is in
+[Expose the aggregator](/ccip/ccv-starter-kit/how-to/expose-the-aggregator).
+
+With the Postgres keystore, read the signer address the verifier logged on first boot (`Using signer address`),
+then register the committee's signer set into the verifier contract with the
+[on-chain contracts kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts)'s
+`apply-signature-configs` target. The signer set is written to the destination chain's verifier, so for a
+two-way lane you register it on both chains' verifiers. The target refuses a weak committee (a 1-of-1, any N-of-N,
+or a threshold at or below 2/3 of the committee) unless you set `ALLOW_WEAK_COMMITTEE=true`, which is for test committees only (see
+[Scale to a committee](/ccip/ccv-starter-kit/how-to/scale-to-a-committee#size-for-fault-tolerance)). On the KMS
+path you did this in step 1.
+
+Checkpoint: the on-chain signer matches the logged address, and the aggregator answers over its public hostname.
+
+## Step 5: Add your custom policy hook
+
+Run a minimal PASS/FAIL endpoint and reference it from your
+[off-chain kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit) cell config. Read the rules on
+[Add a custom policy hook](/ccip/ccv-starter-kit/how-to/add-a-custom-policy-hook) first; an outage that returns
+FAIL is treated as a compliance decision.
+
+Checkpoint: a blocked-address send logs the reason string and never executes.
+
+Your cell (the verifier and aggregator) is deployed, the aggregator is exposed, and the signer is registered
+on chain. Prove it end to end in [Test your setup](/ccip/ccv-starter-kit/evm/test-your-setup).
+
+---
+
+# Test your setup
+Source: https://docs.chain.link/ccip/v2/ccv-starter-kit/evm/test-your-setup
+Last Updated: 2026-09-26
+
+Your cell (the verifier and aggregator) is not onboarded yet, so the default executor cannot fetch your
+attestation and a message sits at `UNTOUCHED`. Prove the verifier and aggregator work by sending a message that
+requires your CCV, then executing it yourself with
+[`ccip-cli`](https://docs.chain.link/ccip/tools/cli/), reading the attestation directly from your own
+aggregator. Make a message require your CCV in either of these ways.
+
+## Option A: a token transfer that mandates your CCV
+
+Use the [CCT Foundry tutorials](https://github.com/smartcontractkit/docs-cct-foundry) to deploy a token and
+pool and wire your CCV as a required verifier for the lane. Point that required verifier at your resolver, not
+the verifier implementation: a pool that lists the implementation reverts during the fee quote with no revert
+data. Then transfer the token on that lane. Take the source Router from the
+[CCIP directory](/ccip/directory):
+
+```bash
+ccip-cli send -s <sourceChain> -d <destChain> -r <sourceRouter> \
+  --to <destWallet> -t <yourToken>=<amount>
+```
+
+## Option B: a receiver contract that requires your CCV
+
+Deploy a receiver contract that declares your resolver as a required verifier through `getCCVsAndFinalityConfig`;
+the [Send arbitrary data tutorial](/ccip/evm/tutorials/application-developers/send-arbitrary-data) walks the
+receiver pattern, and you return your resolver in the receiver's required-CCV list. Your CCV has to be named on
+both sides: the receiver declares it on the destination, and the send names the same resolver on the source with
+`-x ccvs` so your verifier attests. Take the source Router from the [CCIP directory](/ccip/directory):
+
+```bash
+ccip-cli send -s <sourceChain> -d <destChain> -r <sourceRouter> \
+  --to <yourReceiverContract> --data "hello" -L 200000 -x ccvs='["<resolver>"]'
+```
+
+## Execute it yourself
+
+Execute the message with `ccip-cli` 1.14.0 or later, passing your aggregator's gRPC endpoint:
+
+```bash
+ccip-cli manual-exec <src-tx> --verifiers grpcs://<your-aggregator-host>:443
+```
+
+`--verifiers` (alias `--verifier`) takes one or more endpoints; pass your aggregator's public TLS gRPC endpoint
+(`grpcs://`). For a committee, pass every aggregator, space-separated:
+
+```bash
+ccip-cli manual-exec <src-tx> \
+  --verifiers grpcs://agg-1.example.com:443 grpcs://agg-2.example.com:443 grpcs://agg-3.example.com:443
+```
+
+For the mechanism, see [manual execution](/ccip/concepts/manual-execution).
+
+Confirm the result two ways. With `ccip-cli`, a successful execution reports `"status": "SUCCESS"`:
+
+```bash
+ccip-cli show <messageId> --rpcs <destRpc> --json
+```
+
+With the CCIP REST API, read the `status` field; a successful execution prints `SUCCESS`:
+
+```bash
+curl -s https://api.ccip.chain.link/v2/messages/<messageId> | jq -r '.status'
+```
+
+<Aside type="note" title="Two normal states while you wait" />
+
+Checkpoint: the message reached the destination. The cell is ready for onboarding.
+
+---
+
+# Add a custom policy hook
+Source: https://docs.chain.link/ccip/v2/ccv-starter-kit/how-to/add-a-custom-policy-hook
+Last Updated: 2026-09-27
+
+The policy hook is how you apply your own verification logic to every message your CCV signs: your compliance,
+AML, sanctions, or risk screening. It is an HTTPS endpoint that you build and run; the verifier calls it with
+each message as the last check before it signs, and the endpoint returns PASS or FAIL. A FAIL withholds that
+node's signature. Because the interface is a plain HTTP request and response, you implement it in whatever
+language and framework you already use, and run it against your own systems and data.
+
+## Build the endpoint
+
+You implement one HTTPS endpoint that follows the OpenAPI 3.0.3 spec,
+[`policy_hook_openapi_v1.yaml`](https://github.com/smartcontractkit/chainlink-ccv/blob/main/verifier/policy_hook_openapi_v1.yaml).
+The verifier POSTs each message to `<base_url>/v1/evaluate` and expects a JSON body of `{"decision":"PASS"}` or
+`{"decision":"FAIL"}`, with an optional `reason`. Any language and framework works, as long as it serves the
+spec and the verifier can reach it.
+
+Point the verifier at the endpoint with `base_url`, and set the call timeout and retry delay alongside it. The
+recommended setup keeps the endpoint inside your own network, reachable only by your verifier, which needs no
+credential. If you must expose it, the verifier signs each request with an HMAC-SHA256 credential so your
+endpoint can confirm the request to `/v1/evaluate` came from your verifier and reject anything else. The
+chainlink-ccv
+[policy hook guide](https://github.com/smartcontractkit/chainlink-ccv/blob/main/verifier/docs/policy_hook.md)
+documents every config field, the request and response schema, and the HMAC scheme.
+
+Run the endpoint as its own deployment rather than as an extra container beside the verifier, so you scale and
+configure it independently; the off-chain kit's
+[Policy Hooks](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#policy-hooks)
+documentation covers both options. Size it for the verifier's per-message call rate within the call timeout,
+which defaults to 5 seconds and cannot exceed 15.
+
+## How the verifier reads the response
+
+The verifier acts on one thing: an HTTP 200 whose body is `{"decision":"PASS"}` or `{"decision":"FAIL"}`.
+
+- `PASS`: the node signs the message, byte-for-byte identical to a node that runs no hook.
+- `FAIL`: the node drops the message and never signs it. The drop is permanent for that node.
+
+Any other response, a timeout, a 5xx, unparseable JSON, or a `decision` that is neither value, is treated as a
+failed call rather than a verdict: the verifier waits `retry_delay` and asks again.
+
+<Aside type="caution" title="A degraded endpoint must return an error, never FAIL">
+  When your endpoint cannot reach a decision, return an error status (a 5xx) so the call is retried. If it returns
+  `FAIL` instead, the node drops the message permanently, exactly as if the endpoint had screened it and rejected it,
+  when in fact nothing screened it. Retries are bounded: the verifier stops retrying 7 days after the message was first
+  queued, and a message with no verdict by then is failed the same way a `FAIL` would fail it. Treat an outage that
+  approaches that window as an incident, not something the retry loop will ride out.
+</Aside>
+
+## What a FAIL stops, and how to recover
+
+A single `FAIL` withholds one node's signature; on its own it does not stop the message. The committee has a
+signing threshold per source chain, and the aggregator builds a report as soon as that many nodes sign. A message
+stops only when enough nodes withhold to leave the rest below the threshold, which takes `N − threshold + 1` of
+the `N` nodes. In a 2-of-2 committee one `FAIL` is decisive; in a 3-of-5, two rejections are not enough and the
+message still executes on the other three signatures, so it takes three.
+
+Committee sizing is therefore part of the control. If a node's signature is not needed to reach the threshold,
+its `FAIL` does not stop the transfer, it only means that node did not attest. Size the committee so the nodes
+running your hook can actually block.
+
+A dropped message is permanent from that node's point of view, but recoverable. The verifier keeps the failed job
+in its archive with your `reason` as the error; replaying it asks your endpoint again, so the next call can answer
+`PASS`. Each node that dropped the message recovers its own copy, since each dropped it on its own verdict. The
+[policy hook guide](https://github.com/smartcontractkit/chainlink-ccv/blob/main/verifier/docs/policy_hook.md) has
+the reschedule command for a single message and the checkpoint rewind for a range.
+
+`HOLD` appears in the response schema but is not implemented, so do not return it. To hold a message while a review
+is open, return `FAIL`, then replay it once the review clears. Do not hold a message by stalling the call or
+returning a 5xx: both count as a failed call against the 7-day retry window, not as a pause.
+
+Put a short case reference in `reason`, never customer data. The verifier logs and archives it (truncated at 256
+characters) and never signs it.
+
+---
+
+# Choose a secret backend
+Source: https://docs.chain.link/ccip/v2/ccv-starter-kit/how-to/choose-a-secret-backend
+Last Updated: 2026-09-27
+
+A CCV cell is one aggregator plus one verifier. Both read their credentials from secrets you provide when you
+install the chart. This page explains what those secrets contain, which backends the chart supports for
+delivering them, and how to choose. The verifier and aggregator workloads behave the same whichever backend
+you pick, so the choice is about how your cluster already stores and pulls secrets. The off-chain kit's
+[Secrets](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#secrets)
+documentation has the full mount map.
+
+## What the cell needs as secrets
+
+A secret here is a `secrets.toml` file (or the equivalent Kubernetes `Secret`) that a component reads at
+startup. The chart injects up to four per cell, keyed on the values below. The Postgres connection strings in
+them point at the cell's [logical databases](/ccip/ccv-starter-kit/prerequisites#postgres-databases).
+
+`aggregator.secrets.app` holds the aggregator's application secret: its Postgres storage connection string,
+an optional Redis password for the rate limiter, and one HMAC credential pair per client that connects to it.
+The `api_key` is a UUID and the `secret_key` is hex-encoded; you generate both.
+
+```toml
+[storage]
+url = "postgres://user:password@localhost:5432/aggregator?sslmode=disable"
+
+[[clients]]
+client_id = "client-1"
+api_key = "<uuid>"
+secret_key = "<hex>"
+```
+
+`verifier.secrets.app` holds the verifier's application secret: its own Postgres connection string, one HMAC
+credential pair per aggregator it talks to, and an optional credential for a policy-hook endpoint.
+
+```toml
+[db]
+url = "postgres://user:password@localhost:5432/verifier?sslmode=disable"
+
+[[aggregators]]
+secret_name = "aggregator_1"
+api_key = "<uuid>"
+secret_key = "<hex>"
+```
+
+`verifier.secrets.bootstrap` holds the `[keystore]` block that decides where the verifier's signing key lives,
+a Postgres-held key or a cloud KMS key referenced by id, plus the bootstrapper's own Postgres connection
+string. See [Signer key custody and KMS](/ccip/ccv-starter-kit/how-to/signer-key-custody-and-kms) for the
+key-custody decision.
+
+`verifier.secrets.evm` is optional. Use it when an RPC endpoint URL carries an API key, so the keyed URL
+becomes a secret instead of plain configuration.
+
+The per-peer `api_key` and `secret_key` pairs are how committee members authenticate to each other. Exchanging
+them across cells is covered in the runbook's
+[Peer information and credential exchange](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#8-peer-information-and-credential-exchange).
+
+## Supported backends
+
+Set `type` on each of `aggregator.secrets.app`, `verifier.secrets.app`, `verifier.secrets.bootstrap`, and
+optionally `verifier.secrets.evm`. The chart supports five backends.
+
+| Backend                    | How the secret is delivered                                                                                                                                 | Typical cluster                               |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| `externalSecret` (default) | The chart creates an `ExternalSecret`; External Secrets Operator pulls each field from your `SecretStoreRef` via `*RemoteRef` keys and assembles the secret | Any cluster running External Secrets Operator |
+| `gcpSecretStore`           | The Secrets Store CSI Driver mounts one pre-built `secrets.toml` from GCP Secret Manager                                                                    | GKE with the Secret Manager CSI add-on        |
+| `awsSecretStore`           | The CSI Driver (AWS ASCP) mounts one pre-built `secrets.toml` from AWS Secrets Manager                                                                      | EKS with IRSA or Pod Identity                 |
+| `azureKeyVault`            | The CSI Driver (Azure provider) mounts one pre-built `secrets.toml` from Azure Key Vault                                                                    | AKS with Workload Identity or Pod Identity    |
+| `existingSecret`           | The chart mounts a Kubernetes `Secret` you create and manage                                                                                                | Any cluster, including on-premises            |
+
+## When to use each
+
+Use `externalSecret`, the default, when you already run External Secrets Operator or want the chart to build
+the secret for you. It templates the secret from your remote references, and it is the only backend that
+writes the `[keystore]` block on your behalf from `verifier.secrets.bootstrap.keystoreBackend` and
+`verifier.secrets.bootstrap.kms.*`.
+
+Use `gcpSecretStore`, `awsSecretStore`, or `azureKeyVault` on a managed cloud when you want the pod to pull
+the secret keylessly through workload identity. The chart creates a `SecretProviderClass` and the Secrets
+Store CSI Driver mounts one pre-built `secrets.toml` that you store in the cloud's secret manager. Each needs
+the matching identity wiring: GKE Workload Identity Federation on the ServiceAccount for `gcpSecretStore`,
+EKS IRSA or Pod Identity for `awsSecretStore`, and Azure Workload Identity or Pod Identity for `azureKeyVault`.
+
+Use `existingSecret` when you manage the Kubernetes `Secret` yourself, on-premises or on any cluster. The
+chart only mounts it.
+
+## Providing the secrets
+
+How the secret gets created depends on the backend. On `externalSecret` the chart assembles it for you from
+your values and remote references. On the other four (`gcpSecretStore`, `awsSecretStore`, `azureKeyVault`, and
+`existingSecret`) you provide a ready-made `secrets.toml` and the chart only mounts it. In that case you write
+the files shown in [What the cell needs as secrets](#what-the-cell-needs-as-secrets), one per component you
+enable: the aggregator app secret, the verifier app secret, the verifier bootstrap secret, and the verifier EVM
+secret when an RPC URL carries an API key. On a cloud backend you store each file as a secret in that cloud's
+secret manager; on `existingSecret` you create the Kubernetes `Secret`. The off-chain kit's
+[Secrets](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#secrets)
+documentation lists the mount path each file lands at, and the
+[chart values reference](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/charts/ccv-cell/README.md)
+has every field.
+
+<Aside type="caution" title="When you provide secrets.toml yourself" />
+
+---
+
+# Expose the aggregator
+Source: https://docs.chain.link/ccip/v2/ccv-starter-kit/how-to/expose-the-aggregator
+Last Updated: 2026-09-27
+
+The aggregator is the only component you expose to the internet; the verifier and everything else in the cell
+stay private. It serves gRPC, which runs over HTTP/2, so the connection must stay HTTP/2 from the internet all
+the way to the pod, and the load balancer terminates TLS with your
+[publicly trusted certificate](/ccip/ccv-starter-kit/prerequisites#certificate-use-a-publicly-trusted-ca). Give
+it a stable public hostname, because changing the hostname later means updating every peer cell and the indexer.
+The off-chain kit's
+[Ingress](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#ingress)
+documentation has the route value blocks. This page helps you pick one and avoid a health-check failure that
+`kubectl` does not show.
+
+## Choose how to route traffic to the aggregator
+
+The chart offers three ways to route external traffic to the aggregator, and you enable exactly one in your
+values: `aggregator.grpcRoute` and `aggregator.httpRoute` (both use the Kubernetes Gateway API), or
+`aggregator.ingress` (the older Ingress API). All three default to `enabled: false`. Which one fits depends on
+the APIs your cluster has installed, not on which cloud it runs on.
+
+First, list the Gateway API resources your cluster supports:
+
+```bash
+kubectl api-resources --api-group=gateway.networking.k8s.io
+```
+
+Then enable the matching route:
+
+- A `grpcroutes` row in the output: enable `aggregator.grpcRoute`. This is the preferred route for gRPC, and
+  controllers such as Envoy Gateway, Istio, and Contour support it.
+- Gateway API present but no `grpcroutes` row: enable `aggregator.httpRoute`, the fallback for gRPC when the
+  controller does not yet support `GRPCRoute` (for example, the GKE managed Gateway).
+- No `gateway.networking.k8s.io` resources at all: your cluster has no Gateway API, so enable
+  `aggregator.ingress` and set its `className` to your ingress controller.
+
+For `grpcRoute` or `httpRoute`, attach the route to your Gateway's HTTPS listener: set `parentRefs` to the
+Gateway (its `name` and `namespace`) with `sectionName: https`, and set `hostnames` to the aggregator's public
+hostname. If you are not sure which Gateway or listener to use, your cluster administrator can point you to it.
+
+## Point the load balancer health check at the readiness path
+
+A managed load balancer adds its own health check to the backend. By default it sends an HTTP `GET /` on the
+port the aggregator serves on, but the aggregator serves gRPC there and does not answer that request, so the
+load balancer marks the backend unhealthy and every request returns `503`. Point the health check at the
+aggregator's readiness endpoint instead, `/health/ready` on port 8080:
+
+- GKE (HTTPRoute): apply a
+  [`networking.gke.io/v1 HealthCheckPolicy`](https://cloud.google.com/kubernetes-engine/docs/how-to/configure-gateway-resources#healthcheckpolicy)
+  (port 8080, `requestPath /health/ready`) after the release, since it targets the Service.
+- EKS: set the
+  [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/)
+  target-group health check to the readiness path.
+- AKS: set the
+  [Application Gateway for Containers](https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/overview)
+  health probe to the readiness path.
+- On-premise: configure your ingress controller's health check to the readiness path.
+
+<Aside type="caution" title="A 503 when the cluster looks healthy">
+  On GKE, if you skip the `HealthCheckPolicy` above, every request returns `503` even though the cluster shows no
+  problem: the Gateway reports `PROGRAMMED: True`, the route is `Accepted`, and both pods are `1/1`. Nothing in
+  `kubectl` points at the cause, because the failure is in the load balancer's health check rather than in Kubernetes.
+  The load balancer is still probing the default `GET /` against the gRPC port and marking the backend unhealthy.
+  Applying the `HealthCheckPolicy` clears it.
+</Aside>
+
+---
+
+# Scale to a committee
+Source: https://docs.chain.link/ccip/v2/ccv-starter-kit/how-to/scale-to-a-committee
+Last Updated: 2026-09-27
+
+A single cell is for learning. In production you run a committee of cells, each fully independent (its own
+Postgres, secrets, and key custody, never shared), so that no single failure or compromise takes the committee
+down. The off-chain kit's
+[committee-size recommendations](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#7-committee-size-recommendations)
+documentation has more detail. This page covers how many cells to run and where to put them.
+
+## Size for fault tolerance
+
+Start with four cells and a threshold of three (3-of-4). It is the smallest committee that keeps signing when
+one member is offline (`threshold ≤ N − 1`) and stays safe against a single malicious member
+(`threshold > 2N/3`, that is `N ≥ 3f + 1` with `f = 1`). Grow from there for more fault tolerance: 5-of-7
+tolerates two bad or offline members (`f = 2`), and 7-of-10 tolerates three (`f = 3`).
+
+The on-chain kit enforces this floor when you register the committee's signer set on the destination verifier,
+which you do with its
+[`make apply-signature-configs`](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/configure.md)
+target. The target rejects a 1-of-1 signer set, an N-of-N committee (no redundancy, so one offline signer halts
+the lane), and any threshold at or below two-thirds of the committee, so 3-of-4 is the smallest it accepts. To
+register a weaker committee on a testnet, set the environment variable `ALLOW_WEAK_COMMITTEE=true` when you run
+that target; it downgrades the rejection to a warning. Never set it in production. The on-chain kit's
+[troubleshooting](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/troubleshooting.md)
+page lists each rejection and how to resolve it.
+
+## Place cells across failure domains
+
+Spread the committee across independent failure domains, ideally different clouds or regions. Two cells that
+share a cloud region, a database, or an operator fail together, and a committee only protects you if its
+members fail separately.
+
+## Keep RPC independent
+
+Each cell needs its own RPC providers. If two cells read a chain through the same provider, a single faulty or
+malicious provider shows both of them the same wrong chain state, and they can sign the same bad message. Use
+multiple independent providers per chain with failover, and do not share a provider across cells. See the
+[RPC requirements](/resources/network-integration#standardized-rpcs-with-slas).
+
+---
+
+# Signer key custody and KMS
+Source: https://docs.chain.link/ccip/v2/ccv-starter-kit/how-to/signer-key-custody-and-kms
+Last Updated: 2026-09-27
+
+The verifier signs message hashes with one key. You choose where that key lives with `keystoreBackend`:
+
+- `postgres` (the default): the cell generates the key on first boot and keeps it in Postgres.
+- `kms`: the key lives in your cloud KMS, never leaves it, and the cell signs through it.
+
+On a managed cloud, KMS is strongly recommended. The Postgres keystore is supported, but it puts the key in
+your database and its backups.
+
+## KMS support by cloud
+
+- GKE: GCP KMS is supported and recommended.
+- EKS: AWS KMS is supported and recommended.
+- AKS: an Azure Key Vault signer is in progress; use the Postgres keystore for now.
+
+<Aside type="note" title="Key Vault for secrets is different from Key Vault as a signer">
+  On AKS you can already mount secrets from Azure Key Vault through the cluster's CSI driver, and the CCV cell supports
+  that as a secret backend. That is Key Vault holding your `secrets.toml`, not Key Vault holding the signing key. A Key
+  Vault signer (the cell signing through Key Vault without the key leaving it) is the part still in progress. Until it
+  ships, AKS cells use the Postgres keystore.
+</Aside>
+
+## The Postgres keystore
+
+The cell generates the signing key on first boot and stores it in the
+[`bootstrapper` database](/ccip/ccv-starter-kit/prerequisites#postgres-databases). Your Postgres
+backups therefore contain the signing key, so encrypt them and restrict who can read them. Leave
+`signer_address: auto` so the verifier accepts the key it generated. There is nothing to derive before deploy:
+once the cell is running, read the signer address from the verifier log and register it on-chain (the second
+pass in [Deploy your first cell](/ccip/ccv-starter-kit/evm/deploy-your-first-cell)).
+
+## Set the KMS signer address explicitly
+
+With KMS the key exists before the cell does, so you compute its address first and set `signer_address` to it
+rather than `auto`. The verifier then checks on boot that the KMS key matches that address and refuses to start
+if it does not, which catches a wrong key ID before the cell signs anything. With `auto` the verifier signs with
+whatever key the ID points to.
+
+The signing key must be secp256k1: an `EC_SIGN_SECP256K1_SHA256` key on GCP KMS, or an `ECC_SECG_P256K1` signing
+key on AWS KMS. Derive its address in three steps.
+
+1. Fetch the public key. GCP KMS writes it as PEM directly:
+
+   ```bash
+   gcloud kms keys versions get-public-key 1 \
+     --key <key> --keyring <keyring> --location <location> \
+     --public-key-format=pem --output-file public.pem
+   ```
+
+   AWS KMS returns base64-encoded DER, so decode it and convert to PEM:
+
+   ```bash
+   aws kms get-public-key --key-id <key-id-or-arn> \
+     --query PublicKey --output text | base64 --decode > public.der
+   openssl pkey -pubin -inform DER -in public.der -outform PEM -out public.pem
+   ```
+
+2. Derive the address from `public.pem`: take the X and Y coordinates of the uncompressed point (32 bytes each,
+   without the `0x04` prefix byte), hash the 64 bytes with Keccak-256, and keep the last 20. The off-chain kit's
+   [Signer Address](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#signer-address)
+   documentation has a short Python script that does exactly this and prints the resulting address.
+
+3. Set `signer_address` to that address, then complete the on-chain signature config in step 1 of the deploy.
+   KMS needs no second pass.
+
+## KMS permissions
+
+Scope every grant to the one signing key, and give the pod its access through workload identity so nothing
+holds a long-lived credential.
+
+- GKE: the pod needs `roles/cloudkms.signerVerifier` and `roles/cloudkms.viewer` on the key. `signerVerifier`
+  alone is not enough; without `viewer` the verifier crash-loops on `cloudkms.cryptoKeyVersions.get`. The operator
+  who derives the address needs only `roles/cloudkms.publicKeyViewer` (`viewer` does not include public-key
+  reads), and should never hold `signerVerifier`. See the Cloud KMS
+  [permissions and roles reference](https://cloud.google.com/kms/docs/reference/permissions-and-roles) and
+  [Grant a role on a resource](https://cloud.google.com/kms/docs/iam#granting_roles_on_a_resource).
+- EKS: the pod needs `kms:Sign`, `kms:GetPublicKey`, and `kms:DescribeKey`, restricted to the key ARN. Do not
+  grant `kms:ListKeys` or a wildcard resource. The operator who derives the address needs only
+  `kms:GetPublicKey`. See the AWS KMS
+  [permissions reference](https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
+  and [key policies](https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html).
+
+---
+
+# CCV Starter Kit
+Source: https://docs.chain.link/ccip/v2/ccv-starter-kit
+Last Updated: 2026-09-26
+
+<Aside type="note" title="Want information or need support?">
+  Reach the CCV Starter Kit team at <CopyText text="clusersupport@smartcontract.com" />.
+</Aside>
+
+The CCV Starter Kit deploys a Cross-Chain Verifier (CCV) into Kubernetes infrastructure you already run. It has
+two parts, each in its own repository with its own step-by-step documentation:
+
+- The [on-chain contracts kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts) deploys
+  and governs your verifier contracts.
+- The [off-chain kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit) is a Helm chart that runs
+  your verifier and aggregator as a cell: one verifier plus one aggregator, backed by Postgres. Both run as
+  Docker images from the public [Amazon ECR gallery](https://gallery.ecr.aws/chainlink).
+
+<Aside type="caution" title="Keep the default verifier; add CCVs as defense in depth">
+  CCIP verifies every message with its default **committee verifier**. Additional CCVs are defense in depth on top of
+  it, not a replacement. The recommended security posture is to keep the committee verifier as your default CCV and
+  require additional CCVs only where you need them. See [verification models](/ccip/concepts/ccvs/verification-models)
+  and the [trust and responsibility model](/ccip/concepts/ccvs/trust-responsibility-model).
+</Aside>
+
+## Versions and releases
+
+The chart and its images are versioned upstream, not in this guide, so these links always show the current
+releases:
+
+## Available on the marketplaces
+
+The CCV Starter Kit is listed on AWS Marketplace and Google Cloud Marketplace. Professional operators deploy by
+following this guide and the starter kits.
+
+## Who this guide is for
+
+You run production Kubernetes and own your networking, TLS and ingress, secret management, and a production
+database. Cloud-specific dependencies are labeled by cloud (GCP, AWS, Azure, on-premise), and each links the
+vendor's own documentation. The Helm charts are cloud-agnostic, so the same concepts apply on any other cloud
+provider too. If you do not yet run this infrastructure, start with
+[Prerequisites](/ccip/ccv-starter-kit/prerequisites) and set it up first.
+
+This guide is the operator's install path. For what a CCV is and how it fits CCIP, see the
+[CCV overview](/ccip/concepts/ccvs/overview).
+
+## What you build
+
+The verifier polls source chains and signs message hashes; the aggregator serves those attestations over gRPC;
+the CCIP indexer reads them, and the executor runs the message on the destination. For the full end-to-end CCIP
+v2 architecture, see the [CCIP architecture overview](/ccip/concepts/architecture/overview).
+
+## What changes with your infrastructure
+
+The verifier and aggregator run the same containers wherever you deploy them: any cloud (GCP, AWS, Azure, or
+another provider) or on-premise. Only three things differ, and you own all three: how you inject the
+configuration secret, how you expose the aggregator, and where Postgres comes from. On a managed cloud you use
+that cloud's services for each; on-premise you run them yourself. The kit is brownfield: it deploys into
+infrastructure you already run and provisions none of its own.
+
+## Production topology
+
+A single cell is for learning. In production run a committee of cells across independent failure domains,
+ideally different clouds or regions, each cell fully independent (its own Postgres, secrets, and key custody,
+never shared). The smallest production committee is four cells with a threshold of three.
+[Scale to a committee](/ccip/ccv-starter-kit/how-to/scale-to-a-committee) explains the sizing and how to grow
+beyond it.
+
+## Policy hook and key custody
+
+The kit adds two operator capabilities on top of the core cell:
+
+- A custom [policy hook](/ccip/ccv-starter-kit/how-to/add-a-custom-policy-hook): an HTTPS endpoint you
+  implement in any language to run your own compliance or risk checks before a node signs. It only has to honor
+  the request/response contract (an
+  [OpenAPI spec](https://github.com/smartcontractkit/chainlink-ccv/blob/main/verifier/policy_hook_openapi_v1.yaml));
+  the verifier calls it for a PASS/FAIL on each message.
+- [KMS key custody](/ccip/ccv-starter-kit/how-to/signer-key-custody-and-kms): the signing key never leaves
+  your cloud KMS. Strongly recommended on a managed cloud.
+
+## Start here
+
+## How-to guides
+
+## Operate and reference
+
+---
+
+# Logging and monitoring
+Source: https://docs.chain.link/ccip/v2/ccv-starter-kit/logging-and-monitoring
+Last Updated: 2026-09-27
+
+The verifier and aggregator export metrics and write logs. This page covers how to collect those metrics, what
+to watch, and how to read the verifier's startup logs. The
+[policy hook](/ccip/ccv-starter-kit/how-to/add-a-custom-policy-hook) is a service you run, so collect its logs
+through your own logging stack; the cell reports the policy outcomes it sees as metrics, described below.
+
+## Collect the metrics
+
+The verifier and aggregator push metrics over OTLP and expose no scrapable `/metrics` endpoint, so a
+Prometheus-style scrape finds nothing. Deploy an OpenTelemetry collector (the upstream OpenTelemetry Collector
+or Grafana Alloy) to receive the OTLP metrics and forward them to your metrics backend, and set
+`OTEL_SERVICE_NAME` on each component so its metrics carry a distinct service name. Then import the kit's
+[Grafana dashboard](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/grafana/ccv-cell-dashboard.json)
+(the CCV Cell Overview) to visualize them. The off-chain kit documents the collector configuration in
+[Metrics](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#10-metrics-deploy-an-otel-collector),
+the metrics to watch and the example dashboard in
+[Monitoring](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#11-monitoring-the-cell),
+and its alert catalog in
+[Alerting](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#12-alerting).
+
+## Alert on the policy hook
+
+The RUNBOOK's alert catalog covers the cell's built-in metrics, so follow it for those. It does not cover the
+policy hook, because the hook is optional, so it is the one alert you add yourself when you run one. The verifier
+reports each policy outcome on the `verifier_message_transitions_total` counter with `stage="policy"`:
+
+- `outcome="policy_unavailable"` rising means your endpoint is down or timing out and the verifier is retrying.
+- `outcome="policy_rejected"` counts the messages your endpoint answered FAIL.
+
+Both outcomes leave the message in the verifier's job archive rather than deleting it, with your endpoint's
+`reason` string kept for 30 days. The
+[policy hook guide](https://github.com/smartcontractkit/chainlink-ccv/blob/main/verifier/docs/policy_hook.md)
+covers listing and replaying archived messages with the verifier's `ccv job-queue` command.
+
+## Read the startup logs
+
+Two log patterns look like faults but are normal, so knowing them saves a false alarm on first deploy.
+
+Right after deploy, the verifier starts before its own aggregator is ready and retries the connection for the
+first 15 to 30 seconds, logging `connection refused` and `Failed to list message rules` until the aggregator
+comes up. These clear on their own. The catch is that a permanent misconfiguration prints the same lines, so the
+message alone does not tell the two apart, only how long they last. Treat errors that continue past a minute as
+a real fault, and check first that the aggregator is running and listening on `:::50051`.
+
+In steady state with `finality_depth: 0`, the verifier waits for each source message to reach chain finality
+before it attests, and logs `Healthy` while it waits. A log showing only `Healthy` is a verifier waiting for
+finality, not a stuck one.
+
+---
+
+# Onboard to the CCIP indexer
+Source: https://docs.chain.link/ccip/v2/ccv-starter-kit/onboard-to-the-indexer
+Last Updated: 2026-09-27
+
+Onboarding registers your committee's aggregator endpoints with the CCIP indexer. Once you are onboarded, the
+indexer reads your attestations and the default executor runs your messages automatically. It is optional,
+because executing a message on the destination chain is permissionless and you can always execute your own; but
+until you onboard, that is the only way your messages get executed, since nothing reads your aggregators for you
+yet.
+
+## Onboarding prerequisites
+
+- Size the committee for production. An undersized committee, or one with no redundancy, is not onboarded;
+  see [Scale to a committee](/ccip/ccv-starter-kit/how-to/scale-to-a-committee).
+- Expose every aggregator read endpoint publicly, with no authentication: over TLS, on a stable hostname, with
+  no API key and no IP allowlist. Standard WAF or DDoS protection is acceptable if it does not block legitimate
+  public reads. Keep each endpoint responsive: the indexer reads with a 10-second per-request timeout and
+  retries, so answer well under 10 seconds. The off-chain kit's
+  [onboarding requirements](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#9-getting-onboarded-into-the-ccip-indexer)
+  documentation has the full bar.
+- Prove the committee by sending a message that requires your CCV and executing it yourself. For EVM, follow
+  [Test your setup](/ccip/ccv-starter-kit/evm/test-your-setup). Repeat the execution against each aggregator
+  endpoint you will register, not just one. The off-chain kit's
+  [self-execution validation](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#94-validate-your-committee-by-self-executing-a-message)
+  documentation walks through it.
+
+## Request onboarding
+
+Email clusersupport\@smartcontract.com with:
+
+- a display name for your CCV, and optionally a logo URL,
+- a website and a primary contact,
+- your resolver address and the chains it is deployed on (the address is the same on every chain),
+- every aggregator read endpoint URL in the committee.
+
+Send the endpoint list again whenever you add or remove an aggregator. The indexer identifies each endpoint by
+its hostname, so keep hostnames stable and re-register any that change. The off-chain kit's
+[onboarding documentation](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#9-getting-onboarded-into-the-ccip-indexer)
+has the full requirements, including the response times the indexer expects.
+
+## After onboarding
+
+The indexer reads your aggregators, the default executor runs your messages, and the public CCIP API reports
+your verifier entry instead of `UNKNOWN`. Keep your aggregators reachable: the indexer retries each message for up to one hour, and if all of
+your aggregators stay unreachable past that window, it stops and the default executor never runs those messages.
+The attestations are still in your aggregators, so recover those messages the same way you tested: execute them
+yourself.
+
+---
+
+# Operate: day 2
+Source: https://docs.chain.link/ccip/v2/ccv-starter-kit/operate-day-2
+Last Updated: 2026-09-27
+
+Day-2 work splits in two: on-chain changes to your verifier contracts, run through the on-chain kit's `make`
+targets, and off-chain operations on the running cells (your Helm releases). This page maps what those
+operations are and where each is documented; the kits carry the exact commands.
+
+## Sign on-chain changes: Safe or EOA
+
+The `make` targets that change on-chain state take `OUTPUT_MODE`, set to `SAFE` or `EOA` (there is no default).
+
+- `SAFE`, recommended for production: the target writes a Safe transaction batch under `out/safe/` instead of
+  broadcasting, and your multisig imports and executes it, so governance stays the owner of the contracts. See
+  [Safe batches](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/safe-batches.md).
+- `EOA`: the target broadcasts immediately, signed by whatever the `SIGNER` variable holds. `SIGNER` passes
+  straight to `forge script`, so any Foundry wallet works: AWS KMS (`--aws`, the default), GCP KMS (`--gcp`), an
+  encrypted local keystore (`--account <name>` or `--keystore <path>`), a hardware wallet, or `--private-key`
+  for local use. Prefer a keystore or KMS over a raw private key. See
+  [Signing](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/getting-started.md#signing).
+
+The deploy targets (factory, resolver, verifier) are EOA-only and always broadcast.
+
+## On-chain operations
+
+Run these through the `make` targets in either mode above. The generated
+[command reference](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/commands.md)
+lists every target with its required caller and variables, and the
+[operations](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/operations.md)
+and
+[governance](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/governance.md)
+pages walk the workflows.
+
+- **Manage lanes.** Add or update a lane's remote config on the source verifier (`apply-remote-config`), set
+  per-lane sender allowlists (`apply-allowlists`), wire the resolver's inbound and outbound maps when you add a
+  lane or a new verifier version (`apply-inbound`, `apply-outbound`), and pause a lane (`pause-lane`, which sets
+  the router to zero for that destination on the source verifier and writes the change into the lane's config
+  file to commit).
+- **Manage the committee.** Add, remove, or rotate committee signers on the destination verifier
+  (`apply-signature-configs`), and set the allowed-finality cap (`set-finality-config`).
+- **Manage roles and ownership.** Set the verifier's fee aggregator and allowlist admin (`set-dynamic-config`),
+  update its storage locations (`update-storage-locations`), and hand over control through the two-step
+  transfers for the owner (`transfer-owner`, then `accept-owner` from the incoming signer) and the
+  storage-locations admin (`transfer-sla`, then `accept-sla`).
+- **Manage fees.** Withdraw accrued fee-token balances to the aggregators (`sweep-fees`, permissionless); read
+  balances first with `balance-report`.
+- **Check for drift.** Snapshot the live on-chain roles and settings (`snapshot`), and run the config and
+  governance drift check on a schedule (`drift`).
+
+## Off-chain operations
+
+These act on the running cells, not the contracts.
+
+- **Upgrade and roll back.** `helm upgrade` with a changed config or image tag restarts the pods (the chart
+  stamps config and secret checksums) and the containers run their database migrations on startup, so expect
+  brief downtime while the single pod is recreated. `helm rollback` restores the previous release but does not
+  reverse migrations, so back up Postgres before you upgrade. Choose the image tag from the
+  [public ECR gallery](https://gallery.ecr.aws/chainlink).
+- **Scale the committee.** Add fault tolerance by running more cells, each its own Helm release with its own
+  Postgres, secrets, and key custody, never by adding replicas (both StatefulSets are fixed at `replicas: 1`).
+  See [Scale to a committee](/ccip/ccv-starter-kit/how-to/scale-to-a-committee).
+- **Add or remove a cell.** After you add or remove an aggregator, exchange the peer credentials (below) and
+  re-send the aggregator endpoint list to the indexer; see
+  [Onboard to the CCIP indexer](/ccip/ccv-starter-kit/onboard-to-the-indexer).
+- **Exchange or rotate peer credentials.** Every verifier-to-aggregator pair in the committee uses one HMAC key
+  pair, so when you add or rotate a member you generate and distribute the pairs. The off-chain kit's
+  [peer information and credential exchange](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#8-peer-information-and-credential-exchange)
+  documentation has the layout.
+- **Rotate the signing key.** Follow
+  [Signer key custody and KMS](/ccip/ccv-starter-kit/how-to/signer-key-custody-and-kms) for the Postgres
+  keystore or cloud KMS.
+- **Manage Postgres.** Provision storage with headroom and alert on disk; the cell does not size the database
+  for you. With the Postgres keystore, backups contain the signing key, so encrypt them and restrict who can
+  read them.
+- **Monitor.** Collect metrics and set alerts; see
+  [Logging and monitoring](/ccip/ccv-starter-kit/logging-and-monitoring).
+
+## Troubleshooting
+
+The rows are ordered by where they surface, from deploy through onboarding.
+
+| Symptom                                                                             | Likely cause                                                                                        | Where to look                                                                                |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Green pods, no attestation ever                                                     | An address field holds the CommitteeVerifier, not the resolver                                      | [Deploy your first cell, step 2](/ccip/ccv-starter-kit/evm/deploy-your-first-cell)           |
+| Verifier crash-loops on startup, no chain sources                                   | `committee_verifier_addresses` and `on_ramp_addresses` are not both set for the same chain selector | [Deploy your first cell, step 2](/ccip/ccv-starter-kit/evm/deploy-your-first-cell)           |
+| Aggregator crash-loops on startup                                                   | `quorumConfigs` or `destinationVerifiers` is empty                                                  | [Deploy your first cell, step 2](/ccip/ccv-starter-kit/evm/deploy-your-first-cell)           |
+| Pods stuck in `ContainerCreating`, `PermissionDenied` (GCP) or `AccessDenied` (AWS) | The ServiceAccount cannot read the secret; workload identity is not wired                           | [Deploy your first cell, step 3](/ccip/ccv-starter-kit/evm/deploy-your-first-cell)           |
+| Pods stuck in `ContainerCreating`, `serviceAccount.tokens not provided`             | Secrets Store CSI driver installed without the `tokenRequests` audience (AWS)                       | [Deploy your first cell, step 3](/ccip/ccv-starter-kit/evm/deploy-your-first-cell)           |
+| Verifier crash-loops, `AccessDenied` on `kms:Sign` or `kms:GetPublicKey`            | KMS keystore missing a grant; it needs Sign, GetPublicKey, and (on AWS) DescribeKey on the key      | [Signer key custody and KMS](/ccip/ccv-starter-kit/how-to/signer-key-custody-and-kms)        |
+| `connection refused` past a minute after deploy                                     | Aggregator not listening on port 50051, often a config with no `[server] address`                   | [Logging and monitoring](/ccip/ccv-starter-kit/logging-and-monitoring)                       |
+| Every request 503, Gateway `Programmed: True`, pods 1/1                             | Load balancer health check on the default `GET /`, not readiness                                    | [Expose the aggregator](/ccip/ccv-starter-kit/how-to/expose-the-aggregator)                  |
+| Only `Healthy` in the logs, a message takes \~13 minutes (looks hung)               | `finality_depth: 0` waits for the source chain's finality tag; nothing is wrong                     | [Logging and monitoring](/ccip/ccv-starter-kit/logging-and-monitoring#read-the-startup-logs) |
+| CCIP API reports the verifier as `UNKNOWN`                                          | Committee not onboarded yet                                                                         | [Onboard to the CCIP indexer](/ccip/ccv-starter-kit/onboard-to-the-indexer)                  |
+| `policy_unavailable` rising, messages not signed                                    | Policy-hook endpoint down or timing out                                                             | [Logging and monitoring](/ccip/ccv-starter-kit/logging-and-monitoring)                       |
+| `Dropping task - policy hook returned FAIL` in the log                              | Your endpoint rejected the message                                                                  | [Add a custom policy hook](/ccip/ccv-starter-kit/how-to/add-a-custom-policy-hook)            |
+| Onboarded, but a message was never executed                                         | All aggregators unreachable for over an hour                                                        | [Onboard to the CCIP indexer](/ccip/ccv-starter-kit/onboard-to-the-indexer#after-onboarding) |
+
+---
+
+# Prerequisites
+Source: https://docs.chain.link/ccip/v2/ccv-starter-kit/prerequisites
+Last Updated: 2026-09-27
+
+The CCV Starter Kit is a brownfield kit: it deploys into a Kubernetes cluster and stateful services you already
+run, rather than provisioning new infrastructure. You bring the cluster, the database, the secret store, and
+the ingress. This page assumes you already operate production Kubernetes, TLS, gRPC ingress, secret
+management, and a production database. If you do not, set them up first.
+
+<ToolsUtilitiesGrid
+  title="Secret stores"
+  links={[
+  {
+    image: "/images/ccip/ccv-starter-kit/aws-secrets-manager.svg",
+    imageAlt: "AWS Secrets Manager",
+    label: "AWS Secrets Manager",
+    description: "Managed secret store on AWS.",
+    link: "https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html",
+  },
+  {
+    image: "/images/ccip/ccv-starter-kit/gcp-secret-manager.svg",
+    imageAlt: "Google Cloud Secret Manager",
+    label: "GCP Secret Manager",
+    description: "Managed secret store on Google Cloud.",
+    link: "https://cloud.google.com/secret-manager/docs",
+  },
+  {
+    image: "/images/ccip/ccv-starter-kit/azure-key-vault.svg",
+    imageAlt: "Azure Key Vault",
+    label: "Azure Key Vault",
+    description: "Managed secret store on Azure.",
+    link: "https://learn.microsoft.com/en-us/azure/key-vault/general/overview",
+  },
+]}
+/>
+
+You provision each dependency below with your cloud's own tooling; the table links the vendor docs. The
+off-chain kit's
+[Prerequisites](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#1-prerequisites)
+and
+[Configure](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#2-configure-the-values)
+documentation has the field-level detail.
+
+## Dependency matrix
+
+| Dependency           | What the kit needs                                                                                              | Per-cloud vendor doc                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| -------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Kubernetes cluster   | A conformant cluster on a supported version                                                                     | [GKE](https://cloud.google.com/kubernetes-engine/docs/quickstart) / [EKS](https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html) / [AKS](https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-cli) getting-started, or any conformant on-premise Kubernetes                                                                                                                                                                                                                  |
+| Managed Postgres     | Postgres 15+ over TLS, reachable from inside the cluster                                                        | [Cloud SQL](https://cloud.google.com/sql/docs/postgres) / [Amazon RDS for PostgreSQL](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html) / [Azure Database for PostgreSQL](https://learn.microsoft.com/en-us/azure/postgresql/)                                                                                                                                                                                                                                                         |
+| Secret store         | A store the chart references and mounts (five backends)                                                         | [GCP Secret Manager](https://cloud.google.com/secret-manager/docs) / [AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html) ([ASCP](https://docs.aws.amazon.com/secretsmanager/latest/userguide/integrating_csi_driver.html)) / [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/overview) ([AKS CSI](https://learn.microsoft.com/en-us/azure/aks/csi-secrets-store-driver)) / [External Secrets Operator](https://external-secrets.io/latest/) |
+| Workload identity    | Keyless pod access to your secrets and KMS                                                                      | [GKE Workload Identity](https://cloud.google.com/kubernetes-engine/docs/concepts/workload-identity) / EKS [IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) or [Pod Identity](https://docs.aws.amazon.com/eks/latest/userguide/pod-identities.html) / [Microsoft Entra Workload ID](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview)                                                                                                            |
+| Signer key (KMS)     | Optional cloud KMS for the signer key, recommended on a managed cloud; the Postgres keystore holds it otherwise | [GCP KMS](https://cloud.google.com/kms/docs) / [AWS KMS](https://docs.aws.amazon.com/kms/latest/developerguide/overview.html) / Azure Key Vault KMS signer (coming soon; use the Postgres keystore)                                                                                                                                                                                                                                                                                                               |
+| Ingress for gRPC     | TLS-terminated, HTTP/2 and gRPC end to end, a stable public hostname                                            | [GKE Gateway](https://cloud.google.com/kubernetes-engine/docs/concepts/gateway-api) / [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/) / [Azure Application Gateway for Containers](https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/overview); on-premise [MetalLB](https://metallb.universe.tf/) with [Envoy Gateway](https://gateway.envoyproxy.io/)                                                                           |
+| RPC per source chain | Multiple independent providers with failover, not a single endpoint                                             | [RPC requirements](/resources/network-integration#standardized-rpcs-with-slas)                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| On-chain contracts   | The resolver, committee-verifier addresses, and selectors (deploy them first)                                   | [The CCV on-chain contracts kit book](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/getting-started.md)                                                                                                                                                                                                                                                                                                                                                              |
+
+## Postgres databases
+
+The cell keeps its state in separate logical databases on your Postgres server, one per component. Two always
+exist: an `aggregator` database for the aggregator's state, and a `verifier` database for the verifier's state.
+With the default Postgres keystore, the verifier generates its signing key on first boot and stores it in a
+third `bootstrapper` database, so your Postgres backups then contain the signing key. Point the keystore at
+cloud KMS instead and the signing key lives in KMS, never in Postgres. See
+[Signer key custody and KMS](/ccip/ccv-starter-kit/how-to/signer-key-custody-and-kms) for that choice. Create
+the databases your configuration uses and give each component its own connection string; those strings are part
+of the secrets covered in [Choose a secret backend](/ccip/ccv-starter-kit/how-to/choose-a-secret-backend).
+
+## Certificate: use a publicly trusted CA
+
+The aggregator's TLS certificate must be issued by a publicly trusted certificate authority. The clients are
+your peer verifiers and the CCIP indexer, and neither trusts your private CA. A certificate from a private or
+internal CA passes every check you run against your own cell and fails only when a peer or the indexer
+connects. A Google-managed certificate, cert-manager with an ACME issuer such as Let's Encrypt, or a certificate
+bought from a public CA all work.
+
+## RPC providers
+
+Give each cell its own RPC providers, with more than one per chain for failover. Each provider should meet
+Chainlink's [RPC requirements](/resources/network-integration#standardized-rpcs-with-slas): independent
+providers, no rate limits, and the performance SLAs. Cells in a committee must not share a provider;
+[Scale to a committee](/ccip/ccv-starter-kit/how-to/scale-to-a-committee#keep-rpc-independent) explains why.
+
+## Local development only
+
+The off-chain kit ships a `local/` folder for experimentation only: a docker-compose stack you can run anywhere
+Docker and docker-compose are available. Use it to try the cell out, not to run it for real. Production is
+bring-your-own for every dependency above.
+
+---
+
+# Reference
+Source: https://docs.chain.link/ccip/v2/ccv-starter-kit/reference
+Last Updated: 2026-09-27
+
+The two kits, the concept pages, the tools, and the CCIP resources this guide links, collected in one place.
+
+## The two kits
+
+## On-chain contracts kit
+
+The kit is documented as a book:
+[getting started](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/getting-started.md),
+[deploy](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/deploy.md),
+[configure](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/configure.md),
+[governance](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/governance.md),
+[operations](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/operations.md),
+and
+[safe batches](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/safe-batches.md).
+
+Every `make` target, its caller, and its mode are in the
+[command reference](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/commands.md),
+with the
+[config sync commands](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/config-sync-reference.md)
+alongside it. Both are generated from the Makefile and gated in CI, so they stay in step with the targets.
+
+## Off-chain kit
+
+The `ccv-cell` Helm chart is documented in its
+[deployment runbook](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md) and
+[chart values reference](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/charts/ccv-cell/README.md).
+It runs two Docker images, the verifier and the aggregator, published to the public Amazon ECR gallery
+([verifier](https://gallery.ecr.aws/chainlink/chainlink-ccv-verifier),
+[aggregator](https://gallery.ecr.aws/chainlink/chainlink-ccv-aggregator)), where you can see the available
+versions; the [chart releases](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/releases) are on
+GitHub. The chart sets a default image tag; override it in your chart values to run a specific version.
+
+## Concepts
+
+- [CCV overview](/ccip/concepts/ccvs/overview): the entry point to the verification models, interface
+  guarantees, and trust and responsibility model.
+- [CCIP architecture overview](/ccip/concepts/architecture/overview): how verifiers, aggregators, the indexer,
+  and the executor fit together.
+- [Manual execution](/ccip/concepts/manual-execution): executing a message yourself on the destination chain.
+
+## Tools
+
+- [`ccip-cli`](https://docs.chain.link/ccip/tools/cli/): send messages, self-execute, and check message status.
+- [Policy hook OpenAPI spec](https://github.com/smartcontractkit/chainlink-ccv/blob/main/verifier/policy_hook_openapi_v1.yaml):
+  the request and response contract for a custom policy hook.
+
+## CCIP resources
+
+- [Network integration](/resources/network-integration): RPC requirements and SLAs.
+- [CCIP directory](/ccip/directory): Router and lane addresses per chain.
+
+## Support
+
+Questions, or want to run a CCV? Email clusersupport\@smartcontract.com.
+
+---
+
 # Message Configuration (ExtraArgs)
 Source: https://docs.chain.link/ccip/v2/concepts/architecture/message-configuration-extraargs
 
@@ -73966,6 +74998,13 @@ CCVs bridge source-chain events and destination-chain execution:
 Each CCV consists of a stable onchain **resolver** contract and one or more **versioned implementation** contracts. This pattern lets verification logic upgrade without changing the CCV address that token pools and receivers reference.
 
 ## When to Add CCVs
+
+<Aside type="caution" title="Keep the default verifier; add CCVs as defense in depth">
+  CCIP verifies every message with its default **committee verifier**. Additional CCVs are defense in depth on top of
+  it, not a replacement. The recommended security posture is to keep the committee verifier as your default CCV and
+  require additional CCVs only where you need them. See [verification models](/ccip/concepts/ccvs/verification-models)
+  and the [trust and responsibility model](/ccip/concepts/ccvs/trust-responsibility-model).
+</Aside>
 
 Consider additional CCVs when you need:
 
@@ -74642,6 +75681,13 @@ If the pool was deployed with an `AdvancedPoolHooks` contract, configure it sepa
 - Setting an allowlist on the token pool.
 - Configuring and managing Cross-Chain Verifiers (CCVs) as part of your token transfer flow.
 - Configuring policy checks via the Automated Compliance Engine as part of your token transfer flow.
+
+<Aside type="caution" title="Keep the default verifier; add CCVs as defense in depth">
+  CCIP verifies every message with its default **committee verifier**. Additional CCVs are defense in depth on top of
+  it, not a replacement. The recommended security posture is to keep the committee verifier as your default CCV and
+  require additional CCVs only where you need them. See [verification models](/ccip/concepts/ccvs/verification-models)
+  and the [trust and responsibility model](/ccip/concepts/ccvs/trust-responsibility-model).
+</Aside>
 
 The `AdvancedPoolHooks` contract has its own configuration surface:
 
@@ -98345,6 +99391,13 @@ We will send a `string` payload from *Ethereum Sepolia* to *Arbitrum Sepolia* tw
 </AnchoredAccordion>
 
 <AnchoredAccordion title="Configure receiver finality policy" number={6} depth={4}>
+  <Aside type="caution" title="Keep the default verifier; add CCVs as defense in depth">
+    CCIP verifies every message with its default **committee verifier**. Additional CCVs are defense in depth on top of
+    it, not a replacement. The recommended security posture is to keep the committee verifier as your default CCV and
+    require additional CCVs only where you need them. See [verification models](/ccip/concepts/ccvs/verification-models)
+    and the [trust and responsibility model](/ccip/concepts/ccvs/trust-responsibility-model).
+  </Aside>
+
   The receiver exposes an `allowedFinalityConfig` for each source chain. This value tells CCIP which finality modes the receiver accepts for messages from that chain. The sender scripts encode the requested mode into V3 `extraArgs` as `requestedFinalityConfig`, then validate the request against the receiver policy (and the token pool policy, when applicable) before sending.
 
   CCIP 2.0 supports two finality request styles:
