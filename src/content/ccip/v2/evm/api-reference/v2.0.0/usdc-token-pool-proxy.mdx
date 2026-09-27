@@ -69,7 +69,7 @@ contract USDCTokenPoolProxy
 
 ```solidity
 string public constant override typeAndVersion =
-  "USDCTokenPoolProxy 2.0.0-dev";
+  "USDCTokenPoolProxy 2.0.0";
 ```
 
 ---
@@ -163,7 +163,7 @@ function lockOrBurn(
 ```solidity
 function lockOrBurn(
   Pool.LockOrBurnInV1 calldata lockOrBurnIn,
-  uint16 blockConfirmationRequested,
+  bytes4 requestedFinalityConfig,
   bytes memory tokenArgs
 )
   public
@@ -198,7 +198,7 @@ function releaseOrMint(
 ```solidity
 function releaseOrMint(
   Pool.ReleaseOrMintInV1 calldata releaseOrMintIn,
-  uint16 blockConfirmationRequested
+  bytes4 requestedFinalityConfig
 )
   public
   override
@@ -213,6 +213,150 @@ function releaseOrMint(
 ### getFee
 
 Delegates to underlying pool supporting V2.
+
+---
+
+### getStaticConfig
+
+```solidity
+function getStaticConfig() external view returns (address token, address router, address cctpVerifier)
+```
+
+> Returns the token, router, and CCTP verifier addresses the proxy was constructed with.
+
+---
+
+### getPools
+
+```solidity
+function getPools() public view returns (PoolAddresses memory)
+```
+
+> Returns the current pool addresses the proxy routes to: `cctpV1Pool`, `cctpV2Pool`, `cctpV2PoolWithCCV`, and `siloedLockReleasePool`.
+
+---
+
+### getLockOrBurnMechanism
+
+```solidity
+function getLockOrBurnMechanism(
+  uint64 remoteChainSelector
+) public view returns (LockOrBurnMechanism)
+```
+
+> Returns the lock or burn mechanism for a remote chain, including CCTP V1/V2 and Lock/Release.
+
+---
+
+### isSupportedChain
+
+```solidity
+function isSupportedChain(uint64 remoteChainSelector) external view returns (bool)
+```
+
+> Returns true if a lock or burn mechanism is set for the chain. A chain with no mechanism is not supported.
+
+---
+
+### isSupportedToken
+
+```solidity
+function isSupportedToken(address token) external view returns (bool)
+```
+
+> Returns true if `token` is the token the proxy was constructed with.
+
+---
+
+### getToken
+
+```solidity
+function getToken() public view returns (IERC20 token)
+```
+
+> Returns the token this pool can lock or burn.
+
+---
+
+### getTokenTransferFeeConfig
+
+```solidity
+function getTokenTransferFeeConfig(
+  address localToken,
+  uint64 destChainSelector,
+  bytes4 requestedFinalityConfig,
+  bytes calldata tokenArgs
+) external view
+```
+
+> Returns the token transfer fee config for a destination lane. Delegates to the underlying pool.
+
+---
+
+### getRemoteToken
+
+```solidity
+function getRemoteToken(uint64 remoteChainSelector) external view returns (bytes memory)
+```
+
+> Returns the remote token address for a remote chain.
+
+---
+
+### getRemotePools
+
+```solidity
+function getRemotePools(uint64 remoteChainSelector) external view returns (bytes[] memory)
+```
+
+> Returns the pool addresses on the remote chain.
+
+---
+
+### getRequiredCCVs
+
+```solidity
+function getRequiredCCVs(
+  address localToken,
+  uint64 remoteChainSelector,
+  uint256 amount,
+  bytes4 requestedFinalityConfig,
+  bytes calldata extraData,
+  IPoolV2.MessageDirection direction
+) external view returns (address[] memory)
+```
+
+> Returns the CCVs required for a transfer. Delegates to the underlying pool for the mechanism.
+
+---
+
+### getFeeAggregator
+
+```solidity
+function getFeeAggregator() external view returns (address)
+```
+
+> Returns the current fee aggregator address.
+
+---
+
+### setFeeAggregator
+
+```solidity
+function setFeeAggregator(address feeAggregator) external onlyOwner
+```
+
+> Sets the fee aggregator that receives withdrawn fees.
+
+---
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId) external view returns (bool)
+```
+
+> Returns true for the pool interfaces the proxy implements.
 
 ---
 
@@ -238,6 +382,8 @@ function updateLockOrBurnMechanisms(
   external
   onlyOwner
 ```
+
+Reverts `MismatchedArrayLengths()` if the arrays differ in length, and `MustSetPoolForMechanism(chainSelector, mechanism)` if a mechanism is set whose pool address has not been set via `updatePoolAddresses`.
 
 ---
 
@@ -289,7 +435,7 @@ error MustSetPoolForMechanism(
 
 - Owner controls routing configuration.
 - Router enforces ramp authorization.
-- No delegatecall — child pool storage remains isolated.
+- No delegatecall: child pool storage remains isolated.
 - Version tag must match expected child pool semantics.
 - Misconfiguration can halt lane until corrected.
 
@@ -300,5 +446,4 @@ error MustSetPoolForMechanism(
 - [`IPoolV1`](/ccip/evm/api-reference/v2.0.0/i-pool-v1)
 - [`IPoolV2`](/ccip/evm/api-reference/v2.0.0/i-pool-v2)
 - [`ICrossChainVerifierResolver`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-resolver)
-- [`USDCTokenPool`](/ccip/evm/api-reference/v2.0.0/usdc-token-pool)
 - [`SiloedUSDCTokenPool`](/ccip/evm/api-reference/v2.0.0/siloed-usdc-token-pool)

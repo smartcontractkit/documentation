@@ -86284,7 +86284,7 @@ If `msg.sender` is not present in `s_authorizedCallers`.
 - Removals are processed before additions to avoid accidental overlap issues.
 - Zero address cannot be added.
 - Modifier-based enforcement prevents unauthorized execution.
-- Designed for inheritance — does not perform business logic itself.
+- Designed for inheritance: does not perform business logic itself.
 
 ***
 
@@ -86501,7 +86501,7 @@ Reverts if RMN marks the destination chain as unsafe.
 - [`ICrossChainVerifierResolver`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-resolver)
 - [`CommitteeVerifier`](/ccip/evm/api-reference/v2.0.0/committee-verifier)
 - [`CCTPVerifier`](/ccip/evm/api-reference/v2.0.0/cctp-verifier)
-- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
+- [`IRMN`](/ccip/evm/api-reference/v2.0.0/i-rmn)
 - [`IRouter`](/ccip/evm/api-reference/v2.0.0/i-router)
 
 ---
@@ -87404,7 +87404,7 @@ Inherited from `BurnMintTokenPoolAbstract`.
 - This pool burns tokens from a specified address using `burn(address, amount)`.
 - This pool does not require the pool contract to hold tokens before burning.
 - The pool may require allowance or role-based permissions to burn tokens from the specified address.
-- This variant is more flexible than `BurnMintTokenPool` but requires additional permission configuration.
+- This variant burns from the address passed to `burn(address, amount)` instead of the caller's balance, but requires allowance or role-based permissions to be configured.
 - If your token does not support `burn(address, amount)`, use another pool variant.
 - Pool configuration and access behavior are fixed at deployment. Changing them requires deploying a new pool.
 
@@ -87689,7 +87689,7 @@ This is not an upgradeable storage proxy.
 
 ```solidity
 string public constant override typeAndVersion =
-  "CCTPMessageTransmitterProxy 2.0.0-dev";
+  "CCTPMessageTransmitterProxy 2.0.0";
 ```
 
 ***
@@ -88136,6 +88136,8 @@ function applyAllowlistUpdates(AllowlistConfigArgs[] calldata allowlistConfigArg
 
 > Updates allowlist configuration.
 
+Callable by the owner or the `allowlistAdmin` set in the dynamic config. Any other caller reverts with `OnlyCallableByOwnerOrAllowlistAdmin`.
+
 ***
 
 ### setAllowedFinalityConfig
@@ -88164,7 +88166,78 @@ function updateStorageLocations(string[] memory newLocations) external onlyOwner
 function withdrawFeeTokens(address[] calldata feeTokens) external
 ```
 
-> Withdraws accumulated fee tokens. Restricted to authorized callers.
+> Withdraws accumulated fee token balances to the `feeAggregator` in the dynamic config.
+
+Permissionless: it only transfers tokens to the configured fee aggregator.
+
+***
+
+### getFee
+
+```solidity
+function getFee(
+  uint64 destChainSelector,
+  Client.EVM2AnyMessage memory message,
+  bytes memory extraArgs,
+  bytes4 requestedFinality
+) external view returns (uint16 feeUSDCents, uint32 gasForVerification, uint32 payloadSizeBytes)
+```
+
+> Returns the fee in USD cents, verification gas, and payload size for messages to a remote chain. Inherited from `BaseVerifier`.
+
+Reverts `RemoteChainNotSupported(destChainSelector)` if the chain has no configuration, and reverts if `requestedFinality` is outside `getAllowedFinalityConfig()`.
+
+***
+
+### versionTag
+
+```solidity
+function versionTag() public view returns (bytes4 tag)
+```
+
+> Returns the immutable version tag set at construction. Inherited from `BaseVerifier`.
+
+***
+
+### getAllowedFinalityConfig
+
+```solidity
+function getAllowedFinalityConfig() public view returns (bytes4 allowedFinality)
+```
+
+> Returns the allowed finality encoding for fast finality transfers. Inherited from `BaseVerifier`.
+
+***
+
+### getStorageLocations
+
+```solidity
+function getStorageLocations() public view returns (string[] memory)
+```
+
+> Returns the off-chain storage locations for verifier infrastructure to read from. Inherited from `BaseVerifier`.
+
+***
+
+### getRemoteChainConfig
+
+```solidity
+function getRemoteChainConfig(
+  uint64 remoteChainSelector
+) external view returns (RemoteChainConfig memory)
+```
+
+> Returns the router, fee, verification gas, payload size, and allowlist state for a remote chain. Inherited from `BaseVerifier`.
+
+***
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId) external pure returns (bool)
+```
+
+> Returns true for `ICrossChainVerifierV1` and `IERC165`. Inherited from `BaseVerifier`.
 
 ***
 
@@ -88219,7 +88292,7 @@ For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/er
 - [`BaseVerifier`](/ccip/evm/api-reference/v2.0.0/base-verifier)
 - [`ICrossChainVerifierV1`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-v1)
 - [`CCTPMessageTransmitterProxy`](/ccip/evm/api-reference/v2.0.0/cctp-message-transmitter-proxy)
-- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
+- [`IRMN`](/ccip/evm/api-reference/v2.0.0/i-rmn)
 - [`MessageV1Codec`](/ccip/evm/api-reference/v2.0.0/message-v1-codec)
 - [`ITokenMessenger`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/USDC/interfaces/ITokenMessenger.sol)
 - [`IMessageTransmitter`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/USDC/interfaces/IMessageTransmitter.sol)
@@ -88678,6 +88751,8 @@ function applyAllowlistUpdates(AllowlistConfigArgs[] calldata allowlistConfigArg
 
 > Updates allowlist configuration.
 
+Callable by the owner or the `allowlistAdmin` set in the dynamic config. Any other caller reverts with `OnlyCallableByOwnerOrAllowlistAdmin`.
+
 ***
 
 ### setAllowedFinalityConfig
@@ -88746,9 +88821,143 @@ function updateStorageLocations(string[] memory newLocations) external
 function withdrawFeeTokens(address[] calldata feeTokens) external
 ```
 
-> Withdraws accumulated fee tokens. Restricted to authorized callers.
+> Withdraws accumulated fee token balances to the `feeAggregator` in the dynamic config.
+
+Permissionless: it only transfers tokens to the configured fee aggregator. Reverts if `feeAggregator` is `address(0)`.
 
 ***
+
+### getSignatureConfig
+
+```solidity
+function getSignatureConfig(
+  uint64 sourceChainSelector
+) external view returns (address[] memory signers, uint8 threshold)
+```
+
+> Returns the signer set and threshold for a source chain. Inherited from `SignatureQuorumValidator`.
+
+***
+
+### getAllSignatureConfigs
+
+```solidity
+function getAllSignatureConfigs() external view returns (SignatureConfig[] memory configs)
+```
+
+> Returns every configured signature configuration, one per source chain selector. Inherited from `SignatureQuorumValidator`.
+
+***
+
+### applySignatureConfigs
+
+```solidity
+function applySignatureConfigs(
+  uint64[] calldata sourceChainSelectorsToRemove,
+  SignatureConfig[] calldata signatureConfigs
+) external onlyOwner
+```
+
+> Removes the signer configuration for the listed source chains, then applies the updates. Last update per selector wins. Inherited from `SignatureQuorumValidator`.
+
+Reverts `InvalidSignatureConfig()` if a threshold is zero or exceeds its signer list length.
+
+***
+
+### getFee
+
+```solidity
+function getFee(
+  uint64 destChainSelector,
+  Client.EVM2AnyMessage memory message,
+  bytes memory extraArgs,
+  bytes4 requestedFinality
+) external view returns (uint16 feeUSDCents, uint32 gasForVerification, uint32 payloadSizeBytes)
+```
+
+> Returns the fee in USD cents, verification gas, and payload size for messages to a remote chain. Inherited from `BaseVerifier`.
+
+Reverts `RemoteChainNotSupported(destChainSelector)` if the chain has no configuration, and reverts if `requestedFinality` is outside `getAllowedFinalityConfig()`.
+
+***
+
+### versionTag
+
+```solidity
+function versionTag() public view returns (bytes4 tag)
+```
+
+> Returns the immutable version tag set at construction. Used by operational tooling and as a domain separator for signatures. Inherited from `BaseVerifier`.
+
+***
+
+### getAllowedFinalityConfig
+
+```solidity
+function getAllowedFinalityConfig() public view returns (bytes4 allowedFinality)
+```
+
+> Returns the allowed finality encoding for fast finality transfers. Inherited from `BaseVerifier`.
+
+***
+
+### getStorageLocations
+
+```solidity
+function getStorageLocations() public view returns (string[] memory)
+```
+
+> Returns the off-chain storage locations for verifier infrastructure to read from. Inherited from `BaseVerifier`.
+
+***
+
+### getRemoteChainConfig
+
+```solidity
+function getRemoteChainConfig(
+  uint64 remoteChainSelector
+) external view returns (RemoteChainConfig memory)
+```
+
+> Returns the router, fee, verification gas, payload size, and allowlist state for a remote chain. Inherited from `BaseVerifier`.
+
+***
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId) external pure returns (bool)
+```
+
+> Returns true for `ICrossChainVerifierV1` and `IERC165`. Inherited from `BaseVerifier`.
+
+***
+
+## Structs
+
+### DynamicConfig
+
+```solidity
+struct DynamicConfig {
+  address feeAggregator;
+  address allowlistAdmin;
+}
+```
+
+- `feeAggregator`: the entity receiving withdrawn fees. `address(0)` is valid and makes `withdrawFeeTokens` revert.
+- `allowlistAdmin`: the entity that may call `applyAllowlistUpdates` besides the owner.
+
+### SignatureConfig
+
+```solidity
+struct SignatureConfig {
+  uint64 sourceChainSelector;
+  uint8 threshold;
+  address[] signers;
+}
+```
+
+The signer set for a source chain. `threshold` must be nonzero and no greater than `signers.length`.
 
 ## Events
 
@@ -88795,7 +89004,7 @@ For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/er
 - [`SignatureQuorumValidator`](/ccip/evm/api-reference/v2.0.0/signature-quorum-validator)
 - [`ICrossChainVerifierV1`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-v1)
 - [`VersionedVerifierResolver`](/ccip/evm/api-reference/v2.0.0/versioned-verifier-resolver)
-- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
+- [`IRMN`](/ccip/evm/api-reference/v2.0.0/i-rmn)
 - [`FeeTokenHandler`](/ccip/evm/api-reference/v2.0.0/fee-token-handler)
 
 ---
@@ -89224,7 +89433,7 @@ import {ERC20LockBox} from "chainlink-ccip/chains/evm/contracts/pools/ERC20LockB
 
 ```solidity id="6nsoij"
 string public constant override typeAndVersion =
-  "ERC20LockBox 2.0.0-dev";
+  "ERC20LockBox 2.0.0";
 ```
 
 ***
@@ -90433,380 +90642,6 @@ Used by:
 
 ---
 
-# CCIP v2.0.0 FactoryBurnMintERC20 API Reference
-Source: https://docs.chain.link/ccip/evm/api-reference/v2.0.0/factory-burn-mint-erc20
-
-## Summary
-
-`FactoryBurnMintERC20` is a factory-deployable ERC20 implementation designed for CCIP token workflows.
-
-It provides:
-
-- Separate allowlists for minters and burners.
-- Optional maximum total supply.
-- Configurable decimals.
-- Owner-managed CCIP admin pointer.
-
-***
-
-## Contract
-
-`chains/evm/contracts/tokenAdminRegistry/TokenPoolFactory/FactoryBurnMintERC20.sol`
-
-***
-
-## Import
-
-```solidity
-import {FactoryBurnMintERC20} from "chainlink-ccip/chains/evm/contracts/tokenAdminRegistry/TokenPoolFactory/FactoryBurnMintERC20.sol";
-```
-
-***
-
-## Inheritance
-
-- `IBurnMintERC20`
-- `IGetCCIPAdmin`
-- `IERC165`
-- `ERC20Burnable`
-- `Ownable2StepMsgSender`
-- `ITypeAndVersion`
-
-***
-
-## typeAndVersion
-
-```solidity
-function typeAndVersion()
-  external
-  pure
-  returns (string memory)
-```
-
-Returns canonical type string:
-
-```solidity
-"FactoryBurnMintERC20 1.5.0"
-```
-
-***
-
-## State
-
-### Constants
-
-None declared.
-
-***
-
-### Immutables
-
-```solidity
-uint8 internal immutable i_decimals;
-uint256 internal immutable i_maxSupply;
-```
-
-***
-
-### Storage
-
-```solidity
-address internal s_ccipAdmin;
-EnumerableSet.AddressSet internal s_minters;
-EnumerableSet.AddressSet internal s_burners;
-```
-
-***
-
-## Constructor
-
-```solidity
-constructor(
-  string memory name,
-  string memory symbol,
-  uint8 decimals_,
-  uint256 maxSupply_,
-  uint256 preMint,
-  address newOwner
-)
-```
-
-Behavior:
-
-- Sets `i_decimals = decimals_`.
-- Sets `i_maxSupply = maxSupply_`.
-- Sets `s_ccipAdmin = newOwner`.
-- If `maxSupply_ != 0` and `preMint > maxSupply_`, reverts:
-
-```solidity
-error MaxSupplyExceeded(uint256 supplyAfterMint);
-```
-
-- If `preMint != 0`, mints `preMint` to `newOwner`.
-
-***
-
-## External API
-
-### supportsInterface
-
-```solidity
-function supportsInterface(bytes4 interfaceId)
-  public
-  pure
-  returns (bool)
-```
-
-Supports:
-
-- `IERC20`
-- `IBurnMintERC20`
-- `IERC165`
-- `IOwnable`
-- `IGetCCIPAdmin`
-
-***
-
-### decimals
-
-```solidity
-function decimals()
-  public
-  view
-  returns (uint8)
-```
-
-Returns `i_decimals`.
-
-***
-
-### maxSupply
-
-```solidity
-function maxSupply()
-  public
-  view
-  returns (uint256)
-```
-
-Returns `i_maxSupply`.
-
-***
-
-### mint
-
-```solidity
-function mint(address account, uint256 amount)
-  external
-  onlyMinter
-  validAddress(account)
-```
-
-Reverts `MaxSupplyExceeded(totalSupply() + amount)` if exceeding max supply.
-
-***
-
-### burn(uint256)
-
-```solidity
-function burn(uint256 amount)
-  public
-  onlyBurner
-```
-
-Burns from `msg.sender`.
-
-***
-
-### burn(address,uint256)
-
-```solidity
-function burn(address account, uint256 amount)
-  public
-  onlyBurner
-```
-
-Aliases to `burnFrom`.
-
-***
-
-### burnFrom
-
-```solidity
-function burnFrom(address account, uint256 amount)
-  public
-  onlyBurner
-```
-
-Consumes allowance and burns tokens.
-
-***
-
-### grantMintRole
-
-```solidity
-function grantMintRole(address minter)
-  public
-  onlyOwner
-```
-
-Emits `MintAccessGranted(minter)`.
-
-***
-
-### grantBurnRole
-
-```solidity
-function grantBurnRole(address burner)
-  public
-  onlyOwner
-```
-
-Emits `BurnAccessGranted(burner)`.
-
-***
-
-### revokeMintRole
-
-```solidity
-function revokeMintRole(address minter)
-  external
-  onlyOwner
-```
-
-Emits `MintAccessRevoked(minter)`.
-
-***
-
-### revokeBurnRole
-
-```solidity
-function revokeBurnRole(address burner)
-  external
-  onlyOwner
-```
-
-Emits `BurnAccessRevoked(burner)`.
-
-***
-
-### grantMintAndBurnRoles
-
-```solidity
-function grantMintAndBurnRoles(address burnAndMinter)
-  external
-```
-
-Calls `grantMintRole` and `grantBurnRole`.
-
-***
-
-### getMinters
-
-```solidity
-function getMinters()
-  external
-  view
-  returns (address[] memory)
-```
-
-***
-
-### getBurners
-
-```solidity
-function getBurners()
-  external
-  view
-  returns (address[] memory)
-```
-
-***
-
-### getCCIPAdmin
-
-```solidity
-function getCCIPAdmin()
-  external
-  view
-  returns (address)
-```
-
-***
-
-### setCCIPAdmin
-
-```solidity
-function setCCIPAdmin(address newAdmin)
-  public
-  onlyOwner
-```
-
-Emits:
-
-```solidity
-event CCIPAdminTransferred(
-  address indexed previousAdmin,
-  address indexed newAdmin
-);
-```
-
-***
-
-## Events
-
-```solidity
-event MintAccessGranted(address minter);
-event BurnAccessGranted(address burner);
-event MintAccessRevoked(address minter);
-event BurnAccessRevoked(address burner);
-event CCIPAdminTransferred(
-  address indexed previousAdmin,
-  address indexed newAdmin
-);
-```
-
-***
-
-## Errors
-
-```solidity
-error SenderNotMinter(address sender);
-error SenderNotBurner(address sender);
-error MaxSupplyExceeded(uint256 supplyAfterMint);
-```
-
-***
-
-## Modifiers
-
-```solidity
-modifier onlyMinter();
-modifier onlyBurner();
-modifier validAddress(address recipient);
-```
-
-***
-
-## Security model
-
-- Owner controls mint and burn role assignments.
-- Separate allowlists reduce blast radius.
-- Optional hard max supply enforced on mint.
-- `validAddress` prevents minting/transferring to token contract itself.
-- `s_ccipAdmin` has no privileged execution rights; it is a registry pointer.
-
-***
-
-## Related Interfaces & Contracts
-
-- [`IBurnMintERC20`](/ccip/evm/api-reference/v2.0.0/i-burn-mint-erc20)
-- [`BurnMintTokenPool`](/ccip/evm/api-reference/v2.0.0/burn-mint-token-pool)
-- [`TokenPoolFactory`](/ccip/evm/api-reference/v2.0.0/token-pool-factory)
-- [`TokenAdminRegistry`](/ccip/evm/api-reference/v2.0.0/token-admin-registry)
-
----
-
 # CCIP v2.0.0 FeeQuoter API Reference
 Source: https://docs.chain.link/ccip/evm/api-reference/v2.0.0/fee-quoter
 
@@ -91728,17 +91563,17 @@ Initiates a cross-chain deposit.
 
 Parameters:
 
-- `destinationChain` — Lombard chain identifier.
-- `token` — Source token address.
-- `sender` — Logical sender for the deposit.
-- `recipient` — 32-byte destination recipient identifier.
-- `amount` — Token amount.
-- `destinationCaller` — Authorized destination handler.
+- `destinationChain:` Lombard chain identifier.
+- `token:` Source token address.
+- `sender:` Logical sender for the deposit.
+- `recipient:` 32-byte destination recipient identifier.
+- `amount:` Token amount.
+- `destinationCaller:` Authorized destination handler.
 
 Returns:
 
-- `uint256` — Bridge-defined numeric identifier.
-- `bytes32` — Bridge-defined message or payload hash.
+- `uint256:` Bridge-defined numeric identifier.
+- `bytes32:` Bridge-defined message or payload hash.
 
 Function is `payable` to allow bridge-native fee handling.
 
@@ -91842,18 +91677,18 @@ bytes calldata optionalMessage
 
 Parameters:
 
-- `destinationChain` — Lombard chain identifier.
-- `token` — Source token address.
-- `sender` — Logical sender of the deposit.
-- `recipient` — 32-byte destination recipient identifier.
-- `amount` — Token amount to bridge.
-- `destinationCaller` — Authorized destination handler.
-- `optionalMessage` — Arbitrary payload forwarded and included in proof.
+- `destinationChain:` Lombard chain identifier.
+- `token:` Source token address.
+- `sender:` Logical sender of the deposit.
+- `recipient:` 32-byte destination recipient identifier.
+- `amount:` Token amount to bridge.
+- `destinationCaller:` Authorized destination handler.
+- `optionalMessage:` Arbitrary payload forwarded and included in proof.
 
 Returns:
 
-- `uint256` — Bridge-defined numeric identifier.
-- `bytes32` — Bridge-defined message or payload hash.
+- `uint256:` Bridge-defined numeric identifier.
+- `bytes32:` Bridge-defined message or payload hash.
 
 Function is `payable`.
 
@@ -91992,7 +91827,7 @@ It determines which verifier contract should be used for:
 - inbound message validation
 - outbound message construction
 
-This interface enables flexible selection of verifier implementations based on message data, destination chain, or protocol configuration.
+This interface selects the verifier implementation to use based on message data, destination chain, or protocol configuration.
 
 > This interface defines functions implemented by protocol contracts and is not typically used directly by applications.
 
@@ -93074,9 +92909,9 @@ Verifies and executes a bridged message.
 
 Returns:
 
-- `bytes32` — Bridge-defined identifier (e.g., payload hash)
-- `bool executed` — Whether execution succeeded
-- `bytes optionalMessage` — Optional payload forwarded from source chain
+- `bytes32:` Bridge-defined identifier (e.g., payload hash)
+- `bool executed:` Whether execution succeeded
+- `bytes optionalMessage:` Optional payload forwarded from source chain
 
 ***
 
@@ -93705,152 +93540,16 @@ Returns:
 
 ---
 
-# CCIP v2.0.0 IRMNRemote API Reference
-Source: https://docs.chain.link/ccip/evm/api-reference/v2.0.0/i-rmn-remote
-
-## Summary
-
-`IRMNRemote` defines the interface for the remote Risk Management Network (RMN) contract.
-
-It is used by CCIP components to:
-
-- Verify RMN node signatures over commit reports.
-- Query global and per-subject curse state.
-- Retrieve currently cursed subjects.
-
-The interface extends `[IRMN](/ccip/evm/api-reference/v2.0.0/i-rmn)`.
-
-***
-
-## Contract
-
-`chains/evm/contracts/interfaces/IRMNRemote.sol`
-
-***
-
-## Import
-
-```solidity
-import {IRMNRemote} from "chainlink-ccip/chains/evm/contracts/interfaces/IRMNRemote.sol";
-```
-
-***
-
-## Interface surface
-
-```solidity id="z2d4wq"
-interface IRMNRemote is IRMN {
-```
-
-***
-
-### Struct: Signature
-
-```solidity id="l8b5mn"
-struct Signature {
-  bytes32 r;
-  bytes32 s;
-}
-```
-
-***
-
-### verify
-
-```solidity id="f2c7jy"
-function verify(
-  address offRampAddress,
-  Internal.MerkleRoot[] calldata merkleRoots,
-  Signature[] calldata signatures
-) external view;
-```
-
-Verifies RMN node signatures over a commit report.
-
-Reverts on failure.
-
-***
-
-### getCursedSubjects
-
-```solidity id="r1j5ko"
-function getCursedSubjects()
-  external
-  view
-  returns (bytes16[] memory subjects);
-```
-
-Returns the list of currently cursed subjects.
-
-***
-
-### isCursed()
-
-```solidity id="u4p7xm"
-function isCursed()
-  external
-  view
-  override
-  returns (bool);
-```
-
-Returns `true` if a global curse is active.
-
-***
-
-### isCursed(bytes16)
-
-```solidity id="m9k2td"
-function isCursed(
-  bytes16 subject
-)
-  external
-  view
-  override
-  returns (bool);
-```
-
-Returns `true` if:
-
-- A global curse is active, or
-- The specified subject is cursed.
-
-***
-
-```solidity id="8yt7qv"
-}
-```
-
-***
-
-## Integration notes / expectations
-
-- `verify` must revert if quorum or signature validation fails.
-- `offRampAddress` is passed explicitly and must be incorporated into verification logic.
-- Curse checks should be performed by calling contracts before sensitive operations.
-- Implementations must ensure deterministic behavior for signature verification.
-
-***
-
-## Related Interfaces & Contracts
-
-- [`IRMN`](/ccip/evm/api-reference/v2.0.0/i-rmn)
-- [`OffRamp`](/ccip/evm/api-reference/v2.0.0/offramp)
-- [`RMNRemote`](/ccip/evm/api-reference/v2.0.0/rmn-remote)
-- [`Internal`](/ccip/evm/api-reference/v2.0.0/internal)
-
----
-
 # CCIP v2.0.0 IRMN API Reference
 Source: https://docs.chain.link/ccip/evm/api-reference/v2.0.0/i-rmn
 
 ## Summary
 
-`IRMN` defines the minimal on-chain interface for interacting with the Risk Management Network (RMN).
+`IRMN` contains the only RMN-related functions used on-chain by other CCIP contracts.
 
 It allows CCIP contracts to:
 
-- Check whether a Merkle root is blessed.
+- Get the current set of cursed subjects.
 - Check whether the system is globally cursed.
 - Check whether a specific subject is cursed.
 
@@ -93874,50 +93573,35 @@ import {IRMN} from "chainlink-ccip/chains/evm/contracts/interfaces/IRMN.sol";
 
 ## Interface surface
 
-```solidity id="t8k2dp"
+```solidity
 interface IRMN {
 ```
 
 ***
 
-### Struct: TaggedRoot
+### getCursedSubjects
 
-```solidity id="q9l6vf"
-struct TaggedRoot {
-  address commitStore;
-  bytes32 root;
-}
+```solidity
+function getCursedSubjects() external view returns (bytes16[] memory subjects);
 ```
 
-Represents a Merkle root tagged with the address of the commit store contract.
-
-***
-
-### isBlessed
-
-```solidity id="b2j5xn"
-function isBlessed(
-  TaggedRoot calldata taggedRoot
-) external view returns (bool);
-```
-
-Returns whether the specified tagged root is currently blessed.
+Returns the current set of cursed subjects.
 
 ***
 
 ### isCursed()
 
-```solidity id="m4c9rs"
+```solidity
 function isCursed() external view returns (bool);
 ```
 
-Returns `true` if a global or legacy curse is active.
+Returns `true` if there is an active global or legacy curse.
 
 ***
 
 ### isCursed(bytes16)
 
-```solidity id="u7p3lx"
+```solidity
 function isCursed(
   bytes16 subject
 ) external view returns (bool);
@@ -93930,7 +93614,7 @@ Returns `true` if:
 
 ***
 
-```solidity id="f1k6zw"
+```solidity
 }
 ```
 
@@ -93938,16 +93622,16 @@ Returns `true` if:
 
 ## Integration notes / expectations
 
-- `isBlessed` results may change over time and must not be cached across transactions.
 - Curse checks should be performed immediately before executing sensitive operations.
-- Subjects (e.g., chain selectors) may be encoded as `bytes16(uint128(chainSelector))` by calling contracts.
+- To check whether a particular chain is cursed, pass `bytes16(uint128(chainSelector))` as the subject.
+- Both `isCursed` overloads return false immediately when no subjects are cursed at all.
 
 ***
 
 ## Related Interfaces & Contracts
 
-- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
-- [`RMNRemote`](/ccip/evm/api-reference/v2.0.0/rmn-remote)
+- [`RMN`](/ccip/evm/api-reference/v2.0.0/rmn)
+- [`RMNProxy`](/ccip/evm/api-reference/v2.0.0/rmn-proxy)
 - [`OffRamp`](/ccip/evm/api-reference/v2.0.0/offramp)
 - [`OnRamp`](/ccip/evm/api-reference/v2.0.0/onramp)
 
@@ -94597,7 +94281,6 @@ CCIP 2.0 introduces a modular architecture composed of the following builder-fac
 
 #### USDC
 
-- [USDCTokenPool](/ccip/evm/api-reference/v2.0.0/usdc-token-pool)
 - [USDCTokenPoolProxy](/ccip/evm/api-reference/v2.0.0/usdc-token-pool-proxy)
 - [SiloedUSDCTokenPool](/ccip/evm/api-reference/v2.0.0/siloed-usdc-token-pool)
 - [CCTPThroughCCVTokenPool](/ccip/evm/api-reference/v2.0.0/cctp-through-ccv-token-pool)
@@ -94625,10 +94308,9 @@ CCIP 2.0 introduces a modular architecture composed of the following builder-fac
 
 ### RMN
 
+- [RMN](/ccip/evm/api-reference/v2.0.0/rmn)
 - [RMNProxy](/ccip/evm/api-reference/v2.0.0/rmn-proxy)
-- [RMNRemote](/ccip/evm/api-reference/v2.0.0/rmn-remote)
 - [IRMN](/ccip/evm/api-reference/v2.0.0/i-rmn)
-- [IRMNRemote](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
 
 ***
 
@@ -95125,7 +94807,7 @@ import {LombardTokenPool} from "chainlink-ccip/chains/evm/contracts/pools/Lombar
 
 ```solidity
 string public constant override typeAndVersion =
-  "LombardTokenPool 2.0.0-dev";
+  "LombardTokenPool 2.0.0";
 ```
 
 ***
@@ -95220,7 +94902,7 @@ event LombardConfigurationSet(
 ```solidity
 function lockOrBurn(
   Pool.LockOrBurnInV1 calldata lockOrBurnIn,
-  uint16 blockConfirmationRequested,
+  bytes4 requestedFinalityConfig,
   bytes calldata tokenArgs
 )
   public
@@ -95506,7 +95188,7 @@ Implements:
 
 ```solidity
 string public constant override typeAndVersion =
-  "LombardVerifier 2.0.0-dev";
+  "LombardVerifier 2.0.0";
 ```
 
 ***
@@ -95516,10 +95198,7 @@ string public constant override typeAndVersion =
 ### Constants
 
 ```solidity
-bytes4 internal constant VERSION_TAG_V1_7_0 =
-  bytes4(keccak256("LombardVerifier 1.7.0"));
-
-uint8 internal constant SUPPORTED_BRIDGE_MSG_VERSION = 1;
+uint8 internal constant SUPPORTED_BRIDGE_MSG_VERSION = 2;
 
 uint256 internal constant VERSION_TAG_SIZE = 4;
 uint256 internal constant BYTES32_SIZE = 32;
@@ -95545,11 +95224,13 @@ IBridgeV3 internal immutable i_bridge;
 ```solidity
 DynamicConfig private s_dynamicConfig;
 
-EnumerableMap.AddressToAddressMap private s_supportedTokens;
+EnumerableMap.AddressToAddressMap internal s_supportedTokens;
 
-EnumerableSet.UintSet private s_supportedChains;
+EnumerableSet.UintSet internal s_supportedChains;
 
-mapping(uint64 => Path) private s_chainSelectorToPath;
+mapping(uint64 chainSelector => Path path) internal s_chainSelectorToPath;
+
+mapping(uint64 remoteChainSelector => mapping(address token => bytes32 remoteAdapter)) internal s_remoteAdapters;
 ```
 
 ***
@@ -95561,15 +95242,16 @@ constructor(
   DynamicConfig memory dynamicConfig,
   IBridgeV3 bridge,
   string[] memory storageLocation,
-  address rmn
+  address rmn,
+  bytes4 versionTag
 )
-  BaseVerifier(storageLocation, rmn)
+  BaseVerifier(storageLocation, rmn, versionTag)
 ```
 
 Validations:
 
 - `bridge != address(0)` → else `ZeroBridge()`
-- `bridge.MSG_VERSION() == SUPPORTED_BRIDGE_MSG_VERSION`
+- `bridge.MSG_VERSION() == SUPPORTED_BRIDGE_MSG_VERSION` (2) → else `InvalidMessageVersion(2, got)`
 
 Initializes:
 
@@ -95585,6 +95267,59 @@ event DynamicConfigSet(DynamicConfig dynamicConfig);
 ***
 
 ## External API
+
+### getDynamicConfig
+
+```solidity
+function getDynamicConfig() external view returns (DynamicConfig memory)
+```
+
+> Returns the dynamic config.
+
+***
+
+### setDynamicConfig
+
+```solidity
+function setDynamicConfig(DynamicConfig memory dynamicConfig) external onlyOwner
+```
+
+> Sets the dynamic config. A zero-address fee aggregator is valid and makes `withdrawFeeTokens` revert.
+
+***
+
+### i_bridge
+
+```solidity
+IBridgeV3 public immutable i_bridge;
+```
+
+> The Lombard bridge contract. Public immutable, readable directly.
+
+***
+
+### setRemoteAdapters
+
+```solidity
+function setRemoteAdapters(RemoteAdapterArgs[] calldata remoteAdapterArgs) external onlyOwner
+```
+
+> Sets the remote adapter token identifier for each (remote chain selector, local token) pair in the array.
+
+***
+
+### getRemoteAdapter
+
+```solidity
+function getRemoteAdapter(
+  uint64 remoteChainSelector,
+  address token
+) external view returns (bytes32 remoteAdapter)
+```
+
+> Returns the remote adapter token identifier for a remote chain and local token.
+
+***
 
 ### forwardToVerifier
 
@@ -95622,7 +95357,7 @@ Destination-chain behavior:
 
 - `_assertNotCursedByRMN(message.sourceChainSelector)`
 - `_onlyOffRamp(message.sourceChainSelector)`
-- Parse and validate version prefix
+- Parse and validate the version prefix against `versionTag()` → else `InvalidCCVVersion(expected, got)`
 - Parse `rawPayload` and `proof`
 - Call:
 
@@ -95632,7 +95367,7 @@ IMailbox(i_bridge.mailbox())
 ```
 
 - Require `executed == true`
-- Validate bridged message equals `(VERSION_TAG_V1_7_0 || messageId)`
+- Validate the bridged message equals `(versionTag(), messageId)`
 
 ***
 
@@ -95641,12 +95376,12 @@ IMailbox(i_bridge.mailbox())
 ```solidity
 function versionTag()
   public
-  pure
+  view
   override
   returns (bytes4)
 ```
 
-Returns `VERSION_TAG_V1_7_0`.
+Returns the immutable version tag set at construction. Inherited from `BaseVerifier`.
 
 ***
 
@@ -95755,6 +95490,99 @@ function applyRemoteChainConfigUpdates(
   RemoteChainConfigArgs[] calldata remoteChainConfigArgs
 ) external onlyOwner
 ```
+
+***
+
+### applyAllowlistUpdates
+
+```solidity
+function applyAllowlistUpdates(
+  AllowlistConfigArgs[] calldata allowlistConfigArgsItems
+) external onlyOwner
+```
+
+> Updates senders that are allowed to use this verifier.
+
+Owner-only on this verifier, unlike `CommitteeVerifier` and `CCTPVerifier`, which also accept the dynamic config's `allowlistAdmin`.
+
+***
+
+### setAllowedFinalityConfig
+
+```solidity
+function setAllowedFinalityConfig(bytes4 allowedFinality) external onlyOwner
+```
+
+> Sets the allowed finality encoding for fast finality transfers.
+
+***
+
+### updateStorageLocations
+
+```solidity
+function updateStorageLocations(string[] memory newLocations) external onlyOwner
+```
+
+> Updates the off-chain storage location identifiers.
+
+***
+
+### getFee
+
+```solidity
+function getFee(
+  uint64 destChainSelector,
+  Client.EVM2AnyMessage memory message,
+  bytes memory extraArgs,
+  bytes4 requestedFinality
+) external view returns (uint16 feeUSDCents, uint32 gasForVerification, uint32 payloadSizeBytes)
+```
+
+> Returns the fee in USD cents, verification gas, and payload size for messages to a remote chain. Inherited from `BaseVerifier`.
+
+Reverts `RemoteChainNotSupported(destChainSelector)` if the chain has no configuration, and reverts if `requestedFinality` is outside `getAllowedFinalityConfig()`.
+
+***
+
+### getAllowedFinalityConfig
+
+```solidity
+function getAllowedFinalityConfig() public view returns (bytes4 allowedFinality)
+```
+
+> Returns the allowed finality encoding for fast finality transfers. Inherited from `BaseVerifier`.
+
+***
+
+### getStorageLocations
+
+```solidity
+function getStorageLocations() public view returns (string[] memory)
+```
+
+> Returns the off-chain storage locations for verifier infrastructure to read from. Inherited from `BaseVerifier`.
+
+***
+
+### getRemoteChainConfig
+
+```solidity
+function getRemoteChainConfig(
+  uint64 remoteChainSelector
+) external view returns (RemoteChainConfig memory)
+```
+
+> Returns the router, fee, verification gas, payload size, and allowlist state for a remote chain. Inherited from `BaseVerifier`.
+
+***
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId) external pure returns (bool)
+```
+
+> Returns true for `ICrossChainVerifierV1` and `IERC165`. Inherited from `BaseVerifier`.
 
 ***
 
@@ -95872,7 +95700,7 @@ Returns raw `payloadHash`.
 - [`BaseVerifier`](/ccip/evm/api-reference/v2.0.0/base-verifier)
 - [`IBridgeV3`](/ccip/evm/api-reference/v2.0.0/i-bridge-v3)
 - [`IMailbox`](/ccip/evm/api-reference/v2.0.0/i-mailbox)
-- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
+- [`IRMN`](/ccip/evm/api-reference/v2.0.0/i-rmn)
 - [`MessageV1Codec`](/ccip/evm/api-reference/v2.0.0/message-v1-codec)
 
 ---
@@ -97244,7 +97072,7 @@ This is a forwarding proxy, not an upgradeable storage proxy.
 
 ```solidity
 string public constant override typeAndVersion =
-  "Proxy 2.0.0-dev";
+  "Proxy 2.0.0";
 ```
 
 ***
@@ -97266,8 +97094,8 @@ address internal s_target;
 address internal s_feeAggregator;
 ```
 
-- `s_target` — forwarding destination.
-- `s_feeAggregator` — recipient of withdrawn fee token balances.
+- `s_target:` forwarding destination.
+- `s_feeAggregator:` recipient of withdrawn fee token balances.
 
 ***
 
@@ -97829,7 +97657,6 @@ error AddressZero();
 - [`IGetCCIPAdmin`](/ccip/evm/api-reference/v2.0.0/i-get-ccip-admin)
 - [`IOwner`](/ccip/evm/api-reference/v2.0.0/i-owner)
 - [`AccessControl`](https://github.com/OpenZeppelin/openzeppelin-contracts/tree/v5.4.0/contracts/access/AccessControl.sol)
-- [`FactoryBurnMintERC20`](/ccip/evm/api-reference/v2.0.0/factory-burn-mint-erc20)
 
 ---
 
@@ -98026,7 +97853,7 @@ error ZeroAddressNotAllowed();
 - Only owner may update the implementation.
 - Zero implementation address is disallowed.
 - Calls to non-contract addresses revert.
-- No delegatecall — eliminates storage collision risk.
+- No delegatecall: eliminates storage collision risk.
 - All RMN state resides in the implementation contract.
 
 ***
@@ -98034,52 +97861,40 @@ error ZeroAddressNotAllowed();
 ## Related Interfaces & Contracts
 
 - [`IRMN`](/ccip/evm/api-reference/v2.0.0/i-rmn)
-- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
+- [`IRMN`](/ccip/evm/api-reference/v2.0.0/i-rmn)
 - [`OwnerIsCreator`](/ccip/evm/api-reference/v2.0.0/owner-is-creator)
 
 ---
 
-# CCIP v2.0.0 RMNRemote API Reference
-Source: https://docs.chain.link/ccip/evm/api-reference/v2.0.0/rmn-remote
+# CCIP v2.0.0 RMN API Reference
+Source: https://docs.chain.link/ccip/evm/api-reference/v2.0.0/rmn
 
 ## Summary
 
-`RMNRemote` verifies RMN reports for Any2EVM OffRamps, maintains curse state used to gate message flows, and provides a legacy `[IRMN](/ccip/evm/api-reference/v2.0.0/i-rmn)` passthrough for `isBlessed`.
+`RMN` is the Risk Management Network contract. It maintains curse state for subjects, which CCIP contracts check to gate message and token flows.
 
-It implements both:
-
-- `[IRMNRemote](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)`
-- `IRMN` (legacy interface)
-
-to support migration from pre-1.6 flows.
-
-Core responsibilities:
-
-1. Verify RMN reports via threshold ECDSA signatures.
-2. Maintain per-subject and global curse state.
-3. Expose legacy `isBlessed` passthrough when a legacy RMN is configured.
+It implements `[IRMN](/ccip/evm/api-reference/v2.0.0/i-rmn)`. Pools and ramps call `isCursed` before processing; a live curse halts the affected flows until the subject is uncursed.
 
 ***
 
 ## Contract
 
-`chains/evm/contracts/rmn/RMNRemote.sol`
+`chains/evm/contracts/rmn/RMN.sol`
 
 ***
 
 ## Import
 
 ```solidity
-import {RMNRemote} from "chainlink-ccip/chains/evm/contracts/rmn/RMNRemote.sol";
+import {RMN} from "chainlink-ccip/chains/evm/contracts/rmn/RMN.sol";
 ```
 
 ***
 
 ## Inheritance
 
-- `Ownable2StepMsgSender`
+- `AuthorizedCallers`
 - `ITypeAndVersion`
-- `IRMNRemote`
 - `IRMN`
 
 ***
@@ -98087,322 +97902,87 @@ import {RMNRemote} from "chainlink-ccip/chains/evm/contracts/rmn/RMNRemote.sol";
 ## typeAndVersion
 
 ```solidity
-string public constant override typeAndVersion = "RMNRemote 1.6.0";
-```
-
-Returns:
-
-```
-"RMNRemote 1.6.0"
+string public constant override typeAndVersion = "RMN 2.0.0";
 ```
 
 ***
 
-## State
-
-### Constants
-
-#### `GLOBAL_CURSE_SUBJECT`
+## Global curse subject
 
 ```solidity
 bytes16 constant GLOBAL_CURSE_SUBJECT = 0x01000000000000000000000000000001;
 ```
 
-If this subject is cursed, `isCursed()` and `isCursed(bytes16)` return true.
-
-***
-
-#### `RMN_V1_6_ANY2EVM_REPORT`
-
-```solidity
-bytes32 private constant RMN_V1_6_ANY2EVM_REPORT =
-  keccak256("RMN_V1_6_ANY2EVM_REPORT");
-```
-
-Used as the header when computing the report digest.
-
-***
-
-#### `ECDSA_RECOVERY_V`
-
-```solidity
-uint8 private constant ECDSA_RECOVERY_V = 27;
-```
-
-RMN nodes generate signatures with `v = 27`.
-
-***
-
-### Immutables
-
-```solidity
-uint64 internal immutable i_localChainSelector;
-IRMN internal immutable i_legacyRMN;
-```
-
-***
-
-### Storage
-
-```solidity
-Config private s_config;
-uint32 private s_configCount;
-
-EnumerableSet.Bytes16Set private s_cursedSubjects;
-
-mapping(address signer => bool exists) private s_signers;
-```
+A curse on this subject makes both `isCursed()` and `isCursed(bytes16)` return true. Use it for issues affecting all CCIP chains or the chain this contract is deployed on, instead of the local chain selector.
 
 ***
 
 ## Constructor
 
 ```solidity
-constructor(uint64 localChainSelector, IRMN legacyRMN)
+constructor(address[] memory curseAdmins)
 ```
 
-Reverts:
-
-- `ZeroValueNotAllowed()` if `localChainSelector == 0`.
-
-Initializes:
-
-- `i_localChainSelector`
-- `i_legacyRMN`
+Passes `curseAdmins` to `AuthorizedCallers`, initializing the set of addresses authorized to call `curse` (besides the owner).
 
 ***
 
 ## External API
 
-## Verification
-
-### `verify`
+### curse
 
 ```solidity
-function verify(
-  address offRampAddress,
-  Internal.MerkleRoot[] calldata merkleRoots,
-  Signature[] calldata signatures
-) external view
+function curse(bytes16 subject) external
+function curse(bytes16[] memory subjects) public
 ```
 
-Verifies an RMN Any2EVM report.
+Curses one subject or an array of subjects. Callable by the owner or an authorized caller.
 
-Reverts:
-
-- `ConfigNotSet()` if `s_configCount == 0`
-- `ThresholdNotMet()` if `signatures.length < s_config.fSign + 1`
-- `InvalidSignature()` if `ecrecover(...) == address(0)`
-- `OutOfOrderSignatures()` if recovered signer addresses are not strictly increasing
-- `UnexpectedSigner()` if recovered signer not present in `s_signers`
-
-Digest computation:
-
-```
-digest = keccak256(
-  abi.encode(
-    RMN_V1_6_ANY2EVM_REPORT,
-    Report({
-      destChainId: block.chainid,
-      destChainSelector: i_localChainSelector,
-      rmnRemoteContractAddress: address(this),
-      offrampAddress: offRampAddress,
-      rmnHomeContractConfigDigest: s_config.rmnHomeContractConfigDigest,
-      merkleRoots: merkleRoots
-    })
-  )
-)
-```
+Already-cursed subjects, including duplicates within the array, are silently skipped so a single redundant entry does not block the remaining subjects. Emits `Cursed` with only the newly cursed subjects, and emits nothing if every entry was already cursed.
 
 ***
 
-## Configuration
-
-### `setConfig`
+### uncurse
 
 ```solidity
-function setConfig(Config calldata newConfig) external onlyOwner
-```
-
-Reverts:
-
-- `ZeroValueNotAllowed()` if `rmnHomeContractConfigDigest == bytes32(0)`
-- `InvalidSignerOrder()` if `nodeIndex` not strictly increasing
-- `NotEnoughSigners()` if `signers.length < 2 * fSign + 1`
-- `DuplicateOnchainPublicKey()` if duplicate signer keys
-
-Effects:
-
-- Clears previous signer set
-- Sets new signer set
-- Stores `s_config = newConfig`
-- Increments `s_configCount`
-- Emits `ConfigSet(version, newConfig)`
-
-***
-
-### `getVersionedConfig`
-
-```solidity
-function getVersionedConfig()
-  external
-  view
-  returns (uint32 version, Config memory config)
-```
-
-Returns:
-
-- `version = s_configCount`
-- `config = s_config`
-
-***
-
-### `getLocalChainSelector`
-
-```solidity
-function getLocalChainSelector()
-  external
-  view
-  returns (uint64)
-```
-
-Returns `i_localChainSelector`.
-
-***
-
-### `getReportDigestHeader`
-
-```solidity
-function getReportDigestHeader()
-  external
-  pure
-  returns (bytes32)
-```
-
-Returns `RMN_V1_6_ANY2EVM_REPORT`.
-
-***
-
-## Cursing
-
-### `curse(bytes16)`
-
-Wrapper that calls `curse(bytes16[] memory)`.
-
-***
-
-### `curse(bytes16[])`
-
-```solidity
-function curse(bytes16[] memory subjects) public onlyOwner
-```
-
-For each subject:
-
-- Reverts `AlreadyCursed(subject)` if already cursed.
-
-Adds to `s_cursedSubjects`.
-
-Emits `Cursed(subjects)`.
-
-***
-
-### `uncurse(bytes16)`
-
-Wrapper that calls `uncurse(bytes16[] memory)`.
-
-***
-
-### `uncurse(bytes16[])`
-
-```solidity
+function uncurse(bytes16 subject) external
 function uncurse(bytes16[] memory subjects) public onlyOwner
 ```
 
-For each subject:
+Uncurses one subject or an array of subjects. Owner-only.
 
-- Reverts `NotCursed(subject)` if not present.
-
-Removes from `s_cursedSubjects`.
-
-Emits `Uncursed(subjects)`.
+Reverts `NotCursed(subject)` if any subject in the array is not cursed. Emits `Uncursed` with the subjects.
 
 ***
 
-### `getCursedSubjects`
+### getCursedSubjects
 
 ```solidity
-function getCursedSubjects()
-  external
-  view
-  returns (bytes16[] memory)
+function getCursedSubjects() external view returns (bytes16[] memory subjects)
 ```
 
-Returns all cursed subjects.
+Returns the current set of cursed subjects.
 
 ***
 
-### `isCursed()`
+### isCursed
 
 ```solidity
-function isCursed()
-  external
-  view
-  override(IRMN, IRMNRemote)
-  returns (bool)
+function isCursed() external view returns (bool)
+function isCursed(bytes16 subject) external view returns (bool)
 ```
 
-Returns:
+The no-argument overload returns true only if the global curse subject is active.
 
-- `false` if no subjects cursed
-- otherwise `true` if `GLOBAL_CURSE_SUBJECT` present
+The subject overload returns true if the given subject is cursed or the global curse subject is active. To check whether a particular chain is cursed, pass `bytes16(uint128(chainSelector))`.
 
-***
-
-### `isCursed(bytes16)`
-
-```solidity
-function isCursed(bytes16 subject)
-  external
-  view
-  override(IRMN, IRMNRemote)
-  returns (bool)
-```
-
-Returns:
-
-- `false` if no subjects cursed
-- otherwise `true` if `subject` or `GLOBAL_CURSE_SUBJECT` is present
-
-***
-
-## Legacy passthrough
-
-### `isBlessed`
-
-```solidity
-function isBlessed(TaggedRoot calldata taggedRoot)
-  external
-  view
-  returns (bool)
-```
-
-Reverts:
-
-- `IsBlessedNotAvailable()` if `i_legacyRMN == address(0)`
-
-Otherwise returns:
-
-```
-i_legacyRMN.isBlessed(taggedRoot)
-```
+Both overloads return false immediately when no subjects are cursed at all.
 
 ***
 
 ## Events
 
 ```solidity
-event ConfigSet(uint32 indexed version, Config config);
 event Cursed(bytes16[] subjects);
 event Uncursed(bytes16[] subjects);
 ```
@@ -98412,118 +97992,22 @@ event Uncursed(bytes16[] subjects);
 ## Errors
 
 ```solidity
-error AlreadyCursed(bytes16 subject);
-error ConfigNotSet();
-error DuplicateOnchainPublicKey();
-error InvalidSignature();
-error InvalidSignerOrder();
-error NotEnoughSigners();
 error NotCursed(bytes16 subject);
-error OutOfOrderSignatures();
-error ThresholdNotMet();
-error UnexpectedSigner();
-error ZeroValueNotAllowed();
-error IsBlessedNotAvailable();
 ```
 
 ***
 
-## Structs
+## Inherited from AuthorizedCallers
 
-### `Signer`
-
-```solidity
-struct Signer {
-  address onchainPublicKey;
-  uint64 nodeIndex;
-}
-```
-
-***
-
-### `Config`
-
-```solidity
-struct Config {
-  bytes32 rmnHomeContractConfigDigest;
-  Signer[] signers;
-  uint64 fSign;
-}
-```
-
-`fSign` defines the maximum number of faulty nodes.
-Verification requires at least `fSign + 1` valid signatures.
-Total configured signers must be at least `2 * fSign + 1`.
-
-***
-
-### `Report`
-
-```solidity
-struct Report {
-  uint256 destChainId;
-  uint64 destChainSelector;
-  address rmnRemoteContractAddress;
-  address offrampAddress;
-  bytes32 rmnHomeContractConfigDigest;
-  Internal.MerkleRoot[] merkleRoots;
-}
-```
-
-Used only for hashing and digest computation; not stored.
-
-***
-
-## Internal Functions
-
-No additional internal helper functions are declared beyond those described above.
-
-***
-
-## Security model
-
-### Trust boundaries
-
-Owner:
-
-- Controls RMN configuration.
-- Controls curse state.
-
-Signers:
-
-- Must meet threshold (`fSign + 1`).
-- Must be strictly ordered and unique.
-
-Legacy RMN:
-
-- Used only for `isBlessed` passthrough when configured.
-
-***
-
-### Verification invariants
-
-- Signatures must be strictly increasing by recovered signer address.
-- Signers must match configured set.
-- At least `fSign + 1` valid signatures required.
-- Config must be set before verification.
-
-***
-
-### Curse gating
-
-- Global curse overrides per-subject state.
-- Curse state is independent from configuration.
-- Removing a subject requires explicit `uncurse`.
+See the [`AuthorizedCallers`](/ccip/evm/api-reference/v2.0.0/authorized-callers) reference for the full surface: `getAllAuthorizedCallers()`, `applyAuthorizedCallerUpdates(AuthorizedCallerArgs)`, and the `UnauthorizedCaller` / `ZeroAddressNotAllowed` errors.
 
 ***
 
 ## Related Interfaces & Contracts
 
-- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
 - [`IRMN`](/ccip/evm/api-reference/v2.0.0/i-rmn)
-- [`OffRamp`](/ccip/evm/api-reference/v2.0.0/offramp)
-- [`Internal`](/ccip/evm/api-reference/v2.0.0/internal)
-- [`Ownable2StepMsgSender`](/ccip/evm/api-reference/v2.0.0/ownable-2-step-msg-sender)
+- [`RMNProxy`](/ccip/evm/api-reference/v2.0.0/rmn-proxy)
+- [`AuthorizedCallers`](/ccip/evm/api-reference/v2.0.0/authorized-callers)
 
 ---
 
@@ -99164,7 +98648,7 @@ struct SignatureConfig {
 
 - [`BaseVerifier`](/ccip/evm/api-reference/v2.0.0/base-verifier)
 - [`CommitteeVerifier`](/ccip/evm/api-reference/v2.0.0/committee-verifier)
-- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
+- [`IRMN`](/ccip/evm/api-reference/v2.0.0/i-rmn)
 - [`IRouter`](/ccip/evm/api-reference/v2.0.0/i-router)
 
 ---
@@ -99865,29 +99349,33 @@ Source: https://docs.chain.link/ccip/evm/api-reference/v2.0.0/token-pool-factory
 
 ## Summary
 
-`TokenPoolFactory` deploys new `[TokenPool](/ccip/evm/api-reference/v2.0.0/token-pool)` contracts and registers them with `[TokenAdminRegistry](/ccip/evm/api-reference/v2.0.0/token-admin-registry)`.
+`TokenPoolFactory` deploys new tokens and `[TokenPool](/ccip/evm/api-reference/v2.0.0/token-pool)` contracts and registers them with the `[TokenAdminRegistry](/ccip/evm/api-reference/v2.0.0/token-admin-registry)`.
 
-It standardizes pool provisioning and ensures that deployed pools are correctly registered for their corresponding tokens.
+It offers two deployment paths:
+
+1. `deployTokenAndTokenPool`: deploys a token and its pool in one transaction, then registers the pool.
+2. `deployTokenPoolWithExistingToken`: deploys a pool for a token that already exists. Registration and role grants are the caller's responsibility.
+
+Both paths deploy via CREATE2 with a caller-specific salt, so the same inputs produce the same addresses per sender.
 
 ***
 
 ## Contract
 
-`chains/evm/contracts/tokenAdminRegistry/TokenPoolFactory/TokenPoolFactory.sol`
+`chains/evm/contracts/TokenPoolFactory.sol`
 
 ***
 
 ## Import
 
 ```solidity
-import {TokenPoolFactory} from "chainlink-ccip/chains/evm/contracts/tokenAdminRegistry/TokenPoolFactory/TokenPoolFactory.sol";
+import {TokenPoolFactory} from "chainlink-ccip/chains/evm/contracts/TokenPoolFactory.sol";
 ```
 
 ***
 
 ## Inheritance
 
-- `Ownable2StepMsgSender`
 - `ITypeAndVersion`
 
 ***
@@ -99895,8 +99383,7 @@ import {TokenPoolFactory} from "chainlink-ccip/chains/evm/contracts/tokenAdminRe
 ## typeAndVersion
 
 ```solidity
-string public constant override typeAndVersion =
-  "TokenPoolFactory 1.5.0";
+string public constant typeAndVersion = "TokenPoolFactory 2.0.0";
 ```
 
 ***
@@ -99904,89 +99391,152 @@ string public constant override typeAndVersion =
 ## Constructor
 
 ```solidity
-constructor(ITokenAdminRegistry tokenAdminRegistry)
+constructor(
+  ITokenAdminRegistry tokenAdminRegistry,
+  RegistryModuleOwnerCustom tokenAdminModule,
+  address rmnProxy,
+  address ccipRouter
+)
 ```
 
-Reverts:
+Reverts `InvalidZeroAddress()` if any argument is `address(0)`.
 
-```solidity
-error ZeroAddress();
-```
-
-If:
-
-```solidity
-address(tokenAdminRegistry) == address(0)
-```
-
-Initializes:
-
-```solidity
-i_tokenAdminRegistry = tokenAdminRegistry;
-```
+Stores the registry, registry module, RMN proxy, and router used for every pool the factory deploys.
 
 ***
 
-## Deployment API
+## External API
 
-### createTokenPool
+### getStaticConfig
 
 ```solidity
-function createTokenPool(
-  address token,
-  address administrator,
-  bytes calldata constructorArgs
-) external onlyOwner returns (address pool)
+function getStaticConfig()
+  external
+  view
+  returns (
+    address rmnProxy,
+    address tokenAdminRegistry,
+    address registryModuleOwnerCustom,
+    address ccipRouter
+  )
 ```
+
+Returns the four addresses the factory was constructed with.
+
+***
+
+### deployTokenAndTokenPool
+
+```solidity
+function deployTokenAndTokenPool(
+  RemoteTokenPoolInfo[] calldata remoteTokenPools,
+  uint8 localTokenDecimals,
+  PoolType localPoolType,
+  bytes memory tokenInitCode,
+  bytes calldata tokenPoolInitCode,
+  address lockBox,
+  bytes32 salt,
+  address futureOwner
+) external returns (address, address)
+```
+
+Deploys a token and its pool in one transaction, then registers the pool in the TokenAdminRegistry.
 
 Behavior:
 
-1. Validates `token != address(0)`.
-2. Deploys a new pool contract using the provided `constructorArgs`.
-3. Registers the deployed pool with:
+- If `futureOwner` is `address(0)`, the caller becomes the owner.
+- The salt is mixed with `msg.sender` (`keccak256(abi.encodePacked(salt, msg.sender))`) so identical inputs from different senders cannot collide or front-run each other.
+- Deploys the token from `tokenInitCode` (constructor args already appended).
+- Deploys the pool from `tokenPoolInitCode` (constructor args not appended; the factory encodes them).
+- For `BURN_MINT` pools, grants the pool mint and burn roles on the token and renounces the factory's role admin.
+- Forwards any token balance sent to the factory (e.g. a pre-mint to the factory) to `futureOwner`.
+- Registers the pool via the registry module, starting the two-step ownership transfer: `futureOwner` must accept in a separate transaction.
+
+Only the `CrossChainToken` contract is supported for `tokenInitCode`, with `ccipAdmin` set to this factory and `burnMintRoleAdmin` set to this factory for `BURN_MINT` pools. The factory does not verify token compatibility.
+
+Returns `(token, pool)`.
+
+***
+
+### deployTokenPoolWithExistingToken
 
 ```solidity
-i_tokenAdminRegistry.setPool(token, pool);
+function deployTokenPoolWithExistingToken(
+  address token,
+  uint8 localTokenDecimals,
+  PoolType localPoolType,
+  RemoteTokenPoolInfo[] calldata remoteTokenPools,
+  bytes calldata tokenPoolInitCode,
+  address lockBox,
+  bytes32 salt,
+  address futureOwner
+) external returns (address poolAddress)
 ```
 
-4. Emits:
+Deploys a pool for an existing token. The factory is not the token's admin, so it cannot register the pool or grant mint and burn roles: the caller must call `TokenAdminRegistry.setPool` and grant the roles manually.
 
-```solidity
-event TokenPoolDeployed(
-  address indexed token,
-  address indexed pool,
-  address indexed administrator
-);
-```
+Salt handling matches `deployTokenAndTokenPool`.
 
 Returns the deployed pool address.
 
-Note: The factory delegates constructor argument encoding responsibility to the caller via `constructorArgs`.
+***
+
+## Enums
+
+### PoolType
+
+```solidity
+enum PoolType {
+  BURN_MINT,
+  LOCK_RELEASE
+}
+```
+
+The type of pool to deploy.
 
 ***
 
-### getRegistry
+## Structs
+
+### RemoteTokenPoolInfo
 
 ```solidity
-function getRegistry() external view returns (address)
+struct RemoteTokenPoolInfo {
+  uint64 remoteChainSelector;
+  bytes remotePoolAddress;
+  bytes remotePoolInitCode;
+  RemoteChainConfig remoteChainConfig;
+  PoolType poolType;
+  bytes remoteTokenAddress;
+  bytes remoteTokenInitCode;
+  RateLimiter.Config rateLimiterConfig;
+}
 ```
 
-Returns:
+Per-remote-chain deployment info. Empty `remotePoolAddress` or `remoteTokenAddress` means the factory predicts the address from the init code.
+
+### RemoteChainConfig
 
 ```solidity
-address(i_tokenAdminRegistry);
+struct RemoteChainConfig {
+  address remotePoolFactory;
+  address remoteRouter;
+  address remoteRMNProxy;
+  address remoteLockBox;
+  uint8 remoteTokenDecimals;
+}
 ```
 
-***
-
-## Events
+### LocalPoolConfig
 
 ```solidity
-event TokenPoolDeployed(
-  address indexed token,
-  address indexed pool,
-  address indexed administrator
-);
+struct LocalPoolConfig {
+  address token;
+  uint8 localTokenDecimals;
+  PoolType localPoolType;
+  address lockBox;
+  bytes32 salt;
+}
 ```
 
 ***
@@ -99994,20 +99544,16 @@ event TokenPoolDeployed(
 ## Errors
 
 ```solidity
-error ZeroAddress();
+error InvalidZeroAddress();
+error InvalidLockBoxToken(address poolToken);
+error EmptyInitCode();
 ```
-
-No additional custom errors are declared in this contract.
 
 ***
 
-## Security model
+## Events
 
-- Only the contract owner may deploy pools.
-- The registry address is immutable.
-- Registration occurs immediately after deployment.
-- If deployment fails, the transaction reverts atomically.
-- The factory itself does not enforce pool-type validation — constructor argument correctness is the caller’s responsibility.
+None declared.
 
 ***
 
@@ -100015,9 +99561,10 @@ No additional custom errors are declared in this contract.
 
 - [`ITokenAdminRegistry`](/ccip/evm/api-reference/v2.0.0/i-token-admin-registry)
 - [`TokenAdminRegistry`](/ccip/evm/api-reference/v2.0.0/token-admin-registry)
+- [`RegistryModuleOwnerCustom`](/ccip/evm/api-reference/v2.0.0/registry-module-owner-custom)
 - [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
-- [`Ownable2StepMsgSender`](/ccip/evm/api-reference/v2.0.0/ownable-2-step-msg-sender)
-- [`ITypeAndVersion`](/ccip/evm/api-reference/v2.0.0/i-type-and-version)
+- [`ERC20LockBox`](/ccip/evm/api-reference/v2.0.0/erc20-lockbox)
+- [`RateLimiter`](/ccip/evm/api-reference/v2.0.0/rate-limiter)
 
 ---
 
@@ -100644,7 +100191,7 @@ contract USDCTokenPoolProxy
 
 ```solidity
 string public constant override typeAndVersion =
-  "USDCTokenPoolProxy 2.0.0-dev";
+  "USDCTokenPoolProxy 2.0.0";
 ```
 
 ***
@@ -100738,7 +100285,7 @@ function lockOrBurn(
 ```solidity
 function lockOrBurn(
   Pool.LockOrBurnInV1 calldata lockOrBurnIn,
-  uint16 blockConfirmationRequested,
+  bytes4 requestedFinalityConfig,
   bytes memory tokenArgs
 )
   public
@@ -100773,7 +100320,7 @@ function releaseOrMint(
 ```solidity
 function releaseOrMint(
   Pool.ReleaseOrMintInV1 calldata releaseOrMintIn,
-  uint16 blockConfirmationRequested
+  bytes4 requestedFinalityConfig
 )
   public
   override
@@ -100788,6 +100335,150 @@ function releaseOrMint(
 ### getFee
 
 Delegates to underlying pool supporting V2.
+
+***
+
+### getStaticConfig
+
+```solidity
+function getStaticConfig() external view returns (address token, address router, address cctpVerifier)
+```
+
+> Returns the token, router, and CCTP verifier addresses the proxy was constructed with.
+
+***
+
+### getPools
+
+```solidity
+function getPools() public view returns (PoolAddresses memory)
+```
+
+> Returns the current pool addresses the proxy routes to: `cctpV1Pool`, `cctpV2Pool`, `cctpV2PoolWithCCV`, and `siloedLockReleasePool`.
+
+***
+
+### getLockOrBurnMechanism
+
+```solidity
+function getLockOrBurnMechanism(
+  uint64 remoteChainSelector
+) public view returns (LockOrBurnMechanism)
+```
+
+> Returns the lock or burn mechanism for a remote chain, including CCTP V1/V2 and Lock/Release.
+
+***
+
+### isSupportedChain
+
+```solidity
+function isSupportedChain(uint64 remoteChainSelector) external view returns (bool)
+```
+
+> Returns true if a lock or burn mechanism is set for the chain. A chain with no mechanism is not supported.
+
+***
+
+### isSupportedToken
+
+```solidity
+function isSupportedToken(address token) external view returns (bool)
+```
+
+> Returns true if `token` is the token the proxy was constructed with.
+
+***
+
+### getToken
+
+```solidity
+function getToken() public view returns (IERC20 token)
+```
+
+> Returns the token this pool can lock or burn.
+
+***
+
+### getTokenTransferFeeConfig
+
+```solidity
+function getTokenTransferFeeConfig(
+  address localToken,
+  uint64 destChainSelector,
+  bytes4 requestedFinalityConfig,
+  bytes calldata tokenArgs
+) external view
+```
+
+> Returns the token transfer fee config for a destination lane. Delegates to the underlying pool.
+
+***
+
+### getRemoteToken
+
+```solidity
+function getRemoteToken(uint64 remoteChainSelector) external view returns (bytes memory)
+```
+
+> Returns the remote token address for a remote chain.
+
+***
+
+### getRemotePools
+
+```solidity
+function getRemotePools(uint64 remoteChainSelector) external view returns (bytes[] memory)
+```
+
+> Returns the pool addresses on the remote chain.
+
+***
+
+### getRequiredCCVs
+
+```solidity
+function getRequiredCCVs(
+  address localToken,
+  uint64 remoteChainSelector,
+  uint256 amount,
+  bytes4 requestedFinalityConfig,
+  bytes calldata extraData,
+  IPoolV2.MessageDirection direction
+) external view returns (address[] memory)
+```
+
+> Returns the CCVs required for a transfer. Delegates to the underlying pool for the mechanism.
+
+***
+
+### getFeeAggregator
+
+```solidity
+function getFeeAggregator() external view returns (address)
+```
+
+> Returns the current fee aggregator address.
+
+***
+
+### setFeeAggregator
+
+```solidity
+function setFeeAggregator(address feeAggregator) external onlyOwner
+```
+
+> Sets the fee aggregator that receives withdrawn fees.
+
+***
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId) external view returns (bool)
+```
+
+> Returns true for the pool interfaces the proxy implements.
 
 ***
 
@@ -100813,6 +100504,8 @@ function updateLockOrBurnMechanisms(
   external
   onlyOwner
 ```
+
+Reverts `MismatchedArrayLengths()` if the arrays differ in length, and `MustSetPoolForMechanism(chainSelector, mechanism)` if a mechanism is set whose pool address has not been set via `updatePoolAddresses`.
 
 ***
 
@@ -100864,7 +100557,7 @@ error MustSetPoolForMechanism(
 
 - Owner controls routing configuration.
 - Router enforces ramp authorization.
-- No delegatecall — child pool storage remains isolated.
+- No delegatecall: child pool storage remains isolated.
 - Version tag must match expected child pool semantics.
 - Misconfiguration can halt lane until corrected.
 
@@ -100875,297 +100568,7 @@ error MustSetPoolForMechanism(
 - [`IPoolV1`](/ccip/evm/api-reference/v2.0.0/i-pool-v1)
 - [`IPoolV2`](/ccip/evm/api-reference/v2.0.0/i-pool-v2)
 - [`ICrossChainVerifierResolver`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-resolver)
-- [`USDCTokenPool`](/ccip/evm/api-reference/v2.0.0/usdc-token-pool)
 - [`SiloedUSDCTokenPool`](/ccip/evm/api-reference/v2.0.0/siloed-usdc-token-pool)
-
----
-
-# CCIP v2.0.0 USDCTokenPool API Reference
-Source: https://docs.chain.link/ccip/evm/api-reference/v2.0.0/usdc-token-pool
-
-## Summary
-
-`USDCTokenPool` is a USDC-specific `[TokenPool](/ccip/evm/api-reference/v2.0.0/token-pool)` implementation that uses Circle’s Cross Chain Transfer Protocol (CCTP) to burn USDC on the source chain and mint USDC on the destination chain.
-
-It is the **CCTP V1** pool variant. A separate contract, `USDCTokenPoolCCTPV2`, inherits from this pool and overrides only the functionality needed for CCTP V2.
-
-## Contract
-
-`chains/evm/contracts/pools/USDC/USDCTokenPool.sol`
-
-## Import
-
-```solidity
-import {USDCTokenPool} from "chainlink-ccip/chains/evm/contracts/pools/USDC/USDCTokenPool.sol";
-```
-
-## Inheritance
-
-- `TokenPool`
-- `ITypeAndVersion`
-- `AuthorizedCallers` ([GitHub][1])
-
-## typeAndVersion
-
-```solidity
-function typeAndVersion() external pure virtual override returns (string memory);
-```
-
-Returns:
-
-- `"USDCTokenPool 1.6.5-dev"` ([GitHub][1])
-
-## State
-
-### Constants
-
-```solidity
-uint256 internal constant SOURCE_POOL_DATA_LENGTH = 64;
-```
-
-`releaseOrMint` expects `sourcePoolData` to be ABI-decoded into a payload occupying two 32-byte words (64 bytes total). ([GitHub][1])
-
-### Immutables
-
-```solidity
-uint32 public immutable i_supportedUSDCVersion;
-ITokenMessenger public immutable i_tokenMessenger;
-CCTPMessageTransmitterProxy public immutable i_messageTransmitterProxy;
-uint32 public immutable i_localDomainIdentifier;
-```
-
-- `i_supportedUSDCVersion` is the supported CCTP message format version (V1 uses `0`). ([GitHub][1])
-
-### Storage
-
-```solidity
-mapping(uint64 chainSelector => Domain CCTPDomain) internal s_chainToDomain;
-```
-
-Maps a CCIP `chainSelector` to the destination CCTP `Domain` config. ([GitHub][1])
-
-## Constructor
-
-```solidity
-constructor(
-  ITokenMessenger tokenMessenger,
-  CCTPMessageTransmitterProxy cctpMessageTransmitterProxy,
-  IERC20 token,
-  address[] memory allowlist,
-  address rmnProxy,
-  address router,
-  uint32 supportedUSDCVersion
-)
-  TokenPool(token, 6, allowlist, rmnProxy, router)
-  AuthorizedCallers(new address)
-```
-
-Key behaviors:
-
-- Validates non-zero `tokenMessenger`.
-
-- Reads the local message transmitter from the token messenger and validates:
-  - message transmitter `version()` matches `supportedUSDCVersion`
-  - token messenger `messageBodyVersion()` matches `supportedUSDCVersion`
-
-- Validates the transmitter proxy is configured with the expected transmitter.
-
-- Sets `i_localDomainIdentifier = transmitter.localDomain()`.
-
-- Grants `tokenMessenger` max allowance to burn tokens from this pool.
-
-- Emits `ConfigSet(tokenMessenger)`. ([GitHub][1])
-
-## External API
-
-### lockOrBurn
-
-```solidity
-function lockOrBurn(
-  Pool.LockOrBurnInV1 calldata lockOrBurnIn
-) public virtual override returns (Pool.LockOrBurnOutV1 memory);
-```
-
-Burns USDC via `i_tokenMessenger.depositForBurnWithCaller` and returns `destPoolData` containing:
-
-- `nonce` (returned by CCTP V1)
-- `sourceDomain` (`i_localDomainIdentifier`)
-
-Emits `LockedOrBurned`. ([GitHub][1])
-
-Reverts (selection):
-
-- `UnknownDomain(uint64 domain)` if destination domain not enabled.
-- `InvalidReceiver(bytes receiver)` if `receiver.length != 32`. ([GitHub][1])
-
-***
-
-### releaseOrMint
-
-```solidity
-function releaseOrMint(
-  Pool.ReleaseOrMintInV1 calldata releaseOrMintIn
-) public virtual override returns (Pool.ReleaseOrMintOutV1 memory);
-```
-
-Mints USDC on destination by forwarding the offchain-provided `(message, attestation)` to `i_messageTransmitterProxy.receiveMessage(...)`.
-
-Flow:
-
-- Validates `sourcePoolData.length == SOURCE_POOL_DATA_LENGTH`.
-- Decodes `sourcePoolData` as `USDCSourcePoolDataCodec.SourceTokenDataPayloadV1`.
-- Decodes `offchainTokenData` as `MessageAndAttestation`.
-- Validates the USDC message against the expected payload (domain, nonce, version).
-- Calls `receiveMessage` via the transmitter proxy.
-- Emits `ReleasedOrMinted`.
-- Returns `destinationAmount = sourceDenominatedAmount`. ([GitHub][1])
-
-Reverts (selection):
-
-- `InvalidSourcePoolDataLength(uint256 length)`
-- `InvalidMessageLength(uint256 length)`
-- `InvalidMessageVersion(uint32 expected, uint32 got)`
-- `InvalidSourceDomain(uint32 expected, uint32 got)`
-- `InvalidDestinationDomain(uint32 expected, uint32 got)`
-- `InvalidNonce(uint64 expected, uint64 got)`
-- `UnlockingUSDCFailed()` if `receiveMessage` returns false. ([GitHub][1])
-
-***
-
-### getDomain
-
-```solidity
-function getDomain(
-  uint64 chainSelector
-) external view returns (Domain memory);
-```
-
-Returns the configured destination `Domain` for `chainSelector`. ([GitHub][1])
-
-***
-
-### setDomains
-
-```solidity
-function setDomains(
-  DomainUpdate[] calldata domains
-) external onlyOwner;
-```
-
-Sets `s_chainToDomain[destChainSelector]` for each entry and emits `DomainsSet(domains)`.
-
-Reverts:
-
-- `InvalidDomain(DomainUpdate domain)` if `allowedCaller == bytes32(0)` or `destChainSelector == 0`. ([GitHub][1])
-
-## Events
-
-```solidity
-event DomainsSet(DomainUpdate[]);
-event ConfigSet(address tokenMessenger);
-```
-
-(Also emits inherited `TokenPool` events such as `LockedOrBurned` and `ReleasedOrMinted`.) ([GitHub][1])
-
-## Errors
-
-```solidity
-error UnknownDomain(uint64 domain);
-error UnlockingUSDCFailed();
-error InvalidConfig();
-error InvalidDomain(DomainUpdate domain);
-error InvalidMessageVersion(uint32 expected, uint32 got);
-error InvalidTokenMessengerVersion(uint32 expected, uint32 got);
-error InvalidNonce(uint64 expected, uint64 got);
-error InvalidSourceDomain(uint32 expected, uint32 got);
-error InvalidDestinationDomain(uint32 expected, uint32 got);
-error InvalidReceiver(bytes receiver);
-error InvalidTransmitterInProxy();
-error InvalidSourcePoolDataLength(uint256 length);
-error InvalidMessageLength(uint256 length);
-```
-
-Additional errors can surface from inherited `TokenPool` validation (chain allowlist, ramps, RMN, etc.). ([GitHub][1])
-
-## Structs
-
-### MessageAndAttestation
-
-```solidity
-struct MessageAndAttestation {
-  bytes message;
-  bytes attestation;
-}
-```
-
-Offchain-supplied CCTP message + attestation pair. ([GitHub][1])
-
-### DomainUpdate
-
-```solidity
-struct DomainUpdate {
-  bytes32 allowedCaller;
-  bytes32 mintRecipient;
-  uint32 domainIdentifier;
-  uint64 destChainSelector;
-  bool enabled;
-}
-```
-
-Used by `setDomains`. ([GitHub][1])
-
-### Domain
-
-```solidity
-struct Domain {
-  bytes32 allowedCaller;
-  bytes32 mintRecipient;
-  uint32 domainIdentifier;
-  bool enabled;
-}
-```
-
-Stored per destination chain selector. ([GitHub][1])
-
-## Internal Functions
-
-### _onlyOnRamp
-
-Overrides on-ramp caller validation to allow proxy-mediated invocation:
-
-- requires supported chain
-- then validates caller via `AuthorizedCallers` (`_validateCaller()`). ([GitHub][1])
-
-### _onlyOffRamp
-
-Same pattern as `_onlyOnRamp` for off-ramp paths. ([GitHub][1])
-
-### _validateMessage
-
-Parses the CCTP V1 message header fields and validates:
-
-- `version == i_supportedUSDCVersion`
-- `sourceDomain == payload.sourceDomain`
-- `destinationDomain == i_localDomainIdentifier`
-- `nonce == payload.nonce` ([GitHub][1])
-
-## Security model
-
-- Owner controls domain routing (`setDomains`).
-- Only authorized callers can invoke ramp entrypoints (proxy-safe via `AuthorizedCallers`).
-- `releaseOrMint` is fail-closed on malformed `sourcePoolData` or invalid message fields.
-- Minting depends on Circle’s message transmitter acceptance; false return reverts.
-- Unlimited allowance is granted to `tokenMessenger` to burn USDC from the pool. ([GitHub][1])
-
-## Related Interfaces & Contracts
-
-- [`USDCTokenPoolProxy`](/ccip/evm/api-reference/v2.0.0/usdc-token-pool-proxy)
-- [`CCTPThroughCCVTokenPool`](/ccip/evm/api-reference/v2.0.0/cctp-through-ccv-token-pool)
-- [`CCTPMessageTransmitterProxy`](/ccip/evm/api-reference/v2.0.0/cctp-message-transmitter-proxy)
-- [`USDCSourcePoolDataCodec`](/ccip/evm/api-reference/v2.0.0/usdc-source-pool-data-codec)
-- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
-- [`ITokenMessenger`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/USDC/interfaces/ITokenMessenger.sol)
-- [`IMessageTransmitter`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/USDC/interfaces/IMessageTransmitter.sol)
 
 ---
 

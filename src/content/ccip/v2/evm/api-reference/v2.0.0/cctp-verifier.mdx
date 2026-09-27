@@ -178,6 +178,8 @@ function applyAllowlistUpdates(AllowlistConfigArgs[] calldata allowlistConfigArg
 
 > Updates allowlist configuration.
 
+Callable by the owner or the `allowlistAdmin` set in the dynamic config. Any other caller reverts with `OnlyCallableByOwnerOrAllowlistAdmin`.
+
 ---
 
 ### setAllowedFinalityConfig
@@ -206,7 +208,78 @@ function updateStorageLocations(string[] memory newLocations) external onlyOwner
 function withdrawFeeTokens(address[] calldata feeTokens) external
 ```
 
-> Withdraws accumulated fee tokens. Restricted to authorized callers.
+> Withdraws accumulated fee token balances to the `feeAggregator` in the dynamic config.
+
+Permissionless: it only transfers tokens to the configured fee aggregator.
+
+---
+
+### getFee
+
+```solidity
+function getFee(
+  uint64 destChainSelector,
+  Client.EVM2AnyMessage memory message,
+  bytes memory extraArgs,
+  bytes4 requestedFinality
+) external view returns (uint16 feeUSDCents, uint32 gasForVerification, uint32 payloadSizeBytes)
+```
+
+> Returns the fee in USD cents, verification gas, and payload size for messages to a remote chain. Inherited from `BaseVerifier`.
+
+Reverts `RemoteChainNotSupported(destChainSelector)` if the chain has no configuration, and reverts if `requestedFinality` is outside `getAllowedFinalityConfig()`.
+
+---
+
+### versionTag
+
+```solidity
+function versionTag() public view returns (bytes4 tag)
+```
+
+> Returns the immutable version tag set at construction. Inherited from `BaseVerifier`.
+
+---
+
+### getAllowedFinalityConfig
+
+```solidity
+function getAllowedFinalityConfig() public view returns (bytes4 allowedFinality)
+```
+
+> Returns the allowed finality encoding for fast finality transfers. Inherited from `BaseVerifier`.
+
+---
+
+### getStorageLocations
+
+```solidity
+function getStorageLocations() public view returns (string[] memory)
+```
+
+> Returns the off-chain storage locations for verifier infrastructure to read from. Inherited from `BaseVerifier`.
+
+---
+
+### getRemoteChainConfig
+
+```solidity
+function getRemoteChainConfig(
+  uint64 remoteChainSelector
+) external view returns (RemoteChainConfig memory)
+```
+
+> Returns the router, fee, verification gas, payload size, and allowlist state for a remote chain. Inherited from `BaseVerifier`.
+
+---
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId) external pure returns (bool)
+```
+
+> Returns true for `ICrossChainVerifierV1` and `IERC165`. Inherited from `BaseVerifier`.
 
 ---
 
@@ -261,7 +334,7 @@ For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/er
 - [`BaseVerifier`](/ccip/evm/api-reference/v2.0.0/base-verifier)
 - [`ICrossChainVerifierV1`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-v1)
 - [`CCTPMessageTransmitterProxy`](/ccip/evm/api-reference/v2.0.0/cctp-message-transmitter-proxy)
-- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
+- [`IRMN`](/ccip/evm/api-reference/v2.0.0/i-rmn)
 - [`MessageV1Codec`](/ccip/evm/api-reference/v2.0.0/message-v1-codec)
 - [`ITokenMessenger`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/USDC/interfaces/ITokenMessenger.sol)
 - [`IMessageTransmitter`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v2.0.0/chains/evm/contracts/pools/USDC/interfaces/IMessageTransmitter.sol)
