@@ -569,6 +569,96 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
           // },
         ],
       },
+      {
+        title: "Cross-Chain Verifiers",
+        url: "ccip/ccv-starter-kit",
+        chainTypes: ["evm"],
+        pageId: "ccv-starter-kit",
+        children: [
+          {
+            title: "Prerequisites",
+            url: "ccip/ccv-starter-kit/prerequisites",
+            chainTypes: ["evm"],
+            pageId: "ccv-starter-kit-prerequisites",
+          },
+          {
+            title: "Deploy your first cell",
+            url: "ccip/ccv-starter-kit/evm/deploy-your-first-cell",
+            chainTypes: ["evm"],
+            pageId: "ccv-starter-kit-deploy-your-first-cell",
+          },
+          {
+            title: "Test your setup",
+            url: "ccip/ccv-starter-kit/evm/test-your-setup",
+            chainTypes: ["evm"],
+            pageId: "ccv-starter-kit-test-your-setup",
+          },
+          {
+            title: "Onboard to the CCIP indexer",
+            url: "ccip/ccv-starter-kit/onboard-to-the-indexer",
+            chainTypes: ["evm"],
+            pageId: "ccv-starter-kit-onboard-to-the-indexer",
+          },
+          {
+            title: "How-to guides",
+            type: "separator",
+            chainTypes: ["evm"],
+          },
+          {
+            title: "Choose a secret backend",
+            url: "ccip/ccv-starter-kit/how-to/choose-a-secret-backend",
+            chainTypes: ["evm"],
+            pageId: "ccv-starter-kit-choose-a-secret-backend",
+          },
+          {
+            title: "Signer key custody and KMS",
+            url: "ccip/ccv-starter-kit/how-to/signer-key-custody-and-kms",
+            chainTypes: ["evm"],
+            pageId: "ccv-starter-kit-signer-key-custody-and-kms",
+          },
+          {
+            title: "Expose the aggregator",
+            url: "ccip/ccv-starter-kit/how-to/expose-the-aggregator",
+            chainTypes: ["evm"],
+            pageId: "ccv-starter-kit-expose-the-aggregator",
+          },
+          {
+            title: "Scale to a committee",
+            url: "ccip/ccv-starter-kit/how-to/scale-to-a-committee",
+            chainTypes: ["evm"],
+            pageId: "ccv-starter-kit-scale-to-a-committee",
+          },
+          {
+            title: "Add a custom policy hook",
+            url: "ccip/ccv-starter-kit/how-to/add-a-custom-policy-hook",
+            chainTypes: ["evm"],
+            pageId: "ccv-starter-kit-add-a-custom-policy-hook",
+          },
+          {
+            title: "Operate",
+            type: "separator",
+            chainTypes: ["evm"],
+          },
+          {
+            title: "Logging and monitoring",
+            url: "ccip/ccv-starter-kit/logging-and-monitoring",
+            chainTypes: ["evm"],
+            pageId: "ccv-starter-kit-logging-and-monitoring",
+          },
+          {
+            title: "Operate: day 2",
+            url: "ccip/ccv-starter-kit/operate-day-2",
+            chainTypes: ["evm"],
+            pageId: "ccv-starter-kit-operate-day-2",
+          },
+          {
+            title: "Reference",
+            url: "ccip/ccv-starter-kit/reference",
+            chainTypes: ["evm"],
+            pageId: "ccv-starter-kit-reference",
+          },
+        ],
+      },
 
       // {
       //   title: "Advanced",

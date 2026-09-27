@@ -1,0 +1,93 @@
+---
+section: ccip
+date: Last Modified
+title: "Test your setup"
+metadata:
+  description: "Prove an EVM CCV cell before onboarding: require your CCV with a token transfer whose pool mandates it, or a receiver contract that declares it, then self-execute with ccip-cli manual-exec through your own aggregator."
+  excerpt: "test CCV cell, ccip-cli send, manual-exec, token transfer, pool-mandated CCV, receiver contract, getCCVsAndFinalityConfig, self-execution"
+  datePublished: "2026-09-26"
+  lastModified: "2026-09-26"
+whatsnext:
+  "Onboard to the CCIP indexer": "/ccip/ccv-starter-kit/onboard-to-the-indexer"
+  "Reference": "/ccip/ccv-starter-kit/reference"
+---
+
+import { Aside } from "@components"
+
+Your cell (the verifier and aggregator) is not onboarded yet, so the default executor cannot fetch your
+attestation and a message sits at `UNTOUCHED`. Prove the verifier and aggregator work by sending a message that
+requires your CCV, then executing it yourself with
+[`ccip-cli`](https://docs.chain.link/ccip/tools/cli/), reading the attestation directly from your own
+aggregator. Make a message require your CCV in either of these ways.
+
+## Option A: a token transfer that mandates your CCV
+
+Use the [CCT Foundry tutorials](https://github.com/smartcontractkit/docs-cct-foundry) to deploy a token and
+pool and wire your CCV as a required verifier for the lane. Point that required verifier at your resolver, not
+the verifier implementation: a pool that lists the implementation reverts during the fee quote with no revert
+data. Then transfer the token on that lane. Take the source Router from the
+[CCIP directory](/ccip/directory):
+
+```bash
+ccip-cli send -s <sourceChain> -d <destChain> -r <sourceRouter> \
+  --to <destWallet> -t <yourToken>=<amount>
+```
+
+## Option B: a receiver contract that requires your CCV
+
+Deploy a receiver contract that declares your resolver as a required verifier through `getCCVsAndFinalityConfig`;
+the [Send arbitrary data tutorial](/ccip/evm/tutorials/application-developers/send-arbitrary-data) walks the
+receiver pattern, and you return your resolver in the receiver's required-CCV list. Your CCV has to be named on
+both sides: the receiver declares it on the destination, and the send names the same resolver on the source with
+`-x ccvs` so your verifier attests. Take the source Router from the [CCIP directory](/ccip/directory):
+
+```bash
+ccip-cli send -s <sourceChain> -d <destChain> -r <sourceRouter> \
+  --to <yourReceiverContract> --data "hello" -L 200000 -x ccvs='["<resolver>"]'
+```
+
+## Execute it yourself
+
+Execute the message with `ccip-cli` 1.14.0 or later, passing your aggregator's gRPC endpoint:
+
+```bash
+ccip-cli manual-exec <src-tx> --verifiers grpcs://<your-aggregator-host>:443
+```
+
+`--verifiers` (alias `--verifier`) takes one or more endpoints; pass your aggregator's public TLS gRPC endpoint
+(`grpcs://`). For a committee, pass every aggregator, space-separated:
+
+```bash
+ccip-cli manual-exec <src-tx> \
+  --verifiers grpcs://agg-1.example.com:443 grpcs://agg-2.example.com:443 grpcs://agg-3.example.com:443
+```
+
+For the mechanism, see [manual execution](/ccip/concepts/manual-execution).
+
+Confirm the result two ways. With `ccip-cli`, a successful execution reports `"status": "SUCCESS"`:
+
+```bash
+ccip-cli show <messageId> --rpcs <destRpc> --json
+```
+
+With the CCIP REST API, read the `status` field; a successful execution prints `SUCCESS`:
+
+```bash
+curl -s https://api.ccip.chain.link/v2/messages/<messageId> | jq -r '.status'
+```
+
+<Aside type="note" title="Two normal states while you wait">
+  <ul>
+    <li>
+      The verifier attests only once the source message reaches the finality the message requests, and it logs `Healthy`
+      while it waits. A default (finalized) message waits for the source chain's `finalized` tag, roughly 13 to 17
+      minutes on Ethereum Sepolia; a message that requests the `safe` tag or a block depth is faster.
+    </li>
+    <li>
+      The public CCIP API does not know your verifier yet. Until your committee is onboarded it reports your verifier
+      entry as `UNKNOWN`; rely on what your own aggregator returns.
+    </li>
+  </ul>
+</Aside>
+
+Checkpoint: the message reached the destination. The cell is ready for onboarding.
