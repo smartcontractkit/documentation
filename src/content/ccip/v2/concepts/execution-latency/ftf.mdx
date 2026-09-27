@@ -1,10 +1,10 @@
 ---
 section: ccip
 date: Last Modified
-title: "Understanding Faster-Than-Finality (FTF) Transfers in CCIP v2"
+title: "Understanding Faster-Than-Finality (FTF) Transfers in CCIP 2.0"
 metadata:
-  description: "Understand Faster-Than-Finality (FTF) transfers in CCIP v2, including reorg risk, message-ID-based execution, and bounded-risk guarantees."
-  excerpt: "FTF faster-than-finality CCIP 2.0reorg risk block confirmations finality"
+  description: "Understand Faster-Than-Finality (FTF) transfers in CCIP 2.0, including reorg risk, message-ID-based execution, and bounded-risk guarantees."
+  excerpt: "FTF faster-than-finality CCIP 2.0 reorg risk block confirmations finality"
   datePublished: "2025-05-19"
   lastModified: "2025-05-19"
 ---
@@ -25,7 +25,7 @@ When sending a cross-chain message, the safest approach is to wait until the sou
 
 The primary risk associated with executing a cross-chain transaction before the source chain reaches finality is that a block reorganization (reorg) could occur. A reorg occurs when the chain replaces its most recent blocks with a different set of blocks. When this happens, the original source chain transaction could be reordered, altered, or dropped from the chain entirely — regardless of whether the cross-chain transaction had already executed on the destination chain. In effect, a reorg can result in a double spend that either inflates total token supply or leaves the transferred tokens unbacked, depending on the transfer method used.
 
-In regard to finality, CCIP v2's default behavior is identical to prior CCIP versions: all messages wait for full source chain finality before attestation and execution on the destination chain. Faster-Than-Finality (FTF) is an optional, opt-in capability that is only available when explicitly chosen. Existing token pools and existing CCIP sender/receivers deployed under previous versions of CCIP will continue to work as-is, waiting for full finality.
+In regard to finality, CCIP 2.0's default behavior is identical to prior CCIP versions: all messages wait for full source chain finality before attestation and execution on the destination chain. Faster-Than-Finality (FTF) is an optional, opt-in capability that is only available when explicitly chosen. Existing token pools and existing CCIP sender/receivers deployed under previous versions of CCIP will continue to work as-is, waiting for full finality.
 
 Legacy (V1) pools and receivers are additionally protected: they cannot accept FTF requests at all — legacy pools revert on send, and legacy receivers are treated as allowing only full finality on inbound execution.
 
@@ -60,9 +60,9 @@ Because execution is keyed by message ID, not by "Alice's transfer" or by `messa
 
 If the Committee Verifier detects the reorg before attesting (via its reorg tracker), it ignores the FTF depth for that sequence number and waits for full source finality before attesting. That reduces — but does not eliminate — the double-execution window. Double execution remains possible when attestation and execution already occurred before the reorg was detected.
 
-## How CCIP 2.0Handles Reorgs
+## How CCIP 2.0 Handles Reorgs
 
-CCIP 2.0uses a message-ID-based execution model with reorg tracking and reorg quarantining in the default Committee Verifier to minimize risk during FTF transfers.
+CCIP 2.0 uses a message-ID-based execution model with reorg tracking and reorg quarantining in the default Committee Verifier to minimize risk during FTF transfers.
 
 - **Message ID keying:** Each message's execution on the destination chain is tracked by a unique message ID (`messageId = keccak256(encodedMessage)` — a hash of the full encoded payload, which commits to `messageNumber`, source/destination, receiver, token data including pool-returned fields, finality preference, and user data). Two different payloads always produce different IDs and are tracked independently in `s_executionStates[messageId]`. After a reorg, logically the "same" transfer can hash to a new ID if its assigned `messageNumber` differs (because other non-reorged sends on the canonical fork advanced the OnRamp counter) or if committed pool/token fields differ on re-send.
 - **Reorg tracking (Committee Verifier, offchain):** When CCIP's default Committee Verifier detects that a source chain reorg has occurred, all affected message numbers are quarantined — meaning the Committee Verifier pauses new attestations for those messages until the source chain reaches finality. When the Committee Verifier's source reader detects that a previously seen message disappeared from the canonical chain (indicating a reorg), it tracks that message's sequence number for the affected destination lane. While tracked, the verifier ignores the sender's FTF confirmation depth and waits for full source-chain finalization before producing an attestation. Tracking is per (source chain, destination chain) lane — not a global pause on all messages. Once the message block is finalized, the sequence number is removed from tracking and normal processing resumes. This behavior is specific to the default Committee Verifier offchain service.
@@ -80,7 +80,7 @@ Note for additional CCVs: If a message requires additive verifiers (e.g., the CC
 
 Clarification on the third row: "No impact" in row 2 assumes the reorg is shallow enough that attestation had not yet occurred at your chosen depth, or reorg tracking successfully deferred attestation until after the reorg resolved. Row 3 covers the case where attestation and execution already happened under a fork that was later replaced.
 
-If you do not explicitly configure a finality setting, your experience is unchanged from prior versions of CCIP. Waiting for full finality is the default behavior of CCIP v2. FTF is only relevant if the participants in your message path (pool, CCVs, executor, and receiver where applicable) have all configured `allowedFinality` to permit FTF and a sender explicitly requests a non-default finality mode.
+If you do not explicitly configure a finality setting, your experience is unchanged from prior versions of CCIP. Waiting for full finality is the default behavior of CCIP 2.0. FTF is only relevant if the participants in your message path (pool, CCVs, executor, and receiver where applicable) have all configured `allowedFinality` to permit FTF and a sender explicitly requests a non-default finality mode.
 
 If you opt into FTF, your risk exposure is directly proportional to how aggressively you set your confirmation depth relative to the reorg profile of your source chain. On a chain where reorgs are typically 1–2 blocks deep, a confirmation depth of 5 blocks optimizes for both speed and safety. On a chain with deeper or more frequent reorgs, confirmation depth should be increased or your application should implement corrective actions such as idempotency keys or insurance mechanisms.
 
