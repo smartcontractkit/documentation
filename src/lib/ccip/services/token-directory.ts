@@ -456,11 +456,12 @@ export class TokenDirectoryService {
     destVerifierInfo: LaneVerifierInfo | null | undefined,
     isCCVEnabled: boolean
   ): LaneVerifiers | null {
-    // For v1.x source pools, CCV is not supported on the source side.
-    // However, the destination pool may still be v2.0 with CCV.
-    // In that case, we still want to show destination-side verifiers,
-    // so we only short-circuit when BOTH sides lack CCV data.
-    if (!isCCVEnabled && !destVerifierInfo) {
+    // For v1.x pools, CCV is not supported on that pool's own side. However,
+    // the remote pool on the other side of the lane may still be v2.0 with CCV
+    // (e.g. a v1.x source pool with a v2.0 destination, or vice versa). In that
+    // case, we still want to show the remote side's verifiers, so we only
+    // short-circuit when BOTH sides lack CCV data.
+    if (!isCCVEnabled && !sourceVerifierInfo && !destVerifierInfo) {
       return null
     }
 

@@ -13,6 +13,7 @@
  */
 
 import { LRUCache } from "lru-cache"
+import { ZeroAddress } from "ethers"
 import { executeGraphQLQuery } from "~/lib/ccip/graphql/client.ts"
 import { TOKEN_POOL_LANES_WITH_POOLS_QUERY } from "~/lib/ccip/graphql/queries/token-pool-lanes.ts"
 import { TOKEN_POOLS_QUERY } from "~/lib/ccip/graphql/queries/token-pools.ts"
@@ -336,6 +337,20 @@ function parseLaneInfo(
     return synthesized
   }
 
+  // USDC proxy with a non-CCV mechanism (e.g. cctpV2Pool, siloedLockReleasePool):
+  // the mechanism tells us CCV isn't used, so absent arrays mean "no verifiers
+  // configured", not a downstream error. Default to [] instead of null so
+  // buildVerifiersResponse doesn't treat it as an error.
+  if (typeof payload.mechanism === "string") {
+    return {
+      inboundCCVs: [],
+      outboundCCVs: [],
+      thresholdInboundCCVs: [],
+      thresholdOutboundCCVs: [],
+      thresholdAmount,
+    }
+  }
+
   // Neither standard CCV arrays nor a recognizable USDC mechanism — return
   // the raw parsed values (all nulls) so downstream treats it as unconfigured
   return {
@@ -591,8 +606,11 @@ export interface LaneData {
  * Priority:
  *   1. mechanism === "cctpV2PoolWithCCV" AND CCV addresses are known in verifiers.json
  *      (production CCTP-with-CCV lane — has verifiers we can resolve)
- *   2. any node with a mechanism string (v2.0 proxy, non-CCV)
- *   3. first node (v1.x fallback)
+ *   2. CCV arrays present AND all addresses are known in verifiers.json
+ *      (production non-USDC pool with AdvancedPoolHooks — skips staging/dev
+ *      deployments whose verifier addresses aren't in our reference data)
+ *   3. any node with a mechanism string (v2.0 proxy, non-CCV)
+ *   4. first node (v1.x fallback)
  *
  * @param networkId The directory key of the chain this lane belongs to (used to
  *   check if CCV addresses are known in verifiers.json)
@@ -605,31 +623,43 @@ function selectLaneNode(
 ): NonNullable<NonNullable<GetTokenPoolLanesWithPoolsQuery["allCcipTokenPoolLanesWithPools"]>["nodes"]>[number] | null {
   if (nodes.length === 0) return null
 
-  // Helper: check if a node's CCV addresses are all known in verifiers.json
+  // Helper: check if a node's CCV addresses are all known in verifiers.json.
+  // The zero address (default verifier placeholder) is excluded — it's filtered
+  // out downstream in resolveSide and never appears in verifiers.json.
+  // Empty arrays (or zero-address-only arrays) count as known: the entry is
+  // configured with no verifiers, so there is nothing unknown to show.
   const hasKnownCCVs = (n: (typeof nodes)[number]): boolean => {
     const info = n.info as { outboundCCVs?: unknown; inboundCCVs?: unknown } | null
     if (!info) return false
     const outbound = Array.isArray(info.outboundCCVs) ? (info.outboundCCVs as string[]) : []
     const inbound = Array.isArray(info.inboundCCVs) ? (info.inboundCCVs as string[]) : []
-    const allAddrs = [...outbound, ...inbound]
-    if (allAddrs.length === 0) return false
+    const allAddrs = [...outbound, ...inbound].filter((addr) => addr !== ZeroAddress)
     return allAddrs.every((addr) => getVerifier({ networkId, address: addr, environment }) !== undefined)
   }
 
-  return (
+  const selected =
     // 1. Production CCTP-with-CCV: mechanism matches AND all CCV addresses are known
     nodes.find((n) => {
       const info = n.info as { mechanism?: unknown } | null
       return info?.mechanism === CCTP_CCV_MECHANISM && hasKnownCCVs(n)
     }) ??
-    // 2. Any v2.0 proxy with a mechanism string (non-CCV, e.g. cctpV2Pool, siloedLockReleasePool)
+    // 2. Production non-USDC pool (AdvancedPoolHooks): CCV arrays present AND all
+    //    addresses are known in verifiers.json. Skips staging/dev deployments
+    //    (e.g. "2.0.0-dev") whose verifier addresses aren't in our reference data.
+    nodes.find((n) => {
+      const info = n.info as { outboundCCVs?: unknown; inboundCCVs?: unknown } | null
+      const hasArrays = info && (Array.isArray(info.outboundCCVs) || Array.isArray(info.inboundCCVs))
+      return hasArrays && hasKnownCCVs(n)
+    }) ??
+    // 3. Any v2.0 proxy with a mechanism string (non-CCV, e.g. cctpV2Pool, siloedLockReleasePool)
     nodes.find((n) => {
       const info = n.info as { mechanism?: unknown } | null
       return info && typeof info.mechanism === "string"
     }) ??
-    // 3. Fallback: first node (v1.x)
+    // 4. Fallback: first node (v1.x)
     nodes[0]
-  )
+
+  return selected
 }
 
 export async function fetchLaneData(
