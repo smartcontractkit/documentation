@@ -39,7 +39,6 @@ import {AdvancedPoolHooksExtractor} from "chainlink-ccip/chains/evm/contracts/po
 ## Inheritance
 
 - `IExtractor`
-- `ITypeAndVersion`
 
 ---
 
@@ -47,7 +46,7 @@ import {AdvancedPoolHooksExtractor} from "chainlink-ccip/chains/evm/contracts/po
 
 ```solidity
 string public constant override typeAndVersion =
-  "AdvancedPoolHooksExtractor 2.0.0-dev";
+  "AdvancedPoolHooksExtractor 2.0.0";
 ```
 
 ---
@@ -56,43 +55,38 @@ string public constant override typeAndVersion =
 
 ### Constants
 
-```solidity
-string public constant override typeAndVersion =
-  "AdvancedPoolHooksExtractor 2.0.0-dev";
-```
-
 Parameter key constants:
 
 ```solidity
 bytes32 public constant PARAM_FROM =
-  keccak256("PARAM_FROM");
+  keccak256("from");
 
 bytes32 public constant PARAM_TO =
-  keccak256("PARAM_TO");
+  keccak256("to");
 
 bytes32 public constant PARAM_AMOUNT =
-  keccak256("PARAM_AMOUNT");
+  keccak256("amount");
 
 bytes32 public constant PARAM_AMOUNT_POST_FEE =
-  keccak256("PARAM_AMOUNT_POST_FEE");
+  keccak256("amount_post_fee");
 
 bytes32 public constant PARAM_REMOTE_CHAIN_SELECTOR =
-  keccak256("PARAM_REMOTE_CHAIN_SELECTOR");
+  keccak256("remote_chain_selector");
 
 bytes32 public constant PARAM_TOKEN =
-  keccak256("PARAM_TOKEN");
+  keccak256("token");
 
-bytes32 public constant PARAM_BLOCK_CONFIRMATION_REQUESTED =
-  keccak256("PARAM_BLOCK_CONFIRMATION_REQUESTED");
+bytes32 public constant PARAM_REQUESTED_FINALITY =
+  keccak256("requested_finality");
 
 bytes32 public constant PARAM_SOURCE_POOL_ADDRESS =
-  keccak256("PARAM_SOURCE_POOL_ADDRESS");
+  keccak256("source_pool_address");
 
 bytes32 public constant PARAM_SOURCE_POOL_DATA =
-  keccak256("PARAM_SOURCE_POOL_DATA");
+  keccak256("source_pool_data");
 
 bytes32 public constant PARAM_SOURCE_DENOMINATED_AMOUNT =
-  keccak256("PARAM_SOURCE_DENOMINATED_AMOUNT");
+  keccak256("source_denominated_amount");
 ```
 
 No storage variables.
@@ -150,7 +144,7 @@ function _extractPreflightCheck(IPolicyEngine.Payload calldata payload)
 Decodes `payload.data` as:
 
 ```solidity
-(Pool.LockOrBurnInV1, uint16 blockConfirmationRequested, bytes tokenArgs, uint256 amountPostFee)
+(Pool.LockOrBurnInV1, bytes4 requestedFinalityConfig, bytes tokenArgs, uint256 amountPostFee)
 ```
 
 Builds and returns 7 parameters:
@@ -161,7 +155,7 @@ Builds and returns 7 parameters:
 - `PARAM_AMOUNT_POST_FEE` → amountPostFee
 - `PARAM_REMOTE_CHAIN_SELECTOR` → remoteChainSelector
 - `PARAM_TOKEN` → localToken
-- `PARAM_BLOCK_CONFIRMATION_REQUESTED` → blockConfirmationRequested
+- `PARAM_REQUESTED_FINALITY` → requestedFinalityConfig
 
 `tokenArgs` is intentionally skipped.
 
@@ -179,7 +173,7 @@ function _extractPostflightCheck(IPolicyEngine.Payload calldata payload)
 Decodes `payload.data` as:
 
 ```solidity
-(Pool.ReleaseOrMintInV1, uint256 localAmount, uint16 blockConfirmationRequested)
+(Pool.ReleaseOrMintInV1, uint256 localAmount, bytes4 requestedFinalityConfig)
 ```
 
 Builds and returns 9 parameters:
@@ -189,7 +183,7 @@ Builds and returns 9 parameters:
 - `PARAM_AMOUNT` → localAmount
 - `PARAM_REMOTE_CHAIN_SELECTOR` → remoteChainSelector
 - `PARAM_TOKEN` → localToken
-- `PARAM_BLOCK_CONFIRMATION_REQUESTED` → blockConfirmationRequested
+- `PARAM_REQUESTED_FINALITY` → requestedFinalityConfig
 - `PARAM_SOURCE_POOL_ADDRESS` → sourcePoolAddress
 - `PARAM_SOURCE_POOL_DATA` → sourcePoolData
 - `PARAM_SOURCE_DENOMINATED_AMOUNT` → sourceDenominatedAmount

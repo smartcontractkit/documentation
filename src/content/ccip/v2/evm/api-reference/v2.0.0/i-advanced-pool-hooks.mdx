@@ -46,7 +46,7 @@ interface IAdvancedPoolHooks {
 ```solidity
 function preflightCheck(
   Pool.LockOrBurnInV1 calldata lockOrBurnIn,
-  uint16 blockConfirmationRequested,
+  bytes4 requestedFinalityConfig,
   bytes calldata tokenArgs,
   uint256 amountPostFee
 ) external;
@@ -65,7 +65,7 @@ Called before executing `_lockOrBurn` on the source chain.
 function postflightCheck(
   Pool.ReleaseOrMintInV1 calldata releaseOrMintIn,
   uint256 localAmount,
-  uint16 blockConfirmationRequested
+  bytes4 requestedFinalityConfig
 ) external;
 ```
 
@@ -83,7 +83,7 @@ function getRequiredCCVs(
   address localToken,
   uint64 remoteChainSelector,
   uint256 amount,
-  uint16 blockConfirmationRequested,
+  bytes4 requestedFinalityConfig,
   bytes calldata extraData,
   IPoolV2.MessageDirection direction
 ) external view returns (address[] memory requiredCCVs);
@@ -96,7 +96,7 @@ Parameters:
 - `localToken` — token on this chain.
 - `remoteChainSelector` — remote chain identifier.
 - `amount` — transfer amount.
-- `blockConfirmationRequested` — requested finality depth.
+- `requestedFinalityConfig` — requested finality encoding (see `FinalityCodec`).
 - `extraData` — direction-specific payload (e.g., tokenArgs or offchainTokenData).
 - `direction` — `IPoolV2.MessageDirection.Inbound` or `Outbound`.
 
@@ -121,7 +121,7 @@ Returns:
 
 - Hooks may be a no-op implementation.
 - Hooks must validate caller authenticity internally (typically via `AuthorizedCallers`).
-- Hooks are trusted components — a malicious hook may block transfers.
+- Hooks are trusted components: a malicious hook may block transfers.
 
 ---
 

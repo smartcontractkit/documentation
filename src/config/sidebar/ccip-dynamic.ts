@@ -207,6 +207,11 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
             pageId: "ccip-cct-token-issuer-guide",
           },
           {
+            title: "Advanced Pool Hooks",
+            url: "ccip/concepts/cross-chain-token/advanced-pool-hooks",
+            pageId: "ccip-cct-advanced-pool-hooks",
+          },
+          {
             title: "Rate Limits",
             url: "ccip/evm/concepts/cross-chain-token/rate-limits",
             pageId: "ccip-cct-rate-limits",
@@ -524,11 +529,20 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
             pageId: "set-token-transfer-fee-config",
           },
           {
-            title: "Set Advanced Pool Hooks",
-            url: "ccip/evm/tutorials/cross-chain-tokens/set-advanced-pool-hooks-foundry",
-            highlightAsCurrent: ["ccip/evm/tutorials/cross-chain-tokens/set-advanced-pool-hooks-hardhat"],
+            title: "Configure a Sender Allowlist with AdvancedPoolHooks",
+            url: "ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-foundry",
+            highlightAsCurrent: [
+              "ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-hardhat",
+            ],
             chainTypes: ["evm"],
-            pageId: "set-advanced-pool-hooks",
+            pageId: "configure-sender-allowlist-advanced-pool-hooks",
+          },
+          {
+            title: "Enforce ACE Policies on CCIP Token Transfers",
+            url: "ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-foundry",
+            highlightAsCurrent: ["ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-hardhat"],
+            chainTypes: ["evm"],
+            pageId: "enforce-ace-policies",
           },
           {
             title: "Migration Guides",
