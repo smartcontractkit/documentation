@@ -148,14 +148,45 @@ const { titleHeading, disableDefaultStyles, hideTitle } = Astro.props
     }
 
     /*
-      Accordions are deliberately excluded from the top-margin rhythm above, so that a
-      run of stacked accordions stays flush and reads as one continuous list. The side
-      effect is that the FIRST accordion of a run sits jammed against whatever precedes
+      AnchoredAccordion owns the gap above it, the same way every other block in the
+      rhythm above does, so nothing that precedes it (an Aside, a heading's divider)
+      sits flush against it. After h4–h6 it takes the tighter heading gap, matching the
+      heading rules further down.
+
+      A stacked run stays flush so it reads as one continuous list. Every accordion is
+      followed by the <style is:inline> it emits (in production builds too, not just
+      `astro dev`), and in dev the first one on a page also by its <script>, so a bare
+      `accordion + accordion` never matches. These selectors look past up to two of them.
+    */
+    :where(&, & section, & astro-slot, & astro-island) {
+      > astro-anchored-accordion {
+        margin-top: var(--space-5x);
+      }
+
+      > :is(astro-accordion, astro-anchored-accordion) + astro-anchored-accordion,
+      > :is(astro-accordion, astro-anchored-accordion) + :is(style, script) + astro-anchored-accordion,
+      > :is(astro-accordion, astro-anchored-accordion)
+        + :is(style, script)
+        + :is(style, script)
+        + astro-anchored-accordion {
+        margin-top: 0;
+      }
+    }
+
+    :where(&, & section) > :is(h4, h5, h6) + astro-anchored-accordion {
+      margin-top: var(--space-3x);
+    }
+
+    /*
+      The Quickstart Accordion (astro-accordion) is still excluded from the top-margin
+      rhythm, so the FIRST accordion of a run would sit jammed against whatever precedes
       it (e.g. a DocCards grid). Fix it the same way Quickstart.astro and
       CRETemplate.astro already do: the preceding element supplies the gap via :has().
+      This relies on `+` adjacency, which breaks after any component that ends in a
+      <style is:inline> (e.g. Aside); that is why AnchoredAccordion owns its gap instead.
 
-      Headings are excluded because they already carry their own padding-bottom, and an
-      accordion run reads better hugging the heading it belongs to.
+      Headings are excluded because they already carry their own padding-bottom, and a
+      Quickstart Accordion run reads better hugging the heading it belongs to.
 
       NOTE: :is() here is load-bearing — do not "tidy" it to :where(). The
       `* { margin-bottom: 0 }` reset above is specificity (0,1,1); :where() would zero
@@ -163,9 +194,7 @@ const { titleHeading, disableDefaultStyles, hideTitle } = Astro.props
       plain `margin-bottom` on a component's own class (e.g. .cards) has no effect here.
     */
     :is(&, & section, & astro-slot, & astro-island)
-      > :not(astro-accordion, astro-anchored-accordion, h1, h2, h3, h4, h5, h6):has(
-        + :is(astro-accordion, astro-anchored-accordion)
-      ) {
+      > :not(astro-accordion, astro-anchored-accordion, h1, h2, h3, h4, h5, h6):has(+ astro-accordion) {
       margin-bottom: var(--space-5x);
     }
 
