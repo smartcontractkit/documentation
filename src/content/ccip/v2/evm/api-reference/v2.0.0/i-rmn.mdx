@@ -3,17 +3,17 @@ section: ccip
 date: Last Modified
 title: "CCIP v2.0.0 IRMN API Reference"
 metadata:
-  description: "Interface for querying Risk Management Network (RMN) blessing and curse state."
+  description: "Interface for querying Risk Management Network (RMN) curse state."
   version: "2.0.0"
 ---
 
 ## Summary
 
-`IRMN` defines the minimal on-chain interface for interacting with the Risk Management Network (RMN).
+`IRMN` contains the only RMN-related functions used on-chain by other CCIP contracts.
 
 It allows CCIP contracts to:
 
-- Check whether a Merkle root is blessed.
+- Get the current set of cursed subjects.
 - Check whether the system is globally cursed.
 - Check whether a specific subject is cursed.
 
@@ -37,50 +37,35 @@ import {IRMN} from "chainlink-ccip/chains/evm/contracts/interfaces/IRMN.sol";
 
 ## Interface surface
 
-```solidity id="t8k2dp"
+```solidity
 interface IRMN {
 ```
 
 ---
 
-### Struct: TaggedRoot
+### getCursedSubjects
 
-```solidity id="q9l6vf"
-struct TaggedRoot {
-  address commitStore;
-  bytes32 root;
-}
+```solidity
+function getCursedSubjects() external view returns (bytes16[] memory subjects);
 ```
 
-Represents a Merkle root tagged with the address of the commit store contract.
-
----
-
-### isBlessed
-
-```solidity id="b2j5xn"
-function isBlessed(
-  TaggedRoot calldata taggedRoot
-) external view returns (bool);
-```
-
-Returns whether the specified tagged root is currently blessed.
+Returns the current set of cursed subjects.
 
 ---
 
 ### isCursed()
 
-```solidity id="m4c9rs"
+```solidity
 function isCursed() external view returns (bool);
 ```
 
-Returns `true` if a global or legacy curse is active.
+Returns `true` if there is an active global or legacy curse.
 
 ---
 
 ### isCursed(bytes16)
 
-```solidity id="u7p3lx"
+```solidity
 function isCursed(
   bytes16 subject
 ) external view returns (bool);
@@ -93,7 +78,7 @@ Returns `true` if:
 
 ---
 
-```solidity id="f1k6zw"
+```solidity
 }
 ```
 
@@ -101,15 +86,15 @@ Returns `true` if:
 
 ## Integration notes / expectations
 
-- `isBlessed` results may change over time and must not be cached across transactions.
 - Curse checks should be performed immediately before executing sensitive operations.
-- Subjects (e.g., chain selectors) may be encoded as `bytes16(uint128(chainSelector))` by calling contracts.
+- To check whether a particular chain is cursed, pass `bytes16(uint128(chainSelector))` as the subject.
+- Both `isCursed` overloads return false immediately when no subjects are cursed at all.
 
 ---
 
 ## Related Interfaces & Contracts
 
-- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
-- [`RMNRemote`](/ccip/evm/api-reference/v2.0.0/rmn-remote)
+- [`RMN`](/ccip/evm/api-reference/v2.0.0/rmn)
+- [`RMNProxy`](/ccip/evm/api-reference/v2.0.0/rmn-proxy)
 - [`OffRamp`](/ccip/evm/api-reference/v2.0.0/offramp)
 - [`OnRamp`](/ccip/evm/api-reference/v2.0.0/onramp)

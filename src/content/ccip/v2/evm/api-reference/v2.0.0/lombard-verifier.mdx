@@ -51,7 +51,7 @@ Implements:
 
 ```solidity
 string public constant override typeAndVersion =
-  "LombardVerifier 2.0.0-dev";
+  "LombardVerifier 2.0.0";
 ```
 
 ---
@@ -61,10 +61,7 @@ string public constant override typeAndVersion =
 ### Constants
 
 ```solidity
-bytes4 internal constant VERSION_TAG_V1_7_0 =
-  bytes4(keccak256("LombardVerifier 1.7.0"));
-
-uint8 internal constant SUPPORTED_BRIDGE_MSG_VERSION = 1;
+uint8 internal constant SUPPORTED_BRIDGE_MSG_VERSION = 2;
 
 uint256 internal constant VERSION_TAG_SIZE = 4;
 uint256 internal constant BYTES32_SIZE = 32;
@@ -90,11 +87,13 @@ IBridgeV3 internal immutable i_bridge;
 ```solidity
 DynamicConfig private s_dynamicConfig;
 
-EnumerableMap.AddressToAddressMap private s_supportedTokens;
+EnumerableMap.AddressToAddressMap internal s_supportedTokens;
 
-EnumerableSet.UintSet private s_supportedChains;
+EnumerableSet.UintSet internal s_supportedChains;
 
-mapping(uint64 => Path) private s_chainSelectorToPath;
+mapping(uint64 chainSelector => Path path) internal s_chainSelectorToPath;
+
+mapping(uint64 remoteChainSelector => mapping(address token => bytes32 remoteAdapter)) internal s_remoteAdapters;
 ```
 
 ---
@@ -106,15 +105,16 @@ constructor(
   DynamicConfig memory dynamicConfig,
   IBridgeV3 bridge,
   string[] memory storageLocation,
-  address rmn
+  address rmn,
+  bytes4 versionTag
 )
-  BaseVerifier(storageLocation, rmn)
+  BaseVerifier(storageLocation, rmn, versionTag)
 ```
 
 Validations:
 
 - `bridge != address(0)` → else `ZeroBridge()`
-- `bridge.MSG_VERSION() == SUPPORTED_BRIDGE_MSG_VERSION`
+- `bridge.MSG_VERSION() == SUPPORTED_BRIDGE_MSG_VERSION` (2) → else `InvalidMessageVersion(2, got)`
 
 Initializes:
 
@@ -130,6 +130,59 @@ event DynamicConfigSet(DynamicConfig dynamicConfig);
 ---
 
 ## External API
+
+### getDynamicConfig
+
+```solidity
+function getDynamicConfig() external view returns (DynamicConfig memory)
+```
+
+> Returns the dynamic config.
+
+---
+
+### setDynamicConfig
+
+```solidity
+function setDynamicConfig(DynamicConfig memory dynamicConfig) external onlyOwner
+```
+
+> Sets the dynamic config. A zero-address fee aggregator is valid and makes `withdrawFeeTokens` revert.
+
+---
+
+### i_bridge
+
+```solidity
+IBridgeV3 public immutable i_bridge;
+```
+
+> The Lombard bridge contract. Public immutable, readable directly.
+
+---
+
+### setRemoteAdapters
+
+```solidity
+function setRemoteAdapters(RemoteAdapterArgs[] calldata remoteAdapterArgs) external onlyOwner
+```
+
+> Sets the remote adapter token identifier for each (remote chain selector, local token) pair in the array.
+
+---
+
+### getRemoteAdapter
+
+```solidity
+function getRemoteAdapter(
+  uint64 remoteChainSelector,
+  address token
+) external view returns (bytes32 remoteAdapter)
+```
+
+> Returns the remote adapter token identifier for a remote chain and local token.
+
+---
 
 ### forwardToVerifier
 
@@ -167,7 +220,7 @@ Destination-chain behavior:
 
 - `_assertNotCursedByRMN(message.sourceChainSelector)`
 - `_onlyOffRamp(message.sourceChainSelector)`
-- Parse and validate version prefix
+- Parse and validate the version prefix against `versionTag()` → else `InvalidCCVVersion(expected, got)`
 - Parse `rawPayload` and `proof`
 - Call:
 
@@ -177,7 +230,7 @@ IMailbox(i_bridge.mailbox())
 ```
 
 - Require `executed == true`
-- Validate bridged message equals `(VERSION_TAG_V1_7_0 || messageId)`
+- Validate the bridged message equals `(versionTag(), messageId)`
 
 ---
 
@@ -186,12 +239,12 @@ IMailbox(i_bridge.mailbox())
 ```solidity
 function versionTag()
   public
-  pure
+  view
   override
   returns (bytes4)
 ```
 
-Returns `VERSION_TAG_V1_7_0`.
+Returns the immutable version tag set at construction. Inherited from `BaseVerifier`.
 
 ---
 
@@ -300,6 +353,99 @@ function applyRemoteChainConfigUpdates(
   RemoteChainConfigArgs[] calldata remoteChainConfigArgs
 ) external onlyOwner
 ```
+
+---
+
+### applyAllowlistUpdates
+
+```solidity
+function applyAllowlistUpdates(
+  AllowlistConfigArgs[] calldata allowlistConfigArgsItems
+) external onlyOwner
+```
+
+> Updates senders that are allowed to use this verifier.
+
+Owner-only on this verifier, unlike `CommitteeVerifier` and `CCTPVerifier`, which also accept the dynamic config's `allowlistAdmin`.
+
+---
+
+### setAllowedFinalityConfig
+
+```solidity
+function setAllowedFinalityConfig(bytes4 allowedFinality) external onlyOwner
+```
+
+> Sets the allowed finality encoding for fast finality transfers.
+
+---
+
+### updateStorageLocations
+
+```solidity
+function updateStorageLocations(string[] memory newLocations) external onlyOwner
+```
+
+> Updates the off-chain storage location identifiers.
+
+---
+
+### getFee
+
+```solidity
+function getFee(
+  uint64 destChainSelector,
+  Client.EVM2AnyMessage memory message,
+  bytes memory extraArgs,
+  bytes4 requestedFinality
+) external view returns (uint16 feeUSDCents, uint32 gasForVerification, uint32 payloadSizeBytes)
+```
+
+> Returns the fee in USD cents, verification gas, and payload size for messages to a remote chain. Inherited from `BaseVerifier`.
+
+Reverts `RemoteChainNotSupported(destChainSelector)` if the chain has no configuration, and reverts if `requestedFinality` is outside `getAllowedFinalityConfig()`.
+
+---
+
+### getAllowedFinalityConfig
+
+```solidity
+function getAllowedFinalityConfig() public view returns (bytes4 allowedFinality)
+```
+
+> Returns the allowed finality encoding for fast finality transfers. Inherited from `BaseVerifier`.
+
+---
+
+### getStorageLocations
+
+```solidity
+function getStorageLocations() public view returns (string[] memory)
+```
+
+> Returns the off-chain storage locations for verifier infrastructure to read from. Inherited from `BaseVerifier`.
+
+---
+
+### getRemoteChainConfig
+
+```solidity
+function getRemoteChainConfig(
+  uint64 remoteChainSelector
+) external view returns (RemoteChainConfig memory)
+```
+
+> Returns the router, fee, verification gas, payload size, and allowlist state for a remote chain. Inherited from `BaseVerifier`.
+
+---
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId) external pure returns (bool)
+```
+
+> Returns true for `ICrossChainVerifierV1` and `IERC165`. Inherited from `BaseVerifier`.
 
 ---
 
@@ -417,5 +563,5 @@ Returns raw `payloadHash`.
 - [`BaseVerifier`](/ccip/evm/api-reference/v2.0.0/base-verifier)
 - [`IBridgeV3`](/ccip/evm/api-reference/v2.0.0/i-bridge-v3)
 - [`IMailbox`](/ccip/evm/api-reference/v2.0.0/i-mailbox)
-- [`IRMNRemote`](/ccip/evm/api-reference/v2.0.0/i-rmn-remote)
+- [`IRMN`](/ccip/evm/api-reference/v2.0.0/i-rmn)
 - [`MessageV1Codec`](/ccip/evm/api-reference/v2.0.0/message-v1-codec)
