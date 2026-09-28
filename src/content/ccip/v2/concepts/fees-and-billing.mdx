@@ -31,12 +31,10 @@ The final quoted fee depends on the specific message configuration, including:
 | Token Pool Fee                  | Token-specific transfer costs and risk adjustments           | Token Pool Owner | USD flat fee and/or basis points of transferred amount    | `feeToken` and/or transferred token |
 | CCIP Network Fee (protocol fee) | Protocol-level service fee for the lane                      | CCIP             | USD flat fee                                              | Selected `feeToken`                 |
 
-Each component reflects a distinct part of the cross-chain lifecycle.
-
 Fee components are applied in two ways:
 
-- **Additive** fees are paid in the **feeToken** on top of the transfer amount
-- **Subtractive** fees (if configured by the token pool owner) are deducted from the **transferred** token amount
+- **Additive** fees are paid in the `feeToken` on top of the transfer amount
+- **Subtractive** fees (if configured by the token pool owner) are deducted from the transferred token amount
 
 ## Executor Fee
 
@@ -56,12 +54,12 @@ Where total destination gas is:
 
 ### Destination Gas Components
 
-- **Destination gas price** — CCIP maintains a cache of the destination chain's gas price on the source blockchain (in USD per gas unit). At quote time, this is converted into the selected `feeToken`.
-- **Gas limit (user-specified, extra args)** — The `gasLimit` set by the user in the message extra args. This is the maximum gas CCIP can use to call `ccipReceive()` on the receiver contract on the destination chain. Set to 0 for token-only transfers with no callback. The user is billed for the gas specified, not the gas actually used; unused gas is not refunded.
-- **Destination gas overhead** — Fixed base gas CCIP adds on top of the user-specified gas limit to run delivery on the destination chain.
-- **Gas for verification** — Gas required by any Cross-Chain Verifiers (CCVs) attached to the message. If no CCVs are used, this term is 0.
-- **Gas for token transfers** — Additional gas to deliver tokens on the destination chain. The value is set by the Token Transfer Fee config (per destination chain default / token-specific value on the FeeQuoter), or returned by the token pool when a V2 pool has custom fee config enabled. If there are no token transfers, this term is 0.
-- **Destination gas per payload byte** — A per-byte rate applied to the total payload size. Payload size includes the message `data` field plus message-encoding overhead (and any CCV or pool byte contributions). If there is no `data` (token-only), the data portion is 0 — but a small encoding overhead may still apply.
+- **Destination gas price**: CCIP maintains a cache of the destination chain's gas price on the source blockchain (in USD per gas unit). At quote time, this is converted into the selected `feeToken`.
+- **Gas limit (user-specified, extra args)**: The `gasLimit` set by the user in the message extra args. This is the maximum gas CCIP can use to call `ccipReceive()` on the receiver contract on the destination chain. Set to 0 for token-only transfers with no callback. The user is billed for the gas specified, not the gas actually used; unused gas is not refunded.
+- **Destination gas overhead**: Fixed base gas CCIP adds on top of the user-specified gas limit to run delivery on the destination chain.
+- **Gas for verification**: Gas required by any Cross-Chain Verifiers (CCVs) attached to the message. If no CCVs are used, this term is 0.
+- **Gas for token transfers**: Additional gas to deliver tokens on the destination chain. The value is set by the Token Transfer Fee config (per destination chain default / token-specific value on the FeeQuoter), or returned by the token pool when a V2 pool has custom fee config enabled. If there are no token transfers, this term is 0.
+- **Destination gas per payload byte**: A per-byte rate applied to the total payload size. Payload size includes the message `data` field plus message-encoding overhead (and any CCV or pool byte contributions). If there is no `data` (token-only), the data portion is 0, but a small encoding overhead still applies.
 
 ### Optional flat fee
 
@@ -69,10 +67,10 @@ If the executor is not `NO_EXECUTION_ADDRESS`, the executor may also charge a fl
 
 ### Important notes
 
-- **Gas limits** — The user-specified `gasLimit` in extra args controls the `ccipReceive()` budget. If set too low, execution may fail. If set too high, unused gas is not refunded.
-- **Execution constraints** — Gas limits and execution behavior may also be affected by [service limits](/ccip/evm/service-limits) and token pool configuration.
-- **Custom executors** — May charge an additional flat premium via `getFee()`. The default Chainlink-operated executor typically charges **no flat premium**, but destination execution gas cost still applies.
-- **No execution option** — If `NO_EXECUTION_ADDRESS` is specified, the executor flat fee is zero **and** execution gas cost is not added.
+- **Gas limits**: The user-specified `gasLimit` in extra args controls the `ccipReceive()` budget. If set too low, execution may fail. If set too high, unused gas is not refunded.
+- **Execution constraints**: Gas limits and execution behavior may also be affected by [service limits](/ccip/evm/service-limits) and token pool configuration.
+- **Custom executors**: May charge an additional flat premium via `getFee()`. The default Chainlink-operated executor typically charges no flat premium, but destination execution gas cost still applies.
+- **No execution option**: If `NO_EXECUTION_ADDRESS` is specified, the executor flat fee is zero and execution gas cost is not added.
 
 ## CCV Fee
 
@@ -80,9 +78,9 @@ Cross-Chain Verifiers (CCVs) may charge a fee for validating messages and genera
 
 - The default Chainlink-operated CCV does not currently charge a flat fee.
 - When a CCV does charge, the flat fee is paid in `feeToken`.
-- CCV `getFee()` also returns `gasForVerification` and `ccvPayloadSizeBytes`, which feed into the **executor execution gas estimate** above (not billed separately).
+- CCV `getFee()` also returns `gasForVerification` and `payloadSizeBytes`, which feed into the executor execution gas estimate above (not billed separately).
 
-Example: Fast Transfer of USDC may route through Circle's CCV, which can apply its own fee schedule.
+Example: FTF transfers of USDC may route through the CCTP Verifier, and CCTP can deduct its own fee from the transferred USDC.
 
 ## Token Pool Fee
 
@@ -91,11 +89,11 @@ Token issuers may configure fees for transferring their tokens across chains.
 These fees may vary based on:
 
 - Source/destination chain
-- Finality configuration (for example, faster-than-finality vs full finality)
+- Finality configuration (for example, FTF vs full finality)
 
 Token pool fees can be:
 
-- USD-denominated and paid in the feeToken
+- USD-denominated and paid in the `feeToken`
 - A percentage (bps) deducted from the transferred amount
 
 ## CCIP Fee
@@ -119,11 +117,11 @@ This fee compensates the infrastructure and services involved in message deliver
 
 ## Fee Tokens
 
-CCIP supports fee payments in LINK and in alternative assets, including blockchain-native gas tokens and their ERC-20 wrapped versions. The payment model for CCIP is designed to significantly reduce friction for users and quickly scale CCIP to more blockchains by supporting fee payments that originate across a multitude of blockchains over time.
+CCIP supports fee payments in LINK and in alternative assets, including blockchain-native gas tokens and their ERC-20 wrapped versions. The payment model for CCIP is designed to reduce friction for users and scale CCIP to more blockchains by supporting fee payments that originate on many blockchains.
 
 Fees collected in the `feeToken` are incremental to the amount being transferred.
 
-Example: If the fee is $0.50 and the transfer is $100, the user will pay $100.50 and receive $100.
+Example: If the fee is $0.50 and the transfer is $100, the user pays $100.50 and receives $100.
 
 You can see the fee tokens available for any chain:
 
@@ -136,7 +134,8 @@ Fees are calculated and paid at message submission (`ccipSend()`).
 
 Developers can estimate fees before sending a message using:
 
-- `getFee()` — returns total estimated fee
+- `getFee()`: returns total estimated fee
+- A V2 token pool's `getFee()`: returns the pool's fees for a transfer, including the bps rate deducted from the transferred amount
 
 This allows applications to preview costs and adjust parameters before execution.
 
@@ -148,15 +147,15 @@ After sending a message, fee details can be observed through:
 - CCIP APIs
 - CCIP Explorer
 
-These surfaces provide visibility into how fees are distributed across components.
+These surfaces show how fees are distributed across components.
 
 ## Designing for Cost Efficiency
 
-Cost efficient CCIP applications use the least expensive message configuration that still meets their security and execution requirements. The fee quote reflects the complete message, so decisions about payload size, destination gas, token transfers, finality, CCVs, and execution all affect the cost.
+Cost-efficient CCIP applications use the least expensive message configuration that still meets their security and execution requirements. The fee quote reflects the complete message, so decisions about payload size, destination gas, token transfers, finality, CCVs, and execution all affect the cost.
 
 ### Set a realistic destination gas limit
 
-The `gasLimit` in `extraArgs` is priced as par t of the fee quote, and unused gas is not refunded. Estimate the gas required by `ccipReceive()` under realistic destination-chain conditions, then include enough headroom for legitimate variations in execution. An arbitrarily high limit increases every quote, while a limit that is too low can cause destination execution to fail and require manual execution.
+The `gasLimit` in `extraArgs` is priced as part of the fee quote, and unused gas is not refunded. Estimate the gas required by `ccipReceive()` under realistic destination-chain conditions, then include enough headroom for legitimate variations in execution. An arbitrarily high limit increases every quote, while a limit that is too low can cause destination execution to fail and require manual execution.
 
 Test the receiver with representative payloads and contract states instead of estimating from its simplest execution path. Keep the gas limit configurable so that you can adjust it as the receiver changes. For additional guidance, see [setting `gasLimit`](/ccip/evm/concepts/best-practices#setting-gaslimit).
 

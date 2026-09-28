@@ -82794,13 +82794,13 @@ See [Verification Models](/ccip/concepts/ccvs/verification-models) for how each 
 # Trust & Responsibility Model
 Source: https://docs.chain.link/ccip/concepts/ccvs/trust-responsibility-model
 
-Cross-Chain Verifiers (CCVs) introduce a clear trust boundary between CCIP's default verification infrastructure and optional third-party or custom verification.
+Cross-Chain Verifiers (CCVs) introduce a trust boundary between CCIP's default verification infrastructure and optional third-party or custom verification.
 
 ## Default CCIP Verification
 
 For most integrations, CCIP's **CommitteeVerifier** provides verification without additional operator involvement. CCIP node operators run the offchain verifier network and Aggregator; CCIP governance maintains the onchain contracts.
 
-The default committee verifier includes **reorg quarantine** for faster-than-finality messages: when a source-chain reorg is detected, affected messages are held until the chain reaches finality. Bounded-risk guarantees for FTF transfers rely on this behavior.
+The default Committee Verifier includes **reorg quarantine** for faster-than-finality messages. When a source-chain reorg is detected, affected messages are held until the chain reaches finality. Bounded-risk guarantees for FTF transfers rely on this behavior.
 
 ## External CCV Operator Responsibilities
 
@@ -82816,7 +82816,7 @@ Operators of custom or third-party CCVs (outside CCIP's default CommitteeVerifie
 Application and token developers who specify CCV requirements share accountability:
 
 - **CCV risk assessment:** Evaluate the security model, uptime, and reorg-handling behavior of any CCV you require in messages or token transfers originating from your application or token pool.
-- **Reorg behavior:** Do not assume third-party CCVs provide the same reorg quarantine as CCIP's default committee verifier. A custom CCV without comparable reorg-handling logic may expose receivers to duplicate execution even when finality settings are conservative.
+- **Reorg behavior:** Do not assume third-party CCVs provide the same reorg quarantine as CCIP's default Committee Verifier. A custom CCV without comparable reorg-handling logic may expose receivers to duplicate execution even when finality settings are conservative.
 - **Configuration alignment:** CCV requirements from senders, token pools, and receivers are merged at execution time. A message can pass source-side checks but fail destination-side CCV or finality policy validation if configurations are misaligned.
 
 For the full shared-responsibility model across all CCIP participants, see [Service Responsibility](/ccip/concepts/service-responsibility).
@@ -84559,12 +84559,10 @@ The final quoted fee depends on the specific message configuration, including:
 | Token Pool Fee                  | Token-specific transfer costs and risk adjustments           | Token Pool Owner | USD flat fee and/or basis points of transferred amount    | `feeToken` and/or transferred token |
 | CCIP Network Fee (protocol fee) | Protocol-level service fee for the lane                      | CCIP             | USD flat fee                                              | Selected `feeToken`                 |
 
-Each component reflects a distinct part of the cross-chain lifecycle.
-
 Fee components are applied in two ways:
 
-- **Additive** fees are paid in the **feeToken** on top of the transfer amount
-- **Subtractive** fees (if configured by the token pool owner) are deducted from the **transferred** token amount
+- **Additive** fees are paid in the `feeToken` on top of the transfer amount
+- **Subtractive** fees (if configured by the token pool owner) are deducted from the transferred token amount
 
 ## Executor Fee
 
@@ -84584,12 +84582,12 @@ Where total destination gas is:
 
 ### Destination Gas Components
 
-- **Destination gas price** — CCIP maintains a cache of the destination chain's gas price on the source blockchain (in USD per gas unit). At quote time, this is converted into the selected `feeToken`.
-- **Gas limit (user-specified, extra args)** — The `gasLimit` set by the user in the message extra args. This is the maximum gas CCIP can use to call `ccipReceive()` on the receiver contract on the destination chain. Set to 0 for token-only transfers with no callback. The user is billed for the gas specified, not the gas actually used; unused gas is not refunded.
-- **Destination gas overhead** — Fixed base gas CCIP adds on top of the user-specified gas limit to run delivery on the destination chain.
-- **Gas for verification** — Gas required by any Cross-Chain Verifiers (CCVs) attached to the message. If no CCVs are used, this term is 0.
-- **Gas for token transfers** — Additional gas to deliver tokens on the destination chain. The value is set by the Token Transfer Fee config (per destination chain default / token-specific value on the FeeQuoter), or returned by the token pool when a V2 pool has custom fee config enabled. If there are no token transfers, this term is 0.
-- **Destination gas per payload byte** — A per-byte rate applied to the total payload size. Payload size includes the message `data` field plus message-encoding overhead (and any CCV or pool byte contributions). If there is no `data` (token-only), the data portion is 0 — but a small encoding overhead may still apply.
+- **Destination gas price**: CCIP maintains a cache of the destination chain's gas price on the source blockchain (in USD per gas unit). At quote time, this is converted into the selected `feeToken`.
+- **Gas limit (user-specified, extra args)**: The `gasLimit` set by the user in the message extra args. This is the maximum gas CCIP can use to call `ccipReceive()` on the receiver contract on the destination chain. Set to 0 for token-only transfers with no callback. The user is billed for the gas specified, not the gas actually used; unused gas is not refunded.
+- **Destination gas overhead**: Fixed base gas CCIP adds on top of the user-specified gas limit to run delivery on the destination chain.
+- **Gas for verification**: Gas required by any Cross-Chain Verifiers (CCVs) attached to the message. If no CCVs are used, this term is 0.
+- **Gas for token transfers**: Additional gas to deliver tokens on the destination chain. The value is set by the Token Transfer Fee config (per destination chain default / token-specific value on the FeeQuoter), or returned by the token pool when a V2 pool has custom fee config enabled. If there are no token transfers, this term is 0.
+- **Destination gas per payload byte**: A per-byte rate applied to the total payload size. Payload size includes the message `data` field plus message-encoding overhead (and any CCV or pool byte contributions). If there is no `data` (token-only), the data portion is 0, but a small encoding overhead still applies.
 
 ### Optional flat fee
 
@@ -84597,10 +84595,10 @@ If the executor is not `NO_EXECUTION_ADDRESS`, the executor may also charge a fl
 
 ### Important notes
 
-- **Gas limits** — The user-specified `gasLimit` in extra args controls the `ccipReceive()` budget. If set too low, execution may fail. If set too high, unused gas is not refunded.
-- **Execution constraints** — Gas limits and execution behavior may also be affected by [service limits](/ccip/evm/service-limits) and token pool configuration.
-- **Custom executors** — May charge an additional flat premium via `getFee()`. The default Chainlink-operated executor typically charges **no flat premium**, but destination execution gas cost still applies.
-- **No execution option** — If `NO_EXECUTION_ADDRESS` is specified, the executor flat fee is zero **and** execution gas cost is not added.
+- **Gas limits**: The user-specified `gasLimit` in extra args controls the `ccipReceive()` budget. If set too low, execution may fail. If set too high, unused gas is not refunded.
+- **Execution constraints**: Gas limits and execution behavior may also be affected by [service limits](/ccip/evm/service-limits) and token pool configuration.
+- **Custom executors**: May charge an additional flat premium via `getFee()`. The default Chainlink-operated executor typically charges no flat premium, but destination execution gas cost still applies.
+- **No execution option**: If `NO_EXECUTION_ADDRESS` is specified, the executor flat fee is zero and execution gas cost is not added.
 
 ## CCV Fee
 
@@ -84608,9 +84606,9 @@ Cross-Chain Verifiers (CCVs) may charge a fee for validating messages and genera
 
 - The default Chainlink-operated CCV does not currently charge a flat fee.
 - When a CCV does charge, the flat fee is paid in `feeToken`.
-- CCV `getFee()` also returns `gasForVerification` and `ccvPayloadSizeBytes`, which feed into the **executor execution gas estimate** above (not billed separately).
+- CCV `getFee()` also returns `gasForVerification` and `payloadSizeBytes`, which feed into the executor execution gas estimate above (not billed separately).
 
-Example: Fast Transfer of USDC may route through Circle's CCV, which can apply its own fee schedule.
+Example: FTF transfers of USDC may route through the CCTP Verifier, and CCTP can deduct its own fee from the transferred USDC.
 
 ## Token Pool Fee
 
@@ -84619,11 +84617,11 @@ Token issuers may configure fees for transferring their tokens across chains.
 These fees may vary based on:
 
 - Source/destination chain
-- Finality configuration (for example, faster-than-finality vs full finality)
+- Finality configuration (for example, FTF vs full finality)
 
 Token pool fees can be:
 
-- USD-denominated and paid in the feeToken
+- USD-denominated and paid in the `feeToken`
 - A percentage (bps) deducted from the transferred amount
 
 ## CCIP Fee
@@ -84647,11 +84645,11 @@ This fee compensates the infrastructure and services involved in message deliver
 
 ## Fee Tokens
 
-CCIP supports fee payments in LINK and in alternative assets, including blockchain-native gas tokens and their ERC-20 wrapped versions. The payment model for CCIP is designed to significantly reduce friction for users and quickly scale CCIP to more blockchains by supporting fee payments that originate across a multitude of blockchains over time.
+CCIP supports fee payments in LINK and in alternative assets, including blockchain-native gas tokens and their ERC-20 wrapped versions. The payment model for CCIP is designed to reduce friction for users and scale CCIP to more blockchains by supporting fee payments that originate on many blockchains.
 
 Fees collected in the `feeToken` are incremental to the amount being transferred.
 
-Example: If the fee is $0.50 and the transfer is $100, the user will pay $100.50 and receive $100.
+Example: If the fee is $0.50 and the transfer is $100, the user pays $100.50 and receives $100.
 
 You can see the fee tokens available for any chain:
 
@@ -84664,7 +84662,8 @@ Fees are calculated and paid at message submission (`ccipSend()`).
 
 Developers can estimate fees before sending a message using:
 
-- `getFee()` — returns total estimated fee
+- `getFee()`: returns total estimated fee
+- A V2 token pool's `getFee()`: returns the pool's fees for a transfer, including the bps rate deducted from the transferred amount
 
 This allows applications to preview costs and adjust parameters before execution.
 
@@ -84676,15 +84675,15 @@ After sending a message, fee details can be observed through:
 - CCIP APIs
 - CCIP Explorer
 
-These surfaces provide visibility into how fees are distributed across components.
+These surfaces show how fees are distributed across components.
 
 ## Designing for Cost Efficiency
 
-Cost efficient CCIP applications use the least expensive message configuration that still meets their security and execution requirements. The fee quote reflects the complete message, so decisions about payload size, destination gas, token transfers, finality, CCVs, and execution all affect the cost.
+Cost-efficient CCIP applications use the least expensive message configuration that still meets their security and execution requirements. The fee quote reflects the complete message, so decisions about payload size, destination gas, token transfers, finality, CCVs, and execution all affect the cost.
 
 ### Set a realistic destination gas limit
 
-The `gasLimit` in `extraArgs` is priced as par t of the fee quote, and unused gas is not refunded. Estimate the gas required by `ccipReceive()` under realistic destination-chain conditions, then include enough headroom for legitimate variations in execution. An arbitrarily high limit increases every quote, while a limit that is too low can cause destination execution to fail and require manual execution.
+The `gasLimit` in `extraArgs` is priced as part of the fee quote, and unused gas is not refunded. Estimate the gas required by `ccipReceive()` under realistic destination-chain conditions, then include enough headroom for legitimate variations in execution. An arbitrarily high limit increases every quote, while a limit that is too low can cause destination execution to fail and require manual execution.
 
 Test the receiver with representative payloads and contract states instead of estimating from its simplest execution path. Keep the gas limit configurable so that you can adjust it as the receiver changes. For additional guidance, see [setting `gasLimit`](/ccip/evm/concepts/best-practices#setting-gaslimit).
 
@@ -84739,7 +84738,7 @@ Manual execution means that any account can execute a CCIP message on the destin
 On CCIP's end, the default executor service automatically attempts to execute every message sent with the default executor. \
 The default executor applies to every message, unless:
 
-1. The sender chooses the no-execution option ([`Client.NO_EXECUTION_ADDRESS`](/ccip/evm/api-reference/v2.0.0/client#no_execution_address)), or,
+1. The sender chooses the no-execution option ([`Client.NO_EXECUTION_ADDRESS`](/ccip/evm/api-reference/v2.0.0/client#no_execution_address)), or
 2. Defines a custom executor at send time.
 
 This page focuses on `OffRamp.execute` for EVM destination chains in CCIP 2.0. Other destination-chain families are documented separately when their execution path differs.
@@ -84750,7 +84749,7 @@ This page focuses on `OffRamp.execute` for EVM destination chains in CCIP 2.0. O
 > Verifiers](/ccip/concepts/ccvs/overview), and [Message Lifecycle](/ccip/concepts/message-lifecycle) pages for the
 > components used here.
 
-The flowchart below displays the process of a cross-chain transaction, detailing the steps involved in the manual execution:
+The flowchart below shows the steps of a cross-chain transaction, including manual execution:
 
 ![Chainlink CCIP manual execution flowchart](/images/ccip/manual-execution-v2.png)
 
@@ -84758,10 +84757,10 @@ The flowchart below displays the process of a cross-chain transaction, detailing
 
 A message can require manual execution from two different onchain states:
 
-- `UNTOUCHED` - the message has not run on the destination chain.
-- `FAILURE` - execution ran and reverted inside the OffRamp's protected execution path.
+- `UNTOUCHED`: the message has not run on the destination chain.
+- `FAILURE`: execution ran and reverted inside the OffRamp's protected execution path.
 
-This distinction changes the remedy. A message at `UNTOUCHED` has not run yet; it needs a first destination-chain submission. A message at `FAILURE` already ran and must be retried after the underlying issue is fixed.
+A message at `UNTOUCHED` has not run yet; it needs a first destination-chain submission. A message at `FAILURE` already ran and must be retried after the underlying issue is fixed.
 
 | Cause                                   | Onchain state | What happened                                                                                                                             |
 | :-------------------------------------- | :------------ | :---------------------------------------------------------------------------------------------------------------------------------------- |
@@ -84794,10 +84793,10 @@ Start by reading [`OffRamp.getExecutionState(messageId)`](/ccip/evm/api-referenc
 
 The [CCIP API](https://docs.chain.link/ccip/tools/api) exposes the execution and verifier fields that usually explain why a message has not executed. For a given message ID, `GET /v2/messages/{messageId}` returns fields such as:
 
-- `status` - the overall message status.
-- `executor.status` - the executor service view.
-- `verifiers` - one entry per CCV, including `isRequired`, `status`, and `verification.data`.
-- `readyForManualExecution` - a convenience field that can be `false` even when a message is recoverable by direct execution.
+- `status`: the overall message status.
+- `executor.status`: the executor service view.
+- `verifiers`: one entry per CCV, including `isRequired`, `status`, and `verification.data`.
+- `readyForManualExecution`: a convenience field that can be `false` even when a message is recoverable by direct execution.
 
 Use `verifiers` and `executor.status` as the main diagnostic signals. A verifier entry with `isRequired: null` and `status: UNKNOWN` usually points to a verifier that the Indexer does not carry.
 
@@ -84820,7 +84819,7 @@ ccip-cli show 0xSourceTxHash \
   --json
 ```
 
-When the input is a 32-byte hex string, the CLI races both resolution paths concurrently and uses whichever resolves first, so you do not have to declare which form you are passing. The command returns API status, verifier data, and destination-chain receipt state in one view. See the [show command reference](https://docs.chain.link/ccip/tools/cli/show) for details.
+When the input is a 32-byte hex string, the CLI races both resolution paths and uses whichever resolves first, so you do not have to declare which form you are passing. The command returns API status, verifier data, and destination-chain receipt state in one view. See the [show command reference](https://docs.chain.link/ccip/tools/cli/show) for details.
 
 ## Executing a Message
 
@@ -84835,12 +84834,12 @@ function execute(
 ) external
 ```
 
-| Parameter          | Description                                                                                                                                                                                                                                                       |
-| :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `encodedMessage`   | The serialized CCIP 2.0 message. The message ID is `keccak256(encodedMessage)`.                                                                                                                                                                                   |
-| `ccvs`             | CCV resolver addresses that correspond to the submitted verifier results. Use [`getCCVsForMessage(encodedMessage)`](/ccip/evm/api-reference/v2.0.0/offramp#getccvsformessage) to inspect the required set before submitting.                                      |
-| `verifierResults`  | CCV-specific proof bytes, one entry per CCV. The array length must match `ccvs`. For the Committee Verifier, this is the packed quorum signature result. Additional CCVs define their own proof format.                                                           |
-| `gasLimitOverride` | `0` uses the message's original receiver callback gas limit. A non-zero value must be greater than or equal to the message's `ccipReceiveGasLimit`. The override applies only to the receiver callback, not to token handling or the outer transaction gas limit. |
+| Parameter          | Description                                                                                                                                                                                                                  |
+| :----------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `encodedMessage`   | The serialized CCIP 2.0 message. The message ID is `keccak256(encodedMessage)`.                                                                                                                                              |
+| `ccvs`             | CCV resolver addresses that correspond to the submitted verifier results. Use [`getCCVsForMessage(encodedMessage)`](/ccip/evm/api-reference/v2.0.0/offramp#getccvsformessage) to inspect the required set before submitting. |
+| `verifierResults`  | CCV-specific proof bytes, one entry per CCV. The array length must match `ccvs`. For the Committee Verifier, this is the packed quorum signature result. Additional CCVs define their own proof format.                      |
+| `gasLimitOverride` | `0` uses the message's original receiver callback gas limit. A non-zero value must be greater than or equal to the message's `ccipReceiveGasLimit`.                                                                          |
 
 Before submitting, confirm that `keccak256(encodedMessage)` equals the message ID you intend to execute.
 
@@ -84854,7 +84853,7 @@ Before submitting, confirm that `keccak256(encodedMessage)` equals the message I
 
 ![Chainlink CCIP manual execution flowchart](/images/ccip/manual-execution-v2-inputs-flow.png)
 
-To call `execute`, you need the encoded message and one verifier result for each required CCV. The fetch path depends on whether the required CCVs are available through the CCIP Indexer.
+To call `execute`, you need the encoded message and one verifier result for each required CCV (plus enough optional CCVs to meet the receiver's threshold). The fetch path depends on whether the required CCVs are available through the CCIP Indexer.
 
 ### CCV Data Available Through the CCIP API
 
@@ -84866,10 +84865,10 @@ GET https://api.ccip.chain.link/v2/messages/{messageId}/execution-inputs
 
 The `ExecutionInputsV2` response includes:
 
-- `encodedMessage` - the message bytes to pass to `execute`.
-- `verifierAddresses` - the CCV resolver addresses.
-- `ccvData` - the verifier results to pass as `verifierResults`.
-- `verificationComplete` - whether the Indexer has collected all verifier data it knows about.
+- `encodedMessage`: the message bytes to pass to `execute`.
+- `verifierAddresses`: the CCV resolver addresses.
+- `ccvData`: the verifier results to pass as `verifierResults`.
+- `verificationComplete`: whether the Indexer has collected all verifier data it knows about.
 
 `verificationComplete` is an Indexer signal, not an onchain readiness guarantee. If a required verifier is outside the Indexer, this field can remain `false` even after the message is executable with externally fetched verifier data.
 
@@ -84879,11 +84878,11 @@ The [CCIP SDK](https://docs.chain.link/ccip/tools/sdk) and [CCIP CLI](https://do
 
 If a required CCV is not onboarded in the Indexer, the execution-inputs endpoint returns only the verifier data it can see. Fetch the missing attestation from that CCV's provider, then pass it in the matching `verifierResults` entry.
 
-Some verifier implementations expose `getStorageLocations()` as a hint for where offchain proof data can be retrieved. A verifier is not required to populate it, so use the verifier provider's documentation for the exact proof format and retrieval path.
+Verifier implementations expose `getStorageLocations()` as a hint for where offchain proof data can be retrieved. A verifier is not required to populate it, so use the verifier provider's documentation for the exact proof format and retrieval path.
 
 ## Trigger Manual Execution
 
-The CCIP explorer, SDK, CLI, and direct contract calls all submit the same OffRamp transaction. The difference is how much of the input-fetching and transaction assembly each path handles for you.
+The CCIP Explorer, SDK, CLI, and direct contract calls all submit the same OffRamp transaction. The difference is how much of the input-fetching and transaction assembly each path handles for you.
 
 ### CCIP Explorer
 
@@ -84913,7 +84912,7 @@ console.log("Execution tx:", execution.log.transactionHash)
 
 If `gasLimit` is omitted, the SDK estimates receiver execution and sends an override only when the estimate is higher than the message's original `ccipReceiveGasLimit`. To keep the original callback gas limit explicitly, pass `gasLimit: 0`.
 
-Operating without the CCIP API (`apiClient: null`) is not supported for v2 messages that still need CCV attestations. The attestations live offchain and cannot be reconstructed from source-chain logs alone.
+Operating without the CCIP API (`apiClient: null`) is not supported for CCIP 2.0 messages that still need CCV attestations. The attestations live offchain and cannot be reconstructed from source-chain logs alone.
 
 ### CCIP CLI
 
@@ -84936,7 +84935,7 @@ ccip-cli manual-exec 0xSourceTxHash \
   --wallet foundry:$FOUNDRY_KEYSTORE_NAME
 ```
 
-When the input is a 32-byte hex string, the CLI races both resolution paths concurrently and uses whichever resolves first, so you do not have to declare which form you are passing. Use `--no-api` to force transaction-hash resolution via RPCs only.
+When the input is a 32-byte hex string, the CLI races both resolution paths and uses whichever resolves first, so you do not have to declare which form you are passing. Use `--no-api` to force transaction-hash resolution via RPCs only.
 
 To override the receiver callback gas limit for the retry:
 
@@ -84967,15 +84966,15 @@ This path is useful for non-TypeScript tooling or custom execution systems. The 
 
 Use this table as a first pass when an execution attempt does not reach `SUCCESS`.
 
-| Symptom                                                 | Likely cause                                                | Action                                                                                 |
-| :------------------------------------------------------ | :---------------------------------------------------------- | :------------------------------------------------------------------------------------- |
-| Message stays `UNTOUCHED`                               | No executor, missing Indexer data, expired retry window     | Fetch all required execution inputs and call `execute`.                                |
-| `RequiredCCVMissing`                                    | Submitted CCV list is incomplete                            | Call `getCCVsForMessage(encodedMessage)` and include each required CCV.                |
-| `TokenHandlingError`                                    | Pool reverted, token is unregistered, or rate limit applies | Fix the token or pool condition, then retry. Raising `gasLimitOverride` will not help. |
-| `ReceiverError` with empty revert data                  | Receiver likely ran out of gas                              | Retry with a higher receiver callback gas limit.                                       |
-| `ReceiverError` with non-empty revert data              | Receiver reverted with its own error                        | Decode the selector and fix the receiver condition.                                    |
-| `NotEnoughGasForCall` or `InsufficientGasForStaticCall` | Outer transaction gas is too low                            | Raise the transaction gas limit, not the callback gas override.                        |
-| `NoStateProgressMade`                                   | Retry from `FAILURE` failed again with no state progress    | Decode the nested error and fix the underlying issue before retrying.                  |
+| Symptom                                                 | Likely cause                                             | Action                                                                                 |
+| :------------------------------------------------------ | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| Message stays `UNTOUCHED`                               | No executor, missing Indexer data, expired retry window  | Fetch all required execution inputs and call `execute`.                                |
+| `RequiredCCVMissing`                                    | Submitted CCV list is incomplete                         | Call `getCCVsForMessage(encodedMessage)` and include each required CCV.                |
+| `TokenHandlingError`                                    | Pool or token reverted, or rate limit applies            | Fix the token or pool condition, then retry. Raising `gasLimitOverride` will not help. |
+| `ReceiverError` with empty revert data                  | Receiver likely ran out of gas                           | Retry with a higher receiver callback gas limit.                                       |
+| `ReceiverError` with non-empty revert data              | Receiver reverted with its own error                     | Decode the selector and fix the receiver condition.                                    |
+| `NotEnoughGasForCall` or `InsufficientGasForStaticCall` | Outer transaction gas is too low                         | Raise the transaction gas limit, not the callback gas override.                        |
+| `NoStateProgressMade`                                   | Retry from `FAILURE` failed again with no state progress | Decode the nested error and fix the underlying issue before retrying.                  |
 
 After every execution attempt, re-read `getExecutionState(messageId)`. A transaction receipt with status `1` can still record `FAILURE` inside the OffRamp. The API and CLI show the final state only; to see an earlier failure followed by a later success, inspect `ExecutionStateChanged` events on the destination OffRamp.
 
@@ -84995,34 +84994,35 @@ The OffRamp and its dependencies can surface the following errors during manual 
 | :----------------------------------------------------- | :----------- | :------------------------------------------------------------------------------------- |
 | `ReentrancyGuardReentrantCall()`                       | `0x3ee5aeb5` | `execute` was called from inside `ccipReceive` or a pool callback.                     |
 | `InvalidEncodingVersion(uint8)`                        | `0x789d3263` | The encoded message uses an unsupported codec version.                                 |
-| `InvalidDataLength(uint8)`                             | `0xb4205b42` | The encoded message is truncated.                                                      |
+| `InvalidDataLength(uint8)`                             | `0xb4205b42` | The encoded message is truncated or has extra bytes.                                   |
 | `CursedByRMN(uint64)`                                  | `0xfdbd6a72` | RMN curse is active. Retry after the curse is lifted.                                  |
 | `SourceChainNotEnabled(uint64)`                        | `0xed053c59` | The source chain is disabled on this OffRamp.                                          |
 | `InvalidOnRamp(bytes)`                                 | `0xa50bd147` | The source OnRamp is not allowlisted.                                                  |
 | `InvalidOffRamp(address,bytes)`                        | `0x55216e31` | The message is addressed to a different OffRamp.                                       |
 | `InvalidMessageDestChainSelector(uint64)`              | `0x38432a22` | The message is addressed to a different destination chain.                             |
 | `InvalidVerifierResultsLength(uint256,uint256)`        | `0x88f80aa2` | `ccvs.length` and `verifierResults.length` differ.                                     |
-| `InvalidEVMAddress(bytes)`                             | `0x8d666f60` | A receiver or destination token field is not a 20-byte EVM address.                    |
+| `InvalidEVMAddress(bytes)`                             | `0x8d666f60` | The receiver field is not a 20-byte EVM address.                                       |
 | `InvalidGasLimitOverride(uint32,uint32)`               | `0xdf2964df` | The override is lower than the message's original `ccipReceiveGasLimit`.               |
 | `SkippedAlreadyExecutedMessage(bytes32,uint64,uint64)` | `0x5e570e51` | The message is already `SUCCESS` or `IN_PROGRESS`.                                     |
 | `InsufficientGasToCompleteTx(bytes4)`                  | `0x2882569d` | The transaction does not provide enough gas for the OffRamp to complete state updates. |
 
 ### Phase B: Recorded as FAILURE
 
-| Error                                          | Selector     | Meaning                                                                                                 |
-| :--------------------------------------------- | :----------- | :------------------------------------------------------------------------------------------------------ |
-| `InvalidOptionalThreshold(uint8,uint256)`      | `0x3d9055a7` | Receiver CCV configuration is invalid.                                                                  |
-| `DuplicateCCVNotAllowed(address)`              | `0xa1726e40` | Receiver CCV configuration includes duplicates.                                                         |
-| `InvalidRequestedFinality(bytes4,bytes4)`      | `0xdf63778f` | The message requested a finality mode the receiver does not accept.                                     |
-| `InvalidNumberOfTokens(uint256)`               | `0x83d52669` | The decoded token array count is invalid for this execution path.                                       |
-| `RequiredCCVMissing(address)`                  | `0x518d2ac5` | A required CCV is missing from the submitted CCV list.                                                  |
-| `OptionalCCVQuorumNotReached(uint256,uint256)` | `0x403b06ae` | The receiver's optional CCV threshold was not met.                                                      |
-| `InboundImplementationNotFound(address,bytes)` | `0x2665cea2` | The CCV resolver could not map the verifier result to an inbound implementation. Check the version tag. |
-| `NotACompatiblePool(address)`                  | `0xae9b4ce9` | The token is not registered or its pool does not implement a compatible interface.                      |
-| `TokenHandlingError(address,bytes)`            | `0x9fe2f95a` | Token handling reverted. The error names the token.                                                     |
-| `NotEnoughGasForCall()`                        | `0x37c3be29` | The receiver call failed the EIP-150 63/64 gas check. Raise outer transaction gas.                      |
-| `InsufficientGasForStaticCall()`               | `0xea7f4b12` | An ERC-165 interface probe on the token path did not have enough gas. Raise outer transaction gas.      |
-| `ReceiverError(bytes)`                         | `0x0a8d6e8c` | The receiver callback reverted. Decode the inner bytes when present.                                    |
+| Error                                          | Selector     | Meaning                                                                                                        |
+| :--------------------------------------------- | :----------- | :------------------------------------------------------------------------------------------------------------- |
+| `InvalidEVMAddress(bytes)`                     | `0x8d666f60` | A destination token or token receiver field is not a 20-byte EVM address.                                      |
+| `InvalidOptionalThreshold(uint8,uint256)`      | `0x3d9055a7` | Receiver CCV configuration is invalid.                                                                         |
+| `DuplicateCCVNotAllowed(address)`              | `0xa1726e40` | Receiver or pool CCV configuration includes duplicates.                                                        |
+| `InvalidRequestedFinality(bytes4,bytes4)`      | `0xdf63778f` | The message requested a finality mode the receiver does not accept.                                            |
+| `InvalidNumberOfTokens(uint256)`               | `0x83d52669` | The message carries more than one token transfer.                                                              |
+| `RequiredCCVMissing(address)`                  | `0x518d2ac5` | A required CCV is missing from the submitted CCV list.                                                         |
+| `OptionalCCVQuorumNotReached(uint256,uint256)` | `0x403b06ae` | The receiver's optional CCV threshold was not met.                                                             |
+| `InboundImplementationNotFound(address,bytes)` | `0x2665cea2` | The CCV resolver could not map the verifier result to an inbound implementation. Check the version tag.        |
+| `NotACompatiblePool(address)`                  | `0xae9b4ce9` | The token is not registered or its pool does not implement a compatible interface.                             |
+| `TokenHandlingError(address,bytes)`            | `0x9fe2f95a` | Token handling reverted. The error names the token.                                                            |
+| `NotEnoughGasForCall()`                        | `0x37c3be29` | The receiver call failed the EIP-150 63/64 gas check. Raise outer transaction gas.                             |
+| `InsufficientGasForStaticCall()`               | `0xea7f4b12` | An ERC-165 interface probe on the receiver or token pool did not have enough gas. Raise outer transaction gas. |
+| `ReceiverError(bytes)`                         | `0x0a8d6e8c` | The receiver callback reverted. Decode the inner bytes when present.                                           |
 
 ### Phase C: Retry From FAILURE
 
@@ -100881,13 +100881,13 @@ Before calling the router's `ccipSend` [function](/ccip/evm/api-reference/v2.0.0
 
 ## Verify source chain
 
-When implementing the `ccipReceive` [method](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive) in a contract residing on the destination chain, ensure to verify the source chain of the incoming CCIP message. This verification ensures that CCIP messages can only be received from trusted source chains.
+When implementing the `ccipReceive` [method](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive) in a contract residing on the destination chain, verify the source chain of the incoming CCIP message. This verification ensures that CCIP messages can only be received from trusted source chains.
 
 **Example**: For an example of how to verify the source chain, refer to the [Transfer Tokens with Data - Defensive](/ccip/evm/tutorials/application-developers/programmable-token-transfers-defensive#tutorial) example.
 
 ## Verify sender
 
-When implementing the `ccipReceive` [method](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive) in a contract residing on the destination chain, it's important to validate the sender of the incoming CCIP message. This check ensures that CCIP messages are received only from trusted sender addresses.
+When implementing the `ccipReceive` [method](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive) in a contract residing on the destination chain, validate the sender of the incoming CCIP message. This check ensures that CCIP messages are received only from trusted sender addresses.
 
 **Note**: Depending on your use case, this verification might not always be necessary.
 
@@ -100901,15 +100901,15 @@ When you implement the `ccipReceive` [method](/ccip/evm/api-reference/v2.0.0/cci
 
 ## Using `extraArgs`
 
-`extraArgs` is the CCIP message field that carries destination-side execution configuration.
+`extraArgs` is the CCIP message field that carries per-message configuration.
 Keep it mutable in production deployments so you can build it offchain and update it without redeploying, which lets your application adopt future CCIP upgrades without a contract migration.
 
 CCIP 2.0 accepts multiple `extraArgs` formats on EVM lanes. New integrations should use `ExtraArgsV3`. Existing v1.x-style applications can continue to send legacy formats: the OnRamp normalizes them internally before building the message.
 
 Supported formats:
 
-- **`ExtraArgsV3`** Recommended for new v2 integrations. Encodes Cross-Chain Verifiers (CCVs), executor, finality configuration, gas limit, token receiver, and token/executor args. See [`ExtraArgsCodec`](/ccip/evm/api-reference/v2.0.0/extra-args-codec) for encoding helpers.
-- **`GenericExtraArgsV2`** legacy. Only the `gasLimit` field is honored; `allowOutOfOrderExecution` is deprecated in v2.0. See [`GenericExtraArgsV2`](/ccip/evm/api-reference/v2.0.0/client#genericextraargsv2).
+- **`ExtraArgsV3`**: Recommended for new integrations. Encodes Cross-Chain Verifiers (CCVs), executor, finality configuration, gas limit, token receiver (non-EVM destinations only), and token/executor args. See [`ExtraArgsCodec`](/ccip/evm/api-reference/v2.0.0/extra-args-codec) for encoding helpers.
+- **`GenericExtraArgsV2`**: legacy. Only the `gasLimit` field is honored; `allowOutOfOrderExecution` is deprecated in CCIP 2.0. See [`GenericExtraArgsV2`](/ccip/evm/api-reference/v2.0.0/client#genericextraargsv2).
 
 ### Setting `gasLimit`
 
@@ -100919,7 +100919,7 @@ If the destination receiver is an externally owned account (a pure token transfe
 
 To estimate an accurate gas limit for your destination contract, consider the following options:
 
-- Leverage the destination-chain RPC by simulating `receiver.ccipReceive()` with [`eth_estimateGas`](https://ethereum.github.io/execution-apis/api-documentation/). See also the [Alchemy documentation](https://docs.alchemy.com/reference/eth-estimategas).
+- Use the destination-chain RPC to simulate `receiver.ccipReceive()` with [`eth_estimateGas`](https://ethereum.github.io/execution-apis/api-documentation/). See also the [Alchemy documentation](https://docs.alchemy.com/reference/eth-estimategas).
 - Conduct [Foundry gas tests](https://book.getfoundry.sh/forge/gas-tracking) against your receiver.
 - Use the [Hardhat gas reporter plugin](https://github.com/cgewecke/eth-gas-reporter).
 - Look up gas consumption of a comparable internal transaction using a blockchain explorer.
@@ -100928,15 +100928,15 @@ To estimate an accurate gas limit for your destination contract, consider the fo
 
 ## Decoupling CCIP Message Reception and Business Logic
 
-As a best practice, separate the reception of CCIP messages from the core business logic of the contract. Implement 'escape hatches' or fallback mechanisms to gracefully manage situations where the business logic encounters issues. To explore this concept further, refer to the [Defensive Example](/ccip/evm/tutorials/application-developers/programmable-token-transfers-defensive) guide.
+Separate the reception of CCIP messages from the core business logic of the contract. Implement 'escape hatches' or fallback mechanisms to handle failures in the business logic. For an example, refer to the [Defensive Example](/ccip/evm/tutorials/application-developers/programmable-token-transfers-defensive) guide.
 
 ## Evaluate the security and reliability of the networks that you use
 
-Although CCIP has been thoroughly reviewed and audited, inherent risks might still exist based on your use case, the blockchain networks where you deploy your contracts, and the network conditions on those blockchains.
+Although CCIP has been thoroughly reviewed and audited, risks might still exist based on your use case, the blockchain networks where you deploy your contracts, and the network conditions on those blockchains.
 
 ## Review and audit your code
 
-Before securing value with contracts that implement CCIP interfaces and routers, ensure that your code is secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/ccip-contact) before deploying your application to mainnet.
+Before securing value with contracts that implement CCIP interfaces and routers, ensure that your code is secure and reliable.
 
 ## Soak test your dApps
 
@@ -100946,11 +100946,11 @@ Be aware of the [Service Limits and Rate Limits for Supported Networks](/ccip/di
 
 When you build applications that depend on CCIP, include monitoring and safeguards to protect against the negative impact of extreme market events, possible malicious activity on your dApp, potential delays, and outages.
 
-Create your own monitoring alerts based on deviations from normal activity. This will notify you when potential issues occur so you can respond to them.
+Create your own monitoring alerts based on deviations from normal activity.
 
 ## Best Practices for Cross-Chain Token (CCT) Administration
 
-When managing your tokens and token pools, it's critical to follow best practices to ensure the security and integrity of your cross-chain operations. This includes proper handling of admin roles and safeguarding against unauthorized access.
+When you manage your tokens and token pools, handle admin roles carefully and guard against unauthorized access.
 
 ### Securely Manage Admin Roles
 
@@ -100966,7 +100966,7 @@ The **token admin** is responsible for configuring token pools across blockchain
 
 - **Limit Admin Privileges When Possible**: For example, instead of giving the full owner access to manage rate limits, consider assigning the **rate limit admin** role, which is specifically responsible for updating rate limits.
 
-- **Leverage Smart Contract Audits**: Ensure your tokens and token pools are audited and follow secure development practices.
+- **Get Smart Contract Audits**: Ensure your tokens and token pools are audited and follow secure development practices.
 
 ### Best Practices for Token Pool Owners and Rate Limit Admins
 
@@ -100978,26 +100978,26 @@ The **token admin** is responsible for configuring token pools across blockchain
 
 ## Best Practices for Liquidity Management
 
-Effective liquidity management is crucial for ensuring the smooth operation of token pools, especially in [**Lock and Release**](/ccip/evm/api-reference/v2.0.0/lock-release-token-pool) token pools. The most critical aspect is ensuring that the token pool has enough liquidity available when it is acting in **reception mode** (on the destination blockchain), allowing tokens to be released to the receiver. Failure to manage liquidity will result in a degraded user experience and can result in user funds being 'stuck' in transit.
+Token pools, especially [**Lock and Release**](/ccip/evm/api-reference/v2.0.0/lock-release-token-pool) token pools, need effective liquidity management to operate smoothly. The token pool must have enough liquidity when it acts in **reception mode** (on the destination blockchain) to release tokens to the receiver. Failure to manage liquidity will result in a degraded user experience and can result in user funds being 'stuck' in transit.
 
 ### Ensure Sufficient Liquidity
 
 When a `LockReleaseTokenPool` operates in **reception mode** (on the destination blockchain), it releases tokens held in escrow by its associated [`ERC20LockBox`](/ccip/evm/api-reference/v2.0.0/erc20-lockbox). The lockbox ***must*** hold sufficient liquidity to ensure that tokens can be released to the receiver. If the lockbox lacks liquidity, the release operation will fail and user funds will not be available on the destination blockchain until sufficient liquidity is replenished and manual execution is performed.
 
-- **Best Practice**: Estimate expected volume when preparing to add and manage liquidity to ensure sustainable operations.
+- **Best Practice**: Estimate expected volume when preparing to add and manage liquidity.
 - **Best Practice**: Regularly monitor the liquidity available in your lockbox and ensure that there is always enough liquidity to support the release of tokens to the receiver when the pool acts as the destination.
 
 ### Avoid Fragmented Liquidity with Multiple Issuing Blockchains
 
-Using a **Lock and Unlock** mechanism across multiple issuing blockchains can lead to fragmented liquidity, making it more difficult to maintain sufficient liquidity in each pool.
+Using a **Lock and Release** mechanism across multiple issuing blockchains can lead to fragmented liquidity, making it more difficult to maintain sufficient liquidity in each pool.
 
-- **Best Practice**: Where possible, avoid using the **Lock and Unlock** mechanism across multiple issuing blockchains. Fragmented liquidity increases operational overhead and complicates liquidity management.
+- **Best Practice**: Where possible, avoid using the **Lock and Release** mechanism across multiple issuing blockchains. Fragmented liquidity increases operational overhead and complicates liquidity management.
 
 ### Monitor Liquidity Health and Automate Alerts
 
-Monitoring the health of your lockbox liquidity is essential for ensuring the liveness of cross-chain transfers. Automated alerts can notify you if liquidity falls below a certain threshold, allowing you to take action before transfers fail.
+Automated alerts can notify you if your lockbox liquidity falls below a certain threshold, allowing you to take action before transfers fail.
 
-- **Best Practice**: Calculate the amount of time required to deplete your lockbox to various threshold levels (e.g., Low: 50% [Warning], Very Low [Critical] 30%) and utilize automated alerting and pre-defined operational procedures to ensure adequate preparedness to respond by replenishing the lockbox before users are impacted. For this calculation, be sure to assume users will utilize max capacity transfers paired with the token pool's refill rate.
+- **Best Practice**: Calculate the amount of time required to deplete your lockbox to various threshold levels (e.g., Low: 50% [Warning], Very Low: 30% [Critical]) and use automated alerting and pre-defined operational procedures so you can replenish the lockbox before users are impacted. For this calculation, assume users will use max capacity transfers paired with the token pool's refill rate.
 
 ### Use the Lockbox `deposit` and `withdraw` Functions Properly
 

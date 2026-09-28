@@ -25,7 +25,7 @@ Manual execution means that any account can execute a CCIP message on the destin
 On CCIP's end, the default executor service automatically attempts to execute every message sent with the default executor. \
 The default executor applies to every message, unless:
 
-1. The sender chooses the no-execution option ([`Client.NO_EXECUTION_ADDRESS`](/ccip/evm/api-reference/v2.0.0/client#no_execution_address)), or,
+1. The sender chooses the no-execution option ([`Client.NO_EXECUTION_ADDRESS`](/ccip/evm/api-reference/v2.0.0/client#no_execution_address)), or
 2. Defines a custom executor at send time.
 
 This page focuses on `OffRamp.execute` for EVM destination chains in CCIP 2.0. Other destination-chain families are documented separately when their execution path differs.
@@ -38,7 +38,7 @@ This page focuses on `OffRamp.execute` for EVM destination chains in CCIP 2.0. O
 
 <br />
 
-The flowchart below displays the process of a cross-chain transaction, detailing the steps involved in the manual execution:
+The flowchart below shows the steps of a cross-chain transaction, including manual execution:
 
 <ClickToZoom src="/images/ccip/manual-execution-v2.png" alt="Chainlink CCIP manual execution flowchart" />
 
@@ -46,10 +46,10 @@ The flowchart below displays the process of a cross-chain transaction, detailing
 
 A message can require manual execution from two different onchain states:
 
-- `UNTOUCHED` - the message has not run on the destination chain.
-- `FAILURE` - execution ran and reverted inside the OffRamp's protected execution path.
+- `UNTOUCHED`: the message has not run on the destination chain.
+- `FAILURE`: execution ran and reverted inside the OffRamp's protected execution path.
 
-This distinction changes the remedy. A message at `UNTOUCHED` has not run yet; it needs a first destination-chain submission. A message at `FAILURE` already ran and must be retried after the underlying issue is fixed.
+A message at `UNTOUCHED` has not run yet; it needs a first destination-chain submission. A message at `FAILURE` already ran and must be retried after the underlying issue is fixed.
 
 | Cause                                   | Onchain state | What happened                                                                                                                             |
 | :-------------------------------------- | :------------ | :---------------------------------------------------------------------------------------------------------------------------------------- |
@@ -82,10 +82,10 @@ Start by reading [`OffRamp.getExecutionState(messageId)`](/ccip/evm/api-referenc
 
 The [CCIP API](https://docs.chain.link/ccip/tools/api) exposes the execution and verifier fields that usually explain why a message has not executed. For a given message ID, `GET /v2/messages/{messageId}` returns fields such as:
 
-- `status` - the overall message status.
-- `executor.status` - the executor service view.
-- `verifiers` - one entry per CCV, including `isRequired`, `status`, and `verification.data`.
-- `readyForManualExecution` - a convenience field that can be `false` even when a message is recoverable by direct execution.
+- `status`: the overall message status.
+- `executor.status`: the executor service view.
+- `verifiers`: one entry per CCV, including `isRequired`, `status`, and `verification.data`.
+- `readyForManualExecution`: a convenience field that can be `false` even when a message is recoverable by direct execution.
 
 Use `verifiers` and `executor.status` as the main diagnostic signals. A verifier entry with `isRequired: null` and `status: UNKNOWN` usually points to a verifier that the Indexer does not carry.
 
@@ -108,7 +108,7 @@ ccip-cli show 0xSourceTxHash \
   --json
 ```
 
-When the input is a 32-byte hex string, the CLI races both resolution paths concurrently and uses whichever resolves first, so you do not have to declare which form you are passing. The command returns API status, verifier data, and destination-chain receipt state in one view. See the [show command reference](https://docs.chain.link/ccip/tools/cli/show) for details.
+When the input is a 32-byte hex string, the CLI races both resolution paths and uses whichever resolves first, so you do not have to declare which form you are passing. The command returns API status, verifier data, and destination-chain receipt state in one view. See the [show command reference](https://docs.chain.link/ccip/tools/cli/show) for details.
 
 ## Executing a Message
 
@@ -123,12 +123,12 @@ function execute(
 ) external
 ```
 
-| Parameter          | Description                                                                                                                                                                                                                                                       |
-| :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `encodedMessage`   | The serialized CCIP 2.0 message. The message ID is `keccak256(encodedMessage)`.                                                                                                                                                                                   |
-| `ccvs`             | CCV resolver addresses that correspond to the submitted verifier results. Use [`getCCVsForMessage(encodedMessage)`](/ccip/evm/api-reference/v2.0.0/offramp#getccvsformessage) to inspect the required set before submitting.                                      |
-| `verifierResults`  | CCV-specific proof bytes, one entry per CCV. The array length must match `ccvs`. For the Committee Verifier, this is the packed quorum signature result. Additional CCVs define their own proof format.                                                           |
-| `gasLimitOverride` | `0` uses the message's original receiver callback gas limit. A non-zero value must be greater than or equal to the message's `ccipReceiveGasLimit`. The override applies only to the receiver callback, not to token handling or the outer transaction gas limit. |
+| Parameter          | Description                                                                                                                                                                                                                  |
+| :----------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `encodedMessage`   | The serialized CCIP 2.0 message. The message ID is `keccak256(encodedMessage)`.                                                                                                                                              |
+| `ccvs`             | CCV resolver addresses that correspond to the submitted verifier results. Use [`getCCVsForMessage(encodedMessage)`](/ccip/evm/api-reference/v2.0.0/offramp#getccvsformessage) to inspect the required set before submitting. |
+| `verifierResults`  | CCV-specific proof bytes, one entry per CCV. The array length must match `ccvs`. For the Committee Verifier, this is the packed quorum signature result. Additional CCVs define their own proof format.                      |
+| `gasLimitOverride` | `0` uses the message's original receiver callback gas limit. A non-zero value must be greater than or equal to the message's `ccipReceiveGasLimit`.                                                                          |
 
 Before submitting, confirm that `keccak256(encodedMessage)` equals the message ID you intend to execute.
 
@@ -142,7 +142,7 @@ Before submitting, confirm that `keccak256(encodedMessage)` equals the message I
 
 <ClickToZoom src="/images/ccip/manual-execution-v2-inputs-flow.png" alt="Chainlink CCIP manual execution flowchart" />
 
-To call `execute`, you need the encoded message and one verifier result for each required CCV. The fetch path depends on whether the required CCVs are available through the CCIP Indexer.
+To call `execute`, you need the encoded message and one verifier result for each required CCV (plus enough optional CCVs to meet the receiver's threshold). The fetch path depends on whether the required CCVs are available through the CCIP Indexer.
 
 ### CCV Data Available Through the CCIP API
 
@@ -154,10 +154,10 @@ GET https://api.ccip.chain.link/v2/messages/{messageId}/execution-inputs
 
 The `ExecutionInputsV2` response includes:
 
-- `encodedMessage` - the message bytes to pass to `execute`.
-- `verifierAddresses` - the CCV resolver addresses.
-- `ccvData` - the verifier results to pass as `verifierResults`.
-- `verificationComplete` - whether the Indexer has collected all verifier data it knows about.
+- `encodedMessage`: the message bytes to pass to `execute`.
+- `verifierAddresses`: the CCV resolver addresses.
+- `ccvData`: the verifier results to pass as `verifierResults`.
+- `verificationComplete`: whether the Indexer has collected all verifier data it knows about.
 
 `verificationComplete` is an Indexer signal, not an onchain readiness guarantee. If a required verifier is outside the Indexer, this field can remain `false` even after the message is executable with externally fetched verifier data.
 
@@ -167,11 +167,11 @@ The [CCIP SDK](https://docs.chain.link/ccip/tools/sdk) and [CCIP CLI](https://do
 
 If a required CCV is not onboarded in the Indexer, the execution-inputs endpoint returns only the verifier data it can see. Fetch the missing attestation from that CCV's provider, then pass it in the matching `verifierResults` entry.
 
-Some verifier implementations expose `getStorageLocations()` as a hint for where offchain proof data can be retrieved. A verifier is not required to populate it, so use the verifier provider's documentation for the exact proof format and retrieval path.
+Verifier implementations expose `getStorageLocations()` as a hint for where offchain proof data can be retrieved. A verifier is not required to populate it, so use the verifier provider's documentation for the exact proof format and retrieval path.
 
 ## Trigger Manual Execution
 
-The CCIP explorer, SDK, CLI, and direct contract calls all submit the same OffRamp transaction. The difference is how much of the input-fetching and transaction assembly each path handles for you.
+The CCIP Explorer, SDK, CLI, and direct contract calls all submit the same OffRamp transaction. The difference is how much of the input-fetching and transaction assembly each path handles for you.
 
 ### CCIP Explorer
 
@@ -201,7 +201,7 @@ console.log("Execution tx:", execution.log.transactionHash)
 
 If `gasLimit` is omitted, the SDK estimates receiver execution and sends an override only when the estimate is higher than the message's original `ccipReceiveGasLimit`. To keep the original callback gas limit explicitly, pass `gasLimit: 0`.
 
-Operating without the CCIP API (`apiClient: null`) is not supported for v2 messages that still need CCV attestations. The attestations live offchain and cannot be reconstructed from source-chain logs alone.
+Operating without the CCIP API (`apiClient: null`) is not supported for CCIP 2.0 messages that still need CCV attestations. The attestations live offchain and cannot be reconstructed from source-chain logs alone.
 
 ### CCIP CLI
 
@@ -224,7 +224,7 @@ ccip-cli manual-exec 0xSourceTxHash \
   --wallet foundry:$FOUNDRY_KEYSTORE_NAME
 ```
 
-When the input is a 32-byte hex string, the CLI races both resolution paths concurrently and uses whichever resolves first, so you do not have to declare which form you are passing. Use `--no-api` to force transaction-hash resolution via RPCs only.
+When the input is a 32-byte hex string, the CLI races both resolution paths and uses whichever resolves first, so you do not have to declare which form you are passing. Use `--no-api` to force transaction-hash resolution via RPCs only.
 
 To override the receiver callback gas limit for the retry:
 
@@ -255,15 +255,15 @@ This path is useful for non-TypeScript tooling or custom execution systems. The 
 
 Use this table as a first pass when an execution attempt does not reach `SUCCESS`.
 
-| Symptom                                                 | Likely cause                                                | Action                                                                                 |
-| :------------------------------------------------------ | :---------------------------------------------------------- | :------------------------------------------------------------------------------------- |
-| Message stays `UNTOUCHED`                               | No executor, missing Indexer data, expired retry window     | Fetch all required execution inputs and call `execute`.                                |
-| `RequiredCCVMissing`                                    | Submitted CCV list is incomplete                            | Call `getCCVsForMessage(encodedMessage)` and include each required CCV.                |
-| `TokenHandlingError`                                    | Pool reverted, token is unregistered, or rate limit applies | Fix the token or pool condition, then retry. Raising `gasLimitOverride` will not help. |
-| `ReceiverError` with empty revert data                  | Receiver likely ran out of gas                              | Retry with a higher receiver callback gas limit.                                       |
-| `ReceiverError` with non-empty revert data              | Receiver reverted with its own error                        | Decode the selector and fix the receiver condition.                                    |
-| `NotEnoughGasForCall` or `InsufficientGasForStaticCall` | Outer transaction gas is too low                            | Raise the transaction gas limit, not the callback gas override.                        |
-| `NoStateProgressMade`                                   | Retry from `FAILURE` failed again with no state progress    | Decode the nested error and fix the underlying issue before retrying.                  |
+| Symptom                                                 | Likely cause                                             | Action                                                                                 |
+| :------------------------------------------------------ | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| Message stays `UNTOUCHED`                               | No executor, missing Indexer data, expired retry window  | Fetch all required execution inputs and call `execute`.                                |
+| `RequiredCCVMissing`                                    | Submitted CCV list is incomplete                         | Call `getCCVsForMessage(encodedMessage)` and include each required CCV.                |
+| `TokenHandlingError`                                    | Pool or token reverted, or rate limit applies            | Fix the token or pool condition, then retry. Raising `gasLimitOverride` will not help. |
+| `ReceiverError` with empty revert data                  | Receiver likely ran out of gas                           | Retry with a higher receiver callback gas limit.                                       |
+| `ReceiverError` with non-empty revert data              | Receiver reverted with its own error                     | Decode the selector and fix the receiver condition.                                    |
+| `NotEnoughGasForCall` or `InsufficientGasForStaticCall` | Outer transaction gas is too low                         | Raise the transaction gas limit, not the callback gas override.                        |
+| `NoStateProgressMade`                                   | Retry from `FAILURE` failed again with no state progress | Decode the nested error and fix the underlying issue before retrying.                  |
 
 After every execution attempt, re-read `getExecutionState(messageId)`. A transaction receipt with status `1` can still record `FAILURE` inside the OffRamp. The API and CLI show the final state only; to see an earlier failure followed by a later success, inspect `ExecutionStateChanged` events on the destination OffRamp.
 
@@ -283,34 +283,35 @@ The OffRamp and its dependencies can surface the following errors during manual 
 | :----------------------------------------------------- | :----------- | :------------------------------------------------------------------------------------- |
 | `ReentrancyGuardReentrantCall()`                       | `0x3ee5aeb5` | `execute` was called from inside `ccipReceive` or a pool callback.                     |
 | `InvalidEncodingVersion(uint8)`                        | `0x789d3263` | The encoded message uses an unsupported codec version.                                 |
-| `InvalidDataLength(uint8)`                             | `0xb4205b42` | The encoded message is truncated.                                                      |
+| `InvalidDataLength(uint8)`                             | `0xb4205b42` | The encoded message is truncated or has extra bytes.                                   |
 | `CursedByRMN(uint64)`                                  | `0xfdbd6a72` | RMN curse is active. Retry after the curse is lifted.                                  |
 | `SourceChainNotEnabled(uint64)`                        | `0xed053c59` | The source chain is disabled on this OffRamp.                                          |
 | `InvalidOnRamp(bytes)`                                 | `0xa50bd147` | The source OnRamp is not allowlisted.                                                  |
 | `InvalidOffRamp(address,bytes)`                        | `0x55216e31` | The message is addressed to a different OffRamp.                                       |
 | `InvalidMessageDestChainSelector(uint64)`              | `0x38432a22` | The message is addressed to a different destination chain.                             |
 | `InvalidVerifierResultsLength(uint256,uint256)`        | `0x88f80aa2` | `ccvs.length` and `verifierResults.length` differ.                                     |
-| `InvalidEVMAddress(bytes)`                             | `0x8d666f60` | A receiver or destination token field is not a 20-byte EVM address.                    |
+| `InvalidEVMAddress(bytes)`                             | `0x8d666f60` | The receiver field is not a 20-byte EVM address.                                       |
 | `InvalidGasLimitOverride(uint32,uint32)`               | `0xdf2964df` | The override is lower than the message's original `ccipReceiveGasLimit`.               |
 | `SkippedAlreadyExecutedMessage(bytes32,uint64,uint64)` | `0x5e570e51` | The message is already `SUCCESS` or `IN_PROGRESS`.                                     |
 | `InsufficientGasToCompleteTx(bytes4)`                  | `0x2882569d` | The transaction does not provide enough gas for the OffRamp to complete state updates. |
 
 ### Phase B: Recorded as FAILURE
 
-| Error                                          | Selector     | Meaning                                                                                                 |
-| :--------------------------------------------- | :----------- | :------------------------------------------------------------------------------------------------------ |
-| `InvalidOptionalThreshold(uint8,uint256)`      | `0x3d9055a7` | Receiver CCV configuration is invalid.                                                                  |
-| `DuplicateCCVNotAllowed(address)`              | `0xa1726e40` | Receiver CCV configuration includes duplicates.                                                         |
-| `InvalidRequestedFinality(bytes4,bytes4)`      | `0xdf63778f` | The message requested a finality mode the receiver does not accept.                                     |
-| `InvalidNumberOfTokens(uint256)`               | `0x83d52669` | The decoded token array count is invalid for this execution path.                                       |
-| `RequiredCCVMissing(address)`                  | `0x518d2ac5` | A required CCV is missing from the submitted CCV list.                                                  |
-| `OptionalCCVQuorumNotReached(uint256,uint256)` | `0x403b06ae` | The receiver's optional CCV threshold was not met.                                                      |
-| `InboundImplementationNotFound(address,bytes)` | `0x2665cea2` | The CCV resolver could not map the verifier result to an inbound implementation. Check the version tag. |
-| `NotACompatiblePool(address)`                  | `0xae9b4ce9` | The token is not registered or its pool does not implement a compatible interface.                      |
-| `TokenHandlingError(address,bytes)`            | `0x9fe2f95a` | Token handling reverted. The error names the token.                                                     |
-| `NotEnoughGasForCall()`                        | `0x37c3be29` | The receiver call failed the EIP-150 63/64 gas check. Raise outer transaction gas.                      |
-| `InsufficientGasForStaticCall()`               | `0xea7f4b12` | An ERC-165 interface probe on the token path did not have enough gas. Raise outer transaction gas.      |
-| `ReceiverError(bytes)`                         | `0x0a8d6e8c` | The receiver callback reverted. Decode the inner bytes when present.                                    |
+| Error                                          | Selector     | Meaning                                                                                                        |
+| :--------------------------------------------- | :----------- | :------------------------------------------------------------------------------------------------------------- |
+| `InvalidEVMAddress(bytes)`                     | `0x8d666f60` | A destination token or token receiver field is not a 20-byte EVM address.                                      |
+| `InvalidOptionalThreshold(uint8,uint256)`      | `0x3d9055a7` | Receiver CCV configuration is invalid.                                                                         |
+| `DuplicateCCVNotAllowed(address)`              | `0xa1726e40` | Receiver or pool CCV configuration includes duplicates.                                                        |
+| `InvalidRequestedFinality(bytes4,bytes4)`      | `0xdf63778f` | The message requested a finality mode the receiver does not accept.                                            |
+| `InvalidNumberOfTokens(uint256)`               | `0x83d52669` | The message carries more than one token transfer.                                                              |
+| `RequiredCCVMissing(address)`                  | `0x518d2ac5` | A required CCV is missing from the submitted CCV list.                                                         |
+| `OptionalCCVQuorumNotReached(uint256,uint256)` | `0x403b06ae` | The receiver's optional CCV threshold was not met.                                                             |
+| `InboundImplementationNotFound(address,bytes)` | `0x2665cea2` | The CCV resolver could not map the verifier result to an inbound implementation. Check the version tag.        |
+| `NotACompatiblePool(address)`                  | `0xae9b4ce9` | The token is not registered or its pool does not implement a compatible interface.                             |
+| `TokenHandlingError(address,bytes)`            | `0x9fe2f95a` | Token handling reverted. The error names the token.                                                            |
+| `NotEnoughGasForCall()`                        | `0x37c3be29` | The receiver call failed the EIP-150 63/64 gas check. Raise outer transaction gas.                             |
+| `InsufficientGasForStaticCall()`               | `0xea7f4b12` | An ERC-165 interface probe on the receiver or token pool did not have enough gas. Raise outer transaction gas. |
+| `ReceiverError(bytes)`                         | `0x0a8d6e8c` | The receiver callback reverted. Decode the inner bytes when present.                                           |
 
 ### Phase C: Retry From FAILURE
 

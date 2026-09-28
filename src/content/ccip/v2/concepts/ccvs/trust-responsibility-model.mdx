@@ -7,13 +7,15 @@ metadata:
   excerpt: "ccip ccv trust responsibility model operator accountability custom verifier risk"
 ---
 
-Cross-Chain Verifiers (CCVs) introduce a clear trust boundary between CCIP's default verification infrastructure and optional third-party or custom verification.
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+Cross-Chain Verifiers (CCVs) introduce a trust boundary between CCIP's default verification infrastructure and optional third-party or custom verification.
 
 ## Default CCIP Verification
 
 For most integrations, CCIP's **CommitteeVerifier** provides verification without additional operator involvement. CCIP node operators run the offchain verifier network and Aggregator; CCIP governance maintains the onchain contracts.
 
-The default committee verifier includes **reorg quarantine** for faster-than-finality messages: when a source-chain reorg is detected, affected messages are held until the chain reaches finality. Bounded-risk guarantees for FTF transfers rely on this behavior.
+The default Committee Verifier includes **reorg quarantine** for faster-than-finality messages. When a source-chain reorg is detected, affected messages are held until the chain reaches finality. Bounded-risk guarantees for FTF transfers rely on this behavior.
 
 ## External CCV Operator Responsibilities
 
@@ -29,7 +31,7 @@ Operators of custom or third-party CCVs (outside CCIP's default CommitteeVerifie
 Application and token developers who specify CCV requirements share accountability:
 
 - **CCV risk assessment:** Evaluate the security model, uptime, and reorg-handling behavior of any CCV you require in messages or token transfers originating from your application or token pool.
-- **Reorg behavior:** Do not assume third-party CCVs provide the same reorg quarantine as CCIP's default committee verifier. A custom CCV without comparable reorg-handling logic may expose receivers to duplicate execution even when finality settings are conservative.
+- **Reorg behavior:** Do not assume third-party CCVs provide the same reorg quarantine as CCIP's default Committee Verifier. A custom CCV without comparable reorg-handling logic may expose receivers to duplicate execution even when finality settings are conservative.
 - **Configuration alignment:** CCV requirements from senders, token pools, and receivers are merged at execution time. A message can pass source-side checks but fail destination-side CCV or finality policy validation if configurations are misaligned.
 
 For the full shared-responsibility model across all CCIP participants, see [Service Responsibility](/ccip/concepts/service-responsibility).
@@ -48,3 +50,5 @@ For the full shared-responsibility model across all CCIP participants, see [Serv
 - [Verification Models](/ccip/concepts/ccvs/verification-models)
 - [CCV Interfaces & Guarantees](/ccip/concepts/ccvs/interface-guarantees)
 - [Service Responsibility](/ccip/concepts/service-responsibility)
+
+<CcipCommon callout="conceptualDisclaimer" />
