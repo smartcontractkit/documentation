@@ -83820,106 +83820,108 @@ Different blockchains use different consensus mechanisms, which leads to differe
 
 Blockchain finality falls into two broad categories:
 
-- **Probabilistic finality** — commonly used by Proof-of-Work chains (e.g., Bitcoin). A transaction becomes more difficult to revert as more blocks are built on top of it. Exchanges and cross-chain systems typically handle this type of finality with N-confirmation heuristics. Probabilistic finality is not the focus of this article.
-- **Deterministic finality** — commonly used by Proof-of-Stake chains (e.g., Ethereum) and most smart-contract chains integrated with Chainlink CCIP today. The rest of this article covers the different variants of deterministic finality.
+- **Probabilistic finality**: commonly used by Proof-of-Work chains (e.g., Bitcoin). A transaction becomes more difficult to revert as more blocks are built on top of it. Exchanges and cross-chain systems typically handle this type of finality with N-confirmation heuristics. Probabilistic finality is not the focus of this article.
+- **Deterministic finality**: commonly used by Proof-of-Stake chains (e.g., Ethereum) and most smart-contract chains integrated with Chainlink CCIP today. The rest of this article covers the different variants of deterministic finality.
 
-A useful framing for layer 2 chains (L2s) in particular is **soft finality vs. hard finality**: soft finality is what an offchain observer can reasonably trust through self-observation before the chain itself guarantees it; hard finality is the protocol-level guarantee itself.
+Layer 2 chains (L2s) have two layers of finality: **soft finality** and **hard finality**. Soft finality is what an offchain observer can reasonably trust through self-observation before the chain itself guarantees it. Hard finality is the protocol-level guarantee.
 
 ## Numbers at a Glance
 
-| Blockchain      | Type of Chain                                               | Finality Tag              | Estimated Time for Finality |
+The values below can change as supported blockchains and protocol implementations evolve.
+
+| Blockchain      | Type of Chain                                               | Finality Method           | Estimated Time for Finality |
 | --------------- | ----------------------------------------------------------- | ------------------------- | --------------------------- |
 | 0G              | Independent L1                                              | Finality tag              | 1 second                    |
-| AB Chain        | Independent L1                                              | Block Depth (20 blocks)   | \< 1 min                    |
-| Abstract        | Ethereum L2 — ZK Rollup                                     | Finality tag              | 20 mins                     |
-| ADI             | Ethereum L2 - zk Rollup                                     | Finality tag              | 10-13 mins                  |
-| Apechain        | Ethereum L3 — Optimistic Rollup                             | Finality tag              | 50 minutes                  |
-| Aptos           | Independent L1 — Non-EVM (Move, AptosBFT)                   | Instant finality          | \< 1 second                 |
-| Arbitrum        | Ethereum L2 — Optimistic Rollup                             | Finality tag              | 17 minutes                  |
+| AB Chain        | Independent L1                                              | Block depth (20 blocks)   | \< 1 min                    |
+| Abstract        | Ethereum L2 - ZK Rollup                                     | Finality tag              | 20 mins                     |
+| ADI             | Ethereum L2 - ZK Rollup                                     | Finality tag              | 10-13 mins                  |
+| Apechain        | Ethereum L3 - Optimistic Rollup                             | Finality tag              | 50 minutes                  |
+| Aptos           | Independent L1 - Non-EVM (Move, AptosBFT)                   | Instant finality          | \< 1 second                 |
+| Arbitrum        | Ethereum L2 - Optimistic Rollup                             | Finality tag              | 17 minutes                  |
 | Astar           | Independent L1                                              | Finality tag              | 35 seconds                  |
 | Avalanche       | Independent L1                                              | Finality tag              | \< 1 second                 |
-| Base            | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 18 minutes                  |
-| Berachain       | Independent L1                                              | Block Depth (10 blocks)   | 20 seconds                  |
-| BitLayer        | Bitcoin L2 — ZK Rollup                                      | Block depth (21 blocks)   | 1 minute                    |
-| BitTensor       | Independent L1 — Non-EVM                                    | Finality tag              | 24 seconds                  |
-| Blast           | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 20 minutes                  |
+| Base            | Ethereum L2 - Optimistic Rollup (OP Stack)                  | Finality tag              | 18 minutes                  |
+| Berachain       | Independent L1                                              | Block depth (10 blocks)   | 20 seconds                  |
+| BitLayer        | Bitcoin L2 - ZK Rollup                                      | Block depth (21 blocks)   | 1 minute                    |
+| BitTensor       | Independent L1 - Non-EVM                                    | Finality tag              | 24 seconds                  |
+| Blast           | Ethereum L2 - Optimistic Rollup (OP Stack)                  | Finality tag              | 20 minutes                  |
 | BNB Chain       | Independent L1                                              | Finality tag              | 5 seconds                   |
-| Bob             | Hybrid L2 — Optimistic Rollup                               | Finality tag              | 2 hours                     |
-| B²              | Bitcoin L2 — ZK Rollup                                      | Finality tag              | 20 minutes                  |
+| Bob             | Hybrid L2 - Optimistic Rollup                               | Finality tag              | 2 hours                     |
+| B²              | Bitcoin L2 - ZK Rollup                                      | Finality tag              | 20 minutes                  |
 | Botanix         | Bitcoin L2                                                  | Finality tag              | 5 seconds                   |
-| Celo            | Ethereum L2 — Optimistic Rollup                             | Finality tag              | \< 1 second                 |
+| Celo            | Ethereum L2 - Optimistic Rollup                             | Finality tag              | \< 1 second                 |
 | Core            | Independent L1                                              | Block depth (27 blocks)   | 1 minute                    |
 | Corn            | Bitcoin-aligned L2 (BTCN-based)                             | Finality tag              | 12 hours                    |
 | Creditcoin      | Independent L1                                              | Finality tag              |                             |
 | Cronos          | Independent L1                                              | Finality tag              | 1 second                    |
-| Cronos zkEVM    | Ethereum L2 — ZK Rollup (ZK Stack)                          | Finality tag              | 31 hours                    |
+| Cronos zkEVM    | Ethereum L2 - ZK Rollup (ZK Stack)                          | Finality tag              | 31 hours                    |
 | Edge            | Ethereum L2                                                 | Finality tag              | 18 mins                     |
 | Ethereum        | L1                                                          | Finality tag              | \~12.8 minutes              |
 | Etherlink       | Tezos L2                                                    | Block depth (100)         | 50 sec - 10 mins (variable) |
-| Fraxtal         | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 30 minutes                  |
+| Fraxtal         | Ethereum L2 - Optimistic Rollup (OP Stack)                  | Finality tag              | 30 minutes                  |
 | Gnosis          | Independent L1                                              | Finality tag              | 3 minutes                   |
-| Hashkey         | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 1 hour                      |
+| Hashkey         | Ethereum L2 - Optimistic Rollup (OP Stack)                  | Finality tag              | 1 hour                      |
 | Hedera          | Independent L1 (hashgraph + EVM)                            | Block depth (10 blocks)   |                             |
 | Hemi            | Modular L2                                                  | Finality tag              | 90 mins                     |
 | HyperEVM        | EVM execution layer of Hyperliquid L1                       | Finality tag              | 1 sec                       |
-| Ink             | Ethereum L2 — Optimistic Rollup (OP Stack, Kraken)          | Finality tag              | 2 hours                     |
-| Jovay           | Ethereum L2 — ZK Rollup                                     | Finality tag              | 20-30 mins                  |
-| Kaia            | Independent L1 — EVM-compatible                             | Finality tag              | 1 sec                       |
+| Ink             | Ethereum L2 - Optimistic Rollup (OP Stack, Kraken)          | Finality tag              | 2 hours                     |
+| Jovay           | Ethereum L2 - ZK Rollup                                     | Finality tag              | 20-30 mins                  |
+| Kaia            | Independent L1 - EVM-compatible                             | Finality tag              | 1 sec                       |
 | Katana          | Polygon L2                                                  | Finality tag              | \< 1 min                    |
-| Linea           | Ethereum L2 — ZK Rollup                                     | Block depth (600 blocks)  | 20 minutes                  |
-| Lens            | Ethereum L2 — ZK Rollup                                     | Finality tag              | 20 minutes                  |
-| Lisk            | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 20 minutes                  |
-| Mantle          | Ethereum L2 — Optimistic Rollup                             | Finality tag              | 28 minutes                  |
+| Linea           | Ethereum L2 - ZK Rollup                                     | Block depth (600 blocks)  | 20 minutes                  |
+| Lens            | Ethereum L2 - ZK Rollup                                     | Finality tag              | 20 minutes                  |
+| Lisk            | Ethereum L2 - Optimistic Rollup (OP Stack)                  | Finality tag              | 20 minutes                  |
+| Mantle          | Ethereum L2 - Optimistic Rollup                             | Finality tag              | 28 minutes                  |
 | MegaETH         | Ethereum L2                                                 | Finality tag              | 15 minutes                  |
-| Merlin          | Bitcoin L2 — ZK Rollup                                      | Block depth (1000)        | 50 minutes                  |
-| Mint            | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 25-30 minutes               |
+| Merlin          | Bitcoin L2 - ZK Rollup                                      | Block depth (1000)        | 50 minutes                  |
+| Mint            | Ethereum L2 - Optimistic Rollup (OP Stack)                  | Finality tag              | 25-30 minutes               |
 | Morph           | Ethereum L2                                                 | Block depth (10)          | 30 seconds                  |
 | Metal L2        | Ethereum L2                                                 | Finality tag              |                             |
-| Metis           | Ethereum L2 — Optimistic Rollup                             | Finality tag              | 2 hours                     |
-| Mind Network    | Ethereum L2 — FHE-focused                                   | Finality tag              | 1 hour                      |
-| Mode            | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 37 minutes                  |
+| Metis           | Ethereum L2 - Optimistic Rollup                             | Finality tag              | 2 hours                     |
+| Mind Network    | Ethereum L2 - FHE-focused                                   | Finality tag              | 1 hour                      |
+| Mode            | Ethereum L2 - Optimistic Rollup (OP Stack)                  | Finality tag              | 37 minutes                  |
 | Monad           | Independent L1                                              | Block depth (120 blocks)  | 48 seconds                  |
 | Neo X           | Independent L1                                              | Block depth (11 blocks)   | \< 1 minute                 |
 | Nexon (Henesys) | Independent L1                                              | Finality tag              |                             |
-| OP Mainnet      | Ethereum L2 — Optimistic Rollup                             | Finality tag              | 20 minutes                  |
-| opBNB           | BNB Chain L2 — Optimistic Rollup                            | Finality tag              | 1 minute                    |
+| OP Mainnet      | Ethereum L2 - Optimistic Rollup                             | Finality tag              | 20 minutes                  |
+| opBNB           | BNB Chain L2 - Optimistic Rollup                            | Finality tag              | 1 minute                    |
 | Pharos          | Independent L1                                              | Finality tag              | 1 second                    |
 | Polygon         | Ethereum sidechain                                          | Block depth (500 blocks)  | 17 minutes                  |
 | Plasma          | Independent L1                                              | Finality tag              | 1 second                    |
-| Plume           | Ethereum L2 — Optimistic Rollup                             | Finality tag              | 25 mins                     |
-| Robinhood       | Ethereum L2 — Optimistic Rollup                             | Finality tag              | 1 second                    |
+| Plume           | Ethereum L2 - Optimistic Rollup                             | Finality tag              | 25 mins                     |
+| Robinhood       | Ethereum L2 - Optimistic Rollup                             | Finality tag              | 1 second                    |
 | Rootstock       | Bitcoin sidechain                                           | Block depth (20 blocks)   | 5 - 10 mins                 |
 | Ronin           | Independent L1                                              | Finality tag              | 10 seconds                  |
-| Scroll          | Ethereum L2 — ZK Rollup (zkEVM)                             | Finality tag              | 1 hour                      |
+| Scroll          | Ethereum L2 - ZK Rollup (zkEVM)                             | Finality tag              | 1 hour                      |
 | Sei             | Independent L1                                              | Finality tag              | 1 second                    |
 | Solana          | Independent L1                                              | Finality tag              | \< 1 second                 |
-| Soneium         | Ethereum L2 — Optimistic Rollup                             | Finality tag              | 27 minutes                  |
+| Soneium         | Ethereum L2 - Optimistic Rollup                             | Finality tag              | 27 minutes                  |
 | Sonic           | Independent L1                                              | Block depth (10 blocks)   | 7 seconds                   |
 | Shibarium       | Ethereum sidechain                                          | Finality tag              | 1 minute                    |
 | Stable          | Independent L1                                              | Finality tag (1 block)    | 1 second                    |
-| Superseed       | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 20-30 minutes               |
-| Taiko           | Ethereum L2 — based ZK Rollup                               | Finality tag              | 17 mins                     |
-| Tac             | Independent L1 — EVM-compatible (TON-aligned)               | Block depth (10 blocks)   | 20-30 mins                  |
+| Superseed       | Ethereum L2 - Optimistic Rollup (OP Stack)                  | Finality tag              | 20-30 minutes               |
+| Taiko           | Ethereum L2 - based ZK Rollup                               | Finality tag              | 17 mins                     |
+| Tac             | Independent L1 - EVM-compatible (TON-aligned)               | Block depth (10 blocks)   | 20-30 mins                  |
 | Tempo           | Independent L1                                              | Finality tag (1 block)    | 1 second                    |
-| TON             | Independent L1 — Non-EVM                                    | Instant finality          | Instant finality            |
-| Unichain        | Ethereum L2 — Optimistic Rollup (OP Stack, Uniswap)         | Finality tag              | 24 minutes                  |
-| Wemix           | Independent L1 — EVM-compatible (gaming-focused PoS)        | Finality tag              | \< 1 second                 |
-| Worldchain      | Ethereum L2 — Optimistic Rollup (OP Stack, Worldcoin)       | Finality tag              | 40 minutes                  |
-| XLayer          | Ethereum L2 — ZK Rollup (OKX, Polygon CDK / zkEVM)          | Finality tag              | 1 hour                      |
-| XDC             | Independent L1 — EVM-compatible (XDPoS 2.0, hybrid)         | Block depth (32 blocks)   | \~ 1 minute                 |
-| Zircuit         | Ethereum L2 — ZK Rollup (zkEVM with sequencer-level checks) | Finality tag              | 21 minutes                  |
-| ZKsync          | Ethereum L2 — ZK Rollup (Era, ZK Stack)                     | Block depth (1200 blocks) | 20 minutes                  |
-| Zora            | Ethereum L2 — Optimistic Rollup (OP Stack)                  | Finality tag              | 25-30 minutes               |
+| TON             | Independent L1 - Non-EVM                                    | Instant finality          | Instant finality            |
+| Unichain        | Ethereum L2 - Optimistic Rollup (OP Stack, Uniswap)         | Finality tag              | 24 minutes                  |
+| Wemix           | Independent L1 - EVM-compatible (gaming-focused PoS)        | Finality tag              | \< 1 second                 |
+| Worldchain      | Ethereum L2 - Optimistic Rollup (OP Stack, Worldcoin)       | Finality tag              | 40 minutes                  |
+| XLayer          | Ethereum L2 - ZK Rollup (OKX, Polygon CDK / zkEVM)          | Finality tag              | 1 hour                      |
+| XDC             | Independent L1 - EVM-compatible (XDPoS 2.0, hybrid)         | Block depth (32 blocks)   | \~ 1 minute                 |
+| Zircuit         | Ethereum L2 - ZK Rollup (zkEVM with sequencer-level checks) | Finality tag              | 21 minutes                  |
+| ZKsync          | Ethereum L2 - ZK Rollup (Era, ZK Stack)                     | Block depth (1200 blocks) | 20 minutes                  |
+| Zora            | Ethereum L2 - Optimistic Rollup (OP Stack)                  | Finality tag              | 25-30 minutes               |
 
 ## Deterministic Finality on L1 PoA/PoS Chains
 
-Proof of Stake (PoS) and Proof of Authority (PoA) chains typically use Byzantine Fault Tolerant (BFT) consensus. Under the assumption that a sufficient share (usually 67%) of validators or stake is honest, finality guarantees hold.
+Proof of Stake (PoS) and Proof of Authority (PoA) chains typically use Byzantine Fault Tolerant (BFT) consensus. Finality guarantees hold as long as a sufficient share (usually 67%) of validators or stake is honest.
 
 **Ethereum (Casper FFG).** The first block of each epoch (\~6.4 min) is a checkpoint. Validators vote on (source → target) checkpoint pairs. When ≥2/3 of staked ETH votes for a pair, the *target* becomes *justified*; the *source* becomes *finalized* once it has a justified descendant. Under normal conditions, a block is finalized roughly two epochs (\~12.8 min) after inclusion. Reverting a finalized checkpoint requires conflicting votes that get slashed, costing attackers at least one-third of total staked ETH.
 
 **CometBFT (Cosmos Hub and others).** A BFT consensus algorithm (the renamed Tendermint Core) providing instant single-slot finality. As long as more than two-thirds of validators are honest, a block is final the moment it is committed.
 
-**Avalanche.** Validators are repeatedly sampled at random and vote on transactions until a confidence threshold is reached. Finality is typically achieved in \~1–2 seconds.
+**Avalanche.** Validators are repeatedly sampled at random and vote on transactions until a confidence threshold is reached. Finality typically takes \~1–2 seconds.
 
 **BNB Chain (post-BEP-126 Fast Finality).** Combines Proof of Staked Authority with a Casper-FFG-style vote mechanism. Validators sign blocks with BLS keys; once a block accumulates ≥2/3 votes it becomes *justified*, and once two consecutive blocks are justified the earlier one is *finalized*. In practice this takes \~2.5 blocks, or about 0.65 seconds.
 
@@ -83931,20 +83933,20 @@ L2s post periodic checkpoints to an underlying L1 settlement chain, inheriting (
 
 ### Optimistic Rollups
 
-Most commonly used optimistic rollups (Arbitrum One, Base, OP Mainnet, etc.) currently rely on a centralized sequencer that orders L2 transactions, batches them, and posts them to the L1 (commonly Ethereum). A commitment is valid by default and can be challenged during a challenge window — typically 7 days — if it asserts an invalid state root.
+Most commonly used optimistic rollups (Arbitrum One, Base, OP Mainnet, etc.) currently rely on a centralized sequencer that orders L2 transactions, batches them, and posts them to the L1 (commonly Ethereum). A commitment is valid by default and can be challenged during a challenge window (typically 7 days) if it asserts an invalid state root.
 
 Lifecycle:
 
 1. Transaction is included in an L2 block by the sequencer.
 2. The block is included in a batch posted to L1.
 3. The challenge window begins (\~7 days).
-4. After the window, the transaction is finalized on L1 — *hard finality*.
+4. After the window, the transaction is finalized on L1 (*hard finality*).
 
-In current implementations, only invalid state roots can be challenged; valid commitments cannot, assuming no implementation bugs. So an offchain observer who has independently verified the L2 state can have high confidence in a commitment as soon as it is posted to L1 and that L1 block is finalized. This is the *soft finality* most exchanges and cross-chain systems rely on in practice — strictly weaker than the post-challenge-window guarantee, but typically sufficient for non-adversarial flows.
+In current implementations, only invalid state roots can be challenged; valid commitments cannot, assuming no implementation bugs. So an offchain observer who has independently verified the L2 state can have high confidence in a commitment as soon as it is posted to L1 and that L1 block is finalized. This is the *soft finality* most exchanges and cross-chain systems rely on in practice. It is strictly weaker than the post-challenge-window guarantee, but typically sufficient for non-adversarial flows.
 
 ### ZK Rollups
 
-ZK rollups (Starknet, zkSync Era, Linea, etc.) likewise rely on a centralized sequencer today, but accompany each batch with a validity proof that is verified onchain by the L1 (commonly Ethereum). This removes the need for a challenge window.
+ZK rollups (Starknet, ZKsync Era, Linea, etc.) likewise rely on a centralized sequencer today, but accompany each batch with a validity proof that is verified onchain by the L1 (commonly Ethereum). This removes the need for a challenge window.
 
 Lifecycle:
 
@@ -83953,17 +83955,17 @@ Lifecycle:
 3. A validity proof for the batch is posted and verified on L1.
 4. Transaction is finalized on L1, often after an additional rollup-specific safety delay.
 
-The safety delay varies by rollup — historically on the order of hours — and is expected to reduce over time as proof systems mature.
+The safety delay varies by rollup (historically on the order of hours) and is expected to decrease as proof systems mature.
 
 ## How CCIP Determines Finality
 
-By default, CCIP 2.0 waits for full source chain finality before validating messages, producing attestations, and performing execution on the destination chain. Faster-Than-Finality is an opt-in capability that is only available when explicitly chosen. As a result, CCIP message latency depends largely on the source chain's time to finality. CCIP uses one of two methods to determine when a source-chain transaction is final.
+By default, CCIP 2.0 waits for full source-chain finality before validating messages, producing attestations, and executing messages on the destination chain. As a result, CCIP message latency depends largely on the source chain's time to finality. Faster-Than-Finality is opt-in. CCIP uses one of two methods to determine when a source-chain transaction is final.
 
-#### Finality Tag
+### Finality Tag
 
-Many chains with deterministic finality expose a *finality tag* — a standardized signal in JSON-RPC calls that indicates which blocks are finalized.
+Many chains with deterministic finality expose a *finality tag*, a standardized signal in JSON-RPC calls that indicates which blocks are finalized.
 
-#### Block Depth
+### Block Depth
 
 When a finality tag isn't usable, CCIP instead waits for a sufficient number of successive blocks before treating a transaction as final. This applies to:
 
@@ -83971,7 +83973,7 @@ When a finality tag isn't usable, CCIP instead waits for a sufficient number of 
 - Chains with deterministic finality that don't expose a finality tag.
 - Chains with deterministic finality slow enough that waiting for it materially harms UX.
 
-**Risks.** Block depth is a heuristic, not a guarantee. Reorgs remain possible, and anyone relying on CCIP (or any cross-chain bridge) on these chains should weigh that risk accordingly.
+**Risks.** Block depth is a heuristic and doesn't guarantee finality. Reorgs remain possible, and anyone relying on CCIP (or any cross-chain bridge) on these chains should weigh that risk.
 
 ---
 
@@ -84310,28 +84312,28 @@ Test FTF scenarios on testnet before deployment. Do not deploy a permissive FTF 
 Source: https://docs.chain.link/ccip/concepts/execution-latency/ftf-token-issuers
 Last Updated: 2025-05-19
 
-Token issuers retain complete control over whether and how FTF (Faster-Than-Finality) is enabled for their token. By default, FTF is disabled — the `minBlockConfirmations` parameter defaults to 0 (`WAIT_FOR_FINALITY`), which means all transfers for that token wait for full source chain finality, exactly as they do in the current version of CCIP. No user can bypass this default; any attempt to request custom block confirmations on a pool that has not enabled them will revert.
+Token issuers retain complete control over whether and how FTF (Faster-Than-Finality) is enabled for their token. By default, FTF is disabled. The pool's `allowedFinality` parameter defaults to 0 (`WAIT_FOR_FINALITY_FLAG`), so all transfers for that token wait for full source chain finality, exactly as in previous versions of CCIP. No user can bypass this default; any request for FTF on a pool that has not enabled it reverts.
 
-**Existing token pools are unaffected.** Pools deployed under the current version of CCIP use the V1 pool interface, which does not accept block confirmation parameters. These pools continue to function exactly as they do today — all transfers through them wait for full finality, with no code changes or redeployment required. FTF is only available through the V2 pool interface, and only when the token issuer has explicitly configured it. Token issuers who are satisfied with full-finality behavior have no action to take.
+**Existing token pools are unaffected.** Pools deployed under previous versions of CCIP use the V1 pool interface, which does not accept block confirmation parameters. These pools continue to function exactly as they do today, with no code changes or redeployment required. All transfers sent from them wait for full finality. FTF is only available through the V2 pool interface, and only when the token issuer has explicitly configured it. Token issuers who are satisfied with full-finality behavior have no action to take.
 
-Only when a token issuer explicitly configures a V2 pool to allow FTF does the feature become available. Even then, the issuer controls configurable parameters of the risk profile: the minimum confirmation depth, the rate limits, and the fees. CCIP 2.0 provides the tools; the token issuer decides if and how to use them.
+A token issuer who enables FTF on a V2 pool still controls configurable parameters of the risk profile: the minimum confirmation depth, the rate limits, and the fees. CCIP 2.0 provides the tools; the token issuer decides if and how to use them.
 
 These tools are organized into three areas: confirmation floors, separate rate limits, and differentiated fees.
 
 ## Minimum Block Confirmation Floor
 
-Token issuers set a **minimum** block confirmation floor via the `allowedFinality` parameter. This is the **on/off switch for FTF on the pool**:
+Token issuers set a minimum block confirmation floor via the `allowedFinality` parameter. This is the on/off switch for FTF on the pool:
 
-- **Default setting (0 / `WAIT_FOR_FINALITY`):**
-  - FTF is disabled. All transfers wait for full finality.
-  - This is the same behavior as the current version of CCIP, and the same behavior as all existing V1 pools.
+- **Default setting (0 / `WAIT_FOR_FINALITY_FLAG`):**
+  - FTF is disabled. All transfers sent from the pool wait for full finality.
+  - This is the same behavior as previous versions of CCIP and all existing V1 pools.
   - No user action can override this.
 - **Non-zero value:**
   - FTF is enabled, but only down to the floor the issuer sets.
-  - This allows issuers to enforce a maximum reorg exposure window — for example, permitting FTF but requiring at least 20 block confirmations on a given chain. This setting is at a chain level, not lane level.
+  - This allows issuers to enforce a maximum reorg exposure window, for example by permitting FTF but requiring at least 20 block confirmations on a given chain. This setting applies at the chain level, not per lane.
   - If a user requests fewer confirmations than this minimum, the transaction reverts.
 
-The token issuer can change this parameter at any time by calling the `allowedFinality` function on their token pool, enabling or disabling FTF as their risk posture evolves.
+The token issuer can call `setAllowedFinalityConfig` on their token pool at any time to enable FTF, disable it, or change the floor as their risk posture evolves.
 
 For step-by-step configuration details, see the [Token Issuer Guide](/ccip/concepts/cross-chain-token/token-issuer-guide).
 
@@ -84342,49 +84344,49 @@ For step-by-step configuration details, see the [Token Issuer Guide](/ccip/conce
 Because FTF transfers carry a different risk profile than standard finality transfers, CCIP 2.0 token pools maintain dedicated rate limit buckets for each:
 
 - **Default rate limits** apply to standard (wait-for-finality) transfers. These are configured per remote chain when the chain is added to the pool.
-- **Custom block confirmation rate limits** are separate, isolated buckets that apply only to FTF transfers (any transfer specifying a block confirmation count). These are configured independently via the `setRateLimitConfig` function.
-- If custom rate limits are not configured for a given chain, FTF transfers fall back to the default rate limiter. However, by configuring tighter limits on the custom bucket, a token issuer can cap the total value of in-flight, non-finalized transfers at any point in time.
+- **FTF rate limits** are separate, isolated buckets that apply only to FTF transfers (any transfer that does not wait for full finality). These are configured independently via the `setRateLimitConfig` function, with `fastFinality` set to `true`.
+- If FTF rate limits are not enabled for a given chain, FTF transfers fall back to the default rate limits. By configuring tighter limits on the FTF bucket, a token issuer can limit how much value FTF transfers can move (bucket capacity and refill rate).
 
 ## Pricing Risk with Differentiated Fees
 
 Token issuers can configure per-destination-chain fee parameters that charge differently for FTF versus standard finality transfers:
 
-|                    | basis points (collected in transferred token, deducted from amount sent) | Flat (charged in USD as part of fees paid) |
+|                    | Basis points (collected in transferred token, deducted from amount sent) | Flat (charged in USD as part of fees paid) |
 | :----------------- | :----------------------------------------------------------------------- | :----------------------------------------- |
 | FTF transfers      | `fastFinalityTransferFeeBps`                                             | `fastFinalityFeeUSDCents`                  |
-| Standard Transfers | `finalityTransferFeeBps`                                                 | `finalityFeeUSDCents`                      |
+| Standard transfers | `finalityTransferFeeBps`                                                 | `finalityFeeUSDCents`                      |
 
-This means a token issuer can set, for example, 0 basis points for standard transfers and 15 basis points for FTF transfers on a given lane — effectively pricing in the reorg risk they are taking on by allowing faster execution. The fee is deducted from the transferred amount on the source chain before the tokens are locked or burned. Accrued fees can be withdrawn by the pool owner or a designated fee admin. Flat fees instead of basis points can also be used. See [Fees and Billing](/ccip/concepts/fees-and-billing) for more details.
+For example, a token issuer can set 0 basis points for standard transfers and 15 basis points for FTF transfers on a given lane to price in the reorg risk they take on by allowing faster execution. The basis-point fee is deducted from the transferred amount on the source chain before the tokens are locked or burned. The pool owner or a designated fee admin can withdraw accrued fees. A token issuer can also charge flat fees instead of, or alongside, basis-point fees. See [Fees and Billing](/ccip/concepts/fees-and-billing) for more details.
 
-These fees may be used to fund the token issuer's own corrective mechanisms — such as reserves for corrective mints/burns in the event of reorg-induced duplicates.
+Token issuers can use these fees to fund their own corrective mechanisms, such as reserves for corrective mints/burns in the event of reorg-induced duplicates.
 
 ## Risk Management Summary
 
-| Mechanism                            | What It Does                                                                                                                                                                    |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Min block confirmation floor**     | The on/off switch for FTF. Defaults to full finality (disabled). When set, prevents users from requesting dangerously low confirmation depths, bounding maximum reorg exposure. |
-| **Separate FTF rate limits**         | Caps total in-flight value of non-finalized transfers per lane, isolating FTF exposure from standard transfers                                                                  |
-| **Differentiated basis points fees** | Charges a higher basis-point fee on FTF transfers to fund corrective mechanisms. Pool owner or fee admin withdraws accrued fees to fund corrective reserves                     |
+| Mechanism                           | What It Does                                                                                                                                                                    |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Min block confirmation floor**    | The on/off switch for FTF. Defaults to full finality (disabled). When set, prevents users from requesting dangerously low confirmation depths, bounding maximum reorg exposure. |
+| **Separate FTF rate limits**        | Limits the value FTF transfers can move per lane (capacity and refill rate), isolating FTF exposure from standard transfers.                                                    |
+| **Differentiated basis-point fees** | Charges a higher basis-point fee on FTF transfers. The pool owner or fee admin withdraws accrued fees to fund corrective reserves.                                              |
 
-**To reiterate:** none of these mechanisms activate unless the token issuer explicitly enables FTF on a V2 pool. Existing V1 pools and new V2 pools with default settings both enforce full finality.
+None of these mechanisms activate unless the token issuer explicitly enables FTF on a V2 pool. Existing V1 pools and new V2 pools with default settings both enforce full finality on the transfers they send.
 
 ## Practical Guidance
 
-**If you are an existing token issuer:** Your current pool continues to work as-is. V1 pools enforce full finality by design and require no changes. You do not need to redeploy or reconfigure anything.
+**If you are an existing token issuer:** Your current pool continues to work as-is. By design, V1 pools enforce full finality on the transfers they send and require no changes. You do not need to redeploy or reconfigure anything.
 
-**If you are a new token issuer who does not need FTF:** Deploy your V2 pool with default settings. `allowedFinality` defaults to full finality. No user can request faster execution of transfers for your token. Your experience is identical to the current version of CCIP.
+**If you are a new token issuer who does not need FTF:** Deploy your V2 pool with default settings. `allowedFinality` defaults to full finality. No user can request faster execution of transfers for your token. Your experience is the same as in previous versions of CCIP.
 
 **For token issuers considering enabling FTF:** Start by setting a conservative `allowedFinality` floor well above typical reorg depths for your source chains. Configure separate FTF rate limits to cap your worst-case exposure. Consider setting fees to accumulate a fee reserve that funds corrective mechanisms for reorg-induced duplicates.
 
-**For dApps on CCIP:** Consider whether you can include an application-level idempotency key in your message payload. This is optional and doesn't leak into the protocol, but it gives you a clean way to deduplicate on the destination side without relying solely on the protocol's quarantine mechanism. If the token pool you interact with has not enabled FTF — whether it's an existing V1 pool or a V2 pool with default settings — your transfers will always wait for full finality regardless of what you request. See [FTF - dApps](/ccip/concepts/execution-latency/ftf-dapps) for receiver-side guidance.
+**For dApps on CCIP:** Consider whether you can include an application-level idempotency key in your message payload. This is optional and doesn't leak into the protocol, but it gives you a clean way to deduplicate on the destination side without relying solely on the protocol's quarantine mechanism. If the token pool you interact with has not enabled FTF (an existing V1 pool or a V2 pool with default settings), a transfer that requests FTF reverts, and only full-finality transfers go through. See [FTF - dApps](/ccip/concepts/execution-latency/ftf-dapps) for receiver-side guidance.
 
-**When in doubt:** Use defaults and your pool will behave exactly as it does today — full finality for every transfer.
+**When in doubt:** Use the defaults, and your pool behaves exactly as it does today, with full finality for every transfer.
 
 ## Related Pages
 
-- [FTF](/ccip/concepts/execution-latency/ftf) — FTF execution model and bounded-risk guarantees
-- [Token Issuer Guide](/ccip/concepts/cross-chain-token/token-issuer-guide) — Full issuer deployment and governance guidance
-- [Fees and Billing](/ccip/concepts/fees-and-billing) — Fee model and billing details
+- [FTF](/ccip/concepts/execution-latency/ftf): FTF execution model and bounded-risk guarantees
+- [Token Issuer Guide](/ccip/concepts/cross-chain-token/token-issuer-guide): Full issuer deployment and governance guidance
+- [Fees and Billing](/ccip/concepts/fees-and-billing): Fee model and billing details
 
 ---
 
@@ -84394,7 +84396,7 @@ Last Updated: 2025-05-19
 
 > **CAUTION: Reorg risk with custom finality**
 >
-> Choosing a custom finality configuration lower than the default full finality exposes you and your users to [re-org
+> Choosing a custom finality configuration lower than the default full finality exposes you and your users to [reorg
 > risk](https://www.alchemy.com/overviews/what-is-a-reorg), which can lead to duplicate execution and, depending on the
 > transfer method, result in supply inflation, unbacked tokens, and/or loss of funds. Users, dApps, and token issuers
 > are advised to carefully consider their configuration based on their specific use case and risk tolerance.
@@ -84403,52 +84405,52 @@ Last Updated: 2025-05-19
 
 When sending a cross-chain message, the safest approach is to wait until the source chain has fully finalized the transaction before executing it on the destination chain. Finality refers to the level of assurance that past transactions processed by a blockchain are extremely difficult or impossible to revert. On Ethereum, for example, finality takes [2 epochs](https://ethereum.org/developers/docs/consensus-mechanisms/pos/#finality), approximately 12.8–19 minutes. However, for some use cases, waiting for full source chain finality can materially harm the user experience.
 
-The primary risk associated with executing a cross-chain transaction before the source chain reaches finality is that a block reorganization (reorg) could occur. A reorg occurs when the chain replaces its most recent blocks with a different set of blocks. When this happens, the original source chain transaction could be reordered, altered, or dropped from the chain entirely — regardless of whether the cross-chain transaction had already executed on the destination chain. In effect, a reorg can result in a double spend that either inflates total token supply or leaves the transferred tokens unbacked, depending on the transfer method used.
+The main risk of executing a cross-chain transaction before the source chain reaches finality is that a block reorganization (reorg) could occur. A reorg occurs when the chain replaces its most recent blocks with a different set of blocks. When this happens, the original source chain transaction could be reordered, altered, or dropped from the chain entirely, regardless of whether the cross-chain transaction had already executed on the destination chain. In effect, a reorg can result in a double spend that either inflates total token supply or leaves the transferred tokens unbacked, depending on the transfer method used.
 
-In regard to finality, CCIP 2.0's default behavior is identical to prior CCIP versions: all messages wait for full source chain finality before attestation and execution on the destination chain. Faster-Than-Finality (FTF) is an optional, opt-in capability that is only available when explicitly chosen. Existing token pools and existing CCIP sender/receivers deployed under previous versions of CCIP will continue to work as-is, waiting for full finality.
+CCIP 2.0's default finality behavior is identical to prior CCIP versions: all messages wait for full source chain finality before attestation and execution on the destination chain. Faster-Than-Finality (FTF) is an opt-in capability. Existing token pools, senders, and receivers deployed under previous versions of CCIP continue to work as-is and wait for full finality.
 
-Legacy (V1) pools and receivers are additionally protected: they cannot accept FTF requests at all — legacy pools revert on send, and legacy receivers are treated as allowing only full finality on inbound execution.
+Legacy (V1) pools and receivers cannot opt into FTF. The OnRamp reverts an FTF send through a legacy pool (`FTFNotSupportedOnPoolV1`), and the OffRamp treats a legacy receiver as allowing only full finality on inbound execution.
 
-FTF is not a single toggle. It requires explicit opt-in at every layer that participates in the message path. All layers default to full finality (`WAIT_FOR_FINALITY_FLAG`):
+FTF requires explicit opt-in at every layer that participates in the message path. All layers default to full finality (`WAIT_FOR_FINALITY_FLAG`):
 
-| Layer                                   | What must permit FTF                                                                                 |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Sender                                  | Sets `requestedFinalityConfig` in `ExtraArgsV3` to a non-finality mode (block depth)                 |
-| Token pool                              | Configures `allowedFinality` that permits the requested mode (token transfers only)                  |
-| Committee Verifier (and any other CCVs) | Each CCV's `allowedFinality` must permit the request                                                 |
-| Executor                                | Executor contract's `allowedFinality` must permit the request                                        |
-| Receiver                                | For messages that call `ccipReceive`, the receiver's `allowedFinalityConfig` must permit the request |
+| Layer                                   | What must permit FTF                                                                                           |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Sender                                  | Sets `requestedFinalityConfig` in `ExtraArgsV3` to a non-finality mode (a block depth or `WAIT_FOR_SAFE_FLAG`) |
+| Token pool                              | Configures an `allowedFinalityConfig` that permits the requested mode (token transfers only)                   |
+| Committee Verifier (and any other CCVs) | Each CCV's `allowedFinalityConfig` must permit the request                                                     |
+| Executor                                | Executor contract's `allowedFinalityConfig` must permit the request                                            |
+| Receiver                                | For messages that call `ccipReceive`, the receiver's `allowedFinalityConfig` must permit the request           |
 
-If any layer rejects the requested mode, the message cannot be sent (revert at `ccipSend`) or cannot be executed (revert at `OffRamp` verification). See [FINALITY_INVARIANTS.md](https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/FINALITY_INVARIANTS.md).
+If any layer rejects the requested mode, the message cannot be sent (revert at `ccipSend`) or cannot be executed (the OffRamp's finality check fails and the message is recorded as FAILURE). See [FINALITY_INVARIANTS.md](https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/FINALITY_INVARIANTS.md).
 
 ## A Concrete Example
 
-Suppose Alice sends a cross-chain token transfer from Ethereum to Arbitrum. She opts into FTF with a confirmation depth of 2 blocks (\~24 seconds) to get a fast experience. Note that this is only possible because the token issuer has explicitly enabled FTF on their pool — without that, Alice's request would revert. The token pool, Committee Verifier, executor, and (if applicable) destination receiver must all have configured `allowedFinality` to permit her requested depth — otherwise her `ccipSend` reverts on the source chain or delivery fails on the destination.
+Suppose Alice sends a cross-chain token transfer from Ethereum to Arbitrum. She opts into FTF with a confirmation depth of 2 blocks (\~24 seconds) to get a fast experience. This works only because the token issuer has explicitly enabled FTF on their pool. Without that, Alice's request would revert. The token pool, Committee Verifier, executor, and (if applicable) destination receiver must all have configured `allowedFinalityConfig` to permit her requested depth. Otherwise, her `ccipSend` reverts on the source chain or delivery fails on the destination.
 
-**Step 1:** Alice's transfer is included in Ethereum block 100. After 2 block confirmations (block 102), CCIP executes the transfer on Arbitrum — Alice receives her tokens. The Committee Verifier attests the message (once its FTF depth is met and no reorg has been detected for that sequence number). A submitter then calls `OffRamp.execute` on Arbitrum — Alice receives her tokens.
+**Step 1:** Alice's transfer is included in Ethereum block 100. After 2 block confirmations (block 102), the Committee Verifier attests the message, provided no reorg has been detected for that message number. A submitter then calls `OffRamp.execute` on Arbitrum, and Alice receives her tokens.
 
 **Step 2:** Ethereum experiences a 3-block reorg. Blocks 100–102 are replaced by a new fork. In this new fork, Alice's transaction may still exist but can land in a different block with different ordering.
 
-**Step 3:** Because the reorg (3 blocks) was deeper than Alice's confirmation depth (2 blocks), if attestation and execution already completed for the pre-reorg message, the original delivery on Arbitrum stands. A subsequent `CCIPMessageSent` event on the canonical fork may produce a different message ID — resulting in a double execution if that new ID is also attested and executed.
+**Step 3:** Because the reorg (3 blocks) was deeper than Alice's confirmation depth (2 blocks), if attestation and execution already completed for the pre-reorg message, the original delivery on Arbitrum stands. A subsequent `CCIPMessageSent` event on the canonical fork may produce a different message ID, which results in double execution if that new ID is also attested and executed.
 
-**Why the message ID may change:** `messageId = keccak256(encodedMessage)`, and the encoded payload commits to every field in the message — not just user data. Two common reasons the ID differs after a reorg:
+**Why the message ID may change:** `messageId = keccak256(encodedMessage)`, and the encoded payload commits to every field in the message, not just user data. Two common reasons the ID differs after a reorg:
 
-1. **A higher `messageNumber`.** The OnRamp assigns a strictly monotonic `messageNumber` per (source OnRamp, destination chain) lane. After a reorg, the counter on the canonical fork reflects whatever sends actually landed there. Other CCIP messages near the reorg window that did not reorg may already have consumed higher sequence numbers on the canonical chain. When Alice's transfer is included again, it is assigned the next number from canonical OnRamp state — which is often not the same number it held on the discarded fork. A different `messageNumber` alone produces a different message ID, even if Alice's intent (amount, receiver, data) is unchanged.
+1. **A different `messageNumber`.** The OnRamp assigns a strictly monotonic `messageNumber` per (source OnRamp, destination chain) lane. After a reorg, the counter on the canonical fork reflects whatever sends landed there. Other CCIP messages near the reorg window that did not reorg may already have consumed higher message numbers on the canonical chain. When Alice's transfer is included again, it is assigned the next number from canonical OnRamp state, which is often not the number it held on the discarded fork. A different `messageNumber` alone produces a different message ID, even if Alice's intent (amount, receiver, data) is unchanged.
 2. **Different committed pool or token fields.** For token transfers, `messageId` is computed after `lockOrBurn`, so pool-returned data (e.g., `destPoolData`) is part of the hash. A re-send can also differ in these committed fields even when the user-facing transfer looks the same.
 
 Because execution is keyed by message ID, not by "Alice's transfer" or by `messageNumber` alone, the pre-reorg delivery and the post-reorg delivery are tracked as two independent messages. Both can reach SUCCESS on the destination.
 
-If the Committee Verifier detects the reorg before attesting (via its reorg tracker), it ignores the FTF depth for that sequence number and waits for full source finality before attesting. That reduces — but does not eliminate — the double-execution window. Double execution remains possible when attestation and execution already occurred before the reorg was detected.
+If the Committee Verifier detects the reorg before attesting (via its reorg tracker), it ignores the FTF depth for that message number and waits for full source finality before attesting. This narrows the double-execution window but does not eliminate it. Double execution remains possible when attestation and execution already occurred before the reorg was detected.
 
 ## How CCIP 2.0 Handles Reorgs
 
 CCIP 2.0 uses a message-ID-based execution model with reorg tracking and reorg quarantining in the default Committee Verifier to minimize risk during FTF transfers.
 
-- **Message ID keying:** Each message's execution on the destination chain is tracked by a unique message ID (`messageId = keccak256(encodedMessage)` — a hash of the full encoded payload, which commits to `messageNumber`, source/destination, receiver, token data including pool-returned fields, finality preference, and user data). Two different payloads always produce different IDs and are tracked independently in `s_executionStates[messageId]`. After a reorg, logically the "same" transfer can hash to a new ID if its assigned `messageNumber` differs (because other non-reorged sends on the canonical fork advanced the OnRamp counter) or if committed pool/token fields differ on re-send.
-- **Reorg tracking (Committee Verifier, offchain):** When CCIP's default Committee Verifier detects that a source chain reorg has occurred, all affected message numbers are quarantined — meaning the Committee Verifier pauses new attestations for those messages until the source chain reaches finality. When the Committee Verifier's source reader detects that a previously seen message disappeared from the canonical chain (indicating a reorg), it tracks that message's sequence number for the affected destination lane. While tracked, the verifier ignores the sender's FTF confirmation depth and waits for full source-chain finalization before producing an attestation. Tracking is per (source chain, destination chain) lane — not a global pause on all messages. Once the message block is finalized, the sequence number is removed from tracking and normal processing resumes. This behavior is specific to the default Committee Verifier offchain service.
-- **Bounded risk:** The combination of these mechanisms means that double execution can only occur when your chosen confirmation depth is less than or equal to the depth of the reorg and attestation/execution completed for the pre-reorg message before the reorg was detected and handled. If Alice had chosen a confirmation depth of 5 blocks and the reorg was only 3 blocks deep, her message would have been unaffected — the reorg would have been resolved before the Committee Verifier attested. Note that this bounded-risk guarantee depends on the reorg tracking provided by CCIP's default Committee Verifier. Without it, the risk profile of FTF messaging may differ depending on how your chosen verifier handles reorgs.
+- **Message ID keying:** Each message's execution on the destination chain is tracked by a unique message ID (`messageId = keccak256(encodedMessage)`: a hash of the full encoded payload, which commits to `messageNumber`, source/destination, receiver, token data including pool-returned fields, finality preference, and user data). Two different payloads always produce different IDs and are tracked independently in `s_executionStates[messageId]`. After a reorg, logically the "same" transfer can hash to a new ID if its assigned `messageNumber` differs (because other non-reorged sends on the canonical fork advanced the OnRamp counter) or if committed pool/token fields differ on re-send.
+- **Reorg tracking (Committee Verifier, offchain):** When CCIP's default Committee Verifier detects that a source chain reorg has occurred, all affected message numbers are quarantined, meaning the Committee Verifier pauses new attestations for those messages until the source chain reaches finality. When the Committee Verifier's source reader detects that a previously seen message disappeared from the canonical chain (indicating a reorg), it tracks the message number for the affected destination lane. While tracked, the verifier ignores the sender's FTF confirmation depth and waits for full source-chain finality before producing an attestation. Tracking is per (source chain, destination chain) lane, not a global pause on all messages. Once the message block is finalized, the message number is removed from tracking and normal processing resumes. This behavior is specific to the default Committee Verifier offchain service.
+- **Bounded risk:** Together, these mechanisms mean that double execution can only occur when your chosen confirmation depth is less than or equal to the depth of the reorg and the pre-reorg message was attested and executed before the reorg was detected and handled. If Alice had chosen a confirmation depth of 5 blocks and the reorg was only 3 blocks deep, her message would have been unaffected, because the reorg would have been resolved before the Committee Verifier attested. This bounded-risk guarantee depends on the reorg tracking provided by CCIP's default Committee Verifier. Without it, the risk profile of FTF messaging may differ depending on how your chosen verifier handles reorgs.
 
-Note for additional CCVs: If a message requires additive verifiers (e.g., the CCTP Verifier for USDC), each CCV's offchain service applies its own finality and reorg policy. The Committee Verifier's reorg tracking does not govern those attestations — evaluate each required CCV independently before opting into FTF.
+**Additional CCVs:** If a message requires other CCVs (e.g., the CCTP Verifier for USDC), each CCV's offchain service applies its own finality and reorg policy. The Committee Verifier's reorg tracking does not govern those attestations, so evaluate each required CCV independently before opting into FTF.
 
 ## What This Means for You
 
@@ -84458,50 +84460,56 @@ Note for additional CCVs: If a message requires additive verifiers (e.g., the CC
 | FTF, chosen block confirmations > reorg depth | Yes, but shallow     | No impact. The reorg was resolved before your message was acted on.                                 |
 | FTF, chosen block confirmations ≤ reorg depth | Yes, and deep enough | Possible double execution. Your application needs corrective logic.                                 |
 
-Clarification on the third row: "No impact" in row 2 assumes the reorg is shallow enough that attestation had not yet occurred at your chosen depth, or reorg tracking successfully deferred attestation until after the reorg resolved. Row 3 covers the case where attestation and execution already happened under a fork that was later replaced.
+"No impact" in row 2 assumes the reorg is shallow enough that attestation had not yet occurred at your chosen depth, or that reorg tracking deferred attestation until after the reorg resolved. Row 3 covers the case where attestation and execution already happened under a fork that was later replaced.
 
-If you do not explicitly configure a finality setting, your experience is unchanged from prior versions of CCIP. Waiting for full finality is the default behavior of CCIP 2.0. FTF is only relevant if the participants in your message path (pool, CCVs, executor, and receiver where applicable) have all configured `allowedFinality` to permit FTF and a sender explicitly requests a non-default finality mode.
+If you do not explicitly configure a finality setting, your experience is unchanged from prior versions of CCIP. FTF applies only if the participants in your message path (pool, CCVs, executor, and receiver where applicable) have all configured `allowedFinalityConfig` to permit FTF and a sender explicitly requests a non-default finality mode.
 
-If you opt into FTF, your risk exposure is directly proportional to how aggressively you set your confirmation depth relative to the reorg profile of your source chain. On a chain where reorgs are typically 1–2 blocks deep, a confirmation depth of 5 blocks optimizes for both speed and safety. On a chain with deeper or more frequent reorgs, confirmation depth should be increased or your application should implement corrective actions such as idempotency keys or insurance mechanisms.
+If you opt into FTF, your risk exposure is directly proportional to how aggressively you set your confirmation depth relative to the reorg profile of your source chain. On a chain where reorgs are typically 1–2 blocks deep, a confirmation depth of 5 blocks balances speed and safety. On a chain with deeper or more frequent reorgs, increase the confirmation depth or implement corrective actions in your application, such as idempotency keys or insurance mechanisms.
 
 Users who wait for full finality are not affected by the FTF behavior of other users on the same lane.
 
 > **NOTE: Bounded risk depends on the default Committee Verifier**
 >
-> The bounded risk model described above — particularly the reorg tracking that limits double execution to cases where
-> confirmation depth ≤ reorg depth (and pre-reorg attestation already occurred) — relies on CCIP's default Committee
-> Verifier. If you are using additional verification mechanisms, these protections may not apply. You should
-> independently verify how your chosen CCV handles source chain reorgs before opting into FTF.
+> The bounded-risk model above relies on CCIP's default Committee Verifier, in particular its reorg tracking, which
+> limits double execution to cases where confirmation depth ≤ reorg depth and pre-reorg attestation already occurred. If
+> you use additional verification mechanisms, these protections may not apply. Independently verify how your chosen CCV
+> handles source chain reorgs before opting into FTF.
 
 **Token-only transfers:** For token-only messages (no `ccipReceive` callback), the destination receiver's `allowedFinalityConfig` is not consulted. Pool and lane CCV finality rules still apply. dApps using token-only delivery still inherit FTF/reorg risk on the token side.
 
-**Operational edge case:** If a source chain's finalized checkpoint itself reorgs after messages were attested at full finality, recovery may require manual intervention for that chain. This is separate from FTF but relevant when reasoning about finality.
+**Operational edge case:** If a source chain's finalized checkpoint itself reorgs after messages were attested at full finality, recovery may require manual intervention for that chain. This case is separate from FTF.
 
 ## Choosing Your Finality Setting by Chain Type
 
-**Key principle:** Unless you are prepared for risk mitigation with FTF or have a strong need to use FTF for your use case, it is recommended to wait for full finality (CCIP defaults). See [Finality by Chain](/ccip/concepts/execution-latency/finality-by-chain) for expected time to finality for integrated chains.
+**Key principle:** Unless you are prepared to mitigate FTF risk or have a strong need for FTF in your use case, wait for full finality (the CCIP default). See [Finality by Chain](/ccip/concepts/execution-latency/finality-by-chain) for expected time to finality for integrated chains.
 
-When using FTF, the core tradeoff is speed vs. reorg risk. Since double execution may occur when your confirmation depth is less than or equal to the reorg size, the right setting depends on the reorg profile of your source chain.
+When using FTF, the core tradeoff is speed vs. reorg risk. Since double execution may occur when your confirmation depth is less than or equal to the reorg depth, the right setting depends on the reorg profile of your source chain.
 
 Senders request exactly one finality mode per message (full finality, a single block depth, or `WAIT_FOR_SAFE_FLAG`). Receivers and pools may configure multiple permitted modes simultaneously (e.g., accept safe-tag requests or depth ≥ 5 or full finality). See `FinalityCodec` and [FTF - dApps](/ccip/concepts/execution-latency/ftf-dapps) for receiver-side configuration.
 
-**L1 chains with instant / fast finality:** Use defaults (full finality), as they are already fast enough for most use cases. CCIP still defaults to `WAIT_FOR_FINALITY_FLAG` unless you explicitly opt in — even on chains with fast native finality.
+**L1 chains with instant or fast finality:** Use the default (full finality), since these chains already finalize fast enough for most use cases. CCIP still defaults to `WAIT_FOR_FINALITY_FLAG` unless you explicitly opt in, even on chains with fast native finality.
 
 **Ethereum L2s:** During the \~12.8 minutes it takes Ethereum to reach finality (2 epochs = 64 slots × 12 seconds each = 768 seconds), each L2 progresses by different amounts depending on its block time. These L2 blocks represent "soft confirmations" from centralized sequencers. The L2 transactions themselves don't inherit Ethereum's full security until they're posted and finalized on L1, which takes that same \~12.8-minute finality window (for optimistic rollups) or longer (for ZK rollups that need proof generation time).
 
 For example, Arbitrum with its 0.25-second block time produces 3,072 blocks in the same window where Ethereum finalizes just 64.
 
-Many of the OP Stack chains (e.g., Ink, Soneium, World Chain, Mode) use 2s block time, which means these chains have progressed by \~384 blocks during Ethereum's finalization time.
+Many of the OP Stack chains (e.g., Ink, Soneium, World Chain, Mode) use a 2-second block time, so these chains produce \~384 blocks during Ethereum's time to finality.
 
-So, setting minimum block confirmations for L2 is a function of (a) L2's block time and (b) your level of risk tolerance along the spectrum of trusting the sequencer (lowest block confirmations) to relying on the underlying Ethereum chain's security (full finality).
+Setting minimum block confirmations on an L2 therefore depends on (a) the L2's block time and (b) where your risk tolerance falls between trusting the sequencer (fewest block confirmations) and relying on the underlying Ethereum chain's security (full finality).
 
-**Newer or less battle-tested chains:** It is strongly recommended to wait for full finality, given that the reorg surface is unpredictable and the cost of building reliable corrective logic can outweigh the latency savings.
+**Newer or less battle-tested chains:** Wait for full finality. The reorg surface on these chains is unpredictable, and the cost of building reliable corrective logic can outweigh the latency savings.
+
+## FTF for USDC Delivered via CCTP
+
+CCIP 2.0 supports FTF for USDC transfers on lanes that integrate with Circle's CCTP. On these lanes, finality for USDC token transfers is governed by [CCTP finality thresholds](https://developers.circle.com/cctp/concepts/finality-and-block-confirmations), whose block confirmations vary by chain. For transfers with data or a non-zero message gas limit, both the CCTP finality and the message's requested finality determine the overall speed.
+
+The CCTP Verifier integrates with the CCTP smart contracts and Circle's CCTP attestation service.
 
 ## Related Pages
 
-- [Finality by Chain](/ccip/concepts/execution-latency/finality-by-chain) — Chain-specific finality behavior and time-to-finality
-- [FTF - Token Issuers](/ccip/concepts/execution-latency/ftf-token-issuers) — Pool-side FTF controls
-- [FTF - dApps](/ccip/concepts/execution-latency/ftf-dapps) — Receiver-side FTF controls
+- [Finality by Chain](/ccip/concepts/execution-latency/finality-by-chain): Chain-specific finality behavior and time-to-finality
+- [FTF - Token Issuers](/ccip/concepts/execution-latency/ftf-token-issuers): Pool-side FTF controls
+- [FTF - dApps](/ccip/concepts/execution-latency/ftf-dapps): Sender- and receiver-side FTF controls
 
 ---
 
@@ -84517,7 +84525,7 @@ These pages explain how finality and confirmation settings affect latency, and h
 - [Finality by Chain](/ccip/concepts/execution-latency/finality-by-chain): Chain-specific finality models and typical time-to-finality under CCIP defaults.
 - [Faster-Than-Finality (FTF) - Overview](/ccip/concepts/execution-latency/ftf): Execute before full finality: reorg risk, bounded-risk guarantees, and what changes when you opt in.
 - [Faster-Than-Finality (FTF) - Token Issuers](/ccip/concepts/execution-latency/ftf-token-issuers): Pool-side controls for FTF: minimum confirmation floors, dedicated rate limits, and differentiated fees.
-- [Faster-Than-Finality (FTF) - dApps](/ccip/concepts/execution-latency/ftf-dapps): Receiver-side controls for FTF: \`allowedFinalityConfig\` , avoiding stranded messages, and idempotency.
+- [Faster-Than-Finality (FTF) - dApps](/ccip/concepts/execution-latency/ftf-dapps): Sender- and receiver-side controls for FTF: \`requestedFinalityConfig\` , \`allowedFinalityConfig\` , avoiding stranded messages, and idempotency.
 
 ---
 
@@ -103424,56 +103432,56 @@ This page does not cover:
 
 ---
 
-# Onchain Architecture - Upgradability (EVM)
+# Contract Upgradability (EVM)
 Source: https://docs.chain.link/ccip/evm/concepts/upgradability
 Last Updated: 2025-05-19
 
-Chainlink Cross‐Chain Interoperability Protocol (CCIP) is designed to evolve in response to new emerging feature requests, security considerations, and the need to support additional blockchains over time. This requires a secure upgrade process that preserves CCIP's robust security while allowing for iterative improvements.
+Chainlink Cross-Chain Interoperability Protocol (CCIP) is designed to evolve in response to new feature requests, security considerations, and the need to support additional blockchains over time. This requires an upgrade process that preserves CCIP's security while allowing iterative improvements.
 
-**Note**: The Router contract is intentionally immutable. It remains the primary user entry point on both source and destination blockchains—unmodifiable to preserve reliability, stability, and developer predictability over time.
+**Note**: The Router contract's code is intentionally immutable, which preserves reliability, stability, and developer predictability over time. The Router remains the primary user entry point on both source and destination blockchains. Its owner can still update the OnRamp and OffRamp addresses registered for each chain.
 
 ## What Can Be Upgraded
 
 Upgradability in CCIP primarily refers to two categories of changes:
 
 1. **Onchain Configuration**
-   - Many CCIP contracts expose public setter functions that can adjust operational parameters.
-   - Since these parameters can be adjusted without requiring the redeployment of an entire contract, it offers a flexible way to help ensure CCIP's security and reliability over time.
+   - Many CCIP contracts expose public setter functions that adjust operational parameters.
+   - Setters change these parameters without redeploying the contract, which helps keep CCIP secure and reliable over time.
 
 2. **Redeploying Contracts and Redirecting References**
-   - Once a smart contract is deployed, its code cannot be modified. If a new contract version (e.g., OnRamp, OffRamp, or Token Pool) is required, a new updated contract can be deployed, with all existing references updated to point to the new contract address.
+   - Once a smart contract is deployed, its code cannot be modified. If a new contract version (e.g., OnRamp, OffRamp, or token pool) is required, a new contract can be deployed and every existing reference updated to point to its address.
    - For example, an OffRamp address might be updated in the Router or a local mapping so that new inbound messages go through the upgraded contract.
-   - This approach ensures older versions remain stable while new versions can be phased in.
+   - With this approach, older versions remain stable while new versions are phased in.
 
 ## Implementation Process
 
-All onchain configuration changes must pass through a Role-Based Access Control Timelock (RBACTimelock) contract. This mechanism ensures that:
+All configuration changes to CCIP-owned contracts must pass through a Role-Based Access Control Timelock (RBACTimelock) contract. Token pools are owned by token issuers, who configure them directly.
 
 1. **Proposals**
    - All proposals originate from a ManyChainMultiSig (MCMS), which requires multiple independent signers to sign off.
-   - Signers are selected from multiple high-quality Chainlink node operators with a proven, multi-year track record of securing billions in value within the Chainlink Network, as well as from Chainlink Labs.
-   - Signers are also spread across multiple different geographic locations globally and may be rotated on a periodic basis to help mitigate potential risks as they arise, such as geographic concentration.
-   - Two distinct paths exist for a proposal to succeed:
-     - **Time-locked review:** Node operators securing CCIP can veto a proposal within a defined review period. If no veto occurs, the update proceeds.
-     - **Explicit approval:** A quorum of independent signers (including node operators) actively endorse the proposal, allowing for urgent or time-sensitive fixes.
+   - Signers are selected from multiple Chainlink node operators with a multi-year track record of securing billions in value within the Chainlink Network, as well as from Chainlink Labs.
+   - Signers are also spread across multiple geographic locations worldwide and may be rotated periodically to help mitigate risks as they arise, such as geographic concentration.
+   - A proposal can succeed through two paths:
+     - **Timelocked review:** Node operators securing CCIP can veto a proposal within a defined review period. If no veto occurs, the update proceeds.
+     - **Explicit approval:** A quorum of independent signers (including node operators) endorses the proposal, which allows for urgent or time-sensitive fixes.
 
 2. **Review and Veto Window**
-   - During the timelock review period, CCIP node operators can inspect the onchain proposal (e.g., adjusting a rate limit) and reject it if it appears incorrect, preventing the proposal from being executed.
+   - During the timelock review period, CCIP node operators can inspect the onchain proposal (e.g., one that adjusts a rate limit) and veto it if it appears incorrect. A veto stops the proposal from being executed.
 
 3. **Execution**
-   - Once the timelock finishes (with no veto), the proposal transitions to an "executable" state.
+   - Once the timelock period ends with no veto, the proposal becomes executable.
    - Any party can call the timelock contract to finalize the proposal (e.g., via a [timelock-worker](https://github.com/smartcontractkit/timelock-worker) script).
    - The timelock then calls the target CCIP contracts with the specified changes.
 
 4. **Public Verifiability**
-   - Information about the MCMS, including the timelock configuration, signer set, and ongoing timelocked proposals are visible onchain.
-   - For instance, the Ethereum mainnet MCMS can be viewed on [Etherscan](https://etherscan.io/address/0xE53289F32c8E690b7173aA33affE9B6B0CB0012F#readContract).
-   - Anyone can track in-progress proposals, track any node operators vetos, and monitor the final execution status using onchain data.
+   - Information about the MCMS, including the timelock configuration, signer set, and pending proposals, is visible onchain.
+   - For example, you can view the Ethereum mainnet MCMS on [Etherscan](https://etherscan.io/address/0xE53289F32c8E690b7173aA33affE9B6B0CB0012F#readContract).
+   - Anyone can use onchain data to track pending proposals and node operator vetoes, and to monitor the final execution status.
 
 ## Additional Resources
 
 - **[CCIP Owner Contracts - GitHub](https://github.com/smartcontractkit/ccip-owner-contracts)**: Further documentation and source code for the ManyChainMultiSig, timelock, and other related contracts.
-- **[Etherscan: MCMS on Ethereum Mainnet](https://etherscan.io/address/0xE53289F32c8E690b7173aA33affE9B6B0CB0012F#readContract)**: Allows anyone to see the current configuration, pending proposals, and signer addresses on Ethereum.
+- **[Etherscan: MCMS on Ethereum Mainnet](https://etherscan.io/address/0xE53289F32c8E690b7173aA33affE9B6B0CB0012F#readContract)**: Shows the current configuration, pending proposals, and signer addresses on Ethereum.
 - **[Timelock Worker Repo](https://github.com/smartcontractkit/timelock-worker)**: Demonstrates how to automate final execution for proposals that have cleared the timelock period.
 
 ---
