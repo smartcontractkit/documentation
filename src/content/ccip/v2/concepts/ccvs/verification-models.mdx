@@ -7,7 +7,9 @@ metadata:
   excerpt: "ccip ccv verification models committee verifier cctp lombard custom attestation"
 ---
 
-CCIP supports multiple Cross-Chain Verifier (CCV) models. Each model follows the same high-level pipeline — monitor source-chain events, wait for the required finality, produce a VerifierResult — but attestation mechanics differ.
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+CCIP supports multiple Cross-Chain Verifier (CCV) models. Each model follows the same high-level pipeline (monitor source-chain events, wait for the required finality, produce a VerifierResult), but attestation mechanics differ.
 
 For resolver contracts, version tags, and interface requirements shared across models, see [CCV Interfaces & Guarantees](/ccip/concepts/ccvs/interface-guarantees).
 
@@ -19,14 +21,14 @@ The **CommitteeVerifier** is CCIP's default CCV, operated by the CCIP decentrali
 
 1. Offchain verifier nodes monitor `CCIPMessageSent` events filtered to their CCV's resolver contract.
 2. Each node waits until the message meets its configured finality requirement (full finality by default, or a custom depth for faster-than-finality transfers).
-3. Each node independently signs a hash over the CCV's version tag and the MessageID (which commits to the full encoded message).
+3. Each node independently signs a hash over the CCV's version tag and the message ID (which commits to the full encoded message).
 4. Signatures are sent to an **Aggregator**, which assembles a quorum result and exposes the combined VerifierResult via a read API.
 
-**Reorg handling:** When a faster-than-finality message is reorged before full finality, the CommitteeVerifier quarantines affected messages and pauses new attestations until the source chain reaches finality. This reorg quarantine is specific to the default committee verifier. Third-party CCVs may not provide equivalent protection — see [Trust & Responsibility Model](/ccip/concepts/ccvs/trust-responsibility-model).
+**Reorg handling:** When a faster-than-finality message is reorged before full finality, the CommitteeVerifier quarantines affected messages and pauses new attestations until the source chain reaches finality. This reorg quarantine is specific to the default CommitteeVerifier. Third-party CCVs may not provide equivalent protection. See [Trust & Responsibility Model](/ccip/concepts/ccvs/trust-responsibility-model).
 
 ## CCTPVerifier
 
-The **CCTPVerifier** integrates Circle's Cross-Chain Transfer Protocol attestation for USDC.
+The **CCTPVerifier** integrates Circle's Cross-Chain Transfer Protocol (CCTP) attestation for USDC.
 
 Instead of DON quorum signatures, the offchain verifier polls Circle's external attestation API, matches the response to the message using data from the `CCIPMessageSent` receipt, and serves the result via API for executors to retrieve.
 
@@ -34,15 +36,15 @@ Use this model when USDC transfers should carry Circle's native cross-chain atte
 
 ## LombardVerifier
 
-The **LombardVerifier** supports token-specific verification through an external attestation service.
+The **LombardVerifier** supports token-specific verification through Lombard's bridge and an external attestation service.
 
-Like CCTPVerifier, the offchain component polls an external API, matches attestations to messages, and publishes VerifierResults for execution. Configuration includes supported tokens and remote adapter paths.
+As with the CCTPVerifier, the offchain component polls an external API, matches attestations to messages, and publishes VerifierResults for execution. Configuration includes supported tokens, per-chain paths, and remote adapters.
 
-Use this model when a token issuer or protocol requires verification tied to an external attestation provider.
+Use this model for transfers of tokens that Lombard's bridge supports.
 
 ## Custom CCVs
 
-CCVs are **permissionless**. Any party can deploy onchain resolver and implementation contracts plus the corresponding offchain verifier service, provided they conform to CCIP's interface specifications.
+CCVs are permissionless. Any party can deploy onchain resolver and implementation contracts plus the corresponding offchain verifier service, provided they conform to CCIP's interface specifications.
 
 Custom CCVs are appropriate when:
 
@@ -50,7 +52,7 @@ Custom CCVs are appropriate when:
 - An application needs verification logic that the default models do not cover
 - A token pool or receiver mandates a specific third-party verifier
 
-Custom operators must implement both onchain contracts (outbound registration, inbound `verifyMessage`) and offchain infrastructure (event monitoring, attestation publishing). Failure to meet protocol specifications can stall or fail user transactions.
+Custom operators must implement both onchain contracts (outbound `forwardToVerifier` hook, inbound `verifyMessage`) and offchain infrastructure (event monitoring, attestation publishing). Failure to meet protocol specifications can stall or fail user transactions.
 
 ## Comparing Models
 
@@ -66,3 +68,5 @@ Custom operators must implement both onchain contracts (outbound registration, i
 - [Cross-Chain Verifiers Overview](/ccip/concepts/ccvs/overview)
 - [CCV Interfaces & Guarantees](/ccip/concepts/ccvs/interface-guarantees)
 - [Architecture Overview](/ccip/concepts/architecture/overview): Verification stage in the message lifecycle
+
+<CcipCommon callout="conceptualDisclaimer" />

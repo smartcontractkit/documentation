@@ -3,7 +3,7 @@ section: ccip
 date: Last Modified
 title: "Executing with a Multisig"
 metadata:
-  description: "How to build and submit CCIP rate limit update transactions from a multisig wallet, including the v2.0 setRateLimitConfig and v1.x setChainRateLimiterConfig ABIs for transaction builders."
+  description: "Build and submit CCIP rate limit updates from a multisig, with the v2.0 setRateLimitConfig and v1.x setChainRateLimiterConfig ABIs for transaction builders."
   excerpt: "CCIP rate limits multisig Safe transaction builder setRateLimitConfig setChainRateLimiterConfig ABI v2.0 v1.x cross-chain lane outbound inbound tuple"
   datePublished: "2025-06-09"
   lastModified: "2025-06-09"
@@ -12,9 +12,9 @@ metadata:
 import { Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-Rate limit changes are commonly executed from a multisig wallet to reduce operational risk and ensure changes are reviewed before being applied on-chain.
+Rate limit changes are commonly executed from a multisig wallet to reduce operational risk and ensure changes are reviewed before they are applied onchain.
 
-This page describes the high-level execution model for multisig-based updates and points to tooling that can be used to submit transactions safely.
+This page describes the execution model for multisig-based updates and lists tooling you can use to submit the transactions.
 
 ## Why use a multisig
 
@@ -35,7 +35,7 @@ Confirm which role your multisig holds:
 
 ## What the multisig submits
 
-### v2.0
+### v2.0 pools
 
 - `setRateLimitConfig` with an array of entries, each containing:
   - remote chain selector
@@ -52,33 +52,33 @@ Confirm which role your multisig holds:
 
 Or `setChainRateLimiterConfigs` to batch multiple lanes.
 
-The multisig controls approval and submission only — on-chain rate limit behavior is unchanged.
+The multisig controls approval and submission only. Onchain rate limit behavior is unchanged.
 
 ## Building the transaction
 
 To build a rate limit update transaction using a multisig:
 
 1. Identify the correct **token pool contract address** on the chain you are updating
-2. Confirm the multisig is the pool **owner** or `rateLimitAdmin` (via `getDynamicConfig()` on v2.0, or `getRateLimitAdmin()` on v1.x)
+2. Confirm the multisig is the pool **owner** (`owner()`) or its `rateLimitAdmin` (`getDynamicConfig()` on v2.0, `getRateLimitAdmin()` on v1.x)
 3. Prepare the version-appropriate function call (see below)
 4. Supply the **remote chain selector** (`uint64`) for each lane you are updating
-5. Enter **inbound and outbound configuration tuples** for each call — even if you only intend to change one direction, the function still requires both structs (set the unchanged direction to its current on-chain values)
+5. Enter **inbound and outbound configuration tuples** for each call. The function requires both structs even if you only intend to change one direction, so set the unchanged direction to its current onchain values (on v2.0, this also refills that direction's bucket to full capacity)
 6. Express all numeric values in the token's **local base units** (not whole tokens)
 
 Configuration tuples must be entered as arrays or structs containing:
 
-- `isEnabled` (bool)
-- `capacity` (uint128)
-- `rate` (uint128)
+- `isEnabled` (`bool`)
+- `capacity` (`uint128`)
+- `rate` (`uint128`)
 
-### v2.0: prepare `setRateLimitConfig`
+### v2.0 pools: prepare `setRateLimitConfig`
 
 Build an **array** of `RateLimitConfigArgs` entries. For each entry, supply:
 
 - `remoteChainSelector` (`uint64`)
-- `fastFinality` (`bool`) — `false` for default bucket, `true` for fast-finality bucket
-- `outboundRateLimiterConfig` — `[isEnabled, capacity, rate]`
-- `inboundRateLimiterConfig` — `[isEnabled, capacity, rate]`
+- `fastFinality` (`bool`): `false` for the default bucket, `true` for the fast-finality bucket
+- `outboundRateLimiterConfig`: `[isEnabled, capacity, rate]`
+- `inboundRateLimiterConfig`: `[isEnabled, capacity, rate]`
 
 #### Single lane, default bucket only
 
@@ -95,19 +95,19 @@ inboundRateLimiterConfig: [true, 0, 0]
 
 #### Single lane, default + fast-finality
 
-Two array entries with the same `remoteChainSelector` but different `fastFinality` values — one with `false`, one with `true`. Use this when you need to limit or lock down both bucket types.
+Two array entries with the same `remoteChainSelector` but different `fastFinality` values: one with `false`, one with `true`. Use this when you need to limit or lock down both bucket types.
 
 #### Multiple remote chains
 
-Add one or more entries per chain (and per bucket type, if updating fast-finality). All entries are submitted in a single `setRateLimitConfig` call.
+Add one or more entries per chain (one per bucket type you update). All entries go in a single `setRateLimitConfig` call.
 
 ### v1.x pools: prepare `setChainRateLimiterConfig`
 
 For a single lane, supply three arguments:
 
 - `remoteChainSelector` (`uint64`)
-- `outboundConfig` — `[isEnabled, capacity, rate]`
-- `inboundConfig` — `[isEnabled, capacity, rate]`
+- `outboundConfig`: `[isEnabled, capacity, rate]`
+- `inboundConfig`: `[isEnabled, capacity, rate]`
 
 There is no `fastFinality` flag and no array wrapper.
 
@@ -130,23 +130,23 @@ A lane spans two chains. You typically need **two separate multisig transactions
 | 1           | Source      | Source token pool      | Outbound limits |
 | 2           | Destination | Destination token pool | Inbound limits  |
 
-Unless one multisig controls both pools, these are separate proposals — each signed and executed on its respective chain.
+Unless one multisig controls both pools, these are separate proposals, each signed and executed on its own chain.
 
-On v2.0, repeat for fast-finality buckets if applicable (either as a second entry in the array on each chain, or as a separate proposal if you update buckets incrementally).
+On v2.0, repeat this for the fast-finality buckets if FTF transfers are in use on the lane, either as a second entry in the array on each chain or as a separate proposal if you update buckets incrementally.
 
 <Aside type="note" title="v1.x pools">
-  One inbound/outbound pair per chain — no fast-finality entries to plan for.
+  One inbound/outbound pair per chain, with no fast-finality entries to plan for.
 </Aside>
 
 ## Tooling options
 
-Common tooling options for executing multisig transactions include:
+Common options for executing multisig transactions include:
 
 - Safe transaction builder
 - custom scripts that submit transactions to the multisig
 - internal operator tooling built on top of web3 libraries
 
-The specific interface used does not affect the on-chain outcome.
+The interface you use does not affect the onchain outcome.
 
 ## Verification before submission
 
@@ -159,11 +159,11 @@ The specific interface used does not affect the on-chain outcome.
 
 ## After execution
 
-Limits apply immediately once confirmed. Re-inspect on-chain state and monitor transfer behavior.
+Limits apply as soon as the transaction is confirmed. Re-inspect onchain state and monitor transfer behavior.
 
 ## ABIs for transaction builders
 
-### setRateLimitConfig (v2.0)
+### setRateLimitConfig (v2.0 pools)
 
 ```json
 [
@@ -250,6 +250,6 @@ Limits apply immediately once confirmed. Re-inspect on-chain state and monitor t
 - [Common Scenarios](/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios)
 - [Emergency Actions](/ccip/evm/concepts/cross-chain-token/rate-limits/emergency-actions)
 
-For tool-specific walkthroughs, refer to the Token Manager and multisig documentation linked from the Tools section.
+For a tool-specific walkthrough, see the [CCIP Token Manager](/ccip/evm/tools-resources/token-manager).
 
 <CcipCommon callout="conceptualDisclaimer" />

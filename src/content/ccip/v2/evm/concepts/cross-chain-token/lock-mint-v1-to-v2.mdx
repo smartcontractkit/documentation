@@ -9,10 +9,10 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 ## Overview
 
-This migration flow covers upgrading a **lock and mint** token handling mechanism from CCIP v1 to v2 where you have a
-**LockReleaseTokenPool on Chain A** and a **BurnMintTokenPool on Chain B**. When transferring A→B, tokens are locked on
-A and minted on B. When transferring B→A, tokens are burned on B and released on A. It assumes your address is the
-registered administrator in the `TokenAdminRegistry` on all chains.
+This migration flow covers upgrading a **lock and mint** token handling mechanism from v1 to v2 token pools, where you
+have a **LockReleaseTokenPool on Chain A** and a **BurnMintTokenPool on Chain B**. When transferring A→B, tokens are
+locked on A and minted on B. When transferring B→A, tokens are burned on B and released on A. It assumes your address
+is the registered administrator in the `TokenAdminRegistry` on all chains.
 
 This guide covers **EVM-to-EVM only**.
 
@@ -23,7 +23,7 @@ This guide covers **EVM-to-EVM only**.
 
 For simplicity, the steps below illustrate a **2-chain setup (Chain A ↔ Chain B)**. If your token is deployed across
 more chains (for example, one LockRelease pool on Chain A connected to BurnMint pools on Chain B, C, D), repeat the
-relevant steps for each remote chain — see [Multi-chain considerations](#multi-chain-considerations).
+relevant steps for each remote chain. See [Multi-chain considerations](#multi-chain-considerations).
 
 **Out of scope**
 
@@ -31,30 +31,30 @@ relevant steps for each remote chain — see [Multi-chain considerations](#multi
 
 **Definitions**
 
-- **v1 pool**: Any pool version 1.5.x or 1.6.x (`LockReleaseTokenPool 1.5.1`, `BurnMintTokenPool 1.6.0`, etc.)
+- **v1 pool**: Any pool version 1.5.x or 1.6.x (`LockReleaseTokenPool 1.5.1`, `BurnMintTokenPool 1.6.0`, etc.).
 - **v2 pool**: Pool version 2.0 (`LockReleaseTokenPool 2.0` on Chain A, `BurnMintTokenPool 2.0` on Chain B) that
   you want to upgrade to.
 - **ERC20LockBox**: A v2 contract that holds locked token liquidity on behalf of the Lock & Release pool. Constructor:
   `(address token)`. In v1, liquidity was held directly in the pool contract. In v2, it's held in the lockbox. The
-  lockbox is a simple token vault — the `remoteChainSelector` parameter in `deposit`/`withdraw` exists for interface
+  lockbox is a simple token vault. The `remoteChainSelector` parameter in `deposit`/`withdraw` exists for interface
   compatibility but is **unused** internally. All liquidity is pooled together.
 - **Chain A**: The chain with the LockReleaseTokenPool (locks tokens on outbound, releases tokens on inbound).
 - **Chain B**: The chain with the BurnMintTokenPool (mints tokens on inbound, burns tokens on outbound).
 - **TokenAdminRegistry**: The CCIP contract where a token ↔ token pool mapping is registered.
 
-**Key architectural note**: This migration is **asymmetric** — Chain A requires deploying both an ERC20LockBox and a
+**Key architectural note**: This migration is **asymmetric**. Chain A requires deploying both an ERC20LockBox and a
 LockReleaseTokenPool, while Chain B only needs a BurnMintTokenPool. Additionally, there is a **liquidity migration
 step** where locked tokens must be moved from the old v1 pool to the new v2 lockbox.
 
 **v2 LockRelease pool variants**:
 
-| v2 Pool                      | Lockbox model                                               | Use case                                              |
-| :--------------------------- | :---------------------------------------------------------- | :---------------------------------------------------- |
-| `LockReleaseTokenPool`       | Single shared lockbox (set in constructor)                  | Standard — all remote chains share one liquidity pool |
-| `SiloedLockReleaseTokenPool` | Per-chain lockboxes (configured via `configureLockBoxes()`) | When you need isolated liquidity per remote chain     |
+| v2 Pool                      | Lockbox model                                               | Use case                                             |
+| :--------------------------- | :---------------------------------------------------------- | :--------------------------------------------------- |
+| `LockReleaseTokenPool`       | Single shared lockbox (set in constructor)                  | Standard: all remote chains share one liquidity pool |
+| `SiloedLockReleaseTokenPool` | Per-chain lockboxes (configured via `configureLockBoxes()`) | When you need isolated liquidity per remote chain    |
 
 Unlike BurnMint pools (which have variants based on the token's burn interface), LockRelease pools don't need interface
-variants — locking and releasing uses standard ERC20 `transferFrom`/`transfer`.
+variants, because locking and releasing use standard ERC20 `transferFrom`/`transfer`.
 
 This guide uses `LockReleaseTokenPool` (single shared lockbox) as the standard migration path. For siloed lockboxes,
 see the [Siloed liquidity](#siloed-liquidity-per-chain-isolation) section.
@@ -75,7 +75,7 @@ meta-transactions (for example, Safe), you can batch multiple migration steps in
 
 Recommended groupings:
 
-### Batch 1 — Liquidity migration (Chain A)
+### Batch 1: Liquidity migration (Chain A)
 
 Steps 3a–3f combined into one atomic transaction:
 
@@ -84,19 +84,19 @@ Steps 3a–3f combined into one atomic transaction:
 - On token: `approve` (for lockbox to pull tokens)
 - Cleanup: `applyAuthorizedCallerUpdates(remove)` on v2 lockbox
 
-This is the most critical batch — it eliminates the non-atomic custody window where liquidity sits in your wallet
+This is the most critical batch because it eliminates the non-atomic custody window where liquidity sits in your wallet
 between withdraw and deposit. You can optionally include `setPool` (Step 6) in this same batch to combine liquidity
 migration and cutover on Chain A in a single atomic transaction.
 
-### Batch 2 — Configure + cutover (per chain)
+### Batch 2: Configure + cutover (per chain)
 
 `applyChainUpdates` (Step 4) + `setPool` (Step 6). Configures the v2 pool and activates it in one transaction.
 
-### Batch 3 — Cleanup (per chain)
+### Batch 3: Cleanup (per chain)
 
 `removeRemotePool` (Step 8a) + `revokeMintRole` + `revokeBurnRole` (Step 8b, destination only).
 
-Each batch must be executed **per chain** — you cannot batch cross-chain operations into a single transaction. Batch 1
+Each batch must be executed **per chain**. You cannot batch cross-chain operations into a single transaction. Batch 1
 runs on Chain A only; Batches 2 and 3 run on each chain separately.
 
 ## Pre-flight checks
@@ -106,36 +106,35 @@ Before starting the migration, verify the following on **both chains**:
 ### 1. Confirm your admin status in TokenAdminRegistry
 
 - Call `TokenAdminRegistry.getTokenConfig(tokenAddress)` on both chains. This returns:
-  - `.administrator` — must match the address you control (EOA, multisig, or other account)
-  - `.pendingAdministrator` — must be `address(0)` (no pending transfer in progress)
-  - `.tokenPool` — the current v1 pool address
+  - `.administrator`: must match the address you control (EOA, multisig, or other account)
+  - `.pendingAdministrator`: must be `address(0)` (no pending transfer in progress)
+  - `.tokenPool`: the current v1 pool address
 - If the administrator is a multisig or timelock, execute subsequent steps through that governance mechanism. If using
   a multisig like Safe, you can batch multiple steps into a single meta-transaction for atomicity.
 - Note: even if `.pendingAdministrator` is non-zero, the current `.administrator` can still call `setPool`. However,
-  resolving the pending transfer before starting is recommended. For example, if an administrator change was intended
-  in the past but no longer relevant, `transferAdminRole(localToken, address(0))` can be called to cancel the previous
-  transfer.
+  resolving the pending transfer before starting is recommended. For example, if an administrator change you started
+  earlier is no longer relevant, call `transferAdminRole(localToken, address(0))` to cancel it.
 
 ### 2. Confirm you can grant mint/burn roles on the Chain B token
 
 - On **Chain B**, the new v2 BurnMintTokenPool needs mint and burn privileges on the token.
 - Verify the address you control can call `grantMintAndBurnRoles` (or equivalent) on the Chain B token contract.
-- **This is a hard blocker** for Chain B — if you can't grant roles, you can't migrate that side.
-- On **Chain A**, the Lock & Release pool does NOT need mint/burn roles (it locks and releases, it doesn't burn or
+- **This is a hard blocker** for Chain B. If you can't grant roles, you can't migrate that side.
+- On **Chain A**, the Lock & Release pool does NOT need mint/burn roles (it locks and releases; it doesn't burn or
   mint). No role grant is needed on the Chain A token.
 
 ### 3. Confirm you can withdraw liquidity from the v1 Chain A pool
 
 - The v1 LockReleaseTokenPool holds locked token liquidity directly in its contract balance. You need to withdraw this
   liquidity and deposit it into the new v2 ERC20LockBox.
-- **Only the rebalancer can call `withdrawLiquidity`** — the pool owner cannot withdraw directly. If the rebalancer is
+- **Only the rebalancer can call `withdrawLiquidity`**. The pool owner cannot withdraw directly. If the rebalancer is
   `address(0)` (never set), liquidity cannot be withdrawn at all.
 - If the rebalancer is not the address you control, the pool owner can call `setRebalancer(address)` (`onlyOwner`) to
   change it. A common pattern is to temporarily set the rebalancer, perform the withdrawal, then restore the original
   rebalancer after (see Step 3).
-- **This is a hard blocker** — if the rebalancer is `address(0)` and you are not the pool owner (and thus cannot call
+- **This is a hard blocker**. If the rebalancer is `address(0)` and you are not the pool owner (and thus cannot call
   `setRebalancer`), you cannot fund the new lockbox.
-- **Note**: `getRebalancer` and `setRebalancer` are v1 functions. v2 pools do NOT have a rebalancer concept — they use
+- **Note**: `getRebalancer` and `setRebalancer` are v1 functions. v2 pools do NOT have a rebalancer concept. They use
   the lockbox + authorized callers pattern instead.
 
 ### 4. Record your existing v1 deployment details
@@ -154,13 +153,13 @@ Collect and export the following:
     - `pool.getCurrentInboundRateLimiterState(remoteChainSelector)` → returns the inbound `TokenBucket`.
     - `pool.getCurrentOutboundRateLimiterState(remoteChainSelector)` → returns the outbound `TokenBucket`.
     - Each `TokenBucket` is `{ tokens, lastUpdated, isEnabled, capacity, rate }`. The struct is identical across v1.5.1,
-      v1.6.1, and v2.0 — values can be copied directly.
+      v1.6.1, and v2.0, so you can copy values directly.
     - Note: v2 collapses these into a single `getCurrentRateLimiterState(remoteChainSelector, fastFinality)` call
       returning both buckets, but v1 doesn't have that signature.
 
 ### 5. Confirm the token contracts are compatible
 
-- **Chain A token**: Must be a standard ERC20 (the Lock & Release pool locks/releases, no special interface needed
+- **Chain A token**: Must be a standard ERC20 (the Lock & Release pool locks/releases, so no special interface is needed
   beyond `transfer`/`transferFrom`).
 - **Chain B token**: Must implement `burn(amount)` and `mint(to, amount)` interfaces (for example, `IBurnMintERC20`).
 
@@ -173,7 +172,7 @@ Collect and export the following:
 
 ## Step 1: Deploy new v2 token pools
 
-This step is **asymmetric** — Chain A and Chain B require different contracts.
+This step is **asymmetric**: Chain A and Chain B require different contracts.
 
 ### Chain A: LockBox + LockReleaseTokenPool
 
@@ -209,8 +208,8 @@ constructor(
 )
 ```
 
-- Pass `address(0)` for `advancedPoolHooks` if you don't need allowlisting or a policy engine. You can attach hooks
-  later via `updateAdvancedPoolHooks`.
+- Pass `address(0)` for `advancedPoolHooks` if you don't need allowlisting, CCV configuration, or a policy engine. You
+  can attach hooks later via `updateAdvancedPoolHooks`.
 - Record the new v2 pool address.
 
 #### 1c. Authorize pool on LockBox
@@ -237,7 +236,7 @@ struct AuthorizedCallerArgs {
 - Grant mint and burn roles to the new v2 pool on the Chain B token contract.
 - Record the new v2 pool address.
 
-**Note — dual privilege window**: From this point until Step 8b:
+**Note (dual privilege window)**: From this point until Step 8b:
 
 - On Chain B, **both** old v1 and new v2 BurnMint pools have mint/burn roles.
 - On Chain A, the old v1 LockRelease pool still holds liquidity and is still registered. The new v2 pool exists but is
@@ -249,35 +248,35 @@ struct AuthorizedCallerArgs {
 - New v2 Chain A pool: deployed, authorized on lockbox, but **empty** (no liquidity yet) and not connected to CCIP.
 - New v2 Chain B pool: deployed, has mint/burn roles, but not connected to CCIP.
 
-## Step 2 (required): Pause outbound transfers on old v1 pools
+## Step 2 (strongly recommended): Pause outbound transfers on old v1 pools
 
 - Set outbound rate limiter to `isEnabled: true, capacity: 1, rate: 0` on the old v1 pools on **both chains**. This
   effectively blocks all transfers: the capacity allows at most 1 unit (smallest token denomination) and the zero rate
   means the bucket never refills. This works across all pool versions (v1.5.x through v2).
-  - **Do NOT use `isEnabled: false`** — this disables rate limiting entirely, allowing unlimited transfers.
-- This blocks new cross-chain transfers while the migration completes, creating a brief maintenance window.
+  - **Do NOT use `isEnabled: false`**. It disables rate limiting entirely and allows unlimited transfers.
+- This blocks new cross-chain transfers while the migration completes, so expect a brief maintenance window.
 - **Keep inbound open** so in-flight messages can still arrive and be processed.
 
 **For Lock & Mint migrations, pausing is strongly recommended (not just optional)**. Unlike Burn & Mint, Lock & Mint has
 a liquidity migration step (Step 3) that drains the v1 pool. If you don't pause:
 
 - New tokens can get locked in the old v1 pool between Step 3 (drain) and Step 6 (cutover).
-- These tokens are **stranded** — they're not in the v2 lockbox, so the v2 pool can't release them.
+- These tokens are **stranded**. They're not in the v2 lockbox, so the v2 pool can't release them.
 - This creates a **liquidity accounting mismatch**: the v2 lockbox is underfunded relative to the total locked tokens.
 - Reverse (Mint→Lock) messages could fail if the lockbox doesn't have sufficient funds.
 
 If you can batch steps atomically (for example, via a Safe multisig meta-transaction), this window is eliminated. If
 you cannot batch atomically (for example, executing from a plain EOA), pausing is the safest approach.
 
-**Trade-off**: Pausing = prevents stranded liquidity, clean accounting, safe cutover. Not pausing = zero downtime but
-risk of stranded tokens and underfunded lockbox.
+**Trade-off**: Pausing prevents stranded liquidity and gives you clean accounting and a safe cutover. Not pausing means
+zero downtime but risks stranded tokens and an underfunded lockbox.
 
 ## Step 3: Migrate liquidity to LockBox (Chain A only)
 
 This step is unique to Lock & Mint migration. In v1, the Lock & Release pool held liquidity directly in its contract
 balance. In v2, liquidity sits in the `ERC20LockBox`. You must move it.
 
-**Warning — non-atomic execution risk**: If you execute steps individually (not batched), the withdraw → approve →
+**Warning (non-atomic execution risk)**: If you execute steps individually (not batched), the withdraw → approve →
 deposit sequence is **NOT atomic**. Between withdraw and deposit, the full liquidity sits in your wallet. If the
 account is compromised or the deposit fails, tokens are at risk. **Mitigations**: batch all sub-steps atomically via a
 Safe multisig meta-transaction or similar account abstraction, or use a hardware wallet if executing individually.
@@ -312,7 +311,7 @@ you fully drained, verify `token.balanceOf(v1PoolAddress) = 0`.
 
 - Call `applyAuthorizedCallerUpdates` on the lockbox, adding your address as an authorized caller.
 - This is required because only authorized callers can call `deposit`.
-- This authorization is temporary — you will remove it in Step 3f after the deposit.
+- This authorization is temporary. You will remove it in Step 3f after the deposit.
 
 #### 3d. Approve the lockbox to spend tokens
 
@@ -321,13 +320,13 @@ you fully drained, verify `token.balanceOf(v1PoolAddress) = 0`.
 #### 3e. Deposit tokens into the ERC20LockBox
 
 - Call `lockbox.deposit(tokenAddress, 0, amount)` to deposit the tokens into the lockbox.
-- The `remoteChainSelector` parameter (second arg) is **unused** by the ERC20LockBox contract — pass `0` or any value.
+- The `remoteChainSelector` parameter (second arg) is **unused** by the ERC20LockBox contract, so pass `0` or any value.
   The lockbox is a simple token vault shared across all remote chains.
 
 #### 3f. Remove your address from authorized callers (cleanup)
 
 - Call `applyAuthorizedCallerUpdates` on the lockbox, removing your address from the authorized callers list.
-- This minimizes the attack surface — only the pool should remain as an authorized caller.
+- This minimizes the attack surface. Only the pool should remain as an authorized caller.
 
 ### Post-migration verification
 
@@ -358,15 +357,15 @@ function applyChainUpdates(
 Each `ChainUpdate` contains:
 
 - `remoteChainSelector` (uint64)
-- `remotePoolAddresses` (bytes[]) — array of remote pool addresses
-- `remoteTokenAddress` (bytes) — the token address on the remote chain
+- `remotePoolAddresses` (bytes[]): array of remote pool addresses
+- `remoteTokenAddress` (bytes): the token address on the remote chain
 - `outboundRateLimiterConfig` (isEnabled, capacity, rate)
 - `inboundRateLimiterConfig` (isEnabled, capacity, rate)
 
-### Remote pool addresses — include both old and new
+### Remote pool addresses: Include both old and new
 
 The `remotePoolAddresses` array must include **both** the old v1 pool **and** the new v2 pool on the remote chain.
-Multiple pools per remote chain are supported — the contract stores them additively.
+Multiple pools per remote chain are supported, and the contract stores them additively.
 
 Note the **asymmetric pool types**:
 
@@ -377,15 +376,15 @@ Note the **asymmetric pool types**:
   - Remote chain = Chain A
   - `remotePoolAddresses = [encode(v1ChainALockReleasePool), encode(v2ChainALockReleasePool)]`
 
-**Address encoding**: `remotePoolAddresses` is typed as `bytes[]` and `remoteTokenAddress` as `bytes` — the contract
+**Address encoding**: `remotePoolAddresses` is typed as `bytes[]` and `remoteTokenAddress` as `bytes`. The contract
 stores whatever bytes you pass with no format validation beyond a non-zero-length check.
 
 - **EVM remote chain**: left-pad the 20-byte address to 32 bytes. In Solidity: `abi.encode(poolAddress)`. In Go:
-  `common.LeftPadBytes(addr.Bytes(), 32)`. Both produce the same 32 bytes — the 20-byte address right-aligned with 12
+  `common.LeftPadBytes(addr.Bytes(), 32)`. Both produce the same 32 bytes: the 20-byte address right-aligned with 12
   leading zero bytes.
 
 **Why both pools must be listed**: Messages sent through the old v1 pool before the cutover may still be in-flight. The
-OffRamp validates that the source pool address in the message matches a configured remote pool on the destination.
+destination pool validates that the source pool address in the message matches one of its configured remote pools.
 Without the old pool in the list, in-flight messages fail validation.
 
 ### Rate limiter configuration
@@ -394,8 +393,8 @@ Without the old pool in the list, in-flight messages fail validation.
 - Replicate your existing v1 rate limiter settings (or adjust as needed for v2). The struct is identical between v1 and
   v2.
 - Configure both inbound and outbound rate limits per remote chain.
-- If you paused transfers in Step 2, set the v2 pool rate limits to your desired production values (not zero — the v2
-  pool needs to be ready to handle traffic after cutover).
+- If you paused transfers in Step 2, set the v2 pool rate limits to your desired production values (not zero, because
+  the v2 pool needs to be ready to handle traffic after cutover).
 - **Note**: setting `isEnabled: false` means unlimited transfers (no rate limiting). Set `isEnabled: true` with
   appropriate capacity and rate to enforce limits.
 
@@ -404,10 +403,10 @@ Without the old pool in the list, in-flight messages fail validation.
 `applyChainUpdates` reverts with `ChainAlreadyExists` if the remote chain is already configured. You cannot call it
 twice for the same chain. If you need to fix a misconfiguration after the initial call:
 
-- **Add a missing remote pool**: call `addRemotePool(remoteChainSelector, encodedRemotePoolAddress)` (`onlyOwner`) —
-  second arg is `bytes`, encoded as described above.
-- **Remove a wrong remote pool**: call `removeRemotePool(remoteChainSelector, encodedRemotePoolAddress)` (`onlyOwner`) —
-  pass the same bytes that were stored when adding.
+- **Add a missing remote pool**: call `addRemotePool(remoteChainSelector, encodedRemotePoolAddress)` (`onlyOwner`).
+  The second arg is `bytes`, encoded as described above.
+- **Remove a wrong remote pool**: call `removeRemotePool(remoteChainSelector, encodedRemotePoolAddress)` (`onlyOwner`).
+  Pass the same bytes that were stored when adding.
 - **Change rate limiters**: call `setRateLimitConfig(RateLimitConfigArgs[])` (`onlyOwner` or rate limit admin).
 - **Fully reconfigure a chain**: first remove it via `applyChainUpdates([chainSelector], [])`, then re-add it with the
   correct configuration.
@@ -436,17 +435,18 @@ Before cutting over, verify the new v2 pools are correctly configured on **both 
 **Both chains**:
 
 - [ ] `TokenAdminRegistry.getTokenConfig(token).pendingAdministrator` is `address(0)`.
-- [ ] v1 pool is paused (if Step 2 was executed) — verify `token.balanceOf(v1PoolAddress) = 0` (no new locks since
+- [ ] v1 pool is paused (if Step 2 was executed). Verify `token.balanceOf(v1PoolAddress) = 0` (no new locks since
       drain).
 
-Verify before proceeding — `setPool` in the next step routes live traffic through the v2 pools.
+Verify before proceeding, because `setPool` in the next step routes live traffic through the v2 pools.
 
-## Step 6: Activate new v2 pools (`setPool`) — the cutover
+## Step 6: Cut over to the new v2 pools (`setPool`)
 
 - On **each chain**, call `TokenAdminRegistry.setPool(tokenAddress, newV2PoolAddress)` to point the registry to the new
   v2 pool.
-- Call `setPool` directly — your address is already the registered administrator. Do **not** call `proposeAdministrator`
-  or `acceptAdminRole`; these are only for initial registration, not for pool upgrades.
+- Call `setPool` directly, since your address is already the registered administrator. Do **not** call
+  `proposeAdministrator` or `acceptAdminRole`; these register or transfer the administrator role and are not part of a
+  pool upgrade.
 - Once executed on a chain, all new CCIP transfers for this token on that chain route through the new v2 pool.
 - Execute on both chains. The order does not matter because of the dual remote pool configuration from Step 4.
 
@@ -457,8 +457,8 @@ Verify before proceeding — `setPool` in the next step routes live traffic thro
   validate and execute correctly.
 - **For in-flight Lock→Mint messages**: If you paused in Step 2 and withdrew the full balance in Step 3, no residual
   tokens should be in the v1 pool. If you did NOT pause, any tokens locked between Step 3 and this cutover remain in
-  the v1 pool and are NOT in the v2 lockbox — creating a liquidity accounting mismatch (see Step 2 for why pausing is
-  strongly recommended).
+  the v1 pool and are NOT in the v2 lockbox, which creates a liquidity accounting mismatch (see Step 2 for why pausing
+  is strongly recommended).
 
 **Rollback**: If issues arise, you can call `TokenAdminRegistry.setPool(tokenAddress, oldV1PoolAddress)` to revert to
 v1. However, for Lock & Mint:
@@ -467,8 +467,8 @@ v1. However, for Lock & Mint:
   process new releases. (`provideLiquidity` does not exist in the contract source.)
 - Any in-flight messages sent through the v2 pool will fail validation on the v1 destination (since v1 pools were not
   configured with v2 remote pool addresses).
-- **Rollback before Step 6 is simpler**: the tokens are in the v2 lockbox and can be recovered via `lockbox.withdraw()`.
-  **Rollback after Step 6 is significantly harder** due to split liquidity state.
+- **Rollback before Step 6 is simpler**: the tokens are in the v2 lockbox, and an authorized caller can recover them via
+  `lockbox.withdraw()`. **Rollback after Step 6 is significantly harder** due to split liquidity state.
 
 ## Step 7: Validate end-to-end
 
@@ -484,8 +484,8 @@ v1. However, for Lock & Mint:
 
 **Important**: If you paused outbound in Step 2 and waited for in-flight messages to settle before draining, there
 should be no pending messages by this point. Verify via [CCIP Explorer](https://ccip.chain.link/) or `ccip-cli` (which
-queries `api.ccip.chain.link` — will soon support filtering by source token address) that all messages from the old v1
-pool addresses show SUCCESS status.
+queries `api.ccip.chain.link` and will soon support filtering by source token address) that all messages from the old
+v1 pool addresses show SUCCESS status.
 
 **Note**: Steps 8a and 8b are optional. The old pools are already inert (removed from TokenAdminRegistry) and pose
 minimal risk if cleanup is deferred. If you performed a partial drain (left some liquidity in the old v1 pool for
@@ -500,7 +500,7 @@ Call `removeRemotePool(uint64 remoteChainSelector, bytes calldata remotePoolAddr
 
 **Caution**: If any in-flight messages from the old v1 pools are still pending, removing their remote pool address will
 cause those messages to fail validation. If this happens, re-add the address using
-`addRemotePool(uint64 remoteChainSelector, bytes calldata remotePoolAddress)` (`onlyOwner`) to unblock it.
+`addRemotePool(uint64 remoteChainSelector, bytes calldata remotePoolAddress)` (`onlyOwner`) to unblock them.
 
 ### 8b. (Optional) Revoke old pool privileges
 
@@ -511,7 +511,7 @@ cause those messages to fail validation. If this happens, re-add the address usi
 
 **Chain A**:
 
-- The old v1 Lock & Release pool does **not** have mint/burn roles — no revocation needed.
+- The old v1 Lock & Release pool does **not** have mint/burn roles, so no revocation is needed.
 - The old v1 Chain A pool is drained and removed from TokenAdminRegistry. It is inert.
 
 **State after cleanup**
@@ -528,18 +528,20 @@ v2 pools support additional configuration not available in v1:
 
 - Deploy a separate `AdvancedPoolHooks` contract and attach it to your pool via
   `updateAdvancedPoolHooks(IAdvancedPoolHooks newHook)` (`onlyOwner`).
+- Add your pool as an authorized caller on the hooks contract (constructor `authorizedCallers` or
+  `applyAuthorizedCallerUpdates`); otherwise transfers through the pool revert.
 - Alternatively, pass the hooks address in the pool constructor at deployment time (Step 1).
-- If you don't need these features, leave the hooks address at `address(0)` (the default). AdvancedPoolHooks is fully
-  optional.
+- If you don't need these features, leave the hooks address at `address(0)` (the default).
 - Constructor: `(address[] allowlist, uint256 thresholdAmountForAdditionalCCVs, address policyEngine, address[] authorizedCallers)`
 - Capabilities:
   - **Allowlisting**: Restrict which addresses can initiate transfers (moved from pool constructor in v1 to hooks in
-    v2). Managed via `applyAllowListUpdates(address[] removes, address[] adds)` (`onlyOwner`).
+    v2). Managed via `applyAllowListUpdates(address[] removes, address[] adds)` (`onlyOwner`). The allowlist is enabled
+    only if you pass a non-empty `allowlist` to the constructor.
   - **CCV (Cross-Chain Verifier) management**: Configure per-chain verifiers for inbound and outbound transfers via
     `applyCCVConfigUpdates(CCVConfigArg[])` (`onlyOwner`).
   - **Threshold amount for additional CCVs**: Set via `setThresholdAmount(uint256)` (`onlyOwner`). When a transfer
-    amount meets or exceeds this threshold, additional CCVs are required on top of the base CCVs — providing tiered
-    security for high-value transfers. Set to `0` to disable (only base CCVs apply regardless of amount).
+    amount meets or exceeds this threshold, additional CCVs are required on top of the base CCVs, which gives
+    high-value transfers tiered security. Set to `0` to disable (only base CCVs apply regardless of amount).
   - **Policy engine**: Attach a custom policy contract for pre-flight/post-flight validation via
     `setPolicyEngine(address)` (`onlyOwner`).
 
@@ -549,32 +551,34 @@ v2 pools support additional configuration not available in v1:
   default `bytes4(0)` means the pool only accepts full-finality transfers; any non-zero value opts the pool into fast
   finality (either safe-head flag, minimum block-depth, or both). Read the current value via
   `getAllowedFinalityConfig()`.
-- When fast finality is enabled, the pool maintains **two separate rate limiter buckets per remote chain**: one for
-  default (wait-for-finality) transfers and one for fast-finality transfers.
+- When fast finality is enabled, the pool can keep **separate rate limiter buckets per remote chain** for default
+  (wait-for-finality) transfers and for fast-finality transfers. Until you enable the fast-finality buckets
+  (`setRateLimitConfig` with `fastFinality: true`), fast-finality transfers use the default buckets.
 
 ### Rate limits
 
 - v2 pools support **separate rate limits for default (wait-for-finality) and fast finality** per remote chain.
 - Call `setRateLimitConfig(RateLimitConfigArgs[])` (`onlyOwner` or rate limit admin) to configure rate limits. Each
   `RateLimitConfigArgs` includes a `bool fastFinality` flag to target the default or fast-finality bucket.
-- To read current rate limits: `getCurrentRateLimiterState(remoteChainSelector, fastFinality)` — pass `false` for the
-  default (wait-for-finality) bucket, `true` for the fast-finality bucket.
+- To read current rate limits, call `getCurrentRateLimiterState(remoteChainSelector, fastFinality)`. Pass `false` for
+  the default (wait-for-finality) bucket and `true` for the fast-finality bucket.
 
 ### Token transfer fee configuration
 
 - v2 pools have a **pool-level fee override** mechanism. Call `applyTokenTransferFeeConfigUpdates()` on **your pool**
   (`onlyOwner`) to configure per-destination-chain fees.
 - Fees support **separate rates for default and fast finality**:
-  - `finalityTransferFeeBps` / `finalityFeeUSDCents` — for default (wait-for-finality) transfers
-  - `fastFinalityTransferFeeBps` / `fastFinalityFeeUSDCents` — for fast-finality transfers
+  - `finalityTransferFeeBps` / `finalityFeeUSDCents`: for default (wait-for-finality) transfers
+  - `fastFinalityTransferFeeBps` / `fastFinalityFeeUSDCents`: for fast-finality transfers
 - These pool-level fees override the global defaults set by Chainlink on the FeeQuoter contract. If you don't configure
-  pool-level fees (`isEnabled: false`), the FeeQuoter defaults apply.
+  pool-level fees for a destination chain, the pool's `getFee` returns `isEnabled: false` and the FeeQuoter defaults
+  apply.
 - To withdraw accrued fees, call `withdrawFeeTokens(address[], address)` on the pool (`onlyOwner` or `feeAdmin`).
 
 ### Rate limit admin & fee admin delegation
 
 - Call `setDynamicConfig(address router, address rateLimitAdmin, address feeAdmin)` on the v2 pool (`onlyOwner`).
-- There is no separate `setRateLimitAdmin` function — all three are set together (pass the current value for any field
+- There is no separate `setRateLimitAdmin` function. All three are set together (pass the current value for any field
   you don't want to change; for example, router).
 - The **rate limit admin** can call `setRateLimitConfig()` to modify rate limits without full pool ownership.
 - The **fee admin** can call `withdrawFeeTokens(address[], address)` to withdraw accrued fees without full pool
@@ -584,7 +588,7 @@ v2 pools support additional configuration not available in v1:
 
 - Transfer pool ownership to a multisig or timelock contract after migration.
 - Transfer lockbox ownership as well, and remove your address from authorized callers.
-- This ensures all future configuration changes require governance approval.
+- This ensures all future owner-only configuration changes require governance approval.
 
 ## Multi-chain considerations
 
@@ -597,24 +601,25 @@ For tokens deployed across 3+ chains, you typically have **one LockReleaseTokenP
   BurnMint pools on each).
 - Each remote BurnMint pool must configure remote pool entries for Chain A's old v1 and new v2 LockRelease pool
   addresses.
-- Liquidity migration (Step 3): The ERC20LockBox is a shared vault — one withdrawal and one deposit covers all remote
+- Liquidity migration (Step 3): The ERC20LockBox is a shared vault, so one withdrawal and one deposit cover all remote
   chains (the `remoteChainSelector` param is unused).
 
 ### Siloed liquidity (per-chain isolation)
 
 If you need per-chain liquidity isolation, use `SiloedLockReleaseTokenPool` instead of `LockReleaseTokenPool`:
 
-- No lockbox in constructor — configure per-chain lockboxes via `configureLockBoxes(LockBoxConfig[])` (`onlyOwner`).
+- No lockbox in the constructor. Configure per-chain lockboxes via `configureLockBoxes(LockBoxConfig[])` (`onlyOwner`).
 - Each remote chain can have its own ERC20LockBox instance.
 - Liquidity migration differs from the standard flow:
   - Use `withdrawSiloedLiquidity(remoteChainSelector, amount)` per remote chain (instead of `withdrawLiquidity`).
-  - Each siloed chain has its own rebalancer — set and restore per chain via the pool's silo rebalancer functions.
+  - Each siloed chain has its own rebalancer. Set and restore it per chain via the pool's silo rebalancer functions.
   - Authorize, approve, and deposit into each chain's lockbox separately.
   - Also handle any unsiloed liquidity separately.
 
 ### Gradual migration
 
 You can migrate remote chains sequentially. Chain A's v2 pool can serve both migrated (v2) and not-yet-migrated (v1)
-destinations simultaneously, as long as all remote pool addresses are configured.
+destinations simultaneously, as long as all remote pool addresses are configured, including Chain A's v2 pool on each
+not-yet-migrated chain's v1 pool (`addRemotePool`).
 
 <CcipCommon callout="conceptualDisclaimer" />

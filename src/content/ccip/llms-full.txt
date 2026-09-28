@@ -82641,14 +82641,13 @@ Source: https://docs.chain.link/ccip/concepts/ccvs
 
 Cross-Chain Verifiers (CCVs) are CCIP's pluggable verification layer. Each CCV attests that a source-chain message is valid before the destination chain executes it.
 
-Most integrations use CCIP's default CommitteeVerifier without additional configuration.
-The underlying section goes into detail on the different verification models, interfaces, guarantees, and the trust and responsibility model for CCVs.
+Most integrations use CCIP's default Committee Verifier without additional configuration. The pages below cover the verification models, interfaces and guarantees, and the trust and responsibility model for CCVs.
 
 ## Pages
 
-- [Cross-Chain Verifiers Overview](/ccip/concepts/ccvs/overview): What CCVs are, how they fit into the message lifecycle, and when to add custom or third-party verifiers.
-- [Verification Models](/ccip/concepts/ccvs/verification-models): CommitteeVerifier, CCTPVerifier, LombardVerifier, and custom CCV attestation patterns.
-- [CCV Interfaces & Guarantees](/ccip/concepts/ccvs/interface-guarantees): Onchain/offchain interface contracts, the versioned resolver pattern, and protocol guarantees.
+- [Cross-Chain Verifiers Overview](/ccip/concepts/ccvs/overview): What CCVs are, how they fit into the message lifecycle, when to add custom or third-party verifiers, and how CCV requirements combine.
+- [Verification Models](/ccip/concepts/ccvs/verification-models): The \`CommitteeVerifier\` , \`CCTPVerifier\` , and \`LombardVerifier\` attestation flows, custom CCVs, and how the models compare.
+- [CCV Interfaces & Guarantees](/ccip/concepts/ccvs/interface-guarantees): The versioned resolver pattern, onchain and offchain interface requirements, optional access controls, and protocol guarantees.
 - [Trust & Responsibility Model](/ccip/concepts/ccvs/trust-responsibility-model): Trust boundaries and responsibilities for default vs external CCV operators and integrators.
 
 ---
@@ -82656,7 +82655,7 @@ The underlying section goes into detail on the different verification models, in
 # CCV Interfaces & Guarantees
 Source: https://docs.chain.link/ccip/concepts/ccvs/interface-guarantees
 
-Cross-Chain Verifiers (CCVs) expose a consistent onchain/offchain interface so CCIP ramps, executors, and indexers can interact with any verifier type uniformly.
+Cross-Chain Verifiers (CCVs) expose a common onchain and offchain interface, so CCIP ramps, executors, and indexers can work with any verifier type the same way.
 
 This page describes the interface contract and guarantees CCIP enforces. It does not provide deployment instructions.
 
@@ -82664,27 +82663,27 @@ This page describes the interface contract and guarantees CCIP enforces. It does
 
 Each CCV uses a stable **resolver** contract with one or more **versioned implementation** contracts behind it:
 
-- **Source chain (outbound):** The resolver routes to the outbound implementation based on the destination chain. The implementation registers the message with the offchain verifier network and returns attestation hints.
-- **Destination chain (inbound):** The resolver reads the version tag embedded in VerifierResults and routes to the correct inbound implementation, which validates attestation data before execution proceeds.
+- **Source chain (outbound):** The OnRamp asks the resolver for the outbound implementation for the destination chain and calls it. The implementation runs the verifier's outbound hook and returns verifier data, which the OnRamp emits in its `CCIPMessageSent` event for the offchain verifier.
+- **Destination chain (inbound):** The resolver reads the version tag embedded in VerifierResults and returns the matching inbound implementation, which the OffRamp calls to validate attestation data before execution proceeds.
 
-This pattern allows verification logic to upgrade without changing the CCV address referenced by token pools, receivers, or lane configuration.
+This pattern lets a CCV upgrade its verification logic without changing the CCV address referenced by token pools, receivers, or lane configuration.
 
 ## Onchain Interface Requirements
 
-All CCVs validate callers through the Router's ramp registry — outbound calls must come from the registered OnRamp, inbound calls from a registered OffRamp. This lets CCVs survive ramp upgrades without reconfiguration.
+CCVs check callers against the Router's ramp registry. Only the OnRamp that the Router lists for the destination chain can call a CCV's outbound hook (`forwardToVerifier`). On the destination chain, the CCVs whose verification triggers a token mint (the CCTP and Lombard verifiers) accept `verifyMessage` calls only from an OffRamp registered on the Router. The Committee Verifier's `verifyMessage` is a read-only check with no caller restriction. Because CCVs read the ramp addresses from the Router, they survive ramp upgrades without reconfiguration.
 
 Each CCV also:
 
-- Maintains **storage location URIs** that point offchain components to required configuration data
+- Maintains **storage locations** (addresses, URLs, or other identifiers) that tell offchain components such as executors where to find the proof data the CCV produces
 - Quotes a **per-chain fee** (flat USD cents plus gas and payload overheads used during OnRamp fee computation)
-- Enforces a **finality policy** using the same FinalityCodec encoding as the rest of the protocol
+- Enforces a **finality policy** using the same `FinalityCodec` encoding as the rest of the protocol
 - Checks **RMN curse status** before processing
 
-An immutable **4-byte version tag** acts as a domain separator, preventing attestation data from one verifier type being replayed in another.
+An immutable **4-byte version tag** acts as a domain separator, so attestation data from one verifier version cannot be replayed in another.
 
 ### Inbound Verification
 
-On the destination chain, the OffRamp calls each required CCV's inbound handler to validate attestation data against the encoded message. The CCV must implement `verifyMessage` according to the Chainlink-defined specification.
+On the destination chain, the OffRamp calls the inbound implementation of each required CCV, and of each optional CCV counted toward the threshold, to validate attestation data against the encoded message. The CCV must implement `verifyMessage` according to the Chainlink-defined specification.
 
 Failure to conform to the VerifierResult API spec or `verifyMessage` interface can cause stuck transactions, incorrect token accounting, or loss of funds.
 
@@ -82697,7 +82696,7 @@ Each CCV type has a corresponding offchain verifier component. All types follow 
 3. Wait until the message meets the CCV's finality requirement
 4. Produce and publish a **VerifierResult** tied to the MessageID
 
-What finality modes a verifier accepts is governed onchain by the CCV's own policy. The CommitteeVerifier can support faster-than-finality (custom block-depth threshold or chain-specific tags). Third-party verifiers poll external APIs and match responses to messages.
+The finality modes a verifier accepts are governed onchain by the CCV's own policy. The Committee Verifier can support faster-than-finality (a custom block-depth threshold or the `safe` tag). Third-party verifiers poll external APIs and match responses to messages.
 
 ### Indexer Integration
 
@@ -82709,17 +82708,17 @@ Executors and other parties can also query verifier services directly and submit
 
 CCVs may configure:
 
-- **Per-destination-chain sender allowlists** — restrict which source senders the CCV will service
-- **Allowed finality configuration** — define which finality levels the CCV accepts for attestation
+- **Per-destination-chain sender allowlists**: restrict which source senders the CCV will service
+- **Allowed finality configuration**: define which finality levels the CCV accepts for attestation
 
-Receivers and token pools can require specific CCVs and set optional verifier thresholds (quorum). The OffRamp merges requirements from the receiver, token pool, and lane configuration before execution.
+Receivers and token pools can require specific CCVs. Receivers can also list optional CCVs with a threshold (quorum). The OffRamp merges requirements from the receiver, token pool, and lane configuration before execution.
 
 ## Protocol Guarantees
 
 CCIP guarantees on the destination chain:
 
-- Each VerifierResult is validated against the corresponding onchain CCV contract
-- The MessageID is recomputed from the encoded message bytes — tampering causes verification failure
+- The VerifierResult for each required CCV, and for each optional CCV counted toward the threshold, is validated against that CCV's onchain contract
+- The MessageID is recomputed from the encoded message bytes, so tampering causes verification failure
 - All required CCVs must be present; optional thresholds must be met
 - Successfully executed messages cannot be re-executed
 
@@ -82738,17 +82737,17 @@ Source: https://docs.chain.link/ccip/concepts/ccvs/overview
 
 Cross-Chain Verifiers (CCVs) are CCIP's pluggable verification layer. Each CCV attests that a source-chain message is valid before the destination chain executes it.
 
-Most integrations use CCIP's default **CommitteeVerifier** without additional configuration. For how verification fits into the end-to-end message lifecycle, see the [Architecture Overview](/ccip/concepts/architecture/overview).
+Most integrations use CCIP's default **Committee Verifier** without additional configuration. For how verification fits into the end-to-end message lifecycle, see the [Architecture Overview](/ccip/concepts/architecture/overview).
 
-This section explains how verification can be extended with **custom or third-party CCVs**. It does not describe default CCIP behavior in depth or provide production deployment guides.
+This section explains how to extend verification with **custom or third-party CCVs**. It does not describe default CCIP behavior in depth or provide production deployment guides.
 
 ## What CCVs Do
 
 CCVs bridge source-chain events and destination-chain execution:
 
-1. On the **source chain**, the CCV's outbound handler registers the message and returns attestation hints when the OnRamp emits `CCIPMessageSent`.
-2. **Offchain**, the CCV's verifier service waits for the required confirmation depth, validates the message, and publishes a **VerifierResult** tied to the MessageID.
-3. On the **destination chain**, the CCV's inbound implementation verifies attestation data when the OffRamp calls `execute()`.
+1. On the **source chain**, the OnRamp calls the CCV's outbound implementation, which runs the verifier's outbound hook and returns verifier data. The OnRamp emits that data in its `CCIPMessageSent` event.
+2. **Offchain**, the CCV's verifier service waits for the required confirmation depth, validates the message, and publishes a **VerifierResult** tied to the message ID.
+3. On the **destination chain**, the CCV's inbound implementation verifies the attestation data when the OffRamp calls it during `execute()`.
 
 Each CCV consists of a stable onchain **resolver** contract and one or more **versioned implementation** contracts. This pattern lets verification logic upgrade without changing the CCV address that token pools and receivers reference.
 
@@ -82763,15 +82762,15 @@ Each CCV consists of a stable onchain **resolver** contract and one or more **ve
 
 Consider additional CCVs when you need:
 
-- **Additive security** — require issuer, institution, or third-party attestation alongside the default verifier
-- **External proof sources** — integrate attestations from systems such as CCTP (USDC) or token-specific verification services
-- **Policy layering** — combine stricter CCV requirements with faster finality on specific lanes
+- **Additive security**: require issuer, institution, or third-party attestation alongside the default verifier
+- **External proof sources**: integrate attestations from systems such as CCTP (USDC) or token-specific verification services
+- **Policy layering**: combine stricter CCV requirements with Faster-Than-Finality (FTF) on specific lanes
 
 CCV requirements are **additive**. The effective set for a message merges contributions from the sender, token pool, receiver, and lane configuration. All required CCVs must produce valid results before execution proceeds.
 
 ## Verification Models
 
-CCIP ships with concrete CCV implementations and supports permissionless custom verifiers:
+CCIP ships with concrete CCV implementations and supports permissionless custom CCVs:
 
 | Model                 | Operator          | Typical use                                      |
 | :-------------------- | :---------------- | :----------------------------------------------- |
@@ -82842,7 +82841,7 @@ For the full shared-responsibility model across all CCIP participants, see [Serv
 # Verification Models
 Source: https://docs.chain.link/ccip/concepts/ccvs/verification-models
 
-CCIP supports multiple Cross-Chain Verifier (CCV) models. Each model follows the same high-level pipeline — monitor source-chain events, wait for the required finality, produce a VerifierResult — but attestation mechanics differ.
+CCIP supports multiple Cross-Chain Verifier (CCV) models. Each model follows the same high-level pipeline (monitor source-chain events, wait for the required finality, produce a VerifierResult), but attestation mechanics differ.
 
 For resolver contracts, version tags, and interface requirements shared across models, see [CCV Interfaces & Guarantees](/ccip/concepts/ccvs/interface-guarantees).
 
@@ -82854,14 +82853,14 @@ The **CommitteeVerifier** is CCIP's default CCV, operated by the CCIP decentrali
 
 1. Offchain verifier nodes monitor `CCIPMessageSent` events filtered to their CCV's resolver contract.
 2. Each node waits until the message meets its configured finality requirement (full finality by default, or a custom depth for faster-than-finality transfers).
-3. Each node independently signs a hash over the CCV's version tag and the MessageID (which commits to the full encoded message).
+3. Each node independently signs a hash over the CCV's version tag and the message ID (which commits to the full encoded message).
 4. Signatures are sent to an **Aggregator**, which assembles a quorum result and exposes the combined VerifierResult via a read API.
 
-**Reorg handling:** When a faster-than-finality message is reorged before full finality, the CommitteeVerifier quarantines affected messages and pauses new attestations until the source chain reaches finality. This reorg quarantine is specific to the default committee verifier. Third-party CCVs may not provide equivalent protection — see [Trust & Responsibility Model](/ccip/concepts/ccvs/trust-responsibility-model).
+**Reorg handling:** When a faster-than-finality message is reorged before full finality, the CommitteeVerifier quarantines affected messages and pauses new attestations until the source chain reaches finality. This reorg quarantine is specific to the default CommitteeVerifier. Third-party CCVs may not provide equivalent protection. See [Trust & Responsibility Model](/ccip/concepts/ccvs/trust-responsibility-model).
 
 ## CCTPVerifier
 
-The **CCTPVerifier** integrates Circle's Cross-Chain Transfer Protocol attestation for USDC.
+The **CCTPVerifier** integrates Circle's Cross-Chain Transfer Protocol (CCTP) attestation for USDC.
 
 Instead of DON quorum signatures, the offchain verifier polls Circle's external attestation API, matches the response to the message using data from the `CCIPMessageSent` receipt, and serves the result via API for executors to retrieve.
 
@@ -82869,15 +82868,15 @@ Use this model when USDC transfers should carry Circle's native cross-chain atte
 
 ## LombardVerifier
 
-The **LombardVerifier** supports token-specific verification through an external attestation service.
+The **LombardVerifier** supports token-specific verification through Lombard's bridge and an external attestation service.
 
-Like CCTPVerifier, the offchain component polls an external API, matches attestations to messages, and publishes VerifierResults for execution. Configuration includes supported tokens and remote adapter paths.
+As with the CCTPVerifier, the offchain component polls an external API, matches attestations to messages, and publishes VerifierResults for execution. Configuration includes supported tokens, per-chain paths, and remote adapters.
 
-Use this model when a token issuer or protocol requires verification tied to an external attestation provider.
+Use this model for transfers of tokens that Lombard's bridge supports.
 
 ## Custom CCVs
 
-CCVs are **permissionless**. Any party can deploy onchain resolver and implementation contracts plus the corresponding offchain verifier service, provided they conform to CCIP's interface specifications.
+CCVs are permissionless. Any party can deploy onchain resolver and implementation contracts plus the corresponding offchain verifier service, provided they conform to CCIP's interface specifications.
 
 Custom CCVs are appropriate when:
 
@@ -82885,7 +82884,7 @@ Custom CCVs are appropriate when:
 - An application needs verification logic that the default models do not cover
 - A token pool or receiver mandates a specific third-party verifier
 
-Custom operators must implement both onchain contracts (outbound registration, inbound `verifyMessage`) and offchain infrastructure (event monitoring, attestation publishing). Failure to meet protocol specifications can stall or fail user transactions.
+Custom operators must implement both onchain contracts (outbound `forwardToVerifier` hook, inbound `verifyMessage`) and offchain infrastructure (event monitoring, attestation publishing). Failure to meet protocol specifications can stall or fail user transactions.
 
 ## Comparing Models
 
@@ -101055,7 +101054,7 @@ Source: https://docs.chain.link/ccip/evm/concepts/cross-chain-token/burn-mint-v1
 
 ## Overview
 
-This migration flow covers upgrading a **burn and mint** token handling mechanism from CCIP v1 to v2 where you have a
+This migration flow covers upgrading a **burn and mint** token from v1.x to v2.0 token pools, where you have a
 **BurnMintTokenPool on each chain**. It assumes your address is the registered administrator in the `TokenAdminRegistry`
 on all chains.
 
@@ -101078,7 +101077,7 @@ more chains, see [Multi-chain considerations](#multi-chain-considerations).
 
 - **v1 pool**: Any standard pool version 1.5.x or 1.6.x (`BurnMintTokenPool 1.5.1`, `BurnMintTokenPool 1.6.0`, etc.)
   - Includes `BurnMintTokenPool`, `BurnWithFromMintTokenPool`, `BurnFromMintTokenPool`; each concrete pool inherits
-    `BurnMintTokenPoolABstract`, which inherits the base `TokenPool` abstraction.
+    `BurnMintTokenPoolAbstract`, which inherits the base `TokenPool` abstraction.
 - **v2 pool**: Pool version 2.0 (`BurnMintTokenPool 2.0`) that you want to upgrade to.
 - **TokenAdminRegistry**: The CCIP contract where a token ↔ token pool mapping is registered.
 
@@ -101093,20 +101092,19 @@ example, Safe), you can batch multiple migration steps into a single atomic tran
 
 Recommended groupings per chain:
 
-### Batch 1 — Configure + cutover
+### Batch 1: Configure + cutover
 
-`applyChainUpdates` (Step 3) + `setPool` (Step 5).
+`applyChainUpdates` (Step 3) + `setPool` (Step 5). If you planned FTF rate limits or pool fees, put `setRateLimitConfig`
+and `applyTokenTransferFeeConfigUpdates` between these two calls, since both revert until the remote chain is added.
 
-This configures the v2 pool and activates it in a single transaction, eliminating the window between configuration and
+This configures the v2 pool and activates it in a single transaction, so there is no window between configuration and
 cutover.
 
-### Batch 2 — Cleanup
+### Batch 2: Cleanup
 
 `removeRemotePool` (Step 7a) + `revokeMintRole` + `revokeBurnRole` (Step 7b).
 
-This combines all cleanup operations.
-
-Each batch must be executed **per chain** — you cannot batch cross-chain operations into a single transaction.
+Each batch must be executed **per chain**. You cannot batch cross-chain operations into a single transaction.
 
 ## Pre-flight checks
 
@@ -101115,15 +101113,15 @@ Before starting the migration, verify the following on **both chains**:
 ### 1. Confirm your admin status in TokenAdminRegistry
 
 - Call `TokenAdminRegistry.getTokenConfig(tokenAddress)`. This returns a struct with three fields:
-  - `.administrator` — must match your address
-  - `.pendingAdministrator` — must be `address(0)` (no pending admin transfer in progress)
-  - `.tokenPool` — the current v1 pool address (record this)
+  - `.administrator`: must match your address
+  - `.pendingAdministrator`: must be `address(0)` (no pending admin transfer in progress)
+  - `.tokenPool`: the current v1 pool address (record this)
 - If `.administrator` is a multisig or timelock, execute subsequent steps through that governance mechanism. If using a
   multisig like Safe, you can batch multiple steps into a single meta-transaction for atomicity.
 - Note: even if `.pendingAdministrator` is non-zero, the current `.administrator` can still call `setPool`. However,
-  resolving the pending transfer before starting is recommended to avoid confusion. For example, if an administrator
-  change was intended in the past but no longer relevant, `transferAdminRole(localToken, address(0))` can be called to
-  cancel the previous transfer.
+  resolve the pending transfer before you start to avoid confusion. For example, if an administrator change was
+  intended in the past but is no longer relevant, call `transferAdminRole(localToken, address(0))` to cancel the
+  pending transfer.
 
 ### 2. Confirm you can grant mint/burn roles on the token
 
@@ -101131,7 +101129,7 @@ Before starting the migration, verify the following on **both chains**:
 - Verify the address you control can call `grantMintAndBurnRoles` (or equivalent) on the token contract.
 - If token ownership was transferred to a different address (different EOA, multisig, timelock, etc.), you must
   coordinate with that owner.
-- **This is a hard blocker** — if you can't grant roles to the new pool, you can't migrate.
+- **This is a hard blocker**: if you can't grant roles to the new pool, you can't migrate.
 
 ### 3. Record your existing v1 deployment details
 
@@ -101145,7 +101143,7 @@ Collect and export the following:
     - `pool.getCurrentInboundRateLimiterState(remoteChainSelector)` → returns the inbound `TokenBucket`.
     - `pool.getCurrentOutboundRateLimiterState(remoteChainSelector)` → returns the outbound `TokenBucket`.
     - Each `TokenBucket` is `{ tokens, lastUpdated, isEnabled, capacity, rate }`. The struct is identical across v1.5.1,
-      v1.6.1, and v2.0 — values can be copied directly.
+      v1.6.1, and v2.0, so you can copy the values directly.
     - Note: v2 collapses these into a single `getCurrentRateLimiterState(remoteChainSelector, fastFinality)` call
       returning both buckets, but v1 doesn't have that signature.
 - **Current token transfer fee parameters** (if any were configured for your token). In v1, these are set by Chainlink on
@@ -101160,23 +101158,23 @@ Collect and export the following:
 ### 4. Plan your v2 configuration
 
 v2 pools introduce features not available in v1. Most settings can be changed post-deployment via setter functions.
-However, a few are immutable (set in the constructor and cannot be changed): the token address, token decimals, RMN
-proxy. On the `AdvancedPoolHooks` contract, the `allowlistEnabled` flag is also immutable — if you deploy hooks with an
-empty allowlist, you cannot enable allowlisting later without deploying a new hooks contract.
+However, a few are immutable (set in the constructor and cannot be changed): the token address, token decimals, and
+RMN proxy. On the `AdvancedPoolHooks` contract, the `allowlistEnabled` flag is also immutable: if you deploy hooks with
+an empty allowlist, you cannot enable allowlisting later without deploying a new hooks contract.
 
 #### Pool variant selection
 
 The migration flow is identical regardless of token interface. What changes is which v2 pool variant you deploy in Step
 1:
 
-| Token's burn function                        | v2 Pool to deploy            | Notes                                                                                                                                                                               |
-| :------------------------------------------- | :--------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `burn(uint256 amount)`                       | `BurnMintTokenPool`          | Standard — most common                                                                                                                                                              |
-| `burnFrom(address, uint256 amount)`          | `BurnFromMintTokenPool`      | For tokens using allowance-based burn                                                                                                                                               |
-| `burn(address, uint256 amount)`              | `BurnWithFromMintTokenPool`  | Two-param burn variant                                                                                                                                                              |
-| Token has no burn (transfer to dead address) | `BurnToAddressMintTokenPool` | Uses `safeTransfer` to a preconfigured burn address instead of calling `burn`. Constructor takes an extra `burnAddress` parameter (immutable — cannot be changed after deployment). |
+| Token's burn function                        | v2 Pool to deploy            | Notes                                                                                                                                                                                    |
+| :------------------------------------------- | :--------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `burn(uint256 amount)`                       | `BurnMintTokenPool`          | Standard (most common)                                                                                                                                                                   |
+| `burnFrom(address, uint256 amount)`          | `BurnFromMintTokenPool`      | For tokens using allowance-based burn                                                                                                                                                    |
+| `burn(address, uint256 amount)`              | `BurnWithFromMintTokenPool`  | Two-param burn variant                                                                                                                                                                   |
+| Token has no burn (transfer to dead address) | `BurnToAddressMintTokenPool` | Uses `safeTransfer` to a preconfigured burn address instead of calling `burn`. Constructor takes an extra `burnAddress` parameter (immutable, so it cannot be changed after deployment). |
 
-All variants call `mint(address to, uint256 amount)` for inbound transfers and the corresponding burn function for
+All variants call `mint(address account, uint256 amount)` for inbound transfers and the corresponding burn function for
 outbound transfers.
 
 #### Advanced pool hooks (constructor decision)
@@ -101191,7 +101189,7 @@ AdvancedPoolHooks enables:
 - **CCV (Cross-Chain Verifier) management**:
   - Configure per-chain verifiers for inbound and outbound transfers.
   - **Threshold amount for additional CCVs**: When a transfer amount meets or exceeds this threshold, additional CCVs
-    are required on top of the base CCVs — providing tiered security for high-value transfers.
+    are required on top of the base CCVs, which adds tiered security for high-value transfers.
 - **Policy engine**: Attach a custom policy contract for pre-flight/post-flight validation via
   `setPolicyEngine(address)` (`onlyOwner`).
 
@@ -101204,31 +101202,31 @@ address, then call `applyAuthorizedCallerUpdates` on the hooks to add the pool a
 
 If you don't need any of these features, pass `address(0)` for `advancedPoolHooks` in Step 1.
 
-#### Fast finality (FTF)
+#### Faster-Than-Finality (FTF)
 
-By default, CCIP waits for full source-chain finality before processing a transfer. Fast finality lets senders request a
-different finality mode by setting `requestedFinalityConfig` in their CCIP `extraArgs`.
+By default, CCIP waits for full source-chain finality before processing a transfer. FTF lets senders request a different
+finality mode by setting `requestedFinalityConfig` in their CCIP `extraArgs`.
 
-Multiple components validate the request: the OnRamp checks that the value encodes exactly one mode — a flag bit or a
-block depth, never both at once; the pool checks it falls within its own `allowedFinalityConfig`; the OffRamp checks it
-against the receiver's finality config.
+Multiple components validate the request. The OnRamp checks that the value encodes exactly one mode (one flag bit or a
+block depth, never both). The pool checks that it falls within the pool's `allowedFinalityConfig`. The OffRamp checks it
+against the receiver's finality config, except on token-only transfers.
 
-As a pool owner, `allowedFinalityConfig` is the only field you control.
+As the pool owner, you control only `allowedFinalityConfig`.
 
-**Encoding** — both fields are `bytes4` with the same bit layout:
+**Encoding**: both fields are `bytes4` with the same bit layout:
 
-- bits 16+ — flags: bit 16 = `WAIT_FOR_SAFE_FLAG` (safe head instead of full finality)
-- bits 0–15 — block depth
+- bits 16+: flags (bit 16 = `WAIT_FOR_SAFE_FLAG`, safe head instead of full finality)
+- bits 0–15: block depth
 - `bytes4(0)` (`WAIT_FOR_FINALITY_FLAG`) = full finality, the default for both fields
 
 For `allowedFinalityConfig`: flag bits use bitwise AND (any overlapping flag accepts the request), and block depth is a
-minimum (`requestedDepth >= allowedDepth`). You can combine both in one value — the pool accepts a request when either
-rule matches.
+minimum (`requestedDepth >= allowedDepth`). You can combine both in one value, and the pool accepts a request when
+either rule matches.
 
 If you do not set block depth (bits 0–15 = 0), block-depth-based requests are rejected.
 
 **Recommendation**: in Solidity code, prefer `FinalityCodec` constants/helpers (`WAIT_FOR_SAFE_FLAG`, `_encodeBlockDepth`,
-`_encodeBlockDepthAndSafeFlag`) to avoid manual bitmath mistakes. For off-chain tooling (Hardhat, Go,...), implement the
+`_encodeBlockDepthAndSafeFlag`) to avoid manual bitmath mistakes. For offchain tooling (Hardhat, Go, ...), implement the
 same encoding logic in your language runtime, since these Solidity helper functions are `internal` and not ABI-callable.
 
 **Examples:**
@@ -101241,28 +101239,31 @@ same encoding logic in your language runtime, since these Solidity helper functi
 | Accept ≥100-block depth                 | `0x00000064` | `bytes4(uint32(100))`                                           |
 | Pool accepts safe-head **or** ≥10-block | `0x0001000A` | `bytes4(uint32(1 << 16) \| uint32(10))`                         |
 
-- Decide whether you want to allow fast finality on this pool. If not, leave the default (`bytes4(0)`) — the pool only
-  accepts full-finality transfers. If yes, choose which mode(s) then call
+- Decide whether you want to allow FTF on this pool. If not, leave the default (`bytes4(0)`), and the pool only accepts
+  full-finality transfers. If yes, choose which mode(s) to allow, then call
   `setAllowedFinalityConfig(bytes4 allowedFinality)`. Read the current value via `getAllowedFinalityConfig()`.
-- When fast finality is enabled, the pool maintains separate rate limiter buckets per remote chain — one for default
-  (wait-for-finality), one for fast finality. If the fast-finality bucket is not configured (`isEnabled = false`),
-  fast-finality transfers fall back to the default bucket.
-- v2 lets you charge two independent fees per transfer, each with a normal-finality and a fast-finality variant:
-  - **Flat fee** (`finalityFeeUSDCents` / `fastFinalityFeeUSDCents`): added on top of the sender's existing transfer
-    cost. The OnRamp transfers this amount directly to your pool contract.
+- When FTF is enabled, the pool keeps separate rate limiter buckets per remote chain: one for default
+  (wait-for-finality) transfers and one for FTF transfers. If the fast-finality bucket is not enabled
+  (`isEnabled = false`), FTF transfers fall back to the default bucket.
+- v2 pools let you charge two independent fees per transfer, each with a default-finality and an FTF variant:
+  - **Flat fee** (`finalityFeeUSDCents` / `fastFinalityFeeUSDCents`): included in the CCIP fee that `Router.getFee`
+    returns, in place of the FeeQuoter's flat token transfer fee. The OnRamp transfers this amount directly to your pool
+    contract.
   - **Bps fee** (`finalityTransferFeeBps` / `fastFinalityTransferFeeBps`): a percentage (in basis points) deducted from
-    the token amount inside `lockOrBurn`. From the sender perspective, this is not part of CCIP fees (for example
-    `Router.getFees`). However, the recipient gets fewer tokens. The pool retains the deducted tokens.
+    the token amount inside `lockOrBurn`. From the sender's perspective, this is not part of the CCIP fee that
+    `Router.getFee` returns. However, the recipient gets fewer tokens. The pool retains the deducted tokens.
   - If you skip `applyTokenTransferFeeConfigUpdates` (leaving `isEnabled = false`), the pool tells the OnRamp it has no
-    custom fee config, and the OnRamp falls back to FeeQuoter — which only covers a flat USD fee and gas overhead, no
-    bps. If you do call it with `isEnabled = true` but leave all fee fields at zero, neither fee applies.
+    custom fee config, and the OnRamp falls back to the FeeQuoter, which only covers a flat USD fee plus gas and bytes
+    overhead (no bps fee). If you do call it with `isEnabled = true` but leave all fee fields at zero, neither fee
+    applies.
 
 #### Rate limits
 
-- v2 pools support separate rate limits for default (wait-for-finality) and fast finality per remote chain.
-- Plan to copy your v1 rate limiter values (recorded in step 3) into the default finality bucket. If you enable fast
-  finality, plan a separate rate limit for that bucket.
-- After deployment, call `setRateLimitConfig(RateLimitConfigArgs[])` (`onlyOwner` or rate limit admin). The struct is:
+- v2 pools support separate rate limits for default (wait-for-finality) and FTF transfers per remote chain.
+- Plan to copy your v1 rate limiter values (recorded in pre-flight step 3) into the default finality bucket. If you
+  enable FTF, plan a separate rate limit for the fast-finality bucket.
+- After `applyChainUpdates` adds the remote chain (Step 3), call `setRateLimitConfig(RateLimitConfigArgs[])`
+  (`onlyOwner` or rate limit admin). The struct is:
 
 ```
 struct RateLimitConfigArgs {
@@ -101276,45 +101277,47 @@ struct RateLimitConfigArgs {
 - To read current rate limits after configuration:
   - `getCurrentRateLimiterState(remoteChainSelector, fastFinality)` returns `(TokenBucket outbound, TokenBucket inbound)`
     in a single call.
-  - pass `false` for the default (wait-for-finality) bucket, `true` for the fast finality bucket.
+  - Pass `false` for the default (wait-for-finality) bucket and `true` for the fast-finality bucket.
 
 #### Token transfer fee configuration
 
 In v2, you can control fees and other fee-impacting configs in your own pool.
 
-Use the v1 fee data recorded in step 3 and the mapping table below to plan your v2 fee config. After deployment, call
+Use the v1 fee data recorded in pre-flight step 3 and the mapping table below to plan your v2 fee config. After
+`applyChainUpdates` adds the remote chain (Step 3), call
 `applyTokenTransferFeeConfigUpdates(TokenTransferFeeConfigArgs[], uint64[] disableTokenTransferFeeConfigs)` on your pool
-(`onlyOwner`) after deployment.
+(`onlyOwner`).
 
 **v1 → v2 field mapping**:
 
-| v1 field            | v2 pool field       | Conversion                                                                                                                                              |
-| :------------------ | :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `destGasOverhead`   | `destGasOverhead`   | Same field. Only set if you want values different from the FeeQuoter defaults (configured by Chainlink per destination chain). Must be non-zero if set. |
-| `destBytesOverhead` | `destBytesOverhead` | Same field. Only set if you want values different from the FeeQuoter defaults.                                                                          |
+| v1 field            | v2 pool field       | Conversion                                                                                                                                                                     |
+| :------------------ | :------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `destGasOverhead`   | `destGasOverhead`   | Same field. Once you enable a pool fee config, the pool's value replaces the FeeQuoter default (configured by Chainlink per destination chain). Required and must be non-zero. |
+| `destBytesOverhead` | `destBytesOverhead` | Same field. Once you enable a pool fee config, the pool's value replaces the FeeQuoter default.                                                                                |
 
-**v2-only fields** (no v1 equivalent — configure as needed):
+**v2-only fields** (no v1 equivalent; configure as needed):
 
-| v2 pool field                | Description                                                                                                                                                                                   |
-| :--------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `finalityTransferFeeBps`     | Percentage-based fee (in basis points) deducted from the transferred token amount for default (wait-for-finality) transfers. Set to 0 by default.                                             |
-| `finalityFeeUSDCents`        | Flat fee in USD cents for default (wait-for-finality) transfers. Set to 0 by default.                                                                                                         |
-| `fastFinalityFeeUSDCents`    | Flat fee in USD cents for fast-finality transfers. Set to 0 by default. Configure if you enable fast finality and want a different flat fee than the default.                                 |
-| `fastFinalityTransferFeeBps` | Percentage-based fee (in basis points) deducted from the transferred token amount for fast-finality transfers. Set to 0 by default. Configure if you want a percentage fee for fast finality. |
+| v2 pool field                | Description                                                                                                                                                                         |
+| :--------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `finalityTransferFeeBps`     | Percentage-based fee (in basis points) deducted from the transferred token amount for default (wait-for-finality) transfers. Set to 0 by default.                                   |
+| `finalityFeeUSDCents`        | Flat fee in USD cents for default (wait-for-finality) transfers. Set to 0 by default.                                                                                               |
+| `fastFinalityFeeUSDCents`    | Flat fee in USD cents for FTF transfers. Set to 0 by default. Configure if you enable FTF and want a flat fee for FTF transfers (they don't use `finalityFeeUSDCents`).             |
+| `fastFinalityTransferFeeBps` | Percentage-based fee (in basis points) deducted from the transferred token amount for FTF transfers. Set to 0 by default. Configure if you want a percentage fee for FTF transfers. |
 
 #### Rate limit admin & fee admin delegation
 
 v2 pools allow delegating specific responsibilities to separate addresses without giving full pool ownership:
 
 - A **rate limit admin** can call `setRateLimitConfig()` to modify rate limits.
-- A **fee admin** can call `withdrawFeeTokens(address[], address)` to withdraw accrued fees (only relevant if you
-  configured fees via `finalityTransferFeeBps`, `finalityFeeUSDCents`, `fastFinalityTransferFeeBps`, or
-  `fastFinalityFeeUSDCents`).
+- A **fee admin** can call `withdrawFeeTokens(address[], address)` to withdraw the fees the pool accrues: any bps fee
+  it deducts (`finalityTransferFeeBps`, `fastFinalityTransferFeeBps`) and the flat token transfer fee the OnRamp pays
+  to v2 pools (`finalityFeeUSDCents`, `fastFinalityFeeUSDCents`, or the FeeQuoter's fee if you haven't enabled a pool
+  fee config).
 
 If you want to use delegation, decide which addresses will fill these roles. After deployment, call
 `setDynamicConfig(address router, address rateLimitAdmin, address feeAdmin)` on the pool (`onlyOwner`) to assign them.
 
-This replaces all three values at once — pass the current value for any field you don't want to change.
+This replaces all three values at once, so pass the current value for any field you don't want to change.
 
 #### Pool ownership transfer (recommended for production)
 
@@ -101349,7 +101352,7 @@ constructor(
 - Network-specific addresses (RMN proxy, router) must match the current CCIP deployment on each chain. See the
   [CCIP Directory](/ccip/directory) for contract addresses per chain.
 
-**Note — dual mint/burn window**: From this point until Step 7b, **both** old v1 and new v2 pools have mint/burn roles
+**Dual mint/burn window**: From this point until Step 7b, **both** old v1 and new v2 pools have mint/burn roles
 on the token. The old v1 pool still routes live traffic. The new v2 pool has roles but is not yet active in CCIP. Both
 pools can mint/burn independently during this window.
 
@@ -101360,17 +101363,17 @@ pools can mint/burn independently during this window.
 
 ## Step 2 (optional): Pause outbound transfers on old v1 pools
 
-- Restrict outbound transfers on the old v1 pools on both chains. Set outbound rate limiter to `isEnabled: true` with
-  `capacity: 2` and `rate: 1`. This is the strictest configuration that works across all pool versions (v1.5.x, v1.6.x)
-  — it allows at most 2 tokens initially with a 1 token/sec refill, effectively throttling transfers to near zero.
-- **Do NOT use `isEnabled: false`** — this disables rate limiting entirely, allowing unlimited transfers.
+- Restrict outbound transfers on the old v1 pools on both chains. Set the outbound rate limiter to `isEnabled: true`
+  with `capacity: 2` and `rate: 1`. This is the strictest configuration that works across all pool versions (v1.5.x,
+  v1.6.x). It allows at most 2 tokens initially with a 1 token/sec refill, which throttles transfers to near zero.
+- **Do NOT use `isEnabled: false`**: this disables rate limiting entirely and allows unlimited transfers.
 - Call `setChainRateLimiterConfig(remoteChainSelector, outboundConfig, inboundConfig)` on the v1 pool (`onlyOwner` or
   rate limit admin). Keep inbound unchanged so in-flight messages can still arrive.
-- This blocks new cross-chain transfers while the migration completes, creating a brief maintenance window.
+- This blocks new cross-chain transfers for a brief maintenance window while the migration completes.
 
 **Why this is optional**
 
-- The `setPool` call in Step 5 is atomic — once executed, new traffic immediately routes through the v2 pool.
+- The `setPool` call in Step 5 is atomic. Once it executes, new traffic immediately routes through the v2 pool.
 - Because Step 3 configures the new pool to recognize both old and new remote pools, in-flight messages are handled
   safely without a pause.
 - However, pausing gives you a clean cutover with zero overlap if you prefer that.
@@ -101397,31 +101400,31 @@ function applyChainUpdates(
 Each `ChainUpdate` contains:
 
 - `remoteChainSelector` (uint64)
-- `remotePoolAddresses` (bytes[]) — array of remote pool addresses
-- `remoteTokenAddress` (bytes) — the token address on the remote chain
+- `remotePoolAddresses` (bytes[]): array of remote pool addresses
+- `remoteTokenAddress` (bytes): the token address on the remote chain
 - `outboundRateLimiterConfig` (isEnabled, capacity, rate)
 - `inboundRateLimiterConfig` (isEnabled, capacity, rate)
 
-### Remote pool addresses — include both old and new
+### Remote pool addresses: include both old and new
 
-The `remotePoolAddresses` array must include **both** the old v1 pool **and** the new v2 pool on the remote chain. Both
-old and new remote pool addresses are passed in a single `applyChainUpdates` call — no separate `addRemotePool` calls are
-needed. The contract uses an `EnumerableSet` internally, so adding pools is inherently additive — multiple pools per
-remote chain are supported by design.
+The `remotePoolAddresses` array must include **both** the old v1 pool **and** the new v2 pool on the remote chain. You
+pass both addresses in a single `applyChainUpdates` call, so no separate `addRemotePool` calls are needed. Because the
+contract stores remote pools in an `EnumerableSet`, adding a pool never replaces an existing one, and a remote chain can
+have multiple pools.
 
 - v2 pool on chain A: `remotePoolAddresses = [encode(v1ChainBPool), encode(v2ChainBPool)]`
 - v2 pool on chain B: `remotePoolAddresses = [encode(v1ChainAPool), encode(v2ChainAPool)]`
 
-**Address encoding**: `remotePoolAddresses` is typed as `bytes[]` and `remoteTokenAddress` as `bytes` — the contract
-stores whatever bytes you pass with no format validation beyond a non-zero-length check.
+**Address encoding**: `remotePoolAddresses` is typed as `bytes[]` and `remoteTokenAddress` as `bytes`. The contract
+stores whatever bytes you pass, with no format validation beyond a non-zero-length check.
 
 - **EVM remote chain**: left-pad the 20-byte address to 32 bytes. In Solidity: `abi.encode(poolAddress)`. In Go:
-  `common.LeftPadBytes(addr.Bytes(), 32)`. Both produce the same 32 bytes — the 20-byte address right-aligned with 12
+  `common.LeftPadBytes(addr.Bytes(), 32)`. Both produce the same 32 bytes: the 20-byte address right-aligned with 12
   leading zero bytes.
 
 **Why both pools must be listed**: Messages sent through the old v1 pool before the cutover may still be in-flight. When
-they arrive at the destination, the OffRamp validates that the source pool address encoded in the message matches a
-configured remote pool address on the destination pool. Without the old v1 pool address in the list, these in-flight
+they arrive at the destination, the destination pool checks that the source pool address encoded in the message matches
+one of its configured remote pool addresses. Without the old v1 pool address in the list, these in-flight
 messages would fail validation.
 
 ### Rate limiter configuration
@@ -101430,10 +101433,10 @@ messages would fail validation.
 - Replicate your existing v1 rate limiter settings (or adjust as needed for v2). The struct is identical between v1 and
   v2.
 - Configure both inbound and outbound rate limits per remote chain.
-- If you paused transfers in Step 2, set the v2 pool rate limits to your desired production values (not zero — the v2
-  pool needs to be ready to handle traffic after cutover).
-- If you enabled fast finality (see pre-flight step 4), configure the fast finality rate limits separately via
-  `setRateLimitConfig` after deployment.
+- If you paused transfers in Step 2, set the v2 pool rate limits to your desired production values (not zero, because
+  the v2 pool needs to be ready to handle traffic after cutover).
+- If you enabled FTF (see pre-flight step 4), configure the fast-finality rate limits separately via
+  `setRateLimitConfig` after this call.
 - **Note**: setting `isEnabled: false` means unlimited transfers (no rate limiting). Set `isEnabled: true` with
   appropriate capacity and rate to enforce limits.
 
@@ -101446,13 +101449,13 @@ messages would fail validation.
 `applyChainUpdates` reverts with `ChainAlreadyExists` if the remote chain is already configured. You cannot call it twice
 for the same chain. If you need to fix a misconfiguration after the initial call:
 
-- **Add a missing remote pool**: call `addRemotePool(remoteChainSelector, encodedRemotePoolAddress)` (`onlyOwner`) —
-  second arg is `bytes`, encoded as described above.
-- **Remove a wrong remote pool**: call `removeRemotePool(remoteChainSelector, encodedRemotePoolAddress)` (`onlyOwner`) —
-  pass the same bytes that were stored when adding.
-- **Change rate limiters**: call `setRateLimitConfig(RateLimitConfigArgs[])` (`onlyOwner` or rate limit admin)
+- **Add a missing remote pool**: call `addRemotePool(remoteChainSelector, encodedRemotePoolAddress)` (`onlyOwner`).
+  The second argument is `bytes`, encoded as described above.
+- **Remove a wrong remote pool**: call `removeRemotePool(remoteChainSelector, encodedRemotePoolAddress)` (`onlyOwner`).
+  Pass the same bytes you stored when adding it.
+- **Change rate limiters**: call `setRateLimitConfig(RateLimitConfigArgs[])` (`onlyOwner` or rate limit admin).
 - **Fully reconfigure a chain**: first remove it via `applyChainUpdates([chainSelector], [])`, then re-add it with the
-  correct configuration
+  correct configuration.
 
 ## Step 4: Verify new pool configuration
 
@@ -101471,27 +101474,28 @@ If you configured v2 features (from pre-flight step 4 planning):
 
 - [ ] AdvancedPoolHooks: pool is an authorized caller on the hooks contract (`hooks.getAllAuthorizedCallers()` includes
   pool).
-- [ ] Fast finality: `getAllowedFinalityConfig()` returns your intended `bytes4` value.
-- [ ] Fast finality rate limits: configured if planned (check via `getCurrentRateLimiterState(remoteChainSelector, true)`
-  — the `true` selects the fast-finality bucket).
+- [ ] FTF: `getAllowedFinalityConfig()` returns your intended `bytes4` value.
+- [ ] FTF rate limits: configured if planned (check via `getCurrentRateLimiterState(remoteChainSelector, true)`;
+  `true` selects the fast-finality bucket).
 - [ ] Token transfer fees: configured if planned (call
   `getTokenTransferFeeConfig(address(0), destChainSelector, bytes4(0), "")` on the pool and verify the returned
   `TokenTransferFeeConfig` matches your intended values).
 - [ ] Admin delegation: `getDynamicConfig()` returns the correct router, rateLimitAdmin, and feeAdmin.
 
-Verify before proceeding — `setPool` in the next step routes live traffic through the v2 pools.
+Verify everything before proceeding, because `setPool` in the next step routes live traffic through the v2 pools.
 
-## Step 5: Activate new v2 pools (`setPool`) — the cutover
+## Step 5: Cut over to the new v2 pools (`setPool`)
 
-- Ensure all v2 features planned in pre-flight step 4 (hooks, fast finality, rate limits, fees, admin delegation) are
+- Ensure all v2 features planned in pre-flight step 4 (hooks, FTF, rate limits, fees, admin delegation) are
   configured before proceeding. Once `setPool` executes, live traffic flows through the v2 pool.
 - On **each chain**, call `TokenAdminRegistry.setPool(tokenAddress, newV2PoolAddress)` to point the registry to the new v2
   pool.
-- Call `setPool` directly — your address is already the registered administrator. Do **not** call `proposeAdministrator`
-  or `acceptAdminRole`; these are only for initial registration, not for pool upgrades.
+- Call `setPool` directly, since your address is already the registered administrator. Do **not** call
+  `proposeAdministrator` or `acceptAdminRole`; these register or transfer the administrator role and are not part of a
+  pool upgrade.
 - Once executed on a chain, all new CCIP transfers for this token on that chain route through the new v2 pool.
-- Execute on both chains. The order does not matter because of the dual remote pool configuration from Step 3 — both
-  old-to-new and new-to-new message flows are supported.
+- Execute on both chains. The order does not matter because of the dual remote pool configuration from Step 3, which
+  supports both old-to-new and new-to-new message flows.
 
 **What happens to in-flight messages after cutover**
 
@@ -101503,7 +101507,7 @@ Verify before proceeding — `setPool` in the next step routes live traffic thro
 **Rollback**: If you discover issues after cutover on one chain, you can call
 `TokenAdminRegistry.setPool(tokenAddress, oldV1PoolAddress)` to revert that chain back to the v1 pool. This is safe
 because the v1 pool is still deployed and still has mint/burn roles. However, any in-flight messages sent through the v2
-pool during the brief window will still need the v2 remote pool address configured on the destination — so only roll
+pool during the brief window will still need the v2 remote pool address configured on the destination, so only roll
 back if necessary and plan accordingly.
 
 ## Step 6: Validate end-to-end
@@ -101518,12 +101522,12 @@ back if necessary and plan accordingly.
 **Important**: Perform these steps only **after all in-flight messages from the old v1 pools have settled**.
 
 **How to verify**: Check the [CCIP Explorer](https://ccip.chain.link/) or use `ccip-cli` (which queries
-`api.ccip.chain.link` — will soon support filtering by source token address) to confirm all messages originating from
+`api.ccip.chain.link`) to confirm all messages originating from
 the old v1 pool addresses show SUCCESS status.
 
-**Additional safety margin**: Even after verifying via CCIP Explorer / ccip-cli, it is recommended to wait a couple of
-extra days as an additional precaution. There is no cost to waiting longer: keeping old v1 pool addresses in the remote
-pool list has no performance impact.
+**Additional safety margin**: Even after verifying via CCIP Explorer or ccip-cli, wait a couple of extra days as a
+precaution. Waiting longer costs nothing, because keeping old v1 pool addresses in the remote pool list has no
+performance impact.
 
 **Note**: Steps 7a and 7b are optional. The old pools are already inert (removed from TokenAdminRegistry) and pose
 minimal risk if cleanup is deferred.
@@ -101532,10 +101536,10 @@ minimal risk if cleanup is deferred.
 
 Two mechanisms are available:
 
-- `removeRemotePool(uint64 remoteChainSelector, bytes calldata remotePoolAddress)` — removes a specific pool address from
-  a specific remote chain. `onlyOwner`. Use this when you want to keep the chain connected but remove only the old v1
+- `removeRemotePool(uint64 remoteChainSelector, bytes calldata remotePoolAddress)`: removes a specific pool address from
+  a specific remote chain (`onlyOwner`). Use this when you want to keep the chain connected but remove only the old v1
   pool address. This is the correct approach for migration cleanup.
-- `applyChainUpdates(remoteChainSelectorsToRemove, [])` — removes an entire remote chain from the pool configuration.
+- `applyChainUpdates(remoteChainSelectorsToRemove, [])`: removes an entire remote chain from the pool configuration.
   Only use this if you want to completely disconnect from a remote chain (not typical for migration).
 
 For migration cleanup, call `removeRemotePool` on each chain:
@@ -101545,26 +101549,26 @@ For migration cleanup, call `removeRemotePool` on each chain:
 
 **Caution**: Removing a remote pool address causes any still-pending messages from that pool to fail validation on the
 destination. Only proceed once you are confident all old v1 messages have been executed (verify via
-[CCIP Explorer](https://ccip.chain.link/) or ccip-cli (search transactions)).
+[CCIP Explorer](https://ccip.chain.link/) or by searching transactions with ccip-cli).
 
 If you remove prematurely and discover a stuck in-flight message, you can re-add the v1 pool address using
-`addRemotePool(remoteChainSelector, encodedOldV1PoolAddress)` (`onlyOwner`) to unblock it — use the same encoded bytes as
+`addRemotePool(remoteChainSelector, encodedOldV1PoolAddress)` (`onlyOwner`) to unblock it. Use the same encoded bytes as
 before.
 
 ### 7b. (Optional) Revoke mint and burn roles from old v1 pools
 
 The v1 pool is already removed from the TokenAdminRegistry at this point, so it can no longer route CCIP traffic.
-Revoking its mint/burn roles on the token contract is an extra hardening step — it eliminates any residual ability to
+Revoking its mint/burn roles on the token contract is an extra hardening step that removes any residual ability to
 mint or burn tokens.
 
 How you do this depends on which token contract you're using, as each has its own access control model.
 
-- `BurnMintERC677` — does not use OpenZeppelin AccessControl. Roles are managed through an owner-controlled address set.
+- `BurnMintERC677`: does not use OpenZeppelin AccessControl. Roles are managed through an owner-controlled address set.
   Call `revokeMintRole(oldV1PoolAddress)` and `revokeBurnRole(oldV1PoolAddress)`. Both are `onlyOwner`.
-- `BurnMintERC20` — uses OpenZeppelin AccessControl with `DEFAULT_ADMIN_ROLE` as the role admin for `MINTER_ROLE` and
+- `BurnMintERC20`: uses OpenZeppelin AccessControl with `DEFAULT_ADMIN_ROLE` as the role admin for `MINTER_ROLE` and
   `BURNER_ROLE`. Call `revokeRole(MINTER_ROLE, oldV1PoolAddress)` and `revokeRole(BURNER_ROLE, oldV1PoolAddress)`. Caller
   must hold `DEFAULT_ADMIN_ROLE`.
-- `CrossChainToken` (the chainlink-ccip 2.0 token standard) — also uses AccessControl, but explicitly sets
+- `CrossChainToken` (the chainlink-ccip 2.0 token standard): also uses AccessControl, but explicitly sets
   `BURN_MINT_ADMIN_ROLE` (`keccak256("BURN_MINT_ADMIN_ROLE")`) as the role admin for both roles. Same `revokeRole` calls
   as above, but caller must hold `BURN_MINT_ADMIN_ROLE` instead.
 
@@ -101582,16 +101586,20 @@ Before running this step, verify which token contract you have and that your add
 This guide covers a 2-chain scenario. For tokens deployed across 3+ chains:
 
 - Each pool must configure remote pool entries for **every other chain** (both old v1 and new v2 pools).
-- Example for a 3-chain deployment (Ethereum, Arbitrum, Avalanche) — each entry is the encoded pool address:
-  - Ethereum v2 pool: `[encode(v1ArbitrumPool), encode(v2ArbitrumPool), encode(v1AvalanchePool), encode(v2AvalanchePool)]`
-  - Arbitrum v2 pool: `[encode(v1EthereumPool), encode(v2EthereumPool), encode(v1AvalanchePool), encode(v2AvalanchePool)]`
-  - Avalanche v2 pool: `[encode(v1EthereumPool), encode(v2EthereumPool), encode(v1ArbitrumPool), encode(v2ArbitrumPool)]`
+- Example for a 3-chain deployment (Ethereum, Arbitrum, Avalanche). Each pool gets one `ChainUpdate` per remote chain,
+  and each `remotePoolAddresses` array holds that chain's encoded pool addresses:
+  - Ethereum v2 pool: Arbitrum `[encode(v1ArbitrumPool), encode(v2ArbitrumPool)]` and Avalanche
+    `[encode(v1AvalanchePool), encode(v2AvalanchePool)]`
+  - Arbitrum v2 pool: Ethereum `[encode(v1EthereumPool), encode(v2EthereumPool)]` and Avalanche
+    `[encode(v1AvalanchePool), encode(v2AvalanchePool)]`
+  - Avalanche v2 pool: Ethereum `[encode(v1EthereumPool), encode(v2EthereumPool)]` and Arbitrum
+    `[encode(v1ArbitrumPool), encode(v2ArbitrumPool)]`
 
 ### Gradual migration
 
 You can migrate chains sequentially (not all at once), but remote pool configuration must be bilateral. Before
 activating a v2 pool on chain A via `setPool`, the old v1 pool on chain B must be updated to recognize chain A's new v2
-pool address — otherwise chain B rejects messages from chain A's v2 pool (`InvalidSourcePoolAddress`).
+pool address. Otherwise chain B rejects messages from chain A's v2 pool (`InvalidSourcePoolAddress`).
 
 For each chain you migrate:
 
@@ -101603,8 +101611,8 @@ This ensures the v1 pools on not-yet-migrated chains accept messages from newly 
 
 v2-specific features only work fully when both the source and destination pools are v2:
 
-- Fast finality requests from a chain still running a v1 pool are rejected by the OnRamp.
-- Pool-specific CCV requirements fall back to lane defaults when the remote pool is v1.
+- FTF requests from a chain still running a v1 pool are rejected by the OnRamp.
+- On a chain that still runs a v1 pool, CCIP uses the lane's default CCVs instead of pool-specific CCV requirements.
 - Pool-level fee overrides only apply when the source pool is v2.
 
 To use v2 features on a lane, both ends must be migrated to v2 first.
@@ -101616,10 +101624,10 @@ Source: https://docs.chain.link/ccip/evm/concepts/cross-chain-token/lock-mint-v1
 
 ## Overview
 
-This migration flow covers upgrading a **lock and mint** token handling mechanism from CCIP v1 to v2 where you have a
-**LockReleaseTokenPool on Chain A** and a **BurnMintTokenPool on Chain B**. When transferring A→B, tokens are locked on
-A and minted on B. When transferring B→A, tokens are burned on B and released on A. It assumes your address is the
-registered administrator in the `TokenAdminRegistry` on all chains.
+This migration flow covers upgrading a **lock and mint** token handling mechanism from v1 to v2 token pools, where you
+have a **LockReleaseTokenPool on Chain A** and a **BurnMintTokenPool on Chain B**. When transferring A→B, tokens are
+locked on A and minted on B. When transferring B→A, tokens are burned on B and released on A. It assumes your address
+is the registered administrator in the `TokenAdminRegistry` on all chains.
 
 This guide covers **EVM-to-EVM only**.
 
@@ -101630,7 +101638,7 @@ This guide covers **EVM-to-EVM only**.
 
 For simplicity, the steps below illustrate a **2-chain setup (Chain A ↔ Chain B)**. If your token is deployed across
 more chains (for example, one LockRelease pool on Chain A connected to BurnMint pools on Chain B, C, D), repeat the
-relevant steps for each remote chain — see [Multi-chain considerations](#multi-chain-considerations).
+relevant steps for each remote chain. See [Multi-chain considerations](#multi-chain-considerations).
 
 **Out of scope**
 
@@ -101638,30 +101646,30 @@ relevant steps for each remote chain — see [Multi-chain considerations](#multi
 
 **Definitions**
 
-- **v1 pool**: Any pool version 1.5.x or 1.6.x (`LockReleaseTokenPool 1.5.1`, `BurnMintTokenPool 1.6.0`, etc.)
+- **v1 pool**: Any pool version 1.5.x or 1.6.x (`LockReleaseTokenPool 1.5.1`, `BurnMintTokenPool 1.6.0`, etc.).
 - **v2 pool**: Pool version 2.0 (`LockReleaseTokenPool 2.0` on Chain A, `BurnMintTokenPool 2.0` on Chain B) that
   you want to upgrade to.
 - **ERC20LockBox**: A v2 contract that holds locked token liquidity on behalf of the Lock & Release pool. Constructor:
   `(address token)`. In v1, liquidity was held directly in the pool contract. In v2, it's held in the lockbox. The
-  lockbox is a simple token vault — the `remoteChainSelector` parameter in `deposit`/`withdraw` exists for interface
+  lockbox is a simple token vault. The `remoteChainSelector` parameter in `deposit`/`withdraw` exists for interface
   compatibility but is **unused** internally. All liquidity is pooled together.
 - **Chain A**: The chain with the LockReleaseTokenPool (locks tokens on outbound, releases tokens on inbound).
 - **Chain B**: The chain with the BurnMintTokenPool (mints tokens on inbound, burns tokens on outbound).
 - **TokenAdminRegistry**: The CCIP contract where a token ↔ token pool mapping is registered.
 
-**Key architectural note**: This migration is **asymmetric** — Chain A requires deploying both an ERC20LockBox and a
+**Key architectural note**: This migration is **asymmetric**. Chain A requires deploying both an ERC20LockBox and a
 LockReleaseTokenPool, while Chain B only needs a BurnMintTokenPool. Additionally, there is a **liquidity migration
 step** where locked tokens must be moved from the old v1 pool to the new v2 lockbox.
 
 **v2 LockRelease pool variants**:
 
-| v2 Pool                      | Lockbox model                                               | Use case                                              |
-| :--------------------------- | :---------------------------------------------------------- | :---------------------------------------------------- |
-| `LockReleaseTokenPool`       | Single shared lockbox (set in constructor)                  | Standard — all remote chains share one liquidity pool |
-| `SiloedLockReleaseTokenPool` | Per-chain lockboxes (configured via `configureLockBoxes()`) | When you need isolated liquidity per remote chain     |
+| v2 Pool                      | Lockbox model                                               | Use case                                             |
+| :--------------------------- | :---------------------------------------------------------- | :--------------------------------------------------- |
+| `LockReleaseTokenPool`       | Single shared lockbox (set in constructor)                  | Standard: all remote chains share one liquidity pool |
+| `SiloedLockReleaseTokenPool` | Per-chain lockboxes (configured via `configureLockBoxes()`) | When you need isolated liquidity per remote chain    |
 
 Unlike BurnMint pools (which have variants based on the token's burn interface), LockRelease pools don't need interface
-variants — locking and releasing uses standard ERC20 `transferFrom`/`transfer`.
+variants, because locking and releasing use standard ERC20 `transferFrom`/`transfer`.
 
 This guide uses `LockReleaseTokenPool` (single shared lockbox) as the standard migration path. For siloed lockboxes,
 see the [Siloed liquidity](#siloed-liquidity-per-chain-isolation) section.
@@ -101677,7 +101685,7 @@ meta-transactions (for example, Safe), you can batch multiple migration steps in
 
 Recommended groupings:
 
-### Batch 1 — Liquidity migration (Chain A)
+### Batch 1: Liquidity migration (Chain A)
 
 Steps 3a–3f combined into one atomic transaction:
 
@@ -101686,19 +101694,19 @@ Steps 3a–3f combined into one atomic transaction:
 - On token: `approve` (for lockbox to pull tokens)
 - Cleanup: `applyAuthorizedCallerUpdates(remove)` on v2 lockbox
 
-This is the most critical batch — it eliminates the non-atomic custody window where liquidity sits in your wallet
+This is the most critical batch because it eliminates the non-atomic custody window where liquidity sits in your wallet
 between withdraw and deposit. You can optionally include `setPool` (Step 6) in this same batch to combine liquidity
 migration and cutover on Chain A in a single atomic transaction.
 
-### Batch 2 — Configure + cutover (per chain)
+### Batch 2: Configure + cutover (per chain)
 
 `applyChainUpdates` (Step 4) + `setPool` (Step 6). Configures the v2 pool and activates it in one transaction.
 
-### Batch 3 — Cleanup (per chain)
+### Batch 3: Cleanup (per chain)
 
 `removeRemotePool` (Step 8a) + `revokeMintRole` + `revokeBurnRole` (Step 8b, destination only).
 
-Each batch must be executed **per chain** — you cannot batch cross-chain operations into a single transaction. Batch 1
+Each batch must be executed **per chain**. You cannot batch cross-chain operations into a single transaction. Batch 1
 runs on Chain A only; Batches 2 and 3 run on each chain separately.
 
 ## Pre-flight checks
@@ -101708,36 +101716,35 @@ Before starting the migration, verify the following on **both chains**:
 ### 1. Confirm your admin status in TokenAdminRegistry
 
 - Call `TokenAdminRegistry.getTokenConfig(tokenAddress)` on both chains. This returns:
-  - `.administrator` — must match the address you control (EOA, multisig, or other account)
-  - `.pendingAdministrator` — must be `address(0)` (no pending transfer in progress)
-  - `.tokenPool` — the current v1 pool address
+  - `.administrator`: must match the address you control (EOA, multisig, or other account)
+  - `.pendingAdministrator`: must be `address(0)` (no pending transfer in progress)
+  - `.tokenPool`: the current v1 pool address
 - If the administrator is a multisig or timelock, execute subsequent steps through that governance mechanism. If using
   a multisig like Safe, you can batch multiple steps into a single meta-transaction for atomicity.
 - Note: even if `.pendingAdministrator` is non-zero, the current `.administrator` can still call `setPool`. However,
-  resolving the pending transfer before starting is recommended. For example, if an administrator change was intended
-  in the past but no longer relevant, `transferAdminRole(localToken, address(0))` can be called to cancel the previous
-  transfer.
+  resolving the pending transfer before starting is recommended. For example, if an administrator change you started
+  earlier is no longer relevant, call `transferAdminRole(localToken, address(0))` to cancel it.
 
 ### 2. Confirm you can grant mint/burn roles on the Chain B token
 
 - On **Chain B**, the new v2 BurnMintTokenPool needs mint and burn privileges on the token.
 - Verify the address you control can call `grantMintAndBurnRoles` (or equivalent) on the Chain B token contract.
-- **This is a hard blocker** for Chain B — if you can't grant roles, you can't migrate that side.
-- On **Chain A**, the Lock & Release pool does NOT need mint/burn roles (it locks and releases, it doesn't burn or
+- **This is a hard blocker** for Chain B. If you can't grant roles, you can't migrate that side.
+- On **Chain A**, the Lock & Release pool does NOT need mint/burn roles (it locks and releases; it doesn't burn or
   mint). No role grant is needed on the Chain A token.
 
 ### 3. Confirm you can withdraw liquidity from the v1 Chain A pool
 
 - The v1 LockReleaseTokenPool holds locked token liquidity directly in its contract balance. You need to withdraw this
   liquidity and deposit it into the new v2 ERC20LockBox.
-- **Only the rebalancer can call `withdrawLiquidity`** — the pool owner cannot withdraw directly. If the rebalancer is
+- **Only the rebalancer can call `withdrawLiquidity`**. The pool owner cannot withdraw directly. If the rebalancer is
   `address(0)` (never set), liquidity cannot be withdrawn at all.
 - If the rebalancer is not the address you control, the pool owner can call `setRebalancer(address)` (`onlyOwner`) to
   change it. A common pattern is to temporarily set the rebalancer, perform the withdrawal, then restore the original
   rebalancer after (see Step 3).
-- **This is a hard blocker** — if the rebalancer is `address(0)` and you are not the pool owner (and thus cannot call
+- **This is a hard blocker**. If the rebalancer is `address(0)` and you are not the pool owner (and thus cannot call
   `setRebalancer`), you cannot fund the new lockbox.
-- **Note**: `getRebalancer` and `setRebalancer` are v1 functions. v2 pools do NOT have a rebalancer concept — they use
+- **Note**: `getRebalancer` and `setRebalancer` are v1 functions. v2 pools do NOT have a rebalancer concept. They use
   the lockbox + authorized callers pattern instead.
 
 ### 4. Record your existing v1 deployment details
@@ -101756,13 +101763,13 @@ Collect and export the following:
     - `pool.getCurrentInboundRateLimiterState(remoteChainSelector)` → returns the inbound `TokenBucket`.
     - `pool.getCurrentOutboundRateLimiterState(remoteChainSelector)` → returns the outbound `TokenBucket`.
     - Each `TokenBucket` is `{ tokens, lastUpdated, isEnabled, capacity, rate }`. The struct is identical across v1.5.1,
-      v1.6.1, and v2.0 — values can be copied directly.
+      v1.6.1, and v2.0, so you can copy values directly.
     - Note: v2 collapses these into a single `getCurrentRateLimiterState(remoteChainSelector, fastFinality)` call
       returning both buckets, but v1 doesn't have that signature.
 
 ### 5. Confirm the token contracts are compatible
 
-- **Chain A token**: Must be a standard ERC20 (the Lock & Release pool locks/releases, no special interface needed
+- **Chain A token**: Must be a standard ERC20 (the Lock & Release pool locks/releases, so no special interface is needed
   beyond `transfer`/`transferFrom`).
 - **Chain B token**: Must implement `burn(amount)` and `mint(to, amount)` interfaces (for example, `IBurnMintERC20`).
 
@@ -101775,7 +101782,7 @@ Collect and export the following:
 
 ## Step 1: Deploy new v2 token pools
 
-This step is **asymmetric** — Chain A and Chain B require different contracts.
+This step is **asymmetric**: Chain A and Chain B require different contracts.
 
 ### Chain A: LockBox + LockReleaseTokenPool
 
@@ -101811,8 +101818,8 @@ constructor(
 )
 ```
 
-- Pass `address(0)` for `advancedPoolHooks` if you don't need allowlisting or a policy engine. You can attach hooks
-  later via `updateAdvancedPoolHooks`.
+- Pass `address(0)` for `advancedPoolHooks` if you don't need allowlisting, CCV configuration, or a policy engine. You
+  can attach hooks later via `updateAdvancedPoolHooks`.
 - Record the new v2 pool address.
 
 #### 1c. Authorize pool on LockBox
@@ -101839,7 +101846,7 @@ struct AuthorizedCallerArgs {
 - Grant mint and burn roles to the new v2 pool on the Chain B token contract.
 - Record the new v2 pool address.
 
-**Note — dual privilege window**: From this point until Step 8b:
+**Note (dual privilege window)**: From this point until Step 8b:
 
 - On Chain B, **both** old v1 and new v2 BurnMint pools have mint/burn roles.
 - On Chain A, the old v1 LockRelease pool still holds liquidity and is still registered. The new v2 pool exists but is
@@ -101851,35 +101858,35 @@ struct AuthorizedCallerArgs {
 - New v2 Chain A pool: deployed, authorized on lockbox, but **empty** (no liquidity yet) and not connected to CCIP.
 - New v2 Chain B pool: deployed, has mint/burn roles, but not connected to CCIP.
 
-## Step 2 (required): Pause outbound transfers on old v1 pools
+## Step 2 (strongly recommended): Pause outbound transfers on old v1 pools
 
 - Set outbound rate limiter to `isEnabled: true, capacity: 1, rate: 0` on the old v1 pools on **both chains**. This
   effectively blocks all transfers: the capacity allows at most 1 unit (smallest token denomination) and the zero rate
   means the bucket never refills. This works across all pool versions (v1.5.x through v2).
-  - **Do NOT use `isEnabled: false`** — this disables rate limiting entirely, allowing unlimited transfers.
-- This blocks new cross-chain transfers while the migration completes, creating a brief maintenance window.
+  - **Do NOT use `isEnabled: false`**. It disables rate limiting entirely and allows unlimited transfers.
+- This blocks new cross-chain transfers while the migration completes, so expect a brief maintenance window.
 - **Keep inbound open** so in-flight messages can still arrive and be processed.
 
 **For Lock & Mint migrations, pausing is strongly recommended (not just optional)**. Unlike Burn & Mint, Lock & Mint has
 a liquidity migration step (Step 3) that drains the v1 pool. If you don't pause:
 
 - New tokens can get locked in the old v1 pool between Step 3 (drain) and Step 6 (cutover).
-- These tokens are **stranded** — they're not in the v2 lockbox, so the v2 pool can't release them.
+- These tokens are **stranded**. They're not in the v2 lockbox, so the v2 pool can't release them.
 - This creates a **liquidity accounting mismatch**: the v2 lockbox is underfunded relative to the total locked tokens.
 - Reverse (Mint→Lock) messages could fail if the lockbox doesn't have sufficient funds.
 
 If you can batch steps atomically (for example, via a Safe multisig meta-transaction), this window is eliminated. If
 you cannot batch atomically (for example, executing from a plain EOA), pausing is the safest approach.
 
-**Trade-off**: Pausing = prevents stranded liquidity, clean accounting, safe cutover. Not pausing = zero downtime but
-risk of stranded tokens and underfunded lockbox.
+**Trade-off**: Pausing prevents stranded liquidity and gives you clean accounting and a safe cutover. Not pausing means
+zero downtime but risks stranded tokens and an underfunded lockbox.
 
 ## Step 3: Migrate liquidity to LockBox (Chain A only)
 
 This step is unique to Lock & Mint migration. In v1, the Lock & Release pool held liquidity directly in its contract
 balance. In v2, liquidity sits in the `ERC20LockBox`. You must move it.
 
-**Warning — non-atomic execution risk**: If you execute steps individually (not batched), the withdraw → approve →
+**Warning (non-atomic execution risk)**: If you execute steps individually (not batched), the withdraw → approve →
 deposit sequence is **NOT atomic**. Between withdraw and deposit, the full liquidity sits in your wallet. If the
 account is compromised or the deposit fails, tokens are at risk. **Mitigations**: batch all sub-steps atomically via a
 Safe multisig meta-transaction or similar account abstraction, or use a hardware wallet if executing individually.
@@ -101914,7 +101921,7 @@ you fully drained, verify `token.balanceOf(v1PoolAddress) = 0`.
 
 - Call `applyAuthorizedCallerUpdates` on the lockbox, adding your address as an authorized caller.
 - This is required because only authorized callers can call `deposit`.
-- This authorization is temporary — you will remove it in Step 3f after the deposit.
+- This authorization is temporary. You will remove it in Step 3f after the deposit.
 
 #### 3d. Approve the lockbox to spend tokens
 
@@ -101923,13 +101930,13 @@ you fully drained, verify `token.balanceOf(v1PoolAddress) = 0`.
 #### 3e. Deposit tokens into the ERC20LockBox
 
 - Call `lockbox.deposit(tokenAddress, 0, amount)` to deposit the tokens into the lockbox.
-- The `remoteChainSelector` parameter (second arg) is **unused** by the ERC20LockBox contract — pass `0` or any value.
+- The `remoteChainSelector` parameter (second arg) is **unused** by the ERC20LockBox contract, so pass `0` or any value.
   The lockbox is a simple token vault shared across all remote chains.
 
 #### 3f. Remove your address from authorized callers (cleanup)
 
 - Call `applyAuthorizedCallerUpdates` on the lockbox, removing your address from the authorized callers list.
-- This minimizes the attack surface — only the pool should remain as an authorized caller.
+- This minimizes the attack surface. Only the pool should remain as an authorized caller.
 
 ### Post-migration verification
 
@@ -101960,15 +101967,15 @@ function applyChainUpdates(
 Each `ChainUpdate` contains:
 
 - `remoteChainSelector` (uint64)
-- `remotePoolAddresses` (bytes[]) — array of remote pool addresses
-- `remoteTokenAddress` (bytes) — the token address on the remote chain
+- `remotePoolAddresses` (bytes[]): array of remote pool addresses
+- `remoteTokenAddress` (bytes): the token address on the remote chain
 - `outboundRateLimiterConfig` (isEnabled, capacity, rate)
 - `inboundRateLimiterConfig` (isEnabled, capacity, rate)
 
-### Remote pool addresses — include both old and new
+### Remote pool addresses: Include both old and new
 
 The `remotePoolAddresses` array must include **both** the old v1 pool **and** the new v2 pool on the remote chain.
-Multiple pools per remote chain are supported — the contract stores them additively.
+Multiple pools per remote chain are supported, and the contract stores them additively.
 
 Note the **asymmetric pool types**:
 
@@ -101979,15 +101986,15 @@ Note the **asymmetric pool types**:
   - Remote chain = Chain A
   - `remotePoolAddresses = [encode(v1ChainALockReleasePool), encode(v2ChainALockReleasePool)]`
 
-**Address encoding**: `remotePoolAddresses` is typed as `bytes[]` and `remoteTokenAddress` as `bytes` — the contract
+**Address encoding**: `remotePoolAddresses` is typed as `bytes[]` and `remoteTokenAddress` as `bytes`. The contract
 stores whatever bytes you pass with no format validation beyond a non-zero-length check.
 
 - **EVM remote chain**: left-pad the 20-byte address to 32 bytes. In Solidity: `abi.encode(poolAddress)`. In Go:
-  `common.LeftPadBytes(addr.Bytes(), 32)`. Both produce the same 32 bytes — the 20-byte address right-aligned with 12
+  `common.LeftPadBytes(addr.Bytes(), 32)`. Both produce the same 32 bytes: the 20-byte address right-aligned with 12
   leading zero bytes.
 
 **Why both pools must be listed**: Messages sent through the old v1 pool before the cutover may still be in-flight. The
-OffRamp validates that the source pool address in the message matches a configured remote pool on the destination.
+destination pool validates that the source pool address in the message matches one of its configured remote pools.
 Without the old pool in the list, in-flight messages fail validation.
 
 ### Rate limiter configuration
@@ -101996,8 +102003,8 @@ Without the old pool in the list, in-flight messages fail validation.
 - Replicate your existing v1 rate limiter settings (or adjust as needed for v2). The struct is identical between v1 and
   v2.
 - Configure both inbound and outbound rate limits per remote chain.
-- If you paused transfers in Step 2, set the v2 pool rate limits to your desired production values (not zero — the v2
-  pool needs to be ready to handle traffic after cutover).
+- If you paused transfers in Step 2, set the v2 pool rate limits to your desired production values (not zero, because
+  the v2 pool needs to be ready to handle traffic after cutover).
 - **Note**: setting `isEnabled: false` means unlimited transfers (no rate limiting). Set `isEnabled: true` with
   appropriate capacity and rate to enforce limits.
 
@@ -102006,10 +102013,10 @@ Without the old pool in the list, in-flight messages fail validation.
 `applyChainUpdates` reverts with `ChainAlreadyExists` if the remote chain is already configured. You cannot call it
 twice for the same chain. If you need to fix a misconfiguration after the initial call:
 
-- **Add a missing remote pool**: call `addRemotePool(remoteChainSelector, encodedRemotePoolAddress)` (`onlyOwner`) —
-  second arg is `bytes`, encoded as described above.
-- **Remove a wrong remote pool**: call `removeRemotePool(remoteChainSelector, encodedRemotePoolAddress)` (`onlyOwner`) —
-  pass the same bytes that were stored when adding.
+- **Add a missing remote pool**: call `addRemotePool(remoteChainSelector, encodedRemotePoolAddress)` (`onlyOwner`).
+  The second arg is `bytes`, encoded as described above.
+- **Remove a wrong remote pool**: call `removeRemotePool(remoteChainSelector, encodedRemotePoolAddress)` (`onlyOwner`).
+  Pass the same bytes that were stored when adding.
 - **Change rate limiters**: call `setRateLimitConfig(RateLimitConfigArgs[])` (`onlyOwner` or rate limit admin).
 - **Fully reconfigure a chain**: first remove it via `applyChainUpdates([chainSelector], [])`, then re-add it with the
   correct configuration.
@@ -102038,17 +102045,18 @@ Before cutting over, verify the new v2 pools are correctly configured on **both 
 **Both chains**:
 
 - [ ] `TokenAdminRegistry.getTokenConfig(token).pendingAdministrator` is `address(0)`.
-- [ ] v1 pool is paused (if Step 2 was executed) — verify `token.balanceOf(v1PoolAddress) = 0` (no new locks since
+- [ ] v1 pool is paused (if Step 2 was executed). Verify `token.balanceOf(v1PoolAddress) = 0` (no new locks since
   drain).
 
-Verify before proceeding — `setPool` in the next step routes live traffic through the v2 pools.
+Verify before proceeding, because `setPool` in the next step routes live traffic through the v2 pools.
 
-## Step 6: Activate new v2 pools (`setPool`) — the cutover
+## Step 6: Cut over to the new v2 pools (`setPool`)
 
 - On **each chain**, call `TokenAdminRegistry.setPool(tokenAddress, newV2PoolAddress)` to point the registry to the new
   v2 pool.
-- Call `setPool` directly — your address is already the registered administrator. Do **not** call `proposeAdministrator`
-  or `acceptAdminRole`; these are only for initial registration, not for pool upgrades.
+- Call `setPool` directly, since your address is already the registered administrator. Do **not** call
+  `proposeAdministrator` or `acceptAdminRole`; these register or transfer the administrator role and are not part of a
+  pool upgrade.
 - Once executed on a chain, all new CCIP transfers for this token on that chain route through the new v2 pool.
 - Execute on both chains. The order does not matter because of the dual remote pool configuration from Step 4.
 
@@ -102059,8 +102067,8 @@ Verify before proceeding — `setPool` in the next step routes live traffic thro
   validate and execute correctly.
 - **For in-flight Lock→Mint messages**: If you paused in Step 2 and withdrew the full balance in Step 3, no residual
   tokens should be in the v1 pool. If you did NOT pause, any tokens locked between Step 3 and this cutover remain in
-  the v1 pool and are NOT in the v2 lockbox — creating a liquidity accounting mismatch (see Step 2 for why pausing is
-  strongly recommended).
+  the v1 pool and are NOT in the v2 lockbox, which creates a liquidity accounting mismatch (see Step 2 for why pausing
+  is strongly recommended).
 
 **Rollback**: If issues arise, you can call `TokenAdminRegistry.setPool(tokenAddress, oldV1PoolAddress)` to revert to
 v1. However, for Lock & Mint:
@@ -102069,8 +102077,8 @@ v1. However, for Lock & Mint:
   process new releases. (`provideLiquidity` does not exist in the contract source.)
 - Any in-flight messages sent through the v2 pool will fail validation on the v1 destination (since v1 pools were not
   configured with v2 remote pool addresses).
-- **Rollback before Step 6 is simpler**: the tokens are in the v2 lockbox and can be recovered via `lockbox.withdraw()`.
-  **Rollback after Step 6 is significantly harder** due to split liquidity state.
+- **Rollback before Step 6 is simpler**: the tokens are in the v2 lockbox, and an authorized caller can recover them via
+  `lockbox.withdraw()`. **Rollback after Step 6 is significantly harder** due to split liquidity state.
 
 ## Step 7: Validate end-to-end
 
@@ -102086,8 +102094,8 @@ v1. However, for Lock & Mint:
 
 **Important**: If you paused outbound in Step 2 and waited for in-flight messages to settle before draining, there
 should be no pending messages by this point. Verify via [CCIP Explorer](https://ccip.chain.link/) or `ccip-cli` (which
-queries `api.ccip.chain.link` — will soon support filtering by source token address) that all messages from the old v1
-pool addresses show SUCCESS status.
+queries `api.ccip.chain.link` and will soon support filtering by source token address) that all messages from the old
+v1 pool addresses show SUCCESS status.
 
 **Note**: Steps 8a and 8b are optional. The old pools are already inert (removed from TokenAdminRegistry) and pose
 minimal risk if cleanup is deferred. If you performed a partial drain (left some liquidity in the old v1 pool for
@@ -102102,7 +102110,7 @@ Call `removeRemotePool(uint64 remoteChainSelector, bytes calldata remotePoolAddr
 
 **Caution**: If any in-flight messages from the old v1 pools are still pending, removing their remote pool address will
 cause those messages to fail validation. If this happens, re-add the address using
-`addRemotePool(uint64 remoteChainSelector, bytes calldata remotePoolAddress)` (`onlyOwner`) to unblock it.
+`addRemotePool(uint64 remoteChainSelector, bytes calldata remotePoolAddress)` (`onlyOwner`) to unblock them.
 
 ### 8b. (Optional) Revoke old pool privileges
 
@@ -102113,7 +102121,7 @@ cause those messages to fail validation. If this happens, re-add the address usi
 
 **Chain A**:
 
-- The old v1 Lock & Release pool does **not** have mint/burn roles — no revocation needed.
+- The old v1 Lock & Release pool does **not** have mint/burn roles, so no revocation is needed.
 - The old v1 Chain A pool is drained and removed from TokenAdminRegistry. It is inert.
 
 **State after cleanup**
@@ -102130,18 +102138,20 @@ v2 pools support additional configuration not available in v1:
 
 - Deploy a separate `AdvancedPoolHooks` contract and attach it to your pool via
   `updateAdvancedPoolHooks(IAdvancedPoolHooks newHook)` (`onlyOwner`).
+- Add your pool as an authorized caller on the hooks contract (constructor `authorizedCallers` or
+  `applyAuthorizedCallerUpdates`); otherwise transfers through the pool revert.
 - Alternatively, pass the hooks address in the pool constructor at deployment time (Step 1).
-- If you don't need these features, leave the hooks address at `address(0)` (the default). AdvancedPoolHooks is fully
-  optional.
+- If you don't need these features, leave the hooks address at `address(0)` (the default).
 - Constructor: `(address[] allowlist, uint256 thresholdAmountForAdditionalCCVs, address policyEngine, address[] authorizedCallers)`
 - Capabilities:
   - **Allowlisting**: Restrict which addresses can initiate transfers (moved from pool constructor in v1 to hooks in
-    v2). Managed via `applyAllowListUpdates(address[] removes, address[] adds)` (`onlyOwner`).
+    v2). Managed via `applyAllowListUpdates(address[] removes, address[] adds)` (`onlyOwner`). The allowlist is enabled
+    only if you pass a non-empty `allowlist` to the constructor.
   - **CCV (Cross-Chain Verifier) management**: Configure per-chain verifiers for inbound and outbound transfers via
     `applyCCVConfigUpdates(CCVConfigArg[])` (`onlyOwner`).
   - **Threshold amount for additional CCVs**: Set via `setThresholdAmount(uint256)` (`onlyOwner`). When a transfer
-    amount meets or exceeds this threshold, additional CCVs are required on top of the base CCVs — providing tiered
-    security for high-value transfers. Set to `0` to disable (only base CCVs apply regardless of amount).
+    amount meets or exceeds this threshold, additional CCVs are required on top of the base CCVs, which gives
+    high-value transfers tiered security. Set to `0` to disable (only base CCVs apply regardless of amount).
   - **Policy engine**: Attach a custom policy contract for pre-flight/post-flight validation via
     `setPolicyEngine(address)` (`onlyOwner`).
 
@@ -102151,32 +102161,34 @@ v2 pools support additional configuration not available in v1:
   default `bytes4(0)` means the pool only accepts full-finality transfers; any non-zero value opts the pool into fast
   finality (either safe-head flag, minimum block-depth, or both). Read the current value via
   `getAllowedFinalityConfig()`.
-- When fast finality is enabled, the pool maintains **two separate rate limiter buckets per remote chain**: one for
-  default (wait-for-finality) transfers and one for fast-finality transfers.
+- When fast finality is enabled, the pool can keep **separate rate limiter buckets per remote chain** for default
+  (wait-for-finality) transfers and for fast-finality transfers. Until you enable the fast-finality buckets
+  (`setRateLimitConfig` with `fastFinality: true`), fast-finality transfers use the default buckets.
 
 ### Rate limits
 
 - v2 pools support **separate rate limits for default (wait-for-finality) and fast finality** per remote chain.
 - Call `setRateLimitConfig(RateLimitConfigArgs[])` (`onlyOwner` or rate limit admin) to configure rate limits. Each
   `RateLimitConfigArgs` includes a `bool fastFinality` flag to target the default or fast-finality bucket.
-- To read current rate limits: `getCurrentRateLimiterState(remoteChainSelector, fastFinality)` — pass `false` for the
-  default (wait-for-finality) bucket, `true` for the fast-finality bucket.
+- To read current rate limits, call `getCurrentRateLimiterState(remoteChainSelector, fastFinality)`. Pass `false` for
+  the default (wait-for-finality) bucket and `true` for the fast-finality bucket.
 
 ### Token transfer fee configuration
 
 - v2 pools have a **pool-level fee override** mechanism. Call `applyTokenTransferFeeConfigUpdates()` on **your pool**
   (`onlyOwner`) to configure per-destination-chain fees.
 - Fees support **separate rates for default and fast finality**:
-  - `finalityTransferFeeBps` / `finalityFeeUSDCents` — for default (wait-for-finality) transfers
-  - `fastFinalityTransferFeeBps` / `fastFinalityFeeUSDCents` — for fast-finality transfers
+  - `finalityTransferFeeBps` / `finalityFeeUSDCents`: for default (wait-for-finality) transfers
+  - `fastFinalityTransferFeeBps` / `fastFinalityFeeUSDCents`: for fast-finality transfers
 - These pool-level fees override the global defaults set by Chainlink on the FeeQuoter contract. If you don't configure
-  pool-level fees (`isEnabled: false`), the FeeQuoter defaults apply.
+  pool-level fees for a destination chain, the pool's `getFee` returns `isEnabled: false` and the FeeQuoter defaults
+  apply.
 - To withdraw accrued fees, call `withdrawFeeTokens(address[], address)` on the pool (`onlyOwner` or `feeAdmin`).
 
 ### Rate limit admin & fee admin delegation
 
 - Call `setDynamicConfig(address router, address rateLimitAdmin, address feeAdmin)` on the v2 pool (`onlyOwner`).
-- There is no separate `setRateLimitAdmin` function — all three are set together (pass the current value for any field
+- There is no separate `setRateLimitAdmin` function. All three are set together (pass the current value for any field
   you don't want to change; for example, router).
 - The **rate limit admin** can call `setRateLimitConfig()` to modify rate limits without full pool ownership.
 - The **fee admin** can call `withdrawFeeTokens(address[], address)` to withdraw accrued fees without full pool
@@ -102186,7 +102198,7 @@ v2 pools support additional configuration not available in v1:
 
 - Transfer pool ownership to a multisig or timelock contract after migration.
 - Transfer lockbox ownership as well, and remove your address from authorized callers.
-- This ensures all future configuration changes require governance approval.
+- This ensures all future owner-only configuration changes require governance approval.
 
 ## Multi-chain considerations
 
@@ -102199,25 +102211,26 @@ For tokens deployed across 3+ chains, you typically have **one LockReleaseTokenP
   BurnMint pools on each).
 - Each remote BurnMint pool must configure remote pool entries for Chain A's old v1 and new v2 LockRelease pool
   addresses.
-- Liquidity migration (Step 3): The ERC20LockBox is a shared vault — one withdrawal and one deposit covers all remote
+- Liquidity migration (Step 3): The ERC20LockBox is a shared vault, so one withdrawal and one deposit cover all remote
   chains (the `remoteChainSelector` param is unused).
 
 ### Siloed liquidity (per-chain isolation)
 
 If you need per-chain liquidity isolation, use `SiloedLockReleaseTokenPool` instead of `LockReleaseTokenPool`:
 
-- No lockbox in constructor — configure per-chain lockboxes via `configureLockBoxes(LockBoxConfig[])` (`onlyOwner`).
+- No lockbox in the constructor. Configure per-chain lockboxes via `configureLockBoxes(LockBoxConfig[])` (`onlyOwner`).
 - Each remote chain can have its own ERC20LockBox instance.
 - Liquidity migration differs from the standard flow:
   - Use `withdrawSiloedLiquidity(remoteChainSelector, amount)` per remote chain (instead of `withdrawLiquidity`).
-  - Each siloed chain has its own rebalancer — set and restore per chain via the pool's silo rebalancer functions.
+  - Each siloed chain has its own rebalancer. Set and restore it per chain via the pool's silo rebalancer functions.
   - Authorize, approve, and deposit into each chain's lockbox separately.
   - Also handle any unsiloed liquidity separately.
 
 ### Gradual migration
 
 You can migrate remote chains sequentially. Chain A's v2 pool can serve both migrated (v2) and not-yet-migrated (v1)
-destinations simultaneously, as long as all remote pool addresses are configured.
+destinations simultaneously, as long as all remote pool addresses are configured, including Chain A's v2 pool on each
+not-yet-migrated chain's v1 pool (`addRemotePool`).
 
 ---
 
@@ -102227,38 +102240,39 @@ Last Updated: 2025-06-09
 
 Worked examples for `TokenPool` v2.0 contracts. **v1.x pools** differences are noted inline.
 
-Worked configuration scenarios for common rate limit use cases. Examples illustrate capacity and refill calculations — recalculate for your token, lane, and risk tolerance.
+The examples show capacity and refill calculations for common rate limit use cases. Recalculate the values for your token, lane, and risk tolerance.
 
-All scenarios assume you are pool **owner** or `rateLimitAdmin`, have inspected current configuration, and validated decimals on each chain.
+All scenarios assume you are the pool **owner** or its `rateLimitAdmin`, have inspected the current configuration, and have validated decimals on each chain.
 
 ## Scenario: 18-decimal tokens (default bucket)
 
 Tokens with 18 decimals (LINK, ETH) on the default bucket.
 
-**Source chain** — outbound capacity 10 tokens, refill 0.1 tokens/sec:
+**Source chain**: outbound capacity 10 tokens, refill 0.1 tokens/sec.
 
 ```
 outbound capacity: 10 × 10^18  = 10000000000000000000
 outbound rate:     0.1 × 10^18 = 100000000000000000
 ```
 
-**Destination chain** — inbound capacity 11 tokens (10% headroom), refill 0.11 tokens/sec:
+**Destination chain**: inbound capacity 11 tokens (10% headroom), refill 0.11 tokens/sec.
 
 ```
 inbound capacity: 11 × 10^18   = 11000000000000000000
 inbound rate:     0.11 × 10^18 = 110000000000000000
 ```
 
-Submit outbound on the source pool and inbound on the destination pool.
+Submit the outbound values on the source pool and the inbound values on the destination pool.
 
 > **NOTE: v1.x pools**
 >
 > Use `setChainRateLimiterConfig(remoteSelector, outboundConfig, inboundConfig)` on each chain. Each call must include
-> both outbound and inbound structs — set the direction you are not changing to its current on-chain values.
+> both outbound and inbound structs, so set the direction you are not changing to its current onchain values.
 
-> **NOTE: v2.0**
+> **NOTE: v2.0 pools only**
 >
-> Use `setRateLimitConfig` with `fastFinality: false`.
+> Use `setRateLimitConfig` with `fastFinality: false`. Each entry also sets both outbound and inbound, so set the
+> direction you are not changing to its current onchain values.
 
 ## Scenario: 6-decimal tokens (default bucket)
 
@@ -102282,15 +102296,15 @@ Ensure fractional rates produce integer base-unit values.
 
 ## Scenario: fast-finality bucket (v2.0 pools only)
 
-Fast-finality buckets are optional and often configured with **tighter limits** than default buckets because fast-finality transfers have a different risk profile.
+Fast-finality buckets are optional and often configured with **tighter limits** than default buckets because FTF transfers have a different risk profile.
 
 ### When to use this
 
-Use this when your pool accepts fast-finality transfers (`setAllowedFinalityConfig` permits them) and you want separate limits for that traffic.
+Use this when the lane carries FTF transfers (the source pool allows them through `setAllowedFinalityConfig`) and you want separate limits for that traffic.
 
 ### Example configuration
 
-Assume default buckets are configured as in the 18-decimal scenario above. On the source chain, add a fast-finality outbound limit at 50% of default:
+Assume the default buckets are configured as in the 18-decimal scenario above. On the source chain, add a fast-finality outbound limit at 50% of the default:
 
 ```
 fastFinality: true
@@ -102303,10 +102317,10 @@ On the destination chain, configure the fast-finality inbound bucket with 10% he
 ```
 fastFinality: true
 inbound capacity: 5.5 × 10^18 = 5500000000000000000
-inbound rate:     0.055 × 10^18 = 550000000000000000
+inbound rate:     0.055 × 10^18 = 55000000000000000
 ```
 
-If the fast-finality bucket is not enabled (`isEnabled = false`), fast-finality transfers use the default bucket instead.
+If a fast-finality bucket is not enabled (`isEnabled = false`), FTF transfers in that direction use the default bucket instead.
 
 ## Scenario: batch update - default + fast-finality (v2.0 pools only)
 
@@ -102326,7 +102340,7 @@ args[1] = RateLimitConfigArgs({
   remoteChainSelector: REMOTE_SELECTOR,
   fastFinality: true,
   outboundRateLimiterConfig: Config(true, 5000000000000000000, 50000000000000000),
-  inboundRateLimiterConfig: Config(true, 5500000000000000000, 550000000000000000)
+  inboundRateLimiterConfig: Config(true, 5500000000000000000, 55000000000000000)
 });
 
 tokenPool.setRateLimitConfig(args);
@@ -102334,15 +102348,15 @@ tokenPool.setRateLimitConfig(args);
 
 ## Scenario: pausing a lane
 
-This scenario demonstrates how to effectively pause transfers on a specific lane using rate limits.
+Setting a lane's rate limits to zero pauses transfers on that lane.
 
 ### When to use this
 
-Use this pattern during incidents, investigations, or maintenance when transfers must be temporarily halted.
+Use this pattern during incidents, investigations, or maintenance when you need to halt transfers temporarily.
 
 ### Configuration pattern
 
-On **both chains**, for **both bucket types** (if FTF is enabled), set:
+Set these values on **both chains** for the relevant direction (outbound on the source, inbound on the destination). If a fast-finality bucket is enabled for that direction, set them on **both bucket types**:
 
 ```
 isEnabled = true
@@ -102350,20 +102364,17 @@ capacity  = 0
 rate      = 0
 ```
 
-for the relevant direction (outbound on source, inbound on destination).
+This blocks all transfers in that direction without disabling the limiter.
 
-This blocks all transfers for that direction without disabling the limiter entirely.
-
-See [Emergency Actions](/ccip/evm/concepts/cross-chain-token/rate-limits/emergency-actions) for owner-only alternatives such as lane config removal for the token pool.
+See [Emergency Actions](/ccip/evm/concepts/cross-chain-token/rate-limits/emergency-actions) for owner-only alternatives, such as removing the lane from the token pool.
 
 ## Scenario: removing rate limits
 
 > **CAUTION: Not recommended**
 >
-> Removing rate limits entirely removes a defensive safety mechanism. Use this pattern only when you intentionally want
-> transfers to be unconstrained by rate limits for that bucket.
+> Removing rate limits turns off a defensive safety mechanism.
 
-This scenario demonstrates how to remove rate limits entirely for a bucket.
+Disabling a bucket removes its rate limits entirely.
 
 ### When to use this
 
@@ -102379,15 +102390,15 @@ capacity  = 0
 rate      = 0
 ```
 
-Apply to both inbound and outbound if you want both directions unconstrained. Apply to both default and fast-finality entries if both were previously enabled.
+Apply this to both inbound and outbound if you want both directions unconstrained, and to both the default and fast-finality entries if both were previously enabled.
 
 ## Important notes
 
-- Scenario values must always be recalculated for the specific token, lane, and chain decimals
+- Always recalculate scenario values for the specific token, lane, and chain decimals
 - Do not copy example values without adjusting for decimals and desired behavior
-- Changes take effect immediately and refill buckets to full capacity in v2.0
-- A lane requires coordinated configuration on **both** source and destination pools
-- When fast-finality is enabled, configure or lock down **both** bucket types
+- Changes take effect immediately and, on v2.0 pools, refill buckets to full capacity
+- A lane requires coordinated configuration on **both** the source and destination pools
+- When a fast-finality bucket is enabled, configure or lock down **both** bucket types
 
 ---
 
@@ -102395,11 +102406,13 @@ Apply to both inbound and outbound if you want both directions unconstrained. Ap
 Source: https://docs.chain.link/ccip/evm/concepts/cross-chain-token/rate-limits/emergency-actions
 Last Updated: 2025-06-09
 
-This page describes emergency containment using `TokenPool` v2.0 pools. **v1.x pools** differences are noted inline.
+This page describes emergency containment on `TokenPool` v2.0 pools. Differences for **v1.x pools** are noted inline.
 
-This page describes emergency actions that can be taken to contain or halt cross-chain transfers on a specific CCIP lane using rate limit configuration and related pool controls.
+It covers the emergency actions you can take to contain or halt cross-chain transfers on a specific CCIP lane, using rate limit configuration and related pool controls.
 
-These actions are intended for incident response, maintenance, or risk containment scenarios. They should not be used for routine configuration.
+These actions are for incident response, maintenance, or risk containment. Don't use them for routine configuration.
+
+Emergency actions contain operational risk temporarily. Review the underlying cause before you restore normal transfer activity.
 
 ## When to use emergency actions
 
@@ -102409,7 +102422,7 @@ You may need to take emergency action if:
 - a misconfiguration or incident is under investigation
 - maintenance requires temporarily stopping transfers on a lane
 
-Emergency actions are scoped to a specific token pool and lane. They do not pause CCIP globally.
+Emergency actions are scoped to a specific token pool and lane (disabling FTF transfers covers every remote chain on the pool). They do not pause CCIP globally.
 
 ## Rate-limit-based lockdown (rateLimitAdmin or owner)
 
@@ -102443,7 +102456,7 @@ This allows at most one base unit of transfer before the bucket is depleted. For
 
 ### Update all relevant buckets
 
-For full lane containment, update **both directions on both chains** and **both bucket types** if fast-finality is in use:
+For full lane containment, update **both directions on both chains** and **both bucket types** if the fast-finality bucket is enabled:
 
 | Chain       | Pool       | Direction | Buckets to lock                              |
 | ----------- | ---------- | --------- | -------------------------------------------- |
@@ -102452,12 +102465,12 @@ For full lane containment, update **both directions on both chains** and **both 
 
 > **NOTE: v1.x pools**
 >
-> Only one bucket per direction per chain — no fast-finality buckets to lock separately.
+> Only one bucket per direction per remote chain. There are no fast-finality buckets to lock separately.
 
-> **NOTE: v2.0 only**
+> **NOTE: v2.0 pools only**
 >
-> If you lock only the default bucket, fast-finality transfers may continue through the fast-finality bucket or fall
-> back to default.
+> If you lock only the default bucket, FTF transfers continue through the fast-finality bucket when it's enabled. When
+> it isn't, they fall back to the locked default bucket and are blocked.
 
 ### Example: v2.0 pool single-bucket lockdown
 
@@ -102484,7 +102497,7 @@ tokenPool.setChainRateLimiterConfig(
 );
 ```
 
-Repeat on the counterpart chain with directions reversed. On v2.0, repeat with `fastFinality: true` if needed.
+Repeat on the counterpart chain with directions reversed. On v2.0, repeat with `fastFinality: true` if the fast-finality bucket is enabled.
 
 ## Owner-only emergency actions
 
@@ -102499,25 +102512,25 @@ function applyChainUpdates(
 ) external;
 ```
 
-Calling `applyChainUpdates` with a remote selector in the remove array deletes all configuration for that chain, including default and fast-finality rate limit state. This is stronger than throttling and prevents all transfers on the lane until the chain is re-added.
+Calling `applyChainUpdates` with a remote selector in the remove array deletes that chain's remote pools, remote token address, and rate limit state (default and fast-finality buckets) from the pool. This is stronger than throttling and prevents all transfers on the lane until the chain is re-added.
 
-### Disable fast-finality transfers
+### Disable FTF transfers
 
 ```solidity
 function setAllowedFinalityConfig(bytes4 allowedFinality) external;
 ```
 
-The owner can restrict which finality modes the pool accepts. This blocks the fast-finality code path without changing default bucket limits.
+The owner can restrict which finality modes the pool accepts on outbound transfers. Passing `0x00000000` (`WAIT_FOR_FINALITY_FLAG`, the default) makes the pool reject every outbound FTF transfer without changing default bucket limits. The setting covers every remote chain on the pool.
 
 ## Important considerations
 
 When locking down a lane:
 
 - partial lockdown (one direction, one chain, or one bucket type) may still allow some traffic
-- config changes take effect immediately and refill buckets to full capacity — for lockdown configs with `capacity = 0`, that means zero tokens are available — transfers remain blocked.
+- config changes take effect immediately and refill buckets to full capacity. For lockdown configs with `capacity = 0`, full capacity is zero tokens, so transfers remain blocked.
 - behavior depends on the token's smallest unit when using minimal non-zero values
 
-This approach is intended to contain activity, not to permanently disable rate limits.
+Use this approach to contain activity, not to permanently disable rate limits.
 
 ## Restoring normal operation
 
@@ -102525,18 +102538,16 @@ To resume normal transfers:
 
 1. Update inbound and outbound configurations with appropriate capacity and refill values on **both chains**
 2. Update **both default and fast-finality buckets** if you locked both
-3. Revalidate token units and inspect on-chain state before restoring service
-4. If you removed the lane via `applyChainUpdates`, re-add the chain with appropriate initial limits
-
-Always revalidate token units and existing configuration before restoring service.
+3. Revalidate token units and inspect onchain state before restoring service
+4. If you removed the lane via `applyChainUpdates`, re-add the chain with appropriate initial limits (this sets only the default buckets, so set any fast-finality buckets again with `setRateLimitConfig`)
 
 ## What this page does not cover
 
 This page does not cover:
 
-- routine rate limit tuning — see [Common Scenarios](/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios)
-- worked examples for different token decimals — see [Common Scenarios](/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios)
-- fully removing rate limits (`isEnabled = false`) — see [Common Scenarios](/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios)
+- routine rate limit tuning (see [Common Scenarios](/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios))
+- worked examples for different token decimals (see [Common Scenarios](/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios))
+- fully removing rate limits with `isEnabled = false` (see [Common Scenarios](/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios))
 
 ---
 
@@ -102544,9 +102555,9 @@ This page does not cover:
 Source: https://docs.chain.link/ccip/evm/concepts/cross-chain-token/rate-limits/executing-with-a-multisig
 Last Updated: 2025-06-09
 
-Rate limit changes are commonly executed from a multisig wallet to reduce operational risk and ensure changes are reviewed before being applied on-chain.
+Rate limit changes are commonly executed from a multisig wallet to reduce operational risk and ensure changes are reviewed before they are applied onchain.
 
-This page describes the high-level execution model for multisig-based updates and points to tooling that can be used to submit transactions safely.
+This page describes the execution model for multisig-based updates and lists tooling you can use to submit the transactions.
 
 ## Why use a multisig
 
@@ -102567,7 +102578,7 @@ Confirm which role your multisig holds:
 
 ## What the multisig submits
 
-### v2.0
+### v2.0 pools
 
 - `setRateLimitConfig` with an array of entries, each containing:
   - remote chain selector
@@ -102584,33 +102595,33 @@ Confirm which role your multisig holds:
 
 Or `setChainRateLimiterConfigs` to batch multiple lanes.
 
-The multisig controls approval and submission only — on-chain rate limit behavior is unchanged.
+The multisig controls approval and submission only. Onchain rate limit behavior is unchanged.
 
 ## Building the transaction
 
 To build a rate limit update transaction using a multisig:
 
 1. Identify the correct **token pool contract address** on the chain you are updating
-2. Confirm the multisig is the pool **owner** or `rateLimitAdmin` (via `getDynamicConfig()` on v2.0, or `getRateLimitAdmin()` on v1.x)
+2. Confirm the multisig is the pool **owner** (`owner()`) or its `rateLimitAdmin` (`getDynamicConfig()` on v2.0, `getRateLimitAdmin()` on v1.x)
 3. Prepare the version-appropriate function call (see below)
 4. Supply the **remote chain selector** (`uint64`) for each lane you are updating
-5. Enter **inbound and outbound configuration tuples** for each call — even if you only intend to change one direction, the function still requires both structs (set the unchanged direction to its current on-chain values)
+5. Enter **inbound and outbound configuration tuples** for each call. The function requires both structs even if you only intend to change one direction, so set the unchanged direction to its current onchain values (on v2.0, this also refills that direction's bucket to full capacity)
 6. Express all numeric values in the token's **local base units** (not whole tokens)
 
 Configuration tuples must be entered as arrays or structs containing:
 
-- `isEnabled` (bool)
-- `capacity` (uint128)
-- `rate` (uint128)
+- `isEnabled` (`bool`)
+- `capacity` (`uint128`)
+- `rate` (`uint128`)
 
-### v2.0: prepare `setRateLimitConfig`
+### v2.0 pools: prepare `setRateLimitConfig`
 
 Build an **array** of `RateLimitConfigArgs` entries. For each entry, supply:
 
 - `remoteChainSelector` (`uint64`)
-- `fastFinality` (`bool`) — `false` for default bucket, `true` for fast-finality bucket
-- `outboundRateLimiterConfig` — `[isEnabled, capacity, rate]`
-- `inboundRateLimiterConfig` — `[isEnabled, capacity, rate]`
+- `fastFinality` (`bool`): `false` for the default bucket, `true` for the fast-finality bucket
+- `outboundRateLimiterConfig`: `[isEnabled, capacity, rate]`
+- `inboundRateLimiterConfig`: `[isEnabled, capacity, rate]`
 
 #### Single lane, default bucket only
 
@@ -102627,19 +102638,19 @@ inboundRateLimiterConfig: [true, 0, 0]
 
 #### Single lane, default + fast-finality
 
-Two array entries with the same `remoteChainSelector` but different `fastFinality` values — one with `false`, one with `true`. Use this when you need to limit or lock down both bucket types.
+Two array entries with the same `remoteChainSelector` but different `fastFinality` values: one with `false`, one with `true`. Use this when you need to limit or lock down both bucket types.
 
 #### Multiple remote chains
 
-Add one or more entries per chain (and per bucket type, if updating fast-finality). All entries are submitted in a single `setRateLimitConfig` call.
+Add one or more entries per chain (one per bucket type you update). All entries go in a single `setRateLimitConfig` call.
 
 ### v1.x pools: prepare `setChainRateLimiterConfig`
 
 For a single lane, supply three arguments:
 
 - `remoteChainSelector` (`uint64`)
-- `outboundConfig` — `[isEnabled, capacity, rate]`
-- `inboundConfig` — `[isEnabled, capacity, rate]`
+- `outboundConfig`: `[isEnabled, capacity, rate]`
+- `inboundConfig`: `[isEnabled, capacity, rate]`
 
 There is no `fastFinality` flag and no array wrapper.
 
@@ -102662,23 +102673,23 @@ A lane spans two chains. You typically need **two separate multisig transactions
 | 1           | Source      | Source token pool      | Outbound limits |
 | 2           | Destination | Destination token pool | Inbound limits  |
 
-Unless one multisig controls both pools, these are separate proposals — each signed and executed on its respective chain.
+Unless one multisig controls both pools, these are separate proposals, each signed and executed on its own chain.
 
-On v2.0, repeat for fast-finality buckets if applicable (either as a second entry in the array on each chain, or as a separate proposal if you update buckets incrementally).
+On v2.0, repeat this for the fast-finality buckets if FTF transfers are in use on the lane, either as a second entry in the array on each chain or as a separate proposal if you update buckets incrementally.
 
 > **NOTE: v1.x pools**
 >
-> One inbound/outbound pair per chain — no fast-finality entries to plan for.
+> One inbound/outbound pair per chain, with no fast-finality entries to plan for.
 
 ## Tooling options
 
-Common tooling options for executing multisig transactions include:
+Common options for executing multisig transactions include:
 
 - Safe transaction builder
 - custom scripts that submit transactions to the multisig
 - internal operator tooling built on top of web3 libraries
 
-The specific interface used does not affect the on-chain outcome.
+The interface you use does not affect the onchain outcome.
 
 ## Verification before submission
 
@@ -102691,11 +102702,11 @@ The specific interface used does not affect the on-chain outcome.
 
 ## After execution
 
-Limits apply immediately once confirmed. Re-inspect on-chain state and monitor transfer behavior.
+Limits apply as soon as the transaction is confirmed. Re-inspect onchain state and monitor transfer behavior.
 
 ## ABIs for transaction builders
 
-### setRateLimitConfig (v2.0)
+### setRateLimitConfig (v2.0 pools)
 
 ```json
 [
@@ -102782,7 +102793,7 @@ Limits apply immediately once confirmed. Re-inspect on-chain state and monitor t
 - [Common Scenarios](/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios)
 - [Emergency Actions](/ccip/evm/concepts/cross-chain-token/rate-limits/emergency-actions)
 
-For tool-specific walkthroughs, refer to the Token Manager and multisig documentation linked from the Tools section.
+For a tool-specific walkthrough, see the [CCIP Token Manager](/ccip/evm/tools-resources/token-manager).
 
 ---
 
@@ -103281,25 +103292,25 @@ After validating units and conversions, you can proceed to [updating inbound and
 Source: https://docs.chain.link/ccip/evm/concepts/cross-chain-token/rate-limits/update-rate-limits
 Last Updated: 2025-06-09
 
-This page describes updating limits on `TokenPool` v2.0 contracts. **v1.x pools** differences are noted inline.
+This page describes updating limits on `TokenPool` v2.0 contracts. Differences for **v1.x pools** are noted inline.
 
 Once you understand the current configuration and have validated token units and decimals, update inbound and outbound rate limits for the token pool and lane.
 
-Rate limit updates are applied on-chain and take effect immediately. Changes should be made deliberately and reviewed carefully before submission.
+Rate limit updates are applied onchain and take effect immediately. Make changes deliberately and review them carefully before submission.
 
-> **NOTE: v2.0 only**
+> **NOTE: v2.0 pools only**
 >
-> Each update also refills the affected bucket to full capacity.
+> Each update also refills every bucket it sets, outbound and inbound, to full capacity.
 
 > **NOTE: v1.x pools**
 >
-> The bucket continues refilling at the **normal rate** after a config change — it does not jump to full capacity.
+> After a config change, the bucket continues refilling at the **normal rate** instead of jumping to full capacity.
 
 ## Function used to update rate limits
 
-### v2.0 Pools
+### v2.0 pools
 
-Rate limits are updated by calling `setRateLimitConfig`:
+Call `setRateLimitConfig` to update rate limits:
 
 ```solidity
 struct RateLimitConfigArgs {
@@ -103320,7 +103331,7 @@ function setRateLimitConfig(
 ) external;
 ```
 
-This accepts an array of entries. Each entry updates one bucket pair (outbound + inbound) for one remote chain. A single transaction can update multiple chains and/or both default and fast-finality buckets.
+The function takes an array of entries. Each entry updates one bucket pair (outbound + inbound) for one remote chain. A single transaction can cover multiple chains and both the default and fast-finality buckets.
 
 | Field                           | Description                                             |
 | ------------------------------- | ------------------------------------------------------- |
@@ -103333,7 +103344,7 @@ When `isEnabled = true`, rate must be ≤ capacity. To disable: `isEnabled = fal
 
 ### v1.x pools
 
-v1 pools use `setChainRateLimiterConfig` for a single lane:
+v1.x pools use `setChainRateLimiterConfig` for a single lane:
 
 ```solidity
 function setChainRateLimiterConfig(
@@ -103353,7 +103364,7 @@ function setChainRateLimiterConfigs(
 ) external;
 ```
 
-There is no `fastFinality` parameter. Config tuple shape (`isEnabled`, `capacity`, `rate`) is the same.
+There is no `fastFinality` parameter. The config tuple (`isEnabled`, `capacity`, `rate`) has the same shape.
 
 ## Who can call this function
 
@@ -103361,7 +103372,7 @@ The pool **owner** or `rateLimitAdmin` (from `getDynamicConfig()` on v2.0; `getR
 
 ## Inbound and outbound configuration guidance
 
-Inbound and outbound limits are configured independently, but they are related across the lane.
+Inbound and outbound limits are configured independently, but they are related across the lane: a transfer consumes outbound capacity on the source pool and inbound capacity on the destination pool.
 
 Recommended practice:
 
@@ -103373,9 +103384,9 @@ Recommended practice:
 
 > **NOTE: v1.x pools**
 >
-> Skip this section — only one inbound/outbound pair exists per remote chain.
+> Skip this section. v1.x pools have only one inbound/outbound pair per remote chain.
 
-If your lane supports fast-finality transfers, update both bucket types when you intend to limit all traffic:
+If your lane supports FTF transfers, update both bucket types to limit all traffic:
 
 ```solidity
 RateLimitConfigArgs[] memory args = new RateLimitConfigArgs[](2);
@@ -103399,36 +103410,37 @@ args[1] = RateLimitConfigArgs({
 tokenPool.setRateLimitConfig(args);
 ```
 
-If you only update the default bucket, fast-finality transfers may still use a separate fast-finality bucket or fall back to the default bucket depending on whether the FF bucket is enabled.
+If you only update the default bucket, FTF transfers still use the fast-finality bucket in each direction where it is enabled, and fall back to the default bucket where it is not.
 
 ## Example interaction (conceptual)
 
 1. Select the token pool on the correct chain
 2. Build the version-appropriate call (`setRateLimitConfig` or `setChainRateLimiterConfig`)
-3. Supply remote chain selector and outbound/inbound tuples in **local base units**
+3. Supply the remote chain selector and the outbound and inbound tuples in **local base units**
 4. Submit from a wallet with owner or `rateLimitAdmin` permissions
 
-For cross-chain lanes, expect **at least two transactions** — outbound on the source pool and inbound on the destination pool — unless one address controls both pools.
+For cross-chain lanes, expect **at least two transactions**, one on each chain: outbound on the source pool and inbound on the destination pool. This is true even when the same address controls both pools.
 
 ## Verifying before submission
 
-- re-check values are in local base units on this chain
+- re-check that values are in local base units on this chain
 - confirm inbound and outbound are not swapped
 - verify the correct remote chain selector
 - on v2.0: confirm the `fastFinality` flag targets the intended bucket
-- on v2.0: remember the bucket refills to full capacity immediately
+- on v2.0: remember that every bucket you set refills to full capacity immediately
+- on v2.0: each entry also sets the opposite direction, so pass its current values if you are not changing it
 
 ## After the update
 
-Once confirmed, the new limits apply immediately. Monitor behavior and re-inspect on-chain state. On v2.0, inspect both default and fast-finality buckets if applicable.
+Once the transaction is confirmed, the new limits apply immediately. Monitor transfer behavior and re-inspect the onchain state. On v2.0, inspect both the default and fast-finality buckets if FTF transfers are in use on the lane.
 
 ## What this page does not cover
 
 This page does not cover:
 
-- emergency actions such as locking down a lane — see [Emergency Actions](/ccip/evm/concepts/cross-chain-token/rate-limits/emergency-actions)
-- worked examples for specific token decimals — see [Common Scenarios](/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios)
-- tool-specific execution steps for multisig wallets — see [Executing with a Multisig](/ccip/evm/concepts/cross-chain-token/rate-limits/executing-with-a-multisig)
+- emergency actions such as locking down a lane (see [Emergency Actions](/ccip/evm/concepts/cross-chain-token/rate-limits/emergency-actions))
+- worked examples for specific token decimals (see [Common Scenarios](/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios))
+- tool-specific execution steps for multisig wallets (see [Executing with a Multisig](/ccip/evm/concepts/cross-chain-token/rate-limits/executing-with-a-multisig))
 
 ---
 
