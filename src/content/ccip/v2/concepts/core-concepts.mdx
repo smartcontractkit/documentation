@@ -1,0 +1,93 @@
+---
+section: ccip
+date: Last Modified
+title: "Core CCIP Concepts"
+isIndex: true
+---
+
+This page defines the core, CCIP-specific primitives that appear throughout the CCIP architecture, token model, and messaging system.  
+It does not describe step-by-step workflows or configuration.
+
+_Entry points and primitives_
+
+## Router
+
+The **CCIP Router** is the primary onchain entry point for sending cross-chain messages and token transfers. Applications interact with the Router to initiate CCIP operations, while the Router forwards messages to the appropriate onchain and offchain components.
+
+The Router provides a consistent interface for CCIP interactions across supported chains.
+
+## Cross-Chain Message
+
+A **cross-chain message** is the fundamental unit of communication in CCIP. Messages can carry:
+
+- data only,
+- tokens only, or
+- tokens combined with data.
+
+Messages are verified offchain and executed on the destination chain according to CCIP’s messaging and execution model.
+
+## Lane
+
+A **lane** represents a directional cross-chain pathway between a source chain and a destination chain. Each lane defines the execution context, operational state, and limits for messages and token transfers flowing in that direction.
+
+Lanes are the unit at which availability, throughput, and status are tracked in CCIP.
+
+## OnRamp and OffRamp
+
+**OnRamp** and **OffRamp** contracts handle the entry and exit of CCIP messages at the chain level.
+
+- The **OnRamp** processes messages and token transfers on the source chain.
+- The **OffRamp** executes messages and token transfers on the destination chain after verification.
+
+Together, these components enforce ordering, execution guarantees, and interaction with downstream contracts.
+
+## Executor
+
+The **Executor** is responsible for executing verified CCIP messages on the destination chain. Execution may involve calling application contracts, transferring tokens, or triggering additional logic as defined by the message payload.
+
+Execution is asynchronous and subject to operational constraints such as gas limits and lane status.
+
+_Token movement and coordination_
+
+## Programmable Token Transfer (PTT)
+
+A **Programmable Token Transfer (PTT)** is a CCIP message that combines token transfers with application data, enabling tokens and instructions to arrive together on the destination chain.
+
+PTTs are commonly used for cross-chain deposits, staking, swaps, and other workflows where value transfer and execution must be coordinated.
+
+## Cross-Chain Token (CCT)
+
+A **Cross-Chain Token (CCT)** is a token configured to move across chains using CCIP. CCTs rely on token pools and defined transfer mechanisms to maintain supply consistency across networks.
+
+CCTs can be used on their own or as part of Programmable Token Transfers.
+
+## Token Pool
+
+A **token pool** manages liquidity and supply accounting for a Cross-Chain Token across chains. Token pools enforce transfer mechanisms such as lock-and-mint or burn-and-mint and apply rate limits to control flow.
+
+Token pools are central to the safety and correctness of cross-chain token transfers.
+
+## Transfer Mechanisms
+
+CCIP supports different **transfer mechanisms** for cross-chain tokens, including:
+
+- **Lock and Mint**
+- **Burn and Mint**
+
+The transfer mechanism determines how token supply is managed across chains and how value is represented on each network.
+
+_Risk controls and extension points_
+
+## Token Pool Rate Limits
+
+**Token pool rate limits** constrain the amount of tokens that can move across a lane over a given period. These limits are designed to reduce risk and provide operational control over cross-chain token movement.
+
+Rate limits are enforced at the pool level and may vary by token and lane.
+
+---
+
+## Cross-Chain Verification (CCV)
+
+A **Cross-Chain Verification (CCV)** defines how CCIP messages are verified before execution. The default CCIP verification model is provided by the CCIP network, while custom CCVs allow advanced teams to define alternative verification logic.
+
+CCVs are an advanced extension point and are not required for most CCIP integrations.

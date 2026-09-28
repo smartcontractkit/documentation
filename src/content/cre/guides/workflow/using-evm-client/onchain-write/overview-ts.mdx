@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Write workflow results to the blockchain in TypeScript: learn to generate verified reports and submit them securely to smart contracts."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-09-18"
 ---
 
 import { Aside } from "@components"
@@ -98,6 +98,163 @@ Use `evmClient.writeReport()` to submit the signed report to your consumer contr
 <Aside type="note" title="Already familiar with the Getting Started tutorial?">
   The approach covered in [Part 4: Writing Onchain](/cre/getting-started/part-4-writing-onchain) uses this same two-step
   pattern. This section provides the conceptual foundation for that tutorial.
+</Aside>
+
+## Inspecting onchain transactions
+
+When your workflow submits a report onchain, the transaction can fail in two distinct ways: the **transaction itself** can revert (for example, out of gas or an invalid receiver), or the transaction can succeed but your consumer contract's `onReport()` function can **revert during execution**. You should inspect both outcomes and decide how to respond.
+
+### Understanding the response
+
+`evmClient.writeReport()` returns a [`WriteReportReply`](/cre/reference/sdk/evm-client-ts#writereportreply) with two status fields you should check:
+
+| Field                             | Type                              | Meaning                                                                                                  |
+| --------------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `txStatus`                        | `TxStatus`                        | Whether the transaction itself succeeded: `SUCCESS`, `REVERTED`, or `FATAL`.                             |
+| `receiverContractExecutionStatus` | `ReceiverContractExecutionStatus` | Whether your consumer contract's `onReport()` executed successfully: `SUCCESS` or `REVERTED` (optional). |
+| `txHash`                          | `Uint8Array`                      | The 32-byte transaction hash, useful for looking up the transaction on a block explorer.                 |
+| `errorMessage`                    | `string`                          | An error message if the transaction failed.                                                              |
+
+**Important**: `txStatus` and `receiverContractExecutionStatus` are independent. A transaction can succeed (`txStatus === TxStatus.SUCCESS`) while the consumer contract's `onReport()` reverts (`receiverContractExecutionStatus === ReceiverContractExecutionStatus.REVERTED`). Always check both.
+
+### How to know if `onReport()` succeeded
+
+The `receiverContractExecutionStatus` field tells you whether your consumer contract's `onReport()` function executed successfully. Check it after every write and log the result so you can monitor and troubleshoot deliveries:
+
+```typescript
+import { EVMClient, TxStatus, bytesToHex, type Runtime } from "@chainlink/cre-sdk"
+import { EVM_PB } from "@chainlink/cre-sdk/pb"
+
+const writeResult = evmClient
+  .writeReport(runtime, {
+    receiver: config.consumerAddress,
+    report: reportResponse,
+    gasConfig: {
+      gasLimit: config.gasLimit,
+    },
+  })
+  .result()
+
+// Always log the transaction hash and both statuses
+const txHash = bytesToHex(writeResult.txHash || new Uint8Array(32))
+runtime.log(
+  `Write report response: txHash=${txHash} txStatus=${writeResult.txStatus} ` +
+    `receiverStatus=${writeResult.receiverContractExecutionStatus}`
+)
+
+// Check the transaction status first
+if (writeResult.txStatus !== TxStatus.SUCCESS) {
+  throw new Error(`Transaction failed with status ${writeResult.txStatus}: ${writeResult.errorMessage}`)
+}
+
+// Then check whether onReport() executed successfully
+if (writeResult.receiverContractExecutionStatus === EVM_PB.ReceiverContractExecutionStatus.REVERTED) {
+  throw new Error(`onReport() reverted with status ${writeResult.receiverContractExecutionStatus}`)
+}
+```
+
+### Retry and reporting example
+
+The following example shows a complete pattern for inspecting a write, logging the outcome, and retrying when the transaction or the consumer contract execution fails:
+
+```typescript
+import { EVMClient, TxStatus, Report, bytesToHex, type Runtime } from "@chainlink/cre-sdk"
+import { EVM_PB } from "@chainlink/cre-sdk/pb"
+
+const MAX_RETRIES = 3
+
+function submitReport(runtime: Runtime<unknown>, evmClient: EVMClient, report: Report, attempt = 0): void {
+  const writeResult = evmClient
+    .writeReport(runtime, {
+      receiver: config.consumerAddress,
+      report,
+      gasConfig: {
+        gasLimit: config.gasLimit,
+      },
+    })
+    .result()
+
+  const txHash = bytesToHex(writeResult.txHash || new Uint8Array(32))
+  runtime.log(
+    `Write report response: txHash=${txHash} txStatus=${writeResult.txStatus} ` +
+      `receiverStatus=${writeResult.receiverContractExecutionStatus}`
+  )
+
+  // Retry on transaction failure
+  if (writeResult.txStatus !== TxStatus.SUCCESS) {
+    runtime.log(`Transaction failed, retrying: ${writeResult.errorMessage}`)
+    retrySubmit(runtime, evmClient, report, attempt)
+    return
+  }
+
+  // Retry if onReport() reverted even though the transaction succeeded
+  if (writeResult.receiverContractExecutionStatus === EVM_PB.ReceiverContractExecutionStatus.REVERTED) {
+    runtime.log(`onReport() reverted, retrying`)
+    retrySubmit(runtime, evmClient, report, attempt)
+    return
+  }
+
+  runtime.log(`Report delivered successfully: ${txHash}`)
+}
+
+function retrySubmit(runtime: Runtime<unknown>, evmClient: EVMClient, report: Report, attempt: number): void {
+  if (attempt >= MAX_RETRIES) {
+    throw new Error(`Report delivery failed after ${MAX_RETRIES} attempts`)
+  }
+  runtime.log(`Retrying submission (attempt ${attempt + 1}/${MAX_RETRIES})...`)
+  // Add a delay here if your runtime supports it. Be careful about replay attacks — see below.
+  submitReport(runtime, evmClient, report, attempt + 1)
+}
+```
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Replay attacks on retry">
+  A reverted report is **not** marked as used by the forwarder, so retrying (or anyone else) can resubmit the same signed report once conditions change. If your workflow takes corrective action after a failure, embed a monotonic execution timestamp in the report payload and reject stale reports in your consumer contract. See [Same-chain replay on failure](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#same-chain-replay-on-failure).
+</Aside>
+
+### Inspecting executions with the CLI
+
+Once your workflow is deployed, you can inspect its executions programmatically with the CRE CLI. All commands support `--output json` for scripting. You can also view the same information in the [CRE Workflows dashboard](https://app.chain.link/cre/workflows).
+
+**Workflow-level inspection:**
+
+```bash
+# List all workflows for your organization
+cre workflow list
+
+# Deployment health + most recent execution for a workflow
+cre workflow get ./my-workflow --target production-settings
+```
+
+**Execution-level inspection:**
+
+```bash
+# List executions (optionally filtered by workflow, status, or time range)
+cre execution list evm-write-inspection
+cre execution list evm-write-inspection --status FAILURE
+cre execution list evm-write-inspection --limit 50 --output json
+
+# Detailed status of a single execution (incl. top-level errors)
+cre execution status <execution-uuid>
+
+# Capability event timeline (per-event status, method, duration, errors)
+cre execution events <execution-uuid>
+
+# User-emitted log lines (e.g. your "Write report response" logs)
+cre execution logs <execution-uuid>
+```
+
+**Control commands:**
+
+```bash
+# Pause / resume a workflow to stop or start trigger execution
+cre workflow pause ./my-workflow --target production-settings --yes
+cre workflow activate ./my-workflow --target production-settings --yes
+```
+
+{/* prettier-ignore */}
+<Aside type="note" title="Simulation vs production">
+  `cre workflow simulate` uses a **MockForwarder** that records the report but does **not** call your consumer contract's `onReport()`. As a result, `receiverContractExecutionStatus` is always `SUCCESS` in simulation. To observe real `onReport()` reverts (and the retry behavior above), deploy the workflow with `cre workflow deploy` and inspect its executions with the CLI commands above.
 </Aside>
 
 ## Next steps

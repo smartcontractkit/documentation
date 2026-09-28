@@ -1,0 +1,61 @@
+---
+section: ccip
+date: Last Modified
+title: "Logging and monitoring"
+metadata:
+  description: "Observe a CCV cell: metrics are OTLP push only, so run your own OpenTelemetry collector, import the kit's Grafana dashboard, and add your own alert on policy-hook outcomes."
+  excerpt: "CCV monitoring, OTLP, OpenTelemetry collector, Grafana dashboard, OTEL_SERVICE_NAME, alerting, policy hook metrics, dropped messages"
+  datePublished: "2026-09-25"
+  lastModified: "2026-09-27"
+whatsnext:
+  "Operate: day 2": "/ccip/ccv-starter-kit/operate-day-2"
+  "Add a custom policy hook": "/ccip/ccv-starter-kit/how-to/add-a-custom-policy-hook"
+  "Reference": "/ccip/ccv-starter-kit/reference"
+---
+
+The verifier and aggregator export metrics and write logs. This page covers how to collect those metrics, what
+to watch, and how to read the verifier's startup logs. The
+[policy hook](/ccip/ccv-starter-kit/how-to/add-a-custom-policy-hook) is a service you run, so collect its logs
+through your own logging stack; the cell reports the policy outcomes it sees as metrics, described below.
+
+## Collect the metrics
+
+The verifier and aggregator push metrics over OTLP and expose no scrapable `/metrics` endpoint, so a
+Prometheus-style scrape finds nothing. Deploy an OpenTelemetry collector (the upstream OpenTelemetry Collector
+or Grafana Alloy) to receive the OTLP metrics and forward them to your metrics backend, and set
+`OTEL_SERVICE_NAME` on each component so its metrics carry a distinct service name. Then import the kit's
+[Grafana dashboard](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/grafana/ccv-cell-dashboard.json)
+(the CCV Cell Overview) to visualize them. The off-chain kit documents the collector configuration in
+[Metrics](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#10-metrics-deploy-an-otel-collector),
+the metrics to watch and the example dashboard in
+[Monitoring](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#11-monitoring-the-cell),
+and its alert catalog in
+[Alerting](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#12-alerting).
+
+## Alert on the policy hook
+
+The RUNBOOK's alert catalog covers the cell's built-in metrics, so follow it for those. It does not cover the
+policy hook, because the hook is optional, so it is the one alert you add yourself when you run one. The verifier
+reports each policy outcome on the `verifier_message_transitions_total` counter with `stage="policy"`:
+
+- `outcome="policy_unavailable"` rising means your endpoint is down or timing out and the verifier is retrying.
+- `outcome="policy_rejected"` counts the messages your endpoint answered FAIL.
+
+Both outcomes leave the message in the verifier's job archive rather than deleting it, with your endpoint's
+`reason` string kept for 30 days. The
+[policy hook guide](https://github.com/smartcontractkit/chainlink-ccv/blob/main/verifier/docs/policy_hook.md)
+covers listing and replaying archived messages with the verifier's `ccv job-queue` command.
+
+## Read the startup logs
+
+Two log patterns look like faults but are normal, so knowing them saves a false alarm on first deploy.
+
+Right after deploy, the verifier starts before its own aggregator is ready and retries the connection for the
+first 15 to 30 seconds, logging `connection refused` and `Failed to list message rules` until the aggregator
+comes up. These clear on their own. The catch is that a permanent misconfiguration prints the same lines, so the
+message alone does not tell the two apart, only how long they last. Treat errors that continue past a minute as
+a real fault, and check first that the aggregator is running and listening on `:::50051`.
+
+In steady state with `finality_depth: 0`, the verifier waits for each source message to reach chain finality
+before it attests, and logs `Healthy` while it waits. A log showing only `Healthy` is a verifier waiting for
+finality, not a stuck one.

@@ -254,9 +254,9 @@ export async function handleFaucetError(
           APIErrorType.VALIDATION_ERROR,
           `You can request tokens again in ${timeInfo.displayTime}`,
           429, // Rate limit status
+          requestId,
           {
             code: "RATE_LIMIT_ACTIVE",
-            traceId: requestId,
             remainingSeconds: timeInfo.remainingSeconds,
             nextAvailable: timeInfo.nextAvailable.toISOString(),
             displayTime: timeInfo.displayTime,
@@ -279,37 +279,33 @@ export async function handleFaucetError(
     if (errorMessage.includes(pattern)) {
       const responseData = {
         code: mapping.code,
-        traceId: requestId,
         ...(mapping.retryAfter && { retryAfter: mapping.retryAfter }),
       }
 
-      return createErrorResponse(mapping.errorType, mapping.userMessage, mapping.httpStatus, responseData)
+      return createErrorResponse(mapping.errorType, mapping.userMessage, mapping.httpStatus, requestId, responseData)
     }
   }
 
   // Check for partial matches for compound error messages
   if (errorMessage.includes("insufficient") && errorMessage.includes("funds")) {
     const mapping = ERROR_MAPPINGS["insufficient funds"]
-    return createErrorResponse(mapping.errorType, mapping.userMessage, mapping.httpStatus, {
+    return createErrorResponse(mapping.errorType, mapping.userMessage, mapping.httpStatus, requestId, {
       code: mapping.code,
-      traceId: requestId,
       retryAfter: mapping.retryAfter,
     })
   }
 
   if (errorMessage.includes("invalid") && errorMessage.includes("mint")) {
     const mapping = ERROR_MAPPINGS["invalid mint"]
-    return createErrorResponse(mapping.errorType, mapping.userMessage, mapping.httpStatus, {
+    return createErrorResponse(mapping.errorType, mapping.userMessage, mapping.httpStatus, requestId, {
       code: mapping.code,
-      traceId: requestId,
     })
   }
 
   if (errorMessage.includes("timeout") || errorMessage.includes("deadline")) {
     const mapping = ERROR_MAPPINGS["timeout exceeded"]
-    return createErrorResponse(mapping.errorType, mapping.userMessage, mapping.httpStatus, {
+    return createErrorResponse(mapping.errorType, mapping.userMessage, mapping.httpStatus, requestId, {
       code: mapping.code,
-      traceId: requestId,
     })
   }
 
@@ -318,9 +314,9 @@ export async function handleFaucetError(
     APIErrorType.SERVER_ERROR,
     "We encountered an issue processing your request. Please try again or contact support if this continues.",
     500,
+    requestId,
     {
       code: "UNEXPECTED_FAUCET_ERROR",
-      traceId: requestId,
     }
   )
 }

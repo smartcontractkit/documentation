@@ -1,0 +1,173 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 ICrossChainVerifierV1 API Reference"
+metadata:
+  description: "Interface for Cross-Chain Verifier implementations."
+  version: "2.0.0"
+---
+
+`ICrossChainVerifierV1` defines the lifecycle interface for Cross-Chain Verifier (CCV) implementations.
+
+It standardizes:
+
+- source-side verifier data generation (`forwardToVerifier`)
+- destination-side message validation (`verifyMessage`)
+- verification fee calculation (`getFee`)
+
+All CCV implementations must follow this interface to ensure consistent cross-chain validation behavior.
+
+> This interface defines functions implemented by protocol contracts and is not typically used directly by applications.
+
+## Usage Boundary
+
+**You do not call this interface directly.**
+
+- OnRamp components call `forwardToVerifier` during message submission.
+- OffRamp components call `verifyMessage` during message validation.
+- Routing components call `getFee` to calculate verification cost.
+- You implement this interface when building custom verifier logic.
+
+## Contract
+
+`interfaces/ICrossChainVerifierV1.sol`
+
+## Import
+
+```solidity
+import {ICrossChainVerifierV1} from "chainlink-ccip/interfaces/ICrossChainVerifierV1.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## Inheritance
+
+- `IERC165`
+
+## External API
+
+### verifyMessage
+
+```solidity
+function verifyMessage(
+  MessageV1Codec.MessageV1 memory message,
+  bytes32 messageId,
+  bytes memory verifierResults
+) external
+```
+
+> Validates a message on the destination chain using verifier-specific data.
+
+- Reverts if validation fails.
+
+| Parameter         | Type                              | Description                                          |
+| ----------------- | --------------------------------- | ---------------------------------------------------- |
+| `message`         | `MessageV1Codec.MessageV1 memory` | Message being validated.                             |
+| `messageId`       | `bytes32`                         | Canonical identifier for the message.                |
+| `verifierResults` | `bytes memory`                    | Verifier-specific data produced on the source chain. |
+
+---
+
+### getFee
+
+```solidity
+function getFee(
+  uint64 destChainSelector,
+  Client.EVM2AnyMessage memory message,
+  bytes memory extraArgs,
+  bytes4 requestedFinalityConfig
+) external view returns (
+  uint16 feeUSDCents,
+  uint32 gasForVerification,
+  uint32 payloadSizeBytes
+)
+```
+
+> Returns the verification fee and resource requirements for processing a message.
+
+| Parameter                 | Type                           | Description                                      |
+| ------------------------- | ------------------------------ | ------------------------------------------------ |
+| `destChainSelector`       | `uint64`                       | Destination chain identifier.                    |
+| `message`                 | `Client.EVM2AnyMessage memory` | Message being evaluated.                         |
+| `extraArgs`               | `bytes memory`                 | Additional verifier-specific arguments.          |
+| `requestedFinalityConfig` | `bytes4`                       | Desired finality configuration for verification. |
+
+Returns:
+
+| Type     | Description                        |
+| -------- | ---------------------------------- |
+| `uint16` | Verification fee in USD cents.     |
+| `uint32` | Gas required for verification.     |
+| `uint32` | Payload size used in verification. |
+
+---
+
+### forwardToVerifier
+
+```solidity
+function forwardToVerifier(
+  MessageV1Codec.MessageV1 calldata message,
+  bytes32 messageId,
+  address feeToken,
+  uint256 feeTokenAmount,
+  bytes calldata verifierArgs
+) external returns (bytes memory verifierData)
+```
+
+> Produces verifier-specific data on the source chain for later destination-side validation.
+
+- Output is passed to the destination chain and consumed by `verifyMessage`.
+
+| Parameter        | Type                                | Description                           |
+| ---------------- | ----------------------------------- | ------------------------------------- |
+| `message`        | `MessageV1Codec.MessageV1 calldata` | Message being processed.              |
+| `messageId`      | `bytes32`                           | Canonical identifier for the message. |
+| `feeToken`       | `address`                           | Token used for fees.                  |
+| `feeTokenAmount` | `uint256`                           | Fee amount.                           |
+| `verifierArgs`   | `bytes calldata`                    | Verifier-specific arguments.          |
+
+Returns:
+
+| Type           | Description                                |
+| -------------- | ------------------------------------------ |
+| `bytes memory` | Encoded verifier data used for validation. |
+
+---
+
+### getStorageLocations
+
+```solidity
+function getStorageLocations() external view returns (string[] memory)
+```
+
+> Returns off-chain storage locations used by the verifier implementation.
+
+Returns:
+
+| Type              | Description                   |
+| ----------------- | ----------------------------- |
+| `string[] memory` | Storage location identifiers. |
+
+## Notes
+
+- `verifyMessage` must be called with verifier data produced by `forwardToVerifier`.
+- Message data and verifier results must match exactly between source and destination chains.
+- `messageId` is the canonical identifier passed through the verifier interface. Implementations may also derive or validate a message hash internally.
+- For a given message and verifier configuration, `forwardToVerifier` should produce deterministic verifier data.
+- `getFee` should be called with the same message parameters that will be used for verifier execution.
+- Verification will revert if verifier data is invalid, mismatched, or incomplete.
+- Verifiers act as execution gates: messages are processed only if validation succeeds.
+
+## Related Interfaces & Contracts
+
+- [`ICrossChainVerifierResolver`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-resolver)
+- [`BaseVerifier`](/ccip/evm/api-reference/v2.0.0/base-verifier)
+- [`CommitteeVerifier`](/ccip/evm/api-reference/v2.0.0/committee-verifier)
+- [`CCTPVerifier`](/ccip/evm/api-reference/v2.0.0/cctp-verifier)
+- [`LombardVerifier`](/ccip/evm/api-reference/v2.0.0/lombard-verifier)
+- [`MessageV1Codec`](/ccip/evm/api-reference/v2.0.0/message-v1-codec)
+- [`Client`](/ccip/evm/api-reference/v2.0.0/client)
