@@ -1,0 +1,75 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IOwner API Reference"
+metadata:
+  description: "Minimal interface exposing an owner() view function."
+  version: "2.0.0"
+---
+
+`IOwner` defines a minimal interface for retrieving a contract’s owner address.
+
+This interface is a read-only ownership hook that exposes the current owner without defining how ownership is transferred.
+
+This interface is not specific to CCIP and may represent general contract ownership.
+
+Use this interface when a contract needs to expose ownership information without implementing full ownership management logic.
+
+> This interface defines functions implemented by protocol contracts and is not typically used directly by applications.
+
+## Usage Boundary
+
+**You typically do not call this interface directly.**
+
+- Registry and management components may query this interface to determine contract ownership.
+- You implement this interface when you need to expose a canonical owner address.
+- This interface exposes general contract ownership, not CCIP-specific administrative roles.
+- Use `IOwnable` if you need ownership transfer functionality.
+- You are responsible for ensuring the returned address reflects the correct owner.
+
+## Contract
+
+`interfaces/IOwner.sol`
+
+## Import
+
+```solidity
+import {IOwner} from "chainlink-ccip/interfaces/IOwner.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## External API
+
+### owner
+
+```solidity
+function owner() external view returns (address)
+```
+
+> Returns the address recognized as the owner of the contract.
+
+Returns:
+
+| Type      | Description                                         |
+| --------- | --------------------------------------------------- |
+| `address` | Address with ownership authority over the contract. |
+
+## Notes
+
+- This interface does not define how ownership is transferred.
+- Implementations define the source of truth for ownership.
+- This interface assumes a single canonical owner address.
+- The owner address may represent an externally owned account or another contract (for example, a multisig).
+- Returning an incorrect address may expose administrative control to the wrong entity.
+- Use `IGetCCIPAdmin` when exposing a dedicated CCIP admin instead of general ownership.
+
+## Related Interfaces & Contracts
+
+- [`IGetCCIPAdmin`](/ccip/evm/api-reference/v2.0.0/i-get-ccip-admin)
+- [`IOwnable`](/ccip/evm/api-reference/v2.0.0/i-ownable)
+- [`Ownable2Step`](/ccip/evm/api-reference/v2.0.0/ownable-2-step)

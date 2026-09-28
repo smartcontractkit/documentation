@@ -1,0 +1,111 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 USDPriceWith18Decimals API Reference"
+metadata:
+  description: "Utility library for converting between token amounts and USD values using 18-decimal pricing conventions."
+  version: "2.0.0"
+---
+
+`USDPriceWith18Decimals` provides utilities for converting between token amounts and USD values using 18-decimal fixed-point precision.
+
+It assumes:
+
+- token prices are expressed in USD with 18 decimals
+- all calculations are performed using integer arithmetic
+
+This ensures consistent and deterministic fee and value calculations across CCIP contracts.
+
+> This library provides reusable helper functions and is not deployed as a standalone application-facing contract.
+
+## Usage Boundary
+
+**You do not call this library directly.**
+
+- CCIP contracts use this library to convert between token amounts and USD values.
+- It is used internally for fee calculation and execution policy logic.
+- You should ensure that token prices are provided in the correct 18-decimal format.
+
+## Contract
+
+`libraries/USDPriceWith18Decimals.sol`
+
+## Import
+
+```solidity
+import {USDPriceWith18Decimals} from "chainlink-ccip/libraries/USDPriceWith18Decimals.sol";
+```
+
+## Functions
+
+### \_calcUSDValueFromTokenAmount
+
+```solidity
+function _calcUSDValueFromTokenAmount(
+  uint224 tokenPrice,
+  uint256 tokenAmount
+) internal pure returns (uint256)
+```
+
+> Converts a token amount into its USD value using a fixed-point price.
+
+| Parameter     | Type      | Description                                   |
+| ------------- | --------- | --------------------------------------------- |
+| `tokenPrice`  | `uint224` | Token price in USD with 18-decimal precision. |
+| `tokenAmount` | `uint256` | Amount of tokens to convert.                  |
+
+Returns:
+
+| Type      | Description                          |
+| --------- | ------------------------------------ |
+| `uint256` | USD value with 18-decimal precision. |
+
+---
+
+### \_calcTokenAmountFromUSDValue
+
+```solidity
+function _calcTokenAmountFromUSDValue(
+  uint224 tokenPrice,
+  uint256 usdValue
+) internal pure returns (uint256)
+```
+
+> Converts a USD value into the corresponding token amount using a fixed-point price.
+
+| Parameter    | Type      | Description                                   |
+| ------------ | --------- | --------------------------------------------- |
+| `tokenPrice` | `uint224` | Token price in USD with 18-decimal precision. |
+| `usdValue`   | `uint256` | USD value with 18-decimal precision.          |
+
+Returns:
+
+| Type      | Description   |
+| --------- | ------------- |
+| `uint256` | Token amount. |
+
+## Errors
+
+No new custom errors declared.
+
+## Notes
+
+- All values are assumed to use 18-decimal fixed-point precision.
+- Division operations use integer arithmetic and round toward zero.
+- Conversions may lose precision due to integer division.
+- Token price must be non-zero to avoid division errors.
+- All interacting contracts must use the same pricing convention for correctness.
+
+## Usage context
+
+Used by:
+
+- [`FeeQuoter`](/ccip/evm/api-reference/v2.0.0/fee-quoter)
+- [`Executor`](/ccip/evm/api-reference/v2.0.0/executor)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+
+## Related Interfaces & Contracts
+
+- [`FeeQuoter`](/ccip/evm/api-reference/v2.0.0/fee-quoter)
+- [`Executor`](/ccip/evm/api-reference/v2.0.0/executor)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
