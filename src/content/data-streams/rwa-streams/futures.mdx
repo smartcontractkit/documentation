@@ -42,7 +42,7 @@ In addition to the raw generic feed prices above — which switch entirely to th
 | Field                          | Description                                                                                                                                                         |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `goldmanRollPrice`             | Uses the Goldman Roll (GSCI methodology): shifts 20% of the position to the next contract each business day, over business days 5–9 of the month preceding delivery |
-| `interpolatedGoldmanRollPrice` | Interpolated Goldman Roll price. Reported as `0` when the feed is not within an active roll window                                                                  |
+| `interpolatedGoldmanRollPrice` | Interpolated Goldman Roll price, smoothing the roll across the full cycle rather than the fixed Goldman window                                                      |
 | `currentBusinessDay`           | Current business day count within the active roll window, so integrators can implement the Goldman Roll methodology themselves                                      |
 
 For the complete field list and definitions, see the [Futures (v14) schema](/data-streams/reference/report-schema-v14).
@@ -115,17 +115,17 @@ The prices above are 18-decimal fixed-point integers. For example, `Mid Price` `
 
 The v14 report decodes to the following fields. Prices are 18-decimal fixed-point integers; timestamps are Unix epoch seconds unless noted.
 
-| Field                              | Type     | Meaning                                                    |
-| ---------------------------------- | -------- | ---------------------------------------------------------- |
-| `midPrice`, `bidPrice`, `askPrice` | `int192` | Consensus mid, bid, and ask prices (18 decimals)           |
-| `expiryTime`                       | `uint64` | Contract expiration, Unix seconds                          |
-| `firstDayOfNotice`                 | `uint64` | First day of notice, Unix seconds                          |
-| `lastSeenTimestampNs`              | `uint64` | Last provider update, nanoseconds                          |
-| `marketStatus`                     | `uint32` | Market status: `0` Unknown, `1` Closed, `2` Open           |
-| `contractMonth`                    | `uint32` | Contract month, `1` (Jan) to `12` (Dec)                    |
-| `goldmanRollPrice`                 | `int192` | Goldman Roll continuous price (18 decimals)                |
-| `currentBusinessDay`               | `uint32` | Current business day in the roll window                    |
-| `interpolatedGoldmanRollPrice`     | `int192` | Interpolated Goldman Roll price; `0` outside a roll window |
+| Field                              | Type     | Meaning                                                         |
+| ---------------------------------- | -------- | --------------------------------------------------------------- |
+| `midPrice`, `bidPrice`, `askPrice` | `int192` | Consensus mid, bid, and ask prices (18 decimals)                |
+| `expiryTime`                       | `uint64` | Contract expiration, Unix seconds                               |
+| `firstDayOfNotice`                 | `uint64` | First day of notice, Unix seconds                               |
+| `lastSeenTimestampNs`              | `uint64` | Last provider update, nanoseconds                               |
+| `marketStatus`                     | `uint32` | Market status: `0` Unknown, `1` Closed, `2` Open                |
+| `contractMonth`                    | `uint32` | Contract month, `1` (Jan) to `12` (Dec)                         |
+| `goldmanRollPrice`                 | `int192` | Goldman Roll continuous price (18 decimals)                     |
+| `currentBusinessDay`               | `uint32` | Current business day in the roll window                         |
+| `interpolatedGoldmanRollPrice`     | `int192` | Interpolated Goldman Roll price, smoothed across the full cycle |
 
 ### Implementation patterns
 
@@ -222,7 +222,7 @@ The example below fetches all three feeds for an instrument and prints which con
 ### Notes
 
 - **Prices are 18-decimal fixed-point integers.** `midPrice`, `bidPrice`, `askPrice`, `goldmanRollPrice`, and `interpolatedGoldmanRollPrice` are raw integers. Divide by `10^18` to get the human-readable price. In Go and Rust these are big-number types; call `.String()` to display them.
-- **`interpolatedGoldmanRollPrice` is `0` outside a roll window.** Do not treat a `0` value as a price of zero; it means the feed is not currently in an active roll window.
+- **`interpolatedGoldmanRollPrice` is populated continuously.** It smooths the roll across the full contract cycle rather than only the fixed Goldman window, so it is not limited to business days 5–9.
 - **`contractMonth` is validated to `1`–`12`.** The SDKs reject reports with an out-of-range month, so a successful decode guarantees a valid month.
 - **The feed ID encodes the schema version.** The TypeScript SDK's `getReportVersion` and the Go SDK's `feedID.Version()` derive the schema from the feed ID. Use the v14 decoder for futures feeds.
 

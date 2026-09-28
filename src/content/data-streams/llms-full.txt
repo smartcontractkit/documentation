@@ -6470,6 +6470,13 @@ Real-world asset prices (multiple price points and enhanced market data)
 `mid`, `bid`, `ask`, `bidVolume`, `askVolume`,&#x20;
 `lastTradedPrice`, `marketStatus`
 
+[Futures (v14)](/data-streams/reference/report-schema-v14)
+
+Futures price data with continuous roll price series
+
+`midPrice`, `bidPrice`, `askPrice`, `expiryTime`,&#x20;
+`contractMonth`, `goldmanRollPrice`, `marketStatus`
+
 [SmartData](/data-streams/smartdata-streams)
 
 [SmartData (v9)](/data-streams/reference/report-schema-v9)
@@ -6726,46 +6733,47 @@ As a result, these volume fields should not be treated as a proxy for total mark
 # Report Schema: Futures (v14)
 Source: https://docs.chain.link/data-streams/reference/report-schema-v14
 
-import { Aside } from "@components"
-
-<ReportSchemaTabs />
+> **NOTE: Get started**
+>
+> Data Streams is self-serve, no sales call required. [Sign up](https://app.chain.link) to get started, or follow the
+> [sign-up guide](/data-streams/sign-up).
 
 Chainlink Data Streams that use the Futures (v14) schema adhere to the structure outlined below.
 
-<Aside type="note" title="Beta">
-  Futures streams are in beta. To request access, contact
-  [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
-</Aside>
+> **NOTE: Beta**
+>
+> Futures streams are in beta. To request access, contact
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
 
 ## Schema Fields
 
-| Field                          | Type      | Description                                                                                                      |
-| ------------------------------ | --------- | ---------------------------------------------------------------------------------------------------------------- |
-| `feedId`                       | `bytes32` | Unique identifier for the Data Streams feed                                                                      |
-| `validFromTimestamp`           | `uint32`  | Earliest timestamp when the price is valid (seconds)                                                             |
-| `observationsTimestamp`        | `uint32`  | Latest timestamp when the price is valid (seconds)                                                               |
-| `nativeFee`                    | `uint192` | Legacy onchain verification fee field                                                                            |
-| `linkFee`                      | `uint192` | Legacy onchain verification fee field; not used for subscription billing                                         |
-| `expiresAt`                    | `uint32`  | Expiration date of the report (seconds)                                                                          |
-| `midPrice`                     | `int192`  | DON consensus mid price                                                                                          |
-| `bidPrice`                     | `int192`  | DON consensus bid price                                                                                          |
-| `askPrice`                     | `int192`  | DON consensus ask price                                                                                          |
-| `expiryTime`                   | `uint64`  | Contract expiration time (Unix seconds)                                                                          |
-| `firstDayOfNotice`             | `uint64`  | First day of notice for the tracked contract (Unix seconds)                                                      |
-| `lastSeenTimestampNs`          | `uint64`  | Timestamp of the last update received from the data provider (nanoseconds)                                       |
-| `marketStatus`                 | `uint32`  | Market status. Mapping varies by feed; see schema docs.                                                          |
-| `contractMonth`                | `uint32`  | Standard futures month code (F=Jan, G=Feb, H=Mar, J=Apr, K=May, M=Jun, N=Jul, Q=Aug, U=Sep, V=Oct, X=Nov, Z=Dec) |
-| `goldmanRollPrice`             | `int192`  | Continuous price using the Goldman Roll (GSCI) methodology                                                       |
-| `currentBusinessDay`           | `uint32`  | Current business day count within the active roll window                                                         |
-| `interpolatedGoldmanRollPrice` | `int192`  | Interpolated Goldman Roll price (0 when not in an active roll window)                                            |
+| Field                          | Type      | Description                                                                                                                               |
+| ------------------------------ | --------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `feedId`                       | `bytes32` | Unique identifier for the Data Streams feed                                                                                               |
+| `validFromTimestamp`           | `uint32`  | Earliest timestamp when the price is valid (seconds) — [How report timestamps work](/data-streams/how-report-timestamps-work)             |
+| `observationsTimestamp`        | `uint32`  | Latest timestamp when the price is valid (seconds) — [How report timestamps work](/data-streams/how-report-timestamps-work)               |
+| `nativeFee`                    | `uint192` | Legacy onchain verification fee field                                                                                                     |
+| `linkFee`                      | `uint192` | Legacy onchain verification fee field; not used for subscription billing                                                                  |
+| `expiresAt`                    | `uint32`  | Expiration date of the report (seconds)                                                                                                   |
+| `midPrice`                     | `int192`  | DON consensus mid price                                                                                                                   |
+| `bidPrice`                     | `int192`  | DON consensus bid price                                                                                                                   |
+| `askPrice`                     | `int192`  | DON consensus ask price                                                                                                                   |
+| `expiryTime`                   | `uint64`  | Contract expiration time (Unix seconds)                                                                                                   |
+| `firstDayOfNotice`             | `uint64`  | First day of notice for the tracked contract (Unix seconds)                                                                               |
+| `lastSeenTimestampNs`          | `uint64`  | Timestamp of the last update received from the data provider (nanoseconds)                                                                |
+| `marketStatus`                 | `uint32`  | Market status. Mapping varies by feed; see schema docs. — [Status values](/data-streams/reference/report-schema-v14#market-status-values) |
+| `contractMonth`                | `uint32`  | Standard futures month code (F=Jan, G=Feb, H=Mar, J=Apr, K=May, M=Jun, N=Jul, Q=Aug, U=Sep, V=Oct, X=Nov, Z=Dec)                          |
+| `goldmanRollPrice`             | `int192`  | Continuous price using the Goldman Roll (GSCI) methodology                                                                                |
+| `currentBusinessDay`           | `uint32`  | Current business day count within the active roll window                                                                                  |
+| `interpolatedGoldmanRollPrice` | `int192`  | Interpolated Goldman Roll price (0 when not in an active roll window)                                                                     |
 
 ### Market Status Values
 
-<Aside type="caution" title="Use marketStatus, not timestamps">
-  Always use <code>marketStatus</code> to determine whether a market is open. Do <strong>not</strong> use
-  <code>observationsTimestamp</code>, <code>lastSeenTimestampNs</code>, or other timestamp fields — timestamps indicate
-  when data was last recorded, not whether the market is currently active.
-</Aside>
+> **CAUTION: Use marketStatus, not timestamps**
+>
+> Always use `marketStatus` to determine whether a market is open. Do **not** use
+> `observationsTimestamp`, `lastSeenTimestampNs`, or other timestamp fields — timestamps indicate
+> when data was last recorded, not whether the market is currently active.
 
 Each feed's `marketStatus` field reflects the current market status of the primary exchange venue for that instrument. Futures trade during standard trading hours for each instrument, with a scheduled break each trading day. Consult the exchange where the underlying contract is listed for holiday and early-close schedules.
 
@@ -6778,7 +6786,7 @@ In addition to the raw generic feed prices — which switch entirely to the next
 | Field                          | Description                                                                                                                                                         |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `goldmanRollPrice`             | Uses the Goldman Roll (GSCI methodology): shifts 20% of the position to the next contract each business day, over business days 5–9 of the month preceding delivery |
-| `interpolatedGoldmanRollPrice` | Interpolated Goldman Roll price. Reported as `0` when the feed is not within an active roll window                                                                  |
+| `interpolatedGoldmanRollPrice` | Interpolated Goldman Roll price, smoothing the roll across the full cycle rather than the fixed Goldman window                                                      |
 | `currentBusinessDay`           | Current business day count within the active roll window, so integrators can implement the Goldman Roll methodology themselves                                      |
 
 For details on how the generic feeds rotate between contracts and how the continuous roll fields behave, see the [Futures](/data-streams/rwa-streams/futures) reference.
@@ -6792,7 +6800,7 @@ For details on how the generic feeds rotate between contracts and how the contin
 
 #### `interpolatedGoldmanRollPrice`
 
-`interpolatedGoldmanRollPrice` is reported as `0` when the feed is not within an active roll window. Behavior on non-trading days (holding the last value versus resetting to zero) is still being finalized.
+`interpolatedGoldmanRollPrice` smooths the roll across the full contract cycle rather than the fixed Goldman window, so it is populated continuously rather than only during business days 5–9.
 
 ---
 
@@ -7602,10 +7610,10 @@ For inquiries related to a data outage, contact Chainlink Labs at [data_support@
 # Futures
 Source: https://docs.chain.link/data-streams/rwa-streams/futures
 
-<Aside type="note" title="Beta">
-  Futures streams are in beta. To request access, contact
-  [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
-</Aside>
+> **NOTE: Beta**
+>
+> Futures streams are in beta. To request access, contact
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
 
 Futures streams provide price data for exchange-traded futures contracts. These streams enable onchain protocols to build markets around futures price exposure. Coverage currently includes commodities — energy and precious metals — described below.
 
@@ -7626,31 +7634,242 @@ In addition to the raw generic feed prices above — which switch entirely to th
 | Field                          | Description                                                                                                                                                         |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `goldmanRollPrice`             | Uses the Goldman Roll (GSCI methodology): shifts 20% of the position to the next contract each business day, over business days 5–9 of the month preceding delivery |
-| `interpolatedGoldmanRollPrice` | Interpolated Goldman Roll price. Reported as `0` when the feed is not within an active roll window                                                                  |
+| `interpolatedGoldmanRollPrice` | Interpolated Goldman Roll price, smoothing the roll across the full cycle rather than the fixed Goldman window                                                      |
 | `currentBusinessDay`           | Current business day count within the active roll window, so integrators can implement the Goldman Roll methodology themselves                                      |
 
 For the complete field list and definitions, see the [Futures (v14) schema](/data-streams/reference/report-schema-v14).
 
 ## Implementation
 
-<Aside type="caution" title="In development">
-  Futures streams are still under active development. The single-report fetch and decode examples below work against the
-  current testnet feed, but the **three generic feeds** (front, second, and third) and the example of switching between
-  future cuts are **not yet available**. The guidance in [Consuming the three generic
-  feeds](#consuming-the-three-generic-feeds) describes the intended design and is subject to change as the streams are
-  finalized.
-</Aside>
+> **CAUTION: In development**
+>
+> Futures streams are still under active development. The single-report fetch and decode examples below work against the
+> current testnet feed, but the **three generic feeds** (front, second, and third) and the example of switching between
+> future cuts are **not yet available**. The guidance in [Consuming the three generic
+> feeds](#consuming-the-three-generic-feeds) describes the intended design and is subject to change as the streams are
+> finalized.
 
 Futures streams are consumed like any other [Data Streams report](/data-streams/tutorials/go-sdk-fetch): you fetch the latest report for a feed ID and decode it with the SDK. The only difference is the report schema version, which is **v14** for futures streams.
 
 The examples below fetch and decode a live `NY-UKOIL/USD` futures report from the testnet API. Each SDK auto-detects or explicitly targets the v14 schema.
 
+### Go
 
-<Aside type="note" title="SDK version">
-  v14 support requires the latest Data Streams SDK. The Go SDK uses the v2 module
-  (`github.com/smartcontractkit/data-streams-sdk/go/v2`); the TypeScript and Rust SDKs auto-detect the report version
-  from the feed ID.
-</Aside>
+```go
+// FuturesFetch.go — Fetch and decode a Futures (v14) report with the Go SDK.
+//
+// Usage:
+//   export API_KEY="..."
+//   export API_SECRET="..."
+//   go run FuturesFetch.go 0x000ebfe7b7560e1866ef91d4607ce5ee7474382794e5ec755f38b70b1f30e647
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"time"
+
+	streams "github.com/smartcontractkit/data-streams-sdk/go/v2"
+	feed "github.com/smartcontractkit/data-streams-sdk/go/v2/feed"
+	report "github.com/smartcontractkit/data-streams-sdk/go/v2/report"
+	v14 "github.com/smartcontractkit/data-streams-sdk/go/v2/report/v14"
+)
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Fprintf(os.Stderr, "Usage: go run FuturesFetch.go [FeedID]\n")
+		os.Exit(1)
+	}
+	feedIDInput := os.Args[1]
+
+	apiKey := os.Getenv("API_KEY")
+	apiSecret := os.Getenv("API_SECRET")
+	if apiKey == "" || apiSecret == "" {
+		fmt.Fprintf(os.Stderr, "API_KEY and API_SECRET environment variables must be set\n")
+		os.Exit(1)
+	}
+
+	cfg := streams.Config{
+		ApiKey:    apiKey,
+		ApiSecret: apiSecret,
+		RestURL:   "https://api.testnet-dataengine.chain.link",
+		Logger:    streams.LogPrintf,
+	}
+
+	client, err := streams.New(cfg)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to create client: %v\n", err)
+		os.Exit(1)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	var feedID feed.ID
+	if err := feedID.FromString(feedIDInput); err != nil {
+		fmt.Fprintf(os.Stderr, "Invalid feed ID format '%s': %v\n", feedIDInput, err)
+		os.Exit(1)
+	}
+
+	reportResponse, err := client.GetLatestReport(ctx, feedID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to get latest report: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Decode the v14 (Futures) report
+	decodedReport, err := report.Decode[v14.Data](reportResponse.FullReport)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to decode report: %v\n", err)
+		os.Exit(1)
+	}
+
+	d := decodedReport.Data
+
+	fmt.Printf("\nDecoded V14 Report for Stream ID %s:\n", feedIDInput)
+	fmt.Println("------------------------------------------")
+	fmt.Printf("Mid Price             : %s\n", d.MidPrice.String())
+	fmt.Printf("Bid Price             : %s\n", d.BidPrice.String())
+	fmt.Printf("Ask Price             : %s\n", d.AskPrice.String())
+	fmt.Printf("Expiry Time           : %d\n", d.ExpiryTime.Unix())
+	fmt.Printf("First Day of Notice   : %d\n", d.FirstDayOfNotice.Unix())
+	fmt.Printf("Last Seen TimestampNs : %d\n", d.LastSeenTimestampNs.UnixNano())
+	fmt.Printf("Market Status         : %d\n", d.MarketStatus)
+	fmt.Printf("Contract Month        : %d\n", d.ContractMonth)
+	fmt.Printf("Goldman Roll Price    : %s\n", d.GoldmanRollPrice.String())
+	fmt.Printf("Current Business Day  : %d\n", d.CurrentBusinessDay)
+	fmt.Printf("Interp Goldman Roll   : %s\n", d.InterpolatedGoldmanRollPrice.String())
+	fmt.Println("------------------------------------------")
+}
+```
+
+### TypeScript
+
+```ts
+// FuturesFetch.ts — Fetch and decode a Futures (v14) report with the TypeScript SDK.
+//
+// Usage:
+//   export API_KEY="..."
+//   export USER_SECRET="..."
+//   npx tsx FuturesFetch.ts 0x000ebfe7b7560e1866ef91d4607ce5ee7474382794e5ec755f38b70b1f30e647
+import { createClient, decodeReport, getReportVersion, formatReport, LogLevel } from "@chainlink/data-streams-sdk"
+import "dotenv/config"
+
+async function main() {
+  if (process.argv.length < 3) {
+    console.error("Please provide a feed ID as an argument")
+    process.exit(1)
+  }
+
+  const feedId = process.argv[2]
+  const version = getReportVersion(feedId)
+
+  const config = {
+    apiKey: process.env.API_KEY || "YOUR_API_KEY",
+    userSecret: process.env.USER_SECRET || "YOUR_USER_SECRET",
+    endpoint: "https://api.testnet-dataengine.chain.link",
+    wsEndpoint: "wss://ws.testnet-dataengine.chain.link",
+    logging: {
+      logger: console,
+      logLevel: LogLevel.INFO,
+    },
+  }
+
+  const client = createClient(config)
+  console.log(`\nFetching latest report for feed ${feedId} (${version})...\n`)
+
+  const report = await client.getLatestReport(feedId)
+  console.log(`Raw Report Blob: ${report.fullReport}`)
+
+  // The TS SDK auto-detects the report version from the feed ID.
+  const decodedData = decodeReport(report.fullReport, report.feedID)
+
+  const decodedReport = {
+    ...decodedData,
+    feedID: report.feedID,
+    validFromTimestamp: report.validFromTimestamp,
+    observationsTimestamp: report.observationsTimestamp,
+  }
+  console.log(formatReport(decodedReport, version))
+}
+
+main().catch((error) => {
+  console.error("Error:", error instanceof Error ? error.message : error)
+  process.exit(1)
+})
+```
+
+### Rust
+
+```rs
+// FuturesFetch.rs — Fetch and decode a Futures (v14) report with the Rust SDK.
+//
+// Usage:
+//   export API_KEY="..."
+//   export API_SECRET="..."
+//   cargo run 0x000ebfe7b7560e1866ef91d4607ce5ee7474382794e5ec755f38b70b1f30e647
+use chainlink_data_streams_report::feed_id::ID;
+use chainlink_data_streams_report::report::{ decode_full_report, v14::ReportDataV14 };
+use chainlink_data_streams_sdk::client::Client;
+use chainlink_data_streams_sdk::config::Config;
+use std::env;
+use std::error::Error;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+    let args: Vec<String> = env::args().collect();
+    if args.len() < 2 {
+        eprintln!("Usage: cargo run [FeedID]");
+        std::process::exit(1);
+    }
+    let feed_id_input = &args[1];
+
+    let api_key = env::var("API_KEY").expect("API_KEY must be set");
+    let api_secret = env::var("API_SECRET").expect("API_SECRET must be set");
+
+    let config = Config::new(
+        api_key,
+        api_secret,
+        "https://api.testnet-dataengine.chain.link".to_string(),
+        "wss://api.testnet-dataengine.chain.link/ws".to_string(),
+    )
+    .build()?;
+
+    let client = Client::new(config)?;
+
+    let feed_id = ID::from_hex_str(feed_id_input)?;
+
+    let response = client.get_latest_report(feed_id).await?;
+
+    let full_report = hex::decode(&response.report.full_report[2..])?;
+    let (_report_context, report_blob) = decode_full_report(&full_report)?;
+    let report_data = ReportDataV14::decode(&report_blob)?;
+
+    println!("\nDecoded V14 Report for Stream ID {}:", feed_id_input);
+    println!("------------------------------------------");
+    println!("Mid Price             : {}", report_data.mid_price);
+    println!("Bid Price             : {}", report_data.bid_price);
+    println!("Ask Price             : {}", report_data.ask_price);
+    println!("Expiry Time           : {}", report_data.expiry_time);
+    println!("First Day of Notice   : {}", report_data.first_day_of_notice);
+    println!("Last Seen TimestampNs : {}", report_data.last_seen_timestamp_ns);
+    println!("Market Status         : {}", report_data.market_status);
+    println!("Contract Month        : {}", report_data.contract_month);
+    println!("Goldman Roll Price    : {}", report_data.goldman_roll_price);
+    println!("Current Business Day  : {}", report_data.current_business_day);
+    println!("Interp Goldman Roll   : {}", report_data.interpolated_goldman_roll_price);
+    println!("------------------------------------------");
+
+    Ok(())
+}
+```
+
+> **NOTE: SDK version**
+>
+> v14 support requires the latest Data Streams SDK. The Go SDK uses the v2 module
+> (`github.com/smartcontractkit/data-streams-sdk/go/v2`); the TypeScript and Rust SDKs auto-detect the report version
+> from the feed ID.
 
 ### Expected output
 
@@ -7684,17 +7903,17 @@ The prices above are 18-decimal fixed-point integers. For example, `Mid Price` `
 
 The v14 report decodes to the following fields. Prices are 18-decimal fixed-point integers; timestamps are Unix epoch seconds unless noted.
 
-| Field                              | Type     | Meaning                                                    |
-| ---------------------------------- | -------- | ---------------------------------------------------------- |
-| `midPrice`, `bidPrice`, `askPrice` | `int192` | Consensus mid, bid, and ask prices (18 decimals)           |
-| `expiryTime`                       | `uint64` | Contract expiration, Unix seconds                          |
-| `firstDayOfNotice`                 | `uint64` | First day of notice, Unix seconds                          |
-| `lastSeenTimestampNs`              | `uint64` | Last provider update, nanoseconds                          |
-| `marketStatus`                     | `uint32` | Market status: `0` Unknown, `1` Closed, `2` Open           |
-| `contractMonth`                    | `uint32` | Contract month, `1` (Jan) to `12` (Dec)                    |
-| `goldmanRollPrice`                 | `int192` | Goldman Roll continuous price (18 decimals)                |
-| `currentBusinessDay`               | `uint32` | Current business day in the roll window                    |
-| `interpolatedGoldmanRollPrice`     | `int192` | Interpolated Goldman Roll price; `0` outside a roll window |
+| Field                              | Type     | Meaning                                                         |
+| ---------------------------------- | -------- | --------------------------------------------------------------- |
+| `midPrice`, `bidPrice`, `askPrice` | `int192` | Consensus mid, bid, and ask prices (18 decimals)                |
+| `expiryTime`                       | `uint64` | Contract expiration, Unix seconds                               |
+| `firstDayOfNotice`                 | `uint64` | First day of notice, Unix seconds                               |
+| `lastSeenTimestampNs`              | `uint64` | Last provider update, nanoseconds                               |
+| `marketStatus`                     | `uint32` | Market status: `0` Unknown, `1` Closed, `2` Open                |
+| `contractMonth`                    | `uint32` | Contract month, `1` (Jan) to `12` (Dec)                         |
+| `goldmanRollPrice`                 | `int192` | Goldman Roll continuous price (18 decimals)                     |
+| `currentBusinessDay`               | `uint32` | Current business day in the roll window                         |
+| `interpolatedGoldmanRollPrice`     | `int192` | Interpolated Goldman Roll price, smoothed across the full cycle |
 
 ### Implementation patterns
 
@@ -7708,11 +7927,11 @@ Futures streams differ from spot streams in a few ways that affect how you consu
 
 ### Consuming the three generic feeds
 
-<Aside type="note" title="In development">
-  The three generic feeds and the stream-switching example below describe the intended design. They are **not yet
-  available**, and only a single futures feed per instrument is currently exposed. This section is subject to change as
-  the streams are finalized.
-</Aside>
+> **NOTE: In development**
+>
+> The three generic feeds and the stream-switching example below describe the intended design. They are **not yet
+> available**, and only a single futures feed per instrument is currently exposed. This section is subject to change as
+> the streams are finalized.
 
 Each instrument is exposed as three feeds that always track the front, second, and third eligible contracts. The three feeds are the same schema (v14) and differ only in which contract they currently reference. To consume the curve correctly:
 
@@ -7722,17 +7941,69 @@ Each instrument is exposed as three feeds that always track the front, second, a
 
 The example below fetches all three feeds for an instrument and prints which contract each currently tracks, so you can see the curve and detect a roll:
 
+### Go
 
-<Aside type="note" title="Detecting a roll">
-  Because the feeds re-map on expiry, the `contractMonth` and `expiryTime` for a given feed ID change over time. If your
-  application needs to react to a roll, compare `contractMonth`/`expiryTime` between consecutive reports for the same
-  feed ID. A change signals that the feed has rolled to the next contract.
-</Aside>
+```go
+// Read the front, second, and third feeds for an instrument.
+// Replace the three feed IDs with the front/second/third feeds for your instrument.
+feedIDs := []feed.ID{frontID, secondID, thirdID}
+
+for _, id := range feedIDs {
+    resp, err := client.GetLatestReport(ctx, id)
+    if err != nil {
+        log.Fatalf("fetch %s: %v", id, err)
+    }
+    decoded, err := report.Decode[v14.Data](resp.FullReport)
+    if err != nil {
+        log.Fatalf("decode %s: %v", id, err)
+    }
+    d := decoded.Data
+    fmt.Printf("%s -> contract month %d, expiry %d, mid %s\n",
+        id, d.ContractMonth, d.ExpiryTime.Unix(), d.MidPrice.String())
+}
+```
+
+### TypeScript
+
+```typescript
+// Read the front, second, and third feeds for an instrument.
+// Replace the three feed IDs with the front/second/third feeds for your instrument.
+const feedIds = [frontId, secondId, thirdId]
+
+for (const id of feedIds) {
+  const report = await client.getLatestReport(id)
+  const decoded = decodeReport(report.fullReport, report.feedID) as any
+  console.log(`${id} -> contract month ${decoded.contractMonth}, expiry ${decoded.expiryTime}, mid ${decoded.midPrice}`)
+}
+```
+
+### Rust
+
+```rust
+// Read the front, second, and third feeds for an instrument.
+// Replace the three feed IDs with the front/second/third feeds for your instrument.
+let feed_ids = [front_id, second_id, third_id];
+
+for id in feed_ids {
+    let resp = client.get_latest_report(id).await?;
+    let full_report = hex::decode(&resp.report.full_report[2..])?;
+    let (_ctx, blob) = decode_full_report(&full_report)?;
+    let d = ReportDataV14::decode(&blob)?;
+    println!("{} -> contract month {}, expiry {}, mid {}",
+        id, d.contract_month, d.expiry_time, d.mid_price);
+}
+```
+
+> **NOTE: Detecting a roll**
+>
+> Because the feeds re-map on expiry, the `contractMonth` and `expiryTime` for a given feed ID change over time. If your
+> application needs to react to a roll, compare `contractMonth`/`expiryTime` between consecutive reports for the same
+> feed ID. A change signals that the feed has rolled to the next contract.
 
 ### Notes
 
 - **Prices are 18-decimal fixed-point integers.** `midPrice`, `bidPrice`, `askPrice`, `goldmanRollPrice`, and `interpolatedGoldmanRollPrice` are raw integers. Divide by `10^18` to get the human-readable price. In Go and Rust these are big-number types; call `.String()` to display them.
-- **`interpolatedGoldmanRollPrice` is `0` outside a roll window.** Do not treat a `0` value as a price of zero; it means the feed is not currently in an active roll window.
+- **`interpolatedGoldmanRollPrice` is populated continuously.** It smooths the roll across the full contract cycle rather than only the fixed Goldman window, so it is not limited to business days 5–9.
 - **`contractMonth` is validated to `1`–`12`.** The SDKs reject reports with an out-of-range month, so a successful decode guarantees a valid month.
 - **The feed ID encodes the schema version.** The TypeScript SDK's `getReportVersion` and the Go SDK's `feedID.Version()` derive the schema from the feed ID. Use the v14 decoder for futures feeds.
 
@@ -9785,11 +10056,11 @@ When working with different versions of [Data Stream reports](/data-streams/refe
 
 3. Access fields according to the schema version structure. Refer to the [Report Schemas](/data-streams/reference/report-schema-overview) documentation for complete field references for each version.
 
-<Aside type="note" title="Futures streams use the v14 schema">
-  [Futures streams](/data-streams/rwa-streams/futures) use the v14 schema. See the [Futures implementation
-  guidance](/data-streams/rwa-streams/futures#implementation) for v14-specific code, decoded fields, and implementation
-  patterns.
-</Aside>
+> **NOTE: Futures streams use the v14 schema**
+>
+> [Futures streams](/data-streams/rwa-streams/futures) use the v14 schema. See the [Futures implementation
+> guidance](/data-streams/rwa-streams/futures#implementation) for v14-specific code, decoded fields, and implementation
+> patterns.
 
 ## Explanation
 

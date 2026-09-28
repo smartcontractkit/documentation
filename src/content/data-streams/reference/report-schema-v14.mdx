@@ -59,7 +59,7 @@ In addition to the raw generic feed prices — which switch entirely to the next
 | Field                          | Description                                                                                                                                                         |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `goldmanRollPrice`             | Uses the Goldman Roll (GSCI methodology): shifts 20% of the position to the next contract each business day, over business days 5–9 of the month preceding delivery |
-| `interpolatedGoldmanRollPrice` | Interpolated Goldman Roll price. Reported as `0` when the feed is not within an active roll window                                                                  |
+| `interpolatedGoldmanRollPrice` | Interpolated Goldman Roll price, smoothing the roll across the full cycle rather than the fixed Goldman window                                                      |
 | `currentBusinessDay`           | Current business day count within the active roll window, so integrators can implement the Goldman Roll methodology themselves                                      |
 
 For details on how the generic feeds rotate between contracts and how the continuous roll fields behave, see the [Futures](/data-streams/rwa-streams/futures) reference.
@@ -73,4 +73,4 @@ For details on how the generic feeds rotate between contracts and how the contin
 
 #### `interpolatedGoldmanRollPrice`
 
-`interpolatedGoldmanRollPrice` is reported as `0` when the feed is not within an active roll window. Behavior on non-trading days (holding the last value versus resetting to zero) is still being finalized.
+`interpolatedGoldmanRollPrice` smooths the roll across the full contract cycle rather than the fixed Goldman window, so it is populated continuously rather than only during business days 5–9.
