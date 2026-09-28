@@ -147,7 +147,8 @@ export function ProductNavigation({ path }: Props) {
 
       <Portal>
         <Dialog.Overlay />
-        <Dialog.Content className={clsx(styles.menuContent)}>
+        <Dialog.Content className={clsx(styles.menuContent)} aria-describedby={undefined}>
+          <Dialog.Title className={styles.visuallyHidden}>Documentation navigation</Dialog.Title>
           <div className={clsx(styles.content, styles[showSearch ? "submenu" : "main"])}>
             <div
               style={{

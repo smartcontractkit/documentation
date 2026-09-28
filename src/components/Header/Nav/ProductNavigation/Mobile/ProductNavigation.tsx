@@ -50,7 +50,8 @@ export function ProductNavigation() {
 
       <Portal>
         <Dialog.Overlay />
-        <Dialog.Content className={styles.menuContent}>
+        <Dialog.Content className={styles.menuContent} aria-describedby={undefined}>
+          <Dialog.Title className={styles.visuallyHidden}>Navigation menu</Dialog.Title>
           <div className={clsx(styles.content, styles[showSearch ? "submenu" : "main"])}>
             <div
               style={{
