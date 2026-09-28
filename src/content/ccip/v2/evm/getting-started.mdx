@@ -199,6 +199,241 @@ The receiver inherits from [CCIPReceiver](/ccip/evm/api-reference/v2.0.0/ccip-re
 
 Send and verify a cross-chain message using CCIP in under 10 minutes, with your favorite development framework.
 
+#### Foundry
+
+Best for **Solidity-native** workflows that prefer a modular, powerful scripting framework.
+
+<AnchoredAccordion title="Bootstrap a new Foundry project" anchorId="foundry-bootstrap" number={1} depth={5}>
+
+1. Open a new terminal in a directory of your choice and run this command to initialize a new Foundry project:
+
+```bash filename="Terminal"
+forge init
+```
+
+2. Install the required dependencies:
+
+```bash filename="Terminal"
+forge install smartcontractkit/chainlink-ccip smartcontractkit/chainlink-evm
+```
+
+<Aside type="note" title="Note">
+  `cast wallet import` will throw an error if an `env` variable with the same name already exists. Use `cast wallet
+  list` to check previously set variables.
+</Aside>
+
+3. Use Foundry's `cast` command to create a new keystore for your `PRIVATE_KEY`:
+
+```bash filename="Terminal"
+cast wallet import --interactive PRIVATE_KEY
+```
+
+And use the `cast wallet list` command to verify:
+
+      <ClickToZoom
+        src="/images/ccip/tutorials/ccip-getting-started-evm-2.png"
+        alt="Foundry keystore list command output"
+      />
+
+<Aside type="caution" title="Note">
+  While the Hardhat project pulls RPC URLs via encrypted keystore variables, Foundry supports keystore encryption only
+  for private keys — not generic strings.
+</Aside>
+
+4. Configure the remappings so that your `foundry.toml` file looks like this:
+
+```toml filename="foundry.toml"
+
+[profile.default]
+solc = "0.8.34"
+src = "src"
+out = "out"
+libs = ["lib"]
+
+remappings = [
+  "forge-std/=lib/forge-std/src/",
+  "@chainlink/contracts-ccip/contracts/=lib/chainlink-ccip/chains/evm/contracts/",
+  "@chainlink/contracts/=lib/chainlink-evm/contracts/",
+  "@openzeppelin/contracts@5.3.0/utils/introspection/=lib/forge-std/src/interfaces/"
+]
+
+[rpc_endpoints]
+sepolia = "ENTER_YOUR_SEPOLIA_RPC_URL_HERE"
+arbitrumSepolia = "ENTER_YOUR_ARBITRUM_SEPOLIA_RPC_URL_HERE"
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Set up the contracts" anchorId="foundry-contracts" number={2} depth={5}>
+
+1. Create a new directory named `src` at the root of the project if it doesn't already exist.
+2. Create a new file named `Sender.sol` in this directory and paste the [sender contract code](#sender-code) inside it.
+3. Create a new file named `Receiver.sol` in the same directory and paste the [receiver contract code](#receiver-code) inside it.
+4. Run the following command to compile the contracts:
+
+```bash filename="Terminal"
+forge build
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Send a cross-chain message" anchorId="foundry-send" number={3} depth={5}>
+
+1. Create a new directory named `script` at the root of the project if it doesn't already exist.
+2. Create a new file named `SendCrossChainMessage.s.sol` in this directory and paste the following code inside it:
+
+```solidity filename="script/SendCrossChainMessage.s.sol"
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity 0.8.34;
+
+import {Script, console} from "forge-std/Script.sol";
+import {Sender} from "../src/Sender.sol";
+import {Receiver} from "../src/Receiver.sol";
+import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
+
+contract SendCrossChainMessage is Script {
+    // Ethereum Sepolia configuration
+    address constant SEPOLIA_ROUTER = 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59;
+    address constant SEPOLIA_LINK = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
+
+    // Arbitrum Sepolia configuration
+    address constant ARBITRUM_SEPOLIA_ROUTER = 0x2a9C5afB0d0e4BAb2BCdaE109EC4b0c4Be15a165;
+    uint64 constant ARBITRUM_SEPOLIA_CHAIN_SELECTOR = 3478487238524512106;
+
+    uint256 ONE_LINK = 1e18;
+
+    function run() public {
+
+        // Load RPC configs from foundry.toml
+        uint256 sepoliaFork = vm.createFork(vm.rpcUrl("sepolia"));
+        uint256 arbitrumSepoliaFork = vm.createFork(vm.rpcUrl("arbitrumSepolia"));
+
+        // Step 1: Deploy Sender on Sepolia
+        console.log("Connecting to Ethereum Sepolia...");
+        vm.selectFork(sepoliaFork);
+        vm.startBroadcast();
+
+        console.log("\n[Step 1] Deploying Sender contract on Ethereum Sepolia...");
+        Sender sender = new Sender(SEPOLIA_ROUTER, SEPOLIA_LINK);
+        console.log("Sender deployed on Sepolia:", address(sender));
+        console.log(
+            string.concat(
+                "View on Etherscan: https://sepolia.etherscan.io/address/",
+                vm.toString(address(sender))
+            )
+        );
+
+        // Step 2: Fund Sender with 1 LINK
+        console.log("\n[Step 2] Funding Sender with 1 LINK...");
+        LinkTokenInterface(SEPOLIA_LINK).transfer(address(sender), ONE_LINK);
+        vm.stopBroadcast();
+        console.log("Funded Sender with 1 LINK");
+
+        // Step 3: Deploy Receiver on Arbitrum Sepolia
+        console.log("\nConnecting to Arbitrum Sepolia...");
+        vm.selectFork(arbitrumSepoliaFork);
+        vm.startBroadcast();
+
+        console.log("\n[Step 3] Deploying Receiver on Arbitrum Sepolia...");
+        Receiver receiver = new Receiver(ARBITRUM_SEPOLIA_ROUTER);
+        vm.stopBroadcast();
+        console.log("Receiver deployed on Arbitrum Sepolia:", address(receiver));
+        console.log(
+            string.concat(
+                "View on Arbiscan: https://sepolia.arbiscan.io/address/",
+                vm.toString(address(receiver))
+            )
+        );
+        console.log("\n .....Copy the receiver address for the verification script.....\n");
+        console.log(address(receiver));
+
+        // Step 4: Send cross-chain message (Sepolia -> Arbitrum Sepolia)
+        vm.selectFork(sepoliaFork);
+        vm.startBroadcast();
+
+        console.log("\n[Step 4] Sending cross-chain message from Sepolia to Arbitrum Sepolia...");
+        bytes32 messageId = sender.sendMessage(
+            ARBITRUM_SEPOLIA_CHAIN_SELECTOR,
+            address(receiver),
+            "Hello World from Foundry script!"
+        );
+        vm.stopBroadcast();
+
+        console.log("Message sent! Check for delivery after a few minutes...");
+        console.log("CCIP messageId:");
+        console.logBytes32(messageId);
+        console.log("View transaction status on CCIP Explorer: https://ccip.chain.link");
+    }
+}
+```
+
+3. Run the following command to send the cross-chain message:
+
+```bash filename="Terminal"
+forge script script/SendCrossChainMessage.s.sol:SendCrossChainMessage --broadcast --multi --account PRIVATE_KEY
+```
+
+<Aside type="note">
+
+- The `--broadcast` flag broadcasts transactions to the network.
+- The `-vvvv` verbosity flag gives detailed runtime logs.
+- The `--multi` flag sends transactions to multiple chains.
+
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Verify message delivery" anchorId="foundry-verify" number={4} depth={5}>
+
+1. Create a new file named `VerifyCrossChainMessage.s.sol` in the `script` directory and paste the following code inside it:
+
+```solidity filename="script/VerifyCrossChainMessage.s.sol"
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity 0.8.34;
+
+import {Script, console} from "forge-std/Script.sol";
+import {Receiver} from "../src/Receiver.sol";
+
+contract VerifyCrossChainMessage is Script {
+
+    bytes32 constant ZERO_BYTES32 = bytes32(0);
+
+    function run() public {
+
+        address receiverAddress = PASTE_RECEIVER_ADDRESS_HERE;
+        require(receiverAddress != address(0), "Set RECEIVER_ADDRESS");
+
+        console.log("Connecting to Arbitrum Sepolia...");
+        uint256 arbitrumSepoliaFork = vm.createFork(vm.rpcUrl("arbitrumSepolia"));
+        vm.selectFork(arbitrumSepoliaFork);
+
+        console.log("Checking for received message...\n");
+        Receiver receiver = Receiver(receiverAddress);
+
+        (bytes32 messageId, string memory text) = receiver
+            .getLastReceivedMessageDetails();
+
+        if (messageId == ZERO_BYTES32) {
+            console.log("No message received yet.");
+            console.log("Please wait a bit longer and try again.");
+            revert("No message received yet");
+        }
+
+        console.log("Received Message ID:");
+        console.logBytes32(messageId);
+        console.log(string.concat('Received Text: "', text, '"'));
+    }
+}
+```
+
+2. Run the following command to verify the cross-chain message:
+
+```bash filename="Terminal"
+forge script script/VerifyCrossChainMessage.s.sol:VerifyCrossChainMessage
+```
+
+</AnchoredAccordion>
+
 #### Hardhat 3
 
 Best for a `TypeScript`-based scripting workflow where you deploy contracts, send a CCIP message, and verify delivery from the command line.
@@ -242,7 +477,7 @@ import hardhatViem from "@nomicfoundation/hardhat-viem"
 export default defineConfig({
   plugins: [hardhatViem, hardhatKeystore],
   solidity: {
-    version: "0.8.24",
+    version: "0.8.34",
   },
   networks: {
     sepolia: {
@@ -421,240 +656,6 @@ npx hardhat run scripts/verify-cross-chain-message.ts
 ```
 
 4. You should see the message ID and text of the last received message printed in the terminal.
-
-</AnchoredAccordion>
-
-#### Foundry
-
-Best for **Solidity-native** workflows that prefer a modular, powerful scripting framework.
-
-<AnchoredAccordion title="Bootstrap a new Foundry project" anchorId="foundry-bootstrap" number={1} depth={5}>
-
-1. Open a new terminal in a directory of your choice and run this command to initialize a new Foundry project:
-
-```bash filename="Terminal"
-forge init
-```
-
-2. Install the required dependencies:
-
-```bash filename="Terminal"
-forge install smartcontractkit/chainlink-ccip smartcontractkit/chainlink-evm
-```
-
-<Aside type="note" title="Note">
-  `cast wallet import` will throw an error if an `env` variable with the same name already exists. Use `cast wallet
-  list` to check previously set variables.
-</Aside>
-
-3. Use Foundry's `cast` command to create a new keystore for your `PRIVATE_KEY`:
-
-```bash filename="Terminal"
-cast wallet import --interactive PRIVATE_KEY
-```
-
-And use the `cast wallet list` command to verify:
-
-      <ClickToZoom
-        src="/images/ccip/tutorials/ccip-getting-started-evm-2.png"
-        alt="Foundry keystore list command output"
-      />
-
-<Aside type="caution" title="Note">
-  While the Hardhat project pulls RPC URLs via encrypted keystore variables, Foundry supports keystore encryption only
-  for private keys — not generic strings.
-</Aside>
-
-4. Configure the remappings so that your `foundry.toml` file looks like this:
-
-```toml filename="foundry.toml"
-[profile.default]
-solc = "0.8.24"
-src = "src"
-out = "out"
-libs = ["lib"]
-
-remappings = [
-  "forge-std/=lib/forge-std/src/",
-  "@chainlink/contracts-ccip/contracts/=lib/chainlink-ccip/chains/evm/contracts/",
-  "@chainlink/contracts/=lib/chainlink-evm/contracts/",
-  "@openzeppelin/contracts@5.3.0/utils/introspection/=lib/forge-std/src/interfaces/"
-]
-
-[rpc_endpoints]
-sepolia = "ENTER_YOUR_SEPOLIA_RPC_URL_HERE"
-arbitrumSepolia = "ENTER_YOUR_ARBITRUM_SEPOLIA_RPC_URL_HERE"
-```
-
-</AnchoredAccordion>
-
-<AnchoredAccordion title="Set up the contracts" anchorId="foundry-contracts" number={2} depth={5}>
-
-1. Create a new directory named `src` at the root of the project if it doesn't already exist.
-2. Create a new file named `Sender.sol` in this directory and paste the [sender contract code](#sender-code) inside it.
-3. Create a new file named `Receiver.sol` in the same directory and paste the [receiver contract code](#receiver-code) inside it.
-4. Run the following command to compile the contracts:
-
-```bash filename="Terminal"
-forge build
-```
-
-</AnchoredAccordion>
-
-<AnchoredAccordion title="Send a cross-chain message" anchorId="foundry-send" number={3} depth={5}>
-
-1. Create a new directory named `script` at the root of the project if it doesn't already exist.
-2. Create a new file named `SendCrossChainMessage.s.sol` in this directory and paste the following code inside it:
-
-```solidity filename="script/SendCrossChainMessage.s.sol"
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.24;
-
-import {Script, console} from "forge-std/Script.sol";
-import {Sender} from "../src/Sender.sol";
-import {Receiver} from "../src/Receiver.sol";
-import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
-
-contract SendCrossChainMessage is Script {
-    // Ethereum Sepolia configuration
-    address constant SEPOLIA_ROUTER = 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59;
-    address constant SEPOLIA_LINK = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
-
-    // Arbitrum Sepolia configuration
-    address constant ARBITRUM_SEPOLIA_ROUTER = 0x2a9C5afB0d0e4BAb2BCdaE109EC4b0c4Be15a165;
-    uint64 constant ARBITRUM_SEPOLIA_CHAIN_SELECTOR = 3478487238524512106;
-
-    uint256 ONE_LINK = 1e18;
-
-    function run() public {
-
-        // Load RPC configs from foundry.toml
-        uint256 sepoliaFork = vm.createFork(vm.rpcUrl("sepolia"));
-        uint256 arbitrumSepoliaFork = vm.createFork(vm.rpcUrl("arbitrumSepolia"));
-
-        // Step 1: Deploy Sender on Sepolia
-        console.log("Connecting to Ethereum Sepolia...");
-        vm.selectFork(sepoliaFork);
-        vm.startBroadcast();
-
-        console.log("\n[Step 1] Deploying Sender contract on Ethereum Sepolia...");
-        Sender sender = new Sender(SEPOLIA_ROUTER, SEPOLIA_LINK);
-        console.log("Sender deployed on Sepolia:", address(sender));
-        console.log(
-            string.concat(
-                "View on Etherscan: https://sepolia.etherscan.io/address/",
-                vm.toString(address(sender))
-            )
-        );
-
-        // Step 2: Fund Sender with 1 LINK
-        console.log("\n[Step 2] Funding Sender with 1 LINK...");
-        LinkTokenInterface(SEPOLIA_LINK).transfer(address(sender), ONE_LINK);
-        vm.stopBroadcast();
-        console.log("Funded Sender with 1 LINK");
-
-        // Step 3: Deploy Receiver on Arbitrum Sepolia
-        console.log("\nConnecting to Arbitrum Sepolia...");
-        vm.selectFork(arbitrumSepoliaFork);
-        vm.startBroadcast();
-
-        console.log("\n[Step 3] Deploying Receiver on Arbitrum Sepolia...");
-        Receiver receiver = new Receiver(ARBITRUM_SEPOLIA_ROUTER);
-        vm.stopBroadcast();
-        console.log("Receiver deployed on Arbitrum Sepolia:", address(receiver));
-        console.log(
-            string.concat(
-                "View on Arbiscan: https://sepolia.arbiscan.io/address/",
-                vm.toString(address(receiver))
-            )
-        );
-        console.log("\n .....Copy the receiver address for the verification script.....\n");
-        console.log(address(receiver));
-
-        // Step 4: Send cross-chain message (Sepolia -> Arbitrum Sepolia)
-        vm.selectFork(sepoliaFork);
-        vm.startBroadcast();
-
-        console.log("\n[Step 4] Sending cross-chain message from Sepolia to Arbitrum Sepolia...");
-        bytes32 messageId = sender.sendMessage(
-            ARBITRUM_SEPOLIA_CHAIN_SELECTOR,
-            address(receiver),
-            "Hello World from Foundry script!"
-        );
-        vm.stopBroadcast();
-
-        console.log("Message sent! Check for delivery after a few minutes...");
-        console.log("CCIP messageId:");
-        console.logBytes32(messageId);
-        console.log("View transaction status on CCIP Explorer: https://ccip.chain.link");
-    }
-}
-```
-
-3. Run the following command to send the cross-chain message:
-
-```bash filename="Terminal"
-forge script script/SendCrossChainMessage.s.sol:SendCrossChainMessage --broadcast --multi --account PRIVATE_KEY
-```
-
-<Aside type="note">
-
-- The `--broadcast` flag broadcasts transactions to the network.
-- The `-vvvv` verbosity flag gives detailed runtime logs.
-- The `--multi` flag sends transactions to multiple chains.
-
-</Aside>
-
-</AnchoredAccordion>
-
-<AnchoredAccordion title="Verify message delivery" anchorId="foundry-verify" number={4} depth={5}>
-
-1. Create a new file named `VerifyCrossChainMessage.s.sol` in the `script` directory and paste the following code inside it:
-
-```solidity filename="script/VerifyCrossChainMessage.s.sol"
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.24;
-
-import {Script, console} from "forge-std/Script.sol";
-import {Receiver} from "../src/Receiver.sol";
-
-contract VerifyCrossChainMessage is Script {
-
-    bytes32 constant ZERO_BYTES32 = bytes32(0);
-
-    function run() public {
-
-        address receiverAddress = PASTE_RECEIVER_ADDRESS_HERE;
-        require(receiverAddress != address(0), "Set RECEIVER_ADDRESS");
-
-        console.log("Connecting to Arbitrum Sepolia...");
-        uint256 arbitrumSepoliaFork = vm.createFork(vm.rpcUrl("arbitrumSepolia"));
-        vm.selectFork(arbitrumSepoliaFork);
-
-        console.log("Checking for received message...\n");
-        Receiver receiver = Receiver(receiverAddress);
-
-        (bytes32 messageId, string memory text) = receiver
-            .getLastReceivedMessageDetails();
-
-        if (messageId == ZERO_BYTES32) {
-            console.log("No message received yet.");
-            console.log("Please wait a bit longer and try again.");
-            revert("No message received yet");
-        }
-
-        console.log("Received Message ID:");
-        console.logBytes32(messageId);
-        console.log(string.concat('Received Text: "', text, '"'));
-    }
-}
-```
-
-2. Run the following command to verify the cross-chain message:
-
-```bash filename="Terminal"
-forge script script/VerifyCrossChainMessage.s.sol:VerifyCrossChainMessage
-```
 
 </AnchoredAccordion>
 
