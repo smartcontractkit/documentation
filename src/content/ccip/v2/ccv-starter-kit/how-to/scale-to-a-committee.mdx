@@ -1,0 +1,49 @@
+---
+section: ccip
+date: Last Modified
+title: "Scale to a committee"
+metadata:
+  description: "Move from one CCV cell to a production committee: size it for fault tolerance (the N=4, 3-of-4 floor), place cells across independent failure domains, and keep RPC independent."
+  excerpt: "CCV committee, committee size, 3-of-4, Byzantine fault tolerance, failure domains, ALLOW_WEAK_COMMITTEE, RPC independence"
+  datePublished: "2026-09-25"
+  lastModified: "2026-09-27"
+whatsnext:
+  "Operate: day 2": "/ccip/ccv-starter-kit/operate-day-2"
+  "Reference": "/ccip/ccv-starter-kit/reference"
+---
+
+A single cell is for learning. In production you run a committee of cells, each fully independent (its own
+Postgres, secrets, and key custody, never shared), so that no single failure or compromise takes the committee
+down. The off-chain kit's
+[committee-size recommendations](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#7-committee-size-recommendations)
+documentation has more detail. This page covers how many cells to run and where to put them.
+
+## Size for fault tolerance
+
+Start with four cells and a threshold of three (3-of-4). It is the smallest committee that keeps signing when
+one member is offline (`threshold ≤ N − 1`) and stays safe against a single malicious member
+(`threshold > 2N/3`, that is `N ≥ 3f + 1` with `f = 1`). Grow from there for more fault tolerance: 5-of-7
+tolerates two bad or offline members (`f = 2`), and 7-of-10 tolerates three (`f = 3`).
+
+The on-chain kit enforces this floor when you register the committee's signer set on the destination verifier,
+which you do with its
+[`make apply-signature-configs`](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/configure.md)
+target. The target rejects a 1-of-1 signer set, an N-of-N committee (no redundancy, so one offline signer halts
+the lane), and any threshold at or below two-thirds of the committee, so 3-of-4 is the smallest it accepts. To
+register a weaker committee on a testnet, set the environment variable `ALLOW_WEAK_COMMITTEE=true` when you run
+that target; it downgrades the rejection to a warning. Never set it in production. The on-chain kit's
+[troubleshooting](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/troubleshooting.md)
+page lists each rejection and how to resolve it.
+
+## Place cells across failure domains
+
+Spread the committee across independent failure domains, ideally different clouds or regions. Two cells that
+share a cloud region, a database, or an operator fail together, and a committee only protects you if its
+members fail separately.
+
+## Keep RPC independent
+
+Each cell needs its own RPC providers. If two cells read a chain through the same provider, a single faulty or
+malicious provider shows both of them the same wrong chain state, and they can sign the same bad message. Use
+multiple independent providers per chain with failover, and do not share a provider across cells. See the
+[RPC requirements](/resources/network-integration#standardized-rpcs-with-slas).

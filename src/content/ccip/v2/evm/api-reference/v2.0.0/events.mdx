@@ -1,0 +1,219 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 Events API Reference"
+metadata:
+  description: "Reference for key events emitted across Chainlink CCIP v2.0.0 EVM contracts."
+  version: "2.0.0"
+---
+
+This page centralizes key events emitted across the CCIP EVM Solidity surface.
+
+Use it to track message lifecycle, routing changes, and token movement. For full context, see the originating contract pages.
+
+## Event index
+
+| Event                 | Contract | Category         |
+| --------------------- | -------- | ---------------- |
+| CCIPMessageSent       | OnRamp   | Message sending  |
+| MessageExecuted       | Router   | Message delivery |
+| ExecutionStateChanged | OffRamp  | Message delivery |
+| OnRampSet             | Router   | Configuration    |
+| OffRampAdded          | Router   | Configuration    |
+| OffRampRemoved        | Router   | Configuration    |
+| ConfigSet             | OnRamp   | Configuration    |
+| DestChainConfigSet    | OnRamp   | Configuration    |
+| StaticConfigSet       | OffRamp  | Configuration    |
+| SourceChainConfigSet  | OffRamp  | Configuration    |
+
+## Message sending (source chain)
+
+These events are emitted when a message is accepted on the source chain.
+
+### CCIPMessageSent
+
+Emitted by: [OnRamp](/ccip/evm/api-reference/v2.0.0/onramp)
+When emitted: After a message is accepted and encoded for cross-chain delivery
+Why it matters: Primary event for tracking message submission
+
+```solidity id="ev1"
+event CCIPMessageSent(
+  uint64 indexed destChainSelector,
+  address indexed sender,
+  bytes32 indexed messageId,
+  address feeToken,
+  uint256 tokenAmountBeforeTokenPoolFees,
+  bytes encodedMessage,
+  Receipt[] receipts,
+  bytes[] verifierBlobs
+);
+```
+
+## Message delivery (destination chain)
+
+These events are emitted when a message is processed on the destination chain.
+
+### MessageExecuted
+
+Emitted by: [Router](/ccip/evm/api-reference/v2.0.0/router)
+When emitted: After the Router attempts delivery to a receiver
+Why it matters: Correlates destination-chain execution attempts
+
+```solidity id="ev2"
+event MessageExecuted(
+  bytes32 messageId,
+  uint64 sourceChainSelector,
+  address offRamp,
+  bytes32 calldataHash
+);
+```
+
+### ExecutionStateChanged
+
+Emitted by: [OffRamp](/ccip/evm/api-reference/v2.0.0/offramp)
+When emitted: When execution state changes for a message
+Why it matters: Tracks success, failure, or intermediate execution states
+
+```solidity id="ev3"
+event ExecutionStateChanged(
+  uint64 indexed sourceChainSelector,
+  uint64 indexed messageNumber,
+  bytes32 indexed messageId,
+  Internal.MessageExecutionState state,
+  bytes returnData
+);
+```
+
+## Routing and configuration
+
+These events track routing updates and system configuration.
+
+### OnRampSet
+
+Emitted by: [Router](/ccip/evm/api-reference/v2.0.0/router)
+When emitted: When an OnRamp is set or updated
+Why it matters: Tracks outbound routing configuration
+
+```solidity id="ev4"
+event OnRampSet(uint64 indexed destChainSelector, address onRamp);
+```
+
+### OffRampAdded
+
+Emitted by: [Router](/ccip/evm/api-reference/v2.0.0/router)
+When emitted: When an OffRamp is authorized
+Why it matters: Tracks allowed destination-chain delivery sources
+
+```solidity id="ev5"
+event OffRampAdded(uint64 indexed sourceChainSelector, address offRamp);
+```
+
+### OffRampRemoved
+
+Emitted by: [Router](/ccip/evm/api-reference/v2.0.0/router)
+When emitted: When an OffRamp is removed
+Why it matters: Tracks removal of delivery authorization
+
+```solidity id="ev6"
+event OffRampRemoved(uint64 indexed sourceChainSelector, address offRamp);
+```
+
+### ConfigSet
+
+Emitted by: [OnRamp](/ccip/evm/api-reference/v2.0.0/onramp)
+When emitted: When OnRamp configuration is updated
+Why it matters: Tracks changes to source-chain configuration
+
+```solidity id="ev7"
+event ConfigSet(StaticConfig staticConfig, DynamicConfig dynamicConfig);
+```
+
+### DestChainConfigSet
+
+Emitted by: [OnRamp](/ccip/evm/api-reference/v2.0.0/onramp)
+When emitted: When configuration for a destination chain is updated
+Why it matters: Tracks lane-specific configuration
+
+```solidity id="ev8"
+event DestChainConfigSet(
+  uint64 indexed destChainSelector,
+  uint64 messageNumber,
+  DestChainConfigArgs config
+);
+```
+
+### StaticConfigSet
+
+Emitted by: [OffRamp](/ccip/evm/api-reference/v2.0.0/offramp)
+When emitted: During initialization
+Why it matters: Defines baseline OffRamp configuration
+
+```solidity id="ev9"
+event StaticConfigSet(StaticConfig staticConfig);
+```
+
+### SourceChainConfigSet
+
+Emitted by: [OffRamp](/ccip/evm/api-reference/v2.0.0/offramp)
+When emitted: When source-chain configuration is updated
+Why it matters: Tracks inbound lane configuration
+
+```solidity id="ev10"
+event SourceChainConfigSet(
+  uint64 indexed sourceChainSelector,
+  SourceChainConfigArgs sourceConfig
+);
+```
+
+## Token pool events
+
+Token pools emit events during token movement and configuration.
+
+### Lock and release
+
+Contracts:
+
+- [LockReleaseTokenPool](/ccip/evm/api-reference/v2.0.0/lock-release-token-pool)
+- [SiloedLockReleaseTokenPool](/ccip/evm/api-reference/v2.0.0/siloed-lock-release-token-pool)
+
+Typical behavior:
+
+- Tokens are locked on the source chain
+- Tokens are released on the destination chain
+
+Refer to these contract pages for exact event definitions such as token lock, release, and liquidity updates.
+
+### Burn and mint
+
+Contracts:
+
+- [BurnMintTokenPool](/ccip/evm/api-reference/v2.0.0/burn-mint-token-pool)
+- Burn/mint pool variants
+
+Typical behavior:
+
+- Tokens are burned on the source chain
+- Tokens are minted on the destination chain
+
+Refer to these contract pages for exact event definitions such as burn, mint, and supply changes.
+
+### Token pool configuration
+
+Relevant contracts:
+
+- [TokenAdminRegistry](/ccip/evm/api-reference/v2.0.0/token-admin-registry)
+
+Typical configuration events include:
+
+- fee updates
+- rate limit configuration
+- allowlist or policy changes
+
+Refer to token pool and registry contracts for full event definitions.
+
+## Related Interfaces & Contracts
+
+- [Router](/ccip/evm/api-reference/v2.0.0/router)
+- [OnRamp](/ccip/evm/api-reference/v2.0.0/onramp)
+- [OffRamp](/ccip/evm/api-reference/v2.0.0/offramp)
+- [TokenAdminRegistry](/ccip/evm/api-reference/v2.0.0/token-admin-registry)

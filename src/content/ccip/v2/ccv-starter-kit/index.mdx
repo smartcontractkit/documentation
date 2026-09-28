@@ -1,0 +1,161 @@
+---
+section: ccip
+date: Last Modified
+title: "CCV Starter Kit"
+metadata:
+  description: "Run your own Cross-Chain Verifier (CCV) cell for Chainlink CCIP: deploy the verifier and aggregator into Kubernetes you already operate, expose it, and scale to a committee."
+  excerpt: "CCV starter kit, cross-chain verifier, CCIP verifier, aggregator, self-hosted CCV, Kubernetes, GKE, EKS, AKS, committee"
+  datePublished: "2026-09-25"
+  lastModified: "2026-09-26"
+isIndex: true
+whatsnext:
+  "CCV overview (concepts)": "/ccip/concepts/ccvs/overview"
+---
+
+import { Aside, DocCards, DocCard, CopyText } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<Aside type="note" title="Want information or need support?">
+  Reach the CCV Starter Kit team at <CopyText text="clusersupport@smartcontract.com" />.
+</Aside>
+
+The CCV Starter Kit deploys a Cross-Chain Verifier (CCV) into Kubernetes infrastructure you already run. It has
+two parts, each in its own repository with its own step-by-step documentation:
+
+- The [on-chain contracts kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts) deploys
+  and governs your verifier contracts.
+- The [off-chain kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit) is a Helm chart that runs
+  your verifier and aggregator as a cell: one verifier plus one aggregator, backed by Postgres. Both run as
+  Docker images from the public [Amazon ECR gallery](https://gallery.ecr.aws/chainlink).
+
+<CcipCommon callout="ccvDefaultVerifierPosture" />
+
+## Versions and releases
+
+The chart and its images are versioned upstream, not in this guide, so these links always show the current
+releases:
+
+<DocCards>
+  <DocCard title="Verifier image" href="https://gallery.ecr.aws/chainlink/chainlink-ccv-verifier">
+    Published tags for the verifier, on the public Amazon ECR gallery.
+  </DocCard>
+  <DocCard title="Aggregator image" href="https://gallery.ecr.aws/chainlink/chainlink-ccv-aggregator">
+    Published tags for the aggregator, on the public Amazon ECR gallery.
+  </DocCard>
+  <DocCard title="Chart releases" href="https://github.com/smartcontractkit/chainlink-ccv-starter-kit/releases">
+    Releases of the off-chain kit and the ccv-cell Helm chart, on GitHub.
+  </DocCard>
+</DocCards>
+
+## Available on the marketplaces
+
+The CCV Starter Kit is listed on AWS Marketplace and Google Cloud Marketplace. Professional operators deploy by
+following this guide and the starter kits.
+
+<DocCards>
+  <DocCard title="AWS Marketplace" href="https://aws.amazon.com/marketplace/pp/prodview-mcqbm7qznr7ni">
+    <img src="/images/ccip/ccv-starter-kit/aws.svg" alt="AWS Marketplace" width="48" height="48" />
+  </DocCard>
+  <DocCard
+    title="Google Cloud Marketplace"
+    href="https://console.cloud.google.com/marketplace/product/chainlink-labs-ltd-public/chainlink-ccv-starter-kit"
+  >
+    <img src="/images/ccip/ccv-starter-kit/gcp.svg" alt="Google Cloud Marketplace" width="48" height="48" />
+  </DocCard>
+</DocCards>
+
+## Who this guide is for
+
+You run production Kubernetes and own your networking, TLS and ingress, secret management, and a production
+database. Cloud-specific dependencies are labeled by cloud (GCP, AWS, Azure, on-premise), and each links the
+vendor's own documentation. The Helm charts are cloud-agnostic, so the same concepts apply on any other cloud
+provider too. If you do not yet run this infrastructure, start with
+[Prerequisites](/ccip/ccv-starter-kit/prerequisites) and set it up first.
+
+This guide is the operator's install path. For what a CCV is and how it fits CCIP, see the
+[CCV overview](/ccip/concepts/ccvs/overview).
+
+## What you build
+
+The verifier polls source chains and signs message hashes; the aggregator serves those attestations over gRPC;
+the CCIP indexer reads them, and the executor runs the message on the destination. For the full end-to-end CCIP
+v2 architecture, see the [CCIP architecture overview](/ccip/concepts/architecture/overview).
+
+## What changes with your infrastructure
+
+The verifier and aggregator run the same containers wherever you deploy them: any cloud (GCP, AWS, Azure, or
+another provider) or on-premise. Only three things differ, and you own all three: how you inject the
+configuration secret, how you expose the aggregator, and where Postgres comes from. On a managed cloud you use
+that cloud's services for each; on-premise you run them yourself. The kit is brownfield: it deploys into
+infrastructure you already run and provisions none of its own.
+
+## Production topology
+
+A single cell is for learning. In production run a committee of cells across independent failure domains,
+ideally different clouds or regions, each cell fully independent (its own Postgres, secrets, and key custody,
+never shared). The smallest production committee is four cells with a threshold of three.
+[Scale to a committee](/ccip/ccv-starter-kit/how-to/scale-to-a-committee) explains the sizing and how to grow
+beyond it.
+
+## Policy hook and key custody
+
+The kit adds two operator capabilities on top of the core cell:
+
+- A custom [policy hook](/ccip/ccv-starter-kit/how-to/add-a-custom-policy-hook): an HTTPS endpoint you
+  implement in any language to run your own compliance or risk checks before a node signs. It only has to honor
+  the request/response contract (an
+  [OpenAPI spec](https://github.com/smartcontractkit/chainlink-ccv/blob/main/verifier/policy_hook_openapi_v1.yaml));
+  the verifier calls it for a PASS/FAIL on each message.
+- [KMS key custody](/ccip/ccv-starter-kit/how-to/signer-key-custody-and-kms): the signing key never leaves
+  your cloud KMS. Strongly recommended on a managed cloud.
+
+## Start here
+
+<DocCards>
+  <DocCard title="Prerequisites" href="/ccip/ccv-starter-kit/prerequisites">
+    The cluster, database, secret store, and ingress you bring before you deploy.
+  </DocCard>
+  <DocCard title="Deploy your first cell" href="/ccip/ccv-starter-kit/evm/deploy-your-first-cell">
+    Deploy the EVM on-chain contracts, then one off-chain cell: config, deploy, expose, register the signer.
+  </DocCard>
+  <DocCard title="Test your setup" href="/ccip/ccv-starter-kit/evm/test-your-setup">
+    Prove the cell end to end with a token transfer and the ccip-cli.
+  </DocCard>
+</DocCards>
+
+## How-to guides
+
+<DocCards>
+  <DocCard title="Choose a secret backend" href="/ccip/ccv-starter-kit/how-to/choose-a-secret-backend">
+    What the cell keeps in its secrets and the backends that provide them.
+  </DocCard>
+  <DocCard title="Signer key custody and KMS" href="/ccip/ccv-starter-kit/how-to/signer-key-custody-and-kms">
+    KMS versus the Postgres keystore, per cloud.
+  </DocCard>
+  <DocCard title="Expose the aggregator" href="/ccip/ccv-starter-kit/how-to/expose-the-aggregator">
+    Pick a route type for your cluster and point the load balancer health check at readiness.
+  </DocCard>
+  <DocCard title="Scale to a committee" href="/ccip/ccv-starter-kit/how-to/scale-to-a-committee">
+    Size and place a committee across failure domains.
+  </DocCard>
+  <DocCard title="Add a custom policy hook" href="/ccip/ccv-starter-kit/how-to/add-a-custom-policy-hook">
+    Implement your PASS/FAIL compliance endpoint against the OpenAPI spec.
+  </DocCard>
+</DocCards>
+
+## Operate and reference
+
+<DocCards>
+  <DocCard title="Onboard to the CCIP indexer" href="/ccip/ccv-starter-kit/onboard-to-the-indexer">
+    Register your aggregators with the indexer so the default executor runs your messages.
+  </DocCard>
+  <DocCard title="Logging and monitoring" href="/ccip/ccv-starter-kit/logging-and-monitoring">
+    OTLP telemetry, dashboards, and what to alert on.
+  </DocCard>
+  <DocCard title="Operate: day 2" href="/ccip/ccv-starter-kit/operate-day-2">
+    On-chain and off-chain day-2 operations for both kits, plus troubleshooting.
+  </DocCard>
+  <DocCard title="Reference" href="/ccip/ccv-starter-kit/reference">
+    Links to both kits' books, the chart values, and the concept pages.
+  </DocCard>
+</DocCards>

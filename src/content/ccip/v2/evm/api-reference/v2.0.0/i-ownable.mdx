@@ -1,0 +1,88 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IOwnable API Reference"
+metadata:
+  description: "Minimal ownership interface for retrieving and transferring ownership."
+  version: "2.0.0"
+---
+
+`IOwnable` defines a minimal interface for managing contract ownership using a two-step transfer process.
+
+If you implement this interface, ownership is transferred by proposing a new owner and requiring that owner to explicitly accept the role.
+
+> This interface is used by contracts to expose ownership control and is not typically used directly by applications.
+
+## Usage Boundary
+
+**You typically do not interact with this interface directly.**
+
+- Contracts implement this interface to expose ownership functionality.
+- Administrative tooling or contract owners call these functions to manage ownership.
+- You are responsible for correctly handling ownership transitions to avoid loss of control.
+
+## Contract
+
+`@chainlink/contracts/src/v0.8/shared/interfaces/IOwnable.sol`
+
+## Import
+
+```solidity
+import {IOwnable} from "@chainlink/contracts/src/v0.8/shared/interfaces/IOwnable.sol";
+```
+
+## Interface surface
+
+```solidity
+interface IOwnable {
+```
+
+### owner
+
+```solidity
+function owner() external view returns (address);
+```
+
+> Returns the current owner of the contract.
+
+---
+
+### transferOwnership
+
+```solidity
+function transferOwnership(address recipient) external;
+```
+
+> Proposes a new owner.
+
+- Does not immediately transfer ownership.
+- The proposed owner must call `acceptOwnership` to complete the transfer.
+
+---
+
+### acceptOwnership
+
+```solidity
+function acceptOwnership() external;
+```
+
+> Accepts ownership of the contract.
+
+- Can only be called by the proposed owner.
+- Completes the ownership transfer.
+
+```solidity
+}
+```
+
+## Notes
+
+- Ownership transfer follows a two-step process: propose → accept.
+- Until `acceptOwnership` is called, the current owner retains control.
+- Proposing an incorrect address may result in loss of control if the new owner accepts.
+- Ownership must be actively accepted to take effect.
+
+## Related Interfaces & Contracts
+
+- [`Ownable2Step`](/ccip/evm/api-reference/v2.0.0/ownable-2-step)
+- [`Ownable2StepMsgSender`](/ccip/evm/api-reference/v2.0.0/ownable-2-step-msg-sender)
