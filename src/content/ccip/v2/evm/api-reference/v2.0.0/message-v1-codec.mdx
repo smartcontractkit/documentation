@@ -1,0 +1,190 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 MessageV1Codec API Reference"
+metadata:
+  description: "Canonical V1 message encoding and decoding library used by OnRamp and OffRamp."
+  version: "2.0.0"
+---
+
+`MessageV1Codec` defines the canonical binary encoding format for CCIP V1 messages and token transfers.
+
+It is used to:
+
+- serialize messages on the source chain
+- deserialize messages on the destination chain
+- ensure consistent message hashing and verification
+
+All cross-chain message integrity depends on this encoding.
+
+> This library provides reusable helper functions and is not deployed as a standalone application-facing contract.
+
+## Usage Boundary
+
+**You do not call this library directly.**
+
+- CCIP contracts use this library to encode and decode message payloads.
+- OnRamp encodes messages before emission.
+- OffRamp decodes messages before execution.
+- You may use this library for debugging or custom integrations.
+
+## Contract
+
+`libraries/MessageV1Codec.sol`
+
+## Import
+
+```solidity
+import {MessageV1Codec} from "chainlink-ccip/libraries/MessageV1Codec.sol";
+```
+
+## Functions
+
+All functions are `internal` and `pure`.
+
+### \_computeCCVAndExecutorHash
+
+```solidity
+function _computeCCVAndExecutorHash(
+  address[] memory ccvs,
+  address executor
+) internal pure returns (bytes32)
+```
+
+> Computes a deterministic hash over CCV addresses and executor.
+
+- Used to bind verifier configuration to the message.
+
+---
+
+### \_encodeTokenTransferV1
+
+```solidity
+function _encodeTokenTransferV1(
+  TokenTransferV1 memory tokenTransfer
+) internal pure returns (bytes memory)
+```
+
+> Encodes a token transfer.
+
+---
+
+### \_decodeTokenTransferV1
+
+```solidity
+function _decodeTokenTransferV1(
+  bytes calldata encoded,
+  uint256 offset
+) internal pure returns (
+  TokenTransferV1 memory tokenTransfer,
+  uint256 newOffset
+)
+```
+
+> Decodes a token transfer.
+
+---
+
+### \_encodeMessageV1
+
+```solidity
+function _encodeMessageV1(
+  MessageV1 memory message
+) internal pure returns (bytes memory)
+```
+
+> Encodes a CCIP message.
+
+---
+
+### \_decodeMessageV1
+
+```solidity
+function _decodeMessageV1(
+  bytes calldata encoded
+) internal pure returns (MessageV1 memory message)
+```
+
+> Decodes a CCIP message.
+
+---
+
+## Constants
+
+### MAX_NUMBER_OF_TOKENS
+
+```solidity
+uint256 public constant MAX_NUMBER_OF_TOKENS = 1;
+```
+
+### MESSAGE_V1_REMOTE_CHAIN_ADDRESSES
+
+```solidity
+uint256 public constant MESSAGE_V1_REMOTE_CHAIN_ADDRESSES = 2;
+```
+
+## Structs
+
+### MessageV1
+
+| Field                 | Type                |
+| --------------------- | ------------------- |
+| `sourceChainSelector` | `uint64`            |
+| `destChainSelector`   | `uint64`            |
+| `sequenceNumber`      | `uint64`            |
+| `sender`              | `bytes`             |
+| `receiver`            | `bytes`             |
+| `data`                | `bytes`             |
+| `tokenTransfers`      | `TokenTransferV1[]` |
+| `extraArgs`           | `bytes`             |
+
+---
+
+### TokenTransferV1
+
+| Field                | Type      |
+| -------------------- | --------- |
+| `amount`             | `uint256` |
+| `sourcePoolAddress`  | `bytes`   |
+| `sourceTokenAddress` | `bytes`   |
+| `destTokenAddress`   | `bytes`   |
+| `tokenReceiver`      | `bytes`   |
+| `extraData`          | `bytes`   |
+
+## Errors
+
+- `error InvalidDataLength(EncodingErrorLocation location)`
+- `error InvalidEncodingVersion(uint8 version)`
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Notes
+
+- Encoding and decoding functions must be strictly symmetric.
+- Encoded messages must match the expected format exactly across chains.
+- Message hashing depends on canonical encoding.
+- Only a single token transfer is supported per message.
+- Decoding will revert if message data is malformed or incomplete.
+
+## Usage context
+
+Used by:
+
+- [`OnRamp`](/ccip/evm/api-reference/v2.0.0/onramp)
+- [`OffRamp`](/ccip/evm/api-reference/v2.0.0/offramp)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+
+Example:
+
+```solidity
+bytes memory encoded = MessageV1Codec._encodeMessageV1(message);
+bytes32 messageId = keccak256(encoded);
+```
+
+## Related Interfaces & Contracts
+
+- [`OnRamp`](/ccip/evm/api-reference/v2.0.0/onramp)
+- [`OffRamp`](/ccip/evm/api-reference/v2.0.0/offramp)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`ExtraArgsCodec`](/ccip/evm/api-reference/v2.0.0/extra-args-codec)
+- [`CCVConfigValidation`](/ccip/evm/api-reference/v2.0.0/ccv-config-validation)

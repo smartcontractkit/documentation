@@ -1,0 +1,174 @@
+---
+section: ccip
+date: Last Modified
+title: "Prerequisites"
+metadata:
+  description: "What you bring before deploying a CCV cell: a conformant Kubernetes cluster, managed Postgres, a secret store, workload identity, gRPC ingress, and RPC providers, per cloud."
+  excerpt: "CCV prerequisites, brownfield Kubernetes, managed Postgres, secret store, workload identity, gRPC ingress, GKE, EKS, AKS"
+  datePublished: "2026-09-25"
+  lastModified: "2026-09-27"
+whatsnext:
+  "Deploy your first cell": "/ccip/ccv-starter-kit/evm/deploy-your-first-cell"
+  "Choose a secret backend": "/ccip/ccv-starter-kit/how-to/choose-a-secret-backend"
+---
+
+import ToolsUtilitiesGrid from "@components/ToolsUtilitiesGrid/ToolsUtilitiesGrid.astro"
+
+The CCV Starter Kit is a brownfield kit: it deploys into a Kubernetes cluster and stateful services you already
+run, rather than provisioning new infrastructure. You bring the cluster, the database, the secret store, and
+the ingress. This page assumes you already operate production Kubernetes, TLS, gRPC ingress, secret
+management, and a production database. If you do not, set them up first.
+
+<ToolsUtilitiesGrid
+  title="Platforms and dependencies"
+  links={[
+    {
+      image: "/images/ccip/ccv-starter-kit/kubernetes.svg",
+      imageAlt: "Kubernetes",
+      label: "Kubernetes",
+      description: "The cluster runtime your cell runs on.",
+      link: "https://kubernetes.io/docs/home/",
+    },
+    {
+      image: "/images/ccip/ccv-starter-kit/helm.svg",
+      imageAlt: "Helm",
+      label: "Helm",
+      description: "The chart you install the cell with.",
+      link: "https://helm.sh/docs/",
+    },
+    {
+      image: "/images/ccip/ccv-starter-kit/postgresql.svg",
+      imageAlt: "PostgreSQL",
+      label: "PostgreSQL",
+      description: "The database backing the verifier and aggregator.",
+      link: "https://www.postgresql.org/docs/",
+    },
+    {
+      image: "/images/ccip/ccv-starter-kit/gke.svg",
+      imageAlt: "Google Kubernetes Engine",
+      label: "GKE",
+      description: "Managed Kubernetes on Google Cloud.",
+      link: "https://cloud.google.com/kubernetes-engine/docs",
+    },
+    {
+      image: "/images/ccip/ccv-starter-kit/eks.svg",
+      imageAlt: "Amazon EKS",
+      label: "Amazon EKS",
+      description: "Managed Kubernetes on AWS.",
+      link: "https://docs.aws.amazon.com/eks/",
+    },
+    {
+      image: "/images/ccip/ccv-starter-kit/aks.svg",
+      imageAlt: "Azure Kubernetes Service",
+      label: "AKS",
+      description: "Managed Kubernetes on Azure.",
+      link: "https://learn.microsoft.com/en-us/azure/aks/",
+    },
+  ]}
+/>
+
+<ToolsUtilitiesGrid
+  title="Secret stores"
+  links={[
+    {
+      image: "/images/ccip/ccv-starter-kit/aws-secrets-manager.svg",
+      imageAlt: "AWS Secrets Manager",
+      label: "AWS Secrets Manager",
+      description: "Managed secret store on AWS.",
+      link: "https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html",
+    },
+    {
+      image: "/images/ccip/ccv-starter-kit/gcp-secret-manager.svg",
+      imageAlt: "Google Cloud Secret Manager",
+      label: "GCP Secret Manager",
+      description: "Managed secret store on Google Cloud.",
+      link: "https://cloud.google.com/secret-manager/docs",
+    },
+    {
+      image: "/images/ccip/ccv-starter-kit/azure-key-vault.svg",
+      imageAlt: "Azure Key Vault",
+      label: "Azure Key Vault",
+      description: "Managed secret store on Azure.",
+      link: "https://learn.microsoft.com/en-us/azure/key-vault/general/overview",
+    },
+  ]}
+/>
+
+<ToolsUtilitiesGrid
+  title="Signer key custody (KMS)"
+  links={[
+    {
+      image: "/images/ccip/ccv-starter-kit/aws-kms.svg",
+      imageAlt: "AWS KMS",
+      label: "AWS KMS",
+      description: "Cloud KMS signer on AWS.",
+      link: "https://docs.aws.amazon.com/kms/latest/developerguide/overview.html",
+    },
+    {
+      image: "/images/ccip/ccv-starter-kit/gcp-kms.svg",
+      imageAlt: "Google Cloud KMS",
+      label: "GCP KMS",
+      description: "Cloud KMS signer on Google Cloud.",
+      link: "https://cloud.google.com/kms/docs",
+    },
+    {
+      image: "/images/ccip/ccv-starter-kit/azure-key-vault.svg",
+      imageAlt: "Azure Key Vault",
+      label: "Azure Key Vault",
+      description: "KMS signer on Azure.",
+      comingSoon: true,
+    },
+  ]}
+/>
+
+You provision each dependency below with your cloud's own tooling; the table links the vendor docs. The
+off-chain kit's
+[Prerequisites](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#1-prerequisites)
+and
+[Configure](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#2-configure-the-values)
+documentation has the field-level detail.
+
+## Dependency matrix
+
+| Dependency           | What the kit needs                                                                                              | Per-cloud vendor doc                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| -------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Kubernetes cluster   | A conformant cluster on a supported version                                                                     | [GKE](https://cloud.google.com/kubernetes-engine/docs/quickstart) / [EKS](https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html) / [AKS](https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-cli) getting-started, or any conformant on-premise Kubernetes                                                                                                                                                                                                                  |
+| Managed Postgres     | Postgres 15+ over TLS, reachable from inside the cluster                                                        | [Cloud SQL](https://cloud.google.com/sql/docs/postgres) / [Amazon RDS for PostgreSQL](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html) / [Azure Database for PostgreSQL](https://learn.microsoft.com/en-us/azure/postgresql/)                                                                                                                                                                                                                                                         |
+| Secret store         | A store the chart references and mounts (five backends)                                                         | [GCP Secret Manager](https://cloud.google.com/secret-manager/docs) / [AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html) ([ASCP](https://docs.aws.amazon.com/secretsmanager/latest/userguide/integrating_csi_driver.html)) / [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/overview) ([AKS CSI](https://learn.microsoft.com/en-us/azure/aks/csi-secrets-store-driver)) / [External Secrets Operator](https://external-secrets.io/latest/) |
+| Workload identity    | Keyless pod access to your secrets and KMS                                                                      | [GKE Workload Identity](https://cloud.google.com/kubernetes-engine/docs/concepts/workload-identity) / EKS [IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) or [Pod Identity](https://docs.aws.amazon.com/eks/latest/userguide/pod-identities.html) / [Microsoft Entra Workload ID](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview)                                                                                                            |
+| Signer key (KMS)     | Optional cloud KMS for the signer key, recommended on a managed cloud; the Postgres keystore holds it otherwise | [GCP KMS](https://cloud.google.com/kms/docs) / [AWS KMS](https://docs.aws.amazon.com/kms/latest/developerguide/overview.html) / Azure Key Vault KMS signer (coming soon; use the Postgres keystore)                                                                                                                                                                                                                                                                                                               |
+| Ingress for gRPC     | TLS-terminated, HTTP/2 and gRPC end to end, a stable public hostname                                            | [GKE Gateway](https://cloud.google.com/kubernetes-engine/docs/concepts/gateway-api) / [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/) / [Azure Application Gateway for Containers](https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/overview); on-premise [MetalLB](https://metallb.universe.tf/) with [Envoy Gateway](https://gateway.envoyproxy.io/)                                                                           |
+| RPC per source chain | Multiple independent providers with failover, not a single endpoint                                             | [RPC requirements](/resources/network-integration#standardized-rpcs-with-slas)                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| On-chain contracts   | The resolver, committee-verifier addresses, and selectors (deploy them first)                                   | [The CCV on-chain contracts kit book](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/getting-started.md)                                                                                                                                                                                                                                                                                                                                                              |
+
+## Postgres databases
+
+The cell keeps its state in separate logical databases on your Postgres server, one per component. Two always
+exist: an `aggregator` database for the aggregator's state, and a `verifier` database for the verifier's state.
+With the default Postgres keystore, the verifier generates its signing key on first boot and stores it in a
+third `bootstrapper` database, so your Postgres backups then contain the signing key. Point the keystore at
+cloud KMS instead and the signing key lives in KMS, never in Postgres. See
+[Signer key custody and KMS](/ccip/ccv-starter-kit/how-to/signer-key-custody-and-kms) for that choice. Create
+the databases your configuration uses and give each component its own connection string; those strings are part
+of the secrets covered in [Choose a secret backend](/ccip/ccv-starter-kit/how-to/choose-a-secret-backend).
+
+## Certificate: use a publicly trusted CA
+
+The aggregator's TLS certificate must be issued by a publicly trusted certificate authority. The clients are
+your peer verifiers and the CCIP indexer, and neither trusts your private CA. A certificate from a private or
+internal CA passes every check you run against your own cell and fails only when a peer or the indexer
+connects. A Google-managed certificate, cert-manager with an ACME issuer such as Let's Encrypt, or a certificate
+bought from a public CA all work.
+
+## RPC providers
+
+Give each cell its own RPC providers, with more than one per chain for failover. Each provider should meet
+Chainlink's [RPC requirements](/resources/network-integration#standardized-rpcs-with-slas): independent
+providers, no rate limits, and the performance SLAs. Cells in a committee must not share a provider;
+[Scale to a committee](/ccip/ccv-starter-kit/how-to/scale-to-a-committee#keep-rpc-independent) explains why.
+
+## Local development only
+
+The off-chain kit ships a `local/` folder for experimentation only: a docker-compose stack you can run anywhere
+Docker and docker-compose are available. Use it to try the cell out, not to run it for real. Production is
+bring-your-own for every dependency above.

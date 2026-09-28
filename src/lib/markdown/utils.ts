@@ -4,6 +4,7 @@
 
 import path from "path"
 import type { Frontmatter } from "./types.js"
+import { canonicalizeCcipUrlPath } from "../ccip/contentPathMapping.js"
 
 /**
  * Extract frontmatter from raw MDX content
@@ -54,6 +55,7 @@ export function toCanonicalUrl(section: string, relFromContent: string, siteBase
   let slug = withoutExt
   if (slug.endsWith("/index")) slug = slug.slice(0, -"/index".length)
   if (!slug.startsWith(section)) slug = `${section}/${slug}`
+  if (section === "ccip") slug = canonicalizeCcipUrlPath(slug)
   if (!slug.startsWith("/")) slug = `/${slug}`
   return `${siteBase}${slug}`
 }
@@ -124,31 +126,4 @@ export function getIsoStringOrUndefined(val: unknown): string | undefined {
   if (typeof val !== "string") return undefined
   const d = new Date(val)
   return isNaN(d.getTime()) ? undefined : d.toISOString().slice(0, 10)
-}
-
-/**
- * Unescape markdown for plain text output
- * @param s - Markdown string
- * @returns Unescaped string
- */
-export function unescapeForPlainText(s: string): string {
-  let inFence = false
-  return s
-    .split("\n")
-    .map((line) => {
-      const trimmed = line.trim()
-      if (trimmed.startsWith("```") || trimmed.startsWith("~~~")) {
-        inFence = !inFence
-        return line
-      }
-      if (inFence) return line
-      return line
-        .replace(/\\_/g, "_")
-        .replace(/\\\[/g, "[")
-        .replace(/\\\]/g, "]")
-        .replace(/\\\(/g, "(")
-        .replace(/\\\)/g, ")")
-    })
-    .filter((line) => line.trim() !== "{/* prettier-ignore */}")
-    .join("\n")
 }

@@ -1,6 +1,7 @@
 ---
 import CcipDirectoryLayout from "~/layouts/CcipDirectoryLayout.astro"
 import { getEntry, render } from "astro:content"
+import { LATEST_CCIP_CONTENT_DIR } from "~/config/ccipVersions.js"
 import {
   Environment,
   DecommissionedNetwork,
@@ -20,9 +21,11 @@ interface Props {
 }
 const { environment, network } = Astro.props as Props
 
-const entry = await getEntry("ccip", "index")
+const entry = await getEntry("ccip", LATEST_CCIP_CONTENT_DIR)
 if (!entry) {
-  throw new Error('Could not find "ccip/index" doc. Check src/content/ccip/index.mdx!')
+  throw new Error(
+    `Could not find the CCIP landing doc (id "${LATEST_CCIP_CONTENT_DIR}"). Check src/content/ccip/${LATEST_CCIP_CONTENT_DIR}/index.mdx!`
+  )
 }
 
 const { headings } = await render(entry)

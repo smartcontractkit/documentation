@@ -15,6 +15,7 @@ permissions:
   actions: write    # Required for upload-artifact
   contents: read    # Required for checkout and other read operations
   checks: write     # Required for test results
+  pull-requests: read # Required for dorny/paths-filter to list changed files on pull_request events
 
 jobs:
   # Detect which file groups changed so downstream jobs can skip themselves
@@ -44,6 +45,10 @@ jobs:
               - 'src/components/**'
               - 'src/pages/**'
               - 'src/layouts/**'
+              - 'src/lib/markdown/**'
+              - 'src/scripts/check-markdown-fidelity.ts'
+              - 'src/scripts/markdown-fidelity-exceptions.ts'
+              - 'src/scripts/markdown-fidelity-baseline.json'
               - 'astro.config.*'
             any_non_solidity:
               - '**'
@@ -338,3 +343,15 @@ jobs:
 
       - name: Validate LLM files
         run: npm run check:llms
+
+      - name: Check Markdown fidelity
+        run: npm run check:markdown-fidelity -- --warn-only
+
+      - name: Upload Markdown fidelity report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: markdown-fidelity-report
+          path: reports/markdown-fidelity-report.json
+          retention-days: 30
+          if-no-files-found: ignore

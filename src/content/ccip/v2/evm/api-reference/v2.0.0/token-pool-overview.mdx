@@ -1,0 +1,116 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 Token Pools"
+metadata:
+  description: "Choose a CCIP TokenPool implementation (Lock/Release, Burn/Mint variants, USDC/CCTP pools, and specialized pools)."
+  version: "2.0.0"
+---
+
+---
+
+Token pools are the onchain contracts that custody, burn, mint, and/or route tokens as part of CCIP transfers. Your choice of pool determines the token custody model, required token permissions, and operational assumptions.
+
+## Choose a pool model
+
+### Lock / Release
+
+Use this model when tokens are bridged by **escrowing liquidity on the source chain** and **releasing escrowed liquidity on the destination chain**.
+
+Pick this when:
+
+1. You cannot mint/burn the token.
+2. You want a custody-based bridge model with explicit pool liquidity.
+
+Start here:
+
+1. **LockReleaseTokenPool**: Standard lock-and-release pool for most ERC20 tokens.
+2. **SiloedLockReleaseTokenPool**: Lock-and-release with additional isolation constraints (use when you need stricter separation semantics).
+
+Related:
+
+1. **ERC20LockBox**: Helper contract used in some lock/release setups.
+
+Links:
+
+1. [LockReleaseTokenPool](/ccip/evm/api-reference/v2.0.0/lock-release-token-pool)
+2. [SiloedLockReleaseTokenPool](/ccip/evm/api-reference/v2.0.0/siloed-lock-release-token-pool)
+3. [ERC20LockBox](/ccip/evm/api-reference/v2.0.0/erc20-lockbox)
+
+### Burn / Mint
+
+Use this model when the token supports controlled supply changes and your pool can be granted **burner and minter** permissions.
+
+Pick this when:
+
+1. The token implements a burn/mint interface compatible with the pool variant.
+2. You want a model that does not require destination-side liquidity escrow.
+
+Start here:
+
+1. **BurnMintTokenPool**: Standard burn-on-source and mint-on-destination pool.
+2. If you need a specific burn signature or mint target behavior, choose one of the variants below.
+
+Variants (choose based on token interface and desired behavior):
+
+1. **BurnFromMintTokenPool**
+2. **BurnWithFromMintTokenPool**
+3. **BurnToAddressMintTokenPool**
+4. **BurnMintWithLockReleaseFlagTokenPool**
+
+Reference base:
+
+1. **BurnMintTokenPoolAbstract**: Abstract base that implements shared mint-side logic and optional behaviors for burn/mint pools.
+
+Links:
+
+1. [BurnMintTokenPool](/ccip/evm/api-reference/v2.0.0/burn-mint-token-pool)
+2. [BurnMintTokenPoolAbstract](/ccip/evm/api-reference/v2.0.0/burn-mint-token-pool-abstract)
+3. [BurnFromMintTokenPool](/ccip/evm/api-reference/v2.0.0/burn-from-mint-token-pool)
+4. [BurnWithFromMintTokenPool](/ccip/evm/api-reference/v2.0.0/burn-with-from-mint-token-pool)
+5. [BurnToAddressMintTokenPool](/ccip/evm/api-reference/v2.0.0/burn-to-address-mint-token-pool)
+6. [BurnMintWithLockReleaseFlagTokenPool](/ccip/evm/api-reference/v2.0.0/burn-mint-with-lock-release-flag-token-pool)
+
+Operational notes:
+
+1. You must plan role management for mint/burn permissions (grant, rotate, revoke).
+2. Failures in mint/burn permissions manifest as execution failures on the destination chain.
+
+### USDC (CCTP-backed)
+
+Use these pools when bridging **USDC** via Circle’s CCTP message flow (as wired by CCIP).
+
+Pick this when:
+
+1. You are bridging USDC and want CCTP semantics.
+2. You need the CCIP-managed pool implementations for USDC.
+
+Start here:
+
+1. **USDCTokenPoolProxy**: Proxy pool for USDC integrations.
+2. **CCTPThroughCCVTokenPool**: Token pool that routes through CCV verification for CCTP-based transfers.
+3. **CCTPMessageTransmitterProxy**: Proxy used to interface with the CCTP MessageTransmitter in supported setups.
+4. **SiloedUSDCTokenPool**: USDC pool variant with additional isolation constraints.
+
+Links:
+
+1. [USDCTokenPoolProxy](/ccip/evm/api-reference/v2.0.0/usdc-token-pool-proxy)
+2. [CCTPThroughCCVTokenPool](/ccip/evm/api-reference/v2.0.0/cctp-through-ccv-token-pool)
+3. [CCTPMessageTransmitterProxy](/ccip/evm/api-reference/v2.0.0/cctp-message-transmitter-proxy)
+4. [SiloedUSDCTokenPool](/ccip/evm/api-reference/v2.0.0/siloed-usdc-token-pool)
+
+### Specialized
+
+Use these pools only when you specifically need their underlying integration model.
+
+Links:
+
+1. [LombardTokenPool](/ccip/evm/api-reference/v2.0.0/lombard-token-pool)
+
+## Base contract reference
+
+**TokenPool** is the shared base implementation used by multiple pool types. Most builders will use a concrete pool above rather than deploying `TokenPool` directly.
+
+Link:
+
+1. [TokenPool](/ccip/evm/api-reference/v2.0.0/token-pool)

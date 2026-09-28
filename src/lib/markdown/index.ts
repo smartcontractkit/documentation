@@ -4,3 +4,4 @@
  */
 
 export * from "./formatters.js"
+export type { MarkdownArtifact } from "./types.js"
