@@ -1,0 +1,167 @@
+---
+section: ccip
+date: Last Modified
+title: "Deploy your first cell"
+metadata:
+  description: "Stand up an EVM CCV in order: deploy the on-chain contracts, then configure and deploy one off-chain cell, expose the aggregator, and register the signer."
+  excerpt: "deploy CCV cell, EVM, on-chain contracts, resolver, committee verifier, Helm values, StatefulSet, signer registration, aggregator"
+  datePublished: "2026-09-25"
+  lastModified: "2026-09-26"
+whatsnext:
+  "Test your setup": "/ccip/ccv-starter-kit/evm/test-your-setup"
+  "Add a custom policy hook": "/ccip/ccv-starter-kit/how-to/add-a-custom-policy-hook"
+  "Reference": "/ccip/ccv-starter-kit/reference"
+---
+
+import { Aside } from "@components"
+
+This page stands up an EVM CCV in order, using the project's two starter kits: the
+[on-chain contracts kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts) for the
+verifier contracts, and the [off-chain kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit) for
+the cell, one verifier and one aggregator with the aggregator exposed publicly. Each step names what you do,
+says which kit it uses, and links that kit's documentation for the exact commands.
+
+<Aside type="caution" title="A single cell is for learning, not production">
+  This page deploys one cell. A production deployment runs a properly sized committee of independent cells; see [Scale
+  to a committee](/ccip/ccv-starter-kit/how-to/scale-to-a-committee).
+</Aside>
+
+<Aside type="note" title="Build order: on-chain first, in two passes">
+  You cannot register a signer on-chain until the verifier has generated its key, so with the Postgres keystore the
+  on-chain config happens in two passes around the cell deploy: deploy the contracts, deploy the verifier and
+  aggregator, then register the generated signer. On the KMS path the key exists first, so you derive the signer address
+  up front and finish the on-chain signature config in step 1, with no second pass.
+</Aside>
+
+## Step 1: Deploy the on-chain contracts
+
+Start by choosing the source and destination chains you want to connect and collecting their identifiers from
+the [CCIP directory](/ccip/directory): each chain's selector, its Router (the on-chain lane config needs it),
+and, for every source chain, its OnRamp (the cell needs it as `on_ramp_addresses`). These are existing CCIP
+network contracts that the kit does not deploy, so you look them up here.
+
+Then use the
+[on-chain contracts kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts) to deploy the
+verifier's on-chain contracts on both the source and destination chains. It sets up four things per chain:
+
+- The CREATE2 factory: a deployer that produces deterministic contract addresses, so the resolver lands at the
+  same address on every chain. That cross-chain address parity is what lets pools and receivers reference your
+  CCV by one address regardless of chain.
+- The resolver (`VersionedVerifierResolver`): the stable address that token pools and receivers name as your
+  CCV. It stays constant even when you upgrade the verifier implementation behind it, so it is the address you
+  carry everywhere else.
+- The committee verifier: the verifier implementation that the resolver points at, and the contract that
+  checks the committee's signatures on chain.
+- The lane config: wires each source and destination together, so the verifier knows which directed lanes it
+  serves.
+
+The kit is driven by `make` targets, with `OUTPUT_MODE=EOA` to broadcast directly or `OUTPUT_MODE=SAFE` to
+emit Safe Transaction Builder calldata for governance (see
+[Operate: day 2](/ccip/ccv-starter-kit/operate-day-2)). Follow the on-chain contracts kit's stepped guides for
+the exact commands:
+[Getting started](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/getting-started.md)
+covers install, build, and how the `make` targets take `CHAIN`, `TAG`, `RPC_URL`, and `OUTPUT_MODE`; the
+[full flow](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/full-flow.md)
+walks the deploy-then-configure sequence end to end, in the fixed per-chain order (factory, resolver,
+verifier). The
+[deploy](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/deploy.md)
+and
+[configure](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/configure.md)
+pages have the per-target detail.
+
+Carry two things from this step into the cell config: the resolver address (the same on every chain, via
+CREATE2) and the source and destination chain selectors.
+
+Custody note: with KMS, derive the signer address and register the committee's signer set on both chains'
+verifiers now. With the Postgres keystore, you come back to this in step 4. See
+[Signer key custody and KMS](/ccip/ccv-starter-kit/how-to/signer-key-custody-and-kms).
+
+Checkpoint: on both chains you have deployed the CREATE2 factory, the resolver, and the committee verifier, and
+applied the lane config. The resolver reads back the same address on both chains (`make deployments-check`
+asserts the parity). On the KMS path the on-chain signature config is set too; on the Postgres keystore path it
+is still pending step 4.
+
+## Step 2: Configure the cell values
+
+The cell is the verifier and aggregator you run from the
+[off-chain kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit)'s `ccv-cell` Helm chart. Create
+one `my-values.yaml` for that chart and override only what you need. The
+[chart values reference](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/charts/ccv-cell/README.md)
+and the off-chain kit's
+[Configure](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#2-configure-the-values)
+documentation are the field reference.
+
+The most common mistake is putting the CommitteeVerifier implementation address where the resolver belongs.
+`sourceVerifierAddress`, every `destinationVerifiers` entry, and every `committee_verifier_addresses` entry take
+the `VersionedVerifierResolver` from step 1, on every selector. The implementation address matches no message,
+so the cell looks healthy but never attests: green pods and no errors in the logs.
+
+For the secret backend, the secrets the cell needs, and where RPC URLs that carry an API key go, see
+[Choose a secret backend](/ccip/ccv-starter-kit/how-to/choose-a-secret-backend). For the keystore choice and
+the KMS signer, see [Signer key custody and KMS](/ccip/ccv-starter-kit/how-to/signer-key-custody-and-kms).
+
+Checkpoint: your `my-values.yaml` for the verifier and aggregator renders with `helm template` and no schema
+error, with the resolver address and selectors from step 1 in place.
+
+## Step 3: Deploy the verifier and aggregator
+
+Deploy the cell with the [off-chain kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit)'s Helm
+chart. The chart renders StatefulSets with `replicas: 1` by design, so use `statefulset/...` in `kubectl`
+commands. The order matters because the secret
+grant uses ServiceAccount names that only exist once the chart is rendered:
+
+1. Run `helm template` and read the generated `ServiceAccount` names.
+2. Grant those ServiceAccounts access to each secret they read. On GKE the direct workload-identity principal
+   (`principal://.../sa/<KSA>`) needs no Google service account and no annotation; the annotation-plus-GSA
+   pattern also works. Skip this and the pods sit in `ContainerCreating` with `PermissionDenied` on
+   `secretmanager.versions.access`, visible only in `kubectl describe`.
+3. Run `helm upgrade --install`.
+
+<Aside type="note">
+  <ul>
+    <li>
+      The release name changes the resource names. The Helm fullname collapses only when the release name already
+      contains the chart name (`ccv-cell-1` renders `ccv-cell-1-aggregator`, but `demo-cell` renders
+      `demo-cell-ccv-cell-aggregator`), and your secret grant depends on those StatefulSet and ServiceAccount names.
+      Avoid `ccv-cell*` release names, or read the names from the rendered output.
+    </li>
+    <li>
+      Startup errors are expected for the first 15 to 30 seconds. The verifier logs `connection refused` against its own
+      aggregator until the aggregator is up. If they continue past a minute, see [Logging and
+      monitoring](/ccip/ccv-starter-kit/logging-and-monitoring#read-the-startup-logs).
+    </li>
+  </ul>
+</Aside>
+
+Checkpoint: both the verifier and aggregator pods report 1/1, and the verifier log is clean after the startup
+window.
+
+## Step 4: Expose the aggregator and register the signer
+
+Expose the aggregator (TLS-terminated, HTTP/2 and gRPC end to end, a stable public hostname). The route type
+depends on what your cluster supports rather than which cloud it runs on, and every managed load balancer needs
+its health check pointed at the readiness path. The full procedure, with per-cloud health-check settings, is in
+[Expose the aggregator](/ccip/ccv-starter-kit/how-to/expose-the-aggregator).
+
+With the Postgres keystore, read the signer address the verifier logged on first boot (`Using signer address`),
+then register the committee's signer set into the verifier contract with the
+[on-chain contracts kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts)'s
+`apply-signature-configs` target. The signer set is written to the destination chain's verifier, so for a
+two-way lane you register it on both chains' verifiers. The target refuses a weak committee (a 1-of-1, any N-of-N,
+or a threshold at or below 2/3 of the committee) unless you set `ALLOW_WEAK_COMMITTEE=true`, which is for test committees only (see
+[Scale to a committee](/ccip/ccv-starter-kit/how-to/scale-to-a-committee#size-for-fault-tolerance)). On the KMS
+path you did this in step 1.
+
+Checkpoint: the on-chain signer matches the logged address, and the aggregator answers over its public hostname.
+
+## Step 5: Add your custom policy hook
+
+Run a minimal PASS/FAIL endpoint and reference it from your
+[off-chain kit](https://github.com/smartcontractkit/chainlink-ccv-starter-kit) cell config. Read the rules on
+[Add a custom policy hook](/ccip/ccv-starter-kit/how-to/add-a-custom-policy-hook) first; an outage that returns
+FAIL is treated as a compliance decision.
+
+Checkpoint: a blocked-address send logs the reason string and never executes.
+
+Your cell (the verifier and aggregator) is deployed, the aggregator is exposed, and the signer is registered
+on chain. Prove it end to end in [Test your setup](/ccip/ccv-starter-kit/evm/test-your-setup).

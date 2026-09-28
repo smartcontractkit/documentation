@@ -43,6 +43,24 @@ contract Test {
     expect(result).toContain("[Link text](/some/path)")
   })
 
+  it("should preserve DocCards as markdown links", async () => {
+    const markdown = `<DocCards>
+  <DocCard title="Programmable Token Transfers" href="/ccip/evm/tutorials/programmable-token-transfers">
+    Send tokens across chains.
+  </DocCard>
+  <DocCard title="Send Arbitrary Data" href="/ccip/evm/tutorials/send-arbitrary-data">
+    Send data between contracts.
+  </DocCard>
+</DocCards>`
+
+    const result = await transformMarkdown(markdown, "/fake/path.mdx")
+
+    expect(result).toContain("[Programmable Token Transfers](/ccip/evm/tutorials/programmable-token-transfers)")
+    expect(result).toContain("Send tokens across chains.")
+    expect(result).toContain("[Send Arbitrary Data](/ccip/evm/tutorials/send-arbitrary-data)")
+    expect(result).toContain("Send data between contracts.")
+  })
+
   it("should handle tables", async () => {
     const markdown = `| Col1 | Col2 |
 |------|------|

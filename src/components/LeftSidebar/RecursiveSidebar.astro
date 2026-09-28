@@ -1,5 +1,5 @@
 ---
-import type { SectionContent } from "../../config"
+import type { SectionContent } from "../../config/index.ts"
 import styles from "./recursiveSidebar.module.css"
 import { getCollection } from "astro:content"
 
@@ -119,7 +119,9 @@ function shouldExpandSection(item: SectionContent, currentPage: string): boolean
       const chainAttr = chainTypes ? chainTypes.join(",") : "universal"
       return (
         <li data-sdk-lang={sdkLang || "both"} data-chain-types={chainAttr}>
-          {item.children ? (
+          {item.type === "separator" ? (
+            <span class={styles.separator}>{item.title}</span>
+          ) : item.children ? (
             <details open={shouldExpandSection(item, currentPage)}>
               <summary
                 class={`${styles.navLink} ${isCurrentPageMatch(item.url || "", currentPage, item.highlightAsCurrent) ? styles.active : ""}`}
@@ -131,8 +133,8 @@ function shouldExpandSection(item: SectionContent, currentPage: string): boolean
                     aria-current={
                       isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? "page" : undefined
                     }
-                    target={isExternalUrl(item.url) || item.openInNewTab ? "_blank" : undefined}
-                    rel={isExternalUrl(item.url) || item.openInNewTab ? "noopener noreferrer" : undefined}
+                    target={item.openInNewTab || isExternalUrl(item.url) ? "_blank" : undefined}
+                    rel={item.openInNewTab || isExternalUrl(item.url) ? "noopener noreferrer" : undefined}
                   >
                     {item.title}
                   </a>
@@ -150,8 +152,8 @@ function shouldExpandSection(item: SectionContent, currentPage: string): boolean
                 class={`${styles.navLink} ${isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? styles.active : ""}`}
                 href={buildHref(item.url)}
                 aria-current={isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? "page" : undefined}
-                target={isExternalUrl(item.url) || item.openInNewTab ? "_blank" : undefined}
-                rel={isExternalUrl(item.url) || item.openInNewTab ? "noopener noreferrer" : undefined}
+                target={item.openInNewTab || isExternalUrl(item.url) ? "_blank" : undefined}
+                rel={item.openInNewTab || isExternalUrl(item.url) ? "noopener noreferrer" : undefined}
               >
                 {item.title}
               </a>
@@ -164,6 +166,13 @@ function shouldExpandSection(item: SectionContent, currentPage: string): boolean
 </ul>
 
 <script>
+  // Single source of truth for URL -> chain-family detection, shared with the store, the
+  // chain selector and chainNavigation. This file used to carry its own copy, which never
+  // gained a "ton" branch when TON was added (canton was added to it, ton was not). TON
+  // URLs therefore fell through to the stale-localStorage fallback below and the sidebar
+  // rendered the previously selected chain on first load. Import it; never re-derive it.
+  import { detectChainFromPath } from "~/stores/chainType.js"
+
   /**
    * Unified filter that checks BOTH language AND chain type criteria
    * This prevents one filter from overwriting the other's display property
@@ -190,17 +199,6 @@ function shouldExpandSection(item: SectionContent, currentPage: string): boolean
 
     // Item is visible only if BOTH filters pass
     return langVisible && chainVisible
-  }
-
-  /**
-   * Detects chain type from URL path
-   * This ensures consistent behavior even before the store initializes
-   */
-  function detectChainFromPath(pathname: string): string | null {
-    if (/\/(evm|ethereum)(\/|$)/i.test(pathname)) return "evm"
-    if (/\/(svm|solana)(\/|$)/i.test(pathname)) return "solana"
-    if (/\/aptos(\/|$)/i.test(pathname)) return "aptos"
-    return null
   }
 
   /**

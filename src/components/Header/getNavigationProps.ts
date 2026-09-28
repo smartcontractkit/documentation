@@ -28,6 +28,7 @@ interface Page {
 interface SidebarContent {
   title?: string
   url?: string
+  type?: "separator"
   highlightAsCurrent?: string[]
   chainTypes?: ChainType[]
   children?: SidebarContent[]
@@ -42,6 +43,7 @@ const mapContents = (contents: SidebarContent[], pageSdkLangMap: Map<string, str
     const pageWithChildren: Page = {
       label,
       href,
+      ...(page.type && { type: page.type }),
       ...(sdkLang && { sdkLang }),
       ...(page.chainTypes && { chainTypes: page.chainTypes }),
       ...(page.highlightAsCurrent && { highlightAsCurrent: page.highlightAsCurrent }),
@@ -55,7 +57,7 @@ const mapContents = (contents: SidebarContent[], pageSdkLangMap: Map<string, str
   })
 }
 
-const getSubProducts = (sectionData, pageSdkLangMap: Map<string, string>) => {
+export const getSubProducts = (sectionData, pageSdkLangMap: Map<string, string>) => {
   const structuredData = sectionData.map((item) => {
     // Propagate chainTypes from parent to children for consistent filtering
     const contentsWithPropagatedChainTypes = propagateChainTypes(item.contents)

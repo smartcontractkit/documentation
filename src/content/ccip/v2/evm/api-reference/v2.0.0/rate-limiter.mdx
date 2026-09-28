@@ -1,0 +1,155 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 RateLimiter API Reference"
+metadata:
+  description: "Token bucket rate limiting library used by CCIP contracts."
+  version: "2.0.0"
+---
+
+`RateLimiter` implements token bucket rate limiting for CCIP contracts.
+
+It enforces throughput limits by:
+
+- maintaining a bucket of available tokens
+- consuming tokens on each request
+- refilling tokens over time at a fixed rate
+
+This ensures that cross-chain operations such as token transfers and message execution do not exceed configured limits.
+
+> This library provides reusable helper functions and is not deployed as a standalone application-facing contract.
+
+## Usage Boundary
+
+**You do not call this library directly.**
+
+- Contracts use this library to enforce rate limits on token transfers or message execution.
+- Rate limiting is applied per token or per resource bucket.
+- You are responsible for configuring appropriate capacity and refill rates.
+
+## Contract
+
+`libraries/RateLimiter.sol`
+
+## Import
+
+```solidity
+import {RateLimiter} from "chainlink-ccip/libraries/RateLimiter.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## Functions
+
+### \_consume
+
+```solidity
+function _consume(
+  TokenBucket storage s_bucket,
+  uint256 requestTokens,
+  address tokenAddress
+) internal
+```
+
+> Consumes tokens from the bucket to satisfy a request.
+
+- Reverts if insufficient tokens are available.
+
+### \_currentTokenBucketState
+
+```solidity
+function _currentTokenBucketState(
+  TokenBucket memory bucket
+) internal view returns (TokenBucket memory)
+```
+
+> Returns the current token bucket state after applying time-based refill.
+
+### \_setTokenBucketConfig
+
+```solidity
+function _setTokenBucketConfig(
+  TokenBucket storage s_bucket,
+  Config memory config
+) internal
+```
+
+> Updates the token bucket configuration.
+
+### \_calculateRefill
+
+```solidity
+function _calculateRefill(
+  uint256 capacity,
+  uint256 tokens,
+  uint256 timeDiff,
+  uint256 rate
+) private pure returns (uint256)
+```
+
+> Computes the number of tokens to refill based on elapsed time and rate.
+
+### \_min
+
+```solidity
+function _min(uint256 a, uint256 b) internal pure returns (uint256)
+```
+
+> Returns the minimum of two values.
+
+## Structs
+
+### TokenBucket
+
+| Field         | Type      |
+| ------------- | --------- |
+| `tokens`      | `uint128` |
+| `lastUpdated` | `uint32`  |
+| `isEnabled`   | `bool`    |
+| `capacity`    | `uint128` |
+| `rate`        | `uint128` |
+
+### Config
+
+| Field       | Type      |
+| ----------- | --------- |
+| `isEnabled` | `bool`    |
+| `capacity`  | `uint128` |
+| `rate`      | `uint128` |
+
+## Errors
+
+- `error BucketOverfilled()`
+- `error TokenMaxCapacityExceeded(uint256 capacity, uint256 requested, address tokenAddress)`
+- `error TokenRateLimitReached(uint256 minWaitInSeconds, uint256 available, address tokenAddress)`
+- `error InvalidRateLimitRate(Config rateLimiterConfig)`
+- `error DisabledNonZeroRateLimit(Config config)`
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Notes
+
+- Token buckets refill linearly over time based on the configured rate.
+- The number of tokens never exceeds the configured capacity.
+- Each request consumes tokens proportional to the requested amount.
+- Requests exceeding available tokens will revert with rate limit errors.
+- Invalid configurations (e.g. zero rate with enabled bucket) will revert.
+- Rate limiting is typically applied per token or per lane to control cross-chain throughput.
+
+## Usage context
+
+Used by:
+
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`FeeTokenHandler`](/ccip/evm/api-reference/v2.0.0/fee-token-handler)
+
+Rate limiting is applied to control transfer throughput and prevent excessive usage.
+
+## Related Interfaces & Contracts
+
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`FeeTokenHandler`](/ccip/evm/api-reference/v2.0.0/fee-token-handler)

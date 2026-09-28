@@ -1,0 +1,227 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 TokenPoolFactory API Reference"
+metadata:
+  description: "Factory that deploys CrossChainToken tokens and TokenPool instances via CREATE2 and registers them in the TokenAdminRegistry."
+  version: "2.0.0"
+---
+
+## Summary
+
+`TokenPoolFactory` deploys new tokens and `[TokenPool](/ccip/evm/api-reference/v2.0.0/token-pool)` contracts and registers them with the `[TokenAdminRegistry](/ccip/evm/api-reference/v2.0.0/token-admin-registry)`.
+
+It offers two deployment paths:
+
+1. `deployTokenAndTokenPool`: deploys a token and its pool in one transaction, then registers the pool.
+2. `deployTokenPoolWithExistingToken`: deploys a pool for a token that already exists. Registration and role grants are the caller's responsibility.
+
+Both paths deploy via CREATE2 with a caller-specific salt, so the same inputs produce the same addresses per sender.
+
+---
+
+## Contract
+
+`chains/evm/contracts/TokenPoolFactory.sol`
+
+---
+
+## Import
+
+```solidity
+import {TokenPoolFactory} from "chainlink-ccip/chains/evm/contracts/TokenPoolFactory.sol";
+```
+
+---
+
+## Inheritance
+
+- `ITypeAndVersion`
+
+---
+
+## typeAndVersion
+
+```solidity
+string public constant typeAndVersion = "TokenPoolFactory 2.0.0";
+```
+
+---
+
+## Constructor
+
+```solidity
+constructor(
+  ITokenAdminRegistry tokenAdminRegistry,
+  RegistryModuleOwnerCustom tokenAdminModule,
+  address rmnProxy,
+  address ccipRouter
+)
+```
+
+Reverts `InvalidZeroAddress()` if any argument is `address(0)`.
+
+Stores the registry, registry module, RMN proxy, and router used for every pool the factory deploys.
+
+---
+
+## External API
+
+### getStaticConfig
+
+```solidity
+function getStaticConfig()
+  external
+  view
+  returns (
+    address rmnProxy,
+    address tokenAdminRegistry,
+    address registryModuleOwnerCustom,
+    address ccipRouter
+  )
+```
+
+Returns the four addresses the factory was constructed with.
+
+---
+
+### deployTokenAndTokenPool
+
+```solidity
+function deployTokenAndTokenPool(
+  RemoteTokenPoolInfo[] calldata remoteTokenPools,
+  uint8 localTokenDecimals,
+  PoolType localPoolType,
+  bytes memory tokenInitCode,
+  bytes calldata tokenPoolInitCode,
+  address lockBox,
+  bytes32 salt,
+  address futureOwner
+) external returns (address, address)
+```
+
+Deploys a token and its pool in one transaction, then registers the pool in the TokenAdminRegistry.
+
+Behavior:
+
+- If `futureOwner` is `address(0)`, the caller becomes the owner.
+- The salt is mixed with `msg.sender` (`keccak256(abi.encodePacked(salt, msg.sender))`) so identical inputs from different senders cannot collide or front-run each other.
+- Deploys the token from `tokenInitCode` (constructor args already appended).
+- Deploys the pool from `tokenPoolInitCode` (constructor args not appended; the factory encodes them).
+- For `BURN_MINT` pools, grants the pool mint and burn roles on the token and renounces the factory's role admin.
+- Forwards any token balance sent to the factory (e.g. a pre-mint to the factory) to `futureOwner`.
+- Registers the pool via the registry module, starting the two-step ownership transfer: `futureOwner` must accept in a separate transaction.
+
+Only the `CrossChainToken` contract is supported for `tokenInitCode`, with `ccipAdmin` set to this factory and `burnMintRoleAdmin` set to this factory for `BURN_MINT` pools. The factory does not verify token compatibility.
+
+Returns `(token, pool)`.
+
+---
+
+### deployTokenPoolWithExistingToken
+
+```solidity
+function deployTokenPoolWithExistingToken(
+  address token,
+  uint8 localTokenDecimals,
+  PoolType localPoolType,
+  RemoteTokenPoolInfo[] calldata remoteTokenPools,
+  bytes calldata tokenPoolInitCode,
+  address lockBox,
+  bytes32 salt,
+  address futureOwner
+) external returns (address poolAddress)
+```
+
+Deploys a pool for an existing token. The factory is not the token's admin, so it cannot register the pool or grant mint and burn roles: the caller must call `TokenAdminRegistry.setPool` and grant the roles manually.
+
+Salt handling matches `deployTokenAndTokenPool`.
+
+Returns the deployed pool address.
+
+---
+
+## Enums
+
+### PoolType
+
+```solidity
+enum PoolType {
+  BURN_MINT,
+  LOCK_RELEASE
+}
+```
+
+The type of pool to deploy.
+
+---
+
+## Structs
+
+### RemoteTokenPoolInfo
+
+```solidity
+struct RemoteTokenPoolInfo {
+  uint64 remoteChainSelector;
+  bytes remotePoolAddress;
+  bytes remotePoolInitCode;
+  RemoteChainConfig remoteChainConfig;
+  PoolType poolType;
+  bytes remoteTokenAddress;
+  bytes remoteTokenInitCode;
+  RateLimiter.Config rateLimiterConfig;
+}
+```
+
+Per-remote-chain deployment info. Empty `remotePoolAddress` or `remoteTokenAddress` means the factory predicts the address from the init code.
+
+### RemoteChainConfig
+
+```solidity
+struct RemoteChainConfig {
+  address remotePoolFactory;
+  address remoteRouter;
+  address remoteRMNProxy;
+  address remoteLockBox;
+  uint8 remoteTokenDecimals;
+}
+```
+
+### LocalPoolConfig
+
+```solidity
+struct LocalPoolConfig {
+  address token;
+  uint8 localTokenDecimals;
+  PoolType localPoolType;
+  address lockBox;
+  bytes32 salt;
+}
+```
+
+---
+
+## Errors
+
+```solidity
+error InvalidZeroAddress();
+error InvalidLockBoxToken(address poolToken);
+error EmptyInitCode();
+```
+
+---
+
+## Events
+
+None declared.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`ITokenAdminRegistry`](/ccip/evm/api-reference/v2.0.0/i-token-admin-registry)
+- [`TokenAdminRegistry`](/ccip/evm/api-reference/v2.0.0/token-admin-registry)
+- [`RegistryModuleOwnerCustom`](/ccip/evm/api-reference/v2.0.0/registry-module-owner-custom)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`ERC20LockBox`](/ccip/evm/api-reference/v2.0.0/erc20-lockbox)
+- [`RateLimiter`](/ccip/evm/api-reference/v2.0.0/rate-limiter)

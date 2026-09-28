@@ -1,0 +1,1277 @@
+---
+section: ccip
+date: Last Modified
+title: "Send Arbitrary Data and Receive Transfer Confirmation: A -> B -> A"
+metadata:
+  description: "Track CCIP messages end‑to‑end (A→B→A) with Foundry or Hardhat. Send data A→B, receive an acknowledgment B→A, and update onchain status in the sender."
+  image: "/images/ccip/basic-architecture.png"
+  excerpt: "acknowledgment, message tracking, CCIP, bidirectional, Solidity, Foundry, Hardhat"
+  datePublished: "2024-03-25"
+  lastModified: "2026-05-26"
+  estimatedTime: "40 minutes"
+  difficulty: "intermediate"
+whatsnext:
+  "CCIP Directory": "/ccip/directory"
+  "Learn about CCIP Architecture": "/ccip/concepts/architecture/overview"
+  "Learn CCIP best practices": "/ccip/evm/concepts/best-practices"
+---
+
+import { AnchoredAccordion, Aside, GitHubCard } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+In this tutorial, we will use CCIP to send arbitrary data from one chain to another and then have the receiver contract send back an acknowledgment message back to the sender:
+
+- A MessageTracker contract on chain A sends a text message to an Acknowledger contract on chain B.
+- After processing the message, the Acknowledger sends an acknowledgment message back to the MessageTracker.
+- The MessageTracker updates onchain state to reflect the successful execution of the back and forth pattern.
+
+By tracking acknowledgment onchain, your contracts can safely trigger follow-up actions only after the destination contract has confirmed the receipt.
+
+<CcipCommon callout="ftfSupportTutorials" />
+
+## Before you begin
+
+- This tutorial assumes you have completed the [Send Arbitrary Data](/ccip/evm/tutorials/application-developers/send-arbitrary-data) tutorial.
+- You will use _Ethereum Sepolia_ (A) and _Arbitrum Sepolia_ (B).
+- Your wallet should have:
+  - Sepolia ETH (for deploying and sending from Ethereum Sepolia)
+  - Arbitrum Sepolia ETH (for deploying on Arbitrum Sepolia and funding the Acknowledger)
+  - Optional: Sepolia LINK (if you want to pay the CCIP fee in LINK)
+- Learn how to [Acquire testnet LINK](/resources/acquire-link).
+
+## Examine the code
+
+The contracts and scripts used in this tutorial live in the Chainlink CCIP 2.0 starter kit repository (`docs-ccip`).
+
+<GitHubCard
+  title="MessageTracker.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/contracts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/MessageTracker.sol"
+  iconName="github-svg-card"
+>
+  Sends the initial message A→B and tracks the acknowledgment B→A.
+</GitHubCard>
+
+<GitHubCard
+  title="Acknowledger.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/contracts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/Acknowledger.sol"
+  iconName="github-svg-card"
+>
+  Receives the message on B and sends an acknowledgment back to A.
+</GitHubCard>
+
+<AnchoredAccordion title="Initializing both contracts" number={1} depth={4} >
+
+When deploying each contract, you pass the Router address for that chain to `CCIPReceiver`:
+
+- Chain A (source): `MessageTracker` (sends A→B and receives the B→A acknowledgment)
+- Chain B (destination): `Acknowledger` (receives A→B and sends the B→A acknowledgment)
+
+Some key things to note:
+
+- Both contracts inherit from `CCIPReceiver`, so `ccipReceive` ensures that only the Router can deliver CCIP messages.
+- Both contracts inherit from `OwnerIsCreator`, so the deployer is the owner and can configure allowlists and receiver finality policy.
+- In the canonical code, `MessageTracker.sendMessage` is `onlyOwner`, so the tutorial scripts broadcast from the deployer/owner account.
+
+```solidity filename="MessageTracker.sol"
+contract MessageTracker is CCIPReceiver, OwnerIsCreator {
+    constructor(address _router) CCIPReceiver(_router) {}
+
+    function sendMessage(
+        uint64 _destinationChainSelector,
+        address _receiver,
+        string calldata _text,
+        address _feeTokenAddress,
+        bytes calldata _extraArgs
+    )
+        external
+        payable
+        onlyOwner
+        // ... allowlists + receiver validation ...
+        returns (bytes32 messageId)
+    {
+        // ...
+    }
+}
+```
+
+```solidity filename="Acknowledger.sol"
+contract Acknowledger is CCIPReceiver, OwnerIsCreator {
+    constructor(address _router) CCIPReceiver(_router) {}
+}
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Architecture and message lifecycle (A→B→A)" number={2} depth={4} >
+
+In this tutorial, we deploy:
+
+- Chain A (source): _Ethereum Sepolia_ → `MessageTracker`
+- Chain B (destination): _Arbitrum Sepolia_ → `Acknowledger`
+
+The lifecycle of a tracked message is:
+
+1. **A→B**: `MessageTracker.sendMessage(...)` sends a text payload to the Acknowledger.
+2. **B→A**: the Acknowledger receives the message and sends an acknowledgment back, encoding the **initial** message ID.
+3. **State update**: when the MessageTracker receives the acknowledgment, it marks the initial message as processed.
+
+`MessageTracker` tracks messages by the **initial CCIP messageId** (A→B), and stores the acknowledgment messageId (B→A) alongside it:
+
+```solidity filename="MessageTracker.sol"
+enum MessageStatus {
+    NotSent, // 0: default / unknown messageId
+    Sent, // 1: sent to Acknowledger, awaiting acknowledgment
+    ProcessedOnDestination // 2: acknowledgment received
+}
+
+struct MessageInfo {
+    MessageStatus status;
+    bytes32 acknowledgerMessageId; // CCIP messageId of the acknowledgment (B→A)
+}
+
+mapping(bytes32 => MessageInfo) public messagesInfo;
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="MessageTracker: build payload and send (A→B)" number={3} depth={4} >
+
+`MessageTracker` sends a data-only CCIP message using the `Client.EVM2AnyMessage` struct.
+
+The payload includes:
+
+- `receiver`: ABI-encoded destination address (`abi.encode(_receiver)`).
+- `data`: ABI-encoded `(text, extraArgs)` tuple (`abi.encode(_text, _extraArgs)`).
+- `tokenAmounts`: an empty array (data-only).
+- `extraArgs`: pre-encoded execution parameters built off-chain by the scripts (gas limit + requested finality config).
+- `feeToken`: the token used to pay CCIP fees (`_feeTokenAddress`). Pass the LINK token address to pay in LINK, or `address(0)` to pay in native gas.
+
+```solidity filename="MessageTracker.sol"
+function _buildCCIPMessage(
+    address _receiver,
+    string calldata _text,
+    address _feeTokenAddress,
+    bytes calldata _extraArgs
+) private pure returns (Client.EVM2AnyMessage memory) {
+    return Client.EVM2AnyMessage({
+        receiver: abi.encode(_receiver),
+        // Pack (text, extraArgs) so the Acknowledger can reuse the same lane/finality config for the acknowledgment.
+        data: abi.encode(_text, _extraArgs),
+        tokenAmounts: new Client.EVMTokenAmount[](0),
+        extraArgs: _extraArgs,
+        feeToken: _feeTokenAddress
+    });
+}
+```
+
+<Aside type="note" title="Why pack extraArgs into the data field?">
+  The receiver's `Any2EVMMessage` does not include the original `extraArgs` field. Packing `extraArgs` into `data` lets
+  the Acknowledger decode and forward the same bytes into the B→A acknowledgment message.
+</Aside>
+
+After `ccipSend`, the contract immediately marks the initial message as `Sent`:
+
+```solidity filename="MessageTracker.sol"
+if (_feeTokenAddress == address(0)) {
+    messageId = router.ccipSend{value: ccipFee}(_destinationChainSelector, evm2AnyMessage);
+} else {
+    messageId = router.ccipSend(_destinationChainSelector, evm2AnyMessage);
+}
+
+messagesInfo[messageId].status = MessageStatus.Sent;
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Acknowledger: receive message and send acknowledgment (B→A)" number={4} depth={4} >
+
+On chain B, the router calls `Acknowledger.ccipReceive(...)`, which verifies the caller is the router and then invokes the contract's internal `_ccipReceive(...)`.
+
+Two important details:
+
+- The A→B payload packs `(text, extraArgs)` into `data`, so the Acknowledger decodes both values.
+- The Acknowledger forwards the decoded `extraArgs` into the acknowledgment send so both legs use the same lane/finality config.
+
+```solidity filename="Acknowledger.sol"
+bytes memory ackExtraArgs;
+(s_lastReceivedText, ackExtraArgs) = abi.decode(any2EvmMessage.data, (string, bytes));
+
+bytes32 messageIdToAcknowledge = any2EvmMessage.messageId;
+address messageTrackerAddress = abi.decode(any2EvmMessage.sender, (address));
+uint64 messageTrackerChainSelector = any2EvmMessage.sourceChainSelector;
+
+_sendAcknowledgment(messageIdToAcknowledge, messageTrackerAddress, messageTrackerChainSelector, ackExtraArgs);
+```
+
+The acknowledgment encodes the initial message ID and always pays fees with native gas held by the Acknowledger contract:
+
+```solidity filename="Acknowledger.sol"
+Client.EVM2AnyMessage memory acknowledgment = Client.EVM2AnyMessage({
+    receiver: abi.encode(_messageTrackerAddress),
+    data: abi.encode(_messageIdToAcknowledge),
+    tokenAmounts: new Client.EVMTokenAmount[](0),
+    extraArgs: _ackExtraArgs,
+    feeToken: address(0) // pay with native (held by contract)
+});
+
+uint256 fees = router.getFee(_messageTrackerChainSelector, acknowledgment);
+bytes32 messageId = router.ccipSend{value: fees}(_messageTrackerChainSelector, acknowledgment);
+```
+
+<Aside type="note" title="Funding requirement">
+  The Acknowledger pays CCIP fees for acknowledgment messages using native gas held by the contract, so you must fund it
+  with Arbitrum Sepolia ETH before sending messages.
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="MessageTracker: receive acknowledgment and update status" number={5} depth={4} >
+
+When the acknowledgment returns B→A, the MessageTracker decodes the initial message ID from the incoming message data.
+
+It then:
+
+- stores the acknowledgment messageId for auditability (`acknowledgerMessageId`)
+- advances the state machine (`Sent → ProcessedOnDestination`)
+- reverts if the initial message ID is unknown or already processed
+
+```solidity filename="MessageTracker.sol"
+bytes32 initialMsgId = abi.decode(any2EvmMessage.data, (bytes32));
+bytes32 acknowledgerMsgId = any2EvmMessage.messageId;
+
+messagesInfo[initialMsgId].acknowledgerMessageId = acknowledgerMsgId;
+
+MessageStatus currentStatus = messagesInfo[initialMsgId].status;
+
+if (currentStatus == MessageStatus.Sent) {
+    messagesInfo[initialMsgId].status = MessageStatus.ProcessedOnDestination;
+    emit MessageProcessedOnDestination(
+        acknowledgerMsgId,
+        initialMsgId,
+        any2EvmMessage.sourceChainSelector,
+        abi.decode(any2EvmMessage.sender, (address))
+    );
+} else if (currentStatus == MessageStatus.ProcessedOnDestination) {
+    revert MessageHasAlreadyBeenProcessedOnDestination(initialMsgId);
+} else {
+    revert MessageWasNotSentByMessageTracker(initialMsgId);
+}
+```
+
+The tutorial scripts use `getMessageInfo(initialMessageId)` to read:
+
+- the status code (`0`, `1`, or `2`)
+- the acknowledgment’s CCIP message ID (once it has arrived)
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Security: allowlists + receiver finality policy (both directions)" number={6} depth={4} >
+
+Because this tutorial is bidirectional, both contracts enforce allowlists in both directions:
+
+- **Outbound sends** are restricted by destination chain selector:
+  - `MessageTracker` requires the destination chain selector to be allowlisted.
+  - `Acknowledger` requires the source chain selector (used as the acknowledgment destination) to be allowlisted.
+- **Inbound delivery** is restricted by `(source chain selector, sender address)` via the `onlyAllowlisted` checks in both `_ccipReceive` implementations.
+
+Both contracts also expose a receiver finality policy for each source chain via `getCCVsAndFinalityConfig(...)`. The configuration scripts set this policy on both contracts so numeric block-depth finality requests (minimum `32`) can be accepted when configured.
+
+<Aside type="note" title="Default finality is the default">
+  If you omit the finality-related environment variables, the scripts use default finality behavior.
+</Aside>
+
+</AnchoredAccordion>
+
+<CcipCommon callout="senderContractCalloutV2" />
+
+## Tutorial
+
+Let's get started. Choose your preferred development environment below.
+
+### Foundry
+
+Best for Solidity-native workflows that prefer a modular, powerful scripting framework.
+
+<Aside type="note" title="Want to set up a dev environment from scratch? ">
+  Check out the [Getting started page](/ccip/evm/getting-started#foundry) for detailed instructions on setting up a
+  Foundry dev environment from scratch.
+</Aside>
+<AnchoredAccordion
+  title="Bootstrap a new Foundry project"
+  anchorId="foundry-bootstrap-a-new-foundry-project"
+  number={1}
+  depth={4}
+>
+
+<GitHubCard title="Foundry Starter Kit" href="https://github.com/smartcontractkit/docs-ccip" iconName="github-svg-card">
+  Clone the starter kit (contains both Hardhat and Foundry code) for a smoother setup.
+</GitHubCard>
+
+1. Clone the CCIP starter kit and open a terminal inside the project directory:
+
+```bash filename="Terminal"
+git clone https://github.com/smartcontractkit/docs-ccip.git && cd docs-ccip
+```
+
+2. Create a Foundry keystore entry for your private key. Foundry will prompt you to enter the private key and a password to encrypt it:
+
+```bash filename="Terminal"
+cast wallet import your_keystore_name --interactive
+```
+
+3. Install dependencies:
+
+```bash filename="Terminal"
+npm install
+```
+
+4. Create a `.env` file by copying the example file, and fill in your values:
+
+```bash filename="Terminal"
+cp .env.example .env
+```
+
+Set `KEYSTORE_NAME` to the name of the keystore entry you created above, and provide RPC endpoints for the chains you will use:
+
+```env filename=".env"
+# Keystore name
+KEYSTORE_NAME=your_keystore_name
+
+# RPC URLs (add the ones you need)
+ETHEREUM_SEPOLIA_RPC_URL=
+ARBITRUM_SEPOLIA_RPC_URL=
+
+# Etherscan API key (required only if you pass --verify to deployment scripts)
+ETHERSCAN_API_KEY=
+```
+
+5. Load the environment variables:
+
+```bash filename="Terminal"
+source .env
+```
+
+<Aside type="caution" title="Run this in every new terminal session">
+  If you open a new terminal, you must run `source .env` again. To verify, run `echo $ETHEREUM_SEPOLIA_RPC_URL` and
+  confirm it prints your URL.
+</Aside>
+
+6. Compile all contracts:
+
+```bash filename="Terminal"
+forge build
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Deploy your contracts (A and B)"
+  anchorId="foundry-deploy-your-contracts-a-and-b"
+  number={2}
+  depth={4}
+>
+
+<GitHubCard
+  title="Deploy.s.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/deploy/Deploy.s.sol"
+  iconName="github-svg-card"
+>
+  Deploys MessageTracker on Ethereum Sepolia and Acknowledger on Arbitrum Sepolia.
+</GitHubCard>
+
+Run the deploy script:
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+forge script foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/deploy/Deploy.s.sol:Deploy \
+--account $KEYSTORE_NAME \
+--broadcast -vv
+```
+
+Your terminal should look something like this:
+
+```bash filename="Terminal"
+========================================
+🚀 Deploy MessageTracker + Acknowledger Contracts
+========================================
+Source Chain (MessageTracker): Ethereum Sepolia
+Destination Chain (Acknowledger): Arbitrum Sepolia
+========================================
+
+
+[Step 1] Deploying MessageTracker on Ethereum Sepolia...
+MessageTracker deployed at: 0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+https://sepolia.etherscan.io/address/0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+
+========================================
+✅ MessageTracker Deployed on Ethereum Sepolia!
+========================================
+MessageTracker Address: 0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+
+
+[Step 2] Deploying Acknowledger on Arbitrum Sepolia...
+Acknowledger deployed at: 0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+https://sepolia.arbiscan.io/address/0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+
+========================================
+✅ Acknowledger Deployed on Arbitrum Sepolia!
+========================================
+Acknowledger Address: 0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+
+========================================
+✅ All Deployments Complete!
+========================================
+Source Chain: Ethereum Sepolia
+  MessageTracker: 0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+https://sepolia.etherscan.io/address/0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+
+Destination Chain: Arbitrum Sepolia
+  Acknowledger: 0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+https://sepolia.arbiscan.io/address/0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+
+Run this command to set both environment variables:
+export ETHEREUM_SEPOLIA_CONTRACT=0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123 && export ARBITRUM_SEPOLIA_CONTRACT=0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+========================================
+
+IMPORTANT: Fund the Acknowledger contract with native gas tokens on Arbitrum Sepolia
+  The Acknowledger pays CCIP fees (native) for sending acknowledgments back to the MessageTracker.
+```
+
+Export the contract addresses printed by the script:
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_CONTRACT=0x...  # MessageTracker
+export ARBITRUM_SEPOLIA_CONTRACT=0x...    # Acknowledger
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Fund the Acknowledger (required)"
+  anchorId="foundry-fund-the-acknowledger-required"
+  number={3}
+  depth={4}
+>
+
+The Acknowledger pays CCIP fees for acknowledgment messages with native gas held by the contract.
+Fund it with Arbitrum Sepolia ETH before sending messages.
+
+Example (using cast):
+
+```bash filename="Terminal"
+cast send $ARBITRUM_SEPOLIA_CONTRACT \
+--value 0.01ether \
+--account $KEYSTORE_NAME \
+--rpc-url $ARBITRUM_SEPOLIA_RPC_URL \
+--chain arbitrum-sepolia
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Configure allowlists and finality"
+  anchorId="foundry-configure-allowlists-receiver-policy"
+  number={4}
+  depth={4}
+>
+
+<GitHubCard
+  title="Configure.s.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/configure/Configure.s.sol"
+  iconName="github-svg-card"
+>
+  Allowlists both contracts and configures receiver finality policy.
+</GitHubCard>
+
+##### Finality configuration
+
+<CcipCommon callout="ftfExplainer" />
+
+Configure both contracts in a single command. This tutorial uses a block-depth policy with a minimum depth of 32.
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH ALLOWED_BLOCK_DEPTH=32 \
+forge script foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/configure/Configure.s.sol:Configure \
+--account $KEYSTORE_NAME \
+--broadcast -vv
+```
+
+Your terminal should look something like this:
+
+```bash filename="Terminal"
+========================================
+⚙️ Configure MessageTracker + Acknowledger Contracts
+========================================
+Source Chain: Ethereum Sepolia
+  MessageTracker: 0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+Destination Chain: Arbitrum Sepolia
+  Acknowledger: 0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+========================================
+
+
+[Step 1] Configuring MessageTracker on Ethereum Sepolia
+Allowlisting Arbitrum Sepolia as destination chain on MessageTracker...
+✅ Destination chain allowlisted on MessageTracker: Arbitrum Sepolia
+Allowlisting Acknowledger (0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a) from Arbitrum Sepolia on MessageTracker...
+✅ Acknowledger allowlisted on MessageTracker: Arbitrum Sepolia -> 0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+Setting allowed finality config on MessageTracker to 0x00000020 (BLOCK_DEPTH=32)...
+✅ Allowed finality config set on MessageTracker for Arbitrum Sepolia
+
+========================================
+✅ MessageTracker Configuration Complete on Ethereum Sepolia!
+========================================
+
+
+[Step 2] Configuring Acknowledger on Arbitrum Sepolia
+Allowlisting MessageTracker (0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123) from Ethereum Sepolia on Acknowledger...
+✅ MessageTracker allowlisted on Acknowledger: Ethereum Sepolia -> 0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+Allowlisting Ethereum Sepolia as destination chain on Acknowledger...
+✅ Source chain allowlisted as destination on Acknowledger: Ethereum Sepolia
+Setting allowed finality config on Acknowledger to 0x00000020 (BLOCK_DEPTH=32)...
+✅ Allowed finality config set on Acknowledger for Ethereum Sepolia
+
+========================================
+✅ Acknowledger Configuration Complete on Arbitrum Sepolia!
+========================================
+
+========================================
+✅ All Configurations Complete!
+========================================
+Ethereum Sepolia (MessageTracker) can send messages to Arbitrum Sepolia (Acknowledger)
+Arbitrum Sepolia (Acknowledger) can receive messages from Ethereum Sepolia and send acknowledgments back
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Send a message (A→B)"
+  anchorId="foundry-send-a-message-a-b"
+  number={5}
+  depth={4}
+>
+
+<GitHubCard
+  title="SendMessage.s.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/SendMessage.s.sol"
+  iconName="github-svg-card"
+>
+  Sends a message from MessageTracker to Acknowledger.
+</GitHubCard>
+
+##### Faster Than Finality (block depth)
+
+<CcipCommon callout="extraArgsV3Explainer" />
+
+The `BLOCK_DEPTH` environment variable controls send-side finality behavior:
+
+- Omit `BLOCK_DEPTH`, or set `BLOCK_DEPTH=DEFAULT`/`BLOCK_DEPTH=0` (default): Use finalized finality.
+- Set `BLOCK_DEPTH=32`: Request faster than finality using numeric block depth.
+
+##### Example 1: Send a message paying with native:
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+GAS_LIMIT=500000 BLOCK_DEPTH=DEFAULT \
+MESSAGE="Hello World From Foundry" \
+forge script foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/SendMessage.s.sol:SendMessage \
+--account $KEYSTORE_NAME \
+--broadcast -vv
+```
+
+To request numeric faster than finality (minimum 32), set `BLOCK_DEPTH=32`.
+
+Example output:
+
+```bash filename="Terminal"
+========================================
+📡 CCIP Message (A→B→A) - Pay with Native
+========================================
+Source Chain: Ethereum Sepolia
+  MessageTracker: 0x6C16098831403AaC46eb0Bbd989454D0D890ECAb
+Destination Chain: Arbitrum Sepolia
+  Acknowledger: 0x4F8a2C6e0B4d8A1f6E3c9B5d7A2f4C8e0B6d3A5c
+Fee Token: Native (ETH)
+Message: "Hello World From Foundry"
+========================================
+
+
+[Pre-validation] Detecting lane version and building extraArgs...
+Gas limit: 500000
+✅ Using default finality (BLOCK_DEPTH=DEFAULT). V3 extraArgs (gasLimit=500000, finalityConfig=0x00000000).
+
+[Step 1] Sending message via MessageTracker with native fee (ETH)...
+Required CCIP fee (in WEI): 300138348995647
+
+========================================
+✅ Message sent successfully!
+========================================
+CCIP messageId: 0x7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5
+CCIP Explorer:
+https://ccip.chain.link/#/side-drawer/msg/0x7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5
+
+Track message status (status 1 = Sent, 2 = ProcessedOnDestination):
+SOURCE_CHAIN=ETHEREUM_SEPOLIA MESSAGE_ID=0x7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5 forge script foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/GetMessageStatus.s.sol:GetMessageStatus -vv
+========================================
+```
+
+##### Example 2: Send a message paying with LINK (optional):
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+FEE_TOKEN=LINK GAS_LIMIT=500000 BLOCK_DEPTH=DEFAULT \
+MESSAGE="Hello World From Foundry" \
+forge script foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/SendMessage.s.sol:SendMessage \
+--account $KEYSTORE_NAME \
+--broadcast -vv
+```
+
+To request numeric faster than finality (minimum 32), set `BLOCK_DEPTH=32`.
+
+Example output:
+
+```bash filename="Terminal"
+========================================
+📡 CCIP Message (A→B→A) - Pay with LINK
+========================================
+Source Chain: Ethereum Sepolia
+  MessageTracker: 0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+Destination Chain: Arbitrum Sepolia
+  Acknowledger: 0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+Fee Token: LINK
+Message: "Hello World From Foundry"
+========================================
+
+
+[Pre-validation] Detecting lane version and building extraArgs...
+Gas limit: 500000
+✅ Using default finality (BLOCK_DEPTH=DEFAULT). V3 extraArgs (gasLimit=500000, finalityConfig=0x00000000).
+
+[Step 1] Approving MessageTracker to spend fee token for CCIP fees...
+Required CCIP fee (in token units): 16700123456789000
+✅ MessageTracker approved to spend fee token
+
+
+[Step 2] Sending message via MessageTracker...
+
+========================================
+✅ Message sent successfully!
+========================================
+CCIP messageId: 0x8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6
+CCIP Explorer:
+https://ccip.chain.link/#/side-drawer/msg/0x8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6
+
+Track message status (status 1 = Sent, 2 = ProcessedOnDestination):
+SOURCE_CHAIN=ETHEREUM_SEPOLIA MESSAGE_ID=0x8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6 forge script foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/GetMessageStatus.s.sol:GetMessageStatus -vv
+========================================
+```
+
+Copy the `CCIP messageId` from the output.
+
+##### Environment variables
+
+| <nobr>Variable</nobr>                  | Description                                                                                                                                               | <nobr>Default</nobr>                                         |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| <nobr>`KEYSTORE_NAME`</nobr>           | Foundry encrypted keystore name used by `--account $KEYSTORE_NAME`                                                                                        | <nobr>`your_keystore_name`</nobr>                            |
+| <nobr>`SOURCE_CHAIN`</nobr>            | Source chain name identifier (for example, `ETHEREUM_SEPOLIA`)                                                                                            | <nobr>Not set</nobr>                                         |
+| <nobr>`DEST_CHAIN`</nobr>              | Destination chain name identifier (for example, `ARBITRUM_SEPOLIA`)                                                                                       | <nobr>Not set</nobr>                                         |
+| <nobr>`{CHAIN}_RPC_URL`</nobr>         | RPC URL for each chain you run scripts against (for example, `ETHEREUM_SEPOLIA_RPC_URL`, `ARBITRUM_SEPOLIA_RPC_URL`)                                      | <nobr>Not set</nobr>                                         |
+| <nobr>`{CHAIN}_CONTRACT`</nobr>        | Deployed tutorial contract address per chain (MessageTracker on source, Acknowledger on destination)                                                      | <nobr>Not set</nobr>                                         |
+| <nobr>`FEE_TOKEN`</nobr>               | `LINK` or `NATIVE`                                                                                                                                        | <nobr>`NATIVE`</nobr>                                        |
+| <nobr>`FEE_TOKEN_ADDRESS`</nobr>       | ERC-20 address of a CCIP-supported fee token on the lane. Takes priority over `FEE_TOKEN`                                                                 | <nobr>Not set</nobr>                                         |
+| <nobr>`GAS_LIMIT`</nobr>               | Gas limit for the destination callback                                                                                                                    | <nobr>`500000`</nobr>                                        |
+| <nobr>`BLOCK_DEPTH`</nobr>             | Omit or set `DEFAULT` for finalized finality (default), or set `32` for faster than finality                                                              | <nobr>`DEFAULT`</nobr>                                       |
+| <nobr>`ALLOWED_FINALITY_CONFIG`</nobr> | Receiver allowed finality config (used by the configure step). Set `BLOCK_DEPTH` to allow numeric `BLOCK_DEPTH` requests. Omit for default-finality-only. | <nobr>Not set</nobr>                                         |
+| <nobr>`ALLOWED_BLOCK_DEPTH`</nobr>     | Receiver minimum block depth (used by the configure step). Required when `ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH`. Use `32` in this tutorial.                | <nobr>Not set</nobr>                                         |
+| <nobr>`MESSAGE`</nobr>                 | Text payload to send                                                                                                                                      | <nobr>`Hello World From Foundry Script for CCIP 2.0!`</nobr> |
+| <nobr>`MESSAGE_ID`</nobr>              | Message ID to query status (used by the status script)                                                                                                    | <nobr>Not set</nobr>                                         |
+| <nobr>`CHAIN`</nobr>                   | Chain name identifier used by the withdraw script (the chain where the Acknowledger is deployed)                                                          | <nobr>Not set</nobr>                                         |
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Track status (B→A acknowledgment)"
+  anchorId="foundry-track-status-b-a-acknowledgment"
+  number={6}
+  depth={4}
+>
+
+<GitHubCard
+  title="GetMessageStatus.s.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/GetMessageStatus.s.sol"
+  iconName="github-svg-card"
+>
+  Reads message status from MessageTracker.
+</GitHubCard>
+
+Track the message status on the source chain:
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA MESSAGE_ID=0x... \
+forge script foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/GetMessageStatus.s.sol:GetMessageStatus -vv
+```
+
+Status values:
+
+- `0`: `NotSent`
+- `1`: `Sent`
+- `2`: `ProcessedOnDestination`
+
+Example output:
+
+```bash filename="Terminal"
+========================================
+🔍 Check Message Status
+========================================
+Chain: Ethereum Sepolia
+MessageTracker: 0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+Message ID: 0x8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6
+========================================
+
+========================================
+Message Status: 2 (ProcessedOnDestination)
+✅ Message acknowledged! The Acknowledger has processed the message and the MessageTracker has received the acknowledgment.
+Acknowledger Message ID: 0x9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e8
+Check the CCIP Explorer for the acknowledgment message:
+https://ccip.chain.link/#/side-drawer/msg/0x9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e8
+========================================
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Withdraw from Acknowledger (optional cleanup)"
+  anchorId="foundry-withdraw-from-acknowledger-optional-cleanup"
+  number={7}
+  depth={4}
+>
+
+<GitHubCard
+  title="WithdrawFromAcknowledger.s.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/WithdrawFromAcknowledger.s.sol"
+  iconName="github-svg-card"
+>
+  Withdraws native balance from the Acknowledger contract.
+</GitHubCard>
+
+After testing, reclaim any remaining native balance from the Acknowledger:
+
+```bash filename="Terminal"
+CHAIN=ARBITRUM_SEPOLIA \
+forge script foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/WithdrawFromAcknowledger.s.sol:WithdrawFromAcknowledger \
+--account $KEYSTORE_NAME \
+--broadcast -vv
+```
+
+Example output:
+
+```bash filename="Terminal"
+========================================
+💸 Withdraw from Acknowledger
+========================================
+Chain: Arbitrum Sepolia
+Acknowledger: 0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+Native balance: 10000000000000000 wei
+========================================
+
+[Step 1] Withdrawing native balance to 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994...
+✅ Native withdrawal complete
+
+========================================
+✅ Withdraw Complete
+========================================
+Beneficiary: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+```
+
+By default, funds are sent to the broadcasting account. Set `BENEFICIARY=0x...` to override the recipient.
+
+</AnchoredAccordion>
+
+### Hardhat
+
+Best for devs looking for a mature, TypeScript-based smart contract development framework.
+
+<Aside type="note" title="Want to set up a dev environment from scratch? ">
+  Check out the [Getting started page](/ccip/evm/getting-started#hardhat-3) for detailed instructions on setting up a
+  Hardhat dev environment from scratch.
+</Aside>
+<AnchoredAccordion
+  title="Bootstrap a new Hardhat project"
+  anchorId="hardhat-bootstrap-a-new-hardhat-project"
+  number={1}
+  depth={4}
+>
+
+<GitHubCard title="CCIP Starter Kit" href="https://github.com/smartcontractkit/docs-ccip" iconName="github-svg-card">
+  Clone the starter kit (contains both Hardhat and Foundry code) for a smoother setup.
+</GitHubCard>
+
+1. Clone the CCIP starter kit and open a terminal inside the project directory:
+
+```bash filename="Terminal"
+git clone https://github.com/smartcontractkit/docs-ccip.git && cd docs-ccip
+```
+
+2. Copy the example environment file and fill in your values:
+
+```bash filename="Terminal"
+cp .env.example .env
+```
+
+Set `KEYSTORE_NAME` to the keystore alias you will create later in this section, and provide RPC endpoints for the chains you will use:
+
+```env filename=".env"
+# Keystore name
+KEYSTORE_NAME=your_keystore_name
+
+# RPC URLs (add the ones you need)
+ETHEREUM_SEPOLIA_RPC_URL=
+ARBITRUM_SEPOLIA_RPC_URL=
+
+# Etherscan API key (required only if you pass --verify to deployment scripts)
+ETHERSCAN_API_KEY=
+```
+
+3. Install dependencies and compile:
+
+```bash filename="Terminal"
+npm install && npx hardhat compile
+```
+
+4. Load the environment variables:
+
+```bash filename="Terminal"
+source .env
+```
+
+5. Create a Hardhat keystore entry for your private key. Use the same name as `KEYSTORE_NAME` in your `.env` file. Hardhat will prompt you to enter the private key and a password to encrypt it:
+
+```bash filename="Terminal"
+npx hardhat keystore set your_keystore_name
+```
+
+<Aside type="caution" title="Private key format">
+  When prompted for your private key, include the <code>0x</code> prefix.
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Deploy your contracts (A and B)"
+  anchorId="hardhat-deploy-your-contracts-a-and-b"
+  number={2}
+  depth={4}
+>
+
+<GitHubCard
+  title="deploy.ts"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/deploy/deploy.ts"
+  iconName="github-svg-card"
+>
+  Deploys MessageTracker on Ethereum Sepolia and Acknowledger on Arbitrum Sepolia.
+</GitHubCard>
+
+Run the deploy script:
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+npx hardhat run hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/deploy/deploy.ts
+```
+
+Example output:
+
+```bash filename="Terminal"
+========================================
+🚀 Deploy MessageTracker + Acknowledger Contracts
+========================================
+Source Chain (MessageTracker): Ethereum Sepolia
+Destination Chain (Acknowledger): Arbitrum Sepolia
+========================================
+
+[Step 1] Deploying MessageTracker on Ethereum Sepolia
+MessageTracker deployed at: 0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+https://sepolia.etherscan.io/address/0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+
+========================================
+✅ MessageTracker Deployed on Ethereum Sepolia!
+========================================
+MessageTracker Address: 0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+
+[Step 2] Deploying Acknowledger on Arbitrum Sepolia
+Acknowledger deployed at: 0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+https://sepolia.arbiscan.io/address/0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+
+========================================
+✅ Acknowledger Deployed on Arbitrum Sepolia!
+========================================
+Acknowledger Address: 0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+
+========================================
+✅ All Deployments Complete!
+========================================
+Source Chain: Ethereum Sepolia
+  MessageTracker: 0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+https://sepolia.etherscan.io/address/0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+
+Destination Chain: Arbitrum Sepolia
+  Acknowledger: 0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+https://sepolia.arbiscan.io/address/0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+
+Run this command to set both environment variables:
+export ETHEREUM_SEPOLIA_CONTRACT=0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123 && export ARBITRUM_SEPOLIA_CONTRACT=0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+========================================
+
+IMPORTANT: Fund the Acknowledger contract with native gas tokens on Arbitrum Sepolia
+  The Acknowledger pays CCIP fees (native) for sending acknowledgments back to the MessageTracker.
+```
+
+Export the contract addresses printed by the script:
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_CONTRACT=0x...  # MessageTracker
+export ARBITRUM_SEPOLIA_CONTRACT=0x...    # Acknowledger
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Fund the Acknowledger (required)"
+  anchorId="hardhat-fund-the-acknowledger-required"
+  number={3}
+  depth={4}
+>
+
+The Acknowledger pays CCIP fees for acknowledgment messages with native gas held by the contract. Fund it with Arbitrum Sepolia ETH before sending messages.
+
+Example (using cast):
+
+```bash filename="Terminal"
+cast send $ARBITRUM_SEPOLIA_CONTRACT \
+--value 0.01ether \
+--account $KEYSTORE_NAME \
+--rpc-url $ARBITRUM_SEPOLIA_RPC_URL \
+--chain arbitrum-sepolia
+```
+
+If you don't have `cast` installed, you can fund the contract from any wallet by sending Arbitrum Sepolia ETH to `$ARBITRUM_SEPOLIA_CONTRACT`.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Configure allowlists and finality"
+  anchorId="hardhat-configure-allowlists-receiver-policy"
+  number={4}
+  depth={4}
+>
+
+<GitHubCard
+  title="configure.ts"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/configure/configure.ts"
+  iconName="github-svg-card"
+>
+  Allowlists both contracts and configures receiver finality policy.
+</GitHubCard>
+
+##### Finality configuration
+
+<CcipCommon callout="ftfExplainer" />
+
+Configure both contracts in a single command:
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH ALLOWED_BLOCK_DEPTH=32 \
+npx hardhat run hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/configure/configure.ts
+```
+
+Example output:
+
+```bash filename="Terminal"
+========================================
+⚙️ Configure MessageTracker + Acknowledger Contracts
+========================================
+Source Chain: Ethereum Sepolia
+  MessageTracker: 0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+Destination Chain: Arbitrum Sepolia
+  Acknowledger: 0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+========================================
+
+[Step 1] Configuring MessageTracker on Ethereum Sepolia
+Allowlisting Arbitrum Sepolia as destination chain on MessageTracker...
+✅ Destination chain allowlisted on MessageTracker: Arbitrum Sepolia
+Allowlisting Acknowledger (0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a) from Arbitrum Sepolia on MessageTracker...
+✅ Acknowledger allowlisted on MessageTracker: Arbitrum Sepolia -> 0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+Setting allowed finality config on MessageTracker to 0x00000020 (BLOCK_DEPTH=32)...
+✅ Allowed finality config set on MessageTracker to 0x00000020 (BLOCK_DEPTH=32) for Arbitrum Sepolia
+
+========================================
+✅ MessageTracker Configuration Complete on Ethereum Sepolia!
+========================================
+
+[Step 2] Configuring Acknowledger on Arbitrum Sepolia
+Allowlisting MessageTracker (0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123) from Ethereum Sepolia on Acknowledger...
+✅ MessageTracker allowlisted on Acknowledger: Ethereum Sepolia -> 0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+Allowlisting Ethereum Sepolia as destination chain on Acknowledger (for ack messages)...
+✅ Source chain allowlisted as destination on Acknowledger: Ethereum Sepolia
+Setting allowed finality config on Acknowledger to 0x00000020 (BLOCK_DEPTH=32)...
+✅ Allowed finality config set on Acknowledger to 0x00000020 (BLOCK_DEPTH=32) for Ethereum Sepolia
+
+========================================
+✅ Acknowledger Configuration Complete on Arbitrum Sepolia!
+========================================
+
+========================================
+✅ All Configurations Complete!
+========================================
+Ethereum Sepolia (MessageTracker) can send messages to Arbitrum Sepolia (Acknowledger)
+Arbitrum Sepolia (Acknowledger) can receive messages from Ethereum Sepolia and send acknowledgments back
+
+Next Step: Send a Message
+Send a message paying with LINK:
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA FEE_TOKEN=LINK GAS_LIMIT=500000 BLOCK_DEPTH=DEFAULT MESSAGE='Hello World From Hardhat Script for CCIP 2.0!' npx hardhat run hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/send-message.ts
+========================================
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Send a message (A→B)"
+  anchorId="hardhat-send-a-message-a-b"
+  number={5}
+  depth={4}
+>
+
+<GitHubCard
+  title="send-message.ts"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/send-message.ts"
+  iconName="github-svg-card"
+>
+  Sends a message from MessageTracker to Acknowledger.
+</GitHubCard>
+
+##### Faster Than Finality (block depth)
+
+<CcipCommon callout="extraArgsV3Explainer" />
+
+The `BLOCK_DEPTH` environment variable controls send-side finality behavior:
+
+- Omit `BLOCK_DEPTH`, or set `BLOCK_DEPTH=DEFAULT`/`BLOCK_DEPTH=0` (default): Use finalized finality.
+- Set `BLOCK_DEPTH=32`: Request faster than finality using numeric block depth.
+
+##### Example 1: Send a message paying with native:
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+GAS_LIMIT=500000 BLOCK_DEPTH=DEFAULT \
+MESSAGE="Hello World From Hardhat" \
+npx hardhat run hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/send-message.ts
+```
+
+To request numeric faster than finality (minimum 32), set `BLOCK_DEPTH=32`.
+
+Example output:
+
+```bash filename="Terminal"
+========================================
+📡 CCIP Message (A→B→A) - Pay with ETH
+========================================
+Source Chain: Ethereum Sepolia
+  MessageTracker: 0x6c16098831403aac46eb0bbd989454d0d890ecab
+Destination Chain: Arbitrum Sepolia
+  Acknowledger: 0x4f8a2c6e0b4d8a1f6e3c9b5d7a2f4c8e0b6d3a5c
+Fee Token: Native (ETH)
+Message: "Hello World From Hardhat"
+========================================
+
+
+[Pre-validation] Detecting lane version and building extraArgs...
+✅ Using default finality (BLOCK_DEPTH=DEFAULT). V3 extraArgs (gasLimit=500000, finalityConfig=0x00000000).
+[Pre-validation] CCIP fee: 300138348995647
+
+[Step 1] Sending message via MessageTracker with native fee (ETH)...
+Required CCIP fee (in WEI): 300138348995647
+
+========================================
+✅ Message sent successfully!
+========================================
+CCIP messageId: 0xaf1e2d3c4b5a69788796a5b4c3d2e1f00918273a4b5c6d7e8f90a1b2c3d4e5f6
+CCIP Explorer:
+https://ccip.chain.link/#/side-drawer/msg/0xaf1e2d3c4b5a69788796a5b4c3d2e1f00918273a4b5c6d7e8f90a1b2c3d4e5f6
+
+Track message status (1 = Sent, 2 = ProcessedOnDestination):
+SOURCE_CHAIN=ETHEREUM_SEPOLIA MESSAGE_ID=0xaf1e2d3c4b5a69788796a5b4c3d2e1f00918273a4b5c6d7e8f90a1b2c3d4e5f6 npx hardhat run hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/get-message-status.ts
+========================================
+```
+
+##### Example 2: Send a message paying with LINK (optional):
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+FEE_TOKEN=LINK GAS_LIMIT=500000 BLOCK_DEPTH=DEFAULT \
+MESSAGE="Hello World From Hardhat" \
+npx hardhat run hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/send-message.ts
+```
+
+To request numeric faster than finality (minimum 32), set `BLOCK_DEPTH=32`.
+
+Example output:
+
+```bash filename="Terminal"
+========================================
+📡 CCIP Message (A→B→A) - Pay with LINK
+========================================
+Source Chain: Ethereum Sepolia
+  MessageTracker: 0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+Destination Chain: Arbitrum Sepolia
+  Acknowledger: 0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+Fee Token: LINK
+Message: "Hello World From Hardhat"
+========================================
+
+
+[Pre-validation] Detecting lane version and building extraArgs...
+✅ Using default finality (BLOCK_DEPTH=DEFAULT). V3 extraArgs (gasLimit=500000, finalityConfig=0x00000000).
+[Pre-validation] CCIP fee: 16700123456789000
+
+[Step 1] Approving MessageTracker to spend LINK for CCIP fees...
+Required CCIP fee (in LINK units): 16700123456789000
+✅ MessageTracker approved to spend LINK
+
+
+[Step 2] Sending message via MessageTracker...
+
+========================================
+✅ Message sent successfully!
+========================================
+CCIP messageId: 0x8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6
+CCIP Explorer:
+https://ccip.chain.link/#/side-drawer/msg/0x8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6
+
+Track message status (1 = Sent, 2 = ProcessedOnDestination):
+SOURCE_CHAIN=ETHEREUM_SEPOLIA MESSAGE_ID=0x8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6 npx hardhat run hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/get-message-status.ts
+========================================
+```
+
+Copy the `CCIP messageId` from the output.
+
+##### Environment variables
+
+| <nobr>Variable</nobr>                  | Description                                                                                                                                               | <nobr>Default</nobr>                                         |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| <nobr>`KEYSTORE_NAME`</nobr>           | Hardhat keystore entry name, set in `.env`                                                                                                                | <nobr>`your_keystore_name`</nobr>                            |
+| <nobr>`SOURCE_CHAIN`</nobr>            | Source chain name identifier (for example, `ETHEREUM_SEPOLIA`)                                                                                            | <nobr>Not set</nobr>                                         |
+| <nobr>`DEST_CHAIN`</nobr>              | Destination chain name identifier (for example, `ARBITRUM_SEPOLIA`)                                                                                       | <nobr>Not set</nobr>                                         |
+| <nobr>`{CHAIN}_RPC_URL`</nobr>         | RPC URL for each chain you run scripts against (for example, `ETHEREUM_SEPOLIA_RPC_URL`, `ARBITRUM_SEPOLIA_RPC_URL`)                                      | <nobr>Not set</nobr>                                         |
+| <nobr>`{CHAIN}_CONTRACT`</nobr>        | Deployed tutorial contract address per chain (MessageTracker on source, Acknowledger on destination)                                                      | <nobr>Not set</nobr>                                         |
+| <nobr>`FEE_TOKEN`</nobr>               | `LINK` or `NATIVE`                                                                                                                                        | <nobr>`NATIVE`</nobr>                                        |
+| <nobr>`FEE_TOKEN_ADDRESS`</nobr>       | ERC-20 address of a CCIP-supported fee token on the lane. Takes priority over `FEE_TOKEN`                                                                 | <nobr>Not set</nobr>                                         |
+| <nobr>`GAS_LIMIT`</nobr>               | Gas limit for the destination callback                                                                                                                    | <nobr>`500000`</nobr>                                        |
+| <nobr>`BLOCK_DEPTH`</nobr>             | Omit or set `DEFAULT` for finalized finality (default), or set `32` for faster than finality                                                              | <nobr>`DEFAULT`</nobr>                                       |
+| <nobr>`ALLOWED_FINALITY_CONFIG`</nobr> | Receiver allowed finality config (used by the configure step). Set `BLOCK_DEPTH` to allow numeric `BLOCK_DEPTH` requests. Omit for default-finality-only. | <nobr>Not set</nobr>                                         |
+| <nobr>`ALLOWED_BLOCK_DEPTH`</nobr>     | Receiver minimum block depth (used by the configure step). Required when `ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH`. Use `32` in this tutorial.                | <nobr>Not set</nobr>                                         |
+| <nobr>`MESSAGE`</nobr>                 | Text payload to send                                                                                                                                      | <nobr>`Hello World From Hardhat Script for CCIP 2.0!`</nobr> |
+| <nobr>`MESSAGE_ID`</nobr>              | Message ID to query status (used by the status script)                                                                                                    | <nobr>Not set</nobr>                                         |
+| <nobr>`CHAIN`</nobr>                   | Chain name identifier used by the withdraw script (the chain where the Acknowledger is deployed)                                                          | <nobr>Not set</nobr>                                         |
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Track status (B→A acknowledgment)"
+  anchorId="hardhat-track-status-b-a-acknowledgment"
+  number={6}
+  depth={4}
+>
+
+<GitHubCard
+  title="get-message-status.ts"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/get-message-status.ts"
+  iconName="github-svg-card"
+>
+  Reads message status from MessageTracker.
+</GitHubCard>
+
+Track the message status on the source chain:
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA MESSAGE_ID=0x... \
+npx hardhat run hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/get-message-status.ts
+```
+
+Example output:
+
+```bash filename="Terminal"
+========================================
+🔍 Check Message Status
+========================================
+Chain: Ethereum Sepolia
+MessageTracker: 0x5E4b6A1b2C3d4E5f67890123456789aBCdEf0123
+Message ID: 0x8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6
+========================================
+
+========================================
+Message Status: 2 (ProcessedOnDestination)
+✅ Message acknowledged! The Acknowledger has processed the message and the MessageTracker has received the acknowledgment.
+Acknowledger Message ID: 0x9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e8
+Check the CCIP Explorer for the acknowledgment message:
+https://ccip.chain.link/#/side-drawer/msg/0x9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e8
+========================================
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Withdraw from Acknowledger (optional cleanup)"
+  anchorId="hardhat-withdraw-from-acknowledger-optional-cleanup"
+  number={7}
+  depth={4}
+>
+
+<GitHubCard
+  title="withdraw-from-acknowledger.ts"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/withdraw-from-acknowledger.ts"
+  iconName="github-svg-card"
+>
+  Withdraws native balance from the Acknowledger contract.
+</GitHubCard>
+
+After testing, reclaim any remaining native balance from the Acknowledger:
+
+```bash filename="Terminal"
+CHAIN=ARBITRUM_SEPOLIA \
+npx hardhat run hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/withdraw-from-acknowledger.ts
+```
+
+Example output:
+
+```bash filename="Terminal"
+========================================
+💸 Withdraw from Acknowledger
+========================================
+Chain: Arbitrum Sepolia
+Acknowledger: 0x9C2e4F6a8B0d1E3f5A7c9E2b4D6f8A0c2E4b6D8a
+Native balance: 10000000000000000 wei
+Beneficiary: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+========================================
+
+[Step 1] Withdrawing native balance to 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994...
+✅ Native withdrawal complete (tx: 0xb0e1d2c3a49586778879a6b5c4d3e2f11029384756a6b7c8d9e0f1a2b3c4d5e6)
+
+========================================
+✅ Withdraw Complete
+========================================
+Beneficiary: 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+```
+
+By default, funds are sent to the deployer account. Set `BENEFICIARY=0x...` to override the recipient.
+
+</AnchoredAccordion>
+
+## Final note
+
+This tutorial uses a simple acknowledgment message to confirm delivery end-to-end. You can adapt the same pattern to:
+
+- programmable token transfers
+- multi-step workflows that depend on destination-side execution
+- onchain receipts that unlock follow-up actions on the source chain
+
+<CcipCommon callout="educationalDisclaimer" />
