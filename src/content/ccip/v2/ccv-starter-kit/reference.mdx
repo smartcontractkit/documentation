@@ -1,0 +1,83 @@
+---
+section: ccip
+date: Last Modified
+title: "Reference"
+metadata:
+  description: "Every link the CCV Starter Kit guide references, in one place: the on-chain contracts kit and off-chain kit, the CCV concept pages, the CLI and policy-hook spec, and CCIP network resources."
+  excerpt: "CCV reference, on-chain kit book, command reference, deployment runbook, chart values, ECR images, CCV concepts, ccip-cli, policy hook OpenAPI, network integration"
+  datePublished: "2026-09-25"
+  lastModified: "2026-09-27"
+whatsnext:
+  "Deploy your first cell": "/ccip/ccv-starter-kit/evm/deploy-your-first-cell"
+  "Prerequisites": "/ccip/ccv-starter-kit/prerequisites"
+---
+
+import { CopyText, DocCards, DocCard } from "@components"
+
+The two kits, the concept pages, the tools, and the CCIP resources this guide links, collected in one place.
+
+## The two kits
+
+<DocCards>
+  <DocCard
+    title="On-chain contracts kit"
+    href="https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts"
+  >
+    Deploy and govern your verifier contracts: the CREATE2 factory, the resolver, the committee verifier, and the lane
+    config.
+  </DocCard>
+  <DocCard title="Off-chain kit" href="https://github.com/smartcontractkit/chainlink-ccv-starter-kit">
+    The `ccv-cell` Helm chart that runs your verifier and aggregator, and its deployment runbook.
+  </DocCard>
+</DocCards>
+
+## On-chain contracts kit
+
+The kit is documented as a book:
+[getting started](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/getting-started.md),
+[deploy](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/deploy.md),
+[configure](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/configure.md),
+[governance](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/governance.md),
+[operations](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/operations.md),
+and
+[safe batches](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/safe-batches.md).
+
+Every `make` target, its caller, and its mode are in the
+[command reference](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/commands.md),
+with the
+[config sync commands](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/config-sync-reference.md)
+alongside it. Both are generated from the Makefile and gated in CI, so they stay in step with the targets.
+
+## Off-chain kit
+
+The `ccv-cell` Helm chart is documented in its
+[deployment runbook](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md) and
+[chart values reference](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/charts/ccv-cell/README.md).
+It runs two Docker images, the verifier and the aggregator, published to the public Amazon ECR gallery
+([verifier](https://gallery.ecr.aws/chainlink/chainlink-ccv-verifier),
+[aggregator](https://gallery.ecr.aws/chainlink/chainlink-ccv-aggregator)), where you can see the available
+versions; the [chart releases](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/releases) are on
+GitHub. The chart sets a default image tag; override it in your chart values to run a specific version.
+
+## Concepts
+
+- [CCV overview](/ccip/concepts/ccvs/overview): the entry point to the verification models, interface
+  guarantees, and trust and responsibility model.
+- [CCIP architecture overview](/ccip/concepts/architecture/overview): how verifiers, aggregators, the indexer,
+  and the executor fit together.
+- [Manual execution](/ccip/concepts/manual-execution): executing a message yourself on the destination chain.
+
+## Tools
+
+- [`ccip-cli`](https://docs.chain.link/ccip/tools/cli/): send messages, self-execute, and check message status.
+- [Policy hook OpenAPI spec](https://github.com/smartcontractkit/chainlink-ccv/blob/main/verifier/policy_hook_openapi_v1.yaml):
+  the request and response contract for a custom policy hook.
+
+## CCIP resources
+
+- [Network integration](/resources/network-integration): RPC requirements and SLAs.
+- [CCIP directory](/ccip/directory): Router and lane addresses per chain.
+
+## Support
+
+Questions, or want to run a CCV? Email <CopyText text="clusersupport@smartcontract.com" />.

@@ -1,0 +1,100 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IRMN API Reference"
+metadata:
+  description: "Interface for querying Risk Management Network (RMN) curse state."
+  version: "2.0.0"
+---
+
+## Summary
+
+`IRMN` contains the only RMN-related functions used on-chain by other CCIP contracts.
+
+It allows CCIP contracts to:
+
+- Get the current set of cursed subjects.
+- Check whether the system is globally cursed.
+- Check whether a specific subject is cursed.
+
+All functions are read-only.
+
+---
+
+## Contract
+
+`chains/evm/contracts/interfaces/IRMN.sol`
+
+---
+
+## Import
+
+```solidity
+import {IRMN} from "chainlink-ccip/chains/evm/contracts/interfaces/IRMN.sol";
+```
+
+---
+
+## Interface surface
+
+```solidity
+interface IRMN {
+```
+
+---
+
+### getCursedSubjects
+
+```solidity
+function getCursedSubjects() external view returns (bytes16[] memory subjects);
+```
+
+Returns the current set of cursed subjects.
+
+---
+
+### isCursed()
+
+```solidity
+function isCursed() external view returns (bool);
+```
+
+Returns `true` if there is an active global or legacy curse.
+
+---
+
+### isCursed(bytes16)
+
+```solidity
+function isCursed(
+  bytes16 subject
+) external view returns (bool);
+```
+
+Returns `true` if:
+
+- A global curse is active, or
+- The specified subject is cursed.
+
+---
+
+```solidity
+}
+```
+
+---
+
+## Integration notes / expectations
+
+- Curse checks should be performed immediately before executing sensitive operations.
+- To check whether a particular chain is cursed, pass `bytes16(uint128(chainSelector))` as the subject.
+- Both `isCursed` overloads return false immediately when no subjects are cursed at all.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`RMN`](/ccip/evm/api-reference/v2.0.0/rmn)
+- [`RMNProxy`](/ccip/evm/api-reference/v2.0.0/rmn-proxy)
+- [`OffRamp`](/ccip/evm/api-reference/v2.0.0/offramp)
+- [`OnRamp`](/ccip/evm/api-reference/v2.0.0/onramp)

@@ -1,0 +1,119 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 Pool API Reference"
+metadata:
+  description: "Canonical data structures used for token movement across CCIP."
+  version: "2.0.0"
+---
+
+`Pool` defines the canonical data structures used for token movement across CCIP.
+
+These structs are used to:
+
+- represent token transfer intent on the source chain
+- carry token transfer data across chains
+- execute token release or minting on the destination chain
+
+They form the interface between OnRamp, TokenPool implementations, and OffRamp execution.
+
+> This library provides reusable helper functions and is not deployed as a standalone application-facing contract.
+
+## Usage Boundary
+
+**You do not call this library directly.**
+
+- OnRamp constructs `LockOrBurn` inputs when initiating token transfers.
+- TokenPool implementations process these inputs and produce outputs.
+- OffRamp consumes `ReleaseOrMint` inputs to complete token delivery.
+- You interact with these structs indirectly through CCIP contracts.
+
+## Contract
+
+`libraries/Pool.sol`
+
+## Import
+
+```solidity
+import {Pool} from "chainlink-ccip/libraries/Pool.sol";
+```
+
+## Source Chain (Lock/Burn)
+
+### LockOrBurnInV1
+
+Represents a token transfer request on the source chain.
+
+| Field                 | Type      |
+| --------------------- | --------- |
+| `receiver`            | `bytes`   |
+| `remoteChainSelector` | `uint64`  |
+| `originalSender`      | `address` |
+| `amount`              | `uint256` |
+| `localToken`          | `address` |
+
+---
+
+### LockOrBurnOutV1
+
+Represents encoded token transfer data for cross-chain transmission.
+
+| Field              | Type    |
+| ------------------ | ------- |
+| `destTokenAddress` | `bytes` |
+| `destPoolData`     | `bytes` |
+
+---
+
+## Destination Chain (Release/Mint)
+
+### ReleaseOrMintInV1
+
+Represents a token transfer request received on the destination chain.
+
+| Field                     | Type      |
+| ------------------------- | --------- |
+| `originalSender`          | `bytes`   |
+| `remoteChainSelector`     | `uint64`  |
+| `receiver`                | `address` |
+| `sourceDenominatedAmount` | `uint256` |
+| `localToken`              | `address` |
+| `sourcePoolAddress`       | `bytes`   |
+| `sourcePoolData`          | `bytes`   |
+| `offchainTokenData`       | `bytes`   |
+
+---
+
+### ReleaseOrMintOutV1
+
+Represents the result of token release or minting.
+
+| Field               | Type      |
+| ------------------- | --------- |
+| `destinationAmount` | `uint256` |
+
+## Errors
+
+No new custom errors declared.
+
+## Notes
+
+- Each transfer follows a single flow: lock/burn → transmit → release/mint.
+- Source and destination structs must be interpreted consistently across chains.
+- Amounts must be preserved across lock/burn and release/mint operations.
+- Fields encoded as `bytes` represent cross-chain addresses in chain-specific formats.
+- Incorrect struct data may cause token transfers to fail or result in mismatched execution.
+
+## Usage context
+
+Used by OnRamp, TokenPool implementations, and OffRamp.
+
+## Related Interfaces & Contracts
+
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)
+- [`BurnMintTokenPool`](/ccip/evm/api-reference/v2.0.0/burn-mint-token-pool)
+- [`LockReleaseTokenPool`](/ccip/evm/api-reference/v2.0.0/lock-release-token-pool)
+- [`OnRamp`](/ccip/evm/api-reference/v2.0.0/onramp)
+- [`OffRamp`](/ccip/evm/api-reference/v2.0.0/offramp)
+- [`MessageV1Codec`](/ccip/evm/api-reference/v2.0.0/message-v1-codec)
+- [`TokenAdminRegistry`](/ccip/evm/api-reference/v2.0.0/token-admin-registry)

@@ -1,0 +1,101 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IAny2EVMMessageReceiverV2 API Reference"
+metadata:
+  description: "Extended interface for CCIP receivers supporting optional per-source-chain CCV configuration."
+  version: "2.0.0"
+---
+
+`IAny2EVMMessageReceiverV2` extends `IAny2EVMMessageReceiver` with an interface that allows receivers to specify Cross-Chain Verifier (CCV) and finality preferences for incoming messages.
+
+If you implement this interface, you define the verification and finality requirements applied to incoming messages before execution.
+
+> This interface is optional and primarily used by advanced integrations that require custom verification or finality constraints. Most applications do not need to implement it.
+
+## Usage Boundary
+
+**You do not need to implement this interface to receive CCIP messages.**
+
+- Use `CCIPReceiver` without this interface for standard message handling.
+- Implement this interface only if you need to override default verification or finality behavior.
+- If you do, you define the verification requirements applied during message validation.
+
+## Contract
+
+`interfaces/IAny2EVMMessageReceiverV2.sol`
+
+## Import
+
+```solidity
+import {IAny2EVMMessageReceiverV2} from "chainlink-ccip/interfaces/IAny2EVMMessageReceiverV2.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## Inheritance
+
+- `IAny2EVMMessageReceiver`
+
+## External API
+
+### getCCVsAndFinalityConfig
+
+```solidity
+function getCCVsAndFinalityConfig(
+  uint64 sourceChainSelector,
+  bytes calldata sender
+) external view returns (
+  address[] memory requiredCCVs,
+  address[] memory optionalCCVs,
+  uint8 optionalThreshold,
+  bytes4 allowedFinalityConfig
+)
+```
+
+> Returns the Cross-Chain Verifier (CCV) set and finality requirements to apply when processing messages from a given source chain and sender.
+>
+> This function is used during message validation to determine verification and finality requirements on a per-source basis.
+
+| Parameter             | Type             | Description                                         |
+| --------------------- | ---------------- | --------------------------------------------------- |
+| `sourceChainSelector` | `uint64`         | Identifier of the source chain sending the message. |
+| `sender`              | `bytes calldata` | Encoded address of the sender on the source chain.  |
+
+Returns:
+
+| Type               | Description                                              |
+| ------------------ | -------------------------------------------------------- |
+| `address[] memory` | CCVs that must validate the message.                     |
+| `address[] memory` | Additional CCVs that may contribute to validation.       |
+| `uint8`            | Minimum number of optional CCVs required.                |
+| `bytes4`           | Encoded finality configuration accepted by the receiver. |
+
+## Events
+
+No new events declared.
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+No new custom errors declared.
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Notes
+
+- You do not need to implement this interface to receive CCIP messages.
+- This interface defines verification preferences, not message execution logic.
+- If you implement it, you specify CCV and finality requirements for message validation.
+- These preferences are used during message validation but do not change how messages are delivered by the Router.
+- These preferences are advisory and depend on the CCIP execution flow for enforcement.
+
+## Related Interfaces & Contracts
+
+- [`IAny2EVMMessageReceiver`](/ccip/evm/api-reference/v2.0.0/i-any2-evm-message-receiver)
+- [`CCIPReceiver`](/ccip/evm/api-reference/v2.0.0/ccip-receiver)

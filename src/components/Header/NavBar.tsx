@@ -49,6 +49,9 @@ export const NavBar = ({
         }
         e.style.top = `${hidden ? baseHeightNoNav : height}px`
       })
+      // Expose the same offset as a CSS variable. The left sidebar (src/components/LeftSidebar/leftSidebar.module.css)
+      // uses it to sit directly below the docs navigation bar: 120px when the header is shown, 56px when it is hidden.
+      document.documentElement.style.setProperty("--docs-sticky-top", `${hidden ? baseHeightNoNav : height}px`)
       setNavBarInfo({ hidden, height })
     }
   }

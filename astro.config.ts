@@ -13,8 +13,10 @@ import yaml from "@rollup/plugin-yaml"
 import { ccipRedirects } from "./src/config/redirects/ccip"
 import trailingSlashMiddleware from "./src/integrations/trailing-slash-middleware"
 import redirectsJson from "./src/features/redirects/redirects.json"
+import tailwind from "@astrojs/tailwind"
 import { extractCanonicalUrlsWithLanguageVariants } from "./src/utils/sidebar"
 import remarkCodeFenceFilename from "./src/lib/markdown/remarkCodeFenceFilename"
+import remarkCodeFenceLanguageAlias from "./src/lib/markdown/remarkCodeFenceLanguageAlias"
 import rehypeCodeSampleFences from "./src/lib/markdown/rehypeCodeSampleFences"
 
 config() // Load .env file
@@ -48,6 +50,7 @@ export default defineConfig({
     ...ccipRedirects,
   },
   integrations: [
+    tailwind(),
     trailingSlashMiddleware(),
     preact({
       include: ["**/preact/*"],
@@ -81,7 +84,7 @@ export default defineConfig({
         const pathname = new URL(page).pathname
         const cleanPath = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname
 
-        // Exclude short format API reference URLs (e.g., /api-reference/v150, /ccip/api-reference/evm/v150)
+        // Exclude short format API reference URLs (e.g., /api-reference/v150, /ccip/evm/api-reference/v150)
         // These are aliases for versioned content - we keep only the canonical long format URLs
         const shortVersionPattern = /\/api-reference\/(?:.*\/)?v\d{3,4}(?:\/|$)/
         if (shortVersionPattern.test(cleanPath)) {
@@ -113,11 +116,11 @@ export default defineConfig({
     }),
     // Ensure our fence-meta parser runs for `.mdx` pages (in addition to `markdown.remarkPlugins`).
     mdx({
-      remarkPlugins: [remarkCodeFenceFilename],
+      remarkPlugins: [remarkCodeFenceFilename, remarkCodeFenceLanguageAlias],
     }),
   ],
   markdown: {
-    remarkPlugins: [remarkCodeFenceFilename],
+    remarkPlugins: [remarkCodeFenceFilename, remarkCodeFenceLanguageAlias],
     rehypePlugins: [
       rehypeSlug, // Required for autolink to work properly
       [

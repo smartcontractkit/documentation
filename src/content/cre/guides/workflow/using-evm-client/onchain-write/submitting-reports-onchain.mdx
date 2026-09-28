@@ -130,7 +130,7 @@ When submitting reports onchain, follow these practices to ensure reliability an
 
 1. **Monitor transaction status**: Always check the `TxStatus` field in the response to ensure your transaction was successful. Handle `REVERTED` and `FATAL` statuses appropriately.
    ```go
-   if resp.TxStatus != evm.TxStatusSuccess {
+   if resp.TxStatus != evm.TxStatus_TX_STATUS_SUCCESS {
        return fmt.Errorf("transaction failed with status: %v, error: %s", resp.TxStatus, *resp.ErrorMessage)
    }
    ```
@@ -230,7 +230,7 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 	}
 
 	// Check transaction status
-	if resp.TxStatus != evm.TxStatusSuccess {
+	if resp.TxStatus != evm.TxStatus_TX_STATUS_SUCCESS {
 		errorMsg := "unknown error"
 		if resp.ErrorMessage != nil {
 			errorMsg = *resp.ErrorMessage

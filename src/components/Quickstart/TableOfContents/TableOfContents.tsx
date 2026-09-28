@@ -23,18 +23,23 @@ const TableOfContents: FunctionalComponent<{
   const [activeIds, setActiveIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    // Only get top-level headers, don't get nested component headers
     const query = `article :where(
       section > :where(h2, h3, h4),
-       .${Object.keys(wrapperDepthMap).join(", .")}
+       .${Object.keys(wrapperDepthMap).join(", .")},
+      astro-anchored-accordion[data-toc-depth],
+      astro-anchored-accordion :where(h1, h2, h3, h4)
     )`
     const elements = document.querySelectorAll(query)
     const newHeadings: MarkdownHeading[] = []
 
     elements.forEach((e) => {
-      const depth = Number(e.nodeName.at(1)) || wrapperDepthMap[e.className.split(" ")[0]]
+      const el = e as HTMLElement
+      const depth =
+        Number(e.nodeName.at(1)) ||
+        wrapperDepthMap[e.className.split(" ")[0] as HeaderWrapperClass] ||
+        Number(el.dataset?.tocDepth)
       const slug = e.id
-      const text = e.getAttribute("title") || e.textContent
+      const text = e.getAttribute("title") || el.dataset?.tocText || e.textContent
       if (depth && slug && text) {
         newHeadings.push({ depth, slug, text })
       }

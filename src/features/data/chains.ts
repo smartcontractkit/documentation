@@ -113,7 +113,7 @@ export const CHAINS: Chain[] = [
     title: "Arc Data Feeds",
     img: "/assets/chains/arc.svg",
     networkStatusUrl: "https://status.arc.network/",
-    tags: ["default", "smartData"],
+    tags: ["default", "smartData", "extendedHours"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -123,7 +123,7 @@ export const CHAINS: Chain[] = [
         rddUrl: "https://reference-data-directory.vercel.app/feeds-arc-mainnet.json",
         rddBundleUrl: "https://reference-data-directory.vercel.app/bundle-proxies-arc-mainnet.json",
         queryString: "arc-mainnet",
-        tags: ["smartData"],
+        tags: ["smartData", "extendedHours"],
       },
     ],
     label: "Arc",
