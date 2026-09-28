@@ -13,7 +13,7 @@ isIndex: true
 import { ClickToZoom } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-Blockchains don't natively talk to each other. If your application, platform, or backend needs to work across multiple chains, you'd normally have to build and maintain a separate integration for each one — a costly and complex undertaking.
+Blockchains don't natively talk to each other. If your application, platform, or backend needs to work across multiple chains, you'd normally have to build and maintain a separate integration for each one, and that's costly and complex.
 
 Chainlink CCIP solves this. It's a single interoperability layer that lets you transfer messages without building bespoke infrastructure for every chain pair.
 
@@ -21,66 +21,66 @@ Whether you're a DeFi protocol expanding to new networks, an institution connect
 
 ## How CCIP fits into the Chainlink platform
 
-CCIP is part of Chainlink's broader suite of decentralized services. While [Data Feeds](/data-feeds) bring real-world data onchain and [CRE](/cre) handles smart contract execution, CCIP connects the chains themselves — making it possible to build applications that span multiple networks as if they were one.
+CCIP is part of Chainlink's broader suite of decentralized services. While [Data Feeds](/data-feeds) bring real-world data onchain and [CRE](/cre) handles smart contract execution, CCIP connects the chains themselves, so you can build applications that span multiple networks as if they were one.
 
-For institutions adopting blockchain, CCIP acts as a unified connectivity layer: integrate once, reach any supported chain.
+For institutions adopting blockchain, CCIP is a unified connectivity layer. You integrate once and can reach any supported chain.
 
 ## What can CCIP do?
 
 CCIP supports three core capabilities:
 
-1. **Send data across chains (Arbitrary Messaging)** — Send any encoded data to a smart contract on another blockchain. This lets you trigger actions remotely — rebalance a portfolio, mint an NFT, call a function, or orchestrate multi-step workflows across chains.
+1. **Send data across chains (Arbitrary Messaging):** Send any encoded data to a smart contract on another blockchain. This lets you trigger actions remotely: rebalance a portfolio, mint an NFT, call a function, or orchestrate multi-step workflows across chains. Token transfers and programmable token transfers are built on arbitrary messaging.
 
-2. **Move tokens across chains (Token Transfer)** — Transfer tokens to a wallet or contract on a different blockchain. Simple, direct asset movement between chains.
+2. **Move tokens across chains (Token Transfer):** Transfer tokens to a wallet or contract on a different blockchain. Token pools lock or burn the tokens on the source chain and release or mint them on the destination chain.
 
-3. **Move tokens + data together (Programmable Token Transfer)** — Send tokens and instructions in one transaction. For example: transfer tokens to a lending protocol on another chain with instructions to use them as collateral and send the borrowed asset back.
+3. **Move tokens + data together (Programmable Token Transfer):** Send tokens and instructions in one CCIP message. For example, you can transfer tokens to a lending protocol on another chain with instructions to use them as collateral and send the borrowed asset back.
 
 ## What's new in CCIP 2.0
 
-CCIP 2.0 introduces key new features
+CCIP 2.0 introduces these new features:
 
 1. **Additive Security:** Add issuer, third-party, or institution-operated Cross-Chain Verifiers (CCVs) where required for additional verification and control:
-   - **Asset specific verifications**
-   - **Chain specific verifications**
+   - **Asset-specific verifications**
+   - **Chain-specific verifications**
 
-2. **Faster than finality transfers:** Control confirmation parameters, enabling standard or faster-than-finality cross–chain execution tailored to your needs and risk threshold.
+2. **Faster-Than-Finality (FTF) transfers:** Control confirmation parameters to choose standard or FTF cross-chain execution, based on your needs and risk threshold.
 
-3. **Permissionless Execution / No - Exec:** Customize execution by either setting to No Exec (for a more controlled execution), use a custom executor, or permissionlessly execute
+3. **Permissionless Execution / No Exec:** Set the executor to No Exec (for more controlled execution), use a custom executor, or execute permissionlessly.
 
-4. **Modular fee components:** Customize fees for your token or your verifier
+4. **Modular fee components:** Customize fees for your token or your verifier.
 
-5. **Built in Compliance Functions:** Native integration with Chainlink [Automated Compliance Engine (ACE)](/ace) allows policy checks without breaking composability.
+5. **Built-in Compliance Functions:** CCIP integrates natively with the Chainlink [Automated Compliance Engine (ACE)](/ace), so you can run policy checks without breaking composability.
 
 All of these are opt-in features.
 
 ## CCIP 2.0 Defaults
 
-Just as in previous versions, in CCIP 2.0, by default:
+As in previous versions, CCIP 2.0 works this way by default:
 
-1. The Chainlink decentralized oracle network (Chainlink Committee Verifier) verifies each message
-2. Messages wait for full source-chain finality before execution on destination chains
-3. Messages get attempted for execution by the default Chainlink executor
-4. Existing CCTs, sender-receivers will use the default settings and run as-is - no changes are needed by integrators or token issuers.
+1. The Chainlink decentralized oracle network (Chainlink Committee Verifier) verifies each message.
+2. Messages wait for full source-chain finality before execution on destination chains.
+3. The default Chainlink executor attempts to execute each message.
+4. Existing Cross-Chain Tokens (CCTs), sender contracts, and receiver contracts use the default settings and run as-is, so integrators and token issuers don't need to make any changes.
 
-All the new features are opt-in features.
+All the new features are opt-in.
 
 ## Security Model
 
 Cross-chain bridges have historically been high-value targets. CCIP is designed with defense-in-depth security, built on the same Chainlink infrastructure that secures tens of billions in DeFi value today.
 
-- **Decentralized validation:** Cross-chain transactions are validated by default by independent, decentralized oracle networks (DONs).
+- **Decentralized validation:** Independent, decentralized oracle networks (DONs) validate cross-chain transactions by default. CCIP doesn't rely on a single verifier, machine, or infrastructure provider. It is operated by the same globally distributed, security-reviewed node operators that secure Chainlink Data Feeds, validate major blockchain networks, and run enterprise-grade Web2 infrastructure. A message needs at least 9 of 16 signed attestations to be verified. The operators are Sybil-resistant and independent, with significant experience running mission-critical infrastructure across telecommunications, cloud, and Web3.
 
-- **Rate limiting:** Configurable policies cap token flows on both source and destination chains, limiting exposure in the event of an exploit.
+- **Rate limiting:** Configurable policies cap token flows on both source and destination chains, limiting exposure in the event of an exploit. Token issuers can set separate limits (capacity and refill rate) for FTF and standard transfers.
 
-- **Timelocked upgrades:** All security-critical changes go through a timelock contract with a review period. [Node operators](https://ccip.chain.link/nops) can veto upgrades, ensuring no single party can push through a malicious change.
-
-- **Battle-tested infrastructure:** CCIP is operated by the same globally distributed, security-reviewed node operators that secure Chainlink Data Feeds, validate major blockchain networks, and run enterprise-grade Web2 infrastructure. Cross-chain systems introduce additional failure modes compared to single-chain applications. Messages must be verified correctly, and protected against replay or manipulation.
+- **Timelocked upgrades:** All security-critical changes go through a timelock contract with a review period. [Node operators](https://ccip.chain.link/nops) can veto upgrades, which reduces the risk that a single party can push through a malicious change.
 
 For a detailed breakdown of how messages move through the system, see the [Architecture Overview](/ccip/concepts/architecture/overview).
 
 ## Getting Started with CCIP
 
-- [**Check supported networks and tokens (CCIP Directory)**](/ccip/directory/mainnet) — View available chains, supported tokens, and valid routes between them
-- [**Understand how CCIP works (Architecture Overview)**](/ccip/concepts/architecture/overview) — See how messages are verified offchain and enforced onchain
-- [**Build your first cross-chain flow (Tutorials)**](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry) — Step-by-step examples for sending tokens and data.
-- [**Talk to a CCIP expert**](https://chain.link/ccip-contact) — Get implementation guidance from the Chainlink team.
+- [**Check supported networks and tokens (CCIP Directory)**](/ccip/directory/mainnet): View available chains, supported tokens, and valid routes between them.
+- [**Understand how CCIP works (Architecture Overview)**](/ccip/concepts/architecture/overview): See how messages are verified offchain and enforced onchain.
+- [**Build your first cross-chain flow (Tutorials)**](/ccip/evm/tutorials/application-developers): Step-by-step examples for sending tokens and data.
+- [**Talk to a CCIP expert**](https://chain.link/ccip-contact): Get implementation guidance from the Chainlink team.
+
+<CcipCommon callout="conceptualDisclaimer" />
