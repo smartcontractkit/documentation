@@ -3,7 +3,7 @@ section: ccip
 date: Last Modified
 title: "Prerequisites and Permissions"
 metadata:
-  description: "Required permissions for managing CCIP rate limits: the owner and rateLimitAdmin roles, how admin access is granted on v2.0 and v1.x pools, and the scope of admin authority."
+  description: "Permissions for managing CCIP rate limits: the owner and rateLimitAdmin roles, how admin access is granted on v2.0 and v1.x pools, and what each role can do."
   excerpt: "CCIP rate limits permissions owner rateLimitAdmin setDynamicConfig getDynamicConfig setRateLimitAdmin applyChainUpdates v2.0 v1.x multisig"
   datePublished: "2025-06-09"
   lastModified: "2025-06-09"
@@ -13,10 +13,10 @@ import { Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 <Aside type="note" title="CCIP 2.0">
-  This page describes permissions on `TokenPool` v2.0 contracts. **v1.x pools** differences are noted inline.
+  This page describes permissions on `TokenPool` v2.0 contracts. Differences for **v1.x pools** are noted inline.
 </Aside>
 
-Managing CCIP rate limits is a privileged, operator-level action. Before attempting to inspect or modify any rate limit configuration, you must meet the prerequisites described on this page.
+Managing CCIP rate limits is a privileged, operator-level action. Before you inspect or modify any rate limit configuration, you must meet the prerequisites on this page.
 
 ## Required permissions
 
@@ -25,15 +25,15 @@ To **update** rate limits, the submitting wallet must be either:
 - the pool **owner**, or
 - the address returned by `getDynamicConfig()` as `rateLimitAdmin`
 
-The update function is `setRateLimitConfig`. Without one of these roles, you can read on-chain data but cannot make changes.
+The update function is `setRateLimitConfig`. Without one of these roles, you can read onchain data but cannot make changes.
 
 In most cases, the `rateLimitAdmin` role is assigned to a multisig wallet rather than to an individual externally owned account.
 
-## How rate limit admin access is granted (v2.0 pools)
+## How rate limit admin access is granted
 
-Admin access is not self-assigned.
+Admin access is not self-assigned. Only the pool owner can set the `rateLimitAdmin`.
 
-### v2.0
+### v2.0 pools
 
 The `rateLimitAdmin` is set through `setDynamicConfig`:
 
@@ -58,7 +58,7 @@ The update function is `setRateLimitConfig`.
 
 ### v1.x pools
 
-v1 pools use a standalone admin function:
+v1.x pools use standalone admin functions:
 
 ```solidity
 function getRateLimitAdmin() external view returns (address);
@@ -76,36 +76,36 @@ The update functions are `setChainRateLimiterConfig` (single lane) or `setChainR
 
 ### rateLimitAdmin cannot:
 
-- **add or remove remote chains (`applyChainUpdates`) — owner only**
-- **change admin addresses — owner only (`setDynamicConfig` on v2.0; `setRateLimitAdmin` on v1.x)**
+- add or remove remote chains (`applyChainUpdates`): owner only
+- change admin addresses: owner only (`setDynamicConfig` on v2.0; `setRateLimitAdmin` on v1.x)
 
 ### Owner can:
 
 - everything `rateLimitAdmin` can do
-- add or remove lanes via `applyChainUpdates`
+- add or remove remote chains via `applyChainUpdates`
 
 <Aside type="note" title="v1.x pools">
   Removing a chain deletes that lane's inbound/outbound rate limit state. There is no fast-finality state to clean up.
 </Aside>
 
 <Aside type="note" title="v2.0 pools only">
-  Owner can also call `setAllowedFinalityConfig` to control which finality modes the pool accepts, and
-  `setDynamicConfig` to update router, rate limit admin, and fee admin together.
+  The owner can also call `setAllowedFinalityConfig` to control which finality modes the pool accepts, and
+  `setDynamicConfig` to update the router, rate limit admin, and fee admin together.
 </Aside>
 
-Authority applies per token pool, per remote chain, and per direction (and per bucket type on v2.0).
+Each token pool has its own owner and `rateLimitAdmin`. Their authority covers the inbound and outbound limits of every remote chain configured on that pool (and both bucket types on v2.0).
 
 ## Operational expectations
 
-Before making any changes, you should ensure that:
+Before you change anything, make sure that:
 
 - you understand the token's decimal precision and smallest unit **on each chain** you configure
 - you have reviewed the current inbound and outbound configurations (and fast-finality buckets on v2.0)
 - you are prepared to validate values carefully before submitting transactions
-- **v2.0 only:** Config changes immediately refill buckets to full capacity.
-- **v1.x pools:** Config changes do **not** immediately refill to full capacity — the bucket continues refilling at the normal rate.
+- **v2.0 pools:** Config changes immediately refill buckets to full capacity.
+- **v1.x pools:** Config changes do **not** immediately refill to full capacity. The bucket continues refilling at the normal rate.
 
-Rate limit changes are applied on-chain and take effect immediately.
+Rate limit changes are applied onchain and take effect immediately.
 
 ## Responsibility boundary
 

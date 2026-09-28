@@ -102790,18 +102790,18 @@ For tool-specific walkthroughs, refer to the Token Manager and multisig document
 Source: https://docs.chain.link/ccip/evm/concepts/cross-chain-token/rate-limits
 Last Updated: 2025-06-09
 
-This section explains how operators, token issuers, and administrators manage **rate limits** on CCIP `TokenPool` v2.0 contracts (and v1.x pools, with differences noted inline). Rate limits are operator-level controls that bound the volume of tokens that can move across a specific CCIP lane over time, reducing blast radius during incidents and helping manage operational risk.
+This section explains how operators, token issuers, and administrators manage **rate limits** on CCIP `TokenPool` v2.0 contracts (and v1.x pools, with differences noted inline). Rate limits are operator-level controls that bound the volume of tokens that can move across a specific CCIP lane over time. They reduce the blast radius of an incident and help manage operational risk.
 
-Changes are applied on-chain, take effect immediately, and directly affect transfer availability. Most integrators do not need to interact with rate limits.
+Changes are applied onchain, take effect immediately, and directly affect transfer availability. Most integrators do not need to interact with rate limits.
 
 ## Pages
 
 - [Overview](/ccip/evm/concepts/cross-chain-token/rate-limits/overview): How CCIP rate limits work as capacity buckets, why they exist, who should manage them, and the responsibility boundary.
-- [Prerequisites and Permissions](/ccip/evm/concepts/cross-chain-token/rate-limits/prerequisites-and-permissions): Required roles (owner or rateLimitAdmin), how admin access is granted on v2.0 and v1.x pools, and the scope of admin authority.
-- [Inspect Current Rate Limits](/ccip/evm/concepts/cross-chain-token/rate-limits/inspect-current-rate-limits): Read-only inspection of inbound and outbound rate limiter state, including the TokenBucket struct and fast-finality buckets.
-- [Token Units and Decimals](/ccip/evm/concepts/cross-chain-token/rate-limits/token-units-and-decimals): How to convert human-readable token amounts into on-chain base units, with worked examples for 18-decimal and 6-decimal tokens.
-- [Update Rate Limits](/ccip/evm/concepts/cross-chain-token/rate-limits/update-rate-limits): The setRateLimitConfig (v2.0) and setChainRateLimiterConfig (v1.x) functions, inbound/outbound guidance, and fast-finality bucket updates.
-- [Emergency Actions](/ccip/evm/concepts/cross-chain-token/rate-limits/emergency-actions): Incident-response lockdown patterns: throttle to zero, minimal non-zero values, owner-only lane removal, and restoring normal operation.
+- [Prerequisites and Permissions](/ccip/evm/concepts/cross-chain-token/rate-limits/prerequisites-and-permissions): Required roles (owner or \`rateLimitAdmin\` ), how admin access is granted on v2.0 and v1.x pools, and the scope of admin authority.
+- [Inspect Current Rate Limits](/ccip/evm/concepts/cross-chain-token/rate-limits/inspect-current-rate-limits): Read-only inspection of inbound and outbound rate limiter state, including the \`TokenBucket\` struct and fast-finality buckets.
+- [Token Units and Decimals](/ccip/evm/concepts/cross-chain-token/rate-limits/token-units-and-decimals): How to convert human-readable token amounts into onchain base units, with worked examples for 18-decimal and 6-decimal tokens.
+- [Update Rate Limits](/ccip/evm/concepts/cross-chain-token/rate-limits/update-rate-limits): The \`setRateLimitConfig\` (v2.0) and \`setChainRateLimiterConfig\` (v1.x) functions, inbound/outbound guidance, and fast-finality bucket updates.
+- [Emergency Actions](/ccip/evm/concepts/cross-chain-token/rate-limits/emergency-actions): Incident-response lockdown patterns (throttle to zero, minimal non-zero values, owner-only lane removal) and how to restore normal operation.
 - [Common Scenarios](/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios): Worked configuration examples for 18-decimal and 6-decimal tokens, fast-finality buckets, batch updates, pausing a lane, and removing rate limits.
 - [Executing with a Multisig](/ccip/evm/concepts/cross-chain-token/rate-limits/executing-with-a-multisig): How to build and submit rate limit update transactions from a multisig wallet, including ABIs for transaction builders.
 
@@ -102813,11 +102813,11 @@ Last Updated: 2025-06-09
 
 > **NOTE: CCIP 2.0**
 >
-> This page describes read-only inspection of token pool contracts. **v1.x pools** differences are noted inline.
+> This page covers read-only inspection of token pool contracts. Differences for v1.x pools are noted inline.
 
 Before updating any rate limit configuration, inspect the current inbound and outbound settings for the token pool and lane you are managing.
 
-On v2.0 pools, also inspect the **fast-finality bucket** if fast-finality transfers are enabled on the lane.
+On v2.0 pools, also inspect the **fast-finality bucket** if FTF transfers are in use on the lane.
 
 ## What you can inspect
 
@@ -102826,7 +102826,7 @@ Each token pool exposes read-only functions that return rate limiter state for a
 - whether the inbound or outbound rate limit is enabled
 - the configured capacity and refill rate
 - the current tokens available in the bucket (with time-based refill applied)
-- the timestamp of the last refill
+- the refill timestamp, which the getters set to the time of your call
 
 You can also read the current rate limit admin:
 
@@ -102843,19 +102843,19 @@ You can find token pool addresses using:
 
 - the Token Manager
 - `TokenAdminRegistry` lookups for your token
-- CCIP Directory
+- the CCIP Directory
 
 ## Select the remote chain
 
 Rate limits are configured per remote chain. When querying a rate limiter, you must provide the remote chain selector that identifies the cross-chain lane you want to inspect.
 
-Chain selectors are represented as `uint64` values. You can find the correct selector for each supported network in the [CCIP Directory](https://docs.chain.link/ccip/directory).
+Chain selectors are `uint64` values. You can find the correct selector for each supported network in the [CCIP Directory](https://docs.chain.link/ccip/directory).
 
-## Query rate limiter state (v2.0)
+## Query rate limiter state
 
 ### v2.0
 
-Inbound and outbound state for a bucket type are returned by one function:
+One function returns the outbound and inbound state for a bucket type:
 
 ```solidity
 function getCurrentRateLimiterState(
@@ -102872,11 +102872,11 @@ function getCurrentRateLimiterState(
 | `false`        | Default (wait-for-finality) outbound and inbound |
 | `true`         | Fast-finality outbound and inbound               |
 
-Call twice per remote chain — `fastFinality = false` and `fastFinality = true` — to inspect all bucket pairs.
+Call it twice per remote chain, with `fastFinality = false` and `fastFinality = true`, to inspect both bucket pairs.
 
 ### v1.x pools
 
-v1 pools expose **separate getters per direction:**
+v1.x pools expose separate getters for each direction:
 
 ```solidity
 function getCurrentOutboundRateLimiterState(
@@ -102894,7 +102894,7 @@ You can call these functions via a block explorer, web3 client, or deployment st
 
 ## Interpreting the TokenBucket state
 
-A typical rate limiter state includes the following fields:
+The v2.0 and v1.x getters both return `RateLimiter.TokenBucket` structs with these fields:
 
 ```solidity
 struct TokenBucket {
@@ -102909,37 +102909,37 @@ struct TokenBucket {
 Where:
 
 - **tokens** (`uint128`): the current number of tokens available in the bucket (after time-based refill)
-- **lastUpdated** (`uint32`): the timestamp of the last refill
+- **lastUpdated** (`uint32`): the timestamp of the last refill, in seconds (the getters apply the refill at call time, so they return the current block timestamp)
 - **isEnabled** (`bool`): whether the rate limit is active
 - **capacity** (`uint128`): the maximum bucket size
 - **rate** (`uint128`): the refill rate in tokens per second
 
-All numeric values are expressed in the token's **local smallest unit** on the chain where the pool is deployed, not in whole tokens.
+`tokens`, `capacity`, and `rate` are in the token's **local smallest unit** on the chain where the pool is deployed, not in whole tokens.
 
 ### Reading disabled or unconfigured fast-finality buckets
 
-> **NOTE: v2 pools only**
+> **NOTE: v2.0 pools only**
 >
-> A fast-finality bucket with `isEnabled = false` is not enforcing limits for fast-finality transfers in that bucket.
-> Fast-finality traffic falls back to the default bucket.
+> A fast-finality bucket with `isEnabled = false` doesn't enforce limits, so FTF transfers in that direction fall back
+> to the default bucket.
 
 ## Inbound vs outbound inspection
 
-- **Outbound** (source chain pool) — transfers leaving the current chain
-- **Inbound** (destination chain pool) — transfers entering the current chain
+- **Outbound** (source chain pool): transfers leaving the current chain
+- **Inbound** (destination chain pool): transfers entering the current chain
 
 For a complete lane picture, inspect outbound on the source and inbound on the destination.
 
-> **NOTE: v2.0 only**
+> **NOTE: v2.0 pools only**
 >
-> Also inspect fast-finality buckets on both chains if FF transfers are in use.
+> Also inspect the fast-finality buckets on both chains if FTF transfers are in use.
 
 ## Before proceeding
 
 - record existing values for all relevant buckets
-- confirm token decimals on **each chain**
+- confirm token decimals on each chain
 - identify which direction, lane, and bucket type you intend to modify
-- verify your wallet is owner or `rateLimitAdmin`
+- verify your wallet is the pool owner or its `rateLimitAdmin`
 
 Only proceed to updates once you fully understand the current state. Next, review [token units and decimals](/ccip/evm/concepts/cross-chain-token/rate-limits/token-units-and-decimals) before submitting any update transaction.
 
@@ -102953,44 +102953,44 @@ Last Updated: 2025-06-09
 
 CCIP rate limits are an operator-level control on token pools. They limit how much of a token can move across a specific CCIP lane over time, reducing blast radius during incidents and helping manage operational risk.
 
-This documentation is for operators, token issuers, and administrators who manage rate limits on token pool contracts. Most integrators do not need to interact with rate limits. Changes are applied on-chain, take effect immediately, and directly affect transfer availability.
+This documentation is for operators, token issuers, and administrators who manage rate limits on token pool contracts. Most integrators do not need to interact with rate limits. Changes are applied onchain, take effect immediately, and directly affect transfer availability.
 
 > **NOTE: Private/Permissioned Networks**
 >
-> It is strongly recommended to configure Token Pool Rate Limits (TPRLs) for CCTs on all lanes. Private / permissioned
-> networks carry increased risk for token developers — ensure you understand the implications before proceeding. [Learn
-> More](https://docs.chain.link/ccip/concepts/cct).
+> It is strongly recommended to configure Token Pool Rate Limits (TPRLs) for CCTs on all lanes. Private/permissioned
+> networks carry increased risk for token developers. Ensure you understand the implications before proceeding. [Learn
+> More](/ccip/evm/service-limits).
 
 ## How rate limits work
 
 Rate limits are **capacity buckets** that refill over time. Each bucket has three parameters:
 
-- **isEnabled** — whether the limit is active
-- **capacity** — maximum tokens before the bucket is depleted
-- **rate** — refill speed in tokens per second
+- **isEnabled**: whether the limit is active
+- **capacity**: maximum number of tokens the bucket can hold
+- **rate**: refill speed in tokens per second
 
-Transfers consume capacity; if enough is not available, the transfer is rejected until the bucket refills. All values use the token's **local smallest unit** on the chain where the pool is deployed. When enabled, rate must be ≤ capacity.
+Transfers consume capacity; if enough is not available, the transfer is rejected until the bucket refills. A transfer larger than the capacity is rejected even when the bucket is full. All values use the token's **local smallest unit** on the chain where the pool is deployed. When enabled, rate must be ≤ capacity.
 
 Each token pool maintains up to **four limiters per remote chain (v2.0)**:
 
-| Bucket        | Direction          | Used for                           |
-| ------------- | ------------------ | ---------------------------------- |
-| Default       | Outbound / Inbound | Wait-for-finality transfers        |
-| Fast-finality | Outbound / Inbound | Fast-finality transfers (optional) |
+| Bucket        | Direction          | Used for                    |
+| ------------- | ------------------ | --------------------------- |
+| Default       | Outbound / Inbound | Wait-for-finality transfers |
+| Fast-finality | Outbound / Inbound | FTF transfers (optional)    |
 
-Fast-finality buckets are optional. If one is not enabled, fast-finality traffic falls back to the default bucket. Whether fast-finality is permitted at all is controlled by the pool owner via `setAllowedFinalityConfig`.
+Fast-finality buckets are optional. If one is not enabled, FTF transfers fall back to the default bucket for that direction. The pool owner uses `setAllowedFinalityConfig` to control whether the pool allows FTF on outbound transfers.
 
 > **NOTE: v1.x pools**
 >
-> EVM v1 pools have **two limiters per remote chain** — one inbound and one outbound. There are no separate
-> fast-finality buckets and no `setAllowedFinalityConfig`.
+> EVM v1 pools have **two limiters per remote chain**: one inbound and one outbound. There are no separate fast-finality
+> buckets and no `setAllowedFinalityConfig`.
 
 - Outbound limits apply to sends from the local chain.
 - Inbound limits apply to receives on the local chain.
 
 Outbound is configured on the source pool; inbound on the destination pool. Both sides of a lane must be configured for limits to behave as intended.
 
-Because CCIP commits messages in batches and chains finalize in epochs, destination inbound limits should be \~5–10% higher than source outbound limits (deployment tooling typically uses 10% headroom).
+Because many chains finalize blocks in batches, several transfers can become executable at the same time, so destination inbound limits should be \~5–10% higher than source outbound limits (deployment tooling typically uses 10% headroom).
 
 | State     | Config                                | Effect                                          |
 | --------- | ------------------------------------- | ----------------------------------------------- |
@@ -102998,7 +102998,7 @@ Because CCIP commits messages in batches and chains finalize in epochs, destinat
 | Disabled  | `isEnabled=false`, capacity=0, rate=0 | No volume limit for that bucket                 |
 | Throttled | `isEnabled=true`, capacity=0, rate=0  | All transfers blocked                           |
 
-Rate limits are scoped per token pool, remote chain, bucket type, and direction — they do not pause CCIP globally.
+Rate limits are scoped per token pool, remote chain, bucket type, and direction. They do not pause CCIP globally.
 
 > **NOTE: Config changes and bucket refill**
 
@@ -103032,7 +103032,7 @@ Managing rate limits directly affects the availability of cross-chain transfers 
 - allow more volume than intended
 - create congestion or stuck transfers
 
-Changes are applied on-chain and take effect immediately. Always review parameters carefully, verify units, and use a multisig workflow where possible.
+Changes are applied onchain and take effect immediately. Always review parameters carefully, verify units, and use a multisig workflow where possible.
 
 ---
 
@@ -103042,9 +103042,9 @@ Last Updated: 2025-06-09
 
 > **NOTE: CCIP 2.0**
 >
-> This page describes permissions on `TokenPool` v2.0 contracts. **v1.x pools** differences are noted inline.
+> This page describes permissions on `TokenPool` v2.0 contracts. Differences for **v1.x pools** are noted inline.
 
-Managing CCIP rate limits is a privileged, operator-level action. Before attempting to inspect or modify any rate limit configuration, you must meet the prerequisites described on this page.
+Managing CCIP rate limits is a privileged, operator-level action. Before you inspect or modify any rate limit configuration, you must meet the prerequisites on this page.
 
 ## Required permissions
 
@@ -103053,15 +103053,15 @@ To **update** rate limits, the submitting wallet must be either:
 - the pool **owner**, or
 - the address returned by `getDynamicConfig()` as `rateLimitAdmin`
 
-The update function is `setRateLimitConfig`. Without one of these roles, you can read on-chain data but cannot make changes.
+The update function is `setRateLimitConfig`. Without one of these roles, you can read onchain data but cannot make changes.
 
 In most cases, the `rateLimitAdmin` role is assigned to a multisig wallet rather than to an individual externally owned account.
 
-## How rate limit admin access is granted (v2.0 pools)
+## How rate limit admin access is granted
 
-Admin access is not self-assigned.
+Admin access is not self-assigned. Only the pool owner can set the `rateLimitAdmin`.
 
-### v2.0
+### v2.0 pools
 
 The `rateLimitAdmin` is set through `setDynamicConfig`:
 
@@ -103086,7 +103086,7 @@ The update function is `setRateLimitConfig`.
 
 ### v1.x pools
 
-v1 pools use a standalone admin function:
+v1.x pools use standalone admin functions:
 
 ```solidity
 function getRateLimitAdmin() external view returns (address);
@@ -103104,13 +103104,13 @@ The update functions are `setChainRateLimiterConfig` (single lane) or `setChainR
 
 ### rateLimitAdmin cannot:
 
-- **add or remove remote chains (`applyChainUpdates`) — owner only**
-- **change admin addresses — owner only (`setDynamicConfig` on v2.0; `setRateLimitAdmin` on v1.x)**
+- add or remove remote chains (`applyChainUpdates`): owner only
+- change admin addresses: owner only (`setDynamicConfig` on v2.0; `setRateLimitAdmin` on v1.x)
 
 ### Owner can:
 
 - everything `rateLimitAdmin` can do
-- add or remove lanes via `applyChainUpdates`
+- add or remove remote chains via `applyChainUpdates`
 
 > **NOTE: v1.x pools**
 >
@@ -103118,22 +103118,22 @@ The update functions are `setChainRateLimiterConfig` (single lane) or `setChainR
 
 > **NOTE: v2.0 pools only**
 >
-> Owner can also call `setAllowedFinalityConfig` to control which finality modes the pool accepts, and
-> `setDynamicConfig` to update router, rate limit admin, and fee admin together.
+> The owner can also call `setAllowedFinalityConfig` to control which finality modes the pool accepts, and
+> `setDynamicConfig` to update the router, rate limit admin, and fee admin together.
 
-Authority applies per token pool, per remote chain, and per direction (and per bucket type on v2.0).
+Each token pool has its own owner and `rateLimitAdmin`. Their authority covers the inbound and outbound limits of every remote chain configured on that pool (and both bucket types on v2.0).
 
 ## Operational expectations
 
-Before making any changes, you should ensure that:
+Before you change anything, make sure that:
 
 - you understand the token's decimal precision and smallest unit **on each chain** you configure
 - you have reviewed the current inbound and outbound configurations (and fast-finality buckets on v2.0)
 - you are prepared to validate values carefully before submitting transactions
-- **v2.0 only:** Config changes immediately refill buckets to full capacity.
-- **v1.x pools:** Config changes do **not** immediately refill to full capacity — the bucket continues refilling at the normal rate.
+- **v2.0 pools:** Config changes immediately refill buckets to full capacity.
+- **v1.x pools:** Config changes do **not** immediately refill to full capacity. The bucket continues refilling at the normal rate.
 
-Rate limit changes are applied on-chain and take effect immediately.
+Rate limit changes are applied onchain and take effect immediately.
 
 ## Responsibility boundary
 
@@ -103159,34 +103159,34 @@ Last Updated: 2025-06-09
 
 > **NOTE: CCIP 2.0**
 >
-> This page applies to manual on-chain configuration and deployment tooling output. **v1.x pools** differences are noted
+> This page applies to manual onchain configuration and deployment tooling output. **v1.x pools** differences are noted
 > inline.
 
-When configuring CCIP rate limits, on-chain values are specified in the token's **smallest unit** on the chain where the pool is deployed, not in whole tokens.
+When you configure CCIP rate limits, you specify onchain values in the token's **smallest unit** on the chain where the pool is deployed, not in whole tokens.
 
 Incorrect unit handling can result in rate limits orders of magnitude larger or smaller than intended.
 
 ## Smallest unit vs human-readable amounts
 
-Every ERC-20 token defines a number of decimal places that determine its smallest unit:
+A token's decimals determine its smallest unit:
 
 - An 18-decimal token (for example, LINK or ETH) uses `10^18` base units per token
 - A 6-decimal token (for example, USDC or USDT) uses `10^6` base units per token
 
-Rate limit parameters such as capacity and rate must always be provided in these base units when submitting on-chain transactions.
+Rate limit parameters such as capacity and rate must always be provided in these base units when you submit onchain transactions.
 
 ## Local denomination on each chain
 
-Outbound limits on chain A and inbound limits on chain B are **separate transactions**, each scaled to **that chain's decimals**. Do not copy a base-unit value from one chain to another unless decimals match and you intend identical limits.
+You set outbound limits on chain A and inbound limits on chain B in **separate transactions**, each scaled to **that chain's decimals**. Do not copy a base-unit value from one chain to another unless decimals match and you intend identical limits.
 
 > **NOTE: v1.x pools (EVM, pre-v1.6.1)**
 >
-> Inbound limits on some legacy pools were stored using **remote/source decimals** rather than local destination
-> decimals. Pools at **v1.6.1 and later** use local denomination, same as v2.0. Always inspect on-chain state.
+> Inbound limits on some legacy pools were denominated in **remote/source decimals** rather than local destination
+> decimals. Pools at **v1.6.1 and later** use local denomination, same as v2.0. Always inspect onchain state.
 
-## Converting values for on-chain configuration
+## Converting values for onchain configuration
 
-To convert a human-readable token amount into the value used on-chain, apply the following formula:
+To convert a human-readable token amount into the value used onchain, apply the following formula:
 
 ```
 On-chain value = human-readable amount × (10 ^ local token decimals)
@@ -103214,7 +103214,7 @@ Calculation:
 
 The capacity value passed to the token pool contract on Ethereum must be `100000000000000000000`.
 
-If the remote chain uses 18 decimals as well, the counterpart inbound capacity would typically be **110%** of the outbound value for headroom:
+If the token also uses 18 decimals on the remote chain, the counterpart inbound capacity is typically **110%** of the outbound value, for headroom:
 
 ```
 110 × 10^18 = 110000000000000000000
@@ -103224,7 +103224,7 @@ That inbound value is configured on the **destination** pool, not the source.
 
 ## Example: 6-decimal token
 
-Token on a 6-decimal chain:
+Token that uses 6 decimals on the local chain:
 
 - Decimals: 6
 - Desired outbound capacity: 500 tokens
@@ -103239,7 +103239,7 @@ The capacity value passed to the token pool contract must be `500000000`.
 
 ## Cross-decimal lanes
 
-If the same logical token uses different decimals on two chains, each side of the lane must be computed using **local decimals**. Do not reuse a base-unit value from one chain on another.
+If the same logical token uses different decimals on two chains, compute each side of the lane with that chain's **local decimals**. Do not reuse a base-unit value from one chain on another.
 
 ## Common failure modes
 
@@ -103261,19 +103261,15 @@ Any of these mistakes can:
 Before submitting any transaction that updates rate limits:
 
 - verify the token's decimal precision on **each chain** in the lane
-- recompute capacity and rate values from first principles
+- recompute capacity and rate values from the human-readable amounts
 - double-check values in base units
-- confirm inbound on the destination provides adequate headroom (typically ≥ 110% of source outbound)
+- confirm the inbound limit on the destination provides adequate headroom (typically ≥ 110% of source outbound)
 
-Once values are submitted on-chain, they take effect immediately and the bucket is refilled to full capacity.
-
-> **NOTE: v2.0 only**
->
-> Once submitted, values take effect immediately and the bucket refills to full capacity.
+Once values are submitted onchain, they take effect immediately and the bucket is refilled to full capacity.
 
 > **NOTE: v1.x pools**
 >
-> Values take effect immediately, but the bucket refills at the normal rate — it does not jump to full capacity.
+> Values take effect immediately, but the bucket refills at the normal rate instead of jumping to full capacity.
 
 ## What's next
 

@@ -3,7 +3,7 @@ section: ccip
 date: Last Modified
 title: "Inspect Current Rate Limits"
 metadata:
-  description: "Read-only inspection of CCIP token pool rate limiter state: getCurrentRateLimiterState (v2.0) and getCurrentOutboundRateLimiterState/getCurrentInboundRateLimiterState (v1.x), the TokenBucket struct, and inbound vs outbound inspection."
+  description: "Inspect a CCIP token pool's rate limiter state before you change it: getCurrentRateLimiterState on v2.0 pools, the v1.x getters, and the TokenBucket fields."
   excerpt: "CCIP rate limits inspect getCurrentRateLimiterState getCurrentOutboundRateLimiterState getCurrentInboundRateLimiterState TokenBucket tokens lastUpdated isEnabled capacity rate fast finality"
   datePublished: "2025-06-09"
   lastModified: "2025-06-09"
@@ -13,12 +13,12 @@ import { Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 <Aside type="note" title="CCIP 2.0">
-  This page describes read-only inspection of token pool contracts. **v1.x pools** differences are noted inline.
+  This page covers read-only inspection of token pool contracts. Differences for v1.x pools are noted inline.
 </Aside>
 
 Before updating any rate limit configuration, inspect the current inbound and outbound settings for the token pool and lane you are managing.
 
-On v2.0 pools, also inspect the **fast-finality bucket** if fast-finality transfers are enabled on the lane.
+On v2.0 pools, also inspect the **fast-finality bucket** if FTF transfers are in use on the lane.
 
 ## What you can inspect
 
@@ -27,7 +27,7 @@ Each token pool exposes read-only functions that return rate limiter state for a
 - whether the inbound or outbound rate limit is enabled
 - the configured capacity and refill rate
 - the current tokens available in the bucket (with time-based refill applied)
-- the timestamp of the last refill
+- the refill timestamp, which the getters set to the time of your call
 
 You can also read the current rate limit admin:
 
@@ -44,19 +44,19 @@ You can find token pool addresses using:
 
 - the Token Manager
 - `TokenAdminRegistry` lookups for your token
-- CCIP Directory
+- the CCIP Directory
 
 ## Select the remote chain
 
 Rate limits are configured per remote chain. When querying a rate limiter, you must provide the remote chain selector that identifies the cross-chain lane you want to inspect.
 
-Chain selectors are represented as `uint64` values. You can find the correct selector for each supported network in the [CCIP Directory](https://docs.chain.link/ccip/directory).
+Chain selectors are `uint64` values. You can find the correct selector for each supported network in the [CCIP Directory](https://docs.chain.link/ccip/directory).
 
-## Query rate limiter state (v2.0)
+## Query rate limiter state
 
 ### v2.0
 
-Inbound and outbound state for a bucket type are returned by one function:
+One function returns the outbound and inbound state for a bucket type:
 
 ```solidity
 function getCurrentRateLimiterState(
@@ -73,11 +73,11 @@ function getCurrentRateLimiterState(
 | `false`        | Default (wait-for-finality) outbound and inbound |
 | `true`         | Fast-finality outbound and inbound               |
 
-Call twice per remote chain — `fastFinality = false` and `fastFinality = true` — to inspect all bucket pairs.
+Call it twice per remote chain, with `fastFinality = false` and `fastFinality = true`, to inspect both bucket pairs.
 
 ### v1.x pools
 
-v1 pools expose **separate getters per direction:**
+v1.x pools expose separate getters for each direction:
 
 ```solidity
 function getCurrentOutboundRateLimiterState(
@@ -95,7 +95,7 @@ You can call these functions via a block explorer, web3 client, or deployment st
 
 ## Interpreting the TokenBucket state
 
-A typical rate limiter state includes the following fields:
+The v2.0 and v1.x getters both return `RateLimiter.TokenBucket` structs with these fields:
 
 ```solidity
 struct TokenBucket {
@@ -110,37 +110,37 @@ struct TokenBucket {
 Where:
 
 - **tokens** (`uint128`): the current number of tokens available in the bucket (after time-based refill)
-- **lastUpdated** (`uint32`): the timestamp of the last refill
+- **lastUpdated** (`uint32`): the timestamp of the last refill, in seconds (the getters apply the refill at call time, so they return the current block timestamp)
 - **isEnabled** (`bool`): whether the rate limit is active
 - **capacity** (`uint128`): the maximum bucket size
 - **rate** (`uint128`): the refill rate in tokens per second
 
-All numeric values are expressed in the token's **local smallest unit** on the chain where the pool is deployed, not in whole tokens.
+`tokens`, `capacity`, and `rate` are in the token's **local smallest unit** on the chain where the pool is deployed, not in whole tokens.
 
 ### Reading disabled or unconfigured fast-finality buckets
 
-<Aside type="note" title="v2 pools only">
-  A fast-finality bucket with `isEnabled = false` is not enforcing limits for fast-finality transfers in that bucket.
-  Fast-finality traffic falls back to the default bucket.
+<Aside type="note" title="v2.0 pools only">
+  A fast-finality bucket with `isEnabled = false` doesn't enforce limits, so FTF transfers in that direction fall back
+  to the default bucket.
 </Aside>
 
 ## Inbound vs outbound inspection
 
-- **Outbound** (source chain pool) — transfers leaving the current chain
-- **Inbound** (destination chain pool) — transfers entering the current chain
+- **Outbound** (source chain pool): transfers leaving the current chain
+- **Inbound** (destination chain pool): transfers entering the current chain
 
 For a complete lane picture, inspect outbound on the source and inbound on the destination.
 
-<Aside type="note" title="v2.0 only">
-  Also inspect fast-finality buckets on both chains if FF transfers are in use.
+<Aside type="note" title="v2.0 pools only">
+  Also inspect the fast-finality buckets on both chains if FTF transfers are in use.
 </Aside>
 
 ## Before proceeding
 
 - record existing values for all relevant buckets
-- confirm token decimals on **each chain**
+- confirm token decimals on each chain
 - identify which direction, lane, and bucket type you intend to modify
-- verify your wallet is owner or `rateLimitAdmin`
+- verify your wallet is the pool owner or its `rateLimitAdmin`
 
 Only proceed to updates once you fully understand the current state. Next, review [token units and decimals](/ccip/evm/concepts/cross-chain-token/rate-limits/token-units-and-decimals) before submitting any update transaction.
 
