@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Get started as a Policy Manager with Chainlink ACE: create your account, get your PolicyEngine address, integrate your smart contract, configure compliance policies, and test your first policy-protected transaction."
   datePublished: "2026-04-15"
-  lastModified: "2026-05-26"
+  lastModified: "2026-09-23"
 ---
 
 import { Aside, MethodTabs } from "@components"
@@ -35,7 +35,7 @@ A **PolicyEngine** is the onchain contract that evaluates compliance rules on yo
     1. Complete the three-step wizard:
        - **Basic details** — enter an engine name and optional description. This metadata is internal and is not written onchain.
        - **Networks** — select every chain where you want this engine deployed. Only networks enabled in your CRE account appear. Deploy a [CRE Connect Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) on each selected chain before creating the engine.
-       - **Contract types** — select **ERC-20** and/or **ERC-3643**. ACE attaches all pre-built extractors for the selected types automatically — you do not pick individual extractors in the UI.
+       - **Contract types** — select **ERC-20**, **ERC-3643**, and/or **CCIP-AdvancedPoolHooks**. ACE attaches the pre-built extractors for the selected types automatically — you do not pick individual extractors in the UI. For the CCIP setup, see [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools).
     1. Submit the wizard and wait for onchain deployment to complete.
     1. Open the engine in Policy Manager and confirm its status is **Active**. Click the **gear icon** to copy the onchain PolicyEngine contract address for each network — you need these addresses in the next step.
 
@@ -48,7 +48,7 @@ A **PolicyEngine** is the onchain contract that evaluates compliance rules on yo
 
   </Fragment>
   <Fragment slot="api">
-    ACE Beta supports two contract types. Attach **all** extractors for your contract type at creation time so you don't have to add more later.
+    The platform ships with built-in ERC-20, ERC-3643, and `CCIP-AdvancedPoolHooks` contract types. Attach **all** extractors for your contract type at creation time so you don't have to add more later. For the CCIP-specific workflow, see [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools). For contracts with other function signatures, see [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types).
 
     #### Extractor IDs for API creation
 
@@ -64,14 +64,15 @@ A **PolicyEngine** is the onchain contract that evaluates compliance rules on yo
 
     ##### ERC-3643 extractors
 
-    | Extractor                        | ID                                     | Functions covered                                                                |
-    | -------------------------------- | -------------------------------------- | -------------------------------------------------------------------------------- |
-    | ERC20TransferExtractor           | `d4b8cd51-7d5a-487a-9ba5-bb7236e3184c` | `transfer(address,uint256)`, `transferFrom(address,address,uint256)`             |
-    | ERC20ApproveExtractor            | `572201bb-170b-4fda-ab89-a65b5bbc594b` | `approve(address,uint256)`                                                       |
-    | ERC3643MintBurnExtractor         | `f17bbe8b-8462-4dd7-8fb7-a4973dff04fc` | `mint(address,uint256)`, `burn(address,uint256)`                                 |
-    | ERC3643FreezeUnfreezeExtractor   | `a6422540-76fb-46bc-90e2-16cc7b0aaa1e` | `freezePartialTokens(address,uint256)`, `unfreezePartialTokens(address,uint256)` |
-    | ERC3643SetAddressFrozenExtractor | `bd80dda1-fa6c-4028-a26e-a1802ae41ec7` | `setAddressFrozen(address,bool)`                                                 |
-    | ERC3643ForcedTransferExtractor   | `d9015eeb-3345-478f-b2f1-2194b6689078` | `forcedTransfer(address,address,uint256)`                                        |
+    | Extractor                              | ID                                     | Functions covered                                                                |
+    | -------------------------------------- | -------------------------------------- | -------------------------------------------------------------------------------- |
+    | ERC20TransferExtractor                 | `d4b8cd51-7d5a-487a-9ba5-bb7236e3184c` | `transfer(address,uint256)`, `transferFrom(address,address,uint256)`             |
+    | ERC20ApproveExtractor                  | `572201bb-170b-4fda-ab89-a65b5bbc594b` | `approve(address,uint256)`                                                       |
+    | ERC3643MintBurnExtractor               | `f17bbe8b-8462-4dd7-8fb7-a4973dff04fc` | `burn(address,uint256)`                                                          |
+    | ComplianceTokenMintBurnExtractor       | `245c24a9-6fdd-48e0-a418-725ed0b2056c` | `mint(address,uint256)`, `burnFrom(address,uint256)`, `burn(uint256)`            |
+    | ERC3643FreezeUnfreezeExtractor         | `a6422540-76fb-46bc-90e2-16cc7b0aaa1e` | `freezePartialTokens(address,uint256)`, `unfreezePartialTokens(address,uint256)` |
+    | ERC3643SetAddressFrozenExtractor       | `bd80dda1-fa6c-4028-a26e-a1802ae41ec7` | `setAddressFrozen(address,bool)`                                                 |
+    | ERC3643ForcedTransferExtractor         | `d9015eeb-3345-478f-b2f1-2194b6689078` | `forcedTransfer(address,address,uint256)`                                        |
 
     <Aside type="tip" title="Listing extractors via the API">
       You can retrieve the full list of available extractors and their IDs at any time with `GET
@@ -198,6 +199,12 @@ Copy the `address` value from each entry in `onchain_policy_engines` — or from
 
 ### 4. Integrate your contract
 
+<Aside type="note" title="CCIP Token Pools use a dedicated integration">
+  To enforce ACE policies through `AdvancedPoolHooks`, follow [Protect CCIP Token Pools with
+  ACE](/ace/guides/policy-manager/ccip-token-pools). The hook calls the Policy Engine directly, so it does not use the
+  generic `PolicyProtected` integration below.
+</Aside>
+
 See [Making Your Contract ACE-Compatible](/ace/guides/policy-manager/contracts/ace-compatible) for a full overview of what your contract needs. In short:
 
 - Inherit from `PolicyProtected` (or `PolicyProtectedUpgradeable` for upgradeable contracts)
@@ -222,7 +229,7 @@ If you have an already-deployed contract you want to add ACE compliance to, this
 
 ### 5. Register your contract as a target
 
-After deploying your contract, register it as a target under your PolicyEngine. Provide the contract name, type, protected methods, and on-chain addresses for each chain where the contract is deployed.
+After deploying your contract, make sure it appears as a target under your Policy Engine. ACE detects contracts that call `PolicyEngine.attach()` automatically. If ACE does not detect your integration, register the target manually with the request below and provide its name, type, protected methods, and onchain addresses.
 
 ```bash
 curl -X POST https://ace.api.chain.link/v1/targets \

@@ -3,25 +3,27 @@ section: ace
 title: "Managing Targets"
 date: Last Modified
 metadata:
-  description: "Register, view, configure, and archive target contracts in Chainlink ACE using the Platform UI or the Coordinator API."
+  description: "Detect, register, view, configure, and archive target contracts in Chainlink ACE using the Platform UI or the Coordinator API."
   datePublished: "2026-04-06"
-  lastModified: "2026-04-06"
+  lastModified: "2026-09-23"
 ---
 
 import { Aside, MethodTabs } from "@components"
 
-A **target** is a smart contract protected by ACE. After deploying your [ACE-compatible contract](/ace/guides/policy-manager/contracts/ace-compatible), you register it as a target under a PolicyEngine. Once registered, you can configure the [default policy result](#default-allow-behavior) and attach [policies](/ace/guides/policy-manager/manage-policies) to its functions via [protections](/ace/guides/policy-manager/manage-protections).
+A **target** is a smart contract protected by ACE and associated with a Policy Engine. ACE can detect a target from its onchain attachment to the engine, or you can register it through the Coordinator API. Once the target appears under the engine, you can configure its [default policy result](#default-allow-behavior) and attach [policy instances](/ace/guides/policy-manager/manage-policies) to its functions through [protections](/ace/guides/policy-manager/manage-protections).
 
 <Aside type="note">
-  Before registering a target, your contract must be
-  [ACE-compatible](/ace/guides/policy-manager/contracts/ace-compatible) — it needs to inherit `PolicyProtected` and use
-  the `runPolicy` modifier on the functions you want to protect. You also need a [deployed
-  PolicyEngine](/ace/guides/policy-manager/manage-engines).
+  Before adding a target, connect the contract to a [deployed Policy Engine](/ace/guides/policy-manager/manage-engines).
+  Most contracts inherit `PolicyProtected` and use the `runPolicy` modifier. A contract can also call the Policy Engine
+  directly and call `attach()` when it connects, as `AdvancedPoolHooks` does. See [Making Your Contract
+  ACE-Compatible](/ace/guides/policy-manager/contracts/ace-compatible) for both integration paths.
 </Aside>
 
 ## Register a target
 
-After deploying your contract, register it as a target with a `POST` request. Provide the contract name, type, protected methods, and on-chain addresses:
+When a contract calls `PolicyEngine.attach()`, ACE detects the onchain attachment and creates a target automatically.
+
+If ACE does not detect your integration, register the target with a `POST` request. Provide the contract name, type, protected methods, and onchain addresses:
 
 ```bash
 curl -X POST https://ace.api.chain.link/v1/targets \
@@ -58,6 +60,7 @@ curl -X POST https://ace.api.chain.link/v1/targets \
 | `description`           | No       | Description of the contract                                   |
 | `policy_engine_id`      | Yes      | UUID of the policy engine to associate with                   |
 | `protected_methods`     | No       | Array of function signatures that can be protected            |
+| `contract_type_ids`     | No       | Array of contract type UUIDs the target implements            |
 | `desired_default_allow` | No       | Whether to allow transactions by default (default: `true`)    |
 | `onchain_targets`       | No       | Array of objects with `chain_selector` and contract `address` |
 | `metadata`              | No       | Arbitrary JSON metadata (e.g., `{"contract_type": "ERC-20"}`) |
@@ -189,7 +192,7 @@ You can update a target's name, description, contract type, protected methods, d
 
 ## Link targets
 
-When you deploy your ACE-compatible contract on a new chain, the control plane detects it automatically and creates a separate **detected target** (titled "unknown target"). Rather than managing each chain deployment as its own target, you can **merge** detected targets into an existing target to keep a single multi-chain target with all its on-chain addresses in one place.
+When a contract attaches to a Policy Engine on a new chain, the control plane creates a separate **detected target** (titled "unknown target"). Rather than managing each chain deployment as its own target, you can **merge** detected targets into an existing target to keep a single multi-chain target with all its onchain addresses in one place.
 
 ### Conditions
 

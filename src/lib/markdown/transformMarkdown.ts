@@ -20,6 +20,8 @@ import {
   handleClickToZoom,
   handleCodeSample,
   handleBilling,
+  handleDocCards,
+  handleDocCard,
   handlePageTabs,
   handleTabs,
   handlePackageManagerTabs,
@@ -224,6 +226,16 @@ export async function transformMarkdown(
           return handleFragment(node as MdxJsxNode, parent, index)
         }
 
+        // Handle DocCards
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "DocCards") {
+          return handleDocCards(node as MdxJsxNode, parent, index)
+        }
+
+        // Handle DocCard
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "DocCard") {
+          return handleDocCard(node as MdxJsxNode, parent, index)
+        }
+
         // Handle MDX JSX text elements
         if (node.type === "mdxJsxTextElement") {
           const nodeName = (node as MdxJsxNode).name
@@ -341,7 +353,9 @@ export async function transformMarkdown(
             (node as MdxJsxNode).name !== "ResourcesCallout" &&
             (node as MdxJsxNode).name !== "DataStreams" &&
             (node as MdxJsxNode).name !== "SchemaFieldsTable" &&
-            (node as MdxJsxNode).name !== "FeedPage") ||
+            (node as MdxJsxNode).name !== "FeedPage" &&
+            (node as MdxJsxNode).name !== "DocCards" &&
+            (node as MdxJsxNode).name !== "DocCard") ||
           node.type === "mdxjsEsm" ||
           node.type === "import" ||
           node.type === "export" ||
