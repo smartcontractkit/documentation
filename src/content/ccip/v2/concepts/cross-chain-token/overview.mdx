@@ -12,14 +12,14 @@ import { ClickToZoom } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 import RateLimitBucket from "@features/ccip/components/rate-limit-bucket/RateLimitBucket.astro"
 
-A Cross-Chain Token (CCT) is any ERC-20 token that has been registered and configured for cross-chain transfers via CCIP. The Cross-Chain Token (CCT) standard offers a streamlined approach to enable token transfers across blockchains using Chainlink's Cross-Chain Interoperability Protocol (CCIP).
+A Cross-Chain Token (CCT) is any ERC-20 token that has been registered and configured for cross-chain transfers via CCIP. The CCT standard gives you a simple way to enable token transfers across blockchains using Chainlink's Cross-Chain Interoperability Protocol (CCIP).
 
 Key benefits of the CCT standard:
 
 - **Token Developer Control:** Token developers retain ownership and control of token contracts, token pools (orchestration layer) and all cross-chain configuration by default.
-- **Standardized and audited contracts** called "Token pools" for key token handling mechanisms: Lock-and-Mint, Burn-and-Mint, Lock-and-Unlock, saving integration costs.
-- **Composability for aggregators:** CCTs, once registered, are available for dApps and other bridge aggregators who only need to integrate with the CCIP router once, and not per-token.
-- **Native Rate Limits:** Rate limiting is already built into the token handling mechanisms and is configurable per lane, and for standard and fast transfers separately.
+- **Standardized and audited contracts:** Token pools implement the key token handling mechanisms (Lock and Mint, Burn and Mint, Lock and Unlock), saving integration costs.
+- **Composability for aggregators:** Once registered, CCTs are available to dApps and bridge aggregators, which integrate with the CCIP router once instead of once per token.
+- **Native Rate Limits:** Rate limiting is built into token pools and is configurable per lane, and separately for standard and Faster-Than-Finality (FTF) transfers.
 
 ## Core Components
 
@@ -32,26 +32,26 @@ A Cross-Chain Token deployment consists of three components on each supported bl
 
 ### Token
 
-The Token contract represents the actual token being managed and transferred across blockchains. This contract must be ERC20-compatible for EVM and have additional functionalities depending on the cross-chain handling mechanism used. For more details on the requirements for ERC20-compatible tokens, [token compatibility section](#cct-token-compatibility) below.
+The Token contract is the token being managed and transferred across blockchains. On EVM chains, this contract must be ERC20-compatible and have additional functions that depend on the token handling mechanism. For the requirements, see the [token compatibility section](#cct-token-compatibility) below.
 
 ### Token Pool
 
-A Token Pool is a per-token contract deployed on each chain that handles the local token-handling leg of a cross-chain transfer. On the source chain it locks or burns tokens (via `lockOrBurn`, callable only by the OnRamp); on the destination chain it releases or mints them (via `releaseOrMint`, callable only by the OffRamp). Pools don't talk to each other or move tokens directly across chains. A transfer uses two independently-configured pools linked by config. Beyond moving tokens, the pool is the token issuer's control point: it enforces rate limits, validates the source pool, handles cross-chain decimal conversion, can charge a transfer fee, and can mandate specific verifiers (CCVs) for its token.
+A token pool is a per-token contract deployed on each chain that handles the local token-handling leg of a cross-chain transfer. On the source chain it locks or burns tokens (via `lockOrBurn`, callable only by the OnRamp); on the destination chain it releases or mints them (via `releaseOrMint`, callable only by the OffRamp). Pools don't talk to each other or move tokens directly across chains. A transfer uses two independently configured pools, linked through each pool's remote chain settings. Beyond moving tokens, the pool is the token issuer's control point: it enforces rate limits, validates the source pool, handles cross-chain decimal conversion, can charge a transfer fee, and can mandate specific Cross-Chain Verifiers (CCVs) for its token.
 
 ### Token Admin Registry
 
-The Token Admin Registry (TAR) is a per-chain registry that maps each CCIP-enabled token to its administrator and active Token Pool. Registration is self-serve: a registry module (or the CCIP owner) proposes an administrator for a token; that address accepts the role and then configures which pool CCIP should use. Setting a pool enables the token on CCIP; setting it to `address(0)` delists it. TAR does not hold or move tokens — it is the lookup the OnRamp and OffRamp use to resolve the correct pool for a transfer.
+The Token Admin Registry (TAR) is a per-chain registry that maps each CCIP-enabled token to its administrator and active token pool. Registration is self-serve: a registry module (or the CCIP owner) proposes an administrator for a token; that address accepts the role and then configures which pool CCIP should use. Setting a pool enables the token on CCIP; setting it to `address(0)` delists it. TAR does not hold or move tokens. The OnRamp and OffRamp use it to look up the correct pool for a transfer.
 
 ## Token Handling Mechanisms
 
-There are three possible transfer patterns within CCIP, depending on how pools are paired across chains:
+There are three possible token handling mechanisms within CCIP, depending on how pools are paired across chains:
 
-| Token Handling Mechanism                                         | Source Pool Type and action                                  | Destination Pool Type and action                                | Use Case                                                                                                                                                                                                                       |
-| :--------------------------------------------------------------- | :----------------------------------------------------------- | :-------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Burn and Mint** (Any direction)                                | `BurnMintTokenPool` (or a variation of it) — Burns tokens    | `BurnMintTokenPool` (or a variation of it) — Mints tokens       | Preserves a single fixed supply across the whole network: minting on one chain is balanced by burning on another. Most common setup; example: most native stablecoins.                                                         |
-| **Lock and Mint** (From native chain)                            | `LockReleaseTokenPool` (or a variation of it) — Locks tokens | `BurnMintTokenPool` — Mints wrapped tokens                      | Hub-and-spoke: the token is natively minted only on one chain; every other chain uses a wrapped representation of that hub supply.                                                                                             |
-| **Burn and Unlock** (To native chain) (Inverse of Lock and Mint) | `BurnMintTokenPool` — Burns wrapped tokens                   | `LockReleaseTokenPool` — Releases native tokens                 | Returning tokens to the native chain (inverse of Lock and Mint).                                                                                                                                                               |
-| **Lock and Unlock**                                              | `LockReleaseTokenPool` (or a variation of it) — Locks tokens | `LockReleaseTokenPool` (or a variation of it) — Releases tokens | When cross-chain activity cannot mint the token, transfers lock on the source and release from liquidity on the destination. Pools on both chains must be provisioned, and the issuer must rebalance that liquidity over time. |
+| Token Handling Mechanism                                         | Source Pool Type and action                                | Destination Pool Type and action                              | Use Case                                                                                                                                                                                                                       |
+| :--------------------------------------------------------------- | :--------------------------------------------------------- | :------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Burn and Mint** (Any direction)                                | `BurnMintTokenPool` (or a variation of it) burns tokens    | `BurnMintTokenPool` (or a variation of it) mints tokens       | Preserves a single fixed supply across the whole network: minting on one chain is balanced by burning on another. Most common setup (for example, most native stablecoins).                                                    |
+| **Lock and Mint** (From native chain)                            | `LockReleaseTokenPool` (or a variation of it) locks tokens | `BurnMintTokenPool` mints wrapped tokens                      | Hub-and-spoke: the token is natively minted only on one chain; every other chain uses a wrapped representation of that hub supply.                                                                                             |
+| **Burn and Unlock** (To native chain) (Inverse of Lock and Mint) | `BurnMintTokenPool` burns wrapped tokens                   | `LockReleaseTokenPool` releases native tokens                 | Returning tokens to the native chain (inverse of Lock and Mint).                                                                                                                                                               |
+| **Lock and Unlock**                                              | `LockReleaseTokenPool` (or a variation of it) locks tokens | `LockReleaseTokenPool` (or a variation of it) releases tokens | When cross-chain activity cannot mint the token, transfers lock on the source and release from liquidity on the destination. Pools on both chains must be provisioned, and the issuer must rebalance that liquidity over time. |
 
 ## CCT Token Compatibility
 
@@ -59,15 +59,15 @@ Any existing ERC20-compatible token can be a CCT, as long as it meets a few basi
 
 ### Registration compatibility
 
-To be able to register your token as a CCT:
+To register your token as a CCT:
 
 - The token exposes `owner()` or OpenZeppelin `DEFAULT_ADMIN_ROLE`.
 - Alternatively, the token implements a CCIP-specific admin via `setCCIPAdmin()` and `getCCIPAdmin()`.
-- If none of the above are feasible options, manual registration may be possible. [Please see the Token Issuer guide](/ccip/concepts/cross-chain-token/token-issuer-guide) for instructions.
+- If none of these options is feasible, manual registration may be possible. See the [Token Issuer Guide](/ccip/concepts/cross-chain-token/token-issuer-guide) for instructions.
 
 ### Cross-chain operations compatibility
 
-- Ability to grant burner and minter roles to the `BurnMintTokenPool`.
+- The token can grant burner and minter roles to the `BurnMintTokenPool`.
 - On both chains:
   - Implements standard ERC20 `transfer` / `transferFrom`.
   - Implements `decimals()`.
@@ -78,7 +78,7 @@ To be able to register your token as a CCT:
     - `burn(amount)`
     - `burn(address, amount)`
     - `burnFrom(address, amount)`
-- On the chain where the token is locked — no other requirements.
+- On the chain where the token is locked: no other requirements.
 
 ## CCIP 2.0 Token Pool Features
 
@@ -86,71 +86,71 @@ CCIP 2.0 introduces several new **opt-in** features in the 2.0 version of token 
 
 - **Set a token pool fee (flat or bps):**
   - Token issuers can set a lane-specific fee that accrues to the token pool.
-  - Flat: the fee is additive (user pays for it when the transfer is initiated) and is charged in one of the designated fee tokens on the source chain.
+  - Flat: the fee is additive (the user pays it when the transfer is initiated) and is charged in one of the designated fee tokens on the source chain.
   - Bps: the fee is subtracted from the amount sent, and is charged in the transferred token.
-  - Fees can be configured for standard transfers and/or fast transfers separately (see next point).
-- **Allow fast token transfers:**
-  - Token issuers can set the minimum block confirmations that they deem sufficient for transfers of their token from a specific chain. Default, when not set, is always full finality.
-  - Fees can be configured separately for fast transfers.
+  - Fees can be configured separately for standard transfers and FTF transfers (see next point).
+- **Allow FTF token transfers:**
+  - Token issuers can set the minimum number of block confirmations they consider sufficient for transfers of their token from a specific chain. If this is not set, transfers always wait for full finality.
+  - Fees can be configured separately for FTF transfers.
 - **Add custom hooks via `AdvancedPoolHooks`:**
   - Set allowlisted senders for transfers.
   - Add ACE compliance policy hooks.
   - Add custom logic hooks.
   - Configure additive security (see next point).
 - **Configure additive security via CCVs:**
-  - Token issuers can choose to configure additional CCVs (cross-chain verifiers) beyond the default Committee Verifier per lane.
-  - Configure additional CCVs only for transfers greater than a threshold amount.
+  - Token issuers can configure additional CCVs per lane, beyond the default Committee Verifier.
+  - Require additional CCVs only for transfers at or above a threshold amount.
 - **Self-serve custom gas limits for token handling:**
-  - Adjust gas limit for token handling per specific destination chains based on chain/destination token nuances (previously a service request to the Chainlink Labs team for v1.\* pools).
-- **Ability to silo per-remote chain liquidity** (only in `SiloedLockReleaseTokenPool`):
-  - For hub-and-spoke set ups that use Lock and Mint token handling mechanism, token issuers can separate locked liquidity per destination chain.
-- **Ability to pass in optional bytes data to the source token pool:**
-  - Useful for custom token pool implementation.
+  - Adjust the token handling gas limit per destination chain to fit the chain or the destination token (previously a service request to the Chainlink Labs team for v1.x pools).
+- **Silo liquidity per remote chain** (only in `SiloedLockReleaseTokenPool`):
+  - For hub-and-spoke setups that use the Lock and Mint token handling mechanism, token issuers can keep locked liquidity separate per destination chain.
+- **Pass optional bytes data to the source token pool:**
+  - Useful for custom token pool implementations.
 
 ## Token Pool Rate Limits
 
-CCIP provides native **rate limiting** features for token transfers, which allows token issuers to manage the per-transaction maximum and regulate the flow rate of token transfers on a given lane.
+CCIP provides native **rate limiting** features for token transfers, which allow token issuers to manage the per-transaction maximum and regulate the flow rate of token transfers on a given lane.
 
 **It is highly recommended to set rate limits.**
 
-Every token pool enforces a rate limit that works like a bucket of liquid:
+A token pool rate limit works like a bucket of liquid:
 
 - **Max capacity** is the size of the bucket: the upper bound on how many tokens a single transfer can ever move.
 - **Refill rate** is how fast the bucket fills back up, in tokens per second, after transfers have drained it.
 
-Each transfer drains the bucket by exactly the amount transferred. Meanwhile, every second, the refill rate adds tokens back — but only up to the brim. A full bucket doesn't overflow; capacity simply stops accumulating at the maximum.
+Each transfer drains the bucket by exactly the amount transferred. Meanwhile, every second, the refill rate adds tokens back, but only up to the brim. A full bucket doesn't overflow; capacity stops accumulating at the maximum.
 
-The key consequence: a transfer succeeds only if its amount fits within what's _currently_ in the bucket, not the bucket's total size. Right after a large transfer, the available capacity is low, and a second large transfer will be rejected even though it's below the max — users have to wait for the refill. And a transfer larger than the max capacity itself can never succeed, no matter how long you wait.
+A transfer succeeds only if its amount fits within what's _currently_ in the bucket, not the bucket's total size. Right after a large transfer, the available capacity is low, and a second large transfer is rejected even though it's below the max. Senders have to wait for the bucket to refill. A transfer larger than the max capacity can never succeed, no matter how long the sender waits.
 
-The bucket gives you two independent risk management dials. Max capacity caps a single transaction. Refill rate caps sustained throughput (no one can drain it with many rapid transactions either — after a burst, a user is throttled to the refill rate). Together they mean that a sender can only move tokens as fast as the bucket allows, buying time to detect and respond.
+The bucket gives you two independent risk management dials. Max capacity caps a single transaction. Refill rate caps sustained throughput. After a burst, transfers are throttled to the refill rate, so splitting an amount into many rapid transactions doesn't get around the limit either. Together, they mean that a sender can only move tokens as fast as the bucket allows, which buys time to detect and respond.
 
 <RateLimitBucket />
 
 **Notes:**
 
-1. Rate limits are set on the source token pools and on the destination pool.
+1. Rate limits are set on both the source token pool (outbound) and the destination token pool (inbound).
 2. Rate limits are granular (lane level). The rate limit for token transfers from chain A → B can be set differently from chain A → C.
-3. Rate limits for fast transfers can be set differently than for standard transfers.
-4. If a rate limit is not enabled on the pool, it means unlimited transfers are enabled. It is highly recommended to set rate limits.
+3. Rate limits for FTF transfers can be set differently than for standard transfers. If FTF rate limits are not enabled, FTF transfers use the standard rate limits.
+4. If a rate limit is not enabled on the pool, transfers are unlimited. It is highly recommended to set rate limits.
 
-### Token Pool Gas requirements
+## Token Pool Gas Requirements
 
-When CCIP delivers tokens on the destination blockchain, the OffRamp contract wraps the token pool operation in a balance verification pattern — three calls that together determine the gas cost of a token's cross-chain delivery:
+When CCIP delivers tokens on the destination blockchain, the OffRamp contract wraps the token pool operation in a balance check pattern of three calls, which together determine the gas cost of a token's cross-chain delivery:
 
-1. `balanceOf` (pre-check) — reads the receiver's token balance before any tokens are released or minted.
-2. `releaseOrMint` — executes the token pool's release or mint logic. This call's gas cost includes everything it triggers: the pool contract's own logic _plus_ the token contract's execution. If a token's `mint` function is expensive, that cost lands here.
-3. `balanceOf` (post-check) — reads the receiver's balance again to verify that the amount delivered matches the amount sent.
+1. `balanceOf` (pre-check): reads the receiver's token balance before any tokens are released or minted.
+2. `releaseOrMint`: executes the token pool's release or mint logic. This call's gas cost includes everything it triggers: the pool contract's own logic _plus_ the token contract's execution. If a token's `mint` function is expensive, that cost lands here.
+3. `balanceOf` (post-check): reads the receiver's balance again. When the OffRamp calls the receiver contract, it passes the difference between the two balances as the delivered amount (`destTokenAmounts`), rather than the amount the pool returns.
 
-The two balance checks are what enforce CCIP's exact-amount guarantee, so all three calls are always part of the execution and all three count against the gas budget.
+The OffRamp skips the post-check only when the token receiver is the pool itself, and then uses the amount the pool returns. In every other case, all three calls run and count against the gas budget.
 
 ### Default and custom token pool gas limit
 
 The combined cost of these three calls must fit within the **default** limit of **90,000 gas**. Standard burn-and-mint or lock-and-release pools with typical ERC-20 tokens fit comfortably. Tokens with additional logic in their transfer or mint paths (hooks, fees, snapshots, rebasing math) OR chain-specific nuances may not, and can be adjusted via the **custom** gas limit parameter.
 
-For CCIP 2.0 pools, setting a custom token pool gas limit is self-service: the token pool interface lets the token issuer configure a pool's destination gas through the pool's fee configuration — no Chainlink Labs involvement required.
+For CCIP 2.0 pools, setting a custom token pool gas limit is self-service: the token pool interface lets the token issuer configure a pool's destination gas through the pool's fee configuration, with no Chainlink Labs involvement required.
 
-For earlier versions (v1.x) of pools, custom gas limits are an internal CCIP parameter. Token issuers should [contact Chainlink Labs](https://chain.link/ccip-contact?v=Tokens:%20Gas%20limit%20update) to request an update, or upgrade to a 2.0 pool for self-service control. See the token issuer guide for more details.
+For earlier versions (v1.x) of pools, custom gas limits are an internal CCIP parameter. Token issuers should [contact Chainlink Labs](https://chain.link/ccip-contact?v=Tokens:%20Gas%20limit%20update) to request an update, or upgrade to a 2.0 pool for self-service control. See the [Token Issuer Guide](/ccip/concepts/cross-chain-token/token-issuer-guide) for more details.
 
-If execution on the destination blockchain exceeds the applicable gas limit (default or custom), the message becomes eligible for [manual execution](https://docs.chain.link/ccip/concepts/manual-execution), where the user re-triggers delivery and supplies the gas themselves. The failed transaction is useful diagnostically: token issuers can inspect it to see exactly how much gas the execution attempted to use, then configure the custom limit accordingly.
+If execution on the destination blockchain exceeds the applicable gas limit (default or custom), the message becomes eligible for [manual execution](https://docs.chain.link/ccip/concepts/manual-execution), where the user re-triggers delivery and supplies the gas themselves. Token issuers can inspect the failed transaction to see how much gas the execution attempted to use, then configure the custom limit accordingly.
 
 <CcipCommon callout="conceptualDisclaimer" />
