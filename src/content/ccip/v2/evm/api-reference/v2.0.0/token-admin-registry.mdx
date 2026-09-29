@@ -1,0 +1,267 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 TokenAdminRegistry API Reference"
+metadata:
+  description: "Registry mapping tokens to pools and managing per-token administrators."
+  version: "2.0.0"
+---
+
+`TokenAdminRegistry` is the control plane for CCIP token configuration.
+
+It defines:
+
+- which pool is responsible for each token
+- which address controls configuration for each token
+
+This registry is the canonical source of truth for token onboarding and pool assignment within CCIP.
+
+If you use this contract, all routing and token behavior depends on the mappings and administrators defined here.
+
+## Usage Boundary
+
+**You interact with this contract only for configuration and administration.**
+
+- CCIP infrastructure reads from this registry to resolve token → pool mappings.
+- Token administrators update pool assignments and manage configuration.
+- Registry modules and the owner can onboard new tokens and assign administrators.
+- You are responsible for ensuring mappings and admin roles are correct before enabling transfers.
+
+## Contract
+
+`tokenAdminRegistry/TokenAdminRegistry.sol`
+
+## Import
+
+```solidity
+import {TokenAdminRegistry} from "chainlink-ccip/tokenAdminRegistry/TokenAdminRegistry.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## Inheritance
+
+- `ITokenAdminRegistry`
+- `ITypeAndVersion`
+- `Ownable2StepMsgSender`
+
+## External API
+
+### getPools
+
+```solidity
+function getPools(address[] calldata tokens) external view returns (address[] memory)
+```
+
+| Parameter | Type                 | Description      |
+| --------- | -------------------- | ---------------- |
+| `tokens`  | `address[] calldata` | Tokens to query. |
+
+Returns:
+
+| Type               | Description                                                           |
+| ------------------ | --------------------------------------------------------------------- |
+| `address[] memory` | Pools corresponding to the input tokens (may contain zero addresses). |
+
+---
+
+### getPool
+
+```solidity
+function getPool(address token) external view returns (address)
+```
+
+> Returns the pool associated with a token.
+
+| Parameter | Type      | Description             |
+| --------- | --------- | ----------------------- |
+| `token`   | `address` | Token address to query. |
+
+Returns:
+
+| Type      | Description                              |
+| --------- | ---------------------------------------- |
+| `address` | Pool responsible for handling the token. |
+
+---
+
+### getTokenConfig
+
+```solidity
+function getTokenConfig(address token) external view returns (TokenConfig memory)
+```
+
+> Returns full configuration for a token.
+
+---
+
+### getAllConfiguredTokens
+
+```solidity
+function getAllConfiguredTokens(uint64 startIndex, uint64 maxCount) external view returns (address[] memory tokens)
+```
+
+> Returns paginated list of configured tokens.
+
+---
+
+### setPool
+
+```solidity
+function setPool(address localToken, address pool) external onlyTokenAdmin(localToken)
+```
+
+> Sets or updates the pool responsible for handling a token. Can only be called by the token’s administrator.
+
+---
+
+### proposeAdministrator
+
+```solidity
+function proposeAdministrator(address localToken, address administrator) external
+```
+
+> Proposes an administrator for a token. Used when onboarding or reassigning control.
+
+---
+
+### acceptAdminRole
+
+```solidity
+function acceptAdminRole(address localToken) external
+```
+
+> Accepts the administrator role. Can only be called by the proposed administrator.
+
+---
+
+### transferAdminRole
+
+```solidity
+function transferAdminRole(address localToken, address newAdmin) external onlyTokenAdmin(localToken)
+```
+
+> Initiates transfer of the administrator role for a token.
+
+---
+
+### isAdministrator
+
+```solidity
+function isAdministrator(address localToken, address administrator) external view returns (bool)
+```
+
+> Checks if an address is the current administrator for a token.
+
+---
+
+### isRegistryModule
+
+```solidity
+function isRegistryModule(address module) public view returns (bool)
+```
+
+> Checks whether an address is an authorized registry module.
+
+---
+
+### addRegistryModule
+
+```solidity
+function addRegistryModule(address module) external onlyOwner
+```
+
+> Adds a registry module.
+
+---
+
+### removeRegistryModule
+
+```solidity
+function removeRegistryModule(address module) external onlyOwner
+```
+
+> Removes a registry module.
+
+---
+
+## Administrator Lifecycle
+
+1. A registry module or owner proposes an administrator (`proposeAdministrator`)
+2. The proposed administrator accepts (`acceptAdminRole`)
+3. The administrator configures the pool (`setPool`)
+4. The administrator may transfer control (`transferAdminRole` → `acceptAdminRole`)
+
+## Notes
+
+- Each token has exactly one active administrator at a time.
+- This registry defines the source of truth for token-to-pool mappings.
+- All CCIP routing for a token depends on the pool configured in this registry.
+- Registry modules are privileged onboarding components and should be granted access carefully.
+- If a token is mapped to an incorrect pool, transfers may fail or route incorrectly.
+- If no pool is configured, transfers involving that token will fail.
+- Incorrect administrator assignment may grant control to unintended parties.
+
+## Structs
+
+```solidity
+struct TokenConfig {
+  address administrator;
+  address pendingAdministrator;
+  address tokenPool;
+}
+```
+
+## Internal Functions
+
+### onlyTokenAdmin
+
+```solidity
+modifier onlyTokenAdmin(address token)
+```
+
+Restricts access to the token administrator.
+
+Reverts if the caller is not the configured administrator.
+
+## Events
+
+- `event PoolSet(address indexed token, address indexed previousPool, address indexed newPool)`
+- `event AdministratorTransferRequested(address indexed token, address indexed currentAdmin, address indexed newAdmin)`
+- `event AdministratorTransferred(address indexed token, address indexed newAdmin)`
+- `event RegistryModuleAdded(address module)`
+- `event RegistryModuleRemoved(address indexed module)`
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+- `error OnlyRegistryModuleOrOwner(address sender)`
+- `error OnlyAdministrator(address sender, address token)`
+- `error OnlyPendingAdministrator(address sender, address token)`
+- `error AlreadyRegistered(address token)`
+- `error ZeroAddress()`
+- `error InvalidTokenPoolToken(address token)`
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Security model
+
+- Owner controls registry modules.
+- Registry modules and owner can assign initial administrators.
+- Token administrators control pool configuration.
+- Administrator changes require explicit acceptance.
+- All token routing depends on correct registry configuration.
+
+## Related Interfaces & Contracts
+
+- [`ITokenAdminRegistry`](/ccip/evm/api-reference/v2.0.0/i-token-admin-registry)
+- [`IPoolV1`](/ccip/evm/api-reference/v2.0.0/i-pool-v1)
+- [`IPoolV2`](/ccip/evm/api-reference/v2.0.0/i-pool-v2)
+- [`IPoolV1V2`](/ccip/evm/api-reference/v2.0.0/i-pool-v1-v2)
+- [`TokenPoolFactory`](/ccip/evm/api-reference/v2.0.0/token-pool-factory)
+- [`Ownable2StepMsgSender`](/ccip/evm/api-reference/v2.0.0/ownable-2-step-msg-sender)

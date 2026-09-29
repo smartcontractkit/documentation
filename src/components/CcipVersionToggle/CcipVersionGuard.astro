@@ -1,0 +1,40 @@
+---
+/**
+ * Page-load guard for (chain family, CCIP version) pairs that have no docs.
+ *
+ * A CCIP page takes its version from the URL but, when the URL has no chain segment, its chain family
+ * from localStorage. A returning Aptos reader opening /ccip (the v2 landing) would otherwise get
+ * Aptos + v2: an empty sidebar and a toggle that highlights v2. The targets are resolved at build
+ * time by getCcipChainVersionRedirects (src/utils/ccipVersionRouting.ts), with the resolver the
+ * version toggle uses, and applied from <head> before first paint so the page being left never flashes.
+ *
+ * Rendered by HeadCommon.astro only on pages that have redirects.
+ */
+import { CHAIN_TYPE_STORAGE_KEY } from "~/config/chainTypes.js"
+import type { ChainType } from "~/config/types.js"
+
+interface Props {
+  /** Stored chain family → absolute target path */
+  redirects: Partial<Record<ChainType, string>>
+}
+
+const { redirects } = Astro.props
+---
+
+<script is:inline define:vars={{ redirects, storageKey: CHAIN_TYPE_STORAGE_KEY }}>
+  try {
+    // Read the raw value exactly like initializeChainType() so both agree on the chain family.
+    // typeof check: inherited keys ("toString", "__proto__") are never string targets.
+    var target = redirects[localStorage.getItem(storageKey)]
+    if (typeof target === "string") {
+      // Hide the page being replaced; the timeout is a safety net if the navigation never happens.
+      document.documentElement.style.visibility = "hidden"
+      setTimeout(function () {
+        document.documentElement.style.visibility = ""
+      }, 3000)
+      window.location.replace(target + window.location.search + window.location.hash)
+    }
+  } catch (e) {
+    // localStorage unavailable: no stored chain family, so the default (EVM) applies and is valid.
+  }
+</script>

@@ -4,7 +4,7 @@ import { useState } from "preact/hooks"
 export const SimplePreactTooltip = ({
   label,
   tip,
-  imgURL = "https://smartcontract.imgix.net/icons/info.svg?auto=compress%2Cformat",
+  imgURL = "https://d2f70xi62kby8n.cloudfront.net/icons/info.svg?auto=compress%2Cformat",
   labelStyle = {},
   tooltipStyle = {},
 }) => {

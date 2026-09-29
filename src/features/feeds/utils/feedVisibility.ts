@@ -205,6 +205,10 @@ export function isFeedVisible(
   } else if (isRates) {
     isVisible = feed.docs?.productType === "Rates" || feed.docs?.productSubType === "Realized Volatility"
   } else if (isTokenizedEquity) {
+    // Tokenized equity feeds (Ondo and other providers)
+    // Only show true tokenized equity feeds (primaryTokenizedPrice) on this page.
+    // Generic equity price feeds (e.g. RefPrice) are excluded — they are not
+    // tokenized equity instruments and should not appear here.
     const assetClass = feed.docs?.assetClass
     isVisible =
       (assetClass === "Equity" || assetClass === "Equities") &&

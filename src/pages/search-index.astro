@@ -2,6 +2,7 @@
 import { splitTextByHeadings } from "../scripts/split-text-by-headings"
 import { MarkdownInstance } from "astro"
 import fs from "node:fs"
+import { canonicalizeCcipUrlPath } from "~/lib/ccip/contentPathMapping.js"
 
 const pagesGlob = import.meta.glob("./**/*.astro", { eager: true })
 const pages = Object.values(pagesGlob)
@@ -29,7 +30,9 @@ const transformMarkdownInstancesToIndexes = async (instances: MarkdownInstance<R
       const { title, section, metadata } = instance.frontmatter
       const headings = await instance.getHeadings()
       const content = instance.rawContent ? await instance.rawContent() : undefined
-      const href = instance.url?.replace("src/content", "").replace(".mdx", "")
+      let href = instance.url?.replace("src/content", "").replace(".mdx", "")
+      // Canonicalize CCIP latest-version paths: /ccip/v2/x -> /ccip/x (leaves /ccip/v1/x intact)
+      if (href) href = canonicalizeCcipUrlPath(href)
 
       return {
         title,
