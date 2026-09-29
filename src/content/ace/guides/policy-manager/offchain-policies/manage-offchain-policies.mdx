@@ -1,0 +1,288 @@
+---
+section: ace
+title: "Managing Offchain Policies (MVP)"
+date: Last Modified
+metadata:
+  description: "Configure a managed Chainlink ACE offchain policy that screens wallet addresses with TRM Wallet Screening before protected transactions execute."
+  datePublished: "2026-07-17"
+  lastModified: "2026-07-17"
+---
+
+import { Aside } from "@components"
+
+ACE managed offchain risk policies screen wallet addresses with [TRM Wallet Screening](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening) before allowing a protected onchain action. You configure the risk rules and the target functions to protect. Chainlink manages the CRE workflow, deploys the onchain permit validator, calls TRM, and delivers approved permits onchain.
+
+This guide covers policy setup. To integrate permit requests into your application, see [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits).
+
+<Aside type="caution" title="MVP feature">
+  Managed offchain risk policies are an MVP. Their interfaces and capabilities can change during Beta. Contact your
+  Chainlink representative before using this feature and for help with setup. This guide does not cover custom offchain
+  policy integrations, where you host your own policy endpoint and work with Chainlink to configure a custom workflow.
+</Aside>
+
+## How the managed policy works
+
+Creating a managed offchain policy provisions two components:
+
+- A managed CRE workflow that screens the configured wallet addresses with TRM Wallet Screening.
+- A [CertifiedActionDONValidatorPolicy](/ace/reference/policy-library/certified-action-don-validator-policy) (CADV) contract on each selected chain. The workflow writes approved permits to this contract through the Keystone Forwarder.
+
+When you attach the policy to a target function, the CADV becomes part of that function's policy chain. A call without a matching permit is rejected. A permit is valid only for its caller, target, function, and extracted parameters.
+
+## Prerequisites
+
+Before creating a managed offchain risk policy, you need:
+
+1. An ACE organization and [ACE API key](/ace/getting-started/account-setup#3-create-an-api-key).
+1. A [policy engine](/ace/guides/policy-manager/manage-engines) deployed on every chain where you want to use the policy.
+1. A [target contract](/ace/guides/policy-manager/manage-targets) associated with that policy engine.
+1. An extractor attached to the policy engine that supports the target function. The extractor outputs determine which transaction parameters the permit must match.
+1. A Chainlink CRE account with the [CRE CLI](https://docs.chain.link/cre/getting-started/cli-installation/macos-linux) installed and authenticated.
+1. A TRM Labs account with Wallet Screening API access and a valid API key. ACE does not provide a TRM account or API credentials. See [TRM Wallet Screening](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening) to learn about the product and request access.
+
+## Store the TRM credential in Vault DON
+
+The managed workflow retrieves your TRM credential from Vault DON at runtime. The credential remains encrypted and is not included in the offchain policy configuration.
+
+TRM uses HTTP Basic authentication with the API key as both the username and password. Before uploading it, encode `<TRM_API_KEY>:<TRM_API_KEY>` as Base64 without a trailing newline:
+
+```bash
+export TRM_API_KEY="<TRM_API_KEY>"
+export TRM_BASIC_AUTH=$(printf '%s:%s' "$TRM_API_KEY" "$TRM_API_KEY" | base64 | tr -d '\n')
+```
+
+Create a secrets file that maps the Vault DON secret identifier to the environment variable:
+
+```yaml
+secretsNames:
+  trmApiKey:
+    - TRM_BASIC_AUTH
+```
+
+Upload the secret using the CRE CLI. Replace `<TARGET>` with your CRE target:
+
+```bash
+cre secrets create production-secrets.yaml \
+  --target <TARGET> \
+  --secrets-auth=browser
+```
+
+The identifier under `secretsNames` is the value to use for `secret_name` when you create the policy. In this example, it is `trmApiKey`.
+
+For prerequisites, authentication options, secret lifecycle operations, and troubleshooting, see [Using Secrets with Deployed Workflows](https://docs.chain.link/cre/guides/workflow/secrets/using-secrets-deployed).
+
+<Aside type="caution" title="Keep the TRM API key private">
+  Do not put the raw TRM API key or its Base64-encoded credential in the policy configuration, source control, or
+  client-side code. The policy configuration contains only the Vault DON secret identifier.
+</Aside>
+
+## Configure the risk policy
+
+The `wallet_risk_scoring` policy supports the following configuration:
+
+| <div style={{ width: "175px" }}>Field</div> | Required | Description                                                                                                                                                 |
+| ------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `secret_name`                               | Yes      | Vault DON identifier containing the Base64-encoded TRM Basic Auth credential.                                                                               |
+| `addresses_to_check`                        | Yes      | Which addresses to screen: `CALLER`, `PARAMETERS`, or `ALL`.                                                                                                |
+| `risk_threshold`                            | Yes      | Reject an address whose highest TRM risk level is at or above this threshold: `LOW`, `MEDIUM`, `HIGH`, or `SEVERE`.                                         |
+| `block_unknown`                             | No       | When `true`, reject an address whose TRM risk level is `UNKNOWN`. Defaults to `false`.                                                                      |
+| `category_filters`                          | No       | Category-specific thresholds. Each entry contains `category` and an optional `threshold`. If omitted, the global `risk_threshold` applies to that category. |
+| `fail_mode`                                 | No       | `CLOSED` fails the evaluation when TRM returns an unsuccessful HTTP response. `OPEN` allows it to continue. Defaults to `CLOSED`.                           |
+
+### Select addresses to screen
+
+The `addresses_to_check` setting controls which addresses are sent to TRM:
+
+| <div style={{ width: "100px" }}>Value</div> | Addresses screened                                                                                                                                              |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CALLER`                                    | Only `caller_address` from the evaluation request.                                                                                                              |
+| `PARAMETERS`                                | Addresses found in `permit_parameters`. The first permit parameter represents the sender; subsequent address values are identified from the function signature. |
+| `ALL`                                       | The caller and all addresses found in `permit_parameters`, with duplicates removed.                                                                             |
+
+For an ERC-20 `transfer(address,uint256)` evaluation with permit parameters `[from, to, amount]`, `CALLER` screens `from`, while `PARAMETERS` and `ALL` screen both `from` and `to`.
+
+The workflow accepts at most ten unique addresses per evaluation.
+
+### Apply global and category thresholds
+
+TRM assigns an overall risk level to each address. ACE orders the levels as follows:
+
+```text
+UNKNOWN < LOW < MEDIUM < HIGH < SEVERE
+```
+
+An address is rejected when its overall level meets or exceeds `risk_threshold`. For example, a `HIGH` threshold rejects `HIGH` and `SEVERE` results.
+
+You can also apply different thresholds to individual TRM risk categories. The following configuration rejects:
+
+- Any address with an overall risk level of `HIGH` or `SEVERE`.
+- Any `Sanctions` indicator at `LOW` or above.
+- Any `Darknet Market` indicator at `MEDIUM` or above.
+
+```json
+{
+  "risk_threshold": "HIGH",
+  "block_unknown": false,
+  "category_filters": [
+    { "category": "Sanctions", "threshold": "LOW" },
+    { "category": "Darknet Market", "threshold": "MEDIUM" }
+  ]
+}
+```
+
+Category names are matched case-insensitively against the categories returned by TRM. Consult your TRM Wallet Screening account for the categories available to your organization.
+
+<Aside type="caution" title="Choose fail mode deliberately">
+  `OPEN` can produce a permit when TRM returns an unsuccessful HTTP response. Use it only when allowing the action is
+  preferable to blocking it during a provider error. For example, an invalid Vault DON credential can cause TRM to
+  return `401`; with `OPEN`, that response does not block the permit. `OPEN` applies to unsuccessful TRM HTTP responses,
+  but other workflow or transport failures can still produce an `error`. `CLOSED` is the default.
+</Aside>
+
+## Create the offchain policy
+
+Create the policy with `POST /v1/policies`. Use the same policy engine and chains as the target you plan to protect:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/policies \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "policy_kind": "offchain",
+    "name": "Transaction wallet screening",
+    "type": "wallet_risk_scoring",
+    "policy_engine_id": "<POLICY_ENGINE_ID>",
+    "onchain_policies": [
+      { "chain_selector": "<CHAIN_SELECTOR>" }
+    ],
+    "config": {
+      "secret_name": "trmApiKey",
+      "addresses_to_check": "ALL",
+      "fail_mode": "CLOSED",
+      "risk_threshold": "HIGH",
+      "block_unknown": false,
+      "category_filters": [
+        { "category": "Sanctions", "threshold": "LOW" },
+        { "category": "Darknet Market", "threshold": "MEDIUM" }
+      ]
+    }
+  }'
+```
+
+ACE allows one active offchain policy per organization. Creating another returns a conflict until the existing policy is archived.
+
+Policy creation is asynchronous. The initial response includes the policy ID and a `deployment_status` such as `pending` or `deploying`. Poll the policy until it becomes `active`:
+
+```bash
+curl https://ace.api.chain.link/v1/policies/<POLICY_ID> \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+ACE creates a managed CRE workflow and deploys one CADV contract per selected chain. When the policy becomes active, `action_validators` contains each chain selector and CADV address.
+
+<Aside type="note">
+  Deployment can take several minutes. Do not attach protections or request evaluations until `deployment_status` is
+  `active`.
+</Aside>
+
+## Attach the policy to a target function
+
+A protection connects the managed policy to a function on your target. The `extractor_output_ids` must identify, in order, the values that the permit will bind to onchain.
+
+For `transfer(address,uint256)`, use the `from`, `to`, and `amount` outputs from the same `ERC20TransferExtractor`:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/targets/<TARGET_ID>/protections \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "policy_kind": "offchain",
+    "policy_instance_id": "<OFFCHAIN_POLICY_ID>",
+    "function_signature": "transfer(address,uint256)",
+    "desired_position": 0,
+    "extractor_output_ids": [
+      "<FROM_OUTPUT_ID>",
+      "<TO_OUTPUT_ID>",
+      "<AMOUNT_OUTPUT_ID>"
+    ],
+    "onchain_target_protections": [
+      { "chain_selector": "<CHAIN_SELECTOR>" }
+    ]
+  }'
+```
+
+The selected chains must be a subset of the chains configured on the offchain policy. The target and policy must also belong to the same policy engine.
+
+Protection attachment is asynchronous and returns `202 Accepted`. Poll the policy's protections until the new protection becomes `active`:
+
+```bash
+curl https://ace.api.chain.link/v1/policies/<POLICY_ID>/protections \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+Once active, calls to the protected function require a matching permit. Continue with [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits).
+
+## Update the policy configuration
+
+Updating the configuration redeploys the managed workflow but does not replace its CADV contracts or protections:
+
+```bash
+curl -X PUT https://ace.api.chain.link/v1/policies/<POLICY_ID>/config \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "config": {
+      "secret_name": "trmApiKey",
+      "addresses_to_check": "ALL",
+      "fail_mode": "CLOSED",
+      "risk_threshold": "SEVERE",
+      "block_unknown": true,
+      "category_filters": [
+        { "category": "Sanctions", "threshold": "LOW" }
+      ]
+    }
+  }'
+```
+
+The policy enters `config_updating` and returns to `active` after the workflow is redeployed. Do not request new evaluations while the configuration is updating.
+
+## Remove a protection or policy
+
+Remove a protection before archiving its policy:
+
+```bash
+curl -X DELETE \
+  https://ace.api.chain.link/v1/policies/<POLICY_ID>/protections/<PROTECTION_ID> \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+The removal is asynchronous. After all protections are removed, archive the policy:
+
+```bash
+curl -X PATCH https://ace.api.chain.link/v1/policies/<POLICY_ID> \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "policy_kind": "offchain",
+    "status": "archived"
+  }'
+```
+
+Archiving removes the managed workflow and its event watchers. It also allows the organization to create a new offchain policy.
+
+## Beta and MVP limitations
+
+- `wallet_risk_scoring` is the only managed offchain policy type.
+- Each organization can have one active offchain policy.
+- Each evaluation can screen at most ten unique addresses.
+- Every permit is single-use (`maxUses = 1`) and does not expire (`expiry = 0`). These values are not configurable in the current release.
+- The values in `permit_parameters` must match the outputs configured on the protection and the values extracted from the eventual onchain call.
+- General CRE service limits also apply. See [CRE Service Quotas](https://docs.chain.link/cre/service-quotas).
+
+## Related pages
+
+- [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits) — integrate evaluations and permits into an application
+- [Off-Chain Policy Execution](/ace/concepts/off-chain-policies) — conceptual overview of managed and custom offchain policies
+- [CertifiedActionDONValidatorPolicy](/ace/reference/policy-library/certified-action-don-validator-policy) — onchain permit validation
+- [Protecting Target Functions](/ace/guides/policy-manager/manage-protections) — protection concepts and evaluation order
+- [Coordinator API Reference](/api/ace/coordinator/docs) — policy and protection API schemas

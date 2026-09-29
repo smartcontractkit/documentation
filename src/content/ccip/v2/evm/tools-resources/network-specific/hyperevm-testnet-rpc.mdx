@@ -1,0 +1,181 @@
+---
+title: "HyperEVM Testnet RPC Guide"
+section: ccip
+date: Last Modified
+metadata:
+  description: "HyperEVM Testnet RPC for Chainlink CCIP—endpoint, supported JSON-RPC methods, limits, and quick curl/web3 examples."
+  excerpt: "ccip hyperliquid hyperevm hypercore bridge cross-chain token testnet rpc json"
+  datePublished: "2025-10-08T00:00:00Z"
+  lastModified: "2025-10-08T00:00:00Z"
+  difficulty: "beginner"
+  estimatedTime: "15 minutes"
+---
+
+import { Aside, CopyText } from "@components"
+
+<Aside type="caution" title="Disclaimer">
+  This RPC is provided “as is” without warranties of any kind. Use is at your own risk, Chainlink Labs and its
+  affiliates are not liable for any losses, damages, or interruptions arising from its use. The RPC may be modified or
+  unavailable at any time, and users are solely responsible for their interactions and compliance with applicable laws.
+</Aside>
+
+To enhance the HyperEVM developer experience, we provide free public access to our professionally hosted Testnet RPC endpoint. Developers can use this endpoint to build Hyperliquid applications and configure it as a testnet RPC in browser wallets. For mainnet deployments, see available mainnet RPC URLs on the [Hyperliquid docs](https://hyperliquid.gitbook.io/hyperliquid-docs/builder-tools/hyperevm-tools).
+
+## RPC Endpoint Details
+
+- **Network Name**: HyperEVM Testnet
+- **RPC URL**: https://rpcs.chain.link/hyperevm/testnet
+- **Chain ID**: 998
+- **Currency Symbol**: HYPE
+- **Block Explorer URL (Optional)**: https://testnet.purrsec.com/
+
+## For Developers: Building with the RPC
+
+You can use this endpoint in your dApps, scripts, or backend services with any standard Web3 library.
+
+### Ethers.js (JavaScript/TypeScript)
+
+[Ethers.js](https://docs.ethers.org/v6/) is a library for interacting with Ethereum and EVM-compatible chains.
+
+```javascript
+import { ethers } from "ethers"
+
+const rpcUrl = "https://rpcs.chain.link/hyperevm/testnet"
+const provider = new ethers.JsonRpcProvider(rpcUrl)
+
+async function getBlock() {
+  const blockNumber = await provider.getBlockNumber()
+  console.log("Current Block Number:", blockNumber)
+}
+
+getBlock()
+```
+
+### Viem (JavaScript/TypeScript)
+
+[Viem](https://viem.sh/) is a TypeScript library for interacting with Ethereum and EVM-compatible chains. It provides modular, type-safe APIs as an alternative to ethers.js.
+
+```javascript
+import { createPublicClient, http } from "viem"
+
+const rpcUrl = "https://rpcs.chain.link/hyperevm/testnet"
+
+const client = createPublicClient({
+  transport: http(rpcUrl),
+})
+
+async function getBlock() {
+  const blockNumber = await client.getBlockNumber()
+  console.log("Current Block Number:", blockNumber)
+}
+
+getBlock()
+```
+
+### Web3.py (Python)
+
+[Web3.py](https://web3py.readthedocs.io/) is a Python library for interacting with EVM-compatible chains.
+
+```python
+from web3 import Web3
+
+rpc_url = "https://rpcs.chain.link/hyperevm/testnet"
+w3 = Web3(Web3.HTTPProvider(rpc_url))
+
+if w3.is_connected():
+    print("Connected to RPC!")
+    block_number = w3.eth.block_number
+    print("Current Block Number:", block_number)
+else:
+    print("Failed to connect.")
+```
+
+### cURL (Testing)
+
+```shell
+curl -X POST -H "Content-Type: application/json" \
+     --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
+     https://rpcs.chain.link/hyperevm/testnet
+```
+
+**Expected Response**:
+
+```json
+{ "jsonrpc": "2.0", "id": 1, "result": "0x1f92031" }
+```
+
+## For Users: Adding to Your Wallet
+
+You can easily add this network to browser extension wallets like [MetaMask](https://metamask.io/) or [Rabby](https://rabby.io/).
+
+### Using MetaMask
+
+[MetaMask](https://metamask.io/) is a popular browser extension wallet for Ethereum and EVM-compatible chains.
+
+1. Open your MetaMask wallet.
+1. Click the network selection dropdown at the top left.
+1. Click "Add network".
+1. At the bottom, select "Add a network manually".
+1. Fill in the form with the network details:
+   - Network Name: HyperEVM Testnet
+   - RPC URL: https://rpcs.chain.link/hyperevm/testnet
+   - Chain ID: 998
+   - Currency Symbol: HYPE
+   - Block Explorer URL (Optional): https://testnet.purrsec.com/
+1. Click "Save".
+
+### Using Rabby
+
+[Rabby](https://rabby.io/) is a browser extension wallet designed for multi-chain DeFi users with enhanced security features.
+
+1. Click on the "More" button, find "Add Custom Network".
+1. Press "Add Custom Network", or the edit button if editing an existing connection.
+1. Fill in the network details:
+   - Network Name: HyperEVM Testnet
+   - RPC URL: https://rpcs.chain.link/hyperevm/testnet
+   - Chain ID: 998
+   - Currency Symbol: HYPE
+   - Block Explorer URL (Optional): https://testnet.purrsec.com/
+1. Click "Confirm."
+
+## Supported JSON-RPC Methods
+
+| Method                                  | Description                                                                                              |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| net_version                             | Returns the current network ID (as a decimal string).                                                    |
+| web3_clientVersion                      | Returns the client software version string.                                                              |
+| eth_blockNumber                         | Returns the number of the most recent block (hex quantity).                                              |
+| eth_call                                | Executes a read-only call (no state change) against a contract. Only the latest block is supported.      |
+| eth_chainId                             | Returns the chain ID used for EIP-155 transaction signing (hex quantity).                                |
+| eth_estimateGas                         | Estimates the gas required to execute a transaction/call. Only the latest block is supported.            |
+| eth_feeHistory                          | Returns historical base fees, priority fee rewards, and gas usage ratios for a range of recent blocks.   |
+| eth_gasPrice                            | Returns the node’s suggested gas price. Returns the base fee for the next small block.                   |
+| eth_getBalance                          | Returns the account balance for an address. Only the latest block is supported.                          |
+| eth_getBlockByHash                      | Returns block details by block hash; can include full transactions when requested.                       |
+| eth_getBlockByNumber                    | Returns block details by block number; can include full transactions when requested.                     |
+| eth_getBlockReceipts                    | Returns all transaction receipts for the specified block.                                                |
+| eth_getBlockTransactionCountByHash      | Returns the number of transactions in a block, by block hash.                                            |
+| eth_getBlockTransactionCountByNumber    | Returns the number of transactions in a block, by block number.                                          |
+| eth_getCode                             | Returns the EVM bytecode at an address. Only the latest block is supported.                              |
+| eth_getLogs                             | Returns log entries that match a filter object. Up to 4 topics and up to 50 blocks in query range.       |
+| eth_getStorageAt                        | Returns the value from a storage slot at an address. Only the latest block is supported.                 |
+| eth_getTransactionByBlockHashAndIndex   | Returns a transaction from a block, by block hash and transaction index.                                 |
+| eth_getTransactionByBlockNumberAndIndex | Returns a transaction from a block, by block number and transaction index.                               |
+| eth_getTransactionByHash                | Returns a transaction by its hash.                                                                       |
+| eth_getTransactionCount                 | Returns the number of transactions sent from an address (the nonce). Only the latest block is supported. |
+| eth_getTransactionReceipt               | Returns the receipt of a transaction by hash (includes status, gas used, logs).                          |
+| eth_maxPriorityFeePerGas                | Returns the current max priority fee per gas (tip). Always returns zero currently.                       |
+| eth_syncing                             | Reports node sync status. Always returns false.                                                          |
+
+The following HyperEVM-specific endpoints are available:
+
+| Method                        | Description                                                                                                |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| eth_bigBlockGasPrice          | Returns the base fee for the next big block.                                                               |
+| eth_usingBigBlocks            | Returns whether the address is using big blocks.                                                           |
+| eth_getSystemTxsByBlockHash   | Similar to the "getTransaction" analogs but returns the system transactions that originate from HyperCore. |
+| eth_getSystemTxsByBlockNumber | Similar to the "getTransaction" analogs but returns the system transactions that originate from HyperCore. |
+
+## Rate Limits
+
+The RPC endpoint allows 1,000 requests per IP address within a 5-minute moving window.

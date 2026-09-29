@@ -4,8 +4,8 @@ title: "Cross-Chain Identity"
 date: Last Modified
 metadata:
   description: "Learn about ACE Cross-Chain Identity: how the CCID system links wallet addresses across all EVM chains to a single identity, enabling universal credential verification."
-  datePublished: "2026-04-20"
-  lastModified: "2026-08-18"
+  datePublished: "2026-03-31"
+  lastModified: "2026-07-17"
 ---
 
 import { Aside, ClickToZoom } from "@components"
@@ -66,7 +66,7 @@ Both registries are themselves protected by a PolicyEngine. This means write acc
 
 ### Sharing registries across organizations
 
-A registry owner can grant another organization **read access** to a registry, so that organization can reference the same identities and credentials in its own policies without re-issuing them. Access is read-only for the recipient and revocable at any time. This is how a protocol reuses a provider's registry directly. See [External registry](/ace/concepts/key-terms#external-registry) in the glossary.
+A registry owner can grant another organization **read access** to a registry, so that organization can reference the same identities and credentials in its own policies without re-issuing them. Access is read-only for the recipient and revocable at any time. This is how a protocol reuses a provider's registry directly. See [External Registries](/ace/guides/identity-manager/external-registries).
 
 ## Credential type identifiers
 
@@ -138,7 +138,7 @@ The system supports two levels of credential verification:
 
 **Attestation-only** is the default mode. The policy asks a single binary question: _does this credential exist for this identity?_ The answer is yes or no. The `credentialData` field is ignored entirely. This is sufficient for many compliance scenarios — for example, verifying that a user holds a `common.kyc` credential before allowing a transfer.
 
-**Credential Data Validator** adds a second layer. When a `ICredentialDataValidator` contract is configured on a Credential Source, the policy first checks that the credential exists, then passes the `credentialData` bytes to the validator contract for an additional custom check. The validator reads the non-PII data and returns `true` or `false`. ACE provides a pre-built **AllowDenyList Data Validator** whose first use case is jurisdiction control using [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes.
+**Credential Data Validator** adds a second layer. When a `ICredentialDataValidator` contract is configured on a Credential Source, the policy first checks that the credential exists, then passes the `credentialData` bytes to the validator contract for an additional custom check. The validator reads the non-PII data and returns `true` or `false`. ACE provides a pre-built **AllowDenyList Data Validator** whose first use case is jurisdiction control using [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes. See [Managing Data Validators](/ace/guides/policy-manager/manage-data-validators) to configure one.
 
 This enables decisions based on _what's inside_ the credential, not just whether it exists. For example:
 
@@ -154,10 +154,11 @@ This enables decisions based on _what's inside_ the credential, not just whether
 
 <Aside type="note" title="Configuring data validation">
   Credential Data Validators are configurable through the ACE Platform. To issue credentials that carry data, link a
-  data schema to your credential type; to enforce rules on that data at transaction time, attach a Data Validator to
-  your policy's credential source. Attestation-only remains the default when no data validator is configured. Data
-  Validators are a curated catalog maintained by Chainlink — see [Beta
-  Scope](/ace/beta-scope#credential-data-validation-is-a-curated-catalog) for details.
+  data schema to your credential type (see [Managing Credential
+  Types](/ace/guides/identity-manager/manage-credential-types#typed-credentials-with-data-schemas)); to enforce rules on
+  that data at transaction time, attach a Data Validator to your policy's credential source (see [Managing Data
+  Validators](/ace/guides/policy-manager/manage-data-validators)). Attestation-only remains the default when no data
+  validator is configured.
 </Aside>
 
 ## Credential lifecycle

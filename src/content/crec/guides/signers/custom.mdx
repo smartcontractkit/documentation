@@ -1,0 +1,175 @@
+---
+section: crec
+title: "Custom Signer"
+date: Last Modified
+metadata:
+  description: "Implement signer.Signer (and optionally signer.TypedDataSigner) to bridge Chainlink CRE Connect to any custody system: multisig service, in-house HSM, off-chain MPC, etc."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+The built-in signers (local, AWS KMS, HashiCorp Vault, Fireblocks, Privy) cover the most common production cases. For anything else, implement the `signer.Signer` interface yourself: the CRE Connect SDK will wire your custody system into the operation flow with no further changes.
+
+## The interface
+
+The contract is intentionally tiny:
+
+```go
+package signer
+
+type Signer interface {
+    Sign(ctx context.Context, hash []byte) ([]byte, error)
+}
+
+type TypedDataSigner interface {
+    SignTypedData(ctx context.Context, typedData *TypedData) ([]byte, error)
+}
+```
+
+Source: [`signer.go`](https://github.com/smartcontractkit/crec-sdk/blob/main/transact/signer/signer.go).
+
+`Sign` receives a 32-byte digest (the EIP-712 hash of the `Operation`) and must return a signature that recovers to the address you registered in `AllowedEcdsaSigners`.
+
+## What "signature" means here
+
+The CRE Connect Smart Account uses on-chain `ecrecover` to verify ECDSA signatures, so:
+
+- **Length** must be exactly **65 bytes**: `r` (32) ∥ `s` (32) ∥ `v` (1).
+- `s` must be in the **lower half** of the secp256k1 curve order (BIP-62 / EIP-2). go-ethereum's `crypto.Sign` already enforces this.
+- `v` must be **27 or 28**, not `0`/`1`. If your custody system returns `0`/`1`, add 27 before returning.
+- The recovered address must be present in the wallet's `AllowedEcdsaSigners` list.
+
+For RSA-backed wallets the Smart Account uses RSA verification instead: the signature shape differs (PKCS#1 v1.5 over the digest); see [HashiCorp Vault Signer](/crec/guides/signers/hashicorp-vault).
+
+## Minimal example: Multisig approval service
+
+```go
+package mysigner
+
+import (
+    "context"
+    "fmt"
+    "github.com/smartcontractkit/crec-sdk/transact/signer"
+)
+
+type MultisigSigner struct {
+    endpoint string
+    apiKey   string
+    keyID    string
+    expected common.Address
+    http     *http.Client
+}
+
+var _ signer.Signer = (*MultisigSigner)(nil)
+
+func New(endpoint, apiKey, keyID string, expected common.Address) *MultisigSigner {
+    return &MultisigSigner{
+        endpoint: endpoint, apiKey: apiKey, keyID: keyID,
+        expected: expected, http: &http.Client{Timeout: 30 * time.Second},
+    }
+}
+
+func (s *MultisigSigner) Sign(ctx context.Context, hash []byte) ([]byte, error) {
+    body, _ := json.Marshal(map[string]any{
+        "key_id": s.keyID,
+        "digest": "0x" + hex.EncodeToString(hash),
+    })
+
+    req, _ := http.NewRequestWithContext(ctx, "POST", s.endpoint+"/sign", bytes.NewReader(body))
+    req.Header.Set("Authorization", "Bearer "+s.apiKey)
+    req.Header.Set("Content-Type", "application/json")
+
+    resp, err := s.http.Do(req)
+    if err != nil { return nil, fmt.Errorf("multisig sign: %w", err) }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != http.StatusOK {
+        b, _ := io.ReadAll(resp.Body)
+        return nil, fmt.Errorf("multisig sign returned %d: %s", resp.StatusCode, string(b))
+    }
+
+    var out struct{ Signature string `json:"signature"` }
+    if err := json.NewDecoder(resp.Body).Decode(&out); err != nil { return nil, err }
+
+    sig, err := hex.DecodeString(strings.TrimPrefix(out.Signature, "0x"))
+    if err != nil { return nil, err }
+
+    if len(sig) != 65 { return nil, fmt.Errorf("expected 65-byte signature, got %d", len(sig)) }
+    if sig[64] <= 1 { sig[64] += 27 }
+
+    if err := s.verifyRecover(hash, sig); err != nil {
+        return nil, fmt.Errorf("signature does not recover to expected signer: %w", err)
+    }
+
+    return sig, nil
+}
+
+func (s *MultisigSigner) verifyRecover(hash, sig []byte) error {
+    pub, err := crypto.SigToPub(hash, sig)
+    if err != nil { return err }
+    if got := crypto.PubkeyToAddress(*pub); got != s.expected {
+        return fmt.Errorf("recovered %s, expected %s", got.Hex(), s.expected.Hex())
+    }
+    return nil
+}
+```
+
+Use it exactly like a built-in signer:
+
+```go
+ms := mysigner.New("https://multisig.example/api", os.Getenv("APPROVAL_API_KEY"), "treasury-key", expectedAddr)
+opr, err := client.Transact.ExecuteOperation(ctx, channelID, ms, op, chainSelector)
+```
+
+## Optionally implement `TypedDataSigner`
+
+If your custody system supports typed-data signing natively (e.g. so it can render the message to approvers), also implement `signer.TypedDataSigner`:
+
+```go
+func (s *MultisigSigner) SignTypedData(ctx context.Context, td *signer.TypedData) ([]byte, error) {
+    body, _ := json.Marshal(map[string]any{
+        "key_id":     s.keyID,
+        "typed_data": td,
+    })
+    // ... POST and return signature ...
+}
+```
+
+The CRE Connect SDK's `Transact.SignOperation` always calls `Sign(ctx, hash)` today. If you want to use `SignTypedData`, build the typed-data document yourself with `op.TypedData(chainID)` and call `SignTypedData` directly, then submit the resulting signature with `Transact.SendSignedOperation`.
+
+## Register the signer's address
+
+Whatever address your custody system signs as must appear in the wallet's `AllowedEcdsaSigners` (or `AllowedRsaSigners` for RSA). When you provision the wallet, derive the address up front:
+
+```go
+addr := common.HexToAddress(myCustodySystem.GetSignerAddress())
+ecdsa := []string{addr.Hex()}
+client.Wallets.Create(ctx, wallets.CreateInput{
+    // ...
+    AllowedEcdsaSigners: &ecdsa,
+})
+```
+
+See [Manage Wallet Signers](/crec/guides/wallets/manage-signers) for the full provisioning flow.
+
+## Hardening checklist
+
+<Aside type="caution" title="Verify what you sign">
+  Always recover the public key from the returned signature and assert it matches the address you expect. A custody
+  system bug or operator error that returns a signature for the wrong key will silently produce an operation that the
+  Smart Account rejects.
+</Aside>
+
+- **Time-out the upstream call.** Don't let a hung custody backend pin a CRE Connect goroutine indefinitely; give every HTTP / gRPC call a `context.WithTimeout`.
+- **Honour `ctx`.** If `ctx.Done()` fires, abandon any polling loop and return `ctx.Err()`.
+- **Idempotence.** If your custody system retries internally, make sure the hash you sign is the same on retry. The Smart Account's `op.ID` already provides operation-level idempotence.
+- **Audit log.** Every `Sign` call is a security-critical event. Persist `(timestamp, op.ID, signer key, requesting service, recovered address)` somewhere immutable.
+- **Test with the real Smart Account.** Use the [Local Signer](/crec/guides/signers/local) in tests to confirm the wallet accepts your signatures, then swap in your custom signer behind the same interface.
+
+## Next steps
+
+- [Build and Sign Operations](/crec/guides/operations/build-and-sign): the operation contract your `Sign` is fulfilling.
+- [Smart Accounts](/crec/concepts/smart-accounts): how the recovered address is checked on chain.
+- [Signing Transparency](/crec/guides/operations/signing-transparency): what to expose to humans before your custom signer signs.

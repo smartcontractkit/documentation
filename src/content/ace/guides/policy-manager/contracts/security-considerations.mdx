@@ -1,0 +1,64 @@
+---
+section: ace
+title: "Security Considerations"
+date: Last Modified
+metadata:
+  description: "Security considerations for ACE smart contract integration: trust boundaries for policies and extractors, context handling pitfalls, external call risks, and non-reverting view function requirements."
+  datePublished: "2026-03-31"
+  lastModified: "2026-03-31"
+---
+
+This page covers the implementation-level security concerns that developers should understand when integrating with ACE contracts — trust boundaries, external call risks, and defensive programming patterns.
+
+For governance-level security (administration controls, execution ordering, registry governance, privacy guarantees), see the [Security Model](/ace/concepts/security) concepts page.
+
+## Trust model for policies and extractors
+
+The PolicyEngine delegates trust to the individual Policy, Extractor, and Mapper contracts it is configured to use. A vulnerability in any one of these components can compromise the entire system.
+
+### Policy trust
+
+A malicious or poorly written policy can introduce vulnerabilities at two levels:
+
+- **The `run()` function** (read-only) — A policy that always returns Allow would bypass all subsequent policies. A policy that makes dangerous external calls could be exploited for denial of service.
+- **The `postRun()` function** (state-changing) — This function executes after a successful check and can modify onchain state. A malicious postRun could drain funds, change ownership, or corrupt state.
+
+Only install trusted, audited policies. ACE provides a library of pre-built, audited policies for common use cases.
+
+### Extractor trust
+
+The PolicyEngine relies on Extractors to correctly and honestly parse transaction calldata. If an Extractor is compromised, it could misrepresent the data that policies use for their decisions. For example, an Extractor could report a false `value` for a transfer, causing a VolumePolicy to undercount and allow transactions that should be blocked.
+
+### External call risks
+
+Many policies make external calls during execution — for example, querying a credential registry or checking an external data source. Since most policy `run()` functions are `view` (read-only), traditional reentrancy attacks are not possible. However, other risks apply:
+
+- **Denial of service** — A malicious external contract could revert or consume excessive gas, causing the entire policy chain to fail.
+- **Inconsistent reads** — External contract state could change between multiple calls within the same transaction.
+- **Gas exhaustion** — Deep call chains across multiple policies with external calls could exceed gas limits.
+
+For policies with state-changing functions (like `postRun()`), traditional reentrancy protections should be considered if those functions make external calls.
+
+**Mitigation:** Only interact with well-established, audited external contracts in policy logic. Implement proper error handling so that policies gracefully handle external contract failures rather than cascading reverts.
+
+## Context handling and race conditions
+
+The [context parameter](/ace/concepts/policy-management#the-context-parameter) is a powerful feature for passing arbitrary data to policies, but it requires careful handling.
+
+When using the two-step method (calling `setContext` followed by the protected function), the context is stored per sender in the PolicyProtected contract. If context is set but not consumed in the same atomic transaction, stale context from a previous call could be reused. In contracts used by multiple senders (like relayers or governance contracts), one user's context could potentially be overwritten by another before it is consumed.
+
+**Mitigation:** Always set and consume context within the same atomic transaction. For contracts with multiple concurrent users, prefer the direct argument method (`runPolicyWithContext`) over the two-step approach.
+
+## Non-reverting view functions
+
+All validator functions in the Cross-Chain Identity system — `validate()`, `validateCredentialData()`, and related view functions — must **never revert** under any circumstances. They must always return a boolean result.
+
+This is a critical reliability requirement. If a validator reverted during a policy check (for example, because an external call to a credential registry failed), it would break the entire policy chain for that transaction. The PolicyEngine would not be able to distinguish between "credential is invalid" and "validator is broken."
+
+Implementations must use defensive programming patterns:
+
+- Wrap external calls in try-catch blocks.
+- Return `false` on any external call failure rather than allowing the revert to propagate.
+- Validate all inputs before making external calls.
+
+This guarantees that the policy chain always completes and returns a definitive result, even when downstream dependencies fail.

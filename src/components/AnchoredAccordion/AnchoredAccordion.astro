@@ -1,0 +1,174 @@
+---
+import GithubSlugger from "github-slugger"
+
+interface Props {
+  title: string
+  number?: number
+  depth?: 2 | 3 | 4
+  startOpen?: boolean
+  anchorId?: string
+}
+
+const { title, number, depth = 2, startOpen = false, anchorId } = Astro.props
+const slugger = new GithubSlugger()
+const id = anchorId || slugger.slug(title)
+---
+
+<astro-anchored-accordion
+  id={id}
+  data-toc-depth={String(depth)}
+  data-toc-text={title}
+  data-start-open={String(startOpen)}
+>
+  <details
+    {...startOpen ? { open: true } : {}}
+    {...startOpen ? { expanded: "" } : {}}
+    style={number === 1 || !number ? { borderTop: "1px solid var(--gray-300, #ced0d5)" } : {}}
+  >
+    <summary>
+      <span class="before">{number}</span>
+      <slot name="title">{title}</slot>
+      <a href={`#${id}`} class="permalink" aria-label="Permalink for this section">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+        </svg>
+      </a>
+      <span class="accordion-arrow"></span>
+    </summary>
+    <div class="accordionContent">
+      <slot />
+    </div>
+  </details>
+</astro-anchored-accordion>
+
+<style>
+  astro-anchored-accordion {
+    display: block;
+    scroll-margin-top: calc(var(--theme-navbar-height) + var(--space-16x));
+  }
+
+  details {
+    overflow: hidden;
+    border-bottom: 1px solid var(--gray-300, #ced0d5);
+    transition: background-color 0.15s ease;
+  }
+
+  details:not([open]):hover {
+    background-color: var(--blue-50, #eef2ff);
+  }
+
+  summary {
+    display: grid;
+    grid-template-columns: 0 1fr auto auto;
+    align-items: center;
+    gap: var(--space-8x);
+    cursor: pointer;
+    color: var(--blue-800, #1a2b6b);
+    font-size: 16px;
+    padding: var(--space-2x) 0px;
+    list-style: none;
+    transition: background-color 0.15s ease;
+  }
+
+  details[open] > summary:hover {
+    background-color: var(--blue-50, #eef2ff);
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  span.before {
+    font-size: inherit;
+    color: var(--gray-400, #b7bac0);
+    letter-spacing: -0.24px;
+    transition: color 0.15s ease;
+  }
+
+  summary:hover span.before {
+    color: var(--blue-400, #6b8acd);
+  }
+
+  .permalink {
+    display: flex;
+    align-items: center;
+    color: var(--gray-400, #b7bac0);
+    opacity: 0.7;
+    transition:
+      opacity 0.15s ease,
+      color 0.15s ease;
+  }
+
+  summary:hover .permalink {
+    opacity: 0.7;
+  }
+
+  .permalink:hover {
+    opacity: 1;
+    color: var(--blue-800, #1a2b6b);
+  }
+
+  .accordion-arrow {
+    display: flex;
+    align-items: center;
+  }
+
+  .accordion-arrow::after {
+    content: url(/images/quickstarts/arrow-down.svg);
+    -webkit-mask: url(/images/quickstarts/arrow-down.svg) no-repeat center;
+    -webkit-mask-size: var(--space-6x);
+    background-color: var(--gray-400, #b7bac0);
+    transition:
+      0.25s transform ease,
+      0.15s background-color ease;
+  }
+
+  summary:hover .accordion-arrow::after {
+    background-color: var(--blue-600, #174cc2);
+  }
+
+  details[expanded] > summary .accordion-arrow::after {
+    transform: rotate(180deg);
+    background-color: #174cc2;
+  }
+
+  .accordionContent {
+    padding-top: var(--space-4x);
+    padding-left: var(--space-8x);
+    padding-bottom: var(--space-4x);
+  }
+
+  @media (min-width: 48em) {
+    summary {
+      font-size: 20px;
+      padding: var(--space-3x) 0px;
+    }
+  }
+</style>
+
+<style is:inline>
+  astro-anchored-accordion .accordionContent > :not(astro-slot, astro-island, ul, ol) {
+    margin-top: var(--space-4x);
+  }
+
+  astro-anchored-accordion .accordionContent > :first-child {
+    margin-top: 0;
+  }
+</style>
+
+<script>
+  import { AnchoredAccordion } from "./anchoredAccordionUtil.ts"
+
+  customElements.define("astro-anchored-accordion", AnchoredAccordion)
+</script>

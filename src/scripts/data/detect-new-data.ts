@@ -12,6 +12,7 @@ import fs from "fs"
 import path from "path"
 import fetch from "node-fetch"
 import prettier from "prettier"
+import { TOKEN_ICONS_PATH } from "../../config/cdn.js"
 
 // Network endpoints mapping for different blockchain networks
 // Each endpoint provides a JSON file containing feed definitions for that network
@@ -53,6 +54,7 @@ const NETWORK_ENDPOINTS: Record<string, string> = {
   megaeth: "https://reference-data-directory.vercel.app/feeds-megaeth-mainnet.json",
   robinhood: "https://reference-data-directory.vercel.app/feeds-robinhood-mainnet.json",
   tempo: "https://reference-data-directory.vercel.app/feeds-tempo-mainnet.json",
+  arc: "https://reference-data-directory.vercel.app/feeds-arc-mainnet.json",
 }
 
 const STREAM_DEPRECATION_ENDPOINTS: Array<{ network: string; networkType: "mainnet" | "testnet"; url: string }> = [
@@ -114,7 +116,7 @@ interface Baseline {
  * @returns URL to the asset's icon image
  */
 function buildIconUrl(baseAsset: string): string {
-  return `https://d2f70xi62kby8n.cloudfront.net/tokens/${baseAsset.toLowerCase()}.webp`
+  return `${TOKEN_ICONS_PATH}/${baseAsset.toLowerCase()}.webp`
 }
 
 /**

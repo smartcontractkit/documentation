@@ -15,6 +15,8 @@ export const CONTACT_EMAIL_PROXY_ADDRESSES = new Set<string>([
   "0x0101166b3b000332000000000000000000000000000000000000000000000000",
   "0x7cf132bd0456af4ecfceaae684fd7967df931141",
   "0xbb65fa58bdb7d33e4a3d1a40a7a9bd99e746367b",
+  "0x9eb8a54d0590798880c665c7a6d51b95f4078ad7",
+  "0xa261c56cabf7ed6081646b892e57175ab2dd8617",
 ])
 
 /**
@@ -26,7 +28,11 @@ export type ExtendedHoursCategory = "preciousMetals" | "forex"
 
 export const EXTENDED_HOURS_FEED_CATEGORIES: Record<ExtendedHoursCategory, Set<string>> = {
   preciousMetals: new Set(["0x369c67e8b026cc4ef98350f332d7dd52b85b7674"]),
-  forex: new Set(["0x9eb8a54d0590798880c665c7a6d51b95f4078ad7"]),
+  forex: new Set([
+    "0x9eb8a54d0590798880c665c7a6d51b95f4078ad7",
+    "0xbb65fa58bdb7d33e4a3d1a40a7a9bd99e746367b",
+    "0xa261c56cabf7ed6081646b892e57175ab2dd8617",
+  ]),
 }
 
 /** Union of all extended-hours proxy addresses, used for the badge and unfiltered visibility. */
@@ -199,6 +205,10 @@ export function isFeedVisible(
   } else if (isRates) {
     isVisible = feed.docs?.productType === "Rates" || feed.docs?.productSubType === "Realized Volatility"
   } else if (isTokenizedEquity) {
+    // Tokenized equity feeds (Ondo and other providers)
+    // Only show true tokenized equity feeds (primaryTokenizedPrice) on this page.
+    // Generic equity price feeds (e.g. RefPrice) are excluded — they are not
+    // tokenized equity instruments and should not appear here.
     const assetClass = feed.docs?.assetClass
     isVisible =
       (assetClass === "Equity" || assetClass === "Equities") &&

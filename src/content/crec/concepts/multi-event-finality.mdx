@@ -1,0 +1,63 @@
+---
+section: crec
+title: "Multi-Event Finality"
+date: Last Modified
+metadata:
+  description: "How Chainlink CRE Connect reports progressive on-chain confirmations for operations: confirmed_latest, confirmed_safe, and confirmed."
+  datePublished: "2026-08-31"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+**Multi-event finality** is how CRE Connect reports an [Operation](/crec/concepts/operations)'s on-chain confirmation as the underlying block becomes harder to reorganize. Instead of treating confirmation as a single moment, CRE Connect can emit multiple `operation.status` events for the same Operation:
+
+| <div style="width: 120px;">Status</div> | Meaning                                                                                                      | Example use cases                                                    |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| `confirmed_latest`                      | The Operation appeared in the latest observed block. The block can still be reorganized.                     | Read-only dashboards, low-stakes notifications, and fast UX updates. |
+| `confirmed_safe`                        | The Operation appeared in a block the chain considers safe. A reorganization is very unlikely.               | Operational alerting and reversible downstream side effects.         |
+| `confirmed`                             | The Operation appeared in a finalized block. The chain cannot reorganize it under its normal finality rules. | Irreversible business actions, settlement, and compliance workflows. |
+
+These examples are guidance, not policy. Your application owns the decision about which finality level is appropriate for each action. These statuses are part of the public `OperationStatus` enum. See [Lifecycles](/crec/reference/lifecycles#operation-lifecycle) for the complete operation state machine.
+
+## Why operations can emit multiple status events
+
+An Operation completes on chain when the [Smart Account](/crec/concepts/smart-accounts) emits `OperationExecuted`. That same on-chain event can be observed at different [confidence levels](/crec/concepts/confidence-levels) as the block matures.
+
+CRE Connect reports those observations as progressive confirmation statuses. Your application might first see `confirmed_latest`, then `confirmed_safe`, then `confirmed` for the same operation. Each event gives you a stronger finality guarantee than the previous one.
+
+## Statuses only move forward
+
+Treat the confirmation statuses as a ladder: `confirmed_latest` to `confirmed_safe` to `confirmed`.
+
+Each step represents a stronger finality guarantee for the same on-chain Operation. Once an Operation reaches a stronger confirmation status, it does not return to a weaker one.
+
+## Verification and finality are separate
+
+`confirmed_latest`, `confirmed_safe`, and `confirmed` operation status events are DON-verified. You can verify them with `client.Events.VerifyOperationStatus`.
+
+Verification proves that the DON signed the observation. Finality describes how stable the underlying chain block is. A `confirmed_latest` event can pass cryptographic verification and still be affected by a chain reorganization. A `confirmed` event provides the strongest chain-level guarantee.
+
+## Choosing which status to wait for
+
+Choose the status based on what your application will do next:
+
+| Application behavior                | Recommended status |
+| ----------------------------------- | ------------------ |
+| Show progress in a UI               | `confirmed_latest` |
+| Trigger reversible operations       | `confirmed_safe`   |
+| Trigger irreversible business logic | `confirmed`        |
+
+Some networks may not emit every confirmation status. Testnets often favor faster feedback, while mainnets can support stronger finality stages. Use the statuses your channel actually receives on the target network, and design your waiting logic with a timeout.
+
+<Aside type="caution" title="Do not treat verification as finality">
+  Always verify operation status events before acting on them, but choose the confirmation status based on your risk
+  tolerance. Verification and finality answer different questions.
+</Aside>
+
+## Related
+
+- [Lifecycles](/crec/reference/lifecycles#operation-lifecycle): complete operation state machine and status enum.
+- [Confidence Levels](/crec/concepts/confidence-levels): how `latest`, `safe`, and `finalized` differ.
+- [Submit and Track Operations](/crec/guides/operations/submit-and-track): polling and event patterns for operations.
+- [Event Verification](/crec/concepts/event-verification): how to verify `operation.status` events.

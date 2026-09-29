@@ -391,6 +391,7 @@ import {
   hexToBase64,
   bytesToHex,
   TxStatus,
+  handler,
   type Runtime,
   Runner,
 } from "@chainlink/cre-sdk"
@@ -465,7 +466,7 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
 const initWorkflow = (config: Config) => {
   const cron = new CronCapability()
   return [
-    cron.handler(
+    handler(
       cron.trigger({
         schedule: config.schedule,
       }),

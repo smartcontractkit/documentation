@@ -1,0 +1,260 @@
+---
+section: ace
+title: "Managing Registries"
+date: Last Modified
+metadata:
+  description: "Create, view, and manage identity and credential registries in Chainlink ACE using the Platform UI or the Coordinator API."
+  datePublished: "2026-04-06"
+  lastModified: "2026-04-06"
+---
+
+import { Aside, MethodTabs } from "@components"
+
+## What are registries?
+
+A **registry** in ACE is the top-level organizational unit for the Identity Manager. Each registry bundles two types of sub-registries:
+
+- **Identity registries** — map wallet addresses to [Cross-Chain Identifiers (CCIDs)](/ace/concepts/cross-chain-identity#the-cross-chain-identifier-ccid).
+- **Credential registries** — manage the lifecycle of credentials linked to CCIDs.
+
+Each sub-registry corresponds to a smart contract deployed on a specific blockchain. A single registry can span multiple chains by including sub-registries on each target network. For a deeper explanation of the registry model and how it fits into the identity lifecycle, see [Cross-Chain Identity](/ace/concepts/cross-chain-identity).
+
+## Create a registry
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Identity Manager** in the left sidebar.
+    1. Click **Add a new registry**.
+    1. **Step 1 — Registry details:** Set your registry's name and description.
+    1. **Step 2 — Select networks:** Choose the networks you want your registry to be deployed to.
+    1. Click **Deploy registry**.
+  </Fragment>
+  <Fragment slot="api">
+    Use the Coordinator API to create a registry with identity and credential sub-registries. Each entry in `identity_registries` and `credential_registries` specifies a `chain_selector` for the target network (see [Supported Networks](/ace/supported-networks) for chain selector values).
+
+    This example creates a registry with sub-registries on Ethereum Sepolia and Arbitrum Sepolia:
+
+    ```bash
+    curl -X POST https://ace.api.chain.link/v1/registries \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "name": "Production Identity Registry",
+        "description": "Identity and credential registries for compliance verification",
+        "identity_registries": [
+          { "name": "Identity Registry - Sepolia", "description": "Identity registry on Ethereum Sepolia", "chain_selector": "16015286601757825753" },
+          { "name": "Identity Registry - Arbitrum", "description": "Identity registry on Arbitrum Sepolia", "chain_selector": "3478487238524512106" }
+        ],
+        "credential_registries": [
+          { "name": "Credential Registry - Sepolia", "description": "Credential registry on Ethereum Sepolia", "chain_selector": "16015286601757825753" },
+          { "name": "Credential Registry - Arbitrum", "description": "Credential registry on Arbitrum Sepolia", "chain_selector": "3478487238524512106" }
+        ]
+      }'
+    ```
+
+    When you omit the `address` field, ACE deploys a new managed contract on that chain. To import an existing contract instead, provide its address — see [Import an existing registry](#import-an-existing-registry).
+
+    The response includes the registry ID and the status of each sub-registry deployment:
+
+    ```json
+    {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Production Identity Registry",
+      "description": "Identity and credential registries for compliance verification",
+      "org_id": "org-123",
+      "mode": "managed",
+      "chain_selectors": ["16015286601757825753", "3478487238524512106"],
+      "identity_registries": [
+        {
+          "id": "d4c3b2a1-f6e5-0987-dcba-0987654321fe",
+          "name": "Identity Registry - Sepolia",
+          "description": "Identity registry on Ethereum Sepolia",
+          "chain_selector": "16015286601757825753",
+          "address": "0x1a2b3c4d5e6f7890abcdef1234567890abcdef12",
+          "registry_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "org_id": "org-123",
+          "status": "created",
+          "created_at": 1775580000,
+          "updated_at": 1775580000
+        },
+        {
+          "id": "e5d4c3b2-a1f6-8907-edcb-a09876543210",
+          "name": "Identity Registry - Arbitrum",
+          "description": "Identity registry on Arbitrum Sepolia",
+          "chain_selector": "3478487238524512106",
+          "address": "0x2b3c4d5e6f7890abcdef1234567890abcdef1234",
+          "registry_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "org_id": "org-123",
+          "status": "created",
+          "created_at": 1775580000,
+          "updated_at": 1775580000
+        }
+      ],
+      "credential_registries": [
+        {
+          "id": "f6e5d4c3-b2a1-9078-fedc-ba0987654321",
+          "name": "Credential Registry - Sepolia",
+          "description": "Credential registry on Ethereum Sepolia",
+          "chain_selector": "16015286601757825753",
+          "address": "0x3c4d5e6f7890abcdef1234567890abcdef123456",
+          "registry_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "org_id": "org-123",
+          "status": "created",
+          "created_at": 1775580000,
+          "updated_at": 1775580000
+        },
+        {
+          "id": "07f6e5d4-c3b2-1098-0fed-cb1098765432",
+          "name": "Credential Registry - Arbitrum",
+          "description": "Credential registry on Arbitrum Sepolia",
+          "chain_selector": "3478487238524512106",
+          "address": "0x4d5e6f7890abcdef1234567890abcdef12345678",
+          "registry_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "org_id": "org-123",
+          "status": "created",
+          "created_at": 1775580000,
+          "updated_at": 1775580000
+        }
+      ],
+      "archived_at": null,
+      "created_at": 1775580000,
+      "updated_at": 1775580000
+    }
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+## View registries
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Identity Manager** in the left sidebar. You see all registries in your organization.
+    1. Click on a registry to open it. The detail view has two tabs:
+       - **Identities** — lists the identities registered in this registry.
+       - **Credential types** — lists the credential types configured for this registry.
+  </Fragment>
+  <Fragment slot="api">
+    List all registries:
+
+    ```bash
+    curl https://ace.api.chain.link/v1/registries \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    Use query parameters to paginate and filter results:
+
+    | Parameter          | Description                                                                |
+    | :----------------- | :------------------------------------------------------------------------- |
+    | `page`             | Page number (default: 1)                                                   |
+    | `page_size`        | Results per page                                                           |
+    | `include_onchains` | Include onchain sub-registry details in the response                       |
+    | `type`             | Filter by type: `pair` (default), `identity`, or `credential`              |
+    | `include_granted`  | When `true`, also include registries other organizations have shared with you. Each registry carries an `access_type` of `owned` or `granted`. See [External Registries](/ace/guides/identity-manager/external-registries). |
+
+    To retrieve a specific registry by ID:
+
+    ```bash
+    curl https://ace.api.chain.link/v1/registries/a1b2c3d4-e5f6-7890-abcd-ef1234567890 \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    Use the `type` query parameter to filter by sub-registry type:
+
+    ```bash
+    curl "https://ace.api.chain.link/v1/registries/a1b2c3d4-e5f6-7890-abcd-ef1234567890?type=identity" \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+## Multi-chain setup
+
+Registries are designed to work across multiple chains. Each entry in `identity_registries` and `credential_registries` targets a specific `chain_selector`, and the platform deploys (or imports) a contract on each specified chain independently.
+
+A typical multi-chain configuration:
+
+- **Identity registries** on every chain where users interact — so the IdentityRegistry on each chain can resolve wallet addresses to CCIDs locally.
+- **Credential registries** on every chain where policies need to verify credentials at runtime.
+
+Because CCIDs are chain-agnostic identifiers, a credential issued on one chain's CredentialRegistry is logically valid across all chains. The multi-chain deployment ensures that each chain has a local copy of the registry contracts for low-latency, on-chain lookups. For more on how this model works, see [Cross-Chain Identity](/ace/concepts/cross-chain-identity).
+
+<Aside type="note">
+  You must have a [CRE Connect Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) deployed on each
+  chain before ACE can deploy managed registry contracts there.
+</Aside>
+
+## Update a registry
+
+You can update a registry's name, description, and add new sub-registries. Updates are **additive** — you can add new identity or credential sub-registries to additional chains, but you cannot remove existing sub-registry pairs.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Identity Manager** and click on the registry you want to update.
+    1. Click on the gear icon to open the settings page. Edit the registry's **name** or **description**.
+
+    <Aside type="note">
+      Adding sub-registries on additional chains is not available through the Platform UI. Use the **API** tab to extend a registry to new networks.
+    </Aside>
+
+  </Fragment>
+  <Fragment slot="api">
+    ```bash
+    curl -X PUT https://ace.api.chain.link/v1/registries/a1b2c3d4-e5f6-7890-abcd-ef1234567890 \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "name": "Updated Registry Name",
+        "description": "Updated description with expanded chain coverage",
+        "identity_registries": [
+          { "name": "Identity Registry - Base", "description": "Identity registry on Base Sepolia", "chain_selector": "10344971235874465080" }
+        ],
+        "credential_registries": [
+          { "name": "Credential Registry - Base", "description": "Credential registry on Base Sepolia", "chain_selector": "10344971235874465080" }
+        ]
+      }'
+    ```
+
+    This example adds sub-registries on Base Sepolia to an existing registry. The existing sub-registries on other chains are unaffected.
+
+  </Fragment>
+</MethodTabs>
+
+## Share across organizations
+
+You can grant another organization read access to a registry you own, so it can use your identities and credentials as a credential source without re-issuing them. Grants are read-only for the recipient and can be revoked at any time. For the full workflow — granting, discovering registries shared with you, using them, and revoking — see [External Registries](/ace/guides/identity-manager/external-registries).
+
+## Archive a registry
+
+Archiving a registry deactivates it and prevents any further operations. Before archiving, all identities associated with the registry must be removed or archived first.
+
+<Aside type="note">
+  All identities in the registry must be archived or removed before the registry itself can be archived. Attempting to
+  archive a registry with active identities returns an error.
+</Aside>
+
+<MethodTabs>
+  <Fragment slot="ui">
+    <Aside type="note">
+      Archiving a registry is not yet available through the Platform UI. Use the **API** tab to archive one via the Coordinator API.
+    </Aside>
+  </Fragment>
+  <Fragment slot="api">
+    ```bash
+    curl -X PATCH https://ace.api.chain.link/v1/registries/a1b2c3d4-e5f6-7890-abcd-ef1234567890 \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "status": "archived"
+      }'
+    ```
+  </Fragment>
+</MethodTabs>
+
+## Related pages
+
+- [Cross-Chain Identity](/ace/concepts/cross-chain-identity) — conceptual background on CCIDs, registries, and credential sources
+- [Managing Identities and Credentials](/ace/guides/identity-manager/manage-identities) — register identities and issue credentials within a registry
+- [Managing Credential Types](/ace/guides/identity-manager/manage-credential-types) — define and manage the credential types used in credential registries
+- [Coordinator API Reference](/api/ace/coordinator/docs) — full API schema and parameters
