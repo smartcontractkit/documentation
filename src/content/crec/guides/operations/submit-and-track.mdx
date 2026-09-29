@@ -1,0 +1,196 @@
+---
+section: crec
+title: "Submit and Track Operations"
+date: Last Modified
+metadata:
+  description: "Submit a signed Chainlink CRE Connect operation, then poll or stream the resulting `operation.status` events through to confirmation."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+Once you have a signed `(Operation, signature)` pair (see [Build and Sign Operations](/crec/guides/operations/build-and-sign)), submitting it is a single SDK call. Tracking it to a final status takes a little more work. This guide covers both REST polling and the `operation.status` verifiable event.
+
+If you need to create the operation before collecting a signature, use [Draft Operations](/crec/guides/operations/drafts). Drafts start in `pending_signature` and move into this submit-and-track flow after finalization.
+
+## One-shot submission with `ExecuteOperation`
+
+`ExecuteOperation` signs and sends in one call. This is the simplest path:
+
+```go
+opr, err := client.Transact.ExecuteOperation(ctx, channelID, ecdsa, op, chainSelector)
+if err != nil {
+    return err
+}
+fmt.Println(opr.OperationId, opr.Status) // -> <uuid> accepted
+```
+
+Internally `ExecuteOperation`:
+
+1. Calls `SignOperation` (EIP-712 hash + signer).
+2. Marshals every `Transaction` to `(to, value, data)` strings.
+3. POSTs `/channels/{channelID}/operations` with the signature.
+4. GETs the freshly-created operation so you have its server-side `OperationId` and initial `Status`.
+
+If you already signed elsewhere, use `SendSignedOperation(ctx, channelID, op, sig, chainSelector)` and skip the signing step.
+
+## Submit raw without the helper
+
+For tools that build their own input layer (CLIs, batched submitters, off-chain services), call `CreateOperation` directly:
+
+```go
+import "github.com/smartcontractkit/crec-sdk/transact"
+
+opID, err := client.Transact.CreateOperation(ctx, transact.CreateOperationInput{
+    ChannelID:         channelID,
+    ChainSelector:     chainSelector,
+    Address:           op.Account.Hex(),
+    WalletOperationID: op.ID.String(),
+    Deadline:          op.Deadline.Int64(),
+    Transactions: []transact.TransactionRequest{{
+        To: op.Transactions[0].To.Hex(), Value: op.Transactions[0].Value.String(), Data: "0x" + common.Bytes2Hex(op.Transactions[0].Data),
+    }},
+    Signature: "0x" + common.Bytes2Hex(sig),
+})
+```
+
+`CreateOperation` returns only the operation UUID. The API responds with HTTP **201** and an `OperationResponse` body containing just the new `operation_id`. Call `GetOperation(ctx, channelID, opID)` afterwards if you need the full `Operation` record.
+
+curl equivalent:
+
+```bash
+curl -sS -X POST "$CREC_BASE_URL/channels/$CHANNEL_ID/operations" \
+  -H "Authorization: Apikey $CREC_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "chain_selector": "16015286601757825753",
+    "address": "0xYourSmartAccount",
+    "wallet_operation_id": "1735312000",
+    "deadline": 0,
+    "transactions": [
+      {"to":"0xCounter", "value":"0", "data":"0xa9059cbb..."}
+    ],
+    "signature": "0x<65-byte sig>"
+  }'
+```
+
+## Operation lifecycle
+
+The full operation state machine lives in [Lifecycles](/crec/reference/lifecycles#operation-lifecycle). For this guide, the key points are:
+
+| Phase             | Statuses                                                                       |
+| ----------------- | ------------------------------------------------------------------------------ |
+| Draft entry       | `pending_signature` until finalized, cancelled, or expired.                    |
+| Signed entry      | `accepted`, then relay progress through `sending`, `sent`, and `broadcasting`. |
+| Confirmation      | `confirmed_latest`, `confirmed_safe`, then `confirmed` as the block matures.   |
+| Terminal outcomes | `confirmed`, `failed`, `cancelled`, or `expired`.                              |
+
+Use the terminal status that matches your risk tolerance. Read-only dashboards can show `confirmed_latest`; irreversible business actions should wait for `confirmed`. Some testnets only emit `confirmed_latest`, so check the statuses your channel receives on the target network.
+
+## Track to completion
+
+There are two complementary paths.
+
+### Path A: Poll `GetOperation`
+
+Simple, no event subscription required:
+
+```go
+import (
+    "time"
+    apiClient "github.com/smartcontractkit/crec-api-go/client"
+)
+
+deadline := time.Now().Add(2 * time.Minute)
+for time.Now().Before(deadline) {
+    op, err := client.Transact.GetOperation(ctx, channelID, opID)
+    if err != nil {
+        return err
+    }
+    switch op.Status {
+    case apiClient.OperationStatusConfirmed:
+        fmt.Println("done", op.OperationId)
+        return nil
+    case apiClient.OperationStatusFailed:
+        return fmt.Errorf("operation failed: %s", op.OperationId)
+    }
+    time.Sleep(2 * time.Second)
+}
+return fmt.Errorf("timed out waiting for operation %s", opID)
+```
+
+curl equivalent:
+
+```bash
+curl -sS "$CREC_BASE_URL/channels/$CHANNEL_ID/operations/$OPERATION_ID" \
+  -H "Authorization: Apikey $CREC_API_KEY"
+```
+
+### Path B: Subscribe to `operation.status` events
+
+This is the **verifiable** path: CRE Connect emits a signed `operation.status` event each time the operation transitions. Combine it with the regular event poller:
+
+```go
+events, _, err := client.Events.SearchEvents(ctx, channelID, &apiClient.GetChannelsChannelIdEventsSearchParams{
+    Type: ptrSlice([]apiClient.EventType{apiClient.EventTypeOperationStatus}),
+})
+if err != nil { return err }
+
+for _, ev := range events {
+    if ok, _ := client.Events.VerifyOperationStatus(&ev); !ok {
+        continue
+    }
+    osPayload, err := ev.Payload.AsOperationStatusPayload()
+    if err != nil { continue }
+    if osPayload.OperationId == opID && osPayload.Status == apiClient.OperationStatusConfirmed {
+        fmt.Printf("confirmed via event (event_hash=%s)\n", *osPayload.EventHash)
+    }
+}
+```
+
+For a real-time loop, run `Events.Poll` filtered to your operation IDs (see [Poll and Search Events](/crec/guides/events/poll-and-search)).
+
+<Aside type="note" title="Verify before trusting">
+  The poll path (`GetOperation`) returns CRE Connect's view; the event path adds a DON-signed proof. Treat the event as
+  the source of truth for downstream business logic, especially any user-visible "confirmed" indicator.
+</Aside>
+
+## List operations
+
+For dashboards and audits, `ListOperations` filters by status / chain / address / wallet:
+
+```go
+status := apiClient.OperationStatusFailed
+ops, hasMore, err := client.Transact.ListOperations(ctx, transact.ListOperationsInput{
+    ChannelID: channelID,
+    Status:    &[]apiClient.OperationStatus{status},
+})
+```
+
+curl:
+
+```bash
+curl -sS "$CREC_BASE_URL/channels/$CHANNEL_ID/operations?status=failed" \
+  -H "Authorization: Apikey $CREC_API_KEY"
+```
+
+## Sentinel errors
+
+| Error                                                            | Meaning                                                   |
+| ---------------------------------------------------------------- | --------------------------------------------------------- |
+| `transact.ErrChannelNotFound`                                    | Channel does not exist (404).                             |
+| `transact.ErrOperationNotFound`                                  | Operation does not exist (404).                           |
+| `transact.ErrCreateOperation` wrapping `ErrUnexpectedStatusCode` | Non-201 from `POST /operations`.                          |
+| `transact.ErrInvalidDeadline`                                    | `op.Deadline` is negative or doesn't fit in `int64`.      |
+| `transact.ErrAtLeastOneTransactionRequired`                      | Empty `Transactions` slice.                               |
+| `transact.ErrSignatureRequired`                                  | Signature missing on `CreateOperationInput`.              |
+| `transact.ErrDraftNotFinalizable`                                | Draft cannot move from `pending_signature` to `accepted`. |
+| `transact.ErrDraftNotCancellable`                                | Draft cannot be cancelled from its current status.        |
+
+## Next steps
+
+- [Draft Operations: Create, Finalize, Cancel](/crec/guides/operations/drafts): create an unsigned operation and finalize it later.
+- [Batch Multiple Transactions](/crec/guides/operations/batch-transactions): atomic multi-call patterns.
+- [Signing Transparency](/crec/guides/operations/signing-transparency): show users exactly what they're authorising.
+- [Operation Lifecycles](/crec/reference/lifecycles): full state machine reference.

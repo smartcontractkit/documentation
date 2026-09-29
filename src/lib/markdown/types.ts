@@ -110,3 +110,11 @@ export interface CodeBlock {
   /** Optional title */
   title?: string
 }
+
+export type MarkdownArtifact = {
+  requestPath: string
+  routeKind: "normal" | "special" | "selector" | "redirect"
+  transformMode: "normal" | "sanitized" | "fallback" | "replacement"
+  sourcePath?: string
+  markdown: string
+}

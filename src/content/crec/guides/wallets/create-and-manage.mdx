@@ -1,0 +1,296 @@
+---
+section: crec
+title: "Create and Manage Wallets"
+date: Last Modified
+metadata:
+  description: "Provision a Chainlink CRE Connect Smart Account (wallet), look it up, list and filter wallets across your channels, rename it, and archive it: through the Platform UI or the Go SDK / REST API."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside, MethodTabs } from "@components"
+
+A **wallet** in CRE Connect is a Smart Account deployed on a specific chain, owned by an EOA you control, and authorised to be driven by one or more **signers** (ECDSA addresses or RSA keys). It is the `op.Account` you target when you build operations.
+
+This guide covers wallet provisioning and life-cycle management. For runtime signer changes see [Manage Wallet Signers](/crec/guides/wallets/manage-signers).
+
+## Create a wallet
+
+A wallet has two security layers:
+
+- **Owner**: the EOA that owns the deployed Smart Account on chain. Used for ownership-level changes (handled outside CRE Connect).
+- **Allowed signers**: the keys CRE Connect will accept signatures from when executing operations. Today we support `ecdsa` (EVM addresses) and `rsa` (public-key pairs).
+
+<MethodTabs>
+  <Fragment slot="ui">
+
+The fastest way to create a wallet is from the Platform UI.
+
+1. Navigate to [`app.chain.link/cre-connect/wallets`](https://app.chain.link/cre-connect/wallets).
+2. Click **Create wallet** (top right).
+3. In the **Create wallet** side panel, fill in the basics:
+   - **Name** (required): your label for the wallet.
+   - **Description** (optional): a free-text note shown on the wallet's detail page.
+   - **Network**: pick the target chain from the dropdown.
+   - **Key format**: `ECDSA` or `RSA`.
+4. Under **Access control & permissions**:
+   - **Owner address (Administrator)**: the EOA that will own the deployed account. Only the owner can modify wallet information after deployment.
+   - **Authorized signers**: one or more keys CRE Connect will accept signatures from when executing operations. Click **Add more** to add additional rows; up to **10 signers** are supported.
+5. Click **Deploy wallet**.
+
+The wallet appears in the list with status **Deploying**. Once the on-chain Smart Account is deployed, the status flips to **Active** and the **Address** column populates.
+
+<Aside type="note" title="UI labels vs SDK / REST field names">
+  The UI labels are user-facing aliases for the underlying API fields: **Key format** maps to `wallet_type`, **Owner
+  address (Administrator)** to `wallet_owner_address`, and **Authorized signers** to `allowed_ecdsa_signers` /
+  `allowed_rsa_signers`. The SDK / REST examples below use the API field names.
+</Aside>
+
+  </Fragment>
+  <Fragment slot="api">
+
+**Go SDK: ECDSA wallet**
+
+```go
+import (
+    "github.com/smartcontractkit/crec-sdk/wallets"
+    apiClient "github.com/smartcontractkit/crec-api-go/client"
+)
+
+ecdsaSigners := []string{
+    "0xAbC0000000000000000000000000000000000001",
+    "0xAbC0000000000000000000000000000000000002",
+}
+
+statusChannelID := channelID // any channel you own; status events stream here
+w, err := client.Wallets.Create(ctx, wallets.CreateInput{
+    Name:                "treasury-prod-eth-mainnet",
+    ChainSelector:       "5009297550715157269",       // Ethereum mainnet
+    WalletOwnerAddress:  "0xYourOwnerEOA",
+    WalletType:          apiClient.Ecdsa,
+    AllowedEcdsaSigners: &ecdsaSigners,
+    StatusChannelId:     &statusChannelID,            // optional; receives wallet.status events
+})
+if err != nil {
+    return err
+}
+fmt.Println(w.WalletId, w.Status, w.Address) // -> <uuid> pending <empty until deployed>
+```
+
+**curl**
+
+```bash
+curl -sS -X POST "$CREC_BASE_URL/wallets" \
+  -H "Authorization: Apikey $CREC_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name":"treasury-prod-eth-mainnet",
+    "chain_selector":"5009297550715157269",
+    "wallet_owner_address":"0xYourOwnerEOA",
+    "wallet_type":"ecdsa",
+    "allowed_ecdsa_signers":["0xAbC...0001","0xAbC...0002"],
+    "status_channel_id":"d0000000-0000-0000-0000-000000000001"
+  }'
+```
+
+**Go SDK: RSA wallet**
+
+```go
+rsaSigners := apiClient.RSASignersList{
+    // E and N are 0x-prefixed hex strings (validated by the API regex
+    // `^0x[a-fA-F0-9]{2,34}$` for `e` and `^0x[a-fA-F0-9]{512,}$` for `n`).
+    // E is typically `0x010001` (= 65537). N is at least 2048 bits = 512 hex chars.
+    {E: "0x010001", N: "0xc2a8...hex-encoded-modulus..."},
+}
+
+w, err := client.Wallets.Create(ctx, wallets.CreateInput{
+    Name:               "rsa-treasury-eth-mainnet",
+    ChainSelector:      "5009297550715157269",
+    WalletOwnerAddress: "0xYourOwnerEOA",
+    WalletType:         apiClient.Rsa,
+    AllowedRsaSigners:  &rsaSigners,
+    StatusChannelId:    &statusChannelID,            // optional; receives wallet.status events
+})
+```
+
+The SDK validates locally that:
+
+- `Name` is non-empty and ≤ `MaxWalletNameLength` (255).
+- `WalletOwnerAddress` parses as a hex address.
+- `StatusChannelId`, if provided, is not the zero UUID (`wallets.ErrStatusChannelIDZero`).
+- For `WalletType=ecdsa`: only `AllowedEcdsaSigners` is set; every entry is a hex address; no duplicates.
+- For `WalletType=rsa`: only `AllowedRsaSigners` is set; every entry has non-empty `E` and `N`; no duplicates.
+
+The server returns **201** with the wallet record. The on-chain `Address` populates after CRE Connect finishes the CREATE2 deployment.
+
+  </Fragment>
+</MethodTabs>
+
+### Status channel
+
+`StatusChannelId` is optional on `Create`. If you supply it, every wallet status transition (`pending → deploying → deployed`, etc.) emits a `wallet.status` verifiable event into that channel, which is the canonical way to observe `deployed` outside the SDK. The SDK rejects the zero UUID with `wallets.ErrStatusChannelIDZero`.
+
+```go
+sc := channelID
+w, err := client.Wallets.Create(ctx, wallets.CreateInput{
+    // ... fields above ...
+    StatusChannelId: &sc,
+})
+```
+
+Reuse a single dedicated channel per environment for status events, or co-locate status events with the channel that owns the wallet's downstream operations: both patterns work.
+
+## Look up a wallet
+
+```go
+w, err := client.Wallets.Get(ctx, walletID)
+if err != nil {
+    if errors.Is(err, wallets.ErrWalletNotFound) {
+        return fmt.Errorf("wallet does not exist: %s", walletID)
+    }
+    return err
+}
+fmt.Println(w.Address, w.Status, w.AllowedEcdsaSigners)
+```
+
+curl:
+
+```bash
+curl -sS "$CREC_BASE_URL/wallets/$WALLET_ID" -H "Authorization: Apikey $CREC_API_KEY"
+```
+
+## List and filter
+
+<MethodTabs>
+  <Fragment slot="ui">
+
+The Wallets page at [`app.chain.link/cre-connect/wallets`](https://app.chain.link/cre-connect/wallets) lists every wallet across the tenant.
+
+Each row shows: **Name**, **Network**, **Address**, **Type**, **Owner address**, **Additional signers**, and **Status** (`Deploying` or `Active`; archived wallets are hidden by default).
+
+Use the **Network**, **Type**, **Owner**, and **Status** dropdowns above the table to filter the list. Click any column header to sort.
+
+Click a wallet's name to open its detail page, which shows its **Owner address**, **Additional signers**, and a **Basic details** panel (Description, Address, ID, Type, Network, Created at, Status).
+
+  </Fragment>
+  <Fragment slot="api">
+
+```go
+limit := 50
+status := apiClient.WalletStatusDeployed
+list, hasMore, err := client.Wallets.List(ctx, wallets.ListInput{
+    Status: &[]apiClient.WalletStatus{status},
+    Limit:  &limit,
+})
+```
+
+curl:
+
+```bash
+curl -sS "$CREC_BASE_URL/wallets?status=deployed&limit=50" \
+  -H "Authorization: Apikey $CREC_API_KEY"
+```
+
+Filters supported by `ListInput`:
+
+| Field              | Notes                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| `Name`             | Case-insensitive partial match.                              |
+| `ChainSelector`    | Filter to a single chain.                                    |
+| `Owner`            | Owner EOA hex address.                                       |
+| `Address`          | Wallet contract hex address.                                 |
+| `Type`             | `ecdsa` or `rsa`.                                            |
+| `Status`           | Slice of `apiClient.WalletStatus`.                           |
+| `Limit` / `Offset` | Pagination. `Limit` must be positive; `Offset` non-negative. |
+
+  </Fragment>
+</MethodTabs>
+
+## Rename a wallet
+
+The only updatable field through the SDK is `Name`. The Platform UI also lets you edit the wallet's **Description** in the same flow.
+
+<MethodTabs>
+  <Fragment slot="ui">
+
+1. Open the wallet from the list.
+2. Click the **edit** icon next to the wallet name in the page header.
+3. The **Edit wallet** side panel opens with **Name** and **Description** fields pre-filled.
+4. Update the values and click **Save changes**.
+
+  </Fragment>
+  <Fragment slot="api">
+
+```go
+err := client.Wallets.Update(ctx, walletID, wallets.UpdateInput{
+    Name: "treasury-prod-eth-mainnet-2026",
+})
+```
+
+curl:
+
+```bash
+curl -sS -X PATCH "$CREC_BASE_URL/wallets/$WALLET_ID" \
+  -H "Authorization: Apikey $CREC_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"treasury-prod-eth-mainnet-2026"}'
+```
+
+  </Fragment>
+</MethodTabs>
+
+Signer-set changes go through a separate flow; see [Manage Wallet Signers](/crec/guides/wallets/manage-signers).
+
+## Archive a wallet
+
+Archive is **synchronous**. The wallet transitions to `archived` and stops accepting new operations. The on-chain account is **not** destroyed; you can re-import it via a fresh `Create` if needed.
+
+<MethodTabs>
+  <Fragment slot="ui">
+
+<Aside type="note" title="Archive is API-only">
+  Archiving a wallet is currently only available through the SDK or REST API. Use one of the snippets in the **Go SDK**
+  or **cURL** tabs.
+</Aside>
+
+  </Fragment>
+  <Fragment slot="api">
+
+```go
+err := client.Wallets.Archive(ctx, walletID)
+```
+
+curl:
+
+```bash
+curl -sS -X PATCH "$CREC_BASE_URL/wallets/$WALLET_ID" \
+  -H "Authorization: Apikey $CREC_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"archived"}'
+```
+
+  </Fragment>
+</MethodTabs>
+
+## Sentinel errors
+
+| Error                                                           | Trigger                                          |
+| --------------------------------------------------------------- | ------------------------------------------------ |
+| `wallets.ErrNameRequired` / `wallets.ErrNameTooLong`            | Validation.                                      |
+| `wallets.ErrInvalidWalletOwnerAddress`                          | `WalletOwnerAddress` is not a valid hex address. |
+| `wallets.ErrUnsupportedWalletType`                              | `WalletType` is not `ecdsa` or `rsa`.            |
+| `wallets.ErrInvalidSignersForEcdsa`                             | `AllowedRsaSigners` set on an ECDSA wallet.      |
+| `wallets.ErrInvalidSignersForRsa`                               | `AllowedEcdsaSigners` set on an RSA wallet.      |
+| `wallets.ErrInvalidEcdsaSigner` / `wallets.ErrInvalidRsaSigner` | Bad signer entry.                                |
+| `wallets.ErrWalletNotFound`                                     | 404 from `Get` / `Update` / `Archive`.           |
+| `wallets.ErrInvalidLimit` / `wallets.ErrInvalidOffset`          | Bad pagination parameters.                       |
+
+## Service limits
+
+- **Max 10 ECDSA signers** and **max 10 RSA signers** per wallet (enforced by the OpenAPI spec).
+- Wallet name length capped at **255 characters**.
+
+## Next steps
+
+- [Manage Wallet Signers](/crec/guides/wallets/manage-signers): change the allowed-signers set after creation.
+- [Smart Accounts](/crec/concepts/smart-accounts): the on-chain contract behind a CREC wallet.

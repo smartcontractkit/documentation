@@ -37,7 +37,7 @@ export const AdminSetupStep = ({ chain }: AdminSetupStepProps) => {
             use <code>registerAdminViaGetCCIPAdmin()</code> in this tutorial because our deployed BurnMintERC20 token
             implements the <code>getCCIPAdmin()</code> function. For other token implementations, you might use
             different registration methods. See the{" "}
-            <a href="/ccip/concepts/cross-chain-token/evm/registration-administration#self-service-registration-flow">
+            <a href="/ccip/v1/evm/concepts/cross-chain-token/registration-administration#self-service-registration-flow">
               self-service registration documentation
             </a>{" "}
             for all available options.

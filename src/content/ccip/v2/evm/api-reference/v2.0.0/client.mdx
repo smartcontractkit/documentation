@@ -1,0 +1,198 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 Client API Reference"
+metadata:
+  description: "Core CCIP message structs and extraArgs encoding helpers used by applications."
+  version: "2.0.0"
+---
+
+`Client` defines the canonical CCIP message format and encoding helpers used by applications.
+
+It provides:
+
+- message structs for sending and receiving cross-chain messages
+- encoding utilities for chain-specific execution parameters (`extraArgs`)
+- common types used across Router, OnRamp, and OffRamp interactions
+
+All CCIP message construction and decoding relies on this library.
+
+> This library provides reusable helper functions and is not deployed as a standalone application-facing contract.
+
+## Usage Boundary
+
+**You use this library when constructing or decoding CCIP messages.**
+
+- Applications use `EVM2AnyMessage` to send messages through the Router.
+- Receiver contracts use `Any2EVMMessage` to process inbound messages.
+- You are responsible for encoding `extraArgs` correctly for the destination chain.
+
+## Contract
+
+`libraries/Client.sol`
+
+## Import
+
+```solidity
+import {Client} from "chainlink-ccip/libraries/Client.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## Functions
+
+### \_argsToBytes
+
+```solidity
+function _argsToBytes(EVMExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts)
+```
+
+> Encodes extra arguments into the format expected by CCIP contracts.
+
+### \_argsToBytes
+
+```solidity
+function _argsToBytes(GenericExtraArgsV2 memory extraArgs) internal pure returns (bytes memory bts)
+```
+
+> Encodes extra arguments into the format expected by CCIP contracts.
+
+### \_svmArgsToBytes
+
+```solidity
+function _svmArgsToBytes(SVMExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts)
+```
+
+> Encodes SVM-specific execution arguments.
+
+### \_suiArgsToBytes
+
+```solidity
+function _suiArgsToBytes(SuiExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts)
+```
+
+> Encodes Sui-specific execution arguments.
+
+## Constants
+
+### EVM_EXTRA_ARGS_V1_TAG
+
+Version tag for `EVMExtraArgsV1` encoding.
+
+### GENERIC_EXTRA_ARGS_V2_TAG
+
+Version tag for `GenericExtraArgsV2` encoding.
+
+### SVM_EXTRA_ARGS_V1_TAG
+
+Version tag for `SVMExtraArgsV1` encoding.
+
+### NO_EXECUTION_ADDRESS
+
+```solidity
+address public constant NO_EXECUTION_ADDRESS = address(bytes20(NO_EXECUTION_TAG));
+```
+
+> Special address used to indicate that no receiver execution should occur.
+
+## Structs
+
+### EVM2AnyMessage
+
+| Field          | Type               |
+| -------------- | ------------------ |
+| `receiver`     | `bytes`            |
+| `data`         | `bytes`            |
+| `tokenAmounts` | `EVMTokenAmount[]` |
+| `feeToken`     | `address`          |
+| `extraArgs`    | `bytes`            |
+
+### EVMTokenAmount
+
+| Field    | Type      |
+| -------- | --------- |
+| `token`  | `address` |
+| `amount` | `uint256` |
+
+### Any2EVMMessage
+
+| Field                 | Type               |
+| --------------------- | ------------------ |
+| `messageId`           | `bytes32`          |
+| `sourceChainSelector` | `uint64`           |
+| `sender`              | `bytes`            |
+| `data`                | `bytes`            |
+| `destTokenAmounts`    | `EVMTokenAmount[]` |
+
+### EVMExtraArgsV1
+
+| Field      | Type      |
+| ---------- | --------- |
+| `gasLimit` | `uint256` |
+
+### GenericExtraArgsV2
+
+| Field                      | Type      |
+| -------------------------- | --------- |
+| `gasLimit`                 | `uint256` |
+| `allowOutOfOrderExecution` | `bool`    |
+
+### SVMExtraArgsV1
+
+| Field                      | Type        |
+| -------------------------- | ----------- |
+| `computeUnits`             | `uint32`    |
+| `accountIsWritableBitmap`  | `uint64`    |
+| `allowOutOfOrderExecution` | `bool`      |
+| `tokenReceiver`            | `bytes32`   |
+| `accounts`                 | `bytes32[]` |
+
+### SuiExtraArgsV1
+
+| Field                      | Type        |
+| -------------------------- | ----------- |
+| `gasLimit`                 | `uint256`   |
+| `allowOutOfOrderExecution` | `bool`      |
+| `tokenReceiver`            | `bytes32`   |
+| `receiverObjectIds`        | `bytes32[]` |
+
+## Notes
+
+- `extraArgs` must match the destination chain’s expected format.
+- Different chain families (EVM, SVM, Sui) require different extra argument encodings.
+- Incorrectly encoded `extraArgs` may cause message execution to revert.
+
+## Usage context
+
+Used by:
+
+- [`IRouterClient`](/ccip/evm/api-reference/v2.0.0/i-router-client)
+- [`CCIPReceiver`](/ccip/evm/api-reference/v2.0.0/ccip-receiver)
+
+Example:
+
+```solidity
+// Construct outbound CCIP message
+Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
+  receiver: abi.encode(receiverAddress),
+  data: abi.encode(payload),
+  tokenAmounts: tokenAmounts,
+  feeToken: address(0),
+  extraArgs: Client._argsToBytes(
+    Client.GenericExtraArgsV2({
+      gasLimit: 300_000,
+      allowOutOfOrderExecution: false
+    })
+  )
+});
+```
+
+## Related Interfaces & Contracts
+
+- [`IRouterClient`](/ccip/evm/api-reference/v2.0.0/i-router-client)
+- [`CCIPReceiver`](/ccip/evm/api-reference/v2.0.0/ccip-receiver)
+- [`ExtraArgsCodec`](/ccip/evm/api-reference/v2.0.0/extra-args-codec)

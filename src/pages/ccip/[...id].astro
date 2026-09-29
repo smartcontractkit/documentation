@@ -1,44 +1,68 @@
 ---
 import DocsLayout from "~/layouts/DocsLayout.astro"
+import DocsV3Layout from "~/layouts/DocsV3Layout/DocsV3Layout.astro"
+import TutorialLayout from "~/layouts/TutorialLayout.astro"
 import { getCollection, render } from "astro:content"
+import { toCanonicalCcipId, stripAnyCcipVersionPrefix } from "~/lib/ccip/contentPathMapping.js"
+
+const TUTORIAL_LAYOUT_ENTRIES = new Set(["evm/tutorials/cross-chain-token/register-from-eoa-remix"])
+const LANDING_PAGE_ENTRIES = new Set(["v1"])
 
 export async function getStaticPaths() {
   const ccipEntries = await getCollection("ccip")
-  const pathMap = new Map()
+  const pathMap = new Map<string, (typeof ccipEntries)[number]>()
 
-  // Process all entries to build URL path mapping
   for (const entry of ccipEntries) {
-    const urlPath = entry.id.replace(/\.(md|mdx)$/, "")
+    let urlPath = entry.id.replace(/\.(md|mdx)$/, "")
+
+    // Strip trailing /index so index.mdx files serve at their parent path
+    // e.g., v1/index → v1 (serves at /ccip/v1 instead of /ccip/v1/index)
+    urlPath = urlPath.replace(/\/index$/, "")
+
+    // Strip the latest content dir prefix ("v2/") so latest content renders at canonical /ccip/* URLs.
+    // Older versions (e.g. v1/...) are preserved and keep their /ccip/v1/... URLs.
+    urlPath = toCanonicalCcipId(urlPath)
+
+    // Root (/ccip) is served by ccip/index.astro; skip the empty/index entry here.
+    if (urlPath === "" || urlPath === "index") continue
+
+    // Normalize defensively (prevents accidental leading slashes / double slashes)
+    urlPath = urlPath.replace(/^\/+/, "").replace(/\/{2,}/g, "/")
 
     // Skip directory and tutorial entries (handled by dedicated routes)
     if (urlPath.startsWith("directory/") || urlPath.startsWith("tutorials/")) {
       continue
     }
 
-    // Handle API reference version format conversion (if needed)
-    if (urlPath.includes("/api-reference/") && urlPath.includes("/v")) {
-      const parts = urlPath.split("/")
-      const versionIndex = parts.findIndex((part) => part.startsWith("v") && /^v\d+$/.test(part))
+    // Always emit the original path (keeps existing routes working)
+    pathMap.set(urlPath, entry)
 
-      if (versionIndex !== -1) {
-        const versionPart = parts[versionIndex]
-        // Convert version format if needed (v150 → v1.5.0)
-        if (versionPart.length === 4) {
-          const formattedVersion = `v${versionPart[1]}.${versionPart[2]}.${versionPart[3]}`
-          parts[versionIndex] = formattedVersion
-          pathMap.set(parts.join("/"), entry)
-        } else {
-          pathMap.set(urlPath, entry)
+    // Also emit long-format API reference paths (e.g., v160 -> v1.6.0)
+    if (urlPath.includes("/api-reference/")) {
+      const parts = urlPath.split("/")
+      const apiRefIndex = parts.indexOf("api-reference")
+
+      if (apiRefIndex !== -1 && apiRefIndex + 1 < parts.length) {
+        const maybeVersion = parts[apiRefIndex + 1]
+
+        // Only treat 3-4 digit versions as short-format versions, e.g. v150, v160, v151
+        // (Avoid matching the leading "v1" folder.)
+        if (/^v\d{3,4}$/.test(maybeVersion)) {
+          // Convert v160 -> v1.6.0 (only when it's exactly 3 digits after 'v')
+          if (maybeVersion.length === 4) {
+            const formattedVersion = `v${maybeVersion[1]}.${maybeVersion[2]}.${maybeVersion[3]}`
+            const longParts = [...parts]
+            longParts[apiRefIndex + 1] = formattedVersion
+            const longPath = longParts.join("/")
+
+            // Emit the long path in addition to the short one
+            pathMap.set(longPath, entry)
+          }
         }
-      } else {
-        pathMap.set(urlPath, entry)
       }
-    } else {
-      pathMap.set(urlPath, entry)
     }
   }
 
-  // Generate static paths
   return Array.from(pathMap.entries()).map(([urlPath, entry]) => ({
     params: { id: urlPath },
     props: { entry },
@@ -51,8 +75,17 @@ interface Props {
 
 const { entry } = Astro.props
 const { Content, headings } = await render(entry)
+
+// Strip extension and version prefix for layout matching
+const entryId = entry.id.replace(/\.(md|mdx)$/, "").replace(/\/index$/, "")
+const entryIdNoVersion = stripAnyCcipVersionPrefix(entryId)
+const Layout = LANDING_PAGE_ENTRIES.has(entryId)
+  ? DocsV3Layout
+  : TUTORIAL_LAYOUT_ENTRIES.has(entryIdNoVersion)
+    ? TutorialLayout
+    : DocsLayout
 ---
 
-<DocsLayout frontmatter={entry.data} {headings}>
+<Layout frontmatter={entry.data} {headings}>
   <Content />
-</DocsLayout>
+</Layout>

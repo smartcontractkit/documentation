@@ -1,0 +1,377 @@
+---
+import { SvgTaillessArrowDownSmall, Typography } from "@chainlink/blocks"
+import styles from "./ChangelogCard.module.css"
+import type { ChangelogItem } from "./types"
+import { clsx } from "~/lib/clsx/clsx"
+import CopyButton from "./CopyButton.tsx"
+
+interface Props {
+  item: ChangelogItem
+  showBorder?: boolean
+  autoExpand?: boolean
+  showCopyButton?: boolean
+  disableHover?: boolean
+  showNetworksAndTopic?: boolean
+}
+
+const {
+  item,
+  showBorder = true,
+  autoExpand = false,
+  showCopyButton = true,
+  disableHover = false,
+  showNetworksAndTopic = false,
+} = Astro.props
+
+// Format the date
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  })
+}
+
+const formattedDate = formatDate(item["date-of-release"])
+---
+
+<div
+  class={clsx(styles.cardWrapper, showBorder && styles.withBorder)}
+  data-expandable="wrapper"
+  data-auto-expand={autoExpand}
+  data-disable-hover={disableHover}
+>
+  <div class={styles.card} data-expandable="card">
+    <div class={styles.header}>
+      <div class={styles.metaSection}>
+        <Typography variant="body-semi" className={styles.changelogType}>
+          {item.type}
+        </Typography>
+        <Typography variant="body-s" color="muted" className={styles.date}>
+          {formattedDate}
+        </Typography>
+      </div>
+    </div>
+
+    <div class={styles.content} data-expandable="content">
+      {
+        showNetworksAndTopic && (item.networks || item.topic) && (
+          <div class={styles.networksAndTopicSection}>
+            {item.networks && <div set:html={item.networks} />}
+            {item.topic && <span class="prod-chip">{item.topic}</span>}
+          </div>
+        )
+      }
+
+      <Typography
+        variant="h6"
+        style={{
+          marginBottom: "var(--space-2x)",
+        }}
+      >
+        {item.name}
+      </Typography>
+
+      <div class={styles.descriptionContent}>
+        {item["text-description"] && <div class={styles.description} set:html={item["text-description"]} />}
+      </div>
+    </div>
+
+    {showCopyButton && <CopyButton client:only="react" url={item.slug} />}
+  </div>
+
+  <div class={styles.contentFooter} data-expandable="footer">
+    <button class={styles.expandButton} data-expandable="button">
+      <span data-expandable="text">Show more</span>
+      <SvgTaillessArrowDownSmall color="muted" />
+    </button>
+  </div>
+</div>
+
+<script>
+  function swapDataAttributeImages() {
+    // Find all images with data-token attribute and swap src
+    const tokenImages = document.querySelectorAll("img[data-token]")
+    tokenImages.forEach((img) => {
+      const imageEl = img as HTMLImageElement
+      const tokenUrl = imageEl.getAttribute("data-token")
+      const originalSrc = imageEl.getAttribute("src")
+
+      if (tokenUrl && tokenUrl !== originalSrc) {
+        // Try to load the data-token image
+        imageEl.setAttribute("src", tokenUrl)
+
+        // Fallback to original src if image fails to load
+        imageEl.onerror = () => {
+          imageEl.setAttribute("src", originalSrc!)
+          imageEl.onerror = null // Remove handler to prevent infinite loop
+        }
+      }
+    })
+
+    // Find all images with data-network attribute and swap src
+    const networkImages = document.querySelectorAll("img[data-network]")
+    networkImages.forEach((img) => {
+      const imageEl = img as HTMLImageElement
+      const networkUrl = imageEl.getAttribute("data-network")
+      const originalSrc = imageEl.getAttribute("src")
+
+      if (networkUrl && networkUrl !== originalSrc) {
+        // Try to load the data-network image
+        imageEl.setAttribute("src", networkUrl)
+
+        // Fallback to original src if image fails to load
+        imageEl.onerror = () => {
+          imageEl.setAttribute("src", originalSrc!)
+          imageEl.onerror = null // Remove handler to prevent infinite loop
+        }
+      }
+    })
+  }
+
+  function initExpandableCards() {
+    const wrappers = document.querySelectorAll('[data-expandable="wrapper"]')
+
+    wrappers.forEach((wrapper) => {
+      const card = wrapper.querySelector('[data-expandable="card"]') as HTMLElement
+      const content = wrapper.querySelector('[data-expandable="content"]') as HTMLElement
+      const footer = wrapper.querySelector('[data-expandable="footer"]') as HTMLElement
+      const button = wrapper.querySelector('[data-expandable="button"]') as HTMLElement
+      const text = button?.querySelector('[data-expandable="text"]')
+
+      if (!card || !content || !button) return
+
+      // Check if auto-expand is enabled
+      const autoExpand = (wrapper as HTMLElement).dataset.autoExpand === "true"
+
+      if (autoExpand) {
+        // Auto-expand: set to full height and hide footer
+        ;(wrapper as HTMLElement).style.maxHeight = "none"
+        wrapper.classList.add("expanded")
+        footer.style.opacity = "0"
+        footer.style.pointerEvents = "none"
+        return // Skip the rest of the logic
+      }
+
+      // Wait for images to load before checking height
+      const images = card.querySelectorAll("img")
+      let loadedImages = 0
+      const totalImages = images.length
+
+      const checkCardHeight = () => {
+        // Check if wrapper's content exceeds its visible height
+        const wrapperEl = wrapper as HTMLElement
+        const hasOverflow = card.scrollHeight > wrapperEl.clientHeight
+
+        if (hasOverflow) {
+          // Content exceeds wrapper, show button and fade
+          footer.style.opacity = "1"
+          footer.style.pointerEvents = "auto"
+        } else {
+          // Content fits within wrapper, hide the button and fade
+          footer.style.opacity = "0"
+          footer.style.pointerEvents = "none"
+        }
+      }
+
+      // Check height after each image loads
+      if (totalImages > 0) {
+        images.forEach((img) => {
+          if (img.complete) {
+            loadedImages++
+            if (loadedImages === totalImages) {
+              checkCardHeight()
+            }
+          } else {
+            img.addEventListener("load", () => {
+              loadedImages++
+              if (loadedImages === totalImages) {
+                checkCardHeight()
+              }
+            })
+            img.addEventListener("error", () => {
+              loadedImages++
+              if (loadedImages === totalImages) {
+                checkCardHeight()
+              }
+            })
+          }
+        })
+      }
+
+      // this is needed to make the fade/show more work.
+      setTimeout(checkCardHeight, 2000)
+
+      let isExpanded = false
+
+      button.addEventListener("click", () => {
+        isExpanded = !isExpanded
+
+        if (isExpanded) {
+          // Expand wrapper to full card height
+          ;(wrapper as HTMLElement).style.maxHeight = card.scrollHeight + "px"
+          // Hide mask and footer
+          wrapper.classList.add("expanded")
+          footer.style.opacity = "0"
+          footer.style.pointerEvents = "none"
+          if (text) text.textContent = "Show less"
+        } else {
+          // Collapse wrapper back
+          ;(wrapper as HTMLElement).style.maxHeight = ""
+          // Show mask and footer
+          wrapper.classList.remove("expanded")
+          footer.style.opacity = "1"
+          footer.style.pointerEvents = "auto"
+          if (text) text.textContent = "Show more"
+        }
+      })
+    })
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    swapDataAttributeImages()
+    initExpandableCards()
+  })
+
+  // Re-check on resize
+  let resizeTimer: ReturnType<typeof setTimeout>
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer)
+    resizeTimer = setTimeout(() => {
+      initExpandableCards()
+    }, 250)
+  })
+</script>
+
+<style is:global>
+  /* Data Entry List */
+  .log-item__data-entry-list {
+    grid-column-gap: 4px;
+    grid-row-gap: 4px;
+    flex-flow: column;
+    display: flex;
+  }
+
+  /* Data Entry Item */
+  .log-item__data-entry {
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    display: flex;
+  }
+
+  /* Images Container */
+  .log-item__data-entry-images {
+    margin-right: 8px;
+    position: relative;
+  }
+
+  /* Main Image */
+  .log-item__data-entry-img {
+    border-radius: 100%;
+    width: 24px;
+    height: 24px;
+  }
+
+  .log-item__data-entry-img.log-item__data-entry-img-round {
+    border-radius: 100%;
+  }
+
+  .description {
+    > p {
+      margin-bottom: var(--space-4x);
+      font-size: 14px;
+    }
+  }
+
+  /* Overlay Icon */
+  .log-item__data-entry-img-top {
+    background-color: #fff;
+    border: 1px solid #fff;
+    border-radius: 4px;
+    width: 12px;
+    height: 12px;
+    position: absolute;
+    inset: auto 0% 0% auto;
+  }
+
+  /* Link Text */
+  .log-item__data-entry-info {
+    color: #2e7bff;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+  }
+
+  /* Additional Info */
+  .log-item__data-entry-info2 {
+    display: none;
+  }
+
+  .log-item__description > p {
+    color: var(--muted);
+    margin-bottom: var(--space-4x);
+  }
+
+  /* Network Icons List */
+  .log-item__list-chains {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1x);
+  }
+
+  .log-item__img-chain {
+    width: 24px;
+    height: 24px;
+    object-fit: cover;
+  }
+
+  .log-item__more-chains {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background-color: var(--gray-950);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--white);
+    border-radius: 3px;
+  }
+
+  /* Hidden filter elements */
+  .log-item__list-chains .hidden {
+    display: none;
+  }
+
+  /* Disable hover effects when data-disable-hover is true */
+  [data-disable-hover="true"]:hover {
+    background-color: transparent !important;
+  }
+
+  [data-disable-hover="true"]:hover .copyButton {
+    opacity: 0 !important;
+  }
+
+  [data-disable-hover="true"].withBorder:hover {
+    background-color: transparent !important;
+  }
+
+  [data-disable-hover="true"].withBorder:hover .contentFooter {
+    background: none !important;
+  }
+
+  /* Product Chip */
+  .prod-chip {
+    background-color: var(--muted-more);
+    color: var(--mirage);
+    border-radius: 4px;
+    margin-bottom: 0;
+    padding: var(--space-1x) var(--space-2x);
+    font-size: 12px;
+    line-height: 16px;
+    display: inline-block;
+  }
+</style>

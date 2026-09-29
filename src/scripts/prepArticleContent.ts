@@ -28,6 +28,7 @@ const canWrap = (element: Element, dontWrap: Set<string>) => {
 
 // If starting element is an island, check that it's not already using SectionWrapper
 const isValidStartingElement = (element: Element) => {
+  if (element.nodeName === "ASTRO-ANCHORED-ACCORDION") return false
   if (["ASTRO-ISLAND", "SECTION"].includes(element.nodeName) && element.firstElementChild) {
     return canWrap(element.firstElementChild, dontWrapFallback)
   }

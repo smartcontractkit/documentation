@@ -1,0 +1,153 @@
+---
+section: ace
+title: "External Registries"
+date: Last Modified
+metadata:
+  description: "Share ACE identity and credential registries across organizations. Grant another organization read access to your registry, discover registries shared with you, and use them as credential sources in your policies."
+  datePublished: "2026-07-17"
+  lastModified: "2026-07-17"
+---
+
+import { Aside, MethodTabs } from "@components"
+
+**External registries** let one organization reuse another organization's [registry](/ace/guides/identity-manager/manage-registries) without re-issuing identities or credentials. The registry owner grants a second organization **read access**, and that organization can then reference the registry's identities and credentials — for example, to enforce KYC in its own policies using a KYC provider's registry.
+
+Access is granted per registry, is **read-only** for the recipient, and can be revoked at any time.
+
+## Roles and concepts
+
+| <div style={{ width: "100px" }}>Term</div> | Meaning                                                                                                                                                                                                                                           |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Grantor**                                | The organization that **owns** the registry and grants access to it.                                                                                                                                                                              |
+| **Grantee**                                | The organization that **receives** read access to the registry.                                                                                                                                                                                   |
+| **Access grant**                           | The link between a registry and a grantee organization. It is either `active` or `revoked`.                                                                                                                                                       |
+| **Org ID**                                 | The identifier of an organization. The grantee shares theirs with the grantor so the grantor can grant access. Retrieve it with `GET /organizations/me` (<a href="/api/ace/coordinator/docs#/Organizations" target="_blank">Coordinator API</a>). |
+| **`access_type`**                          | A field on a registry indicating whether the caller `owned` it or was `granted` access to it.                                                                                                                                                     |
+
+## What the grantee can and cannot do
+
+An active grant gives the grantee **read access** to the registry:
+
+- **Can** list and view the registry, and read its [credential types](/ace/guides/identity-manager/manage-credential-types), [identities](/ace/guides/identity-manager/manage-identities), and [credentials](/ace/guides/identity-manager/manage-credentials).
+- **Can** reference the registry's on-chain contracts as a credential source in its own [identity-validation policies](/ace/reference/policy-library/credential-registry-identity-validator-policy).
+- **Cannot** write to the registry — registering identities, issuing credentials, or changing configuration remains exclusive to the grantor.
+
+<Aside type="note" title="Only the owner manages grants">
+  Creating, listing, and revoking access grants requires **ownership** of the registry. A grantee cannot re-share a
+  registry that was shared with it.
+</Aside>
+
+## Grant access to another organization
+
+Granting access requires the grantee's **Org ID**. Ask the grantee to retrieve it and share it with you:
+
+```bash
+# Run by the grantee — returns their organization, including its id
+curl https://ace.api.chain.link/v1/organizations/me \
+  -H "Authorization: Apikey <GRANTEE_API_KEY>"
+```
+
+As the registry owner, create the grant:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/registries/<REGISTRY_ID>/access-grants \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "grantee_org_id": "org-456"
+  }'
+```
+
+The response is the created grant:
+
+```json
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "grantee_org_id": "org-456",
+  "grantor_org_id": "org-123",
+  "status": "active",
+  "granted_at": 1800000000,
+  "revoked_at": null
+}
+```
+
+## View who has access
+
+List the active and past grants for a registry you own:
+
+```bash
+curl https://ace.api.chain.link/v1/registries/<REGISTRY_ID>/access-grants \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+Each entry includes the grantee, the status (`active` or `revoked`), and the `granted_at` / `revoked_at` timestamps, giving you an audit trail of who was granted access and when.
+
+## Use a registry shared with you
+
+As a grantee, include `include_granted=true` when listing registries to see registries other organizations have shared with you, alongside your own:
+
+```bash
+curl "https://ace.api.chain.link/v1/registries?include_granted=true" \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+Each registry in the response carries an **`access_type`** field:
+
+- `"owned"` — your organization owns the registry.
+- `"granted"` — another organization (shown in `org_id`) granted you access.
+
+Once you can see a granted registry, you use it the same way you would reference any credential source:
+
+1. Read the registry to get the on-chain **identity registry** and **credential registry** contract addresses per chain, and read its **credential types** to get the `credential_type_hash` values you need.
+1. Add those addresses and credential type hashes as a **credential source** on your [CredentialRegistryIdentityValidatorPolicy](/ace/reference/policy-library/credential-registry-identity-validator-policy) or [GroupedIdentityValidatorPolicy](/ace/reference/policy-library/grouped-identity-validator-policy) instance.
+
+Your policy then validates credentials issued by the other organization at transaction time. Because the grant is read-only, you rely on the grantor to keep the credentials current; if they revoke a credential, your policy sees the change immediately.
+
+<Aside type="caution" title="Access can be revoked">
+  A granted registry remains usable only while the grant is active. If the grantor revokes access, your organization
+  loses read access to the registry and its sub-resources.
+</Aside>
+
+## Revoke access
+
+As the registry owner, revoke a grant by setting its status to `revoked`. Identify the grant by the grantee's Org ID:
+
+```bash
+curl -X PATCH https://ace.api.chain.link/v1/registries/<REGISTRY_ID>/access-grants/org-456 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "status": "revoked"
+  }'
+```
+
+Revocation takes effect immediately. The grant record is retained with a `revoked_at` timestamp for audit purposes rather than deleted, so the history of grants and revocations is preserved. To restore access later, create a new grant.
+
+## What happens when access is revoked
+
+Revoking a registry access grant is a **platform-level action only** — it removes the registry from the grantee's view in the ACE Platform (UI and API). The grantee can no longer browse the registry, read its credentials, or reference it in new policy configurations.
+
+**Onchain, nothing changes automatically.** If the grantee's policies already reference the revoked registry's onchain contracts as a credential source, those policies continue to validate credentials from that registry at transaction time. The onchain policy contracts have no awareness of platform-level access grants — they only know the registry contract addresses that were configured as credential sources.
+
+### What each party should do
+
+**Grantor** — After revoking access, be aware that the grantee's existing policies may still reference your registry onchain.
+
+**Grantee** — After a grant is revoked, the ACE Platform displays a warning on any policy instance that references a source from the revoked registry. You should remove the revoked registry source from your policy configuration to ensure your compliance setup reflects the current state of your access agreements. Until you remove it:
+
+- The policy continues to validate credentials from the revoked registry onchain.
+- You cannot edit the revoked source — you can only remove it.
+- You cannot reference the revoked registry in new policy configurations.
+
+<Aside type="caution" title="Remove revoked sources to stay compliant">
+  Revoking access does not reconfigure the grantee's policies onchain. The grantee must remove the revoked credential
+  source from their policy configuration. The ACE Platform warns you when a policy references a revoked source.
+</Aside>
+
+## Related pages
+
+- [Managing Registries](/ace/guides/identity-manager/manage-registries) — create and manage the registries you own
+- [Cross-Chain Identity](/ace/concepts/cross-chain-identity) — CCIDs, registries, and credential sources
+- [CredentialRegistryIdentityValidatorPolicy](/ace/reference/policy-library/credential-registry-identity-validator-policy) — reference a registry as a credential source
+- [Managing Policies](/ace/guides/policy-manager/manage-policies) — configure policy instances and their credential sources
+- [Coordinator API Reference](/api/ace/coordinator/docs) — full API schema
