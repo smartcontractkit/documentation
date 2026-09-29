@@ -1,0 +1,92 @@
+---
+section: ccip
+date: Last Modified
+title: "Ownable2StepMsgSender API Reference"
+metadata:
+  description: "Two-step ownership helper that initializes ownership to msg.sender."
+  version: "2.0.0"
+---
+
+`Ownable2StepMsgSender` is a convenience wrapper around `Ownable2Step` that initializes ownership to `msg.sender`.
+
+Use this contract when the deployer should be the initial owner, without explicitly specifying the owner address.
+
+## Usage Boundary
+
+**You use this contract when deploying contracts that should be owned by the deployer.**
+
+- Contracts inherit this implementation to initialize ownership automatically.
+- Use this variant when deployment is performed directly by the intended owner.
+- Use `Ownable2Step` instead if ownership must be assigned to a different address at deployment.
+- You are responsible for ensuring the deployer address is the correct initial owner.
+
+## Contract
+
+`@chainlink/contracts/src/v0.8/shared/access/Ownable2StepMsgSender.sol`
+
+## Import
+
+```solidity
+import {Ownable2StepMsgSender} from "@chainlink/contracts/src/v0.8/shared/access/Ownable2StepMsgSender.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts@latest
+```
+
+## Inheritance
+
+```solidity
+contract Ownable2StepMsgSender is Ownable2Step
+```
+
+## External API
+
+### constructor
+
+```solidity
+constructor()
+  Ownable2Step(msg.sender, address(0))
+{}
+```
+
+> Initializes ownership with `msg.sender` as the owner.
+
+- Assumes the deployer is the intended owner.
+- No pending owner is set at deployment.
+
+All other functions are inherited from `Ownable2Step`.
+
+## Events
+
+No new events declared.
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+No new custom errors declared.
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Security model
+
+- Ownership is assigned to the deployer (`msg.sender`) at deployment time.
+- If deployed through a factory or proxy, the factory or proxy may become the owner instead of the intended user.
+- Ownership transfer follows the two-step acceptance process inherited from `Ownable2Step`.
+
+## Notes
+
+- This contract simplifies ownership initialization for common deployment patterns.
+- This contract relies on `msg.sender` at deployment time to determine the initial owner.
+- If deployed via a factory, the factory contract becomes the owner unless ownership is reassigned.
+- When used behind a proxy, ownership may be assigned during proxy initialization rather than contract deployment.
+- It should not be used when ownership needs to be assigned to a different address at deployment.
+- Ensure deployment is executed from the correct address to avoid unintended ownership assignment.
+
+## Related Interfaces & Contracts
+
+- [`Ownable2Step`](/ccip/evm/api-reference/v2.0.0/ownable-2-step)
+- [`OwnerIsCreator`](/ccip/evm/api-reference/v2.0.0/owner-is-creator)

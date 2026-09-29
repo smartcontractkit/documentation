@@ -1,0 +1,165 @@
+---
+section: ccip
+date: Last Modified
+title: "Update Rate Limits"
+metadata:
+  description: "Update CCIP token pool rate limits with setRateLimitConfig (v2.0) or setChainRateLimiterConfig (v1.x), including inbound/outbound and fast-finality buckets."
+  excerpt: "CCIP rate limits update setRateLimitConfig setChainRateLimiterConfig setChainRateLimiterConfigs RateLimitConfigArgs Config outbound inbound fast finality v2.0 v1.x"
+  datePublished: "2025-06-09"
+  lastModified: "2025-06-09"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+This page describes updating limits on `TokenPool` v2.0 contracts. Differences for **v1.x pools** are noted inline.
+
+Once you understand the current configuration and have validated token units and decimals, update inbound and outbound rate limits for the token pool and lane.
+
+Rate limit updates are applied onchain and take effect immediately. Make changes deliberately and review them carefully before submission.
+
+<Aside type="note" title="v2.0 pools only">
+  Each update also refills every bucket it sets, outbound and inbound, to full capacity.
+</Aside>
+
+<Aside type="note" title="v1.x pools">
+  After a config change, the bucket continues refilling at the **normal rate** instead of jumping to full capacity.
+</Aside>
+
+## Function used to update rate limits
+
+### v2.0 pools
+
+Call `setRateLimitConfig` to update rate limits:
+
+```solidity
+struct RateLimitConfigArgs {
+  uint64 remoteChainSelector;
+  bool fastFinality;
+  RateLimiter.Config outboundRateLimiterConfig;
+  RateLimiter.Config inboundRateLimiterConfig;
+}
+
+struct Config {
+  bool isEnabled;
+  uint128 capacity;
+  uint128 rate;
+}
+
+function setRateLimitConfig(
+  RateLimitConfigArgs[] calldata rateLimitConfigArgs
+) external;
+```
+
+The function takes an array of entries. Each entry updates one bucket pair (outbound + inbound) for one remote chain. A single transaction can cover multiple chains and both the default and fast-finality buckets.
+
+| Field                           | Description                                             |
+| ------------------------------- | ------------------------------------------------------- |
+| **`remoteChainSelector`**       | The remote chain for this lane                          |
+| **`fastFinality`**              | `false` = default bucket; `true` = fast-finality bucket |
+| **`outboundRateLimiterConfig`** | Outbound limit for this bucket type                     |
+| **`inboundRateLimiterConfig`**  | Inbound limit for this bucket type                      |
+
+When `isEnabled = true`, rate must be ≤ capacity. To disable: `isEnabled = false`, `capacity = 0`, `rate = 0`.
+
+### v1.x pools
+
+v1.x pools use `setChainRateLimiterConfig` for a single lane:
+
+```solidity
+function setChainRateLimiterConfig(
+  uint64 remoteChainSelector,
+  RateLimiter.Config outboundConfig,
+  RateLimiter.Config inboundConfig
+) external;
+```
+
+For multiple lanes in one transaction, use the batch variant:
+
+```solidity
+function setChainRateLimiterConfigs(
+  uint64[] calldata remoteChainSelectors,
+  RateLimiter.Config[] calldata outboundConfigs,
+  RateLimiter.Config[] calldata inboundConfigs
+) external;
+```
+
+There is no `fastFinality` parameter. The config tuple (`isEnabled`, `capacity`, `rate`) has the same shape.
+
+## Who can call this function
+
+The pool **owner** or `rateLimitAdmin` (from `getDynamicConfig()` on v2.0; `getRateLimitAdmin()` on v1.x).
+
+## Inbound and outbound configuration guidance
+
+Inbound and outbound limits are configured independently, but they are related across the lane: a transfer consumes outbound capacity on the source pool and inbound capacity on the destination pool.
+
+Recommended practice:
+
+- set **outbound** on the **source** chain pool
+- set **inbound** on the **destination** chain pool
+- make destination **inbound ~5–10% higher** than source **outbound**
+
+## Updating default and fast-finality buckets (v2.0 only)
+
+<Aside type="note" title="v1.x pools">
+  Skip this section. v1.x pools have only one inbound/outbound pair per remote chain.
+</Aside>
+
+If your lane supports FTF transfers, update both bucket types to limit all traffic:
+
+```solidity
+RateLimitConfigArgs[] memory args = new RateLimitConfigArgs[](2);
+
+// Default bucket
+args[0] = RateLimitConfigArgs({
+  remoteChainSelector: REMOTE_SELECTOR,
+  fastFinality: false,
+  outboundRateLimiterConfig: outboundDefault,
+  inboundRateLimiterConfig: inboundDefault
+});
+
+// Fast-finality bucket
+args[1] = RateLimitConfigArgs({
+  remoteChainSelector: REMOTE_SELECTOR,
+  fastFinality: true,
+  outboundRateLimiterConfig: outboundFF,
+  inboundRateLimiterConfig: inboundFF
+});
+
+tokenPool.setRateLimitConfig(args);
+```
+
+If you only update the default bucket, FTF transfers still use the fast-finality bucket in each direction where it is enabled, and fall back to the default bucket where it is not.
+
+## Example interaction (conceptual)
+
+1. Select the token pool on the correct chain
+2. Build the version-appropriate call (`setRateLimitConfig` or `setChainRateLimiterConfig`)
+3. Supply the remote chain selector and the outbound and inbound tuples in **local base units**
+4. Submit from a wallet with owner or `rateLimitAdmin` permissions
+
+For cross-chain lanes, expect **at least two transactions**, one on each chain: outbound on the source pool and inbound on the destination pool. This is true even when the same address controls both pools.
+
+## Verifying before submission
+
+- re-check that values are in local base units on this chain
+- confirm inbound and outbound are not swapped
+- verify the correct remote chain selector
+- on v2.0: confirm the `fastFinality` flag targets the intended bucket
+- on v2.0: remember that every bucket you set refills to full capacity immediately
+- on v2.0: each entry also sets the opposite direction, so pass its current values if you are not changing it
+
+## After the update
+
+Once the transaction is confirmed, the new limits apply immediately. Monitor transfer behavior and re-inspect the onchain state. On v2.0, inspect both the default and fast-finality buckets if FTF transfers are in use on the lane.
+
+## What this page does not cover
+
+This page does not cover:
+
+- emergency actions such as locking down a lane (see [Emergency Actions](/ccip/evm/concepts/cross-chain-token/rate-limits/emergency-actions))
+- worked examples for specific token decimals (see [Common Scenarios](/ccip/evm/concepts/cross-chain-token/rate-limits/common-scenarios))
+- tool-specific execution steps for multisig wallets (see [Executing with a Multisig](/ccip/evm/concepts/cross-chain-token/rate-limits/executing-with-a-multisig))
+
+<CcipCommon callout="conceptualDisclaimer" />

@@ -1,0 +1,80 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Test Tokens - Faucets for EVM and Solana"
+metadata:
+  description: "Mint CCIP-BnM and CCIP-LnM test tokens on EVM and Solana testnets. Call drip functions on EVM contracts or use the Solana faucet for cross-chain testing."
+  excerpt: "CCIP test tokens, CCIP-BnM, CCIP-LnM, Solana faucet, EVM faucet, testnet tokens, burn mint tokens, lock mint tokens, MetaMask, Phantom wallet, cross-chain testing, wallet connect, SPL token, Token-2022, ERC20"
+  datePublished: "2023-08-03"
+  lastModified: "2025-08-19"
+  estimatedTime: "5 minutes"
+---
+
+import { ClickToZoom, Aside } from "@components"
+import { MintTokenButton } from "@features/ccip/components/MintTokenButton"
+
+import { SVMTestTokensClient } from "@features/ccip/components/faucet"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+CCIP provides test tokens that you can mint on testnets for development and testing.
+
+## Quick Start
+
+### EVM Chains
+
+Call the `drip` function directly on token contracts using the interface below or through block explorers:
+
+<MintTokenButton client:only="react" />
+
+### Solana Devnet
+
+Use the dedicated faucet interface for CCIP-BnM tokens:
+
+<SVMTestTokensClient client:only="react" />
+
+#### Amount and rate limits
+
+- The faucet mints **1 CCIP‑BnM** per request.
+- Requests are **rate‑limited to about once every 3 hours per wallet**.
+
+#### Signature requirement
+
+The faucet requires wallet signature verification. When you request tokens, your wallet will prompt you to sign a message.
+
+- Message signing is free (no SOL required) and grants no spending permissions.
+- After signature verification, the server executes the token mint transaction.
+
+## About CCIP Test Tokens
+
+CCIP supports specialized test tokens designed for cross-chain testing. These tokens are available on all CCIP-supported testnets.
+
+| Token        | Type        | Availability                                                       | Description                                                    |
+| ------------ | ----------- | ------------------------------------------------------------------ | -------------------------------------------------------------- |
+| **CCIP-BnM** | Burn & Mint | All testnets                                                       | Burned on source chain, minted on destination chain            |
+| **CCIP-LnM** | Lock & Mint | Ethereum Sepolia (native)<br/>Other chains (wrapped as clCCIP-LnM) | Locked on Ethereum Sepolia, minted as wrapped tokens elsewhere |
+
+On EVM chains, tokens are minted by calling the `drip` function directly on contracts. On Solana Devnet, CCIP-BnM tokens are available through a dedicated faucet interface.
+
+## LINK Token Faucets
+
+For CCIP operations, you also need LINK tokens to pay transaction fees. Use the official [Chainlink faucets](https://faucets.chain.link/) to obtain LINK tokens on supported testnets by connecting your wallet.
+
+## Block Explorer Method (EVM Chains)
+
+For EVM chains, you call the `drip` function directly on token contracts. You can use block explorers instead of the interface above:
+
+```solidity
+function drip(address to) external {
+  _mint(to, 1e18);
+}
+```
+
+### General Process
+
+Navigate to the [CCIP Directory](/ccip/directory/testnet) to find token contract addresses, open the contract on the appropriate block explorer, connect your wallet, and call the `drip` function with your wallet address.
+
+### Example: Ethereum Sepolia CCIP-BnM
+
+Locate the CCIP-BnM contract address in the [CCIP Directory](/ccip/directory/testnet) under [Ethereum Sepolia](/ccip/directory/testnet/chain/ethereum-testnet-sepolia). Open the [contract on Etherscan](https://sepolia.etherscan.io/address/0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05), navigate to the Contract tab, select Write Contract, and connect your wallet. Call the `drip` function with your wallet address to mint 1 CCIP-BnM token. Import the token in your wallet using this [MetaMask guide](https://support.metamask.io/hc/en-us/articles/360015489031#h_01FWH492CHY60HWPC28RW0872H).
+
+<CcipCommon callout="educationalDisclaimer" />

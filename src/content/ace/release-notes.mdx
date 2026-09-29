@@ -5,12 +5,23 @@ date: Last Modified
 metadata:
   description: "Chainlink ACE release notes: Beta scope, known constraints, changelog, and what is supported in each release."
   datePublished: "2026-03-31"
-  lastModified: "2026-07-17"
+  lastModified: "2026-09-23"
 ---
 
 import AceCallout from "@features/ace/callouts/AceCallout.astro"
 
 <AceCallout callout="privateBeta" />
+
+## September 14, 2026 — Custom contracts
+
+This release makes any ACE-compatible contract a first-class citizen in the platform, not just ERC-20 and ERC-3643 tokens.
+
+### What's new
+
+- **Custom contract types**: Declare contract types with your own function ABIs via the new `/contract-types` Coordinator API endpoints. Custom types appear alongside the built-in contract types (ERC-20, ERC-3643, and [CCIP-AdvancedPoolHooks](/ace/guides/policy-manager/ccip-token-pools)) and can be attached to policy engines and targets with `contract_type_ids`. See [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types).
+- **Custom extractors**: Write and deploy your own extractor contract (implementing `IExtractor` from the [chainlink-ace](https://github.com/smartcontractkit/chainlink-ace) repository) and register it via `POST /extractors` with its supported function signatures and per-chain deployment addresses. Pre-built extractors cover ERC-20, ERC-3643, and CCIP-AdvancedPoolHooks signatures; custom extractors extend coverage to any other function signature.
+- **Contract types on engines and targets**: `POST/PUT /policy-engines` and `POST/PUT /targets` accept `contract_type_ids`, and engine, target, and extractor responses now include their associated contract types (`contract_types`, `assigned_contract_types`).
+- **ERC-3643 extractor coverage fix**: `ERC3643MintBurnExtractor` now covers `burn(address,uint256)` only; `mint(address,uint256)` is covered by `ComplianceTokenMintBurnExtractor`. If you protect `mint` on an ERC-3643 token, attach `ComplianceTokenMintBurnExtractor`.
 
 ## July 17, 2026 — ACE Beta+
 

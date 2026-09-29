@@ -1,0 +1,90 @@
+---
+import { Tag, Typography } from "@chainlink/blocks"
+import styles from "./Demos.module.css"
+
+export interface Demo {
+  image: string
+  title: string
+  description: string
+  tags: string[]
+  href: string
+}
+
+const demos: Demo[] = [
+  {
+    image: "/images/demos/Demos thumbnails 1.png",
+    title: "Custom Data Feed",
+    description:
+      "See how you can bring your financial data onchain in a variety of different ways by creating a Net Asset Value feed, Proof of Reserve feed, or other custom data feed.",
+    tags: ["CRE", "DATA FEEDS"],
+    href: "/",
+  },
+  {
+    image: "/images/demos/Demos thumbnails 2.png",
+    title: "Delivery vs. Payment (DvP)",
+    description:
+      "Learn how to sell a variety of assets via a Delivery vs. Payment transaction using the Chainlink Runtime Environment (CRE).",
+    tags: ["CRE"],
+    href: "/",
+  },
+  {
+    image: "/images/demos/Demos thumbnails 3.png",
+    title: "Digital Transfer Agent (DTA)",
+    description:
+      "Learn how to invest in a variety of funds via a Digital Transfer Agent (DTA) transaction using the Chainlink Runtime Environment (CRE).",
+    tags: ["CRE"],
+    href: "/",
+  },
+  {
+    image: "/images/demos/Demos thumbnails 4.png",
+    title: "Explore Chainlink",
+    description: "Explore how the Chainlink standard powers tokenization and onchain finance through",
+    tags: ["CRE", "CCIP", "DATA FEEDS"],
+    href: "/",
+  },
+]
+---
+
+<section class={styles.demosSection}>
+  <Typography variant="h2">Demos</Typography>
+  <div class={styles.grid}>
+    {
+      demos.map((demo) => (
+        <a href={demo.href} class={styles.card}>
+          <div class={styles.imageContainer}>
+            <img src={demo.image} alt={demo.title} class={styles.image} />
+          </div>
+          <div class={styles.content}>
+            <div class={styles.body}>
+              <Typography
+                variant="h6"
+                style={{
+                  fontWeight: "500",
+                  marginBottom: "var(--space-4x)",
+                }}
+              >
+                {demo.title}
+              </Typography>
+              <Typography variant="body-s" color="muted">
+                {demo.description}
+              </Typography>
+            </div>
+            <footer class={styles.footer}>
+              <div class={styles.tags}>
+                {demo.tags.map((tag) => (
+                  <Tag size="sm" className={styles.footerTag}>
+                    {tag}
+                  </Tag>
+                ))}
+              </div>
+
+              <div class={styles.footerArrow}>
+                <img src="/assets/icons/upper-right-arrow.svg" alt="" />
+              </div>
+            </footer>
+          </div>
+        </a>
+      ))
+    }
+  </div>
+</section>

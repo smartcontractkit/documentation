@@ -7,16 +7,16 @@ function MegaMenu() {
   return (
     <div className={styles.wrapper}>
       <div className={styles.resourcesMenuContentMain}>
-        {megaMenuSections.map((section) => (
+        {Object.values(megaMenuSections).map((section) => (
           <div className={styles.resourcesMenuContentRow} key={section.title}>
             <h2 className="label">{section.title}</h2>
             {section.items?.map((item, index) => (
               <MegaMenuItem
                 key={index}
-                image={item.image?.src}
+                image={item.icon?.src}
                 title={item?.title}
                 description={item.description}
-                links={item.links}
+                links={[{ label: item.title, href: item.link }]}
               />
             ))}
           </div>

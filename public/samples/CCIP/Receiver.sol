@@ -3,6 +3,7 @@ pragma solidity 0.8.24;
 
 import {CCIPReceiver} from "@chainlink/contracts-ccip/contracts/applications/CCIPReceiver.sol";
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
+import {FinalityCodec} from "@chainlink/contracts-ccip/contracts/libraries/FinalityCodec.sol";
 
 /**
  * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
@@ -12,19 +13,10 @@ import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
 
 /// @title - A simple contract for receiving string data across chains.
 contract Receiver is CCIPReceiver {
-  // Event emitted when a message is received from another chain.
-  event MessageReceived( // The unique ID of the message.
-    // The chain selector of the source chain.
-    // The address of the sender from the source chain.
-    // The text that was received.
-    bytes32 indexed messageId,
-    uint64 indexed sourceChainSelector,
-    address sender,
-    string text
-  );
+  event MessageReceived(bytes32 indexed messageId, uint64 indexed sourceChainSelector, address sender, string text);
 
-  bytes32 private s_lastReceivedMessageId; // Store the last received messageId.
-  string private s_lastReceivedText; // Store the last received text.
+  bytes32 private s_lastReceivedMessageId;
+  string private s_lastReceivedText;
 
   /// @notice Constructor initializes the contract with the router address.
   /// @param router The address of the router contract.
@@ -32,19 +24,38 @@ contract Receiver is CCIPReceiver {
     address router
   ) CCIPReceiver(router) {}
 
-  /// handle a received message
+  /// @notice Handle a received message.
   function _ccipReceive(
     Client.Any2EVMMessage memory any2EvmMessage
   ) internal override {
-    s_lastReceivedMessageId = any2EvmMessage.messageId; // fetch the messageId
-    s_lastReceivedText = abi.decode(any2EvmMessage.data, (string)); // abi-decoding of the sent text
+    s_lastReceivedMessageId = any2EvmMessage.messageId;
+    s_lastReceivedText = abi.decode(any2EvmMessage.data, (string));
 
     emit MessageReceived(
       any2EvmMessage.messageId,
-      any2EvmMessage.sourceChainSelector, // fetch the source chain identifier (aka selector)
-      abi.decode(any2EvmMessage.sender, (address)), // abi-decoding of the sender address,
+      any2EvmMessage.sourceChainSelector,
+      abi.decode(any2EvmMessage.sender, (address)),
       abi.decode(any2EvmMessage.data, (string))
     );
+  }
+
+  /// @notice Returns the CCVs and finality config for a given source chain.
+  /// @dev Override to advertise receiver finality policy to the OffRamp.
+  function getCCVsAndFinalityConfig(
+    uint64,
+    bytes calldata
+  )
+    external
+    view
+    override
+    returns (
+      address[] memory requiredCCVs,
+      address[] memory optionalCCVs,
+      uint8 optionalThreshold,
+      bytes4 allowedFinalityConfig
+    )
+  {
+    return (new address[](0), new address[](0), 0, FinalityCodec.WAIT_FOR_FINALITY_FLAG);
   }
 
   /// @notice Fetches the details of the last received message.

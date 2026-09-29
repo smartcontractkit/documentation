@@ -1,4 +1,13 @@
 
 npx lint-staged
+
+# Validate CCIP directory data integrity when reference data or chain mappings
+# are touched. Fails fast if a new network was added to verifiers.json /
+# lanes.json / tokens.json / chains.json / decom.json without a matching case
+# in directoryToSupportedChain and entries in chains.json / types.ts.
+if git diff --cached --name-only | grep -qE '^src/config/data/ccip/v1_2_0/(mainnet|testnet)/(chains|lanes|tokens|verifiers|decom)\.json$|^src/features/utils/index\.ts$|^src/config/data/chains\.json$|^src/config/data/chain-to-technology\.json$|^src/config/types\.ts$'; then
+  npm run validate:ccip-data
+fi
+
 npm run generate:llms
 git add 'src/content/**/llms-full*.txt'

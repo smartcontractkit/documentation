@@ -1,0 +1,41 @@
+---
+import Card from "./Card.astro"
+import styles from "./cards.module.css"
+import { ICard } from "./types.ts"
+
+interface Props {
+  links: ICard[]
+  title?: string
+  subhead?: string
+  id?: string
+}
+
+const { links, title = null, subhead = null, id = null } = Astro.props as Props
+---
+
+<section class={styles.cardsWrapper} {...id ? { "aria-labelledby": id } : {}}>
+  {
+    title ? (
+      <div class={styles.header}>
+        <h2 id={id ?? undefined} class={styles.title}>
+          {title}
+        </h2>
+        {subhead ? <p class={styles.subhead}>{subhead}</p> : null}
+      </div>
+    ) : null
+  }
+
+  <div class={styles.grid}>
+    {
+      links.map((link) => (
+        <Card
+          title={link.title}
+          description={link.description}
+          links={link.links}
+          personas={link.personas}
+          badge={link.badge}
+        />
+      ))
+    }
+  </div>
+</section>

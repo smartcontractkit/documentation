@@ -17,15 +17,21 @@ const TableOfContents: FunctionalComponent<{
   const [activeIds, setActiveIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    // Only get top-level headers, don't get nested component headers
-    const elements = document.querySelectorAll("article section > :where(h1, h2, h3, h4)")
+    const elements = document.querySelectorAll(
+      [
+        "article section > :where(h1, h2, h3, h4)",
+        "article astro-anchored-accordion[data-toc-depth]",
+        "article astro-anchored-accordion :where(h1, h2, h3, h4)",
+      ].join(", ")
+    )
     const newHeadings: MarkdownHeading[] = []
 
     elements.forEach((e) => {
-      const depth = Number(e.nodeName.at(1))
+      const el = e as HTMLElement
+      const depth = Number(e.nodeName.at(1)) || Number(el.dataset?.tocDepth)
       const slug = e.id
-      const text = e.textContent
-      if (text) {
+      const text = el.dataset?.tocText || e.textContent
+      if (depth && slug && text) {
         newHeadings.push({
           depth,
           slug,
@@ -46,8 +52,13 @@ const TableOfContents: FunctionalComponent<{
           const { id, firstElementChild: first } = target
           if (isIntersecting) {
             newIds.add(id)
-            if (onUpdateActiveTitle && first?.textContent && ["H1", "H2"].includes(first.nodeName)) {
-              onUpdateActiveTitle(first.id === "overview" ? "Overview" : first.textContent)
+            if (onUpdateActiveTitle) {
+              const tocText = (target as HTMLElement).dataset?.tocText
+              if (tocText) {
+                onUpdateActiveTitle(tocText)
+              } else if (first?.textContent && ["H1", "H2"].includes(first.nodeName)) {
+                onUpdateActiveTitle(first.id === "overview" ? "Overview" : first.textContent)
+              }
             }
           } else {
             newIds.delete(id)

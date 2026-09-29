@@ -1,0 +1,148 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 RMN API Reference"
+metadata:
+  description: "Risk Management Network contract that maintains curse state for CCIP chains, gating message and token flows."
+  version: "2.0.0"
+---
+
+## Summary
+
+`RMN` is the Risk Management Network contract. It maintains curse state for subjects, which CCIP contracts check to gate message and token flows.
+
+It implements `[IRMN](/ccip/evm/api-reference/v2.0.0/i-rmn)`. Pools and ramps call `isCursed` before processing; a live curse halts the affected flows until the subject is uncursed.
+
+---
+
+## Contract
+
+`chains/evm/contracts/rmn/RMN.sol`
+
+---
+
+## Import
+
+```solidity
+import {RMN} from "chainlink-ccip/chains/evm/contracts/rmn/RMN.sol";
+```
+
+---
+
+## Inheritance
+
+- `AuthorizedCallers`
+- `ITypeAndVersion`
+- `IRMN`
+
+---
+
+## typeAndVersion
+
+```solidity
+string public constant override typeAndVersion = "RMN 2.0.0";
+```
+
+---
+
+## Global curse subject
+
+```solidity
+bytes16 constant GLOBAL_CURSE_SUBJECT = 0x01000000000000000000000000000001;
+```
+
+A curse on this subject makes both `isCursed()` and `isCursed(bytes16)` return true. Use it for issues affecting all CCIP chains or the chain this contract is deployed on, instead of the local chain selector.
+
+---
+
+## Constructor
+
+```solidity
+constructor(address[] memory curseAdmins)
+```
+
+Passes `curseAdmins` to `AuthorizedCallers`, initializing the set of addresses authorized to call `curse` (besides the owner).
+
+---
+
+## External API
+
+### curse
+
+```solidity
+function curse(bytes16 subject) external
+function curse(bytes16[] memory subjects) public
+```
+
+Curses one subject or an array of subjects. Callable by the owner or an authorized caller.
+
+Already-cursed subjects, including duplicates within the array, are silently skipped so a single redundant entry does not block the remaining subjects. Emits `Cursed` with only the newly cursed subjects, and emits nothing if every entry was already cursed.
+
+---
+
+### uncurse
+
+```solidity
+function uncurse(bytes16 subject) external
+function uncurse(bytes16[] memory subjects) public onlyOwner
+```
+
+Uncurses one subject or an array of subjects. Owner-only.
+
+Reverts `NotCursed(subject)` if any subject in the array is not cursed. Emits `Uncursed` with the subjects.
+
+---
+
+### getCursedSubjects
+
+```solidity
+function getCursedSubjects() external view returns (bytes16[] memory subjects)
+```
+
+Returns the current set of cursed subjects.
+
+---
+
+### isCursed
+
+```solidity
+function isCursed() external view returns (bool)
+function isCursed(bytes16 subject) external view returns (bool)
+```
+
+The no-argument overload returns true only if the global curse subject is active.
+
+The subject overload returns true if the given subject is cursed or the global curse subject is active. To check whether a particular chain is cursed, pass `bytes16(uint128(chainSelector))`.
+
+Both overloads return false immediately when no subjects are cursed at all.
+
+---
+
+## Events
+
+```solidity
+event Cursed(bytes16[] subjects);
+event Uncursed(bytes16[] subjects);
+```
+
+---
+
+## Errors
+
+```solidity
+error NotCursed(bytes16 subject);
+```
+
+---
+
+## Inherited from AuthorizedCallers
+
+See the [`AuthorizedCallers`](/ccip/evm/api-reference/v2.0.0/authorized-callers) reference for the full surface: `getAllAuthorizedCallers()`, `applyAuthorizedCallerUpdates(AuthorizedCallerArgs)`, and the `UnauthorizedCaller` / `ZeroAddressNotAllowed` errors.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`IRMN`](/ccip/evm/api-reference/v2.0.0/i-rmn)
+- [`RMNProxy`](/ccip/evm/api-reference/v2.0.0/rmn-proxy)
+- [`AuthorizedCallers`](/ccip/evm/api-reference/v2.0.0/authorized-callers)

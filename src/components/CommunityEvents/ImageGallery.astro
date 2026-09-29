@@ -1,0 +1,42 @@
+---
+import type { GalleryImage } from "./types"
+import styles from "./ImageGallery.module.css"
+
+interface Props {
+  images: GalleryImage[]
+}
+
+const { images } = Astro.props
+
+// Split images into two rows for the gallery
+const topRowImages = images.slice(0, Math.ceil(images.length / 2))
+const bottomRowImages = images.slice(Math.ceil(images.length / 2))
+
+// Duplicate images for seamless infinite scroll
+const topRowDuplicated = [...topRowImages, ...topRowImages]
+const bottomRowDuplicated = [...bottomRowImages, ...bottomRowImages]
+---
+
+<div class={styles.gallery}>
+  <!-- Top row - scrolls left -->
+  <div class={styles.row}>
+    {
+      topRowDuplicated.map((image) => (
+        <div class={styles.imageWrapper}>
+          <img src={image.imageUrl} alt={image.alt} loading="lazy" class={styles.image} />
+        </div>
+      ))
+    }
+  </div>
+
+  <!-- Bottom row - scrolls right -->
+  <div class={`${styles.row} ${styles.rowReverse}`}>
+    {
+      bottomRowDuplicated.map((image) => (
+        <div class={styles.imageWrapper}>
+          <img src={image.imageUrl} alt={image.alt} loading="lazy" class={styles.image} />
+        </div>
+      ))
+    }
+  </div>
+</div>

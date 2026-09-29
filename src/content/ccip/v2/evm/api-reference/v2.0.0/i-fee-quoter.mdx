@@ -1,0 +1,204 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IFeeQuoter API Reference"
+metadata:
+  description: "Interface for CCIP fee quoting, token pricing, and destination-chain gas price retrieval."
+  version: "2.0.0"
+---
+
+## Summary
+
+`IFeeQuoter` defines the public interface for CCIP fee quoting and pricing.
+
+It provides functions for:
+
+- Fee token discovery
+- Token price retrieval
+- Destination-chain gas price retrieval
+- Price updates
+- Token-transfer fee resolution
+- Execution gas quoting
+- Legacy extra-args resolution
+
+This interface is used by `[OnRamp](/ccip/evm/api-reference/v2.0.0/onramp)`, `[Executor](/ccip/evm/api-reference/v2.0.0/executor)`, and other components that convert USD-denominated fees into fee-token amounts.
+
+---
+
+## Contract
+
+`chains/evm/contracts/interfaces/IFeeQuoter.sol`
+
+---
+
+## Import
+
+```solidity
+import {IFeeQuoter} from "chainlink-ccip/chains/evm/contracts/interfaces/IFeeQuoter.sol";
+```
+
+---
+
+## Interface surface
+
+```solidity
+interface IFeeQuoter {
+```
+
+---
+
+### getFeeTokens
+
+```solidity
+function getFeeTokens()
+  external
+  view
+  returns (address[] memory);
+```
+
+---
+
+### getTokenPrice
+
+```solidity
+function getTokenPrice(
+  address token
+)
+  external
+  view
+  returns (Internal.TimestampedPackedUint224 memory);
+```
+
+---
+
+### getValidatedTokenPrice
+
+```solidity
+function getValidatedTokenPrice(
+  address token
+)
+  external
+  view
+  returns (uint224);
+```
+
+---
+
+### getTokenPrices
+
+```solidity
+function getTokenPrices(
+  address[] calldata tokens
+)
+  external
+  view
+  returns (Internal.TimestampedPackedUint224[] memory);
+```
+
+---
+
+### updatePrices
+
+```solidity
+function updatePrices(
+  Internal.PriceUpdates calldata priceUpdates
+)
+  external;
+```
+
+---
+
+### getDestinationChainGasPrice
+
+```solidity
+function getDestinationChainGasPrice(
+  uint64 destChainSelector
+)
+  external
+  view
+  returns (Internal.TimestampedPackedUint224 memory);
+```
+
+---
+
+### getTokenTransferFee
+
+```solidity
+function getTokenTransferFee(
+  uint64 destChainSelector,
+  address token
+)
+  external
+  view
+  returns (
+    uint32 feeUSDCents,
+    uint32 destGasOverhead,
+    uint32 destBytesOverhead
+  );
+```
+
+---
+
+### quoteGasForExec
+
+```solidity
+function quoteGasForExec(
+  uint64 destChainSelector,
+  uint32 nonCalldataGas,
+  uint32 calldataSize,
+  address feeToken
+)
+  external
+  view
+  returns (
+    uint32 totalGas,
+    uint256 gasCostInUsdCents,
+    uint256 feeTokenPrice,
+    uint256 premiumPercentMultiplier
+  );
+```
+
+---
+
+### resolveLegacyArgs
+
+```solidity
+function resolveLegacyArgs(
+  uint64 destChainSelector,
+  bytes calldata extraArgs
+)
+  external
+  view
+  returns (
+    bytes memory tokenReceiver,
+    uint32 gasLimit,
+    bytes memory executorArgs
+  );
+```
+
+---
+
+```solidity
+}
+```
+
+---
+
+## Integration notes / expectations
+
+- `updatePrices` should be access-controlled in implementations.
+- All price-returning functions may revert if price data is missing or invalid.
+- Returned USD values are denominated in USD cents or 18-decimal USD units depending on function.
+- Gas price encoding is chain-family dependent.
+- Legacy functions exist for compatibility with pre-1.7 lanes.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`FeeQuoter`](/ccip/evm/api-reference/v2.0.0/fee-quoter)
+- [`IExecutor`](/ccip/evm/api-reference/v2.0.0/i-executor)
+- [`Internal`](/ccip/evm/api-reference/v2.0.0/internal)
+- [`IPoolV2`](/ccip/evm/api-reference/v2.0.0/i-pool-v2)
+- [`IRouter`](/ccip/evm/api-reference/v2.0.0/i-router)
+- [`USDPriceWith18Decimals`](/ccip/evm/api-reference/v2.0.0/usd-price-with-18-decimals)
