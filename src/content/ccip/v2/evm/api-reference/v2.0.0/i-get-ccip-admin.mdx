@@ -1,0 +1,68 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IGetCCIPAdmin API Reference"
+metadata:
+  description: "Interface for tokens that expose a dedicated CCIP admin address."
+  version: "2.0.0"
+---
+
+`IGetCCIPAdmin` defines an interface for retrieving a token’s CCIP administrator address.
+
+This interface is a read-only hook for exposing token-level CCIP administrative authority.
+
+If you implement this interface, you declare the address that controls CCIP-related administration for the token.
+
+> This interface defines functions implemented by protocol contracts and is not typically used directly by applications.
+
+## Usage Boundary
+
+**You typically do not call this interface directly.**
+
+- `TokenAdminRegistry` and related CCIP infrastructure query this interface to determine token-level administrative authority.
+- You implement this interface when your token needs to expose a dedicated CCIP admin address.
+- You are responsible for ensuring the returned address accurately reflects the entity authorized to manage CCIP configuration.
+
+## Contract
+
+`interfaces/IGetCCIPAdmin.sol`
+
+## Import
+
+```solidity
+import {IGetCCIPAdmin} from "chainlink-ccip/interfaces/IGetCCIPAdmin.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## External API
+
+### getCCIPAdmin
+
+```solidity
+function getCCIPAdmin() external view returns (address)
+```
+
+> Returns the address authorized to manage CCIP configuration for the token.
+
+Returns:
+
+| Type      | Description                                                            |
+| --------- | ---------------------------------------------------------------------- |
+| `address` | Address with authority over CCIP-related configuration for this token. |
+
+## Notes
+
+- This interface does not enforce how the admin address is determined.
+- Implementations define the source of truth for CCIP administrative authority.
+- This interface assumes a single canonical CCIP admin address for the token.
+- Returning an incorrect address can grant CCIP administrative control to the wrong entity.
+
+## Related Interfaces & Contracts
+
+- [`TokenAdminRegistry`](/ccip/evm/api-reference/v2.0.0/token-admin-registry)
+- [`RegistryModuleOwnerCustom`](/ccip/evm/api-reference/v2.0.0/registry-module-owner-custom)

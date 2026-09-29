@@ -1130,7 +1130,7 @@ Source: https://docs.chain.link/data-feeds/getting-started
 
 You can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the [ETH / USD feed](https://data.chain.link/feeds/ethereum/mainnet/eth-usd). These data feeds use data aggregated from many independent Chainlink node operators. Each price feed has an onchain address and functions that enable contracts to read pricing data from that address.
 
-This guide shows you how to read Data Feeds and store the value onchain using Solidity. To learn how to read feeds offchain or use different languages, see the [Using Data Feeds on EVM Chains](/data-feeds/using-data-feeds) guide. Alternatively, you can also learn how to use Data Feeds on [Solana](/data-feeds/solana) or [StarkNet](/data-feeds/starknet).
+This guide shows you how to read Data Feeds and store the value onchain using Solidity. To learn how to read feeds offchain or use different languages, see the [Using Data Feeds on EVM Chains](/data-feeds/using-data-feeds) guide. Alternatively, you can also learn how to use Data Feeds on [Solana](/data-feeds/solana), [StarkNet](/data-feeds/starknet), or [Stellar](/data-feeds/stellar).
 
 The code for reading Data Feeds on Ethereum or other EVM-compatible blockchains is the same for each chain and each Data Feed types. You choose different types of feeds for different uses, but the request and response format are the same. The answer decimal length and expected value ranges might change depending on what feed you use.
 
@@ -1516,159 +1516,9 @@ print(historicalData)
 
 # Chainlink Data Feeds
 Source: https://docs.chain.link/data-feeds
+Last Updated: 2026-09-16
 
-> **NOTE: Talk to an expert**
->
-> [Contact us](https://chain.link/contact?ref_id=pricefeeds) to talk to an expert about integrating Chainlink
-> Data Feeds with your applications.
 
-Chainlink Data Feeds are the quickest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health.
-
-If you already started a project and need to integrate Chainlink, you can [add Chainlink to your existing project](/resources/create-a-chainlinked-project?parent=dataFeeds#installing-into-existing-projects) with the [`@chainlink/contracts` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
-
-## Types of data feeds
-
-Data feeds provide many different types of data for your applications.
-
-- [Price Feeds](#price-feeds)
-- [SmartData Feeds](#smartdata-feeds)
-  - [Multiple-Variable Response (MVR) Feeds](#multiple-variable-response-mvr-feeds)
-- [Smart Value Recapture (SVR) Feeds](#smart-value-recapture-svr-feeds)
-- [Rate and Volatility Feeds](#rate-and-volatility-feeds)
-- [L2 sequencer uptime feeds](#l2-sequencer-uptime-feeds)
-- [Self-managed feeds](#self-managed-feeds)
-
-### Price Feeds
-
-Smart contracts often act in real-time on data such as prices of assets. This is especially true in [DeFi](https://chain.link/use-cases/defi).
-
-For example, lending and borrowing platforms like [Aave](https://aave.com) utilize Data Feeds to assess collateral value accurately, while perpetual platforms such as [GMX](https://gmx.io) rely on these feeds to validate offchain data and ensure that each deposit or withdrawal executes at the correct market value.
-
-Data Feeds aggregate many data sources and publish them onchain using a combination of the [Decentralized Data Model](/architecture-overview/architecture-decentralized-model?parent=dataFeeds) and [Offchain Reporting](/architecture-overview/off-chain-reporting?parent=dataFeeds).
-
-- To learn how to use Price Feeds, see the [Price Feeds](/data-feeds/price-feeds) documentation.
-- See the [Data Feeds Contract Addresses](/data-feeds/price-feeds/addresses) page for a list of available networks and addresses.
-
-### SmartData Feeds
-
-Chainlink SmartData is a suite of onchain data offerings designed to unlock the utility, accessibility, and reliability of tokenized real-world assets (RWAs). By providing secure minting assurances alongside essential real-world data such as reserves, Net Asset Value (NAV), and Assets Under Management (AUM) data, the SmartData suite embeds security and enriches data into tokenized RWA offerings.
-
-- To learn more about the broader SmartData suite, see the [SmartData](/data-feeds/smartdata) documentation.
-- See the [SmartData Contract Addresses](/data-feeds/smartdata/addresses) page for a list of available networks and addresses.
-
-#### Multiple-Variable Response (MVR) Feeds
-
-The SmartData suite includes [Multiple-Variable Response (MVR) Feeds](/data-feeds/mvr-feeds), which bundle multiple data points of various types into a single onchain update. Unlike traditional feeds that provide only one numeric value, MVR feeds can return multiple values of different types (both numeric and non-numeric) in a single transaction.
-
-- To learn more about MVR Feeds, see the [Multiple-Variable Response (MVR) Feeds](/data-feeds/mvr-feeds) documentation.
-- See the [SmartData Contract Addresses](/data-feeds/smartdata/addresses) page for a list of available networks and addresses. Use the *Show Multiple-Variable Response (MVR) feeds* checkbox to filter the list.
-
-### Smart Value Recapture (SVR) Feeds
-
-Smart Value Recapture (SVR) Feeds introduce a mechanism to recapture Oracle Extractable Value (OEV), a form of MEV associated with oracle updates, often observed during liquidations.
-
-- To learn more, see the [Smart Value Recapture (SVR) Feeds](/data-feeds/svr-feeds) documentation.
-- Find SVR-enabled addresses on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page by filtering for SVR feeds.
-
-### Rate and Volatility Feeds
-
-Several feeds provide interest rate curve data, APY data, and realized asset price volatility.
-
-- To learn more, see the [Rate and Volatility Feeds](/data-feeds/rates-feeds) documentation.
-- See the [Rate and Volatility Contract Addresses](/data-feeds/rates-feeds/addresses) page for a list of available networks and addresses.
-
-### L2 sequencer uptime feeds
-
-L2 sequencer feeds track the last known status of the sequencer on an L2 network at a given point in time. This helps you prevent mass liquidations by providing a grace period to allow customers to react to these events.
-
-To learn how to use L2 sequencer uptime feeds, see the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) documentation.
-
-### Self-managed feeds
-
-Some networks publish Data Feed–style proxy contracts where **onchain updates are written by the chain or a third-party operator** (for example using a CRE workflow that reads [Chainlink Data Streams](/data-streams)), rather than through Chainlink Labs–managed decentralized oracle networks. **Chainlink Labs does not operate, monitor, or list addresses** for these deployments in official feed catalogs.
-
-For responsibilities, monitoring scope, and how to obtain contract addresses, see [Self-Managed Feeds](/data-feeds/self-managed-feeds).
-
-## Components of a data feed
-
-Data Feeds are examples of decentralized oracle networks with different interfaces depending on the type of data they provide. Each feed type includes specific components:
-
-### Single-value Feed Components
-
-Data feeds that deliver a single numeric value (such as price feeds or single-value [SmartData feeds](/data-feeds/smartdata)) include the following components:
-
-- **Consumer**: A consumer is an onchain or offchain application that uses Data Feeds. Consumer contracts use the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol) to call functions on the proxy contract and retrieve information from the aggregator contract. For a complete list of functions available in the `AggregatorV3Interface`, see the [Data Feeds API Reference](/data-feeds/api-reference/#aggregatorv3interface).
-- **Proxy contract**: Proxy contracts are onchain proxies that point to the aggregator for a particular data feed. Using proxies enables the underlying aggregator to be upgraded without any service interruption to consuming contracts. Proxy contracts can vary from one data feed to another, but the [`EACAggregatorProxy.sol` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.6/EACAggregatorProxy.sol) on Github is a common example.
-- **Aggregator contract**: An aggregator is a contract that receives periodic data updates from the oracle network. Aggregators store aggregated data onchain so that consumers can retrieve it and act upon it within the same transaction. For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/data-feeds/api-reference/#accesscontrolledoffchainaggregator).
-
-To learn how to create a consumer contract that uses an existing price feed, read the [Using Data Feeds](/data-feeds/price-feeds) documentation.
-
-### MVR Feed Components
-
-[Multiple-Variable Response (MVR) Feeds](/data-feeds/mvr-feeds), which deliver multiple data points of various types in a single bundle, include the following components:
-
-- **Consumer**: A consumer is an onchain or offchain application that uses MVR Feeds. Consumer contracts use the [`IBundleAggregatorProxy`](/data-feeds/mvr-feeds/api-reference/#ibundleaggregatorproxy) interface to call functions on the proxy contract and retrieve bundle data.
-- **Bundle Aggregator Proxy**: This proxy contract points to the underlying bundle aggregator. Using proxies enables the underlying aggregator to be upgraded without service interruption to consuming contracts. The proxy exposes functions like [`latestBundle()`](/data-feeds/mvr-feeds/api-reference/#latestbundle), [`bundleDecimals()`](/data-feeds/mvr-feeds/api-reference/#bundledecimals), and [`latestBundleTimestamp()`](/data-feeds/mvr-feeds/api-reference/#latestbundletimestamp) for consumers to access the bundled data.
-
-To learn how to create a consumer contract that uses an existing MVR feed, read the [Using MVR Feeds on EVM Chains (Solidity)](/data-feeds/mvr-feeds/guides/evm-solidity) guide.
-
-## Reading proxy and aggregator configurations
-
-Because the proxy and aggregator contracts are all onchain, you can see the current configuration by reading the variables through an [ABI](https://docs.soliditylang.org/en/latest/abi-spec.html) or using a blockchain explorer for your network. For example, you can see the [BTC/USD proxy configuration](https://etherscan.io/address/0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c#readContract) on the Ethereum network using Etherscan.
-
-If you read the BTC/USD proxy configuration, you can query all of the functions and variables that are publicly accessible for that contract including the `aggregator` address, `latestRoundData()` function, `latestAnswer` variable, `owner` address, `latestTimestamp` variable, and several others. To see descriptions for the proxy contract variables and functions, see the source code for your specific data feed on [Etherscan](https://etherscan.io/address/0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c#code#L568).
-
-The proxy contract points to an aggregator. This allows you to retrieve data through the proxy even if the aggregator is upgraded. If you view the `aggregator` address defined in the proxy configuration, you can see the aggregator and its configuration. For example, see the [BTC/USD aggregator contract](https://etherscan.io/address/0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c#code) in Etherscan. This contract includes several variables and functions, including another `latestRoundData()`. To see descriptions for the aggregator variables and functions, see the source code on [GitHub](https://github.com/smartcontractkit/libocr/blob/master/contract/AccessControlledOffchainAggregator.sol) or [Etherscan](https://etherscan.io/address/0xAe74faA92cB67A95ebCAB07358bC222e33A34dA7#code#F1#L1).
-
-You can call the `latestRoundData()` function directly on the aggregator, but it is a best practice to use the proxy instead so that changes to the aggregator do not affect your application. Similar to the proxy contract, the aggregator contract has a `latestAnswer` variable, `owner` address, `latestTimestamp` variable, and several others.
-
-## Components of an aggregator
-
-The aggregator contract has several variables and functions that might be useful for your application. Although aggregator contracts are similar for each data feed, some aggregators have different variables. Use the `typeAndVersion()` function on the aggregator to identify what type of aggregator it is and what version it is running.
-
-Always check the contract source code and configuration to understand how specific data feeds operate. For example, the [aggregator contract for BTC/USD on Arbitrum](https://arbiscan.io/address/0x942d00008D658dbB40745BBEc89A93c253f9B882#code) is different from the aggregators on other networks.
-
-For examples of the contracts that are typically used in aggregator deployments, see the [libocr repository](https://github.com/smartcontractkit/libocr/blob/master/contract/) on GitHub.
-
-For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/data-feeds/api-reference/#accesscontrolledoffchainaggregator).
-
-## Updates to proxy and aggregator contracts
-
-To accommodate the dynamic nature of offchain environments, Chainlink Data Feeds are updated from time to time to add new features and capabilities as well as respond to externalities such as token migrations, protocol rebrands, extreme market events, and upstream issues with data or node operations.
-
-These updates include changes to the aggregator configuration or a complete replacement of the aggregator that the proxy uses. If you consume data feeds through the proxy, your applications can continue to operate during these changes.
-
-Proxy and aggregator contracts all have an `owner` address that has permission to change variables and functions. For example, if you read the [BTC/USD proxy contract](https://etherscan.io/address/0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c#readContract) in Etherscan, you can see the `owner` address. This address is a [multi-signature safe](https://docs.safe.global/getting-started/readme) (multisig) that you can also inspect.
-
-If you [view the multisig contract](https://etherscan.io/address/0x21f73D42Eb58Ba49dDB685dc29D3bF5c0f0373CA#readProxyContract) in Etherscan using the *Read as Proxy* feature, you can see the full details of the multisig including the list of addresses that can sign and the number of signers required for the multisig to approve actions on any contracts that it owns.
-
-The multisig-coordinated upgradability of Chainlink Data Feeds involves time-tested processes that balance collusion-resistance with the flexibility required to implement improvements and swiftly react to external conditions. The approach taken to upgradability will continue to evolve over time to meet user requirements.
-
-## Monitoring data feeds
-
-When you build applications and protocols that depend on data feeds, include monitoring and safeguards to protect against the negative impact of extreme market events, possible malicious activity on third-party venues or contracts, potential delays, and outages.
-
-Create your own monitoring alerts based on deviations in the answers that data feeds provide. This will notify you when potential issues occur so you can respond to them.
-
-### Check the latest answer against reasonable limits
-
-The data feed aggregator includes both [`minAnswer` and `maxAnswer` values](https://github.com/smartcontractkit/libocr/blob/9e4afd8896f365b964bdf769ca28f373a3fb0300/contract/AccessControlledOffchainAggregator.sol#L33). On most data feeds, these values are no longer used and they do not stop your application from reading the most recent answer. For monitoring purposes, you must decide what limits are acceptable for your application.
-
-Configure your application to detect when the reported answer is close to reaching reasonable minimum and maximum limits so it can alert you to potential market events. Separately, configure your application to detect and respond to extreme price volatility or prices that are outside of your acceptable limits.
-
-### Check the timestamp of the latest answer
-
-Chainlink Data Feeds do not provide streaming data. Rather, the aggregator updates its `latestAnswer` when the value deviates beyond a specified threshold or when the heartbeat idle time has passed. You can find the heartbeat and deviation values for each data feed at [data.chain.link](https://data.chain.link/) or in the [Contract Addresses](/data-feeds/price-feeds/addresses) lists.
-
-Your application should track the `latestTimestamp` variable or use the `updatedAt` value from the `latestRoundData()` function to make sure that the latest answer is recent enough for your application to use it. If your application detects that the reported answer is not updated within the heartbeat or within time limits that you determine are acceptable for your application, pause operation or switch to an alternate operation mode while identifying the cause of the delay.
-
-When the node detects that the heartbeat is reached, it initiates the latest round. Depending on congestion and network conditions, there may be a slight delay for the latest round to get onchain.
-
-During periods of low volatility, the heartbeat triggers updates to the latest answer. Some heartbeats are configured to last several hours, so your application should check the timestamp and verify that the latest answer is recent enough for your application.
-
-Users should build applications with the understanding that data feeds for wrapped or liquid staking assets might have different heartbeat and deviation thresholds than that of the underlying asset. Heartbeat and deviation thresholds can also differ for the same asset across different blockchains. Combining data from multiple feeds, even those with a common denominator, might result in a margin of error that users must account for in their risk mitigation practices.
-
-To learn more about the heartbeat and deviation threshold, read the [Decentralized Data Model](/architecture-overview/architecture-decentralized-model?parent=dataFeeds#aggregator) page.
 
 ---
 
@@ -3612,6 +3462,164 @@ Check our [implementation guides](/data-feeds/mvr-feeds/guides) for detailed ins
   - [Solidity Guide](/data-feeds/mvr-feeds/guides/evm-solidity): For smart contract developers using Solidity
   - [ethers.js Guide](/data-feeds/mvr-feeds/guides/ethersjs): For frontend or Node.js developers using ethers.js v5
   - [Viem Guide](/data-feeds/mvr-feeds/guides/viem): For TypeScript developers using the Viem library
+
+---
+
+# What are Chainlink Data Feeds?
+Source: https://docs.chain.link/data-feeds/overview
+
+> **NOTE: Talk to an expert**
+>
+> [Contact us](https://chain.link/contact?ref_id=pricefeeds) to talk to an expert about integrating Chainlink
+> Data Feeds with your applications.
+
+Chainlink Data Feeds are the quickest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health.
+
+If you already started a project and need to integrate Chainlink, you can [add Chainlink to your existing project](/resources/create-a-chainlinked-project?parent=dataFeeds#installing-into-existing-projects) with the [`@chainlink/contracts` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
+
+## Types of data feeds
+
+Data feeds provide many different types of data for your applications.
+
+- [Price Feeds](#price-feeds)
+- [SmartData Feeds](#smartdata-feeds)
+  - [Multiple-Variable Response (MVR) Feeds](#multiple-variable-response-mvr-feeds)
+- [Smart Value Recapture (SVR) Feeds](#smart-value-recapture-svr-feeds)
+- [Rate and Volatility Feeds](#rate-and-volatility-feeds)
+- [L2 sequencer uptime feeds](#l2-sequencer-uptime-feeds)
+- [Self-managed feeds](#self-managed-feeds)
+
+### Price Feeds
+
+Smart contracts often act in real-time on data such as prices of assets. This is especially true in [DeFi](https://chain.link/use-cases/defi).
+
+For example, lending and borrowing platforms like [Aave](https://aave.com) utilize Data Feeds to assess collateral value accurately, while perpetual platforms such as [GMX](https://gmx.io) rely on these feeds to validate offchain data and ensure that each deposit or withdrawal executes at the correct market value.
+
+Data Feeds aggregate many data sources and publish them onchain using a combination of the [Decentralized Data Model](/architecture-overview/architecture-decentralized-model?parent=dataFeeds) and [Offchain Reporting](/architecture-overview/off-chain-reporting?parent=dataFeeds).
+
+- To learn how to use Price Feeds, see the [Price Feeds](/data-feeds/price-feeds) documentation.
+- See the [Data Feeds Contract Addresses](/data-feeds/price-feeds/addresses) page for a list of available networks and addresses.
+
+### SmartData Feeds
+
+Chainlink SmartData is a suite of onchain data offerings designed to unlock the utility, accessibility, and reliability of tokenized real-world assets (RWAs). By providing secure minting assurances alongside essential real-world data such as reserves, Net Asset Value (NAV), and Assets Under Management (AUM) data, the SmartData suite embeds security and enriches data into tokenized RWA offerings.
+
+- To learn more about the broader SmartData suite, see the [SmartData](/data-feeds/smartdata) documentation.
+- See the [SmartData Contract Addresses](/data-feeds/smartdata/addresses) page for a list of available networks and addresses.
+
+#### Multiple-Variable Response (MVR) Feeds
+
+The SmartData suite includes [Multiple-Variable Response (MVR) Feeds](/data-feeds/mvr-feeds), which bundle multiple data points of various types into a single onchain update. Unlike traditional feeds that provide only one numeric value, MVR feeds can return multiple values of different types (both numeric and non-numeric) in a single transaction.
+
+- To learn more about MVR Feeds, see the [Multiple-Variable Response (MVR) Feeds](/data-feeds/mvr-feeds) documentation.
+- See the [SmartData Contract Addresses](/data-feeds/smartdata/addresses) page for a list of available networks and addresses. Use the *Show Multiple-Variable Response (MVR) feeds* checkbox to filter the list.
+
+### Smart Value Recapture (SVR) Feeds
+
+Smart Value Recapture (SVR) Feeds introduce a mechanism to recapture Oracle Extractable Value (OEV), a form of MEV associated with oracle updates, often observed during liquidations.
+
+- To learn more, see the [Smart Value Recapture (SVR) Feeds](/data-feeds/svr-feeds) documentation.
+- Find SVR-enabled addresses on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page by filtering for SVR feeds.
+
+### Rate and Volatility Feeds
+
+Several feeds provide interest rate curve data, APY data, and realized asset price volatility.
+
+- To learn more, see the [Rate and Volatility Feeds](/data-feeds/rates-feeds) documentation.
+- See the [Rate and Volatility Contract Addresses](/data-feeds/rates-feeds/addresses) page for a list of available networks and addresses.
+
+### L2 sequencer uptime feeds
+
+L2 sequencer feeds track the last known status of the sequencer on an L2 network at a given point in time. This helps you prevent mass liquidations by providing a grace period to allow customers to react to these events.
+
+To learn how to use L2 sequencer uptime feeds, see the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) documentation.
+
+### Self-managed feeds
+
+Some networks publish Data Feed–style proxy contracts where **onchain updates are written by the chain or a third-party operator** (for example using a CRE workflow that reads [Chainlink Data Streams](/data-streams)), rather than through Chainlink Labs–managed decentralized oracle networks. **Chainlink Labs does not operate, monitor, or list addresses** for these deployments in official feed catalogs.
+
+For responsibilities, monitoring scope, and how to obtain contract addresses, see [Self-Managed Feeds](/data-feeds/self-managed-feeds).
+
+## Components of a data feed
+
+Data Feeds are examples of decentralized oracle networks with different interfaces depending on the type of data they provide. Each feed type includes specific components:
+
+### Single-value Feed Components
+
+Data feeds that deliver a single numeric value (such as price feeds or single-value [SmartData feeds](/data-feeds/smartdata)) include the following components:
+
+- **Consumer**: A consumer is an onchain or offchain application that uses Data Feeds. Consumer contracts use the [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol) to call functions on the proxy contract and retrieve information from the aggregator contract. For a complete list of functions available in the `AggregatorV3Interface`, see the [Data Feeds API Reference](/data-feeds/api-reference/#aggregatorv3interface).
+- **Proxy contract**: Proxy contracts are onchain proxies that point to the aggregator for a particular data feed. Using proxies enables the underlying aggregator to be upgraded without any service interruption to consuming contracts. Proxy contracts can vary from one data feed to another, but the [`EACAggregatorProxy.sol` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.6/EACAggregatorProxy.sol) on Github is a common example.
+- **Aggregator contract**: An aggregator is a contract that receives periodic data updates from the oracle network. Aggregators store aggregated data onchain so that consumers can retrieve it and act upon it within the same transaction. For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/data-feeds/api-reference/#accesscontrolledoffchainaggregator).
+
+To learn how to create a consumer contract that uses an existing price feed, read the [Using Data Feeds](/data-feeds/price-feeds) documentation.
+
+### MVR Feed Components
+
+[Multiple-Variable Response (MVR) Feeds](/data-feeds/mvr-feeds), which deliver multiple data points of various types in a single bundle, include the following components:
+
+- **Consumer**: A consumer is an onchain or offchain application that uses MVR Feeds. Consumer contracts use the [`IBundleAggregatorProxy`](/data-feeds/mvr-feeds/api-reference/#ibundleaggregatorproxy) interface to call functions on the proxy contract and retrieve bundle data.
+- **Bundle Aggregator Proxy**: This proxy contract points to the underlying bundle aggregator. Using proxies enables the underlying aggregator to be upgraded without service interruption to consuming contracts. The proxy exposes functions like [`latestBundle()`](/data-feeds/mvr-feeds/api-reference/#latestbundle), [`bundleDecimals()`](/data-feeds/mvr-feeds/api-reference/#bundledecimals), and [`latestBundleTimestamp()`](/data-feeds/mvr-feeds/api-reference/#latestbundletimestamp) for consumers to access the bundled data.
+
+To learn how to create a consumer contract that uses an existing MVR feed, read the [Using MVR Feeds on EVM Chains (Solidity)](/data-feeds/mvr-feeds/guides/evm-solidity) guide.
+
+## Reading proxy and aggregator configurations
+
+Because the proxy and aggregator contracts are all onchain, you can see the current configuration by reading the variables through an [ABI](https://docs.soliditylang.org/en/latest/abi-spec.html) or using a blockchain explorer for your network. For example, you can see the [BTC/USD proxy configuration](https://etherscan.io/address/0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c#readContract) on the Ethereum network using Etherscan.
+
+If you read the BTC/USD proxy configuration, you can query all of the functions and variables that are publicly accessible for that contract including the `aggregator` address, `latestRoundData()` function, `latestAnswer` variable, `owner` address, `latestTimestamp` variable, and several others. To see descriptions for the proxy contract variables and functions, see the source code for your specific data feed on [Etherscan](https://etherscan.io/address/0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c#code#L568).
+
+The proxy contract points to an aggregator. This allows you to retrieve data through the proxy even if the aggregator is upgraded. If you view the `aggregator` address defined in the proxy configuration, you can see the aggregator and its configuration. For example, see the [BTC/USD aggregator contract](https://etherscan.io/address/0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c#code) in Etherscan. This contract includes several variables and functions, including another `latestRoundData()`. To see descriptions for the aggregator variables and functions, see the source code on [GitHub](https://github.com/smartcontractkit/libocr/blob/master/contract/AccessControlledOffchainAggregator.sol) or [Etherscan](https://etherscan.io/address/0xAe74faA92cB67A95ebCAB07358bC222e33A34dA7#code#F1#L1).
+
+You can call the `latestRoundData()` function directly on the aggregator, but it is a best practice to use the proxy instead so that changes to the aggregator do not affect your application. Similar to the proxy contract, the aggregator contract has a `latestAnswer` variable, `owner` address, `latestTimestamp` variable, and several others.
+
+## Components of an aggregator
+
+The aggregator contract has several variables and functions that might be useful for your application. Although aggregator contracts are similar for each data feed, some aggregators have different variables. Use the `typeAndVersion()` function on the aggregator to identify what type of aggregator it is and what version it is running.
+
+Always check the contract source code and configuration to understand how specific data feeds operate. For example, the [aggregator contract for BTC/USD on Arbitrum](https://arbiscan.io/address/0x942d00008D658dbB40745BBEc89A93c253f9B882#code) is different from the aggregators on other networks.
+
+For examples of the contracts that are typically used in aggregator deployments, see the [libocr repository](https://github.com/smartcontractkit/libocr/blob/master/contract/) on GitHub.
+
+For a complete list of functions and variables available on most aggregator contracts, see the [Data Feeds API Reference](/data-feeds/api-reference/#accesscontrolledoffchainaggregator).
+
+## Updates to proxy and aggregator contracts
+
+To accommodate the dynamic nature of offchain environments, Chainlink Data Feeds are updated from time to time to add new features and capabilities as well as respond to externalities such as token migrations, protocol rebrands, extreme market events, and upstream issues with data or node operations.
+
+These updates include changes to the aggregator configuration or a complete replacement of the aggregator that the proxy uses. If you consume data feeds through the proxy, your applications can continue to operate during these changes.
+
+Proxy and aggregator contracts all have an `owner` address that has permission to change variables and functions. For example, if you read the [BTC/USD proxy contract](https://etherscan.io/address/0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c#readContract) in Etherscan, you can see the `owner` address. This address is a [multi-signature safe](https://docs.safe.global/getting-started/readme) (multisig) that you can also inspect.
+
+If you [view the multisig contract](https://etherscan.io/address/0x21f73D42Eb58Ba49dDB685dc29D3bF5c0f0373CA#readProxyContract) in Etherscan using the *Read as Proxy* feature, you can see the full details of the multisig including the list of addresses that can sign and the number of signers required for the multisig to approve actions on any contracts that it owns.
+
+The multisig-coordinated upgradability of Chainlink Data Feeds involves time-tested processes that balance collusion-resistance with the flexibility required to implement improvements and swiftly react to external conditions. The approach taken to upgradability will continue to evolve over time to meet user requirements.
+
+## Monitoring data feeds
+
+When you build applications and protocols that depend on data feeds, include monitoring and safeguards to protect against the negative impact of extreme market events, possible malicious activity on third-party venues or contracts, potential delays, and outages.
+
+Create your own monitoring alerts based on deviations in the answers that data feeds provide. This will notify you when potential issues occur so you can respond to them.
+
+### Check the latest answer against reasonable limits
+
+The data feed aggregator includes both [`minAnswer` and `maxAnswer` values](https://github.com/smartcontractkit/libocr/blob/9e4afd8896f365b964bdf769ca28f373a3fb0300/contract/AccessControlledOffchainAggregator.sol#L33). On most data feeds, these values are no longer used and they do not stop your application from reading the most recent answer. For monitoring purposes, you must decide what limits are acceptable for your application.
+
+Configure your application to detect when the reported answer is close to reaching reasonable minimum and maximum limits so it can alert you to potential market events. Separately, configure your application to detect and respond to extreme price volatility or prices that are outside of your acceptable limits.
+
+### Check the timestamp of the latest answer
+
+Chainlink Data Feeds do not provide streaming data. Rather, the aggregator updates its `latestAnswer` when the value deviates beyond a specified threshold or when the heartbeat idle time has passed. You can find the heartbeat and deviation values for each data feed at [data.chain.link](https://data.chain.link/) or in the [Contract Addresses](/data-feeds/price-feeds/addresses) lists.
+
+Your application should track the `latestTimestamp` variable or use the `updatedAt` value from the `latestRoundData()` function to make sure that the latest answer is recent enough for your application to use it. If your application detects that the reported answer is not updated within the heartbeat or within time limits that you determine are acceptable for your application, pause operation or switch to an alternate operation mode while identifying the cause of the delay.
+
+When the node detects that the heartbeat is reached, it initiates the latest round. Depending on congestion and network conditions, there may be a slight delay for the latest round to get onchain.
+
+During periods of low volatility, the heartbeat triggers updates to the latest answer. Some heartbeats are configured to last several hours, so your application should check the timestamp and verify that the latest answer is recent enough for your application.
+
+Users should build applications with the understanding that data feeds for wrapped or liquid staking assets might have different heartbeat and deviation thresholds than that of the underlying asset. Heartbeat and deviation thresholds can also differ for the same asset across different blockchains. Combining data from multiple feeds, even those with a common denominator, might result in a margin of error that users must account for in their risk mitigation practices.
+
+To learn more about the heartbeat and deviation threshold, read the [Decentralized Data Model](/architecture-overview/architecture-decentralized-model?parent=dataFeeds#aggregator) page.
 
 ---
 
@@ -5763,6 +5771,405 @@ For instance, you can set new values for the latest round of data on the aggrega
 ```bash
 make ma-set-latest-round NETWORK=devnet && make ac-set-answer NETWORK=devnet && make ac-read-answer NETWORK=devnet
 ```
+
+---
+
+# Using Data Feeds on Stellar
+Source: https://docs.chain.link/data-feeds/stellar
+
+[Stellar](https://stellar.org/) is a Layer 1 blockchain that uses [Soroban](https://soroban.stellar.org/) smart contracts written in [Rust](https://www.rust-lang.org/). Chainlink Data Feeds on Stellar use a single proxy contract that serves every feed. Instead of a per-feed contract address, you select a feed by its 32-byte `data_id`.
+
+A `data_id` is a 32-byte identifier for a feed, similar to how a contract address identifies a feed on EVM chains. It is the same value as the **Feed ID** shown in the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) table. You pass the `data_id` to the proxy contract to read that feed's data.
+
+## How Stellar Data Feeds work
+
+Data Feeds on Stellar use a single proxy contract that serves every feed. Consumers read feeds from the proxy by passing a 32-byte `data_id`:
+
+- **Proxy contract**: A single proxy contract serves every feed. Consumers read feed data from the proxy by passing the `data_id` for the feed they need.
+
+Consumers select a feed by passing its 32-byte `data_id` to the proxy. You can find the `data_id` for each feed on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+
+## Supported networks
+
+Chainlink Data Feeds are available on the following Stellar networks:
+
+- Stellar Testnet
+- Stellar Mainnet (Pubnet)
+
+## Available data feeds on Stellar
+
+The following table shows all available data feeds on Stellar. Each feed is identified by its `data_id` (the Feed ID), which you pass to the proxy contract to read that feed's data.
+
+## Proxy contract addresses
+
+The proxy contract address is the same for every feed on a given network. You only ever interact with the proxy.
+
+- **Stellar Testnet**: CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4
+- **Stellar Mainnet (Pubnet)**: CDQBHEUGLDHMSUHG4IH33RJBUTMNCZOT4JIAQR4WZFRDZW6DR6S32ZLZ
+
+## Reader interface
+
+Consumers call the following functions on the proxy contract. The interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_proxy.rs) repository.
+
+| Function                                 | Returns                                                          |
+| ---------------------------------------- | ---------------------------------------------------------------- |
+| `latest_round(data_id, decimals)`        | The most recent round for that feed, at the requested `decimals` |
+| `get_round(data_id, round_id, decimals)` | A specific historical round, at the requested `decimals`         |
+| `decimals(data_id)`                      | Decimal places for the answer                                    |
+| `description(data_id)`                   | Human-readable pair name                                         |
+| `get_min_decimals(data_id)`              | The minimum decimal places the feed can be served at             |
+
+### Round structure
+
+A round returned by the proxy carries the following fields:
+
+| Field       | Description                                                            |
+| ----------- | ---------------------------------------------------------------------- |
+| `round_id`  | The unique identifier of the round                                     |
+| `answer`    | The answer for the feed, represented as an `I256`                      |
+| `timestamp` | The observation timestamp in Unix seconds when the answer was produced |
+
+## Error handling
+
+When you call the proxy, the contract can return a `ProxyReadError`. The following cases describe what each error means for a consumer:
+
+| Error             | Meaning                                                                                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NoDataPresent`   | No round is available for the requested `data_id` or `round_id`. This can happen if the feed has not been written yet or the round has expired. |
+| `InvalidDecimals` | The `decimals` you requested is outside the supported range for the feed.                                                                       |
+| `RoundsToZero`    | A non-zero answer would truncate to zero at the requested `decimals`. Request fewer decimal places.                                             |
+| `FeedFrozen`      | The feed is frozen and cannot be read.                                                                                                          |
+
+## How long a round is available
+
+A round is available for a retention period of `3,110,400` ledgers. After this period, a round can no longer be read from the proxy.
+
+## Getting started
+
+You can read Chainlink Data Feeds on Stellar either offchain or onchain. Both methods read the same data from the proxy contract, differing only in where the read happens.
+
+- **[Using Data Feeds Offchain](/data-feeds/stellar/using-data-feeds-off-chain)**: Read a feed via Soroban RPC simulation using `stellar-cli` and the Stellar JavaScript SDK. This method is for applications that need to read feed data without deploying a contract.
+
+- **[Using Data Feeds Onchain](/data-feeds/stellar/using-data-feeds-on-chain)**: Deploy a Soroban contract in Rust that calls the proxy and reads a price. This method is for applications that need to read feed data directly within a smart contract.
+
+Each guide lists the tools and requirements you need to complete it.
+
+## Answer precision
+
+All feeds are stored at `18` decimal places and are typically returned at `18` decimal places. The `decimals` parameter is required when you call `latest_round` or `get_round` on the proxy. You should pass `18` unless a feed is explicitly served at a reduced precision.
+
+In some instances, Chainlink approves the serving of a reduced precision for certain feeds. In this case, you can pass that reduced precision as the `decimals` parameter when requesting a feed from the proxy.
+
+The precision is truncated, so if an `18`-decimal feed is requested at `8` decimal places, the answer is truncated (rounded down). Factor this into your calculations. If you need to control the precision yourself, request the feed at `18` decimal places and override the precision in your application.
+
+> **DANGER: Select quality data feeds**
+>
+> Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds).
+
+---
+
+# Using Data Feeds Offchain (Stellar)
+Source: https://docs.chain.link/data-feeds/stellar/using-data-feeds-off-chain
+
+Chainlink Data Feeds are the quickest way to access market prices for real-world assets. This guide demonstrates how to read Chainlink Data Feeds on the Stellar Testnet offchain using a [Soroban RPC simulation](https://soroban.stellar.org/docs/reference/rpc) with the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli) and the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk). To learn how to use Data Feeds in your onchain Soroban contracts, see the [Using Data Feeds Onchain](/data-feeds/stellar/using-data-feeds-on-chain) guide.
+
+To get the full list of Chainlink Data Feeds on Stellar, see the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+
+## Available data feeds on Stellar
+
+The following table shows all available data feeds on Stellar. Each feed is identified by its `data_id` (the Feed ID), which you pass to the proxy contract to read that feed's data.
+
+> **DANGER: Select quality data feeds**
+>
+> Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds).
+
+## Prerequisites
+
+Before you begin, you should have:
+
+- Familiarity with [Stellar](https://stellar.org/) and [Soroban](https://soroban.stellar.org/) smart contracts
+- Understanding of how [Chainlink Data Feeds on Stellar](/data-feeds/stellar) work, including the `data_id` addressing scheme
+
+## Requirements
+
+To complete this guide, you'll need:
+
+- **Stellar CLI**: Install the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli). Run stellar --version to verify your installation.
+
+- **Node.js 18 or higher**: Install [Node.js](https://nodejs.org/en/download/). Run node --version to verify your installation.
+
+## Read a feed with the Stellar CLI
+
+You can read a Chainlink Data Feed offchain without deploying a contract by simulating a call to the proxy contract using the `stellar contract invoke` command with the `--send=no` flag. This does not submit a transaction and requires no XLM.
+
+The proxy contract exposes a `latest_round` function that takes a `data_id` and a `decimals` parameter, and returns the most recent round for that feed. You pass the `data_id` as raw hex (without the `0x` prefix), and `18` for the `decimals` parameter unless the feed is served at a reduced precision.
+
+1. Run the following command, replacing `<SOURCE_ACCOUNT>` with any Stellar account public key. The proxy contract on Stellar Testnet is `CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4`, and the BTC/USD `data_id` is `01a0b4d920000332000000000000000000000000000000000000000000000000`:
+
+   ```bash
+   stellar contract invoke \
+   --id CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4 \
+   --source-account <SOURCE_ACCOUNT> \
+   --network testnet \
+   --send=no \
+   -- latest_round \
+   --data_id "01a0b4d920000332000000000000000000000000000000000000000000000000" \
+   --decimals 18
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   {"answer":"84421629086034400000000","round_id":96,"timestamp":1790274329}
+   ```
+
+   Where:
+
+   - `answer` is the latest BTC/USD price with 18 decimal places (`84421629086034400000000` = 84421.63).
+   - `round_id` is the unique identifier of the round.
+   - `timestamp` is the observation timestamp in Unix seconds when the answer was produced.
+
+   You can find the `data_id` for each feed on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+
+## Read a feed with the Stellar JavaScript SDK
+
+You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk) with a Soroban RPC query. This example uses the `contract.Client` API available in SDK v17 and later.
+
+1. Create a new directory for your project and initialize it:
+
+   ```bash
+   mkdir stellar-offchain && cd stellar-offchain && npm init -y
+   ```
+
+2. Install the Stellar JavaScript SDK:
+
+   ```bash
+   npm install @stellar/stellar-sdk
+   ```
+
+3. Create a `read-feed.js` file with the following contents. This script queries the proxy contract's `latest_round` function for a given `data_id`:
+
+   ```javascript
+   const { contract } = require("@stellar/stellar-sdk")
+
+   const proxy = "CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4"
+   const dataId = "01a0b4d920000332000000000000000000000000000000000000000000000000"
+
+   async function readLatestRound() {
+     const client = await contract.Client.from({
+       contractId: proxy,
+       rpcUrl: "https://soroban-testnet.stellar.org",
+       networkPassphrase: "Test SDF Network ; September 2015",
+     })
+     const result = await client.latest_round({ data_id: Buffer.from(dataId, "hex"), decimals: 18 })
+     const round = result.result.value
+     console.log("Latest round:", {
+       round_id: round.round_id.toString(),
+       answer: round.answer.toString(),
+       timestamp: round.timestamp.toString(),
+     })
+   }
+
+   readLatestRound().catch(console.error)
+   ```
+
+   The `data_id` argument is a 32-byte value, passed as a `Buffer` object. The `decimals` argument is required and requests the precision at which the answer is returned; pass `18` unless the feed is served at a reduced precision. The `latest_round` function returns a `Round` object wrapped in an `Ok` value, so you access it with `result.result.value`.
+
+4. Run the script:
+
+   ```bash
+   node read-feed.js
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Latest round: {
+     round_id: '96',
+     answer: '84421629086034400000000',
+     timestamp: '1790274329'
+   }
+   ```
+
+   Where `answer` is the latest BTC/USD price with 18 decimal places (`84421629086034400000000` = 84421.63).
+
+---
+
+# Using Data Feeds Onchain (Stellar)
+Source: https://docs.chain.link/data-feeds/stellar/using-data-feeds-on-chain
+
+Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. This guide demonstrates how to deploy a [Soroban](https://soroban.stellar.org/) contract in Rust to the Stellar Testnet and read a price onchain by calling the Chainlink Data Feeds proxy contract. To learn how to read price feed data using offchain applications, see the [Using Data Feeds Offchain](/data-feeds/stellar/using-data-feeds-off-chain) guide.
+
+To get the full list of available Chainlink Data Feeds on Stellar, see the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+
+## Available data feeds on Stellar
+
+The following table shows all available data feeds on Stellar. Each feed is identified by its `data_id` (the Feed ID), which you pass to the proxy contract to read that feed's data.
+
+> **DANGER: Select quality data feeds**
+>
+> Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds).
+
+## Prerequisites
+
+Before you begin, you should have:
+
+- Familiarity with [Rust](https://www.rust-lang.org/learn) programming
+- Understanding of [Stellar](https://stellar.org/) and [Soroban](https://soroban.stellar.org/) smart contracts
+- Understanding of how [Chainlink Data Feeds on Stellar](/data-feeds/stellar) work, including the `data_id` addressing scheme
+
+## Requirements
+
+To complete this guide, you'll need:
+
+- **Stellar CLI**: Install the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli). Run stellar --version to verify your installation.
+
+- **Rust toolchain**: Install [Rust](https://www.rust-lang.org/tools/install) using [rustup](https://rustup.rs/). Run cargo --version to verify your installation.
+
+- **Testnet XLM**: You'll need testnet XLM to deploy your contract. Fund a Stellar Testnet account using the friendbot faucet. Testnet XLM has no real value.
+
+## Set up your Stellar testnet account
+
+1. Create a new directory for your project and navigate to it in your terminal:
+
+   ```bash
+   mkdir stellar-data-feeds && cd stellar-data-feeds
+   ```
+
+2. Generate a keypair for your testnet account:
+
+   ```bash
+   stellar keys generate --network testnet my-account
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Secret key already exists for key my-account
+   ```
+
+3. Fund your account with testnet XLM using the friendbot faucet:
+
+   ```bash
+   stellar keys fund my-account --network testnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Funded account <YOUR_PUBLIC_KEY> with 10000.0000000 XLM
+   ```
+
+## Create the Soroban contract
+
+1. Initialize a Soroban contract project:
+
+   ```bash
+   stellar contract init consumer --name consumer
+   ```
+
+   This creates a `consumer` directory with a default Soroban contract scaffold.
+
+2. Open the `consumer/contracts/consumer/src/lib.rs` file and replace its contents with the following contract. This contract calls the Chainlink Data Feeds proxy contract to read the latest price for a given `data_id` and returns the answer. The proxy interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_proxy.rs) repository:
+
+   ```rust
+   #![no_std]
+   use soroban_sdk::{contract, contractimpl, contractclient, contracterror, contracttype, Address, BytesN, Env, I256};
+
+   #[contractclient(name = "DataFeedsProxyClient")]
+   pub trait DataFeedsProxy {
+       fn latest_round(env: Env, data_id: BytesN<32>, decimals: u32) -> Result<Round, ProxyReadError>;
+   }
+
+   #[contracttype]
+   #[derive(Clone, Debug)]
+   pub struct Round {
+       pub round_id: u64,
+       pub answer: I256,
+       pub timestamp: u64,
+   }
+
+   #[contracterror]
+   #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+   #[repr(u32)]
+   pub enum ProxyReadError {
+       NoDataPresent = 50,
+       InvalidDecimals = 51,
+       RoundsToZero = 52,
+   }
+
+   #[contract]
+   pub struct Consumer;
+
+   #[contractimpl]
+   impl Consumer {
+       /// Read the latest round for a feed and return its answer.
+       pub fn read_latest_price(env: Env, proxy: Address, data_id: BytesN<32>) -> I256 {
+           let client = DataFeedsProxyClient::new(&env, &proxy);
+           let round = client.latest_round(&data_id, &18).unwrap();
+           round.answer
+       }
+   }
+   ```
+
+   This contract calls the proxy's `latest_round` function with a single `data_id` and requests the answer at `18` decimal places. The returned `Round` contains the `round_id`, `answer`, and `timestamp` fields for the feed.
+
+## Build and deploy the contract
+
+1. Build the contract:
+
+   ```bash
+   stellar contract build
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Compiling consumer...
+   Finished `release` profile [optimized] target(s) in 5.00s
+   ```
+
+2. Deploy the contract to the Stellar Testnet:
+
+   ```bash
+   stellar contract deploy \
+   --wasm target/wasm32v1-none/release/consumer.wasm \
+   --source my-account \
+   --network testnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   <YOUR_CONTRACT_ADDRESS>
+   ```
+
+   Note the contract address that is printed. You use it to invoke the contract in the next step.
+
+## Invoke the contract
+
+1. Invoke the `read_latest_price` function on your deployed contract, passing the proxy contract address and the `data_id` for the feed you want to read. The proxy contract on Stellar Testnet is `CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4`, and the BTC/USD `data_id` is `01a0b4d920000332000000000000000000000000000000000000000000000000`. You can find the `data_id` for other assets on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+
+   Because `read_latest_price` is a read-only function, use the `--send=no` flag to simulate the call without submitting a transaction:
+
+   ```bash
+   stellar contract invoke \
+   --id <YOUR_CONTRACT_ADDRESS> \
+   --source my-account \
+   --network testnet \
+   --send=no \
+   -- read_latest_price \
+   --proxy CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4 \
+   --data_id 01a0b4d920000332000000000000000000000000000000000000000000000000
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   "86400288421531180000000"
+   ```
+
+   Where the value is the latest BTC/USD price for the feed, stored at 18 decimal places. For example, `86400288421531180000000` represents a price of `86400.29`.
 
 ---
 

@@ -1,0 +1,1335 @@
+---
+section: ccip
+date: Last Modified
+title: "Transfer Tokens with Data"
+metadata:
+  description: "Send ERC-20 tokens and data in one CCIP transaction on EVM. Deploy sender/receiver, pay CCIP fees in LINK or native gas, and verify programmable token transfers."
+  image: "/images/ccip/basic-architecture.png"
+  excerpt: "programmable transfers, ERC‑20, ERC20, token + data, CCIP, LINK, native gas, Solidity, Foundry"
+  datePublished: "2024-03-25"
+  lastModified: "2026-05-01"
+  estimatedTime: "30 minutes"
+  difficulty: "intermediate"
+whatsnext:
+  "Learn how to manually execute a failed CCIP transaction": "/ccip/evm/tutorials/application-developers/manual-execution"
+  "Learn how to handle errors gracefully when making CCIP transactions": "/ccip/evm/tutorials/application-developers/programmable-token-transfers-defensive"
+  "CCIP Directory": "/ccip/directory"
+  "Learn CCIP best practices": "/ccip/evm/concepts/best-practices"
+---
+
+import { AnchoredAccordion, CodeSample, ClickToZoom, CopyText, Aside, GitHubCard } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+In this tutorial, we will use CCIP to send some `tokens + arbitrary data` from one chain to another in a single transaction. \
+We will send `CCIP-BnM` tokens and a `string` payload from _Ethereum Sepolia_ to _Arbitrum Sepolia_ twice:
+
+1. Once, paying CCIP fees in native gas tokens `ETH` and using faster than finality (`BLOCK_DEPTH=32`).
+2. And then a second time, paying CCIP fees in `LINK` and using finalized finality (default).
+
+<CcipCommon callout="ftfSupportTutorials" />
+
+## Before you begin
+
+1. You should understand how to write, compile, deploy, and fund a smart contract. Go through this [tutorial](/quickstarts/deploy-your-first-contract) to get started.
+2. Your account must have some `ETH` and `LINK` tokens on _Ethereum Sepolia_ and `ETH` tokens on _Arbitrum Sepolia_. \
+   Learn how to [Acquire testnet LINK](/resources/acquire-link).
+3. Check the [CCIP Directory](/ccip/directory) if you want to configure a different set of source and destination chains/tokens.
+
+## Examine the code
+
+<AnchoredAccordion title="Initializing the contract" number={1} depth={4} >
+
+When deploying the contract, we define the router address of the blockchain we deploy the contract on.
+Defining the router address is useful for the following:
+
+- Sender part:
+  - Calls the router's `getFee` [function](/ccip/evm/api-reference/v2.0.0/i-router-client#getfee) to estimate the CCIP fees.
+  - Calls the router's `ccipSend` [function](/ccip/evm/api-reference/v2.0.0/i-router-client#ccipsend) to send CCIP messages.
+
+- Receiver part:
+  - The contract inherits from [CCIPReceiver](/ccip/evm/api-reference/v2.0.0/ccip-receiver), which serves as a base contract for receiver contracts. This contract requires that child contracts implement the `_ccipReceive` [function](/ccip/evm/api-reference/v2.0.0/ccip-receiver#_ccipreceive).
+  - `_ccipReceive` is called by the `ccipReceive` [function](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract.
+
+Some key things to note:
+
+- `OwnerIsCreator` sets the deployer as the owner of the contract.
+- The constructor passes the router address into `CCIPReceiver` at deployment time.
+- `sendMessage` is `payable` and open to any caller (not restricted to the owner). It handles both LINK and native fee payments:
+  - pass the LINK token address as `_feeTokenAddress` to pay in LINK, or,
+  - `address(0)` to pay in native gas.
+- The function accepts pre-encoded `_extraArgs` bytes built off-chain, making the contract forward-compatible with any extraArgs version.
+- Access control is enforced through allowlisting:
+  - outbound messages are restricted by destination chain selector (`onlyAllowlistedDestinationChain`), not by destination receiver address
+  - inbound messages are restricted by source chain selector + source sender contract pair (`onlyAllowlisted`)
+
+- The contract overrides `getCCVsAndFinalityConfig` from `CCIPReceiver` to advertise per-source-chain receiver finality policy to the OffRamp. See **Configure receiver finality policy** below.
+
+```solidity filename="ProgrammableTokenTransfers.sol"
+// Imports
+
+contract ProgrammableTokenTransfers is CCIPReceiver, OwnerIsCreator {
+
+    constructor(address _router) CCIPReceiver(_router) {}
+
+    // ... state variables, modifiers, allowlist admin functions ...
+
+    function sendMessage(
+        uint64 _destinationChainSelector,
+        address _receiver,
+        string calldata _text,
+        address _token,
+        uint256 _amount,
+        address _feeTokenAddress,
+        bytes calldata _extraArgs
+    )
+        external
+        payable
+        onlyAllowlistedDestinationChain(_destinationChainSelector)
+        validateReceiver(_receiver)
+        returns (bytes32 messageId)
+    {
+        messageId = _sendCCIPMessage(
+            _destinationChainSelector,
+            _receiver,
+            _text,
+            _token,
+            _amount,
+            _feeTokenAddress,
+            _extraArgs
+        );
+    }
+
+    // ... internal helpers (fee handling, message building, approvals) ...
+
+    function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage)
+        internal
+        override
+        onlyAllowlisted(any2EvmMessage.sourceChainSelector, abi.decode(any2EvmMessage.sender, (address)))
+    {
+        s_lastReceivedMessageId = any2EvmMessage.messageId;
+        s_lastReceivedSender = abi.decode(any2EvmMessage.sender, (address));
+        s_lastReceivedText = abi.decode(any2EvmMessage.data, (string));
+
+        bool hasToken = any2EvmMessage.destTokenAmounts.length > 0;
+        s_lastReceivedTokenAddress = hasToken ? any2EvmMessage.destTokenAmounts[0].token : address(0);
+        s_lastReceivedTokenAmount = hasToken ? any2EvmMessage.destTokenAmounts[0].amount : 0;
+
+        emit MessageReceived( /* ... */ );
+    }
+
+    // ... getCCVsAndFinalityConfig override, fee helpers, and withdrawal utilities ...
+}
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Build transaction payload" number={2} depth={4} >
+
+`_sendCCIPMessage` calls the `_buildCCIPMessage` helper to build a CCIP message payload using `EVM2AnyMessage` [struct](/ccip/evm/api-reference/v2.0.0/client#evm2anymessage). \
+This payload is then passed to the router's `getFee` and `ccipSend` functions.
+
+The payload includes:
+
+- `receiver`: ABI-encoded destination address (`abi.encode(_receiver)`).
+- `data`: ABI-encoded text payload (`abi.encode(_text)`).
+- `tokenAmounts`: A 1-element array containing the token address and amount to transfer.
+- `extraArgs`: Pre-encoded message execution parameters built off-chain by a helper script. For finalized (default) finality, the scripts encode V3 extraArgs with the finalized finality config. For faster than finality requests, the scripts detect lane support and use V3 extraArgs with `requestedFinalityConfig` on FTF-capable lanes, or V2 extraArgs on pre-v2.0 lanes.
+- `feeToken`: The token used to pay CCIP fees (`_feeTokenAddress`). Pass the LINK token address to pay in LINK, or `address(0)` to pay in native gas.
+
+<Aside type="note" title="ExtraArgs are encoded off-chain">
+  <ol>
+    <li>
+      The contract accepts pre-encoded `_extraArgs` bytes, so it does not need to know about specific encoding versions.
+      The scripts handle lane detection and encoding.
+    </li>
+    <li>This makes the contract forward-compatible with future CCIP versions.</li>
+  </ol>
+</Aside>
+
+```solidity filename="_buildCCIPMessage"
+  function _buildCCIPMessage(
+      address _receiver,
+      string calldata _text,
+      address _token,
+      uint256 _amount,
+      address _feeTokenAddress,
+      bytes calldata _extraArgs
+  ) private pure returns (Client.EVM2AnyMessage memory) {
+      Client.EVMTokenAmount[] memory tokenAmounts = new Client.EVMTokenAmount[](1);
+      tokenAmounts[0] = Client.EVMTokenAmount({token: _token, amount: _amount});
+
+      return Client.EVM2AnyMessage({
+          receiver: abi.encode(_receiver),
+          data: abi.encode(_text),
+          tokenAmounts: tokenAmounts,
+          extraArgs: _extraArgs,
+          feeToken: _feeTokenAddress
+      });
+  }
+```
+
+     {" "}
+
+     <CcipCommon callout="senderContractCalloutV2" />
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Sending messages" number={3} depth={4} >
+
+The public `sendMessage` function delegates to `_sendCCIPMessage`, which performs four operations:
+
+1. Builds the message payload by calling `_buildCCIPMessage`. See **Build transaction payload** for details.
+2. Computes the fees by invoking the router's `getFee` [function](/ccip/evm/api-reference/v2.0.0/i-router-client#getfee).
+3. Pulls tokens from the caller and grants the router the required approvals by calling `_handleFeeAndTokenApprovals`. See **Handling fees and token approvals** for details.
+4. Dispatches the CCIP message by executing the router's `ccipSend` [function](/ccip/evm/api-reference/v2.0.0/i-router-client#ccipsend). If paying in native gas (`_feeTokenAddress == address(0)`), the fee is forwarded via `{value: ccipFee}`.
+
+**Note**: As a security measure, `sendMessage` is protected by the `onlyAllowlistedDestinationChain` and `validateReceiver` modifiers. Any caller can invoke it -- access is governed by the destination chain allowlist, not ownership.
+
+```solidity filename="_sendCCIPMessage"
+  function _sendCCIPMessage(
+      uint64 _destinationChainSelector,
+      address _receiver,
+      string calldata _text,
+      address _token,
+      uint256 _amount,
+      address _feeTokenAddress,
+      bytes calldata _extraArgs
+  ) private returns (bytes32 messageId) {
+      Client.EVM2AnyMessage memory evm2AnyMessage = _buildCCIPMessage(
+          _receiver, _text, _token, _amount, _feeTokenAddress, _extraArgs
+      );
+
+      IRouterClient router = IRouterClient(this.getRouter());
+      uint256 ccipFee = router.getFee(_destinationChainSelector, evm2AnyMessage);
+
+      _handleFeeAndTokenApprovals(router, _token, _amount, _feeTokenAddress, ccipFee);
+
+      if (_feeTokenAddress == address(0)) {
+          messageId = router.ccipSend{value: ccipFee}(_destinationChainSelector, evm2AnyMessage);
+      } else {
+          messageId = router.ccipSend(_destinationChainSelector, evm2AnyMessage);
+      }
+
+      emit MessageSent(
+          messageId, _destinationChainSelector, _receiver, _text, _token, _amount, _feeTokenAddress, ccipFee
+      );
+
+      return messageId;
+  }
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Handling fees and token approvals" number={4} depth={4} >
+
+The contract uses a **pull-from-caller** model: when a user calls `sendMessage`, the contract pulls the required tokens from `msg.sender` via `safeTransferFrom`, then approves the Router to spend them via `forceApprove`. The caller (EOA or upstream contract) must `approve` this contract **before** calling `sendMessage`.
+
+`_handleFeeAndTokenApprovals` handles three scenarios:
+
+1. **Native fee** (`_feeTokenAddress == address(0)`): Validates that `msg.value` covers the CCIP fee. Pulls the transfer token from the caller via `safeTransferFrom` and approves the Router.
+2. **Same token for fee and transfer** (`_token == _feeTokenAddress`): Pulls the combined total (`ccipFee + amount`) from the caller in one `safeTransferFrom`. Approves the Router for the combined total.
+3. **Different ERC-20 tokens**: Pulls each token separately from the caller. Approves the Router for each.
+
+<Aside type="note" title="Approve the contract, not the Router">
+  Because the contract pulls tokens from the caller, your scripts must call `approve(contractAddress, amount)` --
+  **not** `approve(routerAddress, amount)`. This is a key difference from older CCIP patterns where the contract was
+  pre-funded.
+</Aside>
+
+```solidity filename="_handleFeeAndTokenApprovals"
+  function _handleFeeAndTokenApprovals(
+      IRouterClient _router,
+      address _token,
+      uint256 _amount,
+      address _feeTokenAddress,
+      uint256 _ccipFee
+  ) private {
+      if (_feeTokenAddress == address(0)) {
+          if (msg.value < _ccipFee) {
+              revert InsufficientNativeForFees(msg.value, _ccipFee);
+          }
+
+          IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+          IERC20(_token).forceApprove(address(_router), _amount);
+      } else if (_token == _feeTokenAddress) {
+          uint256 totalAmount = _ccipFee + _amount;
+          IERC20(_token).safeTransferFrom(msg.sender, address(this), totalAmount);
+          IERC20(_token).forceApprove(address(_router), totalAmount);
+      } else {
+          IERC20(_feeTokenAddress).safeTransferFrom(msg.sender, address(this), _ccipFee);
+          IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+          IERC20(_feeTokenAddress).forceApprove(address(_router), _ccipFee);
+          IERC20(_token).forceApprove(address(_router), _amount);
+      }
+  }
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Receiving messages" number={5} depth={4} >
+
+On the destination blockchain, the router calls the inherited `ccipReceive` [function](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive), which verifies the caller is the router and then invokes the contract's internal `_ccipReceive` [function](/ccip/evm/api-reference/v2.0.0/ccip-receiver#_ccipreceive). The `_ccipReceive` function expects an `Any2EVMMessage` [struct](/ccip/evm/api-reference/v2.0.0/client#any2evmmessage) that contains:
+
+- The CCIP `messageId`.
+- The `sourceChainSelector`.
+- The `sender` address in bytes format. The address is decoded from bytes to an Ethereum address using the [ABI specifications](https://docs.soliditylang.org/en/v0.8.20/abi-spec.html) and stored in `s_lastReceivedSender`.
+- The `destTokenAmounts` array contains received tokens and their respective amounts. The function checks whether tokens were included before accessing the array, so it gracefully handles messages with or without token transfers.
+- The `data`, which is also in bytes format. Given a `string` is expected, the data is decoded from bytes to a string using the [ABI specifications](https://docs.soliditylang.org/en/v0.8.20/abi-spec.html).
+
+**Note**: Two important security measures are applied:
+
+- `_ccipReceive` is called by the `ccipReceive` [function](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract. See the `onlyRouter` [modifier](/ccip/evm/api-reference/v2.0.0/ccip-receiver#onlyrouter) for more information.
+- The modifier `onlyAllowlisted` ensures that only a call from an allowlisted source chain and sender pair is accepted.
+
+```solidity filename="_ccipReceive"
+  function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage)
+      internal
+      override
+      onlyAllowlisted(any2EvmMessage.sourceChainSelector, abi.decode(any2EvmMessage.sender, (address)))
+  {
+      s_lastReceivedMessageId = any2EvmMessage.messageId;
+      s_lastReceivedSender = abi.decode(any2EvmMessage.sender, (address));
+      s_lastReceivedText = abi.decode(any2EvmMessage.data, (string));
+
+      bool hasToken = any2EvmMessage.destTokenAmounts.length > 0;
+      s_lastReceivedTokenAddress = hasToken ? any2EvmMessage.destTokenAmounts[0].token : address(0);
+      s_lastReceivedTokenAmount = hasToken ? any2EvmMessage.destTokenAmounts[0].amount : 0;
+
+      emit MessageReceived(
+          any2EvmMessage.messageId,
+          any2EvmMessage.sourceChainSelector,
+          s_lastReceivedSender,
+          s_lastReceivedText,
+          s_lastReceivedTokenAddress,
+          s_lastReceivedTokenAmount
+      );
+  }
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Configure receiver finality policy" number={6} depth={4} >
+
+The receiver exposes an `allowedFinalityConfig` for each source chain. This value tells CCIP which finality modes the receiver accepts for messages from that chain. The sender scripts encode the requested mode into V3 `extraArgs` as `requestedFinalityConfig`, then validate the request against the receiver policy (and the token pool policy, when applicable) before sending.
+
+CCIP 2.0 supports two finality request styles:
+
+- **Default finality (finalized)**: Omit `BLOCK_DEPTH` (or set `BLOCK_DEPTH=DEFAULT`).
+- **Numeric block depth (faster than finality)**: Set `BLOCK_DEPTH=32` (or higher). This tutorial standardizes on `32`.
+
+This contract uses two functions to manage receiver-side finality policy:
+
+1. **`setAllowedFinalityConfig`**: An owner-only setter that stores the `FinalityCodec`-encoded policy for a source chain.
+2. **`getCCVsAndFinalityConfig`**: The OffRamp and scripts can call this hook to read the receiver's CCV and finality policy. This tutorial does not configure custom CCVs, so it returns empty CCV arrays and `optionalThreshold = 0`.
+
+```solidity filename="Receiver finality policy"
+  function setAllowedFinalityConfig(
+      uint64 _sourceChainSelector,
+      bytes4 _allowedFinalityConfig
+  ) external onlyOwner {
+      s_allowedFinalityConfig[_sourceChainSelector] = _allowedFinalityConfig;
+      emit AllowedFinalityConfigSet(_sourceChainSelector, _allowedFinalityConfig);
+  }
+
+  function getCCVsAndFinalityConfig(
+      uint64 sourceChainSelector,
+      bytes calldata sender
+  )
+      external
+      view
+      override
+      returns (
+          address[] memory requiredCCVs,
+          address[] memory optionalCCVs,
+          uint8 optionalThreshold,
+          bytes4 allowedFinalityConfig
+      )
+  {
+      address decodedSender = abi.decode(sender, (address));
+      if (!allowlistedChainSenders[sourceChainSelector][decodedSender]) {
+          revert SenderNotAllowedForChain(sourceChainSelector, decodedSender);
+      }
+
+      requiredCCVs = new address[](0);
+      optionalCCVs = new address[](0);
+      optionalThreshold = 0;
+      allowedFinalityConfig = s_allowedFinalityConfig[sourceChainSelector];
+  }
+```
+
+</AnchoredAccordion>
+
+<GitHubCard
+  title="ProgrammableTokenTransfers.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/contracts/tutorials/programmable-token-transfers/ProgrammableTokenTransfers.sol"
+  iconName="github-svg-card"
+>
+  Check out the complete contract code on Github.
+</GitHubCard>
+
+## Tutorial
+
+Let's get started! Choose your preferred development environment below.
+
+### Foundry
+
+Best for **Solidity-native** workflows that prefer a modular, powerful scripting framework.
+
+<Aside type="note" title="Want to set up a dev environment from scratch? ">
+  Check out the [Getting started page](/ccip/evm/getting-started#foundry) for detailed instructions on setting up a
+  Foundry dev environment from scratch.
+</Aside>
+<AnchoredAccordion
+  title="Bootstrap a new Foundry project"
+  anchorId="foundry-bootstrap-a-new-foundry-project"
+  number={1}
+  depth={4}
+>
+
+<GitHubCard title="Foundry Starter Kit" href="https://github.com/smartcontractkit/docs-ccip" iconName="github-svg-card">
+  Clone the Foundry Starter Kit for a smoother setup.
+</GitHubCard>
+
+1. Clone the [CCIP 2.0 template](https://github.com/smartcontractkit/docs-ccip) repository, and open a terminal inside the project directory:
+
+```bash filename="Terminal"
+git clone https://github.com/smartcontractkit/docs-ccip.git && cd docs-ccip
+```
+
+2. If you don't already have a Foundry keystore, use the `cast` command to create a new one. Here, `your_keystore_name` is the alias you assign to this keystore entry -- Foundry will prompt you to enter the actual private key and a password to encrypt it:
+
+```bash filename="Terminal"
+cast wallet import your_keystore_name --interactive
+```
+
+And use the `cast wallet list` command to verify:
+
+      <ClickToZoom
+        src="/images/ccip/tutorials/ccip-getting-started-evm-2.png"
+        alt="Foundry keystore list command output"
+      />
+
+<Aside type="caution" title="Note">
+  As of writing, Foundry supports keystore encryption only for private keys (not generic strings), so in this tutorial
+  we only encrypt the private key and store the keystore alias in `KEYSTORE_NAME`.
+</Aside>
+
+3. Install dependencies:
+
+```bash filename="Terminal"
+npm install
+```
+
+4. Create a `.env` file by copying the example file, and fill in your values:
+
+```bash filename="Terminal"
+cp .env.example .env
+```
+
+Set `KEYSTORE_NAME` to the name of the keystore entry you created above, and provide RPC endpoints for the chains you will use:
+
+```env filename=".env"
+# Keystore name
+KEYSTORE_NAME=your_keystore_name
+
+# RPC URLs (add the ones you need)
+ETHEREUM_SEPOLIA_RPC_URL=
+ARBITRUM_SEPOLIA_RPC_URL=
+
+# Etherscan API key (required only if you pass --verify to deployment scripts)
+ETHERSCAN_API_KEY=
+```
+
+5. Load the environment variables:
+
+```bash filename="Terminal"
+source .env
+```
+
+<Aside type="caution" title="Run this in every new terminal session">
+  If you open a new terminal, you must run `source .env` again. To verify, run `echo $ETHEREUM_SEPOLIA_RPC_URL` and
+  confirm it prints your URL.
+</Aside>
+
+6. Run the following command to compile all the contracts:
+
+```bash filename="Terminal"
+forge build
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Deploy your contracts"
+  anchorId="foundry-deploy-your-contracts"
+  number={2}
+  depth={4}
+>
+
+In this section, you will deploy the contracts on the source and destination chains.
+
+1. The `Deploy.s.sol` script does the following:
+
+- Deploy `ProgrammableTokenTransfers` on _Ethereum Sepolia_ (source).
+- Deploy `ProgrammableTokenTransfers` on _Arbitrum Sepolia_ (destination).
+- Returns the contract addresses in the terminal
+
+To run the script, use the following command:
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+forge script foundry/scripts/tutorials/programmable-token-transfers/deploy/Deploy.s.sol \
+--account $KEYSTORE_NAME \
+--broadcast -vv
+```
+
+The deploy script prints the deployed contract addresses and follow-up commands. Your terminal should look something like this:
+
+```bash filename="Terminal"
+========================================
+🚀 Deploy CCIP Contracts on Both Chains
+========================================
+Source Chain: Ethereum Sepolia
+Destination Chain: Arbitrum Sepolia
+========================================
+
+
+[Step 1] Deploying ProgrammableTokenTransfers on Ethereum Sepolia
+Contract deployed at: 0x2a0C1c7E6fD5b3A9b8C7d6E5f4A3B2c1D0eF9a8B
+https://sepolia.etherscan.io/address/0x2a0C1c7E6fD5b3A9b8C7d6E5f4A3B2c1D0eF9a8B
+
+========================================
+✅ Deployment Complete on Ethereum Sepolia!
+========================================
+Source Contract Address: 0x2a0C1c7E6fD5b3A9b8C7d6E5f4A3B2c1D0eF9a8B
+
+
+[Step 2] Deploying ProgrammableTokenTransfers on Arbitrum Sepolia
+Contract deployed at: 0x8A4f2E6c1B9d3D5a7C8e0F2b4D6a8C1e3F5b7A9c
+https://sepolia.arbiscan.io/address/0x8A4f2E6c1B9d3D5a7C8e0F2b4D6a8C1e3F5b7A9c
+
+========================================
+✅ Deployment Complete on Arbitrum Sepolia!
+========================================
+Destination Contract Address: 0x8A4f2E6c1B9d3D5a7C8e0F2b4D6a8C1e3F5b7A9c
+
+========================================
+✅ All Deployments Complete!
+========================================
+Source Chain: Ethereum Sepolia
+Source Contract: 0x2a0C1c7E6fD5b3A9b8C7d6E5f4A3B2c1D0eF9a8B
+https://sepolia.etherscan.io/address/0x2a0C1c7E6fD5b3A9b8C7d6E5f4A3B2c1D0eF9a8B
+
+Destination Chain: Arbitrum Sepolia
+Destination Contract: 0x8A4f2E6c1B9d3D5a7C8e0F2b4D6a8C1e3F5b7A9c
+https://sepolia.arbiscan.io/address/0x8A4f2E6c1B9d3D5a7C8e0F2b4D6a8C1e3F5b7A9c
+
+Run this command to set both environment variables:
+export ETHEREUM_SEPOLIA_CONTRACT=0x2a0C1c7E6fD5b3A9b8C7d6E5f4A3B2c1D0eF9a8B && export ARBITRUM_SEPOLIA_CONTRACT=0x8A4f2E6c1B9d3D5a7C8e0F2b4D6a8C1e3F5b7A9c
+========================================
+```
+
+Check out the complete file on Github here:
+
+<GitHubCard
+  title="Deploy.s.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/programmable-token-transfers/deploy/Deploy.s.sol"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Configure allowlists and finality"
+  anchorId="foundry-configure-allowlists-and-finality"
+  number={3}
+  depth={4}
+>
+
+As a best practice, configure allowlists before sending messages: the sender contract restricts outbound sends by destination chain, and the receiver contract restricts inbound delivery by source chain-sender pair.
+
+<GitHubCard
+  title="Configure.s.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/programmable-token-transfers/configure/Configure.s.sol"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+1. Export the addresses of the previously deployed contracts so that they're available in the terminal:
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_CONTRACT=<Sender Contract address> && export ARBITRUM_SEPOLIA_CONTRACT=<Receiver Contract Address>
+```
+
+2. The `Configure.s.sol` script handles both sides in a single command:
+   - allowlists the destination chain on the sender contract,
+   - and allowlists the chain-sender pair on the receiver contract.
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH \
+ALLOWED_BLOCK_DEPTH=32 \
+forge script foundry/scripts/tutorials/programmable-token-transfers/configure/Configure.s.sol \
+--account $KEYSTORE_NAME --broadcast -vv
+```
+
+##### Finality configuration
+
+<CcipCommon callout="ftfExplainer" />
+
+- To allow numeric faster than finality requests, set `ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH` and choose a minimum `ALLOWED_BLOCK_DEPTH`. \
+- In this tutorial, `ALLOWED_BLOCK_DEPTH=32` allows send-time requests of `BLOCK_DEPTH=32` (or higher).
+
+Your terminal should look something like this:
+
+```bash filename="Terminal"
+========================================
+⚙️ Configure CCIP Contracts on Both Chains
+========================================
+Source Chain: Ethereum Sepolia
+Source Contract: 0x2a0C1c7E6fD5b3A9b8C7d6E5f4A3B2c1D0eF9a8B
+Destination Chain: Arbitrum Sepolia
+Destination Contract: 0x8A4f2E6c1B9d3D5a7C8e0F2b4D6a8C1e3F5b7A9c
+========================================
+
+
+[Step 1] Configuring sender on Ethereum Sepolia
+Allowlisting Arbitrum Sepolia as destination chain...
+✅ Destination chain allowlisted: Arbitrum Sepolia
+
+========================================
+✅ Configuration Complete on Ethereum Sepolia!
+========================================
+
+
+[Step 2] Configuring receiver on Arbitrum Sepolia
+Allowlisting sender 0x2a0C1c7E6fD5b3A9b8C7d6E5f4A3B2c1D0eF9a8B from Ethereum Sepolia...
+✅ Chain-sender pair allowlisted: Ethereum Sepolia -> 0x2a0C1c7E6fD5b3A9b8C7d6E5f4A3B2c1D0eF9a8B
+Setting allowed finality config to 0x00000020 (BLOCK_DEPTH=32)...
+✅ Allowed finality config set to 0x00000020 (BLOCK_DEPTH=32) for Ethereum Sepolia
+
+========================================
+✅ Configuration Complete on Arbitrum Sepolia!
+========================================
+
+========================================
+✅ All Configurations Complete!
+========================================
+Ethereum Sepolia can send messages to Arbitrum Sepolia
+Arbitrum Sepolia can receive messages from Ethereum Sepolia
+```
+
+3. **Optional -- enable bidirectional messaging:** If you want the destination contract to also send messages back to the source, run the reversed command:
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ARBITRUM_SEPOLIA DEST_CHAIN=ETHEREUM_SEPOLIA \
+ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH \
+ALLOWED_BLOCK_DEPTH=32 \
+forge script foundry/scripts/tutorials/programmable-token-transfers/configure/Configure.s.sol \
+--account $KEYSTORE_NAME --broadcast -vv
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Fund your wallet with test tokens"
+  anchorId="foundry-fund-your-wallet-with-test-tokens"
+  number={4}
+  depth={4}
+>
+
+<GitHubCard
+  title="DripBnMToken.s.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/faucet/DripBnMToken.s.sol"
+  iconName="github-svg-card"
+>
+  Check out the faucet script on Github.
+</GitHubCard>
+
+<Aside type="note" title="Convenient way to print your wallet address">
+  If you don't have the public address of your wallet handy, run `cast wallet address --account $KEYSTORE_NAME` to print
+  it from the terminal.
+</Aside>
+Before sending a CCIP message, you need `CCIP-BnM` test tokens in your wallet. The send scripts transfer `CCIP-BnM` from
+your EOA to the contract, so your wallet must hold a balance.
+
+Use the faucet script included in the starter kit to drip `CCIP-BnM` tokens to your address:
+
+```bash filename="Terminal"
+CHAIN=ETHEREUM_SEPOLIA RECIPIENT_ADDRESS=<your-wallet-address> \
+forge script foundry/scripts/faucet/DripBnMToken.s.sol \
+--account $KEYSTORE_NAME --broadcast -vv
+```
+
+<Aside type="note" title="Note">
+  If you plan to pay CCIP fees in LINK (instead of native gas), you also need LINK tokens. Get test LINK from the
+  [Chainlink faucet](https://faucets.chain.link/).
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Send a message"
+  anchorId="foundry-send-a-message"
+  number={5}
+  depth={4}
+>
+
+`SendMessage.s.sol` is a unified send script that handles both native and LINK fee payments. Set `FEE_TOKEN=LINK` to pay with LINK, or omit it (defaults to `NATIVE`) to pay with the native gas token. The script:
+
+- Builds off-chain `extraArgs` for the lane. Foundry uses `ExtraArgsHelper.buildExtraArgs` to detect the lane version and encode V2 or V3.
+- Approves the contract to spend the caller's tokens (the contract then pulls via `safeTransferFrom`).
+- Sends the CCIP message.
+
+##### Faster Than Finality (block depth)
+
+<CcipCommon callout="extraArgsV3Explainer" />
+
+The `BLOCK_DEPTH` environment variable controls send-side finality behavior:
+
+- Omit `BLOCK_DEPTH`, or set `BLOCK_DEPTH=DEFAULT`/`BLOCK_DEPTH=0` (default): Use finalized finality.
+- Set `BLOCK_DEPTH=32`: Request faster than finality using numeric block depth.
+
+##### Example 1: Pay with native gas + faster than finality (`BLOCK_DEPTH=32`)
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+BLOCK_DEPTH=32 \
+TOKEN_AMOUNT=1000000000000000 GAS_LIMIT=200000 \
+MESSAGE='Hello from Foundry!' \
+forge script foundry/scripts/tutorials/programmable-token-transfers/interact/SendMessage.s.sol \
+--account $KEYSTORE_NAME --broadcast -vv
+```
+
+Your terminal should look like this:
+
+```bash filename="Terminal"
+========================================
+📡 CCIP Message Transfer - Pay with Native
+========================================
+Source Chain: Ethereum Sepolia
+Destination Chain: Arbitrum Sepolia
+Sender: 0x2a0C1c7E6fD5b3A9b8C7d6E5f4A3B2c1D0eF9a8B
+Receiver: 0x8A4f2E6c1B9d3D5a7C8e0F2b4D6a8C1e3F5b7A9c
+Fee Token: Native (ETH)
+========================================
+
+
+[Pre-validation] Detecting lane version and building extraArgs...
+Gas limit (override): 200000
+Token pool ALLOWED_FINALITY_CONFIG: 0x00000020 (BLOCK_DEPTH: 32 block(s))
+Receiver contract ALLOWED_FINALITY_CONFIG: 0x00000020 (BLOCK_DEPTH: 32 block(s))
+✅ Using V3 extraArgs with FTF (gasLimit=200000, finalityConfig=0x00000020 (BLOCK_DEPTH: 32 block(s))).
+
+[Step 1] Approving contract to spend CCIP-BnM...
+✅ Contract approved to spend CCIP-BnM
+
+
+[Step 2] Sending CCIP message with native token fee ( ETH )...
+Required CCIP fee (in WEI): 230463107598943
+
+========================================
+✅ Message sent successfully!
+========================================
+CCIP messageId: 0xa1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f91
+CCIP Explorer:
+https://ccip.chain.link/#/side-drawer/msg/0xa1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f91
+```
+
+##### Example 2: Pay with LINK + finalized finality (default)
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+FEE_TOKEN=LINK \
+TOKEN_AMOUNT=1000000000000000 GAS_LIMIT=200000 \
+MESSAGE='Hello from Foundry!' \
+forge script foundry/scripts/tutorials/programmable-token-transfers/interact/SendMessage.s.sol \
+--account $KEYSTORE_NAME --broadcast -vv
+```
+
+Your terminal should look like this:
+
+```bash filename="Terminal"
+========================================
+📡 CCIP Message Transfer - Pay with LINK
+========================================
+Source Chain: Ethereum Sepolia
+Destination Chain: Arbitrum Sepolia
+Sender: 0x2a0C1c7E6fD5b3A9b8C7d6E5f4A3B2c1D0eF9a8B
+Receiver: 0x8A4f2E6c1B9d3D5a7C8e0F2b4D6a8C1e3F5b7A9c
+Fee Token: LINK
+========================================
+
+
+[Pre-validation] Detecting lane version and building extraArgs...
+Gas limit (override): 200000
+✅ Using default finality (BLOCK_DEPTH=DEFAULT). V3 extraArgs (gasLimit=200000, finalityConfig=0x00000000).
+
+[Step 1] Approving contract to spend fee token for CCIP fees...
+Required CCIP fee (in token units): 28700123456789000
+✅ Contract approved to spend fee token
+
+
+[Step 2] Approving contract to spend CCIP-BnM...
+✅ Contract approved to spend CCIP-BnM
+
+
+[Step 3] Sending CCIP message...
+
+========================================
+✅ Message sent successfully!
+========================================
+CCIP messageId: 0xb2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90a2
+CCIP Explorer:
+https://ccip.chain.link/#/side-drawer/msg/0xb2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90a2
+```
+
+##### Environment variables
+
+| <nobr>Variable</nobr>                  | Description                                                                                                                        | <nobr>Default</nobr>                    |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| <nobr>`KEYSTORE_NAME`</nobr>           | Foundry encrypted keystore name used by `--account $KEYSTORE_NAME`                                                                 | <nobr>`your_keystore_name`</nobr>       |
+| <nobr>`SOURCE_CHAIN`</nobr>            | Source chain name identifier (for example, `ETHEREUM_SEPOLIA`)                                                                     | <nobr>Not set</nobr>                    |
+| <nobr>`DEST_CHAIN`</nobr>              | Destination chain name identifier (for example, `ARBITRUM_SEPOLIA`)                                                                | <nobr>Not set</nobr>                    |
+| <nobr>`{CHAIN}_RPC_URL`</nobr>         | RPC URL for each chain you run scripts against (for example, `ETHEREUM_SEPOLIA_RPC_URL`, `ARBITRUM_SEPOLIA_RPC_URL`)               | <nobr>Not set</nobr>                    |
+| <nobr>`{CHAIN}_CONTRACT`</nobr>        | Deployed tutorial contract address per chain (for example, `ETHEREUM_SEPOLIA_CONTRACT`, `ARBITRUM_SEPOLIA_CONTRACT`)               | <nobr>Not set</nobr>                    |
+| <nobr>`FEE_TOKEN`</nobr>               | `LINK` or `NATIVE`                                                                                                                 | <nobr>`NATIVE`</nobr>                   |
+| <nobr>`FEE_TOKEN_ADDRESS`</nobr>       | ERC-20 address of a CCIP-supported fee token on the lane. Takes priority over `FEE_TOKEN`                                          | <nobr>Not set</nobr>                    |
+| <nobr>`TOKEN_AMOUNT`</nobr>            | Amount of CCIP-BnM to transfer (in wei)                                                                                            | <nobr>`1000000000000000` (0.001)</nobr> |
+| <nobr>`GAS_LIMIT`</nobr>               | Gas limit for the destination callback                                                                                             | <nobr>`200000`</nobr>                   |
+| <nobr>`BLOCK_DEPTH`</nobr>             | Omit or set `DEFAULT` for finalized finality (default), or set `32` for faster than finality                                       | <nobr>`DEFAULT`</nobr>                  |
+| <nobr>`ALLOWED_FINALITY_CONFIG`</nobr> | Receiver allowed finality mode(s) used by the configure step. Set to `BLOCK_DEPTH` to allow numeric faster than finality requests. | <nobr>Not set</nobr>                    |
+| <nobr>`ALLOWED_BLOCK_DEPTH`</nobr>     | Receiver minimum block depth (used when `ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH`). Use `32` in this tutorial.                         | <nobr>Not set</nobr>                    |
+| <nobr>`MESSAGE`</nobr>                 | Text payload to send                                                                                                               | <nobr>`Default String Text`</nobr>      |
+| <nobr>`CHAIN`</nobr>                   | Chain name identifier used by the receipt verification scripts (the chain where the receiver is deployed)                          | <nobr>Not set</nobr>                    |
+
+<GitHubCard
+  title="SendMessage.s.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/programmable-token-transfers/interact/SendMessage.s.sol"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Verify receipt on the destination chain"
+  anchorId="foundry-verify-receipt-on-the-destination-chain"
+  number={6}
+  depth={4}
+>
+
+The `GetLastReceivedMessageDetails.s.sol` script queries the receiver contract for the last received message. This is a read-only operation: no transaction is broadcast.
+
+1. Run the script, passing the `CHAIN` where you deployed the receiver:
+
+```bash filename="Terminal"
+CHAIN=ARBITRUM_SEPOLIA forge script foundry/scripts/tutorials/programmable-token-transfers/interact/GetLastReceivedMessageDetails.s.sol
+```
+
+Your terminal should look something like this:
+
+```bash filename="Terminal"
+========================================
+🔍 Verify Received Message
+========================================
+Chain: Arbitrum Sepolia
+Receiver Address: 0x8A4f2E6c1B9d3D5a7C8e0F2b4D6a8C1e3F5b7A9c
+========================================
+
+Checking for received message...
+
+========================================
+✅ Message Received Successfully!
+========================================
+Message ID: 0xa1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f91
+Sender: 0x2a0C1c7E6fD5b3A9b8C7d6E5f4A3B2c1D0eF9a8B
+Received Text: "Hello from Foundry!"
+Received Token: 0x686325E21F55c64Bf724047E0fe7C454D6faD37D
+Received Token Amount: 1000000000000000
+========================================
+```
+
+Check out the complete file on Github here:
+
+<GitHubCard
+  title="GetLastReceivedMessageDetails.s.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/programmable-token-transfers/interact/GetLastReceivedMessageDetails.s.sol"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+</AnchoredAccordion>
+
+### Hardhat
+
+Best for developers who want a mature, TypeScript-based smart contract development framework.
+
+<Aside type="note" title="Want to set up a dev environment from scratch? ">
+  Check out the [Getting started page](/ccip/evm/getting-started#hardhat-3) for detailed instructions on setting up a
+  Hardhat dev environment from scratch.
+</Aside>
+<AnchoredAccordion
+  title="Bootstrap a new Hardhat project"
+  anchorId="hardhat-bootstrap-a-new-hardhat-project"
+  number={1}
+  depth={4}
+>
+
+<GitHubCard title="CCIP Starter Kit" href="https://github.com/smartcontractkit/docs-ccip" iconName="github-svg-card">
+  Clone the starter kit (contains both Hardhat and Foundry code) for a smoother setup.
+</GitHubCard>
+
+1. Clone the [CCIP 2.0 template](https://github.com/smartcontractkit/docs-ccip) repository, and open a terminal inside the project directory:
+
+```bash filename="Terminal"
+git clone https://github.com/smartcontractkit/docs-ccip.git && cd docs-ccip
+```
+
+2. Copy the example environment file and fill in your values:
+
+```bash filename="Terminal"
+cp .env.example .env
+```
+
+Set `KEYSTORE_NAME` to the keystore alias you will create later in this section, and provide RPC endpoints for the chains you will use:
+
+```env filename=".env"
+# Keystore name
+KEYSTORE_NAME=your_keystore_name
+
+# RPC URLs (add the ones you need)
+ETHEREUM_SEPOLIA_RPC_URL=
+ARBITRUM_SEPOLIA_RPC_URL=
+
+# Etherscan API key (required only if you pass --verify to deployment scripts)
+ETHERSCAN_API_KEY=
+```
+
+3. Install dependencies and compile:
+
+```bash filename="Terminal"
+npm install && npx hardhat compile
+```
+
+4. Load the environment variables:
+
+```bash filename="Terminal"
+source .env
+```
+
+<Aside type="caution" title="Run this in every new terminal session">
+  If you open a new terminal, you must run `source .env` again. To verify, run `echo $ETHEREUM_SEPOLIA_RPC_URL` and
+  confirm it prints your URL.
+</Aside>
+
+5. Create a Hardhat keystore entry for your private key. Use the same name as `KEYSTORE_NAME` in your `.env` file. Hardhat will prompt you to enter the private key and a password to encrypt it:
+
+```bash filename="Terminal"
+npx hardhat keystore set your_keystore_name
+```
+
+<Aside type="caution" title="Private key format">
+  When prompted for your private key, include the <code>0x</code> prefix.
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Deploy your contracts"
+  anchorId="hardhat-deploy-your-contracts"
+  number={2}
+  depth={4}
+>
+
+<GitHubCard
+  title="deploy.ts"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/programmable-token-transfers/deploy/deploy.ts"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+In this section, you will deploy the contracts on the source and destination chains. The next step configures the sender contract to allow the destination chain and the receiver contract to allow the source chain-sender pair.
+
+1. The `deploy.ts` script does the following:
+
+- Deploy `ProgrammableTokenTransfers` on _Ethereum Sepolia_ (source).
+- Deploy `ProgrammableTokenTransfers` on _Arbitrum Sepolia_ (destination).
+- Returns the contract addresses in the terminal
+
+2. To run the script, use the following command:
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+npx hardhat run hardhat/scripts/tutorials/programmable-token-transfers/deploy/deploy.ts
+```
+
+The deploy script prints the deployed contract addresses and follow-up commands. Your terminal should look something like this:
+
+```bash filename="Terminal"
+========================================
+🚀 Deploy CCIP Contracts on Both Chains
+========================================
+Source Chain: Ethereum Sepolia
+Destination Chain: Arbitrum Sepolia
+========================================
+
+[Step 1] Deploying ProgrammableTokenTransfers on Ethereum Sepolia
+Contract deployed at: 0x4b7C2d9E3F1a6B8c0D2e4F6a8B0c2D4e6F8a0B2c
+https://sepolia.etherscan.io/address/0x4b7C2d9E3F1a6B8c0D2e4F6a8B0c2D4e6F8a0B2c
+
+========================================
+✅ Deployment Complete on Ethereum Sepolia!
+========================================
+Source Contract Address: 0x4b7C2d9E3F1a6B8c0D2e4F6a8B0c2D4e6F8a0B2c
+
+[Step 2] Deploying ProgrammableTokenTransfers on Arbitrum Sepolia
+Contract deployed at: 0x3E7a9C1f5B2d8A4e6F0c3D7b9E1a5C8f2B4d6A0e
+https://sepolia.arbiscan.io/address/0x3E7a9C1f5B2d8A4e6F0c3D7b9E1a5C8f2B4d6A0e
+
+========================================
+✅ Deployment Complete on Arbitrum Sepolia!
+========================================
+Destination Contract Address: 0x3E7a9C1f5B2d8A4e6F0c3D7b9E1a5C8f2B4d6A0e
+
+========================================
+✅ All Deployments Complete!
+========================================
+Source Chain: Ethereum Sepolia
+Source Contract: 0x4b7C2d9E3F1a6B8c0D2e4F6a8B0c2D4e6F8a0B2c
+https://sepolia.etherscan.io/address/0x4b7C2d9E3F1a6B8c0D2e4F6a8B0c2D4e6F8a0B2c
+
+Destination Chain: Arbitrum Sepolia
+Destination Contract: 0x3E7a9C1f5B2d8A4e6F0c3D7b9E1a5C8f2B4d6A0e
+https://sepolia.arbiscan.io/address/0x3E7a9C1f5B2d8A4e6F0c3D7b9E1a5C8f2B4d6A0e
+
+Run this command to set both environment variables:
+export ETHEREUM_SEPOLIA_CONTRACT=0x4b7C2d9E3F1a6B8c0D2e4F6a8B0c2D4e6F8a0B2c && export ARBITRUM_SEPOLIA_CONTRACT=0x3E7a9C1f5B2d8A4e6F0c3D7b9E1a5C8f2B4d6A0e
+========================================
+```
+
+3. Before moving on, export the addresses of the previously deployed contracts so that they're available in the terminal:
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_CONTRACT=<sender-contract-address> && \
+export ARBITRUM_SEPOLIA_CONTRACT=<receiver-contract-address>
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Configure allowlists and finality"
+  anchorId="hardhat-configure-allowlists-and-finality"
+  number={3}
+  depth={4}
+>
+
+As a best practice, configure allowlists before sending messages: the sender contract restricts outbound sends by destination chain, and the receiver contract restricts inbound delivery by source chain-sender pair.
+
+<GitHubCard
+  title="configure.ts"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/programmable-token-transfers/configure/configure.ts"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+1. The `configure.ts` script handles both sides in a single command -- it allowlists the destination chain on the sender contract and allowlists the chain-sender pair on the receiver contract:
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH \
+ALLOWED_BLOCK_DEPTH=32 \
+npx hardhat run hardhat/scripts/tutorials/programmable-token-transfers/configure/configure.ts
+```
+
+##### Finality configuration
+
+<CcipCommon callout="ftfExplainer" />
+
+To allow numeric faster than finality requests, set `ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH` and choose a minimum `ALLOWED_BLOCK_DEPTH`. In this tutorial, `ALLOWED_BLOCK_DEPTH=32` allows send-time requests of `BLOCK_DEPTH=32` (or higher).
+
+Your terminal should look something like this:
+
+```bash filename="Terminal"
+========================================
+⚙️ Configure CCIP Contracts on Both Chains
+========================================
+Source Chain: Ethereum Sepolia
+Source Contract: 0x4b7C2d9E3F1a6B8c0D2e4F6a8B0c2D4e6F8a0B2c
+Destination Chain: Arbitrum Sepolia
+Destination Contract: 0x3E7a9C1f5B2d8A4e6F0c3D7b9E1a5C8f2B4d6A0e
+========================================
+
+[Step 1] Configuring sender on Ethereum Sepolia
+Allowlisting Arbitrum Sepolia as destination chain...
+✅ Destination chain allowlisted: Arbitrum Sepolia
+
+========================================
+✅ Configuration Complete on Ethereum Sepolia!
+========================================
+
+[Step 2] Configuring receiver on Arbitrum Sepolia
+Allowlisting sender 0x4b7C2d9E3F1a6B8c0D2e4F6a8B0c2D4e6F8a0B2c from Ethereum Sepolia...
+✅ Chain-sender pair allowlisted: Ethereum Sepolia -> 0x4b7C2d9E3F1a6B8c0D2e4F6a8B0c2D4e6F8a0B2c
+Setting allowed finality config to 0x00000020 (BLOCK_DEPTH=32)...
+✅ Allowed finality config set to 0x00000020 (BLOCK_DEPTH=32) for Ethereum Sepolia
+
+========================================
+✅ Configuration Complete on Arbitrum Sepolia!
+========================================
+
+========================================
+✅ All Configurations Complete!
+========================================
+Ethereum Sepolia can send messages to Arbitrum Sepolia
+Arbitrum Sepolia can receive messages from Ethereum Sepolia
+```
+
+2. **Optional: enable bidirectional messaging:** If you want the destination contract to also send messages back to the source, run the reversed command:
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ARBITRUM_SEPOLIA DEST_CHAIN=ETHEREUM_SEPOLIA \
+ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH \
+ALLOWED_BLOCK_DEPTH=32 \
+npx hardhat run hardhat/scripts/tutorials/programmable-token-transfers/configure/configure.ts
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Fund your wallet with test tokens"
+  anchorId="hardhat-fund-your-wallet-with-test-tokens"
+  number={4}
+  depth={4}
+>
+
+<GitHubCard
+  title="drip-bnm-token.ts"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/faucet/drip-bnm-token.ts"
+  iconName="github-svg-card"
+>
+  Check out the faucet script on Github.
+</GitHubCard>
+
+Before sending a CCIP message, you need `CCIP-BnM` test tokens in your wallet. The send scripts transfer `CCIP-BnM` from your EOA to the contract, so your wallet must hold a balance.
+
+Use the faucet script included in the starter kit to drip `CCIP-BnM` tokens to your address:
+
+```bash filename="Terminal"
+CHAIN=ETHEREUM_SEPOLIA \
+RECIPIENT_ADDRESS=<your-wallet-address> \
+npx hardhat run hardhat/scripts/faucet/drip-bnm-token.ts
+```
+
+If you plan to pay CCIP fees in LINK (instead of native gas), you also need LINK tokens. Get test LINK from the [Chainlink faucet](https://faucets.chain.link/).
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Send a message"
+  anchorId="hardhat-send-a-message"
+  number={5}
+  depth={4}
+>
+
+`send-message.ts` is a unified send script that handles both native and LINK fee payments. Set `FEE_TOKEN=LINK` to pay with LINK, or omit it (defaults to `NATIVE`) to pay with the native gas token. The script:
+
+- Builds off-chain `extraArgs` for the lane. Hardhat uses `@chainlink/ccip-sdk` and the receiver policy check in `buildExtraArgs` to encode V2 or V3.
+- Approves the contract to spend the caller's tokens (the contract then pulls via `safeTransferFrom`).
+- Sends the CCIP message.
+
+##### Dynamic gas estimation
+
+When `GAS_LIMIT` is **not** set, the script uses `estimateReceiveExecution` from `@chainlink/ccip-sdk` to dynamically estimate the required gas limit for the destination callback. This avoids wasting gas by over-estimating, or failing by under-estimating. If estimation fails, it falls back to `200000`. You can override by setting `GAS_LIMIT` explicitly.
+
+##### Faster Than Finality (block depth)
+
+<CcipCommon callout="extraArgsV3Explainer" />
+
+The `BLOCK_DEPTH` environment variable controls send-side finality behavior:
+
+- Omit `BLOCK_DEPTH`, or set `BLOCK_DEPTH=DEFAULT`/`BLOCK_DEPTH=0` (default): Use finalized finality.
+- Set `BLOCK_DEPTH=32`: Request faster than finality using numeric block depth.
+
+##### Example 1: Pay with native gas + faster than finality (`BLOCK_DEPTH=32`) + explicit gas limit
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+BLOCK_DEPTH=32 \
+TOKEN_AMOUNT=1000000000000000 \
+MESSAGE="Hello from Hardhat" \
+GAS_LIMIT=200000 \
+FEE_TOKEN=NATIVE \
+npx hardhat run hardhat/scripts/tutorials/programmable-token-transfers/interact/send-message.ts
+```
+
+Your terminal should look like this:
+
+```bash filename="Terminal"
+========================================
+📡 CCIP Message Transfer - Pay with ETH
+========================================
+Source Chain: Ethereum Sepolia
+Destination Chain: Arbitrum Sepolia
+Sender: 0x4b7C2d9E3F1a6B8c0D2e4F6a8B0c2D4e6F8a0B2c
+Receiver: 0x3E7a9C1f5B2d8A4e6F0c3D7b9E1a5C8f2B4d6A0e
+Fee Token: Native (ETH)
+========================================
+
+[Pre-validation] Querying lane features and receiver contract...
+Gas limit (override): 200000
+Token pool ALLOWED_FINALITY_CONFIG: 0x00000020 (BLOCK_DEPTH: 32 block(s))
+Receiver contract ALLOWED_FINALITY_CONFIG: 0x00000020 (BLOCK_DEPTH: 32 block(s))
+✅ Using V3 extraArgs with FTF (gasLimit=200000, finalityConfig=32 block(s)).
+[Pre-validation] CCIP fee: 230463107598943
+
+[Step 1] Approving contract to spend CCIP-BnM...
+✅ Contract approved to spend CCIP-BnM
+
+
+[Step 2] Sending CCIP message with native token fee (ETH)...
+Required CCIP fee (in WEI): 230463107598943
+
+========================================
+✅ Message sent successfully!
+========================================
+CCIP messageId: 0xc3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90a1b3
+CCIP Explorer:
+https://ccip.chain.link/#/side-drawer/msg/0xc3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90a1b3
+```
+
+##### Example 2: Pay with LINK + finalized finality (default) + dynamic gas estimation
+
+This example deliberately omits `GAS_LIMIT` to demonstrate dynamic estimation via `estimateReceiveExecution`:
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+TOKEN_AMOUNT=1000000000000000 \
+MESSAGE="Hello from Hardhat" \
+FEE_TOKEN=LINK \
+npx hardhat run hardhat/scripts/tutorials/programmable-token-transfers/interact/send-message.ts
+```
+
+Your terminal should look like this:
+
+```bash filename="Terminal"
+========================================
+📡 CCIP Message Transfer - Pay with LINK
+========================================
+Source Chain: Ethereum Sepolia
+Destination Chain: Arbitrum Sepolia
+Sender: 0x4b7C2d9E3F1a6B8c0D2e4F6a8B0c2D4e6F8a0B2c
+Receiver: 0x3E7a9C1f5B2d8A4e6F0c3D7b9E1a5C8f2B4d6A0e
+Fee Token: LINK
+========================================
+
+[Pre-validation] Querying lane features and receiver contract...
+Gas limit (estimated): 198765
+✅ Using default finality (BLOCK_DEPTH=DEFAULT). V3 extraArgs (gasLimit=198765, finalityConfig=0x00000000).
+[Pre-validation] CCIP fee: 28700123456789000
+
+[Step 1] Approving contract to spend LINK for CCIP fees...
+Required CCIP fee (in LINK units): 28700123456789000
+✅ Contract approved to spend LINK
+
+
+[Step 2] Approving contract to spend CCIP-BnM...
+✅ Contract approved to spend CCIP-BnM
+
+
+[Step 3] Sending CCIP message...
+
+========================================
+✅ Message sent successfully!
+========================================
+CCIP messageId: 0xd4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c4
+CCIP Explorer:
+https://ccip.chain.link/#/side-drawer/msg/0xd4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c4
+```
+
+##### Environment variables
+
+| <nobr>Variable</nobr>                  | Description                                                                                                                        | <nobr>Default</nobr>                    |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| <nobr>`KEYSTORE_NAME`</nobr>           | Hardhat keystore entry name, set in `.env`                                                                                         | <nobr>`your_keystore_name`</nobr>       |
+| <nobr>`SOURCE_CHAIN`</nobr>            | Source chain name identifier (for example, `ETHEREUM_SEPOLIA`)                                                                     | <nobr>Not set</nobr>                    |
+| <nobr>`DEST_CHAIN`</nobr>              | Destination chain name identifier (for example, `ARBITRUM_SEPOLIA`)                                                                | <nobr>Not set</nobr>                    |
+| <nobr>`{CHAIN}_RPC_URL`</nobr>         | RPC URL for each chain you run scripts against (for example, `ETHEREUM_SEPOLIA_RPC_URL`, `ARBITRUM_SEPOLIA_RPC_URL`)               | <nobr>Not set</nobr>                    |
+| <nobr>`{CHAIN}_CONTRACT`</nobr>        | Deployed tutorial contract address per chain (for example, `ETHEREUM_SEPOLIA_CONTRACT`, `ARBITRUM_SEPOLIA_CONTRACT`)               | <nobr>Not set</nobr>                    |
+| <nobr>`FEE_TOKEN`</nobr>               | `LINK` or `NATIVE`                                                                                                                 | <nobr>`NATIVE`</nobr>                   |
+| <nobr>`FEE_TOKEN_ADDRESS`</nobr>       | ERC-20 address of a CCIP-supported fee token on the lane. Takes priority over `FEE_TOKEN`                                          | <nobr>Not set</nobr>                    |
+| <nobr>`TOKEN_AMOUNT`</nobr>            | Amount of CCIP-BnM to transfer (in wei)                                                                                            | <nobr>`1000000000000000` (0.001)</nobr> |
+| <nobr>`GAS_LIMIT`</nobr>               | Gas limit for the destination callback (if unset, estimated dynamically via `estimateReceiveExecution`)                            | <nobr>Estimated</nobr>                  |
+| <nobr>`BLOCK_DEPTH`</nobr>             | Omit or set `DEFAULT` for finalized finality (default), or set `32` for faster than finality                                       | <nobr>`DEFAULT`</nobr>                  |
+| <nobr>`ALLOWED_FINALITY_CONFIG`</nobr> | Receiver allowed finality mode(s) used by the configure step. Set to `BLOCK_DEPTH` to allow numeric faster than finality requests. | <nobr>Not set</nobr>                    |
+| <nobr>`ALLOWED_BLOCK_DEPTH`</nobr>     | Receiver minimum block depth (used when `ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH`). Use `32` in this tutorial.                         | <nobr>Not set</nobr>                    |
+| <nobr>`MESSAGE`</nobr>                 | Text payload to send                                                                                                               | <nobr>`Default String Text`</nobr>      |
+| <nobr>`CHAIN`</nobr>                   | Chain name identifier used by the receipt verification scripts (the chain where the receiver is deployed)                          | <nobr>Not set</nobr>                    |
+
+<GitHubCard
+  title="send-message.ts"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/programmable-token-transfers/interact/send-message.ts"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Verify receipt on the destination chain"
+  anchorId="hardhat-verify-receipt-on-the-destination-chain"
+  number={6}
+  depth={4}
+>
+
+<GitHubCard
+  title="get-last-received-message-details.ts"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/programmable-token-transfers/interact/get-last-received-message-details.ts"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+The `get-last-received-message-details.ts` script queries the receiver contract for the last received message. This is a read-only operation: no transaction is actually broadcast to the destination chain.
+
+1. Run the script, passing the `CHAIN` where you deployed the receiver:
+
+```bash filename="Terminal"
+CHAIN=ARBITRUM_SEPOLIA \
+npx hardhat run hardhat/scripts/tutorials/programmable-token-transfers/interact/get-last-received-message-details.ts
+```
+
+Your terminal should look something like this:
+
+```bash filename="Terminal"
+========================================
+🔍 Verify Received Message
+========================================
+Chain: Arbitrum Sepolia
+Receiver Address: 0x3E7a9C1f5B2d8A4e6F0c3D7b9E1a5C8f2B4d6A0e
+========================================
+
+Checking for received message...
+
+========================================
+✅ Message Received Successfully!
+========================================
+Message ID: 0xc3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90a1b3
+Sender: 0x4b7C2d9E3F1a6B8c0D2e4F6a8B0c2D4e6F8a0B2c
+Received Text: "Hello from Hardhat"
+Received Token: 0x686325E21F55c64Bf724047E0fe7C454D6faD37D
+Received Token Amount: 1000000000000000
+========================================
+```
+
+</AnchoredAccordion>
+
+<CcipCommon callout="educationalDisclaimer" />

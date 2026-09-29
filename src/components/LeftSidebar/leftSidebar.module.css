@@ -1,19 +1,57 @@
 .nav {
+  /* existing */
   width: 100%;
-  height: calc(100vh - var(--space-16x));
-  /* Subtract header height */
+  /* Sit directly below the fixed header AND the sticky docs navigation bar (DocsNavigation).
+     --docs-sticky-top is set on <html> by src/components/Header/NavBar.tsx (onHideChange):
+     120px (64px header + 56px docs bar) while the header is shown, 56px while it is hidden on scroll.
+     120px is the fallback used until NavBar hydrates. */
+  height: calc(100vh - var(--docs-sticky-top, 120px));
   position: sticky;
-  top: var(--space-16x);
-  /* Header height */
+  top: var(--docs-sticky-top, 120px);
+  /* Same duration and easing as the docs navigation bars' own `top` transition, so both move together. */
+  transition:
+    top 0.5s ease,
+    height 0.5s ease;
   overflow: hidden;
-  /* Prevent nav overflow */
   display: flex;
   flex-direction: column;
+
+  /* new: sidebar-wide alignment */
+  padding-right: var(--space-8x);
+  padding-left: var(--space-4x); /* match what you want as the left gutter */
 }
 
 .sidebarDropdowns {
   padding-top: var(--space-3x);
   flex-shrink: 0;
+  width: 100%;
+}
+
+.selectorRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-2x);
+  align-items: start;
+  width: 100%;
+  min-width: 0;
+}
+
+.selectorRow > :global(*) {
+  width: 100%;
+  min-width: 0;
+}
+
+.selectorRow > :global(*) :global(button),
+.selectorRow > :global(*) :global([role="button"]),
+.selectorRow > :global(*) :global([role="combobox"]),
+.selectorRow > :global(*) :global(select),
+.selectorRow > :global(*) :global(a) {
+  width: 100%;
+  max-width: none;
+}
+
+.selectorRow > :global(*) :global(*) {
+  max-width: 100%;
 }
 
 .navGroups {
@@ -56,8 +94,7 @@
 .navGroupTitle {
   margin-bottom: var(--space-2x);
   margin-top: var(--space-1x);
-  color: var(--gray-900);
-  font-weight: 600;
+  color: var(--muted-foreground);
   line-height: 24px;
   font-size: 15px;
   display: flex;
@@ -66,10 +103,9 @@
   cursor: pointer;
   list-style: none;
   position: relative;
-  padding-left: var(--space-6x);
 }
 
-.navGroupTitle::before {
+.navGroupTitle::after {
   content: "";
   width: 6px;
   height: 6px;
@@ -80,21 +116,16 @@
   transition: transform 0.15s ease;
   position: absolute;
   top: calc(50% - 4px);
-  left: var(--space-2x);
+  right: var(--space-2x);
 }
 
-details[open] > .navGroupTitle::before {
+details[open] > .navGroupTitle::after {
   transform: rotate(45deg);
   top: calc(50% - 5px);
 }
 
-details:hover .navGroupTitle::before {
-  border-color: var(--color-text-link);
-}
-
 .navGroupEntries {
   margin-bottom: 0;
-  padding-left: var(--space-6x);
 }
 
 details {
@@ -120,4 +151,17 @@ details[open] > .navGroupTitle {
 
 :global(:root.theme-dark) .navLink[aria-current="page"] {
   color: hsla(var(--color-base-white), 100%, 1);
+}
+
+/* Language Switcher for tablet screens (800px-1200px) */
+.languageSwitcherTablet {
+  padding: var(--space-6x) 0;
+  display: none;
+}
+
+/* Show on tablet/medium screens where left sidebar is visible but right sidebar is hidden */
+@media (min-width: 50em) and (max-width: 1199px) {
+  .languageSwitcherTablet {
+    display: block;
+  }
 }

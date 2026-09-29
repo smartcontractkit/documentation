@@ -1,0 +1,112 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IRouter API Reference"
+metadata:
+  description: "Interface for the CCIP Router responsible for routing inbound messages and exposing ramp configuration."
+  version: "2.0.0"
+---
+
+## Summary
+
+`IRouter` defines the minimal interface for the CCIP [Router](/ccip/evm/api-reference/v2.0.0/router).
+
+It is used by:
+
+- [OffRamp](/ccip/evm/api-reference/v2.0.0/offramp) contracts to route verified messages to receivers.
+- Pools and verifiers to validate configured ramps.
+- Integrations that query routing configuration.
+
+---
+
+## Contract
+
+`chains/evm/contracts/interfaces/IRouter.sol`
+
+---
+
+## Import
+
+```solidity
+import {IRouter} from "chainlink-ccip/chains/evm/contracts/interfaces/IRouter.sol";
+```
+
+---
+
+## Interface surface
+
+```solidity
+interface IRouter {
+```
+
+---
+
+### Errors
+
+```solidity
+error OnlyOffRamp();
+```
+
+---
+
+### routeMessage
+
+```solidity
+function routeMessage(
+  Client.Any2EVMMessage calldata message,
+  uint16 gasForCallExactCheck,
+  uint256 gasLimit,
+  address receiver
+)
+  external
+  returns (
+    bool success,
+    bytes memory retBytes,
+    uint256 gasUsed
+  );
+```
+
+---
+
+### getOnRamp
+
+```solidity
+function getOnRamp(
+  uint64 destChainSelector
+) external view returns (address);
+```
+
+---
+
+### isOffRamp
+
+```solidity
+function isOffRamp(
+  uint64 sourceChainSelector,
+  address offRamp
+) external view returns (bool);
+```
+
+---
+
+```solidity
+}
+```
+
+---
+
+## Integration notes / expectations
+
+- `routeMessage` must only be callable by configured off-ramps.
+- `getOnRamp` and `isOffRamp` are used for ramp authorization checks.
+- Implementations are expected to enforce strict caller validation internally.
+
+---
+
+## Related Interfaces & Contracts
+
+- [`Client`](/ccip/evm/api-reference/v2.0.0/client)
+- [`IRouterClient`](/ccip/evm/api-reference/v2.0.0/i-router-client)
+- [`OffRamp`](/ccip/evm/api-reference/v2.0.0/offramp)
+- [`OnRamp`](/ccip/evm/api-reference/v2.0.0/onramp)
+- [`TokenPool`](/ccip/evm/api-reference/v2.0.0/token-pool)

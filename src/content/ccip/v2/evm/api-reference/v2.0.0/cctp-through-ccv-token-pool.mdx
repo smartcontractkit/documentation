@@ -1,0 +1,150 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 CCTPVerifier API Reference"
+metadata:
+  description: "Cross-Chain Verifier that validates USDC transfers using Circle CCTP."
+  version: "2.0.0"
+---
+
+`CCTPVerifier` validates cross-chain USDC messages using Circle CCTP.
+
+If you use this verifier, it confirms that a message and attestation are valid by calling the configured CCTP `MessageTransmitter` and enforcing domain and sender checks.
+
+Use this verifier when integrating CCIP with CCTP-based USDC transfers.
+
+> Applications do not call this contract directly. It is invoked by CCIP pools and routing components during message verification.  
+> This verifier is specific to USDC transfers using Circle CCTP and is not a general-purpose verifier.
+
+## Usage Boundary
+
+**You do not call this contract directly.**
+
+- CCIP infrastructure invokes this verifier during message processing.
+- You configure this verifier as part of a pool or cross-chain verification setup.
+- You are responsible for ensuring correct domain mappings and trusted senders.
+- Only authorized callers can invoke `verify`. Unauthorized calls will revert.
+
+## Contract
+
+`verifiers/CCTPVerifier.sol`
+
+## Import
+
+```solidity
+import {CCTPVerifier} from "chainlink-ccip/verifiers/CCTPVerifier.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## Inheritance
+
+- `BaseVerifier`
+- `ICrossChainVerifierV1`
+
+## Constructor
+
+```solidity
+constructor(
+  address messageTransmitterProxy,
+  address usdcToken,
+  uint32 localDomainIdentifier,
+  address[] memory allowedCallers
+)
+```
+
+| Parameter                 | Type               | Description                                                |
+| ------------------------- | ------------------ | ---------------------------------------------------------- |
+| `messageTransmitterProxy` | `address`          | Trusted CCTP MessageTransmitter used to validate messages. |
+| `usdcToken`               | `address`          | Address of the USDC token contract.                        |
+| `localDomainIdentifier`   | `uint32`           | Domain identifier for the local chain.                     |
+| `allowedCallers`          | `address[] memory` | Contracts allowed to invoke verification.                  |
+
+## External API
+
+### verify
+
+```solidity
+function verify(bytes calldata message, bytes calldata attestation) external returns (bytes memory)
+```
+
+> Validates a CCTP message and attestation.
+>
+> Returns verified message data that downstream CCIP components use for execution.
+
+- Calls the configured `MessageTransmitter` to verify the message
+- Confirms the message originates from an allowed domain and sender
+
+Reverts if:
+
+- the attestation is invalid
+- the message ID does not match
+- the sender is not authorized
+- the MessageTransmitter call fails
+
+### setDynamicConfig
+
+Owner-only.
+
+Updates verifier configuration such as attester or transmitter settings.
+
+Emits `DynamicConfigSet`.
+
+### setDomains
+
+Owner-only.
+
+Configures allowed sender addresses for remote domains.
+
+Emits `DomainsSet`.
+
+## Events
+
+```solidity
+event StaticConfigSet(address tokenMessenger, address messageTransmitterProxy, address usdcToken, uint32 localDomainIdentifier);
+event DynamicConfigSet(DynamicConfig dynamicConfig);
+event DomainsSet(SetDomainArgs[] domains);
+```
+
+For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/events).
+
+## Errors
+
+```solidity
+error InvalidVerifierResults();
+error InvalidMessageId(bytes32 expected, bytes32 got);
+error InvalidMessageSender(bytes32 expected, bytes32 got);
+error ReceiveMessageCallFailed();
+```
+
+For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
+
+## Security model
+
+- Trusts the Circle CCTP `MessageTransmitter` to validate message authenticity
+- Enforces strict validation of:
+  - message ID
+  - sender address
+  - domain mapping
+
+- Owner controls:
+  - dynamic configuration (attester/transmitter)
+  - allowed domain mappings
+
+- Fails closed if verification fails at any step
+
+## Notes
+
+- This verifier relies on the CCTP `MessageTransmitter` contract for message validation.
+- If domain mappings or allowed senders are misconfigured, valid cross-chain messages will fail verification.
+- This verifier determines whether a message is accepted, but does not control how tokens are minted or released.
+
+## Related Interfaces & Contracts
+
+- [`BaseVerifier`](/ccip/evm/api-reference/v2.0.0/base-verifier)
+- [`ICrossChainVerifierV1`](/ccip/evm/api-reference/v2.0.0/i-cross-chain-verifier-v1)
+- [`CCTPThroughCCVTokenPool`](/ccip/evm/api-reference/v2.0.0/cctp-through-ccv-token-pool)

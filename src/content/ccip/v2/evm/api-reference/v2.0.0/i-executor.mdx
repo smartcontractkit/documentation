@@ -1,0 +1,111 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 IExecutor API Reference"
+metadata:
+  description: "Interface for executor contracts that validate execution constraints and quote fees."
+  version: "2.0.0"
+---
+
+`IExecutor` defines the interface for enforcing execution policy and computing execution fees for CCIP message delivery.
+
+It determines:
+
+- whether a message satisfies execution constraints (chain, finality, CCVs)
+- the fee required for execution under those constraints
+
+This interface represents the execution policy layer between fee pricing and message validation.
+
+This interface exposes the read-only execution policy surface used by CCIP routing components.
+
+> This interface defines functions implemented by protocol contracts and is not typically used directly by applications.
+
+## Usage Boundary
+
+**You do not call this interface directly.**
+
+- CCIP routing components use this interface to validate execution constraints and compute execution fees.
+- Executor implementations enforce allowed chains, CCV limits, and finality rules.
+- You implement this interface when defining custom execution policy.
+- Execution flow typically follows: FeeQuoter (pricing) → Executor (policy + execution fee) → Verifier (validation).
+
+## Contract
+
+`interfaces/IExecutor.sol`
+
+## Import
+
+```solidity
+import {IExecutor} from "chainlink-ccip/interfaces/IExecutor.sol";
+```
+
+If you have not installed the package:
+
+```bash
+npm install @chainlink/contracts-ccip@2.0.0
+```
+
+## External API
+
+### getAllowedFinalityConfig
+
+```solidity
+function getAllowedFinalityConfig() external view returns (bytes4)
+```
+
+> Returns the finality policy currently allowed by the executor implementation.
+
+Returns:
+
+| Type     | Description                     |
+| -------- | ------------------------------- |
+| `bytes4` | Allowed finality configuration. |
+
+---
+
+### getFee
+
+```solidity
+function getFee(
+  uint64 destChainSelector,
+  bytes4 requestedFinalityConfig,
+  address[] memory ccvAddresses,
+  bytes memory extraArgs,
+  address feeToken
+) external view returns (
+  uint16 usdCents
+)
+```
+
+> Returns the execution fee based on destination chain, requested finality, and selected CCVs.
+
+| Parameter                 | Type               | Description                                     |
+| ------------------------- | ------------------ | ----------------------------------------------- |
+| `destChainSelector`       | `uint64`           | Destination chain identifier.                   |
+| `requestedFinalityConfig` | `bytes4`           | Desired finality configuration.                 |
+| `ccvAddresses`            | `address[] memory` | CCV contracts requested for message validation. |
+| `extraArgs`               | `bytes memory`     | Additional execution parameters.                |
+| `feeToken`                | `address`          | Token used to pay execution fees.               |
+
+Returns:
+
+| Type     | Description                             |
+| -------- | --------------------------------------- |
+| `uint16` | Execution fee denominated in USD cents. |
+
+## Notes
+
+- Execution requires that selected CCVs satisfy configured constraints.
+- The number and identity of CCVs must conform to executor configuration.
+- Fee calculation must be deterministic for a given set of inputs.
+- Execution fee calculation will revert if constraints are not satisfied.
+- `requestedFinalityConfig` must be compatible with the executor’s allowed finality policy.
+- The fee returned by `getFee` reflects execution policy and CCV selection, not general message pricing.
+- If no valid execution policy exists for the provided inputs, fee calculation should revert rather than return a misleading value.
+
+## Related Interfaces & Contracts
+
+- [`Executor`](/ccip/evm/api-reference/v2.0.0/executor)
+- [`IFeeQuoter`](/ccip/evm/api-reference/v2.0.0/i-fee-quoter)
+- [`IPoolV2`](/ccip/evm/api-reference/v2.0.0/i-pool-v2)
+- [`OffRamp`](/ccip/evm/api-reference/v2.0.0/offramp)

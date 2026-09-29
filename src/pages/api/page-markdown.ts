@@ -6,6 +6,8 @@
 import type { APIRoute } from "astro"
 import { textPlainHeaders } from "@lib/api/cacheHeaders.js"
 import { buildMarkdownArtifact } from "@lib/markdown/buildMarkdownArtifact.js"
+import { toContentEntryId } from "@lib/ccip/contentPathMapping.js"
+import { LATEST_CCIP_CONTENT_DIR } from "@config/ccipVersions.js"
 
 // In-memory cache for transformed markdown
 // TTL: 5 minutes (matches CDN cache duration)
@@ -44,7 +46,23 @@ export const GET: APIRoute = async ({ request }) => {
       })
     }
 
-    const artifact = await buildMarkdownArtifact(requestedPath, { lang: targetLanguage })
+    const cleanPath = requestedPath.startsWith("/") ? requestedPath.slice(1) : requestedPath
+
+    // Direct /ccip/v2/* paths are not canonical (the page route 301s them); reject here too.
+    if (cleanPath === `ccip/${LATEST_CCIP_CONTENT_DIR}` || cleanPath.startsWith(`ccip/${LATEST_CCIP_CONTENT_DIR}/`)) {
+      return new Response(JSON.stringify({ error: `Page not found: ${requestedPath}` }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      })
+    }
+
+    // CCIP latest content lives on disk under /v2; map canonical "ccip/x" -> "ccip/v2/x" (v1 unchanged).
+    let lookupPath = cleanPath
+    if (cleanPath === "ccip" || cleanPath.startsWith("ccip/")) {
+      lookupPath = `ccip/${toContentEntryId(cleanPath.replace(/^ccip\/?/, ""))}`
+    }
+
+    const artifact = await buildMarkdownArtifact(lookupPath, { lang: targetLanguage })
     if (!artifact) {
       return new Response(JSON.stringify({ error: `Page not found: ${requestedPath}` }), {
         status: 404,
