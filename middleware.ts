@@ -1,8 +1,9 @@
 import { next, rewrite } from "@vercel/functions"
-import { MARKDOWN_NEGOTIATION_MATCHER, negotiateMarkdown } from "./src/lib/markdown/negotiateMarkdown.ts"
+import { negotiateMarkdown } from "./src/lib/markdown/negotiateMarkdown.js"
 
 // Vercel runs this before static HTML. Astro's src/middleware.ts does not.
 // Redirects in vercel.json run first, so an old URL still returns 301.
+// Write the matcher as a string. Vercel reads this object as text.
 export default function middleware(request: Request): Response {
   const url = new URL(request.url)
   const decision = negotiateMarkdown(url.pathname, request.headers.get("accept"))
@@ -25,6 +26,6 @@ export default function middleware(request: Request): Response {
 }
 
 export const config = {
-  matcher: [MARKDOWN_NEGOTIATION_MATCHER],
+  matcher: ["/((?!_astro/|_image/|_vercel/|api/|samples/)(?!.*\\.).*)"],
   runtime: "nodejs",
 }

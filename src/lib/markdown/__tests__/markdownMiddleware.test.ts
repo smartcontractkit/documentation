@@ -1,6 +1,12 @@
+import { readFileSync } from "node:fs"
+import { dirname, resolve } from "node:path"
+import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "@jest/globals"
 import { onRequest } from "../../../middleware.ts"
-import middleware from "../../../../middleware.ts"
+import middleware, { config } from "../../../../middleware.ts"
+import { MARKDOWN_NEGOTIATION_MATCHER } from "../negotiateMarkdown.ts"
+
+const middlewareSourcePath = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../middleware.ts")
 
 function pageRequest(pathname: string, accept: string | null): Request {
   const headers = new Headers()
@@ -52,6 +58,13 @@ describe("astro middleware", () => {
 })
 
 describe("vercel middleware", () => {
+  it("writes the matcher as a string literal", () => {
+    const source = readFileSync(middlewareSourcePath, "utf8")
+    expect(source).not.toContain("MARKDOWN_NEGOTIATION_MATCHER")
+    expect(config.matcher).toEqual([MARKDOWN_NEGOTIATION_MATCHER])
+    expect(config.runtime).toBe("nodejs")
+  })
+
   it("rewrites when the caller asks for markdown", () => {
     const response = middleware(pageRequest("/data-feeds/price-feeds?lang=en", "text/markdown"))
     expect(response.headers.get("x-middleware-rewrite")).toBe(
