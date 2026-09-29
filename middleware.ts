@@ -11,7 +11,11 @@ export default function middleware(request: Request): Response {
   if (decision.action === "rewrite") {
     const rewritten = new URL(url)
     rewritten.pathname = decision.pathname
-    return rewrite(rewritten)
+    // Vercel keeps the original URL on the server function. That URL is the
+    // HTML page, and the server crashes when it tries to render it.
+    const headers = new Headers(request.headers)
+    headers.set("x-astro-path", `${rewritten.pathname}${rewritten.search}`)
+    return rewrite(rewritten, { request: { headers } })
   }
 
   if (decision.action === "html") {

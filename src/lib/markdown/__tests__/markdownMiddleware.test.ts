@@ -70,6 +70,7 @@ describe("vercel middleware", () => {
     expect(response.headers.get("x-middleware-rewrite")).toBe(
       "https://docs.chain.link/data-feeds/price-feeds.md?lang=en"
     )
+    expect(response.headers.get("x-middleware-request-x-astro-path")).toBe("/data-feeds/price-feeds.md?lang=en")
     expect(response.headers.get("x-middleware-next")).toBeNull()
   })
 
