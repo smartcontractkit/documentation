@@ -32,7 +32,10 @@ contract Sender is OwnerIsCreator {
   /// @notice Constructor initializes the contract with the router address.
   /// @param _router The address of the router contract.
   /// @param _link The address of the LINK token contract.
-  constructor(address _router, address _link) {
+  constructor(
+    address _router,
+    address _link
+  ) {
     s_router = IRouterClient(_router);
     s_linkToken = LinkTokenInterface(_link);
   }
