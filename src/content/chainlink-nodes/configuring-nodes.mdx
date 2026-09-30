@@ -119,10 +119,10 @@ Test your node to verify that it works as intended. If you are using a VPS, open
 
 ## Using multiple config files
 
-You can use multiple config and secrets files. The config settings from each file are applied in the order that you specify when you run your node. Duplicated fields override values specified in earlier config files. This allows you to create a common config that applies to many nodes with specific configs for nodes that need unique configuration settings. Specifying multiple secrets files is invalid.
+You can use multiple config and secrets files. The config settings from each file are applied in the order that you specify when you run your node. Duplicated fields override values specified in earlier config files. This allows you to create a common config that applies to many nodes with specific configs for nodes that need unique configuration settings. Secret fields from multiple secrets files are merged, but each secret field can appear in only one file. Duplicated secret fields are invalid.
 
-To specify multiple config files, add additional `-config` flags to the `docker run` command:
+To specify multiple config or secrets files, add additional `-config` or `-secrets` flags to the `docker run` command:
 
 ```shell
-docker run --platform linux/x86_64/v8 --name chainlink -v ~/.chainlink:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:1.13.0 -config /chainlink/config.toml -config /chainlink/config2.toml -config /chainlink/config3.toml -secrets /chainlink/secrets.toml node start
+docker run --platform linux/x86_64/v8 --name chainlink -v ~/.chainlink:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:1.13.0 -config /chainlink/config.toml -config /chainlink/config2.toml -config /chainlink/config3.toml -secrets /chainlink/secrets.toml -secrets /chainlink/secrets2.toml node start
 ```
