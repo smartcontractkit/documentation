@@ -92,7 +92,12 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                   <tr
                     key={index}
                     className={`ccip-table__row--clickable ${allLanesPaused ? "ccip-table__row--paused" : ""}`}
-                    onClick={() => {
+                    onClick={(event) => {
+                      // Address links and copy buttons sit in this row. Their clicks must not open the drawer.
+                      const target = event.target
+                      if (target instanceof Element && target.closest("a, button, input, textarea, select, label")) {
+                        return
+                      }
                       drawerWidthStore.set(DrawerWidth.Wide)
                       drawerContentStore.set(() => (
                         <TokenDrawer
@@ -106,11 +111,11 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                     role="button"
                     tabIndex={0}
                     aria-label={`View ${network.name} token details`}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault()
-                        e.currentTarget.click()
-                      }
+                    onKeyDown={(event) => {
+                      if (event.key !== "Enter" && event.key !== " ") return
+                      if (event.target !== event.currentTarget) return
+                      event.preventDefault()
+                      event.currentTarget.click()
                     }}
                   >
                     <td>
