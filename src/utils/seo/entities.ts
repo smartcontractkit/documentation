@@ -14,6 +14,61 @@ export interface EntityAnalysis {
   about: SemanticEntity[] // Primary topics the content is about
 }
 
+// Path and title words that are acronyms. Naive title case turns "ccip" into "Ccip"
+// and "cre" into "Cre". Google shows those schema names in search results.
+const ACRONYM_LABELS: Record<string, string> = {
+  abi: "ABI",
+  ace: "ACE",
+  ai: "AI",
+  apac: "APAC",
+  api: "API",
+  apis: "APIs",
+  aws: "AWS",
+  ccip: "CCIP",
+  cct: "CCT",
+  cctp: "CCTP",
+  ccv: "CCV",
+  ccvs: "CCVs",
+  clf: "CLF",
+  cli: "CLI",
+  cre: "CRE",
+  crec: "CREC",
+  dex: "DEX",
+  don: "DON",
+  dta: "DTA",
+  ens: "ENS",
+  eoa: "EOA",
+  erc20: "ERC20",
+  eth: "ETH",
+  evm: "EVM",
+  ftf: "FTF",
+  http: "HTTP",
+  kv: "KV",
+  mvr: "MVR",
+  nft: "NFT",
+  por: "PoR",
+  rmn: "RMN",
+  rwa: "RWA",
+  sdk: "SDK",
+  svm: "SVM",
+  svr: "SVR",
+  ton: "TON",
+  tron: "TRON",
+  ts: "TS",
+  ui: "UI",
+  usdc: "USDC",
+  vrf: "VRF",
+  ws: "WS",
+}
+
+export function formatLabelWord(word: string): string {
+  const known = ACRONYM_LABELS[word.toLowerCase()]
+  if (known) return known
+  // Keep a title token that is already all caps, such as "DON" or "USDC".
+  if (word.length > 1 && word === word.toUpperCase() && /[A-Z]/.test(word)) return word
+  return word.charAt(0).toUpperCase() + word.slice(1)
+}
+
 /**
  * Analyze content to extract relevant entities for stronger SEO signals
  */
@@ -25,18 +80,18 @@ export function extractContentEntities(excerpt: string, pathname: string, title?
   // Parse title for direct about entities (simple approach)
   if (title) {
     const titleWords = title
-      .toLowerCase()
       .replace(/[^\w\s]/g, " ") // Remove punctuation
       .split(/\s+/)
       .filter((word) => word.length > 2) // Remove short words
 
     // Add title-based about entities
     for (const word of titleWords) {
-      if (!["the", "and", "with", "for", "how", "tutorial", "guide"].includes(word)) {
+      const key = word.toLowerCase()
+      if (!["the", "and", "with", "for", "how", "tutorial", "guide"].includes(key)) {
         entities.about.push({
           "@type": "Thing",
-          name: word.charAt(0).toUpperCase() + word.slice(1),
-          description: `Content about ${word}`,
+          name: formatLabelWord(word),
+          description: `Content about ${key}`,
         })
       }
     }

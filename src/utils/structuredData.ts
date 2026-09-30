@@ -7,7 +7,7 @@
  */
 
 import type { Metadata, QuickstartsFrontmatter } from "~/content.config.ts"
-import { generateEnhancedSchemaProperties } from "./seo/entities.ts"
+import { formatLabelWord, generateEnhancedSchemaProperties } from "./seo/entities.ts"
 
 /**
  * Base URLs - Environment-aware constants
@@ -568,7 +568,7 @@ export function generateBreadcrumbList(pathname: string, baseUrl: string): objec
 function formatBreadcrumbName(segment: string): string {
   return segment
     .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) => formatLabelWord(word))
     .join(" ")
 }
 
