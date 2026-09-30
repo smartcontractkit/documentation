@@ -1,0 +1,77 @@
+---
+import { getCollection, render } from "astro:content"
+import type { CollectionEntry } from "astro:content"
+import SolutionLayout from "~/layouts/SolutionLayout.astro"
+import SolutionsHub from "~/components/Solutions/SolutionsHub.astro"
+import {
+  getSolutionBySlug,
+  toPageId,
+  toPagePath,
+  ALL_REGISTERED_SOLUTIONS,
+  SOLUTIONS_HUB_ENABLED,
+} from "~/config/solutions/index.ts"
+import type { Solution } from "~/config/solutions/index.ts"
+import { assertRegisteredSolutionsHaveContent } from "~/utils/solutions"
+
+type Props = { kind: "hub" } | { kind: "page"; entry: CollectionEntry<"solutions">; solution: Solution; pageId: string }
+
+export async function getStaticPaths() {
+  const entries = await getCollection("solutions")
+  await assertRegisteredSolutionsHaveContent(ALL_REGISTERED_SOLUTIONS)
+
+  const paths: { params: { slug: string | undefined }; props: Props }[] = []
+
+  // The hub is /solutions itself: a rest parameter set to undefined matches the bare
+  // /solutions path. Leaving it out while the hub is disabled means no page, no sitemap entry.
+  if (SOLUTIONS_HUB_ENABLED) {
+    paths.push({ params: { slug: undefined }, props: { kind: "hub" } })
+  }
+
+  for (const entry of entries) {
+    const id = entry.id.replace(/\.mdx?$/, "")
+    const slug = id.split("/")[0]
+    const solution = getSolutionBySlug(slug)
+
+    if (!solution) {
+      const isHidden = ALL_REGISTERED_SOLUTIONS.some((s) => s.slug === slug && s.hidden)
+      if (isHidden) continue
+
+      // sub-page as "<slug>/<page-id>". Name the file the contributor has to create.
+      const fileHint = id.includes("/") ? `${id}.mdx` : `${id}/index.mdx`
+      throw new Error(
+        `[solutions] Content exists at src/content/solutions/${fileHint} but no manifest is registered for ` +
+          `"${slug}". Create src/config/solutions/${slug}.ts and register it in src/config/solutions/index.ts. ` +
+          `See src/content/solutions/README.md.`
+      )
+    }
+
+    const pageId = toPageId(slug, entry.id)
+    // params.slug is everything after "/solutions/". For the landing page that is just the slug.
+    const routeSlug = toPagePath(slug, pageId).replace("/solutions/", "")
+
+    paths.push({ params: { slug: routeSlug }, props: { kind: "page", entry, solution, pageId } })
+  }
+
+  return paths
+}
+
+const props = Astro.props
+const page = props.kind === "page" ? props : null
+const rendered = page ? await render(page.entry) : null
+const Content = rendered?.Content
+---
+
+{
+  page && Content ? (
+    <SolutionLayout
+      solution={page.solution}
+      pageId={page.pageId}
+      frontmatter={page.entry.data}
+      headings={rendered?.headings}
+    >
+      <Content />
+    </SolutionLayout>
+  ) : (
+    <SolutionsHub />
+  )
+}

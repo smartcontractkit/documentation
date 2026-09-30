@@ -24,6 +24,7 @@ import {
   resolveCanonicalSymbolByAddress,
   resolveOnChainSymbol,
   resolvePoolType,
+  resolveCuratedPoolInfo,
   toSelectorName,
   getAllTokenSymbols,
   getChainFamilyForDirectoryKey,
@@ -364,6 +365,54 @@ function parseLaneInfo(
 
 // ---------- Pool data ----------
 
+/**
+ * Builds a PoolInfo from the curated tokens.json entry (poolAddress, poolType,
+ * typeAndVersion). Used when Atlas has no pool data for a token on a chain —
+ * e.g. operator-hardcoded entries such as USD1 on canton-mainnet — so the
+ * directory still resolves the correct pool type, pool version, and transfer
+ * mechanism instead of "No pool on ..." and an empty pool version.
+ */
+function buildCuratedPoolInfo(environment: Environment, tokenSymbol: string, directoryKey: string): PoolInfo | null {
+  const curated = resolveCuratedPoolInfo(environment, tokenSymbol, directoryKey)
+  if (!curated) return null
+
+  console.warn(
+    `[CCIP GraphQL] No pool data in Atlas for ${tokenSymbol}@${directoryKey}; using curated tokens.json pool data`
+  )
+  return {
+    address: curated.address,
+    rawType: curated.rawType,
+    type: curated.type,
+    version: curated.version,
+    thresholdAmount: null,
+  }
+}
+
+/**
+ * Resolves rawType/version for an Atlas pool node, falling back to the curated
+ * tokens.json entry when Atlas has the pool but its `typeAndVersion` is null
+ * (e.g. USD1 on canton-mainnet) — so the directory still shows the pool class
+ * and version instead of "—" and an empty pool version.
+ */
+function resolveRawTypeAndVersion(
+  environment: Environment,
+  tokenSymbol: string,
+  directoryKey: string,
+  typeAndVersion: string | null | undefined
+): { rawType: string; version: string } {
+  const rawType = extractRawType(typeAndVersion)
+  const version = extractVersion(typeAndVersion) || ""
+  if (rawType && version) return { rawType, version }
+
+  const curated = resolveCuratedPoolInfo(environment, tokenSymbol, directoryKey)
+  if (!curated || (!curated.rawType && !curated.version)) return { rawType, version }
+
+  console.warn(
+    `[CCIP GraphQL] Missing typeAndVersion in Atlas for ${tokenSymbol}@${directoryKey}; using curated tokens.json pool type/version`
+  )
+  return { rawType: rawType || curated.rawType, version: version || curated.version }
+}
+
 export async function fetchPoolDataForToken(
   environment: Environment,
   tokenSymbol: string,
@@ -383,15 +432,20 @@ export async function fetchPoolDataForToken(
       })
 
       const node = result.allCcipTokenPools?.nodes?.find((n) => n.tokenPool)
-      if (!node?.tokenPool) return null
+      if (!node?.tokenPool) {
+        // Atlas has no pool data for this token on this chain. Fall back to the
+        // curated tokens.json entry so pool type, version, and mechanism still
+        // resolve (e.g. USD1 on canton-mainnet).
+        return buildCuratedPoolInfo(environment, tokenSymbol, directoryKey)
+      }
 
       const chainFamily = getChainFamilyForDirectoryKey(directoryKey)
-      const rawType = extractRawType(node.typeAndVersion)
+      const { rawType, version } = resolveRawTypeAndVersion(environment, tokenSymbol, directoryKey, node.typeAndVersion)
       return {
         address: normalizeAddressForDisplay(node.tokenPool, chainFamily),
         rawType,
         type: resolveMechanismPoolType(environment, tokenSymbol, directoryKey, rawType),
-        version: extractVersion(node.typeAndVersion) || "",
+        version,
         thresholdAmount: parseThresholdAmount(node.info),
       }
     })
@@ -431,14 +485,23 @@ export async function fetchPoolDataForTokenAllChains(environment: Environment, t
         if (!dirKey) continue
 
         const chainFamily = getChainFamilyForDirectoryKey(dirKey)
-        const rawType = extractRawType(node.typeAndVersion)
+        const { rawType, version } = resolveRawTypeAndVersion(environment, tokenSymbol, dirKey, node.typeAndVersion)
         poolData[dirKey] = {
           address: normalizeAddressForDisplay(node.tokenPool, chainFamily),
           rawType,
           type: resolveMechanismPoolType(environment, tokenSymbol, dirKey, rawType),
-          version: extractVersion(node.typeAndVersion) || "",
+          version,
           thresholdAmount: parseThresholdAmount(node.info),
         }
+      }
+
+      // Fill in chains Atlas has no pool data for (e.g. USD1 on canton-mainnet)
+      // from the curated tokens.json entry so pool type, version, and mechanism
+      // still resolve on the token pages.
+      for (const dirKey of Object.keys(addressMap)) {
+        if (poolData[dirKey]) continue
+        const curated = buildCuratedPoolInfo(environment, tokenSymbol, dirKey)
+        if (curated) poolData[dirKey] = curated
       }
 
       return poolData
@@ -477,16 +540,31 @@ export async function fetchAllPoolData(environment: Environment): Promise<AllPoo
 
         const { tokenSymbol, directoryKey } = mapping
         const chainFamily = getChainFamilyForDirectoryKey(directoryKey)
-        const rawType = extractRawType(node.typeAndVersion)
+        const { rawType, version } = resolveRawTypeAndVersion(
+          environment,
+          tokenSymbol,
+          directoryKey,
+          node.typeAndVersion
+        )
 
         if (!allPoolData[tokenSymbol]) allPoolData[tokenSymbol] = {}
         allPoolData[tokenSymbol][directoryKey] = {
           address: normalizeAddressForDisplay(node.tokenPool, chainFamily),
           rawType,
           type: resolveMechanismPoolType(environment, tokenSymbol, directoryKey, rawType),
-          version: extractVersion(node.typeAndVersion) || "",
+          version,
           thresholdAmount: parseThresholdAmount(node.info),
         }
+      }
+
+      // Fill in token/chain pairs Atlas has no pool data for (e.g. USD1 on
+      // canton-mainnet) from the curated tokens.json entry.
+      for (const { tokenSymbol, directoryKey } of addressIndex.values()) {
+        if (allPoolData[tokenSymbol]?.[directoryKey]) continue
+        const curated = buildCuratedPoolInfo(environment, tokenSymbol, directoryKey)
+        if (!curated) continue
+        if (!allPoolData[tokenSymbol]) allPoolData[tokenSymbol] = {}
+        allPoolData[tokenSymbol][directoryKey] = curated
       }
 
       return allPoolData

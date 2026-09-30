@@ -122,10 +122,21 @@ const creTemplatesFrontmatter = z
   })
   .strict()
 
+/** Schema for Solutions pages. Structure and order live in src/config/solutions/ */
+const solutionsFrontmatter = z
+  .object({
+    title: z.string(),
+    description: z.string().optional(),
+    metadata,
+    draft: z.boolean().optional(),
+  })
+  .strict()
+
 /** Re-export for convenience */
 export type BaseFrontmatter = z.infer<typeof baseFrontmatter>
 export type QuickstartsFrontmatter = z.infer<typeof quickstartsFrontmatter>
 export type CRETemplatesFrontmatter = z.infer<typeof creTemplatesFrontmatter>
+export type SolutionsFrontmatter = z.infer<typeof solutionsFrontmatter>
 export type Metadata = z.infer<typeof metadata>
 
 /** --------------------------
@@ -262,6 +273,14 @@ const creTemplatesCollection = defineCollection({
   schema: creTemplatesFrontmatter,
 })
 
+const solutionsCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/solutions",
+    pattern: ["**/*.md?(x)", "!README.md", "!**/README.md"],
+  }),
+  schema: solutionsFrontmatter,
+})
+
 const architectureOverviewCollection = defineCollection({
   loader: glob({
     base: "./src/content/architecture-overview",
@@ -315,6 +334,7 @@ export const collections = {
   "chainlink-local": chainlinkLocalCollection,
   quickstarts: quickstartsCollection,
   "cre-templates": creTemplatesCollection,
+  solutions: solutionsCollection,
   "architecture-overview": architectureOverviewCollection,
   "getting-started": gettingStartedCollection,
   "any-api": anyApiCollection,
