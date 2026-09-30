@@ -4,6 +4,7 @@ import {
   MARKDOWN_FALLBACK_PARAM,
   negotiateMarkdown,
 } from "./src/lib/markdown/negotiateMarkdown.js"
+import { isSunsetDocsPath } from "./src/config/sunset.js"
 
 // Vercel runs this before static HTML. Astro's src/middleware.ts does not.
 // vercel.json redirects run first. Other old URLs are HTML refresh pages.
@@ -27,11 +28,11 @@ export default function middleware(request: Request): Response {
   }
 
   if (decision.action === "html") {
-    return next({
-      headers: {
-        Link: `<${decision.alternatePath}>; rel="alternate"; type="text/markdown"`,
-      },
-    })
+    // Sunset pages keep their URL but are left out of Markdown output.
+    const headers: Record<string, string> = isSunsetDocsPath(url.pathname)
+      ? { "X-Robots-Tag": "noindex, follow" }
+      : { Link: `<${decision.alternatePath}>; rel="alternate"; type="text/markdown"` }
+    return next({ headers })
   }
 
   return next()

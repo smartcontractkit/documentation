@@ -3,8 +3,6 @@ import ccipLogo from "../../../../../assets/product-logos/ccip-logo.svg"
 import dataFeedsLogo from "../../../../../assets/product-logos/data-feeds-logo.svg"
 import dataStreamsLogo from "../../../../../assets/product-logos/data-streams-logo.svg"
 import dataLinkLogo from "../../../../../assets/product-logos/datalink-logo.svg"
-import functionsLogo from "../../../../../assets/product-logos/functions-logo.svg"
-import automationLogo from "../../../../../assets/product-logos/automation-logo.svg"
 import vrfLogo from "../../../../../assets/product-logos/vrf-logo.svg"
 import dtaLogo from "../../../../../assets/product-logos/dta-logo.svg"
 import generalGlobeLogo from "../../../../../assets/product-logos/general-globe-logo.svg"
@@ -124,18 +122,6 @@ export const megaMenuSections = {
   compute: {
     title: "Compute",
     items: [
-      {
-        icon: functionsLogo,
-        title: "Functions",
-        description: "Connect smart contracts to any API",
-        link: "/chainlink-functions",
-      },
-      {
-        icon: automationLogo,
-        title: "Automation",
-        description: "Automate smart contracts via decentralized triggers",
-        link: "/chainlink-automation",
-      },
       {
         icon: vrfLogo,
         title: "VRF",

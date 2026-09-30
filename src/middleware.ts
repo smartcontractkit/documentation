@@ -1,5 +1,6 @@
 import type { MiddlewareHandler } from "astro"
 import { MARKDOWN_FALLBACK_PARAM, negotiateMarkdown } from "@lib/markdown/negotiateMarkdown.js"
+import { isSunsetDocsPath } from "./config/sunset.js"
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
   const decision = negotiateMarkdown(context.url.pathname, context.request.headers.get("accept"))
@@ -14,6 +15,11 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
   const response = await next()
   if (decision.action !== "html") return response
+
+  if (isSunsetDocsPath(context.url.pathname)) {
+    response.headers.set("X-Robots-Tag", "noindex, follow")
+    return response
+  }
 
   const contentType = response.headers.get("content-type") || ""
   if (!contentType.includes("text/html")) return response

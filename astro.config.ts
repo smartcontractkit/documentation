@@ -15,6 +15,7 @@ import trailingSlashMiddleware from "./src/integrations/trailing-slash-middlewar
 import redirectsJson from "./src/features/redirects/redirects.json"
 import tailwind from "@astrojs/tailwind"
 import { extractCanonicalUrlsWithLanguageVariants } from "./src/utils/sidebar"
+import { isSunsetDocsPath } from "./src/config/sunset"
 import remarkCodeFenceFilename from "./src/lib/markdown/remarkCodeFenceFilename"
 import remarkCodeFenceLanguageAlias from "./src/lib/markdown/remarkCodeFenceLanguageAlias"
 import rehypeCodeSampleFences from "./src/lib/markdown/rehypeCodeSampleFences"
@@ -71,8 +72,6 @@ export default defineConfig({
         "https://docs.chain.link/data-streams/llms-full.txt",
         "https://docs.chain.link/dta-technical-standard/llms-full.txt",
         "https://docs.chain.link/datalink/llms-full.txt",
-        "https://docs.chain.link/chainlink-functions/llms-full.txt",
-        "https://docs.chain.link/chainlink-automation/llms-full.txt",
         "https://docs.chain.link/resources/llms-full.txt",
         "https://docs.chain.link/architecture-overview/llms-full.txt",
         "https://docs.chain.link/getting-started/llms-full.txt",
@@ -83,6 +82,11 @@ export default defineConfig({
         // Exclude redirect source URLs from sitemap to prevent duplicates
         const pathname = new URL(page).pathname
         const cleanPath = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname
+
+        // Functions and Automation pages stay reachable, but they are not indexed.
+        if (isSunsetDocsPath(cleanPath)) {
+          return false
+        }
 
         // Exclude short format API reference URLs (e.g., /api-reference/v150, /ccip/evm/api-reference/v150)
         // These are aliases for versioned content - we keep only the canonical long format URLs
