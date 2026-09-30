@@ -10,6 +10,7 @@ import {
   LaneVerifierInfo,
   NamingConvention,
   OutputKeyType,
+  RateLimiterDirections,
 } from "~/lib/ccip/types/index.ts"
 import { loadReferenceData, Version } from "@config/data/ccip/index.ts"
 import type { LaneConfig, ChainConfig } from "@config/data/ccip/types.ts"
@@ -308,6 +309,7 @@ export class TokenDirectoryService {
       destChainInfo: { chainId: string | number; selector: string }
       outputLaneKey: string
       formattedInternalId: string
+      fallbackRateLimits: RateLimiterDirections | null
     }> = []
 
     for (const [destDirectoryKey, laneConfig] of Object.entries(sourceLanes)) {
@@ -322,7 +324,15 @@ export class TokenDirectoryService {
       const outputLaneKey = this.formatLaneKey(destDirectoryKey, outputKey, internalIdFormat, chainIdService)
       const formattedInternalId = chainIdService.format(destDirectoryKey, internalIdFormat)
 
-      lanesToProcess.push({ destDirectoryKey, destChainInfo, outputLaneKey, formattedInternalId })
+      lanesToProcess.push({
+        destDirectoryKey,
+        destChainInfo,
+        outputLaneKey,
+        formattedInternalId,
+        // Rate limits from lanes.json — used when Atlas has no lane node for
+        // this token on this chain (e.g. USD1 on canton-mainnet)
+        fallbackRateLimits: laneConfig.supportedTokens?.[tokenSymbol]?.rateLimiterConfig ?? null,
+      })
     }
 
     // Fetch rate limits concurrently with concurrency limit.
@@ -349,7 +359,7 @@ export class TokenDirectoryService {
         chainId: lane.destChainInfo.chainId,
         selector: lane.destChainInfo.selector,
         rateLimits: {
-          standard: lane.laneData?.rateLimits.standard ?? null,
+          standard: lane.laneData?.rateLimits.standard ?? lane.fallbackRateLimits,
           custom: lane.laneData?.rateLimits.custom ?? null,
         },
         verifiers: this.buildLaneVerifiers(lane.laneData?.verifierInfo, lane.destVerifierInfo, isCCVEnabled),
@@ -381,6 +391,7 @@ export class TokenDirectoryService {
       sourceChainInfo: { chainId: string | number; selector: string }
       outputLaneKey: string
       formattedInternalId: string
+      fallbackRateLimits: RateLimiterDirections | null
     }> = []
 
     for (const [sourceDirectoryKey, sourceLanes] of Object.entries(lanesReferenceData)) {
@@ -402,6 +413,9 @@ export class TokenDirectoryService {
         sourceChainInfo,
         outputLaneKey,
         formattedInternalId,
+        // Rate limits from lanes.json — used when Atlas has no lane node for
+        // this token on the source chain (e.g. USD1 on canton-mainnet)
+        fallbackRateLimits: laneConfig.supportedTokens?.[tokenSymbol]?.rateLimiterConfig ?? null,
       })
     }
 
@@ -429,7 +443,7 @@ export class TokenDirectoryService {
         chainId: lane.sourceChainInfo.chainId,
         selector: lane.sourceChainInfo.selector,
         rateLimits: {
-          standard: lane.laneData?.rateLimits.standard ?? null,
+          standard: lane.laneData?.rateLimits.standard ?? lane.fallbackRateLimits,
           custom: lane.laneData?.rateLimits.custom ?? null,
         },
         verifiers: this.buildLaneVerifiers(lane.laneData?.verifierInfo, lane.destVerifierInfo, isCCVEnabled),
