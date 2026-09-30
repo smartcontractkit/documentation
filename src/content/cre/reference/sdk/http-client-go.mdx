@@ -26,7 +26,7 @@ The HTTP Client lets you make requests to external APIs from your workflow. Each
 | Method                                                              | Use When                                  | Guide                                                                                                                   |
 | ------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | [`http.SendRequest`](#httpsendrequest)                              | Making HTTP calls (recommended)           | [GET](/cre/guides/workflow/using-http-client/get-request) / [POST](/cre/guides/workflow/using-http-client/post-request) |
-| [`client.SendRequest`](#clientsendrequest)                          | Complex scenarios requiring fine control  | [GET](/cre/guides/workflow/using-http-client/get-request#2-the-creruninnodemode-pattern-low-level)                      |
+| [`client.SendRequest`](#clientsendrequest)                          | Complex scenarios requiring fine control  | [GET](/cre/guides/workflow/using-http-client/get-request-go#2-the-creruninnodemode-pattern-low-level)                   |
 | [`sendRequester.SendReport`](#sendrequestersendreport)              | Submitting reports via HTTP (recommended) | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http)                                     |
 | [`client.SendReport`](#clientsendreport)                            | Complex report submission scenarios       | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http#advanced-low-level-pattern)          |
 | [`cre.ParseReport`](/cre/reference/sdk/core-go#report-verification) | Verifying received reports (receiver)     | [Report verification](/cre/guides/workflow/using-http-client/verifying-reports-offchain-go)                             |
@@ -42,15 +42,15 @@ Defines the parameters for an outgoing HTTP request.
   HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
 </Aside>
 
-| <div style="width: 120px;">Field</div> | <div style="width: 200px;">Type</div> | Description                                                                                                                    |
-| -------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `Url`                                  | `string`                              | The URL of the API endpoint.                                                                                                   |
-| `Method`                               | `string`                              | The HTTP method (e.g., `"GET"`, `"POST"`).                                                                                     |
-| `MultiHeaders`                         | `map[string]*HeaderValues`            | Optional HTTP headers (recommended). Supports multiple values per header name. See [`HeaderValues`](#http-headervalues) below. |
-| `Headers`                              | `map[string]string`                   | **Deprecated.** Use `MultiHeaders` instead. Single-value headers only.                                                         |
-| `Body`                                 | `[]byte`                              | Optional raw request body.                                                                                                     |
-| `Timeout`                              | `*durationpb.Duration`                | Optional request timeout. See [Request Timeout](#request-timeout) below for usage, defaults, and limits.                       |
-| `CacheSettings`                        | `*CacheSettings`                      | Optional caching behavior for the request.                                                                                     |
+| <div style="width: 120px;">Field</div> | <div style="width: 200px;">Type</div> | Description                                                                                                                   |
+| -------------------------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `Url`                                  | `string`                              | The URL of the API endpoint.                                                                                                  |
+| `Method`                               | `string`                              | The HTTP method (e.g., `"GET"`, `"POST"`).                                                                                    |
+| `MultiHeaders`                         | `map[string]*HeaderValues`            | Optional HTTP headers (recommended). Supports multiple values per header name. See [`HeaderValues`](#httpheadervalues) below. |
+| `Headers`                              | `map[string]string`                   | **Deprecated.** Use `MultiHeaders` instead. Single-value headers only.                                                        |
+| `Body`                                 | `[]byte`                              | Optional raw request body.                                                                                                    |
+| `Timeout`                              | `*durationpb.Duration`                | Optional request timeout. See [Request Timeout](#request-timeout) below for usage, defaults, and limits.                      |
+| `CacheSettings`                        | `*CacheSettings`                      | Optional caching behavior for the request.                                                                                    |
 
 ### Request Timeout
 
@@ -251,8 +251,8 @@ result, err := http.SendRequest(config, runtime, client,
 
 **Guides:**
 
-- [GET Requests](/cre/guides/workflow/using-http-client/get-request#1-the-httpsendrequest-pattern-recommended)
-- [POST Requests](/cre/guides/workflow/using-http-client/post-request#1-the-httpsendrequest-pattern-recommended)
+- [GET Requests](/cre/guides/workflow/using-http-client/get-request-go#1-the-httpsendrequest-pattern-recommended)
+- [POST Requests](/cre/guides/workflow/using-http-client/post-request-go#1-the-httpsendrequest-pattern-recommended)
 
 ### `client.SendRequest`
 
@@ -275,7 +275,7 @@ func (c *Client) SendRequest(runtime cre.NodeRuntime, input *http.Request) cre.P
 
 **Guide:**
 
-- [Using `cre.RunInNodeMode`](/cre/guides/workflow/using-http-client/get-request#2-the-creruninnodemode-pattern-low-level)
+- [Using `cre.RunInNodeMode`](/cre/guides/workflow/using-http-client/get-request-go#2-the-creruninnodemode-pattern-low-level)
 
 ## Submitting reports via HTTP
 

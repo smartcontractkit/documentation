@@ -4,6 +4,7 @@ import { SIDEBAR, CCIP_SIDEBARS } from "../../config"
 import type { SectionEntry, SectionContent } from "../../config"
 import { SIDEBAR_SECTIONS } from "../../config/sidebarSections.ts"
 import { AI_AGENT_RESOURCES_SECTION, withParentQuery } from "../../config/sidebar/ai-agent-resources.ts"
+import { getSolutionsSection } from "../../config/sidebar/solutions.ts"
 import RecursiveSidebar from "./RecursiveSidebar.astro"
 import { LanguageSwitcherDropdown } from "~/components/LanguageSwitcherDropdown"
 import { ChainTypeSelector } from "~/components/ChainSelector"
@@ -62,6 +63,17 @@ function getSidebarSections(section?: Sections): SectionEntryWithParent[] {
         })
       }
 
+      const solutionsSection = getSolutionsSection(parentSection as Sections)
+      if (solutionsSection) {
+        // Insert before the AI resources group when present, else append, so Solutions sits above it.
+        const hasAiResources = !SECTIONS_WITHOUT_AI_RESOURCES.has(parentSection as Sections)
+        const insertAt = hasAiResources ? sections.length - 1 : sections.length
+        sections.splice(insertAt, 0, {
+          ...solutionsSection,
+          parentSection: parentSection as Sections,
+        })
+      }
+
       return sections
     })
   }
@@ -75,7 +87,13 @@ function getSidebarSections(section?: Sections): SectionEntryWithParent[] {
       return ccipSections
     }
 
-    return [...ccipSections, withParentQuery(AI_AGENT_RESOURCES_SECTION, section)]
+    const ccipSolutionsSection = getSolutionsSection(section)
+
+    return [
+      ...ccipSections,
+      ...(ccipSolutionsSection ? [ccipSolutionsSection] : []),
+      withParentQuery(AI_AGENT_RESOURCES_SECTION, section),
+    ]
   }
 
   const productSections = SIDEBAR[section] ?? []
@@ -84,7 +102,13 @@ function getSidebarSections(section?: Sections): SectionEntryWithParent[] {
     return productSections
   }
 
-  return [...productSections, withParentQuery(AI_AGENT_RESOURCES_SECTION, section)]
+  const solutionsSection = getSolutionsSection(section)
+
+  return [
+    ...productSections,
+    ...(solutionsSection ? [solutionsSection] : []),
+    withParentQuery(AI_AGENT_RESOURCES_SECTION, section),
+  ]
 }
 
 /**

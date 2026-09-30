@@ -146,22 +146,27 @@ function TokenDrawer({
     destinationDecimals: number | undefined
   }
 
+  // Token config (V1_2_0) — remote-chain decimals for the v1.5.1 decimal-mismatch
+  // warning and for formatting inbound rate limits, plus the curated pool type
+  // fallback used when the drawer opens without GraphQL-enriched pool types
+  // (e.g. from the chain page token grid).
+  const tokenData = getTokenData({
+    environment,
+    version: Version.V1_2_0,
+    tokenId: token.id,
+  })
+
   const laneRows: LaneRow[] = Object.entries(activeLanes)
     .map(([chainKey, laneEntry]) => {
       const networkDetails = getNetwork({ filter: environment, chain: chainKey })
       if (!networkDetails) return null
 
-      // Destination token decimals (V1_2_0 config) — used to detect the v1.5.1 decimal-mismatch rate-limit warning
-      const destinationDecimals = getTokenData({
-        environment,
-        version: Version.V1_2_0,
-        tokenId: token.id,
-      })[chainKey]?.decimals
+      const destinationDecimals = tokenData[chainKey]?.decimals
 
       return {
         networkDetails,
         chainKey,
-        destinationPoolType: poolTypesByChain?.[chainKey],
+        destinationPoolType: poolTypesByChain?.[chainKey] ?? (tokenData[chainKey]?.poolType as PoolType | undefined),
         rateLimits: laneEntry.rateLimits ?? null,
         verifiers: laneEntry.verifiers ?? null,
         destinationDecimals,
@@ -351,11 +356,18 @@ function TokenDrawer({
                     const isEvmNetwork = String(network.chainType).toLowerCase() === "evm"
                     const shouldWarn = Boolean(isV151 && hasDecimalMismatch && isInboundLane && isEvmNetwork)
 
+                    // Outbound values come from this chain's pool node (this chain's
+                    // decimals); inbound values come from the remote chain's pool node
+                    // (remote chain's decimals) — e.g. USD1 canton (10) ↔ mainnet (18).
+                    const rowDecimals = isOutbound
+                      ? network.tokenDecimals
+                      : (destinationDecimals ?? network.tokenDecimals)
+
                     return SHOW_VERIFIERS_ACCORDION ? (
                       <NetworkLaneRow
                         key={chainKey}
                         networkDetails={networkDetails}
-                        tokenDecimals={network.tokenDecimals}
+                        tokenDecimals={rowDecimals}
                         tokenPaused={tokenPaused}
                         isExpanded={expandedRows.has(networkDetails.name)}
                         onToggle={() => toggleRowExpansion(networkDetails.name)}
@@ -379,7 +391,7 @@ function TokenDrawer({
                         mechanism={mechanism}
                         allLimits={allLimits}
                         isLoadingRateLimits={isLoadingRateLimits}
-                        tokenDecimals={network.tokenDecimals}
+                        tokenDecimals={rowDecimals}
                         showWarning={shouldWarn}
                         onWarningEnter={(target) => openWarningTooltip(chainKey, target)}
                         onWarningLeave={scheduleCloseWarning}

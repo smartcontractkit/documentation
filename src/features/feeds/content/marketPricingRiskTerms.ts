@@ -60,7 +60,7 @@ const STREAMS_TERMS: MarketPricingRiskTerms = {
   deprecatingPage: "/data-streams/deprecating-streams",
   riskMitigationHref: "/data-streams/concepts/best-practices",
   evaluatingSourcesHref: "/data-streams/developer-responsibilities#market-integrity-risks",
-  customSectionHref: "#-custom-streams",
+  customSectionHref: "#-custom-market-pricing-risk-streams",
   anchorSuffix: "streams",
   contactRefId: "DataStreams",
 }
