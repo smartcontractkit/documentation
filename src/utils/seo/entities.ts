@@ -14,6 +14,40 @@ export interface EntityAnalysis {
   about: SemanticEntity[] // Primary topics the content is about
 }
 
+// Path and title words that are acronyms. Naive title case turns "ccip" into "Ccip"
+// and "cre" into "Cre". Google shows those schema names in search results.
+const ACRONYM_LABELS: Record<string, string> = {
+  ace: "ACE",
+  api: "API",
+  apis: "APIs",
+  ccip: "CCIP",
+  ccvs: "CCVs",
+  cli: "CLI",
+  cre: "CRE",
+  crec: "CREC",
+  dta: "DTA",
+  ens: "ENS",
+  evm: "EVM",
+  ftf: "FTF",
+  http: "HTTP",
+  nft: "NFT",
+  rmn: "RMN",
+  sdk: "SDK",
+  svm: "SVM",
+  ton: "TON",
+  ui: "UI",
+  usdc: "USDC",
+  vrf: "VRF",
+}
+
+export function formatLabelWord(word: string): string {
+  const known = ACRONYM_LABELS[word.toLowerCase()]
+  if (known) return known
+  // Keep a title token that is already all caps, such as "DON" or "USDC".
+  if (word.length > 1 && word === word.toUpperCase() && /[A-Z]/.test(word)) return word
+  return word.charAt(0).toUpperCase() + word.slice(1)
+}
+
 /**
  * Analyze content to extract relevant entities for stronger SEO signals
  */
@@ -25,18 +59,18 @@ export function extractContentEntities(excerpt: string, pathname: string, title?
   // Parse title for direct about entities (simple approach)
   if (title) {
     const titleWords = title
-      .toLowerCase()
       .replace(/[^\w\s]/g, " ") // Remove punctuation
       .split(/\s+/)
       .filter((word) => word.length > 2) // Remove short words
 
     // Add title-based about entities
     for (const word of titleWords) {
-      if (!["the", "and", "with", "for", "how", "tutorial", "guide"].includes(word)) {
+      const key = word.toLowerCase()
+      if (!["the", "and", "with", "for", "how", "tutorial", "guide"].includes(key)) {
         entities.about.push({
           "@type": "Thing",
-          name: word.charAt(0).toUpperCase() + word.slice(1),
-          description: `Content about ${word}`,
+          name: formatLabelWord(word),
+          description: `Content about ${key}`,
         })
       }
     }
