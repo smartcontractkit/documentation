@@ -87619,6 +87619,36 @@ Returns:
 | `uint8`            | Minimum number of optional CCVs required.                |
 | `bytes4`           | Encoded finality configuration accepted by the receiver. |
 
+***
+
+### onlyRouter (modifier)
+
+```solidity
+modifier onlyRouter()
+```
+
+> Restricts function execution to the configured CCIP Router returned by `getRouter()`.
+>
+> Reverts with `InvalidRouter(msg.sender)` if the caller is any other address.
+>
+> Applied to `ccipReceive`.
+
+## Internal Functions
+
+### `_ccipReceive`
+
+```solidity
+function _ccipReceive( Client.Any2EVMMessage memory message ) internal virtual
+```
+
+> Application-defined message handler. Called by `ccipReceive` after Router enforcement.
+>
+> Inheriting contracts must override this function to implement message handling logic.
+
+| Parameter | Type                           | Description                          |
+| --------- | ------------------------------ | ------------------------------------ |
+| `message` | `Client.Any2EVMMessage memory` | The decoded CCIP message to process. |
+
 ## Events
 
 No new events declared.
@@ -87630,6 +87660,8 @@ For a cross-contract event index, see [Events](/ccip/evm/api-reference/v2.0.0/ev
 ```solidity
 error InvalidRouter(address router);
 ```
+
+Thrown by the constructor when `router` is the zero address, and by `onlyRouter` when the caller is not the configured Router.
 
 For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/errors).
 

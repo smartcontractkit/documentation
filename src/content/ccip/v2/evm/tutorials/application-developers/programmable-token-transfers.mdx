@@ -47,7 +47,7 @@ Defining the router address is useful for the following:
   - Calls the router's `ccipSend` [function](/ccip/evm/api-reference/v2.0.0/i-router-client#ccipsend) to send CCIP messages.
 
 - Receiver part:
-  - The contract inherits from [CCIPReceiver](/ccip/evm/api-reference/v2.0.0/ccip-receiver), which serves as a base contract for receiver contracts. This contract requires that child contracts implement the `_ccipReceive` [function](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive).
+  - The contract inherits from [CCIPReceiver](/ccip/evm/api-reference/v2.0.0/ccip-receiver), which serves as a base contract for receiver contracts. This contract requires that child contracts implement the `_ccipReceive` [function](/ccip/evm/api-reference/v2.0.0/ccip-receiver#_ccipreceive).
   - `_ccipReceive` is called by the `ccipReceive` [function](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract.
 
 Some key things to note:
@@ -268,7 +268,7 @@ The contract uses a **pull-from-caller** model: when a user calls `sendMessage`,
 
 <AnchoredAccordion title="Receiving messages" number={5} depth={4} >
 
-On the destination blockchain, the router calls the inherited `ccipReceive` [function](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive), which verifies the caller is the router and then invokes the contract's internal `_ccipReceive` [function](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive). The `_ccipReceive` function expects an `Any2EVMMessage` [struct](/ccip/evm/api-reference/v2.0.0/client#any2evmmessage) that contains:
+On the destination blockchain, the router calls the inherited `ccipReceive` [function](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive), which verifies the caller is the router and then invokes the contract's internal `_ccipReceive` [function](/ccip/evm/api-reference/v2.0.0/ccip-receiver#_ccipreceive). The `_ccipReceive` function expects an `Any2EVMMessage` [struct](/ccip/evm/api-reference/v2.0.0/client#any2evmmessage) that contains:
 
 - The CCIP `messageId`.
 - The `sourceChainSelector`.
@@ -278,7 +278,7 @@ On the destination blockchain, the router calls the inherited `ccipReceive` [fun
 
 **Note**: Two important security measures are applied:
 
-- `_ccipReceive` is called by the `ccipReceive` [function](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract. See the `onlyRouter` [modifier](/ccip/evm/api-reference/v2.0.0/ccip-receiver#onlyrouter) for more information.
+- `_ccipReceive` is called by the `ccipReceive` [function](/ccip/evm/api-reference/v2.0.0/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract. See the `onlyRouter` [modifier](/ccip/evm/api-reference/v2.0.0/ccip-receiver#onlyrouter-modifier) for more information.
 - The modifier `onlyAllowlisted` ensures that only a call from an allowlisted source chain and sender pair is accepted.
 
 ```solidity filename="_ccipReceive"
