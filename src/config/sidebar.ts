@@ -89,7 +89,11 @@ export const CCIP_SIDEBARS: Record<CcipVersion, SectionEntry[]> = {
  *   ]
  * }
  */
-const sidebarWithSunsetProducts: Partial<Record<Sections, SectionEntry[]>> = {
+/**
+ * Full left-nav trees, including sunset Functions and Automation.
+ * Use this on those pages. SITE menus use the filtered `SIDEBAR` export.
+ */
+export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry[]>> = {
   [SIDEBAR_SECTIONS.ACE]: [
     {
       section: "Chainlink ACE",
@@ -3188,5 +3192,5 @@ const sidebarWithSunsetProducts: Partial<Record<Sections, SectionEntry[]>> = {
 }
 
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = Object.fromEntries(
-  Object.entries(sidebarWithSunsetProducts).filter(([section]) => !isSunsetSidebarSection(section))
+  Object.entries(SIDEBAR_WITH_SUNSET_PRODUCTS).filter(([section]) => !isSunsetSidebarSection(section))
 ) as Partial<Record<Sections, SectionEntry[]>>

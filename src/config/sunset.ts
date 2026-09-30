@@ -1,7 +1,13 @@
 /**
  * Chainlink Functions and Chainlink Automation stay reachable at their old URLs.
- * They are left out of navigation, search, sitemaps, and Markdown output.
+ * Site menus, search, and Markdown output leave them out.
+ * Their own pages still show the left sidebar from SIDEBAR_WITH_SUNSET_PRODUCTS.
+ * Pages send noindex. They stay in the sitemap so a crawler can recrawl and see noindex.
+ * Set SUNSET_PAGES_STAY_IN_SITEMAP to false after a few weeks to drop them from the sitemap.
  */
+
+/** Temporary. Flip to false after crawlers have had time to read noindex. */
+export const SUNSET_PAGES_STAY_IN_SITEMAP = true
 
 export const SUNSET_DOC_ROOTS = ["chainlink-automation", "chainlink-functions"] as const
 

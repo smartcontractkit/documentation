@@ -74,6 +74,17 @@ export const megaMenuSections = {
       },
     ],
   },
+  compliance: {
+    title: "Compliance",
+    items: [
+      {
+        icon: aceLogo,
+        title: "Automated Compliance Engine (ACE)",
+        description: "Enable compliance-focused digital assets",
+        link: "/ace",
+      },
+    ],
+  },
   data: {
     title: "Data",
     items: [
@@ -105,17 +116,6 @@ export const megaMenuSections = {
         title: "Digital Transfer Agent (DTA) Technical Standard",
         description: "Unlock streamlined tokenized fund operations",
         link: "/dta-technical-standard",
-      },
-    ],
-  },
-  compliance: {
-    title: "Compliance",
-    items: [
-      {
-        icon: aceLogo,
-        title: "Automated Compliance Engine (ACE)",
-        description: "Enable compliance-focused digital assets",
-        link: "/ace",
       },
     ],
   },
@@ -187,16 +187,29 @@ function MegaMenu({ cancel, isMobile }: { cancel?: () => void; isMobile?: boolea
             ))}
           </li>
         </div>
-        <div className={styles.section}>
-          <header>
-            <BlueSquare />
-            <GroupTitle>{megaMenuSections.interoperability.title}</GroupTitle>
-          </header>
-          <li className={styles.itemList}>
-            {megaMenuSections.interoperability.items.map((link) => (
-              <GroupItem key={link.title} data={link} />
-            ))}
-          </li>
+        <div className={styles.sectionStack}>
+          <div className={styles.section}>
+            <header>
+              <BlueSquare />
+              <GroupTitle>{megaMenuSections.interoperability.title}</GroupTitle>
+            </header>
+            <li className={styles.itemList}>
+              {megaMenuSections.interoperability.items.map((link) => (
+                <GroupItem key={link.title} data={link} />
+              ))}
+            </li>
+          </div>
+          <div className={styles.section}>
+            <header>
+              <BlueSquare />
+              <GroupTitle>{megaMenuSections.compliance.title}</GroupTitle>
+            </header>
+            <li className={styles.itemList}>
+              {megaMenuSections.compliance.items.map((link) => (
+                <GroupItem key={link.title} data={link} />
+              ))}
+            </li>
+          </div>
         </div>
         <div className={styles.section}>
           <header>
@@ -234,29 +247,16 @@ function MegaMenu({ cancel, isMobile }: { cancel?: () => void; isMobile?: boolea
             ))}
           </li>
         </div>
-        <div className={styles.sectionStack}>
-          <div className={styles.section}>
-            <header>
-              <BlueSquare />
-              <GroupTitle>{megaMenuSections.compliance.title}</GroupTitle>
-            </header>
-            <li className={styles.itemList}>
-              {megaMenuSections.compliance.items.map((link) => (
-                <GroupItem key={link.title} data={link} />
-              ))}
-            </li>
-          </div>
-          <div className={styles.section}>
-            <header>
-              <BlueSquare />
-              <GroupTitle>{megaMenuSections.other.title}</GroupTitle>
-            </header>
-            <li className={styles.itemList}>
-              {megaMenuSections.other.items.map((link) => (
-                <GroupItem key={link.title} data={link} />
-              ))}
-            </li>
-          </div>
+        <div className={styles.section}>
+          <header>
+            <BlueSquare />
+            <GroupTitle>{megaMenuSections.other.title}</GroupTitle>
+          </header>
+          <li className={styles.itemList}>
+            {megaMenuSections.other.items.map((link) => (
+              <GroupItem key={link.title} data={link} />
+            ))}
+          </li>
         </div>
       </div>
     </div>

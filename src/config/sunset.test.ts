@@ -1,5 +1,11 @@
 import { describe, expect, it } from "@jest/globals"
-import { isSunsetContentFile, isSunsetDocsPath, isSunsetSidebarSection } from "./sunset.js"
+import { SIDEBAR, SIDEBAR_WITH_SUNSET_PRODUCTS } from "./sidebar.js"
+import {
+  SUNSET_PAGES_STAY_IN_SITEMAP,
+  isSunsetContentFile,
+  isSunsetDocsPath,
+  isSunsetSidebarSection,
+} from "./sunset.js"
 
 describe("sunset docs paths", () => {
   it.each([
@@ -33,5 +39,22 @@ describe("sunset docs paths", () => {
     expect(isSunsetContentFile("/repo/src/content/chainlink-functions/getting-started.mdx")).toBe(true)
     expect(isSunsetContentFile("/repo/src/content/quickstarts/eth-balance-monitor.mdx")).toBe(true)
     expect(isSunsetContentFile("/repo/src/content/quickstarts/circuit-breaker.mdx")).toBe(false)
+  })
+
+  it("keeps the product trees for their own pages and keeps the pages in the sitemap", () => {
+    expect(SIDEBAR.automation).toBeUndefined()
+    expect(SIDEBAR.chainlinkFunctions).toBeUndefined()
+    expect(SIDEBAR.vrf?.length).toBeGreaterThan(0)
+
+    const automationTitles = SIDEBAR_WITH_SUNSET_PRODUCTS.automation?.flatMap((group) =>
+      group.contents.map((item) => item.title)
+    )
+    const functionsTitles = SIDEBAR_WITH_SUNSET_PRODUCTS.chainlinkFunctions?.flatMap((group) =>
+      group.contents.map((item) => item.title)
+    )
+
+    expect(automationTitles).toContain("Cancel an Upkeep and Withdraw Funds")
+    expect(functionsTitles).toContain("Cancel a Subscription and Withdraw Funds")
+    expect(SUNSET_PAGES_STAY_IN_SITEMAP).toBe(true)
   })
 })

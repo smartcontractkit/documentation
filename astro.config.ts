@@ -15,7 +15,7 @@ import trailingSlashMiddleware from "./src/integrations/trailing-slash-middlewar
 import redirectsJson from "./src/features/redirects/redirects.json"
 import tailwind from "@astrojs/tailwind"
 import { extractCanonicalUrlsWithLanguageVariants } from "./src/utils/sidebar"
-import { isSunsetDocsPath } from "./src/config/sunset"
+import { isSunsetDocsPath, SUNSET_PAGES_STAY_IN_SITEMAP } from "./src/config/sunset"
 import remarkCodeFenceFilename from "./src/lib/markdown/remarkCodeFenceFilename"
 import remarkCodeFenceLanguageAlias from "./src/lib/markdown/remarkCodeFenceLanguageAlias"
 import rehypeCodeSampleFences from "./src/lib/markdown/rehypeCodeSampleFences"
@@ -83,8 +83,9 @@ export default defineConfig({
         const pathname = new URL(page).pathname
         const cleanPath = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname
 
-        // Functions and Automation pages stay reachable, but they are not indexed.
-        if (isSunsetDocsPath(cleanPath)) {
+        // Sunset pages stay listed for now so a crawler can recrawl and read noindex.
+        // Flip SUNSET_PAGES_STAY_IN_SITEMAP to false after a few weeks.
+        if (!SUNSET_PAGES_STAY_IN_SITEMAP && isSunsetDocsPath(cleanPath)) {
           return false
         }
 
