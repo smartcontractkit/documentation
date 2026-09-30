@@ -49,7 +49,7 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
       // Universal: shown for EVM V2 and Canton V2 (Solana/Aptos/TON are on ccip-v1.ts)
       {
         title: "Release Notes",
-        url: "https://dev.chain.link/changelog?product=CCIP",
+        url: "https://docs.chain.link/changelog?product=CCIP",
       },
       {
         title: "Get Started",
