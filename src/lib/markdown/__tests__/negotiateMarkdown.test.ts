@@ -41,6 +41,14 @@ describe("markdownAlternatePath", () => {
     expect(markdownAlternatePath("/api-reference/overview")).toBe("/api-reference/overview.md")
   })
 
+  it("maps version directories that contain dots", () => {
+    expect(markdownAlternatePath("/ccip/v1/evm/api-reference/v1.6.0/client")).toBe(
+      "/ccip/v1/evm/api-reference/v1.6.0/client.md"
+    )
+    expect(markdownAlternatePath("/ccip/v1/evm/api-reference/v1.6.0")).toBe("/ccip/v1/evm/api-reference/v1.6.0.md")
+    expect(markdownAlternatePath("/ccip/v1/evm/api-reference/v1.6.0/")).toBe("/ccip/v1/evm/api-reference/v1.6.0.md")
+  })
+
   it("skips files, apis, and build assets", () => {
     expect(markdownAlternatePath("/ccip/getting-started.md")).toBeNull()
     expect(markdownAlternatePath("/llms.txt")).toBeNull()
@@ -69,12 +77,38 @@ describe("negotiateMarkdown", () => {
 describe("MARKDOWN_NEGOTIATION_MATCHER", () => {
   const matcher = pathToRegexp(MARKDOWN_NEGOTIATION_MATCHER)
 
-  it.each(["/", "/ccip/getting-started", "/ccip/getting-started/", "/api-reference/overview"])(
-    "includes %s",
-    (pathname) => {
+  it.each([
+    "/",
+    "/ccip/getting-started",
+    "/ccip/getting-started/",
+    "/api-reference/overview",
+    "/ccip/v1/evm/api-reference/v1.6.0/client",
+    "/ccip/v1/evm/api-reference/v1.6.0",
+    "/ccip/v1/evm/api-reference/v1.6.0/",
+    "/changelog",
+    "/docs/off-chain-reporting",
+  ])("includes %s", (pathname) => {
+    expect(matcher.test(pathname)).toBe(true)
+  })
+
+  it("matches every path the alternate helper can rewrite", () => {
+    const paths = [
+      "/",
+      "/ccip/getting-started",
+      "/ccip/getting-started/",
+      "/api-reference/overview",
+      "/ccip/v1/evm/api-reference/v1.6.0/client",
+      "/ccip/v1/evm/api-reference/v1.6.0",
+      "/ccip/v1/svm/api-reference/v1.6.0/router",
+      "/changelog",
+      "/search-index",
+      "/docs/off-chain-reporting",
+    ]
+    for (const pathname of paths) {
+      expect(markdownAlternatePath(pathname)).not.toBeNull()
       expect(matcher.test(pathname)).toBe(true)
     }
-  )
+  })
 
   it.each([
     "/api/page-markdown",

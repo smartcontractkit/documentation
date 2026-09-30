@@ -1,8 +1,69 @@
 const SKIPPED_EXACT_PATHS = new Set(["/api", "/_astro", "/_image", "/_vercel", "/samples"])
 const SKIPPED_PREFIXES = ["/api/", "/_astro/", "/_image/", "/_vercel/", "/samples/"]
 
-// Keep this aligned with the root middleware matcher. Dotted paths are files.
-export const MARKDOWN_NEGOTIATION_MATCHER = "/((?!_astro/|_image/|_vercel/|api/|samples/)(?!.*\\.).*)"
+// A dot means a file only when the last segment ends with one of these.
+// Version directories such as v1.6.0 are pages. "0" is not in this list.
+const FILE_EXTENSIONS = [
+  "avif",
+  "css",
+  "csv",
+  "eot",
+  "gif",
+  "go",
+  "gz",
+  "htm",
+  "html",
+  "ico",
+  "jpeg",
+  "jpg",
+  "js",
+  "json",
+  "map",
+  "md",
+  "mdx",
+  "mjs",
+  "mp3",
+  "mp4",
+  "otf",
+  "pdf",
+  "png",
+  "py",
+  "rs",
+  "sol",
+  "svg",
+  "toml",
+  "ts",
+  "tsx",
+  "ttf",
+  "txt",
+  "wasm",
+  "webm",
+  "webmanifest",
+  "webp",
+  "woff",
+  "woff2",
+  "xml",
+  "yaml",
+  "yml",
+  "zip",
+] as const
+
+const FILE_EXTENSION_SET = new Set<string>(FILE_EXTENSIONS)
+
+// Vercel reads root middleware.ts as text, so that file repeats this string.
+// The middleware test checks the two copies match.
+const skippedPrefixPattern = SKIPPED_PREFIXES.map((prefix) => prefix.slice(1)).join("|")
+const fileExtensionPattern = FILE_EXTENSIONS.join("|")
+export const MARKDOWN_NEGOTIATION_MATCHER = `/((?!${skippedPrefixPattern})(?!.*\\.(?:${fileExtensionPattern})$).*)`
+
+export const MARKDOWN_FALLBACK_PARAM = "markdown_fallback"
+export const MARKDOWN_FALLBACK_HEADER = "x-markdown-fallback"
+
+function lastSegmentIsFile(segment: string): boolean {
+  const dot = segment.lastIndexOf(".")
+  if (dot <= 0) return false
+  return FILE_EXTENSION_SET.has(segment.slice(dot + 1).toLowerCase())
+}
 
 export type MarkdownNegotiation =
   { action: "rewrite"; pathname: string } | { action: "html"; alternatePath: string } | { action: "skip" }
@@ -39,7 +100,7 @@ export function markdownAlternatePath(pathname: string): string | null {
   }
 
   const lastSegment = path.slice(path.lastIndexOf("/") + 1)
-  if (lastSegment.includes(".")) return null
+  if (lastSegmentIsFile(lastSegment)) return null
 
   return path === "/" ? "/index.md" : `${path}.md`
 }

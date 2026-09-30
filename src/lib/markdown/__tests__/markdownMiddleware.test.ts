@@ -30,7 +30,9 @@ describe("astro middleware", () => {
       async () => new Response("html", { headers: { "content-type": "text/html" } })
     )
 
-    expect(rewritten).toBe("https://docs.chain.link/cre/getting-started/cli-installation.md?lang=en")
+    expect(rewritten).toBe(
+      "https://docs.chain.link/cre/getting-started/cli-installation.md?lang=en&markdown_fallback=1"
+    )
     expect(response).toBeInstanceOf(Response)
     if (!(response instanceof Response)) return
     expect(response.headers.get("content-type")).toContain("text/markdown")
@@ -68,9 +70,12 @@ describe("vercel middleware", () => {
   it("rewrites when the caller asks for markdown", () => {
     const response = middleware(pageRequest("/data-feeds/price-feeds?lang=en", "text/markdown"))
     expect(response.headers.get("x-middleware-rewrite")).toBe(
-      "https://docs.chain.link/data-feeds/price-feeds.md?lang=en"
+      "https://docs.chain.link/data-feeds/price-feeds.md?lang=en&markdown_fallback=1"
     )
-    expect(response.headers.get("x-middleware-request-x-astro-path")).toBe("/data-feeds/price-feeds.md?lang=en")
+    expect(response.headers.get("x-middleware-request-x-astro-path")).toBe(
+      "/data-feeds/price-feeds.md?lang=en&markdown_fallback=1"
+    )
+    expect(response.headers.get("x-middleware-request-x-markdown-fallback")).toBe("1")
     expect(response.headers.get("x-middleware-next")).toBeNull()
   })
 
