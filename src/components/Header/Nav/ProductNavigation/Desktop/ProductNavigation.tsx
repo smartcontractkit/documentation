@@ -59,16 +59,6 @@ export const ProductNavigation = ({ setNavMenuOpen, showMegaMenu, isMegamenuOpen
             </a>
           </Item>
           <Item>
-            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/demos">
-              Demos
-            </NavigationMenu.Link>
-          </Item>
-          <Item>
-            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/tools">
-              Tools
-            </NavigationMenu.Link>
-          </Item>
-          <Item>
             <NavigationMenu.Link className={styles.navLink} href="/changelog">
               Changelog
             </NavigationMenu.Link>
