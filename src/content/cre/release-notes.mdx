@@ -5,12 +5,31 @@ date: Last Modified
 metadata:
   description: "Discover what's new in CRE: latest features, changes, and improvements in each release of the Chainlink Runtime Environment."
   datePublished: "2025-11-04"
-  lastModified: "2026-09-18"
+  lastModified: "2026-10-01"
 ---
 
 import { Aside } from "@components"
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Ethereum Glamsterdam upgrade">
+  Ethereum is upgrading to Glamsterdam during Q4 2026, which changes the gas model of the chain. **No action is required unless your workflow sets a gas limit.** Ethereum Sepolia upgrades on 6 October 2026 at 13:53:36 UTC; Ethereum Hoodi and Mainnet follow in Q4 2026. Onchain writes may fail for roughly 30 minutes before and after each upgrade. See [Network Upgrades](/cre/network-upgrades) for timelines and preparation steps.
+</Aside>
+
+## CLI v1.36.0 - October 1, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.36.0" target="_blank">CRE CLI version 1.36.0</a> is now available.**
+
+- **Clearer execution statuses**: `cre execution status`, `cre execution list`, and `cre workflow get` now surface detailed and classified execution statuses. Runs that finish with capability errors are labeled `SUCCESS (completed with errors)`, and failures caused by the platform rather than your workflow are flagged with a hint so you know whether to retry or debug. Capability errors are now shown even when the top-level execution status is `SUCCESS`. See [`cre execution`](/cre/reference/cli/execution).
+- **Telemetry fix for commands that don't require login**: Commands such as `cre generate-bindings`, `cre workflow build`, and `cre workflow hash` now attach existing credentials silently so their usage events are recorded. These commands remain fully usable while logged out.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.35.0...v1.36.0)
 
 ## CLI v1.35.0 - September 18, 2026
 
