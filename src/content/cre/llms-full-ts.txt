@@ -476,6 +476,49 @@ These quotas apply to each individual workflow.
 
 ---
 
+# Network Upgrades
+Source: https://docs.chain.link/cre/network-upgrades
+Last Updated: 2026-10-01
+
+Blockchain networks periodically upgrade their protocol. Most upgrades do not affect CRE workflows, but some change how transactions are priced or executed. This page tracks upcoming upgrades that may require action from workflow developers.
+
+## Ethereum Glamsterdam
+
+Ethereum is upgrading to [Glamsterdam](https://ethereum.org/roadmap/glamsterdam/) during Q4 2026. The exact timing is still to be confirmed.
+
+Glamsterdam changes the gas model of the chain. **You do not need to do anything unless your workflow sets a gas limit**, in which case see [Preparation](#preparation) below.
+
+### Timelines
+
+| Network              | Timing                                         | Impact                                                                                  |
+| -------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **Ethereum Sepolia** | 6 October 2026 (time to be announced)          | Workflows writing to Ethereum Sepolia may fail 30 minutes before and after the upgrade. |
+| **Ethereum Hoodi**   | Q4 2026 (will be confirmed closer to the time) | Workflows writing to Ethereum Hoodi may fail 30 minutes before and after the upgrade.   |
+| **Ethereum Mainnet** | Q4 2026 (will be confirmed closer to the time) | Workflows writing to Ethereum Mainnet may fail 30 minutes before and after the upgrade. |
+
+> **NOTE: Writes may fail during the upgrade window**
+>
+> Onchain writes to the affected network may fail for roughly 30 minutes before and 30 minutes after each upgrade. If a write fails during this window, retry it after the upgrade completes.
+
+### Preparation
+
+If any of your workflows sets a gas limit, you will need to adjust it once the hardfork takes effect. We can't advise exactly how, because the correct value depends on how much storage versus compute your transactions use.
+
+To best prepare:
+
+1. **Start testing against Ethereum Sepolia from 6 October 2026**, once the new gas model is in effect. Update your workflows to add gas headroom or unset the gas limit, and confirm they still succeed.
+2. **Update your workflows for Ethereum Mainnet** once it is upgraded (date to be confirmed, but in Q4 2026).
+
+For details on configuring gas limits in your workflows, see [Configuring gas limits](/cre/guides/workflow/using-evm-client/onchain-write/using-write-report-helpers#configuring-gas-limits) and [Writing data onchain](/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain).
+
+## Learn more
+
+- [Supported Networks](/cre/supported-networks) — Networks available for simulation and production
+- [Writing Data Onchain](/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain) — Configure gas limits for onchain writes
+- [Release Notes](/cre/release-notes) — What's new in CRE
+
+---
+
 # Support & Feedback
 Source: https://docs.chain.link/cre/support-feedback
 Last Updated: 2025-11-04
@@ -533,6 +576,10 @@ Source: https://docs.chain.link/cre/release-notes
 Last Updated: 2026-10-01
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+> **CAUTION: Ethereum Glamsterdam upgrade**
+>
+> Ethereum is upgrading to Glamsterdam during Q4 2026, which changes the gas model of the chain. **No action is required unless your workflow sets a gas limit.** Ethereum Sepolia upgrades on 6 October 2026; Ethereum Hoodi and Mainnet follow in Q4 2026. Onchain writes may fail for roughly 30 minutes before and after each upgrade. See [Network Upgrades](/cre/network-upgrades) for timelines and preparation steps.
 
 ## CLI v1.36.0 - October 1, 2026
 
