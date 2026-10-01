@@ -530,9 +530,23 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-09-18
+Last Updated: 2026-10-01
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.36.0 - October 1, 2026
+
+**[CRE CLI version 1.36.0](https://github.com/smartcontractkit/cre-cli/releases/tag/v1.36.0) is now available.**
+
+- **Clearer execution statuses**: `cre execution status`, `cre execution list`, and `cre workflow get` now surface detailed and classified execution statuses. Runs that finish with capability errors are labeled `SUCCESS (completed with errors)`, and failures caused by the platform rather than your workflow are flagged with a hint so you know whether to retry or debug. Capability errors are now shown even when the top-level execution status is `SUCCESS`. See [`cre execution`](/cre/reference/cli/execution).
+- **Telemetry fix for commands that don't require login**: Commands such as `cre generate-bindings`, `cre workflow build`, and `cre workflow hash` now attach existing credentials silently so their usage events are recorded. These commands remain fully usable while logged out.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.35.0...v1.36.0)
 
 ## CLI v1.35.0 - September 18, 2026
 
@@ -9926,7 +9940,7 @@ The typical workflow lifecycle uses these commands in sequence:
 
 # Execution Commands
 Source: https://docs.chain.link/cre/reference/cli/execution
-Last Updated: 2026-07-09
+Last Updated: 2026-10-01
 
 The `cre execution` commands query workflow execution history from the CRE platform. Use them to debug failures, review capability timelines, and pull log lines without opening the web UI.
 
@@ -9939,6 +9953,17 @@ The `cre execution` commands query workflow execution history from the CRE platf
 > All `cre` commands support [global flags](/cre/reference/cli#global-flags) like `--env`, `--target`, `--project-root`, and `--verbose`.
 
 For a quick health check on the workflow configured in your project, see [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get), which shows deployment health and the most recent execution.
+
+## Execution statuses
+
+`cre execution list`, `cre execution status`, and [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get) report a top-level status of `TRIGGERED`, `IN_PROGRESS`, `SUCCESS`, or `FAILURE`. When the platform provides additional detail, the CLI refines this into a more descriptive label:
+
+| Label                                 | Meaning                                                                                                                    |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `SUCCESS (completed with errors)`     | The workflow finished, but one or more capability calls returned an error. The failing capability events are listed below. |
+| `FAILURE (no error details reported)` | The execution failed without reporting a reason. Check `cre execution logs` for clues.                                     |
+
+When the platform classifies a failure as a system error rather than a workflow error, the CLI prints a hint explaining that the failure was not caused by your workflow. In JSON output, these refinements appear as the `detailedStatus`, `classifiedStatus`, and `hint` fields.
 
 ## `cre execution list`
 
