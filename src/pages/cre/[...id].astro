@@ -1,5 +1,6 @@
 ---
 import DocsLayout from "~/layouts/DocsLayout.astro"
+import type { MarkdownHeading } from "astro"
 import { getCollection, render } from "astro:content"
 
 export async function getStaticPaths() {
@@ -88,17 +89,32 @@ interface Props {
 
 const { entry, goEntry, tsEntry, isCanonical } = Astro.props
 
-// Determine what to render
-let Content, headings, currentEntry
+let Content, currentEntry
+let headings: MarkdownHeading[]
+let canonicalFragmentIds: string[] = []
 
 if (isCanonical) {
-  // Canonical URL - will redirect client-side based on preference
   currentEntry = goEntry || tsEntry!
-  const renderResult = await render(currentEntry)
-  Content = () => null // Don't render content, just redirect
-  headings = renderResult.headings
+
+  // Collect fragments from both language variants so static link checkers
+  // can validate canonical URLs without executing the client-side redirect.
+  const [goRenderResult, tsRenderResult] = await Promise.all([render(goEntry!), render(tsEntry!)])
+  const goFragmentIds = new Set(goRenderResult.headings.map((heading) => heading.slug))
+
+  canonicalFragmentIds = [
+    ...new Set(
+      tsRenderResult.headings
+        .map((heading) => heading.slug)
+        .filter((slug) => slug && slug !== "overview" && goFragmentIds.has(slug))
+    ),
+  ]
+
+  Content = () => null
+
+  // Redirect pages do not render documentation sections, so their TOC
+  // must not expose links to headings that are absent from the page.
+  headings = []
 } else {
-  // Language-specific URL - render the content
   currentEntry = entry!
   const renderResult = await render(currentEntry)
   Content = renderResult.Content
@@ -107,7 +123,6 @@ if (isCanonical) {
 ---
 
 <DocsLayout frontmatter={currentEntry.data} {headings}>
-  {/* noindex for redirect pages */}
   {isCanonical && <meta name="robots" content="noindex, follow" slot="head-scripts" />}
 
   {
@@ -115,8 +130,25 @@ if (isCanonical) {
       <script
         is:inline
         slot="head-scripts"
-        define:vars={{ goUrl: `/cre/${goEntry!.id}`, tsUrl: `/cre/${tsEntry!.id}` }}
-        set:html={`(function(){try{var s=localStorage.getItem("docs-language-preference"),l=s==="go"||s==='"go"'?"go":"ts",u=l==="go"?goUrl:tsUrl;u&&window.location.replace(u)}catch(e){tsUrl&&window.location.replace(tsUrl)}})();`}
+        define:vars={{
+          goUrl: `/cre/${goEntry!.id}`,
+          tsUrl: `/cre/${tsEntry!.id}`,
+        }}
+        set:html={`(function(){
+          try {
+            var s = localStorage.getItem("docs-language-preference");
+            var l = s === "go" || s === '"go"' ? "go" : "ts";
+            var u = l === "go" ? goUrl : tsUrl;
+            var suffix = window.location.search + window.location.hash;
+            if (u) window.location.replace(u + suffix);
+          } catch (e) {
+            if (tsUrl) {
+              window.location.replace(
+                tsUrl + window.location.search + window.location.hash
+              );
+            }
+          }
+        })();`}
       />
     )
   }
@@ -127,20 +159,48 @@ if (isCanonical) {
         is:inline
         slot="head-scripts"
         define:vars={{ currentLang: entry!.data.sdkLang }}
-        set:html={`(function(){try{localStorage.setItem("docs-language-preference",currentLang)}catch(e){}})();`}
+        set:html={`(function(){
+          try {
+            localStorage.setItem("docs-language-preference", currentLang);
+          } catch (e) {}
+        })();`}
       />
     )
   }
 
-  {isCanonical ? <div /> : <Content />}
+  {
+    isCanonical ? (
+      // These IDs are invisible to users but allow Lychee to verify fragments
+      // that become valid after the language-specific redirect.
+      <div hidden aria-hidden="true">
+        {canonicalFragmentIds.map((fragmentId) => (
+          <span id={fragmentId} />
+        ))}
+      </div>
+    ) : (
+      <Content />
+    )
+  }
 </DocsLayout>
 
 {
   !isCanonical && goEntry && tsEntry && (
     <script
       type="module"
-      define:vars={{ goUrl: `/cre/${goEntry.id}`, tsUrl: `/cre/${tsEntry.id}` }}
-      set:html={`window.addEventListener("languageChanged",function(e){try{var l=e.detail.language,u=l==="go"?goUrl:tsUrl;u&&(window.location.href=u)}catch(e){console.error("Language change error:",e)}});`}
+      define:vars={{
+        goUrl: `/cre/${goEntry.id}`,
+        tsUrl: `/cre/${tsEntry.id}`,
+      }}
+      set:html={`window.addEventListener("languageChanged", function(e) {
+        try {
+          var l = e.detail.language;
+          var u = l === "go" ? goUrl : tsUrl;
+          var suffix = window.location.search + window.location.hash;
+          if (u) window.location.href = u + suffix;
+        } catch (e) {
+          console.error("Language change error:", e);
+        }
+      });`}
     />
   )
 }

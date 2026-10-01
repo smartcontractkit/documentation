@@ -7,6 +7,7 @@ import styles from "./productNavigation.module.css"
 import { CaretIcon } from "../CaretIcon.tsx"
 import MegaMenu from "./MegaMenu.tsx"
 import MegaMenuContainer from "./MegaMenuContainer.tsx"
+import { SOLUTIONS_HUB_ENABLED } from "~/config/solutions/hub.ts"
 
 type Props = {
   setNavMenuOpen: (navMenuOpen: boolean) => void
@@ -14,13 +15,14 @@ type Props = {
   showMegaMenu: () => void
   isMegamenuOpen: boolean
   exitMegamenu: () => void
+  path: string
 }
 
 const Root = extendRadixComponent(NavigationMenu.Root)
 const List = extendRadixComponent(NavigationMenu.List)
 const Item = extendRadixComponent(NavigationMenu.Item)
 
-export const ProductNavigation = ({ setNavMenuOpen, showMegaMenu, isMegamenuOpen, exitMegamenu }: Props) => {
+export const ProductNavigation = ({ setNavMenuOpen, showMegaMenu, isMegamenuOpen, exitMegamenu, path }: Props) => {
   const productMenuRef = React.useRef<HTMLButtonElement>(null)
   const productMenuDataset = productMenuRef.current?.dataset ?? {}
   const productMenuOpen = React.useMemo(() => productMenuDataset.state === "open", [productMenuDataset.state])
@@ -36,7 +38,9 @@ export const ProductNavigation = ({ setNavMenuOpen, showMegaMenu, isMegamenuOpen
       }
     }
   }
-
+  // "Docs" is active everywhere except on Solutions pages, where "Solutions" takes
+  // the indicator.
+  const isSolutionsPage = SOLUTIONS_HUB_ENABLED && path.startsWith("/solutions")
   React.useEffect(() => setNavMenuOpen(productMenuOpen || subProductMenuOpen), [productMenuOpen, subProductMenuOpen])
 
   return (
@@ -45,7 +49,7 @@ export const ProductNavigation = ({ setNavMenuOpen, showMegaMenu, isMegamenuOpen
         <List className={styles.list}>
           <Item onMouseEnter={exitMegamenu}>
             <a
-              className={clsx(styles.navLink)}
+              className={clsx(styles.navLink, { [styles.active]: !isSolutionsPage })}
               href="/"
               onMouseEnter={showMegaMenu}
               role="button"
@@ -58,6 +62,16 @@ export const ProductNavigation = ({ setNavMenuOpen, showMegaMenu, isMegamenuOpen
               Docs <CaretIcon aria-hidden />
             </a>
           </Item>
+          {SOLUTIONS_HUB_ENABLED && (
+            <Item>
+              <NavigationMenu.Link
+                className={clsx(styles.navLink, { [styles.active]: isSolutionsPage })}
+                href="/solutions"
+              >
+                Solutions
+              </NavigationMenu.Link>
+            </Item>
+          )}
           <Item>
             <NavigationMenu.Link className={styles.navLink} href="/changelog">
               Changelog

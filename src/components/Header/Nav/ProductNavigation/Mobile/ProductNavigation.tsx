@@ -7,6 +7,7 @@ import { MenuIcon } from "./MenuIcon.tsx"
 import { BackArrowIcon } from "./BackArrowIcon.tsx"
 import { CaretRightIcon } from "./CaretRightIcon.tsx"
 import MegaMenu from "../Desktop/MegaMenu.tsx"
+import { SOLUTIONS_HUB_ENABLED } from "~/config/solutions/hub.ts"
 
 const Trigger = extendRadixComponent(Dialog.Trigger)
 const Close = extendRadixComponent(Dialog.Close)
@@ -85,7 +86,11 @@ export function ProductNavigation() {
                       Docs
                       <CaretRightIcon />
                     </button>
-
+                    {SOLUTIONS_HUB_ENABLED && (
+                      <a href="/solutions" className={styles.productContentLink}>
+                        Solutions
+                      </a>
+                    )}
                     <a href="/changelog" className={styles.productContentLink}>
                       Changelog
                     </a>
