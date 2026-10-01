@@ -5282,7 +5282,7 @@ Complete TypeScript reference implementations, available as templates:
 
 # Managing Secrets
 Source: https://docs.chain.link/cre/guides/workflow/secrets
-Last Updated: 2026-03-26
+Last Updated: 2026-10-01
 
 Secrets are sensitive values like API keys, private keys, database URLs, and authentication tokens that your workflow needs to access at runtime. CRE provides different approaches for managing secrets depending on whether you're developing locally or running workflows in production.
 
@@ -5353,6 +5353,10 @@ apiKey := secret.Value
 ```
 
 The CRE runtime automatically handles retrieving the secret from the appropriate source based on your environment.
+
+> **NOTE: Fetch secrets only inside trigger handlers**
+>
+> When your workflow starts, the DON first runs your top-level code to register (subscribe) trigger handlers. During this trigger subscription phase, all capability calls and secret retrieval (Go: `runtime.GetSecrets()` / TS: `runtime.getSecret()`) are blocked. A `GetSecrets()` call made while registering handlers fails. Call it from inside a trigger handler instead — secrets are fetched on each execution, after the trigger fires.
 
 ## Getting started
 
