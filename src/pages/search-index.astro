@@ -3,12 +3,15 @@ import { splitTextByHeadings } from "../scripts/split-text-by-headings"
 import { MarkdownInstance } from "astro"
 import fs from "node:fs"
 import { canonicalizeCcipUrlPath } from "~/lib/ccip/contentPathMapping.js"
+import { isSunsetContentFile } from "~/config/sunset"
 
 const pagesGlob = import.meta.glob("./**/*.astro", { eager: true })
 const pages = Object.values(pagesGlob)
 
 const postsMdxGlob = import.meta.glob<MarkdownInstance<Record<string, any>>>("../content/**/*.mdx", { eager: true })
-const postsMdx = Object.values(postsMdxGlob).filter((post) => !post.frontmatter.draft)
+const postsMdx = Object.values(postsMdxGlob).filter(
+  (post) => !post.frontmatter.draft && !isSunsetContentFile(post.file)
+)
 
 const postsMdxWithContent = postsMdx.map((post) => {
   const url = new URL(post.file, import.meta.url)

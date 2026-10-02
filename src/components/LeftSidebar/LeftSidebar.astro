@@ -1,6 +1,6 @@
 ---
 import { Sections } from "~/content.config"
-import { SIDEBAR, CCIP_SIDEBARS } from "../../config"
+import { SIDEBAR_WITH_SUNSET_PRODUCTS, CCIP_SIDEBARS } from "../../config"
 import type { SectionEntry, SectionContent } from "../../config"
 import { SIDEBAR_SECTIONS } from "../../config/sidebarSections.ts"
 import { AI_AGENT_RESOURCES_SECTION, withParentQuery } from "../../config/sidebar/ai-agent-resources.ts"
@@ -53,7 +53,7 @@ function getSidebarSections(section?: Sections): SectionEntryWithParent[] {
     return []
   } else if (section === "global") {
     // Flatten all sidebar entries into one array (include AI resources per product)
-    return Object.entries(SIDEBAR).flatMap(([parentSection, entries]) => {
+    return Object.entries(SIDEBAR_WITH_SUNSET_PRODUCTS).flatMap(([parentSection, entries]) => {
       const sections = entries?.map((entry) => ({ ...entry, parentSection: parentSection as Sections })) ?? []
 
       if (!SECTIONS_WITHOUT_AI_RESOURCES.has(parentSection as Sections)) {
@@ -81,7 +81,7 @@ function getSidebarSections(section?: Sections): SectionEntryWithParent[] {
   // For CCIP: use version-specific sidebar based on the current page URL
   if (section === "ccip") {
     const ccipVersion = detectCcipVersionFromPage(currentPage)
-    const ccipSections = CCIP_SIDEBARS[ccipVersion] ?? SIDEBAR[section] ?? []
+    const ccipSections = CCIP_SIDEBARS[ccipVersion] ?? SIDEBAR_WITH_SUNSET_PRODUCTS[section] ?? []
 
     if (SECTIONS_WITHOUT_AI_RESOURCES.has(section)) {
       return ccipSections
@@ -96,7 +96,7 @@ function getSidebarSections(section?: Sections): SectionEntryWithParent[] {
     ]
   }
 
-  const productSections = SIDEBAR[section] ?? []
+  const productSections = SIDEBAR_WITH_SUNSET_PRODUCTS[section] ?? []
 
   if (SECTIONS_WITHOUT_AI_RESOURCES.has(section)) {
     return productSections
