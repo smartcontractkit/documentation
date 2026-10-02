@@ -41,7 +41,7 @@ After the transaction is confirmed onchain, the faucet app shows "Request comple
 # Cross-chain bridges and associated risks
 Source: https://docs.chain.link/resources/bridge-risks
 
-When working with Chainlink on layer-2 chains and side chains, you must export your LINK tokens from Ethereum to the target chain using a cross-chain bridge. Follow this [video](https://www.youtube.com/watch?v=WKvIGkBWRUA) for an example of moving LINK tokens from Ethereum to Polygon.
+Move LINK from Ethereum to another chain with [Chainlink CCIP](/ccip/evm/tutorials/application-developers/transfer-tokens-from-contract) and CCIP-powered applications such as [Transporter](https://app.transporter.io/?tab=token\&token=LINK). You do not have to use a third-party bridge.
 
 Cross-chain bridges come with their own risks. In fact, bridge attacks constitute some of the [largest cryptocurrency hacks](https://rekt.news/leaderboard/) by value. When moving your LINK tokens or any asset across chains, understand the risks that you are taking with your assets. Chainlink Labs does not endorse any bridge. Ultimately, you are responsible for assessing the bridge that you use to move your assets.
 
@@ -654,7 +654,7 @@ To stay up to date on the hackathons that Chainlink is running or sponsoring, ke
 
 ---
 
-# Install Frameworks
+# Starter Kits and Frameworks
 Source: https://docs.chain.link/resources/create-a-chainlinked-project
 
 ![Starter kit logos](/images/starter-kit-images/starter-kits.webp)
@@ -665,9 +665,17 @@ You can install and use Chainlink in your projects either manually or by using t
 >
 > If you're new to smart contract development and want a step-by-step guide, try out our [Getting Started](/getting-started/conceptual-overview) guide.
 
+For a new project, start from the product guide you need:
+
+- [Data Feeds](/data-feeds/getting-started)
+- [Data Streams](/data-streams/tutorials/overview)
+- [VRF v2.5](/vrf/v2-5/getting-started)
+- [CCIP](/ccip/v2/evm/getting-started)
+- [CRE](/cre/getting-started/overview)
+
 ## Installing into existing projects
 
-Chainlink is supported by [Hardhat](http://hardhat.org), [Brownie](https://eth-brownie.readthedocs.io/en/stable), [Truffle](https://www.trufflesuite.com), and other frameworks.
+Chainlink is supported by [Hardhat](https://hardhat.org), [Foundry](https://book.getfoundry.sh/), and [Anchor](https://www.anchor-lang.com/). [Apeworx](https://docs.apeworx.io/ape/stable/) is available for Vyper.
 
 If you already have a project, install the [@chainlink/contracts](https://www.npmjs.com/package/@chainlink/contracts) NPM package.
 
@@ -702,22 +710,6 @@ To learn more about Hardhat, read the [Hardhat Documentation](https://hardhat.or
 
 For more details on how to use Chainlink with Hardhat, see the blog post for [How to use Hardhat with Chainlink](https://blog.chain.link/using-chainlink-with-hardhat/).
 
-### Brownie Starter Kit
-
-For the latest instructions, see the [Brownie Starter Kit](https://github.com/smartcontractkit/chainlink-mix) repository.
-
-To learn more about Brownie, read the [Brownie Documentation](https://eth-brownie.readthedocs.io/en/stable/).
-
-For more details on how to use Chainlink with Brownie, see the [Develop a DeFi Project Using Python](https://blog.chain.link/develop-python-defi-project/) blog post.
-
-### Truffle Starter Kit
-
-For the latest instructions, see the [Truffle Starter Kit](https://github.com/smartcontractkit/truffle-starter-kit) repository.
-
-To learn more about Truffle, read the [Truffle Suite Documentation](https://trufflesuite.com/docs/).
-
-For more details on how to use Chainlink with Truffle, see our blog post about [Using Truffle to interact with Chainlink Smart Contracts](https://www.trufflesuite.com/blog/using-truffle-to-interact-with-chainlink-smart-contracts).
-
 ### Foundry Starter Kit
 
 For the latest instructions, see the following repositories:
@@ -731,7 +723,7 @@ To learn more about Foundry, read the [Foundry Documentation](https://book.getfo
 
 For the latest instructions, see the [Apeworx Starter Kit](https://github.com/smartcontractkit/apeworx-starter-kit) repository.
 
-To learn more about Truffle, read the [Apeworx Documentation](https://docs.apeworx.io/ape/stable/).
+To learn more about Apeworx, read the [Apeworx Documentation](https://docs.apeworx.io/ape/stable/).
 
 ### Anchor Starter Kit (Solana)
 
@@ -743,7 +735,7 @@ To learn more about Anchor, see the [Anchor Documentation](https://www.anchor-la
 
 See our blog post on [Testing Chainlink Smart Contracts](https://blog.chain.link/testing-chainlink-smart-contracts/) or watch the [Chainlink Hackathon Workshop](https://www.youtube.com/watch?v=d8SqLaH8pu0).
 
-Tests samples can be found on [Hardhat Starter Kit](https://github.com/smartcontractkit/hardhat-starter-kit/tree/main/test) and [Truffle Starter Kit](https://github.com/smartcontractkit/truffle-starter-kit/tree/master/test) respectively.
+Test samples can be found in the [Hardhat Starter Kit](https://github.com/smartcontractkit/hardhat-starter-kit/tree/main/test).
 
 ---
 
@@ -883,6 +875,11 @@ For important updates regarding the use of Chainlink Price Feeds, users should j
 # Glossary
 Source: https://docs.chain.link/resources/glossary
 
+> **CAUTION: Old terms**
+>
+> This glossary still documents Chainlink node v1 terms. The URL stays. The page is not in the product navigation. Use
+> the current docs for Data Feeds, Data Streams, CCIP, CRE, and VRF v2.5.
+
 ### Adapter
 
 > **DANGER**
@@ -890,7 +887,7 @@ Source: https://docs.chain.link/resources/glossary
 > The adapters or JSON adapters for v1 Jobs are removed for Chainlink nodes running version 1.0.0 and later. Use [v2 job
 > tasks](/chainlink-nodes/oracle-jobs/tasks) instead.
 
-An adapter or [task](#task) is a piece of software responsible for executing a specific piece of functionality. A Chainlink node comes with a number of Adapters built-in, commonly known as Core Adapters, but can also be extended via [Bridges](/chainlink-nodes/external-adapters/node-operators) to connect with user-defined [External Adapters](#external-adapter).
+An adapter or [task](#task) is a piece of software responsible for executing a specific piece of functionality. A Chainlink node comes with a number of Adapters built-in, commonly known as Core Adapters, but can also be extended via [bridges](/chainlink-nodes/oracle-jobs/all-tasks#bridge-task) to connect with user-defined [external adapters](#external-adapter).
 
 ### Answer
 
@@ -914,7 +911,7 @@ Encumbrance parameters are the part of a [service agreement](#service-agreement)
 
 [External adapters](https://github.com/smartcontractkit/chainlink/wiki/External-Adapters) are what make Chainlink easily extensible, providing simple integration of custom computations and specialized APIs.
 
-A Chainlink node communicates with external adapters by sending a POST request with a JSON data payload. More information can be found on the external adapter [page](/chainlink-nodes/external-adapters/external-adapters).
+A Chainlink node communicates with external adapters by sending a POST request with a JSON data payload. The adapter code lives in the [external adapters repository](https://github.com/smartcontractkit/external-adapters-js). The old external adapter docs now open the [v1 to v2 job migration](/chainlink-nodes/oracle-jobs/migration-v1-v2) page.
 
 ### Function selector
 
@@ -1015,7 +1012,7 @@ Source: https://docs.chain.link/resources/hackathon-resources
 
 > **NOTE: Note on Resources**
 >
-> For a comprehensive list of resources, refer to the [Learning Resources](/getting-started/other-tutorials) page.
+> For a comprehensive list of resources, refer to the [Chainlink Documentation](https://docs.chain.link).
 
 This page lists useful resource to help you get started with Hackathon projects. If you want to check out code from past hackathons to get some inspiration, check out the [Blog](https://blog.chain.link/?s=hackathon) to find past hackathons and winners.
 
@@ -1037,13 +1034,13 @@ Always refer to the [getting help](/resources/getting-help) page for the latest 
 
 If you are new to Smart Contracts, read the [Getting Started Guide](/getting-started/conceptual-overview).
 
-- [Learning Resources](/getting-started/other-tutorials)
+- [Chainlink Documentation](https://docs.chain.link)
 - [Video Tutorials](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J)
 - [What is Ethereum?](https://www.youtube.com/playlist?list=PLVP9aGDn-X0QwJVbQvuKr-zrh2_DV5M6J)
 - [Developer Blog featuring several tutorials](https://blog.chain.link/tag/developers/)
 - [Testing Chainlink Smart Contracts](https://blog.chain.link/testing-chainlink-smart-contracts/)
 - [NFTs and Chainlink](https://blog.chain.link/build-deploy-and-sell-your-own-dynamic-nft/)
-- [Build an external adapter](/chainlink-nodes/external-adapters/developers)
+- [External adapters repository](https://github.com/smartcontractkit/external-adapters-js)
 
 ## Inspiration
 
