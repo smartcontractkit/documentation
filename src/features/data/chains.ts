@@ -113,7 +113,7 @@ export const CHAINS: Chain[] = [
     title: "Arc Data Feeds",
     img: "/assets/chains/arc.svg",
     networkStatusUrl: "https://status.arc.network/",
-    tags: ["default", "smartData", "extendedHours"],
+    tags: ["default", "smartData", "extendedHours", "svrAtlas"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -357,7 +357,7 @@ export const CHAINS: Chain[] = [
     title: "HyperEVM Data Feeds",
     img: "/assets/chains/hyperevm.svg",
     networkStatusUrl: "https://hyperevmscan.statuspage.io/",
-    tags: ["default", "smartData"],
+    tags: ["default", "smartData", "svrAtlas"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -376,7 +376,7 @@ export const CHAINS: Chain[] = [
     title: "Ink Data Feeds",
     img: "/assets/chains/ink.svg",
     networkStatusUrl: "https://status.inkonchain.com/",
-    tags: ["default"],
+    tags: ["default", "svrAtlas"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -626,7 +626,7 @@ export const CHAINS: Chain[] = [
     title: "Robinhood Chain Data Feeds",
     img: "/assets/chains/robinhood-chain.svg",
     networkStatusUrl: "https://status.robinhoodchain.offchain.io/",
-    tags: ["default", "tokenizedEquity"],
+    tags: ["default", "tokenizedEquity", "svrAtlas"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -824,7 +824,7 @@ export const CHAINS: Chain[] = [
     title: "Tempo Data Feeds",
     img: "/assets/chains/tempo.svg",
     networkStatusUrl: "https://explore.tempo.xyz/",
-    tags: ["default"],
+    tags: ["default", "svrAtlas"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -867,7 +867,7 @@ export const CHAINS: Chain[] = [
     title: "Unichain Data Feeds",
     img: "/assets/chains/unichain.svg",
     networkStatusUrl: "https://status.unichain.org/",
-    tags: ["default"],
+    tags: ["default", "svrAtlas"],
     supportedFeatures: ["feeds"],
     networks: [
       {

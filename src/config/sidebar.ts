@@ -1295,7 +1295,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   url: "data-feeds/svr-feeds/searcher-onboarding-ethereum",
                 },
                 {
-                  title: "Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain, Monad)",
+                  title: "Searcher Onboarding: Atlas",
                   url: "data-feeds/svr-feeds/searcher-onboarding-atlas",
                 },
               ],
