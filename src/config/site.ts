@@ -11,7 +11,7 @@ export const PAGE = {
 
 export const OPEN_GRAPH = {
   image: {
-    src: "/images/og.png",
+    src: "/images/og-docs.jpg",
     alt: "Simple, clean, and comprehensive documentation for any developer to learn, experiment, and build with the Chainlink platform. Start building now.",
   },
   twitter: "chainlink",
