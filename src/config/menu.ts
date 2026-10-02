@@ -29,19 +29,9 @@ export const MENU: MenuItems = {
       section: "dataFeeds",
     },
     {
-      text: "Functions",
-      link: "/chainlink-functions",
-      section: "chainlinkFunctions",
-    },
-    {
       text: "CCIP",
       link: "/ccip",
       section: "ccip",
-    },
-    {
-      text: "Automation",
-      link: "/chainlink-automation",
-      section: "automation",
     },
     {
       text: "VRF",

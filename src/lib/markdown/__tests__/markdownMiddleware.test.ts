@@ -57,6 +57,25 @@ describe("astro middleware", () => {
       '</cre/getting-started/cli-installation.md>; rel="alternate"; type="text/markdown"'
     )
   })
+
+  it("keeps sunset pages out of markdown output", async () => {
+    const request = pageRequest("/chainlink-functions/getting-started", "text/html")
+    const response = await onRequest(
+      {
+        url: new URL(request.url),
+        request,
+        rewrite: async () => {
+          throw new Error("html requests must not rewrite")
+        },
+      } as never,
+      async () => new Response("<html></html>", { headers: { "content-type": "text/html; charset=utf-8" } })
+    )
+
+    expect(response).toBeInstanceOf(Response)
+    if (!(response instanceof Response)) return
+    expect(response.headers.get("x-robots-tag")).toBe("noindex, follow")
+    expect(response.headers.get("link")).toBeNull()
+  })
 })
 
 describe("vercel middleware", () => {
@@ -91,5 +110,12 @@ describe("vercel middleware", () => {
     expect(response.headers.get("x-middleware-rewrite")).toBeNull()
     expect(response.headers.get("link")).toBeNull()
     expect(response.headers.get("x-middleware-next")).toBe("1")
+  })
+
+  it("keeps sunset pages out of markdown output", () => {
+    const response = middleware(pageRequest("/chainlink-automation/getting-started", "text/html"))
+    expect(response.headers.get("x-middleware-next")).toBe("1")
+    expect(response.headers.get("x-robots-tag")).toBe("noindex, follow")
+    expect(response.headers.get("link")).toBeNull()
   })
 })

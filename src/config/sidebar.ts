@@ -5,6 +5,7 @@
 
 import { Sections } from "../content.config.ts"
 import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
+import { isSunsetSidebarSection } from "./sunset.ts"
 import { CCIP_SIDEBAR_CONTENT } from "./sidebar/ccip-dynamic.ts"
 import { CCIP_V16_SIDEBAR_CONTENT } from "./sidebar/ccip-v1.ts"
 import { AI_AGENT_RESOURCES_SECTION } from "./sidebar/ai-agent-resources.ts"
@@ -88,7 +89,11 @@ export const CCIP_SIDEBARS: Record<CcipVersion, SectionEntry[]> = {
  *   ]
  * }
  */
-export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
+/**
+ * Full left-nav trees, including sunset Functions and Automation.
+ * Use this on those pages. SITE menus use the filtered `SIDEBAR` export.
+ */
+export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry[]>> = {
   [SIDEBAR_SECTIONS.ACE]: [
     {
       section: "Chainlink ACE",
@@ -3185,3 +3190,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     },
   ],
 }
+
+export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = Object.fromEntries(
+  Object.entries(SIDEBAR_WITH_SUNSET_PRODUCTS).filter(([section]) => !isSunsetSidebarSection(section))
+) as Partial<Record<Sections, SectionEntry[]>>

@@ -17,8 +17,6 @@ export const SUPPORTED_LLM_SECTIONS = [
   "data-streams",
   "dta-technical-standard",
   "datalink",
-  "chainlink-functions",
-  "chainlink-automation",
   "resources",
   "architecture-overview",
   "getting-started",
@@ -65,14 +63,6 @@ export const LLM_SECTIONS_CONFIG: Record<SupportedSection, LlmsSectionConfig> = 
   },
   datalink: {
     root: "src/content/datalink",
-    includeGlobs: ["**/*.mdx"],
-  },
-  "chainlink-functions": {
-    root: "src/content/chainlink-functions",
-    includeGlobs: ["**/*.mdx"],
-  },
-  "chainlink-automation": {
-    root: "src/content/chainlink-automation",
     includeGlobs: ["**/*.mdx"],
   },
   resources: {
