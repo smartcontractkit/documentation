@@ -20,25 +20,11 @@ function AlgoliaSearch({ algoliaVars }) {
     return <div></div>
   }
 
-  const popularCards = [
-    {
-      url: "https://dev.chain.link/resources/quickstarts",
-      imgSrc: "https://cdn.prod.website-files.com/64cc2c23d8dbd707cdb556d8/684b28edebfa8dd23ec82671_Quickstarts.svg",
-      label: "Quickstarts",
-    },
-    {
-      url: "https://dev.chain.link/tools",
-      imgSrc: "https://cdn.prod.website-files.com/64cc2c23d8dbd707cdb556d8/684b28f1b0dd30e51458603c_Tools.svg",
-      label: "Tools",
-    },
-  ]
-
   return (
     <SearchButtonComponent
       algoliaAppId={algoliaVars.algoliaAppId}
       algoliaPublicApiKey={algoliaVars.algoliaPublicApiKey}
       categoryOrder={["Documentation"]}
-      popularCards={popularCards}
       ariaLabel="Open AI search"
       spotlight={["Documentation"]}
     />

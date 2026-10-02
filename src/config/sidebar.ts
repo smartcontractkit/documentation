@@ -1321,7 +1321,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         },
         {
           title: "Release Notes",
-          url: "https://dev.chain.link/changelog?product=Data+Feeds",
+          url: "https://docs.chain.link/changelog?product=Data+Feeds",
         },
       ],
     },
@@ -1599,7 +1599,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         },
         {
           title: "Release Notes",
-          url: "https://dev.chain.link/changelog?product=Data+Streams",
+          url: "https://docs.chain.link/changelog?product=Data+Streams",
         },
       ],
     },
@@ -1949,7 +1949,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         },
         {
           title: "Release Notes",
-          url: "https://dev.chain.link/changelog?product=Automation",
+          url: "https://docs.chain.link/changelog?product=Automation",
         },
       ],
     },
@@ -2132,7 +2132,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         },
         {
           title: "Release Notes",
-          url: "https://dev.chain.link/changelog?product=Functions",
+          url: "https://docs.chain.link/changelog?product=Functions",
         },
       ],
     },
@@ -2335,7 +2335,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         },
         {
           title: "Release Notes",
-          url: "https://dev.chain.link/changelog?product=VRF",
+          url: "https://docs.chain.link/changelog?product=VRF",
         },
       ],
     },
@@ -2595,7 +2595,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         },
         {
           title: "Release Notes",
-          url: "https://dev.chain.link/changelog?product=Nodes",
+          url: "https://docs.chain.link/changelog?product=Nodes",
         },
       ],
     },

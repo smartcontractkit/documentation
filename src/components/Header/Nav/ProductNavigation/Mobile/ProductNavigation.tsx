@@ -91,12 +91,6 @@ export function ProductNavigation() {
                         Solutions
                       </a>
                     )}
-                    <a href="https://dev.chain.link/demos" className={styles.productContentLink}>
-                      Demos
-                    </a>
-                    <a href="https://dev.chain.link/tools" className={styles.productContentLink}>
-                      Tools
-                    </a>
                     <a href="/changelog" className={styles.productContentLink}>
                       Changelog
                     </a>

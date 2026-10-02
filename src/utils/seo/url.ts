@@ -4,7 +4,7 @@
  * - If relative and a site URL is provided, resolves against it
  * - If site is missing, returns the original string
  *
- * @param pathOrUrl Relative path (e.g. "/images/og.png") or absolute URL
+ * @param pathOrUrl Relative path (e.g. "/images/og-docs.png") or absolute URL
  * @param site The site base URL (Astro.site) – may be undefined in some contexts
  * @returns Absolute URL string when resolvable; otherwise the input
  */
@@ -45,7 +45,7 @@ export function resolveCanonical(
  * Infer an image MIME type from a URL pathname (query/hash ignored).
  * Supports: .jpg/.jpeg, .png, .webp, .gif
  *
- * @param pathname URL pathname (e.g. "/images/og.png")
+ * @param pathname URL pathname (e.g. "/images/og-docs.png")
  * @returns MIME type string like "image/png" or undefined when unknown
  */
 export function getMimeFromUrlPath(pathname: string): string | undefined {

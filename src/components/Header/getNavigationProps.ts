@@ -139,6 +139,7 @@ const desktopSubProductsNav = [
     href: "/quickstarts",
     icon: quickstartLogo.src,
     col: 2,
+    hideFromDropdown: true,
   },
   {
     label: "Documentation",
@@ -225,11 +226,6 @@ const getDocsSections = (pageSdkLangMap: Map<string, string>) => [
         href: "/chainlink-nodes",
         icon: nodesLogo.src,
         subProducts: getSubProducts(sidebar.nodeOperator, new Map()),
-      },
-      {
-        label: "Quickstarts",
-        href: "/quickstarts",
-        icon: quickstartLogo.src,
       },
       {
         label: "General",
