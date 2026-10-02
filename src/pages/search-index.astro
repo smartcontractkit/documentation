@@ -10,7 +10,7 @@ const pages = Object.values(pagesGlob)
 
 const postsMdxGlob = import.meta.glob<MarkdownInstance<Record<string, any>>>("../content/**/*.mdx", { eager: true })
 const postsMdx = Object.values(postsMdxGlob).filter(
-  (post) => !post.frontmatter.draft && !isSunsetContentFile(post.file)
+  (post) => !post.frontmatter.draft && !isSunsetContentFile(post.file) && !post.frontmatter.metadata?.noindex
 )
 
 const postsMdxWithContent = postsMdx.map((post) => {
