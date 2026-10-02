@@ -334,6 +334,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           highlightAsCurrent: ["cre/supported-networks-ts", "cre/supported-networks-go"],
         },
         {
+          title: "Network Upgrades",
+          url: "cre/network-upgrades",
+        },
+        {
           title: "Support & Feedback",
           url: "cre/support-feedback",
         },
