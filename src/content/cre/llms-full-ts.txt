@@ -476,6 +476,50 @@ These quotas apply to each individual workflow.
 
 ---
 
+# Network Upgrades
+Source: https://docs.chain.link/cre/network-upgrades
+Last Updated: 2026-10-01
+
+Blockchain networks periodically upgrade their protocol. Most upgrades do not affect CRE workflows, but some change how transactions are priced or executed. This page tracks upcoming upgrades that may require action from workflow developers.
+
+## Ethereum Glamsterdam
+
+Ethereum is upgrading to [Glamsterdam](https://ethereum.org/roadmap/glamsterdam/) during Q4 2026. The Ethereum Sepolia upgrade is scheduled for 6 October 2026 at 13:53:36 UTC; Hoodi and Mainnet timings are still to be confirmed.
+
+Glamsterdam changes the gas model of the chain. **You do not need to do anything unless your workflow sets a gas limit**, in which case see [Preparation](#preparation) below.
+
+### Timelines
+
+| Network              | Timing                                         | Impact                                                                                  |
+| -------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **Ethereum Sepolia** | 6 October 2026, 13:53:36 UTC                   | Workflows writing to Ethereum Sepolia may fail 30 minutes before and after the upgrade. |
+| **Ethereum Hoodi**   | Q4 2026 (will be confirmed closer to the time) | Workflows writing to Ethereum Hoodi may fail 30 minutes before and after the upgrade.   |
+| **Ethereum Mainnet** | Q4 2026 (will be confirmed closer to the time) | Workflows writing to Ethereum Mainnet may fail 30 minutes before and after the upgrade. |
+
+> **NOTE: Writes may fail during the upgrade window**
+>
+> Onchain writes to the affected network may fail for roughly 30 minutes before and 30 minutes after each upgrade. If a write fails during this window, retry it after the upgrade completes.
+
+### Preparation
+
+If your workflows set a gas limit, you may need to adjust it once the hardfork takes effect. The new gas limit value depends on how much storage versus compute your transactions use, so we cannot advise on how to adjust your limits.
+
+To best prepare:
+
+1. **Ahead of the Ethereum Sepolia upgrade**, update your workflows to add extra gas headroom or unset the gas limit, and confirm they still succeed.
+2. **After the Ethereum Sepolia upgrade on 6 October 2026**, confirm whether your workflow's transactions still succeed. If they do, no more action is needed. If you still have a gas limit set and your transactions are reverting due to out of gas, increase your gas limit well above the previous Fusaka limit of 16,777,216.
+3. **Ahead of the Ethereum Hoodi and Mainnet upgrade** (date to be confirmed in Q4 2026), apply the same steps as Ethereum Sepolia to minimize impact to your workflows.
+
+For details on configuring gas limits in your workflows, see [Configuring gas limits](/cre/guides/workflow/using-evm-client/onchain-write/using-write-report-helpers#configuring-gas-limits) and [Writing data onchain](/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain).
+
+## Learn more
+
+- [Supported Networks](/cre/supported-networks) — Networks available for simulation and production
+- [Writing Data Onchain](/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain) — Configure gas limits for onchain writes
+- [Release Notes](/cre/release-notes) — What's new in CRE
+
+---
+
 # Support & Feedback
 Source: https://docs.chain.link/cre/support-feedback
 Last Updated: 2025-11-04
@@ -530,9 +574,27 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-09-18
+Last Updated: 2026-10-01
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+> **CAUTION: Ethereum Glamsterdam upgrade**
+>
+> Ethereum is upgrading to Glamsterdam during Q4 2026, which changes the gas model of the chain. **No action is required unless your workflow sets a gas limit.** Ethereum Sepolia upgrades on 6 October 2026 at 13:53:36 UTC; Ethereum Hoodi and Mainnet follow in Q4 2026. Onchain writes may fail for roughly 30 minutes before and after each upgrade. See [Network Upgrades](/cre/network-upgrades) for timelines and preparation steps.
+
+## CLI v1.36.0 - October 1, 2026
+
+**[CRE CLI version 1.36.0](https://github.com/smartcontractkit/cre-cli/releases/tag/v1.36.0) is now available.**
+
+- **Clearer execution statuses**: `cre execution status`, `cre execution list`, and `cre workflow get` now surface detailed and classified execution statuses. Runs that finish with capability errors are labeled `SUCCESS (completed with errors)`, and failures caused by the platform rather than your workflow are flagged with a hint so you know whether to retry or debug. Capability errors are now shown even when the top-level execution status is `SUCCESS`. See [`cre execution`](/cre/reference/cli/execution).
+- **Telemetry fix for commands that don't require login**: Commands such as `cre generate-bindings`, `cre workflow build`, and `cre workflow hash` now attach existing credentials silently so their usage events are recorded. These commands remain fully usable while logged out.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.35.0...v1.36.0)
 
 ## CLI v1.35.0 - September 18, 2026
 
@@ -4581,7 +4643,7 @@ Complete TypeScript reference implementations, available as templates:
 
 # Managing Secrets
 Source: https://docs.chain.link/cre/guides/workflow/secrets
-Last Updated: 2026-03-26
+Last Updated: 2026-10-01
 
 Secrets are sensitive values like API keys, private keys, database URLs, and authentication tokens that your workflow needs to access at runtime. CRE provides different approaches for managing secrets depending on whether you're developing locally or running workflows in production.
 
@@ -4652,6 +4714,10 @@ const apiKey = secret.value
 ```
 
 The CRE runtime automatically handles retrieving the secret from the appropriate source based on your environment.
+
+> **NOTE: Fetch secrets only inside trigger handlers**
+>
+> When your workflow starts, the DON first runs your top-level code to register (subscribe) trigger handlers. During this trigger subscription phase, all capability calls and secret retrieval (Go: `runtime.GetSecrets()` / TS: `runtime.getSecret()`) are blocked. A `GetSecrets()` call made while registering handlers fails. Call it from inside a trigger handler instead — secrets are fetched on each execution, after the trigger fires.
 
 ## Getting started
 
@@ -5838,118 +5904,6 @@ For complete setup instructions, configuration requirements, and step-by-step gu
 - [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Learn about the initial deployment process
 - [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows) — Control workflow execution state
 - [Deleting Workflows](/cre/guides/operations/deleting-workflows) — Remove workflows from the registry
-
----
-
-# Verifying Workflows
-Source: https://docs.chain.link/cre/guides/operations/verifying-workflows
-Last Updated: 2026-03-19
-
-Workflow verification ensures the integrity and authenticity of your workflows across deployment, onchain execution, and third-party auditing. This guide explains how workflow IDs are computed, how to verify workflows in consumer contracts, and how to enable independent verification by third parties.
-
-## Workflow ID
-
-The workflow ID is a unique hash that serves as the primary identifier for your workflow throughout its lifecycle. It is computed locally during [`cre workflow deploy`](/cre/reference/cli/workflow#cre-workflow-deploy) from the following inputs:
-
-- **workflowOwner**: The deployer's address
-- **workflowName**: The name specified in your workflow
-- **Compiled workflow binary**: The WASM binary produced from your workflow code
-- **Config file contents**: The contents of your workflow's config file
-- **Secrets hash**: An empty string placeholder for secrets
-
-Because the workflow ID is derived from these inputs, it deterministically represents a specific version of your workflow code and configuration.
-
-> **CAUTION: Workflow ID changes on updates**
->
-> The workflow ID changes whenever you update your workflow code or config file, even if the workflow name stays the
-> same. For example, if you change contract bindings, the compiled binary changes, which produces a new workflow ID.
-> Plan for this when designing consumer contracts that permission on workflow ID.
-
-Use [`cre workflow hash`](/cre/reference/cli/workflow#cre-workflow-hash) to inspect the workflow ID before deploying. This lets you preview the ID without submitting an onchain transaction.
-
-For more details on deployment and updates, see [Deploying Workflows](/cre/guides/operations/deploying-workflows) and [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows).
-
-## Verifying workflows onchain
-
-When a workflow writes onchain, the consumer contract receives both the report data and metadata through the `onReport` callback. The metadata contains information you can use to verify the source of the report:
-
-- **`workflowId`** (`bytes32`): The unique workflow hash
-- **`workflowName`** (`bytes10`): The workflow name, hash-encoded
-- **`workflowOwner`** (`address`): The address that deployed the workflow
-
-See [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts) for the full `IReceiver` interface and metadata structure.
-
-### Workflow name encoding
-
-The `workflowName` in metadata is not stored as a plain string. It is a SHA256 hash of the workflow name, truncated to `bytes10`. See [how workflow names are encoded](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#how-workflow-names-are-encoded) for the full encoding process.
-
-### Security best practices
-
-Follow these practices to ensure only authorized workflows can interact with your consumer contract:
-
-- **Verify `msg.sender`**: Always check that `msg.sender` is the expected forwarder address. See the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory) for addresses by network.
-- **Permission on workflow ID**: Use `setExpectedWorkflowId` from `ReceiverTemplate` to restrict which workflow can call your contract.
-
-> **TIP: Permissioning without workflow ID**
->
-> If you permission on `workflowId`, you must update it in your contract every time you update the workflow. An
-> alternative is to use `setExpectedAuthor` and `setExpectedWorkflowName` from `ReceiverTemplate` instead. These values
-> don't change when you update your workflow code, so your contract won't need updates after each workflow deployment.
-
-## Third-party verification
-
-> **NOTE: Go workflows only**
->
-> Reproducible builds are currently supported for Go workflows only. TypeScript reproducible builds are in development.
-
-Third-party verification allows customers or auditors to independently confirm that a deployed workflow matches its source code. The deployer shares the workflow source, and the verifier uses the CRE CLI to compute the workflow hash and compare it against the onchain workflow ID.
-
-### Steps for the workflow developer
-
-1. **Add a `.env.public` file** to your workflow folder with `GOTOOLCHAIN` set to the Go toolchain version you use to build the workflow. Pinning that version helps reproducible builds across machines and environments. Add this file *before* running `cre workflow deploy`.
-
-   Example (replace with your own version—the tag below is not prescriptive):
-
-   ```
-   GOTOOLCHAIN=go1.23.0
-   ```
-
-   Use the same toolchain string you build with; `go version` reports it (for example `go1.23.0 linux/amd64` → use `go1.23.0`).
-
-2. **Share your workflow source** with the customer. Provide a zip archive or repository link that includes all workflow files, including `.env.public`. Exclude `.env` files that contain private keys or secrets.
-
-### Steps for the verifier
-
-1. [**Install the CRE CLI**](/cre/getting-started/cli-installation). No login or deploy access is required for hash verification.
-
-2. **Unzip or clone** the shared workflow repository.
-
-3. **Run `cre workflow hash`** to compute the workflow hash:
-
-   ```bash
-   cre workflow hash ./workflow-folder --public_key=0xYourDeployerAddress
-   ```
-
-   Replace `./workflow-folder` with the path to the workflow source and `0xYourDeployerAddress` with the deployer's public address.
-
-4. **Compare the output** with the workflow ID observed onchain. The `Workflow hash` value in the output corresponds to the onchain workflow ID:
-
-   ```
-   Binary hash:   0dcbb19de3c22edfe61605a970eb6d42199df91ac3e992cd3f2e33cb13efbb4c
-   Config hash:   3bdaebcc2f639d77cb248242c1d01c8651f540cdbf423d26fe3128516fd225b6
-   Workflow hash: 004fff5bb1ae05cc16e453f8ad564f5e8b0eae1945ec22f3d0adfc0339954d56
-   ```
-
-   If the workflow hash matches the onchain workflow ID, the deployed workflow matches the shared source code.
-
-<Aside type="tip">Run `cre workflow hash -h` for full usage details and additional flags.</Aside>
-
-## Learn more
-
-- [Deploying Workflows](/cre/guides/operations/deploying-workflows)
-- [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows)
-- [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)
-- [CRE CLI Workflow Reference](/cre/reference/cli/workflow)
 
 ---
 
@@ -9926,7 +9880,7 @@ The typical workflow lifecycle uses these commands in sequence:
 
 # Execution Commands
 Source: https://docs.chain.link/cre/reference/cli/execution
-Last Updated: 2026-07-09
+Last Updated: 2026-10-01
 
 The `cre execution` commands query workflow execution history from the CRE platform. Use them to debug failures, review capability timelines, and pull log lines without opening the web UI.
 
@@ -9939,6 +9893,17 @@ The `cre execution` commands query workflow execution history from the CRE platf
 > All `cre` commands support [global flags](/cre/reference/cli#global-flags) like `--env`, `--target`, `--project-root`, and `--verbose`.
 
 For a quick health check on the workflow configured in your project, see [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get), which shows deployment health and the most recent execution.
+
+## Execution statuses
+
+`cre execution list`, `cre execution status`, and [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get) report a top-level status of `TRIGGERED`, `IN_PROGRESS`, `SUCCESS`, or `FAILURE`. When the platform provides additional detail, the CLI refines this into a more descriptive label:
+
+| Label                                 | Meaning                                                                                                                    |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `SUCCESS (completed with errors)`     | The workflow finished, but one or more capability calls returned an error. The failing capability events are listed below. |
+| `FAILURE (no error details reported)` | The execution failed without reporting a reason. Check `cre execution logs` for clues.                                     |
+
+When the platform classifies a failure as a system error rather than a workflow error, the CLI prints a hint explaining that the failure was not caused by your workflow. In JSON output, these refinements appear as the `detailedStatus`, `classifiedStatus`, and `hint` fields.
 
 ## `cre execution list`
 
@@ -16177,7 +16142,7 @@ jobs:
 
 # Verifying Workflows
 Source: https://docs.chain.link/cre/guides/operations/verifying-workflows-ts
-Last Updated: 2026-04-09
+Last Updated: 2026-10-01
 
 > **NOTE: TypeScript**
 >
@@ -16249,7 +16214,7 @@ TypeScript workflows use Docker to produce reproducible builds. The same source 
 
 ### Steps for the workflow developer
 
-1. **Use the [`verifiable-build-ts` template](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/verifiable-build/verifiable-build-ts)** as the starting point for your workflow. This template includes the `Dockerfile`, `Makefile`, and `Dockerfile.lock` required to produce reproducible builds.
+1. **Use the [`verifiable-build-ts` template](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/verifiable-build/verifiable-build-ts)** as the starting point for your workflow. This template includes the `Dockerfile`, `Makefile`, and `bun.lock` required to produce reproducible builds.
 
 2. **Generate the lockfile** by running `make lock` from inside the `workflow/` directory. Re-run this whenever you change dependencies in `package.json`:
 

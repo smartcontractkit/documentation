@@ -1,7 +1,5 @@
 import ccipLogo from "../../../assets/product-logos/ccip-logo.svg"
 import vrfLogo from "../../../assets/product-logos/vrf-logo.svg"
-import functionsLogo from "../../../assets/product-logos/functions-logo.svg"
-import automationLogo from "../../../assets/product-logos/automation-logo.svg"
 import dataFeedsLogo from "../../../assets/product-logos/data-feeds-logo.svg"
 import dataStreamsLogo from "../../../assets/product-logos/data-streams-logo.svg"
 import creLogo from "../../../assets/product-logos/cre-logo.svg"
@@ -77,7 +75,6 @@ export const productChainLinks: ProductChainLinks = {
       mint: "/ccip/directory/mainnet/chain/mint-mainnet",
       opbnb: "/ccip/directory/mainnet/chain/binance-smart-chain-mainnet-opbnb-1",
       plume: "/ccip/directory/mainnet/chain/plume-mainnet",
-      superseed: "/ccip/directory/mainnet/chain/superseed-mainnet",
       taiko: "/ccip/directory/mainnet/chain/ethereum-mainnet-taiko-1",
       tempo: "/ccip/directory/mainnet/chain/tempo-mainnet",
       metal: "/ccip/directory/mainnet/chain/metal-mainnet",
@@ -249,36 +246,6 @@ export const productChainLinks: ProductChainLinks = {
       worldchain: "/data-streams/supported-networks?streamsNetwork=worldchain",
       xlayer: "/data-streams/supported-networks?streamsNetwork=xlayer",
       zksync: "/data-streams/supported-networks?streamsNetwork=zksync",
-    },
-  },
-  Functions: {
-    learnMoreLink: "chainlink-functions",
-    logo: functionsLogo,
-    chains: {
-      arbitrum: "/chainlink-functions/supported-networks#arbitrum-mainnet",
-      avalanche: "/chainlink-functions/supported-networks#avalanche-mainnet",
-      base: "/chainlink-functions/supported-networks#base-mainnet",
-      celo: "/chainlink-functions/supported-networks#celo-mainnet",
-      ethereum: "/chainlink-functions/supported-networks#ethereum-mainnet",
-      optimism: "/chainlink-functions/supported-networks#op-mainnet",
-      polygon: "/chainlink-functions/supported-networks#polygon-mainnet",
-      soneium: "/chainlink-functions/supported-networks#soneium-mainnet",
-    },
-  },
-  Automation: {
-    learnMoreLink: "chainlink-automation",
-    logo: automationLogo,
-    chains: {
-      arbitrum: "/chainlink-automation/overview/supported-networks#arbitrum",
-      avalanche: "/chainlink-automation/overview/supported-networks#avalanche",
-      base: "/chainlink-automation/overview/supported-networks#base",
-      "bnb-chain": "/chainlink-automation/overview/supported-networks#bnb-chain",
-      ethereum: "/chainlink-automation/overview/supported-networks#ethereum",
-      "gnosis-chain": "/chainlink-automation/overview/supported-networks#gnosis",
-      optimism: "/chainlink-automation/overview/supported-networks#op",
-      polygon: "/chainlink-automation/overview/supported-networks#polygon",
-      scroll: "/chainlink-automation/overview/supported-networks#scroll",
-      zksync: "/chainlink-automation/overview/supported-networks#zksync",
     },
   },
   VRF: {

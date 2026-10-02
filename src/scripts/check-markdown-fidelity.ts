@@ -16,6 +16,7 @@ import {
 } from "@lib/markdown/sourceScanners.js"
 import type { MarkdownArtifact } from "@lib/markdown/types.js"
 import { markdownFidelityExceptions } from "./markdown-fidelity-exceptions.js"
+import { isSunsetDocsPath } from "../config/sunset.js"
 
 const CONTENT_ROOT = path.resolve("src/content")
 const DEFAULT_REPORT_PATH = "reports/markdown-fidelity-report.json"
@@ -1646,7 +1647,7 @@ export async function collectCorpusPaths(contentRoot = CONTENT_ROOT): Promise<st
       routes.add(route.slice(0, -3))
     }
   }
-  return [...routes].sort()
+  return [...routes].filter((route) => !isSunsetDocsPath(route)).sort()
 }
 
 function safeSourcePath(sourcePath: string): { absolute: string; relative: string } | null {
@@ -1748,6 +1749,8 @@ async function checkPathInternal(
   globallyScheduledPaths?: ReadonlySet<string>,
   globallyVisitedPaths?: Set<string>
 ): Promise<FidelityFinding[]> {
+  if (isSunsetDocsPath(requestPath)) return []
+
   globallyVisitedPaths?.add(requestPath)
   const nextAncestors = new Set(ancestorPaths)
   nextAncestors.add(requestPath)

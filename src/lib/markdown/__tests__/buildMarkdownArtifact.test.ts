@@ -19,6 +19,14 @@ describe("buildMarkdownArtifact", () => {
     expect(artifact?.routeKind).toBe(routeKind)
   })
 
+  it("does not build Markdown for sunset Functions and Automation pages", async () => {
+    await expect(buildMarkdownArtifact("chainlink-functions")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("chainlink-functions/getting-started")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("chainlink-automation/overview/supported-networks")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("quickstarts/time-based-upkeep")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("quickstarts/functions-demo-app")).resolves.toBeNull()
+  })
+
   it("rejects path escapes", async () => {
     expect(normalizeMarkdownPath("../outside")).toBeNull()
     await expect(buildMarkdownArtifact("../outside")).resolves.toBeNull()

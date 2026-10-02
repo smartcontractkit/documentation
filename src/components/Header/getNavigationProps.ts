@@ -3,8 +3,6 @@ import creLogo from "../../assets/product-logos/cre-logo.svg"
 import crecLogo from "../../assets/product-logos/crec-logo.svg"
 import ccipLogo from "../../assets/product-logos/ccip-logo.svg"
 import vrfLogo from "../../assets/product-logos/vrf-logo.svg"
-import functionsLogo from "../../assets/product-logos/functions-logo.svg"
-import automationLogo from "../../assets/product-logos/automation-logo.svg"
 import dataFeedsLogo from "../../assets/product-logos/data-feeds-logo.svg"
 import dataStreamsLogo from "../../assets/product-logos/data-streams-logo.svg"
 import dtaLogo from "../../assets/product-logos/dta-logo.svg"
@@ -119,21 +117,9 @@ const desktopSubProductsNav = [
     col: 1,
   },
   {
-    label: "Functions",
-    href: "/chainlink-functions",
-    icon: functionsLogo.src,
-    col: 1,
-  },
-  {
     label: "VRF",
     href: "/vrf",
     icon: vrfLogo.src,
-    col: 1,
-  },
-  {
-    label: "Automation",
-    href: "/chainlink-automation",
-    icon: automationLogo.src,
     col: 1,
   },
   {
@@ -223,22 +209,10 @@ const getDocsSections = (pageSdkLangMap: Map<string, string>) => [
         subProducts: getSubProducts(sidebar.ccip, new Map()),
       },
       {
-        label: "Functions",
-        href: "/chainlink-functions",
-        icon: functionsLogo.src,
-        subProducts: getSubProducts(sidebar.chainlinkFunctions, new Map()),
-      },
-      {
         label: "VRF",
         href: "/vrf",
         icon: vrfLogo.src,
         subProducts: getSubProducts(sidebar.vrf, new Map()),
-      },
-      {
-        label: "Automation",
-        href: "/chainlink-automation",
-        icon: automationLogo.src,
-        subProducts: getSubProducts(sidebar.automation, new Map()),
         divider: true,
       },
       {

@@ -3,8 +3,6 @@ import ccipLogo from "../../../../../assets/product-logos/ccip-logo.svg"
 import dataFeedsLogo from "../../../../../assets/product-logos/data-feeds-logo.svg"
 import dataStreamsLogo from "../../../../../assets/product-logos/data-streams-logo.svg"
 import dataLinkLogo from "../../../../../assets/product-logos/datalink-logo.svg"
-import functionsLogo from "../../../../../assets/product-logos/functions-logo.svg"
-import automationLogo from "../../../../../assets/product-logos/automation-logo.svg"
 import vrfLogo from "../../../../../assets/product-logos/vrf-logo.svg"
 import dtaLogo from "../../../../../assets/product-logos/dta-logo.svg"
 import generalGlobeLogo from "../../../../../assets/product-logos/general-globe-logo.svg"
@@ -74,6 +72,12 @@ export const megaMenuSections = {
         description: "Move data and value across any blockchain",
         link: "/ccip",
       },
+      {
+        icon: aceLogo,
+        title: "Automated Compliance Engine (ACE)",
+        description: "Enable compliance-focused digital assets",
+        link: "/ace",
+      },
     ],
   },
   data: {
@@ -110,32 +114,9 @@ export const megaMenuSections = {
       },
     ],
   },
-  compliance: {
-    title: "Compliance",
-    items: [
-      {
-        icon: aceLogo,
-        title: "Automated Compliance Engine (ACE)",
-        description: "Enable compliance-focused digital assets",
-        link: "/ace",
-      },
-    ],
-  },
   compute: {
     title: "Compute",
     items: [
-      {
-        icon: functionsLogo,
-        title: "Functions",
-        description: "Connect smart contracts to any API",
-        link: "/chainlink-functions",
-      },
-      {
-        icon: automationLogo,
-        title: "Automation",
-        description: "Automate smart contracts via decentralized triggers",
-        link: "/chainlink-automation",
-      },
       {
         icon: vrfLogo,
         title: "VRF",
@@ -186,92 +167,33 @@ export const megaMenuSections = {
   },
 }
 
+function MenuColumn({ groups }: { groups: Array<(typeof megaMenuSections)[keyof typeof megaMenuSections]> }) {
+  return (
+    <div className={styles.sectionStack}>
+      {groups.map((group) => (
+        <div className={styles.section} key={group.title}>
+          <header>
+            <BlueSquare />
+            <GroupTitle>{group.title}</GroupTitle>
+          </header>
+          <li className={styles.itemList}>
+            {group.items.map((link) => (
+              <GroupItem key={link.title} data={link} />
+            ))}
+          </li>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function MegaMenu({ cancel, isMobile }: { cancel?: () => void; isMobile?: boolean }) {
   return (
     <div className={clsx(styles.wrapper, isMobile && styles.mobile)} onMouseLeave={cancel}>
       <div className={styles.row}>
-        <div className={styles.section}>
-          <header>
-            <BlueSquare />
-            <GroupTitle>{megaMenuSections.orchestration.title}</GroupTitle>
-          </header>
-          <li className={styles.itemList}>
-            {megaMenuSections.orchestration.items.map((link) => (
-              <GroupItem key={link.title} data={link} />
-            ))}
-          </li>
-        </div>
-        <div className={styles.section}>
-          <header>
-            <BlueSquare />
-            <GroupTitle>{megaMenuSections.interoperability.title}</GroupTitle>
-          </header>
-          <li className={styles.itemList}>
-            {megaMenuSections.interoperability.items.map((link) => (
-              <GroupItem key={link.title} data={link} />
-            ))}
-          </li>
-        </div>
-        <div className={styles.section}>
-          <header>
-            <BlueSquare />
-            <GroupTitle>{megaMenuSections.assetManagement.title}</GroupTitle>
-          </header>
-          <li className={styles.itemList}>
-            {megaMenuSections.assetManagement.items.map((link) => (
-              <GroupItem key={link.title} data={link} />
-            ))}
-          </li>
-        </div>
-      </div>
-
-      <div className={styles.row}>
-        <div className={styles.section}>
-          <header>
-            <BlueSquare />
-            <GroupTitle>{megaMenuSections.data.title}</GroupTitle>
-          </header>
-          <li className={styles.itemList}>
-            {megaMenuSections.data.items.map((link) => (
-              <GroupItem key={link.title} data={link} />
-            ))}
-          </li>
-        </div>
-        <div className={styles.section}>
-          <header>
-            <BlueSquare />
-            <GroupTitle>{megaMenuSections.compute.title}</GroupTitle>
-          </header>
-          <li className={styles.itemList}>
-            {megaMenuSections.compute.items.map((link) => (
-              <GroupItem key={link.title} data={link} />
-            ))}
-          </li>
-        </div>
-        <div className={styles.sectionStack}>
-          <div className={styles.section}>
-            <header>
-              <BlueSquare />
-              <GroupTitle>{megaMenuSections.compliance.title}</GroupTitle>
-            </header>
-            <li className={styles.itemList}>
-              {megaMenuSections.compliance.items.map((link) => (
-                <GroupItem key={link.title} data={link} />
-              ))}
-            </li>
-          </div>
-          <div className={styles.section}>
-            <header>
-              <BlueSquare />
-              <GroupTitle>{megaMenuSections.other.title}</GroupTitle>
-            </header>
-            <li className={styles.itemList}>
-              {megaMenuSections.other.items.map((link) => (
-                <GroupItem key={link.title} data={link} />
-              ))}
-            </li>
-          </div>
-        </div>
+        <MenuColumn groups={[megaMenuSections.orchestration, megaMenuSections.data]} />
+        <MenuColumn groups={[megaMenuSections.interoperability, megaMenuSections.compute]} />
+        <MenuColumn groups={[megaMenuSections.assetManagement, megaMenuSections.other]} />
       </div>
     </div>
   )
