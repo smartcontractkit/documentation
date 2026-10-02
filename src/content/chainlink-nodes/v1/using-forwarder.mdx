@@ -9,6 +9,12 @@ metadata:
 
 import { Aside, ClickToZoom, CodeSample } from "@components"
 
+<Aside type="caution" title="Direct request jobs are no longer supported">
+  Chainlink nodes reject new direct request jobs. The DirectRequest job type was removed in Chainlink v2.48.0, so the
+  job steps in this tutorial do not run on this node. Forwarder contracts are still supported for other job types such
+  as OCR2 and VRF.
+</Aside>
+
 <Aside type="note" title="Prerequisites">
 This guide assumes you have a running Chainlink node. See the [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide to learn how to run a Chainlink node. **Note**: For this example to work, you must use Chainlink node version _1.12.0_ or above.
 
@@ -44,7 +50,7 @@ On your terminal, check that your Chainlink node is running:
  docker ps -a -f name=chainlink
 
  CONTAINER ID   IMAGE                            COMMAND               CREATED         STATUS                   PORTS                    NAMES
- feff39f340d6   smartcontract/chainlink:1.12.0   "chainlink local n"   4 minutes ago   Up 4 minutes (healthy)   0.0.0.0:6688->6688/tcp   chainlink
+ feff39f340d6   smartcontract/chainlink:2.66.0   "chainlink node -c…"  4 minutes ago   Up 4 minutes (healthy)   0.0.0.0:6688->6688/tcp   chainlink
 ```
 
 Your Chainlink Operator Interface is accessible on [http://localhost:6688](http://localhost:6688). If using a VPS, you can create a [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/) to your node for `6688:localhost:6688` to enable connectivity to the GUI. Typically this is done with `ssh -i $KEY $USER@$REMOTE-IP -L 6688:localhost:6688 -N`. A SSH tunnel is recommended over opening up ports specific to the Chainlink node to be public facing. See the [Security and Operation Best Practices](/chainlink-nodes/resources/best-security-practices) page for more details on how to secure your node.
@@ -247,20 +253,23 @@ MetaMask prompts you to confirm the transaction.
    docker stop chainlink && docker rm chainlink
    ```
 
-1. Update your environment file. If you followed [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide then add `ETH_USE_FORWARDERS=true` and `FEATURE_LOG_POLLER=true` to your environment file:
+1. Enable forwarders in your `config.toml`. Add the following to the `config.toml` file that you created in the [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide:
 
-   ```shell
-   echo "ETH_USE_FORWARDERS=true
-   FEATURE_LOG_POLLER=true" >> ~/.chainlink-sepolia/.env
+   ```toml
+   [EVM.Transactions]
+   ForwardersEnabled = true
+
+   [Feature]
+   LogPoller = true
    ```
 
-   - `ETH_USE_FORWARDERS` enables sending transactions through forwarder contracts.
-   - `FEATURE_LOG_POLLER` enables polling forwarder contracts logs to detect any changes to the authorized senders.
+   - `EVM.Transactions.ForwardersEnabled` enables sending transactions through forwarder contracts.
+   - `Feature.LogPoller` enables polling forwarder contracts logs to detect any changes to the authorized senders.
 
 1. Start the Chainlink node:
 
    ```shell
-   cd ~/.chainlink-sepolia && docker run --platform linux/x86_64/v8 --name chainlink  -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env -p 6688:6688 smartcontract/chainlink:1.12.0 local n
+   cd ~/.chainlink-sepolia && docker run --platform linux/x86_64/v8 --name chainlink -v ~/.chainlink-sepolia:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
    ```
 
 1. You will be prompted to enter the key store password:

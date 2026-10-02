@@ -6,6 +6,35 @@ title: "Task Types"
 
 This guide outlines different task types.
 
+## Anchor task
+
+Rebases a lower or upper sample stream onto a pre-winsorized reference stream, then returns the weighted mean. For each surviving source, the task derives a displacement from the spread between the low and high samples and applies it to the reference value. Sources missing from the low or high stream are dropped. This task is marked experimental in the node source.
+
+**Parameters**
+
+- `reference`: an array of samples to anchor to. This stream should already be winsorized.
+- `low`: an array of lower samples, one per source.
+- `high`: an array of upper samples, one per source.
+- `select`: optional. Whether to anchor to the low or the high stream. Use `low` or `high`. Defaults to `low`.
+- `minWeightMass`: optional. The minimum surviving weight mass required for the task to return a result. Defaults to `0`.
+- `precision`: optional. The number of decimal places to retain in the result.
+
+**Outputs**
+
+The weighted mean of the anchored samples.
+
+**Example**
+
+```toml
+anchor [type="anchor"
+        reference="$(winsorized)"
+        low="$(low_samples)"
+        high="$(high_samples)"
+        select="low"
+        minWeightMass="0"
+        precision=8]
+```
+
 ## 'Any' task
 
 Returns a random value from the set of inputs passed in.
@@ -135,6 +164,51 @@ parse [type="jsonparse" path="$(decode_cbor.jsonPath)" data="$(fetch)"]
 
 See the [Direct Request page](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs) for a more comprehensive example.
 
+## Coalesce task
+
+Returns the first input that is neither an error nor nil, or nil if there are none.
+
+**Parameters**
+
+None.
+
+**Inputs**
+
+One or more inputs.
+
+**Outputs**
+
+The value of the first input that did not error and is not nil. Returns nil when every input errored or was nil.
+
+**Example**
+
+```toml
+primary   [type="http" method=GET url="https://primary.example.com"]
+secondary [type="http" method=GET url="https://secondary.example.com"]
+pick      [type="coalesce"]
+
+primary -> pick
+secondary -> pick
+```
+
+## Conditional task
+
+Fails the run unless `data` resolves to true.
+
+**Parameters**
+
+- `data`: the boolean to check. Can be a literal, a `$(variable)`, or the single pipeline input.
+
+**Outputs**
+
+`true` when the condition is satisfied. The task errors with `conditional was not satisfied` when it is not.
+
+**Example**
+
+```toml
+check [type="conditional" data="$(should_continue)"]
+```
+
 ## Divide task
 
 Divides the provided `input` by the `divisor` and returns the result with a number of decimal places defined in the `precision` value.
@@ -171,6 +245,32 @@ my_divide_task [type="divide"
 ```
 
 Given the input `10`, this example returns `3.33`.
+
+## Estimate Gas Limit task
+
+Estimates the gas required for a transaction and returns the estimate as a `uint64`. If the estimate cannot be obtained, the task falls back to the configured maximum gas limit for the job.
+
+**Parameters**
+
+- `from`: the address the transaction would be sent from. Defaults to the zero address.
+- `to`: the address of the contract to call.
+- `data`: the data to attach to the call, including the function selector.
+- `multiplier`: optional. The multiplier applied to the estimated gas. Defaults to `1`.
+- `evmChainID`: optional. The chain on which to estimate. Defaults to the chain ID of the job.
+- `block`: optional. The block at which to estimate, for example `latest`.
+
+**Outputs**
+
+The estimated gas limit as a `uint64`.
+
+**Example**
+
+```toml
+estimate_gas [type="estimategaslimit"
+              to="0x613a38AC1659769640aaE063C651F48E0250454C"
+              multiplier="1.1"
+              data="$(vrf.output)"]
+```
 
 ## ETH ABI Decode Log task
 
@@ -280,6 +380,28 @@ encode [type="ethabiencode"
         ]
 ```
 
+## ETH ABI Encode 2 task
+
+Encodes a bytes payload according to ETH ABI encoding, using a JSON method definition for the ABI. Unlike the [ETH ABI Encode task](#eth-abi-encode-task), which takes a Solidity signature string, this task takes the ABI as a JSON object with `name` and `inputs`. When `name` is set, the 4-byte method signature is prepended to the result.
+
+**Parameters**
+
+- `abi`: a JSON object describing the method, with a `name` and a list of `inputs`. Each input has a `name` and a `type`. Example:
+  - `{"name":"fulfillRequest","inputs":[{"name":"requestID","type":"bytes32"},{"name":"answer","type":"uint256"}]}`
+- `data`: a map of the values to be encoded.
+
+**Outputs**
+
+A byte array.
+
+**Example**
+
+```toml
+encode [type="ethabiencode2"
+        abi="{\\"name\\":\\"fulfillRequest\\",\\"inputs\\":[{\\"name\\":\\"requestID\\",\\"type\\":\\"bytes32\\"},{\\"name\\":\\"answer\\",\\"type\\":\\"uint256\\"}]}"
+        data="{\\"requestID\\": $(decode_log.requestId), \\"answer\\": $(parse)}"]
+```
+
 ## ETH Call task
 
 Makes a non-mutating contract call to the specified contract with the specified data payload.
@@ -351,6 +473,24 @@ submit_tx    [type="ethtx"
                failOnRevert="true"]
 
 encode_tx -> submit_tx
+```
+
+## Fail task
+
+Returns an error with the configured message. This task is marked as testing only in the node source.
+
+**Parameters**
+
+- `msg`: the error message.
+
+**Outputs**
+
+The task always errors with `msg`.
+
+**Example**
+
+```toml
+fail [type="fail" msg="stopping here"]
 ```
 
 ## Hex Decode task
@@ -504,6 +644,28 @@ my_lessthan_task [type="lessthan" left="3" right="10"]
 
 the task will return true which is the result of `3 LESS_THAN 10`
 
+## Lookup task
+
+Looks up a key in a map input and returns the value at that key.
+
+**Parameters**
+
+- `key`: the key to look up in the input map.
+
+**Inputs**
+
+A single map input.
+
+**Outputs**
+
+The value at `key`. The value is nil when the key is not present.
+
+**Example**
+
+```toml
+lookup [type="lookup" key="ethusd"]
+```
+
 ## Lowercase task
 
 Accepts a string and returns a lowercase string.
@@ -523,6 +685,30 @@ my_lowercase_task [type="lowercase" input="Hello World!"]
 ```
 
 Given the input `Hello World!`, the task will return `hello world!`.
+
+## Max task
+
+Accepts multiple numerical inputs and returns the maximum of them.
+
+**Parameters**
+
+- `values`: an array of values from which to select the maximum.
+- `allowedFaults` (optional): the maximum number of input tasks that can error without the Max task erroring. If not specified, this value defaults to `N - 1`, where `N` is the number of inputs.
+- `lax` (optional): when disabled (the default), the task errors if there are no input values or if the input includes nil values. When enabled, the task returns nil with no error if there are no valid input values, and nil values are excluded from the calculation and do not count as a fault.
+
+**Outputs**
+
+The maximum of the values in the `values` array.
+
+**Example**
+
+```toml
+my_max_task [type="max"
+             values=<[ $(fetch1), $(fetch2), $(fetch3) ]>
+             allowedFaults=1]
+```
+
+Given the inputs `2`, `5`, and `20`, the task will return `20`.
 
 ## Mean task
 
@@ -622,6 +808,30 @@ This example task returns the following map:
 { "foo": "abc", "bar": "xyz", "biz": "buzz" }
 ```
 
+## Min task
+
+Accepts multiple numerical inputs and returns the minimum of them.
+
+**Parameters**
+
+- `values`: an array of values from which to select the minimum.
+- `allowedFaults` (optional): the maximum number of input tasks that can error without the Min task erroring. If not specified, this value defaults to `N - 1`, where `N` is the number of inputs.
+- `lax` (optional): when disabled (the default), the task errors if there are no input values or if the input includes nil values. When enabled, the task returns nil with no error if there are no valid input values, and nil values are excluded from the calculation and do not count as a fault.
+
+**Outputs**
+
+The minimum of the values in the `values` array.
+
+**Example**
+
+```toml
+my_min_task [type="min"
+             values=<[ $(fetch1), $(fetch2), $(fetch3) ]>
+             allowedFaults=1]
+```
+
+Given the inputs `2`, `5`, and `20`, the task will return `2`.
+
 ## Mode task
 
 Accepts multiple numerical inputs and returns the mode (most common) of them. If more than one value occur the maximum number of times, it returns all of them.
@@ -712,6 +922,73 @@ my_multiply_task [type="multiply" input="$(json_parse_result)" times=3]
 
 Given the input `10`, the task will return `30`.
 
+## Normalize task
+
+Converts sample values onto a common unit using a unit to factor map. Samples that are already in the target unit, or that carry no unit, pass through unchanged. This task is marked experimental in the node source.
+
+**Parameters**
+
+- `samples`: an array of samples, or the pipeline input.
+- `unitMap`: an optional map of unit names to factors. Each factor may be a raw number or a sample. Required when `enabled` is true.
+- `targetUnit`: the unit that the output samples are converted to.
+- `enabled`: optional. Defaults to `true`.
+- `onMissingRate`: optional. What to do when a sample's unit has no factor in `unitMap`. Defaults to `drop`. Any other value makes the task error instead.
+
+**Outputs**
+
+An array of samples with all values expressed in `targetUnit`. Unconvertible samples are dropped, or cause an error, depending on `onMissingRate`.
+
+## Panic task
+
+Panics with the configured message. This task is marked as testing only in the node source.
+
+**Parameters**
+
+- `msg`: the panic message.
+
+**Example**
+
+```toml
+panic [type="panic" msg="stopping here"]
+```
+
+## Sample task
+
+Wraps an upstream result into a sample. A sample bundles a value with the metadata (source, weight, unit, timestamp) that the aggregation tasks consume. This task is marked experimental in the node source.
+
+**Parameters**
+
+- `input`: the upstream result to read the value from. Defaults to the single pipeline input.
+- `source`: the source name. Used for grouping and weighting.
+- `weight`: optional. The nominal weight of the sample. Defaults to `1`.
+- `unit`: optional. The unit of the value. An empty value means the value is already in the common unit.
+- `tag`: optional. A free label, used for diagnostics only.
+- `valuePath`: the JSON path to the value inside `input`.
+- `tsPath`: the JSON path to the timestamp inside `input`.
+- `tsUnit`: optional. The unit of the timestamp. Defaults to `ms`.
+- `decimals`: optional. The number of decimals to scale the value by.
+
+**Outputs**
+
+A sample with the fields `source`, `value`, `ts_ms`, `weight`, `unit`, and `tag`.
+
+## Staleness task
+
+Decays the weight of each sample by its age, so that older samples count for less in downstream aggregation. This task is marked experimental in the node source.
+
+**Parameters**
+
+- `samples`: an array of samples, or the pipeline input.
+- `method`: the decay method to apply.
+- `threshold`: optional. The age beyond which a sample is considered stale.
+- `halfLife`: optional. The age at which a sample's weight is halved. Defaults to `0s`.
+- `cutoff`: optional. The maximum age of a sample.
+- `decayThreshold`: optional. The weight below which a sample is dropped.
+
+**Outputs**
+
+An array of samples with adjusted `weight` values.
+
 ## Sum Task
 
 Accepts multiple numerical inputs and returns the sum of them.
@@ -754,3 +1031,79 @@ my_uppercase_task [type="uppercase" input="Hello World!"]
 ```
 
 Given the input `Hello World!`, the task will return `HELLO WORLD!`.
+
+## VRF V2 task
+
+Generates a VRF v2 proof from a request log. It takes the decoded log as its single input and returns the encoded proof.
+
+**Parameters**
+
+- `publicKey`: the public key of the VRF key that this node uses to generate the proof.
+- `requestBlockHash`: the hash of the block in which the request log was received. Usually set to `$(jobRun.logBlockHash)`.
+- `requestBlockNumber`: the number of the block in which the request log was received. Usually set to `$(jobRun.logBlockNumber)`.
+- `topics`: the log's topics. Usually set to `$(jobRun.logTopics)`.
+
+**Inputs**
+
+A single decoded request log, normally from an [ETH ABI Decode Log task](#eth-abi-decode-log-task).
+
+**Outputs**
+
+A map with an `output` key that holds the encoded proof.
+
+**Example**
+
+```toml
+vrf [type="vrfv2"
+     publicKey="$(jobSpec.publicKey)"
+     requestBlockHash="$(jobRun.logBlockHash)"
+     requestBlockNumber="$(jobRun.logBlockNumber)"
+     topics="$(jobRun.logTopics)"]
+```
+
+## VRF V2Plus task
+
+Generates a VRF v2plus proof from a request log. It is identical to the [VRF V2 task](#vrf-v2-task), except that it uses the V2Plus request commitment, which includes a flag that indicates whether the request is paid in native tokens or in LINK.
+
+**Parameters**
+
+- `publicKey`: the public key of the VRF key that this node uses to generate the proof.
+- `requestBlockHash`: the hash of the block in which the request log was received. Usually set to `$(jobRun.logBlockHash)`.
+- `requestBlockNumber`: the number of the block in which the request log was received. Usually set to `$(jobRun.logBlockNumber)`.
+- `topics`: the log's topics. Usually set to `$(jobRun.logTopics)`.
+
+**Inputs**
+
+A single decoded request log, normally from an [ETH ABI Decode Log task](#eth-abi-decode-log-task).
+
+**Outputs**
+
+A map with an `output` key that holds the encoded proof.
+
+**Example**
+
+```toml
+vrf [type="vrfv2plus"
+     publicKey="$(jobSpec.publicKey)"
+     requestBlockHash="$(jobRun.logBlockHash)"
+     requestBlockNumber="$(jobRun.logBlockNumber)"
+     topics="$(jobRun.logTopics)"]
+```
+
+## Weighted Mean task
+
+Gates on a minimum weight mass, optionally clamps each sample's value into a band around the cross-sectional median, then returns the weighted mean. With no `method` set it computes a plain weighted mean with no clamping. This task is marked experimental in the node source.
+
+**Parameters**
+
+- `samples`: an array of samples, or the pipeline input. Normally the output of a [Staleness task](#staleness-task), one sample per source.
+- `reference`: optional. An array of samples to derive the clamp band from.
+- `band`: optional. The width of the clamp band. Defaults to `0.03`.
+- `minWeightMass`: optional. The minimum surviving weight mass required for the task to return a result. Defaults to `0`.
+- `method`: optional. The winsorization method to apply. Empty, the default, means no clamping.
+- `winsorRef`: optional. The reference used for winsorization. Defaults to `median`.
+- `precision`: optional. The number of decimal places to retain in the result.
+
+**Outputs**
+
+The weighted mean as a decimal, winsorized when `method` is set. The task fails with `insufficient weight mass` when the surviving mass is below `minWeightMass`.

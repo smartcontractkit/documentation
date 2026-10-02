@@ -85,6 +85,12 @@ Return to [Running a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-nod
 
 You can use the [Nethermind client](https://docs.nethermind.io) for the Ethereum Mainnet. See the [Nethermind supported network configurations](https://docs.nethermind.io/get-started/installing-nethermind#supported-networks) page for a list of supported networks.
 
+<Aside type="note" title="Nethermind support status">
+  The Chainlink node [README](https://github.com/smartcontractkit/chainlink#ethereum-execution-client-requirements)
+  lists Nethermind as supported but known to have bugs that prevent reliable operation. Geth and Besu are the officially
+  supported execution clients.
+</Aside>
+
 Download the latest version:
 
 ```shell
@@ -153,6 +159,8 @@ Return to [Running a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-nod
 
 The following services offer Ethereum clients with websockets connectivity known to work with the Chainlink node.
 
+Each example shows the WebSocket endpoint that the provider gives you. Set it as `WSURL` in an `[[EVM.Nodes]]` block of your `config.toml`, together with the `HTTPURL` that the same provider gives you. `HTTPURL` is required for every node.
+
 ## [Alchemy](https://www.alchemyapi.io)
 
 Example connection setting:
@@ -163,12 +171,12 @@ Example connection setting:
   <Fragment slot="tab.2">Mainnet</Fragment>
   <Fragment slot="panel.1">
   ```text Sepolia
-  ETH_URL=wss://eth-sepolia.alchemyapi.io/v2/YOUR_PROJECT_ID
+  WSURL = 'wss://eth-sepolia.alchemyapi.io/v2/YOUR_PROJECT_ID'
   ```
   </Fragment>
   <Fragment slot="panel.2">
   ```text Mainnet
-  ETH_URL=wss://eth-mainnet.alchemyapi.io/v2/YOUR_PROJECT_ID
+  WSURL = 'wss://eth-mainnet.alchemyapi.io/v2/YOUR_PROJECT_ID'
   ```
   </Fragment>
 </Tabs>
@@ -178,7 +186,7 @@ Example connection setting:
 Example connection setting:
 
 ```text Mainnet
-ETH_URL=wss://user-name:pass-word-pass-word-pass-word@ws-nd-123-456-789.p2pify.com
+WSURL = 'wss://user-name:pass-word-pass-word-pass-word@ws-nd-123-456-789.p2pify.com'
 ```
 
 ## [Fiews](https://docs.fiews.io/docs/getting-started)
@@ -186,7 +194,7 @@ ETH_URL=wss://user-name:pass-word-pass-word-pass-word@ws-nd-123-456-789.p2pify.c
 Example connection setting:
 
 ```text Mainnet
-ETH_URL=wss://cl-main.fiews.io/v2/YOUR_API_KEY
+WSURL = 'wss://cl-main.fiews.io/v2/YOUR_API_KEY'
 ```
 
 ## [GetBlock](https://getblock.io/)
@@ -199,12 +207,12 @@ Example connection setting:
   <Fragment slot="tab.2">Mainnet</Fragment>
   <Fragment slot="panel.1">
   ```text Sepolia
-  ETH_URL=wss://eth.getblock.io/sepolia/?api_key=YOUR_API_KEY
+  WSURL = 'wss://eth.getblock.io/sepolia/?api_key=YOUR_API_KEY'
   ```
   </Fragment>
   <Fragment slot="panel.2">
   ```text Mainnet
-  ETH_URL=wss://eth.getblock.io/mainnet/?api_key=YOUR_API_KEY
+  WSURL = 'wss://eth.getblock.io/mainnet/?api_key=YOUR_API_KEY'
   ```
   </Fragment>
 </Tabs>
@@ -219,12 +227,12 @@ Example connection setting. Replace YOUR_PROJECT_ID with the ID Infura provides 
   <Fragment slot="tab.2">Mainnet</Fragment>
   <Fragment slot="panel.1">
   ```text Sepolia
-  ETH_URL=wss://sepolia.infura.io/ws/v3/YOUR_PROJECT_ID
+  WSURL = 'wss://sepolia.infura.io/ws/v3/YOUR_PROJECT_ID'
   ```
   </Fragment>
   <Fragment slot="panel.2">
   ```text Mainnet
-  ETH_URL=wss://mainnet.infura.io/ws/v3/YOUR_PROJECT_ID
+  WSURL = 'wss://mainnet.infura.io/ws/v3/YOUR_PROJECT_ID'
   ```
   </Fragment>
 </Tabs>
@@ -234,7 +242,7 @@ Example connection setting. Replace YOUR_PROJECT_ID with the ID Infura provides 
 Example connection setting:
 
 ```text Mainnet
-ETH_URL=wss://main-rpc.linkpool.io/ws
+WSURL = 'wss://main-rpc.linkpool.io/ws'
 ```
 
 ## [QuikNode](https://www.quiknode.io)
@@ -247,12 +255,12 @@ Example connection setting:
   <Fragment slot="tab.2">Mainnet</Fragment>
   <Fragment slot="panel.1">
     ```text Sepolia
-    ETH_URL=wss://your-node-name.sepolia.quiknode.pro/security-hash/
+    WSURL = 'wss://your-node-name.sepolia.quiknode.pro/security-hash/'
     ```
   </Fragment>
   <Fragment slot="panel.2">
   ```text Mainnet
-  ETH_URL=wss://your-node-name.quiknode.pro/security-hash/
+  WSURL = 'wss://your-node-name.quiknode.pro/security-hash/'
   ```
   </Fragment>
 </Tabs>
