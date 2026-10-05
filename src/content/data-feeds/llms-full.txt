@@ -6371,19 +6371,7 @@ Source: https://docs.chain.link/data-feeds/svr-feeds/searcher-onboarding-atlas
 
 [Chainlink Smart Value Recapture (SVR)](/data-feeds/svr-feeds) has expanded beyond Ethereum Mainnet with a new auction system, **Atlas**. This guide provides existing Chainlink SVR searchers with the technical specifications and integration requirements for participating in all non-ETH mainnet SVR auctions.
 
-Atlas is currently live on the following networks:
-
-| Network         | Chain selector        |
-| --------------- | --------------------- |
-| Base            | `base-mainnet`        |
-| Arbitrum        | `arbitrum-mainnet`    |
-| BNB Chain       | `bnb-mainnet`         |
-| Monad           | `monad-mainnet`       |
-| Arc             | `arc-mainnet`         |
-| HyperEVM        | `hyperliquid-mainnet` |
-| Ink             | `ink-mainnet`         |
-| Robinhood Chain | `robinhood-mainnet`   |
-| Unichain        | `unichain-mainnet`    |
+Atlas is currently live on the following networks: Base, Arbitrum, BNB Chain, Monad, Arc, HyperEVM, Ink, Robinhood Chain, and Unichain. See [Contract References](#contract-references) for the deployed addresses.
 
 > **NOTE: Tempo**
 >
@@ -6415,88 +6403,10 @@ Recommended native token amounts for bonding:
 
 ## Contract References
 
-The following contracts are deployed at version **v1.6.4**.
+Each chain has a live Atlas deployment and a live DappControl:
 
-### Base
-
-Contract
-Address
-
-Atlas (v1.6.4)
-
-DappControl
-
-### Arbitrum
-
-Contract
-Address
-
-Atlas (v1.6.4)
-
-DappControl
-
-### BNB Chain
-
-Contract
-Address
-
-Atlas (v1.6.4)
-
-DappControl
-
-### Monad
-
-Contract
-Address
-
-Atlas (v1.6.4)
-
-DappControl
-
-### Arc
-
-Contract
-Address
-
-Atlas (v1.6.4)
-
-DappControl
-
-### HyperEVM
-
-Contract
-Address
-
-Atlas (v1.6.4)
-
-DappControl
-
-### Ink
-
-Contract
-Address
-
-Atlas (v1.6.4)
-
-DappControl
-
-### Robinhood Chain
-
-Contract
-Address
-
-Atlas (v1.6.4)
-
-DappControl
-
-### Unichain
-
-Contract
-Address
-
-Atlas (v1.6.4)
-
-DappControl
+- **Atlas**: The auction contract, deployed at version **v1.6.4**. Searchers bond native tokens here to cover the gas costs of their operation and the oracle update, and call it to unbond and redeem.
+- **DappControl**: The dApp-specific module that defines the auction rules for Chainlink SVR. Searchers read parameters such as the solver gas limit from it, and filter incoming user operations by its address.
 
 ## Feed Aggregator Addresses
 
@@ -6704,7 +6614,7 @@ interface IAtlas {
     function depositAndBond(uint256 amountToBond) external payable;
 }
 
-address atlasAddress = address(0x8e098Dfd60aEC9bCf07fd3cA5933e9F22b1b4A0d);
+address atlasAddress = address(0x583dcFef0D240DC80753F0F0B26513feE27D9B77);
 uint256 amountToBond = 1e18;
 
 IAtlas(atlasAddress).depositAndBond{ value: amountToBond }(amountToBond);
@@ -6728,7 +6638,7 @@ interface IAtlas {
     function ESCROW_DURATION() external view returns (uint256);
 }
 
-address atlasAddress = address(0x8e098Dfd60aEC9bCf07fd3cA5933e9F22b1b4A0d);
+address atlasAddress = address(0x583dcFef0D240DC80753F0F0B26513feE27D9B77);
 uint256 amountToUnbond = 1e18;
 
 IAtlas(atlasAddress).unbond(amountToUnbond);
@@ -7091,7 +7001,7 @@ var (
 	chainId = big.NewInt(8453)
 
 	// Filtering notifications for the Chainlink dApp control (module) address only
-	dAppControlAddress = common.HexToAddress("0xe15BBa987C002ecc3586e81244517877D294d291")
+	dAppControlAddress = common.HexToAddress("0xa5E1a36938769cbd5a26f5e19D8FCB379f597c83")
 )
 
 // This function returns true if the notification is of interest and false

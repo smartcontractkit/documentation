@@ -2,8 +2,6 @@ import { type ChainMetadata } from "~/features/data/api/index.ts"
 import type { DataFeedType } from "../types.ts"
 import { type FeedVisibilityOptions, isFeedVisible } from "./feedVisibility.ts"
 
-// This file contains functions to detect and classify SVR feeds based on their metadata.
-//
 // SVR feeds are identified by the presence of a `secondaryProxyAddress`.
 export function isSvrFeed(metadata: ChainMetadata): boolean {
   return !!metadata?.secondaryProxyAddress
@@ -12,19 +10,13 @@ export function isSvrFeed(metadata: ChainMetadata): boolean {
 /** Fallback label used when the RDD does not provide `svrDisplayLabel`. */
 export const DEFAULT_SVR_LABEL = "SVR"
 
-/**
- * Returns the SVR variant label for a feed, or `null` when the feed is not an
- * SVR feed. Unknown/new labels are passed through unchanged so they still render.
- */
+/** Returns the SVR variant label for a feed, or `null` if it is not an SVR feed. */
 export function getSvrType(metadata: ChainMetadata): string | null {
   if (!metadata?.secondaryProxyAddress) return null
   return metadata.svrDisplayLabel || DEFAULT_SVR_LABEL
 }
 
-/**
- * Returns the distinct SVR variant labels present on a network, sorted for
- * stable rendering. Used to build the SVR type filter checkboxes dynamically.
- */
+/** Returns the distinct SVR variant labels present on a network, sorted. */
 export function getSvrTypesOnNetwork(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   network: any
@@ -66,10 +58,7 @@ export function chainHasSvrFeeds(
   )
 }
 
-/**
- * Documentation anchor for a given SVR variant label. Unknown/new labels fall
- * back to the SVR Feeds overview page.
- */
+/** Docs anchor for an SVR variant label; unknown labels fall back to the overview. */
 export function getSvrTypeDocLink(label: string): string {
   switch (label) {
     case "Aave SVR":

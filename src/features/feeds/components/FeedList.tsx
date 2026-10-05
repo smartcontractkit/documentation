@@ -20,6 +20,8 @@ import {
   type ExtendedHoursCategory,
 } from "../utils/feedVisibility.ts"
 import { chainHasSvrFeeds, getSvrTypesOnNetwork, getSvrTypeDocLink } from "../utils/svrDetection.ts"
+import { getAtlasContracts } from "../utils/atlasContracts.ts"
+import { AddressCell } from "./AtlasContractsTable.tsx"
 import {
   filterChainsByFeedTypeTag,
   networkMatchesFeedTypeTag,
@@ -545,7 +547,6 @@ export const FeedList = ({
     forceExtendedHoursCategory,
   ])
 
-  // Distinct SVR variant labels on the selected chain (drives the filter checkboxes).
   const svrTypesOnNetwork = useMemo(() => {
     if (!isSvr || !currentChainMetadata.processedData) return []
     const labels = new Set<string>()
@@ -554,6 +555,11 @@ export const FeedList = ({
     })
     return [...labels].sort()
   }, [isSvr, currentChainMetadata.processedData])
+
+  const atlasContracts = useMemo(
+    () => (isSvr ? getAtlasContracts(selectedChain.page) : null),
+    [isSvr, selectedChain.page]
+  )
 
   useEffect(() => {
     if (!chainHasSvr && showOnlySVR) {
@@ -1768,6 +1774,36 @@ export const FeedList = ({
                           <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for
                           examples.
                         </p>
+                      )}
+                      {isSvr && atlasContracts && (
+                        <>
+                          <p>
+                            Searchers bond native tokens to the <strong>Atlas</strong> contract and query the{" "}
+                            <strong>DappControl</strong> contract for auction parameters such as the solver gas limit.
+                          </p>
+                          <table className={tableStyles.table} style={{ marginBottom: "1rem" }}>
+                            <thead>
+                              <tr>
+                                <th>Contract</th>
+                                <th>Address</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>Atlas (v1.6.4)</td>
+                                <td>
+                                  <AddressCell address={atlasContracts.atlas} explorerUrl={network.explorerUrl} />
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>DappControl</td>
+                                <td>
+                                  <AddressCell address={atlasContracts.dappControl} explorerUrl={network.explorerUrl} />
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </>
                       )}
                       {network.name === "Aptos Mainnet" && (
                         <>
