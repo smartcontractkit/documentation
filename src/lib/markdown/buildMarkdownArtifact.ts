@@ -3,6 +3,7 @@ import path from "node:path"
 import { transformPageToMarkdown } from "./transformMarkdown.js"
 import type { MarkdownArtifact } from "./types.js"
 import { extractFrontmatter, getIsoStringOrUndefined, toCanonicalUrl, toContentRelative } from "./utils.js"
+import { isSunsetDocsPath } from "../../config/sunset.js"
 
 const SITE_BASE = "https://docs.chain.link"
 const CONTENT_ROOT = path.resolve("src/content")
@@ -61,6 +62,7 @@ export async function buildMarkdownArtifact(
 ): Promise<MarkdownArtifact | null> {
   const cleanPath = normalizeMarkdownPath(requestPath)
   if (!cleanPath) return null
+  if (isSunsetDocsPath(cleanPath)) return null
 
   const specialResolution = await resolveSpecialCanonicalMarkdownPath(cleanPath)
   if (specialResolution) {

@@ -24,15 +24,11 @@ function MegaMenu() {
 
         <div className={styles.bottomLinks}>
           <div className="label">
-            <a href="https://dev.chain.link/resources" target="_blank" rel="noopener noreferrer">
-              View all resources
-            </a>
+            <a href="/resources">View all resources</a>
             <img src="/images/tabler_arrow-up.svg" alt="" />
           </div>
           <div className="label">
-            <a href="https://dev.chain.link/products/general" target="_blank" rel="noopener noreferrer">
-              Learn about Chainlink
-            </a>
+            <a href="/getting-started/conceptual-overview">Learn about Chainlink</a>
             <img src="/images/tabler_arrow-up.svg" alt="" />
           </div>
         </div>
