@@ -1,4 +1,5 @@
 ---
+import { ClientRouter } from "astro:transitions"
 import HeadCommon from "~/components/HeadCommon.astro"
 import HeadSEO from "~/components/HeadSEO.astro"
 import StructuredData from "~/components/StructuredData.astro"
@@ -27,6 +28,7 @@ const canonicalURL = new URL(canonicalURLStr)
 
 <html dir="ltr" lang="en-us" class="initial" transition:animate="none">
   <head>
+    <ClientRouter />
     <HeadCommon {title} />
     <HeadSEO
       metadata={metadata}
@@ -48,7 +50,7 @@ const canonicalURL = new URL(canonicalURLStr)
         scroll-behavior: smooth;
       }
     </style>
-    <script is:inline>
+    <script is:inline data-astro-rerun>
       try {
         const savedLang = localStorage.getItem("docs-language-preference")
         if (savedLang === "ts") {
@@ -64,6 +66,32 @@ const canonicalURL = new URL(canonicalURLStr)
     </script>
     <slot name="head" />
     <slot name="head-scripts" />
+    <script is:inline data-astro-rerun>
+      // Safety net for Radix scroll locks (mobile nav dialog, etc.).
+      //
+      // Radix sets `pointer-events: none` + `data-scroll-locked` on <body> while a dialog is open
+      // and removes them on close. With Astro's ClientRouter, navigating from a link inside the
+      // dialog unmounts it without running that cleanup, so the lock is left behind and the whole
+      // page becomes non-interactive. Clear any stale lock after each navigation.
+      ;(function () {
+        if (window.__docsScrollLockGuard) return
+        window.__docsScrollLockGuard = true
+
+        function clearStaleScrollLock() {
+          var body = document.body
+          if (!body) return
+          if (body.hasAttribute("data-scroll-locked")) {
+            body.removeAttribute("data-scroll-locked")
+            body.style.removeProperty("pointer-events")
+            body.style.removeProperty("overflow")
+            body.style.removeProperty("padding-right")
+          }
+        }
+
+        document.addEventListener("astro:after-swap", clearStaleScrollLock)
+        document.addEventListener("astro:page-load", clearStaleScrollLock)
+      })()
+    </script>
   </head>
   <body>
     <Header />

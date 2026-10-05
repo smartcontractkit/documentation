@@ -43,6 +43,18 @@ const canonicalUrlsWithLanguageVariants = extractCanonicalUrlsWithLanguageVarian
 export default defineConfig({
   site: "https://docs.chain.link",
   trailingSlash: "never",
+  // Prefetch internal links so client-side navigations (ClientRouter) feel instant.
+  // "hover" (not "viewport") avoids prefetching the hundreds of links in the docs sidebar at once.
+  //
+  // NOTE (Astro 5 -> 7 upgrade): `prefetch` and `<ClientRouter />` are stable in Astro 5 and remain
+  // the supported API in Astro 6/7, so this config carries over unchanged. The one thing to revisit
+  // is `patches/astro+5.18.2.patch` (dev-server module-graph perf fix): it is pinned to 5.18.2 and
+  // will fail to apply after the upgrade. Check whether the upstream fix has landed by then; if not,
+  // regenerate the patch against the new version with `npx patch-package astro`.
+  prefetch: {
+    prefetchAll: true,
+    defaultStrategy: "hover",
+  },
   redirects: {
     "/ccip/directory": "/ccip/directory/mainnet",
     "/ccip/supported-networks": "/ccip/directory/mainnet",
