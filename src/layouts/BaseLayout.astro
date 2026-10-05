@@ -4,6 +4,7 @@ import HeadCommon from "~/components/HeadCommon.astro"
 import HeadSEO from "~/components/HeadSEO.astro"
 import StructuredData from "~/components/StructuredData.astro"
 import Header from "~/components/Header/Header.astro"
+import NavigationProgress from "~/components/NavigationProgress.astro"
 import { NewsletterCTA } from "~/components/Footer/NewsletterCTA"
 import Footer from "~/components/Footer/Footer.astro"
 import { Metadata, QuickstartsFrontmatter } from "~/content.config.ts"
@@ -67,6 +68,47 @@ const canonicalURL = new URL(canonicalURLStr)
     <slot name="head" />
     <slot name="head-scripts" />
     <script is:inline data-astro-rerun>
+      // Cancel client-side routing to canonical CRE pages.
+      //
+      // A canonical CRE page (e.g. /cre/foo) renders an empty body and redirects to the
+      // language-specific URL (/cre/foo-go or /cre/foo-ts). Under ClientRouter the router would
+      // swap in that empty body and only then run the redirect, flashing a blank page. Detect the
+      // marker the page emits during preparation and cancel, so the redirect happens before paint.
+      //
+      // `astro:before-swap` is not cancelable, so this hooks `astro:before-preparation` and wraps
+      // its loader: the loader has already parsed the incoming document by the time it resolves,
+      // so we can inspect it without a second fetch.
+      ;(function () {
+        if (window.__docsCanonicalRedirectGuard) return
+        window.__docsCanonicalRedirectGuard = true
+
+        document.addEventListener("astro:before-preparation", (event) => {
+          const originalLoader = event.loader
+          event.loader = async function () {
+            await originalLoader()
+
+            const marker = event.newDocument?.querySelector("meta[name='astro-canonical-redirect']")
+            if (!marker) return
+
+            let lang = "ts"
+            try {
+              const stored = localStorage.getItem("docs-language-preference")
+              lang = stored === "go" || stored === '"go"' ? "go" : "ts"
+            } catch (e) {
+              // localStorage unavailable: fall back to the TypeScript variant.
+            }
+
+            const target = lang === "go" ? marker.getAttribute("data-go") : marker.getAttribute("data-ts")
+            if (!target) return
+
+            // Cancel the client-side navigation. The router then falls back to a full page load,
+            // which runs the page's own redirect before anything paints.
+            event.preventDefault()
+          }
+        })
+      })()
+    </script>
+    <script is:inline data-astro-rerun>
       // Safety net for Radix scroll locks (mobile nav dialog, etc.).
       //
       // Radix sets `pointer-events: none` + `data-scroll-locked` on <body> while a dialog is open
@@ -94,6 +136,7 @@ const canonicalURL = new URL(canonicalURLStr)
     </script>
   </head>
   <body>
+    <NavigationProgress />
     <Header />
     <slot />
     <NewsletterCTA client:visible />
