@@ -28,35 +28,30 @@ export const contracts = {
     dappControl: "0x7D50b32444609A9B53BcF208c159C8d0d0767835",
   },
   monad: {
-    atlas: "0x006DD7813C90CaB67c1Dc185c21Abb2C7414b061",
+    atlas: "0x2DA28fedc4643c787CB5c5e84fa6AaDb596875E8",
     dappControl: "0xa40d9f38621b4ffb2181508b973519e8133951c0",
   },
-  // TODO: Replace the placeholder addresses below with the deployed Atlas and
-  // DappControl addresses for each chain. Placeholders are 0x000...000 so they
-  // are easy to find and replace.
+  // Atlas + DappControl addresses sourced from the reference-data-directory
+  // (dAppControl/<address>.json -> "destination" is the Atlas contract).
   arc: {
-    atlas: "0x0000000000000000000000000000000000000000",
-    dappControl: "0x0000000000000000000000000000000000000000",
+    atlas: "0x3b7B38362bB7E2F000Cd2432343F3483F785F435",
+    dappControl: "0x5210729C598746F2bD7A22d5B66A7cDE72f462E7",
   },
   hyperevm: {
-    atlas: "0x0000000000000000000000000000000000000000",
-    dappControl: "0x0000000000000000000000000000000000000000",
+    atlas: "0x137B8Fdf027598f1Bf5F2d60cB081bD8539BD8c7",
+    dappControl: "0x2ac121f89b39BA231CBF8Abf7aC6D0140f6B8821",
   },
   ink: {
-    atlas: "0x0000000000000000000000000000000000000000",
-    dappControl: "0x0000000000000000000000000000000000000000",
+    atlas: "0x3efbaBE0ee916A4677D281c417E895a3e7411Ac2",
+    dappControl: "0xB0B992eaed9CbB37667E25D9C5214CDEB406Bd13",
   },
   robinhood: {
-    atlas: "0x0000000000000000000000000000000000000000",
-    dappControl: "0x0000000000000000000000000000000000000000",
-  },
-  tempo: {
-    atlas: "0x0000000000000000000000000000000000000000",
-    dappControl: "0x0000000000000000000000000000000000000000",
+    atlas: "0x3efbaBE0ee916A4677D281c417E895a3e7411Ac2",
+    dappControl: "0xC9eACB1CF3bBe2874ccF5d25737c418Cfb944340",
   },
   unichain: {
-    atlas: "0x0000000000000000000000000000000000000000",
-    dappControl: "0x0000000000000000000000000000000000000000",
+    atlas: "0xbAf4fBB4FD65199D5795Ee4990B9661387ce3B6e",
+    dappControl: "0x763D32a9EDf2F1684F1Dee50AB6CcCa5b68EF655",
   },
 }
 
@@ -87,8 +82,14 @@ Atlas is currently live on the following networks:
 | HyperEVM        | `hyperliquid-mainnet` |
 | Ink             | `ink-mainnet`         |
 | Robinhood Chain | `robinhood-mainnet`   |
-| Tempo           | `tempo-mainnet`       |
 | Unichain        | `unichain-mainnet`    |
+
+<Aside type="note" title="Tempo">
+  <p>
+    SVR is available on Tempo, but Atlas is not deployed there. Tempo uses SVR proxies without any order flow auction
+    (OFA) functionality while auctionDON support is pending. Searchers cannot participate in Atlas auctions on Tempo.
+  </p>
+</Aside>
 
 ## Core Components
 
@@ -126,8 +127,7 @@ The following contracts are deployed at version **v1.6.4**.
   <Fragment slot="tab.6">HyperEVM</Fragment>
   <Fragment slot="tab.7">Ink</Fragment>
   <Fragment slot="tab.8">Robinhood Chain</Fragment>
-  <Fragment slot="tab.9">Tempo</Fragment>
-  <Fragment slot="tab.10">Unichain</Fragment>
+  <Fragment slot="tab.9">Unichain</Fragment>
   <Fragment slot="panel.1">
     <table>
       <thead>
@@ -332,30 +332,6 @@ The following contracts are deployed at version **v1.6.4**.
         <tr>
           <td>Atlas (v1.6.4)</td>
           <td>
-            <CopyText text={contracts.tempo.atlas} code />
-          </td>
-        </tr>
-        <tr>
-          <td>DappControl</td>
-          <td>
-            <CopyText text={contracts.tempo.dappControl} code />
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </Fragment>
-  <Fragment slot="panel.10">
-    <table>
-      <thead>
-        <tr>
-          <th>Contract</th>
-          <th>Address</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Atlas (v1.6.4)</td>
-          <td>
             <CopyText text={contracts.unichain.atlas} code />
           </td>
         </tr>
@@ -376,9 +352,8 @@ The following contracts are deployed at version **v1.6.4**.
   <p>
     Searchers need to listen to the **Aggregator address** for price reports, not the proxy address. You can find the
     aggregator address by reading `aggregator` in the proxy contract. For convenience, we've included the aggregator
-    address in the table below. Use **Aave-SVR** type feeds for Aave, **SVR** type feeds for other protocols, and
-    **SVR-Backup** for the legacy shared feeds. For the full list of SVR feeds, see the [SVR Feeds
-    page](/data-feeds/svr-feeds).
+    address in the table below. Each feed is labeled with its SVR variant (for example, **Shared SVR**, **Aave SVR**, or
+    **Compound SVR**). For the full list of SVR feeds, see the [SVR Feeds page](/data-feeds/svr-feeds).
   </p>
 </Aside>
 

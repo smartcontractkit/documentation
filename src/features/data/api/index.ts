@@ -47,6 +47,7 @@ export interface ChainMetadata {
   path: string
   proxyAddress: null | string
   secondaryProxyAddress?: string
+  svrDisplayLabel?: string
   threshold: number
   valuePrefix: string
   valueSuffix?: string

@@ -824,7 +824,7 @@ export const CHAINS: Chain[] = [
     title: "Tempo Data Feeds",
     img: "/assets/chains/tempo.svg",
     networkStatusUrl: "https://explore.tempo.xyz/",
-    tags: ["default", "svrAtlas"],
+    tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
       {

@@ -6189,7 +6189,7 @@ Source: https://docs.chain.link/data-feeds/svr-feeds
 > **TIP: SVR Now Available Beyond Ethereum Mainnet**
 >
 > Chainlink SVR has expanded beyond Ethereum Mainnet and is now available on Base, Arbitrum, BNB Chain, Monad, Arc,
-> HyperEVM, Ink, Robinhood Chain, Tempo, and Unichain via the Atlas auction system. See the&#x20;
+> HyperEVM, Ink, Robinhood Chain, and Unichain via the Atlas auction system. See the&#x20;
 > [Atlas searcher onboarding guide](/data-feeds/svr-feeds/searcher-onboarding-atlas) for integration
 > details.
 
@@ -6262,7 +6262,7 @@ If the **private route** fails or times out, the SVR feed automatically **revert
 
 ## SVR Feed Variants
 
-Chainlink SVR Feeds are available in three variants:
+Each SVR feed carries a variant label in the [Feed Addresses](/data-feeds/price-feeds/addresses) table and on [data.chain.link](https://data.chain.link/). The label identifies which protocol or integration the feed is intended for.
 
 ### SVR (Shared)
 
@@ -6272,9 +6272,9 @@ Canonical shared SVR feeds for use by any protocol. These are the recommended fe
 
 Dedicated SVR feeds exclusively for the Aave protocol.
 
-### SVR-Backup (Legacy)
+### Compound SVR Feeds
 
-Legacy shared SVR feeds that are still actively used by existing applications. Searchers should continue to monitor these feeds. New integrations should use the [SVR (Shared)](#svr-shared) feeds instead.
+Dedicated SVR feeds exclusively for the Compound protocol.
 
 ## Default SVR Activation
 
@@ -6282,7 +6282,7 @@ Chainlink SVR is activated by default for certain Chainlink Data Feeds on certai
 
 Integrators should expect zero service disruption during activation, and no action is needed on their part.
 
-On these networks, SVR feeds have an **SVR** label on the [Feed Addresses](/data-feeds/price-feeds/addresses?network=base\&showSvr=true) page and on [data.chain.link](https://data.chain.link/). Previously deployed SVR feeds remain available and function as expected, and can be identified with the **SVR-Backup** label.
+On these networks, SVR feeds have an **SVR** label on the [Feed Addresses](/data-feeds/price-feeds/addresses?network=base\&showSvr=true) page and on [data.chain.link](https://data.chain.link/). Previously deployed SVR feeds remain available and function as expected, and can be identified by their variant label.
 
 For any questions, contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com). Protocols can also opt out at any time by reading from the "Standard" proxy that complements every SVR proxy for the relevant feed.
 
@@ -6325,10 +6325,11 @@ This code sample is essentially the same as reading from a standard Chainlink Pr
 
 Chainlink SVR supports two auction paths depending on the network:
 
-| Network                                                                                | Auction System      | Guide                                                                                       |
-| -------------------------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------- |
-| Ethereum Mainnet                                                                       | Flashbots MEV-Share | [Searcher Onboarding: Ethereum Mainnet](/data-feeds/svr-feeds/searcher-onboarding-ethereum) |
-| Base, Arbitrum, BNB Chain, Monad, Arc, HyperEVM, Ink, Robinhood Chain, Tempo, Unichain | Atlas               | [Searcher Onboarding: Atlas](/data-feeds/svr-feeds/searcher-onboarding-atlas)               |
+| Network                                                                         | Auction System      | Guide                                                                                       |
+| ------------------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------- |
+| Ethereum Mainnet                                                                | Flashbots MEV-Share | [Searcher Onboarding: Ethereum Mainnet](/data-feeds/svr-feeds/searcher-onboarding-ethereum) |
+| Base, Arbitrum, BNB Chain, Monad, Arc, HyperEVM, Ink, Robinhood Chain, Unichain | Atlas               | [Searcher Onboarding: Atlas](/data-feeds/svr-feeds/searcher-onboarding-atlas)               |
+| Tempo                                                                           | None (no OFA)       | SVR proxies only; Atlas is not deployed                                                     |
 
 ## Economics and Revenue Split
 
@@ -6382,8 +6383,12 @@ Atlas is currently live on the following networks:
 | HyperEVM        | `hyperliquid-mainnet` |
 | Ink             | `ink-mainnet`         |
 | Robinhood Chain | `robinhood-mainnet`   |
-| Tempo           | `tempo-mainnet`       |
 | Unichain        | `unichain-mainnet`    |
+
+> **NOTE: Tempo**
+>
+> SVR is available on Tempo, but Atlas is not deployed there. Tempo uses SVR proxies without any order flow auction
+> (OFA) functionality while auctionDON support is pending. Searchers cannot participate in Atlas auctions on Tempo.
 
 ## Core Components
 
@@ -6484,15 +6489,6 @@ Atlas (v1.6.4)
 
 DappControl
 
-### Tempo
-
-Contract
-Address
-
-Atlas (v1.6.4)
-
-DappControl
-
 ### Unichain
 
 Contract
@@ -6508,9 +6504,8 @@ DappControl
 >
 > Searchers need to listen to the **Aggregator address** for price reports, not the proxy address. You can find the
 > aggregator address by reading `aggregator` in the proxy contract. For convenience, we've included the aggregator
-> address in the table below. Use **Aave-SVR** type feeds for Aave, **SVR** type feeds for other protocols, and
-> **SVR-Backup** for the legacy shared feeds. For the full list of SVR feeds, see the [SVR Feeds
-> page](/data-feeds/svr-feeds).
+> address in the table below. Each feed is labeled with its SVR variant (for example, **Shared SVR**, **Aave SVR**, or
+> **Compound SVR**). For the full list of SVR feeds, see the [SVR Feeds page](/data-feeds/svr-feeds).
 
 ## Guide
 
@@ -7301,9 +7296,8 @@ For more background on how Aave liquidations work, see [Aave Documentation](http
 >
 > Searchers need to listen to the **Aggregator address** for price reports, not the proxy address. You can find the
 > aggregator address by reading `aggregator` in the proxy contract. For convenience, we've included the aggregator
-> address in the table below. Use **Aave-SVR** type feeds for Aave, **SVR** type feeds for other protocols, and
-> **SVR-Backup** for the legacy shared feeds. For the full list of SVR feeds, see the [SVR Feeds
-> page](/data-feeds/svr-feeds).
+> address in the table below. Each feed is labeled with its SVR variant (for example, **Shared SVR**, **Aave SVR**, or
+> **Compound SVR**). For the full list of SVR feeds, see the [SVR Feeds page](/data-feeds/svr-feeds).
 
 ## How to Participate as a Searcher
 
