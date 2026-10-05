@@ -72,12 +72,6 @@ export const megaMenuSections = {
         description: "Move data and value across any blockchain",
         link: "/ccip",
       },
-      {
-        icon: aceLogo,
-        title: "Automated Compliance Engine (ACE)",
-        description: "Enable compliance-focused digital assets",
-        link: "/ace",
-      },
     ],
   },
   data: {
@@ -111,6 +105,17 @@ export const megaMenuSections = {
         title: "Digital Transfer Agent (DTA) Technical Standard",
         description: "Unlock streamlined tokenized fund operations",
         link: "/dta-technical-standard",
+      },
+    ],
+  },
+  compliance: {
+    title: "Compliance",
+    items: [
+      {
+        icon: aceLogo,
+        title: "Automated Compliance Engine (ACE)",
+        description: "Enable compliance-focused digital assets",
+        link: "/ace",
       },
     ],
   },
@@ -192,7 +197,9 @@ function MegaMenu({ cancel, isMobile }: { cancel?: () => void; isMobile?: boolea
     <div className={clsx(styles.wrapper, isMobile && styles.mobile)} onMouseLeave={cancel}>
       <div className={styles.row}>
         <MenuColumn groups={[megaMenuSections.orchestration, megaMenuSections.data]} />
-        <MenuColumn groups={[megaMenuSections.interoperability, megaMenuSections.compute]} />
+        <MenuColumn
+          groups={[megaMenuSections.interoperability, megaMenuSections.compliance, megaMenuSections.compute]}
+        />
         <MenuColumn groups={[megaMenuSections.assetManagement, megaMenuSections.other]} />
       </div>
     </div>
