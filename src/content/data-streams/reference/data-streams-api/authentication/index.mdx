@@ -45,13 +45,13 @@ These headers authenticate your request and ensure data integrity.
 
 ### Authorization Header
 
-The `Authorization` header contains your API key, which is provided to you when you sign up for Chainlink Data Streams access. It follows this format:
+The `Authorization` header contains your **Data Streams Username**, which is provided to you when you sign up for Chainlink Data Streams access. It follows this format:
 
 ```
-Authorization: YOUR_API_KEY
+Authorization: YOUR_DATA_STREAMS_USERNAME
 ```
 
-Your API key is a UUID string that identifies your account. Keep it secure and do not share it publicly.
+Your username is a UUID string that identifies your account. It is the same value used as the API key in the examples below. Keep it secure and do not share it publicly.
 
 ### X-Authorization-Timestamp Header
 
@@ -113,6 +113,23 @@ Even for GET requests and WebSocket connections, you need to include a body hash
 ## Authentication Examples
 
 Below are complete examples for authenticating with the Data Streams API in various languages. Each example shows how to properly generate the required headers and make a request.
+
+<Aside type="note" title="Testnet vs. mainnet endpoints">
+  The examples use the mainnet endpoints (`api.dataengine.chain.link` and `ws.dataengine.chain.link`). If you are using
+  testnet credentials, change the host to the testnet endpoints (`api.testnet-dataengine.chain.link` and
+  `ws.testnet-dataengine.chain.link`). Credentials are environment-specific: mainnet credentials only work against the
+  mainnet endpoints, and testnet credentials only work against the testnet endpoints. See the [REST
+  API](/data-streams/reference/data-streams-api/interface-api#domains) and [WebSocket
+  API](/data-streams/reference/data-streams-api/interface-ws#domains) references for the full endpoint list.
+</Aside>
+
+<Aside type="note" title="Feed IDs and subscriptions">
+  The examples use the mainnet ETH/USD feed ID (`0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9`).
+  Your account must be subscribed to a feed to retrieve its reports; otherwise the API returns `401 feeds not
+  authorized`. Replace the feed ID with one your account is subscribed to. You can list the feeds you are entitled to
+  with the authenticated [Discovery
+  endpoint](/data-streams/reference/data-streams-api/discovery-endpoint#hidden-streams).
+</Aside>
 
 - [JavaScript examples](/data-streams/reference/data-streams-api/authentication/javascript-examples)
 - [TypeScript examples](/data-streams/reference/data-streams-api/authentication/typescript-examples)

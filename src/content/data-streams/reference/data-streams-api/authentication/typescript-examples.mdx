@@ -60,10 +60,10 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
 ### Running the Example
 
 1. Create a file named <CopyText text="auth-example.ts" code/> with the example code shown below
-1. Set your API credentials as environment variables:
+1. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 1. Run the example:
    ```bash
@@ -200,7 +200,7 @@ async function fetchSingleReport(feedID: string): Promise<SingleReport> {
 
   // API connection details
   const method = "GET"
-  const host = "api.testnet-dataengine.chain.link"
+  const host = "api.dataengine.chain.link"
   const path = "/api/v1/reports/latest"
   const queryString = `?feedID=${feedID}`
   const fullPath = path + queryString
@@ -232,7 +232,7 @@ async function fetchSingleReport(feedID: string): Promise<SingleReport> {
 async function main(): Promise<void> {
   try {
     // Example feed ID (ETH/USD)
-    const feedID = "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
+    const feedID = "0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"
 
     console.log(`Fetching latest report for feed ID: ${feedID}`)
 
@@ -258,9 +258,9 @@ main()
 **Expected output**:
 
 ```bash
-Fetching latest report for feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Fetching latest report for feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 Successfully retrieved report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747929367
   Observations Timestamp: 1747929367
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8d69000000[...]79dd065e3f83ca7c0ca4aaa
@@ -326,10 +326,10 @@ While this example demonstrates the authentication mechanism, production applica
 ### Running the Example
 
 1. Create a file named <CopyText text="ws-auth-example.ts" code/> with the example code shown below
-1. Set your API credentials as environment variables (if not already set):
+1. Set your API credentials as environment variables (if not already set). Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 1. Run the example:
    ```bash
@@ -417,7 +417,7 @@ function setupWebSocketConnection(apiKey: string, apiSecret: string, feedIDs: st
     }
 
     // WebSocket connection details
-    const host = "ws.testnet-dataengine.chain.link"
+    const host = "ws.dataengine.chain.link"
     const path = "/api/v1/ws"
     const queryString = `?feedIDs=${feedIDs.join(",")}`
     const fullPath = path + queryString
@@ -542,7 +542,7 @@ async function main(): Promise<void> {
     }
 
     // Example feed ID (ETH/USD)
-    const feedIDs = ["0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"]
+    const feedIDs = ["0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"]
 
     // Set up WebSocket connection
     const ws = await setupWebSocketConnection(apiKey, apiSecret, feedIDs)
@@ -581,11 +581,11 @@ main()
 **Expected output**:
 
 ```bash
-Connecting to: wss://ws.testnet-dataengine.chain.link/api/v1/ws?feedIDs=0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Connecting to: wss://ws.dataengine.chain.link/api/v1/ws?feedIDs=0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 WebSocket connection established
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747930054
   Observations Timestamp: 1747930054
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
@@ -593,7 +593,7 @@ Received new report:
 [...]
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747930059
   Observations Timestamp: 1747930059
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
@@ -601,7 +601,7 @@ Sending ping to keep connection alive...
 Received pong from server
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747930060
   Observations Timestamp: 1747930060
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
