@@ -25,6 +25,11 @@ describe("buildMarkdownArtifact", () => {
     await expect(buildMarkdownArtifact("chainlink-automation/overview/supported-networks")).resolves.toBeNull()
     await expect(buildMarkdownArtifact("quickstarts/time-based-upkeep")).resolves.toBeNull()
     await expect(buildMarkdownArtifact("quickstarts/functions-demo-app")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("any-api/introduction")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("chainlink-nodes/job-specs/multi-word-job")).resolves.toBeNull()
+    await expect(
+      buildMarkdownArtifact("chainlink-nodes/external-initiators/external-initiators-introduction")
+    ).resolves.toBeNull()
   })
 
   it("rejects path escapes", async () => {

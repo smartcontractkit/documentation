@@ -5,6 +5,7 @@ import path from "path"
 import { fileURLToPath } from "node:url"
 import { LLM_SECTIONS_CONFIG, SUPPORTED_LLM_SECTIONS, type LlmsSectionConfig } from "../config/llms.js"
 import { SIDEBAR } from "../config/sidebar.js"
+import { isSunsetContentFile } from "../config/sunset.js"
 import type { SectionEntry, SectionContent } from "../config/sidebar.js"
 import { transformPageBodyToMarkdown } from "../lib/markdown/buildMarkdownArtifact.js"
 import { unescapeMarkdown } from "../lib/markdown/formatters.js"
@@ -174,6 +175,7 @@ async function main() {
 
         for (const absFile of orderedPages) {
           if (!absFile.endsWith(".mdx") && !absFile.endsWith(".md")) continue
+          if (isSunsetContentFile(absFile)) continue
 
           const raw = await fs.readFile(absFile, "utf-8")
           const { sdkLang } = extractFrontmatter(raw)
@@ -222,6 +224,7 @@ async function main() {
 
       for (const absFile of orderedPages) {
         if (!absFile.endsWith(".mdx") && !absFile.endsWith(".md")) continue
+        if (isSunsetContentFile(absFile)) continue
         const raw = await fs.readFile(absFile, "utf-8")
         const rendered = await renderLlmsPageMarkdown(raw, absFile, section)
         if (rendered.transformMode !== "normal") {
