@@ -125,6 +125,10 @@ describe("buildMarkdownArtifact", () => {
     await expect(
       buildMarkdownArtifact("chainlink-nodes/external-initiators/external-initiators-introduction")
     ).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("vrf/v1/introduction")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("vrf/v2/subscription")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("vrf/v2/subscription/ui")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("vrf/v2-5/getting-started")).resolves.not.toBeNull()
   })
 
   it("rejects path escapes", async () => {
