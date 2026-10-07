@@ -1,0 +1,96 @@
+---
+section: ace
+title: "What is Active Monitoring?"
+date: Last Modified
+metadata:
+  description: "Chainlink ACE Active Monitoring screens wallet addresses with TRM, applies your rules to risk changes, and acts onchain on tokens you already run, without changing their contracts."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-05"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+**Chainlink ACE Active Monitoring** screens the wallet addresses you choose with TRM, a blockchain analytics provider that scores address risk, on a schedule, applies the rules you define when an address's risk changes, and acts onchain on tokens you already run, without changing their contracts. Every decision is recorded, so you can show what was detected, what the rule decided, and what was executed.
+
+Active Monitoring is the continuous part of ACE. [Policy Manager and Identity Manager](/ace/concepts/preventive-vs-continuous) are preventive: they block a transaction while it executes. Active Monitoring is reactive: it covers holders who were compliant when they received your token and changed risk level afterward.
+
+## What problem does it solve?
+
+A regulated token issuer has to react when a holder becomes a risk, for example when an address you onboarded months ago is flagged for sanctions exposure. Without automation, the steps are spread across tools: an alert in one system, a decision in a chat, an action in a wallet interface, and an audit trail rebuilt afterward. That is slow, easy to get wrong, and hard to prove.
+
+Active Monitoring closes that loop for tokens that are already deployed:
+
+1. **Detect.** It screens your watchlist with [TRM Wallet Screening](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening) at the interval you choose.
+1. **Decide.** It applies your monitoring rule to each risk change: record it, flag it for a person, or enforce an action.
+1. **Act.** For an enforced action, it calls the enforcement function you registered, through your CRE Connect Wallet.
+1. **Prove.** It keeps the TRM result, the rule, the balance reading, the operation, and who acted, in one record.
+
+<ClickToZoom
+  src="/images/ace/active-monitoring-loop.svg"
+  alt="Active Monitoring loop: detect a risk change with TRM, decide with your rule, act onchain, and prove with one record. Screening repeats at the next run."
+  caption="The Active Monitoring loop"
+/>
+
+## Who is it for?
+
+- **Compliance teams** define the rule for each token, review flagged decisions, and read the audit trail.
+- **Platform and custody engineers** register the token and its ABI, set up wallets and the TRM API key, and grant the onchain role. Your keys and your signer stay with you.
+- **Token issuers and asset managers** with tokens already in production. You do not need to use Policy Manager or Identity Manager.
+
+## How it works: a real-world example
+
+An issuer runs **Example Treasury Fund (EXTF)** on Ethereum Sepolia and Arbitrum Sepolia. It uses an ERC-3643 token with `freezePartialTokens` and `setAddressFrozen`, and a separate blocklist contract with `addBlacklist`. The blocklist is optional: it shows that an action can run on a second contract. The issuer sets this rule:
+
+| TRM risk level                   | Response                                                                                        |
+| :------------------------------- | :---------------------------------------------------------------------------------------------- |
+| 15 - Severe                      | Enforce: freeze the full balance if the address holds one, and add the address to the blocklist |
+| 10 - High                        | Flag for a person to review                                                                     |
+| 5 - Medium, 1 - Low, 0 - Unknown | Silently log                                                                                    |
+
+At the next screening run, TRM reports one watchlist address as **Severe**. The address holds EXTF on Ethereum Sepolia and none on Arbitrum Sepolia. Active Monitoring creates these **decisions**:
+
+| Network          | Freeze rule                  | Blocklist rule                        |
+| :--------------- | :--------------------------- | :------------------------------------ |
+| Ethereum Sepolia | The balance is frozen        | The address is added to the blocklist |
+| Arbitrum Sepolia | No balance - flag for review | The address is added to the blocklist |
+
+Each enforced decision links to its operation and shows the status until it succeeds. On Arbitrum Sepolia, a person reviews the decision that has no balance to freeze, and resolves it or enforces another action. No contract was changed, and the issuer can remove the onchain role at any time to stop all enforcement.
+
+This example is for illustration. You choose which levels to enforce, and you can start with Silently log and Flag only.
+
+## Key features
+
+- **No contract changes.** You upload the ABI of your token and select the functions Active Monitoring may call. It works with any contract that has such functions, such as ERC-3643 tokens or your own blocklist contract.
+- **One configuration, every network.** You register a token once with its address on each network. One rule applies everywhere, and each network gets its own decisions.
+- **Three responses.** Silently log, Flag for human review, or Enforce an action automatically.
+- **Balance-aware actions.** An action can run only if the address holds a balance, and can use the balance as an argument.
+- **Human review.** A person resolves a flagged decision with a recorded reason, or enforces an action, and the record names them.
+- **Your signer.** You choose the signing model. With delegated signing, Chainlink signs and executes operations on your behalf, within the rule and the onchain role you set. With self-signing, your own key signs each operation. Both run through your CRE Connect Wallet, which you own.
+- **Audit trail.** Each decision keeps the TRM result as returned, the conditions evaluated, and the operation history.
+- **Platform UI and API.** You configure and run Active Monitoring in the [Chainlink Platform](https://app.chain.link) UI or with the Coordinator API.
+
+## What you need
+
+- An organization with ACE enabled and a [CRE Connect Wallet](/ace/getting-started/account-setup) on each network where your token runs.
+- A TRM Labs account with access to the [Wallet Screening API](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening).
+- Admin authority on your token, to grant the onchain role that its enforcement functions require.
+
+ACE is in Beta. See [Beta Scope](/ace/beta-scope#active-monitoring-is-limited-during-beta) for the current limits.
+
+## Where to go next
+
+### Understand Active Monitoring
+
+1. **[Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous)**: how Active Monitoring differs from Policy Manager.
+1. **[How Active Monitoring Works](/ace/active-monitoring/concepts/how-it-works)**: one alert, step by step.
+1. **[Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules)**: how a risk level becomes an outcome.
+1. **[Enforcement and Security Model](/ace/active-monitoring/concepts/enforcement-and-security)**: what Active Monitoring can and cannot do.
+
+### Build with Active Monitoring
+
+- **[Active Monitoring Quick Start](/ace/active-monitoring/quick-start)**: set up the loop end to end.
+- **[Guides](/ace/active-monitoring/guides)**: prepare a token, configure rules, manage the watchlist, and review decisions.
+- **[Active Monitoring API](/ace/active-monitoring/reference/api)**: the endpoints by task.

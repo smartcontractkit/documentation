@@ -3436,6 +3436,1756 @@
         "type": "string",
         "description": "Status of the wallet",
         "enum": ["creation_pending", "creation_failed", "created"]
+      },
+      "ActionVariable": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "key", "data_type", "kind", "value", "description", "created_at", "updated_at"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Use this key as `argument_mapping.value` when `mapping_type` is `reference`.",
+            "example": "screened_address"
+          },
+          "data_type": {
+            "$ref": "#/components/schemas/ActionVariableDataType"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ActionVariableKind"
+          },
+          "value": {
+            "type": "string",
+            "nullable": true,
+            "description": "Always `null` for system variables. Active Monitoring resolves them when it builds the call."
+          },
+          "description": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ActionVariableDataType": {
+        "type": "string",
+        "enum": ["string", "number", "address", "bool"],
+        "description": "Type of the resolved value."
+      },
+      "ActionVariableKind": {
+        "type": "string",
+        "enum": ["system"]
+      },
+      "ActiveMonitoringFunctionABI": {
+        "type": "object",
+        "required": ["name", "type", "stateMutability", "inputs", "outputs"],
+        "additionalProperties": true,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "enum": ["function"]
+          },
+          "stateMutability": {
+            "type": "string",
+            "enum": ["view", "pure", "nonpayable", "payable"]
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "outputs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "ActiveRuleGroupSummary": {
+        "type": "object",
+        "required": ["id", "title", "created_at"],
+        "description": "Header of the active monitoring rule. The get endpoint returns the full rule.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/CreatedAt"
+          }
+        }
+      },
+      "ArgumentMapping": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["argument_name", "mapping_type", "value"],
+        "properties": {
+          "argument_name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "ABI input name on the admin function."
+          },
+          "mapping_type": {
+            "$ref": "#/components/schemas/ArgumentMappingType"
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "description": "For `constant`: the literal value, validated against the ABI type of the input. For `reference`: an action variable key (`screened_address` or `holder_balance`) or a path such as `trm_event.address`."
+          }
+        }
+      },
+      "ArgumentMappingType": {
+        "type": "string",
+        "enum": ["reference", "constant"]
+      },
+      "AutoEnforceRuleAction": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "action_type", "onchain_enforcement_definition"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action_type": {
+            "type": "string",
+            "enum": ["auto_enforce_onchain_action"]
+          },
+          "onchain_enforcement_definition": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OnchainEnforcementDefinition"
+              }
+            ]
+          }
+        }
+      },
+      "AutoEnforceRuleActionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action_type", "onchain_enforcement_definition"],
+        "properties": {
+          "action_type": {
+            "type": "string",
+            "enum": ["auto_enforce_onchain_action"]
+          },
+          "onchain_enforcement_definition": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OnchainEnforcementDefinition"
+              }
+            ]
+          }
+        }
+      },
+      "AutoEnforceRuleGroupAction": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "action_type", "onchain_enforcement_definition"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action_type": {
+            "type": "string",
+            "enum": ["auto_enforce_onchain_action"]
+          },
+          "onchain_enforcement_definition": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RuleGroupOnchainEnforcement"
+              }
+            ]
+          }
+        }
+      },
+      "AutoEnforcedOnchainAction": {
+        "type": "object",
+        "required": [
+          "id",
+          "action_definition",
+          "activity_history",
+          "chain_selector",
+          "transaction_hash",
+          "crec_operation_id",
+          "created_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action_definition": {
+            "$ref": "#/components/schemas/DecisionLogActionDefinition"
+          },
+          "activity_history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecisionLogActivityEntry"
+            }
+          },
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector"
+          },
+          "transaction_hash": {
+            "type": "string",
+            "nullable": true,
+            "description": "Hash of the onchain transaction. `null` until it is known."
+          },
+          "crec_operation_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "ID of the operation in CRE Connect. `null` until it is assigned."
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/CreatedAt"
+          }
+        }
+      },
+      "ConditionDataSourceMetadata": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "contract_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Required when `data_source_type` is `read_balance_event`: the `id` of the primary contract, which must have `balanceOf(address)`. Omit for `trm_event`."
+          }
+        }
+      },
+      "ConditionDataSourceType": {
+        "type": "string",
+        "enum": ["trm_event", "read_balance_event"]
+      },
+      "ConditionOperator": {
+        "type": "string",
+        "enum": ["equals", "greater"]
+      },
+      "Contract": {
+        "type": "object",
+        "required": ["id", "title", "role", "onchain_contracts", "functions", "created_at", "updated_at"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/ContractRole"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/CreatedAt"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/UpdatedAt"
+          },
+          "onchain_contracts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OnchainContract"
+            }
+          },
+          "functions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContractFunction"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/ContractMetadata"
+          }
+        }
+      },
+      "ContractFunction": {
+        "type": "object",
+        "required": ["func_id", "func_abi"],
+        "properties": {
+          "func_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "func_abi": {
+            "$ref": "#/components/schemas/ActiveMonitoringFunctionABI"
+          }
+        }
+      },
+      "ContractFunctionInput": {
+        "type": "object",
+        "required": ["func_abi"],
+        "properties": {
+          "func_abi": {
+            "$ref": "#/components/schemas/ActiveMonitoringFunctionABI"
+          }
+        }
+      },
+      "ContractFunctionMode": {
+        "type": "string",
+        "enum": ["read", "write"]
+      },
+      "ContractGroup": {
+        "type": "object",
+        "required": ["group_id", "active_rule_group", "contracts"],
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "`id` of the primary contract."
+          },
+          "active_rule_group": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ActiveRuleGroupSummary"
+              }
+            ],
+            "nullable": true,
+            "description": "The active monitoring rule of this token, or `null` when it has none. To list past rules, use the list endpoint with `contract_group_id`."
+          },
+          "contracts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Contract"
+            }
+          }
+        }
+      },
+      "ContractInput": {
+        "type": "object",
+        "required": ["title", "role", "onchain_contracts", "functions"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "$ref": "#/components/schemas/ContractRole"
+          },
+          "onchain_contracts": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/OnchainContract"
+            }
+          },
+          "functions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/ContractFunctionInput"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/ContractMetadata"
+          }
+        }
+      },
+      "ContractMetadata": {
+        "type": "object",
+        "description": "Free-form metadata of the contract. For the primary token, `token_decimals` holds the number of decimals.",
+        "additionalProperties": true,
+        "example": {
+          "token_decimals": 18
+        }
+      },
+      "ContractRole": {
+        "type": "string",
+        "enum": ["primary", "associated"]
+      },
+      "CreateContractGroupRequest": {
+        "type": "object",
+        "required": ["contracts"],
+        "properties": {
+          "contracts": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/ContractInput"
+            },
+            "description": "Exactly one contract with `role` `primary`, and zero or more with `role` `associated`."
+          }
+        }
+      },
+      "CreateMonitoredAddressesRequest": {
+        "type": "object",
+        "required": ["source"],
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/MonitoredAddressSource"
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MonitoredAddressInput"
+            },
+            "description": "Required when source is `list`; must be omitted when source is `registry`."
+          },
+          "registry_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Required when source is `registry`; stored as source_reference_id. Must be omitted when source is `list`."
+          }
+        }
+      },
+      "CreateMonitoredAddressesResponse": {
+        "type": "object",
+        "required": ["results"],
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MonitoredAddressResult"
+            },
+            "description": "The addresses just added. `monitored_address_trm_score` is `null` because they have not been screened yet."
+          }
+        }
+      },
+      "CreateProviderApiKeyRequest": {
+        "type": "object",
+        "required": ["provider", "api_key"],
+        "properties": {
+          "provider": {
+            "$ref": "#/components/schemas/ScreeningProvider"
+          },
+          "api_key": {
+            "type": "string",
+            "description": "API key from the dashboard of the screening provider. It is stored encrypted and never returned."
+          },
+          "name": {
+            "type": "string",
+            "description": "Optional label to recognize the key. Not unique."
+          }
+        }
+      },
+      "CreateRuleGroupRequest": {
+        "type": "object",
+        "required": ["title", "trigger_event_type", "contract_group_id", "rules"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "trigger_event_type": {
+            "$ref": "#/components/schemas/RuleTriggerEventType"
+          },
+          "contract_group_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "`id` of the primary contract of the monitored token. It must not already have an active rule."
+          },
+          "rules": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/RuleInput"
+            }
+          }
+        }
+      },
+      "DecisionLog": {
+        "type": "object",
+        "required": [
+          "id",
+          "rule_id",
+          "rule_group_id",
+          "trigger_event_id",
+          "chain_selector",
+          "status",
+          "output",
+          "created_at",
+          "activity_history",
+          "input_events",
+          "condition_runs",
+          "enforced_actions"
+        ],
+        "description": "A decision with its full details, including the stored input events.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rule_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rule_group_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "trigger_event_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "chain_selector": {
+            "type": "string",
+            "description": "Network this evaluation applies to, and where the operation runs when one is created."
+          },
+          "status": {
+            "$ref": "#/components/schemas/RuleRunStatus"
+          },
+          "output": {
+            "$ref": "#/components/schemas/RuleRunOutput"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/CreatedAt"
+          },
+          "activity_history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecisionLogDomainActivityEntry"
+            },
+            "description": "Append-only history of the decision, oldest first."
+          },
+          "input_events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecisionLogInputEvent"
+            }
+          },
+          "condition_runs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecisionLogConditionRun"
+            }
+          },
+          "enforced_actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecisionLogEnforcedAction"
+            }
+          }
+        }
+      },
+      "DecisionLogActionDefinition": {
+        "type": "object",
+        "required": ["id", "created_at", "contract", "admin_function", "argument_mapping"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/CreatedAt"
+          },
+          "contract": {
+            "$ref": "#/components/schemas/DecisionLogContract"
+          },
+          "admin_function": {
+            "$ref": "#/components/schemas/DecisionLogAdminFunction"
+          },
+          "argument_mapping": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArgumentMapping"
+            }
+          }
+        }
+      },
+      "DecisionLogActivityEntry": {
+        "type": "object",
+        "required": ["status", "event_timestamp"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Status of the operation: `pending`, `sending`, `pending_signature`, `executing`, `success`, or `failed`."
+          },
+          "event_timestamp": {
+            "$ref": "#/components/schemas/EventTimestamp"
+          }
+        }
+      },
+      "DecisionLogAdminFunction": {
+        "type": "object",
+        "required": ["id", "func_signature"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "func_signature": {
+            "type": "string",
+            "description": "Canonical function signature, for example `freeze(address,string)`."
+          }
+        }
+      },
+      "DecisionLogConditionRun": {
+        "type": "object",
+        "required": ["condition_id", "input_reference_id", "result", "status"],
+        "properties": {
+          "condition_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "input_reference_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["evaluated"]
+          }
+        }
+      },
+      "DecisionLogContract": {
+        "type": "object",
+        "required": ["id", "title", "chain_selector", "contract_address"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector"
+          },
+          "contract_address": {
+            "$ref": "#/components/schemas/EthAddress"
+          }
+        }
+      },
+      "DecisionLogDomainActivityEntry": {
+        "type": "object",
+        "required": ["event_name", "event_timestamp", "actor_type", "actor_id"],
+        "properties": {
+          "event_name": {
+            "type": "string",
+            "enum": [
+              "evaluation_triggered",
+              "flagged_for_review",
+              "auto_enforced_onchain_action",
+              "silently_logged",
+              "manual_enforced_onchain_action",
+              "user_ignored"
+            ]
+          },
+          "event_timestamp": {
+            "$ref": "#/components/schemas/EventTimestamp"
+          },
+          "actor_type": {
+            "type": "string",
+            "enum": ["system", "user"]
+          },
+          "actor_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "ID of the user when `actor_type` is `user`. `null` when `actor_type` is `system`."
+          }
+        }
+      },
+      "DecisionLogEnforcedAction": {
+        "type": "object",
+        "required": ["id", "rule_action_definition_id", "action_type", "created_at"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rule_action_definition_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action_type": {
+            "$ref": "#/components/schemas/EnforcedActionType"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/CreatedAt"
+          },
+          "auto_enforced_onchain_action": {
+            "$ref": "#/components/schemas/AutoEnforcedOnchainAction"
+          },
+          "manual_enforced_onchain_action": {
+            "$ref": "#/components/schemas/ManualEnforcedOnchainAction"
+          },
+          "dismiss_action": {
+            "$ref": "#/components/schemas/DismissAction"
+          }
+        }
+      },
+      "DecisionLogInputEvent": {
+        "type": "object",
+        "required": ["id", "event_type", "event_time", "payload"],
+        "description": "Input event of a decision.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "event_type": {
+            "$ref": "#/components/schemas/ConditionDataSourceType"
+          },
+          "event_time": {
+            "$ref": "#/components/schemas/CreatedAt"
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Stored event body, including `raw_response` for `trm_event`."
+          }
+        }
+      },
+      "DecisionLogSummary": {
+        "type": "object",
+        "required": [
+          "id",
+          "rule_id",
+          "rule_group_id",
+          "trigger_event_id",
+          "chain_selector",
+          "status",
+          "output",
+          "created_at",
+          "activity_history",
+          "input_events",
+          "condition_runs",
+          "enforced_actions"
+        ],
+        "description": "A decision in the list. Same shape as `DecisionLog`, except that `trm_event` payloads contain only `address` and `risk_level`.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rule_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rule_group_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "trigger_event_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "chain_selector": {
+            "type": "string",
+            "description": "Network this evaluation applies to, and where the operation runs when one is created."
+          },
+          "status": {
+            "$ref": "#/components/schemas/RuleRunStatus"
+          },
+          "output": {
+            "$ref": "#/components/schemas/RuleRunOutput"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/CreatedAt"
+          },
+          "activity_history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecisionLogDomainActivityEntry"
+            },
+            "description": "Append-only history of the decision, oldest first."
+          },
+          "input_events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecisionLogSummaryInputEvent"
+            }
+          },
+          "condition_runs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecisionLogConditionRun"
+            }
+          },
+          "enforced_actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecisionLogEnforcedAction"
+            }
+          }
+        }
+      },
+      "DecisionLogSummaryInputEvent": {
+        "type": "object",
+        "required": ["id", "event_type", "event_time", "payload"],
+        "description": "Input event of a decision in the list.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "event_type": {
+            "$ref": "#/components/schemas/ConditionDataSourceType"
+          },
+          "event_time": {
+            "$ref": "#/components/schemas/CreatedAt"
+          },
+          "payload": {
+            "description": "For `trm_event`: `address` and `risk_level` only. For `read_balance_event`: the full payload.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TrmEventPayloadSummary"
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ]
+          }
+        }
+      },
+      "DismissAction": {
+        "type": "object",
+        "required": ["id", "note", "created_at"],
+        "description": "The reason a user gave when resolving the decision.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "note": {
+            "type": "string",
+            "description": "Required reason given when the decision was resolved."
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/CreatedAt"
+          }
+        }
+      },
+      "DismissDecisionLogRequest": {
+        "type": "object",
+        "required": ["note"],
+        "description": "Resolves a flagged decision. The outcome becomes `user_ignored`.",
+        "properties": {
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Required reason."
+          }
+        }
+      },
+      "EnforceDecisionLogRequest": {
+        "type": "object",
+        "required": ["onchain_enforcement_definitions"],
+        "description": "Submits one or more operations for a flagged decision. The outcome becomes `manual_enforced_onchain_action`. All definitions are validated first, and the decision is resolved only when every operation is accepted.",
+        "properties": {
+          "onchain_enforcement_definitions": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 10,
+            "description": "Operations to submit, in this order. Each `contract_id` and `admin_function_id` pair can appear once. Every `argument_mapping` entry must be a `constant`; send `[]` for a function with no inputs.",
+            "items": {
+              "$ref": "#/components/schemas/OnchainEnforcementDefinition"
+            }
+          }
+        }
+      },
+      "EnforcedActionType": {
+        "type": "string",
+        "enum": ["auto_enforced_onchain_action", "manual_enforced_onchain_action", "user_ignored"]
+      },
+      "EventTimestamp": {
+        "type": "integer",
+        "format": "int64",
+        "description": "Unix time in nanoseconds of an activity entry. `created_at` fields are in seconds."
+      },
+      "FlagForReviewRuleAction": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "action_type"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action_type": {
+            "type": "string",
+            "enum": ["flag_for_review"]
+          }
+        }
+      },
+      "FlagForReviewRuleActionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action_type"],
+        "properties": {
+          "action_type": {
+            "type": "string",
+            "enum": ["flag_for_review"]
+          }
+        }
+      },
+      "FlagForReviewRuleGroupAction": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "action_type"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action_type": {
+            "type": "string",
+            "enum": ["flag_for_review"]
+          }
+        }
+      },
+      "GetRuleGroupResponse": {
+        "type": "object",
+        "required": ["rule_group", "rules"],
+        "properties": {
+          "rule_group": {
+            "$ref": "#/components/schemas/RuleGroupHeader"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RuleGroupRule"
+            }
+          }
+        }
+      },
+      "ListActionVariablesResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action_variables", "total", "total_pages", "page"],
+        "properties": {
+          "action_variables": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionVariable"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          }
+        }
+      },
+      "ListContractGroupsResponse": {
+        "type": "object",
+        "required": ["contract_groups", "total", "total_pages", "page"],
+        "properties": {
+          "contract_groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContractGroup"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          }
+        }
+      },
+      "ListDecisionLogsResponse": {
+        "type": "object",
+        "required": ["decision_logs", "total", "total_pages", "page"],
+        "properties": {
+          "screening": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "last_screened_at": {
+                "$ref": "#/components/schemas/CreatedAt",
+                "nullable": true,
+                "description": "Earliest `last_screened_at` across the addresses of the watchlist. Omitted when `screening` is `null`."
+              },
+              "interval_hours": {
+                "type": "integer",
+                "nullable": true,
+                "description": "Configured screening interval in hours. Omitted when none is configured."
+              }
+            }
+          },
+          "decision_logs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecisionLogSummary"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          }
+        }
+      },
+      "ListMonitoredAddressesResponse": {
+        "type": "object",
+        "required": ["monitored_addresses", "total", "total_pages", "page"],
+        "properties": {
+          "monitored_addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MonitoredAddressResult"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          }
+        }
+      },
+      "ListRuleGroupsResponse": {
+        "type": "object",
+        "required": ["rule_groups", "total", "total_pages", "page"],
+        "properties": {
+          "rule_groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetRuleGroupResponse"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          }
+        }
+      },
+      "ManualEnforcedOnchainAction": {
+        "type": "object",
+        "required": [
+          "id",
+          "contract",
+          "admin_function",
+          "argument_mapping",
+          "activity_history",
+          "chain_selector",
+          "transaction_hash",
+          "crec_operation_id",
+          "actor_type",
+          "actor_id",
+          "created_at"
+        ],
+        "description": "An operation a user created with the enforce endpoint. It records the contract, function, and arguments the user chose.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "contract": {
+            "$ref": "#/components/schemas/DecisionLogContract"
+          },
+          "admin_function": {
+            "$ref": "#/components/schemas/DecisionLogAdminFunction"
+          },
+          "argument_mapping": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArgumentMapping"
+            }
+          },
+          "activity_history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecisionLogActivityEntry"
+            }
+          },
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector"
+          },
+          "transaction_hash": {
+            "type": "string",
+            "nullable": true
+          },
+          "crec_operation_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "actor_type": {
+            "type": "string",
+            "enum": ["user"],
+            "description": "Always `user`."
+          },
+          "actor_id": {
+            "type": "string",
+            "description": "ID of the user who submitted the operation. Never an email address."
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/CreatedAt"
+          }
+        }
+      },
+      "MonitoredAddress": {
+        "type": "object",
+        "required": ["id", "title", "address", "chain_selectors"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "address": {
+            "$ref": "#/components/schemas/EthAddress"
+          },
+          "chain_selectors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "source_reference_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "ID of the identity registry the address was imported from, when `source` is `registry`."
+          }
+        }
+      },
+      "MonitoredAddressInput": {
+        "type": "object",
+        "required": ["address", "chain_selectors"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Optional display title; defaults to address when omitted."
+          },
+          "address": {
+            "$ref": "#/components/schemas/EthAddress"
+          },
+          "chain_selectors": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      },
+      "MonitoredAddressResult": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MonitoredAddress"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "monitored_address_trm_score": {
+                "type": "object",
+                "nullable": true,
+                "description": "Present after the address is screened for the first time. `last_screened_at` is the time of the latest screening and `risk_score_level` is the latest TRM risk level.",
+                "properties": {
+                  "risk_score_level": {
+                    "type": "string",
+                    "enum": ["severe", "high", "medium", "low", "unknown"],
+                    "nullable": true
+                  },
+                  "last_screened_at": {
+                    "$ref": "#/components/schemas/CreatedAt"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "MonitoredAddressSource": {
+        "type": "string",
+        "enum": ["list", "registry"]
+      },
+      "OnchainContract": {
+        "type": "object",
+        "required": ["chain_selector", "address"],
+        "properties": {
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector"
+          },
+          "address": {
+            "$ref": "#/components/schemas/EthAddress"
+          }
+        }
+      },
+      "OnchainEnforcementDefinition": {
+        "type": "object",
+        "required": ["contract_id", "admin_function_id", "argument_mapping"],
+        "properties": {
+          "contract_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "`id` of a contract of the same monitored token: the primary contract or an associated contract."
+          },
+          "admin_function_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "`func_id` of a write function of `contract_id`."
+          },
+          "argument_mapping": {
+            "type": "array",
+            "description": "One entry per input of the function, matched by name. Required: send `[]` for a function with no inputs.",
+            "items": {
+              "$ref": "#/components/schemas/ArgumentMapping"
+            }
+          }
+        }
+      },
+      "PatchRuleGroupRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["status"],
+        "description": "Archives the rule. `status` must be `archived`. Archiving an archived rule returns `409`.",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["archived"]
+          }
+        }
+      },
+      "ProviderApiKey": {
+        "type": "object",
+        "required": ["id", "provider", "status", "name", "key_last4", "created_at", "updated_at"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identifier of the key. It stays the same when you replace the key."
+          },
+          "provider": {
+            "$ref": "#/components/schemas/ScreeningProvider"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active"],
+            "description": "Always `active`. The key is not validated when you store it."
+          },
+          "name": {
+            "type": "string",
+            "description": "Label you gave the key. Empty when you did not set one."
+          },
+          "key_last4": {
+            "type": "string",
+            "description": "Last four characters of the key, to help you recognize it. The full key is never returned."
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/CreatedAt"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/UpdatedAt"
+          }
+        }
+      },
+      "Rule": {
+        "type": "object",
+        "required": ["id", "conditions", "actions"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RuleCondition"
+            }
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RuleAction"
+            }
+          }
+        }
+      },
+      "RuleAction": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/AutoEnforceRuleAction"
+          },
+          {
+            "$ref": "#/components/schemas/FlagForReviewRuleAction"
+          },
+          {
+            "$ref": "#/components/schemas/SilentlyLogRuleAction"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "action_type",
+          "mapping": {
+            "auto_enforce_onchain_action": "#/components/schemas/AutoEnforceRuleAction",
+            "flag_for_review": "#/components/schemas/FlagForReviewRuleAction",
+            "silently_log": "#/components/schemas/SilentlyLogRuleAction"
+          }
+        }
+      },
+      "RuleActionInput": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/AutoEnforceRuleActionInput"
+          },
+          {
+            "$ref": "#/components/schemas/FlagForReviewRuleActionInput"
+          },
+          {
+            "$ref": "#/components/schemas/SilentlyLogRuleActionInput"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "action_type",
+          "mapping": {
+            "auto_enforce_onchain_action": "#/components/schemas/AutoEnforceRuleActionInput",
+            "flag_for_review": "#/components/schemas/FlagForReviewRuleActionInput",
+            "silently_log": "#/components/schemas/SilentlyLogRuleActionInput"
+          }
+        }
+      },
+      "RuleCondition": {
+        "allOf": [
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "$ref": "#/components/schemas/RuleConditionInput"
+          }
+        ]
+      },
+      "RuleConditionInput": {
+        "type": "object",
+        "required": ["data_source_type", "path", "operator", "value"],
+        "properties": {
+          "data_source_type": {
+            "$ref": "#/components/schemas/ConditionDataSourceType"
+          },
+          "data_source_metadata": {
+            "$ref": "#/components/schemas/ConditionDataSourceMetadata"
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Field to compare: `risk_level` for `trm_event`, `balance` for `read_balance_event`."
+          },
+          "operator": {
+            "$ref": "#/components/schemas/ConditionOperator"
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Value to compare. For `risk_level`: `severe`, `high`, `medium`, `low`, or `unknown`. For `balance`: an unsigned integer in token base units (raw `uint256`, not scaled by decimals)."
+          }
+        }
+      },
+      "RuleGroup": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "trigger_event_type",
+          "contract_group_id",
+          "status",
+          "rules",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "trigger_event_type": {
+            "$ref": "#/components/schemas/RuleTriggerEventType"
+          },
+          "contract_group_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RuleGroupStatus"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/CreatedAt"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/UpdatedAt"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Rule"
+            }
+          }
+        }
+      },
+      "RuleGroupAction": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/AutoEnforceRuleGroupAction"
+          },
+          {
+            "$ref": "#/components/schemas/FlagForReviewRuleGroupAction"
+          },
+          {
+            "$ref": "#/components/schemas/SilentlyLogRuleGroupAction"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "action_type",
+          "mapping": {
+            "auto_enforce_onchain_action": "#/components/schemas/AutoEnforceRuleGroupAction",
+            "flag_for_review": "#/components/schemas/FlagForReviewRuleGroupAction",
+            "silently_log": "#/components/schemas/SilentlyLogRuleGroupAction"
+          }
+        }
+      },
+      "RuleGroupAdminFunction": {
+        "type": "object",
+        "required": ["func_id", "func_abi", "func_signature", "mode"],
+        "description": "Enforcement function, expanded with its signature and mode.",
+        "properties": {
+          "func_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "func_abi": {
+            "$ref": "#/components/schemas/ActiveMonitoringFunctionABI"
+          },
+          "func_signature": {
+            "type": "string",
+            "example": "freeze(address,string)"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ContractFunctionMode"
+          }
+        }
+      },
+      "RuleGroupCondition": {
+        "type": "object",
+        "required": ["id", "data_source_type", "path", "operator", "value"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "data_source_type": {
+            "$ref": "#/components/schemas/ConditionDataSourceType"
+          },
+          "data_source_metadata": {
+            "$ref": "#/components/schemas/RuleGroupConditionMetadata"
+          },
+          "path": {
+            "type": "string"
+          },
+          "operator": {
+            "$ref": "#/components/schemas/ConditionOperator"
+          },
+          "value": {
+            "type": "string",
+            "description": "Value to compare. For `risk_level`: `severe`, `high`, `medium`, `low`, or `unknown`. For `balance`: an unsigned integer in token base units (raw `uint256`, not scaled by decimals)."
+          }
+        }
+      },
+      "RuleGroupConditionMetadata": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "contract": {
+            "$ref": "#/components/schemas/Contract",
+            "description": "Present when `data_source_type` is `read_balance_event`."
+          }
+        }
+      },
+      "RuleGroupHeader": {
+        "type": "object",
+        "required": ["id", "title", "trigger_event_type", "status", "contract", "created_at", "updated_at"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "trigger_event_type": {
+            "$ref": "#/components/schemas/RuleTriggerEventType"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RuleGroupStatus"
+          },
+          "contract": {
+            "$ref": "#/components/schemas/Contract",
+            "description": "Primary contract the rule applies to."
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/CreatedAt"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/UpdatedAt"
+          }
+        }
+      },
+      "RuleGroupOnchainEnforcement": {
+        "type": "object",
+        "required": ["contract", "admin_function", "argument_mapping"],
+        "properties": {
+          "contract": {
+            "$ref": "#/components/schemas/Contract"
+          },
+          "admin_function": {
+            "$ref": "#/components/schemas/RuleGroupAdminFunction"
+          },
+          "argument_mapping": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArgumentMapping"
+            }
+          }
+        }
+      },
+      "RuleGroupRule": {
+        "type": "object",
+        "required": ["id", "conditions", "actions"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RuleGroupCondition"
+            }
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RuleGroupAction"
+            }
+          }
+        }
+      },
+      "RuleGroupStatus": {
+        "type": "string",
+        "enum": ["draft", "active", "archived"],
+        "description": "A rule is `active` when you create it. `archived` is final."
+      },
+      "RuleInput": {
+        "type": "object",
+        "required": ["conditions", "actions"],
+        "properties": {
+          "conditions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/RuleConditionInput"
+            }
+          },
+          "actions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/RuleActionInput"
+            },
+            "description": "All actions of a rule must have the same `action_type`. A rule can have several actions of that type."
+          }
+        }
+      },
+      "RuleRunOutput": {
+        "type": "string",
+        "enum": [
+          "flagged_for_review",
+          "auto_enforced_onchain_action",
+          "silently_logged",
+          "manual_enforced_onchain_action",
+          "user_ignored"
+        ],
+        "nullable": true
+      },
+      "RuleRunStatus": {
+        "type": "string",
+        "enum": ["evaluating", "activated", "not_activated"]
+      },
+      "RuleTriggerEventType": {
+        "type": "string",
+        "enum": ["trm_event"]
+      },
+      "ScreeningInterval": {
+        "type": "object",
+        "required": ["org_id", "interval_hours", "created_at", "updated_at"],
+        "properties": {
+          "org_id": {
+            "type": "string"
+          },
+          "interval_hours": {
+            "$ref": "#/components/schemas/ScreeningIntervalHours"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/CreatedAt"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/UpdatedAt"
+          }
+        }
+      },
+      "ScreeningIntervalHours": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 168,
+        "description": "Whole hours between two screening runs, from 1 to 168 (one week). The Platform UI offers 6, 12, and 24 hours."
+      },
+      "ScreeningIntervalStatus": {
+        "description": "The configured interval and whether recurring screening is running. Only the get endpoint returns `screening_active`.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ScreeningInterval"
+          },
+          {
+            "type": "object",
+            "required": ["screening_active"],
+            "properties": {
+              "screening_active": {
+                "type": "boolean",
+                "description": "`true` while recurring screening is running: after you start screening, and until it stops."
+              }
+            }
+          }
+        ]
+      },
+      "ScreeningProvider": {
+        "type": "string",
+        "enum": ["trm"],
+        "description": "Screening provider. `trm` is the only supported value."
+      },
+      "SetScreeningIntervalRequest": {
+        "type": "object",
+        "required": ["interval_hours"],
+        "properties": {
+          "interval_hours": {
+            "$ref": "#/components/schemas/ScreeningIntervalHours"
+          }
+        }
+      },
+      "SilentlyLogRuleAction": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "action_type"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action_type": {
+            "type": "string",
+            "enum": ["silently_log"]
+          }
+        }
+      },
+      "SilentlyLogRuleActionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action_type"],
+        "properties": {
+          "action_type": {
+            "type": "string",
+            "enum": ["silently_log"]
+          }
+        }
+      },
+      "SilentlyLogRuleGroupAction": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "action_type"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action_type": {
+            "type": "string",
+            "enum": ["silently_log"]
+          }
+        }
+      },
+      "StartScreeningResponse": {
+        "type": "object",
+        "required": ["result"],
+        "properties": {
+          "result": {
+            "type": "string",
+            "enum": ["enqueued", "already_enqueued"],
+            "description": "`enqueued` when this call started screening. `already_enqueued` when screening was already running."
+          }
+        }
+      },
+      "StopScreeningResponse": {
+        "type": "object",
+        "required": ["result"],
+        "properties": {
+          "result": {
+            "type": "string",
+            "enum": ["canceled", "not_active"],
+            "description": "`canceled` when this call stopped screening. `not_active` when screening was not running. A run that is executing is not interrupted: the endpoint returns `409`, so retry after it completes."
+          }
+        }
+      },
+      "TrmEventPayloadSummary": {
+        "type": "object",
+        "required": ["address", "risk_level"],
+        "additionalProperties": false,
+        "description": "List version of a `trm_event` payload, with `address` and `risk_level` only. The get endpoint returns the full payload with `raw_response`.",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/EthAddress"
+          },
+          "risk_level": {
+            "type": "string",
+            "enum": ["severe", "high", "medium", "low", "unknown"]
+          }
+        }
       }
     },
     "parameters": {
@@ -3470,6 +5220,45 @@
           "minimum": 1,
           "maximum": 100,
           "default": 10
+        }
+      },
+      "contract_group_id": {
+        "name": "contract_group_id",
+        "in": "path",
+        "required": true,
+        "description": "Primary contract instance id for the contract group. Associated contract\nids are not accepted.\n",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "rule_group_id": {
+        "name": "rule_group_id",
+        "in": "path",
+        "required": true,
+        "description": "Rule group id.",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "screening_provider": {
+        "name": "screening_provider",
+        "in": "path",
+        "required": true,
+        "description": "Screening provider whose API key metadata to read or delete.",
+        "schema": {
+          "$ref": "#/components/schemas/ScreeningProvider"
+        }
+      },
+      "decision_log_id": {
+        "name": "decision_log_id",
+        "in": "path",
+        "required": true,
+        "description": "Decision log id — the list / GET item `id` (rule-run id).\n",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
         }
       }
     },
@@ -3535,6 +5324,27 @@
     },
     {
       "name": "Target Protections"
+    },
+    {
+      "name": "Active Monitoring: Watchlist"
+    },
+    {
+      "name": "Active Monitoring: Monitored Tokens"
+    },
+    {
+      "name": "Active Monitoring: Rules"
+    },
+    {
+      "name": "Active Monitoring: Action Variables"
+    },
+    {
+      "name": "Active Monitoring: Provider Keys"
+    },
+    {
+      "name": "Active Monitoring: Screening"
+    },
+    {
+      "name": "Active Monitoring: Decisions"
     }
   ],
   "x-constants": {
@@ -10925,6 +12735,1393 @@
                 "example": {
                   "error": "Not found",
                   "message": "Resource not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/active-monitoring/monitored-addresses": {
+      "post": {
+        "tags": ["Active Monitoring: Watchlist"],
+        "operationId": "createMonitoredAddresses",
+        "summary": "Add addresses to the watchlist",
+        "description": "With `source` set to `list`, adds the addresses in `addresses` to the watchlist of your organization. With `source` set to `registry`, adds the active onchain addresses of the identities in the ACE identity registry `registry_id`; omit `addresses`. If an address is already on the watchlist, the request returns `409` and no address is added.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMonitoredAddressesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Addresses accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateMonitoredAddressesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicate monitored address",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Active Monitoring: Watchlist"],
+        "operationId": "listMonitoredAddresses",
+        "summary": "List watchlist addresses",
+        "description": "Returns the addresses on the watchlist. `monitored_address_trm_score` is `null` until the address is screened for the first time. After that, `last_screened_at` is the time of the latest screening and `risk_score_level` is the latest TRM risk level.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/page_size"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page of monitored addresses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListMonitoredAddressesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/active-monitoring/contract-groups": {
+      "post": {
+        "tags": ["Active Monitoring: Monitored Tokens"],
+        "operationId": "createContractGroup",
+        "summary": "Register a monitored token",
+        "description": "Registers exactly one primary contract (the monitored token) and zero or more associated contracts in a single request. `group_id` in the response is the `id` of the primary contract. The `func_abi` entries define the functions Active Monitoring can read and call: the signature and the read or write mode are derived from them. Each `chain_selector` needs a created CRE Connect Wallet for your organization. `active_rule_group` is `null` until you create a monitoring rule.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateContractGroupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Group created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractGroup"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicate title, function, or onchain deployment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Active Monitoring: Monitored Tokens"],
+        "operationId": "listContractGroups",
+        "summary": "List monitored tokens",
+        "description": "Returns one item per primary contract. `active_rule_group` is the header of the active monitoring rule, or `null` when the token has none.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/page_size"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page of contract groups",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListContractGroupsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/active-monitoring/contract-groups/{contract_group_id}": {
+      "get": {
+        "tags": ["Active Monitoring: Monitored Tokens"],
+        "operationId": "getContractGroup",
+        "summary": "Get a monitored token",
+        "description": "`contract_group_id` is the `id` of the primary contract. The `id` of an associated contract returns `404`. The response includes `active_rule_group`, or `null` when the token has no active rule.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contract_group_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractGroup"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/active-monitoring/action-variables": {
+      "get": {
+        "tags": ["Active Monitoring: Action Variables"],
+        "operationId": "listActionVariables",
+        "summary": "List action variables",
+        "description": "Returns the named values you can use as `argument_mapping.value` when `mapping_type` is `reference`. `screened_address` is the screened address. `holder_balance` is the raw `balanceOf` value of the screened address on the primary token. System variables have a `null` `value`: Active Monitoring resolves them when it builds the call.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/page_size"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page of action variables",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListActionVariablesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/active-monitoring/rule-groups": {
+      "post": {
+        "tags": ["Active Monitoring: Rules"],
+        "operationId": "createRuleGroup",
+        "summary": "Create a monitoring rule",
+        "description": "Creates the monitoring rule of a token. The rule is active immediately and cannot be edited: to change it, archive it and create a new one. `contract_group_id` is the `id` of the primary contract, which must not already have an active rule. `admin_function_id` must be a write function of its contract, and `argument_mapping` must contain exactly one entry per input of that function. Condition paths are `risk_level` for `trm_event` and `balance` for `read_balance_event`. A `reference` value is an action variable key, such as `screened_address` or `holder_balance`, or a path such as `trm_event.address`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRuleGroupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Rule group created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleGroup"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Contract already has an active rule group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Active Monitoring: Rules"],
+        "operationId": "listRuleGroups",
+        "summary": "List monitoring rules",
+        "description": "Returns monitoring rules in the same shape as the get endpoint. Filter by `status` (`draft`, `active`, or `archived`) and by `contract_group_id`, the `id` of the primary contract. Filters combine.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/page_size"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by rule-group status. Omit to return all statuses.",
+            "schema": {
+              "$ref": "#/components/schemas/RuleGroupStatus"
+            }
+          },
+          {
+            "name": "contract_group_id",
+            "in": "query",
+            "description": "Primary contract instance id (group id). Same value as rule-group `contract_group_id`.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page of rule groups",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListRuleGroupsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/active-monitoring/rule-groups/{rule_group_id}": {
+      "get": {
+        "tags": ["Active Monitoring: Rules"],
+        "operationId": "getRuleGroup",
+        "summary": "Get a monitoring rule",
+        "description": "Returns the rule with its conditions and actions. Contracts and enforcement functions are expanded with their titles and ABI signatures.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/rule_group_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rule group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetRuleGroupResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Rule group not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Active Monitoring: Rules"],
+        "operationId": "patchRuleGroup",
+        "summary": "Archive a monitoring rule",
+        "description": "The only change allowed is archiving: set `status` to `archived`. An archived rule cannot be reactivated, and archiving it again returns `409`. Returns the same shape as the get endpoint.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/rule_group_id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchRuleGroupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Archived rule group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetRuleGroupResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Rule group not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Rule group is already archived",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/active-monitoring/provider-api-keys": {
+      "post": {
+        "tags": ["Active Monitoring: Provider Keys"],
+        "operationId": "createProviderApiKey",
+        "summary": "Store the TRM API key",
+        "description": "Stores the API key of the screening provider. The key is encrypted, never returned, and not validated when you store it. An organization has one key per provider: posting a key replaces the existing one.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProviderApiKeyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Key stored (metadata only; the key is never echoed back)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderApiKey"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing/blank api_key, or unsupported provider",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/active-monitoring/provider-api-keys/{screening_provider}": {
+      "get": {
+        "tags": ["Active Monitoring: Provider Keys"],
+        "operationId": "getProviderApiKey",
+        "summary": "Get TRM API key metadata",
+        "description": "Returns the status, the last four characters, and the timestamps of the stored key. The key itself is never returned. Returns `404` when no key is stored.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/screening_provider"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Provider API key metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderApiKey"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No key stored for this org and provider",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Active Monitoring: Provider Keys"],
+        "operationId": "deleteProviderApiKey",
+        "summary": "Remove the TRM API key",
+        "description": "Removes the stored key. Active Monitoring stops screening until you store a new key.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/screening_provider"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Key removed (or none existed)"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/active-monitoring/screening-interval": {
+      "post": {
+        "tags": ["Active Monitoring: Screening"],
+        "operationId": "setScreeningInterval",
+        "summary": "Set the screening interval",
+        "description": "Sets the number of hours between two screening runs. The change applies from the next scheduled run: a run that is already scheduled keeps its time.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetScreeningIntervalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Interval stored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScreeningInterval"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "interval_hours out of range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Active Monitoring: Screening"],
+        "operationId": "getScreeningInterval",
+        "summary": "Get the org's TRM screening interval",
+        "responses": {
+          "200": {
+            "description": "Configured interval, plus whether a screening chain is currently active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScreeningIntervalStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No interval configured for this org",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "Returns the configured interval and `screening_active`, which is `true` while recurring screening is running. Returns `404` when no interval is configured."
+      },
+      "delete": {
+        "tags": ["Active Monitoring: Screening"],
+        "operationId": "deleteScreeningInterval",
+        "summary": "Remove the screening interval",
+        "description": "Removes the configured interval. There is no default interval. A scheduled run still executes once more, then screening stops until you set a new interval and call the start endpoint again. To stop immediately, use the stop endpoint.",
+        "responses": {
+          "204": {
+            "description": "Interval removed (or none existed)"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/active-monitoring/screening-interval/start": {
+      "post": {
+        "tags": ["Active Monitoring: Screening"],
+        "operationId": "startScreening",
+        "summary": "Start screening",
+        "description": "Starts recurring screening. It requires a configured screening interval, a stored TRM API key, an active monitoring rule, and at least one address on the watchlist; otherwise it returns `400`. The first run starts immediately and repeats at the configured interval. Calling it while screening is running changes nothing.",
+        "responses": {
+          "202": {
+            "description": "First screening run enqueued, or a chain was already active for the org",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StartScreeningResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A precondition for starting screening isn't met yet: no screening interval\nconfigured, no TRM API key configured, no active rule config, or no monitored\naddress.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/active-monitoring/screening-interval/stop": {
+      "post": {
+        "tags": ["Active Monitoring: Screening"],
+        "operationId": "stopScreening",
+        "summary": "Stop screening",
+        "description": "Stops recurring screening without changing the configured interval. A run that is already executing finishes, and the endpoint returns `409`: retry after it completes. Calling it while screening is stopped changes nothing. Start screening again with the start endpoint.",
+        "responses": {
+          "202": {
+            "description": "Active screening job cancelled, or no chain was active for the org",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StopScreeningResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A screening occurrence is currently running; retry after it completes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/active-monitoring/decision-logs": {
+      "get": {
+        "tags": ["Active Monitoring: Decisions"],
+        "operationId": "listDecisionLogs",
+        "summary": "List decisions",
+        "description": "Returns the decisions of every active monitoring rule of your organization, one item per rule evaluated for a screening event on one network. A decision is listed once it has an outcome (`output`): evaluations in progress and evaluations where the rule did not match are not listed. `flag_for_review` and `silently_log` decisions have an empty `enforced_actions` array. In the list, `trm_event` payloads contain only `address` and `risk_level`; the get endpoint returns the full payload, including `raw_response`.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/page_size"
+          },
+          {
+            "name": "chain_selector",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rule_group_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "primary_token",
+            "in": "query",
+            "description": "Filter by rule group contract_instance_id (primary token).",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "decision_output",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/RuleRunOutput"
+            }
+          },
+          {
+            "name": "onchain_action_status",
+            "in": "query",
+            "description": "Matches the latest status on an auto-enforced onchain action's activity_history.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trm_risk_level",
+            "in": "query",
+            "description": "Matches risk_level on a trm_event input event payload.",
+            "schema": {
+              "type": "string",
+              "enum": ["severe", "high", "medium", "low", "unknown"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Decision logs page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListDecisionLogsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/active-monitoring/decision-logs/{decision_log_id}": {
+      "get": {
+        "tags": ["Active Monitoring: Decisions"],
+        "operationId": "getDecisionLog",
+        "summary": "Get a decision",
+        "description": "Returns the full decision, including the stored input events: the TRM result (`trm_event`, with `raw_response`) and the balance reading (`read_balance_event`). `decision_log_id` is the `id` returned by the list endpoint.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/decision_log_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Decision log",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionLog"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Decision log not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/active-monitoring/decision-logs/{decision_log_id}/dismiss": {
+      "post": {
+        "tags": ["Active Monitoring: Decisions"],
+        "operationId": "dismissDecisionLog",
+        "summary": "Resolve a flagged decision",
+        "description": "Resolves a decision whose outcome is `flagged_for_review`. The outcome becomes `user_ignored`, and the required `note` is recorded. Requires a signed-in user identity. Returns the full decision.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/decision_log_id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DismissDecisionLogRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated decision log",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionLog"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Decision log not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Run is not flagged for review",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/active-monitoring/decision-logs/{decision_log_id}/enforce": {
+      "post": {
+        "tags": ["Active Monitoring: Decisions"],
+        "operationId": "enforceDecisionLog",
+        "summary": "Enforce a flagged decision",
+        "description": "Resolves a decision whose outcome is `flagged_for_review` by submitting 1 to 10 operations. The outcome becomes `manual_enforced_onchain_action`. Each `contract_id` and `admin_function_id` pair can appear once, and every argument mapping must be a `constant`. All definitions are validated before any operation is submitted: if validation or submission fails, the decision stays flagged. Requires a signed-in user identity. Returns the full decision, with `enforced_actions` in request order.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/decision_log_id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnforceDecisionLogRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated decision log",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionLog"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Decision log not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Run is not flagged for review",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
                 }
               }
             }

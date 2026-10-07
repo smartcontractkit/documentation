@@ -1,0 +1,78 @@
+---
+section: ace
+title: "Decisions, Review, and Audit Trail"
+date: Last Modified
+metadata:
+  description: "Understand the decisions Chainlink ACE Active Monitoring records, how a flagged decision is reviewed, and what each decision keeps as audit evidence."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-05"
+---
+
+import { Aside } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+A **decision** is the record Active Monitoring keeps each time a monitoring rule matches a risk event for an address on one network. The **Decisions log** lists them. This page explains the outcomes, how a person reviews a flagged decision, and what each decision keeps as evidence.
+
+## One decision per rule, address, and network
+
+When a risk event matches a rule, Active Monitoring creates one decision for that rule, that address, and each network of the monitored token. A rule that does not match creates no decision, so the log lists only what Active Monitoring acted on or recorded.
+
+A single risk alert can therefore produce several decisions: one per matching rule and per network. See [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules#one-rule-several-decisions).
+
+## Decision outcomes
+
+| Outcome in the Decisions log                                         | What it means                                                                                |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **Evaluating**                                                       | The rule is still being evaluated, usually while the balance is read.                        |
+| **Logged**                                                           | A rule with the Silently log response matched. Nothing else happens.                         |
+| **Flag for review**                                                  | A rule with the Flag response matched. A person must act.                                    |
+| **No balance - flag for review**                                     | The risk level matched an Enforce rule, but the address holds no balance. A person must act. |
+| A function signature, such as `freezePartialTokens(address,uint256)` | A rule with the Enforce response created an operation.                                       |
+| The same, from a person                                              | A person enforced an action on a flagged decision.                                           |
+| **Resolved**                                                         | A person closed a flagged decision with a reason, and no action was taken.                   |
+
+For the API values and the operation statuses, see [Limits, Statuses, and Values](/ace/active-monitoring/reference/limits-and-values).
+
+## Review a flagged decision
+
+A flagged decision stays open until a person closes it. There are two ways to close it:
+
+- **Resolve** records a required reason and closes the decision without any onchain action. The reason is recorded with the person who resolved it.
+- **Enforce action** lets the reviewer choose a contract, an enforcement function, and the argument values, and creates an operation. Every argument is a constant: a source such as **Balance** is replaced by the value read for that decision.
+
+Both actions are final. A decision that is resolved or enforced cannot be flagged again, and a person cannot act on a decision that is not flagged. Both actions require a signed-in user, so the record always names a person.
+
+See [Review Decisions and Track Operations](/ace/active-monitoring/guides/review-decisions) for the steps.
+
+## Operations
+
+When a decision creates an operation, the decision shows the status of the operation, from **Submitted** to **Success** or **Failed**. The **Operations activity** card keeps every status with its time.
+
+An operation that fails stays failed. To try again, enforce the action manually from a flagged decision, or wait for the next risk event on that address. The most common cause of a failure is a missing onchain role. See [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token).
+
+A failed operation shows as **Failed** in the **Operation status** column of the Decisions log. Open the decision: the **Action · Enforcement failed** card shows the CRE Connect operation ID. Use it to look up what happened to the operation in CRE Connect.
+
+## What each decision keeps
+
+A decision is the audit record of one evaluation. It holds:
+
+| Evidence                    | Where to find it                                                                                             |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| The TRM result, as returned | **TRM raw data** tab. Active Monitoring stores the full response for the address.                            |
+| The rule that matched       | **Rule · Matched** card: the response and each condition, marked **Condition met** or **Condition not met**. |
+| The balance reading         | **Rule · Matched** card: the balance, the time of the reading, and the block it was read at.                 |
+| The enforced action         | **Action** card: the contract, the function, and the value sent for each argument.                           |
+| The operation               | **Action** card and **Operations activity**: the operation ID, and each status with its time.                |
+| Who acted on it             | **Action** card: the person who resolved the decision and the reason, or who enforced the action.            |
+| Every step, in order        | The activity history of the decision, in the API: append-only, oldest first, with the actor of each step.    |
+
+The record is created as the events happen, not rebuilt afterward. The API returns the same data, including the transaction hash of an operation once it is known.
+
+Read decisions with the Coordinator API. The [Reporting API](/ace/concepts/reporting) does not cover Active Monitoring data.
+
+## Next steps
+
+- [Review Decisions and Track Operations](/ace/active-monitoring/guides/review-decisions): read the log and act on flagged decisions.
+- [Enforcement and Security Model](/ace/active-monitoring/concepts/enforcement-and-security): what Active Monitoring can and cannot do.

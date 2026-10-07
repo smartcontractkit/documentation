@@ -1,0 +1,96 @@
+---
+section: ace
+title: "Rule Examples"
+date: Last Modified
+metadata:
+  description: "Adapt ready-made Chainlink ACE Active Monitoring rules: detect-only, a blocklist function on the token, an address freeze, and a freeze plus a blocklist entry."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-05"
+---
+
+import { Aside } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+These examples show how to fill the **Decision logic** cards of a [monitoring rule](/ace/active-monitoring/concepts/monitoring-rules) for common token designs. Each one lists the settings for the Platform UI. To create the same rule with the API, see [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules#create-a-monitoring-rule).
+
+The examples illustrate what is possible. They are not recommendations: the right responses depend on your token, your compliance policy, and how much automation you accept. Function names and argument names come from each example's ABI, so match them to your own contract. In the tables, **Screened address** is the address that TRM flagged, and **Balance** is that address's balance of the token.
+
+## Detect only
+
+Use this to learn what your watchlist produces before any onchain action. No role is needed, and no operation is created.
+
+| Risk level                       | Response     |
+| :------------------------------- | :----------- |
+| 15 - Severe, 10 - High           | Flag         |
+| 5 - Medium, 1 - Low, 0 - Unknown | Silently log |
+
+Severe and High addresses appear as **Flag for review**. A person resolves each one or enforces an action. When you trust the results, [delete the rule and create a new one](/ace/active-monitoring/guides/configure-monitoring-rules#delete-a-monitoring-rule) that enforces.
+
+## A blocklist function on the token
+
+Use this when the token itself has a function that blocks an address, for example `blacklist(address account)`. No associated contract is needed.
+
+| Risk level                       | Response     |
+| :------------------------------- | :----------- |
+| 15 - Severe                      | Enforce      |
+| 10 - High                        | Flag         |
+| 5 - Medium, 1 - Low, 0 - Unknown | Silently log |
+
+For the Enforce response, add one action:
+
+| Field                                           | Value                                                                                                      |
+| :---------------------------------------------- | :--------------------------------------------------------------------------------------------------------- |
+| **Enforce on**                                  | The token                                                                                                  |
+| **Enforcement function**                        | `blacklist(address)`                                                                                       |
+| **Parameter mapping**, `account`                | **Screened address**                                                                                       |
+| **Only execute if the address holds a balance** | Not selected: the address is blocked even if it holds nothing, which stops it from receiving tokens later. |
+
+## Freeze an address
+
+Use this on a token with a function that freezes an address, for example `setAddressFrozen(address _userAddress, bool _freeze)` on an ERC-3643 token. A frozen address cannot send or receive tokens through regular transfers.
+
+For the Enforce response, add one action:
+
+| Field                                           | Value                               |
+| :---------------------------------------------- | :---------------------------------- |
+| **Enforce on**                                  | The token                           |
+| **Enforcement function**                        | `setAddressFrozen(address,bool)`    |
+| **Parameter mapping**, `_userAddress`           | **Screened address**                |
+| **Parameter mapping**, `_freeze`                | **Other**, with the constant `true` |
+| **Only execute if the address holds a balance** | Not selected                        |
+
+The `Balance` source does not fit a `bool` argument, so you type the constant. `setAddressFrozen` blocks inbound transfers too, which a balance-based freeze does not.
+
+## Freeze a balance and add a blocklist entry
+
+This is the rule used in the [Quick Start](/ace/active-monitoring/quick-start). It freezes the tokens an address holds and blocks the address.
+
+For the Enforce response, add two actions:
+
+|                                                 | Action 1                                                         | Action 2                                                                |
+| :---------------------------------------------- | :--------------------------------------------------------------- | :---------------------------------------------------------------------- |
+| **Enforce on**                                  | The token                                                        | An associated blocklist contract                                        |
+| **Enforcement function**                        | `freezePartialTokens(address,uint256)`                           | `addBlacklist(address,string)`                                          |
+| **Parameter mapping**                           | `_userAddress`: **Screened address**<br />`_amount`: **Balance** | `account`: **Screened address**<br />`reason`: **Other**, `Severe risk` |
+| **Only execute if the address holds a balance** | Selected                                                         | Not selected                                                            |
+
+The freeze runs on networks where the address holds a balance. The blocklist entry runs on every network. Where the address holds no balance, the decision for the freeze is **No balance - flag for review**.
+
+## A lighter response for High
+
+Use two Enforce cards to apply a lighter action to High addresses than to Severe addresses. For example:
+
+| Risk level                       | Response                                                        |
+| :------------------------------- | :-------------------------------------------------------------- |
+| 15 - Severe                      | Enforce: freeze the balance and add a blocklist entry, as above |
+| 10 - High                        | Enforce: add a blocklist entry only                             |
+| 5 - Medium, 1 - Low, 0 - Unknown | Silently log                                                    |
+
+Each card has its own **Enforced action** fields, so the two cards can use different functions.
+
+## Next steps
+
+- [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules): create the rule.
+- [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token): grant the role that these functions require.

@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Understand how Chainlink ACE handles transaction signing and contract ownership: delegated signing and self-signing models, CRE Connect Wallet, and how to choose."
   datePublished: "2026-03-31"
-  lastModified: "2026-07-17"
+  lastModified: "2026-10-05"
 ---
 
 import { Aside, ClickToZoom } from "@components"
@@ -127,3 +127,17 @@ The SDK supports multiple signer backends: local ECDSA keys, AWS KMS, HashiCorp 
 ### Your safety net
 
 The same safety net applies as with delegated signing. Because your wallet owns the CRE Connect Wallet, you can at any time interact with it directly, add or remove authorized signers, or take over operational responsibility entirely.
+
+## Signing in Active Monitoring
+
+[Active Monitoring](/ace/active-monitoring/overview) creates an operation each time a monitoring rule enforces an action, or a person enforces an action on a flagged decision. The operation follows your organization's signing model and runs through your CRE Connect Wallet, like any other ACE operation.
+
+|                         | Delegated signing                                                                                     | Self-signing                                                                                 |
+| :---------------------- | :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| **Who signs**           | Chainlink signs and executes the operation on your behalf.                                            | You sign the operation with your own key.                                                    |
+| **Operation statuses**  | Submitted, Sending, Executing, Success or Failed                                                      | Submitted, Sending, **Pending signature**, Executing, Success or Failed                      |
+| **Automatic execution** | Yes. An Enforce response executes as soon as a risk event matches, within your rule and onchain role. | No. An Enforce response prepares the operation, and your signer signs it before it executes. |
+
+In both models, the CRE Connect Wallet needs the onchain role that each enforcement function requires. The role is the limit of what an operation can do. See [Enforcement and Security Model](/ace/active-monitoring/concepts/enforcement-and-security).
+
+With self-signing, find and sign pending Active Monitoring operations the same way as other pending operations, with the [CRE Connect SDK](https://github.com/smartcontractkit/crec-sdk).
