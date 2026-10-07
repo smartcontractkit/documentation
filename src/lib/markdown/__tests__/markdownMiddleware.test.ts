@@ -76,6 +76,42 @@ describe("astro middleware", () => {
     expect(response.headers.get("x-robots-tag")).toBe("noindex, follow")
     expect(response.headers.get("link")).toBeNull()
   })
+
+  it("keeps VRF v1 and v2 out of markdown output and keeps v2.5", async () => {
+    const hidden = pageRequest("/vrf/v2/subscription", "text/html")
+    const hiddenResponse = await onRequest(
+      {
+        url: new URL(hidden.url),
+        request: hidden,
+        rewrite: async () => {
+          throw new Error("html requests must not rewrite")
+        },
+      } as never,
+      async () => new Response("<html></html>", { headers: { "content-type": "text/html; charset=utf-8" } })
+    )
+    expect(hiddenResponse).toBeInstanceOf(Response)
+    if (!(hiddenResponse instanceof Response)) return
+    expect(hiddenResponse.headers.get("x-robots-tag")).toBe("noindex, follow")
+    expect(hiddenResponse.headers.get("link")).toBeNull()
+
+    const current = pageRequest("/vrf/v2-5/getting-started", "text/html")
+    const currentResponse = await onRequest(
+      {
+        url: new URL(current.url),
+        request: current,
+        rewrite: async () => {
+          throw new Error("html requests must not rewrite")
+        },
+      } as never,
+      async () => new Response("<html></html>", { headers: { "content-type": "text/html; charset=utf-8" } })
+    )
+    expect(currentResponse).toBeInstanceOf(Response)
+    if (!(currentResponse instanceof Response)) return
+    expect(currentResponse.headers.get("x-robots-tag")).toBeNull()
+    expect(currentResponse.headers.get("link")).toBe(
+      '</vrf/v2-5/getting-started.md>; rel="alternate"; type="text/markdown"'
+    )
+  })
 })
 
 describe("vercel middleware", () => {
@@ -117,5 +153,17 @@ describe("vercel middleware", () => {
     expect(response.headers.get("x-middleware-next")).toBe("1")
     expect(response.headers.get("x-robots-tag")).toBe("noindex, follow")
     expect(response.headers.get("link")).toBeNull()
+  })
+
+  it("keeps VRF v1 and v2 out of markdown output and keeps v2.5", () => {
+    const hidden = middleware(pageRequest("/vrf/v1/introduction", "text/html"))
+    expect(hidden.headers.get("x-middleware-next")).toBe("1")
+    expect(hidden.headers.get("x-robots-tag")).toBe("noindex, follow")
+    expect(hidden.headers.get("link")).toBeNull()
+
+    const current = middleware(pageRequest("/vrf/v2-5/migration-from-v1", "text/html"))
+    expect(current.headers.get("x-middleware-next")).toBe("1")
+    expect(current.headers.get("x-robots-tag")).toBeNull()
+    expect(current.headers.get("link")).toBe('</vrf/v2-5/migration-from-v1.md>; rel="alternate"; type="text/markdown"')
   })
 })
