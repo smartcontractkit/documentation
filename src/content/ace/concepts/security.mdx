@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Learn about the Chainlink ACE security model: policy administration controls, execution ordering, registry governance, and privacy guarantees."
   datePublished: "2026-03-31"
-  lastModified: "2026-03-31"
+  lastModified: "2026-10-05"
 ---
 
 This page covers the governance and operational security principles behind how ACE protects onchain assets and identity data — the controls, ordering guarantees, and privacy properties that administrators, auditors, and compliance teams should understand.
@@ -49,3 +49,14 @@ ACE is designed so that no personally identifiable information (PII) is stored o
 - **Credential data** is arbitrary `bytes` — typically a hash of offchain data or a non-sensitive reference. The system never requires raw PII to be written to the blockchain.
 - **CCID-to-address mappings** are publicly readable onchain. This is by design — it enables cross-chain verification — but it means anyone can see which addresses share the same identity. For applications where this transparency is a concern, multiple CCIDs per user can be used to limit correlation across domains. See [Cross-Chain Identity: Privacy and correlation](/ace/concepts/cross-chain-identity#privacy-and-correlation) for details.
 - **Credential type identifiers** are hashed (`keccak256`) but use known namespaced strings (e.g., `common.kyc`), so standard types are effectively public knowledge.
+
+## Active Monitoring controls
+
+[Active Monitoring](/ace/active-monitoring/overview) acts on tokens you already run, so its controls differ from the controls above. They sit on your token and on your organization:
+
+- **The onchain role is the authority.** Active Monitoring can call only the functions you registered, and only if your CRE Connect Wallet holds the role on your contract. You can revoke the role at any time.
+- **Registered functions only.** Active Monitoring builds a call only from the ABI functions you selected, so it cannot construct a call to any other function.
+- **Review before action.** The Flag response sends a decision to a person. Resolving or enforcing a flagged decision is recorded with the person who did it.
+- **Credentials stay out of the interface.** The TRM API key is stored encrypted and never shown again.
+
+See [Enforcement and Security Model](/ace/active-monitoring/concepts/enforcement-and-security) for the full model.

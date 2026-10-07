@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "ACE Beta scope: supported networks, managed offchain risk policies, contract types, customizations, signing model, and contract upgradeability."
   datePublished: "2026-03-31"
-  lastModified: "2026-09-23"
+  lastModified: "2026-10-07"
 ---
 
 import { Aside } from "@components"
@@ -71,3 +71,20 @@ The following limitations apply:
 - **CRE quotas apply** — Evaluations are subject to current [CRE Service Quotas](https://docs.chain.link/cre/service-quotas), including the HTTP trigger rate limit.
 
 See [Offchain Policies](/ace/guides/policy-manager/offchain-policies) for an overview, [Managing Offchain Policies (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies) to configure wallet screening, and [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits) to integrate evaluations into an application.
+
+## Active Monitoring is limited during Beta
+
+Active Monitoring screens a watchlist with TRM and acts on tokens you already run. See [How Active Monitoring Works](/ace/active-monitoring/concepts/how-it-works). The following limitations apply:
+
+- **TRM access required**: Your organization needs a TRM Labs account with Wallet Screening API access. You store the key in the Platform, in **General settings > API access**. This key is separate from the credential of managed offchain risk policies.
+- **TRM is the only provider**: Active Monitoring has no other screening provider.
+- **Watchlist**:
+  - You cannot remove an address after you add it.
+  - The Platform UI accepts up to 100 rows per CSV upload.
+- **One monitoring rule per token**: A rule is immutable. To change it, delete it and create a new one.
+- **Monitored tokens are fixed**: You cannot edit or remove a monitored token after you register it.
+- **Enforcement functions have conditions**: A function must be a write function with named inputs, no array or tuple inputs, and at least one input.
+- **Screening interval**: The Platform UI offers 6, 12, or 24 hours. The API accepts 1 to 168 hours.
+- **Networks**: Active Monitoring is available on the [supported networks](/ace/supported-networks) where your organization has a created CRE Connect Wallet.
+
+To get started, see the [Active Monitoring Quick Start](/ace/active-monitoring/quick-start).

@@ -1,0 +1,76 @@
+---
+section: ace
+title: "Monitored Tokens and Associated Contracts"
+date: Last Modified
+metadata:
+  description: "Understand how you register a token with Chainlink ACE Active Monitoring: the primary token, associated contracts, enforcement functions, networks, and decimals."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-05"
+---
+
+import { Aside } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+A **monitored token** is a token contract you register with Active Monitoring so that [monitoring rules](/ace/active-monitoring/concepts/monitoring-rules) can read an address's balance and call enforcement functions on it. This page explains what you register, which functions Active Monitoring can call, and how one token maps to several networks.
+
+Registering a token does not change the contract and does not grant anything onchain. You grant the required role separately: see [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token).
+
+## What you register
+
+A monitored token is a group of one primary token and, optionally, associated contracts.
+
+| Part                    | Purpose                                                                                                                                       | Required         |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| **Primary token**       | The token you monitor. Rules attach to it, and Active Monitoring calls its `balanceOf(address)` function to read balances.                    | Yes, exactly one |
+| **Associated contract** | Another contract that an enforced action runs on, such as a separate blocklist or registry contract that your token's compliance logic reads. | No               |
+
+Use an associated contract when the control you need does not live on the token. A freeze acts on a balance, so it belongs on the token. A deny list often has its own owner and upgrade path, so it lives in its own contract. A rule can enforce on either contract. The Platform UI registers one associated contract. To register several, use the API.
+
+## Contract ABI and functions
+
+You upload the JSON ABI of each contract. Active Monitoring uses it to encode the calldata of the functions it calls. Only functions of type `function` are read from the file.
+
+- **Enforcement functions** are the write functions you select when you register the contract. Active Monitoring can call only these. A function that is in the ABI but not selected cannot be used in a rule or in a manual enforcement.
+- **Read functions** (`view` and `pure`) are registered automatically. Active Monitoring needs `balanceOf(address)` on the primary token to evaluate balance conditions.
+
+A function is available as an enforcement function when it meets all of these conditions:
+
+| Condition                                          | Why                                                                                    |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| It is a write function (`nonpayable` or `payable`) | Read functions cannot change state.                                                    |
+| Every input has a name                             | Rules map each argument by name.                                                       |
+| No input is an array or a tuple                    | Active Monitoring cannot type-check a mapping for these types.                         |
+| It has at least one input                          | Current Beta limit. A function with no arguments does not appear in the function list. |
+
+## Networks and addresses
+
+A token can have a different address on each network, or the same address on several.
+
+- Register each address with its network. The Platform UI lets you pick several networks for one address.
+- Only networks where your organization has a created [CRE Connect Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) are available.
+- Register an associated contract on every network of the primary token. The Platform UI locks the networks of the associated contract to those of the primary token. The API does not check this: an action that targets a network where the associated contract has no address cannot run.
+- You can register a given address on a given network once. A second registration returns a conflict.
+
+## Decimals
+
+You enter the token's decimals when you register the primary token. Active Monitoring stores them to display balances in token units on a decision.
+
+Rules and parameter mapping use **raw base units**. The `Balance` parameter passes the exact `balanceOf` value, and a constant you type is sent as written, with no decimal scaling. For a token with 6 decimals, `1000000` is one token.
+
+## One configuration, one decision per network
+
+You configure the token once, and one monitoring rule applies to all of its networks. Active Monitoring evaluates the rule on every network of the token, so a single risk alert can produce a different decision on each network. For example, an address that holds a balance on one network and none on another gets a freeze on the first only.
+
+Each network produces its own decisions and operations. An operation that reverts on one network does not change what happens on another.
+
+## Limits in Beta
+
+You cannot edit or remove a monitored token after you register it. Check the addresses, networks, and ABI before you submit.
+
+## Next steps
+
+- [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token): grant the role and prepare the ABI.
+- [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens): register the token in the Platform UI or with the API.
+- [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules): decide what happens for each risk score.
