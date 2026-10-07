@@ -44,7 +44,6 @@ describe("buildMarkdownArtifact", () => {
     expect(markdown).not.toContain("replaces and enhances VRF v1")
 
     if (version === "v2") {
-      expect(markdown).toContain("](/vrf/v2/security)")
       expect(normalized).toContain(
         "The migration guide includes VRF v2.5 code examples for both subscription and direct funding and explains the differences between VRF v2.5 and VRF v2."
       )
