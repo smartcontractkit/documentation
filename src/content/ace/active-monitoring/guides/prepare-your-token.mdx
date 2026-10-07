@@ -1,0 +1,133 @@
+---
+section: ace
+title: "Prepare Your Token"
+date: Last Modified
+metadata:
+  description: "Prepare a token for Chainlink ACE Active Monitoring: grant the CRE Connect Wallet the onchain role that each enforcement function requires, and prepare the JSON ABI you upload."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-05"
+---
+
+import { Aside } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+Before Active Monitoring can enforce an action on your token, grant your CRE Connect Wallet the onchain role that each enforcement function requires, and prepare the JSON ABI you will upload.
+
+An **enforcement function** is a function on your token or on an associated contract that Active Monitoring calls when a rule enforces an action, such as `freezePartialTokens` or a blocklist function. Active Monitoring calls it through your organization's [CRE Connect Wallet](/ace/concepts/signing-ownership) on that network. If the wallet lacks the required role, the call reverts. See [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens) for the full model.
+
+## Prerequisites
+
+- A [CRE Connect Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) on every network where your token runs.
+- Admin authority on the token and on each associated contract: the account that can change who may call their functions.
+- The JSON ABI of the token, and of any associated contract you plan to enforce on.
+
+<Aside type="note" title="The role depends on your contract">
+  Active Monitoring needs only one thing: your CRE Connect Wallet must be allowed to call the enforcement functions. How
+  you allow it depends on the contract. This guide uses a standard ERC-3643 (T-REX) token, where the owner adds the
+  wallet as an agent. Other contracts use an OpenZeppelin `AccessControl` role, an owner-only function, or another
+  check. Use the access check your contract implements.
+</Aside>
+
+## Grant the role to your CRE Connect Wallet
+
+1. List the actions you want Active Monitoring to take, and the function that performs each one. For example, freeze a balance with `freezePartialTokens(address,uint256)` and block an address with a blocklist function.
+1. For each function, find the access check in the contract.
+1. Copy the address of your CRE Connect Wallet on each network. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Home**, click **View settings**, and open the **ACE wallets** tab. Through the API, send `GET /wallets`.
+1. On each network, allow the wallet to call each function, as described in the next sections.
+
+### Example: a standard ERC-3643 token
+
+In a standard ERC-3643 (T-REX) token, the owner adds the wallet as an agent. The agent role covers every `onlyAgent` function, including `mint`, `burn`, and `pause`, not only the functions you select. Active Monitoring calls only the functions you register and map in a rule, but the role allows more. Review your contract to know what else the role allows.
+
+Call `addAgent(address)` on the token from the owner account, with any tool you use to send transactions, such as a multisig, a script, or a block explorer. The following example uses [Foundry's `cast`](https://book.getfoundry.sh/cast/). Replace the placeholders with your token address, the wallet address of the network, and your RPC URL:
+
+```bash
+cast send <TOKEN_ADDRESS> "addAgent(address)" <CRE_CONNECT_WALLET_ADDRESS> \
+  --rpc-url <RPC_URL> \
+  --private-key <TOKEN_OWNER_PRIVATE_KEY>
+```
+
+Confirm the grant by calling `isAgent(address)`. It returns `true` when the wallet is an agent:
+
+```bash
+cast call <TOKEN_ADDRESS> "isAgent(address)(bool)" <CRE_CONNECT_WALLET_ADDRESS> \
+  --rpc-url <RPC_URL>
+```
+
+Repeat on every network of the token.
+
+### Example: an associated contract
+
+An associated contract has its own access check. For a blocklist that has an operator role, grant the wallet that role on each network. The following example uses `cast` again:
+
+```bash
+cast send <BLOCKLIST_ADDRESS> "setOperator(address,bool)" <CRE_CONNECT_WALLET_ADDRESS> true \
+  --rpc-url <RPC_URL> \
+  --private-key <BLOCKLIST_OWNER_PRIVATE_KEY>
+```
+
+### Example: a token that uses ACE policies
+
+If your token also uses ACE for preventive enforcement, a [RoleBasedAccessControlPolicy](/ace/reference/policy-library/role-based-access-control-policy) on its policy engine can decide who calls each function. In that case, [create the policy](/ace/guides/policy-manager/manage-policies#create-a-policy-instance), assign the role to your CRE Connect Wallet, and [attach the policy](/ace/guides/policy-manager/manage-protections#create-a-target-protection) to each enforcement function. Active Monitoring does not require ACE policies on your token.
+
+<Aside type="caution" title="Without the role, the token is detect-only">
+  Active Monitoring still screens addresses and creates decisions when the role is missing. Each enforcement operation
+  is submitted and reverts onchain, and the decision shows the operation status **Failed**. Grant the role on every
+  network before you start screening if you want enforcement to work.
+</Aside>
+
+## Prepare the ABI
+
+Active Monitoring needs a JSON ABI for each contract you register. Use the ABI that your compiler produces: a JSON array of entries. Only entries with `type` set to `function` are read.
+
+For each function, the entry must include `name`, `inputs`, `outputs`, and `stateMutability`. To enforce a function, every input must have a name and none can be an array or tuple. See [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens#contract-abi-and-functions) for all conditions.
+
+If you plan to use the balance condition in a rule, the primary token ABI must include `balanceOf(address)`.
+
+The following fragment is a valid ABI for a token that has a balance getter and two enforcement functions:
+
+```json
+[
+  {
+    "type": "function",
+    "name": "balanceOf",
+    "stateMutability": "view",
+    "inputs": [{ "name": "_userAddress", "type": "address" }],
+    "outputs": [{ "name": "", "type": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "freezePartialTokens",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "_userAddress", "type": "address" },
+      { "name": "_amount", "type": "uint256" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "setAddressFrozen",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "_userAddress", "type": "address" },
+      { "name": "_freeze", "type": "bool" }
+    ],
+    "outputs": []
+  }
+]
+```
+
+## Stop Active Monitoring from acting
+
+You control enforcement from your token, not only from ACE:
+
+- **Revoke the role.** Use the revocation mechanism of your contract: remove the wallet's role assignment from the `RoleBasedAccessControlPolicy`, call `removeAgent(address)` on an ERC-3643 token, or the equivalent. Enforcement operations then revert. The change takes effect on the next operation.
+- **Delete the monitoring rule.** Active Monitoring stops creating decisions for the token. See [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules).
+
+## Next steps
+
+- [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens): register the token and its associated contract.
+- [Enforcement and Security Model](/ace/active-monitoring/concepts/enforcement-and-security): what Active Monitoring can and cannot do with the role you grant.

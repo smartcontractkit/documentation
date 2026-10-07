@@ -1,0 +1,91 @@
+---
+section: ace
+title: "Troubleshoot Active Monitoring"
+date: Last Modified
+metadata:
+  description: "Find and fix common Chainlink ACE Active Monitoring problems: no decisions, decisions stuck on Evaluating, pending or failed operations, rule creation errors, and watchlist upload errors."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-07"
+---
+
+import { Aside } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+This guide lists the problems you are most likely to hit with Active Monitoring, with the cause and the fix for each. Find your symptom, then follow the steps.
+
+## The Start screening button is disabled
+
+Starting screening needs a TRM API key, a monitored token with an active monitoring rule, and at least one watchlist address. Hover over the button to see which one is missing, then complete it:
+
+- [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening)
+- [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules)
+- [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist)
+
+The API returns `400` from `POST /active-monitoring/screening-interval/start` in the same case, and also when no screening interval is set.
+
+## No decision appears
+
+Check these causes in order:
+
+1. **Screening has not started, or has not run yet.** The **Decisions log** header shows when the watchlist was last screened. If it shows no time, start screening. After you start, the first run creates decisions as soon as it completes. Later runs follow the screening interval.
+1. **The risk level of the address did not change.** Active Monitoring raises a risk event the first time an address is screened and when its level changes. An address that keeps the same level creates no new decision. See [Watchlist and Screening](/ace/active-monitoring/concepts/screening#when-a-result-becomes-a-risk-event).
+1. **The token has no active rule.** A token without a rule shows **Missing rule** in **Monitored tokens**. Create the rule, then wait for the next risk event.
+1. **No rule matches the risk level.** The Platform UI requires all five levels. If you created the rule with the API, a level without a rule creates no decision.
+1. **TRM could not screen the address.** If the TRM API key is wrong or removed, Active Monitoring screens nothing. Add the key again. Active Monitoring does not check the key when you save it.
+
+## A decision stays on Evaluating
+
+A rule that has the balance condition reads the balance of the address through CRE Connect before it decides. The decision shows **Evaluating** until the reading arrives. Wait a few minutes and refresh the log.
+
+If it stays on **Evaluating**, check that the primary token ABI includes `balanceOf(address)` and that the address and network of the token are correct.
+
+## The decision says No balance - flag for review
+
+The risk level matched an Enforce rule, but the rule runs the action only if the address holds a balance, and the address holds none on that network. Active Monitoring does not run the action. Review the decision, then resolve it or enforce a different action. See [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules#the-balance-condition).
+
+## An operation stays on Pending signature
+
+Your organization uses self-signing. The operation waits for your signer to approve it before CRE Connect executes it. See [Signing and Ownership Model](/ace/concepts/signing-ownership#signing-in-active-monitoring).
+
+## An operation failed
+
+The operation was submitted and did not succeed. Open the decision: the **Action · Enforcement failed** card shows the CRE Connect operation ID, which you can use to see what happened. Check these causes:
+
+- **The CRE Connect Wallet has no role on the contract.** The function call reverts. Grant the role on that network. See [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token).
+- **The role was revoked.** Operations revert from the moment you revoke it.
+- **The contract rejects the call.** For example, the function refuses an amount larger than the balance, or the address is already in the state the function sets. Open the transaction in the block explorer of the network, using the operation ID or the transaction hash in the decision.
+- **The wrong contract address was registered.** Compare the addresses on the token page with the deployed contracts.
+
+After you fix the cause, enforce the action again from a flagged decision, or wait for the next risk event on that address.
+
+## Creating a monitoring rule fails
+
+| Message or status                                                  | Cause and fix                                                                                                                          |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| This token already has a monitoring rule (`409`)                   | A token has one active rule. Delete the rule, then create the new one.                                                                 |
+| The primary contract needs a `balanceOf(address)` function (`400`) | The balance condition reads the balance with this function. You cannot edit a registered token: contact your Chainlink representative. |
+| An argument is not mapped, or has the wrong type (`400`)           | Map every argument of the function. Use a source that fits the argument type, or a valid constant.                                     |
+| The function is not a write function (`400`)                       | Select a function that changes state. Read functions cannot be enforced.                                                               |
+
+## A watchlist upload fails
+
+| Symptom                                  | Cause and fix                                                                                                      |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Missing required column(s)               | The file needs the headers `address` and `chain_selector`.                                                         |
+| CSV exceeds 100 items limit              | Split the file. The Platform UI accepts up to 100 rows per upload. Upload several files.                           |
+| A row shows an address or network error  | Fix the row. Addresses must be valid, and `chain_selector` must be a supported chain selector, not a network name. |
+| The upload fails and no address is added | An address appears twice in the file or is already on the watchlist. Remove the duplicates and upload again.       |
+
+## Registering a token fails
+
+- **A network is missing from the network list.** Only networks where your organization has a created CRE Connect Wallet appear. Create the wallet in the general settings.
+- **The token already exists.** An address can be registered once on a network.
+- **You registered a wrong address or ABI.** You cannot edit or remove a registered token in Beta. Contact your Chainlink representative.
+- **No enforcement function in the list.** The ABI has no write function that qualifies. A function must have named inputs, no array or tuple inputs, and at least one input. See [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens#contract-abi-and-functions).
+
+## Next steps
+
+- [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token): the onchain role that enforcement needs.
+- [Limits, Statuses, and Values](/ace/active-monitoring/reference/limits-and-values): every status and limit.
