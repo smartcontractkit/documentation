@@ -125,6 +125,7 @@ const selectorComponents = {
   FeedsCommonCallout: { astro: "src/features/feeds/callouts/FeedsCommonCallout.astro", attribute: "callout" },
   ResourcesCallout: { astro: "src/features/resources/callouts/ResourcesCallout.astro", attribute: "callout" },
   DataStreams: { astro: "src/features/data-streams/common/DataStreams.astro", attribute: "section" },
+  VrfDeprecation: { astro: "src/features/vrf/VrfDeprecation.astro", attribute: "version" },
   CcipCommon: { astro: "src/features/ccip/CcipCommon.astro", attribute: "callout" },
 } as const
 

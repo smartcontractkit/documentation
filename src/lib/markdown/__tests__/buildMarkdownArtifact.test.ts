@@ -6,6 +6,27 @@ import {
 } from "@lib/markdown/buildMarkdownArtifact.js"
 
 describe("buildMarkdownArtifact", () => {
+  it.each(["v1", "v2"])("preserves the %s deprecation warning and migration link", async (version) => {
+    const artifact = await buildMarkdownArtifact(`vrf/${version}/security`)
+    const markdown = artifact?.markdown ?? ""
+
+    expect(artifact?.transformMode).toBe("normal")
+    expect(markdown).toContain(`Chainlink VRF ${version} is deprecated`)
+    expect(markdown.match(new RegExp(`Security fixes for VRF ${version} are not guaranteed\\.`, "g"))).toHaveLength(1)
+    expect(markdown).toContain(`](/vrf/v2-5/migration-from-${version})`)
+    expect(markdown).not.toContain("replaces and enhances VRF v1")
+  })
+
+  it.each(["v1", "v2"])("preserves the %s deprecation warning on the migration guide", async (version) => {
+    const artifact = await buildMarkdownArtifact(`vrf/v2-5/migration-from-${version}`)
+    const markdown = artifact?.markdown ?? ""
+
+    expect(artifact?.transformMode).toBe("normal")
+    expect(markdown).toContain(`Chainlink VRF ${version} is deprecated`)
+    expect(markdown.match(new RegExp(`Security fixes for VRF ${version} are not guaranteed\\.`, "g"))).toHaveLength(1)
+    expect(markdown).toContain("Complete this guide to migrate your application to Chainlink VRF v2.5.")
+  })
+
   it.each([
     ["cre/getting-started/cli-installation", "normal"],
     ["cre-templates", "special"],
