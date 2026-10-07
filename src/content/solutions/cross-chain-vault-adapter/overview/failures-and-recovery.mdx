@@ -7,6 +7,8 @@ import { Aside, ClickToZoom } from "@components"
 
 The hub chain is the chain where the vault and the adapter are deployed, and a source chain is any other chain that users send deposits and redemptions from.
 
+In this guide, “vault operator” refers to the team that operates and configures the vault and its adapter, not Chainlink Labs, the Chainlink Foundation, or Chainlink node operators.
+
 When a cross-chain deposit or redemption fails on the hub chain, the user gets the tokens back with a cross-chain refund to the source chain or a local recovery on the hub chain. The adapter, which is how users on other chains reach the vault, calls the vault inside the transaction that receives the CCIP message, so a failure leaves the tokens in the adapter, not in the vault. The adapter records the failure and holds the tokens until someone recovers them. Some failures happen inside CCIP before the adapter records anything. Most of those are fixed with CCIP manual execution. Two sender mistakes have no recovery path, and their tokens are permanently lost, as described in [Failures with no recovery path](#failures-with-no-recovery-path).
 
 ## What counts as a failure
@@ -91,7 +93,7 @@ If a contract sent the original message, such as a sender contract or a smart ac
 
 A refund uses the same settings as a return leg to that chain: the return format set with `setEvmReturnLaneFormat` and the requested finality set with `setEvmReturnRequestedFinality` for the inbound token. If the lane, the token pool, or a rate limit cannot carry the token at that moment, the refund transaction reverts. The message stays `BASIC`, and anyone can try again later.
 
-Refunds keep working after an operator sets the source chain's type to `NONE`. The adapter records the source chain's family when the message fails, and infers it from the sender address if the chain was not configured at that time.
+Refunds keep working after the vault operator sets the source chain's type to `NONE`. The adapter records the source chain's family when the message fails, and infers it from the sender address if the chain was not configured at that time.
 
 ## Local recovery
 
@@ -131,11 +133,11 @@ Some failures happen inside CCIP, before the adapter's `try/catch` can record an
 | Cause                                                                                                                                                                   | Recovery                                                                                  |
 | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------- |
 | The gas limit in the user's message is too low, so `ccipReceive` runs out of gas, usually before the adapter can record a failure                                       | Manual execution with a higher gas limit                                                  |
-| On a CCIP 2.0 lane, the message requests a finality that the adapter's inbound finality setting does not allow                                                          | The operator updates `setInboundFinality`, then manual execution                          |
-| On a CCIP 2.0 lane, the message lacks attestations from a required [Cross-Chain Verifier (CCV)](/ccip/concepts/ccvs/overview), or the optional CCV threshold is not met | The verifier attests or the operator updates `setCCVsConfig`, then manual execution       |
+| On a CCIP 2.0 lane, the message requests a finality that the adapter's inbound finality setting does not allow                                                          | The vault operator updates `setInboundFinality`, then manual execution                    |
+| On a CCIP 2.0 lane, the message lacks attestations from a required [Cross-Chain Verifier (CCV)](/ccip/concepts/ccvs/overview), or the optional CCV threshold is not met | The verifier attests or the vault operator updates `setCCVsConfig`, then manual execution |
 | A token pool rate limit on the hub chain is exhausted, or the token's pool on the hub chain is missing or incompatible                                                  | Wait for the rate limit to refill or for the pool to be configured, then manual execution |
 
-The adapter's default inbound finality is `0x00000000`, which means wait for finality. On a CCIP 2.0 lane, CCIP rejects a [faster-than-finality](/ccip/concepts/execution-latency/ftf-dapps) message from a source chain until the operator allows it, and waiting for the source chain to finalize does not help. CCIP 1.6 lanes do not read the adapter's CCV or finality settings.
+The adapter's default inbound finality is `0x00000000`, which means wait for finality. On a CCIP 2.0 lane, CCIP rejects a [faster-than-finality](/ccip/concepts/execution-latency/ftf-dapps) message from a source chain until the vault operator allows it, and waiting for the source chain to finalize does not help. CCIP 1.6 lanes do not read the adapter's CCV or finality settings.
 
 A return leg or a refund is a separate CCIP message from the hub chain to the source chain. If it fails on the source chain, for example on a token pool rate limit, recover it with manual execution using the CCIP message ID from the adapter's `MessageSent` event.
 
