@@ -6,15 +6,49 @@ import {
 } from "@lib/markdown/buildMarkdownArtifact.js"
 
 describe("buildMarkdownArtifact", () => {
-  it.each(["v1", "v2"])("preserves the %s deprecation warning and migration link", async (version) => {
-    const artifact = await buildMarkdownArtifact(`vrf/${version}/security`)
+  it.each([
+    ["v1", "vrf/v1/api-reference"],
+    ["v1", "vrf/v1/best-practices"],
+    ["v1", "vrf/v1/examples/get-a-random-number"],
+    ["v1", "vrf/v1/introduction"],
+    ["v1", "vrf/v1/security"],
+    ["v1", "vrf/v1/supported-networks"],
+    ["v2", "vrf/v2/best-practices"],
+    ["v2", "vrf/v2/direct-funding"],
+    ["v2", "vrf/v2/direct-funding/examples/get-a-random-number"],
+    ["v2", "vrf/v2/direct-funding/examples/test-locally"],
+    ["v2", "vrf/v2/direct-funding/supported-networks"],
+    ["v2", "vrf/v2/estimating-costs"],
+    ["v2", "vrf/v2/getting-started"],
+    ["v2", "vrf/v2/security"],
+    ["v2", "vrf/v2/subscription"],
+    ["v2", "vrf/v2/subscription/examples/get-a-random-number"],
+    ["v2", "vrf/v2/subscription/examples/programmatic-subscription"],
+    ["v2", "vrf/v2/subscription/examples/test-locally"],
+    ["v2", "vrf/v2/subscription/supported-networks"],
+    ["v2", "vrf/v2/subscription/ui"],
+  ])("preserves the %s deprecation warning and migration link on %s", async (version, requestPath) => {
+    const artifact = await buildMarkdownArtifact(requestPath)
     const markdown = artifact?.markdown ?? ""
+    const normalized = markdown
+      .split("\n")
+      .map((line) => line.replace(/^>\s?/, ""))
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim()
 
     expect(artifact?.transformMode).toBe("normal")
-    expect(markdown).toContain(`Chainlink VRF ${version} is deprecated`)
-    expect(markdown.match(new RegExp(`Security fixes for VRF ${version} are not guaranteed\\.`, "g"))).toHaveLength(1)
+    expect(markdown.split(`**CAUTION: Chainlink VRF ${version} is deprecated**`).length - 1).toBe(1)
+    expect(markdown.split(`Security fixes for VRF ${version} are not guaranteed.`).length - 1).toBe(1)
     expect(markdown).toContain(`](/vrf/v2-5/migration-from-${version})`)
     expect(markdown).not.toContain("replaces and enhances VRF v1")
+
+    if (version === "v2") {
+      expect(markdown).toContain("](/vrf/v2/security)")
+      expect(normalized).toContain(
+        "The migration guide includes VRF v2.5 code examples for both subscription and direct funding and explains the differences between VRF v2.5 and VRF v2."
+      )
+    }
   })
 
   it.each(["v1", "v2"])("preserves the %s deprecation warning on the migration guide", async (version) => {
@@ -26,6 +60,35 @@ describe("buildMarkdownArtifact", () => {
     expect(markdown.match(new RegExp(`Security fixes for VRF ${version} are not guaranteed\\.`, "g"))).toHaveLength(1)
     expect(markdown).toContain("Complete this guide to migrate your application to Chainlink VRF v2.5.")
   })
+
+  it.each([
+    ["vrf/v2/getting-started", "](/vrf/v2-5/getting-started)"],
+    ["vrf/v2/best-practices", "](/vrf/v2-5/best-practices)"],
+    ["vrf/v2/estimating-costs", "](/vrf/v2-5/billing)"],
+    ["vrf/v2/subscription/examples/get-a-random-number", "](/vrf/v2-5/subscription/get-a-random-number)"],
+    ["vrf/v2/subscription/examples/test-locally", "](/vrf/v2-5/subscription/test-locally)"],
+    ["vrf/v2/subscription/supported-networks", "](/vrf/v2-5/supported-networks)"],
+    ["vrf/v2/direct-funding/supported-networks", "](/vrf/v2-5/supported-networks)"],
+  ])("preserves the V2.5 contextual link on %s", async (requestPath, expectedLink) => {
+    const artifact = await buildMarkdownArtifact(requestPath)
+
+    expect(artifact?.transformMode).toBe("normal")
+    expect(artifact?.markdown).toContain(expectedLink)
+  })
+
+  it.each(["vrf/v2/subscription", "vrf/v2/subscription/examples/get-a-random-number"])(
+    "preserves the Subscription Manager limits on %s",
+    async (requestPath) => {
+      const artifact = await buildMarkdownArtifact(requestPath)
+      const markdown = artifact?.markdown ?? ""
+
+      expect(artifact?.transformMode).toBe("normal")
+      expect(markdown).toContain("You can no longer create new VRF v2 subscriptions in the Subscription Manager.")
+      expect(markdown).toContain("](/vrf/v2/subscription/examples/programmatic-subscription)")
+      expect(markdown).toContain("](/vrf/v2/subscription/ui/#pending)")
+      expect(markdown).toContain("](/vrf/v2/subscription/ui/#failed-requests)")
+    }
+  )
 
   it.each([
     ["cre/getting-started/cli-installation", "normal"],
