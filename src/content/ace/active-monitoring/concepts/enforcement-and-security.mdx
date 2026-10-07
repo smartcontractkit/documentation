@@ -1,0 +1,78 @@
+---
+section: ace
+title: "Enforcement and Security Model"
+date: Last Modified
+metadata:
+  description: "Understand what Chainlink ACE Active Monitoring can and cannot do on your token, how the onchain role limits it, how signing works for each model, and how your TRM key and data are handled."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-05"
+---
+
+import { Aside } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+This page explains what Active Monitoring can do with the role you grant on your token, which controls you keep, and how to start with limited authority. Read it before you set a response to Enforce.
+
+## What Active Monitoring can do
+
+An enforced action calls a function on your token or on an associated contract. Active Monitoring can create such a call only when all of these hold:
+
+- The function is one you selected when you registered the contract. Active Monitoring builds calls only from the ABI functions you registered, so it cannot construct a call to any other function.
+- The call comes from a monitoring rule you created, or from a signed-in user who enforces an action on a flagged decision.
+- The arguments come from the rule: the screened address, the balance read for that address, or constants you typed.
+- The call runs through your organization's CRE Connect Wallet on the network of the decision.
+
+## What Active Monitoring cannot do
+
+- It cannot call a function you did not register, or run code on your contracts.
+- It cannot act on another organization's tokens.
+- It cannot succeed without the onchain role. If your CRE Connect Wallet lacks the role, the call reverts and the operation fails.
+- It does not grant, check, or manage roles. You do that on your contract.
+
+## The onchain role is the boundary
+
+The role you grant to your CRE Connect Wallet defines what an operation can do. ACE configuration narrows it further, but the contract enforces it:
+
+- **Grant only what you need.** Roles are defined by your contract. In an ERC-3643 (T-REX) token, the agent role covers every `onlyAgent` function, including `mint`, `burn`, and `pause`, not only the functions you selected in ACE. Active Monitoring calls only the registered functions, but the role allows more. If you need onchain least privilege, put a guard contract in front of the token and register that contract, or restrict the wallet with an access check that lists exact functions.
+- **Revoke at any time.** Removing the role stops enforcement immediately: the next operation reverts. You do not need ACE for this.
+- **Rules cannot exceed the role.** A rule that enforces a function your wallet cannot call produces failed operations, not unauthorized changes.
+
+See [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token) for the steps.
+
+## Signing models
+
+Your organization chooses a signing model when it is onboarded. Both models use the same CRE Connect Wallet, and you own your contracts in both. Only the approval step differs. See [Signing and Ownership Model](/ace/concepts/signing-ownership) for the full model.
+
+| Signing model    | What happens when a rule enforces an action                                                                                                                 | Automatic execution |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| **Delegated**    | Chainlink signs and executes the operation on your behalf, as the authorized operator of your CRE Connect Wallet, within the rule and onchain role you set. | Yes                 |
+| **Self-signing** | The operation waits with the status **Pending signature** until you sign it with your own key.                                                              | No                  |
+
+Choose the model that fits how much automation you accept. With delegated signing, an Enforce response executes as soon as a risk event matches, within the rule you defined and the onchain role you granted. With self-signing, an Enforce response prepares each operation, and your signer signs it before it executes. This adds a human checkpoint to every action and delays it until someone signs.
+
+## Start with limited authority
+
+You can run Active Monitoring without enforcement and add it step by step:
+
+1. Map every risk level to **Silently log** or **Flag**. You see what the rule would have caught, and no operation is created.
+1. Review flagged decisions. Use **Enforce action** on the cases you decide to act on.
+1. Move the risk levels you trust to **Enforce**.
+
+Until you grant the onchain role, an Enforce response creates operations that revert. The token is effectively detect-only.
+
+## Control who can change monitoring
+
+Anyone with your organization API key can create and delete monitoring rules, register tokens, and change the watchlist. Resolving or enforcing a flagged decision requires a signed-in user, so the record names a person. Protect the API key as described in [ACE API Overview](/ace/reference/apis#authentication).
+
+## Data and keys
+
+- **TRM API key.** Active Monitoring stores your key encrypted and never shows it again. The API returns only its last four characters. Removing the key deletes it.
+- **TRM results.** Each decision keeps the full TRM response for the address. It can contain entity names and risk categories. Your organization can read it in the Platform and the API.
+- **Onchain data.** The arguments of an enforced call are written onchain. A constant such as a reason string is public. Do not put personal data in it.
+
+## Next steps
+
+- [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token): grant the role and prepare the ABI.
+- [Signing and Ownership Model](/ace/concepts/signing-ownership): how each signing model works across ACE.

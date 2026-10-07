@@ -3,7 +3,8 @@ import { MARKDOWN_FALLBACK_PARAM, negotiateMarkdown } from "@lib/markdown/negoti
 import { isSunsetDocsPath } from "./config/sunset.js"
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
-  const decision = negotiateMarkdown(context.url.pathname, context.request.headers.get("accept"))
+  const acceptHeader = context.isPrerendered ? null : context.request.headers.get("accept")
+  const decision = negotiateMarkdown(context.url.pathname, acceptHeader)
 
   if (decision.action === "rewrite") {
     const rewritten = new URL(context.url)

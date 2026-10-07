@@ -108,6 +108,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
       section: "Core Concepts",
       contents: [
         { title: "Architecture", url: "ace/concepts/architecture" },
+        { title: "Preventive vs Continuous Compliance", url: "ace/concepts/preventive-vs-continuous" },
         { title: "Key Terms", url: "ace/concepts/key-terms" },
         { title: "Signing & Ownership Model", url: "ace/concepts/signing-ownership" },
         { title: "Security Model", url: "ace/concepts/security" },
@@ -312,6 +313,45 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               url: "api/ace/reporting/docs",
               openInNewTab: true,
             },
+          ],
+        },
+      ],
+    },
+    {
+      section: "Active Monitoring",
+      contents: [
+        { title: "Overview", url: "ace/active-monitoring/overview" },
+        { title: "Quick Start", url: "ace/active-monitoring/quick-start" },
+        {
+          title: "Concepts",
+          children: [
+            { title: "How It Works", url: "ace/active-monitoring/concepts/how-it-works" },
+            { title: "Monitored Tokens", url: "ace/active-monitoring/concepts/monitored-tokens" },
+            { title: "Monitoring Rules", url: "ace/active-monitoring/concepts/monitoring-rules" },
+            { title: "Watchlist & Screening", url: "ace/active-monitoring/concepts/screening" },
+            { title: "Decisions & Audit Trail", url: "ace/active-monitoring/concepts/decisions-and-audit" },
+            { title: "Enforcement & Security", url: "ace/active-monitoring/concepts/enforcement-and-security" },
+          ],
+        },
+        {
+          title: "Guides",
+          url: "ace/active-monitoring/guides",
+          children: [
+            { title: "Prepare Your Token", url: "ace/active-monitoring/guides/prepare-your-token" },
+            { title: "Configure Screening", url: "ace/active-monitoring/guides/configure-screening" },
+            { title: "Manage Monitored Tokens", url: "ace/active-monitoring/guides/manage-monitored-tokens" },
+            { title: "Configure Monitoring Rules", url: "ace/active-monitoring/guides/configure-monitoring-rules" },
+            { title: "Manage the Watchlist", url: "ace/active-monitoring/guides/manage-watchlist" },
+            { title: "Review Decisions", url: "ace/active-monitoring/guides/review-decisions" },
+            { title: "Troubleshooting", url: "ace/active-monitoring/guides/troubleshooting" },
+            { title: "Rule Examples", url: "ace/active-monitoring/guides/rule-examples" },
+          ],
+        },
+        {
+          title: "Reference",
+          children: [
+            { title: "Active Monitoring API", url: "ace/active-monitoring/reference/api" },
+            { title: "Limits, Statuses & Values", url: "ace/active-monitoring/reference/limits-and-values" },
           ],
         },
       ],

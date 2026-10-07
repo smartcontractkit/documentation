@@ -1,0 +1,104 @@
+---
+section: ace
+title: "Monitoring Rules and Responses"
+date: Last Modified
+metadata:
+  description: "Understand how a Chainlink ACE Active Monitoring rule maps TRM risk levels to responses, how enforced actions and the balance condition work, and why one rule can create several decisions."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-05"
+---
+
+import { Aside } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+A **monitoring rule** tells Active Monitoring what to do when TRM reports a risk level for a screened address. Each monitored token has one rule. Active Monitoring does nothing for a token until its rule exists: registering a token only describes it.
+
+## Risk levels and responses
+
+A rule maps each of the five TRM risk levels to one of three responses.
+
+| Response         | What happens                                                                         |
+| ---------------- | ------------------------------------------------------------------------------------ |
+| **Silently log** | Active Monitoring records the decision. Nothing else happens.                        |
+| **Flag**         | The decision waits in the Decisions log. A person resolves it or enforces an action. |
+| **Enforce**      | Active Monitoring creates an operation for each enforced action, with no review.     |
+
+In the Platform UI, you group levels that share a response in one **Decision logic** card. Every level must be in exactly one card. For example:
+
+| Risk level                       | Response     |
+| -------------------------------- | ------------ |
+| 15 - Severe                      | Enforce      |
+| 10 - High                        | Flag         |
+| 5 - Medium, 1 - Low, 0 - Unknown | Silently log |
+
+Use Silently log and Flag while you learn how your watchlist behaves. Use Enforce for the levels where you accept an automatic action. See [Enforcement and Security Model](/ace/active-monitoring/concepts/enforcement-and-security) for what Enforce can do under each signing model.
+
+## Enforced actions
+
+An Enforce response contains one or more **enforced actions**. Each action calls one enforcement function:
+
+- **Enforce on**: the contract that runs the function, either the primary token or an associated contract. See [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens).
+- **Enforcement function**: one of the write functions you selected when you registered that contract.
+- **Parameter mapping**: where each argument of the function gets its value.
+
+The same contract and function pair cannot appear twice in one Decision logic card.
+
+### Parameter mapping
+
+Active Monitoring reads the argument names and types from the ABI. You choose only the value of each argument:
+
+| Source               | Value sent                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| **Screened address** | The address that TRM screened.                                                                    |
+| **Balance**          | The raw `balanceOf` value of the screened address on the primary token, in base units.            |
+| **Other** (constant) | A value you type. Active Monitoring sends it as written, and checks it against the argument type. |
+
+The Platform UI lists only the sources whose type fits the argument. For example, an `address` argument offers **Screened address**, and a `uint256` argument offers **Balance**. See [Limits, Statuses, and Values](/ace/active-monitoring/reference/limits-and-values#parameter-mapping) for the full compatibility table.
+
+This is Active Monitoring's own parameter mapping. It is unrelated to the extractor mapping of [Policy Management](/ace/concepts/policy-management#the-extractor-and-mapper-pattern).
+
+### The balance condition
+
+Many enforcement functions only make sense when the address holds tokens. Freezing a balance of zero costs a transaction and changes nothing. Each enforced action has the option **Only execute if the address holds a balance on this token**.
+
+When you select it, Active Monitoring reads the balance of the screened address on the primary token, on the network of the decision, and runs the action only if the balance is greater than zero. When you do not select it, the action runs without reading the balance.
+
+<Aside type="caution" title="Select the condition when you map Balance">
+  The `Balance` source needs a balance reading, and the reading exists only when the condition is selected. Select the
+  condition on every enforced action that maps `Balance`.
+</Aside>
+
+If the risk level matches but the balance is zero, the action does not run. The decision becomes **No balance - flag for review**, so that a person can decide what to do for an address that holds nothing.
+
+## One rule, several decisions
+
+An Enforce response with several actions is not one decision. The Platform UI turns the response into separate rules: actions with the balance condition go in one rule, and actions without it go in another. Active Monitoring evaluates each rule independently, so one risk event can create several decisions.
+
+For example, this Enforce response applies to **15 - Severe** on a token with two actions:
+
+| Action                                                                                       | Balance condition |
+| -------------------------------------------------------------------------------------------- | ----------------- |
+| `freezePartialTokens(_userAddress, _amount)` on the token, with `_amount` set to **Balance** | Selected          |
+| `addBlacklist(account, reason)` on an associated blocklist contract                          | Not selected      |
+
+For a Severe address, Active Monitoring evaluates two rules:
+
+| Address holds a balance on the network | Decision from the freeze rule | Decision from the blocklist rule |
+| -------------------------------------- | ----------------------------- | -------------------------------- |
+| Yes                                    | Freeze enforced               | Blocklist entry enforced         |
+| No                                     | No balance - flag for review  | Blocklist entry enforced         |
+
+Every decision is for one address on one network, so the same alert can produce different results on different networks. The blocklist entry above is added on every network, and the freeze runs only on networks where the address holds a balance.
+
+## A rule is immutable
+
+You cannot edit a rule. To change it, delete it and create a new one. Deleting the rule of a token removes the rule only: the token and its configuration stay.
+
+While a token has no rule, Active Monitoring creates no decisions for it. Risk events that occur in that period are not evaluated against the new rule later.
+
+## Next steps
+
+- [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules): create a rule in the Platform UI or with the API.
+- [Decisions, Review, and Audit Trail](/ace/active-monitoring/concepts/decisions-and-audit): what each outcome means.

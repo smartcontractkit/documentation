@@ -1,0 +1,74 @@
+---
+section: ace
+title: "Watchlist and Screening"
+date: Last Modified
+metadata:
+  description: "Understand what Chainlink ACE Active Monitoring screens, how often it screens, how TRM risk levels work, and when a screening result becomes a risk event."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-07"
+---
+
+import { Aside } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+Screening is how Active Monitoring detects risk: it checks the addresses on your watchlist against TRM Wallet Screening on a schedule you choose. TRM Labs is the blockchain analytics provider that scores the risk of each address, and you use your own TRM account. This page explains what is screened, how a result becomes a risk event, and what limits apply.
+
+## The watchlist
+
+The **watchlist** is the list of wallet addresses that Active Monitoring screens. You build it from a CSV file or from an [ACE identity registry](/ace/guides/identity-manager/manage-registries). See [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist).
+
+The watchlist belongs to your organization, not to one token. Active Monitoring evaluates every watchlist address against the monitoring rule of every monitored token, on each network of that token.
+
+Active Monitoring screens only these addresses. It does not read your token's holder list and does not screen the counterparties of transfers.
+
+## TRM risk levels
+
+TRM returns one risk level for each screened address: **Severe** (score 15), **High** (10), **Medium** (5), **Low** (1), or **Unknown** (0). Active Monitoring asks TRM about the address across all the networks that TRM covers, so the level applies to the address as a whole, not to one network.
+
+Your monitoring rule maps each level to a response. See [Limits, Statuses, and Values](/ace/active-monitoring/reference/limits-and-values#trm-risk-levels) for the scores and API values.
+
+TRM also returns the categories behind the level, for example sanctions exposure or mixer activity. Active Monitoring keeps the full TRM result with each decision. You can read it in the **TRM raw data** tab of the decision.
+
+## Schedule
+
+You choose how often Active Monitoring screens, in whole hours, when you [add your TRM API key](/ace/active-monitoring/guides/configure-screening). The Platform UI offers 6, 12, and 24 hours. The API accepts 1 to 168 hours.
+
+Screening starts when you click **Start screening**, or call `POST /active-monitoring/screening-interval/start`. The first run starts immediately, and later runs repeat at the interval. Each run screens the whole watchlist.
+
+The **Decisions log** header shows when the least recently screened address was screened, and the interval: for example, "Last screened 2:15 hrs ago | Updates every 6 hrs".
+
+If TRM cannot screen some addresses in a run, for example because the API key is invalid or TRM is unavailable, those addresses keep their previous result and are tried again at the next run.
+
+## When a result becomes a risk event
+
+A screening result does not always lead to a decision. Active Monitoring raises a **risk event** only when:
+
+- an address is screened for the first time, or
+- the highest risk level of an address differs from the level of the previous run.
+
+An address that stays at the same level raises no new event, so it produces no new decision. For example, an address that is **Severe** at the first run, and **Severe** at every later run, produces one decision for each matching rule, at the first run only.
+
+This has three consequences:
+
+- A monitoring rule reacts to **new** events. When you create or replace a rule, addresses whose level does not change are not evaluated again.
+- A decision reflects the balance at the moment of the event, not later. An address that gets a balance after its decision does not trigger a new decision until its level changes.
+- To see Active Monitoring act on an address again, its risk level must change.
+
+## Limits
+
+| Item               | Limit                                                            |
+| ------------------ | ---------------------------------------------------------------- |
+| Watchlist size     | No fixed limit                                                   |
+| Screening provider | TRM only                                                         |
+| Screening interval | 6, 12, or 24 hours in the Platform UI; 1 to 168 hours in the API |
+| TRM API keys       | One per organization                                             |
+
+You need a TRM API key for [TRM Wallet Screening](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening). Active Monitoring does not provide TRM credentials. See the TRM website for how to get access.
+
+## Next steps
+
+- [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist): add the addresses to screen.
+- [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening): store the key and start screening.
+- [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules): decide what happens for each risk level.

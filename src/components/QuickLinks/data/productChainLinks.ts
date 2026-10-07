@@ -75,6 +75,7 @@ export const productChainLinks: ProductChainLinks = {
       mint: "/ccip/directory/mainnet/chain/mint-mainnet",
       opbnb: "/ccip/directory/mainnet/chain/binance-smart-chain-mainnet-opbnb-1",
       plume: "/ccip/directory/mainnet/chain/plume-mainnet",
+      superseed: "/ccip/directory/mainnet/chain/superseed-mainnet",
       taiko: "/ccip/directory/mainnet/chain/ethereum-mainnet-taiko-1",
       tempo: "/ccip/directory/mainnet/chain/tempo-mainnet",
       metal: "/ccip/directory/mainnet/chain/metal-mainnet",
