@@ -1,4 +1,6 @@
 ---
+export const prerender = false
+
 import Chain from "~/components/CCIP/Chain/Chain.astro"
 import DecommissionedChain from "~/components/CCIP/Chain/DecommissionedChain.astro"
 import {
@@ -11,47 +13,21 @@ import {
   getDecommissionedNetwork,
 } from "~/config/data/ccip"
 
-export async function getStaticPaths() {
-  // Get both active and decommissioned networks
-  const activeNetworks = getAllNetworks({ filter: Environment.Mainnet })
-  const decommissionedNetworks = getAllDecommissionedNetworks({ filter: Environment.Mainnet })
+// Handle dynamic routing
+const { chain } = Astro.params
+const environment = Environment.Mainnet
 
-  // Combine all chain names
-  const allChains = [
-    ...activeNetworks.map(({ chain }) => ({ chain, isDecommissioned: false })),
-    ...decommissionedNetworks.map(({ chain }) => ({ chain, isDecommissioned: true })),
-  ]
+// Get data dynamically
+const activeNetworks = getAllNetworks({ filter: environment })
+const decommissionedNetworks = getAllDecommissionedNetworks({ filter: environment })
 
-  return allChains.map(({ chain, isDecommissioned }) => {
-    if (isDecommissioned) {
-      const decomNetwork = decommissionedNetworks.find((network) => network.chain === chain) as DecommissionedNetwork
-      return {
-        params: { chain },
-        props: {
-          decomNetwork,
-          environment: Environment.Mainnet,
-          isDecommissioned: true,
-        },
-      }
-    } else {
-      const activeNetwork = activeNetworks.find((network) => network.chain === chain) as Network
-      return {
-        params: { chain },
-        props: {
-          activeNetwork,
-          environment: Environment.Mainnet,
-          isDecommissioned: false,
-        },
-      }
-    }
-  })
-}
+const activeNetwork = activeNetworks.find((n) => n.chain === chain)
+const decomNetwork = decommissionedNetworks.find((n) => n.chain === chain)
+const isDecommissioned = !activeNetwork && !!decomNetwork
 
-const { decomNetwork, activeNetwork, environment, isDecommissioned } = Astro.props as {
-  decomNetwork?: DecommissionedNetwork
-  activeNetwork?: Network
-  environment: Environment
-  isDecommissioned: boolean
+// Handle 404s
+if (!activeNetwork && !decomNetwork) {
+  return Astro.redirect("/404")
 }
 ---
 
