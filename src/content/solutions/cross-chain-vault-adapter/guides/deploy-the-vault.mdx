@@ -1,0 +1,497 @@
+---
+title: "Deploy the vault and set up its share token"
+description: "Deploy an example ERC-4626 vault on Ethereum Sepolia, deposit 1 CCIP-BnM, and make the vault share token a CCIP cross-chain token between Ethereum Sepolia and Arbitrum Sepolia."
+---
+
+import { AnchoredAccordion, Aside, GitHubCard } from "@components"
+
+In this tutorial, we will:
+
+1. Deploy `ExampleERC4626Vault` on Ethereum Sepolia and verify it on Etherscan.
+2. Deposit 1 CCIP-BnM and receive 1 vCCIP-BnM.
+3. Transform `vCCIP-BnM` into a cross-chain token using the CCIP protocol under the [Lock & Mint mechanism](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry), by deploying:
+   - A Lock & Release pool on Ethereum Sepolia, and,
+   - A Burn & Mint pool on Arbitrum Sepolia.
+4. Return to this page, transfer 0.1 vCCIP-BnM to Arbitrum Sepolia, and confirm the balances on both chains.
+
+> An [ERC-4626](https://eips.ethereum.org/EIPS/eip-4626) vault holds one asset and gives depositors shares in return. The vault contract is itself an ERC-20 token contract, and the shares are its tokens, so the vault's address is also the share token's address. In this tutorial, the asset is CCIP-BnM and the share token is Vault CCIP-BnM (vCCIP-BnM). Two adapter features need the share token to be a [CCIP cross-chain token (CCT)](/ccip/concepts/cross-chain-token/overview) on the Arbitrum Sepolia lane: returning shares to Arbitrum Sepolia, and redeeming shares from Arbitrum Sepolia.
+
+The hub chain is the chain where the vault and the adapter are deployed, and a source chain is any other chain that users send deposits and redemptions from. Here, Ethereum Sepolia is the hub chain and Arbitrum Sepolia is the source chain.
+
+## Before you begin
+
+You need:
+
+- [Foundry](https://book.getfoundry.sh/getting-started/installation),
+- [Node.js](https://nodejs.org/en/download) 22.10 or later,
+- pnpm 10, and,
+- A Foundry keystore for your wallet, which deploys and owns the vault and the share token contracts in this tutorial. Use the same keystore in every tutorial of this solution.
+
+<Aside type="caution" title="Before you continue">
+  <ol>
+    <li>
+      **Ethereum Sepolia ETH**: required for Ethereum Sepolia transactions. Get it from the [Chainlink
+      faucet](https://faucets.chain.link).
+    </li>
+    <li>
+      **Arbitrum Sepolia ETH**: required for Arbitrum Sepolia transactions in the `Lock & Mint` tutorial. Get it from
+      the same faucet.
+    </li>
+    <li>
+      **CCIP-BnM on Ethereum Sepolia**: the vault's asset. [Get CCIP-BnM on Ethereum
+      Sepolia](https://docs.chain.link/ccip/getting-started/test-tokens) from this page.
+    </li>
+    <li>
+      **Etherscan API key**: required for `--verify`, which publishes the source code of the contracts you deploy on
+      Etherscan. One [Etherscan API key](https://etherscan.io/myapikey) works on Ethereum Sepolia and Arbitrum Sepolia.
+    </li>
+  </ol>
+</Aside>
+
+<Aside type="tip" title="Bringing your own vault?">
+
+Skip only what you already have:
+
+- Complete [Set up your development environment](#set-up-your-development-environment) and [Set your shell variables](#set-your-shell-variables) in every case. Deploy the adapter uses the same repository, keystore, and variables.
+- If you have an ERC-4626 vault on Ethereum Sepolia that meets the [requirements](/solutions/cross-chain-vault-adapter#requirements):
+  - skip **Get CCIP-BnM on Ethereum Sepolia** and **Deploy the vault**, and run `export VAULT=<your_vault_address>`.
+  - Set `ETHEREUM_SEPOLIA_CCIP_BNM` to your vault's asset, and scale the amounts on this page to its decimals.
+- If you already hold at least 0.1 of your vault's shares on Ethereum Sepolia:
+  - skip **Deposit 1 CCIP-BnM**.
+- If your share token already has pools on Ethereum Sepolia and Arbitrum Sepolia that are configured for each other and registered in the TokenAdminRegistry on both chains:
+  - skip [Set up the share token in CCIP](#set-up-the-share-token-in-ccip) and run `export ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_TOKEN=<your_share_token_on_arbitrum_sepolia>`.
+    In [Confirm the balances](#confirm-the-balances), skip the lockbox check, and expect your balances to move by 0.1 instead of matching the values shown.
+- If you set up your own share token now, it must implement `getCCIPAdmin()` or OpenZeppelin's `owner()`, so the Lock & Mint tutorial's Claim Admin Role step can identify its administrator.
+- If you have already transferred shares from Ethereum Sepolia to Arbitrum Sepolia, skip [Test the share token](#test-the-share-token).
+
+</Aside>
+
+<AnchoredAccordion title="Set up your development environment" number={1} depth={3}>
+
+1. Install [ccip-cli](https://docs.chain.link/ccip/tools/cli) and check its version:
+
+```bash filename="Terminal"
+npm install -g @chainlink/ccip-cli
+ccip-cli --version
+```
+
+This tutorial was tested with ccip-cli 1.14.0.
+
+2. Check that Foundry is installed:
+
+```bash filename="Terminal"
+forge --version
+```
+
+3. Enable pnpm through Corepack. The repository pins `pnpm@10.11.1`:
+
+```bash filename="Terminal"
+corepack enable
+```
+
+4. Clone the adapter repository, install its dependencies, and build it:
+
+<GitHubCard
+  title="Cross-chain vault adapters"
+  href="https://github.com/smartcontractkit/cross-chain-vault-adapters"
+  iconName="github-svg-card"
+>
+  The adapter, its factory, the example vault, and their deploy scripts.
+</GitHubCard>
+
+```bash filename="Terminal"
+git clone https://github.com/smartcontractkit/cross-chain-vault-adapters.git
+cd cross-chain-vault-adapters
+pnpm install
+forge build
+```
+
+5. Create an encrypted Foundry keystore. Skip this step if `cast wallet list` already shows the keystore you want to use:
+
+```bash filename="Terminal"
+cast wallet import your_keystore_name --interactive
+```
+
+6. Create a `.env` file from the example:
+
+```bash filename="Terminal"
+cp .env.example .env
+```
+
+7. In `.env`, fill in these variables:
+
+```bash filename=".env"
+ETHEREUM_SEPOLIA_RPC_URL=your_ethereum_sepolia_rpc_url
+ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL=your_arbitrum_sepolia_rpc_url
+ETHERSCAN_API_KEY=your_etherscan_api_key
+KEYSTORE_NAME=your_keystore_name
+```
+
+Leave the other variables as they are.
+Run `source .env` to load the environment variables into your shell.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Set your shell variables" number={2} depth={3}>
+
+The `cast` and `ccip-cli` commands in these tutorials read the following variables from your shell. Use one terminal for this tutorial and the next one, and run these commands again if you open a new terminal:
+
+> You can fetch the keystore names available inside your Foundry keystore by using the `cast wallet list` command.
+
+```bash filename="Terminal"
+export MY_ADDRESS=$(cast wallet address --account $KEYSTORE_NAME)
+export ETHEREUM_SEPOLIA_ROUTER=0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+export ETHEREUM_SEPOLIA_CCIP_BNM=0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05
+```
+
+> `(cast wallet address --account $KEYSTORE_NAME)` sets the public address of the keystore specified by `KEYSTORE_NAME` into your terminal. You will need it.
+
+The RPC variable names match the Lock & Mint tutorial, so the same values work in both repositories. The router and CCIP-BnM addresses come from the [Ethereum Sepolia page of the CCIP Directory](/ccip/directory/testnet/chain/ethereum-testnet-sepolia).
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Get CCIP-BnM on Ethereum Sepolia" number={3} depth={3}>
+
+You have two ways to get CCIP-BnM tokens on Ethereum Sepolia to follow through the tutorial:
+
+1. Mint CCIP-BnM on Ethereum Sepolia from [CCIP test tokens](/ccip/getting-started/test-tokens).
+2. Use the following cast command to call `drip` on the CCIP-BnM token:
+
+```bash filename="Terminal"
+cast send $ETHEREUM_SEPOLIA_CCIP_BNM "drip(address)" $MY_ADDRESS \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+  --account $KEYSTORE_NAME
+```
+
+Check that your wallet holds at least 1 CCIP-BnM. CCIP-BnM has 18 decimals, so 1 CCIP-BnM is `1000000000000000000`:
+
+```bash filename="Terminal"
+cast call $ETHEREUM_SEPOLIA_CCIP_BNM "balanceOf(address)(uint256)" $MY_ADDRESS \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+Example Output:
+
+```bash filename="Terminal"
+1000000000000000000 [1e18]
+```
+
+</AnchoredAccordion>
+
+## Deploy and fund the vault
+
+<AnchoredAccordion title="Deploy the vault" number={1} depth={3}>
+
+`ExampleERC4626Vault` combines OpenZeppelin's audited `ERC4626` and `Ownable` contracts with a constructor and no other code.
+This implementation is deliberately minimal to serve as a tool to follow through the tutorials. Please use your own, audited implementation in production.
+`Ownable` gives the vault an `owner()` function. The Lock & Mint tutorial's Claim Admin Role step uses it to register you as the share token's CCIP administrator.
+
+<Aside type="caution" title="Use your own vault in production">
+  `ExampleERC4626Vault` exists for these tutorials. The OpenZeppelin contracts it inherits are audited, but the vault
+  itself is not, and it has no yield strategy.
+</Aside>
+
+<GitHubCard
+  title="ExampleERC4626Vault.sol"
+  href="https://github.com/smartcontractkit/cross-chain-vault-adapters/blob/main/src/ccip/dev/ExampleERC4626Vault.sol"
+  iconName="github-svg-card"
+>
+  View the vault contract on GitHub.
+</GitHubCard>
+
+<GitHubCard
+  title="DeployExampleERC4626Vault.s.sol"
+  href="https://github.com/smartcontractkit/cross-chain-vault-adapters/blob/main/script/ccip/DeployExampleERC4626Vault.s.sol"
+  iconName="github-svg-card"
+>
+  View the deployment script on GitHub.
+</GitHubCard>
+
+1. From the root of the `cross-chain-vault-adapters` repository, deploy the vault with CCIP-BnM as its asset, and verify it on Etherscan:
+
+```bash filename="Terminal"
+VAULT_ASSET=$ETHEREUM_SEPOLIA_CCIP_BNM \
+  VAULT_NAME="Vault CCIP-BnM" \
+  VAULT_SYMBOL=vCCIP-BnM \
+  pnpm ccip:deploy-example-vault \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast \
+  --verify \
+  --delay 20 \
+  --retries 12 \
+  --gas-estimate-multiplier 700
+```
+
+Etherscan needs time to index a new contract. `--delay 20 --retries 12` makes Forge retry verification up to 12 times, 20 seconds apart.
+
+The script makes your wallet the vault owner. To make another address the owner, set `VAULT_OWNER`. Without `--broadcast`, the script only simulates the deployment.
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+== Return ==
+vault: contract ExampleERC4626Vault 0xE4Ef963183C29401Ff6F67CC13B500dB1354cfB6
+
+== Logs ==
+  ExampleERC4626Vault: 0xE4Ef963183C29401Ff6F67CC13B500dB1354cfB6
+  Asset:               0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05
+  Name / symbol:       Vault CCIP-BnM vCCIP-BnM
+  Decimals:            18
+  Owner:               0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+```
+
+2. Export the vault address from the `ExampleERC4626Vault` line:
+
+```bash filename="Terminal"
+export VAULT=<ExampleERC4626Vault_address>
+```
+
+3. Check that your wallet owns the vault. The output must equal `$MY_ADDRESS`:
+
+```bash filename="Terminal"
+cast call $VAULT "owner()(address)" --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Deposit 1 CCIP-BnM" number={2} depth={3}>
+
+A deposit moves CCIP-BnM into the vault and mints vCCIP-BnM to the receiver. Amounts in these commands use 18 decimals: `1000000000000000000` is 1 token.
+
+1. Approve the vault to transfer 1 CCIP-BnM from your wallet:
+
+```bash filename="Terminal"
+cast send $ETHEREUM_SEPOLIA_CCIP_BNM "approve(address,uint256)" $VAULT 1000000000000000000 \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+  --account $KEYSTORE_NAME
+```
+
+2. Deposit 1 CCIP-BnM with your wallet as the receiver:
+
+```bash filename="Terminal"
+cast send $VAULT "deposit(uint256,address)" 1000000000000000000 $MY_ADDRESS \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+  --account $KEYSTORE_NAME
+```
+
+Each `cast send` prints a receipt. Check that it shows `status 1 (success)`.
+
+3. Check your vCCIP-BnM balance and the value of 1 vCCIP-BnM in CCIP-BnM:
+
+```bash filename="Terminal"
+cast call $VAULT "balanceOf(address)(uint256)" $MY_ADDRESS --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+cast call $VAULT "convertToAssets(uint256)(uint256)" 1000000000000000000 --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+At this point:
+
+You hold 1 vCCIP-BnM, and 1 vCCIP-BnM converts to 1 CCIP-BnM. \
+Anyone can change this rate by transferring CCIP-BnM directly to the vault. The amounts in the next tutorials assume nobody has.
+
+</AnchoredAccordion>
+
+## Set up the share token in CCIP
+
+The [Lock & Mint tutorial](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry) makes a token a cross-chain token with a Lock & Release pool on Ethereum Sepolia and a Burn & Mint pool on Arbitrum Sepolia.
+On Ethereum Sepolia, only the vault can mint vCCIP-BnM, so the pool locks and releases existing shares. On Arbitrum Sepolia, you deploy a new vCCIP-BnM token that its pool mints and burns.
+
+<AnchoredAccordion title="Prepare the Lock & Mint repository" number={1} depth={3} anchorId="prepare-the-lock-and-mint-repository">
+
+The Lock & Mint tutorial uses its own repository, [docs-cct-foundry](https://github.com/smartcontractkit/docs-cct-foundry). Work in the same terminal, so `VAULT` and the other shell variables stay set.
+
+1. Move to the directory that contains `cross-chain-vault-adapters`:
+
+```bash filename="Terminal"
+cd ..
+```
+
+2. Follow the Lock & Mint tutorial's [Set up your development environment](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry#set-up-your-development-environment) step.
+
+3. From the `docs-cct-foundry` directory, after `source .env`, point the Lock & Mint scripts at the vault as the Ethereum Sepolia token:
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_TOKEN=$VAULT
+```
+
+> You need to follow the rest of the tutorial as it is. You will essentially set up your Vault's token on Ethereum Sepolia as the canonical deployment and enable it to have cross-chain functionality via CCIP under the Lock & Mint mechanism.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Run the Lock & Mint tutorial for vCCIP-BnM" number={2} depth={3} anchorId="run-the-lock-and-mint-tutorial">
+
+Follow the Lock & Mint tutorial from [Deploy Tokens](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry#deploy-tokens), with these changes:
+
+| Lock & Mint step                                                                                                                                                    | What to do for vCCIP-BnM                                                                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Deploy Tokens](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry#deploy-tokens)                                                           | Skip the Ethereum Sepolia deployment, because the vault is the token there. Deploy only the Arbitrum Sepolia token with the command below, then export its address. Keep `ETHEREUM_SEPOLIA_TOKEN=$VAULT`. |
+| [Deploy Token Pools](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry#deploy-token-pools)                                                 | Run every step: the ERC20LockBox, the Lock & Release pool, and the lockbox authorization on Ethereum Sepolia, and the Burn & Mint pool on Arbitrum Sepolia.                                               |
+| [Claim Admin Role](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry#claim-admin-role)                                                     | Run it on both chains with `CCIP_ADMIN_ADDRESS=$MY_ADDRESS`. On Ethereum Sepolia, the script reads the admin from the vault's `owner()`.                                                                  |
+| [Accept Admin Role](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry#accept-admin-role)                                                   | Run it on both chains.                                                                                                                                                                                    |
+| [Configure Token Pools](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry#configure-token-pools)                                           | Run it on both chains with the tutorial's rate limits.                                                                                                                                                    |
+| [Configure Faster Than Finality](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry#optional-configure-fast-finality-for-the-token-pool)    | Skip it. These tutorials use default finality.                                                                                                                                                            |
+| [Activate the Token Pool](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry#activate-the-token-pool)                                       | Run it on both chains.                                                                                                                                                                                    |
+| [Mint Tokens](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry#mint-tokens)                                                               | Skip it. Only deposits mint vCCIP-BnM on Ethereum Sepolia, and you already hold 1 vCCIP-BnM.                                                                                                              |
+| [Transfer Tokens Across Networks](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry#transfer-tokens-across-networks)                       | Skip it. You transfer vCCIP-BnM in [Test the share token](#test-the-share-token).                                                                                                                         |
+| [Hand Off Token Administration](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry#optional-hand-off-token-administration-after-enablement) | Skip it.                                                                                                                                                                                                  |
+
+Deploy the Arbitrum Sepolia token with the vault's name, symbol, and decimals, and no pre-mint. Because the decimals match, 0.1 vCCIP-BnM on Ethereum Sepolia arrives as 0.1 vCCIP-BnM on Arbitrum Sepolia:
+
+```bash filename="Terminal"
+TOKEN_NAME="Vault CCIP-BnM" \
+  TOKEN_SYMBOL=vCCIP-BnM \
+  TOKEN_DECIMALS=18 \
+  TOKEN_PRE_MINT=0 \
+  forge script \
+  script/deploy/DeployToken.s.sol \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL \
+  --account $KEYSTORE_NAME \
+  --broadcast \
+  --verify
+```
+
+Under Token Parameters, the output must show `Vault CCIP-BnM`, `vCCIP-BnM`, `18`, and `Pre-mint: 0`. Export the token's address:
+
+```bash filename="Terminal"
+export ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_TOKEN=<token_address_on_arbitrum_sepolia>
+```
+
+When Activate the Token Pool succeeds on both chains, return to this page.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Check the registration" number={3} depth={3}>
+
+1. Once your token pool is activated on both chains, go back to the adapter repository:
+
+```bash filename="Terminal"
+cd ../cross-chain-vault-adapters
+```
+
+2. Read the pool that the TokenAdminRegistry on each chain holds for the share token:
+
+```bash filename="Terminal"
+cast call 0x95F29FEE11c5C55d26cCcf1DB6772DE953B37B82 "getPool(address)(address)" $VAULT \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+cast call 0x8126bE56454B628a88C17849B9ED99dd5a11Bd2f "getPool(address)(address)" $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_TOKEN \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL
+```
+
+1. The first address must equal `$ETHEREUM_SEPOLIA_TOKEN_POOL`, and,
+2. The second must equal `$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_TOKEN_POOL`.
+
+A zero address means Activate the Token Pool did not run on that chain.
+
+</AnchoredAccordion>
+
+## Test the share token
+
+<AnchoredAccordion title="Transfer vCCIP-BnM to Arbitrum Sepolia" number={1} depth={3}>
+
+Send 0.1 vCCIP-BnM from your wallet on Ethereum Sepolia to the same address on Arbitrum Sepolia. The Lock & Release pool locks the shares in the lockbox, and the Burn & Mint pool mints 0.1 vCCIP-BnM on Arbitrum Sepolia.
+`ccip-cli` approves the router for the exact amount. Without `--fee-token`, it pays the CCIP fee in Ethereum Sepolia ETH:
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia \
+  --router $ETHEREUM_SEPOLIA_ROUTER \
+  --dest ethereum-testnet-sepolia-arbitrum-1 \
+  --transfer-tokens $VAULT=0.1 \
+  --receiver $MY_ADDRESS \
+  --wallet foundry:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL"
+```
+
+`--transfer-tokens` takes the amount in whole tokens, so `0.1` is 0.1 vCCIP-BnM.
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+✔ Enter password for Foundry keystore 'PRIVATE_KEY'
+Estimated gasLimit for sender = 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994 : 0
+Fee: 257831635941687n = 0.000257831635941687 ETH
+🚀 Sending message to 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994 @ ethereum-testnet-sepolia-arbitrum-1 , tx => 0x621f4cd397751b87bd8edb6bb90afb4e9bcfd274ccc228cb54e4d66d8bde787d , messageId => 0x81ef360a4235f6333e7725e38c171e018f14f73c19559aefb19ff70ab6ca3c9e
+Lane:
+┌────────────────┬──────────────────────────────────────────────┬───────────────────────────────────────┐
+│ (index)        │ source                                       │ dest                                  │
+├────────────────┼──────────────────────────────────────────────┼───────────────────────────────────────┤
+│ name           │ 'ethereum-testnet-sepolia'                   │ 'ethereum-testnet-sepolia-arbitrum-1' │
+│ chainId        │ 11155111                                     │ 421614                                │
+│ chainSelector  │ 16015286601757825753n                        │ 3478487238524512106n                  │
+│ onRamp/version │ '0x8dcf17f298c881A547D91ca4aA3C2AD7568C6777' │ '2.0.0'                               │
+└────────────────┴──────────────────────────────────────────────┴───────────────────────────────────────┘
+Request (source):
+┌────────────────────────────────┬──────────────────────────────────────────────────────────────────────┐
+│ (index)                        │ Values                                                               │
+├────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│ messageId                      │ '0x81ef360a4235f6333e7725e38c171e018f14f73c19559aefb19ff70ab6ca3c9e' │
+│ origin                         │ '0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994'                         │
+│ sender                         │ '0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994'                         │
+│ receiver                       │ '0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994'                         │
+```
+
+Export the message ID from the output:
+
+```bash filename="Terminal"
+export MESSAGE_ID=<message_id>
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Track the transfer" number={2} depth={3}>
+
+Open the CCIP Explorer link from the output, or follow the message from the terminal with [`ccip-cli show`](https://docs.chain.link/ccip/tools/cli/show). `--wait` keeps the command running until the message executes on Arbitrum Sepolia:
+
+```bash filename="Terminal"
+ccip-cli show $MESSAGE_ID \
+  --wait \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL"
+```
+
+CCIP delivers the message after the source transaction reaches finality on Ethereum Sepolia, which typically takes about 20 minutes.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Confirm the balances" number={3} depth={3}>
+
+1. Check your vCCIP-BnM balance on Ethereum Sepolia:
+
+```bash filename="Terminal"
+cast call $VAULT "balanceOf(address)(uint256)" $MY_ADDRESS --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+```bash filename="Terminal"
+900000000000000000 [9e17]
+```
+
+If you set up the share token with the Lock & Mint tutorial in this terminal, `LOCK_BOX` holds the lockbox address from its Deploy ERC20LockBox step. Check that the lockbox holds the 0.1 vCCIP-BnM you sent:
+
+```bash filename="Terminal"
+cast call $VAULT "balanceOf(address)(uint256)" $LOCK_BOX --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+```bash filename="Terminal"
+100000000000000000 [1e17]
+```
+
+2. Check your vCCIP-BnM balance on Arbitrum Sepolia:
+
+```bash filename="Terminal"
+cast call $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_TOKEN "balanceOf(address)(uint256)" $MY_ADDRESS \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL
+```
+
+```bash filename="Terminal"
+100000000000000000 [1e17]
+```
+
+Your wallet holds 0.9 vCCIP-BnM on Ethereum Sepolia and 0.1 vCCIP-BnM on Arbitrum Sepolia. The lockbox holds the 0.1 vCCIP-BnM that backs the Arbitrum Sepolia supply. The vault still holds 1 CCIP-BnM against 1 vCCIP-BnM of total supply, so shares still convert 1:1.
+
+</AnchoredAccordion>
+
+## Where to go next
+
+- [Deploy the adapter](/solutions/cross-chain-vault-adapter/guides/deploy-the-adapter): deploy a Cross-Chain Vault Adapter for this vault on Ethereum Sepolia, with Arbitrum Sepolia as a source chain. Stay in this terminal and in the `cross-chain-vault-adapters` directory.
+- [How it works](/solutions/cross-chain-vault-adapter/overview/how-it-works): how the adapter uses the vault and its share token for deposits and redemptions.

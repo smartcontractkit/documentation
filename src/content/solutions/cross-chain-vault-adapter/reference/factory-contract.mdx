@@ -1,0 +1,307 @@
+---
+title: "Factory contract"
+description: "API reference for CrossChainERC4626AdapterFactory: the deploy function, its configuration structs, the AdapterDeployed event, the errors it can revert with, and the role handoff."
+---
+
+import { Aside } from "@components"
+
+The hub chain is the chain where the vault and the adapter are deployed, and a source chain is any other chain that users send deposits and redemptions from.
+
+`CrossChainERC4626AdapterFactory` deploys a `CrossChainERC4626Adapter` on the hub chain, applies its initial configuration, and hands its roles to your accounts in one transaction.
+
+This contract provides:
+
+- deployment of an adapter bound to the CCIP Router you pass in
+- the initial chain types, vault allowlist entry, deposit and redeem switches, and adapter fees
+- a role handoff that leaves the factory with no roles on the adapter
+
+<Aside type="note" title="Who calls the factory">
+  The vault team calls `deploy` once per adapter, on the hub chain. Users and integrators never call the factory. They
+  send CCIP messages to the deployed adapter, as described in [How it
+  works](/solutions/cross-chain-vault-adapter/overview/how-it-works). To deploy an adapter for your vault, see [Deploy
+  the adapter](/solutions/cross-chain-vault-adapter/guides/deploy-the-adapter).
+</Aside>
+
+## Usage boundary
+
+- Anyone can call `deploy`. The factory has no owner, allowlist, or fee.
+- After `deploy` returns, the factory holds no role on the adapter and cannot change it.
+- The factory keeps no registry of adapters. The `AdapterDeployed` event is the only on-chain record that links an adapter to this factory.
+- The factory sets the initial configuration only. Send later changes to the adapter directly, from the account that holds the required role. See the [configuration functions](/solutions/cross-chain-vault-adapter/reference/adapter-contract#configuration-functions) on the adapter.
+
+## Contract
+
+[`src/ccip/CrossChainERC4626AdapterFactory.sol`](https://github.com/smartcontractkit/cross-chain-vault-adapters/blob/main/src/ccip/CrossChainERC4626AdapterFactory.sol)
+
+- Version: `CrossChainERC4626AdapterFactory 1.0.0`, returned by [`typeAndVersion`](#typeandversion).
+- The factory and the adapter are audited.
+- Both are compiled with solc 0.8.24 for the cancun EVM version, and their bytecode uses the `PUSH0` opcode. Deploy them only on chains that support the Shanghai upgrade.
+
+## Deployed addresses
+
+| Network          | Address                                      |
+| ---------------- | -------------------------------------------- |
+| Ethereum mainnet | `0x1b79038DCCbeE0E406eA0c1bA758A2cF696b38D4` |
+| Ethereum Sepolia | `0x12A0f45738F3DDA931C4D3ECd1b267355e587921` |
+
+You can deploy your own factory with the repository's `pnpm ccip:deploy-factory` script.
+
+## Inheritance
+
+- [`ITypeAndVersion`](/ccip/evm/api-reference/v2.0.0/i-type-and-version)
+
+## Functions
+
+### deploy
+
+Deploys and configures a `CrossChainERC4626Adapter` in one transaction.
+
+```solidity
+function deploy(DeploymentConfig calldata config) external returns (address adapterAddress)
+```
+
+> The factory holds all three roles while it applies `config`, then grants each role to its configured account and renounces its own. Any revert undoes the whole transaction, so no adapter is created. The numbered steps after **Emits** list the exact order.
+>
+> `deploy` leaves the CCIP 2.0 settings at their defaults and does not fund the adapter. See [Security notes](#security-notes).
+
+**Access:** anyone.
+
+**Parameters:**
+
+| Parameter | Type                                               | Description                                                                           |
+| --------- | -------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `config`  | [`DeploymentConfig`](#deploymentconfig) `calldata` | Router, role accounts, vault, processing switches, and batches of chain and fee rows. |
+
+**Returns:**
+
+| Name             | Type      | Description                      |
+| ---------------- | --------- | -------------------------------- |
+| `adapterAddress` | `address` | Address of the deployed adapter. |
+
+**Reverts with:**
+
+- `InvalidAdmin`, `InvalidFeeSetter`, or `InvalidFeeCollector` when the matching role account is the zero address.
+- `InvalidRouter(address(0))` from the adapter constructor when `config.router` is the zero address.
+- `InvalidTarget(address(0))` from the adapter's `setAssetFee` when a `FeeConfig` row has a zero `bridgedToken`.
+
+**Emits:**
+
+- `AdapterDeployed` from the factory.
+- The adapter's own events from the configuration calls: `ChainTypeSet` per chain row, `TargetEnabled` when `vaultTarget` is set, `ProcessingEnabledSet`, and `AssetFeeSet` per fee row. See the adapter's [events](/solutions/cross-chain-vault-adapter/reference/adapter-contract#events).
+- OpenZeppelin `RoleGranted` and `RoleRevoked` events from the adapter for the role handoff.
+
+`deploy` runs these steps in order:
+
+1. Reverts if `defaultAdmin`, `feeSetter`, or `feeCollector` is the zero address. These checks run before the adapter constructor, so a call with a zero router and a zero admin reverts with `InvalidAdmin`.
+2. Deploys the adapter with `CREATE`, passing `config.router` and the factory's own address as admin, fee setter, and fee collector. The factory now holds all three roles.
+3. Calls `setChainType` once for each `chainConfigs` row.
+4. Calls `setTargetEnabled(vaultTarget, targetEnabled)` only when `vaultTarget` is not the zero address. Otherwise it skips the call and ignores `targetEnabled`.
+5. Calls `setProcessingEnabled(depositsEnabled, redeemsEnabled)`. This call always runs.
+6. Calls `setAssetFee` once for each `feeConfigs` row.
+7. Hands off the roles, as described in [Role handoff](#role-handoff).
+8. Emits `AdapterDeployed` and returns the adapter address.
+
+Rows apply in array order. A later row for the same chain selector, or the same selector and token pair, overwrites an earlier one.
+
+---
+
+### typeAndVersion
+
+Returns the factory's type and version, declared as a public constant:
+
+```solidity
+string public constant override typeAndVersion = "CrossChainERC4626AdapterFactory 1.0.0";
+```
+
+**Access:** anyone.
+
+**Returns:** `string`, the contract type and version. The repository's `pnpm ccip:deploy` script checks this value before it deploys through an existing factory.
+
+## Types
+
+The three structs are declared in the factory:
+
+```solidity
+struct ChainConfig {
+  uint64 chainSelector;
+  CrossChainERC4626Adapter.ChainType chainType;
+}
+
+struct FeeConfig {
+  uint64 destinationChainSelector;
+  address bridgedToken;
+  uint256 fee;
+}
+
+struct DeploymentConfig {
+  address router;
+  address defaultAdmin;
+  address feeSetter;
+  address feeCollector;
+  address vaultTarget;
+  bool targetEnabled;
+  bool depositsEnabled;
+  bool redeemsEnabled;
+  ChainConfig[] chainConfigs;
+  FeeConfig[] feeConfigs;
+}
+```
+
+### DeploymentConfig
+
+| Field             | Type            | Description                                                                                                                                                                                                                                                     |
+| ----------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `router`          | `address`       | CCIP Router on the hub chain. It becomes the adapter's immutable `ROUTER`, the only caller allowed to deliver messages. Must not be zero. Get the address from the CCIP Directory for [testnet](/ccip/directory/testnet) or [mainnet](/ccip/directory/mainnet). |
+| `defaultAdmin`    | `address`       | Receives `DEFAULT_ADMIN_ROLE`. Must not be zero.                                                                                                                                                                                                                |
+| `feeSetter`       | `address`       | Receives `FEE_SETTER_ROLE`. Must not be zero.                                                                                                                                                                                                                   |
+| `feeCollector`    | `address`       | Receives `FEE_COLLECTOR_ROLE`. Must not be zero.                                                                                                                                                                                                                |
+| `vaultTarget`     | `address`       | ERC-4626 vault to allowlist. Pass the zero address to skip.                                                                                                                                                                                                     |
+| `targetEnabled`   | `bool`          | Value passed to `setTargetEnabled` for `vaultTarget`. Ignored when `vaultTarget` is zero.                                                                                                                                                                       |
+| `depositsEnabled` | `bool`          | Whether the adapter processes deposits.                                                                                                                                                                                                                         |
+| `redeemsEnabled`  | `bool`          | Whether the adapter processes redemptions.                                                                                                                                                                                                                      |
+| `chainConfigs`    | `ChainConfig[]` | Source chains to configure. Can be empty.                                                                                                                                                                                                                       |
+| `feeConfigs`      | `FeeConfig[]`   | Adapter fee rows. Can be empty.                                                                                                                                                                                                                                 |
+
+### ChainConfig
+
+| Field           | Type                                 | Description                                                                                                                                                                                                                                                              |
+| --------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `chainSelector` | `uint64`                             | CCIP chain selector of a source chain.                                                                                                                                                                                                                                   |
+| `chainType`     | `CrossChainERC4626Adapter.ChainType` | `NONE` (0) disables the chain, `EVM` (1) is an EVM chain, `SVM` (2) is the Solana Virtual Machine chain family. Messages from a chain whose type is `NONE` become [failed messages](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery) in the adapter. |
+
+### FeeConfig
+
+Each row becomes one `setAssetFee` call. The code calls the adapter fee the asset fee.
+
+| Field                      | Type      | Description                                                                                                                              |
+| -------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `destinationChainSelector` | `uint64`  | Chain the output returns to, which is the source chain of the inbound message.                                                           |
+| `bridgedToken`             | `address` | Token bridged back, which is the share token (the vault address) for deposit returns and the asset for redeem returns. Must not be zero. |
+| `fee`                      | `uint256` | Flat adapter fee in the asset's smallest units. The adapter charges it only when the user asks for return to the source chain.           |
+
+The fee is staged even when the chain in that row has no chain type yet.
+
+### Example configuration
+
+The following JSON illustrates the fields of a `DeploymentConfig` for an adapter on Ethereum Sepolia that accepts messages from Arbitrum Sepolia, with deposits and redemptions enabled and an adapter fee on both return legs. No repository script reads this JSON. Instead, `pnpm ccip:deploy` builds the struct from environment variables. Chain selectors and fees are strings because `uint64` and `uint256` values can exceed the JavaScript safe integer range.
+
+```json
+{
+  "router": "0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59",
+  "defaultAdmin": "<your admin multisig>",
+  "feeSetter": "<your fee setter>",
+  "feeCollector": "<your fee collector>",
+  "vaultTarget": "<your vault address>",
+  "targetEnabled": true,
+  "depositsEnabled": true,
+  "redeemsEnabled": true,
+  "chainConfigs": [{ "chainSelector": "3478487238524512106", "chainType": 1 }],
+  "feeConfigs": [
+    {
+      "destinationChainSelector": "3478487238524512106",
+      "bridgedToken": "<your vault address>",
+      "fee": "1000000000000000"
+    },
+    {
+      "destinationChainSelector": "3478487238524512106",
+      "bridgedToken": "<your vault asset address>",
+      "fee": "1000000000000000"
+    }
+  ]
+}
+```
+
+- `0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59` is the CCIP Router on Ethereum Sepolia, and `3478487238524512106` is the Arbitrum Sepolia chain selector.
+- Replace `<your vault address>`, `<your vault asset address>`, and the three role placeholders with your own addresses.
+- A `fee` of `1000000000000000` is 0.001 of an 18-decimal asset. It matches the 0.001 CCIP-BnM adapter fee in [Deploy the adapter](/solutions/cross-chain-vault-adapter/guides/deploy-the-adapter#configure-the-deployment).
+- The first fee row applies when shares return to Arbitrum Sepolia. That requires the share token to be a [CCIP cross-chain token (CCT)](/ccip/concepts/cross-chain-token/overview) on both chains.
+
+## Events
+
+The factory declares one event:
+
+```solidity
+event AdapterDeployed(
+  address indexed adapter,
+  address indexed router,
+  address indexed defaultAdmin,
+  address feeSetter,
+  address feeCollector,
+  address vaultTarget,
+  bool targetEnabled,
+  bool depositsEnabled,
+  bool redeemsEnabled
+);
+```
+
+| Field             | Type      | Indexed | Description                                                      |
+| ----------------- | --------- | ------- | ---------------------------------------------------------------- |
+| `adapter`         | `address` | Yes     | Address of the new adapter.                                      |
+| `router`          | `address` | Yes     | `config.router`.                                                 |
+| `defaultAdmin`    | `address` | Yes     | Account that received `DEFAULT_ADMIN_ROLE`.                      |
+| `feeSetter`       | `address` | No      | Account that received `FEE_SETTER_ROLE`.                         |
+| `feeCollector`    | `address` | No      | Account that received `FEE_COLLECTOR_ROLE`.                      |
+| `vaultTarget`     | `address` | No      | `config.vaultTarget`, or the zero address if none was set.       |
+| `targetEnabled`   | `bool`    | No      | `config.targetEnabled`, emitted even when `vaultTarget` is zero. |
+| `depositsEnabled` | `bool`    | No      | `config.depositsEnabled`.                                        |
+| `redeemsEnabled`  | `bool`    | No      | `config.redeemsEnabled`.                                         |
+
+The chain and fee rows are not in this event. They appear as the adapter's `ChainTypeSet` and `AssetFeeSet` events in the same transaction.
+
+## Errors
+
+The factory declares no errors. It reverts with errors declared in `CrossChainERC4626Adapter`, listed on the adapter's [errors](/solutions/cross-chain-vault-adapter/reference/adapter-contract#errors):
+
+| Error                           | Raised by             | When                                         |
+| ------------------------------- | --------------------- | -------------------------------------------- |
+| `InvalidAdmin()`                | Factory               | `defaultAdmin` is the zero address.          |
+| `InvalidFeeSetter()`            | Factory               | `feeSetter` is the zero address.             |
+| `InvalidFeeCollector()`         | Factory               | `feeCollector` is the zero address.          |
+| `InvalidRouter(address router)` | Adapter constructor   | `router` is the zero address.                |
+| `InvalidTarget(address target)` | Adapter `setAssetFee` | A `FeeConfig` row has a zero `bridgedToken`. |
+
+## Role handoff
+
+The factory hands off the roles in this order:
+
+1. The adapter constructor grants `DEFAULT_ADMIN_ROLE`, `FEE_SETTER_ROLE`, and `FEE_COLLECTOR_ROLE` to the factory.
+2. The factory applies the configuration. `setAssetFee` needs `FEE_SETTER_ROLE`; the other calls need `DEFAULT_ADMIN_ROLE`.
+3. The factory grants `DEFAULT_ADMIN_ROLE` to `defaultAdmin`, `FEE_SETTER_ROLE` to `feeSetter`, and `FEE_COLLECTOR_ROLE` to `feeCollector`.
+4. The factory renounces `FEE_COLLECTOR_ROLE`, then `FEE_SETTER_ROLE`, then `DEFAULT_ADMIN_ROLE`.
+
+Each role ends with exactly one holder, unless you pass the same account for several roles. Deploying the adapter with its constructor gives a different result:
+
+| Role                 | Through the factory | Through the constructor           |
+| -------------------- | ------------------- | --------------------------------- |
+| `DEFAULT_ADMIN_ROLE` | `defaultAdmin`      | `defaultAdmin`                    |
+| `FEE_SETTER_ROLE`    | `feeSetter` only    | `feeSetter` and `defaultAdmin`    |
+| `FEE_COLLECTOR_ROLE` | `feeCollector` only | `feeCollector` and `defaultAdmin` |
+
+`DEFAULT_ADMIN_ROLE` is the admin of both fee roles, so `defaultAdmin` can grant or revoke them later. The adapter uses OpenZeppelin [`AccessControlEnumerable`](https://docs.openzeppelin.com/contracts/5.x/api/access#AccessControlEnumerable), so grant, revoke, and renounce each take effect in one step, with no two-step transfer. If the last `DEFAULT_ADMIN_ROLE` holder renounces it, the adapter's configuration is locked permanently. Use a multisig for `defaultAdmin`.
+
+Do not pass the factory's own address for any role. The factory renounces its roles in step 4, so that role would end with no holder.
+
+## Security notes
+
+**Permissionless deployment.** Anyone can deploy an adapter that points at any router and any vault. An `AdapterDeployed` event from this factory does not show who controls the adapter. Before you trust an adapter, check its role holders with `getRoleMember` and its `ROUTER`.
+
+**Address derivation.** The factory deploys with `CREATE`, so the adapter address depends on the factory address and its nonce. Each call to `deploy` from anyone increments the nonce. Read the address from the return value or the `AdapterDeployed` event instead of precomputing it. Do not assume an adapter has the same address on two chains.
+
+**No input validation beyond zero checks.** The factory does not check that `router` has code or that `vaultTarget` is an ERC-4626 vault. The repository's `pnpm ccip:deploy` script checks both before it broadcasts. The router must have code, and the vault must return a non-zero `asset()`. `ROUTER` is immutable, so a wrong router means deploying a new adapter. A `defaultAdmin` you do not control also means deploying a new adapter, because nobody else can change the configuration.
+
+**Settings the factory does not apply.** The factory does not configure CCIP 2.0 settings and does not fund the adapter. After deployment, the `defaultAdmin` account sets these on the adapter:
+
+- the return format for each CCIP 2.0 lane, with [`setEvmReturnLaneFormat`](/solutions/cross-chain-vault-adapter/reference/adapter-contract#setevmreturnlaneformat)
+- the requested finality of return legs, with [`setEvmReturnRequestedFinality`](/solutions/cross-chain-vault-adapter/reference/adapter-contract#setevmreturnrequestedfinality), if you change the default
+- the inbound finality, with [`setInboundFinality`](/solutions/cross-chain-vault-adapter/reference/adapter-contract#setinboundfinality), if you change the default
+- the Cross-Chain Verifier (CCV) policy, with [`setCCVsConfig`](/solutions/cross-chain-vault-adapter/reference/adapter-contract#setccvsconfig), if the lane's default verifiers are not enough
+
+Anyone can also send the native gas token to the adapter, which pays the CCIP fee for return legs. A new adapter holds none. The repository's `pnpm ccip:configure` script applies these settings and the funding. For what each setting does and which lanes need it, see [CCIP 2.0 lanes](/solutions/cross-chain-vault-adapter/overview/how-it-works#ccip-20-lanes). For an example that sets the return format and funds the adapter, see [Deploy the adapter](/solutions/cross-chain-vault-adapter/guides/deploy-the-adapter#fund-the-adapter).
+
+## Related contracts
+
+- [Adapter contract](/solutions/cross-chain-vault-adapter/reference/adapter-contract): the `CrossChainERC4626Adapter` that `deploy` creates
+- [`ITypeAndVersion`](/ccip/evm/api-reference/v2.0.0/i-type-and-version)
+- [`IAny2EVMMessageReceiverV2`](/ccip/evm/api-reference/v2.0.0/i-any2-evm-message-receiver-v2): the receiver interface the adapter implements
+- [`ExtraArgsCodec`](/ccip/evm/api-reference/v2.0.0/extra-args-codec): encodes the `GenericExtraArgsV3` return format
+- [OpenZeppelin `AccessControlEnumerable`](https://docs.openzeppelin.com/contracts/5.x/api/access#AccessControlEnumerable): role management on the adapter
