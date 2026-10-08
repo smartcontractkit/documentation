@@ -1,18 +1,29 @@
 ---
 import { SOLUTION_PRODUCTS, SOLUTIONS_HUB_ENABLED } from "~/config/solutions/index.ts"
 import type { Solution } from "~/config/solutions/index.ts"
+import type { ResolvedNavGroup } from "~/utils/solutions"
 import SolutionGitHubButton from "./SolutionGitHubButton.astro"
+import SolutionMobileNavigation from "./SolutionMobileNavigation"
 
 interface Props {
   solution: Solution
+  groups: ResolvedNavGroup[] | null
+  currentPage: string
 }
-const { solution } = Astro.props
+const { solution, groups, currentPage } = Astro.props
 
 const products = solution.products.map((p) => SOLUTION_PRODUCTS[p]).filter(Boolean)
 ---
 
 <div class="solution-nav">
-  <div class="solution-nav-inner">
+  <div class:list={["solution-nav-inner", { "has-mobile-navigation": groups !== null }]}>
+    {
+      groups && (
+        <div class="solution-mobile-navigation">
+          <SolutionMobileNavigation client:media="(max-width: 50em)" title={solution.title} {groups} {currentPage} />
+        </div>
+      )
+    }
     {
       SOLUTIONS_HUB_ENABLED ? (
         <nav class="solution-breadcrumb" aria-label="Breadcrumb">
@@ -90,6 +101,12 @@ const products = solution.products.map((p) => SOLUTION_PRODUCTS[p]).filter(Boole
     min-width: 0;
   }
 
+  .solution-mobile-navigation {
+    display: none;
+    flex: 1;
+    min-width: 0;
+  }
+
   .breadcrumb-root {
     font-size: 13px;
     font-weight: 500;
@@ -149,6 +166,16 @@ const products = solution.products.map((p) => SOLUTION_PRODUCTS[p]).filter(Boole
   .product-badge:hover {
     color: var(--blue-600, #0847f7);
     border-color: var(--blue-600, #0847f7);
+  }
+
+  @media (max-width: 49.999em) {
+    .has-mobile-navigation .solution-breadcrumb {
+      display: none;
+    }
+
+    .solution-mobile-navigation {
+      display: block;
+    }
   }
 
   @media (max-width: 50em) {
