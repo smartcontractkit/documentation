@@ -173,7 +173,7 @@ The payload is the `data` of your CCIP message: four 32-byte fields that tell th
 | `minimumOut`        | the preview minus 1%    | The smallest acceptable output, in CCIP-BnM. The builder subtracts the `TOLERANCE_BPS` tolerance from the preview.                                                                                                           |
 | `deliveryAndRefund` | your address and `true` | Bit 0 set to `1` returns the CCIP-BnM to Arbitrum Sepolia. Bits 1 to 160 hold `$MY_ADDRESS` as the local refund address, which can take back the vCCIP-BnM on Ethereum Sepolia if the request fails. The builder packs both. |
 
-The payload does not name the action. The token you send decides it: vCCIP-BnM, the vault's share token, makes this request a redemption, so `minimumOut` counts CCIP-BnM. With the 1:1 vault and the equal adapter fees in these tutorials, this payload is byte for byte the payload of your deposit.
+The payload does not name the action. The token you send decides it: vCCIP-BnM, the vault's share token, makes this request a redemption, so `minimumOut` counts CCIP-BnM. With the 1:1 vault and the equal adapter fees in these tutorials, this payload is byte for byte the same payload you built in [Deposit from a source chain](/solutions/cross-chain-vault-adapter/guides/deposit-from-source-chain).
 
 1. Build the payload with the repository's `pnpm ccip:build-payload` script. It calls your adapter's `preview` with your vault, token, amount, source chain and return flag, subtracts the tolerance from the preview to set `minimumOut`, packs the return flag and your local refund address into `deliveryAndRefund`, and ABI-encodes the four fields:
 
@@ -220,7 +220,7 @@ export REDEEM_PAYLOAD=$(REQUEST_TOKEN=$VAULT \
    - the beneficiary and the local refund must be your address,
    - the return-to-source flag must be `true`,
    - the byte length must be `128`.
-   - The last line is the value of `REDEEM_PAYLOAD`, byte for byte the payload of your deposit. Do not continue if the preview is `0` or `forge` prints an error.
+   - The last line is the value of `REDEEM_PAYLOAD`: byte for byte the same payload as `DEPOSIT_PAYLOAD` in the deposit tutorial. Do not continue if the preview is `0` or `forge` prints an error.
 
 <Aside type="caution" title="The payload is final once sent">
   Nobody can change the payload after your message leaves Arbitrum Sepolia. If a check does not match, build the payload
