@@ -20,8 +20,21 @@ Without the adapter, a user on a source chain who wants those shares in a vault 
 
 With the Chainlink Cross-Chain Vault Adapter on the other hand, the user:
 
-1. Approves the CCIP Router and sends one CCIP message from the source chain. \
-   The message carries the asset and a 128-byte payload that names the vault, the beneficiary, the minimum output, the delivery option, and a local refund address.
+1. Approves the CCIP Router and sends one CCIP message from the source chain.
+
+<Aside type="note" title="Message payload">
+
+A single message carries:
+
+<ol>
+  <li>The asset itself, and,</li>
+  <li>
+    A 128-byte payload that names: the vault, the beneficiary, the minimum output, the delivery option, and a local
+    refund address (in case the message fails on delivery and a refund is needed).
+  </li>
+</ol>
+
+</Aside>
 
 And that's it. The user doesn't have to do anything else.
 
@@ -34,7 +47,7 @@ The following diagram shows a deposit from a source chain into a vault on the hu
   alt="A user's wallet on a source chain sends the asset and a payload through Chainlink CCIP to the adapter on the hub chain. The adapter deposits into the ERC-4626 vault and receives shares, then delivers them to the user's wallet on the hub chain, or returns them through CCIP to the source chain when the share token is a CCIP cross-chain token."
 />
 
-The repository also contains a separate [multibridge implementation](https://github.com/smartcontractkit/cross-chain-vault-adapters/blob/main/docs/multibridge/README.md) for vaults whose asset or share token moves over LayerZero OFT or Stargate. These docs cover the CCIP implementation.
+The repository also contains a separate [multibridge implementation](https://github.com/smartcontractkit/cross-chain-vault-adapters/blob/main/docs/multibridge/README.md) for vaults whose asset or share token moves over other cross-chain protocols. These docs cover the CCIP implementation.
 
 ## Who it's for
 
